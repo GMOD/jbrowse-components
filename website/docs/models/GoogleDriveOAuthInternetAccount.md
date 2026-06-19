@@ -28,18 +28,35 @@ and docs.
 
 ### Available via [OAuthInternetAccount](../oauthinternetaccount)
 
-**Properties:** type, configuration
+**Properties:** [type](../oauthinternetaccount#property-type),
+[configuration](../oauthinternetaccount#property-configuration)
 
-**Getters:** conf, codeVerifierPKCE, authEndpoint, tokenEndpoint, needsPKCE,
-clientId, scopes, state, responseType, refreshTokenKey
+**Getters:** [conf](../oauthinternetaccount#getter-conf),
+[codeVerifierPKCE](../oauthinternetaccount#getter-codeverifierpkce),
+[authEndpoint](../oauthinternetaccount#getter-authendpoint),
+[tokenEndpoint](../oauthinternetaccount#getter-tokenendpoint),
+[needsPKCE](../oauthinternetaccount#getter-needspkce),
+[clientId](../oauthinternetaccount#getter-clientid),
+[scopes](../oauthinternetaccount#getter-scopes),
+[state](../oauthinternetaccount#getter-state),
+[responseType](../oauthinternetaccount#getter-responsetype),
+[refreshTokenKey](../oauthinternetaccount#getter-refreshtokenkey)
 
-**Methods:** retrieveRefreshToken
+**Methods:**
+[retrieveRefreshToken](../oauthinternetaccount#method-retrieverefreshtoken)
 
-**Actions:** storeRefreshToken, removeRefreshToken,
-exchangeAuthorizationForAccessToken, exchangeRefreshForAccessToken,
-getTokenViaAuthFlow, getTokenFromUser, validateToken, getFetcher
+**Actions:**
+[storeRefreshToken](../oauthinternetaccount#action-storerefreshtoken),
+[removeRefreshToken](../oauthinternetaccount#action-removerefreshtoken),
+[exchangeAuthorizationForAccessToken](../oauthinternetaccount#action-exchangeauthorizationforaccesstoken),
+[exchangeRefreshForAccessToken](../oauthinternetaccount#action-exchangerefreshforaccesstoken),
+[getTokenViaAuthFlow](../oauthinternetaccount#action-gettokenviaauthflow),
+[getTokenFromUser](../oauthinternetaccount#action-gettokenfromuser),
+[validateToken](../oauthinternetaccount#action-validatetoken),
+[getFetcher](../oauthinternetaccount#action-getfetcher)
 
-### GoogleDriveOAuthInternetAccount - Properties
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -59,7 +76,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### GoogleDriveOAuthInternetAccount - Getters
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents
 
@@ -77,7 +97,10 @@ Element
 string
 ```
 
-### GoogleDriveOAuthInternetAccount - Methods
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
@@ -93,7 +116,10 @@ getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: 
 openLocation: (location: UriLocation) => GoogleDriveFile
 ```
 
-### GoogleDriveOAuthInternetAccount - Actions
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 
@@ -101,3 +127,5 @@ openLocation: (location: UriLocation) => GoogleDriveFile
 // type signature
 validateToken: (token: string, location: UriLocation) => Promise<string>
 ```
+
+</details>

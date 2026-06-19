@@ -28,18 +28,35 @@ and docs.
 
 ### Available via [OAuthInternetAccount](../oauthinternetaccount)
 
-**Properties:** type, configuration
+**Properties:** [type](../oauthinternetaccount#property-type),
+[configuration](../oauthinternetaccount#property-configuration)
 
-**Getters:** conf, codeVerifierPKCE, authEndpoint, tokenEndpoint, needsPKCE,
-clientId, scopes, state, responseType, refreshTokenKey
+**Getters:** [conf](../oauthinternetaccount#getter-conf),
+[codeVerifierPKCE](../oauthinternetaccount#getter-codeverifierpkce),
+[authEndpoint](../oauthinternetaccount#getter-authendpoint),
+[tokenEndpoint](../oauthinternetaccount#getter-tokenendpoint),
+[needsPKCE](../oauthinternetaccount#getter-needspkce),
+[clientId](../oauthinternetaccount#getter-clientid),
+[scopes](../oauthinternetaccount#getter-scopes),
+[state](../oauthinternetaccount#getter-state),
+[responseType](../oauthinternetaccount#getter-responsetype),
+[refreshTokenKey](../oauthinternetaccount#getter-refreshtokenkey)
 
-**Methods:** retrieveRefreshToken
+**Methods:**
+[retrieveRefreshToken](../oauthinternetaccount#method-retrieverefreshtoken)
 
-**Actions:** storeRefreshToken, removeRefreshToken,
-exchangeAuthorizationForAccessToken, exchangeRefreshForAccessToken,
-getTokenViaAuthFlow, getTokenFromUser, validateToken, getFetcher
+**Actions:**
+[storeRefreshToken](../oauthinternetaccount#action-storerefreshtoken),
+[removeRefreshToken](../oauthinternetaccount#action-removerefreshtoken),
+[exchangeAuthorizationForAccessToken](../oauthinternetaccount#action-exchangeauthorizationforaccesstoken),
+[exchangeRefreshForAccessToken](../oauthinternetaccount#action-exchangerefreshforaccesstoken),
+[getTokenViaAuthFlow](../oauthinternetaccount#action-gettokenviaauthflow),
+[getTokenFromUser](../oauthinternetaccount#action-gettokenfromuser),
+[validateToken](../oauthinternetaccount#action-validatetoken),
+[getFetcher](../oauthinternetaccount#action-getfetcher)
 
-### DropboxOAuthInternetAccount - Properties
+<details>
+<summary>DropboxOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -59,7 +76,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### DropboxOAuthInternetAccount - Getters
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents
 
@@ -77,7 +97,10 @@ Element
 string
 ```
 
-### DropboxOAuthInternetAccount - Methods
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
@@ -86,7 +109,10 @@ string
 getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
 
-### DropboxOAuthInternetAccount - Actions
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 
@@ -94,3 +120,5 @@ getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: 
 // type signature
 validateToken: (token: string, location: UriLocation) => Promise<string>
 ```
+
+</details>

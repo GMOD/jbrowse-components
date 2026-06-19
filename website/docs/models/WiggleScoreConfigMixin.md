@@ -33,13 +33,17 @@ and docs.
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
+**Properties:**
+[configOverrides](../configoverridemixin#property-configoverrides)
 
-**Methods:** getOverride, getConfWithOverride
+**Methods:** [getOverride](../configoverridemixin#method-getoverride),
+[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
 
-**Actions:** setOverride, clearOverride
+**Actions:** [setOverride](../configoverridemixin#action-setoverride),
+[clearOverride](../configoverridemixin#action-clearoverride)
 
-### WiggleScoreConfigMixin - Properties
+<details>
+<summary>WiggleScoreConfigMixin - Properties</summary>
 
 #### property: resolution
 
@@ -59,7 +63,10 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 displayCrossHatches: types.stripDefault(types.boolean, false)
 ```
 
-### WiggleScoreConfigMixin - Volatiles
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Volatiles</summary>
 
 #### volatile: loadedBpPerPx
 
@@ -70,7 +77,10 @@ number | undefined
 loadedBpPerPx: undefined as number | undefined
 ```
 
-### WiggleScoreConfigMixin - Getters
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Getters</summary>
 
 #### getter: scalebarOverlapLeft
 
@@ -177,7 +187,10 @@ number | undefined
 boolean
 ```
 
-### WiggleScoreConfigMixin - Actions
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Actions</summary>
 
 #### action: toggleCrossHatches
 
@@ -257,3 +270,5 @@ Strict zoom equality: see adr-008.
 // type signature
 isCacheValid: (_displayedRegionIndex: number) => boolean
 ```
+
+</details>

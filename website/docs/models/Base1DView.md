@@ -24,7 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
 
-### Base1DView - Properties
+<details>
+<summary>Base1DView - Properties</summary>
 
 #### property: id
 
@@ -71,7 +72,10 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 minimumBlockWidth: types.stripDefault(types.number, 0)
 ```
 
-### Base1DView - Volatiles
+</details>
+
+<details>
+<summary>Base1DView - Volatiles</summary>
 
 #### volatile: features
 
@@ -91,7 +95,10 @@ number
 volatileWidth: 0
 ```
 
-### Base1DView - Getters
+</details>
+
+<details>
+<summary>Base1DView - Getters</summary>
 
 #### getter: width
 
@@ -156,7 +163,10 @@ BlockSet
 number
 ```
 
-### Base1DView - Methods
+</details>
+
+<details>
+<summary>Base1DView - Methods</summary>
 
 #### method: pxToBp
 
@@ -172,7 +182,10 @@ pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: bo
 bpToPx: ({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number | undefined; }) => number | undefined
 ```
 
-### Base1DView - Actions
+</details>
+
+<details>
+<summary>Base1DView - Actions</summary>
 
 #### action: setDisplayedRegions
 
@@ -265,3 +278,5 @@ the displayed region in the linear genome view
 // type signature
 moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
+
+</details>

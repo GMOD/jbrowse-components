@@ -24,7 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 Session mixin that persists dockview layout state. Each dockview panel can
 contain multiple views stacked vertically.
 
-### DockviewLayoutMixin - Properties
+<details>
+<summary>DockviewLayoutMixin - Properties</summary>
 
 #### property: dockviewLayout
 
@@ -88,7 +89,10 @@ IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
 activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 ```
 
-### DockviewLayoutMixin - Getters
+</details>
+
+<details>
+<summary>DockviewLayoutMixin - Getters</summary>
 
 #### getter: getViewIdsForPanel
 
@@ -109,7 +113,10 @@ list, and the view's index within it (or undefined if unassigned)
 (viewId: string) => { panelId: string; viewIds: IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>; idx: number; } | undefined
 ```
 
-### DockviewLayoutMixin - Actions
+</details>
+
+<details>
+<summary>DockviewLayoutMixin - Actions</summary>
 
 #### action: setDockviewLayout
 
@@ -209,3 +216,5 @@ Move a view to the bottom of its panel's view stack
 // type signature
 moveViewToBottomInPanel: (viewId: string) => void
 ```
+
+</details>

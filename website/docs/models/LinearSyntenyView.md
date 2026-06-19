@@ -44,32 +44,65 @@ and docs.
 
 ### Available via [LinearComparativeView](../linearcomparativeview)
 
-**Properties:** id, type, trackSelectorType, showIntraviewLinks, linkViews,
-interactiveOverlay, scrollZoom, levels, views, viewTrackConfigs
+**Properties:** [id](../linearcomparativeview#property-id),
+[type](../linearcomparativeview#property-type),
+[trackSelectorType](../linearcomparativeview#property-trackselectortype),
+[showIntraviewLinks](../linearcomparativeview#property-showintraviewlinks),
+[linkViews](../linearcomparativeview#property-linkviews),
+[interactiveOverlay](../linearcomparativeview#property-interactiveoverlay),
+[scrollZoom](../linearcomparativeview#property-scrollzoom),
+[levels](../linearcomparativeview#property-levels),
+[views](../linearcomparativeview#property-views),
+[viewTrackConfigs](../linearcomparativeview#property-viewtrackconfigs)
 
-**Volatiles:** width
+**Volatiles:** [width](../linearcomparativeview#volatile-width)
 
-**Getters:** initialized, refNames, assemblyNames
+**Getters:** [initialized](../linearcomparativeview#getter-initialized),
+[refNames](../linearcomparativeview#getter-refnames),
+[assemblyNames](../linearcomparativeview#getter-assemblynames)
 
-**Methods:** isViewCompact, headerMenuItems, showMenuItems, menuItems,
-rubberBandMenuItems
+**Methods:** [isViewCompact](../linearcomparativeview#method-isviewcompact),
+[headerMenuItems](../linearcomparativeview#method-headermenuitems),
+[showMenuItems](../linearcomparativeview#method-showmenuitems),
+[menuItems](../linearcomparativeview#method-menuitems),
+[rubberBandMenuItems](../linearcomparativeview#method-rubberbandmenuitems)
 
-**Actions:** reconcileLevels, setWidth, setViews, removeView, addView,
-removeLastRow, setLinkViews, setScrollZoom, activateTrackSelector, toggleTrack,
-showTrack, hideTrack, squareView, clearView, toggleCompactView, compactAllViews,
-expandAllViews, autoScaleLevelHeights, appendRow
+**Actions:** [reconcileLevels](../linearcomparativeview#action-reconcilelevels),
+[setWidth](../linearcomparativeview#action-setwidth),
+[setViews](../linearcomparativeview#action-setviews),
+[removeView](../linearcomparativeview#action-removeview),
+[addView](../linearcomparativeview#action-addview),
+[removeLastRow](../linearcomparativeview#action-removelastrow),
+[setLinkViews](../linearcomparativeview#action-setlinkviews),
+[setScrollZoom](../linearcomparativeview#action-setscrollzoom),
+[activateTrackSelector](../linearcomparativeview#action-activatetrackselector),
+[toggleTrack](../linearcomparativeview#action-toggletrack),
+[showTrack](../linearcomparativeview#action-showtrack),
+[hideTrack](../linearcomparativeview#action-hidetrack),
+[squareView](../linearcomparativeview#action-squareview),
+[clearView](../linearcomparativeview#action-clearview),
+[toggleCompactView](../linearcomparativeview#action-togglecompactview),
+[compactAllViews](../linearcomparativeview#action-compactallviews),
+[expandAllViews](../linearcomparativeview#action-expandallviews),
+[autoScaleLevelHeights](../linearcomparativeview#action-autoscalelevelheights),
+[appendRow](../linearcomparativeview#action-appendrow)
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### LinearSyntenyView - Properties
+<details>
+<summary>LinearSyntenyView - Properties</summary>
 
 #### property: type
 
@@ -205,7 +238,10 @@ IType<LinearSyntenyViewInit | undefined, LinearSyntenyViewInit | undefined, Line
 init: types.frozen<LinearSyntenyViewInit | undefined>()
 ```
 
-### LinearSyntenyView - Volatiles
+</details>
+
+<details>
+<summary>LinearSyntenyView - Volatiles</summary>
 
 #### volatile: importFormSyntenyTrackSelections
 
@@ -230,7 +266,10 @@ false
 awaitingAutoDiagonalize: false
 ```
 
-### LinearSyntenyView - Getters
+</details>
+
+<details>
+<summary>LinearSyntenyView - Getters</summary>
 
 #### getter: hasSomethingToShow
 
@@ -304,7 +343,10 @@ Whether to show the import form
 boolean
 ```
 
-### LinearSyntenyView - Methods
+</details>
+
+<details>
+<summary>LinearSyntenyView - Methods</summary>
 
 #### method: showMenuItems
 
@@ -330,7 +372,10 @@ headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxM
 menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
-### LinearSyntenyView - Actions
+</details>
+
+<details>
+<summary>LinearSyntenyView - Actions</summary>
 
 #### action: importFormRemoveRow
 
@@ -443,3 +488,5 @@ setAwaitingAutoDiagonalize: (arg: boolean) => void
 // type signature
 exportSvg: (opts: ExportSvgOptions) => Promise<void>
 ```
+
+</details>

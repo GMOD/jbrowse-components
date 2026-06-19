@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### Assembly - Properties
+<details>
+<summary>Assembly - Properties</summary>
 
 #### property: configuration
 
@@ -32,7 +33,10 @@ IMaybe<IReferenceType<IAnyType>>
 configuration: types.safeReference(assemblyConfigType)
 ```
 
-### Assembly - Volatiles
+</details>
+
+<details>
+<summary>Assembly - Volatiles</summary>
 
 #### volatile: error
 
@@ -128,7 +132,10 @@ Set<string> | undefined
 allRefNamesWithLowerCase: undefined as Set<string> | undefined
 ```
 
-### Assembly - Getters
+</details>
+
+<details>
+<summary>Assembly - Getters</summary>
 
 #### getter: name
 
@@ -215,7 +222,10 @@ overview scalebars/rulers)
 Map<string, number> | undefined
 ```
 
-### Assembly - Methods
+</details>
+
+<details>
+<summary>Assembly - Methods</summary>
 
 #### method: getConf
 
@@ -287,7 +297,10 @@ config so concurrent callers share one load
 getRefNameMapForAdapter: (adapterConf: AdapterConf, options: BaseOptions) => Promise<RefNameAliases>
 ```
 
-### Assembly - Actions
+</details>
+
+<details>
+<summary>Assembly - Actions</summary>
 
 #### action: setLoaded
 
@@ -327,3 +340,5 @@ loadPre: () => Promise<void>
 // type signature
 load: () => Promise<void>
 ```
+
+</details>

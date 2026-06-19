@@ -56,59 +56,102 @@ and docs.
 
 ### Available via [BaseDisplay](../basedisplay)
 
-**Properties:** id, type, rpcDriverName
+**Properties:** [id](../basedisplay#property-id),
+[type](../basedisplay#property-type),
+[rpcDriverName](../basedisplay#property-rpcdrivername)
 
-**Volatiles:** error, statusMessage
+**Volatiles:** [error](../basedisplay#volatile-error),
+[statusMessage](../basedisplay#volatile-statusmessage)
 
-**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
-adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-DisplayMessageComponent, viewMenuActions
+**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
+[parentDisplay](../basedisplay#getter-parentdisplay),
+[RenderingComponent](../basedisplay#getter-renderingcomponent),
+[DisplayBlurb](../basedisplay#getter-displayblurb),
+[adapterConfig](../basedisplay#getter-adapterconfig),
+[isMinimized](../basedisplay#getter-isminimized),
+[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
+[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+**Methods:** [renderProps](../basedisplay#method-renderprops),
+[renderingProps](../basedisplay#method-renderingprops),
+[trackMenuItems](../basedisplay#method-trackmenuitems),
+[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
-**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
+[setError](../basedisplay#action-seterror),
+[setRpcDriverName](../basedisplay#action-setrpcdrivername),
+[reload](../basedisplay#action-reload)
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** heightOverride
+**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
 
-**Volatiles:** scrollTop
+**Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
-**Getters:** height
+**Getters:** [height](../trackheightmixin#getter-height)
 
-**Actions:** setScrollTop, setHeight, resizeHeight
+**Actions:** [setScrollTop](../trackheightmixin#action-setscrolltop),
+[setHeight](../trackheightmixin#action-setheight),
+[resizeHeight](../trackheightmixin#action-resizeheight)
 
 ### Available via [FeatureDensityMixin](../featuredensitymixin)
 
-**Properties:** userBpPerPxLimit
+**Properties:**
+[userBpPerPxLimit](../featuredensitymixin#property-userbpperpxlimit)
 
-**Volatiles:** featureDensityStatsP, currStatsBpPerPx
+**Volatiles:**
+[featureDensityStatsP](../featuredensitymixin#volatile-featuredensitystatsp),
+[currStatsBpPerPx](../featuredensitymixin#volatile-currstatsbpperpx)
 
-**Getters:** currentBytesRequested, currentFeatureScreenDensity,
-maxFeatureScreenDensity, featureDensityStatsReady, maxAllowableBytes,
-bytesTooLarge, densityTooLarge, regionTooLarge, regionTooLargeReason,
-featureDensityStatsReadyAndRegionNotTooLarge
+**Getters:**
+[currentBytesRequested](../featuredensitymixin#getter-currentbytesrequested),
+[currentFeatureScreenDensity](../featuredensitymixin#getter-currentfeaturescreendensity),
+[maxFeatureScreenDensity](../featuredensitymixin#getter-maxfeaturescreendensity),
+[featureDensityStatsReady](../featuredensitymixin#getter-featuredensitystatsready),
+[maxAllowableBytes](../featuredensitymixin#getter-maxallowablebytes),
+[bytesTooLarge](../featuredensitymixin#getter-bytestoolarge),
+[densityTooLarge](../featuredensitymixin#getter-densitytoolarge),
+[regionTooLarge](../featuredensitymixin#getter-regiontoolarge),
+[regionTooLargeReason](../featuredensitymixin#getter-regiontoolargereason),
+[featureDensityStatsReadyAndRegionNotTooLarge](../featuredensitymixin#getter-featuredensitystatsreadyandregionnottoolarge)
 
-**Methods:** regionCannotBeRendered
+**Methods:**
+[regionCannotBeRendered](../featuredensitymixin#method-regioncannotberendered)
 
-**Actions:** setCurrStatsBpPerPx, setFeatureDensityStatsLimit,
-getFeatureDensityStats, setFeatureDensityStatsP, clearFeatureDensityStats
+**Actions:**
+[setCurrStatsBpPerPx](../featuredensitymixin#action-setcurrstatsbpperpx),
+[setFeatureDensityStatsLimit](../featuredensitymixin#action-setfeaturedensitystatslimit),
+[getFeatureDensityStats](../featuredensitymixin#action-getfeaturedensitystats),
+[setFeatureDensityStatsP](../featuredensitymixin#action-setfeaturedensitystatsp),
+[clearFeatureDensityStats](../featuredensitymixin#action-clearfeaturedensitystats)
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
-**Properties:** userByteSizeLimit
+**Properties:**
+[userByteSizeLimit](../regiontoolargemixin#property-userbytesizelimit)
 
-**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
-featureDensityStats
+**Volatiles:**
+[regionTooLargeState](../regiontoolargemixin#volatile-regiontoolargestate),
+[regionTooLargeReasonState](../regiontoolargemixin#volatile-regiontoolargereasonstate),
+[featureDensityStats](../regiontoolargemixin#volatile-featuredensitystats)
 
-**Getters:** regionTooLarge, regionTooLargeReason
+**Getters:** [regionTooLarge](../regiontoolargemixin#getter-regiontoolarge),
+[regionTooLargeReason](../regiontoolargemixin#getter-regiontoolargereason)
 
-**Methods:** regionCannotBeRenderedText
+**Methods:**
+[regionCannotBeRenderedText](../regiontoolargemixin#method-regioncannotberenderedtext)
 
-**Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload, forceLoad
+**Actions:**
+[setRegionTooLarge](../regiontoolargemixin#action-setregiontoolarge),
+[setFeatureDensityStats](../regiontoolargemixin#action-setfeaturedensitystats),
+[setFeatureDensityStatsLimit](../regiontoolargemixin#action-setfeaturedensitystatslimit),
+[reload](../regiontoolargemixin#action-reload),
+[forceLoad](../regiontoolargemixin#action-forceload)
 
-### LinearArcDisplay - Properties
+<details>
+<summary>LinearArcDisplay - Properties</summary>
 
 #### property: type
 
@@ -140,7 +183,10 @@ IMaybe<ISimpleType<string>>
 displayModeOverride: types.maybe(types.string)
 ```
 
-### LinearArcDisplay - Volatiles
+</details>
+
+<details>
+<summary>LinearArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -160,7 +206,10 @@ false
 loading: false
 ```
 
-### LinearArcDisplay - Getters
+</details>
+
+<details>
+<summary>LinearArcDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -215,7 +264,10 @@ returns the id of the globally-selected feature, used to highlight it
 string | undefined
 ```
 
-### LinearArcDisplay - Methods
+</details>
+
+<details>
+<summary>LinearArcDisplay - Methods</summary>
 
 #### method: trackMenuItems
 
@@ -224,7 +276,10 @@ string | undefined
 trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
-### LinearArcDisplay - Actions
+</details>
+
+<details>
+<summary>LinearArcDisplay - Actions</summary>
 
 #### action: selectFeature
 
@@ -260,3 +315,5 @@ setDisplayMode: (flag: string) => void
 // type signature
 renderSvg: (opts: { rasterizeLayers?: boolean | undefined; }) => Promise<ReactNode>
 ```
+
+</details>

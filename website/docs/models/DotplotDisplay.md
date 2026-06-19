@@ -28,19 +28,36 @@ and docs.
 
 ### Available via [BaseDisplay](../basedisplay)
 
-**Properties:** id, type, rpcDriverName
+**Properties:** [id](../basedisplay#property-id),
+[type](../basedisplay#property-type),
+[rpcDriverName](../basedisplay#property-rpcdrivername)
 
-**Volatiles:** error, statusMessage
+**Volatiles:** [error](../basedisplay#volatile-error),
+[statusMessage](../basedisplay#volatile-statusmessage)
 
-**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
-adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-DisplayMessageComponent, viewMenuActions
+**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
+[parentDisplay](../basedisplay#getter-parentdisplay),
+[RenderingComponent](../basedisplay#getter-renderingcomponent),
+[DisplayBlurb](../basedisplay#getter-displayblurb),
+[adapterConfig](../basedisplay#getter-adapterconfig),
+[isMinimized](../basedisplay#getter-isminimized),
+[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
+[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+**Methods:** [renderProps](../basedisplay#method-renderprops),
+[renderingProps](../basedisplay#method-renderingprops),
+[trackMenuItems](../basedisplay#method-trackmenuitems),
+[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
-**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
+[setError](../basedisplay#action-seterror),
+[setRpcDriverName](../basedisplay#action-setrpcdrivername),
+[reload](../basedisplay#action-reload)
 
-### DotplotDisplay - Properties
+<details>
+<summary>DotplotDisplay - Properties</summary>
 
 #### property: type
 
@@ -89,7 +106,10 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 minAlignmentLength: types.optional(types.number, 0)
 ```
 
-### DotplotDisplay - Volatiles
+</details>
+
+<details>
+<summary>DotplotDisplay - Volatiles</summary>
 
 #### volatile: rpcData
 
@@ -155,7 +175,10 @@ false
 assembliesSwapped: false
 ```
 
-### DotplotDisplay - Getters
+</details>
+
+<details>
+<summary>DotplotDisplay - Getters</summary>
 
 #### getter: isLoading
 
@@ -184,7 +207,10 @@ Per-render fetch warnings, plus the load-time reversed-assembly hint.
 ;[]
 ```
 
-### DotplotDisplay - Methods
+</details>
+
+<details>
+<summary>DotplotDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -193,7 +219,10 @@ Per-render fetch warnings, plus the load-time reversed-assembly hint.
 renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<string | number | bigint | boolean | Iterable<ReactNode> | Element | null | undefined>
 ```
 
-### DotplotDisplay - Actions
+</details>
+
+<details>
+<summary>DotplotDisplay - Actions</summary>
 
 #### action: setStatusMessage
 
@@ -268,3 +297,5 @@ setMinAlignmentLength: (value: number) => void
 // type signature
 setColorBy: (value: SyntenyColorBy) => void
 ```
+
+</details>

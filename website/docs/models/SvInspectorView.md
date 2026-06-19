@@ -33,15 +33,20 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### SvInspectorView - Properties
+<details>
+<summary>SvInspectorView - Properties</summary>
 
 #### property: id
 
@@ -123,7 +128,10 @@ IType<SvInspectorViewInit | undefined, SvInspectorViewInit | undefined, SvInspec
 init: types.frozen<SvInspectorViewInit | undefined>()
 ```
 
-### SvInspectorView - Volatiles
+</details>
+
+<details>
+<summary>SvInspectorView - Volatiles</summary>
 
 #### volatile: width
 
@@ -161,7 +169,10 @@ number
 circularViewOptionsBarHeight: 52
 ```
 
-### SvInspectorView - Getters
+</details>
+
+<details>
+<summary>SvInspectorView - Getters</summary>
 
 #### getter: assemblyName
 
@@ -226,7 +237,10 @@ string
 { type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
 ```
 
-### SvInspectorView - Methods
+</details>
+
+<details>
+<summary>SvInspectorView - Methods</summary>
 
 #### method: menuItems
 
@@ -235,7 +249,10 @@ string
 menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
-### SvInspectorView - Actions
+</details>
+
+<details>
+<summary>SvInspectorView - Actions</summary>
 
 #### action: setWidth
 
@@ -271,3 +288,5 @@ setInit: (init?: SvInspectorViewInit | undefined) => void
 // type signature
 resizeHeight: (distance: number) => number
 ```
+
+</details>

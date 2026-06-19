@@ -32,28 +32,48 @@ and docs.
 
 ### Available via [BaseRootModel](../baserootmodel)
 
-**Properties:** jbrowse, session, sessionPath, assemblyManager
+**Properties:** [jbrowse](../baserootmodel#property-jbrowse),
+[session](../baserootmodel#property-session),
+[sessionPath](../baserootmodel#property-sessionpath),
+[assemblyManager](../baserootmodel#property-assemblymanager)
 
-**Volatiles:** rpcManager, adminMode, error, textSearchManager, pluginManager
+**Volatiles:** [rpcManager](../baserootmodel#volatile-rpcmanager),
+[adminMode](../baserootmodel#volatile-adminmode),
+[error](../baserootmodel#volatile-error),
+[textSearchManager](../baserootmodel#volatile-textsearchmanager),
+[pluginManager](../baserootmodel#volatile-pluginmanager)
 
-**Actions:** setError, setSession, setDefaultSession, setSessionPath,
-renameCurrentSession
+**Actions:** [setError](../baserootmodel#action-seterror),
+[setSession](../baserootmodel#action-setsession),
+[setDefaultSession](../baserootmodel#action-setdefaultsession),
+[setSessionPath](../baserootmodel#action-setsessionpath),
+[renameCurrentSession](../baserootmodel#action-renamecurrentsession)
 
 ### Available via [InternetAccountsMixin](../internetaccountsmixin)
 
-**Properties:** internetAccounts
+**Properties:**
+[internetAccounts](../internetaccountsmixin#property-internetaccounts)
 
-**Actions:** initializeInternetAccount, createEphemeralInternetAccount,
-findAppropriateInternetAccount
+**Actions:**
+[initializeInternetAccount](../internetaccountsmixin#action-initializeinternetaccount),
+[createEphemeralInternetAccount](../internetaccountsmixin#action-createephemeralinternetaccount),
+[findAppropriateInternetAccount](../internetaccountsmixin#action-findappropriateinternetaccount)
 
 ### Available via [RootAppMenuMixin](../rootappmenumixin)
 
-**Volatiles:** mutableMenuActions
+**Volatiles:**
+[mutableMenuActions](../rootappmenumixin#volatile-mutablemenuactions)
 
-**Actions:** setMenus, appendMenu, insertMenu, appendToMenu, insertInMenu,
-appendToSubMenu, insertInSubMenu
+**Actions:** [setMenus](../rootappmenumixin#action-setmenus),
+[appendMenu](../rootappmenumixin#action-appendmenu),
+[insertMenu](../rootappmenumixin#action-insertmenu),
+[appendToMenu](../rootappmenumixin#action-appendtomenu),
+[insertInMenu](../rootappmenumixin#action-insertinmenu),
+[appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
+[insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-### JBrowseReactAppRootModel - Volatiles
+<details>
+<summary>JBrowseReactAppRootModel - Volatiles</summary>
 
 #### volatile: version
 
@@ -88,7 +108,10 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 })
 ```
 
-### JBrowseReactAppRootModel - Methods
+</details>
+
+<details>
+<summary>JBrowseReactAppRootModel - Methods</summary>
 
 #### method: menus
 
@@ -97,7 +120,10 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 menus: () => Menu[]
 ```
 
-### JBrowseReactAppRootModel - Actions
+</details>
+
+<details>
+<summary>JBrowseReactAppRootModel - Actions</summary>
 
 #### action: setPluginsUpdated
 
@@ -115,3 +141,5 @@ react-app instead timestamps it so multiple "new sessions" don't collide.
 // type signature
 setDefaultSession: () => void
 ```
+
+</details>

@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### BaseConnectionModel - Properties
+<details>
+<summary>BaseConnectionModel - Properties</summary>
 
 #### property: tracks
 
@@ -41,7 +42,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### BaseConnectionModel - Getters
+</details>
+
+<details>
+<summary>BaseConnectionModel - Getters</summary>
 
 #### getter: connectionId
 
@@ -60,7 +64,10 @@ string
 string
 ```
 
-### BaseConnectionModel - Actions
+</details>
+
+<details>
+<summary>BaseConnectionModel - Actions</summary>
 
 #### action: connect
 
@@ -96,3 +103,5 @@ setTrackConfs: (trackConfs: TrackConf[]) => void
 // type signature
 clear: () => void
 ```
+
+</details>

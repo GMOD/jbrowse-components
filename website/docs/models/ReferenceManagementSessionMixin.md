@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### ReferenceManagementSessionMixin - Methods
+<details>
+<summary>ReferenceManagementSessionMixin - Methods</summary>
 
 #### method: getReferring
 
@@ -43,7 +44,10 @@ to avoid O(n × treeSize) traversals.
 getReferringMultiple: (tracks: IAnyStateTreeNode[]) => Map<string, ReferringNode[]>
 ```
 
-### ReferenceManagementSessionMixin - Actions
+</details>
+
+<details>
+<summary>ReferenceManagementSessionMixin - Actions</summary>
 
 #### action: removeReferring
 
@@ -51,3 +55,5 @@ getReferringMultiple: (tracks: IAnyStateTreeNode[]) => Map<string, ReferringNode
 // type signature
 removeReferring: (referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
 ```
+
+</details>

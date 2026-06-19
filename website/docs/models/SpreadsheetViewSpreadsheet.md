@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### SpreadsheetViewSpreadsheet - Properties
+<details>
+<summary>SpreadsheetViewSpreadsheet - Properties</summary>
 
 #### property: rowSet
 
@@ -62,7 +63,10 @@ visibleColumns: types.optional(
       )
 ```
 
-### SpreadsheetViewSpreadsheet - Volatiles
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Volatiles</summary>
 
 #### volatile: visibleRowFlags
 
@@ -73,7 +77,10 @@ Record<number, boolean> | undefined
 visibleRowFlags: undefined as Record<number, boolean> | undefined
 ```
 
-### SpreadsheetViewSpreadsheet - Getters
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Getters</summary>
 
 #### getter: rows
 
@@ -103,7 +110,10 @@ boolean
 GridRow[] | undefined
 ```
 
-### SpreadsheetViewSpreadsheet - Actions
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Actions</summary>
 
 #### action: setVisibleRows
 
@@ -118,3 +128,5 @@ setVisibleRows: (arg?: Record<number, boolean> | undefined) => void
 // type signature
 setVisibleColumns: (arg: Record<string, boolean>) => void
 ```
+
+</details>

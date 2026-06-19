@@ -60,19 +60,36 @@ and docs.
 
 ### Available via [BaseDisplay](../basedisplay)
 
-**Properties:** id, type, rpcDriverName
+**Properties:** [id](../basedisplay#property-id),
+[type](../basedisplay#property-type),
+[rpcDriverName](../basedisplay#property-rpcdrivername)
 
-**Volatiles:** error, statusMessage
+**Volatiles:** [error](../basedisplay#volatile-error),
+[statusMessage](../basedisplay#volatile-statusmessage)
 
-**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
-adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-DisplayMessageComponent, viewMenuActions
+**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
+[parentDisplay](../basedisplay#getter-parentdisplay),
+[RenderingComponent](../basedisplay#getter-renderingcomponent),
+[DisplayBlurb](../basedisplay#getter-displayblurb),
+[adapterConfig](../basedisplay#getter-adapterconfig),
+[isMinimized](../basedisplay#getter-isminimized),
+[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
+[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+**Methods:** [renderProps](../basedisplay#method-renderprops),
+[renderingProps](../basedisplay#method-renderingprops),
+[trackMenuItems](../basedisplay#method-trackmenuitems),
+[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
-**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
+[setError](../basedisplay#action-seterror),
+[setRpcDriverName](../basedisplay#action-setrpcdrivername),
+[reload](../basedisplay#action-reload)
 
-### LinearSyntenyDisplay - Properties
+<details>
+<summary>LinearSyntenyDisplay - Properties</summary>
 
 #### property: type
 
@@ -92,7 +109,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### LinearSyntenyDisplay - Volatiles
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Volatiles</summary>
 
 #### volatile: featureData
 
@@ -173,7 +193,10 @@ false
 assembliesSwapped: false
 ```
 
-### LinearSyntenyDisplay - Getters
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Getters</summary>
 
 #### getter: parentHelper
 
@@ -347,7 +370,10 @@ yTop before handing this to the backend.
 { yTop: number; height: number; alpha: number; minAlignmentLength: number; hoveredFeatureId: number; clickedFeatureId: number; offsetPx0: number; offsetPx1: number; bpPerPx0: number; bpPerPx1: number; drawCurves: boolean; } | undefined
 ```
 
-### LinearSyntenyDisplay - Methods
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Methods</summary>
 
 #### method: getFeature
 
@@ -356,7 +382,10 @@ yTop before handing this to the backend.
 getFeature: (index: number) => FeatPos | undefined
 ```
 
-### LinearSyntenyDisplay - Actions
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Actions</summary>
 
 #### action: setRpcData
 
@@ -409,3 +438,5 @@ openContextMenu: (anchor: ClickCoord) => void
 // type signature
 closeContextMenu: () => void
 ```
+
+</details>

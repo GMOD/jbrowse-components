@@ -32,117 +32,211 @@ and docs.
 
 ### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
 
-**Methods:** getReferring, getReferringMultiple
+**Methods:**
+[getReferring](../referencemanagementsessionmixin#method-getreferring),
+[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
 
-**Actions:** removeReferring
+**Actions:**
+[removeReferring](../referencemanagementsessionmixin#action-removereferring)
 
 ### Available via [ThemeManagerSessionMixin](../thememanagersessionmixin)
 
-**Volatiles:** sessionThemeName
+**Volatiles:**
+[sessionThemeName](../thememanagersessionmixin#volatile-sessionthemename)
 
-**Getters:** themeName, themeOptions, theme
+**Getters:** [themeName](../thememanagersessionmixin#getter-themename),
+[themeOptions](../thememanagersessionmixin#getter-themeoptions),
+[theme](../thememanagersessionmixin#getter-theme)
 
-**Methods:** allThemes
+**Methods:** [allThemes](../thememanagersessionmixin#method-allthemes)
 
-**Actions:** setThemeName
+**Actions:** [setThemeName](../thememanagersessionmixin#action-setthemename)
 
 ### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
 
-**Properties:** views, stickyViewHeaders, useWorkspaces
+**Properties:** [views](../multipleviewssessionmixin#property-views),
+[stickyViewHeaders](../multipleviewssessionmixin#property-stickyviewheaders),
+[useWorkspaces](../multipleviewssessionmixin#property-useworkspaces)
 
-**Actions:** moveViewDown, moveViewUp, moveViewToTop, moveViewToBottom, addView,
-removeView, setStickyViewHeaders, setUseWorkspaces
+**Actions:** [moveViewDown](../multipleviewssessionmixin#action-moveviewdown),
+[moveViewUp](../multipleviewssessionmixin#action-moveviewup),
+[moveViewToTop](../multipleviewssessionmixin#action-moveviewtotop),
+[moveViewToBottom](../multipleviewssessionmixin#action-moveviewtobottom),
+[addView](../multipleviewssessionmixin#action-addview),
+[removeView](../multipleviewssessionmixin#action-removeview),
+[setStickyViewHeaders](../multipleviewssessionmixin#action-setstickyviewheaders),
+[setUseWorkspaces](../multipleviewssessionmixin#action-setuseworkspaces)
 
 ### Available via [BaseSessionModel](../basesessionmodel)
 
-**Properties:** id, name, margin, focusedViewId
+**Properties:** [id](../basesessionmodel#property-id),
+[name](../basesessionmodel#property-name),
+[margin](../basesessionmodel#property-margin),
+[focusedViewId](../basesessionmodel#property-focusedviewid)
 
-**Volatiles:** selection, hovered, queueOfDialogs
+**Volatiles:** [selection](../basesessionmodel#volatile-selection),
+[hovered](../basesessionmodel#volatile-hovered),
+[queueOfDialogs](../basesessionmodel#volatile-queueofdialogs)
 
-**Getters:** root, jbrowse, rpcManager, configuration, adminMode,
-textSearchManager, assemblies, DialogComponent, DialogProps
+**Getters:** [root](../basesessionmodel#getter-root),
+[jbrowse](../basesessionmodel#getter-jbrowse),
+[rpcManager](../basesessionmodel#getter-rpcmanager),
+[configuration](../basesessionmodel#getter-configuration),
+[adminMode](../basesessionmodel#getter-adminmode),
+[textSearchManager](../basesessionmodel#getter-textsearchmanager),
+[assemblies](../basesessionmodel#getter-assemblies),
+[DialogComponent](../basesessionmodel#getter-dialogcomponent),
+[DialogProps](../basesessionmodel#getter-dialogprops)
 
-**Actions:** setSelection, clearSelection, setHovered, setName,
-setFocusedViewId, removeActiveDialog, queueDialog
+**Actions:** [setSelection](../basesessionmodel#action-setselection),
+[clearSelection](../basesessionmodel#action-clearselection),
+[setHovered](../basesessionmodel#action-sethovered),
+[setName](../basesessionmodel#action-setname),
+[setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
+[removeActiveDialog](../basesessionmodel#action-removeactivedialog),
+[queueDialog](../basesessionmodel#action-queuedialog)
 
 ### Available via [SnackbarModel](../snackbarmodel)
 
-**Volatiles:** snackbarMessages
+**Volatiles:** [snackbarMessages](../snackbarmodel#volatile-snackbarmessages)
 
-**Getters:** snackbarMessageSet
+**Getters:** [snackbarMessageSet](../snackbarmodel#getter-snackbarmessageset)
 
-**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
-removeSnackbarMessage
+**Actions:** [notify](../snackbarmodel#action-notify),
+[notifyError](../snackbarmodel#action-notifyerror),
+[pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
+[popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
+[removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
 
 ### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
 
-**Properties:** drawerPosition, drawerWidth, widgets, activeWidgets, minimized
+**Properties:**
+[drawerPosition](../drawerwidgetsessionmixin#property-drawerposition),
+[drawerWidth](../drawerwidgetsessionmixin#property-drawerwidth),
+[widgets](../drawerwidgetsessionmixin#property-widgets),
+[activeWidgets](../drawerwidgetsessionmixin#property-activewidgets),
+[minimized](../drawerwidgetsessionmixin#property-minimized)
 
-**Getters:** visibleWidget
+**Getters:** [visibleWidget](../drawerwidgetsessionmixin#getter-visiblewidget)
 
-**Actions:** setDrawerPosition, updateDrawerWidth, resizeDrawer, addWidget,
-showWidget, hideWidget, minimizeWidgetDrawer, showWidgetDrawer, hideAllWidgets,
-editConfiguration
+**Actions:**
+[setDrawerPosition](../drawerwidgetsessionmixin#action-setdrawerposition),
+[updateDrawerWidth](../drawerwidgetsessionmixin#action-updatedrawerwidth),
+[resizeDrawer](../drawerwidgetsessionmixin#action-resizedrawer),
+[addWidget](../drawerwidgetsessionmixin#action-addwidget),
+[showWidget](../drawerwidgetsessionmixin#action-showwidget),
+[hideWidget](../drawerwidgetsessionmixin#action-hidewidget),
+[minimizeWidgetDrawer](../drawerwidgetsessionmixin#action-minimizewidgetdrawer),
+[showWidgetDrawer](../drawerwidgetsessionmixin#action-showwidgetdrawer),
+[hideAllWidgets](../drawerwidgetsessionmixin#action-hideallwidgets),
+[editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)
 
 ### Available via [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
 
-**Properties:** sessionTracks
+**Properties:**
+[sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks)
 
-**Getters:** tracks
+**Getters:** [tracks](../sessiontracksmanagersessionmixin#getter-tracks)
 
-**Actions:** addTrackConf, updateTrackConfiguration, resetTrackConfiguration,
-deleteTrackConf
+**Actions:**
+[addTrackConf](../sessiontracksmanagersessionmixin#action-addtrackconf),
+[updateTrackConfiguration](../sessiontracksmanagersessionmixin#action-updatetrackconfiguration),
+[resetTrackConfiguration](../sessiontracksmanagersessionmixin#action-resettrackconfiguration),
+[deleteTrackConf](../sessiontracksmanagersessionmixin#action-deletetrackconf)
 
 ### Available via [TracksManagerSessionMixin](../tracksmanagersessionmixin)
 
-**Getters:** tracks, getTracksById, tracksById
+**Getters:** [tracks](../tracksmanagersessionmixin#getter-tracks),
+[getTracksById](../tracksmanagersessionmixin#getter-gettracksbyid),
+[tracksById](../tracksmanagersessionmixin#getter-tracksbyid)
 
-**Actions:** addTrackConf, updateTrackConfiguration, deleteTrackConf
+**Actions:** [addTrackConf](../tracksmanagersessionmixin#action-addtrackconf),
+[updateTrackConfiguration](../tracksmanagersessionmixin#action-updatetrackconfiguration),
+[deleteTrackConf](../tracksmanagersessionmixin#action-deletetrackconf)
 
 ### Available via [AssembliesMixin](../assembliesmixin)
 
-**Properties:** sessionAssemblies, temporaryAssemblies
+**Properties:**
+[sessionAssemblies](../assembliesmixin#property-sessionassemblies),
+[temporaryAssemblies](../assembliesmixin#property-temporaryassemblies)
 
-**Getters:** assemblies, assemblyNames
+**Getters:** [assemblies](../assembliesmixin#getter-assemblies),
+[assemblyNames](../assembliesmixin#getter-assemblynames)
 
-**Actions:** addSessionAssembly, addAssembly, removeAssembly,
-removeSessionAssembly, addTemporaryAssembly, removeTemporaryAssembly
+**Actions:** [addSessionAssembly](../assembliesmixin#action-addsessionassembly),
+[addAssembly](../assembliesmixin#action-addassembly),
+[removeAssembly](../assembliesmixin#action-removeassembly),
+[removeSessionAssembly](../assembliesmixin#action-removesessionassembly),
+[addTemporaryAssembly](../assembliesmixin#action-addtemporaryassembly),
+[removeTemporaryAssembly](../assembliesmixin#action-removetemporaryassembly)
 
 ### Available via [AppSessionMixin](../appsessionmixin)
 
-**Getters:** root, version, gitCommit, history, assemblyManager
+**Getters:** [root](../appsessionmixin#getter-root),
+[version](../appsessionmixin#getter-version),
+[gitCommit](../appsessionmixin#getter-gitcommit),
+[history](../appsessionmixin#getter-history),
+[assemblyManager](../appsessionmixin#getter-assemblymanager)
 
-**Methods:** renderProps, menus
+**Methods:** [renderProps](../appsessionmixin#method-renderprops),
+[menus](../appsessionmixin#method-menus)
 
-**Actions:** renameCurrentSession
+**Actions:**
+[renameCurrentSession](../appsessionmixin#action-renamecurrentsession)
 
 ### Available via [WebSessionConnectionsMixin](../websessionconnectionsmixin)
 
-**Properties:** sessionConnections
+**Properties:**
+[sessionConnections](../websessionconnectionsmixin#property-sessionconnections)
 
-**Actions:** addConnectionConf, deleteConnection
+**Actions:**
+[addConnectionConf](../websessionconnectionsmixin#action-addconnectionconf),
+[deleteConnection](../websessionconnectionsmixin#action-deleteconnection)
 
 ### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 
-**Properties:** connectionInstances
+**Properties:**
+[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances)
 
-**Getters:** connections
+**Getters:**
+[connections](../connectionmanagementsessionmixin#getter-connections)
 
-**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
-deleteConnection, addConnectionConf, clearConnections
+**Actions:**
+[makeConnection](../connectionmanagementsessionmixin#action-makeconnection),
+[prepareToBreakConnection](../connectionmanagementsessionmixin#action-preparetobreakconnection),
+[breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
+[deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
+[addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
+[clearConnections](../connectionmanagementsessionmixin#action-clearconnections)
 
 ### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
 
-**Properties:** dockviewLayout, panelViewAssignments, init, pendingMove,
-activePanelId
+**Properties:**
+[dockviewLayout](../dockviewlayoutmixin#property-dockviewlayout),
+[panelViewAssignments](../dockviewlayoutmixin#property-panelviewassignments),
+[init](../dockviewlayoutmixin#property-init),
+[pendingMove](../dockviewlayoutmixin#property-pendingmove),
+[activePanelId](../dockviewlayoutmixin#property-activepanelid)
 
-**Getters:** getViewIdsForPanel, getPanelContainingView
+**Getters:**
+[getViewIdsForPanel](../dockviewlayoutmixin#getter-getviewidsforpanel),
+[getPanelContainingView](../dockviewlayoutmixin#getter-getpanelcontainingview)
 
-**Actions:** setDockviewLayout, setActivePanelId, setInit, setPendingMove,
-assignViewToPanel, removeViewFromPanel, removePanel, moveViewUpInPanel,
-moveViewDownInPanel, moveViewToTopInPanel, moveViewToBottomInPanel
+**Actions:**
+[setDockviewLayout](../dockviewlayoutmixin#action-setdockviewlayout),
+[setActivePanelId](../dockviewlayoutmixin#action-setactivepanelid),
+[setInit](../dockviewlayoutmixin#action-setinit),
+[setPendingMove](../dockviewlayoutmixin#action-setpendingmove),
+[assignViewToPanel](../dockviewlayoutmixin#action-assignviewtopanel),
+[removeViewFromPanel](../dockviewlayoutmixin#action-removeviewfrompanel),
+[removePanel](../dockviewlayoutmixin#action-removepanel),
+[moveViewUpInPanel](../dockviewlayoutmixin#action-moveviewupinpanel),
+[moveViewDownInPanel](../dockviewlayoutmixin#action-moveviewdowninpanel),
+[moveViewToTopInPanel](../dockviewlayoutmixin#action-moveviewtotopinpanel),
+[moveViewToBottomInPanel](../dockviewlayoutmixin#action-moveviewtobottominpanel)
 
-### BaseWebSessionModel - Properties
+<details>
+<summary>BaseWebSessionModel - Properties</summary>
 
 #### property: sessionPlugins
 
@@ -155,7 +249,10 @@ sessionPlugins: types.array(
       )
 ```
 
-### BaseWebSessionModel - Volatiles
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
@@ -175,7 +272,10 @@ string[]
 pendingFileHandleIds: [] as string[]
 ```
 
-### BaseWebSessionModel - Getters
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Getters</summary>
 
 #### getter: root
 
@@ -207,7 +307,10 @@ any
 TextSearchManager
 ```
 
-### BaseWebSessionModel - Methods
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Methods</summary>
 
 #### method: canEditTrack
 
@@ -255,7 +358,10 @@ getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { 
 getTrackActionMenuItems: ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
 ```
 
-### BaseWebSessionModel - Actions
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Actions</summary>
 
 #### action: addAssemblyConf
 
@@ -309,3 +415,5 @@ editTrackConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, a
 // type signature
 setPendingFileHandleIds: (ids: string[]) => void
 ```
+
+</details>

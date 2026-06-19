@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### DrawerWidgetSessionMixin - Properties
+<details>
+<summary>DrawerWidgetSessionMixin - Properties</summary>
 
 #### property: drawerPosition
 
@@ -77,7 +78,10 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 minimized: types.stripDefault(types.boolean, false)
 ```
 
-### DrawerWidgetSessionMixin - Getters
+</details>
+
+<details>
+<summary>DrawerWidgetSessionMixin - Getters</summary>
 
 #### getter: visibleWidget
 
@@ -86,7 +90,10 @@ minimized: types.stripDefault(types.boolean, false)
 any
 ```
 
-### DrawerWidgetSessionMixin - Actions
+</details>
+
+<details>
+<summary>DrawerWidgetSessionMixin - Actions</summary>
 
 #### action: setDrawerPosition
 
@@ -160,3 +167,5 @@ task to be configuring it
 // type signature
 editConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
 ```
+
+</details>

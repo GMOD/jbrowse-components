@@ -28,14 +28,22 @@ and docs.
 
 ### Available via [ConnectionManagementSessionMixin](../connectionmanagementsessionmixin)
 
-**Properties:** connectionInstances
+**Properties:**
+[connectionInstances](../connectionmanagementsessionmixin#property-connectioninstances)
 
-**Getters:** connections
+**Getters:**
+[connections](../connectionmanagementsessionmixin#getter-connections)
 
-**Actions:** makeConnection, prepareToBreakConnection, breakConnection,
-deleteConnection, addConnectionConf, clearConnections
+**Actions:**
+[makeConnection](../connectionmanagementsessionmixin#action-makeconnection),
+[prepareToBreakConnection](../connectionmanagementsessionmixin#action-preparetobreakconnection),
+[breakConnection](../connectionmanagementsessionmixin#action-breakconnection),
+[deleteConnection](../connectionmanagementsessionmixin#action-deleteconnection),
+[addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
+[clearConnections](../connectionmanagementsessionmixin#action-clearconnections)
 
-### WebSessionConnectionsMixin - Properties
+<details>
+<summary>WebSessionConnectionsMixin - Properties</summary>
 
 #### property: sessionConnections
 
@@ -49,7 +57,10 @@ sessionConnections: types.stripDefault(
         )
 ```
 
-### WebSessionConnectionsMixin - Actions
+</details>
+
+<details>
+<summary>WebSessionConnectionsMixin - Actions</summary>
 
 #### action: addConnectionConf
 
@@ -64,3 +75,5 @@ addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> 
 // type signature
 deleteConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
+
+</details>

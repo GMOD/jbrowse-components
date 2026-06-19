@@ -33,27 +33,54 @@ and docs.
 
 ### Available via [WiggleScoreConfigMixin](../wigglescoreconfigmixin)
 
-**Properties:** resolution, displayCrossHatches
+**Properties:** [resolution](../wigglescoreconfigmixin#property-resolution),
+[displayCrossHatches](../wigglescoreconfigmixin#property-displaycrosshatches)
 
-**Volatiles:** loadedBpPerPx
+**Volatiles:** [loadedBpPerPx](../wigglescoreconfigmixin#volatile-loadedbpperpx)
 
-**Getters:** scalebarOverlapLeft, posColor, negColor, bicolorPivot, scaleType,
-autoscaleType, numStdDev, scatterPointSize, summaryScoreMode, renderingType,
-minScore, maxScore, minScoreBound, maxScoreBound, hasResolution
+**Getters:**
+[scalebarOverlapLeft](../wigglescoreconfigmixin#getter-scalebaroverlapleft),
+[posColor](../wigglescoreconfigmixin#getter-poscolor),
+[negColor](../wigglescoreconfigmixin#getter-negcolor),
+[bicolorPivot](../wigglescoreconfigmixin#getter-bicolorpivot),
+[scaleType](../wigglescoreconfigmixin#getter-scaletype),
+[autoscaleType](../wigglescoreconfigmixin#getter-autoscaletype),
+[numStdDev](../wigglescoreconfigmixin#getter-numstddev),
+[scatterPointSize](../wigglescoreconfigmixin#getter-scatterpointsize),
+[summaryScoreMode](../wigglescoreconfigmixin#getter-summaryscoremode),
+[renderingType](../wigglescoreconfigmixin#getter-renderingtype),
+[minScore](../wigglescoreconfigmixin#getter-minscore),
+[maxScore](../wigglescoreconfigmixin#getter-maxscore),
+[minScoreBound](../wigglescoreconfigmixin#getter-minscorebound),
+[maxScoreBound](../wigglescoreconfigmixin#getter-maxscorebound),
+[hasResolution](../wigglescoreconfigmixin#getter-hasresolution)
 
-**Actions:** toggleCrossHatches, setResolution, setLoadedBpPerPx, setScaleType,
-setColor, setMinScore, setMaxScore, setRenderingType, setSummaryScoreMode,
-setAutoscale, isCacheValid
+**Actions:**
+[toggleCrossHatches](../wigglescoreconfigmixin#action-togglecrosshatches),
+[setResolution](../wigglescoreconfigmixin#action-setresolution),
+[setLoadedBpPerPx](../wigglescoreconfigmixin#action-setloadedbpperpx),
+[setScaleType](../wigglescoreconfigmixin#action-setscaletype),
+[setColor](../wigglescoreconfigmixin#action-setcolor),
+[setMinScore](../wigglescoreconfigmixin#action-setminscore),
+[setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
+[setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
+[setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
+[setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
+[isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
+**Properties:**
+[configOverrides](../configoverridemixin#property-configoverrides)
 
-**Methods:** getOverride, getConfWithOverride
+**Methods:** [getOverride](../configoverridemixin#method-getoverride),
+[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
 
-**Actions:** setOverride, clearOverride
+**Actions:** [setOverride](../configoverridemixin#action-setoverride),
+[clearOverride](../configoverridemixin#action-clearoverride)
 
-### WiggleCommonMixin - Volatiles
+<details>
+<summary>WiggleCommonMixin - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -64,7 +91,10 @@ ObservableMap<number, WiggleDataResult>
 rpcDataMap: observable.map<number, WiggleDataResult>()
 ```
 
-### WiggleCommonMixin - Getters
+</details>
+
+<details>
+<summary>WiggleCommonMixin - Getters</summary>
 
 #### getter: visibleScoreRange
 
@@ -80,7 +110,10 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 ;[number, number] | undefined
 ```
 
-### WiggleCommonMixin - Actions
+</details>
+
+<details>
+<summary>WiggleCommonMixin - Actions</summary>
 
 #### action: clearDisplaySpecificData
 
@@ -88,3 +121,5 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 // type signature
 clearDisplaySpecificData: () => void
 ```
+
+</details>

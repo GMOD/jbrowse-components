@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### FacetedModel - Properties
+<details>
+<summary>FacetedModel - Properties</summary>
 
 #### property: filterText
 
@@ -65,7 +66,10 @@ panelWidth: types.optional(types.number, () =>
       )
 ```
 
-### FacetedModel - Volatiles
+</details>
+
+<details>
+<summary>FacetedModel - Volatiles</summary>
 
 #### volatile: visible
 
@@ -112,7 +116,10 @@ AbstractSessionModel | undefined
 session: undefined as AbstractSessionModel | undefined
 ```
 
-### FacetedModel - Getters
+</details>
+
+<details>
+<summary>FacetedModel - Getters</summary>
 
 #### getter: allRows
 
@@ -200,7 +207,10 @@ stable and don't recompute on every filterText keystroke.
 Record<string, number>
 ```
 
-### FacetedModel - Actions
+</details>
+
+<details>
+<summary>FacetedModel - Actions</summary>
 
 #### action: setTrackConfigurations
 
@@ -257,3 +267,5 @@ setShowFilters: (f: boolean) => void
 // type signature
 setVisible: (args: Record<string, boolean>) => void
 ```
+
+</details>

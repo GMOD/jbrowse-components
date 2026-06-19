@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### ThemeManagerSessionMixin - Volatiles
+<details>
+<summary>ThemeManagerSessionMixin - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
@@ -32,7 +33,10 @@ string
 sessionThemeName: localStorageGetItem('themeName') ?? 'default'
 ```
 
-### ThemeManagerSessionMixin - Getters
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Getters</summary>
 
 #### getter: themeName
 
@@ -55,7 +59,10 @@ SerializableThemeArgs
 Theme
 ```
 
-### ThemeManagerSessionMixin - Methods
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Methods</summary>
 
 #### method: allThemes
 
@@ -64,7 +71,10 @@ Theme
 allThemes: () => ThemeMap
 ```
 
-### ThemeManagerSessionMixin - Actions
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Actions</summary>
 
 #### action: setThemeName
 
@@ -72,3 +82,5 @@ allThemes: () => ThemeMap
 // type signature
 setThemeName: (name: string) => void
 ```
+
+</details>

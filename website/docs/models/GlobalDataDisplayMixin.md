@@ -43,37 +43,63 @@ and docs.
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
-**Properties:** userByteSizeLimit
+**Properties:**
+[userByteSizeLimit](../regiontoolargemixin#property-userbytesizelimit)
 
-**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
-featureDensityStats
+**Volatiles:**
+[regionTooLargeState](../regiontoolargemixin#volatile-regiontoolargestate),
+[regionTooLargeReasonState](../regiontoolargemixin#volatile-regiontoolargereasonstate),
+[featureDensityStats](../regiontoolargemixin#volatile-featuredensitystats)
 
-**Getters:** regionTooLarge, regionTooLargeReason
+**Getters:** [regionTooLarge](../regiontoolargemixin#getter-regiontoolarge),
+[regionTooLargeReason](../regiontoolargemixin#getter-regiontoolargereason)
 
-**Methods:** regionCannotBeRenderedText
+**Methods:**
+[regionCannotBeRenderedText](../regiontoolargemixin#method-regioncannotberenderedtext)
 
-**Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload, forceLoad
+**Actions:**
+[setRegionTooLarge](../regiontoolargemixin#action-setregiontoolarge),
+[setFeatureDensityStats](../regiontoolargemixin#action-setfeaturedensitystats),
+[setFeatureDensityStatsLimit](../regiontoolargemixin#action-setfeaturedensitystatslimit),
+[reload](../regiontoolargemixin#action-reload),
+[forceLoad](../regiontoolargemixin#action-forceload)
 
 ### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
-autorunsInstalled, renderError
+**Volatiles:** [canvasDrawn](../renderlifecyclemixin#volatile-canvasdrawn),
+[currentRenderingBackend](../renderlifecyclemixin#volatile-currentrenderingbackend),
+[renderTick](../renderlifecyclemixin#volatile-rendertick),
+[autorunsInstalled](../renderlifecyclemixin#volatile-autorunsinstalled),
+[renderError](../renderlifecyclemixin#volatile-rendererror)
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-setRenderError, attachRenderingBackend
+**Actions:** [markCanvasDrawn](../renderlifecyclemixin#action-markcanvasdrawn),
+[resetCanvasDrawn](../renderlifecyclemixin#action-resetcanvasdrawn),
+[stopRenderingBackend](../renderlifecyclemixin#action-stoprenderingbackend),
+[renderNow](../renderlifecyclemixin#action-rendernow),
+[setRenderError](../renderlifecyclemixin#action-setrendererror),
+[attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
 ### Available via [FetchMixin](../fetchmixin)
 
-**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
-statusProgress, fetchCanceled, regionStatuses
+**Volatiles:** [activeStopToken](../fetchmixin#volatile-activestoptoken),
+[fetchGeneration](../fetchmixin#volatile-fetchgeneration),
+[error](../fetchmixin#volatile-error),
+[statusMessage](../fetchmixin#volatile-statusmessage),
+[statusProgress](../fetchmixin#volatile-statusprogress),
+[fetchCanceled](../fetchmixin#volatile-fetchcanceled),
+[regionStatuses](../fetchmixin#volatile-regionstatuses)
 
-**Getters:** isLoading
+**Getters:** [isLoading](../fetchmixin#getter-isloading)
 
-**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch,
-cancelFetchByUser, runFetch
+**Actions:** [setError](../fetchmixin#action-seterror),
+[setStatusMessage](../fetchmixin#action-setstatusmessage),
+[setRegionStatus](../fetchmixin#action-setregionstatus),
+[cancelFetch](../fetchmixin#action-cancelfetch),
+[cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
+[runFetch](../fetchmixin#action-runfetch)
 
-### GlobalDataDisplayMixin - Getters
+<details>
+<summary>GlobalDataDisplayMixin - Getters</summary>
 
 #### getter: displayPhase
 
@@ -116,3 +142,5 @@ condition.
 // type
 boolean
 ```
+
+</details>

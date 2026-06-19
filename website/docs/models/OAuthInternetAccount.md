@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### OAuthInternetAccount - Properties
+<details>
+<summary>OAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -41,7 +42,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### OAuthInternetAccount - Getters
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Getters</summary>
 
 #### getter: conf
 
@@ -122,7 +126,10 @@ string
 string
 ```
 
-### OAuthInternetAccount - Methods
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Methods</summary>
 
 #### method: retrieveRefreshToken
 
@@ -131,7 +138,10 @@ string
 retrieveRefreshToken: () => string | null
 ```
 
-### OAuthInternetAccount - Actions
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Actions</summary>
 
 #### action: storeRefreshToken
 
@@ -192,3 +202,5 @@ validateToken: (token: string, location: UriLocation) => Promise<string>
 // type signature
 getFetcher: (loc?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
+
+</details>

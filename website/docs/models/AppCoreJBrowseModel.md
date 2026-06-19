@@ -25,7 +25,8 @@ built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model â€
 config models are MST trees themselves, which is why this state model is allowed
 to build on one. Generally found on a property named rootModel.jbrowse
 
-### AppCoreJBrowseModel - Getters
+<details>
+<summary>AppCoreJBrowseModel - Getters</summary>
 
 #### getter: assemblyNames
 
@@ -41,7 +42,10 @@ string[]
 RpcManager
 ```
 
-### AppCoreJBrowseModel - Actions
+</details>
+
+<details>
+<summary>AppCoreJBrowseModel - Actions</summary>
 
 #### action: addAssemblyConf
 
@@ -129,3 +133,5 @@ addInternetAccountConf: (internetAccountConf: ModelInstanceTypeProps<Record<stri
 // type signature
 deleteInternetAccountConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
+
+</details>

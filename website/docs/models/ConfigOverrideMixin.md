@@ -36,7 +36,8 @@ that persists via the snapshot mechanism. They are accepted by
 `getOverride`/`setOverride`/`clearOverride` but NOT by `getConfWithOverride`
 (which requires a config-slot fallback).
 
-### ConfigOverrideMixin - Properties
+<details>
+<summary>ConfigOverrideMixin - Properties</summary>
 
 #### property: configOverrides
 
@@ -50,7 +51,10 @@ configOverrides: types.optional(
       )
 ```
 
-### ConfigOverrideMixin - Methods
+</details>
+
+<details>
+<summary>ConfigOverrideMixin - Methods</summary>
 
 #### method: getOverride
 
@@ -72,7 +76,10 @@ object/array/frozen slots degrade to `any`), mirroring the adapter `getConf`.
 getConfWithOverride: <SLOT extends SlotName = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>>(key: SLOT) => ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
 ```
 
-### ConfigOverrideMixin - Actions
+</details>
+
+<details>
+<summary>ConfigOverrideMixin - Actions</summary>
 
 #### action: setOverride
 
@@ -87,3 +94,5 @@ setOverride: (key: AnyKey, value: unknown) => void
 // type signature
 clearOverride: (key: AnyKey) => void
 ```
+
+</details>

@@ -816,7 +816,9 @@ export function stripPropertyName(code: string) {
       valueStart = scanner.getTokenEnd()
     }
   }
-  return valueStart < 0 ? code.trim() : dedentValue(code.slice(valueStart).trim())
+  return valueStart < 0
+    ? code.trim()
+    : dedentValue(code.slice(valueStart).trim())
 }
 
 // After dropping the `<name>:` prefix the value's first line (its opening `{`)
@@ -1066,6 +1068,21 @@ export function section(...parts: (string | false | 0 | undefined)[]) {
 export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
   const body = section(...parts)
   return body ? `## Overview\n\n${body}` : ''
+}
+
+// Wrap content in a collapsed-by-default `<details>` block whose `<summary>` is
+// the section title. The blank lines around the body are required: by CommonMark
+// (which Astro's remark follows) a blank line ends the raw-HTML block, so the
+// enclosed headings/code render as markdown instead of literal HTML. Returns
+// empty string when all parts are falsy, matching section().
+export function collapsible(
+  summary: string,
+  ...parts: (string | false | 0 | undefined)[]
+) {
+  const body = section(...parts)
+  return body
+    ? `<details>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
+    : ''
 }
 
 // Renders authored #example blocks under a consistent heading. Empty when none

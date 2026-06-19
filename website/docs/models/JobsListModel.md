@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### JobsListModel - Properties
+<details>
+<summary>JobsListModel - Properties</summary>
 
 #### property: id
 
@@ -77,7 +78,10 @@ IArrayType<IModelType<{ name: ISimpleType<string>; }, { cancelCallback(): void; 
 aborted: types.array(Job)
 ```
 
-### JobsListModel - Actions
+</details>
+
+<details>
+<summary>JobsListModel - Actions</summary>
 
 #### action: addJob
 
@@ -148,3 +152,5 @@ updateJobStatusMessage: (jobName: string, message?: string | undefined) => void
 // type signature
 updateJobProgressPct: (jobName: string, pct: number) => void
 ```
+
+</details>

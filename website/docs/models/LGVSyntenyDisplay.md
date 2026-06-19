@@ -58,137 +58,337 @@ and docs.
 
 ### Available via [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
-**Properties:** type, configuration, linkedReads, showBezierConnections,
-showCoverage, coverageHeight, showMismatches, showInterbaseIndicators,
-drawSingletons, drawProperPairs, flipStrandLongReadChains, drawInter,
-drawLongRange, arcColorByType, readConnections, readConnectionsDown,
-showSashimiArcs, minSashimiScore, sashimiArcsHeight, readConnectionsHeight,
-showSoftClipping
+**Properties:** [type](../linearalignmentsdisplay#property-type),
+[configuration](../linearalignmentsdisplay#property-configuration),
+[linkedReads](../linearalignmentsdisplay#property-linkedreads),
+[showBezierConnections](../linearalignmentsdisplay#property-showbezierconnections),
+[showCoverage](../linearalignmentsdisplay#property-showcoverage),
+[coverageHeight](../linearalignmentsdisplay#property-coverageheight),
+[showMismatches](../linearalignmentsdisplay#property-showmismatches),
+[showInterbaseIndicators](../linearalignmentsdisplay#property-showinterbaseindicators),
+[drawSingletons](../linearalignmentsdisplay#property-drawsingletons),
+[drawProperPairs](../linearalignmentsdisplay#property-drawproperpairs),
+[flipStrandLongReadChains](../linearalignmentsdisplay#property-flipstrandlongreadchains),
+[drawInter](../linearalignmentsdisplay#property-drawinter),
+[drawLongRange](../linearalignmentsdisplay#property-drawlongrange),
+[arcColorByType](../linearalignmentsdisplay#property-arccolorbytype),
+[readConnections](../linearalignmentsdisplay#property-readconnections),
+[readConnectionsDown](../linearalignmentsdisplay#property-readconnectionsdown),
+[showSashimiArcs](../linearalignmentsdisplay#property-showsashimiarcs),
+[minSashimiScore](../linearalignmentsdisplay#property-minsashimiscore),
+[sashimiArcsHeight](../linearalignmentsdisplay#property-sashimiarcsheight),
+[readConnectionsHeight](../linearalignmentsdisplay#property-readconnectionsheight),
+[showSoftClipping](../linearalignmentsdisplay#property-showsoftclipping)
 
-**Volatiles:** featureIdUnderMouse, mouseoverExtraInformation,
-contextMenuFeature, contextMenuCoord, contextMenuCigarHit,
-contextMenuIndicatorHit, contextMenuRefName, rpcDataMap, scrollTop,
-collapsedGroups, groupMaxHeightOverrides, highlightedChainIds, selectedChainIds,
-colorTagMap, visibleModifications, modificationsReady, overCigarItem,
-hoverCoverageBand
+**Volatiles:**
+[featureIdUnderMouse](../linearalignmentsdisplay#volatile-featureidundermouse),
+[mouseoverExtraInformation](../linearalignmentsdisplay#volatile-mouseoverextrainformation),
+[contextMenuFeature](../linearalignmentsdisplay#volatile-contextmenufeature),
+[contextMenuCoord](../linearalignmentsdisplay#volatile-contextmenucoord),
+[contextMenuCigarHit](../linearalignmentsdisplay#volatile-contextmenucigarhit),
+[contextMenuIndicatorHit](../linearalignmentsdisplay#volatile-contextmenuindicatorhit),
+[contextMenuRefName](../linearalignmentsdisplay#volatile-contextmenurefname),
+[rpcDataMap](../linearalignmentsdisplay#volatile-rpcdatamap),
+[scrollTop](../linearalignmentsdisplay#volatile-scrolltop),
+[collapsedGroups](../linearalignmentsdisplay#volatile-collapsedgroups),
+[groupMaxHeightOverrides](../linearalignmentsdisplay#volatile-groupmaxheightoverrides),
+[highlightedChainIds](../linearalignmentsdisplay#volatile-highlightedchainids),
+[selectedChainIds](../linearalignmentsdisplay#volatile-selectedchainids),
+[colorTagMap](../linearalignmentsdisplay#volatile-colortagmap),
+[visibleModifications](../linearalignmentsdisplay#volatile-visiblemodifications),
+[modificationsReady](../linearalignmentsdisplay#volatile-modificationsready),
+[overCigarItem](../linearalignmentsdisplay#volatile-overcigaritem),
+[hoverCoverageBand](../linearalignmentsdisplay#volatile-hovercoverageband)
 
-**Getters:** isChainMode, showLinkedReadLines, scaleType, autoscaleType,
-minScore, maxScore, minScoreBound, maxScoreBound, numStdDev, featureWidgetType,
-selectedFeatureId, TooltipComponent, visibleModificationTypes, colorBy,
-filterBy, featureHeight, featureSpacing, maxHeight, chainIdMap, mismatchAlpha,
-showLowFreqMismatches, showLegend, sortedBy, groupBy, prefersOffset,
-coverageIsLog, coverageStats, coverageDomain, coverageTicks,
-colorLegendCategories, colorPalette, laidOutByGroup, groupOrder,
-laidOutPileupMap, sourceSections, maxY, pileupTruncated, rawDataByGroup,
-arcsByGroup, modificationThreshold, colorSchemeIndex, showModifications,
-showPerBaseQuality, showPerBaseLetter, totalPileupHeight, readIdIndexMap,
-readConnectionsLineWidth, hasSashimiArcs, belowCoverageBands,
-coverageDisplayHeight, sections, renderSections, sashimiSections, isGrouped,
-scrollModel, pileupViewportHeight, pileupContentHeight, scalebarOverlapLeft,
-showOutline, visibleLabels, highlightBoxes, scrollableHeight, sortTag,
-renderState, arcsYDomainBp, insertSizeTicks, featureUnderMouse
+**Getters:** [isChainMode](../linearalignmentsdisplay#getter-ischainmode),
+[showLinkedReadLines](../linearalignmentsdisplay#getter-showlinkedreadlines),
+[scaleType](../linearalignmentsdisplay#getter-scaletype),
+[autoscaleType](../linearalignmentsdisplay#getter-autoscaletype),
+[minScore](../linearalignmentsdisplay#getter-minscore),
+[maxScore](../linearalignmentsdisplay#getter-maxscore),
+[minScoreBound](../linearalignmentsdisplay#getter-minscorebound),
+[maxScoreBound](../linearalignmentsdisplay#getter-maxscorebound),
+[numStdDev](../linearalignmentsdisplay#getter-numstddev),
+[featureWidgetType](../linearalignmentsdisplay#getter-featurewidgettype),
+[selectedFeatureId](../linearalignmentsdisplay#getter-selectedfeatureid),
+[TooltipComponent](../linearalignmentsdisplay#getter-tooltipcomponent),
+[visibleModificationTypes](../linearalignmentsdisplay#getter-visiblemodificationtypes),
+[colorBy](../linearalignmentsdisplay#getter-colorby),
+[filterBy](../linearalignmentsdisplay#getter-filterby),
+[featureHeight](../linearalignmentsdisplay#getter-featureheight),
+[featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
+[maxHeight](../linearalignmentsdisplay#getter-maxheight),
+[chainIdMap](../linearalignmentsdisplay#getter-chainidmap),
+[mismatchAlpha](../linearalignmentsdisplay#getter-mismatchalpha),
+[showLowFreqMismatches](../linearalignmentsdisplay#getter-showlowfreqmismatches),
+[showLegend](../linearalignmentsdisplay#getter-showlegend),
+[sortedBy](../linearalignmentsdisplay#getter-sortedby),
+[groupBy](../linearalignmentsdisplay#getter-groupby),
+[prefersOffset](../linearalignmentsdisplay#getter-prefersoffset),
+[coverageIsLog](../linearalignmentsdisplay#getter-coverageislog),
+[coverageStats](../linearalignmentsdisplay#getter-coveragestats),
+[coverageDomain](../linearalignmentsdisplay#getter-coveragedomain),
+[coverageTicks](../linearalignmentsdisplay#getter-coverageticks),
+[colorLegendCategories](../linearalignmentsdisplay#getter-colorlegendcategories),
+[colorPalette](../linearalignmentsdisplay#getter-colorpalette),
+[laidOutByGroup](../linearalignmentsdisplay#getter-laidoutbygroup),
+[groupOrder](../linearalignmentsdisplay#getter-grouporder),
+[laidOutPileupMap](../linearalignmentsdisplay#getter-laidoutpileupmap),
+[sourceSections](../linearalignmentsdisplay#getter-sourcesections),
+[maxY](../linearalignmentsdisplay#getter-maxy),
+[pileupTruncated](../linearalignmentsdisplay#getter-pileuptruncated),
+[rawDataByGroup](../linearalignmentsdisplay#getter-rawdatabygroup),
+[arcsByGroup](../linearalignmentsdisplay#getter-arcsbygroup),
+[modificationThreshold](../linearalignmentsdisplay#getter-modificationthreshold),
+[colorSchemeIndex](../linearalignmentsdisplay#getter-colorschemeindex),
+[showModifications](../linearalignmentsdisplay#getter-showmodifications),
+[showPerBaseQuality](../linearalignmentsdisplay#getter-showperbasequality),
+[showPerBaseLetter](../linearalignmentsdisplay#getter-showperbaseletter),
+[totalPileupHeight](../linearalignmentsdisplay#getter-totalpileupheight),
+[readIdIndexMap](../linearalignmentsdisplay#getter-readidindexmap),
+[readConnectionsLineWidth](../linearalignmentsdisplay#getter-readconnectionslinewidth),
+[hasSashimiArcs](../linearalignmentsdisplay#getter-hassashimiarcs),
+[belowCoverageBands](../linearalignmentsdisplay#getter-belowcoveragebands),
+[coverageDisplayHeight](../linearalignmentsdisplay#getter-coveragedisplayheight),
+[sections](../linearalignmentsdisplay#getter-sections),
+[renderSections](../linearalignmentsdisplay#getter-rendersections),
+[sashimiSections](../linearalignmentsdisplay#getter-sashimisections),
+[isGrouped](../linearalignmentsdisplay#getter-isgrouped),
+[scrollModel](../linearalignmentsdisplay#getter-scrollmodel),
+[pileupViewportHeight](../linearalignmentsdisplay#getter-pileupviewportheight),
+[pileupContentHeight](../linearalignmentsdisplay#getter-pileupcontentheight),
+[scalebarOverlapLeft](../linearalignmentsdisplay#getter-scalebaroverlapleft),
+[showOutline](../linearalignmentsdisplay#getter-showoutline),
+[visibleLabels](../linearalignmentsdisplay#getter-visiblelabels),
+[highlightBoxes](../linearalignmentsdisplay#getter-highlightboxes),
+[scrollableHeight](../linearalignmentsdisplay#getter-scrollableheight),
+[sortTag](../linearalignmentsdisplay#getter-sorttag),
+[renderState](../linearalignmentsdisplay#getter-renderstate),
+[arcsYDomainBp](../linearalignmentsdisplay#getter-arcsydomainbp),
+[insertSizeTicks](../linearalignmentsdisplay#getter-insertsizeticks),
+[featureUnderMouse](../linearalignmentsdisplay#getter-featureundermouse)
 
-**Methods:** isGroupCollapsed, legendItems, groupLaidOutMap,
-findFeatureInRpcData, searchFeatureByID, getFeatureInfoById, rpcProps,
-trackMenuItems, contextMenuItems
+**Methods:**
+[isGroupCollapsed](../linearalignmentsdisplay#method-isgroupcollapsed),
+[legendItems](../linearalignmentsdisplay#method-legenditems),
+[groupLaidOutMap](../linearalignmentsdisplay#method-grouplaidoutmap),
+[findFeatureInRpcData](../linearalignmentsdisplay#method-findfeatureinrpcdata),
+[searchFeatureByID](../linearalignmentsdisplay#method-searchfeaturebyid),
+[getFeatureInfoById](../linearalignmentsdisplay#method-getfeatureinfobyid),
+[rpcProps](../linearalignmentsdisplay#method-rpcprops),
+[trackMenuItems](../linearalignmentsdisplay#method-trackmenuitems),
+[contextMenuItems](../linearalignmentsdisplay#method-contextmenuitems)
 
-**Actions:** clearMouseoverState, setError, setRegionTooLarge, setRpcData,
-clearDisplaySpecificData, setOverCigarItem, setScrollTop,
-setHighlightedChainIds, clearHighlights, clearSelection, setSelectedChainIds,
-setColorScheme, updateColorTagMap, setFilterBy, setShowOutline,
-toggleSoftClipping, toggleMismatchAlpha, toggleShowLowFreqMismatches,
-setSortedBy, setSortedByAtPosition, clearSortedBy, setGroupBy,
-toggleGroupCollapsed, resizeGroupHeight, setScaleType, setAutoscale,
-setMinScore, setMaxScore, setFeatureHeight, setFeatureSpacing, setMaxHeight,
-setCompactness, setShowSashimiArcs, toggleSashimiArcs, setReadConnections,
-setReadConnectionsDown, setShowCoverage, setCoverageHeight,
-setReadConnectionsHeight, setSashimiArcsHeight, setMinSashimiScore,
-setReadConnectionsLineWidth, setDrawInter, setDrawLongRange, setColorByType,
-setShowMismatches, setShowLegend, setDrawSingletons, setDrawProperPairs,
-setShowInterbaseIndicators, setFlipStrandLongReadChains, setLinkedReads,
-setShowBezierConnections, updateVisibleModifications, setModificationsReady,
-setFeatureIdUnderMouse, setMouseoverExtraInformation, setHoverState,
-setContextMenuFeature, setContextMenuCoord, setContextMenuCigarHit,
-setContextMenuIndicatorHit, clearContextMenu, setContextMenuRefName,
-selectFeature, startRenderingBackend, selectFeatureById,
-setContextMenuFeatureById, getByteEstimateConfig, fetchNeeded, renderSvg
+**Actions:**
+[clearMouseoverState](../linearalignmentsdisplay#action-clearmouseoverstate),
+[setError](../linearalignmentsdisplay#action-seterror),
+[setRegionTooLarge](../linearalignmentsdisplay#action-setregiontoolarge),
+[setRpcData](../linearalignmentsdisplay#action-setrpcdata),
+[clearDisplaySpecificData](../linearalignmentsdisplay#action-cleardisplayspecificdata),
+[setOverCigarItem](../linearalignmentsdisplay#action-setovercigaritem),
+[setScrollTop](../linearalignmentsdisplay#action-setscrolltop),
+[setHighlightedChainIds](../linearalignmentsdisplay#action-sethighlightedchainids),
+[clearHighlights](../linearalignmentsdisplay#action-clearhighlights),
+[clearSelection](../linearalignmentsdisplay#action-clearselection),
+[setSelectedChainIds](../linearalignmentsdisplay#action-setselectedchainids),
+[setColorScheme](../linearalignmentsdisplay#action-setcolorscheme),
+[updateColorTagMap](../linearalignmentsdisplay#action-updatecolortagmap),
+[setFilterBy](../linearalignmentsdisplay#action-setfilterby),
+[setShowOutline](../linearalignmentsdisplay#action-setshowoutline),
+[toggleSoftClipping](../linearalignmentsdisplay#action-togglesoftclipping),
+[toggleMismatchAlpha](../linearalignmentsdisplay#action-togglemismatchalpha),
+[toggleShowLowFreqMismatches](../linearalignmentsdisplay#action-toggleshowlowfreqmismatches),
+[setSortedBy](../linearalignmentsdisplay#action-setsortedby),
+[setSortedByAtPosition](../linearalignmentsdisplay#action-setsortedbyatposition),
+[clearSortedBy](../linearalignmentsdisplay#action-clearsortedby),
+[setGroupBy](../linearalignmentsdisplay#action-setgroupby),
+[toggleGroupCollapsed](../linearalignmentsdisplay#action-togglegroupcollapsed),
+[resizeGroupHeight](../linearalignmentsdisplay#action-resizegroupheight),
+[setScaleType](../linearalignmentsdisplay#action-setscaletype),
+[setAutoscale](../linearalignmentsdisplay#action-setautoscale),
+[setMinScore](../linearalignmentsdisplay#action-setminscore),
+[setMaxScore](../linearalignmentsdisplay#action-setmaxscore),
+[setFeatureHeight](../linearalignmentsdisplay#action-setfeatureheight),
+[setFeatureSpacing](../linearalignmentsdisplay#action-setfeaturespacing),
+[setMaxHeight](../linearalignmentsdisplay#action-setmaxheight),
+[setCompactness](../linearalignmentsdisplay#action-setcompactness),
+[setShowSashimiArcs](../linearalignmentsdisplay#action-setshowsashimiarcs),
+[toggleSashimiArcs](../linearalignmentsdisplay#action-togglesashimiarcs),
+[setReadConnections](../linearalignmentsdisplay#action-setreadconnections),
+[setReadConnectionsDown](../linearalignmentsdisplay#action-setreadconnectionsdown),
+[setShowCoverage](../linearalignmentsdisplay#action-setshowcoverage),
+[setCoverageHeight](../linearalignmentsdisplay#action-setcoverageheight),
+[setReadConnectionsHeight](../linearalignmentsdisplay#action-setreadconnectionsheight),
+[setSashimiArcsHeight](../linearalignmentsdisplay#action-setsashimiarcsheight),
+[setMinSashimiScore](../linearalignmentsdisplay#action-setminsashimiscore),
+[setReadConnectionsLineWidth](../linearalignmentsdisplay#action-setreadconnectionslinewidth),
+[setDrawInter](../linearalignmentsdisplay#action-setdrawinter),
+[setDrawLongRange](../linearalignmentsdisplay#action-setdrawlongrange),
+[setColorByType](../linearalignmentsdisplay#action-setcolorbytype),
+[setShowMismatches](../linearalignmentsdisplay#action-setshowmismatches),
+[setShowLegend](../linearalignmentsdisplay#action-setshowlegend),
+[setDrawSingletons](../linearalignmentsdisplay#action-setdrawsingletons),
+[setDrawProperPairs](../linearalignmentsdisplay#action-setdrawproperpairs),
+[setShowInterbaseIndicators](../linearalignmentsdisplay#action-setshowinterbaseindicators),
+[setFlipStrandLongReadChains](../linearalignmentsdisplay#action-setflipstrandlongreadchains),
+[setLinkedReads](../linearalignmentsdisplay#action-setlinkedreads),
+[setShowBezierConnections](../linearalignmentsdisplay#action-setshowbezierconnections),
+[updateVisibleModifications](../linearalignmentsdisplay#action-updatevisiblemodifications),
+[setModificationsReady](../linearalignmentsdisplay#action-setmodificationsready),
+[setFeatureIdUnderMouse](../linearalignmentsdisplay#action-setfeatureidundermouse),
+[setMouseoverExtraInformation](../linearalignmentsdisplay#action-setmouseoverextrainformation),
+[setHoverState](../linearalignmentsdisplay#action-sethoverstate),
+[setContextMenuFeature](../linearalignmentsdisplay#action-setcontextmenufeature),
+[setContextMenuCoord](../linearalignmentsdisplay#action-setcontextmenucoord),
+[setContextMenuCigarHit](../linearalignmentsdisplay#action-setcontextmenucigarhit),
+[setContextMenuIndicatorHit](../linearalignmentsdisplay#action-setcontextmenuindicatorhit),
+[clearContextMenu](../linearalignmentsdisplay#action-clearcontextmenu),
+[setContextMenuRefName](../linearalignmentsdisplay#action-setcontextmenurefname),
+[selectFeature](../linearalignmentsdisplay#action-selectfeature),
+[startRenderingBackend](../linearalignmentsdisplay#action-startrenderingbackend),
+[selectFeatureById](../linearalignmentsdisplay#action-selectfeaturebyid),
+[setContextMenuFeatureById](../linearalignmentsdisplay#action-setcontextmenufeaturebyid),
+[getByteEstimateConfig](../linearalignmentsdisplay#action-getbyteestimateconfig),
+[fetchNeeded](../linearalignmentsdisplay#action-fetchneeded),
+[renderSvg](../linearalignmentsdisplay#action-rendersvg)
 
 ### Available via [BaseDisplay](../basedisplay)
 
-**Properties:** id, type, rpcDriverName
+**Properties:** [id](../basedisplay#property-id),
+[type](../basedisplay#property-type),
+[rpcDriverName](../basedisplay#property-rpcdrivername)
 
-**Volatiles:** error, statusMessage
+**Volatiles:** [error](../basedisplay#volatile-error),
+[statusMessage](../basedisplay#volatile-statusmessage)
 
-**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
-adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-DisplayMessageComponent, viewMenuActions
+**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
+[parentDisplay](../basedisplay#getter-parentdisplay),
+[RenderingComponent](../basedisplay#getter-renderingcomponent),
+[DisplayBlurb](../basedisplay#getter-displayblurb),
+[adapterConfig](../basedisplay#getter-adapterconfig),
+[isMinimized](../basedisplay#getter-isminimized),
+[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
+[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+**Methods:** [renderProps](../basedisplay#method-renderprops),
+[renderingProps](../basedisplay#method-renderingprops),
+[trackMenuItems](../basedisplay#method-trackmenuitems),
+[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
-**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
+[setError](../basedisplay#action-seterror),
+[setRpcDriverName](../basedisplay#action-setrpcdrivername),
+[reload](../basedisplay#action-reload)
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** heightOverride
+**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
 
-**Volatiles:** scrollTop
+**Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
-**Getters:** height
+**Getters:** [height](../trackheightmixin#getter-height)
 
-**Actions:** setScrollTop, setHeight, resizeHeight
+**Actions:** [setScrollTop](../trackheightmixin#action-setscrolltop),
+[setHeight](../trackheightmixin#action-setheight),
+[resizeHeight](../trackheightmixin#action-resizeheight)
 
 ### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
 
-**Volatiles:** loadedRegions
+**Volatiles:**
+[loadedRegions](../multiregiondisplaymixin#volatile-loadedregions)
 
-**Getters:** isReady, viewportWithinLoadedData, svgReady, svgReadyExtraTerminal,
-renderBlocks, displayPhase, loadingOverlayVisible
+**Getters:** [isReady](../multiregiondisplaymixin#getter-isready),
+[viewportWithinLoadedData](../multiregiondisplaymixin#getter-viewportwithinloadeddata),
+[svgReady](../multiregiondisplaymixin#getter-svgready),
+[svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
+[renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
+[displayPhase](../multiregiondisplaymixin#getter-displayphase),
+[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
 
-**Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
-invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
-fetchRegions, afterAttach
+**Actions:**
+[setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
+[clearDisplaySpecificData](../multiregiondisplaymixin#action-cleardisplayspecificdata),
+[clearAllRpcData](../multiregiondisplaymixin#action-clearallrpcdata),
+[reload](../multiregiondisplaymixin#action-reload),
+[invalidateLoadedRegions](../multiregiondisplaymixin#action-invalidateloadedregions),
+[fetchNeeded](../multiregiondisplaymixin#action-fetchneeded),
+[isCacheValid](../multiregiondisplaymixin#action-iscachevalid),
+[getByteEstimateConfig](../multiregiondisplaymixin#action-getbyteestimateconfig),
+[fetchRegions](../multiregiondisplaymixin#action-fetchregions),
+[afterAttach](../multiregiondisplaymixin#action-afterattach)
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
-**Properties:** userByteSizeLimit
+**Properties:**
+[userByteSizeLimit](../regiontoolargemixin#property-userbytesizelimit)
 
-**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
-featureDensityStats
+**Volatiles:**
+[regionTooLargeState](../regiontoolargemixin#volatile-regiontoolargestate),
+[regionTooLargeReasonState](../regiontoolargemixin#volatile-regiontoolargereasonstate),
+[featureDensityStats](../regiontoolargemixin#volatile-featuredensitystats)
 
-**Getters:** regionTooLarge, regionTooLargeReason
+**Getters:** [regionTooLarge](../regiontoolargemixin#getter-regiontoolarge),
+[regionTooLargeReason](../regiontoolargemixin#getter-regiontoolargereason)
 
-**Methods:** regionCannotBeRenderedText
+**Methods:**
+[regionCannotBeRenderedText](../regiontoolargemixin#method-regioncannotberenderedtext)
 
-**Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload, forceLoad
+**Actions:**
+[setRegionTooLarge](../regiontoolargemixin#action-setregiontoolarge),
+[setFeatureDensityStats](../regiontoolargemixin#action-setfeaturedensitystats),
+[setFeatureDensityStatsLimit](../regiontoolargemixin#action-setfeaturedensitystatslimit),
+[reload](../regiontoolargemixin#action-reload),
+[forceLoad](../regiontoolargemixin#action-forceload)
 
 ### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
-autorunsInstalled, renderError
+**Volatiles:** [canvasDrawn](../renderlifecyclemixin#volatile-canvasdrawn),
+[currentRenderingBackend](../renderlifecyclemixin#volatile-currentrenderingbackend),
+[renderTick](../renderlifecyclemixin#volatile-rendertick),
+[autorunsInstalled](../renderlifecyclemixin#volatile-autorunsinstalled),
+[renderError](../renderlifecyclemixin#volatile-rendererror)
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-setRenderError, attachRenderingBackend
+**Actions:** [markCanvasDrawn](../renderlifecyclemixin#action-markcanvasdrawn),
+[resetCanvasDrawn](../renderlifecyclemixin#action-resetcanvasdrawn),
+[stopRenderingBackend](../renderlifecyclemixin#action-stoprenderingbackend),
+[renderNow](../renderlifecyclemixin#action-rendernow),
+[setRenderError](../renderlifecyclemixin#action-setrendererror),
+[attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
 ### Available via [FetchMixin](../fetchmixin)
 
-**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
-statusProgress, fetchCanceled, regionStatuses
+**Volatiles:** [activeStopToken](../fetchmixin#volatile-activestoptoken),
+[fetchGeneration](../fetchmixin#volatile-fetchgeneration),
+[error](../fetchmixin#volatile-error),
+[statusMessage](../fetchmixin#volatile-statusmessage),
+[statusProgress](../fetchmixin#volatile-statusprogress),
+[fetchCanceled](../fetchmixin#volatile-fetchcanceled),
+[regionStatuses](../fetchmixin#volatile-regionstatuses)
 
-**Getters:** isLoading
+**Getters:** [isLoading](../fetchmixin#getter-isloading)
 
-**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch,
-cancelFetchByUser, runFetch
+**Actions:** [setError](../fetchmixin#action-seterror),
+[setStatusMessage](../fetchmixin#action-setstatusmessage),
+[setRegionStatus](../fetchmixin#action-setregionstatus),
+[cancelFetch](../fetchmixin#action-cancelfetch),
+[cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
+[runFetch](../fetchmixin#action-runfetch)
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
+**Properties:**
+[configOverrides](../configoverridemixin#property-configoverrides)
 
-**Methods:** getOverride, getConfWithOverride
+**Methods:** [getOverride](../configoverridemixin#method-getoverride),
+[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
 
-**Actions:** setOverride, clearOverride
+**Actions:** [setOverride](../configoverridemixin#action-setoverride),
+[clearOverride](../configoverridemixin#action-clearoverride)
 
-### LGVSyntenyDisplay - Properties
+<details>
+<summary>LGVSyntenyDisplay - Properties</summary>
 
 #### property: type
 
@@ -208,7 +408,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(schema)
 ```
 
-### LGVSyntenyDisplay - Getters
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Getters</summary>
 
 #### getter: featureWidgetType
 
@@ -220,7 +423,10 @@ configuration: ConfigurationReference(schema)
 }
 ```
 
-### LGVSyntenyDisplay - Methods
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Methods</summary>
 
 #### method: contextMenuItems
 
@@ -236,7 +442,10 @@ contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconType
 trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; })[]
 ```
 
-### LGVSyntenyDisplay - Actions
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Actions</summary>
 
 #### action: selectFeature
 
@@ -244,3 +453,5 @@ trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableCompon
 // type signature
 selectFeature: (feature: Feature) => void
 ```
+
+</details>

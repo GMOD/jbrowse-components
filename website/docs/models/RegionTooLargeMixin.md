@@ -31,7 +31,8 @@ LinearBasicDisplay).
 Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
 forceLoad.
 
-### RegionTooLargeMixin - Properties
+<details>
+<summary>RegionTooLargeMixin - Properties</summary>
 
 #### property: userByteSizeLimit
 
@@ -44,7 +45,10 @@ IMaybe<ISimpleType<number>>
 userByteSizeLimit: types.maybe(types.number)
 ```
 
-### RegionTooLargeMixin - Volatiles
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Volatiles</summary>
 
 #### volatile: regionTooLargeState
 
@@ -73,7 +77,10 @@ FeatureDensityStats | undefined
 featureDensityStats: undefined as FeatureDensityStats | undefined
 ```
 
-### RegionTooLargeMixin - Getters
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Getters</summary>
 
 #### getter: regionTooLarge
 
@@ -89,7 +96,10 @@ boolean
 string
 ```
 
-### RegionTooLargeMixin - Methods
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Methods</summary>
 
 #### method: regionCannotBeRenderedText
 
@@ -101,7 +111,10 @@ display chrome via `TooLargeMessage`, not the model.
 regionCannotBeRenderedText: (_region?: Region | undefined) => "" | "Force load to see features"
 ```
 
-### RegionTooLargeMixin - Actions
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Actions</summary>
 
 #### action: setRegionTooLarge
 
@@ -144,3 +157,5 @@ display models override reload() to do the actual refetch.
 // type signature
 forceLoad: () => void
 ```
+
+</details>

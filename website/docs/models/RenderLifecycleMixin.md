@@ -45,7 +45,8 @@ multi-entry config. `render` returns `true` when the backend actually painted
 content (flips `canvasDrawn`), `false` to skip this tick (e.g. `renderState` not
 yet computed or no regions loaded).
 
-### RenderLifecycleMixin - Volatiles
+<details>
+<summary>RenderLifecycleMixin - Volatiles</summary>
 
 #### volatile: canvasDrawn
 
@@ -111,7 +112,10 @@ undefined
 renderError: undefined
 ```
 
-### RenderLifecycleMixin - Actions
+</details>
+
+<details>
+<summary>RenderLifecycleMixin - Actions</summary>
 
 #### action: markCanvasDrawn
 
@@ -161,3 +165,5 @@ attach a GPU/Canvas2D backend and install the upload + render autorun pair
 // type signature
 attachRenderingBackend: <B>(backend: B, cbs: RenderingBackendCallbacks<B>) => void
 ```
+
+</details>

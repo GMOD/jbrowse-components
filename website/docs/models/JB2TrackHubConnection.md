@@ -28,13 +28,20 @@ and docs.
 
 ### Available via [BaseConnectionModel](../baseconnectionmodel)
 
-**Properties:** tracks, configuration
+**Properties:** [tracks](../baseconnectionmodel#property-tracks),
+[configuration](../baseconnectionmodel#property-configuration)
 
-**Getters:** connectionId, name
+**Getters:** [connectionId](../baseconnectionmodel#getter-connectionid),
+[name](../baseconnectionmodel#getter-name)
 
-**Actions:** connect, addTrackConf, addTrackConfs, setTrackConfs, clear
+**Actions:** [connect](../baseconnectionmodel#action-connect),
+[addTrackConf](../baseconnectionmodel#action-addtrackconf),
+[addTrackConfs](../baseconnectionmodel#action-addtrackconfs),
+[setTrackConfs](../baseconnectionmodel#action-settrackconfs),
+[clear](../baseconnectionmodel#action-clear)
 
-### JB2TrackHubConnection - Properties
+<details>
+<summary>JB2TrackHubConnection - Properties</summary>
 
 #### property: configuration
 
@@ -54,7 +61,10 @@ ISimpleType<"JB2TrackHubConnection">
 type: types.literal('JB2TrackHubConnection')
 ```
 
-### JB2TrackHubConnection - Actions
+</details>
+
+<details>
+<summary>JB2TrackHubConnection - Actions</summary>
 
 #### action: connect
 
@@ -62,3 +72,5 @@ type: types.literal('JB2TrackHubConnection')
 // type signature
 connect: () => Promise<void>
 ```
+
+</details>

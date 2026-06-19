@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### BaseDisplay - Properties
+<details>
+<summary>BaseDisplay - Properties</summary>
 
 #### property: id
 
@@ -50,7 +51,10 @@ IMaybe<ISimpleType<string>>
 rpcDriverName: types.maybe(types.string)
 ```
 
-### BaseDisplay - Volatiles
+</details>
+
+<details>
+<summary>BaseDisplay - Volatiles</summary>
 
 #### volatile: error
 
@@ -70,7 +74,10 @@ string | undefined
 statusMessage: undefined as string | undefined
 ```
 
-### BaseDisplay - Getters
+</details>
+
+<details>
+<summary>BaseDisplay - Getters</summary>
 
 #### getter: parentTrack
 
@@ -157,7 +164,10 @@ FC<any> | undefined
 MenuItem[]
 ```
 
-### BaseDisplay - Methods
+</details>
+
+<details>
+<summary>BaseDisplay - Methods</summary>
 
 #### method: renderProps
 
@@ -197,7 +207,10 @@ trackMenuItems: () => MenuItem[]
 regionCannotBeRendered: () => null
 ```
 
-### BaseDisplay - Actions
+</details>
+
+<details>
+<summary>BaseDisplay - Actions</summary>
 
 #### action: setStatusMessage
 
@@ -228,3 +241,5 @@ base display reload does nothing, see specialized displays for details
 // type signature
 reload: () => void
 ```
+
+</details>

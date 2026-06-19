@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### DesktopSessionTrackMenuMixin - Methods
+<details>
+<summary>DesktopSessionTrackMenuMixin - Methods</summary>
 
 #### method: getTrackActions
 
@@ -47,3 +48,5 @@ getTrackListMenuItems: (trackConfig: ModelInstanceTypeProps<Record<string, any>>
 // type signature
 getTrackActionMenuItems: ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
 ```
+
+</details>

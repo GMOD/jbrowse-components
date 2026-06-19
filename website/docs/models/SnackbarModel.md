@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### SnackbarModel - Volatiles
+<details>
+<summary>SnackbarModel - Volatiles</summary>
 
 #### volatile: snackbarMessages
 
@@ -32,7 +33,10 @@ IObservableArray<SnackbarMessage>
 snackbarMessages: observable.array<SnackbarMessage>()
 ```
 
-### SnackbarModel - Getters
+</details>
+
+<details>
+<summary>SnackbarModel - Getters</summary>
 
 #### getter: snackbarMessageSet
 
@@ -41,7 +45,10 @@ snackbarMessages: observable.array<SnackbarMessage>()
 Map<string, SnackbarMessage>
 ```
 
-### SnackbarModel - Actions
+</details>
+
+<details>
+<summary>SnackbarModel - Actions</summary>
 
 #### action: notify
 
@@ -77,3 +84,5 @@ popSnackbarMessage: () => SnackbarMessage | undefined
 // type signature
 removeSnackbarMessage: (message: string) => void
 ```
+
+</details>

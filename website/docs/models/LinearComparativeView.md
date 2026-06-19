@@ -28,15 +28,20 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### LinearComparativeView - Properties
+<details>
+<summary>LinearComparativeView - Properties</summary>
 
 #### property: id
 
@@ -144,7 +149,10 @@ viewTrackConfigs: types.stripDefault(
         )
 ```
 
-### LinearComparativeView - Volatiles
+</details>
+
+<details>
+<summary>LinearComparativeView - Volatiles</summary>
 
 #### volatile: width
 
@@ -155,7 +163,10 @@ number | undefined
 width: undefined as number | undefined
 ```
 
-### LinearComparativeView - Getters
+</details>
+
+<details>
+<summary>LinearComparativeView - Getters</summary>
 
 #### getter: initialized
 
@@ -178,7 +189,10 @@ boolean
 string[]
 ```
 
-### LinearComparativeView - Methods
+</details>
+
+<details>
+<summary>LinearComparativeView - Methods</summary>
 
 #### method: isViewCompact
 
@@ -221,7 +235,10 @@ menuItems: () => MenuItem[]
 rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
-### LinearComparativeView - Actions
+</details>
+
+<details>
+<summary>LinearComparativeView - Actions</summary>
 
 #### action: reconcileLevels
 
@@ -376,3 +393,5 @@ given), so we don't reimplement that imperatively here.
 // type signature
 appendRow: ({ assembly, loc, syntenyTrackId, }: { assembly: string; loc?: string | undefined; syntenyTrackId?: string | undefined; }) => void
 ```
+
+</details>

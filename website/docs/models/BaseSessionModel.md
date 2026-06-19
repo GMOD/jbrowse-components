@@ -31,14 +31,18 @@ and docs.
 
 ### Available via [SnackbarModel](../snackbarmodel)
 
-**Volatiles:** snackbarMessages
+**Volatiles:** [snackbarMessages](../snackbarmodel#volatile-snackbarmessages)
 
-**Getters:** snackbarMessageSet
+**Getters:** [snackbarMessageSet](../snackbarmodel#getter-snackbarmessageset)
 
-**Actions:** notify, notifyError, pushSnackbarMessage, popSnackbarMessage,
-removeSnackbarMessage
+**Actions:** [notify](../snackbarmodel#action-notify),
+[notifyError](../snackbarmodel#action-notifyerror),
+[pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
+[popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
+[removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
 
-### BaseSessionModel - Properties
+<details>
+<summary>BaseSessionModel - Properties</summary>
 
 #### property: id
 
@@ -78,7 +82,10 @@ IMaybe<ISimpleType<string>>
 focusedViewId: types.maybe(types.string)
 ```
 
-### BaseSessionModel - Volatiles
+</details>
+
+<details>
+<summary>BaseSessionModel - Volatiles</summary>
 
 #### volatile: selection
 
@@ -113,7 +120,10 @@ hovered: undefined as unknown
 queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 ```
 
-### BaseSessionModel - Getters
+</details>
+
+<details>
+<summary>BaseSessionModel - Getters</summary>
 
 #### getter: root
 
@@ -178,7 +188,10 @@ DialogComponentType
 Record<string, unknown>
 ```
 
-### BaseSessionModel - Actions
+</details>
+
+<details>
+<summary>BaseSessionModel - Actions</summary>
 
 #### action: setSelection
 
@@ -233,3 +246,5 @@ removeActiveDialog: () => void
 // type signature
 queueDialog: (doneCallback: DoneCallback) => void
 ```
+
+</details>

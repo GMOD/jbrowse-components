@@ -32,7 +32,8 @@ The transform's formula is display-specific because it depends on what data-x =
 `viewOffsetX = max(0, lastDrawnOffsetPx) * scale - view.offsetPx` pattern
 (handles negative offsetPx when scrolled left of genome start).
 
-### StaleViewportRescaleMixin - Volatiles
+<details>
+<summary>StaleViewportRescaleMixin - Volatiles</summary>
 
 #### volatile: lastDrawnOffsetPx
 
@@ -56,7 +57,10 @@ number | undefined
 lastDrawnBpPerPx: undefined as number | undefined
 ```
 
-### StaleViewportRescaleMixin - Actions
+</details>
+
+<details>
+<summary>StaleViewportRescaleMixin - Actions</summary>
 
 #### action: setLastDrawnViewport
 
@@ -64,3 +68,5 @@ lastDrawnBpPerPx: undefined as number | undefined
 // type signature
 setLastDrawnViewport: (offsetPx: number, bpPerPx: number) => void
 ```
+
+</details>

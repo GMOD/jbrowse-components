@@ -28,15 +28,20 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### SpreadsheetView - Properties
+<details>
+<summary>SpreadsheetView - Properties</summary>
 
 #### property: type
 
@@ -114,7 +119,10 @@ IType<SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined, Spreadsh
 init: types.frozen<SpreadsheetViewInit | undefined>()
 ```
 
-### SpreadsheetView - Volatiles
+</details>
+
+<details>
+<summary>SpreadsheetView - Volatiles</summary>
 
 #### volatile: width
 
@@ -125,7 +133,10 @@ number
 width: 400
 ```
 
-### SpreadsheetView - Getters
+</details>
+
+<details>
+<summary>SpreadsheetView - Getters</summary>
 
 #### getter: assembly
 
@@ -134,7 +145,10 @@ width: 400
 any
 ```
 
-### SpreadsheetView - Methods
+</details>
+
+<details>
+<summary>SpreadsheetView - Methods</summary>
 
 #### method: menuItems
 
@@ -143,7 +157,10 @@ any
 menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
 ```
 
-### SpreadsheetView - Actions
+</details>
+
+<details>
+<summary>SpreadsheetView - Actions</summary>
 
 #### action: setWidth
 
@@ -210,3 +227,5 @@ at the file and load it
 // type signature
 applyInit: (init: SpreadsheetViewInit) => Promise<void>
 ```
+
+</details>

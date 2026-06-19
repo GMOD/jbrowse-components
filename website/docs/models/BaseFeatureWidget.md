@@ -26,7 +26,8 @@ contents of what is displayed
 
 see: formatDetails-\>feature,formatDetails-\>subfeatures
 
-### BaseFeatureWidget - Properties
+<details>
+<summary>BaseFeatureWidget - Properties</summary>
 
 #### property: id
 
@@ -149,7 +150,10 @@ descriptions: types.optional(
       )
 ```
 
-### BaseFeatureWidget - Volatiles
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Volatiles</summary>
 
 #### volatile: error
 
@@ -160,7 +164,10 @@ undefined
 error: undefined
 ```
 
-### BaseFeatureWidget - Actions
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Actions</summary>
 
 #### action: setFeatureData
 
@@ -196,3 +203,5 @@ setExtra: (type?: string | undefined, trackId?: string | undefined, maxDepth?: n
 // type signature
 setError: (e: unknown) => void
 ```
+
+</details>

@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### Job - Properties
+<details>
+<summary>Job - Properties</summary>
 
 #### property: name
 
@@ -32,7 +33,10 @@ ISimpleType<string>
 name: types.string
 ```
 
-### Job - Volatiles
+</details>
+
+<details>
+<summary>Job - Volatiles</summary>
 
 #### volatile: statusMessage
 
@@ -52,7 +56,10 @@ number
 progressPct: 0
 ```
 
-### Job - Actions
+</details>
+
+<details>
+<summary>Job - Actions</summary>
 
 #### action: setCancelCallback
 
@@ -74,3 +81,5 @@ setStatusMessage: (message?: string | undefined) => void
 // type signature
 setProgressPct: (pct: number) => void
 ```
+
+</details>

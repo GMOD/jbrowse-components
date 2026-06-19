@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### TrackMenuSessionMixin - Methods
+<details>
+<summary>TrackMenuSessionMixin - Methods</summary>
 
 #### method: getTrackActionMenuItems
 
@@ -29,3 +30,5 @@ reference the markdown files in our repo of the checked out git tag
 // type signature
 getTrackActionMenuItems: ({ effectiveConfig, extraTrackActions, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] | undefined; v...
 ```
+
+</details>

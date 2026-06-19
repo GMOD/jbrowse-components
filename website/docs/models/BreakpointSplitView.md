@@ -28,15 +28,20 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### BreakpointSplitView - Properties
+<details>
+<summary>BreakpointSplitView - Properties</summary>
 
 #### property: type
 
@@ -124,7 +129,10 @@ IType<BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined, 
 init: types.frozen<BreakpointSplitViewInit | undefined>()
 ```
 
-### BreakpointSplitView - Volatiles
+</details>
+
+<details>
+<summary>BreakpointSplitView - Volatiles</summary>
 
 #### volatile: width
 
@@ -146,7 +154,10 @@ matchedTrackFeatures: {
 }
 ```
 
-### BreakpointSplitView - Getters
+</details>
+
+<details>
+<summary>BreakpointSplitView - Getters</summary>
 
 #### getter: hasSomethingToShow
 
@@ -199,7 +210,10 @@ re-pairing or re-lookup.
 Map<string, OverlayMatch>
 ```
 
-### BreakpointSplitView - Methods
+</details>
+
+<details>
+<summary>BreakpointSplitView - Methods</summary>
 
 #### method: exportSvg
 
@@ -260,7 +274,10 @@ menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onC
 rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 ```
 
-### BreakpointSplitView - Actions
+</details>
+
+<details>
+<summary>BreakpointSplitView - Actions</summary>
 
 #### action: setWidth
 
@@ -331,3 +348,5 @@ setInit: (init?: BreakpointSplitViewInit | undefined) => void
 // type signature
 setViews: (viewInits: BreakpointSplitViewInitView[]) => void
 ```
+
+</details>

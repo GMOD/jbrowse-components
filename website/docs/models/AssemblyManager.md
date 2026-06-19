@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### AssemblyManager - Properties
+<details>
+<summary>AssemblyManager - Properties</summary>
 
 #### property: assemblies
 
@@ -35,7 +36,10 @@ IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { er
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
 
-### AssemblyManager - Getters
+</details>
+
+<details>
+<summary>AssemblyManager - Getters</summary>
 
 #### getter: assemblyNameMap
 
@@ -68,7 +72,10 @@ session.temporaryAssemblies
 RpcManager
 ```
 
-### AssemblyManager - Methods
+</details>
+
+<details>
+<summary>AssemblyManager - Methods</summary>
 
 #### method: getCanonicalAssemblyName
 
@@ -115,7 +122,10 @@ getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string | undef
 isValidRefName: (refName: string, assemblyName: string) => boolean
 ```
 
-### AssemblyManager - Actions
+</details>
+
+<details>
+<summary>AssemblyManager - Actions</summary>
 
 #### action: removeAssembly
 
@@ -142,3 +152,5 @@ reference. snapshots cannot be used
 // type signature
 addAssembly: (configuration: any) => void
 ```
+
+</details>

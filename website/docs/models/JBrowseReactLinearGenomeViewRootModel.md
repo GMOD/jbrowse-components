@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### JBrowseReactLinearGenomeViewRootModel - Properties
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>
 
 #### property: config
 
@@ -79,7 +80,10 @@ internetAccounts: types.array(
       )
 ```
 
-### JBrowseReactLinearGenomeViewRootModel - Volatiles
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Volatiles</summary>
 
 #### volatile: error
 
@@ -132,7 +136,10 @@ string
 version
 ```
 
-### JBrowseReactLinearGenomeViewRootModel - Getters
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Getters</summary>
 
 #### getter: jbrowse
 
@@ -141,7 +148,10 @@ version
 ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>;...
 ```
 
-### JBrowseReactLinearGenomeViewRootModel - Actions
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Actions</summary>
 
 #### action: setSession
 
@@ -177,3 +187,5 @@ addInternetAccount: (acct: any) => void
 // type signature
 findAppropriateInternetAccount: (location: UriLocation) => any
 ```
+
+</details>

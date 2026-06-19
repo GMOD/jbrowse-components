@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### ConnectionManagementSessionMixin - Properties
+<details>
+<summary>ConnectionManagementSessionMixin - Properties</summary>
 
 #### property: connectionInstances
 
@@ -35,7 +36,10 @@ connectionInstances: types.stripDefault(
       )
 ```
 
-### ConnectionManagementSessionMixin - Getters
+</details>
+
+<details>
+<summary>ConnectionManagementSessionMixin - Getters</summary>
 
 #### getter: connections
 
@@ -44,7 +48,10 @@ connectionInstances: types.stripDefault(
 (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
-### ConnectionManagementSessionMixin - Actions
+</details>
+
+<details>
+<summary>ConnectionManagementSessionMixin - Actions</summary>
 
 #### action: makeConnection
 
@@ -87,3 +94,5 @@ addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> 
 // type signature
 clearConnections: () => void
 ```
+
+</details>

@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### BaseViewModel - Properties
+<details>
+<summary>BaseViewModel - Properties</summary>
 
 #### property: id
 
@@ -53,7 +54,10 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 minimized: types.stripDefault(types.boolean, false)
 ```
 
-### BaseViewModel - Volatiles
+</details>
+
+<details>
+<summary>BaseViewModel - Volatiles</summary>
 
 #### volatile: width
 
@@ -64,7 +68,10 @@ number
 width: 800
 ```
 
-### BaseViewModel - Getters
+</details>
+
+<details>
+<summary>BaseViewModel - Getters</summary>
 
 #### getter: menuItems
 
@@ -73,7 +80,10 @@ width: 800
 () => MenuItem[]
 ```
 
-### BaseViewModel - Actions
+</details>
+
+<details>
+<summary>BaseViewModel - Actions</summary>
 
 #### action: setDisplayName
 
@@ -103,3 +113,5 @@ setWidth: (newWidth: number) => void
 // type signature
 setMinimized: (flag: boolean) => void
 ```
+
+</details>

@@ -4,6 +4,7 @@ import slugify from 'slugify'
 
 import {
   codeBlock,
+  collapsible,
   collectTransitive,
   docPage,
   exampleSection,
@@ -163,9 +164,25 @@ function stateModelCategory(name: string, explicit?: string): string {
     : suffixCategory(name, explicit, MODEL_CATEGORIES)
 }
 
-function memberLine(label: string, members: Member[]) {
+// Singular heading kind a plural section label maps to: "Getters" -> "getter",
+// "Properties" -> "property". Shared by the member-section headings and the
+// inherited-member anchor links so the slug used in both never drifts.
+function memberKind(label: string) {
+  return label.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
+}
+
+// One inherited-member line, e.g.
+// "**Getters:** [width](../baseviewmodel#getter-width), ...". Each name links
+// straight to its `#### <kind>: <name>` heading on the model that defines it; the
+// anchor mirrors the github-slugger id Astro derives for that heading
+// (`<kind>-<name lowercased>`), so the link lands on the member — modern browsers
+// auto-expand the enclosing collapsed <details> on fragment navigation.
+function memberLine(modelId: string, label: string, members: Member[]) {
+  const kind = memberKind(label)
   return members.length
-    ? `**${label}:** ${members.map(m => m.name).join(', ')}`
+    ? `**${label}:** ${members
+        .map(m => `[${m.name}](../${modelId}#${kind}-${m.name.toLowerCase()})`)
+        .join(', ')}`
     : ''
 }
 
@@ -174,12 +191,13 @@ function memberLine(label: string, members: Member[]) {
 // to traverse the whole inheritance chain to learn what is available.
 function inheritedSection(ancestors: ModelWithHeader[]) {
   const blocks = ancestors.flatMap(model => {
+    const id = model.header.id
     const lines = [
-      memberLine('Properties', model.properties),
-      memberLine('Volatiles', model.volatiles),
-      memberLine('Getters', model.getters),
-      memberLine('Methods', model.methods),
-      memberLine('Actions', model.actions),
+      memberLine(id, 'Properties', model.properties),
+      memberLine(id, 'Volatiles', model.volatiles),
+      memberLine(id, 'Getters', model.getters),
+      memberLine(id, 'Methods', model.methods),
+      memberLine(id, 'Actions', model.actions),
     ].filter(Boolean)
     return lines.length
       ? [
@@ -260,10 +278,10 @@ function memberSection(
   members: Member[],
   renderBody: (m: Member) => string,
 ) {
-  const kind = label.toLowerCase().replace(/ies$/, 'y').replace(/s$/, '')
+  const kind = memberKind(label)
   return members.length
-    ? section(
-        `### ${modelName} - ${label}`,
+    ? collapsible(
+        `${modelName} - ${label}`,
         ...members.map(m =>
           section(
             `#### ${kind}: ${m.name}`,

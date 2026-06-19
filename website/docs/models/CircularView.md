@@ -43,15 +43,20 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### CircularView - Properties
+<details>
+<summary>CircularView - Properties</summary>
 
 #### property: type
 
@@ -212,7 +217,10 @@ IType<CircularViewInit | undefined, CircularViewInit | undefined, CircularViewIn
 init: types.frozen<CircularViewInit | undefined>()
 ```
 
-### CircularView - Volatiles
+</details>
+
+<details>
+<summary>CircularView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -250,7 +258,10 @@ number
 panY: 0
 ```
 
-### CircularView - Getters
+</details>
+
+<details>
+<summary>CircularView - Getters</summary>
 
 #### getter: width
 
@@ -428,7 +439,10 @@ boolean
 Slice[]
 ```
 
-### CircularView - Methods
+</details>
+
+<details>
+<summary>CircularView - Methods</summary>
 
 #### method: menuItems
 
@@ -439,7 +453,10 @@ return the view menu items
 menuItems: () => MenuItem[]
 ```
 
-### CircularView - Actions
+</details>
+
+<details>
+<summary>CircularView - Actions</summary>
 
 #### action: fitToWindow
 
@@ -599,3 +616,5 @@ resizeHeight: (distance: number) => number
 // type signature
 resizeWidth: (distance: number) => number
 ```
+
+</details>

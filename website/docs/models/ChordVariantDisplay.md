@@ -54,19 +54,36 @@ and docs.
 
 ### Available via [BaseDisplay](../basedisplay)
 
-**Properties:** id, type, rpcDriverName
+**Properties:** [id](../basedisplay#property-id),
+[type](../basedisplay#property-type),
+[rpcDriverName](../basedisplay#property-rpcdrivername)
 
-**Volatiles:** error, statusMessage
+**Volatiles:** [error](../basedisplay#volatile-error),
+[statusMessage](../basedisplay#volatile-statusmessage)
 
-**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
-adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-DisplayMessageComponent, viewMenuActions
+**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
+[parentDisplay](../basedisplay#getter-parentdisplay),
+[RenderingComponent](../basedisplay#getter-renderingcomponent),
+[DisplayBlurb](../basedisplay#getter-displayblurb),
+[adapterConfig](../basedisplay#getter-adapterconfig),
+[isMinimized](../basedisplay#getter-isminimized),
+[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
+[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+**Methods:** [renderProps](../basedisplay#method-renderprops),
+[renderingProps](../basedisplay#method-renderingprops),
+[trackMenuItems](../basedisplay#method-trackmenuitems),
+[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
-**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
+[setError](../basedisplay#action-seterror),
+[setRpcDriverName](../basedisplay#action-setrpcdrivername),
+[reload](../basedisplay#action-reload)
 
-### ChordVariantDisplay - Properties
+<details>
+<summary>ChordVariantDisplay - Properties</summary>
 
 #### property: type
 
@@ -95,7 +112,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### ChordVariantDisplay - Volatiles
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -115,7 +135,10 @@ Record<string, string> | undefined
 refNameMap: undefined as Record<string, string> | undefined
 ```
 
-### ChordVariantDisplay - Getters
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Getters</summary>
 
 #### getter: ready
 
@@ -138,7 +161,10 @@ Record<string, Block>
 string | undefined
 ```
 
-### ChordVariantDisplay - Methods
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -147,7 +173,10 @@ string | undefined
 renderSvg: (_opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<Element | null>
 ```
 
-### ChordVariantDisplay - Actions
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Actions</summary>
 
 #### action: onChordClick
 
@@ -169,3 +198,5 @@ setFeatures: (features: Feature[] | undefined) => void
 // type signature
 setRefNameMap: (refNameMap: Record<string, string>) => void
 ```
+
+</details>

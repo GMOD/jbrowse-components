@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### GridBookmarkWidgetModel - Properties
+<details>
+<summary>GridBookmarkWidgetModel - Properties</summary>
 
 #### property: label
 
@@ -73,7 +74,10 @@ bookmarks: types.optional(types.array(LabeledRegionModel), () =>
       )
 ```
 
-### GridBookmarkWidgetModel - Volatiles
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Volatiles</summary>
 
 #### volatile: selectedBookmarks
 
@@ -106,7 +110,10 @@ string
 gridView: 'bookmarks'
 ```
 
-### GridBookmarkWidgetModel - Getters
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Getters</summary>
 
 #### getter: bookmarkAssemblies
 
@@ -150,7 +157,10 @@ boolean
 string[]
 ```
 
-### GridBookmarkWidgetModel - Actions
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Actions</summary>
 
 #### action: setLabel
 
@@ -263,3 +273,5 @@ clearSelectedBookmarks: () => void
 // type signature
 removeBookmarkObject: (arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void
 ```
+
+</details>

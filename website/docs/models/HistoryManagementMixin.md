@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### HistoryManagementMixin - Properties
+<details>
+<summary>HistoryManagementMixin - Properties</summary>
 
 #### property: history
 
@@ -33,3 +34,5 @@ IOptionalIType<IModelType<{ undoIdx: IType<number | undefined, number, number>; 
 // code
 history: types.optional(TimeTraveller, { targetPath: '../session' })
 ```
+
+</details>

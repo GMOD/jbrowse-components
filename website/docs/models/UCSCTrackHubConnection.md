@@ -28,13 +28,20 @@ and docs.
 
 ### Available via [BaseConnectionModel](../baseconnectionmodel)
 
-**Properties:** tracks, configuration
+**Properties:** [tracks](../baseconnectionmodel#property-tracks),
+[configuration](../baseconnectionmodel#property-configuration)
 
-**Getters:** connectionId, name
+**Getters:** [connectionId](../baseconnectionmodel#getter-connectionid),
+[name](../baseconnectionmodel#getter-name)
 
-**Actions:** connect, addTrackConf, addTrackConfs, setTrackConfs, clear
+**Actions:** [connect](../baseconnectionmodel#action-connect),
+[addTrackConf](../baseconnectionmodel#action-addtrackconf),
+[addTrackConfs](../baseconnectionmodel#action-addtrackconfs),
+[setTrackConfs](../baseconnectionmodel#action-settrackconfs),
+[clear](../baseconnectionmodel#action-clear)
 
-### UCSCTrackHubConnection - Properties
+<details>
+<summary>UCSCTrackHubConnection - Properties</summary>
 
 #### property: configuration
 
@@ -54,7 +61,10 @@ ISimpleType<"UCSCTrackHubConnection">
 type: types.literal('UCSCTrackHubConnection')
 ```
 
-### UCSCTrackHubConnection - Actions
+</details>
+
+<details>
+<summary>UCSCTrackHubConnection - Actions</summary>
 
 #### action: connect
 
@@ -62,3 +72,5 @@ type: types.literal('UCSCTrackHubConnection')
 // type signature
 connect: () => Promise<void>
 ```
+
+</details>

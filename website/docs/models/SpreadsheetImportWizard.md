@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### SpreadsheetImportWizard - Properties
+<details>
+<summary>SpreadsheetImportWizard - Properties</summary>
 
 #### property: fileType
 
@@ -52,7 +53,10 @@ IType<FileLocation | undefined, FileLocation | undefined, FileLocation | undefin
 cachedFileLocation: types.frozen<FileLocation | undefined>()
 ```
 
-### SpreadsheetImportWizard - Volatiles
+</details>
+
+<details>
+<summary>SpreadsheetImportWizard - Volatiles</summary>
 
 #### volatile: fileSource
 
@@ -81,7 +85,10 @@ false
 loading: false
 ```
 
-### SpreadsheetImportWizard - Getters
+</details>
+
+<details>
+<summary>SpreadsheetImportWizard - Getters</summary>
 
 #### getter: isReadyToOpen
 
@@ -97,7 +104,10 @@ boolean
 string | undefined
 ```
 
-### SpreadsheetImportWizard - Methods
+</details>
+
+<details>
+<summary>SpreadsheetImportWizard - Methods</summary>
 
 #### method: tracksForAssembly
 
@@ -106,7 +116,10 @@ string | undefined
 tracksForAssembly: (selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: FileLocation; }[]
 ```
 
-### SpreadsheetImportWizard - Actions
+</details>
+
+<details>
+<summary>SpreadsheetImportWizard - Actions</summary>
 
 #### action: setSelectedAssemblyName
 
@@ -160,3 +173,5 @@ no reach into the parent)
 // type signature
 import: (assemblyName: string) => Promise<ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { ...; }[], { ...; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined>
 ```
+
+</details>

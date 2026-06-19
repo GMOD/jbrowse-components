@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### InternetAccountsMixin - Properties
+<details>
+<summary>InternetAccountsMixin - Properties</summary>
 
 #### property: internetAccounts
 
@@ -34,7 +35,10 @@ internetAccounts: types.array(
       )
 ```
 
-### InternetAccountsMixin - Actions
+</details>
+
+<details>
+<summary>InternetAccountsMixin - Actions</summary>
 
 #### action: initializeInternetAccount
 
@@ -56,3 +60,5 @@ createEphemeralInternetAccount: (internetAccountId: string, initialSnapshot: Rec
 // type signature
 findAppropriateInternetAccount: (location: UriLocation) => any
 ```
+
+</details>

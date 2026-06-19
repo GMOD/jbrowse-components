@@ -44,23 +44,35 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
 ### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
-autorunsInstalled, renderError
+**Volatiles:** [canvasDrawn](../renderlifecyclemixin#volatile-canvasdrawn),
+[currentRenderingBackend](../renderlifecyclemixin#volatile-currentrenderingbackend),
+[renderTick](../renderlifecyclemixin#volatile-rendertick),
+[autorunsInstalled](../renderlifecyclemixin#volatile-autorunsinstalled),
+[renderError](../renderlifecyclemixin#volatile-rendererror)
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-setRenderError, attachRenderingBackend
+**Actions:** [markCanvasDrawn](../renderlifecyclemixin#action-markcanvasdrawn),
+[resetCanvasDrawn](../renderlifecyclemixin#action-resetcanvasdrawn),
+[stopRenderingBackend](../renderlifecyclemixin#action-stoprenderingbackend),
+[renderNow](../renderlifecyclemixin#action-rendernow),
+[setRenderError](../renderlifecyclemixin#action-setrendererror),
+[attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
-### DotplotView - Properties
+<details>
+<summary>DotplotView - Properties</summary>
 
 #### property: id
 
@@ -282,7 +294,10 @@ IOptionalIType<ISimpleType<boolean>, [undefined]>
 highlightsVisible: types.stripDefault(types.boolean, true)
 ```
 
-### DotplotView - Volatiles
+</details>
+
+<details>
+<summary>DotplotView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -358,7 +373,10 @@ false
 awaitingAutoDiagonalize: false
 ```
 
-### DotplotView - Getters
+</details>
+
+<details>
+<summary>DotplotView - Getters</summary>
 
 #### getter: width
 
@@ -541,7 +559,10 @@ uploaded geometry; returns undefined when none do, which gates the render pass.
 unknown
 ```
 
-### DotplotView - Methods
+</details>
+
+<details>
+<summary>DotplotView - Methods</summary>
 
 #### method: renderProps
 
@@ -582,7 +603,10 @@ getVHighlightCoords: (region: { assemblyName?: string | undefined; refName: stri
 menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
 ```
 
-### DotplotView - Actions
+</details>
+
+<details>
+<summary>DotplotView - Actions</summary>
 
 #### action: setImportFormSyntenyTrack
 
@@ -866,3 +890,5 @@ squareView: () => void
 // type signature
 squareViewProportional: () => void
 ```
+
+</details>

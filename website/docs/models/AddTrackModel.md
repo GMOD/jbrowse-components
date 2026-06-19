@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### AddTrackModel - Properties
+<details>
+<summary>AddTrackModel - Properties</summary>
 
 #### property: id
 
@@ -52,7 +53,10 @@ view: types.safeReference(
       )
 ```
 
-### AddTrackModel - Getters
+</details>
+
+<details>
+<summary>AddTrackModel - Getters</summary>
 
 #### getter: trackAdapter
 
@@ -155,7 +159,10 @@ string
 "" | "Warning: JBrowse cannot access files using the ftp protocol" | "Warning: one or more of your files do not provide the protocol e.g.\n          https://, please provide an absolute URL unless you are sure a\n          relative URL is intended." | "Warning: You entered a http:// resources but we cannot access HT...
 ```
 
-### AddTrackModel - Methods
+</details>
+
+<details>
+<summary>AddTrackModel - Methods</summary>
 
 #### method: getTrackConfig
 
@@ -164,7 +171,10 @@ string
 getTrackConfig: (timestamp: number) => { [x: string]: ...; } | undefined
 ```
 
-### AddTrackModel - Actions
+</details>
+
+<details>
+<summary>AddTrackModel - Actions</summary>
 
 #### action: setMixinData
 
@@ -235,3 +245,5 @@ setTrackType: (str: string) => void
 // type signature
 clearData: () => void
 ```
+
+</details>

@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### JBrowseReactCircularGenomeViewRootModel - Properties
+<details>
+<summary>JBrowseReactCircularGenomeViewRootModel - Properties</summary>
 
 #### property: config
 
@@ -61,7 +62,10 @@ internetAccounts: types.array(
       )
 ```
 
-### JBrowseReactCircularGenomeViewRootModel - Volatiles
+</details>
+
+<details>
+<summary>JBrowseReactCircularGenomeViewRootModel - Volatiles</summary>
 
 #### volatile: error
 
@@ -110,7 +114,10 @@ TextSearchManager
 textSearchManager: new TextSearchManager(pluginManager)
 ```
 
-### JBrowseReactCircularGenomeViewRootModel - Getters
+</details>
+
+<details>
+<summary>JBrowseReactCircularGenomeViewRootModel - Getters</summary>
 
 #### getter: jbrowse
 
@@ -126,7 +133,10 @@ ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: Configura
 PluginManager
 ```
 
-### JBrowseReactCircularGenomeViewRootModel - Actions
+</details>
+
+<details>
+<summary>JBrowseReactCircularGenomeViewRootModel - Actions</summary>
 
 #### action: setSession
 
@@ -162,3 +172,5 @@ addInternetAccount: (internetAccount: any) => void
 // type signature
 findAppropriateInternetAccount: (location: UriLocation) => any
 ```
+
+</details>

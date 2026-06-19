@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### HTTPBasicInternetAccount - Properties
+<details>
+<summary>HTTPBasicInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -41,7 +42,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-### HTTPBasicInternetAccount - Getters
+</details>
+
+<details>
+<summary>HTTPBasicInternetAccount - Getters</summary>
 
 #### getter: conf
 
@@ -57,7 +61,10 @@ ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, d
 boolean
 ```
 
-### HTTPBasicInternetAccount - Actions
+</details>
+
+<details>
+<summary>HTTPBasicInternetAccount - Actions</summary>
 
 #### action: getTokenFromUser
 
@@ -72,3 +79,5 @@ getTokenFromUser: (resolve: (token: string) => void, reject: (error: Error) => v
 // type signature
 validateToken: (token: string, location: UriLocation) => Promise<string>
 ```
+
+</details>

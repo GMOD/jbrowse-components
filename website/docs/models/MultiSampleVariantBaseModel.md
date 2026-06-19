@@ -58,80 +58,141 @@ and docs.
 
 ### Available via [BaseDisplay](../basedisplay)
 
-**Properties:** id, type, rpcDriverName
+**Properties:** [id](../basedisplay#property-id),
+[type](../basedisplay#property-type),
+[rpcDriverName](../basedisplay#property-rpcdrivername)
 
-**Volatiles:** error, statusMessage
+**Volatiles:** [error](../basedisplay#volatile-error),
+[statusMessage](../basedisplay#volatile-statusmessage)
 
-**Getters:** parentTrack, parentDisplay, RenderingComponent, DisplayBlurb,
-adapterConfig, isMinimized, effectiveRpcDriverName, effectiveTrackConfig,
-DisplayMessageComponent, viewMenuActions
+**Getters:** [parentTrack](../basedisplay#getter-parenttrack),
+[parentDisplay](../basedisplay#getter-parentdisplay),
+[RenderingComponent](../basedisplay#getter-renderingcomponent),
+[DisplayBlurb](../basedisplay#getter-displayblurb),
+[adapterConfig](../basedisplay#getter-adapterconfig),
+[isMinimized](../basedisplay#getter-isminimized),
+[effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
+[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
+[DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
+[viewMenuActions](../basedisplay#getter-viewmenuactions)
 
-**Methods:** renderProps, renderingProps, trackMenuItems, regionCannotBeRendered
+**Methods:** [renderProps](../basedisplay#method-renderprops),
+[renderingProps](../basedisplay#method-renderingprops),
+[trackMenuItems](../basedisplay#method-trackmenuitems),
+[regionCannotBeRendered](../basedisplay#method-regioncannotberendered)
 
-**Actions:** setStatusMessage, setError, setRpcDriverName, reload
+**Actions:** [setStatusMessage](../basedisplay#action-setstatusmessage),
+[setError](../basedisplay#action-seterror),
+[setRpcDriverName](../basedisplay#action-setrpcdrivername),
+[reload](../basedisplay#action-reload)
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** heightOverride
+**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
 
-**Volatiles:** scrollTop
+**Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
-**Getters:** height
+**Getters:** [height](../trackheightmixin#getter-height)
 
-**Actions:** setScrollTop, setHeight, resizeHeight
+**Actions:** [setScrollTop](../trackheightmixin#action-setscrolltop),
+[setHeight](../trackheightmixin#action-setheight),
+[resizeHeight](../trackheightmixin#action-resizeheight)
 
 ### Available via [MultiRegionDisplayMixin](../multiregiondisplaymixin)
 
-**Volatiles:** loadedRegions
+**Volatiles:**
+[loadedRegions](../multiregiondisplaymixin#volatile-loadedregions)
 
-**Getters:** isReady, viewportWithinLoadedData, svgReady, svgReadyExtraTerminal,
-renderBlocks, displayPhase, loadingOverlayVisible
+**Getters:** [isReady](../multiregiondisplaymixin#getter-isready),
+[viewportWithinLoadedData](../multiregiondisplaymixin#getter-viewportwithinloadeddata),
+[svgReady](../multiregiondisplaymixin#getter-svgready),
+[svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
+[renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
+[displayPhase](../multiregiondisplaymixin#getter-displayphase),
+[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
 
-**Actions:** setLoadedRegion, clearDisplaySpecificData, clearAllRpcData, reload,
-invalidateLoadedRegions, fetchNeeded, isCacheValid, getByteEstimateConfig,
-fetchRegions, afterAttach
+**Actions:**
+[setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
+[clearDisplaySpecificData](../multiregiondisplaymixin#action-cleardisplayspecificdata),
+[clearAllRpcData](../multiregiondisplaymixin#action-clearallrpcdata),
+[reload](../multiregiondisplaymixin#action-reload),
+[invalidateLoadedRegions](../multiregiondisplaymixin#action-invalidateloadedregions),
+[fetchNeeded](../multiregiondisplaymixin#action-fetchneeded),
+[isCacheValid](../multiregiondisplaymixin#action-iscachevalid),
+[getByteEstimateConfig](../multiregiondisplaymixin#action-getbyteestimateconfig),
+[fetchRegions](../multiregiondisplaymixin#action-fetchregions),
+[afterAttach](../multiregiondisplaymixin#action-afterattach)
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
-**Properties:** userByteSizeLimit
+**Properties:**
+[userByteSizeLimit](../regiontoolargemixin#property-userbytesizelimit)
 
-**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
-featureDensityStats
+**Volatiles:**
+[regionTooLargeState](../regiontoolargemixin#volatile-regiontoolargestate),
+[regionTooLargeReasonState](../regiontoolargemixin#volatile-regiontoolargereasonstate),
+[featureDensityStats](../regiontoolargemixin#volatile-featuredensitystats)
 
-**Getters:** regionTooLarge, regionTooLargeReason
+**Getters:** [regionTooLarge](../regiontoolargemixin#getter-regiontoolarge),
+[regionTooLargeReason](../regiontoolargemixin#getter-regiontoolargereason)
 
-**Methods:** regionCannotBeRenderedText
+**Methods:**
+[regionCannotBeRenderedText](../regiontoolargemixin#method-regioncannotberenderedtext)
 
-**Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload, forceLoad
+**Actions:**
+[setRegionTooLarge](../regiontoolargemixin#action-setregiontoolarge),
+[setFeatureDensityStats](../regiontoolargemixin#action-setfeaturedensitystats),
+[setFeatureDensityStatsLimit](../regiontoolargemixin#action-setfeaturedensitystatslimit),
+[reload](../regiontoolargemixin#action-reload),
+[forceLoad](../regiontoolargemixin#action-forceload)
 
 ### Available via [RenderLifecycleMixin](../renderlifecyclemixin)
 
-**Volatiles:** canvasDrawn, currentRenderingBackend, renderTick,
-autorunsInstalled, renderError
+**Volatiles:** [canvasDrawn](../renderlifecyclemixin#volatile-canvasdrawn),
+[currentRenderingBackend](../renderlifecyclemixin#volatile-currentrenderingbackend),
+[renderTick](../renderlifecyclemixin#volatile-rendertick),
+[autorunsInstalled](../renderlifecyclemixin#volatile-autorunsinstalled),
+[renderError](../renderlifecyclemixin#volatile-rendererror)
 
-**Actions:** markCanvasDrawn, resetCanvasDrawn, stopRenderingBackend, renderNow,
-setRenderError, attachRenderingBackend
+**Actions:** [markCanvasDrawn](../renderlifecyclemixin#action-markcanvasdrawn),
+[resetCanvasDrawn](../renderlifecyclemixin#action-resetcanvasdrawn),
+[stopRenderingBackend](../renderlifecyclemixin#action-stoprenderingbackend),
+[renderNow](../renderlifecyclemixin#action-rendernow),
+[setRenderError](../renderlifecyclemixin#action-setrendererror),
+[attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
 ### Available via [FetchMixin](../fetchmixin)
 
-**Volatiles:** activeStopToken, fetchGeneration, error, statusMessage,
-statusProgress, fetchCanceled, regionStatuses
+**Volatiles:** [activeStopToken](../fetchmixin#volatile-activestoptoken),
+[fetchGeneration](../fetchmixin#volatile-fetchgeneration),
+[error](../fetchmixin#volatile-error),
+[statusMessage](../fetchmixin#volatile-statusmessage),
+[statusProgress](../fetchmixin#volatile-statusprogress),
+[fetchCanceled](../fetchmixin#volatile-fetchcanceled),
+[regionStatuses](../fetchmixin#volatile-regionstatuses)
 
-**Getters:** isLoading
+**Getters:** [isLoading](../fetchmixin#getter-isloading)
 
-**Actions:** setError, setStatusMessage, setRegionStatus, cancelFetch,
-cancelFetchByUser, runFetch
+**Actions:** [setError](../fetchmixin#action-seterror),
+[setStatusMessage](../fetchmixin#action-setstatusmessage),
+[setRegionStatus](../fetchmixin#action-setregionstatus),
+[cancelFetch](../fetchmixin#action-cancelfetch),
+[cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
+[runFetch](../fetchmixin#action-runfetch)
 
 ### Available via [ConfigOverrideMixin](../configoverridemixin)
 
-**Properties:** configOverrides
+**Properties:**
+[configOverrides](../configoverridemixin#property-configoverrides)
 
-**Methods:** getOverride, getConfWithOverride
+**Methods:** [getOverride](../configoverridemixin#method-getoverride),
+[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
 
-**Actions:** setOverride, clearOverride
+**Actions:** [setOverride](../configoverridemixin#action-setoverride),
+[clearOverride](../configoverridemixin#action-clearoverride)
 
-### MultiSampleVariantBaseModel - Properties
+<details>
+<summary>MultiSampleVariantBaseModel - Properties</summary>
 
 #### property: type
 
@@ -181,7 +242,10 @@ IOptionalIType<ISimpleType<number>, [undefined]>
 lineZoneHeight: types.stripDefault(types.number, 0)
 ```
 
-### MultiSampleVariantBaseModel - Volatiles
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Volatiles</summary>
 
 #### volatile: showLegend
 
@@ -270,7 +334,10 @@ string | undefined
 pendingClusterTree: undefined as string | undefined
 ```
 
-### MultiSampleVariantBaseModel - Getters
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Getters</summary>
 
 #### getter: featuresVolatile
 
@@ -521,7 +588,10 @@ number
 boolean
 ```
 
-### MultiSampleVariantBaseModel - Methods
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Methods</summary>
 
 #### method: rpcProps
 
@@ -567,7 +637,10 @@ Returns legend items for rendering colors based on current mode
 legendItems: () => LegendItem[]
 ```
 
-### MultiSampleVariantBaseModel - Actions
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Actions</summary>
 
 #### action: setCellData
 
@@ -760,3 +833,5 @@ fetchNeeded: (_needed: { region: Region; displayedRegionIndex: number; }[]) => P
 // type signature
 reload: () => void
 ```
+
+</details>

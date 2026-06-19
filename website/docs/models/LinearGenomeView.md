@@ -59,15 +59,20 @@ and docs.
 
 ### Available via [BaseViewModel](../baseviewmodel)
 
-**Properties:** id, displayName, minimized
+**Properties:** [id](../baseviewmodel#property-id),
+[displayName](../baseviewmodel#property-displayname),
+[minimized](../baseviewmodel#property-minimized)
 
-**Volatiles:** width
+**Volatiles:** [width](../baseviewmodel#volatile-width)
 
-**Getters:** menuItems
+**Getters:** [menuItems](../baseviewmodel#getter-menuitems)
 
-**Actions:** setDisplayName, setWidth, setMinimized
+**Actions:** [setDisplayName](../baseviewmodel#action-setdisplayname),
+[setWidth](../baseviewmodel#action-setwidth),
+[setMinimized](../baseviewmodel#action-setminimized)
 
-### LinearGenomeView - Properties
+<details>
+<summary>LinearGenomeView - Properties</summary>
 
 #### property: id
 
@@ -341,7 +346,10 @@ IType<InitState | undefined, InitState | undefined, InitState | undefined>
 init: types.frozen<InitState | undefined>()
 ```
 
-### LinearGenomeView - Volatiles
+</details>
+
+<details>
+<summary>LinearGenomeView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -472,7 +480,10 @@ VolatileGuide[]
 volatileGuides: [] as VolatileGuide[]
 ```
 
-### LinearGenomeView - Getters
+</details>
+
+<details>
+<summary>LinearGenomeView - Getters</summary>
 
 #### getter: pinnedTracks
 
@@ -961,7 +972,10 @@ string
 { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; } | undefined
 ```
 
-### LinearGenomeView - Methods
+</details>
+
+<details>
+<summary>LinearGenomeView - Methods</summary>
 
 #### method: scalebarDisplayPrefix
 
@@ -1129,7 +1143,10 @@ Core-extendPluggableElement to add their own items
 highlightMenuItems: (_highlight: HighlightType) => MenuItem[]
 ```
 
-### LinearGenomeView - Actions
+</details>
+
+<details>
+<summary>LinearGenomeView - Actions</summary>
 
 #### action: setShowTrackOutlines
 
@@ -1558,3 +1575,5 @@ locstring. Will try to perform `setDisplayedRegions` if changing regions
 // type signature
 navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
 ```
+
+</details>

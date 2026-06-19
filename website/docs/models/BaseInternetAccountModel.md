@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### BaseInternetAccountModel - Properties
+<details>
+<summary>BaseInternetAccountModel - Properties</summary>
 
 #### property: id
 
@@ -50,7 +51,10 @@ ITypeUnion<any, any, any>
 configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```
 
-### BaseInternetAccountModel - Getters
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Getters</summary>
 
 #### getter: name
 
@@ -132,7 +136,10 @@ The key used to store this internetAccount's token in sessionStorage
 string
 ```
 
-### BaseInternetAccountModel - Methods
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Methods</summary>
 
 #### method: handlesLocation
 
@@ -143,7 +150,10 @@ Determine whether this internetAccount provides credentials for a URL
 handlesLocation: (location: UriLocation) => boolean
 ```
 
-### BaseInternetAccountModel - Actions
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Actions</summary>
 
 #### action: getTokenFromUser
 
@@ -236,3 +246,5 @@ Gets a filehandle that uses a fetch that adds auth headers
 // type signature
 openLocation: (location: UriLocation) => RemoteFileWithRangeCache
 ```
+
+</details>

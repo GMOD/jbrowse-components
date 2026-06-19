@@ -30,9 +30,18 @@ and docs.
 
 ### Available via [AppCoreJBrowseModel](../appcorejbrowsemodel)
 
-**Getters:** assemblyNames, rpcManager
+**Getters:** [assemblyNames](../appcorejbrowsemodel#getter-assemblynames),
+[rpcManager](../appcorejbrowsemodel#getter-rpcmanager)
 
-**Actions:** addAssemblyConf, removeAssemblyConf, addTrackConf,
-addConnectionConf, deleteConnectionConf, deleteTrackConf, updateTrackConf,
-addPlugin, removePlugin, setDefaultSessionConf, addInternetAccountConf,
-deleteInternetAccountConf
+**Actions:** [addAssemblyConf](../appcorejbrowsemodel#action-addassemblyconf),
+[removeAssemblyConf](../appcorejbrowsemodel#action-removeassemblyconf),
+[addTrackConf](../appcorejbrowsemodel#action-addtrackconf),
+[addConnectionConf](../appcorejbrowsemodel#action-addconnectionconf),
+[deleteConnectionConf](../appcorejbrowsemodel#action-deleteconnectionconf),
+[deleteTrackConf](../appcorejbrowsemodel#action-deletetrackconf),
+[updateTrackConf](../appcorejbrowsemodel#action-updatetrackconf),
+[addPlugin](../appcorejbrowsemodel#action-addplugin),
+[removePlugin](../appcorejbrowsemodel#action-removeplugin),
+[setDefaultSessionConf](../appcorejbrowsemodel#action-setdefaultsessionconf),
+[addInternetAccountConf](../appcorejbrowsemodel#action-addinternetaccountconf),
+[deleteInternetAccountConf](../appcorejbrowsemodel#action-deleteinternetaccountconf)

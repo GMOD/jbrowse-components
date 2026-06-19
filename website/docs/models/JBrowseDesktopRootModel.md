@@ -32,32 +32,52 @@ and docs.
 
 ### Available via [BaseRootModel](../baserootmodel)
 
-**Properties:** jbrowse, session, sessionPath, assemblyManager
+**Properties:** [jbrowse](../baserootmodel#property-jbrowse),
+[session](../baserootmodel#property-session),
+[sessionPath](../baserootmodel#property-sessionpath),
+[assemblyManager](../baserootmodel#property-assemblymanager)
 
-**Volatiles:** rpcManager, adminMode, error, textSearchManager, pluginManager
+**Volatiles:** [rpcManager](../baserootmodel#volatile-rpcmanager),
+[adminMode](../baserootmodel#volatile-adminmode),
+[error](../baserootmodel#volatile-error),
+[textSearchManager](../baserootmodel#volatile-textsearchmanager),
+[pluginManager](../baserootmodel#volatile-pluginmanager)
 
-**Actions:** setError, setSession, setDefaultSession, setSessionPath,
-renameCurrentSession
+**Actions:** [setError](../baserootmodel#action-seterror),
+[setSession](../baserootmodel#action-setsession),
+[setDefaultSession](../baserootmodel#action-setdefaultsession),
+[setSessionPath](../baserootmodel#action-setsessionpath),
+[renameCurrentSession](../baserootmodel#action-renamecurrentsession)
 
 ### Available via [InternetAccountsMixin](../internetaccountsmixin)
 
-**Properties:** internetAccounts
+**Properties:**
+[internetAccounts](../internetaccountsmixin#property-internetaccounts)
 
-**Actions:** initializeInternetAccount, createEphemeralInternetAccount,
-findAppropriateInternetAccount
+**Actions:**
+[initializeInternetAccount](../internetaccountsmixin#action-initializeinternetaccount),
+[createEphemeralInternetAccount](../internetaccountsmixin#action-createephemeralinternetaccount),
+[findAppropriateInternetAccount](../internetaccountsmixin#action-findappropriateinternetaccount)
 
 ### Available via [HistoryManagementMixin](../historymanagementmixin)
 
-**Properties:** history
+**Properties:** [history](../historymanagementmixin#property-history)
 
 ### Available via [RootAppMenuMixin](../rootappmenumixin)
 
-**Volatiles:** mutableMenuActions
+**Volatiles:**
+[mutableMenuActions](../rootappmenumixin#volatile-mutablemenuactions)
 
-**Actions:** setMenus, appendMenu, insertMenu, appendToMenu, insertInMenu,
-appendToSubMenu, insertInSubMenu
+**Actions:** [setMenus](../rootappmenumixin#action-setmenus),
+[appendMenu](../rootappmenumixin#action-appendmenu),
+[insertMenu](../rootappmenumixin#action-insertmenu),
+[appendToMenu](../rootappmenumixin#action-appendtomenu),
+[insertInMenu](../rootappmenumixin#action-insertinmenu),
+[appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
+[insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-### JBrowseDesktopRootModel - Properties
+<details>
+<summary>JBrowseDesktopRootModel - Properties</summary>
 
 #### property: jobsManager
 
@@ -68,7 +88,10 @@ IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName
 jobsManager: types.optional(JobsManager, {})
 ```
 
-### JBrowseDesktopRootModel - Volatiles
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Volatiles</summary>
 
 #### volatile: version
 
@@ -111,7 +134,10 @@ openNewSessionCallback: async (_path: string) => {
         }
 ```
 
-### JBrowseDesktopRootModel - Methods
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Methods</summary>
 
 #### method: menus
 
@@ -120,7 +146,10 @@ openNewSessionCallback: async (_path: string) => {
 menus: () => Menu[]
 ```
 
-### JBrowseDesktopRootModel - Actions
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Actions</summary>
 
 #### action: setOpenNewSessionCallback
 
@@ -146,3 +175,5 @@ session path).
 // type signature
 setPluginsUpdated: () => Promise<void>
 ```
+
+</details>

@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### HierarchicalTrackSelectorWidget - Properties
+<details>
+<summary>HierarchicalTrackSelectorWidget - Properties</summary>
 
 #### property: id
 
@@ -52,7 +53,10 @@ view: types.safeReference(
       )
 ```
 
-### HierarchicalTrackSelectorWidget - Volatiles
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Volatiles</summary>
 
 #### volatile: favorites
 
@@ -150,7 +154,10 @@ number
 favoritesCounter: 0
 ```
 
-### HierarchicalTrackSelectorWidget - Getters
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Getters</summary>
 
 #### getter: shownTrackIds
 
@@ -284,7 +291,10 @@ Map<string, { active: number; total: number; }>
 boolean
 ```
 
-### HierarchicalTrackSelectorWidget - Methods
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Methods</summary>
 
 #### method: isSelected
 
@@ -321,7 +331,10 @@ getRefSeqTrackConf: (assemblyName: string) => (ModelInstanceTypeProps<Record<str
 itemOffsets: (height: number, scrollTop: number) => { startIndex: number; endIndex: number; totalHeight: number; }
 ```
 
-### HierarchicalTrackSelectorWidget - Actions
+</details>
+
+<details>
+<summary>HierarchicalTrackSelectorWidget - Actions</summary>
 
 #### action: setSortTrackNames
 
@@ -497,3 +510,5 @@ collapseSubCategories: () => void
 // type signature
 collapseTopLevelCategories: () => void
 ```
+
+</details>

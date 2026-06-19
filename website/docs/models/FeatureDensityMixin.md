@@ -37,19 +37,29 @@ and docs.
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
-**Properties:** userByteSizeLimit
+**Properties:**
+[userByteSizeLimit](../regiontoolargemixin#property-userbytesizelimit)
 
-**Volatiles:** regionTooLargeState, regionTooLargeReasonState,
-featureDensityStats
+**Volatiles:**
+[regionTooLargeState](../regiontoolargemixin#volatile-regiontoolargestate),
+[regionTooLargeReasonState](../regiontoolargemixin#volatile-regiontoolargereasonstate),
+[featureDensityStats](../regiontoolargemixin#volatile-featuredensitystats)
 
-**Getters:** regionTooLarge, regionTooLargeReason
+**Getters:** [regionTooLarge](../regiontoolargemixin#getter-regiontoolarge),
+[regionTooLargeReason](../regiontoolargemixin#getter-regiontoolargereason)
 
-**Methods:** regionCannotBeRenderedText
+**Methods:**
+[regionCannotBeRenderedText](../regiontoolargemixin#method-regioncannotberenderedtext)
 
-**Actions:** setRegionTooLarge, setFeatureDensityStats,
-setFeatureDensityStatsLimit, reload, forceLoad
+**Actions:**
+[setRegionTooLarge](../regiontoolargemixin#action-setregiontoolarge),
+[setFeatureDensityStats](../regiontoolargemixin#action-setfeaturedensitystats),
+[setFeatureDensityStatsLimit](../regiontoolargemixin#action-setfeaturedensitystatslimit),
+[reload](../regiontoolargemixin#action-reload),
+[forceLoad](../regiontoolargemixin#action-forceload)
 
-### FeatureDensityMixin - Properties
+<details>
+<summary>FeatureDensityMixin - Properties</summary>
 
 #### property: userBpPerPxLimit
 
@@ -60,7 +70,10 @@ IMaybe<ISimpleType<number>>
 userBpPerPxLimit: types.maybe(types.number)
 ```
 
-### FeatureDensityMixin - Volatiles
+</details>
+
+<details>
+<summary>FeatureDensityMixin - Volatiles</summary>
 
 #### volatile: featureDensityStatsP
 
@@ -82,7 +95,10 @@ number
 currStatsBpPerPx: 0
 ```
 
-### FeatureDensityMixin - Getters
+</details>
+
+<details>
+<summary>FeatureDensityMixin - Getters</summary>
 
 #### getter: currentBytesRequested
 
@@ -154,7 +170,10 @@ string
 boolean
 ```
 
-### FeatureDensityMixin - Methods
+</details>
+
+<details>
+<summary>FeatureDensityMixin - Methods</summary>
 
 #### method: regionCannotBeRendered
 
@@ -163,7 +182,10 @@ boolean
 regionCannotBeRendered: (_region: Region) => Element | null
 ```
 
-### FeatureDensityMixin - Actions
+</details>
+
+<details>
+<summary>FeatureDensityMixin - Actions</summary>
 
 #### action: setCurrStatsBpPerPx
 
@@ -199,3 +221,5 @@ setFeatureDensityStatsP: (arg: Promise<FeatureDensityStats> | undefined) => void
 // type signature
 clearFeatureDensityStats: () => void
 ```
+
+</details>

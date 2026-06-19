@@ -26,7 +26,8 @@ entire fetch state machine (stop-token rotation, staleness tracking, error
 capture, status reporting); consumers see only `runFetch`, `cancelFetch`,
 `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
 
-### FetchMixin - Volatiles
+<details>
+<summary>FetchMixin - Volatiles</summary>
 
 #### volatile: activeStopToken
 
@@ -115,7 +116,10 @@ Map<number, RpcStatus>
 regionStatuses: new Map<number, RpcStatus>()
 ```
 
-### FetchMixin - Getters
+</details>
+
+<details>
+<summary>FetchMixin - Getters</summary>
 
 #### getter: isLoading
 
@@ -126,7 +130,10 @@ true while a fetch is active
 boolean
 ```
 
-### FetchMixin - Actions
+</details>
+
+<details>
+<summary>FetchMixin - Actions</summary>
 
 #### action: setError
 
@@ -190,3 +197,5 @@ others are stored in `error` if not stale.
 // type signature
 runFetch: (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 ```
+
+</details>

@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-### RootAppMenuMixin - Volatiles
+<details>
+<summary>RootAppMenuMixin - Volatiles</summary>
 
 #### volatile: mutableMenuActions
 
@@ -32,7 +33,10 @@ MenuAction[]
 mutableMenuActions: [] as MenuAction[]
 ```
 
-### RootAppMenuMixin - Actions
+</details>
+
+<details>
+<summary>RootAppMenuMixin - Actions</summary>
 
 #### action: setMenus
 
@@ -94,3 +98,5 @@ Insert a menu item into a sub-menu
 // type signature
 insertInSubMenu: (menuPath: string[], menuItem: MenuItem, position: number) => void
 ```
+
+</details>

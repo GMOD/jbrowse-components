@@ -1,5 +1,6 @@
 import {
   categoryLabel,
+  collapsible,
   collectTransitive,
   exampleSection,
   overviewSection,
@@ -82,9 +83,9 @@ describe('removeComments', () => {
 
 describe('stripPropertyName', () => {
   test('drops the slot-name prefix and keeps just the value', () => {
-    expect(stripPropertyName("theme: { type: 'frozen', defaultValue: {} }")).toBe(
-      "{ type: 'frozen', defaultValue: {} }",
-    )
+    expect(
+      stripPropertyName("theme: { type: 'frozen', defaultValue: {} }"),
+    ).toBe("{ type: 'frozen', defaultValue: {} }")
   })
 
   test('ignores colons inside the value (URLs, nested objects, string keys)', () => {
@@ -124,6 +125,13 @@ describe('section / overviewSection', () => {
   test('overviewSection adds a heading only when there is content', () => {
     expect(overviewSection('body')).toBe('## Overview\n\nbody')
     expect(overviewSection('', false)).toBe('')
+  })
+
+  test('collapsible wraps content with blank lines so inner markdown renders', () => {
+    expect(collapsible('Title', '#### a', '#### b')).toBe(
+      '<details>\n<summary>Title</summary>\n\n#### a\n\n#### b\n\n</details>',
+    )
+    expect(collapsible('Title', '', false, undefined)).toBe('')
   })
 })
 
