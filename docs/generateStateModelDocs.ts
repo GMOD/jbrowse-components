@@ -15,6 +15,7 @@ import {
   section,
   stripComposedBlock,
   warnCoverageGap,
+  warnDuplicateHeader,
 } from './util.ts'
 import { writeFormatted } from './format.ts'
 
@@ -92,21 +93,12 @@ export function accumulateModel(
   const member = buildMember(obj)
 
   if (obj.type === 'stateModel') {
-    // A #stateModel const is tagged twice (VariableStatement + its inner
-    // declaration); the statement half can resolve to an empty name when the tag
-    // carries none, so only treat two *non-empty, differently named* #stateModel
-    // in one file as the violation the README warns about (the second silently
-    // wins).
-    if (
-      file.header &&
-      file.header.name &&
-      member.name &&
-      member.name !== file.header.name
-    ) {
-      console.warn(
-        `${file.filename}: multiple #stateModel tags ("${file.header.name}" then "${member.name}"); only the last is documented (one #stateModel per file)`,
-      )
-    }
+    warnDuplicateHeader({
+      filename: file.filename,
+      tag: 'stateModel',
+      existing: file.header?.name,
+      incoming: member.name,
+    })
     file.header = {
       name: member.name,
       docs: stripComposedBlock(member.docs),
@@ -321,20 +313,20 @@ export async function writeModelDocs(byFile: Record<string, StateModel>) {
       renderModel(model, ancestors),
     )
   }
-  warnCoverageGap(
-    withHeader.filter(m => !m.header.examples.length),
-    withHeader.length,
-    'models',
-    'have no #example',
-    m => m.header.name,
-  )
-  warnCoverageGap(
-    withHeader.filter(
+  warnCoverageGap({
+    items: withHeader.filter(m => !m.header.examples.length),
+    total: withHeader.length,
+    kind: 'models',
+    reason: 'have no #example',
+    getName: m => m.header.name,
+  })
+  warnCoverageGap({
+    items: withHeader.filter(
       m => stateModelCategory(m.header.name, m.header.category) === 'General',
     ),
-    withHeader.length,
-    'models',
-    'resolved to the General category (consider adding #category)',
-    m => m.header.name,
-  )
+    total: withHeader.length,
+    kind: 'models',
+    reason: 'resolved to the General category (consider adding #category)',
+    getName: m => m.header.name,
+  })
 }

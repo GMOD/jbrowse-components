@@ -83,8 +83,12 @@ function renderExport({
   )
 }
 
+function sortByName(exports: ApiExport[]) {
+  return [...exports].sort((a, b) => a.name.localeCompare(b.name))
+}
+
 function renderGroup({ group, id, exports }: ApiGroup) {
-  const sorted = [...exports].sort((a, b) => a.name.localeCompare(b.name))
+  const sorted = sortByName(exports)
   return `---
 id: ${id}
 title: ${group}
@@ -122,7 +126,7 @@ const README_START = '<!-- API_DOCS_START -->'
 const README_END = '<!-- API_DOCS_END -->'
 
 function renderReadmeSection(exports: ApiExport[]) {
-  const sorted = [...exports].sort((a, b) => a.name.localeCompare(b.name))
+  const sorted = sortByName(exports)
   return section(
     '## API',
     'Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.',

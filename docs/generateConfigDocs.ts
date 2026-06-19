@@ -14,6 +14,7 @@ import {
   repoRelative,
   section,
   warnCoverageGap,
+  warnDuplicateHeader,
 } from './util.ts'
 import { writeFormatted } from './format.ts'
 
@@ -77,21 +78,12 @@ export function accumulateConfig(
   const item = buildItem(obj)
 
   if (obj.type === 'config') {
-    // A #config const is tagged twice (VariableStatement + its inner
-    // declaration); the statement half can resolve to an empty name when the tag
-    // carries none, so only treat two *non-empty, differently named* #config in
-    // one file as the violation the README warns about (the second silently
-    // wins).
-    if (
-      file.header &&
-      file.header.name &&
-      item.name &&
-      item.name !== file.header.name
-    ) {
-      console.warn(
-        `${file.filename}: multiple #config tags ("${file.header.name}" then "${item.name}"); only the last is documented (one #config per file)`,
-      )
-    }
+    warnDuplicateHeader({
+      filename: file.filename,
+      tag: 'config',
+      existing: file.header?.name,
+      incoming: item.name,
+    })
     file.header = {
       name: item.name,
       docs: item.docs,
@@ -336,20 +328,20 @@ export async function writeConfigDocs(
       renderConfig(cfg, collectBaseConfigs(cfg, index), links),
     )
   }
-  warnCoverageGap(
-    withHeader.filter(c => !c.header.examples.length),
-    withHeader.length,
-    'configs',
-    'have no #example',
-    c => c.header.name,
-  )
-  warnCoverageGap(
-    withHeader.filter(
+  warnCoverageGap({
+    items: withHeader.filter(c => !c.header.examples.length),
+    total: withHeader.length,
+    kind: 'configs',
+    reason: 'have no #example',
+    getName: c => c.header.name,
+  })
+  warnCoverageGap({
+    items: withHeader.filter(
       c => configCategory(c.header.name, c.header.category) === 'General',
     ),
-    withHeader.length,
-    'configs',
-    'resolved to the General category (consider adding #category)',
-    c => c.header.name,
-  )
+    total: withHeader.length,
+    kind: 'configs',
+    reason: 'resolved to the General category (consider adding #category)',
+    getName: c => c.header.name,
+  })
 }

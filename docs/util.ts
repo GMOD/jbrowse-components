@@ -274,13 +274,7 @@ function memberBlockKind(node: ts.Node): MemberBlock | undefined {
 // `() => {...; return {...}}` callback for volatile/views/actions.
 function memberObjectLiteral(node: ts.CallExpression, kind: MemberBlock) {
   if (kind === 'property') {
-    for (let i = node.arguments.length - 1; i >= 0; i--) {
-      const arg = node.arguments[i]!
-      if (ts.isObjectLiteralExpression(arg)) {
-        return arg
-      }
-    }
-    return undefined
+    return node.arguments.findLast(ts.isObjectLiteralExpression)
   }
   const cb = node.arguments.at(-1)
   return cb && (ts.isArrowFunction(cb) || ts.isFunctionExpression(cb))
@@ -842,17 +836,47 @@ ${body}
 `
 }
 
+// Warn when a second, differently-named #config/#stateModel tag turns up in a
+// file that already documents one (only the last is rendered — one per file).
+// A #config/#stateModel const is tagged twice (the VariableStatement and its
+// inner declaration); the statement half resolves to an empty name when the tag
+// carries none, so an empty `incoming` never trips this — only two non-empty,
+// differing names do. Shared by both accumulators.
+export function warnDuplicateHeader({
+  filename,
+  tag,
+  existing,
+  incoming,
+}: {
+  filename: string
+  tag: 'config' | 'stateModel'
+  existing: string | undefined
+  incoming: string
+}) {
+  if (existing && incoming && incoming !== existing) {
+    console.warn(
+      `${filename}: multiple #${tag} tags ("${existing}" then "${incoming}"); only the last is documented (one #${tag} per file)`,
+    )
+  }
+}
+
 // Logs a coverage-gap warning shared by both generators' write*Docs entry
 // points, e.g. "6/102 configs have no #example: Foo, Bar" or
 // "8/95 models resolved to the General category: Foo, Bar". Silent when
 // `items` is empty, so a fully-covered run prints nothing.
-export function warnCoverageGap<T>(
-  items: T[],
-  total: number,
-  kind: string,
-  reason: string,
-  getName: (item: T) => string,
-) {
+export function warnCoverageGap<T>({
+  items,
+  total,
+  kind,
+  reason,
+  getName,
+}: {
+  items: T[]
+  total: number
+  kind: string
+  reason: string
+  getName: (item: T) => string
+}) {
   if (items.length) {
     console.warn(
       `${items.length}/${total} ${kind} ${reason}: ${items.map(getName).join(', ')}`,
@@ -935,7 +959,7 @@ export function stripComposedBlock(docs: string) {
 
 export async function getAllFiles() {
   const { stdout } = await exec2(
-    String.raw`git ls-files | grep "\(plugins\|products\|packages\).*.\(t\|j\)sx\?$"`,
+    String.raw`git ls-files | grep "\(plugins\|products\|packages\).*\.\(t\|j\)sx\?$"`,
   )
   return stdout.split('\n').filter(Boolean)
 }
