@@ -1,10 +1,10 @@
 import { notEmpty, objectHash } from '@jbrowse/core/util'
 import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 
-import { makeLoc, resolve } from './util.ts'
+import { htmlLink, makeLoc } from './util.ts'
 
 import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
-import type { FileLocation } from '@jbrowse/core/util'
+import type { UriLocation } from '@jbrowse/core/util'
 
 export function generateTracks({
   trackDb,
@@ -13,7 +13,7 @@ export function generateTracks({
   baseUrl,
 }: {
   trackDb: TrackDbFile
-  trackDbLoc: FileLocation
+  trackDbLoc: UriLocation
   assemblyName: string
   baseUrl: string
 }) {
@@ -44,17 +44,13 @@ export function generateTracks({
           metadata: {
             ...track.data,
             ...(track.data.html
-              ? {
-                  html: `<a href="${resolve(track.data.html, baseUrl)}">${track.data.html}</a>`,
-                }
+              ? { html: htmlLink(track.data.html, baseUrl) }
               : {}),
           },
           category: [
             track.data.group,
-            ...parentTracks
-              .map(p => p?.data.group)
-              .filter((f): f is string => !!f),
-          ].filter(f => !!f),
+            ...parentTracks.map(p => p?.data.group),
+          ].filter((f): f is string => !!f),
           ...makeTrackConfig({
             track,
             trackDbLoc,
@@ -77,7 +73,7 @@ function makeTrackConfig({
   trackDb,
 }: {
   track: RaStanza
-  trackDbLoc: FileLocation
+  trackDbLoc: UriLocation
   trackDb: TrackDbFile
 }) {
   const { data } = track

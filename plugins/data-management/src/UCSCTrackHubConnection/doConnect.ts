@@ -1,6 +1,6 @@
 import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
 import { getConf } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getEnv, getSession, isUriLocation } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { generateAssembly } from './generateAssembly.ts'
@@ -15,7 +15,6 @@ import {
 
 import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
 import type { RaStanza } from '@gmod/ucsc-hub'
-import type { UriLocation } from '@jbrowse/core/util'
 
 // fetch a single genome's trackDb (resolved against the genomes.txt location)
 // and convert it into jbrowse track configs
@@ -27,7 +26,7 @@ async function loadGenomeTracks({
 }: {
   genome: RaStanza
   genomeName: string
-  genomesBaseUri: string | undefined
+  genomesBaseUri: string
   hubUri: string
 }) {
   const db = genome.data.trackDb
@@ -49,7 +48,10 @@ export async function doConnect(self: ConnectionDoConnectArg) {
   const session = getSession(self)
   const notLoadedAssemblies: string[] = []
   try {
-    const hubFileLocation = getConf(self, 'hubTxtLocation') as UriLocation
+    const hubFileLocation = getConf(self, 'hubTxtLocation')
+    if (!isUriLocation(hubFileLocation)) {
+      throw new Error('UCSC track hubs must be loaded from a URL')
+    }
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
     const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
     const { assemblyManager } = session
@@ -81,11 +83,10 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         throw new Error('genomesFile not found on hub')
       }
 
-      const genomesFile = await fetchGenomesFile(
-        makeLocFromUri(genomeFile, hubUri),
-      )
+      const genomesLoc = makeLocFromUri(genomeFile, hubUri)
+      const genomesFile = await fetchGenomesFile(genomesLoc)
       const assemblyNames = getConf(self, 'assemblyNames')
-      const genomesBaseUri = hubUri ? resolve(genomeFile, hubUri) : undefined
+      const genomesBaseUri = genomesLoc.uri
       const trackCounts: Record<string, number> = {}
       for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
         if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {

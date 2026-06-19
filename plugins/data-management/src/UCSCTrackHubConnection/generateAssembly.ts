@@ -1,6 +1,6 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
 
-import { makeLocFromUri, resolve } from './util.ts'
+import { htmlLink, makeLocFromUri, resolve } from './util.ts'
 
 import type { RaStanza } from '@gmod/ucsc-hub'
 
@@ -10,7 +10,7 @@ import type { RaStanza } from '@gmod/ucsc-hub'
 // against the base uri of the file the stanza came from (hub.txt for
 // single-file, genomes.txt for multi-genome). chromSizes is optional since the
 // TwoBitAdapter derives sizes from the .2bit when absent.
-export function generateAssembly(genome: RaStanza, baseUri?: string) {
+export function generateAssembly(genome: RaStanza, baseUri: string) {
   const { data, name } = genome
   return {
     name: name!,
@@ -19,10 +19,8 @@ export function generateAssembly(genome: RaStanza, baseUri?: string) {
       type: 'ReferenceSequenceTrack',
       metadata: {
         ...data,
-        ...(data.htmlPath && baseUri
-          ? {
-              htmlPath: `<a href="${resolve(data.htmlPath, baseUri)}">${data.htmlPath}</a>`,
-            }
+        ...(data.htmlPath
+          ? { htmlPath: htmlLink(data.htmlPath, baseUri) }
           : {}),
       },
       trackId: `${name}-${createElementId()}`,
@@ -34,7 +32,7 @@ export function generateAssembly(genome: RaStanza, baseUri?: string) {
           : {}),
       },
     },
-    ...(data.chromAliasBb && baseUri
+    ...(data.chromAliasBb
       ? {
           refNameAliases: {
             adapter: {
