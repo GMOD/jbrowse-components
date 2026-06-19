@@ -209,10 +209,10 @@ export default function stateModelFactory(
 
         contextMenuItems() {
           const base = superContextMenuItems()
-          if (base.length === 0 || !self.isGeneLike) {
+          const info = self.contextMenuInfo
+          if (!info || !self.isGeneLike) {
             return base
           }
-          const info = self.contextMenuInfo!
           const {
             item: { featureId },
             displayedRegionIndex,

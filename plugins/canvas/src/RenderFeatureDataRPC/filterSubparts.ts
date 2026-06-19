@@ -1,6 +1,6 @@
 import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
-import { isCDS, isUTR } from './util.ts'
+import { isCDS, isExon, isUTR } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
@@ -20,8 +20,8 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   let codeStart = Number.POSITIVE_INFINITY
   let codeEnd = Number.NEGATIVE_INFINITY
 
-  let haveLeftUTR: boolean | undefined
-  let haveRightUTR: boolean | undefined
+  let haveLeftUTR = false
+  let haveRightUTR = false
 
   for (const sub of subparts) {
     if (isCDS(sub)) {
@@ -46,8 +46,7 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentRefName = parent.get('refName')
 
   for (const sub of subparts) {
-    const type = sub.get('type')
-    if (type === 'exon') {
+    if (isExon(sub)) {
       const exonStart = sub.get('start')
       const exonEnd = sub.get('end')
       if (exonStart < codeStart) {

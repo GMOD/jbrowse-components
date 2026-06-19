@@ -10,6 +10,7 @@ import {
 } from '@mui/material'
 
 import { collapseIntrons, getExonsAndCDS, replaceIntrons } from './util.ts'
+import { isExon } from '../../RenderFeatureDataRPC/util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -30,7 +31,7 @@ function buildRows(transcripts: Feature[]): TranscriptRow[] {
       const start = transcript.get('start')
       const end = transcript.get('end')
       const exonsAndCDS = getExonsAndCDS([transcript])
-      const exonCount = exonsAndCDS.filter(f => f.get('type') === 'exon').length
+      const exonCount = exonsAndCDS.filter(f => isExon(f)).length
       return {
         transcript,
         name:

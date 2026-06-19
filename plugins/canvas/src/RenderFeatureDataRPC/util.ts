@@ -58,6 +58,13 @@ export function isCDS(feature: Feature) {
   return feature.get('type')?.toLowerCase() === 'cds'
 }
 
+// Case-insensitive for the same reason as isCDS: a function that finds CDS
+// bounds case-insensitively but matches exons case-sensitively would derive
+// UTRs from only some exons.
+export function isExon(feature: Feature) {
+  return feature.get('type')?.toLowerCase() === 'exon'
+}
+
 export function getBoxColor({
   feature,
   config,
