@@ -1,0 +1,72 @@
+import { useEffect, useRef, useState } from 'react'
+
+// No IntersectionObserver (jsdom/SSR): start (and stay) visible, the
+// pre-lazy-mount behavior, so tests and non-browser environments are unchanged.
+function intersectionObserverAvailable() {
+  return typeof window !== 'undefined' && 'IntersectionObserver' in window
+}
+
+/**
+ * View-level lazy mounting. A view only mounts its (GPU-heavy) body when it is
+ * within `rootMargin` of the viewport, and collapses to a height-preserving
+ * spacer once scrolled far away. This bounds the number of simultaneously-live
+ * GPU canvases/contexts — the root cause of the "workspaces freeze" with many
+ * stacked views (one WebGL context per display canvas blows past the browser's
+ * per-page cap; see agent-docs/workspaces-freeze-investigation.md).
+ *
+ * `root: null` (viewport) is container-agnostic: it reports on-screen-ness the
+ * same way whether the views scroll inside the classic container or a dockview
+ * panel, so neither container needs to know about windowing.
+ *
+ * Starts hidden so a cold load with N crammed views doesn't mount them all at
+ * once; the observer's first callback mounts only what's near the viewport.
+ */
+export function useViewVisibility(rootMargin: string, estimatedHeight: number) {
+  const ref = useRef<HTMLDivElement>(null)
+  const [visible, setVisible] = useState(() => !intersectionObserverAvailable())
+  const [rememberedHeight, setRememberedHeight] = useState(0)
+
+  // latest `visible` for the ResizeObserver callback, so we only record the
+  // body's real content height while it's mounted (not the spacer height)
+  const visibleRef = useRef(false)
+  visibleRef.current = visible
+
+  useEffect(() => {
+    const node = ref.current
+    if (node && intersectionObserverAvailable()) {
+      const io = new IntersectionObserver(
+        entries => {
+          const entry = entries[entries.length - 1]
+          if (entry) {
+            setVisible(entry.isIntersecting)
+          }
+        },
+        { rootMargin },
+      )
+      io.observe(node)
+
+      const ro =
+        'ResizeObserver' in window
+          ? new ResizeObserver(entries => {
+              const box = entries[entries.length - 1]?.contentBoxSize[0]
+              if (box && visibleRef.current && box.blockSize > 0) {
+                setRememberedHeight(box.blockSize)
+              }
+            })
+          : undefined
+      ro?.observe(node)
+
+      return () => {
+        io.disconnect()
+        ro?.disconnect()
+      }
+    }
+    return undefined
+  }, [rootMargin])
+
+  return {
+    ref,
+    visible,
+    placeholderHeight: rememberedHeight || estimatedHeight,
+  }
+}

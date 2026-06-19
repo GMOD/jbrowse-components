@@ -5,6 +5,18 @@ import { isAlive, isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import { onDeviceLost } from './gpuDevice.ts'
 import { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
 
+// Auto-recovery from WebGL context loss. The browser force-loses the oldest
+// context when too many are live (and may never fire `webglcontextrestored`),
+// which strands the display on the GPU error overlay. We re-init a FEW times on
+// an exponential backoff so it comes back once GPU capacity frees — then stop
+// and leave the manual Retry button, deliberately leaning on manual recovery
+// rather than risk thrashing the page with endless re-inits. The attempt budget
+// resets ONLY on a genuine browser restore or a manual retry (never on a bare
+// re-acquire), so a context that keeps flapping climbs to the cap and stops —
+// it can never spin in an infinite loop.
+const MAX_CONTEXT_RECOVER_ATTEMPTS = 2
+const CONTEXT_RECOVER_BASE_MS = 1000
+
 function nodeAlive(model: unknown) {
   if (isStateTreeNode(model)) {
     return isAlive(model)
@@ -64,6 +76,17 @@ export function useRenderingBackend<
   const [contextVersion, setContextVersion] = useState(0)
   const rendererRef = useRef<RenderingBackendType | null>(null)
 
+  // Set true the moment a `webglcontextlost` fires; gates auto-recovery so only
+  // a genuine context loss triggers it (not a config/render-logic error). The
+  // canvas often unmounts behind the error overlay before recovery runs, so
+  // recovery is driven by `renderError` (always observed) + this sticky flag,
+  // not by the canvas-bound listener.
+  const contextLostRef = useRef(false)
+  const recoverAttemptsRef = useRef(0)
+  const recoverTimerRef = useRef<ReturnType<typeof setTimeout> | undefined>(
+    undefined,
+  )
+
   const canvasRef = useCallback((node: HTMLCanvasElement | null) => {
     setCanvas(node)
   }, [])
@@ -72,8 +95,14 @@ export function useRenderingBackend<
     if (canvas) {
       const onLost = (e: Event) => {
         e.preventDefault()
+        contextLostRef.current = true
       }
       const onRestored = () => {
+        // browser recovered on its own: cancel any pending backoff + reset
+        clearTimeout(recoverTimerRef.current)
+        recoverTimerRef.current = undefined
+        contextLostRef.current = false
+        recoverAttemptsRef.current = 0
         setContextVersion(v => v + 1)
       }
       canvas.addEventListener('webglcontextlost', onLost)
@@ -85,6 +114,42 @@ export function useRenderingBackend<
     }
     return undefined
   }, [canvas])
+
+  // Auto-recover a context-loss-induced error: re-init on bounded backoff. Gated
+  // on `contextLostRef` so non-GPU render errors are never auto-retried, and on
+  // a one-pending-timer guard so it schedules at most one attempt at a time. The
+  // attempt counter is reset only on a clean init / restore / manual retry, so a
+  // context that keeps re-losing climbs to the cap then stops — never spins.
+  // Runs every render (no dep array) on purpose: the guards make it idempotent,
+  // and depending on `model.renderError` is unreliable here (a plain re-render
+  // can miss the value transition). The unmount cleanup is the separate effect
+  // below.
+  useEffect(() => {
+    if (
+      model.renderError &&
+      contextLostRef.current &&
+      recoverTimerRef.current === undefined &&
+      recoverAttemptsRef.current < MAX_CONTEXT_RECOVER_ATTEMPTS
+    ) {
+      const delay = CONTEXT_RECOVER_BASE_MS * 2 ** recoverAttemptsRef.current
+      recoverAttemptsRef.current += 1
+      recoverTimerRef.current = setTimeout(() => {
+        recoverTimerRef.current = undefined
+        if (nodeAlive(model)) {
+          model.setRenderError(undefined)
+        }
+        setContextVersion(v => v + 1)
+      }, delay)
+    }
+  })
+
+  // Clear any pending auto-recovery timer on unmount.
+  useEffect(
+    () => () => {
+      clearTimeout(recoverTimerRef.current)
+    },
+    [],
+  )
 
   useEffect(
     () =>
@@ -115,6 +180,12 @@ export function useRenderingBackend<
           } else {
             backend = r
             rendererRef.current = r
+            // init produced a backend: clear the context-loss scoping flag so a
+            // later non-GPU error isn't mistaken for a context loss. The attempt
+            // counter is deliberately NOT reset here — a context that resolves
+            // then immediately re-loses must keep climbing toward the cap rather
+            // than spin forever; only a real restore / manual retry resets it.
+            contextLostRef.current = false
             if (nodeAlive(model)) {
               model.setRenderError(undefined)
               model.startRenderingBackend(r)
@@ -146,6 +217,11 @@ export function useRenderingBackend<
   })
 
   function retry() {
+    // manual retry = fresh start: cancel pending backoff and reset the budget
+    clearTimeout(recoverTimerRef.current)
+    recoverTimerRef.current = undefined
+    contextLostRef.current = false
+    recoverAttemptsRef.current = 0
     if (nodeAlive(model)) {
       model.setRenderError(undefined)
     }

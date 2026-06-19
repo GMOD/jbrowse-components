@@ -42,6 +42,22 @@ function createMockModel() {
   }
 }
 
+// setRenderError actually mutates renderError so the recovery effect (which
+// reads model.renderError) observes it across rerenders, mirroring the observer
+// re-render that drives it in the app.
+function createReactiveModel() {
+  const model = {
+    startRenderingBackend: jest.fn(),
+    stopRenderingBackend: jest.fn(),
+    renderNow: jest.fn(),
+    renderError: undefined as unknown,
+    setRenderError: jest.fn((e: unknown) => {
+      model.renderError = e
+    }),
+  }
+  return model
+}
+
 describe('useRenderingBackend', () => {
   test('initializes backend and starts it on success', async () => {
     const factory = createMockFactory()
@@ -204,6 +220,72 @@ describe('useRenderingBackend', () => {
     expect(dispose).toHaveBeenCalledTimes(1)
     expect(model.startRenderingBackend).toHaveBeenCalledTimes(2)
   })
+
+  // Real timers (not fake): jest fake timers block React's passive-effect
+  // flush, so the recovery effect — which must run to schedule the backoff —
+  // never fires under them. `rerender()` stands in for the observer re-render
+  // that re-runs the hook when `renderError` changes in the app.
+  const wait = (ms: number) =>
+    act(async () => {
+      await new Promise(r => setTimeout(r, ms))
+    })
+
+  test('auto-recovers from context loss a bounded number of times, then stops', async () => {
+    // factory always rejects = GPU capacity never frees, the worst case
+    const factory = jest.fn().mockRejectedValue(new Error('context lost'))
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result, rerender } = renderHook(() =>
+      useRenderingBackend(factory, model),
+    )
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(1)
+    expect(model.renderError).toBeInstanceOf(Error)
+
+    // a real context-loss event arms auto-recovery
+    act(() => {
+      canvas.dispatchEvent(new Event('webglcontextlost', { cancelable: true }))
+    })
+
+    // Each cycle: rerender (observer would, on the renderError change) →
+    // schedule the next backoff → wait it out → the re-init rejects again.
+    // backoff is 1s then 2s; after the cap no further attempt is scheduled.
+    rerender()
+    await wait(1400)
+    rerender()
+    await wait(2400)
+    rerender()
+    await wait(2400)
+
+    // 1 initial + at most MAX_CONTEXT_RECOVER_ATTEMPTS (2) auto-retries.
+    // Crucially it STOPS — no unbounded thrash.
+    expect(factory).toHaveBeenCalledTimes(3)
+  }, 15000)
+
+  test('does not auto-recover a non-context render error', async () => {
+    const factory = jest.fn().mockRejectedValue(new Error('bad config'))
+    const model = createReactiveModel()
+    const canvas = document.createElement('canvas')
+    const { result, rerender } = renderHook(() =>
+      useRenderingBackend(factory, model),
+    )
+    act(() => {
+      result.current.canvasRef(canvas)
+    })
+    await act(async () => {})
+    expect(factory).toHaveBeenCalledTimes(1)
+
+    // no webglcontextlost dispatched → recovery must stay disarmed
+    rerender()
+    await wait(1400)
+    rerender()
+    await wait(2400)
+
+    expect(factory).toHaveBeenCalledTimes(1)
+  }, 10000)
 
   test('cleans up device lost listener on unmount', () => {
     const cleanup = jest.fn()

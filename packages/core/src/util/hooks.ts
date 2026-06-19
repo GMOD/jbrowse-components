@@ -46,20 +46,6 @@ export function useDebounce<T>(value: T, delay: number) {
   return debouncedValue
 }
 
-// TEMP DEBUG: gated width-set instrumentation to profile dockview re-layout
-// thrash (set window.__WIDTH_DEBUG__ = true). Remove after investigation.
-// function widthDebug(): { count: number } | undefined {
-//   const w = globalThis as typeof globalThis & {
-//     __WIDTH_DEBUG__?: boolean
-//     __widthSet__?: { count: number }
-//   }
-//   if (!w.__WIDTH_DEBUG__) {
-//     return undefined
-//   }
-//   w.__widthSet__ ??= { count: 0 }
-//   return w.__widthSet__
-// }
-
 // used in ViewContainer files to get the width
 export function useWidthSetter(
   view: { setWidth: (arg: number) => void; id?: string },
@@ -73,10 +59,6 @@ export function useWidthSetter(
       // https://stackoverflow.com/a/58701523/2129219
       // avoids ResizeObserver loop error being shown during development
       token = requestAnimationFrame(() => {
-        // const dbg = widthDebug()
-        // if (dbg) {
-        //   dbg.count++
-        // }
         view.setWidth(width)
       })
     }
