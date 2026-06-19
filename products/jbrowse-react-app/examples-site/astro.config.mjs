@@ -6,4 +6,9 @@ export default defineConfig({
   base: '/storybook/app',
   trailingSlash: 'always',
   integrations: [react()],
+  // The RPC worker (imported via Vite's `?worker`) needs ES output because it
+  // code-splits.
+  vite: {
+    worker: { format: 'es' },
+  },
 })

@@ -136,6 +136,13 @@ export const examples: ExampleMeta[] = [
     description: 'Load a plugin at runtime from a URL with loadPlugins.',
     group: 'Plugins',
   },
+  {
+    slug: 'with-web-worker',
+    name: 'WithWebWorker',
+    title: 'Web worker RPC',
+    description: 'Offload data parsing/rendering to a web worker.',
+    group: 'Plugins',
+  },
 
   // --- Real-world demos ---
   {
