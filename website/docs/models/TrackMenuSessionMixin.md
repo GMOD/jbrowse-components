@@ -22,13 +22,12 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackMenuSessionMixin - Methods</summary>
+<summary>TrackMenuSessionMixin - Methods</summary>
 
 #### method: getTrackActionMenuItems
 
-```js
-// type signature
-getTrackActionMenuItems: ({ effectiveConfig, extraTrackActions, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] | undefined; v...
+```ts
+type getTrackActionMenuItems = ({ effectiveConfig, extraTrackActions, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] | undefined; v...
 ```
 
 </details>

@@ -300,121 +300,132 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearBasicDisplay - Getters</summary>
+<summary>LinearBasicDisplay - Getters</summary>
 
 #### getter: subfeatureLabels
 
-```js
-// type
-;'none' | 'overlay' | 'below'
+```ts
+type subfeatureLabels = 'none' | 'overlay' | 'below'
 ```
 
 #### getter: geneGlyphMode
 
-```js
-// type
-;'auto' | 'all' | 'longestCoding'
+```ts
+type geneGlyphMode = 'auto' | 'all' | 'longestCoding'
 ```
 
 #### getter: displayDirectionalChevrons
 
-```js
-// type
-boolean
+```ts
+type displayDirectionalChevrons = boolean
 ```
 
 #### getter: effectiveGeneGlyphMode
 
-```js
-// type
-;'auto' | 'all' | 'longestCoding'
+```ts
+type effectiveGeneGlyphMode = 'auto' | 'all' | 'longestCoding'
 ```
 
 #### getter: isGeneLike
 
-```js
-// type
-boolean
+```ts
+type isGeneLike = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearBasicDisplay - Methods</summary>
+<summary>LinearBasicDisplay - Methods</summary>
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: number | undefined; colorByCDS: boolean; the...
+```ts
+type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: number | undefined; colorByCDS: boolean; the...
 ```
 
 #### method: showSubmenuMenuItems
 
-```js
-// type signature
-showSubmenuMenuItems: () => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: "checkbox"; checked: boolean; onClick: () => void; })[]
+```ts
+type showSubmenuMenuItems = () => (
+  | {
+      label: string
+      subMenu: {
+        label: string
+        type: 'radio'
+        checked: boolean
+        onClick: () => void
+      }[]
+    }
+  | { label: string; type: 'checkbox'; checked: boolean; onClick: () => void }
+)[]
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => (MenuItem | { label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; })[]
+```ts
+type trackMenuItems = () => (
+  | MenuItem
+  | {
+      label: string
+      subMenu: {
+        label: string
+        type: 'radio'
+        checked: boolean
+        onClick: () => void
+      }[]
+    }
+)[]
 ```
 
 #### method: contextMenuItems
 
-```js
-// type signature
-contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```ts
+type contextMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  onClick: () => void
+}[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearBasicDisplay - Actions</summary>
+<summary>LinearBasicDisplay - Actions</summary>
 
 #### action: setSubfeatureLabels
 
-```js
-// type signature
-setSubfeatureLabels: (value: "none" | "overlay" | "below") => void
+```ts
+type setSubfeatureLabels = (value: 'none' | 'overlay' | 'below') => void
 ```
 
 #### action: setGeneGlyphMode
 
-```js
-// type signature
-setGeneGlyphMode: (value: "auto" | "all" | "longestCoding") => void
+```ts
+type setGeneGlyphMode = (value: 'auto' | 'all' | 'longestCoding') => void
 ```
 
 #### action: setDisplayMode
 
-```js
-// type signature
-setDisplayMode: (value: DisplayMode) => void
+```ts
+type setDisplayMode = (value: DisplayMode) => void
 ```
 
 #### action: setCompactness
 
-```js
-// type signature
-setCompactness: (level: "normal" | "compact" | "super-compact") => void
+```ts
+type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
 ```
 
 #### action: setShowOnlyGenes
 
-```js
-// type signature
-setShowOnlyGenes: (value: boolean) => void
+```ts
+type setShowOnlyGenes = (value: boolean) => void
 ```
 
 #### action: setDisplayDirectionalChevrons
 
-```js
-// type signature
-setDisplayDirectionalChevrons: (value: boolean) => void
+```ts
+type setDisplayDirectionalChevrons = (value: boolean) => void
 ```
 
 </details>

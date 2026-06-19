@@ -22,103 +22,92 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Properties</summary>
+<summary>AddTrackModel - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"AddTrackWidget">
+type type = ISimpleType<'AddTrackWidget'>
 // code
 type: types.literal('AddTrackWidget')
 ```
 
 #### property: view
 
-```js
+```ts
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+type view = IMaybe<IReferenceType<IAnyType>>
 // code
-view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      )
+view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Getters</summary>
+<summary>AddTrackModel - Getters</summary>
 
 #### getter: trackAdapter
 
-```js
-// type
-AdapterConfig | undefined
+```ts
+type trackAdapter = AdapterConfig | undefined
 ```
 
 #### getter: trackName
 
-```js
-// type
-string
+```ts
+type trackName = string
 ```
 
 #### getter: uris
 
-```js
-// type
-(string | undefined)[]
+```ts
+type uris = (string | undefined)[]
 ```
 
 #### getter: isFtp
 
-```js
-// type
-boolean
+```ts
+type isFtp = boolean
 ```
 
 #### getter: isRelativeTrackUrl
 
-```js
-// type
-boolean
+```ts
+type isRelativeTrackUrl = boolean
 ```
 
 #### getter: isRelativeIndexUrl
 
-```js
-// type
-boolean
+```ts
+type isRelativeIndexUrl = boolean
 ```
 
 #### getter: isRelativeUrl
 
-```js
-// type
-boolean
+```ts
+type isRelativeUrl = boolean
 ```
 
 #### getter: wrongProtocol
 
-```js
-// type
-boolean
+```ts
+type wrongProtocol = boolean
 ```
 
 #### getter: unsupported
 
-```js
-// type
-boolean
+```ts
+type unsupported = boolean
 ```
 
 #### getter: adapterHintNotConfigurable
@@ -126,124 +115,108 @@ boolean
 Returns true if the user selected an adapter from the dropdown but the extension
 point couldn't build a config for it
 
-```js
-// type
-boolean
+```ts
+type adapterHintNotConfigurable = boolean
 ```
 
 #### getter: assembly
 
-```js
-// type
-any
+```ts
+type assembly = any
 ```
 
 #### getter: trackAdapterType
 
-```js
-// type
-string | undefined
+```ts
+type trackAdapterType = string | undefined
 ```
 
 #### getter: trackType
 
-```js
-// type
-string
+```ts
+type trackType = string
 ```
 
 #### getter: warningMessage
 
-```js
-// type
-"" | "Warning: JBrowse cannot access files using the ftp protocol" | "Warning: one or more of your files do not provide the protocol e.g.\n          https://, please provide an absolute URL unless you are sure a\n          relative URL is intended." | "Warning: You entered a http:// resources but we cannot access HT...
+```ts
+type warningMessage = "" | "Warning: JBrowse cannot access files using the ftp protocol" | "Warning: one or more of your files do not provide the protocol e.g.\n          https://, please provide an absolute URL unless you are sure a\n          relative URL is intended." | "Warning: You entered a http:// resources but we cannot access HT...
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Methods</summary>
+<summary>AddTrackModel - Methods</summary>
 
 #### method: getTrackConfig
 
-```js
-// type signature
-getTrackConfig: (timestamp: number) => { [x: string]: ...; } | undefined
+```ts
+type getTrackConfig = (timestamp: number) => { [x: string]: ...; } | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Actions</summary>
+<summary>AddTrackModel - Actions</summary>
 
 #### action: setMixinData
 
-```js
-// type signature
-setMixinData: (arg: Record<string, unknown>) => void
+```ts
+type setMixinData = (arg: Record<string, unknown>) => void
 ```
 
 #### action: setAdapterHint
 
-```js
-// type signature
-setAdapterHint: (obj: string) => void
+```ts
+type setAdapterHint = (obj: string) => void
 ```
 
 #### action: setTextIndexingConf
 
-```js
-// type signature
-setTextIndexingConf: (conf: IndexingAttr) => void
+```ts
+type setTextIndexingConf = (conf: IndexingAttr) => void
 ```
 
 #### action: setTextIndexTrack
 
-```js
-// type signature
-setTextIndexTrack: (flag: boolean) => void
+```ts
+type setTextIndexTrack = (flag: boolean) => void
 ```
 
 #### action: setTrackData
 
-```js
-// type signature
-setTrackData: (obj: FileLocation) => void
+```ts
+type setTrackData = (obj: FileLocation) => void
 ```
 
 #### action: setIndexTrackData
 
-```js
-// type signature
-setIndexTrackData: (obj: FileLocation) => void
+```ts
+type setIndexTrackData = (obj: FileLocation) => void
 ```
 
 #### action: setAssembly
 
-```js
-// type signature
-setAssembly: (str: string) => void
+```ts
+type setAssembly = (str: string) => void
 ```
 
 #### action: setTrackName
 
-```js
-// type signature
-setTrackName: (str: string) => void
+```ts
+type setTrackName = (str: string) => void
 ```
 
 #### action: setTrackType
 
-```js
-// type signature
-setTrackType: (str: string) => void
+```ts
+type setTrackType = (str: string) => void
 ```
 
 #### action: clearData
 
-```js
-// type signature
-clearData: () => void
+```ts
+type clearData = () => void
 ```
 
 </details>

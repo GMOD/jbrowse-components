@@ -179,49 +179,49 @@ and docs.
 [runFetch](../fetchmixin#action-runfetch)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Properties</summary>
+<summary>LinearReferenceSequenceDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearReferenceSequenceDisplay">
+type type = ISimpleType<'LinearReferenceSequenceDisplay'>
 // code
 type: types.literal('LinearReferenceSequenceDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: showForward
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showForward = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showForward: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showReverse
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showReverse = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showReverse: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showTranslation
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showTranslation = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showTranslation: types.stripDefault(types.boolean, true)
 ```
@@ -229,13 +229,13 @@ showTranslation: types.stripDefault(types.boolean, true)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Volatiles</summary>
+<summary>LinearReferenceSequenceDisplay - Volatiles</summary>
 
 #### volatile: sequenceData
 
-```js
+```ts
 // type signature
-ObservableMap<number, SequenceRegionData>
+type sequenceData = ObservableMap<number, SequenceRegionData>
 // code
 sequenceData: observable.map<number, SequenceRegionData>()
 ```
@@ -243,13 +243,12 @@ sequenceData: observable.map<number, SequenceRegionData>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Getters</summary>
+<summary>LinearReferenceSequenceDisplay - Getters</summary>
 
 #### getter: sequenceType
 
-```js
-// type
-any
+```ts
+type sequenceType = any
 ```
 
 #### getter: colorState
@@ -258,12 +257,8 @@ Theme-derived palette + text colors, derived from the session theme so they're
 always available — including headless SVG export and RPC, where no component
 mounts to seed them.
 
-```js
-// type
-{
-  palette: ColorPalette
-  textColors: TextColors
-}
+```ts
+type colorState = { palette: ColorPalette; textColors: TextColors }
 ```
 
 #### getter: isDna
@@ -271,36 +266,32 @@ mounts to seed them.
 true for DNA tracks; reverse-complement and translation rows are gated on this
 since they are biologically meaningful only for DNA.
 
-```js
-// type
-boolean
+```ts
+type isDna = boolean
 ```
 
 #### getter: effectiveShowReverse
 
 reverse-complement row is meaningful only for DNA
 
-```js
-// type
-boolean
+```ts
+type effectiveShowReverse = boolean
 ```
 
 #### getter: effectiveShowTranslation
 
 translation rows are meaningful only for DNA
 
-```js
-// type
-boolean
+```ts
+type effectiveShowTranslation = boolean
 ```
 
 #### getter: zoomedOut
 
 the view is too zoomed out to show individual bases
 
-```js
-// type
-boolean
+```ts
+type zoomedOut = boolean
 ```
 
 #### getter: svgReadyExtraTerminal
@@ -309,23 +300,20 @@ zoomedOut is a terminal renderable state (static "zoom in" message, no fetch),
 so it makes `svgReady` resolve even though no data loads. See
 MultiRegionDisplayMixin.svgReadyExtraTerminal.
 
-```js
-// type
-boolean
+```ts
+type svgReadyExtraTerminal = boolean
 ```
 
 #### getter: numRows
 
-```js
-// type
-number
+```ts
+type numRows = number
 ```
 
 #### getter: sequenceHeight
 
-```js
-// type
-number
+```ts
+type sequenceHeight = number
 ```
 
 #### getter: computedHeight
@@ -333,9 +321,8 @@ number
 collapses to 50px when zoomed out (no sequence visible) or before the view
 initializes; otherwise sized to fit the visible rows.
 
-```js
-// type
-number
+```ts
+type computedHeight = number
 ```
 
 #### getter: height
@@ -343,25 +330,22 @@ number
 override TrackHeightMixin height: use manual resize if set, otherwise the
 zoom-aware computed height.
 
-```js
-// type
-number
+```ts
+type height = number
 ```
 
 #### getter: rowHeight
 
-```js
-// type
-number
+```ts
+type rowHeight = number
 ```
 
 #### getter: renderState
 
 everything the Canvas2D backend needs to paint a frame
 
-```js
-// type
-DrawSequenceState
+```ts
+type renderState = DrawSequenceState
 ```
 
 #### getter: displayPhase
@@ -371,68 +355,67 @@ base resolution the body shows a "zoom in" message, so suppress the loading
 phase (fall through to `ready`) and let that message show. The inherited
 `loadingOverlayVisible` reads this overridden getter.
 
-```js
-// type
-DisplayPhase
+```ts
+type displayPhase = DisplayPhase
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Methods</summary>
+<summary>LinearReferenceSequenceDisplay - Methods</summary>
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<Element | null>
+```ts
+type renderSvg = (
+  opts?: ExportSvgDisplayOptions | undefined,
+) => Promise<Element | null>
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => { label: string; type: string; checked: boolean; onClick: () => void; }[]
+```ts
+type trackMenuItems = () => {
+  label: string
+  type: string
+  checked: boolean
+  onClick: () => void
+}[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Actions</summary>
+<summary>LinearReferenceSequenceDisplay - Actions</summary>
 
 #### action: setSequenceRegion
 
-```js
-// type signature
-setSequenceRegion: (idx: number, data: SequenceRegionData) => void
+```ts
+type setSequenceRegion = (idx: number, data: SequenceRegionData) => void
 ```
 
 #### action: clearDisplaySpecificData
 
-```js
-// type signature
-clearDisplaySpecificData: () => void
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 #### action: toggleShowForward
 
-```js
-// type signature
-toggleShowForward: () => void
+```ts
+type toggleShowForward = () => void
 ```
 
 #### action: toggleShowReverse
 
-```js
-// type signature
-toggleShowReverse: () => void
+```ts
+type toggleShowReverse = () => void
 ```
 
 #### action: toggleShowTranslation
 
-```js
-// type signature
-toggleShowTranslation: () => void
+```ts
+type toggleShowTranslation = () => void
 ```
 
 #### action: startRenderingBackend
@@ -441,16 +424,16 @@ Called by `useRenderingBackend` (via DisplayChrome) once the canvas backend is
 created. Streams each fetched region into the backend and draws every frame from
 `renderState`.
 
-```js
-// type signature
-startRenderingBackend: (backend: Canvas2DSequenceRenderer) => void
+```ts
+type startRenderingBackend = (backend: Canvas2DSequenceRenderer) => void
 ```
 
 #### action: fetchNeeded
 
-```js
-// type signature
-fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
+```ts
+type fetchNeeded = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+) => Promise<void>
 ```
 
 </details>

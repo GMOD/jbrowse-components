@@ -22,13 +22,13 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Properties</summary>
+<summary>BaseViewModel - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -38,18 +38,18 @@ id: ElementId
 displayName is displayed in the header of the view, or assembly names being used
 if none is specified
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type displayName = IMaybe<ISimpleType<string>>
 // code
 displayName: types.maybe(types.string)
 ```
 
 #### property: minimized
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 minimized: types.stripDefault(types.boolean, false)
 ```
@@ -57,13 +57,13 @@ minimized: types.stripDefault(types.boolean, false)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Volatiles</summary>
+<summary>BaseViewModel - Volatiles</summary>
 
 #### volatile: width
 
-```js
+```ts
 // type signature
-number
+type width = number
 // code
 width: 800
 ```
@@ -71,25 +71,23 @@ width: 800
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Getters</summary>
+<summary>BaseViewModel - Getters</summary>
 
 #### getter: menuItems
 
-```js
-// type
-() => MenuItem[]
+```ts
+type menuItems = () => MenuItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Actions</summary>
+<summary>BaseViewModel - Actions</summary>
 
 #### action: setDisplayName
 
-```js
-// type signature
-setDisplayName: (name: string) => void
+```ts
+type setDisplayName = (name: string) => void
 ```
 
 #### action: setWidth
@@ -102,16 +100,14 @@ should draw to, it may start fetching data for regions it doesn't need to
 setWidth is updated by a ResizeObserver generally, the views often need to know
 how wide they are to properly draw genomic regions
 
-```js
-// type signature
-setWidth: (newWidth: number) => void
+```ts
+type setWidth = (newWidth: number) => void
 ```
 
 #### action: setMinimized
 
-```js
-// type signature
-setMinimized: (flag: boolean) => void
+```ts
+type setMinimized = (flag: boolean) => void
 ```
 
 </details>

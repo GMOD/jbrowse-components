@@ -25,43 +25,53 @@ Session mixin that persists dockview layout state. Each dockview panel can
 contain multiple views stacked vertically.
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DockviewLayoutMixin - Properties</summary>
+<summary>DockviewLayoutMixin - Properties</summary>
 
 #### property: dockviewLayout
 
 Serialized dockview layout state
 
-```js
+```ts
 // type signature
-IOptionalIType<IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>, [undefined]>
+type dockviewLayout = IOptionalIType<
+  IMaybe<IType<SerializedDockview, SerializedDockview, SerializedDockview>>,
+  [undefined]
+>
 // code
 dockviewLayout: types.stripDefault(
-        types.maybe(types.frozen<SerializedDockview>()),
-        undefined,
-      )
+  types.maybe(types.frozen<SerializedDockview>()),
+  undefined,
+)
 ```
 
 #### property: panelViewAssignments
 
 Maps panel IDs to arrays of view IDs (for stacking views within a panel)
 
-```js
+```ts
 // type signature
-IOptionalIType<IMapType<IArrayType<ISimpleType<string>>>, [undefined]>
+type panelViewAssignments = IOptionalIType<
+  IMapType<IArrayType<ISimpleType<string>>>,
+  [undefined]
+>
 // code
 panelViewAssignments: types.stripDefault(
-        types.map(types.array(types.string)),
-        {},
-      )
+  types.map(types.array(types.string)),
+  {},
+)
 ```
 
 #### property: init
 
 Initial layout configuration from URL params. Processed once then cleared.
 
-```js
+```ts
 // type signature
-IType<DockviewLayoutNode | undefined, DockviewLayoutNode | undefined, DockviewLayoutNode | undefined>
+type init = IType<
+  DockviewLayoutNode | undefined,
+  DockviewLayoutNode | undefined,
+  DockviewLayoutNode | undefined
+>
 // code
 init: types.frozen<DockviewLayoutNode | undefined>()
 ```
@@ -71,9 +81,13 @@ init: types.frozen<DockviewLayoutNode | undefined>()
 A view move queued before workspaces were enabled. Consumed once when the
 dockview container mounts, then cleared.
 
-```js
+```ts
 // type signature
-IType<PendingMove | undefined, PendingMove | undefined, PendingMove | undefined>
+type pendingMove = IType<
+  PendingMove | undefined,
+  PendingMove | undefined,
+  PendingMove | undefined
+>
 // code
 pendingMove: types.frozen<PendingMove | undefined>()
 ```
@@ -82,9 +96,9 @@ pendingMove: types.frozen<PendingMove | undefined>()
 
 The currently active panel ID in dockview
 
-```js
+```ts
 // type signature
-IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
+type activePanelId = IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
 // code
 activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 ```
@@ -92,15 +106,19 @@ activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DockviewLayoutMixin - Getters</summary>
+<summary>DockviewLayoutMixin - Getters</summary>
 
 #### getter: getViewIdsForPanel
 
 Get view IDs for a specific panel
 
-```js
-// type
-(panelId: string) => never[] | (IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>)
+```ts
+type getViewIdsForPanel = (
+  panelId: string,
+) =>
+  | never[]
+  | (IMSTArray<ISimpleType<string>> &
+      IStateTreeNode<IArrayType<ISimpleType<string>>>)
 ```
 
 #### getter: getPanelContainingView
@@ -108,113 +126,110 @@ Get view IDs for a specific panel
 Find the panel containing a view, returning the panel ID, that panel's view-ID
 list, and the view's index within it (or undefined if unassigned)
 
-```js
-// type
-(viewId: string) => { panelId: string; viewIds: IMSTArray<ISimpleType<string>> & IStateTreeNode<IArrayType<ISimpleType<string>>>; idx: number; } | undefined
+```ts
+type getPanelContainingView = (
+  viewId: string,
+) =>
+  | {
+      panelId: string
+      viewIds: IMSTArray<ISimpleType<string>> &
+        IStateTreeNode<IArrayType<ISimpleType<string>>>
+      idx: number
+    }
+  | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DockviewLayoutMixin - Actions</summary>
+<summary>DockviewLayoutMixin - Actions</summary>
 
 #### action: setDockviewLayout
 
 Save the current dockview layout
 
-```js
-// type signature
-setDockviewLayout: (layout: SerializedDockview | undefined) => void
+```ts
+type setDockviewLayout = (layout: SerializedDockview | undefined) => void
 ```
 
 #### action: setActivePanelId
 
 Set the active panel ID
 
-```js
-// type signature
-setActivePanelId: (panelId: string | undefined) => void
+```ts
+type setActivePanelId = (panelId: string | undefined) => void
 ```
 
 #### action: setInit
 
 Set the initial layout configuration (from URL params)
 
-```js
-// type signature
-setInit: (init: DockviewLayoutNode | undefined) => void
+```ts
+type setInit = (init: DockviewLayoutNode | undefined) => void
 ```
 
 #### action: setPendingMove
 
 Queue a view move to be applied when the dockview container mounts
 
-```js
-// type signature
-setPendingMove: (pendingMove: PendingMove | undefined) => void
+```ts
+type setPendingMove = (pendingMove: PendingMove | undefined) => void
 ```
 
 #### action: assignViewToPanel
 
 Assign a view to a panel (adds to the panel's view stack)
 
-```js
-// type signature
-assignViewToPanel: (panelId: string, viewId: string) => void
+```ts
+type assignViewToPanel = (panelId: string, viewId: string) => void
 ```
 
 #### action: removeViewFromPanel
 
 Remove a view from its panel
 
-```js
-// type signature
-removeViewFromPanel: (viewId: string) => void
+```ts
+type removeViewFromPanel = (viewId: string) => void
 ```
 
 #### action: removePanel
 
 Remove a panel and all its view assignments
 
-```js
-// type signature
-removePanel: (panelId: string) => void
+```ts
+type removePanel = (panelId: string) => void
 ```
 
 #### action: moveViewUpInPanel
 
 Move a view up within its panel's view stack
 
-```js
-// type signature
-moveViewUpInPanel: (viewId: string) => void
+```ts
+type moveViewUpInPanel = (viewId: string) => void
 ```
 
 #### action: moveViewDownInPanel
 
 Move a view down within its panel's view stack
 
-```js
-// type signature
-moveViewDownInPanel: (viewId: string) => void
+```ts
+type moveViewDownInPanel = (viewId: string) => void
 ```
 
 #### action: moveViewToTopInPanel
 
 Move a view to the top of its panel's view stack
 
-```js
-// type signature
-moveViewToTopInPanel: (viewId: string) => void
+```ts
+type moveViewToTopInPanel = (viewId: string) => void
 ```
 
 #### action: moveViewToBottomInPanel
 
 Move a view to the bottom of its panel's view stack
 
-```js
-// type signature
-moveViewToBottomInPanel: (viewId: string) => void
+```ts
+type moveViewToBottomInPanel = (viewId: string) => void
 ```
 
 </details>

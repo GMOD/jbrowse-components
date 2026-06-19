@@ -22,22 +22,22 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseConnectionModel - Properties</summary>
+<summary>BaseConnectionModel - Properties</summary>
 
 #### property: tracks
 
-```js
+```ts
 // type signature
-IArrayType<IAnyModelType>
+type tracks = IArrayType<IAnyModelType>
 // code
 tracks: types.array(pluginManager.pluggableConfigSchemaType('track'))
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -45,63 +45,56 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseConnectionModel - Getters</summary>
+<summary>BaseConnectionModel - Getters</summary>
 
 #### getter: connectionId
 
 the connection's unique id, resolved from its configuration (the config is the
 source of truth; connection names are not guaranteed unique)
 
-```js
-// type
-string
+```ts
+type connectionId = string
 ```
 
 #### getter: name
 
-```js
-// type
-string
+```ts
+type name = string
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseConnectionModel - Actions</summary>
+<summary>BaseConnectionModel - Actions</summary>
 
 #### action: connect
 
-```js
-// type signature
-connect: (_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```ts
+type connect = (_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
 ```
 
 #### action: addTrackConf
 
-```js
-// type signature
-addTrackConf: (trackConf: TrackConf) => any
+```ts
+type addTrackConf = (trackConf: TrackConf) => any
 ```
 
 #### action: addTrackConfs
 
-```js
-// type signature
-addTrackConfs: (trackConfs: TrackConf[]) => void
+```ts
+type addTrackConfs = (trackConfs: TrackConf[]) => void
 ```
 
 #### action: setTrackConfs
 
-```js
-// type signature
-setTrackConfs: (trackConfs: TrackConf[]) => void
+```ts
+type setTrackConfs = (trackConfs: TrackConf[]) => void
 ```
 
 #### action: clear
 
-```js
-// type signature
-clear: () => void
+```ts
+type clear = () => void
 ```
 
 </details>

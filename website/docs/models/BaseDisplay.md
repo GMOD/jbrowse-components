@@ -22,31 +22,31 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Properties</summary>
+<summary>BaseDisplay - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type type = ISimpleType<string>
 // code
 type: types.string
 ```
 
 #### property: rpcDriverName
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type rpcDriverName = IMaybe<ISimpleType<string>>
 // code
 rpcDriverName: types.maybe(types.string)
 ```
@@ -54,22 +54,22 @@ rpcDriverName: types.maybe(types.string)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Volatiles</summary>
+<summary>BaseDisplay - Volatiles</summary>
 
 #### volatile: error
 
-```js
+```ts
 // type signature
-unknown
+type error = unknown
 // code
 error: undefined as unknown
 ```
 
 #### volatile: statusMessage
 
-```js
+```ts
 // type signature
-string | undefined
+type statusMessage = string | undefined
 // code
 statusMessage: undefined as string | undefined
 ```
@@ -77,13 +77,12 @@ statusMessage: undefined as string | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Getters</summary>
+<summary>BaseDisplay - Getters</summary>
 
 #### getter: parentTrack
 
-```js
-// type
-AbstractTrackModel
+```ts
+type parentTrack = AbstractTrackModel
 ```
 
 #### getter: parentDisplay
@@ -91,30 +90,28 @@ AbstractTrackModel
 Returns the parent display if this display is nested within another display
 (e.g., PileupDisplay inside LinearAlignmentsDisplay)
 
-```js
-// type
-{ type?: string | undefined; effectiveRpcDriverName?: string | undefined; } | undefined
+```ts
+type parentDisplay =
+  | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
+  | undefined
 ```
 
 #### getter: RenderingComponent
 
-```js
-// type
-FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
+```ts
+type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
 ```
 
 #### getter: DisplayBlurb
 
-```js
-// type
-FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```ts
+type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
 ```
 
 #### getter: adapterConfig
 
-```js
-// type
-any
+```ts
+type adapterConfig = any
 ```
 
 #### getter: isMinimized
@@ -122,9 +119,8 @@ any
 Returns true if the parent track is minimized. Used to skip expensive operations
 like autoruns when track is not visible.
 
-```js
-// type
-boolean
+```ts
+type isMinimized = boolean
 ```
 
 #### getter: effectiveRpcDriverName
@@ -135,16 +131,14 @@ Returns the effective RPC driver name with hierarchical fallback:
 2. Parent display's effectiveRpcDriverName (for nested displays)
 3. Track config's rpcDriverName
 
-```js
-// type
-any
+```ts
+type effectiveRpcDriverName = any
 ```
 
 #### getter: effectiveTrackConfig
 
-```js
-// type
-Record<string, unknown>
+```ts
+type effectiveTrackConfig = Record<string, unknown>
 ```
 
 #### getter: DisplayMessageComponent
@@ -152,34 +146,28 @@ Record<string, unknown>
 if a display-level message should be displayed instead, make this return a react
 component
 
-```js
-// type
-FC<any> | undefined
+```ts
+type DisplayMessageComponent = FC<any> | undefined
 ```
 
 #### getter: viewMenuActions
 
-```js
-// type
-MenuItem[]
+```ts
+type viewMenuActions = MenuItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Methods</summary>
+<summary>BaseDisplay - Methods</summary>
 
 #### method: renderProps
 
 the react props that are passed to the Renderer when data is rendered in this
 display. these are serialized and sent to the worker for server-side rendering
 
-```js
-// type signature
-renderProps: () => {
-  notReady: boolean
-  rpcDriverName: any
-}
+```ts
+type renderProps = () => { notReady: boolean; rpcDriverName: any }
 ```
 
 #### method: renderingProps
@@ -188,58 +176,51 @@ props passed to the renderer's React "Rendering" component. these are
 client-side only and never sent to the worker. includes displayModel and
 callbacks
 
-```js
-// type signature
-renderingProps: () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
+```ts
+type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => MenuItem[]
+```ts
+type trackMenuItems = () => MenuItem[]
 ```
 
 #### method: regionCannotBeRendered
 
-```js
-// type signature
-regionCannotBeRendered: () => null
+```ts
+type regionCannotBeRendered = () => null
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Actions</summary>
+<summary>BaseDisplay - Actions</summary>
 
 #### action: setStatusMessage
 
-```js
-// type signature
-setStatusMessage: (arg?: RpcStatus | undefined) => void
+```ts
+type setStatusMessage = (arg?: RpcStatus | undefined) => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (error?: unknown) => void
+```ts
+type setError = (error?: unknown) => void
 ```
 
 #### action: setRpcDriverName
 
-```js
-// type signature
-setRpcDriverName: (rpcDriverName: string) => void
+```ts
+type setRpcDriverName = (rpcDriverName: string) => void
 ```
 
 #### action: reload
 
 base display reload does nothing, see specialized displays for details
 
-```js
-// type signature
-reload: () => void
+```ts
+type reload = () => void
 ```
 
 </details>

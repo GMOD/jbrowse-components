@@ -177,22 +177,22 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Properties</summary>
+<summary>LinearHicDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearHicDisplay">
+type type = ISimpleType<'LinearHicDisplay'>
 // code
 type: types.literal('LinearHicDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -205,18 +205,18 @@ the _offset_ (not an absolute binsize) keeps the user's intent valid across zoom
 levels — a saved session with bias=-1 still means "one step finer than auto"
 when reopened at a different scale.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type resolutionBias = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 resolutionBias: types.stripDefault(types.number, 0)
 ```
 
 #### property: useLogScale
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type useLogScale = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 useLogScale: types.stripDefault(types.boolean, false)
 ```
@@ -227,65 +227,62 @@ Color saturation point: false → maxScore/20 (linear) or maxScore (log), matche
 legacy behavior. true → 95th percentile of counts; lower saturation point so
 off-diagonal contacts read more strongly.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type useColorPercentile = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 useColorPercentile: types.stripDefault(types.boolean, false)
 ```
 
 #### property: activeNormalization
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type activeNormalization = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 activeNormalization: types.stripDefault(types.string, 'KR')
 ```
 
 #### property: mode
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<HicRenderMode>, [undefined]>
+type mode = IOptionalIType<ISimpleType<HicRenderMode>, [undefined]>
 // code
 mode: types.stripDefault(
-          types.enumeration<HicRenderMode>('HicRenderMode', [
-            'triangular',
-            'adjust',
-          ]),
-          'triangular',
-        )
+  types.enumeration<HicRenderMode>('HicRenderMode', ['triangular', 'adjust']),
+  'triangular',
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Volatiles</summary>
+<summary>LinearHicDisplay - Volatiles</summary>
 
 #### volatile: rpcData
 
-```js
+```ts
 // type signature
-HicDataResult | null
+type rpcData = HicDataResult | null
 // code
 rpcData: null as HicDataResult | null
 ```
 
 #### volatile: availableNormalizations
 
-```js
+```ts
 // type signature
-string[] | undefined
+type availableNormalizations = string[] | undefined
 // code
 availableNormalizations: undefined as string[] | undefined
 ```
 
 #### volatile: availableResolutions
 
-```js
+```ts
 // type signature
-number[] | undefined
+type availableResolutions = number[] | undefined
 // code
 availableResolutions: undefined as number[] | undefined
 ```
@@ -294,9 +291,9 @@ availableResolutions: undefined as number[] | undefined
 
 Bumped by `reload()` to retrigger the fetch autorun.
 
-```js
+```ts
 // type signature
-number
+type reloadCounter = number
 // code
 reloadCounter: 0
 ```
@@ -304,27 +301,24 @@ reloadCounter: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Getters</summary>
+<summary>LinearHicDisplay - Getters</summary>
 
 #### getter: colorScheme
 
-```js
-// type
-;'fall' | 'juicebox' | 'viridis' | undefined
+```ts
+type colorScheme = 'fall' | 'juicebox' | 'viridis' | undefined
 ```
 
 #### getter: showLegend
 
-```js
-// type
-boolean | undefined
+```ts
+type showLegend = boolean | undefined
 ```
 
 #### getter: colorMaxScore
 
-```js
-// type
-number
+```ts
+type colorMaxScore = number
 ```
 
 #### getter: autoResolutionIdx
@@ -336,16 +330,14 @@ when nothing qualifies (very zoomed in).
 The factor 2 floors at ~0.5 bins/screen-pixel, which keeps bins visible without
 going sub-pixel; users who want finer can step the resolution bias down.
 
-```js
-// type
-number
+```ts
+type autoResolutionIdx = number
 ```
 
 #### getter: yScalar
 
-```js
-// type
-number
+```ts
+type yScalar = number
 ```
 
 #### getter: effectiveResolutionIdx
@@ -353,18 +345,16 @@ number
 Index actually used after applying `resolutionBias`, clamped to the valid range
 so a stale bias from a different zoom level can't index out of bounds.
 
-```js
-// type
-number
+```ts
+type effectiveResolutionIdx = number
 ```
 
 #### getter: effectiveResolution
 
 The actual binsize to fetch at, after auto-pick + bias.
 
-```js
-// type
-number | undefined
+```ts
+type effectiveResolution = number | undefined
 ```
 
 #### getter: renderTransform
@@ -372,24 +362,19 @@ number | undefined
 Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test,
 and SVG export. See `computeRenderTransform` for the math.
 
-```js
-// type
-RenderTransform
+```ts
+type renderTransform = RenderTransform
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Methods</summary>
+<summary>LinearHicDisplay - Methods</summary>
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => {
-  resolution: number | undefined
-  normalization: string
-}
+```ts
+type rpcProps = () => { resolution: number | undefined; normalization: string }
 ```
 
 #### method: nextResolution
@@ -399,9 +384,8 @@ step exists in that direction. Consumed by both the UI (button disabled state)
 and `stepResolution` itself, so there's one source of truth for "what's the next
 resolution".
 
-```js
-// type signature
-nextResolution: (dir: 1 | -1) => number | undefined
+```ts
+type nextResolution = (dir: 1 | -1) => number | undefined
 ```
 
 #### method: hitTest
@@ -411,9 +395,8 @@ returns the contact bin under the cursor, or undefined. The forward transform
 lives in `renderTransform`; this is its inverse so hit-testing always matches
 what was drawn.
 
-```js
-// type signature
-hitTest: (mouseX: number, mouseY: number) => HicContactItem | undefined
+```ts
+type hitTest = (mouseX: number, mouseY: number) => HicContactItem | undefined
 ```
 
 #### method: renderState
@@ -421,9 +404,19 @@ hitTest: (mouseX: number, mouseY: number) => HicContactItem | undefined
 Computed per-frame render state for the GPU backend. Read by the autorun
 lifecycle on every change to any tracked observable.
 
-```js
-// type signature
-renderState: { binWidth: number; yScalar: number; canvasWidth: number; canvasHeight: number; colorMaxScore: number; useLogScale: boolean; viewScale: number; viewOffsetX: number; } | undefined
+```ts
+type renderState =
+  | {
+      binWidth: number
+      yScalar: number
+      canvasWidth: number
+      canvasHeight: number
+      colorMaxScore: number
+      useLogScale: boolean
+      viewScale: number
+      viewOffsetX: number
+    }
+  | undefined
 ```
 
 #### method: svgLegendWidth
@@ -431,35 +424,31 @@ renderState: { binWidth: number; yScalar: number; canvasWidth: number; canvasHei
 Width of the SVG legend (consumed by SVGLinearGenomeView). Returns 0 when no
 legend will be drawn so the export framework can omit space.
 
-```js
-// type signature
-svgLegendWidth: () => number
+```ts
+type svgLegendWidth = () => number
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => MenuItem[]
+```ts
+type trackMenuItems = () => MenuItem[]
 ```
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
+```ts
+type renderSvg = (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Actions</summary>
+<summary>LinearHicDisplay - Actions</summary>
 
 #### action: setRpcData
 
-```js
-// type signature
-setRpcData: (data: HicDataResult | null) => void
+```ts
+type setRpcData = (data: HicDataResult | null) => void
 ```
 
 #### action: startRenderingBackend
@@ -467,65 +456,56 @@ setRpcData: (data: HicDataResult | null) => void
 Called by the React hook (`useRenderingBackend`) when the HAL resolves. Wires
 the backend into the mixin-owned autorun pair via `attachRenderingBackend`.
 
-```js
-// type signature
-startRenderingBackend: (backend: HicRenderingBackend) => void
+```ts
+type startRenderingBackend = (backend: HicRenderingBackend) => void
 ```
 
 #### action: setUseLogScale
 
-```js
-// type signature
-setUseLogScale: (f: boolean) => void
+```ts
+type setUseLogScale = (f: boolean) => void
 ```
 
 #### action: setUseColorPercentile
 
-```js
-// type signature
-setUseColorPercentile: (f: boolean) => void
+```ts
+type setUseColorPercentile = (f: boolean) => void
 ```
 
 #### action: setColorScheme
 
-```js
-// type signature
-setColorScheme: (f?: "fall" | "juicebox" | "viridis" | undefined) => void
+```ts
+type setColorScheme = (f?: 'fall' | 'juicebox' | 'viridis' | undefined) => void
 ```
 
 #### action: setActiveNormalization
 
-```js
-// type signature
-setActiveNormalization: (f: string) => void
+```ts
+type setActiveNormalization = (f: string) => void
 ```
 
 #### action: setAvailableNormalizations
 
-```js
-// type signature
-setAvailableNormalizations: (f: string[]) => void
+```ts
+type setAvailableNormalizations = (f: string[]) => void
 ```
 
 #### action: setMode
 
-```js
-// type signature
-setMode: (arg: HicRenderMode) => void
+```ts
+type setMode = (arg: HicRenderMode) => void
 ```
 
 #### action: setShowLegend
 
-```js
-// type signature
-setShowLegend: (arg: boolean) => void
+```ts
+type setShowLegend = (arg: boolean) => void
 ```
 
 #### action: setAvailableResolutions
 
-```js
-// type signature
-setAvailableResolutions: (f: number[]) => void
+```ts
+type setAvailableResolutions = (f: number[]) => void
 ```
 
 #### action: stepResolution
@@ -535,18 +515,16 @@ against the _current_ effective index so repeated clicks at a clamped boundary
 don't accumulate stale bias the user can't see — the bias always reflects what's
 actually on screen.
 
-```js
-// type signature
-stepResolution: (dir: 1 | -1) => void
+```ts
+type stepResolution = (dir: 1 | -1) => void
 ```
 
 #### action: resetResolutionBias
 
 Reset to pure auto-mode: bias 0, binsize follows zoom directly.
 
-```js
-// type signature
-resetResolutionBias: () => void
+```ts
+type resetResolutionBias = () => void
 ```
 
 #### action: performHicFetch
@@ -554,16 +532,14 @@ resetResolutionBias: () => void
 Re-fetches contact matrix for the current viewport. Both the autorun (in
 `afterAttach`) and `reload()` invoke this directly.
 
-```js
-// type signature
-performHicFetch: () => Promise<void>
+```ts
+type performHicFetch = () => Promise<void>
 ```
 
 #### action: reload
 
-```js
-// type signature
-reload: () => void
+```ts
+type reload = () => void
 ```
 
 </details>

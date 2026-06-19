@@ -22,13 +22,13 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Properties</summary>
+<summary>Assembly - Properties</summary>
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+type configuration = IMaybe<IReferenceType<IAnyType>>
 // code
 configuration: types.safeReference(assemblyConfigType)
 ```
@@ -36,51 +36,51 @@ configuration: types.safeReference(assemblyConfigType)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Volatiles</summary>
+<summary>Assembly - Volatiles</summary>
 
 #### volatile: error
 
-```js
+```ts
 // type signature
-unknown
+type error = unknown
 // code
 error
 ```
 
 #### volatile: loadingP
 
-```js
+```ts
 // type signature
-Promise<void> | undefined
+type loadingP = Promise<void> | undefined
 // code
 loadingP: undefined as Promise<void> | undefined
 ```
 
 #### volatile: adapterLoads
 
-```js
+```ts
 // type signature
-QuickLRU<string, Promise<RefNameAliases>>
+type adapterLoads = QuickLRU<string, Promise<RefNameAliases>>
 // code
 adapterLoads: new QuickLRU<string, Promise<RefNameAliases>>({
-          maxSize: 1000,
-        })
+  maxSize: 1000,
+})
 ```
 
 #### volatile: volatileRegions
 
-```js
+```ts
 // type signature
-BasicRegion[] | undefined
+type volatileRegions = BasicRegion[] | undefined
 // code
 volatileRegions: undefined as BasicRegion[] | undefined
 ```
 
 #### volatile: refNameAliases
 
-```js
+```ts
 // type signature
-RefNameAliases | undefined
+type refNameAliases = RefNameAliases | undefined
 // code
 refNameAliases: undefined as RefNameAliases | undefined
 ```
@@ -90,20 +90,18 @@ refNameAliases: undefined as RefNameAliases | undefined
 Maps canonical refName -> sequence adapter refName (in FASTA). These may differ
 when refNameAliases with override:true remap names.
 
-```js
+```ts
 // type signature
-Record<string, string> | undefined
+type canonicalToSeqAdapterRefNames = Record<string, string> | undefined
 // code
-canonicalToSeqAdapterRefNames: undefined as
-          | Record<string, string>
-          | undefined
+canonicalToSeqAdapterRefNames: undefined as Record<string, string> | undefined
 ```
 
 #### volatile: cytobands
 
-```js
+```ts
 // type signature
-Feature[] | undefined
+type cytobands = Feature[] | undefined
 // code
 cytobands: undefined as Feature[] | undefined
 ```
@@ -113,9 +111,9 @@ cytobands: undefined as Feature[] | undefined
 Precomputed in loadPre to avoid expensive synchronous computation when MobX
 triggers the autorun after setLoaded
 
-```js
+```ts
 // type signature
-RefNameAliases | undefined
+type lowerCaseRefNameAliases = RefNameAliases | undefined
 // code
 lowerCaseRefNameAliases: undefined as RefNameAliases | undefined
 ```
@@ -125,9 +123,9 @@ lowerCaseRefNameAliases: undefined as RefNameAliases | undefined
 Precomputed in loadPre to avoid expensive synchronous computation when MobX
 triggers the autorun after setLoaded
 
-```js
+```ts
 // type signature
-Set<string> | undefined
+type allRefNamesWithLowerCase = Set<string> | undefined
 // code
 allRefNamesWithLowerCase: undefined as Set<string> | undefined
 ```
@@ -135,55 +133,48 @@ allRefNamesWithLowerCase: undefined as Set<string> | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Getters</summary>
+<summary>Assembly - Getters</summary>
 
 #### getter: name
 
-```js
-// type
-string
+```ts
+type name = string
 ```
 
 #### getter: aliases
 
-```js
-// type
-string[]
+```ts
+type aliases = string[]
 ```
 
 #### getter: displayName
 
-```js
-// type
-string
+```ts
+type displayName = string
 ```
 
 #### getter: refNameColors
 
-```js
-// type
-string[]
+```ts
+type refNameColors = string[]
 ```
 
 #### getter: allAliases
 
-```js
-// type
-string[]
+```ts
+type allAliases = string[]
 ```
 
 #### getter: initialized
 
-```js
-// type
-boolean
+```ts
+type initialized = boolean
 ```
 
 #### getter: regions
 
-```js
-// type
-BasicRegion[] | undefined
+```ts
+type regions = BasicRegion[] | undefined
 ```
 
 #### getter: allRefNames
@@ -192,23 +183,20 @@ note: lowerCaseRefNameAliases not included here: this allows the list of
 refnames to be just the "normal casing", but things like getCanonicalRefName can
 resolve a lower-case name if needed
 
-```js
-// type
-string[] | undefined
+```ts
+type allRefNames = string[] | undefined
 ```
 
 #### getter: rpcManager
 
-```js
-// type
-RpcManager
+```ts
+type rpcManager = RpcManager
 ```
 
 #### getter: refNames
 
-```js
-// type
-string[] | undefined
+```ts
+type refNames = string[] | undefined
 ```
 
 #### getter: refNameToIndex
@@ -217,28 +205,25 @@ memoized refName -> first region index, so getRefNameColor is O(1) instead of an
 O(n) indexOf per call (matters for assemblies with many contigs rendered in
 overview scalebars/rulers)
 
-```js
-// type
-Map<string, number> | undefined
+```ts
+type refNameToIndex = Map<string, number> | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Methods</summary>
+<summary>Assembly - Methods</summary>
 
 #### method: getConf
 
-```js
-// type signature
-getConf: (arg: string) => any
+```ts
+type getConf = (arg: string) => any
 ```
 
 #### method: hasName
 
-```js
-// type signature
-hasName: (name: string) => boolean
+```ts
+type hasName = (name: string) => boolean
 ```
 
 #### method: getCanonicalRefName
@@ -248,16 +233,14 @@ name may differ from what's in the FASTA file when refNameAliases with
 override:true are configured. To get the name that matches the FASTA file, use
 getSeqAdapterRefName().
 
-```js
-// type signature
-getCanonicalRefName: (refName: string) => string
+```ts
+type getCanonicalRefName = (refName: string) => string
 ```
 
 #### method: getRefNameColor
 
-```js
-// type signature
-getRefNameColor: (refName: string) => string | undefined
+```ts
+type getRefNameColor = (refName: string) => string | undefined
 ```
 
 #### method: getSeqAdapterRefName
@@ -265,9 +248,8 @@ getRefNameColor: (refName: string) => string | undefined
 Given a canonical refName, returns the refName used by the sequence adapter
 (what's in the FASTA file). Falls back to the input if no mapping exists.
 
-```js
-// type signature
-getSeqAdapterRefName: (canonicalRefName: string) => string
+```ts
+type getSeqAdapterRefName = (canonicalRefName: string) => string
 ```
 
 #### method: getCanonicalRefName2
@@ -275,16 +257,14 @@ getSeqAdapterRefName: (canonicalRefName: string) => string
 Returns canonical refName, falling back to input if not found. See
 getCanonicalRefName() for details.
 
-```js
-// type signature
-getCanonicalRefName2: (refName: string) => string
+```ts
+type getCanonicalRefName2 = (refName: string) => string
 ```
 
 #### method: isValidRefName
 
-```js
-// type signature
-isValidRefName: (refName: string) => boolean
+```ts
+type isValidRefName = (refName: string) => boolean
 ```
 
 #### method: getRefNameMapForAdapter
@@ -292,15 +272,17 @@ isValidRefName: (refName: string) => boolean
 get Map of `canonical-name -> adapter-specific-name`, memoized per adapter
 config so concurrent callers share one load
 
-```js
-// type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, options: BaseOptions) => Promise<RefNameAliases>
+```ts
+type getRefNameMapForAdapter = (
+  adapterConf: AdapterConf,
+  options: BaseOptions,
+) => Promise<RefNameAliases>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Actions</summary>
+<summary>Assembly - Actions</summary>
 
 #### action: setLoaded
 
@@ -308,37 +290,39 @@ Applies all load-time state in a single transaction so dependent autoruns fire
 once, with the precomputed lowercase/name lookups already in place by the time
 refNameAliases becomes observable.
 
-```js
-// type signature
-setLoaded: ({ regions, refNameAliases, lowerCaseRefNameAliases, allRefNamesWithLowerCase, canonicalToSeqAdapterRefNames, cytobands, }: RefNameMaps & { regions: Region[]; cytobands: Feature[]; }) => void
+```ts
+type setLoaded = ({
+  regions,
+  refNameAliases,
+  lowerCaseRefNameAliases,
+  allRefNamesWithLowerCase,
+  canonicalToSeqAdapterRefNames,
+  cytobands,
+}: RefNameMaps & { regions: Region[]; cytobands: Feature[] }) => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (e: unknown) => void
+```ts
+type setError = (e: unknown) => void
 ```
 
 #### action: setLoadingP
 
-```js
-// type signature
-setLoadingP: (p?: Promise<void> | undefined) => void
+```ts
+type setLoadingP = (p?: Promise<void> | undefined) => void
 ```
 
 #### action: loadPre
 
-```js
-// type signature
-loadPre: () => Promise<void>
+```ts
+type loadPre = () => Promise<void>
 ```
 
 #### action: load
 
-```js
-// type signature
-load: () => Promise<void>
+```ts
+type load = () => Promise<void>
 ```
 
 </details>

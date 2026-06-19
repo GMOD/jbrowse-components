@@ -41,58 +41,61 @@ and docs.
 [setMinimized](../baseviewmodel#action-setminimized)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Properties</summary>
+<summary>SpreadsheetView - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"SpreadsheetView">
+type type = ISimpleType<'SpreadsheetView'>
 // code
 type: types.literal('SpreadsheetView')
 ```
 
 #### property: offsetPx
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type offsetPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 offsetPx: types.stripDefault(types.number, 0)
 ```
 
 #### property: height
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: hideVerticalResizeHandle
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideVerticalResizeHandle = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
 // code
 hideVerticalResizeHandle: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideFilterControls
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideFilterControls = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 hideFilterControls: types.stripDefault(types.boolean, false)
 ```
 
 #### property: importWizard
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+type importWizard = IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 importWizard: types.optional(ImportWizardModel, () =>
             ImportWizardModel.create(),
@@ -101,9 +104,9 @@ importWizard: types.optional(ImportWizardModel, () =>
 
 #### property: spreadsheet
 
-```js
+```ts
 // type signature
-IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+type spreadsheet = IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 spreadsheet: types.maybe(Spreadsheet())
 ```
@@ -112,9 +115,13 @@ spreadsheet: types.maybe(Spreadsheet())
 
 used for initializing the view from a session snapshot
 
-```js
+```ts
 // type signature
-IType<SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined, SpreadsheetViewInit | undefined>
+type init = IType<
+  SpreadsheetViewInit | undefined,
+  SpreadsheetViewInit | undefined,
+  SpreadsheetViewInit | undefined
+>
 // code
 init: types.frozen<SpreadsheetViewInit | undefined>()
 ```
@@ -122,13 +129,13 @@ init: types.frozen<SpreadsheetViewInit | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Volatiles</summary>
+<summary>SpreadsheetView - Volatiles</summary>
 
 #### volatile: width
 
-```js
+```ts
 // type signature
-number
+type width = number
 // code
 width: 400
 ```
@@ -136,74 +143,70 @@ width: 400
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Getters</summary>
+<summary>SpreadsheetView - Getters</summary>
 
 #### getter: assembly
 
-```js
-// type
-any
+```ts
+type assembly = any
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Methods</summary>
+<summary>SpreadsheetView - Methods</summary>
 
 #### method: menuItems
 
-```js
-// type signature
-menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```ts
+type menuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  onClick: () => void
+}[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Actions</summary>
+<summary>SpreadsheetView - Actions</summary>
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => number
+```ts
+type setWidth = (newWidth: number) => number
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (newHeight: number) => number
+```ts
+type setHeight = (newHeight: number) => number
 ```
 
 #### action: resizeHeight
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 #### action: resizeWidth
 
-```js
-// type signature
-resizeWidth: (distance: number) => number
+```ts
+type resizeWidth = (distance: number) => number
 ```
 
 #### action: displaySpreadsheet
 
 load a new spreadsheet and set our mode to display it
 
-```js
-// type signature
-displaySpreadsheet: (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined) => void
+```ts
+type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined) => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: SpreadsheetViewInit | undefined) => void
+```ts
+type setInit = (init?: SpreadsheetViewInit | undefined) => void
 ```
 
 #### action: loadSpreadsheet
@@ -213,9 +216,8 @@ result. Every entry point (declarative init, cached reload, the import form's
 Open button) routes through here so the view stays the sole owner of
 displaySpreadsheet
 
-```js
-// type signature
-loadSpreadsheet: (assemblyName: string) => Promise<void>
+```ts
+type loadSpreadsheet = (assemblyName: string) => Promise<void>
 ```
 
 #### action: applyInit
@@ -223,9 +225,8 @@ loadSpreadsheet: (assemblyName: string) => Promise<void>
 apply a declarative init (from addView / sv-inspector): point the import wizard
 at the file and load it
 
-```js
-// type signature
-applyInit: (init: SpreadsheetViewInit) => Promise<void>
+```ts
+type applyInit = (init: SpreadsheetViewInit) => Promise<void>
 ```
 
 </details>

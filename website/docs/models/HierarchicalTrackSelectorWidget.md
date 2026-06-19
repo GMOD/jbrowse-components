@@ -22,134 +22,132 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Properties</summary>
+<summary>HierarchicalTrackSelectorWidget - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"HierarchicalTrackSelectorWidget">
+type type = ISimpleType<'HierarchicalTrackSelectorWidget'>
 // code
 type: types.literal('HierarchicalTrackSelectorWidget')
 ```
 
 #### property: view
 
-```js
+```ts
 // type signature
-IMaybe<IReferenceType<IAnyType>>
+type view = IMaybe<IReferenceType<IAnyType>>
 // code
-view: types.safeReference(
-        pluginManager.pluggableMstType('view', 'stateModel'),
-      )
+view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Volatiles</summary>
+<summary>HierarchicalTrackSelectorWidget - Volatiles</summary>
 
 #### volatile: favorites
 
-```js
+```ts
 // type signature
-string[]
+type favorites = string[]
 // code
 favorites: localStorageGetJSON<string[]>(favoritesK(), [])
 ```
 
 #### volatile: recentlyUsed
 
-```js
+```ts
 // type signature
-string[]
+type recentlyUsed = string[]
 // code
 recentlyUsed: [] as string[]
 ```
 
 #### volatile: selection
 
-```js
+```ts
 // type signature
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+type selection = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 // code
 selection: [] as AnyConfigurationModel[]
 ```
 
 #### volatile: sortTrackNames
 
-```js
+```ts
 // type signature
-boolean | undefined
+type sortTrackNames = boolean | undefined
 // code
 sortTrackNames: localStorageGetJSON<boolean | undefined>(
-        sortTrackNamesK,
-        undefined,
-      )
+  sortTrackNamesK,
+  undefined,
+)
 ```
 
 #### volatile: sortCategories
 
-```js
+```ts
 // type signature
-boolean | undefined
+type sortCategories = boolean | undefined
 // code
 sortCategories: localStorageGetJSON<boolean | undefined>(
-        sortCategoriesK,
-        undefined,
-      )
+  sortCategoriesK,
+  undefined,
+)
 ```
 
 #### volatile: collapsed
 
-```js
+```ts
 // type signature
-ObservableMap<string, boolean>
+type collapsed = ObservableMap<string, boolean>
 // code
 collapsed: observable.map<string, boolean>()
 ```
 
 #### volatile: folderCategories
 
-```js
+```ts
 // type signature
-ObservableSet<string>
+type folderCategories = ObservableSet<string>
 // code
 folderCategories: observable.set<string>()
 ```
 
 #### volatile: filterText
 
-```js
+```ts
 // type signature
-string
+type filterText = string
 // code
 filterText: ''
 ```
 
 #### volatile: recentlyUsedCounter
 
-```js
+```ts
 // type signature
-number
+type recentlyUsedCounter = number
 // code
 recentlyUsedCounter: 0
 ```
 
 #### volatile: favoritesCounter
 
-```js
+```ts
 // type signature
-number
+type favoritesCounter = number
 // code
 favoritesCounter: 0
 ```
@@ -157,358 +155,324 @@ favoritesCounter: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Getters</summary>
+<summary>HierarchicalTrackSelectorWidget - Getters</summary>
 
 #### getter: shownTrackIds
 
-```js
-// type
-Set<string>
+```ts
+type shownTrackIds = Set<string>
 ```
 
 #### getter: selectionSet
 
-```js
-// type
-Set<ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```ts
+type selectionSet = Set<ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 #### getter: favoritesSet
 
-```js
-// type
-Set<string>
+```ts
+type favoritesSet = Set<string>
 ```
 
 #### getter: recentlyUsedSet
 
-```js
-// type
-Set<string>
+```ts
+type recentlyUsedSet = Set<string>
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: activeSortTrackNames
 
-```js
-// type
-any
+```ts
+type activeSortTrackNames = any
 ```
 
 #### getter: activeSortCategories
 
-```js
-// type
-any
+```ts
+type activeSortCategories = any
 ```
 
 #### getter: configAndSessionTrackConfigurations
 
 filter out tracks that don't match the current assembly/display types
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type configAndSessionTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTrackConfigurations
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type allTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTrackConfigurationMap
 
-```js
-// type
-Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```ts
+type allTrackConfigurationMap = Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 #### getter: favoriteTracks
 
 filters out tracks that are not in the favorites group
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type favoriteTracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: recentlyUsedTracks
 
 filters out tracks that are not in the recently used group
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type recentlyUsedTracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: allTracks
 
-```js
-// type
-{ group: any; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
+```ts
+type allTracks = { group: any; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
 ```
 
 #### getter: hierarchy
 
-```js
-// type
-{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; nestingLevel: number; children: TreeNode[]; }[]; }
+```ts
+type hierarchy = {
+  name: string
+  id: string
+  type: 'category'
+  children: {
+    name: any
+    id: any
+    type: 'category'
+    nestingLevel: number
+    children: TreeNode[]
+  }[]
+}
 ```
 
 #### getter: flattenedItems
 
-```js
-// type
-TreeNode[]
+```ts
+type flattenedItems = TreeNode[]
 ```
 
 #### getter: flattenedItemOffsets
 
-```js
-// type
-{ cumulativeHeight: number; offsets: number[]; }
+```ts
+type flattenedItemOffsets = { cumulativeHeight: number; offsets: number[] }
 ```
 
 #### getter: folderCategoryStats
 
-```js
-// type
-Map<string, { active: number; total: number; }>
+```ts
+type folderCategoryStats = Map<string, { active: number; total: number }>
 ```
 
 #### getter: hasAnySubcategories
 
-```js
-// type
-boolean
+```ts
+type hasAnySubcategories = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Methods</summary>
+<summary>HierarchicalTrackSelectorWidget - Methods</summary>
 
 #### method: isSelected
 
-```js
-// type signature
-isSelected: (track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
+```ts
+type isSelected = (track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
 
 #### method: isFavorite
 
-```js
-// type signature
-isFavorite: (trackId: string) => boolean
+```ts
+type isFavorite = (trackId: string) => boolean
 ```
 
 #### method: isRecentlyUsed
 
-```js
-// type signature
-isRecentlyUsed: (trackId: string) => boolean
+```ts
+type isRecentlyUsed = (trackId: string) => boolean
 ```
 
 #### method: getRefSeqTrackConf
 
-```js
-// type signature
-getRefSeqTrackConf: (assemblyName: string) => (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | undefined
+```ts
+type getRefSeqTrackConf = (assemblyName: string) => (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | undefined
 ```
 
 #### method: itemOffsets
 
-```js
-// type signature
-itemOffsets: (height: number, scrollTop: number) => { startIndex: number; endIndex: number; totalHeight: number; }
+```ts
+type itemOffsets = (
+  height: number,
+  scrollTop: number,
+) => { startIndex: number; endIndex: number; totalHeight: number }
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Actions</summary>
+<summary>HierarchicalTrackSelectorWidget - Actions</summary>
 
 #### action: setSortTrackNames
 
-```js
-// type signature
-setSortTrackNames: (val: boolean) => void
+```ts
+type setSortTrackNames = (val: boolean) => void
 ```
 
 #### action: setSortCategories
 
-```js
-// type signature
-setSortCategories: (val: boolean) => void
+```ts
+type setSortCategories = (val: boolean) => void
 ```
 
 #### action: setSelection
 
-```js
-// type signature
-setSelection: (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
+```ts
+type setSelection = (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: addToSelection
 
-```js
-// type signature
-addToSelection: (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
+```ts
+type addToSelection = (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: removeFromSelection
 
-```js
-// type signature
-removeFromSelection: (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
+```ts
+type removeFromSelection = (elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void
 ```
 
 #### action: clearSelection
 
-```js
-// type signature
-clearSelection: () => void
+```ts
+type clearSelection = () => void
 ```
 
 #### action: addToFavorites
 
-```js
-// type signature
-addToFavorites: (trackId: string) => void
+```ts
+type addToFavorites = (trackId: string) => void
 ```
 
 #### action: removeFromFavorites
 
-```js
-// type signature
-removeFromFavorites: (trackId: string) => void
+```ts
+type removeFromFavorites = (trackId: string) => void
 ```
 
 #### action: clearFavorites
 
-```js
-// type signature
-clearFavorites: () => void
+```ts
+type clearFavorites = () => void
 ```
 
 #### action: setRecentlyUsedCounter
 
-```js
-// type signature
-setRecentlyUsedCounter: (val: number) => void
+```ts
+type setRecentlyUsedCounter = (val: number) => void
 ```
 
 #### action: setRecentlyUsed
 
-```js
-// type signature
-setRecentlyUsed: (str: string[]) => void
+```ts
+type setRecentlyUsed = (str: string[]) => void
 ```
 
 #### action: setFavoritesCounter
 
-```js
-// type signature
-setFavoritesCounter: (val: number) => void
+```ts
+type setFavoritesCounter = (val: number) => void
 ```
 
 #### action: addToRecentlyUsed
 
-```js
-// type signature
-addToRecentlyUsed: (id: string) => void
+```ts
+type addToRecentlyUsed = (id: string) => void
 ```
 
 #### action: clearRecentlyUsed
 
-```js
-// type signature
-clearRecentlyUsed: () => void
+```ts
+type clearRecentlyUsed = () => void
 ```
 
 #### action: setView
 
-```js
-// type signature
-setView: (view: unknown) => void
+```ts
+type setView = (view: unknown) => void
 ```
 
 #### action: toggleCategory
 
-```js
-// type signature
-toggleCategory: (pathName: string) => void
+```ts
+type toggleCategory = (pathName: string) => void
 ```
 
 #### action: setCategoryCollapsed
 
-```js
-// type signature
-setCategoryCollapsed: (pathName: string, status: boolean) => void
+```ts
+type setCategoryCollapsed = (pathName: string, status: boolean) => void
 ```
 
 #### action: expandAllCategories
 
-```js
-// type signature
-expandAllCategories: () => void
+```ts
+type expandAllCategories = () => void
 ```
 
 #### action: setCollapsedCategories
 
-```js
-// type signature
-setCollapsedCategories: (str: [string, boolean][]) => void
+```ts
+type setCollapsedCategories = (str: [string, boolean][]) => void
 ```
 
 #### action: toggleFolderCategory
 
-```js
-// type signature
-toggleFolderCategory: (categoryId: string) => void
+```ts
+type toggleFolderCategory = (categoryId: string) => void
 ```
 
 #### action: setFolderCategories
 
-```js
-// type signature
-setFolderCategories: (ids: string[]) => void
+```ts
+type setFolderCategories = (ids: string[]) => void
 ```
 
 #### action: clearFilterText
 
-```js
-// type signature
-clearFilterText: () => void
+```ts
+type clearFilterText = () => void
 ```
 
 #### action: setFilterText
 
-```js
-// type signature
-setFilterText: (newText: string) => void
+```ts
+type setFilterText = (newText: string) => void
 ```
 
 #### action: collapseSubCategories
 
-```js
-// type signature
-collapseSubCategories: () => void
+```ts
+type collapseSubCategories = () => void
 ```
 
 #### action: collapseTopLevelCategories
 
-```js
-// type signature
-collapseTopLevelCategories: () => void
+```ts
+type collapseTopLevelCategories = () => void
 ```
 
 </details>

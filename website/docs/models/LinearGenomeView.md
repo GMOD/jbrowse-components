@@ -72,13 +72,13 @@ and docs.
 [setMinimized](../baseviewmodel#action-setminimized)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Properties</summary>
+<summary>LinearGenomeView - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
@@ -89,9 +89,9 @@ this is a string instead of the const literal 'LinearGenomeView' to reduce some
 typescripting strictness, but you should pass the string 'LinearGenomeView' to
 the model explicitly
 
-```js
+```ts
 // type signature
-string
+type type = string
 // code
 type: types.literal('LinearGenomeView') as unknown as string
 ```
@@ -100,9 +100,9 @@ type: types.literal('LinearGenomeView') as unknown as string
 
 corresponds roughly to the horizontal scroll of the LGV
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type offsetPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 offsetPx: types.stripDefault(types.number, 0)
 ```
@@ -111,9 +111,9 @@ offsetPx: types.stripDefault(types.number, 0)
 
 corresponds roughly to the zoom level, base-pairs per pixel
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type bpPerPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 bpPerPx: types.stripDefault(types.number, 1)
 ```
@@ -124,9 +124,12 @@ currently displayed regions, can be a single chromosome, arbitrary subsections,
 or the entire set of chromosomes in the genome, but it not advised to use the
 entire set of chromosomes if your assembly is very fragmented
 
-```js
+```ts
 // type signature
-IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
+type displayedRegions = IOptionalIType<
+  IType<Region[], Region[], Region[]>,
+  [undefined]
+>
 // code
 displayedRegions: types.stripDefault(types.frozen<Region[]>(), [])
 ```
@@ -135,78 +138,76 @@ displayedRegions: types.stripDefault(types.frozen<Region[]>(), [])
 
 array of currently displayed tracks state models instances
 
-```js
+```ts
 // type signature
-IArrayType<IAnyType>
+type tracks = IArrayType<IAnyType>
 // code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
+tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 ```
 
 #### property: hideHeader
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideHeader = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 hideHeader: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideHeaderOverview
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideHeaderOverview = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 hideHeaderOverview: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideNoTracksActive
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideNoTracksActive = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 hideNoTracksActive: types.stripDefault(types.boolean, false)
 ```
 
 #### property: trackSelectorType
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 trackSelectorType: types.stripDefault(
-          types.enumeration(['hierarchical']),
-          'hierarchical',
-        )
+  types.enumeration(['hierarchical']),
+  'hierarchical',
+)
 ```
 
 #### property: showCenterLine
 
 show the "center line"
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showCenterLine = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCenterLine: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showCenterLine', false),
-        )
+  localStorageGetBoolean('lgv-showCenterLine', false),
+)
 ```
 
 #### property: showCytobandsSetting
 
 show the "cytobands" in the overview scale bar
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showCytobandsSetting = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCytobandsSetting: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showCytobands', true),
-        )
+  localStorageGetBoolean('lgv-showCytobands', true),
+)
 ```
 
 #### property: trackLabelsOverride
@@ -216,23 +217,23 @@ empty string "" (which results in conf being used). see LinearGenomeViewPlugin
 https://jbrowse.org/jb2/docs/config/lineargenomeviewplugin/ docs for how conf is
 used
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type trackLabelsOverride = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 trackLabelsOverride: types.optional(
-          types.string,
-          () => localStorageGetItem('lgv-trackLabels') ?? '',
-        )
+  types.string,
+  () => localStorageGetItem('lgv-trackLabels') ?? '',
+)
 ```
 
 #### property: showGridlines
 
 show the "gridlines" in the track area
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showGridlines = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showGridlines: types.stripDefault(types.boolean, true)
 ```
@@ -241,23 +242,23 @@ showGridlines: types.stripDefault(types.boolean, true)
 
 highlights on the LGV from the URL parameters
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
+type highlight = IOptionalIType<
+  IArrayType<IType<HighlightType, HighlightType, HighlightType>>,
+  [undefined]
+>
 // code
-highlight: types.stripDefault(
-          types.array(types.frozen<HighlightType>()),
-          [],
-        )
+highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
 ```
 
 #### property: highlightsVisible
 
 controls whether view.highlight entries are rendered
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 highlightsVisible: types.stripDefault(types.boolean, true)
 ```
@@ -266,9 +267,9 @@ highlightsVisible: types.stripDefault(types.boolean, true)
 
 controls whether highlight/bookmark chip labels are shown inline
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type labelsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 labelsVisible: types.stripDefault(types.boolean, true)
 ```
@@ -277,48 +278,48 @@ labelsVisible: types.stripDefault(types.boolean, true)
 
 color by CDS
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type colorByCDS = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 colorByCDS: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-colorByCDS', false),
-        )
+  localStorageGetBoolean('lgv-colorByCDS', false),
+)
 ```
 
 #### property: showTrackOutlines
 
 show the track outlines
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showTrackOutlines = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showTrackOutlines: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-showTrackOutlines', true),
-        )
+  localStorageGetBoolean('lgv-showTrackOutlines', true),
+)
 ```
 
 #### property: scrollZoom
 
 enable scroll-to-zoom on WebGL tracks
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type scrollZoom = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 scrollZoom: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-scrollZoom', false),
-        )
+  localStorageGetBoolean('lgv-scrollZoom', false),
+)
 ```
 
 #### property: scalebarOnly
 
 when true, only the header and coordinate scalebar are rendered
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type scalebarOnly = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 scalebarOnly: types.stripDefault(types.boolean, false)
 ```
@@ -339,9 +340,13 @@ session/config JSON. example:
 }
 ```
 
-```js
+```ts
 // type signature
-IType<InitState | undefined, InitState | undefined, InitState | undefined>
+type init = IType<
+  InitState | undefined,
+  InitState | undefined,
+  InitState | undefined
+>
 // code
 init: types.frozen<InitState | undefined>()
 ```
@@ -349,122 +354,121 @@ init: types.frozen<InitState | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Volatiles</summary>
+<summary>LinearGenomeView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
-```js
+```ts
 // type signature
-number | undefined
+type volatileWidth = number | undefined
 // code
 volatileWidth: undefined as number | undefined
 ```
 
 #### volatile: minimumBlockWidth
 
-```js
+```ts
 // type signature
-number
+type minimumBlockWidth = number
 // code
 minimumBlockWidth: 3
 ```
 
 #### volatile: draggingTrackId
 
-```js
+```ts
 // type signature
-string | undefined
+type draggingTrackId = string | undefined
 // code
 draggingTrackId: undefined as undefined | string
 ```
 
 #### volatile: lastTrackDragY
 
-```js
+```ts
 // type signature
-number | undefined
+type lastTrackDragY = number | undefined
 // code
 lastTrackDragY: undefined as undefined | number
 ```
 
 #### volatile: volatileError
 
-```js
+```ts
 // type signature
-unknown
+type volatileError = unknown
 // code
 volatileError
 ```
 
 #### volatile: trackRefs
 
-```js
+```ts
 // type signature
-;(Record < string,
-  HTMLDivElement >
-    // code
-    trackRefs)
+type trackRefs = Record<string, HTMLDivElement>
+// code
+trackRefs
 ```
 
 #### volatile: coarseDynamicBlocks
 
-```js
+```ts
 // type signature
-ContentBlock[]
+type coarseDynamicBlocks = ContentBlock[]
 // code
 coarseDynamicBlocks: [] as ContentBlock[]
 ```
 
 #### volatile: coarseTotalBp
 
-```js
+```ts
 // type signature
-number
+type coarseTotalBp = number
 // code
 coarseTotalBp: 0
 ```
 
 #### volatile: coarseBpPerPx
 
-```js
+```ts
 // type signature
-number
+type coarseBpPerPx = number
 // code
 coarseBpPerPx: self.bpPerPx
 ```
 
 #### volatile: leftOffset
 
-```js
+```ts
 // type signature
-BpOffset | undefined
+type leftOffset = BpOffset | undefined
 // code
 leftOffset: undefined as undefined | BpOffset
 ```
 
 #### volatile: rightOffset
 
-```js
+```ts
 // type signature
-BpOffset | undefined
+type rightOffset = BpOffset | undefined
 // code
 rightOffset: undefined as undefined | BpOffset
 ```
 
 #### volatile: isScalebarRefNameMenuOpen
 
-```js
+```ts
 // type signature
-false
+type isScalebarRefNameMenuOpen = false
 // code
 isScalebarRefNameMenuOpen: false
 ```
 
 #### volatile: scalebarRefNameClickPending
 
-```js
+```ts
 // type signature
-false
+type scalebarRefNameClickPending = false
 // code
 scalebarRefNameClickPending: false
 ```
@@ -473,9 +477,9 @@ scalebarRefNameClickPending: false
 
 temporary vertical guides that can be set by displays (e.g., LD display hover)
 
-```js
+```ts
 // type signature
-VolatileGuide[]
+type volatileGuides = VolatileGuide[]
 // code
 volatileGuides: [] as VolatileGuide[]
 ```
@@ -483,20 +487,18 @@ volatileGuides: [] as VolatileGuide[]
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Getters</summary>
+<summary>LinearGenomeView - Getters</summary>
 
 #### getter: pinnedTracks
 
-```js
-// type
-any[]
+```ts
+type pinnedTracks = any[]
 ```
 
 #### getter: unpinnedTracks
 
-```js
-// type
-any[]
+```ts
+type unpinnedTracks = any[]
 ```
 
 #### getter: trackLabels
@@ -504,39 +506,34 @@ any[]
 the effective track labels setting, resolving the stored `trackLabelsOverride`
 against the LinearGenomeViewPlugin config default
 
-```js
-// type
-any
+```ts
+type trackLabels = any
 ```
 
 #### getter: width
 
-```js
-// type
-number
+```ts
+type width = number
 ```
 
 #### getter: trackWidthPx
 
 width minus track outline borders (1px each side when shown)
 
-```js
-// type
-number
+```ts
+type trackWidthPx = number
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: assemblyDisplayNames
 
-```js
-// type
-string[]
+```ts
+type assemblyDisplayNames = string[]
 ```
 
 #### getter: isTopLevelView
@@ -544,9 +541,8 @@ string[]
 checking if lgv is a 'top-level' view is used for toggling pin track capability,
 sticky positioning
 
-```js
-// type
-boolean
+```ts
+type isTopLevelView = boolean
 ```
 
 #### getter: stickyViewHeaders
@@ -554,209 +550,180 @@ boolean
 only uses sticky view headers when it is a 'top-level' view and session allows
 it
 
-```js
-// type
-boolean
+```ts
+type stickyViewHeaders = boolean
 ```
 
 #### getter: rubberbandTop
 
-```js
-// type
-number
+```ts
+type rubberbandTop = number
 ```
 
 #### getter: pinnedTracksTop
 
-```js
-// type
-number
+```ts
+type pinnedTracksTop = number
 ```
 
 #### getter: assembliesNotFound
 
-```js
-// type
-string | undefined
+```ts
+type assembliesNotFound = string | undefined
 ```
 
 #### getter: assemblyErrors
 
-```js
-// type
-string
+```ts
+type assemblyErrors = string
 ```
 
 #### getter: assembliesInitialized
 
-```js
-// type
-boolean
+```ts
+type assembliesInitialized = boolean
 ```
 
 #### getter: initialized
 
-```js
-// type
-boolean
+```ts
+type initialized = boolean
 ```
 
 #### getter: hasDisplayedRegions
 
-```js
-// type
-boolean
+```ts
+type hasDisplayedRegions = boolean
 ```
 
 #### getter: loadingMessage
 
-```js
-// type
-'Loading' | undefined
+```ts
+type loadingMessage = 'Loading' | undefined
 ```
 
 #### getter: hasSomethingToShow
 
-```js
-// type
-boolean
+```ts
+type hasSomethingToShow = boolean
 ```
 
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view
 
-```js
-// type
-boolean
+```ts
+type showLoading = boolean
 ```
 
 #### getter: showImportForm
 
 Whether to show the import form
 
-```js
-// type
-boolean
+```ts
+type showImportForm = boolean
 ```
 
 #### getter: scalebarHeight
 
-```js
-// type
-number
+```ts
+type scalebarHeight = number
 ```
 
 #### getter: headerHeight
 
-```js
-// type
-number
+```ts
+type headerHeight = number
 ```
 
 #### getter: trackHeights
 
-```js
-// type
-number
+```ts
+type trackHeights = number
 ```
 
 #### getter: trackHeightsWithResizeHandles
 
-```js
-// type
-number
+```ts
+type trackHeightsWithResizeHandles = number
 ```
 
 #### getter: height
 
-```js
-// type
-number
+```ts
+type height = number
 ```
 
 #### getter: totalBp
 
-```js
-// type
-number
+```ts
+type totalBp = number
 ```
 
 #### getter: maxBpPerPx
 
-```js
-// type
-number
+```ts
+type maxBpPerPx = number
 ```
 
 #### getter: minBpPerPx
 
-```js
-// type
-number
+```ts
+type minBpPerPx = number
 ```
 
 #### getter: error
 
-```js
-// type
-unknown
+```ts
+type error = unknown
 ```
 
 #### getter: maxOffset
 
-```js
-// type
-number
+```ts
+type maxOffset = number
 ```
 
 #### getter: minOffset
 
-```js
-// type
-number
+```ts
+type minOffset = number
 ```
 
 #### getter: displayedRegionsTotalPx
 
-```js
-// type
-number
+```ts
+type displayedRegionsTotalPx = number
 ```
 
 #### getter: trackMap
 
-```js
-// type
-Map<any, any>
+```ts
+type trackMap = Map<any, any>
 ```
 
 #### getter: trackTypeActions
 
-```js
-// type
-Map<string, MenuItem[]>
+```ts
+type trackTypeActions = Map<string, MenuItem[]>
 ```
 
 #### getter: canShowCytobands
 
-```js
-// type
-boolean
+```ts
+type canShowCytobands = boolean
 ```
 
 #### getter: showCytobands
 
-```js
-// type
-boolean
+```ts
+type showCytobands = boolean
 ```
 
 #### getter: anyCytobandsExist
 
-```js
-// type
-boolean
+```ts
+type anyCytobandsExist = boolean
 ```
 
 #### getter: cytobandOffset
@@ -764,9 +731,8 @@ boolean
 the cytoband is displayed to the right of the chromosome name, and that offset
 is calculated manually with this method
 
-```js
-// type
-number
+```ts
+type cytobandOffset = number
 ```
 
 #### getter: overviewLayout
@@ -774,18 +740,16 @@ number
 geometry of the overview scalebar — derived from displayedRegions, width, and
 cytobandOffset so it stays cached by MobX
 
-```js
-// type
-ViewLayout
+```ts
+type overviewLayout = ViewLayout
 ```
 
 #### getter: overviewScale
 
 bp-per-px scale used by overview tick labels
 
-```js
-// type
-number
+```ts
+type overviewScale = number
 ```
 
 #### getter: staticBlocks
@@ -796,9 +760,8 @@ the left may be removed, and new blocks may be instantiated on the right. tracks
 may use the static blocks to render their data for the region represented by the
 block
 
-```js
-// type
-BlockSet
+```ts
+type staticBlocks = BlockSet
 ```
 
 #### getter: dynamicBlocks
@@ -807,9 +770,8 @@ dynamic blocks represent the exact coordinates of the currently visible genome
 regions on the screen. they are similar to static blocks, but static blocks can
 go offscreen while dynamic blocks represent exactly what is on screen
 
-```js
-// type
-BlockSet
+```ts
+type dynamicBlocks = BlockSet
 ```
 
 #### getter: scalebarRegionEndPx
@@ -820,9 +782,8 @@ changes, so this getter is also stable during normal scroll — avoiding a Map
 rebuild every frame. Used by ScalebarRefNameLabels to clip chromosome name
 labels.
 
-```js
-// type
-Map<number, number>
+```ts
+type scalebarRegionEndPx = Map<number, number>
 ```
 
 #### getter: gridlineTicks
@@ -832,13 +793,8 @@ staticBlocks + bpPerPx. Computed once and shared by every Gridlines instance
 (scalebar, main view, each pinned track) rather than recomputing the makeTicks
 loop per component.
 
-```js
-// type
-{
-  x: number
-  major: boolean
-}
-;[]
+```ts
+type gridlineTicks = { x: number; major: boolean }[]
 ```
 
 #### getter: totalWidthPx
@@ -847,9 +803,8 @@ Integer-rounded sum of all visible block widths. Slightly less than view.width
 when the genome ends before the right edge; use view.width for SVG clip rects
 (display boundary) and this for paint canvas sizing (actual content width).
 
-```js
-// type
-number
+```ts
+type totalWidthPx = number
 ```
 
 #### getter: totalWidthPxWithoutBorders
@@ -857,25 +812,22 @@ number
 Like totalWidthPx but excluding inter-region boundary blocks. Used when column
 layout divides the canvas width by feature count.
 
-```js
-// type
-number
+```ts
+type totalWidthPxWithoutBorders = number
 ```
 
 #### getter: visibleBp
 
-```js
-// type
-number
+```ts
+type visibleBp = number
 ```
 
 #### getter: roundedDynamicBlocks
 
 rounded dynamic blocks are dynamic blocks without fractions of bp
 
-```js
-// type
-{ start: number; end: number; type: "ContentBlock"; assemblyName: string; refName: string; key: string; offsetPx: number; widthPx: number; reversed?: boolean | undefined; displayedRegionIndex?: number | undefined; isLeftEndOfDisplayedRegion?: boolean | undefined; isRightEndOfDisplayedRegion?: boolean | undefined; va...
+```ts
+type roundedDynamicBlocks = { start: number; end: number; type: "ContentBlock"; assemblyName: string; refName: string; key: string; offsetPx: number; widthPx: number; reversed?: boolean | undefined; displayedRegionIndex?: number | undefined; isLeftEndOfDisplayedRegion?: boolean | undefined; isRightEndOfDisplayedRegion?: boolean | undefined; va...
 ```
 
 #### getter: visibleRegions
@@ -884,9 +836,8 @@ Returns the currently visible content blocks with screen pixel positions and
 displayedRegionIndex guaranteed. Used by WebGL displays for per-region data
 fetching and rendering.
 
-```js
-// type
-{
+```ts
+type visibleRegions = {
   refName: string
   start: number
   end: number
@@ -895,8 +846,7 @@ fetching and rendering.
   displayedRegionIndex: number
   screenStartPx: number
   screenEndPx: number
-}
-;[]
+}[]
 ```
 
 #### getter: bufferedVisibleRegions
@@ -905,97 +855,92 @@ visibleRegions expanded by a half-screen buffer on each side, clamped to
 displayedRegion bounds, with integer-rounded coordinates. Use this when fetching
 data that should extend slightly beyond the viewport for smooth scrolling.
 
-```js
-// type
-{
-  region: {
-    refName: string
-    start: number
-    end: number
-    assemblyName: string
-  }
+```ts
+type bufferedVisibleRegions = {
+  region: { refName: string; start: number; end: number; assemblyName: string }
   displayedRegionIndex: number
-}
-;[]
+}[]
 ```
 
 #### getter: visibleLocStrings
 
 a single "combo-locstring" representing all the regions visible on the screen
 
-```js
-// type
-string
+```ts
+type visibleLocStrings = string
 ```
 
 #### getter: coarseVisibleLocStrings
 
 same as visibleLocStrings, but only updated every 500ms
 
-```js
-// type
-string
+```ts
+type coarseVisibleLocStrings = string
 ```
 
 #### getter: coarseTotalBpDisplayStr
 
-```js
-// type
-string
+```ts
+type coarseTotalBpDisplayStr = string
 ```
 
 #### getter: effectiveBpPerPx
 
-```js
-// type
-number
+```ts
+type effectiveBpPerPx = number
 ```
 
 #### getter: effectiveTotalBp
 
-```js
-// type
-number
+```ts
+type effectiveTotalBp = number
 ```
 
 #### getter: effectiveTotalBpDisplayStr
 
-```js
-// type
-string
+```ts
+type effectiveTotalBpDisplayStr = string
 ```
 
 #### getter: centerLineInfo
 
-```js
-// type
-{ coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; } | undefined
+```ts
+type centerLineInfo =
+  | {
+      coord: number
+      index: number
+      refName: string
+      oob: boolean
+      assemblyName: string
+      offset: number
+      start: number
+      end: number
+      reversed?: boolean | undefined
+    }
+  | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Methods</summary>
+<summary>LinearGenomeView - Methods</summary>
 
 #### method: scalebarDisplayPrefix
 
-```js
-// type signature
-scalebarDisplayPrefix: () => string
+```ts
+type scalebarDisplayPrefix = () => string
 ```
 
 #### method: MiniControlsComponent
 
-```js
-// type signature
-MiniControlsComponent: () => FC<any>
+```ts
+type MiniControlsComponent = () => FC<any>
 ```
 
 #### method: HeaderComponent
 
-```js
-// type signature
-HeaderComponent: () => FC<any>
+```ts
+type HeaderComponent = () => FC<any>
 ```
 
 #### method: getTrackYOffset
@@ -1005,33 +950,30 @@ container starts. Walks tracks in DOM render order (pinned first, then
 unpinned), matching TrackContainer's layout and using the same constants it
 renders with. Returns `undefined` if the track is not present in the view.
 
-```js
-// type signature
-getTrackYOffset: (trackId: string) => number | undefined
+```ts
+type getTrackYOffset = (trackId: string) => number | undefined
 ```
 
 #### method: renderProps
 
-```js
-// type signature
-renderProps: () => {
-  bpPerPx: number
-  colorByCDS: boolean
-}
+```ts
+type renderProps = () => { bpPerPx: number; colorByCDS: boolean }
 ```
 
 #### method: searchScope
 
-```js
-// type signature
-searchScope: (assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }
+```ts
+type searchScope = (assemblyName: string) => {
+  assemblyName: string
+  includeAggregateIndexes: boolean
+  tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>
+}
 ```
 
 #### method: getTrack
 
-```js
-// type signature
-getTrack: (id: string) => any
+```ts
+type getTrack = (id: string) => any
 ```
 
 #### method: getActiveDisplayId
@@ -1040,9 +982,8 @@ displayId of the active (shown) display for a track in this view, used by the
 config editor to expand the relevant display and collapse the track's other
 displays
 
-```js
-// type signature
-getActiveDisplayId: (trackId: string) => string | undefined
+```ts
+type getActiveDisplayId = (trackId: string) => string | undefined
 ```
 
 #### method: getSelectedRegions
@@ -1050,41 +991,47 @@ getActiveDisplayId: (trackId: string) => string | undefined
 Helper method for the fetchSequence. Retrieves the corresponding regions that
 were selected by the rubberband
 
-```js
-// type signature
-getSelectedRegions: (leftOffset?: BpOffset | undefined, rightOffset?: BpOffset | undefined) => { assemblyName: string; refName: string; start: number; end: number; }[]
+```ts
+type getSelectedRegions = (
+  leftOffset?: BpOffset | undefined,
+  rightOffset?: BpOffset | undefined,
+) => { assemblyName: string; refName: string; start: number; end: number }[]
 ```
 
 #### method: exportSvg
 
 creates an svg export and save using FileSaver
 
-```js
-// type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### method: menuItems
 
 return the view menu items
 
-```js
-// type signature
-menuItems: () => MenuItem[]
+```ts
+type menuItems = () => MenuItem[]
 ```
 
 #### method: rubberBandMenuItems
 
-```js
-// type signature
-rubberBandMenuItems: () => MenuItem[]
+```ts
+type rubberBandMenuItems = () => MenuItem[]
 ```
 
 #### method: bpToPx
 
-```js
-// type signature
-bpToPx: ({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number | undefined; }) => { index: number; offsetPx: number; } | undefined
+```ts
+type bpToPx = ({
+  refName,
+  coord,
+  displayedRegionIndex,
+}: {
+  refName: string
+  coord: number
+  displayedRegionIndex?: number | undefined
+}) => { index: number; offsetPx: number } | undefined
 ```
 
 #### method: getHighlightCoords
@@ -1094,9 +1041,13 @@ container. Falls back to the raw refName if the region's assemblyName is missing
 or unknown so highlights authored without an assembly still render in
 single-assembly views.
 
-```js
-// type signature
-getHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { width: number; left: number; } | undefined
+```ts
+type getHighlightCoords = (region: {
+  assemblyName?: string | undefined
+  refName: string
+  start: number
+  end: number
+}) => { width: number; left: number } | undefined
 ```
 
 #### method: getOverviewHighlightCoords
@@ -1104,9 +1055,13 @@ getHighlightCoords: (region: { assemblyName?: string | undefined; refName: strin
 like getHighlightCoords but laid out against the overview scalebar and shifted
 by the cytoband offset
 
-```js
-// type signature
-getOverviewHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { left: number; width: number; } | undefined
+```ts
+type getOverviewHighlightCoords = (region: {
+  assemblyName?: string | undefined
+  refName: string
+  start: number
+  end: number
+}) => { left: number; width: number } | undefined
 ```
 
 #### method: centerAt
@@ -1114,23 +1069,34 @@ getOverviewHighlightCoords: (region: { assemblyName?: string | undefined; refNam
 scrolls the view to center on the given bp. if that is not in any of the
 displayed regions, does nothing
 
-```js
-// type signature
-centerAt: (coord: number, refName: string, displayedRegionIndex?: number | undefined) => void
+```ts
+type centerAt = (
+  coord: number,
+  refName: string,
+  displayedRegionIndex?: number | undefined,
+) => void
 ```
 
 #### method: pxToBp
 
-```js
-// type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; }
+```ts
+type pxToBp = (px: number) => {
+  coord: number
+  index: number
+  refName: string
+  oob: boolean
+  assemblyName: string
+  offset: number
+  start: number
+  end: number
+  reversed?: boolean | undefined
+}
 ```
 
 #### method: rubberbandClickMenuItems
 
-```js
-// type signature
-rubberbandClickMenuItems: (clickOffset: BpOffset) => MenuItem[]
+```ts
+type rubberbandClickMenuItems = (clickOffset: BpOffset) => MenuItem[]
 ```
 
 #### method: highlightMenuItems
@@ -1138,170 +1104,150 @@ rubberbandClickMenuItems: (clickOffset: BpOffset) => MenuItem[]
 returns menu items for a highlight context menu. plugins can extend this via
 Core-extendPluggableElement to add their own items
 
-```js
-// type signature
-highlightMenuItems: (_highlight: HighlightType) => MenuItem[]
+```ts
+type highlightMenuItems = (_highlight: HighlightType) => MenuItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Actions</summary>
+<summary>LinearGenomeView - Actions</summary>
 
 #### action: setShowTrackOutlines
 
-```js
-// type signature
-setShowTrackOutlines: (arg: boolean) => void
+```ts
+type setShowTrackOutlines = (arg: boolean) => void
 ```
 
 #### action: setScrollZoom
 
-```js
-// type signature
-setScrollZoom: (flag: boolean) => void
+```ts
+type setScrollZoom = (flag: boolean) => void
 ```
 
 #### action: setColorByCDS
 
-```js
-// type signature
-setColorByCDS: (flag: boolean) => void
+```ts
+type setColorByCDS = (flag: boolean) => void
 ```
 
 #### action: setShowCytobands
 
-```js
-// type signature
-setShowCytobands: (flag: boolean) => void
+```ts
+type setShowCytobands = (flag: boolean) => void
 ```
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => void
+```ts
+type setWidth = (newWidth: number) => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (error: unknown) => void
+```ts
+type setError = (error: unknown) => void
 ```
 
 #### action: setIsScalebarRefNameMenuOpen
 
-```js
-// type signature
-setIsScalebarRefNameMenuOpen: (isOpen: boolean) => void
+```ts
+type setIsScalebarRefNameMenuOpen = (isOpen: boolean) => void
 ```
 
 #### action: setScalebarRefNameClickPending
 
-```js
-// type signature
-setScalebarRefNameClickPending: (pending: boolean) => void
+```ts
+type setScalebarRefNameClickPending = (pending: boolean) => void
 ```
 
 #### action: setHideHeader
 
-```js
-// type signature
-setHideHeader: (b: boolean) => void
+```ts
+type setHideHeader = (b: boolean) => void
 ```
 
 #### action: setHideHeaderOverview
 
-```js
-// type signature
-setHideHeaderOverview: (b: boolean) => void
+```ts
+type setHideHeaderOverview = (b: boolean) => void
 ```
 
 #### action: setScalebarOnly
 
-```js
-// type signature
-setScalebarOnly: (b: boolean) => void
+```ts
+type setScalebarOnly = (b: boolean) => void
 ```
 
 #### action: setHideNoTracksActive
 
-```js
-// type signature
-setHideNoTracksActive: (b: boolean) => void
+```ts
+type setHideNoTracksActive = (b: boolean) => void
 ```
 
 #### action: setShowGridlines
 
-```js
-// type signature
-setShowGridlines: (b: boolean) => void
+```ts
+type setShowGridlines = (b: boolean) => void
 ```
 
 #### action: addToHighlights
 
-```js
-// type signature
-addToHighlights: (highlight: HighlightType) => void
+```ts
+type addToHighlights = (highlight: HighlightType) => void
 ```
 
 #### action: setHighlight
 
-```js
-// type signature
-setHighlight: (highlight?: HighlightType[] | undefined) => void
+```ts
+type setHighlight = (highlight?: HighlightType[] | undefined) => void
 ```
 
 #### action: removeHighlight
 
-```js
-// type signature
-removeHighlight: (highlight: HighlightType) => void
+```ts
+type removeHighlight = (highlight: HighlightType) => void
 ```
 
 #### action: updateHighlight
 
-```js
-// type signature
-updateHighlight: (old: HighlightType, updates: Partial<HighlightType>) => void
+```ts
+type updateHighlight = (
+  old: HighlightType,
+  updates: Partial<HighlightType>,
+) => void
 ```
 
 #### action: setHighlightsVisible
 
-```js
-// type signature
-setHighlightsVisible: (arg: boolean) => void
+```ts
+type setHighlightsVisible = (arg: boolean) => void
 ```
 
 #### action: setLabelsVisible
 
-```js
-// type signature
-setLabelsVisible: (arg: boolean) => void
+```ts
+type setLabelsVisible = (arg: boolean) => void
 ```
 
 #### action: setVolatileGuides
 
 set temporary vertical guides (e.g., for LD display hover)
 
-```js
-// type signature
-setVolatileGuides: (guides: VolatileGuide[]) => void
+```ts
+type setVolatileGuides = (guides: VolatileGuide[]) => void
 ```
 
 #### action: scrollTo
 
-```js
-// type signature
-scrollTo: (offsetPx: number) => number
+```ts
+type scrollTo = (offsetPx: number) => number
 ```
 
 #### action: zoomTo
 
-```js
-// type signature
-zoomTo: (bpPerPx: number, offset?: any) => number
+```ts
+type zoomTo = (bpPerPx: number, offset?: any) => number
 ```
 
 #### action: setOffsets
@@ -1310,149 +1256,139 @@ sets offsets of rubberband, used in the get sequence dialog can call
 view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute the
 selected regions from the offsets
 
-```js
-// type signature
-setOffsets: (left?: BpOffset | undefined, right?: BpOffset | undefined) => void
+```ts
+type setOffsets = (
+  left?: BpOffset | undefined,
+  right?: BpOffset | undefined,
+) => void
 ```
 
 #### action: setSearchResults
 
-```js
-// type signature
-setSearchResults: (searchResults: BaseResult[], searchQuery: string, assemblyName?: string | undefined) => void
+```ts
+type setSearchResults = (
+  searchResults: BaseResult[],
+  searchQuery: string,
+  assemblyName?: string | undefined,
+) => void
 ```
 
 #### action: setNewView
 
-```js
-// type signature
-setNewView: (bpPerPx: number, offsetPx: number) => void
+```ts
+type setNewView = (bpPerPx: number, offsetPx: number) => void
 ```
 
 #### action: horizontallyFlip
 
-```js
-// type signature
-horizontallyFlip: () => void
+```ts
+type horizontallyFlip = () => void
 ```
 
 #### action: showTrack
 
-```js
-// type signature
-showTrack: (trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any) => any
+```ts
+type showTrack = (
+  trackId: string,
+  initialSnapshot?: any,
+  displayInitialSnapshot?: any,
+) => any
 ```
 
 #### action: hideTrack
 
-```js
-// type signature
-hideTrack: (trackId: string) => boolean
+```ts
+type hideTrack = (trackId: string) => boolean
 ```
 
 #### action: moveTrackDown
 
-```js
-// type signature
-moveTrackDown: (id: string) => void
+```ts
+type moveTrackDown = (id: string) => void
 ```
 
 #### action: moveTrackUp
 
-```js
-// type signature
-moveTrackUp: (id: string) => void
+```ts
+type moveTrackUp = (id: string) => void
 ```
 
 #### action: moveTrackToTop
 
-```js
-// type signature
-moveTrackToTop: (id: string) => void
+```ts
+type moveTrackToTop = (id: string) => void
 ```
 
 #### action: moveTrackToBottom
 
-```js
-// type signature
-moveTrackToBottom: (id: string) => void
+```ts
+type moveTrackToBottom = (id: string) => void
 ```
 
 #### action: moveTrack
 
-```js
-// type signature
-moveTrack: (movingId: string, targetId: string) => void
+```ts
+type moveTrack = (movingId: string, targetId: string) => void
 ```
 
 #### action: toggleTrack
 
-```js
-// type signature
-toggleTrack: (trackId: string) => boolean
+```ts
+type toggleTrack = (trackId: string) => boolean
 ```
 
 #### action: setTrackLabels
 
-```js
-// type signature
-setTrackLabels: (setting: "offset" | "hidden" | "overlapping") => void
+```ts
+type setTrackLabels = (setting: 'offset' | 'hidden' | 'overlapping') => void
 ```
 
 #### action: setShowCenterLine
 
-```js
-// type signature
-setShowCenterLine: (b: boolean) => void
+```ts
+type setShowCenterLine = (b: boolean) => void
 ```
 
 #### action: setDisplayedRegions
 
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
+```ts
+type setDisplayedRegions = (regions: Region[]) => void
 ```
 
 #### action: activateTrackSelector
 
-```js
-// type signature
-activateTrackSelector: () => Widget
+```ts
+type activateTrackSelector = () => Widget
 ```
 
 #### action: horizontalScroll
 
-```js
-// type signature
-horizontalScroll: (distance: number) => number
+```ts
+type horizontalScroll = (distance: number) => number
 ```
 
 #### action: showAllRegions
 
-```js
-// type signature
-showAllRegions: () => void
+```ts
+type showAllRegions = () => void
 ```
 
 #### action: showAllRegionsInAssembly
 
-```js
-// type signature
-showAllRegionsInAssembly: (assemblyName?: string | undefined) => void
+```ts
+type showAllRegionsInAssembly = (assemblyName?: string | undefined) => void
 ```
 
 #### action: setDraggingTrackId
 
-```js
-// type signature
-setDraggingTrackId: (idx?: string | undefined) => void
+```ts
+type setDraggingTrackId = (idx?: string | undefined) => void
 ```
 
 #### action: setLastTrackDragY
 
-```js
-// type signature
-setLastTrackDragY: (y: number) => void
+```ts
+type setLastTrackDragY = (y: number) => void
 ```
 
 #### action: onTrackDragOver
@@ -1461,50 +1397,44 @@ called while dragging a track over the track at `targetId`; reorders once the
 cursor has moved far enough (see shouldSwapTracks) to avoid jitter when a short
 track is dragged over a tall one
 
-```js
-// type signature
-onTrackDragOver: (targetId: string, currentY: number) => void
+```ts
+type onTrackDragOver = (targetId: string, currentY: number) => void
 ```
 
 #### action: clearView
 
 this "clears the view" and makes the view return to the import form
 
-```js
-// type signature
-clearView: () => void
+```ts
+type clearView = () => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (arg?: InitState | undefined) => void
+```ts
+type setInit = (arg?: InitState | undefined) => void
 ```
 
 #### action: slide
 
 perform animated slide
 
-```js
-// type signature
-slide: (viewWidths: number) => void
+```ts
+type slide = (viewWidths: number) => void
 ```
 
 #### action: zoom
 
 perform animated zoom
 
-```js
-// type signature
-zoom: (targetBpPerPx: number) => void
+```ts
+type zoom = (targetBpPerPx: number) => void
 ```
 
 #### action: setCoarseDynamicBlocks
 
-```js
-// type signature
-setCoarseDynamicBlocks: (blocks: BlockSet, bpPerPx: number) => void
+```ts
+type setCoarseDynamicBlocks = (blocks: BlockSet, bpPerPx: number) => void
 ```
 
 #### action: moveTo
@@ -1512,9 +1442,8 @@ setCoarseDynamicBlocks: (blocks: BlockSet, bpPerPx: number) => void
 offset is the base-pair-offset in the displayed region, index is the index of
 the displayed region in the linear genome view
 
-```js
-// type signature
-moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
+```ts
+type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
 
 #### action: navToLocString
@@ -1522,9 +1451,12 @@ moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 Navigate to the given locstring, will change displayed regions if needed, and
 wait for assemblies to be initialized
 
-```js
-// type signature
-navToLocString: (input: string, optAssemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
+```ts
+type navToLocString = (
+  input: string,
+  optAssemblyName?: string | undefined,
+  grow?: number | undefined,
+) => Promise<void>
 ```
 
 #### action: navToLocations
@@ -1533,9 +1465,12 @@ Similar to `navToLocString`, but accepts a list of parsed location objects
 instead of a locstring. Will try to perform `setDisplayedRegions` if changing
 regions
 
-```js
-// type signature
-navToLocations: (regions: ParsedLocString[], assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
+```ts
+type navToLocations = (
+  regions: ParsedLocString[],
+  assemblyName?: string | undefined,
+  grow?: number | undefined,
+) => Promise<void>
 ```
 
 #### action: navTo
@@ -1547,9 +1482,8 @@ displayedRegion. Navigates to the first matching location encountered.
 
 Throws an error if navigation was unsuccessful
 
-```js
-// type signature
-navTo: (query: NavLocation, grow?: number | undefined) => void
+```ts
+type navTo = (query: NavLocation, grow?: number | undefined) => void
 ```
 
 #### action: navToMultiple
@@ -1561,9 +1495,11 @@ displayedRegion. Navigates to the first matching location encountered.
 
 Throws an error if navigation was unsuccessful
 
-```js
-// type signature
-navToMultiple: (locations: NavLocation[], grow?: number | undefined) => void
+```ts
+type navToMultiple = (
+  locations: NavLocation[],
+  grow?: number | undefined,
+) => void
 ```
 
 #### action: navToLocation
@@ -1571,9 +1507,12 @@ navToMultiple: (locations: NavLocation[], grow?: number | undefined) => void
 Similar to `navToLocString`, but accepts a parsed location object instead of a
 locstring. Will try to perform `setDisplayedRegions` if changing regions
 
-```js
-// type signature
-navToLocation: (parsedLocString: ParsedLocString, assemblyName?: string | undefined, grow?: number | undefined) => Promise<void>
+```ts
+type navToLocation = (
+  parsedLocString: ParsedLocString,
+  assemblyName?: string | undefined,
+  grow?: number | undefined,
+) => Promise<void>
 ```
 
 </details>

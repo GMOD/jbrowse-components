@@ -169,13 +169,13 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Properties</summary>
+<summary>LinearCanvasBaseDisplay - Properties</summary>
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -187,9 +187,9 @@ the `jexlFilters` config slot; when undefined the config default applies. Stored
 as already-`jexl:`-prefixed expressions (runtime convention), unlike the
 deferred-evaluation config slot.
 
-```js
+```ts
 // type signature
-IMaybe<IArrayType<ISimpleType<string>>>
+type jexlFiltersSetting = IMaybe<IArrayType<ISimpleType<string>>>
 // code
 jexlFiltersSetting: types.maybe(types.array(types.string))
 ```
@@ -197,105 +197,110 @@ jexlFiltersSetting: types.maybe(types.array(types.string))
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Volatiles</summary>
+<summary>LinearCanvasBaseDisplay - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
-```js
+```ts
 // type signature
-ObservableMap<number, LoadedFeatureData>
+type rpcDataMap = ObservableMap<number, LoadedFeatureData>
 // code
 rpcDataMap: observable.map<number, LoadedFeatureData>()
 ```
 
 #### volatile: densityStatsPerRegion
 
-```js
+```ts
 // type signature
-ObservableMap<number, RegionDensityStats>
+type densityStatsPerRegion = ObservableMap<number, RegionDensityStats>
 // code
 densityStatsPerRegion: observable.map<number, RegionDensityStats>()
 ```
 
 #### volatile: featureIdUnderMouse
 
-```js
+```ts
 // type signature
-string | null
+type featureIdUnderMouse = string | null
 // code
 featureIdUnderMouse: null as string | null
 ```
 
 #### volatile: subfeatureIdUnderMouse
 
-```js
+```ts
 // type signature
-string | null
+type subfeatureIdUnderMouse = string | null
 // code
 subfeatureIdUnderMouse: null as string | null
 ```
 
 #### volatile: mouseoverExtraInformation
 
-```js
+```ts
 // type signature
-string | undefined
+type mouseoverExtraInformation = string | undefined
 // code
 mouseoverExtraInformation: undefined as string | undefined
 ```
 
 #### volatile: contextMenuFeature
 
-```js
+```ts
 // type signature
-Feature | undefined
+type contextMenuFeature = Feature | undefined
 // code
 contextMenuFeature: undefined as Feature | undefined
 ```
 
 #### volatile: contextMenuInfo
 
-```js
+```ts
 // type signature
-{ item: FlatbushItem; displayedRegionIndex: number; } | undefined
+type contextMenuInfo =
+  | { item: FlatbushItem; displayedRegionIndex: number }
+  | undefined
 // code
 contextMenuInfo: undefined as
-          | { item: FlatbushItem; displayedRegionIndex: number }
-          | undefined
+  | { item: FlatbushItem; displayedRegionIndex: number }
+  | undefined
 ```
 
 #### volatile: userFeatureDensityLimit
 
-```js
+```ts
 // type signature
-number | undefined
+type userFeatureDensityLimit = number | undefined
 // code
 userFeatureDensityLimit: undefined as number | undefined
 ```
 
 #### volatile: byteEstimateVisibleBp
 
-```js
+```ts
 // type signature
-number | undefined
+type byteEstimateVisibleBp = number | undefined
 // code
 byteEstimateVisibleBp: undefined as number | undefined
 ```
 
 #### volatile: heightBeforeExpand
 
-```js
+```ts
 // type signature
-number | undefined
+type heightBeforeExpand = number | undefined
 // code
 heightBeforeExpand: undefined as number | undefined
 ```
 
 #### volatile: incrementalLayout
 
-```js
+```ts
 // type signature
-(rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>
+type incrementalLayout = (
+  rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
+  inputs: LayoutInputs,
+) => Map<number, FeatureDataResult>
 // code
 incrementalLayout: createIncrementalLayout()
 ```
@@ -303,7 +308,7 @@ incrementalLayout: createIncrementalLayout()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Getters</summary>
+<summary>LinearCanvasBaseDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -312,23 +317,20 @@ the config typed off the concrete schema; `ConfigurationReference` erases
 (same move as `BaseAdapter<CONF>`). The override-aware reads use
 `getConfWithOverride` instead.
 
-```js
-// type
-ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### getter: visibleFeatureDensityPerPx
 
-```js
-// type
-number
+```ts
+type visibleFeatureDensityPerPx = number
 ```
 
 #### getter: renderState
 
-```js
-// type
-{
+```ts
+type renderState = {
   scrollY: number
   canvasWidth: number
   canvasHeight: number
@@ -337,159 +339,141 @@ number
 
 #### getter: DisplayMessageComponent
 
-```js
-// type
-LazyExoticComponent<({ model }: Props) => Element>
+```ts
+type DisplayMessageComponent = LazyExoticComponent<
+  ({ model }: Props) => Element
+>
 ```
 
 #### getter: showTooltipsEnabled
 
-```js
-// type
-boolean
+```ts
+type showTooltipsEnabled = boolean
 ```
 
 #### getter: showLegend
 
-```js
-// type
-boolean
+```ts
+type showLegend = boolean
 ```
 
 #### getter: maxHeight
 
-```js
-// type
-number
+```ts
+type maxHeight = number
 ```
 
 #### getter: autoHeight
 
-```js
-// type
-boolean
+```ts
+type autoHeight = boolean
 ```
 
 #### getter: displayMode
 
-```js
-// type
-;'normal' | 'compact' | 'superCompact' | 'reducedRepresentation' | 'collapse'
+```ts
+type displayMode =
+  | 'normal'
+  | 'compact'
+  | 'superCompact'
+  | 'reducedRepresentation'
+  | 'collapse'
 ```
 
 #### getter: showLabelsMode
 
-```js
-// type
-;'auto' | 'off' | 'on'
+```ts
+type showLabelsMode = 'auto' | 'off' | 'on'
 ```
 
 #### getter: showLabels
 
-```js
-// type
-boolean
+```ts
+type showLabels = boolean
 ```
 
 #### getter: showDescriptions
 
-```js
-// type
-boolean
+```ts
+type showDescriptions = boolean
 ```
 
 #### getter: showOutline
 
-```js
-// type
-boolean
+```ts
+type showOutline = boolean
 ```
 
 #### getter: featureColor
 
-```js
-// type
-string
+```ts
+type featureColor = string
 ```
 
 #### getter: utrColor
 
-```js
-// type
-string
+```ts
+type utrColor = string
 ```
 
 #### getter: colorByMode
 
-```js
-// type
-;'strand' | 'attribute' | 'solid'
+```ts
+type colorByMode = 'strand' | 'attribute' | 'solid'
 ```
 
 #### getter: colorByAttribute
 
-```js
-// type
-string
+```ts
+type colorByAttribute = string
 ```
 
 #### getter: effectiveShowDescriptions
 
-```js
-// type
-boolean
+```ts
+type effectiveShowDescriptions = boolean
 ```
 
 #### getter: selectedFeatureId
 
-```js
-// type
-string | undefined
+```ts
+type selectedFeatureId = string | undefined
 ```
 
 #### getter: maxFeatureDensity
 
-```js
-// type
-number | undefined
+```ts
+type maxFeatureDensity = number | undefined
 ```
 
 #### getter: colorByCDS
 
-```js
-// type
-boolean
+```ts
+type colorByCDS = boolean
 ```
 
 #### getter: sequenceAdapter
 
-```js
-// type
-any
+```ts
+type sequenceAdapter = any
 ```
 
 #### getter: regionKeys
 
-```js
-// type
-Map<number, string>
+```ts
+type regionKeys = Map<number, string>
 ```
 
 #### getter: reversedRegions
 
-```js
-// type
-Set<number>
+```ts
+type reversedRegions = Set<number>
 ```
 
 #### getter: featureWidgetType
 
-```js
-// type
-{
-  type: string
-  id: string
-}
+```ts
+type featureWidgetType = { type: string; id: string }
 ```
 
 #### getter: estimatedVisibleBytes
@@ -502,106 +486,92 @@ scaling, a large zoomed-out estimate stays above the limit forever and gates
 refetch (FetchVisibleRegions won't re-estimate while regionTooLarge holds) — a
 permanently stuck banner.
 
-```js
-// type
-number | undefined
+```ts
+type estimatedVisibleBytes = number | undefined
 ```
 
 #### getter: bytesEstimateTooLarge
 
-```js
-// type
-boolean
+```ts
+type bytesEstimateTooLarge = boolean
 ```
 
 #### getter: densityTooLarge
 
-```js
-// type
-boolean
+```ts
+type densityTooLarge = boolean
 ```
 
 #### getter: regionTooLarge
 
-```js
-// type
-boolean
+```ts
+type regionTooLarge = boolean
 ```
 
 #### getter: regionTooLargeReason
 
-```js
-// type
-string
+```ts
+type regionTooLargeReason = string
 ```
 
 #### getter: laidOutDataMap
 
-```js
-// type
-Map<number, FeatureDataResult>
+```ts
+type laidOutDataMap = Map<number, FeatureDataResult>
 ```
 
 #### getter: maxY
 
-```js
-// type
-number
+```ts
+type maxY = number
 ```
 
 #### getter: hasOverflow
 
-```js
-// type
-boolean
+```ts
+type hasOverflow = boolean
 ```
 
 #### getter: featureIdIndex
 
-```js
-// type
-Map<string, FlatbushItem>
+```ts
+type featureIdIndex = Map<string, FlatbushItem>
 ```
 
 #### getter: subfeatureIdIndex
 
-```js
-// type
-Map<string, SubfeatureInfo>
+```ts
+type subfeatureIdIndex = Map<string, SubfeatureInfo>
 ```
 
 #### getter: hoveredFeature
 
-```js
-// type
-FlatbushItem | null
+```ts
+type hoveredFeature = FlatbushItem | null
 ```
 
 #### getter: hoveredSubfeature
 
-```js
-// type
-SubfeatureInfo | null
+```ts
+type hoveredSubfeature = SubfeatureInfo | null
 ```
 
 #### getter: featureItemMap
 
-```js
-// type
-Map<string, FeatureItemEntry>
+```ts
+type featureItemMap = Map<string, FeatureItemEntry>
 ```
 
 #### getter: flatbushIndexes
 
-```js
-// type
-Map<number, FlatbushRegionIndexes>
+```ts
+type flatbushIndexes = Map<number, FlatbushRegionIndexes>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Methods</summary>
+<summary>LinearCanvasBaseDisplay - Methods</summary>
 
 #### method: activeFilters
 
@@ -611,16 +581,14 @@ override shadows the config slot when set; otherwise the deferred-evaluation
 truth for both the worker (via rpcProps) and the "Filter by..." dialog (so
 existing config filters show up and are editable).
 
-```js
-// type signature
-activeFilters: () => string[]
+```ts
+type activeFilters = () => string[]
 ```
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => {
+```ts
+type rpcProps = () => {
   displayConfig: DisplayConfig
   maxFeatureDensity: number | undefined
   colorByCDS: boolean
@@ -630,37 +598,49 @@ rpcProps: () => {
 
 #### method: getFeatureById
 
-```js
-// type signature
-getFeatureById: (featureId: string) => FlatbushItem | undefined
+```ts
+type getFeatureById = (featureId: string) => FlatbushItem | undefined
 ```
 
 #### method: searchFeatureByID
 
-```js
-// type signature
-searchFeatureByID: (id: string) => readonly [number, number, number, number] | undefined
+```ts
+type searchFeatureByID = (
+  id: string,
+) => readonly [number, number, number, number] | undefined
 ```
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
+```ts
+type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
 ```
 
 #### method: showSubmenuMenuItems
 
-```js
-// type signature
-showSubmenuMenuItems: () => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { label: string; type: "checkbox"; checked: boolean; onClick: () => void; })[]
+```ts
+type showSubmenuMenuItems = () => (
+  | {
+      label: string
+      subMenu: {
+        label: string
+        type: 'radio'
+        checked: boolean
+        onClick: () => void
+      }[]
+    }
+  | { label: string; type: 'checkbox'; checked: boolean; onClick: () => void }
+)[]
 ```
 
 #### method: contextMenuItems
 
-```js
-// type signature
-contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```ts
+type contextMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  onClick: () => void
+}[]
 ```
 
 #### method: colorBySubMenuItems
@@ -668,9 +648,13 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 The "Color by..." radio choices (solid/strand/attribute). Split out so
 subclasses can reuse them while assembling their own color menu.
 
-```js
-// type signature
-colorBySubMenuItems: () => { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]
+```ts
+type colorBySubMenuItems = () => {
+  label: string
+  type: 'radio'
+  checked: boolean
+  onClick: () => void
+}[]
 ```
 
 #### method: colorMenuItems
@@ -679,147 +663,156 @@ Color-related track menu entries: a single "Color by..." entry whose "Solid
 color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
 override to drop the gene-oriented UTR picker.
 
-```js
-// type signature
-colorMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; }[]
+```ts
+type colorMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  subMenu: {
+    label: string
+    type: 'radio'
+    checked: boolean
+    onClick: () => void
+  }[]
+}[]
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; })[]
+```ts
+type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Actions</summary>
+<summary>LinearCanvasBaseDisplay - Actions</summary>
 
 #### action: expandToFit
 
-```js
-// type signature
-expandToFit: () => void
+```ts
+type expandToFit = () => void
 ```
 
 #### action: collapseFromExpand
 
-```js
-// type signature
-collapseFromExpand: () => void
+```ts
+type collapseFromExpand = () => void
 ```
 
 #### action: clearHeightBeforeExpand
 
-```js
-// type signature
-clearHeightBeforeExpand: () => void
+```ts
+type clearHeightBeforeExpand = () => void
 ```
 
 #### action: setRpcData
 
-```js
-// type signature
-setRpcData: (displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void
+```ts
+type setRpcData = (
+  displayedRegionIndex: number,
+  data: FeatureDataResult,
+  loadedBpPerPx: number,
+  region: Region,
+) => void
 ```
 
 #### action: setDensityStats
 
-```js
-// type signature
-setDensityStats: (displayedRegionIndex: number, stats: RegionDensityStats) => void
+```ts
+type setDensityStats = (
+  displayedRegionIndex: number,
+  stats: RegionDensityStats,
+) => void
 ```
 
 #### action: clearDisplaySpecificData
 
-```js
-// type signature
-clearDisplaySpecificData: () => void
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 #### action: pruneRpcDataMapToVisible
 
-```js
-// type signature
-pruneRpcDataMapToVisible: (visibleDisplayedRegionIndices: Set<number>) => void
+```ts
+type pruneRpcDataMapToVisible = (
+  visibleDisplayedRegionIndices: Set<number>,
+) => void
 ```
 
 #### action: startRenderingBackend
 
-```js
-// type signature
-startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
+```ts
+type startRenderingBackend = (backend: CanvasFeatureRenderingBackend) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
 
-```js
-// type signature
-setFeatureDensityStatsLimit: (stats?: { bytes?: number | undefined; fetchSizeLimit?: number | undefined; } | undefined) => void
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?:
+    | { bytes?: number | undefined; fetchSizeLimit?: number | undefined }
+    | undefined,
+) => void
 ```
 
 #### action: setHover
 
-```js
-// type signature
-setHover: (featureId: string | null, subfeatureId: string | null, tooltip: string | undefined) => void
+```ts
+type setHover = (
+  featureId: string | null,
+  subfeatureId: string | null,
+  tooltip: string | undefined,
+) => void
 ```
 
 #### action: clearHover
 
-```js
-// type signature
-clearHover: () => void
+```ts
+type clearHover = () => void
 ```
 
 #### action: setContextMenuFeature
 
-```js
-// type signature
-setContextMenuFeature: (feature?: Feature | undefined) => void
+```ts
+type setContextMenuFeature = (feature?: Feature | undefined) => void
 ```
 
 #### action: setContextMenuInfo
 
-```js
-// type signature
-setContextMenuInfo: (info?: { item: FlatbushItem; displayedRegionIndex: number; } | undefined) => void
+```ts
+type setContextMenuInfo = (
+  info?: { item: FlatbushItem; displayedRegionIndex: number } | undefined,
+) => void
 ```
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+```ts
+type selectFeature = (feature: Feature) => void
 ```
 
 #### action: clearSelection
 
-```js
-// type signature
-clearSelection: () => void
+```ts
+type clearSelection = () => void
 ```
 
 #### action: setShowLabels
 
-```js
-// type signature
-setShowLabels: (value: "auto" | "off" | "on") => void
+```ts
+type setShowLabels = (value: 'auto' | 'off' | 'on') => void
 ```
 
 #### action: setAutoHeight
 
-```js
-// type signature
-setAutoHeight: (value: boolean) => void
+```ts
+type setAutoHeight = (value: boolean) => void
 ```
 
 #### action: setShowDescriptions
 
-```js
-// type signature
-setShowDescriptions: (value: boolean) => void
+```ts
+type setShowDescriptions = (value: boolean) => void
 ```
 
 #### action: setJexlFilters
@@ -827,107 +820,107 @@ setShowDescriptions: (value: boolean) => void
 Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
 undefined to clear it and fall back to the config `jexlFilters` slot.
 
-```js
-// type signature
-setJexlFilters: (filters?: string[] | undefined) => void
+```ts
+type setJexlFilters = (filters?: string[] | undefined) => void
 ```
 
 #### action: setShowOutline
 
-```js
-// type signature
-setShowOutline: (value: boolean) => void
+```ts
+type setShowOutline = (value: boolean) => void
 ```
 
 #### action: setFeatureColor
 
-```js
-// type signature
-setFeatureColor: (color?: string | undefined) => void
+```ts
+type setFeatureColor = (color?: string | undefined) => void
 ```
 
 #### action: setUtrColor
 
-```js
-// type signature
-setUtrColor: (color?: string | undefined) => void
+```ts
+type setUtrColor = (color?: string | undefined) => void
 ```
 
 #### action: showContextMenuForFeature
 
-```js
-// type signature
-showContextMenuForFeature: (featureInfo: FlatbushItem, displayedRegionIndex: number) => void
+```ts
+type showContextMenuForFeature = (
+  featureInfo: FlatbushItem,
+  displayedRegionIndex: number,
+) => void
 ```
 
 #### action: openSetColorDialog
 
-```js
-// type signature
-openSetColorDialog: (showUtrColor?: any) => void
+```ts
+type openSetColorDialog = (showUtrColor?: any) => void
 ```
 
 #### action: openColorByAttributeDialog
 
-```js
-// type signature
-openColorByAttributeDialog: () => void
+```ts
+type openColorByAttributeDialog = () => void
 ```
 
 #### action: openFilterDialog
 
-```js
-// type signature
-openFilterDialog: () => void
+```ts
+type openFilterDialog = () => void
 ```
 
 #### action: fetchFullFeature
 
-```js
-// type signature
-fetchFullFeature: (featureId: string, displayedRegionIndex: number) => Promise<SimpleFeature | undefined>
+```ts
+type fetchFullFeature = (
+  featureId: string,
+  displayedRegionIndex: number,
+) => Promise<SimpleFeature | undefined>
 ```
 
 #### action: selectFeatureById
 
-```js
-// type signature
-selectFeatureById: (featureInfo: FlatbushItem, subfeatureInfo: SubfeatureInfo | undefined, displayedRegionIndex: number) => void
+```ts
+type selectFeatureById = (
+  featureInfo: FlatbushItem,
+  subfeatureInfo: SubfeatureInfo | undefined,
+  displayedRegionIndex: number,
+) => void
 ```
 
 #### action: isCacheValid
 
-```js
-// type signature
-isCacheValid: (displayedRegionIndex: number) => boolean
+```ts
+type isCacheValid = (displayedRegionIndex: number) => boolean
 ```
 
 #### action: getByteEstimateConfig
 
-```js
-// type signature
-getByteEstimateConfig: () => ByteEstimateConfig | null
+```ts
+type getByteEstimateConfig = () => ByteEstimateConfig | null
 ```
 
 #### action: selectFullFeature
 
-```js
-// type signature
-selectFullFeature: (featureId: string, displayedRegionIndex: number) => void
+```ts
+type selectFullFeature = (
+  featureId: string,
+  displayedRegionIndex: number,
+) => void
 ```
 
 #### action: reload
 
-```js
-// type signature
-reload: () => Promise<void>
+```ts
+type reload = () => Promise<void>
 ```
 
 #### action: fetchNeeded
 
-```js
-// type signature
-fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => void
+```ts
+type fetchNeeded = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+) => void
 ```
 
 #### action: setFeatureDensityStats
@@ -935,23 +928,20 @@ fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => vo
 Records the span the byte estimate was measured at so `estimatedVisibleBytes`
 can scale it to the current view (see `byteEstimateVisibleBp`).
 
-```js
-// type signature
-setFeatureDensityStats: (stats?: FeatureDensityStats | undefined) => void
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: clearStaleDensityState
 
-```js
-// type signature
-clearStaleDensityState: () => void
+```ts
+type clearStaleDensityState = () => void
 ```
 
 #### action: afterAttach
 
-```js
-// type signature
-afterAttach: () => void
+```ts
+type afterAttach = () => void
 ```
 
 </details>

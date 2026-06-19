@@ -89,22 +89,22 @@ and docs.
 [reload](../basedisplay#action-reload)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Properties</summary>
+<summary>LinearSyntenyDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearSyntenyDisplay">
+type type = ISimpleType<'LinearSyntenyDisplay'>
 // code
 type: types.literal('LinearSyntenyDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -112,13 +112,13 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Volatiles</summary>
+<summary>LinearSyntenyDisplay - Volatiles</summary>
 
 #### volatile: featureData
 
-```js
+```ts
 // type signature
-SyntenyFeatureData | undefined
+type featureData = SyntenyFeatureData | undefined
 // code
 featureData: undefined as SyntenyFeatureData | undefined
 ```
@@ -129,45 +129,45 @@ Raw GPU-instance geometry produced by the RPC. The view observes this on every
 display and uploads it to the shared backend keyed by `displayKey`. Clearing it
 (undefined) triggers backend eviction.
 
-```js
+```ts
 // type signature
-SyntenyGeometry | undefined
+type instanceData = SyntenyGeometry | undefined
 // code
 instanceData: undefined as SyntenyGeometry | undefined
 ```
 
 #### volatile: hoveredFeatureIdx
 
-```js
+```ts
 // type signature
-number
+type hoveredFeatureIdx = number
 // code
 hoveredFeatureIdx: -1
 ```
 
 #### volatile: clickedFeatureIdx
 
-```js
+```ts
 // type signature
-number
+type clickedFeatureIdx = number
 // code
 clickedFeatureIdx: -1
 ```
 
 #### volatile: contextMenuAnchor
 
-```js
+```ts
 // type signature
-ClickCoord | undefined
+type contextMenuAnchor = ClickCoord | undefined
 // code
 contextMenuAnchor: undefined as ClickCoord | undefined
 ```
 
 #### volatile: statusMessage
 
-```js
+```ts
 // type signature
-string | undefined
+type statusMessage = string | undefined
 // code
 statusMessage: undefined as string | undefined
 ```
@@ -177,18 +177,18 @@ statusMessage: undefined as string | undefined
 determinate progress fraction [0,1] for the current status, or undefined when
 the in-flight phase is indeterminate
 
-```js
+```ts
 // type signature
-number | undefined
+type statusProgress = number | undefined
 // code
 statusProgress: undefined as number | undefined
 ```
 
 #### volatile: assembliesSwapped
 
-```js
+```ts
 // type signature
-false
+type assembliesSwapped = false
 // code
 assembliesSwapped: false
 ```
@@ -196,60 +196,50 @@ assembliesSwapped: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Getters</summary>
+<summary>LinearSyntenyDisplay - Getters</summary>
 
 #### getter: parentHelper
 
-```js
-// type
-{
-  height: number
-  level: number
-}
+```ts
+type parentHelper = { height: number; level: number }
 ```
 
 #### getter: level
 
-```js
-// type
-number
+```ts
+type level = number
 ```
 
 #### getter: displayKey
 
 Stable backend key under the view-shared backend.
 
-```js
-// type
-number
+```ts
+type displayKey = number
 ```
 
 #### getter: height
 
-```js
-// type
-number
+```ts
+type height = number
 ```
 
 #### getter: adapterConfig
 
-```js
-// type
-any
+```ts
+type adapterConfig = any
 ```
 
 #### getter: trackIds
 
-```js
-// type
-string[]
+```ts
+type trackIds = string[]
 ```
 
 #### getter: numFeats
 
-```js
-// type
-number
+```ts
+type numFeats = number
 ```
 
 #### getter: warnings
@@ -258,13 +248,8 @@ Warnings surfaced in the view header. Flags a likely reversed assembly row
 order, detected once at view load (only when the two assemblies have distinct
 chromosome names).
 
-```js
-// type
-{
-  message: string
-  effect: string
-}
-;[]
+```ts
+type warnings = { message: string; effect: string }[]
 ```
 
 #### getter: ready
@@ -273,9 +258,8 @@ A fetch has completed (data is present, even if it mapped zero features). Not
 `numFeats > 0` — an empty-but-finished fetch is ready, otherwise an empty result
 spins the loading overlay forever.
 
-```js
-// type
-boolean
+```ts
+type ready = boolean
 ```
 
 #### getter: loading
@@ -283,51 +267,60 @@ boolean
 Fetch in-flight. Excludes error so error UI and loading UI never show
 simultaneously.
 
-```js
-// type
-boolean
+```ts
+type loading = boolean
 ```
 
 #### getter: view
 
-```js
-// type
-ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
+```ts
+type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
 ```
 
 #### getter: colorSchemeConfig
 
-```js
-// type
-{ cigarColors: { I: string; N: string; D: string; X: string; M: string; '=': string; }; }
+```ts
+type colorSchemeConfig = {
+  cigarColors: {
+    I: string
+    N: string
+    D: string
+    X: string
+    M: string
+    '=': string
+  }
+}
 ```
 
 #### getter: colorMapWithAlpha
 
-```js
-// type
-{ I: string; N: string; D: string; X: string; M: string; '=': string; }
+```ts
+type colorMapWithAlpha = {
+  I: string
+  N: string
+  D: string
+  X: string
+  M: string
+  '=': string
+}
 ```
 
 #### getter: posColorWithAlpha
 
-```js
-// type
-string
+```ts
+type posColorWithAlpha = string
 ```
 
 #### getter: negColorWithAlpha
 
-```js
-// type
-string
+```ts
+type negColorWithAlpha = string
 ```
 
 #### getter: queryColorWithAlphaMap
 
-```js
-// type
-(queryName: string) => string
+```ts
+type queryColorWithAlphaMap = (queryName: string) => string
 ```
 
 #### getter: computedColors
@@ -337,9 +330,8 @@ featureData, or instanceData descriptors change — this is the gpuProps half of
 the rpcProps/gpuProps split. colorBy changes flow through here without touching
 the RPC.
 
-```js
-// type
-Uint32Array<ArrayBuffer> | undefined
+```ts
+type computedColors = Uint32Array<ArrayBuffer> | undefined
 ```
 
 #### getter: renderInstanceData
@@ -348,16 +340,14 @@ Instance data with main-thread-computed colors substituted in. The view's upload
 autorun reads this, so any colorBy change re-fires upload without an RPC
 round-trip.
 
-```js
-// type
-{ colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 9 more ...; instanceCount: number; } | undefined
+```ts
+type renderInstanceData = { colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 9 more ...; instanceCount: number; } | undefined
 ```
 
 #### getter: tooltipText
 
-```js
-// type
-string
+```ts
+type tooltipText = string
 ```
 
 #### getter: renderParams
@@ -365,78 +355,86 @@ string
 Per-track render params consumed by the view's aggregator. The view substitutes
 yTop before handing this to the backend.
 
-```js
-// type
-{ yTop: number; height: number; alpha: number; minAlignmentLength: number; hoveredFeatureId: number; clickedFeatureId: number; offsetPx0: number; offsetPx1: number; bpPerPx0: number; bpPerPx1: number; drawCurves: boolean; } | undefined
+```ts
+type renderParams =
+  | {
+      yTop: number
+      height: number
+      alpha: number
+      minAlignmentLength: number
+      hoveredFeatureId: number
+      clickedFeatureId: number
+      offsetPx0: number
+      offsetPx1: number
+      bpPerPx0: number
+      bpPerPx1: number
+      drawCurves: boolean
+    }
+  | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Methods</summary>
+<summary>LinearSyntenyDisplay - Methods</summary>
 
 #### method: getFeature
 
-```js
-// type signature
-getFeature: (index: number) => FeatPos | undefined
+```ts
+type getFeature = (index: number) => FeatPos | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Actions</summary>
+<summary>LinearSyntenyDisplay - Actions</summary>
 
 #### action: setRpcData
 
 Set both feature and instance data in one MST action so downstream autoruns
 (upload, render) fire once per RPC completion, not twice.
 
-```js
-// type signature
-setRpcData: (featureData: SyntenyFeatureData | undefined, instanceData: SyntenyGeometry | undefined) => void
+```ts
+type setRpcData = (
+  featureData: SyntenyFeatureData | undefined,
+  instanceData: SyntenyGeometry | undefined,
+) => void
 ```
 
 #### action: setStatusMessage
 
-```js
-// type signature
-setStatusMessage: (status?: RpcStatus | undefined) => void
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
 
 #### action: setAssembliesSwapped
 
-```js
-// type signature
-setAssembliesSwapped: (arg: boolean) => void
+```ts
+type setAssembliesSwapped = (arg: boolean) => void
 ```
 
 #### action: setHoveredFeatureIdx
 
-```js
-// type signature
-setHoveredFeatureIdx: (idx: number) => void
+```ts
+type setHoveredFeatureIdx = (idx: number) => void
 ```
 
 #### action: setClickedFeatureIdx
 
-```js
-// type signature
-setClickedFeatureIdx: (idx: number) => void
+```ts
+type setClickedFeatureIdx = (idx: number) => void
 ```
 
 #### action: openContextMenu
 
-```js
-// type signature
-openContextMenu: (anchor: ClickCoord) => void
+```ts
+type openContextMenu = (anchor: ClickCoord) => void
 ```
 
 #### action: closeContextMenu
 
-```js
-// type signature
-closeContextMenu: () => void
+```ts
+type closeContextMenu = () => void
 ```
 
 </details>

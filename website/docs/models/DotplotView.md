@@ -72,103 +72,106 @@ and docs.
 [attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Properties</summary>
+<summary>DotplotView - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"DotplotView">
+type type = ISimpleType<'DotplotView'>
 // code
 type: types.literal('DotplotView')
 ```
 
 #### property: height
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: borderSize
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type borderSize = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 borderSize: types.stripDefault(types.number, defaultBorderSize)
 ```
 
 #### property: tickSize
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type tickSize = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 tickSize: types.stripDefault(types.number, defaultTickSize)
 ```
 
 #### property: vtextRotation
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type vtextRotation = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 vtextRotation: types.stripDefault(types.number, 0)
 ```
 
 #### property: htextRotation
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type htextRotation = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 htextRotation: types.stripDefault(types.number, defaultHtextRotation)
 ```
 
 #### property: fontSize
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type fontSize = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 fontSize: types.stripDefault(types.number, defaultFontSize)
 ```
 
 #### property: trackSelectorType
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: assemblyNames
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>
+type assemblyNames = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
 // code
 assemblyNames: types.stripDefault(types.array(types.string), [])
 ```
 
 #### property: drawCigar
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawCigar = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawCigar: types.stripDefault(types.boolean, true)
 ```
@@ -180,14 +183,17 @@ bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all
 displays render at the same tier and the menu doesn't need to fan out per
 display.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<"auto" | "fine" | "coarse">, [undefined]>
+type lodMode = IOptionalIType<
+  ISimpleType<'auto' | 'fine' | 'coarse'>,
+  [undefined]
+>
 // code
 lodMode: types.stripDefault(
-            types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-            'auto',
-          )
+  types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+  'auto',
+)
 ```
 
 #### property: lockAspectRatio
@@ -196,9 +202,9 @@ When true, hview and vview are kept at the same bpPerPx so the dotplot stays
 square. Wheel zoom already preserves the ratio; box-zoom and other independent
 ops trigger an autorun resync.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type lockAspectRatio = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 lockAspectRatio: types.stripDefault(types.boolean, false)
 ```
@@ -208,36 +214,36 @@ lockAspectRatio: types.stripDefault(types.boolean, false)
 Screen-space line width (CSS pixels) applied to every dotplot display in this
 view. View-level because the GPU pass renders all displays with one uniform.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type lineWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 lineWidth: types.stripDefault(types.number, defaultLineWidth)
 ```
 
 #### property: hview
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...
+type hview = IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...
 // code
 hview: types.optional(DotplotHView, {})
 ```
 
 #### property: vview
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...
+type vview = IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...
 // code
 vview: types.optional(DotplotVView, {})
 ```
 
 #### property: tracks
 
-```js
+```ts
 // type signature
-IArrayType<IAnyType>
+type tracks = IArrayType<IAnyType>
 // code
 tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
@@ -247,23 +253,27 @@ tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 this represents tracks specific to this view specifically used for read vs ref
 dotplots where this track would not really apply elsewhere
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
+type viewTrackConfigs = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
 viewTrackConfigs: types.stripDefault(
-            types.array(pm.pluggableConfigSchemaType('track')),
-            [],
-          )
+  types.array(pm.pluggableConfigSchemaType('track')),
+  [],
+)
 ```
 
 #### property: init
 
 used for initializing the view from a session snapshot
 
-```js
+```ts
 // type signature
-IType<DotplotViewInit | undefined, DotplotViewInit | undefined, DotplotViewInit | undefined>
+type init = IType<
+  DotplotViewInit | undefined,
+  DotplotViewInit | undefined,
+  DotplotViewInit | undefined
+>
 // code
 init: types.frozen<DotplotViewInit | undefined>()
 ```
@@ -273,23 +283,23 @@ init: types.frozen<DotplotViewInit | undefined>()
 translucent highlight bands drawn per-axis: vertical when the region's assembly
 matches hview, horizontal when it matches vview
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IType<HighlightType, HighlightType, HighlightType>>, [undefined]>
+type highlight = IOptionalIType<
+  IArrayType<IType<HighlightType, HighlightType, HighlightType>>,
+  [undefined]
+>
 // code
-highlight: types.stripDefault(
-            types.array(types.frozen<HighlightType>()),
-            [],
-          )
+highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
 ```
 
 #### property: highlightsVisible
 
 controls whether view.highlight entries are rendered
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 highlightsVisible: types.stripDefault(types.boolean, true)
 ```
@@ -297,22 +307,22 @@ highlightsVisible: types.stripDefault(types.boolean, true)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Volatiles</summary>
+<summary>DotplotView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
-```js
+```ts
 // type signature
-number | undefined
+type volatileWidth = number | undefined
 // code
 volatileWidth: undefined as number | undefined
 ```
 
 #### volatile: volatileError
 
-```js
+```ts
 // type signature
-unknown
+type volatileError = unknown
 // code
 volatileError: undefined as unknown
 ```
@@ -322,9 +332,9 @@ volatileError: undefined as unknown
 these are 'personal preferences', stored in volatile and loaded/written to
 localStorage
 
-```js
+```ts
 // type signature
-string
+type cursorMode = string
 // code
 cursorMode: localStorageGetItem(LS_CURSOR_MODE) === 'move'
   ? 'move'
@@ -333,30 +343,29 @@ cursorMode: localStorageGetItem(LS_CURSOR_MODE) === 'move'
 
 #### volatile: borderX
 
-```js
+```ts
 // type signature
-number
+type borderX = number
 // code
 borderX: 100
 ```
 
 #### volatile: borderY
 
-```js
+```ts
 // type signature
-number
+type borderY = number
 // code
 borderY: 100
 ```
 
 #### volatile: importFormSyntenyTrackSelections
 
-```js
+```ts
 // type signature
-IObservableArray<ImportFormSyntenyTrack>
+type importFormSyntenyTrackSelections = IObservableArray<ImportFormSyntenyTrack>
 // code
-importFormSyntenyTrackSelections:
-          observable.array<ImportFormSyntenyTrack>()
+importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
 ```
 
 #### volatile: awaitingAutoDiagonalize
@@ -366,9 +375,9 @@ the DiagonalizeDotplot pass. Used to gate showLoading on so the user sees a
 spinner with "Reordering chromosomes…" instead of an undiagonalized plot that
 immediately re-paints.
 
-```js
+```ts
 // type signature
-false
+type awaitingAutoDiagonalize = false
 // code
 awaitingAutoDiagonalize: false
 ```
@@ -376,150 +385,120 @@ awaitingAutoDiagonalize: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Getters</summary>
+<summary>DotplotView - Getters</summary>
 
 #### getter: width
 
-```js
-// type
-number
+```ts
+type width = number
 ```
 
 #### getter: assemblyErrors
 
-```js
-// type
-string
+```ts
+type assemblyErrors = string
 ```
 
 #### getter: assembliesInitialized
 
-```js
-// type
-boolean
+```ts
+type assembliesInitialized = boolean
 ```
 
 #### getter: initialized
 
-```js
-// type
-boolean
+```ts
+type initialized = boolean
 ```
 
 #### getter: hticks
 
-```js
-// type
-{
-  type: string
-  base: number
-  index: number
-  refName: string
-}
-;[]
+```ts
+type hticks = { type: string; base: number; index: number; refName: string }[]
 ```
 
 #### getter: vticks
 
-```js
-// type
-{
-  type: string
-  base: number
-  index: number
-  refName: string
-}
-;[]
+```ts
+type vticks = { type: string; base: number; index: number; refName: string }[]
 ```
 
 #### getter: hTickPositions
 
-```js
-// type
-PositionedTick[]
+```ts
+type hTickPositions = PositionedTick[]
 ```
 
 #### getter: vTickPositions
 
-```js
-// type
-PositionedTick[]
+```ts
+type vTickPositions = PositionedTick[]
 ```
 
 #### getter: hasSomethingToShow
 
-```js
-// type
-boolean
+```ts
+type hasSomethingToShow = boolean
 ```
 
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view
 
-```js
-// type
-boolean
+```ts
+type showLoading = boolean
 ```
 
 #### getter: showImportForm
 
 Whether to show the import form
 
-```js
-// type
-boolean
+```ts
+type showImportForm = boolean
 ```
 
 #### getter: loadingMessage
 
-```js
-// type
-;'Loading' | 'Reordering chromosomes…' | undefined
+```ts
+type loadingMessage = 'Loading' | 'Reordering chromosomes…' | undefined
 ```
 
 #### getter: viewWidth
 
-```js
-// type
-number
+```ts
+type viewWidth = number
 ```
 
 #### getter: viewHeight
 
-```js
-// type
-number
+```ts
+type viewHeight = number
 ```
 
 #### getter: hblockLabelKeysToHide
 
-```js
-// type
-Set<string>
+```ts
+type hblockLabelKeysToHide = Set<string>
 ```
 
 #### getter: vblockLabelKeysToHide
 
-```js
-// type
-Set<string>
+```ts
+type vblockLabelKeysToHide = Set<string>
 ```
 
 #### getter: views
 
-```js
-// type
-(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]
+```ts
+type views = (ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: dotplotDisplays
 
 DotplotDisplays under each track, indexed to match `tracks`.
 
-```js
-// type
-(ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
+```ts
+type dotplotDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: hasLodCapableAdapter
@@ -527,9 +506,8 @@ DotplotDisplays under each track, indexed to match `tracks`.
 True if any track has an adapter that declares the 'lod' capability. Used to
 gate the LOD menu — only PIF supports it.
 
-```js
-// type
-boolean
+```ts
+type hasLodCapableAdapter = boolean
 ```
 
 #### getter: geometryByTrackIndex
@@ -537,9 +515,8 @@ boolean
 Per-display GPU geometry keyed by track index. The upload autorun diffs this
 map: new entries upload, vanished entries evict.
 
-```js
-// type
-Map<number, DotplotGeometryData>
+```ts
+type geometryByTrackIndex = Map<number, DotplotGeometryData>
 ```
 
 #### getter: dotplotRenderState
@@ -547,31 +524,34 @@ Map<number, DotplotGeometryData>
 Aggregated per-frame render state. Built by walking each display that has
 uploaded geometry; returns undefined when none do, which gates the render pass.
 
-```js
-// type
-{ viewBpH: number; viewBpV: number; bpPerPxHInv: number; bpPerPxVInv: number; lineWidth: number; displayKeys: number[]; } | undefined
+```ts
+type dotplotRenderState =
+  | {
+      viewBpH: number
+      viewBpV: number
+      bpPerPxHInv: number
+      bpPerPxVInv: number
+      lineWidth: number
+      displayKeys: number[]
+    }
+  | undefined
 ```
 
 #### getter: error
 
-```js
-// type
-unknown
+```ts
+type error = unknown
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Methods</summary>
+<summary>DotplotView - Methods</summary>
 
 #### method: renderProps
 
-```js
-// type signature
-renderProps: () => {
-  drawCigar: boolean
-  highResolutionScaling: any
-}
+```ts
+type renderProps = () => { drawCigar: boolean; highResolutionScaling: any }
 ```
 
 #### method: getHHighlightCoords
@@ -580,9 +560,13 @@ Map a highlight/bookmark region to {left, width} px on the horizontal axis. left
 is already screen-offset. Returns undefined when the region isn't on hview's
 assembly/displayed regions.
 
-```js
-// type signature
-getHHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { width: number; left: number; } | undefined
+```ts
+type getHHighlightCoords = (region: {
+  assemblyName?: string | undefined
+  refName: string
+  start: number
+  end: number
+}) => { width: number; left: number } | undefined
 ```
 
 #### method: getVHighlightCoords
@@ -591,63 +575,63 @@ Map a highlight/bookmark region to {top, height} px on the vertical axis. The
 vview lays out bottom-to-top, so the band is y-flipped into screen space.
 Returns undefined when the region isn't on vview.
 
-```js
-// type signature
-getVHighlightCoords: (region: { assemblyName?: string | undefined; refName: string; start: number; end: number; }) => { top: number; height: number; } | undefined
+```ts
+type getVHighlightCoords = (region: {
+  assemblyName?: string | undefined
+  refName: string
+  start: number
+  end: number
+}) => { top: number; height: number } | undefined
 ```
 
 #### method: menuItems
 
-```js
-// type signature
-menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
+```ts
+type menuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; } | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Actions</summary>
+<summary>DotplotView - Actions</summary>
 
 #### action: setImportFormSyntenyTrack
 
-```js
-// type signature
-setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
+```ts
+type setImportFormSyntenyTrack = (
+  arg: number,
+  val: ImportFormSyntenyTrack,
+) => void
 ```
 
 #### action: startRenderingBackend
 
-```js
-// type signature
-startRenderingBackend: (backend: DotplotRenderingBackend) => void
+```ts
+type startRenderingBackend = (backend: DotplotRenderingBackend) => void
 ```
 
 #### action: setCursorMode
 
-```js
-// type signature
-setCursorMode: (mode: CursorMode) => void
+```ts
+type setCursorMode = (mode: CursorMode) => void
 ```
 
 #### action: setDrawCigar
 
-```js
-// type signature
-setDrawCigar: (flag: boolean) => void
+```ts
+type setDrawCigar = (flag: boolean) => void
 ```
 
 #### action: setLodMode
 
-```js
-// type signature
-setLodMode: (value: "auto" | "fine" | "coarse") => void
+```ts
+type setLodMode = (value: 'auto' | 'fine' | 'coarse') => void
 ```
 
 #### action: setLockAspectRatio
 
-```js
-// type signature
-setLockAspectRatio: (flag: boolean) => void
+```ts
+type setLockAspectRatio = (flag: boolean) => void
 ```
 
 #### action: syncBpPerPx
@@ -656,239 +640,219 @@ Equalize hview/vview bpPerPx without recentering. Used by the aspect-lock
 autorun to absorb divergence from box-zoom and similar operations while
 preserving the user's current pan position.
 
-```js
-// type signature
-syncBpPerPx: () => void
+```ts
+type syncBpPerPx = () => void
 ```
 
 #### action: setLineWidth
 
-```js
-// type signature
-setLineWidth: (value: number) => void
+```ts
+type setLineWidth = (value: number) => void
 ```
 
 #### action: addToHighlights
 
-```js
-// type signature
-addToHighlights: (highlight: HighlightType) => void
+```ts
+type addToHighlights = (highlight: HighlightType) => void
 ```
 
 #### action: setHighlight
 
-```js
-// type signature
-setHighlight: (highlight?: HighlightType[] | undefined) => void
+```ts
+type setHighlight = (highlight?: HighlightType[] | undefined) => void
 ```
 
 #### action: removeHighlight
 
-```js
-// type signature
-removeHighlight: (highlight: HighlightType) => void
+```ts
+type removeHighlight = (highlight: HighlightType) => void
 ```
 
 #### action: setHighlightsVisible
 
-```js
-// type signature
-setHighlightsVisible: (arg: boolean) => void
+```ts
+type setHighlightsVisible = (arg: boolean) => void
 ```
 
 #### action: clearView
 
 returns to the import form
 
-```js
-// type signature
-clearView: () => void
+```ts
+type clearView = () => void
 ```
 
 #### action: setBorderX
 
-```js
-// type signature
-setBorderX: (n: number) => void
+```ts
+type setBorderX = (n: number) => void
 ```
 
 #### action: setBorderY
 
-```js
-// type signature
-setBorderY: (n: number) => void
+```ts
+type setBorderY = (n: number) => void
 ```
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => number
+```ts
+type setWidth = (newWidth: number) => number
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (newHeight: number) => number
+```ts
+type setHeight = (newHeight: number) => number
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (e: unknown) => void
+```ts
+type setError = (e: unknown) => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: DotplotViewInit | undefined) => void
+```ts
+type setInit = (init?: DotplotViewInit | undefined) => void
 ```
 
 #### action: setAwaitingAutoDiagonalize
 
-```js
-// type signature
-setAwaitingAutoDiagonalize: (arg: boolean) => void
+```ts
+type setAwaitingAutoDiagonalize = (arg: boolean) => void
 ```
 
 #### action: zoomOut
 
-```js
-// type signature
-zoomOut: () => void
+```ts
+type zoomOut = () => void
 ```
 
 #### action: zoomIn
 
-```js
-// type signature
-zoomIn: () => void
+```ts
+type zoomIn = () => void
 ```
 
 #### action: activateTrackSelector
 
-```js
-// type signature
-activateTrackSelector: () => Widget
+```ts
+type activateTrackSelector = () => Widget
 ```
 
 #### action: showTrack
 
-```js
-// type signature
-showTrack: (trackId: string, initialSnapshot?: any) => any
+```ts
+type showTrack = (trackId: string, initialSnapshot?: any) => any
 ```
 
 #### action: hideTrack
 
-```js
-// type signature
-hideTrack: (trackId: string) => boolean
+```ts
+type hideTrack = (trackId: string) => boolean
 ```
 
 #### action: toggleTrack
 
-```js
-// type signature
-toggleTrack: (trackId: string) => void
+```ts
+type toggleTrack = (trackId: string) => void
 ```
 
 #### action: setAssemblyNames
 
-```js
-// type signature
-setAssemblyNames: (target: string, query: string) => void
+```ts
+type setAssemblyNames = (target: string, query: string) => void
 ```
 
 #### action: setViews
 
-```js
-// type signature
-setViews: (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
+```ts
+type setViews = (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
 ```
 
 #### action: getCoords
 
-```js
-// type signature
-getCoords: (mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; }[] | undefined
+```ts
+type getCoords = (
+  mousedown: Coord,
+  mouseup: Coord,
+) =>
+  | {
+      coord: number
+      index: number
+      refName: string
+      oob: boolean
+      assemblyName: string
+      offset: number
+      start: number
+      end: number
+      reversed?: boolean | undefined
+    }[]
+  | undefined
 ```
 
 #### action: zoomInToMouseCoords
 
 zooms into clicked and dragged region
 
-```js
-// type signature
-zoomInToMouseCoords: (mousedown: Coord, mouseup: Coord) => void
+```ts
+type zoomInToMouseCoords = (mousedown: Coord, mouseup: Coord) => void
 ```
 
 #### action: calculateBorders
 
 Calculate borders synchronously for a given zoom level
 
-```js
-// type signature
-calculateBorders: () => {
-  borderX: number
-  borderY: number
-}
+```ts
+type calculateBorders = () => { borderX: number; borderY: number }
 ```
 
 #### action: showAllRegions
 
-```js
-// type signature
-showAllRegions: () => void
+```ts
+type showAllRegions = () => void
 ```
 
 #### action: initializeDisplayedRegions
 
-```js
-// type signature
-initializeDisplayedRegions: () => void
+```ts
+type initializeDisplayedRegions = () => void
 ```
 
 #### action: onDotplotView
 
 creates a linear synteny view from the clicked and dragged region
 
-```js
-// type signature
-onDotplotView: (mousedown: Coord, mouseup: Coord) => void
+```ts
+type onDotplotView = (mousedown: Coord, mouseup: Coord) => void
 ```
 
 #### action: exportSvg
 
 creates an svg export and save using FileSaver
 
-```js
-// type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### action: applySquare
 
-```js
-// type signature
-applySquare: (ratio: number) => void
+```ts
+type applySquare = (ratio: number) => void
 ```
 
 #### action: squareView
 
-```js
-// type signature
-squareView: () => void
+```ts
+type squareView = () => void
 ```
 
 #### action: squareViewProportional
 
-```js
-// type signature
-squareViewProportional: () => void
+```ts
+type squareViewProportional = () => void
 ```
 
 </details>

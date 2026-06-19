@@ -22,13 +22,13 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SnackbarModel - Volatiles</summary>
+<summary>SnackbarModel - Volatiles</summary>
 
 #### volatile: snackbarMessages
 
-```js
+```ts
 // type signature
-IObservableArray<SnackbarMessage>
+type snackbarMessages = IObservableArray<SnackbarMessage>
 // code
 snackbarMessages: observable.array<SnackbarMessage>()
 ```
@@ -36,53 +36,60 @@ snackbarMessages: observable.array<SnackbarMessage>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SnackbarModel - Getters</summary>
+<summary>SnackbarModel - Getters</summary>
 
 #### getter: snackbarMessageSet
 
-```js
-// type
-Map<string, SnackbarMessage>
+```ts
+type snackbarMessageSet = Map<string, SnackbarMessage>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SnackbarModel - Actions</summary>
+<summary>SnackbarModel - Actions</summary>
 
 #### action: notify
 
-```js
-// type signature
-notify: (message: string, level?: NotificationLevel | undefined, action?: SnackAction | SnackAction[] | undefined) => void
+```ts
+type notify = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  action?: SnackAction | SnackAction[] | undefined,
+) => void
 ```
 
 #### action: notifyError
 
-```js
-// type signature
-notifyError: (errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction | undefined) => void
+```ts
+type notifyError = (
+  errorMessage: string,
+  error?: unknown,
+  extra?: unknown,
+  action?: SnackAction | undefined,
+) => void
 ```
 
 #### action: pushSnackbarMessage
 
-```js
-// type signature
-pushSnackbarMessage: (message: string, level?: NotificationLevel | undefined, actions?: SnackAction[] | undefined) => void
+```ts
+type pushSnackbarMessage = (
+  message: string,
+  level?: NotificationLevel | undefined,
+  actions?: SnackAction[] | undefined,
+) => void
 ```
 
 #### action: popSnackbarMessage
 
-```js
-// type signature
-popSnackbarMessage: () => SnackbarMessage | undefined
+```ts
+type popSnackbarMessage = () => SnackbarMessage | undefined
 ```
 
 #### action: removeSnackbarMessage
 
-```js
-// type signature
-removeSnackbarMessage: (message: string) => void
+```ts
+type removeSnackbarMessage = (message: string) => void
 ```
 
 </details>

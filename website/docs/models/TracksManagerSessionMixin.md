@@ -77,13 +77,12 @@ and docs.
 [removeReferring](../referencemanagementsessionmixin#action-removereferring)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TracksManagerSessionMixin - Getters</summary>
+<summary>TracksManagerSessionMixin - Getters</summary>
 
 #### getter: tracks
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: getTracksById
@@ -93,9 +92,8 @@ jbrowse.tracks are returned as plain objects here; hydration to MST models
 happens lazily in TrackConfigurationReference on first access. MobX caches this
 until any dependency changes.
 
-```js
-// type
-() => Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```ts
+type getTracksById = () => Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 #### getter: tracksById
@@ -103,21 +101,19 @@ until any dependency changes.
 MobX-cached map of trackId → config for all tracks, assemblies, and connections.
 Recomputes only when dependencies change.
 
-```js
-// type
-Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```ts
+type tracksById = Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TracksManagerSessionMixin - Actions</summary>
+<summary>TracksManagerSessionMixin - Actions</summary>
 
 #### action: addTrackConf
 
-```js
-// type signature
-addTrackConf: (trackConf: AnyConfiguration) => any
+```ts
+type addTrackConf = (trackConf: AnyConfiguration) => any
 ```
 
 #### action: updateTrackConfiguration
@@ -126,16 +122,17 @@ Persist edited track config back to the in-memory jbrowse config. The
 session-tracks mixin overrides this so a non-admin's edits become a shareable
 session-track override instead.
 
-```js
-// type signature
-updateTrackConfiguration: (trackConf: { [key: string]: unknown; trackId: string; }) => void
+```ts
+type updateTrackConfiguration = (trackConf: {
+  [key: string]: unknown
+  trackId: string
+}) => void
 ```
 
 #### action: deleteTrackConf
 
-```js
-// type signature
-deleteTrackConf: (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type deleteTrackConf = (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 </details>

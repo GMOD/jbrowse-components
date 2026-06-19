@@ -77,13 +77,13 @@ and docs.
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Properties</summary>
+<summary>JBrowseWebRootModel - Properties</summary>
 
 #### property: configPath
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type configPath = IMaybe<ISimpleType<string>>
 // code
 configPath: types.maybe(types.string)
 ```
@@ -91,58 +91,58 @@ configPath: types.maybe(types.string)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Volatiles</summary>
+<summary>JBrowseWebRootModel - Volatiles</summary>
 
 #### volatile: adminMode
 
-```js
+```ts
 // type signature
-boolean
+type adminMode = boolean
 // code
 adminMode
 ```
 
 #### volatile: sessionDB
 
-```js
+```ts
 // type signature
-IDBPDatabase<SessionDB> | undefined
+type sessionDB = IDBPDatabase<SessionDB> | undefined
 // code
 sessionDB: undefined as IDBPDatabase<SessionDB> | undefined
 ```
 
 #### volatile: version
 
-```js
+```ts
 // type signature
-string
+type version = string
 // code
 version: packageJSON.version
 ```
 
 #### volatile: gitCommit
 
-```js
+```ts
 // type signature
-string
+type gitCommit = string
 // code
 gitCommit
 ```
 
 #### volatile: pluginsUpdated
 
-```js
+```ts
 // type signature
-false
+type pluginsUpdated = false
 // code
 pluginsUpdated: false
 ```
 
 #### volatile: rpcManager
 
-```js
+```ts
 // type signature
-RpcManager
+type rpcManager = RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
   makeWorkerInstance,
@@ -152,112 +152,109 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 
 #### volatile: savedSessionMetadata
 
-```js
+```ts
 // type signature
-SessionMetadata[] | undefined
+type savedSessionMetadata = SessionMetadata[] | undefined
 // code
 savedSessionMetadata: undefined as SessionMetadata[] | undefined
 ```
 
 #### volatile: reloadPluginManagerCallback
 
-```js
+```ts
 // type signature
-(_configSnapshot: Record<string, unknown>, _sessionSnapshot: Record<string, unknown>) => void
+type reloadPluginManagerCallback = (
+  _configSnapshot: Record<string, unknown>,
+  _sessionSnapshot: Record<string, unknown>,
+) => void
 // code
 reloadPluginManagerCallback: (
-        _configSnapshot: Record<string, unknown>,
-        _sessionSnapshot: Record<string, unknown>,
-      ) => {
-        console.error('reloadPluginManagerCallback unimplemented')
-      }
+  _configSnapshot: Record<string, unknown>,
+  _sessionSnapshot: Record<string, unknown>,
+) => {
+  console.error('reloadPluginManagerCallback unimplemented')
+}
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Methods</summary>
+<summary>JBrowseWebRootModel - Methods</summary>
 
 #### method: menus
 
-```js
-// type signature
-menus: () => Menu[]
+```ts
+type menus = () => Menu[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Actions</summary>
+<summary>JBrowseWebRootModel - Actions</summary>
 
 #### action: setSavedSessionMetadata
 
-```js
-// type signature
-setSavedSessionMetadata: (sessions: SessionMetadata[]) => void
+```ts
+type setSavedSessionMetadata = (sessions: SessionMetadata[]) => void
 ```
 
 #### action: fetchSessionMetadata
 
-```js
-// type signature
-fetchSessionMetadata: () => Promise<void>
+```ts
+type fetchSessionMetadata = () => Promise<void>
 ```
 
 #### action: setSessionDB
 
-```js
-// type signature
-setSessionDB: (sessionDB: IDBPDatabase<SessionDB>) => void
+```ts
+type setSessionDB = (sessionDB: IDBPDatabase<SessionDB>) => void
 ```
 
 #### action: setPluginsUpdated
 
-```js
-// type signature
-setPluginsUpdated: () => void
+```ts
+type setPluginsUpdated = () => void
 ```
 
 #### action: setReloadPluginManagerCallback
 
-```js
-// type signature
-setReloadPluginManagerCallback: (callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void
+```ts
+type setReloadPluginManagerCallback = (
+  callback: (
+    configSnapshot: Record<string, unknown>,
+    sessionSnapshot: Record<string, unknown>,
+  ) => void,
+) => void
 ```
 
 #### action: setDefaultSession
 
-```js
-// type signature
-setDefaultSession: () => void
+```ts
+type setDefaultSession = () => void
 ```
 
 #### action: activateSession
 
-```js
-// type signature
-activateSession: (id: string) => Promise<void>
+```ts
+type activateSession = (id: string) => Promise<void>
 ```
 
 #### action: setSavedSessionFavorite
 
-```js
-// type signature
-setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
+```ts
+type setSavedSessionFavorite = (id: string, favorite: boolean) => Promise<void>
 ```
 
 #### action: deleteSavedSession
 
-```js
-// type signature
-deleteSavedSession: (id: string) => Promise<void>
+```ts
+type deleteSavedSession = (id: string) => Promise<void>
 ```
 
 #### action: renameSavedSession
 
-```js
-// type signature
-renameSavedSession: (id: string, name: string) => Promise<void>
+```ts
+type renameSavedSession = (id: string, name: string) => Promise<void>
 ```
 
 </details>

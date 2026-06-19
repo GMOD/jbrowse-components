@@ -26,46 +26,41 @@ delegating to the root's . Composed only by the full-app jbrowse-web session;
 react-app omits it (its root has no session database).
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionManagementMixin - Getters</summary>
+<summary>WebSessionManagementMixin - Getters</summary>
 
 #### getter: savedSessionMetadata
 
-```js
-// type
-SessionMetadata[] | undefined
+```ts
+type savedSessionMetadata = SessionMetadata[] | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionManagementMixin - Actions</summary>
+<summary>WebSessionManagementMixin - Actions</summary>
 
 #### action: deleteSavedSession
 
-```js
-// type signature
-deleteSavedSession: (id: string) => Promise<void>
+```ts
+type deleteSavedSession = (id: string) => Promise<void>
 ```
 
 #### action: setSavedSessionFavorite
 
-```js
-// type signature
-setSavedSessionFavorite: (id: string, favorite: boolean) => Promise<void>
+```ts
+type setSavedSessionFavorite = (id: string, favorite: boolean) => Promise<void>
 ```
 
 #### action: renameSavedSession
 
-```js
-// type signature
-renameSavedSession: (id: string, name: string) => Promise<void>
+```ts
+type renameSavedSession = (id: string, name: string) => Promise<void>
 ```
 
 #### action: activateSession
 
-```js
-// type signature
-activateSession: (id: string) => Promise<void>
+```ts
+type activateSession = (id: string) => Promise<void>
 ```
 
 </details>

@@ -22,43 +22,44 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">InternetAccountsMixin - Properties</summary>
+<summary>InternetAccountsMixin - Properties</summary>
 
 #### property: internetAccounts
 
-```js
+```ts
 // type signature
-IArrayType<IAnyType>
+type internetAccounts = IArrayType<IAnyType>
 // code
 internetAccounts: types.array(
-        pluginManager.pluggableMstType('internet account', 'stateModel'),
-      )
+  pluginManager.pluggableMstType('internet account', 'stateModel'),
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">InternetAccountsMixin - Actions</summary>
+<summary>InternetAccountsMixin - Actions</summary>
 
 #### action: initializeInternetAccount
 
-```js
-// type signature
-initializeInternetAccount: (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
+```ts
+type initializeInternetAccount = (internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
 ```
 
 #### action: createEphemeralInternetAccount
 
-```js
-// type signature
-createEphemeralInternetAccount: (internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any
+```ts
+type createEphemeralInternetAccount = (
+  internetAccountId: string,
+  initialSnapshot: Record<string, unknown>,
+  url: string,
+) => any
 ```
 
 #### action: findAppropriateInternetAccount
 
-```js
-// type signature
-findAppropriateInternetAccount: (location: UriLocation) => any
+```ts
+type findAppropriateInternetAccount = (location: UriLocation) => any
 ```
 
 </details>

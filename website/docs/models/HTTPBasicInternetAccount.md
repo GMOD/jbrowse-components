@@ -22,22 +22,22 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HTTPBasicInternetAccount - Properties</summary>
+<summary>HTTPBasicInternetAccount - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"HTTPBasicInternetAccount">
+type type = ISimpleType<'HTTPBasicInternetAccount'>
 // code
 type: types.literal('HTTPBasicInternetAccount')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -45,39 +45,38 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HTTPBasicInternetAccount - Getters</summary>
+<summary>HTTPBasicInternetAccount - Getters</summary>
 
 #### getter: conf
 
-```js
-// type
-ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### getter: validateWithHEAD
 
-```js
-// type
-boolean
+```ts
+type validateWithHEAD = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HTTPBasicInternetAccount - Actions</summary>
+<summary>HTTPBasicInternetAccount - Actions</summary>
 
 #### action: getTokenFromUser
 
-```js
-// type signature
-getTokenFromUser: (resolve: (token: string) => void, reject: (error: Error) => void) => void
+```ts
+type getTokenFromUser = (
+  resolve: (token: string) => void,
+  reject: (error: Error) => void,
+) => void
 ```
 
 #### action: validateToken
 
-```js
-// type signature
-validateToken: (token: string, location: UriLocation) => Promise<string>
+```ts
+type validateToken = (token: string, location: UriLocation) => Promise<string>
 ```
 
 </details>

@@ -41,22 +41,22 @@ and docs.
 [clear](../baseconnectionmodel#action-clear)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">UCSCTrackHubConnection - Properties</summary>
+<summary>UCSCTrackHubConnection - Properties</summary>
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"UCSCTrackHubConnection">
+type type = ISimpleType<'UCSCTrackHubConnection'>
 // code
 type: types.literal('UCSCTrackHubConnection')
 ```
@@ -64,13 +64,12 @@ type: types.literal('UCSCTrackHubConnection')
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">UCSCTrackHubConnection - Actions</summary>
+<summary>UCSCTrackHubConnection - Actions</summary>
 
 #### action: connect
 
-```js
-// type signature
-connect: () => Promise<void>
+```ts
+type connect = () => Promise<void>
 ```
 
 </details>

@@ -26,58 +26,58 @@ only UI state for the track, and have a reference to a track configuration. note
 that multiple displayed tracks could use the same configuration.
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Properties</summary>
+<summary>BaseTrackModel - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type type = ISimpleType<string>
 // code
 type: types.literal(trackType)
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(baseTrackConfig)
 ```
 
 #### property: minimized
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 minimized: types.stripDefault(types.boolean, false)
 ```
 
 #### property: pinned
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type pinned = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 pinned: types.stripDefault(types.boolean, false)
 ```
 
 #### property: displays
 
-```js
+```ts
 // type signature
-IArrayType<IAnyType>
+type displays = IArrayType<IAnyType>
 // code
 displays: types.array(pm.pluggableMstType('display', 'stateModel'))
 ```
@@ -85,118 +85,108 @@ displays: types.array(pm.pluggableMstType('display', 'stateModel'))
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Getters</summary>
+<summary>BaseTrackModel - Getters</summary>
 
 #### getter: trackId
 
-```js
-// type
-string
+```ts
+type trackId = string
 ```
 
 #### getter: rpcSessionId
 
 determines which webworker to send the track to, currently based on trackId
 
-```js
-// type
-string
+```ts
+type rpcSessionId = string
 ```
 
 #### getter: name
 
-```js
-// type
-any
+```ts
+type name = any
 ```
 
 #### getter: textSearchAdapter
 
-```js
-// type
-any
+```ts
+type textSearchAdapter = any
 ```
 
 #### getter: adapterConfig
 
-```js
-// type
-any
+```ts
+type adapterConfig = any
 ```
 
 #### getter: activeDisplay
 
 a shown track always has at least one display
 
-```js
-// type
-any
+```ts
+type activeDisplay = any
 ```
 
 #### getter: viewMenuActions
 
-```js
-// type
-MenuItem[]
+```ts
+type viewMenuActions = MenuItem[]
 ```
 
 #### getter: canConfigure
 
-```js
-// type
-boolean
+```ts
+type canConfigure = boolean
 ```
 
 #### getter: adapterType
 
-```js
-// type
-AdapterType
+```ts
+type adapterType = AdapterType
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Methods</summary>
+<summary>BaseTrackModel - Methods</summary>
 
 #### method: saveTrackFileFormatOptions
 
-```js
-// type signature
-saveTrackFileFormatOptions: () => Record<string, FileTypeExporter>
+```ts
+type saveTrackFileFormatOptions = () => Record<string, FileTypeExporter>
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => MenuItem[]
+```ts
+type trackMenuItems = () => MenuItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Actions</summary>
+<summary>BaseTrackModel - Actions</summary>
 
 #### action: setPinned
 
-```js
-// type signature
-setPinned: (flag: boolean) => void
+```ts
+type setPinned = (flag: boolean) => void
 ```
 
 #### action: setMinimized
 
-```js
-// type signature
-setMinimized: (flag: boolean) => void
+```ts
+type setMinimized = (flag: boolean) => void
 ```
 
 #### action: replaceDisplay
 
-```js
-// type signature
-replaceDisplay: (oldDisplayId: string, newDisplayId: string, initialSnapshot?: any) => void
+```ts
+type replaceDisplay = (
+  oldDisplayId: string,
+  newDisplayId: string,
+  initialSnapshot?: any,
+) => void
 ```
 
 </details>

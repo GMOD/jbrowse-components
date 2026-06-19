@@ -41,76 +41,76 @@ and docs.
 [setMinimized](../baseviewmodel#action-setminimized)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Properties</summary>
+<summary>BreakpointSplitView - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"BreakpointSplitView">
+type type = ISimpleType<'BreakpointSplitView'>
 // code
 type: types.literal('BreakpointSplitView')
 ```
 
 #### property: height
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: trackSelectorType
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
 #### property: showIntraviewLinks
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showIntraviewLinks = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showIntraviewLinks: types.stripDefault(types.boolean, true)
 ```
 
 #### property: linkViews
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type linkViews = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 linkViews: types.stripDefault(types.boolean, false)
 ```
 
 #### property: interactiveOverlay
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type interactiveOverlay = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 interactiveOverlay: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showHeader
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showHeader = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showHeader: types.stripDefault(types.boolean, true)
 ```
 
 #### property: views
 
-```js
+```ts
 // type signature
-IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
+type views = IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
 // code
 views: types.array(
           pluginManager.getViewType('LinearGenomeView')
@@ -122,9 +122,13 @@ views: types.array(
 
 used for initializing the view from a session snapshot
 
-```js
+```ts
 // type signature
-IType<BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined, BreakpointSplitViewInit | undefined>
+type init = IType<
+  BreakpointSplitViewInit | undefined,
+  BreakpointSplitViewInit | undefined,
+  BreakpointSplitViewInit | undefined
+>
 // code
 init: types.frozen<BreakpointSplitViewInit | undefined>()
 ```
@@ -132,23 +136,22 @@ init: types.frozen<BreakpointSplitViewInit | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Volatiles</summary>
+<summary>BreakpointSplitView - Volatiles</summary>
 
 #### volatile: width
 
-```js
+```ts
 // type signature
-number
+type width = number
 // code
 width: 800
 ```
 
 #### volatile: matchedTrackFeatures
 
-```js
+```ts
 // type signature
-{
-}
+type matchedTrackFeatures = {}
 // code
 matchedTrackFeatures: {
 }
@@ -157,34 +160,30 @@ matchedTrackFeatures: {
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Getters</summary>
+<summary>BreakpointSplitView - Getters</summary>
 
 #### getter: hasSomethingToShow
 
-```js
-// type
-boolean
+```ts
+type hasSomethingToShow = boolean
 ```
 
 #### getter: initialized
 
-```js
-// type
-boolean
+```ts
+type initialized = boolean
 ```
 
 #### getter: showImportForm
 
-```js
-// type
-boolean
+```ts
+type showImportForm = boolean
 ```
 
 #### getter: assembly
 
-```js
-// type
-(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+```ts
+type assembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: matchedTracks
@@ -192,9 +191,10 @@ boolean
 Find all track ids that match across multiple views, or return just the single
 view's track if only a single row is used
 
-```js
-// type
-(IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>) | { configuration: { trackId: string; }; }[]
+```ts
+type matchedTracks =
+  | (IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>)
+  | { configuration: { trackId: string } }[]
 ```
 
 #### getter: overlayMatches
@@ -205,23 +205,21 @@ across renders and only invalidates when the underlying feature or layout reads
 change — so horizontal/vertical scrolling and track resizing do NOT trigger
 re-pairing or re-lookup.
 
-```js
-// type
-Map<string, OverlayMatch>
+```ts
+type overlayMatches = Map<string, OverlayMatch>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Methods</summary>
+<summary>BreakpointSplitView - Methods</summary>
 
 #### method: exportSvg
 
 creates an svg export and save using FileSaver
 
-```js
-// type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### method: getMatchedTracks
@@ -233,9 +231,8 @@ by `overlayMatches`, whose trackIds come from `matchedTracks` (the intersect
 across all views), so the track is present in every view and `filter` drops
 nothing. Don't level-index the result for an arbitrary trackId.
 
-```js
-// type signature
-getMatchedTracks: (trackConfigId: string) => any[]
+```ts
+type getMatchedTracks = (trackConfigId: string) => any[]
 ```
 
 #### method: getTrackOverlayData
@@ -248,105 +245,109 @@ for converting feature layout records to SVG coordinates.
 `domYOffsets` — live rendering: DOM-measured track tops (relative to the overlay
 SVG), scrollTops still read from model.
 
-```js
-// type signature
-getTrackOverlayData: (trackId: string, yOffsetsOverride?: number[] | undefined, domYOffsets?: number[] | undefined) => { tracks: any[]; yOffsets: any[]; heights: any[]; getX: (level: number, refName: string, coord: number) => number | undefined; getY: (level: number, c: LayoutRecord) => any; }
+```ts
+type getTrackOverlayData = (
+  trackId: string,
+  yOffsetsOverride?: number[] | undefined,
+  domYOffsets?: number[] | undefined,
+) => {
+  tracks: any[]
+  yOffsets: any[]
+  heights: any[]
+  getX: (level: number, refName: string, coord: number) => number | undefined
+  getY: (level: number, c: LayoutRecord) => any
+}
 ```
 
 #### method: getMatchedFeaturesInLayout
 
-```js
-// type signature
-getMatchedFeaturesInLayout: (trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: number; }[][]
+```ts
+type getMatchedFeaturesInLayout = (
+  trackConfigId: string,
+  features: Feature[][],
+) => {
+  feature: Feature
+  layout: LayoutRecord
+  level: number
+  clipLengthAtStartOfRead: number
+}[][]
 ```
 
 #### method: menuItems
 
-```js
-// type signature
-menuItems: () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; icon?: undefined; subMenu?: undefined; } | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
+```ts
+type menuItems = () => ({ label: string; subMenu: MenuItem[]; } | { label: string; onClick: () => void; icon?: undefined; subMenu?: undefined; } | { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
 ```
 
 #### method: rubberBandMenuItems
 
-```js
-// type signature
-rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
+```ts
+type rubberBandMenuItems = () => { label: string; onClick: () => void }[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Actions</summary>
+<summary>BreakpointSplitView - Actions</summary>
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => void
+```ts
+type setWidth = (newWidth: number) => void
 ```
 
 #### action: setInteractiveOverlay
 
-```js
-// type signature
-setInteractiveOverlay: (arg: boolean) => void
+```ts
+type setInteractiveOverlay = (arg: boolean) => void
 ```
 
 #### action: setShowIntraviewLinks
 
-```js
-// type signature
-setShowIntraviewLinks: (arg: boolean) => void
+```ts
+type setShowIntraviewLinks = (arg: boolean) => void
 ```
 
 #### action: setLinkViews
 
-```js
-// type signature
-setLinkViews: (arg: boolean) => void
+```ts
+type setLinkViews = (arg: boolean) => void
 ```
 
 #### action: setShowHeader
 
-```js
-// type signature
-setShowHeader: (arg: boolean) => void
+```ts
+type setShowHeader = (arg: boolean) => void
 ```
 
 #### action: setMatchedTrackFeatures
 
-```js
-// type signature
-setMatchedTrackFeatures: (obj: Record<string, Feature[][]>) => void
+```ts
+type setMatchedTrackFeatures = (obj: Record<string, Feature[][]>) => void
 ```
 
 #### action: reverseViewOrder
 
-```js
-// type signature
-reverseViewOrder: () => void
+```ts
+type reverseViewOrder = () => void
 ```
 
 #### action: squareView
 
-```js
-// type signature
-squareView: () => void
+```ts
+type squareView = () => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: BreakpointSplitViewInit | undefined) => void
+```ts
+type setInit = (init?: BreakpointSplitViewInit | undefined) => void
 ```
 
 #### action: setViews
 
-```js
-// type signature
-setViews: (viewInits: BreakpointSplitViewInitView[]) => void
+```ts
+type setViews = (viewInits: BreakpointSplitViewInitView[]) => void
 ```
 
 </details>

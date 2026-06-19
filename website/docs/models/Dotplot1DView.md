@@ -25,55 +25,49 @@ ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
 used here
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Dotplot1DView - Getters</summary>
+<summary>Dotplot1DView - Getters</summary>
 
 #### getter: dynamicBlocks
 
 this uses padding=false and elision=false
 
-```js
-// type
-BlockSet
+```ts
+type dynamicBlocks = BlockSet
 ```
 
 #### getter: maxBpPerPx
 
-```js
-// type
-number
+```ts
+type maxBpPerPx = number
 ```
 
 #### getter: minBpPerPx
 
-```js
-// type
-number
+```ts
+type minBpPerPx = number
 ```
 
 #### getter: maxOffset
 
-```js
-// type
-number
+```ts
+type maxOffset = number
 ```
 
 #### getter: minOffset
 
-```js
-// type
-number
+```ts
+type minOffset = number
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Dotplot1DView - Actions</summary>
+<summary>Dotplot1DView - Actions</summary>
 
 #### action: center
 
-```js
-// type signature
-center: () => void
+```ts
+type center = () => void
 ```
 
 </details>

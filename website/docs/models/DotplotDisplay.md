@@ -57,22 +57,22 @@ and docs.
 [reload](../basedisplay#action-reload)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Properties</summary>
+<summary>DotplotDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"DotplotDisplay">
+type type = ISimpleType<'DotplotDisplay'>
 // code
 type: types.literal('DotplotDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -81,27 +81,27 @@ configuration: ConfigurationReference(configSchema)
 
 color by setting that overrides the config setting
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 colorBy: types.optional(types.string, 'default')
 ```
 
 #### property: alpha
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type alpha = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 alpha: types.optional(types.number, 1)
 ```
 
 #### property: minAlignmentLength
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minAlignmentLength = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 minAlignmentLength: types.optional(types.number, 0)
 ```
@@ -109,15 +109,15 @@ minAlignmentLength: types.optional(types.number, 0)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Volatiles</summary>
+<summary>DotplotDisplay - Volatiles</summary>
 
 #### volatile: rpcData
 
 RPC-computed feature data
 
-```js
+```ts
 // type signature
-DotplotRpcData | undefined
+type rpcData = DotplotRpcData | undefined
 // code
 rpcData: undefined as DotplotRpcData | undefined
 ```
@@ -128,18 +128,18 @@ GPU-instance geometry produced from featPositions, self- describing via embedded
 bpPerPx. The containing DotplotView aggregates one of these per display and
 uploads them to the shared backend keyed by track index.
 
-```js
+```ts
 // type signature
-DotplotGeometryData | undefined
+type geometry = DotplotGeometryData | undefined
 // code
 geometry: undefined as DotplotGeometryData | undefined
 ```
 
 #### volatile: fetchStopToken
 
-```js
+```ts
 // type signature
-StopToken | undefined
+type fetchStopToken = StopToken | undefined
 // code
 fetchStopToken: undefined as StopToken | undefined
 ```
@@ -150,27 +150,27 @@ determinate progress fraction [0,1] for the current status, or undefined when
 the in-flight phase is indeterminate. Pairs with the `statusMessage` volatile
 inherited from BaseDisplay.
 
-```js
+```ts
 // type signature
-number | undefined
+type statusProgress = number | undefined
 // code
 statusProgress: undefined as number | undefined
 ```
 
 #### volatile: fetchWarnings
 
-```js
+```ts
 // type signature
-{ message: string; effect: string; }[]
+type fetchWarnings = { message: string; effect: string }[]
 // code
 fetchWarnings: [] as { message: string; effect: string }[]
 ```
 
 #### volatile: assembliesSwapped
 
-```js
+```ts
 // type signature
-false
+type assembliesSwapped = false
 // code
 assembliesSwapped: false
 ```
@@ -178,51 +178,54 @@ assembliesSwapped: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Getters</summary>
+<summary>DotplotDisplay - Getters</summary>
 
 #### getter: isLoading
 
-```js
-// type
-boolean
+```ts
+type isLoading = boolean
 ```
 
 #### getter: isRefetching
 
-```js
-// type
-boolean
+```ts
+type isRefetching = boolean
 ```
 
 #### getter: warnings
 
 Per-render fetch warnings, plus the load-time reversed-assembly hint.
 
-```js
-// type
-{
-  message: string
-  effect: string
-}
-;[]
+```ts
+type warnings = { message: string; effect: string }[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Methods</summary>
+<summary>DotplotDisplay - Methods</summary>
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<string | number | bigint | boolean | Iterable<ReactNode> | Element | null | undefined>
+```ts
+type renderSvg = (
+  opts: ExportSvgOptions & { theme?: ThemeOptions | undefined },
+) => Promise<
+  | string
+  | number
+  | bigint
+  | boolean
+  | Iterable<ReactNode>
+  | Element
+  | null
+  | undefined
+>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Actions</summary>
+<summary>DotplotDisplay - Actions</summary>
 
 #### action: setStatusMessage
 
@@ -230,72 +233,62 @@ Status callback for the in-flight fetch; derives the indeterminate message and
 the determinate progress fraction. Overrides BaseDisplay's string-only setter so
 the dotplot loading overlay can show a bar.
 
-```js
-// type signature
-setStatusMessage: (status?: RpcStatus | undefined) => void
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
 
 #### action: setLoading
 
-```js
-// type signature
-setLoading: (stopToken: StopToken) => void
+```ts
+type setLoading = (stopToken: StopToken) => void
 ```
 
 #### action: setRpcData
 
-```js
-// type signature
-setRpcData: (data: DotplotRpcData) => void
+```ts
+type setRpcData = (data: DotplotRpcData) => void
 ```
 
 #### action: setWarnings
 
-```js
-// type signature
-setWarnings: (w: { message: string; effect: string; }[]) => void
+```ts
+type setWarnings = (w: { message: string; effect: string }[]) => void
 ```
 
 #### action: setAssembliesSwapped
 
-```js
-// type signature
-setAssembliesSwapped: (arg: boolean) => void
+```ts
+type setAssembliesSwapped = (arg: boolean) => void
 ```
 
 #### action: setGeometry
 
-```js
-// type signature
-setGeometry: (data: DotplotGeometryData | undefined) => void
+```ts
+type setGeometry = (data: DotplotGeometryData | undefined) => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (error: unknown) => void
+```ts
+type setError = (error: unknown) => void
 ```
 
 #### action: setAlpha
 
-```js
-// type signature
-setAlpha: (value: number) => void
+```ts
+type setAlpha = (value: number) => void
 ```
 
 #### action: setMinAlignmentLength
 
-```js
-// type signature
-setMinAlignmentLength: (value: number) => void
+```ts
+type setMinAlignmentLength = (value: number) => void
 ```
 
 #### action: setColorBy
 
-```js
-// type signature
-setColorBy: (value: SyntenyColorBy) => void
+```ts
+type setColorBy = (value: SyntenyColorBy) => void
 ```
 
 </details>

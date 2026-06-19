@@ -22,22 +22,22 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">OAuthInternetAccount - Properties</summary>
+<summary>OAuthInternetAccount - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"OAuthInternetAccount">
+type type = ISimpleType<'OAuthInternetAccount'>
 // code
 type: types.literal('OAuthInternetAccount')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -45,7 +45,7 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">OAuthInternetAccount - Getters</summary>
+<summary>OAuthInternetAccount - Getters</summary>
 
 #### getter: conf
 
@@ -54,51 +54,44 @@ The config typed off the concrete schema. `ConfigurationReference` erases
 the schema's slot definitions), so reads go through this getter to recover
 per-slot types and slot-name validation.
 
-```js
-// type
-ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### getter: codeVerifierPKCE
 
-```js
-// type
-string
+```ts
+type codeVerifierPKCE = string
 ```
 
 #### getter: authEndpoint
 
-```js
-// type
-string
+```ts
+type authEndpoint = string
 ```
 
 #### getter: tokenEndpoint
 
-```js
-// type
-string
+```ts
+type tokenEndpoint = string
 ```
 
 #### getter: needsPKCE
 
-```js
-// type
-boolean
+```ts
+type needsPKCE = boolean
 ```
 
 #### getter: clientId
 
-```js
-// type
-string
+```ts
+type clientId = string
 ```
 
 #### getter: scopes
 
-```js
-// type
-string
+```ts
+type scopes = string
 ```
 
 #### getter: state
@@ -107,68 +100,63 @@ OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
 
 Can override or extend if dynamic state is needed.
 
-```js
-// type
-string
+```ts
+type state = string
 ```
 
 #### getter: responseType
 
-```js
-// type
-'code' | 'token'
+```ts
+type responseType = 'code' | 'token'
 ```
 
 #### getter: refreshTokenKey
 
-```js
-// type
-string
+```ts
+type refreshTokenKey = string
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">OAuthInternetAccount - Methods</summary>
+<summary>OAuthInternetAccount - Methods</summary>
 
 #### method: retrieveRefreshToken
 
-```js
-// type signature
-retrieveRefreshToken: () => string | null
+```ts
+type retrieveRefreshToken = () => string | null
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">OAuthInternetAccount - Actions</summary>
+<summary>OAuthInternetAccount - Actions</summary>
 
 #### action: storeRefreshToken
 
-```js
-// type signature
-storeRefreshToken: (refreshToken: string) => void
+```ts
+type storeRefreshToken = (refreshToken: string) => void
 ```
 
 #### action: removeRefreshToken
 
-```js
-// type signature
-removeRefreshToken: () => void
+```ts
+type removeRefreshToken = () => void
 ```
 
 #### action: exchangeAuthorizationForAccessToken
 
-```js
-// type signature
-exchangeAuthorizationForAccessToken: (code: string, redirectUri: string) => Promise<string>
+```ts
+type exchangeAuthorizationForAccessToken = (
+  code: string,
+  redirectUri: string,
+) => Promise<string>
 ```
 
 #### action: exchangeRefreshForAccessToken
 
-```js
-// type signature
-exchangeRefreshForAccessToken: (refreshToken: string) => Promise<string>
+```ts
+type exchangeRefreshForAccessToken = (refreshToken: string) => Promise<string>
 ```
 
 #### action: getTokenViaAuthFlow
@@ -177,30 +165,31 @@ Opens the provider's auth page and returns a promise for the resulting token.
 For Electron, drives the flow directly via IPC; for web, opens a popup and waits
 for the redirect message.
 
-```js
-// type signature
-getTokenViaAuthFlow: () => Promise<string>
+```ts
+type getTokenViaAuthFlow = () => Promise<string>
 ```
 
 #### action: getTokenFromUser
 
-```js
-// type signature
-getTokenFromUser: (resolve: (token: string) => void, reject: (error: Error) => void) => Promise<void>
+```ts
+type getTokenFromUser = (
+  resolve: (token: string) => void,
+  reject: (error: Error) => void,
+) => Promise<void>
 ```
 
 #### action: validateToken
 
-```js
-// type signature
-validateToken: (token: string, location: UriLocation) => Promise<string>
+```ts
+type validateToken = (token: string, location: UriLocation) => Promise<string>
 ```
 
 #### action: getFetcher
 
-```js
-// type signature
-getFetcher: (loc?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+```ts
+type getFetcher = (
+  loc?: UriLocation | undefined,
+) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
 
 </details>

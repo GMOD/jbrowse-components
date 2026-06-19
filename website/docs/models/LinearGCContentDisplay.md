@@ -287,13 +287,13 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGCContentDisplay - Properties</summary>
+<summary>LinearGCContentDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearGCContentDisplay">
+type type = ISimpleType<'LinearGCContentDisplay'>
 // code
 type: types.literal('LinearGCContentDisplay')
 ```

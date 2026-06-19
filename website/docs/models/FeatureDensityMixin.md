@@ -59,13 +59,13 @@ and docs.
 [forceLoad](../regiontoolargemixin#action-forceload)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Properties</summary>
+<summary>FeatureDensityMixin - Properties</summary>
 
 #### property: userBpPerPxLimit
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type userBpPerPxLimit = IMaybe<ISimpleType<number>>
 // code
 userBpPerPxLimit: types.maybe(types.number)
 ```
@@ -73,24 +73,22 @@ userBpPerPxLimit: types.maybe(types.number)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Volatiles</summary>
+<summary>FeatureDensityMixin - Volatiles</summary>
 
 #### volatile: featureDensityStatsP
 
-```js
+```ts
 // type signature
-Promise<FeatureDensityStats> | undefined
+type featureDensityStatsP = Promise<FeatureDensityStats> | undefined
 // code
-featureDensityStatsP: undefined as
-        | undefined
-        | Promise<FeatureDensityStats>
+featureDensityStatsP: undefined as undefined | Promise<FeatureDensityStats>
 ```
 
 #### volatile: currStatsBpPerPx
 
-```js
+```ts
 // type signature
-number
+type currStatsBpPerPx = number
 // code
 currStatsBpPerPx: 0
 ```
@@ -98,128 +96,116 @@ currStatsBpPerPx: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Getters</summary>
+<summary>FeatureDensityMixin - Getters</summary>
 
 #### getter: currentBytesRequested
 
-```js
-// type
-number
+```ts
+type currentBytesRequested = number
 ```
 
 #### getter: currentFeatureScreenDensity
 
-```js
-// type
-number
+```ts
+type currentFeatureScreenDensity = number
 ```
 
 #### getter: maxFeatureScreenDensity
 
-```js
-// type
-any
+```ts
+type maxFeatureScreenDensity = any
 ```
 
 #### getter: featureDensityStatsReady
 
-```js
-// type
-boolean
+```ts
+type featureDensityStatsReady = boolean
 ```
 
 #### getter: maxAllowableBytes
 
-```js
-// type
-number
+```ts
+type maxAllowableBytes = number
 ```
 
 #### getter: bytesTooLarge
 
-```js
-// type
-boolean
+```ts
+type bytesTooLarge = boolean
 ```
 
 #### getter: densityTooLarge
 
-```js
-// type
-boolean
+```ts
+type densityTooLarge = boolean
 ```
 
 #### getter: regionTooLarge
 
-```js
-// type
-boolean
+```ts
+type regionTooLarge = boolean
 ```
 
 #### getter: regionTooLargeReason
 
-```js
-// type
-string
+```ts
+type regionTooLargeReason = string
 ```
 
 #### getter: featureDensityStatsReadyAndRegionNotTooLarge
 
-```js
-// type
-boolean
+```ts
+type featureDensityStatsReadyAndRegionNotTooLarge = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Methods</summary>
+<summary>FeatureDensityMixin - Methods</summary>
 
 #### method: regionCannotBeRendered
 
-```js
-// type signature
-regionCannotBeRendered: (_region: Region) => Element | null
+```ts
+type regionCannotBeRendered = (_region: Region) => Element | null
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Actions</summary>
+<summary>FeatureDensityMixin - Actions</summary>
 
 #### action: setCurrStatsBpPerPx
 
-```js
-// type signature
-setCurrStatsBpPerPx: (n: number) => void
+```ts
+type setCurrStatsBpPerPx = (n: number) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
 
-```js
-// type signature
-setFeatureDensityStatsLimit: (stats?: FeatureDensityStats | undefined) => void
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?: FeatureDensityStats | undefined,
+) => void
 ```
 
 #### action: getFeatureDensityStats
 
-```js
-// type signature
-getFeatureDensityStats: () => Promise<FeatureDensityStats>
+```ts
+type getFeatureDensityStats = () => Promise<FeatureDensityStats>
 ```
 
 #### action: setFeatureDensityStatsP
 
-```js
-// type signature
-setFeatureDensityStatsP: (arg: Promise<FeatureDensityStats> | undefined) => void
+```ts
+type setFeatureDensityStatsP = (
+  arg: Promise<FeatureDensityStats> | undefined,
+) => void
 ```
 
 #### action: clearFeatureDensityStats
 
-```js
-// type signature
-clearFeatureDensityStats: () => void
+```ts
+type clearFeatureDensityStats = () => void
 ```
 
 </details>

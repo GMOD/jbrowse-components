@@ -388,22 +388,22 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Properties</summary>
+<summary>LGVSyntenyDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LGVSyntenyDisplay">
+type type = ISimpleType<'LGVSyntenyDisplay'>
 // code
 type: types.literal('LGVSyntenyDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(schema)
 ```
@@ -411,47 +411,49 @@ configuration: ConfigurationReference(schema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Getters</summary>
+<summary>LGVSyntenyDisplay - Getters</summary>
 
 #### getter: featureWidgetType
 
-```js
-// type
-{
-  type: string
-  id: string
-}
+```ts
+type featureWidgetType = { type: string; id: string }
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Methods</summary>
+<summary>LGVSyntenyDisplay - Methods</summary>
 
 #### method: contextMenuItems
 
-```js
-// type signature
-contextMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } | { label: string; onClick: () => void; icon?: undefined; })[]
+```ts
+type contextMenuItems = () => (
+  | {
+      label: string
+      icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & {
+        muiName: string
+      }
+      onClick: () => void
+    }
+  | { label: string; onClick: () => void; icon?: undefined }
+)[]
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; })[]
+```ts
+type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Actions</summary>
+<summary>LGVSyntenyDisplay - Actions</summary>
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+```ts
+type selectFeature = (feature: Feature) => void
 ```
 
 </details>

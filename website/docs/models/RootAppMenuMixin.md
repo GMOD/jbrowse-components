@@ -22,13 +22,13 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RootAppMenuMixin - Volatiles</summary>
+<summary>RootAppMenuMixin - Volatiles</summary>
 
 #### volatile: mutableMenuActions
 
-```js
+```ts
 // type signature
-MenuAction[]
+type mutableMenuActions = MenuAction[]
 // code
 mutableMenuActions: [] as MenuAction[]
 ```
@@ -36,67 +36,68 @@ mutableMenuActions: [] as MenuAction[]
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RootAppMenuMixin - Actions</summary>
+<summary>RootAppMenuMixin - Actions</summary>
 
 #### action: setMenus
 
-```js
-// type signature
-setMenus: (newMenus: Menu[]) => void
+```ts
+type setMenus = (newMenus: Menu[]) => void
 ```
 
 #### action: appendMenu
 
 Add a top-level menu
 
-```js
-// type signature
-appendMenu: (menuName: string) => void
+```ts
+type appendMenu = (menuName: string) => void
 ```
 
 #### action: insertMenu
 
 Insert a top-level menu
 
-```js
-// type signature
-insertMenu: (menuName: string, position: number) => void
+```ts
+type insertMenu = (menuName: string, position: number) => void
 ```
 
 #### action: appendToMenu
 
 Add a menu item to a top-level menu
 
-```js
-// type signature
-appendToMenu: (menuName: string, menuItem: MenuItem) => void
+```ts
+type appendToMenu = (menuName: string, menuItem: MenuItem) => void
 ```
 
 #### action: insertInMenu
 
 Insert a menu item into a top-level menu
 
-```js
-// type signature
-insertInMenu: (menuName: string, menuItem: MenuItem, position: number) => void
+```ts
+type insertInMenu = (
+  menuName: string,
+  menuItem: MenuItem,
+  position: number,
+) => void
 ```
 
 #### action: appendToSubMenu
 
 Add a menu item to a sub-menu
 
-```js
-// type signature
-appendToSubMenu: (menuPath: string[], menuItem: MenuItem) => void
+```ts
+type appendToSubMenu = (menuPath: string[], menuItem: MenuItem) => void
 ```
 
 #### action: insertInSubMenu
 
 Insert a menu item into a sub-menu
 
-```js
-// type signature
-insertInSubMenu: (menuPath: string[], menuItem: MenuItem, position: number) => void
+```ts
+type insertInSubMenu = (
+  menuPath: string[],
+  menuItem: MenuItem,
+  position: number,
+) => void
 ```
 
 </details>

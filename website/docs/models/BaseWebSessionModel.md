@@ -236,38 +236,42 @@ and docs.
 [moveViewToBottomInPanel](../dockviewlayoutmixin#action-moveviewtobottominpanel)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Properties</summary>
+<summary>BaseWebSessionModel - Properties</summary>
 
 #### property: sessionPlugins
 
-```js
+```ts
 // type signature
-IArrayType<IType<PluginDefinition & { name: string; }, PluginDefinition & { name: string; }, PluginDefinition & { name: string; }>>
+type sessionPlugins = IArrayType<
+  IType<
+    PluginDefinition & { name: string },
+    PluginDefinition & { name: string },
+    PluginDefinition & { name: string }
+  >
+>
 // code
-sessionPlugins: types.array(
-        types.frozen<PluginDefinition & { name: string }>(),
-      )
+sessionPlugins: types.array(types.frozen<PluginDefinition & { name: string }>())
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Volatiles</summary>
+<summary>BaseWebSessionModel - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
-```js
+```ts
 // type signature
-string
+type sessionThemeName = string
 // code
 sessionThemeName: localStorageGetItem('themeName') ?? 'default'
 ```
 
 #### volatile: pendingFileHandleIds
 
-```js
+```ts
 // type signature
-string[]
+type pendingFileHandleIds = string[]
 // code
 pendingFileHandleIds: [] as string[]
 ```
@@ -275,51 +279,46 @@ pendingFileHandleIds: [] as string[]
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Getters</summary>
+<summary>BaseWebSessionModel - Getters</summary>
 
 #### getter: root
 
-```js
-// type
-AbstractWebRootModel
+```ts
+type root = AbstractWebRootModel
 ```
 
 #### getter: connections
 
 list of config connections and session connections
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: shareURL
 
-```js
-// type
-any
+```ts
+type shareURL = any
 ```
 
 #### getter: textSearchManager
 
-```js
-// type
-TextSearchManager
+```ts
+type textSearchManager = TextSearchManager
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Methods</summary>
+<summary>BaseWebSessionModel - Methods</summary>
 
 #### method: canEditTrack
 
 whether the user may edit this track's config (admins may edit any; everyone
 else only their own session tracks)
 
-```js
-// type signature
-canEditTrack: (trackId: string) => boolean
+```ts
+type canEditTrack = (trackId: string) => boolean
 ```
 
 #### method: isTrackOverride
@@ -328,74 +327,65 @@ whether `trackId` is a session-track edit (see updateTrackConfiguration)
 shadowing an admin-owned config track of the same trackId, rather than a
 standalone user-added session track
 
-```js
-// type signature
-isTrackOverride: (trackId: string) => boolean
+```ts
+type isTrackOverride = (trackId: string) => boolean
 ```
 
 #### method: getTrackActions
 
 raw track actions (Settings, Copy, Delete) without submenu wrapper
 
-```js
-// type signature
-getTrackActions: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```ts
+type getTrackActions = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 #### method: getTrackListMenuItems
 
 flattened menu items for use in hierarchical track selector
 
-```js
-// type signature
-getTrackListMenuItems: (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```ts
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
 ```
 
 #### method: getTrackActionMenuItems
 
-```js
-// type signature
-getTrackActionMenuItems: ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
+```ts
+type getTrackActionMenuItems = ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Actions</summary>
+<summary>BaseWebSessionModel - Actions</summary>
 
 #### action: addAssemblyConf
 
-```js
-// type signature
-addAssemblyConf: (conf: AnyConfiguration) => void
+```ts
+type addAssemblyConf = (conf: AnyConfiguration) => void
 ```
 
 #### action: addSessionPlugin
 
-```js
-// type signature
-addSessionPlugin: (plugin: PluginDefinition & { name: string; }) => void
+```ts
+type addSessionPlugin = (plugin: PluginDefinition & { name: string }) => void
 ```
 
 #### action: removeSessionPlugin
 
-```js
-// type signature
-removeSessionPlugin: (pluginDefinition: PluginDefinition) => void
+```ts
+type removeSessionPlugin = (pluginDefinition: PluginDefinition) => void
 ```
 
 #### action: setDefaultSession
 
-```js
-// type signature
-setDefaultSession: () => void
+```ts
+type setDefaultSession = () => void
 ```
 
 #### action: setSession
 
-```js
-// type signature
-setSession: (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<...>; focu...
+```ts
+type setSession = (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<...>; focu...
 ```
 
 #### action: editTrackConfiguration
@@ -404,16 +394,14 @@ opens the config editor for a track. Available for any track: edits to a
 non-session (admin-owned) track apply in-memory for the current session even
 when the user lacks rights to persist them.
 
-```js
-// type signature
-editTrackConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
+```ts
+type editTrackConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
 #### action: setPendingFileHandleIds
 
-```js
-// type signature
-setPendingFileHandleIds: (ids: string[]) => void
+```ts
+type setPendingFileHandleIds = (ids: string[]) => void
 ```
 
 </details>

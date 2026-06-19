@@ -73,31 +73,31 @@ and docs.
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactAppRootModel - Volatiles</summary>
+<summary>JBrowseReactAppRootModel - Volatiles</summary>
 
 #### volatile: version
 
-```js
+```ts
 // type signature
-string
+type version = string
 // code
 version
 ```
 
 #### volatile: pluginsUpdated
 
-```js
+```ts
 // type signature
-false
+type pluginsUpdated = false
 // code
 pluginsUpdated: false
 ```
 
 #### volatile: rpcManager
 
-```js
+```ts
 // type signature
-RpcManager
+type rpcManager = RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
   makeWorkerInstance,
@@ -111,25 +111,23 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactAppRootModel - Methods</summary>
+<summary>JBrowseReactAppRootModel - Methods</summary>
 
 #### method: menus
 
-```js
-// type signature
-menus: () => Menu[]
+```ts
+type menus = () => Menu[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactAppRootModel - Actions</summary>
+<summary>JBrowseReactAppRootModel - Actions</summary>
 
 #### action: setPluginsUpdated
 
-```js
-// type signature
-setPluginsUpdated: () => void
+```ts
+type setPluginsUpdated = () => void
 ```
 
 #### action: setDefaultSession
@@ -137,9 +135,8 @@ setPluginsUpdated: () => void
 BaseRootModel's setDefaultSession reuses defaultSession's literal name;
 react-app instead timestamps it so multiple "new sessions" don't collide.
 
-```js
-// type signature
-setDefaultSession: () => void
+```ts
+type setDefaultSession = () => void
 ```
 
 </details>

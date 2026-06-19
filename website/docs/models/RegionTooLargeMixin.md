@@ -32,15 +32,15 @@ Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
 forceLoad.
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Properties</summary>
+<summary>RegionTooLargeMixin - Properties</summary>
 
 #### property: userByteSizeLimit
 
 user-confirmed byte limit after a force-load, disabling the gate
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type userByteSizeLimit = IMaybe<ISimpleType<number>>
 // code
 userByteSizeLimit: types.maybe(types.number)
 ```
@@ -48,31 +48,31 @@ userByteSizeLimit: types.maybe(types.number)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Volatiles</summary>
+<summary>RegionTooLargeMixin - Volatiles</summary>
 
 #### volatile: regionTooLargeState
 
-```js
+```ts
 // type signature
-false
+type regionTooLargeState = false
 // code
 regionTooLargeState: false
 ```
 
 #### volatile: regionTooLargeReasonState
 
-```js
+```ts
 // type signature
-string
+type regionTooLargeReasonState = string
 // code
 regionTooLargeReasonState: ''
 ```
 
 #### volatile: featureDensityStats
 
-```js
+```ts
 // type signature
-FeatureDensityStats | undefined
+type featureDensityStats = FeatureDensityStats | undefined
 // code
 featureDensityStats: undefined as FeatureDensityStats | undefined
 ```
@@ -80,54 +80,51 @@ featureDensityStats: undefined as FeatureDensityStats | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Getters</summary>
+<summary>RegionTooLargeMixin - Getters</summary>
 
 #### getter: regionTooLarge
 
-```js
-// type
-boolean
+```ts
+type regionTooLarge = boolean
 ```
 
 #### getter: regionTooLargeReason
 
-```js
-// type
-string
+```ts
+type regionTooLargeReason = string
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Methods</summary>
+<summary>RegionTooLargeMixin - Methods</summary>
 
 #### method: regionCannotBeRenderedText
 
 Plaintext reason (for SVG export); the on-screen too-large UI is rendered by the
 display chrome via `TooLargeMessage`, not the model.
 
-```js
-// type signature
-regionCannotBeRenderedText: (_region?: Region | undefined) => "" | "Force load to see features"
+```ts
+type regionCannotBeRenderedText = (
+  _region?: Region | undefined,
+) => '' | 'Force load to see features'
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Actions</summary>
+<summary>RegionTooLargeMixin - Actions</summary>
 
 #### action: setRegionTooLarge
 
-```js
-// type signature
-setRegionTooLarge: (val: boolean, reason?: string | undefined) => void
+```ts
+type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
 ```
 
 #### action: setFeatureDensityStats
 
-```js
-// type signature
-setFeatureDensityStats: (stats?: FeatureDensityStats | undefined) => void
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 ```
 
 #### action: setFeatureDensityStatsLimit
@@ -135,16 +132,16 @@ setFeatureDensityStats: (stats?: FeatureDensityStats | undefined) => void
 force-load: raise the byte limit past the current request and clear the
 too-large banner
 
-```js
-// type signature
-setFeatureDensityStatsLimit: (stats?: FeatureDensityStats | undefined) => void
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?: FeatureDensityStats | undefined,
+) => void
 ```
 
 #### action: reload
 
-```js
-// type signature
-reload: () => void
+```ts
+type reload = () => void
 ```
 
 #### action: forceLoad
@@ -153,9 +150,8 @@ Raises the byte limit past the current density stats and triggers a reload. The
 display chrome calls this via TooLargeMessage's force-load button; concrete
 display models override reload() to do the actual refetch.
 
-```js
-// type signature
-forceLoad: () => void
+```ts
+type forceLoad = () => void
 ```
 
 </details>

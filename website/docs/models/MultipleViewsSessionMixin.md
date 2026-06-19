@@ -91,102 +91,92 @@ and docs.
 [editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultipleViewsSessionMixin - Properties</summary>
+<summary>MultipleViewsSessionMixin - Properties</summary>
 
 #### property: views
 
-```js
+```ts
 // type signature
-IArrayType<IAnyType>
+type views = IArrayType<IAnyType>
 // code
-views: types.array(
-          pluginManager.pluggableMstType('view', 'stateModel'),
-        )
+views: types.array(pluginManager.pluggableMstType('view', 'stateModel'))
 ```
 
 #### property: stickyViewHeaders
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type stickyViewHeaders = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 stickyViewHeaders: types.optional(types.boolean, () =>
-          localStorageGetBoolean('stickyViewHeaders', true),
-        )
+  localStorageGetBoolean('stickyViewHeaders', true),
+)
 ```
 
 #### property: useWorkspaces
 
 enables the dockview-based tabbed/tiled workspace layout
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type useWorkspaces = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 useWorkspaces: types.optional(types.boolean, () =>
-          localStorageGetBoolean('useWorkspaces', false),
-        )
+  localStorageGetBoolean('useWorkspaces', false),
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultipleViewsSessionMixin - Actions</summary>
+<summary>MultipleViewsSessionMixin - Actions</summary>
 
 #### action: moveViewDown
 
-```js
-// type signature
-moveViewDown: (id: string) => void
+```ts
+type moveViewDown = (id: string) => void
 ```
 
 #### action: moveViewUp
 
-```js
-// type signature
-moveViewUp: (id: string) => void
+```ts
+type moveViewUp = (id: string) => void
 ```
 
 #### action: moveViewToTop
 
-```js
-// type signature
-moveViewToTop: (id: string) => void
+```ts
+type moveViewToTop = (id: string) => void
 ```
 
 #### action: moveViewToBottom
 
-```js
-// type signature
-moveViewToBottom: (id: string) => void
+```ts
+type moveViewToBottom = (id: string) => void
 ```
 
 #### action: addView
 
-```js
-// type signature
-addView: (typeName: string, initialState?: any) => any
+```ts
+type addView = (typeName: string, initialState?: any) => any
 ```
 
 #### action: removeView
 
-```js
-// type signature
-removeView: (view: IBaseViewModel) => void
+```ts
+type removeView = (view: IBaseViewModel) => void
 ```
 
 #### action: setStickyViewHeaders
 
-```js
-// type signature
-setStickyViewHeaders: (sticky: boolean) => void
+```ts
+type setStickyViewHeaders = (sticky: boolean) => void
 ```
 
 #### action: setUseWorkspaces
 
-```js
-// type signature
-setUseWorkspaces: (useWorkspaces: boolean) => void
+```ts
+type setUseWorkspaces = (useWorkspaces: boolean) => void
 ```
 
 </details>

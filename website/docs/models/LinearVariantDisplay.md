@@ -294,13 +294,13 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearVariantDisplay - Properties</summary>
+<summary>LinearVariantDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearVariantDisplay">
+type type = ISimpleType<'LinearVariantDisplay'>
 // code
 type: types.literal('LinearVariantDisplay')
 ```
@@ -308,28 +308,32 @@ type: types.literal('LinearVariantDisplay')
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearVariantDisplay - Getters</summary>
+<summary>LinearVariantDisplay - Getters</summary>
 
 #### getter: featureWidgetType
 
-```js
-// type
-{
-  type: string
-  id: string
-}
+```ts
+type featureWidgetType = { type: string; id: string }
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearVariantDisplay - Methods</summary>
+<summary>LinearVariantDisplay - Methods</summary>
 
 #### method: colorMenuItems
 
-```js
-// type signature
-colorMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; }[]
+```ts
+type colorMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  subMenu: {
+    label: string
+    type: 'radio'
+    checked: boolean
+    onClick: () => void
+  }[]
+}[]
 ```
 
 </details>

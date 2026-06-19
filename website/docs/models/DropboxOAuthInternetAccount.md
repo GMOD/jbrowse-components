@@ -56,22 +56,22 @@ and docs.
 [getFetcher](../oauthinternetaccount#action-getfetcher)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Properties</summary>
+<summary>DropboxOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"DropboxOAuthInternetAccount">
+type type = ISimpleType<'DropboxOAuthInternetAccount'>
 // code
 type: types.literal('DropboxOAuthInternetAccount')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -79,46 +79,44 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Getters</summary>
+<summary>DropboxOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents
 
 The FileSelector icon for Dropbox
 
-```js
-// type
-Element
+```ts
+type toggleContents = Element
 ```
 
 #### getter: selectorLabel
 
-```js
-// type
-string
+```ts
+type selectorLabel = string
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Methods</summary>
+<summary>DropboxOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
-```js
-// type signature
-getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+```ts
+type getFetcher = (
+  location?: UriLocation | undefined,
+) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Actions</summary>
+<summary>DropboxOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 
-```js
-// type signature
-validateToken: (token: string, location: UriLocation) => Promise<string>
+```ts
+type validateToken = (token: string, location: UriLocation) => Promise<string>
 ```
 
 </details>

@@ -43,37 +43,35 @@ and docs.
 [clearConnections](../connectionmanagementsessionmixin#action-clearconnections)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionConnectionsMixin - Properties</summary>
+<summary>WebSessionConnectionsMixin - Properties</summary>
 
 #### property: sessionConnections
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
+type sessionConnections = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
 sessionConnections: types.stripDefault(
-          types.array(pluginManager.pluggableConfigSchemaType('connection')),
-          [],
-        )
+  types.array(pluginManager.pluggableConfigSchemaType('connection')),
+  [],
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionConnectionsMixin - Actions</summary>
+<summary>WebSessionConnectionsMixin - Actions</summary>
 
 #### action: addConnectionConf
 
-```js
-// type signature
-addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type addConnectionConf = (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteConnection
 
-```js
-// type signature
-deleteConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type deleteConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 </details>

@@ -3,7 +3,6 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
-  codeBlock,
   collapsible,
   collectTransitive,
   docPage,
@@ -16,6 +15,8 @@ import {
   section,
   stripComposedBlock,
   suffixCategory,
+  typeAliasBlock,
+  typeAndCodeBlock,
   warnDuplicateHeader,
   warnHeaderGaps,
   withHeaders,
@@ -231,19 +232,19 @@ function renderModel(
 ): string {
   const sections = section(
     memberSection(header.name, 'Properties', properties, p =>
-      codeBlock('// type signature', p.signature, '// code', p.code),
+      typeAndCodeBlock(p.name, p.signature, p.code),
     ),
     memberSection(header.name, 'Volatiles', volatiles, v =>
-      codeBlock('// type signature', v.signature, '// code', v.code),
+      typeAndCodeBlock(v.name, v.signature, v.code),
     ),
     memberSection(header.name, 'Getters', getters, g =>
-      codeBlock('// type', g.signature),
+      typeAliasBlock(g.name, g.signature),
     ),
     memberSection(header.name, 'Methods', methods, m =>
-      codeBlock('// type signature', `${m.name}: ${m.signature}`),
+      typeAliasBlock(m.name, m.signature),
     ),
     memberSection(header.name, 'Actions', actions, a =>
-      codeBlock('// type signature', `${a.name}: ${a.signature}`),
+      typeAliasBlock(a.name, a.signature),
     ),
   )
 

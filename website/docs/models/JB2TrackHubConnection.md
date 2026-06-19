@@ -41,22 +41,22 @@ and docs.
 [clear](../baseconnectionmodel#action-clear)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JB2TrackHubConnection - Properties</summary>
+<summary>JB2TrackHubConnection - Properties</summary>
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"JB2TrackHubConnection">
+type type = ISimpleType<'JB2TrackHubConnection'>
 // code
 type: types.literal('JB2TrackHubConnection')
 ```
@@ -64,13 +64,12 @@ type: types.literal('JB2TrackHubConnection')
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JB2TrackHubConnection - Actions</summary>
+<summary>JB2TrackHubConnection - Actions</summary>
 
 #### action: connect
 
-```js
-// type signature
-connect: () => Promise<void>
+```ts
+type connect = () => Promise<void>
 ```
 
 </details>

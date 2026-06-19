@@ -22,57 +22,61 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Properties</summary>
+<summary>SpreadsheetViewSpreadsheet - Properties</summary>
 
 #### property: rowSet
 
-```js
+```ts
 // type signature
-IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>
+type rowSet = IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>
 // code
 rowSet: types.frozen<RowSet | undefined>()
 ```
 
 #### property: columns
 
-```js
+```ts
 // type signature
-IType<{ name: string; }[], { name: string; }[], { name: string; }[]>
+type columns = IType<{ name: string }[], { name: string }[], { name: string }[]>
 // code
 columns: types.frozen<{ name: string }[]>()
 ```
 
 #### property: assemblyName
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type assemblyName = IMaybe<ISimpleType<string>>
 // code
 assemblyName: types.maybe(types.string)
 ```
 
 #### property: visibleColumns
 
-```js
+```ts
 // type signature
-IOptionalIType<IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>, [undefined]>
+type visibleColumns = IOptionalIType<
+  IType<
+    Record<string, boolean>,
+    Record<string, boolean>,
+    Record<string, boolean>
+  >,
+  [undefined]
+>
 // code
-visibleColumns: types.optional(
-        types.frozen<Record<string, boolean>>(),
-        {},
-      )
+visibleColumns: types.optional(types.frozen<Record<string, boolean>>(), {})
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Volatiles</summary>
+<summary>SpreadsheetViewSpreadsheet - Volatiles</summary>
 
 #### volatile: visibleRowFlags
 
-```js
+```ts
 // type signature
-Record<number, boolean> | undefined
+type visibleRowFlags = Record<number, boolean> | undefined
 // code
 visibleRowFlags: undefined as Record<number, boolean> | undefined
 ```
@@ -80,53 +84,47 @@ visibleRowFlags: undefined as Record<number, boolean> | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Getters</summary>
+<summary>SpreadsheetViewSpreadsheet - Getters</summary>
 
 #### getter: rows
 
-```js
-// type
-GridRow[] | undefined
+```ts
+type rows = GridRow[] | undefined
 ```
 
 #### getter: initialized
 
-```js
-// type
-boolean
+```ts
+type initialized = boolean
 ```
 
 #### getter: dataGridColumns
 
-```js
-// type
-({ field: string; width: number; type: "number" | undefined; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[] | undefined
+```ts
+type dataGridColumns = ({ field: string; width: number; type: "number" | undefined; } | { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element | "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } | { ...; })[] | undefined
 ```
 
 #### getter: visibleRows
 
-```js
-// type
-GridRow[] | undefined
+```ts
+type visibleRows = GridRow[] | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Actions</summary>
+<summary>SpreadsheetViewSpreadsheet - Actions</summary>
 
 #### action: setVisibleRows
 
-```js
-// type signature
-setVisibleRows: (arg?: Record<number, boolean> | undefined) => void
+```ts
+type setVisibleRows = (arg?: Record<number, boolean> | undefined) => void
 ```
 
 #### action: setVisibleColumns
 
-```js
-// type signature
-setVisibleColumns: (arg: Record<string, boolean>) => void
+```ts
+type setVisibleColumns = (arg: Record<string, boolean>) => void
 ```
 
 </details>

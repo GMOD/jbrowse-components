@@ -229,39 +229,36 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Properties</summary>
+<summary>LinearAlignmentsDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearAlignmentsDisplay">
+type type = ISimpleType<'LinearAlignmentsDisplay'>
 // code
 type: types.literal('LinearAlignmentsDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: linkedReads
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<LinkedReadsMode>, [undefined]>
+type linkedReads = IOptionalIType<ISimpleType<LinkedReadsMode>, [undefined]>
 // code
 linkedReads: types.stripDefault(
-            types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
-              'off',
-              'normal',
-            ]),
-            'off',
-          )
+  types.enumeration<LinkedReadsMode>('LinkedReadsMode', ['off', 'normal']),
+  'off',
+)
 ```
 
 #### property: showBezierConnections
@@ -270,104 +267,104 @@ Draw paired-read connection curves (bezier overlay + GPU straight lines for
 normal pairs). Orthogonal to `linkedReads` layout, so curves work over an
 ordinary pileup or chain layout.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showBezierConnections = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showBezierConnections: types.stripDefault(types.boolean, false)
 ```
 
 #### property: showCoverage
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showCoverage = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCoverage: types.stripDefault(types.boolean, true)
 ```
 
 #### property: coverageHeight
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type coverageHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 coverageHeight: types.stripDefault(types.number, 45)
 ```
 
 #### property: showMismatches
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showMismatches = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showMismatches: types.stripDefault(types.boolean, true)
 ```
 
 #### property: showInterbaseIndicators
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showInterbaseIndicators = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showInterbaseIndicators: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawSingletons
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawSingletons = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawSingletons: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawProperPairs
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawProperPairs = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawProperPairs: types.stripDefault(types.boolean, true)
 ```
 
 #### property: flipStrandLongReadChains
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type flipStrandLongReadChains = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
 // code
 flipStrandLongReadChains: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawInter
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawInter = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawInter: types.stripDefault(types.boolean, true)
 ```
 
 #### property: drawLongRange
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawLongRange = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawLongRange: types.stripDefault(types.boolean, true)
 ```
 
 #### property: arcColorByType
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<ArcColorByType>, [undefined]>
+type arcColorByType = IOptionalIType<ISimpleType<ArcColorByType>, [undefined]>
 // code
-arcColorByType: types.stripDefault(
-            arcColorByTypes,
-            'insertSizeAndOrientation',
-          )
+arcColorByType: types.stripDefault(arcColorByTypes, 'insertSizeAndOrientation')
 ```
 
 #### property: readConnections
@@ -375,36 +372,39 @@ arcColorByType: types.stripDefault(
 read-connection rendering mode (mate pairs + split reads), orthogonal to
 direction
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<ReadConnectionsMode>, [undefined]>
+type readConnections = IOptionalIType<
+  ISimpleType<ReadConnectionsMode>,
+  [undefined]
+>
 // code
 readConnections: types.stripDefault(
-            types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
-              'off',
-              'arc',
-              'samplot',
-            ]),
-            'off',
-          )
+  types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
+    'off',
+    'arc',
+    'samplot',
+  ]),
+  'off',
+)
 ```
 
 #### property: readConnectionsDown
 
 draw read connections below the coverage band instead of over it
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type readConnectionsDown = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 readConnectionsDown: types.stripDefault(types.boolean, false)
 ```
 
 #### property: showSashimiArcs
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showSashimiArcs = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showSashimiArcs: types.stripDefault(types.boolean, true)
 ```
@@ -414,36 +414,36 @@ showSashimiArcs: types.stripDefault(types.boolean, true)
 hide sashimi junction arcs with fewer than this many supporting reads (0 shows
 all)
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minSashimiScore = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 minSashimiScore: types.stripDefault(types.number, 0)
 ```
 
 #### property: sashimiArcsHeight
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type sashimiArcsHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 sashimiArcsHeight: types.stripDefault(types.number, 40)
 ```
 
 #### property: readConnectionsHeight
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type readConnectionsHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 readConnectionsHeight: types.stripDefault(types.number, 40)
 ```
 
 #### property: showSoftClipping
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showSoftClipping = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showSoftClipping: types.stripDefault(types.boolean, false)
 ```
@@ -451,76 +451,76 @@ showSoftClipping: types.stripDefault(types.boolean, false)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Volatiles</summary>
+<summary>LinearAlignmentsDisplay - Volatiles</summary>
 
 #### volatile: featureIdUnderMouse
 
-```js
+```ts
 // type signature
-string | undefined
+type featureIdUnderMouse = string | undefined
 // code
 featureIdUnderMouse: undefined as undefined | string
 ```
 
 #### volatile: mouseoverExtraInformation
 
-```js
+```ts
 // type signature
-TooltipPayload | undefined
+type mouseoverExtraInformation = TooltipPayload | undefined
 // code
 mouseoverExtraInformation: undefined as TooltipPayload | undefined
 ```
 
 #### volatile: contextMenuFeature
 
-```js
+```ts
 // type signature
-Feature | undefined
+type contextMenuFeature = Feature | undefined
 // code
 contextMenuFeature: undefined as Feature | undefined
 ```
 
 #### volatile: contextMenuCoord
 
-```js
+```ts
 // type signature
-[number, number] | undefined
+type contextMenuCoord = [number, number] | undefined
 // code
 contextMenuCoord: undefined as [number, number] | undefined
 ```
 
 #### volatile: contextMenuCigarHit
 
-```js
+```ts
 // type signature
-CigarHitResult | undefined
+type contextMenuCigarHit = CigarHitResult | undefined
 // code
 contextMenuCigarHit: undefined as CigarHitResult | undefined
 ```
 
 #### volatile: contextMenuIndicatorHit
 
-```js
+```ts
 // type signature
-IndicatorHitResult | undefined
+type contextMenuIndicatorHit = IndicatorHitResult | undefined
 // code
 contextMenuIndicatorHit: undefined as IndicatorHitResult | undefined
 ```
 
 #### volatile: contextMenuRefName
 
-```js
+```ts
 // type signature
-string | undefined
+type contextMenuRefName = string | undefined
 // code
 contextMenuRefName: undefined as string | undefined
 ```
 
 #### volatile: rpcDataMap
 
-```js
+```ts
 // type signature
-ObservableMap<number, GroupedAlignmentsResult>
+type rpcDataMap = ObservableMap<number, GroupedAlignmentsResult>
 // code
 rpcDataMap: observable.map<number, GroupedAlignmentsResult>()
 ```
@@ -530,9 +530,9 @@ rpcDataMap: observable.map<number, GroupedAlignmentsResult>()
 pileup vertical scroll offset in px. Also read by the BreakpointSplitView
 overlay to position its SVG curves.
 
-```js
+```ts
 // type signature
-number
+type scrollTop = number
 // code
 scrollTop: 0
 ```
@@ -544,9 +544,9 @@ grouping). Keyed by group key so it survives re-fetches; volatile so it resets
 on reload. Stale keys from a prior grouping dimension are harmless — they never
 match the new keys.
 
-```js
+```ts
 // type signature
-ObservableSet<string>
+type collapsedGroups = ObservableSet<string>
 // code
 collapsedGroups: observable.set<string>()
 ```
@@ -558,67 +558,63 @@ volatile like `collapsedGroups`; absent keys fall back to the display-wide
 `maxHeight`. Lets a dense section be shrunk independently. Cleared by
 `setGroupBy`.
 
-```js
+```ts
 // type signature
-ObservableMap<string, number>
+type groupMaxHeightOverrides = ObservableMap<string, number>
 // code
 groupMaxHeightOverrides: observable.map<string, number>()
 ```
 
 #### volatile: highlightedChainIds
 
-```js
+```ts
 // type signature
-string[]
+type highlightedChainIds = string[]
 // code
 highlightedChainIds: [] as string[]
 ```
 
 #### volatile: selectedChainIds
 
-```js
+```ts
 // type signature
-string[]
+type selectedChainIds = string[]
 // code
 selectedChainIds: [] as string[]
 ```
 
 #### volatile: colorTagMap
 
-```js
+```ts
 // type signature
-;(Record < string,
-  string >
-    // code
-    colorTagMap)
+type colorTagMap = Record<string, string>
+// code
+colorTagMap
 ```
 
 #### volatile: visibleModifications
 
-```js
+```ts
 // type signature
-ObservableMap<string, ModificationTypeWithColor>
+type visibleModifications = ObservableMap<string, ModificationTypeWithColor>
 // code
-visibleModifications: observable.map<
-            string,
-            ModificationTypeWithColor
-          >({})
+visibleModifications: observable.map<string, ModificationTypeWithColor>({})
 ```
 
 #### volatile: modificationsReady
 
-```js
+```ts
 // type signature
-false
+type modificationsReady = false
 // code
 modificationsReady: false
 ```
 
 #### volatile: overCigarItem
 
-```js
+```ts
 // type signature
-false
+type overCigarItem = false
 // code
 overCigarItem: false
 ```
@@ -630,25 +626,26 @@ hover. Drives the tooltip's vertical hover bar so it lands on the hovered
 group's coverage band, not always the top one. `undefined` when not hovering
 coverage.
 
-```js
+```ts
 // type signature
-{ topOffset: number; coverageHeight: number; } | undefined
+type hoverCoverageBand =
+  | { topOffset: number; coverageHeight: number }
+  | undefined
 // code
 hoverCoverageBand: undefined as
-            | { topOffset: number; coverageHeight: number }
-            | undefined
+  | { topOffset: number; coverageHeight: number }
+  | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Getters</summary>
+<summary>LinearAlignmentsDisplay - Getters</summary>
 
 #### getter: isChainMode
 
-```js
-// type
-boolean
+```ts
+type isChainMode = boolean
 ```
 
 #### getter: showLinkedReadLines
@@ -658,159 +655,149 @@ layout. Only meaningful when bezier connections are on AND we are in pileup mode
 — chain layout has its own connecting-line pass that already covers normal
 pairs.
 
-```js
-// type
-boolean
+```ts
+type showLinkedReadLines = boolean
 ```
 
 #### getter: scaleType
 
-```js
-// type
-'linear' | 'log'
+```ts
+type scaleType = 'linear' | 'log'
 ```
 
 #### getter: autoscaleType
 
-```js
-// type
-'local' | 'localsd'
+```ts
+type autoscaleType = 'local' | 'localsd'
 ```
 
 #### getter: minScore
 
-```js
-// type
-number
+```ts
+type minScore = number
 ```
 
 #### getter: maxScore
 
-```js
-// type
-number
+```ts
+type maxScore = number
 ```
 
 #### getter: minScoreBound
 
-```js
-// type
-number | undefined
+```ts
+type minScoreBound = number | undefined
 ```
 
 #### getter: maxScoreBound
 
-```js
-// type
-number | undefined
+```ts
+type maxScoreBound = number | undefined
 ```
 
 #### getter: numStdDev
 
-```js
-// type
-number
+```ts
+type numStdDev = number
 ```
 
 #### getter: featureWidgetType
 
-```js
-// type
-{
-  type: string
-  id: string
-}
+```ts
+type featureWidgetType = { type: string; id: string }
 ```
 
 #### getter: selectedFeatureId
 
-```js
-// type
-string | undefined
+```ts
+type selectedFeatureId = string | undefined
 ```
 
 #### getter: TooltipComponent
 
-```js
-// type
-LazyExoticComponent<({ model, clientMouseCoord, offsetMouseCoord, }: { model: { mouseoverExtraInformation: TooltipPayload | undefined; hoverCoverageBand: { topOffset: number; coverageHeight: number; } | undefined; }; offsetMouseCoord?: Coord | undefined; clientMouseCoord: Coord; }) => Element | null>
+```ts
+type TooltipComponent = LazyExoticComponent<
+  ({
+    model,
+    clientMouseCoord,
+    offsetMouseCoord,
+  }: {
+    model: {
+      mouseoverExtraInformation: TooltipPayload | undefined
+      hoverCoverageBand:
+        | { topOffset: number; coverageHeight: number }
+        | undefined
+    }
+    offsetMouseCoord?: Coord | undefined
+    clientMouseCoord: Coord
+  }) => Element | null
+>
 ```
 
 #### getter: visibleModificationTypes
 
-```js
-// type
-string[]
+```ts
+type visibleModificationTypes = string[]
 ```
 
 #### getter: colorBy
 
-```js
-// type
-ColorBy
+```ts
+type colorBy = ColorBy
 ```
 
 #### getter: filterBy
 
-```js
-// type
-FilterBy
+```ts
+type filterBy = FilterBy
 ```
 
 #### getter: featureHeight
 
-```js
-// type
-number
+```ts
+type featureHeight = number
 ```
 
 #### getter: featureSpacing
 
-```js
-// type
-number
+```ts
+type featureSpacing = number
 ```
 
 #### getter: maxHeight
 
-```js
-// type
-number
+```ts
+type maxHeight = number
 ```
 
 #### getter: chainIdMap
 
-```js
-// type
-Map<string, string[]>
+```ts
+type chainIdMap = Map<string, string[]>
 ```
 
 #### getter: mismatchAlpha
 
-```js
-// type
-boolean
+```ts
+type mismatchAlpha = boolean
 ```
 
 #### getter: showLowFreqMismatches
 
-```js
-// type
-boolean
+```ts
+type showLowFreqMismatches = boolean
 ```
 
 #### getter: showLegend
 
-```js
-// type
-boolean
+```ts
+type showLegend = boolean
 ```
 
 #### getter: sortedBy
 
-```js
-// type
-SortedBy | undefined
+```ts
+type sortedBy = SortedBy | undefined
 ```
 
 #### getter: groupBy
@@ -818,9 +805,8 @@ SortedBy | undefined
 In-track stacked grouping dimension (undefined = ungrouped). Sent to the worker
 via rpcProps; the worker partitions one fetch into N sections.
 
-```js
-// type
-GroupBy | undefined
+```ts
+type groupBy = GroupBy | undefined
 ```
 
 #### getter: prefersOffset
@@ -828,37 +814,32 @@ GroupBy | undefined
 Offset the track label above the visualization when grouping, so the stacked
 group sections aren't hidden behind an overlapping label.
 
-```js
-// type
-boolean
+```ts
+type prefersOffset = boolean
 ```
 
 #### getter: coverageIsLog
 
-```js
-// type
-boolean
+```ts
+type coverageIsLog = boolean
 ```
 
 #### getter: coverageStats
 
-```js
-// type
-ScoreStats | undefined
+```ts
+type coverageStats = ScoreStats | undefined
 ```
 
 #### getter: coverageDomain
 
-```js
-// type
-;[number, number] | undefined
+```ts
+type coverageDomain = [number, number] | undefined
 ```
 
 #### getter: coverageTicks
 
-```js
-// type
-YScaleTicks | undefined
+```ts
+type coverageTicks = YScaleTicks | undefined
 ```
 
 #### getter: colorLegendCategories
@@ -869,16 +850,14 @@ readColorCategory with the renderer so the two can't disagree. Empty while the
 legend is hidden so the O(reads) scan is skipped; MobX memoizes it against
 rpcDataMap + scheme + mode.
 
-```js
-// type
-Set<ReadColorCategory>
+```ts
+type colorLegendCategories = Set<ReadColorCategory>
 ```
 
 #### getter: colorPalette
 
-```js
-// type
-ColorPalette
+```ts
+type colorPalette = ColorPalette
 ```
 
 #### getter: laidOutByGroup
@@ -888,9 +867,8 @@ lays out independently (own `maxRows` cap) so a dense group can't starve the
 rest. Tag colors are baked here (not in the worker) so colorTagMap stays a
 main-thread tier-2 setting — see readTagColors.
 
-```js
-// type
-LaidOutByGroup
+```ts
+type laidOutByGroup = LaidOutByGroup
 ```
 
 #### getter: groupOrder
@@ -899,9 +877,8 @@ Group keys + labels in stacking order; a single entry (key '') when ungrouped.
 Derived straight from the fetched `rpcDataMap` (not from the layout pass), so
 group identity/order stays stable across relayouts.
 
-```js
-// type
-GroupId[]
+```ts
+type groupOrder = GroupId[]
 ```
 
 #### getter: laidOutPileupMap
@@ -910,9 +887,8 @@ Renderer-facing per-region layout. Stage 2 draws a single section, so this
 exposes the first (for ungrouped, the only) group; Stage 3 switches the
 renderers to loop `sections` directly.
 
-```js
-// type
-Map<number, PileupDataResult>
+```ts
+type laidOutPileupMap = Map<number, PileupDataResult>
 ```
 
 #### getter: sourceSections
@@ -922,9 +898,12 @@ key '' when ungrouped). Pairs each group's laid-out region map with its key so
 the renderers can namespace HAL region keys per section. Parallel to
 `renderState.sections`.
 
-```js
-// type
-{ groupKey: string; laidOutPileupMap: Map<number, PileupDataResult>; arcsRpcDataMap: Map<number, ArcsUploadData>; }[]
+```ts
+type sourceSections = {
+  groupKey: string
+  laidOutPileupMap: Map<number, PileupDataResult>
+  arcsRpcDataMap: Map<number, ArcsUploadData>
+}[]
 ```
 
 #### getter: maxY
@@ -935,9 +914,8 @@ single-section/ungrouped path (`totalPileupHeight`, `searchFeatureByID`, and the
 no-data synthetic section in `sections`). Grouped layout sizes each section from
 its own `groupMaxY`; don't use this as a cross-group aggregate.
 
-```js
-// type
-number
+```ts
+type maxY = number
 ```
 
 #### getter: pileupTruncated
@@ -947,9 +925,8 @@ the "max height reached" / "show all" banner. Groups the user explicitly shrank
 (a per-group height drag) are skipped: their truncation is intentional, not the
 global cap the banner offers to lift.
 
-```js
-// type
-boolean
+```ts
+type pileupTruncated = boolean
 ```
 
 #### getter: rawDataByGroup
@@ -959,9 +936,8 @@ insertion-ordered so the first key is the primary group. The arc compute and the
 per-section sashimi overlay both read one group's raw map from here; ungrouped
 is the single key `''`.
 
-```js
-// type
-Map<string, Map<number, PileupDataResult>>
+```ts
+type rawDataByGroup = Map<string, Map<number, PileupDataResult>>
 ```
 
 #### getter: arcsByGroup
@@ -973,65 +949,59 @@ Empty map when read-connections are off, so the off-path skips the per-read
 region scan entirely. Source of truth for the per-section arc feed
 (`sourceSections`) and the shared cross-group `arcsYDomainBp`.
 
-```js
-// type
-Map<string, Map<number, ArcsUploadData>>
+```ts
+type arcsByGroup = Map<string, Map<number, ArcsUploadData>>
 ```
 
 #### getter: modificationThreshold
 
-```js
-// type
-number
+```ts
+type modificationThreshold = number
 ```
 
 #### getter: colorSchemeIndex
 
-```js
-// type
-number
+```ts
+type colorSchemeIndex = number
 ```
 
 #### getter: showModifications
 
-```js
-// type
-boolean
+```ts
+type showModifications = boolean
 ```
 
 #### getter: showPerBaseQuality
 
-```js
-// type
-boolean
+```ts
+type showPerBaseQuality = boolean
 ```
 
 #### getter: showPerBaseLetter
 
-```js
-// type
-boolean
+```ts
+type showPerBaseLetter = boolean
 ```
 
 #### getter: totalPileupHeight
 
-```js
-// type
-number
+```ts
+type totalPileupHeight = number
 ```
 
 #### getter: readIdIndexMap
 
-```js
-// type
-Map<string, { displayedRegionIndex: number; groupKey: string; idx: number; }>
+```ts
+type readIdIndexMap = Map<
+  string,
+  { displayedRegionIndex: number; groupKey: string; idx: number }
+>
 ```
 
 #### getter: readConnectionsLineWidth
 
-```js
-// type
-number
+```ts
+type readConnectionsLineWidth = number
 ```
 
 #### getter: hasSashimiArcs
@@ -1040,9 +1010,8 @@ True when any loaded region has a junction passing minSashimiScore. Drives
 whether the below-coverage band reserves space, so a threshold that hides every
 arc also reclaims the empty band.
 
-```js
-// type
-boolean
+```ts
+type hasSashimiArcs = boolean
 ```
 
 #### getter: belowCoverageBands
@@ -1053,9 +1022,8 @@ height, the renderers, and the three resize handles can't drift apart.
 `arcsBandTop`/`sashimiBandTop` are each band's top edge; `bottom` is where the
 pileup begins (== coverageDisplayHeight).
 
-```js
-// type
-{
+```ts
+type belowCoverageBands = {
   hasArcsBand: boolean
   hasSashimiBand: boolean
   arcsBandTop: number
@@ -1066,9 +1034,8 @@ pileup begins (== coverageDisplayHeight).
 
 #### getter: coverageDisplayHeight
 
-```js
-// type
-number
+```ts
+type coverageDisplayHeight = number
 ```
 
 #### getter: sections
@@ -1081,9 +1048,8 @@ it is the one-group call, with a synthetic group when no data has arrived yet
 sticky-coverage-vs-scroll distinction lives downstream in `buildSectionRenders`,
 keyed off section count.
 
-```js
-// type
-SectionsLayout
+```ts
+type sections = SectionsLayout
 ```
 
 #### getter: renderSections
@@ -1095,9 +1061,16 @@ mapped to the right section and its group. Reads straight off `sections` (every
 field already lives on the `Section`); ungrouped is the single section, so the
 pipeline reduces to pre-grouping.
 
-```js
-// type
-{ groupKey: string; label: string; laidOutPileupMap: Map<number, PileupDataResult>; topOffset: number; coverageTop: number; coverageHeight: number; pileupHeight: number; }[]
+```ts
+type renderSections = {
+  groupKey: string
+  label: string
+  laidOutPileupMap: Map<number, PileupDataResult>
+  topOffset: number
+  coverageTop: number
+  coverageHeight: number
+  pileupHeight: number
+}[]
 ```
 
 #### getter: sashimiSections
@@ -1109,9 +1082,13 @@ section's own coverage. The overlay and SVG export both map over this so their
 geometry can't drift; ungrouped is the single-section case (sticky band below
 sticky coverage, raw map == the only group). Empty when sashimi is off.
 
-```js
-// type
-{ groupKey: string; rpcDataMap: Map<number, PileupDataResult>; top: number; down: boolean; }[]
+```ts
+type sashimiSections = {
+  groupKey: string
+  rpcDataMap: Map<number, PileupDataResult>
+  top: number
+  down: boolean
+}[]
 ```
 
 #### getter: isGrouped
@@ -1120,9 +1097,8 @@ True when reads are stacked into >1 group section. Drives the scroll model:
 ungrouped keeps coverage sticky (only the pileup scrolls); grouped scrolls the
 whole coverage+pileup stack as one.
 
-```js
-// type
-boolean
+```ts
+type isGrouped = boolean
 ```
 
 #### getter: scrollModel
@@ -1132,9 +1108,8 @@ content-space Y into screen space. Built once here so the label / resize-handle
 / coverage-axis overlays don't each re-assemble
 `{ isGrouped, scrollTop, canvasHeight }` inline.
 
-```js
-// type
-ScrollModel
+```ts
+type scrollModel = ScrollModel
 ```
 
 #### getter: pileupViewportHeight
@@ -1142,9 +1117,8 @@ ScrollModel
 Height of the scrollable viewport. Ungrouped excludes the sticky coverage band;
 grouped scrolls the entire display.
 
-```js
-// type
-number
+```ts
+type pileupViewportHeight = number
 ```
 
 #### getter: pileupContentHeight
@@ -1152,30 +1126,26 @@ number
 Total scrollable content height. Ungrouped is just the pileup (coverage is
 sticky); grouped is the full stacked-sections height.
 
-```js
-// type
-number
+```ts
+type pileupContentHeight = number
 ```
 
 #### getter: scalebarOverlapLeft
 
-```js
-// type
-number
+```ts
+type scalebarOverlapLeft = number
 ```
 
 #### getter: showOutline
 
-```js
-// type
-boolean
+```ts
+type showOutline = boolean
 ```
 
 #### getter: visibleLabels
 
-```js
-// type
-VisibleLabel[]
+```ts
+type visibleLabels = VisibleLabel[]
 ```
 
 #### getter: highlightBoxes
@@ -1185,72 +1155,63 @@ div. Deliberately NOT part of `renderState`: the hovered id changes on nearly
 every mousemove, and routing it through the canvas would repaint the whole
 pileup each move.
 
-```js
-// type
-HighlightBox[]
+```ts
+type highlightBoxes = HighlightBox[]
 ```
 
 #### getter: scrollableHeight
 
-```js
-// type
-number
+```ts
+type scrollableHeight = number
 ```
 
 #### getter: sortTag
 
-```js
-// type
-string | undefined
+```ts
+type sortTag = string | undefined
 ```
 
 #### getter: renderState
 
-```js
-// type
-{ scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 24 more ...; arcsYDomainBp: number | undefined; } | undefined
+```ts
+type renderState = { scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 24 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
 
-```js
-// type
-number | undefined
+```ts
+type arcsYDomainBp = number | undefined
 ```
 
 #### getter: insertSizeTicks
 
-```js
-// type
-YScaleTicks | undefined
+```ts
+type insertSizeTicks = YScaleTicks | undefined
 ```
 
 #### getter: featureUnderMouse
 
-```js
-// type
-SimpleFeature | undefined
+```ts
+type featureUnderMouse = SimpleFeature | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Methods</summary>
+<summary>LinearAlignmentsDisplay - Methods</summary>
 
 #### method: isGroupCollapsed
 
 Whether a stacked group's pileup is collapsed to just its coverage.
 
-```js
-// type signature
-isGroupCollapsed: (key: string) => boolean
+```ts
+type isGroupCollapsed = (key: string) => boolean
 ```
 
 #### method: legendItems
 
-```js
-// type signature
-legendItems: () => LegendItem[]
+```ts
+type legendItems = () => LegendItem[]
 ```
 
 #### method: groupLaidOutMap
@@ -1259,37 +1220,57 @@ Laid-out region map for one group key, or an empty map for a key with no data.
 Centralizes the empty-map fallback shared by the section getters so they never
 have to branch on a missing group.
 
-```js
-// type signature
-groupLaidOutMap: (key: string) => Map<number, PileupDataResult>
+```ts
+type groupLaidOutMap = (key: string) => Map<number, PileupDataResult>
 ```
 
 #### method: findFeatureInRpcData
 
-```js
-// type signature
-findFeatureInRpcData: (featureId: string) => { displayedRegionIndex: number; idx: number; rpcData: PileupDataResult; start: number; end: number; } | undefined
+```ts
+type findFeatureInRpcData = (
+  featureId: string,
+) =>
+  | {
+      displayedRegionIndex: number
+      idx: number
+      rpcData: PileupDataResult
+      start: number
+      end: number
+    }
+  | undefined
 ```
 
 #### method: searchFeatureByID
 
-```js
-// type signature
-searchFeatureByID: (featureId: string) => [number, number, number, number] | undefined
+```ts
+type searchFeatureByID = (
+  featureId: string,
+) => [number, number, number, number] | undefined
 ```
 
 #### method: getFeatureInfoById
 
-```js
-// type signature
-getFeatureInfoById: (featureId: string) => { id: string; name: string; start: number; end: number; flags: number; mapq: number; strand: number; refName: string; } | undefined
+```ts
+type getFeatureInfoById = (
+  featureId: string,
+) =>
+  | {
+      id: string
+      name: string
+      start: number
+      end: number
+      flags: number
+      mapq: number
+      strand: number
+      refName: string
+    }
+  | undefined
 ```
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => {
+```ts
+type rpcProps = () => {
   filterBy: FilterBy
   colorBy: ColorBy
   sortTag: string | undefined
@@ -1305,168 +1286,152 @@ rpcProps: () => {
 
 Track menu items
 
-```js
-// type signature
-trackMenuItems: () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
+```ts
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
 ```
 
 #### method: contextMenuItems
 
-```js
-// type signature
-contextMenuItems: () => MenuItem[]
+```ts
+type contextMenuItems = () => MenuItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Actions</summary>
+<summary>LinearAlignmentsDisplay - Actions</summary>
 
 #### action: clearMouseoverState
 
-```js
-// type signature
-clearMouseoverState: () => void
+```ts
+type clearMouseoverState = () => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (error?: unknown) => void
+```ts
+type setError = (error?: unknown) => void
 ```
 
 #### action: setRegionTooLarge
 
-```js
-// type signature
-setRegionTooLarge: (val: boolean, reason?: string | undefined) => void
+```ts
+type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
 ```
 
 #### action: setRpcData
 
-```js
-// type signature
-setRpcData: (displayedRegionIndex: number, data: GroupedAlignmentsResult | null) => void
+```ts
+type setRpcData = (
+  displayedRegionIndex: number,
+  data: GroupedAlignmentsResult | null,
+) => void
 ```
 
 #### action: clearDisplaySpecificData
 
-```js
-// type signature
-clearDisplaySpecificData: () => void
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 #### action: setOverCigarItem
 
-```js
-// type signature
-setOverCigarItem: (flag: boolean) => void
+```ts
+type setOverCigarItem = (flag: boolean) => void
 ```
 
 #### action: setScrollTop
 
-```js
-// type signature
-setScrollTop: (scrollTop: number) => void
+```ts
+type setScrollTop = (scrollTop: number) => void
 ```
 
 #### action: setHighlightedChainIds
 
-```js
-// type signature
-setHighlightedChainIds: (ids: string[]) => void
+```ts
+type setHighlightedChainIds = (ids: string[]) => void
 ```
 
 #### action: clearHighlights
 
-```js
-// type signature
-clearHighlights: () => void
+```ts
+type clearHighlights = () => void
 ```
 
 #### action: clearSelection
 
-```js
-// type signature
-clearSelection: () => void
+```ts
+type clearSelection = () => void
 ```
 
 #### action: setSelectedChainIds
 
-```js
-// type signature
-setSelectedChainIds: (ids: string[]) => void
+```ts
+type setSelectedChainIds = (ids: string[]) => void
 ```
 
 #### action: setColorScheme
 
-```js
-// type signature
-setColorScheme: (colorBy: ColorBy) => void
+```ts
+type setColorScheme = (colorBy: ColorBy) => void
 ```
 
 #### action: updateColorTagMap
 
-```js
-// type signature
-updateColorTagMap: (uniqueTag: string[]) => void
+```ts
+type updateColorTagMap = (uniqueTag: string[]) => void
 ```
 
 #### action: setFilterBy
 
-```js
-// type signature
-setFilterBy: (filterBy: FilterBy) => void
+```ts
+type setFilterBy = (filterBy: FilterBy) => void
 ```
 
 #### action: setShowOutline
 
-```js
-// type signature
-setShowOutline: (show: boolean | undefined) => void
+```ts
+type setShowOutline = (show: boolean | undefined) => void
 ```
 
 #### action: toggleSoftClipping
 
-```js
-// type signature
-toggleSoftClipping: () => void
+```ts
+type toggleSoftClipping = () => void
 ```
 
 #### action: toggleMismatchAlpha
 
-```js
-// type signature
-toggleMismatchAlpha: () => void
+```ts
+type toggleMismatchAlpha = () => void
 ```
 
 #### action: toggleShowLowFreqMismatches
 
-```js
-// type signature
-toggleShowLowFreqMismatches: () => void
+```ts
+type toggleShowLowFreqMismatches = () => void
 ```
 
 #### action: setSortedBy
 
-```js
-// type signature
-setSortedBy: (type: string, tag?: string | undefined) => void
+```ts
+type setSortedBy = (type: string, tag?: string | undefined) => void
 ```
 
 #### action: setSortedByAtPosition
 
-```js
-// type signature
-setSortedByAtPosition: (type: string, pos: number, refName: string) => void
+```ts
+type setSortedByAtPosition = (
+  type: string,
+  pos: number,
+  refName: string,
+) => void
 ```
 
 #### action: clearSortedBy
 
-```js
-// type signature
-clearSortedBy: () => void
+```ts
+type clearSortedBy = () => void
 ```
 
 #### action: setGroupBy
@@ -1475,18 +1440,16 @@ Set (or clear, when undefined) the in-track stacked grouping dimension. A tier-1
 refetch setting (in `rpcProps`) — the worker re-partitions the fetch into N
 sections. Resets the Y scroll since the stacked content height changes.
 
-```js
-// type signature
-setGroupBy: (groupBy?: GroupBy | undefined) => void
+```ts
+type setGroupBy = (groupBy?: GroupBy | undefined) => void
 ```
 
 #### action: toggleGroupCollapsed
 
 Collapse/expand a stacked group's pileup (coverage stays visible).
 
-```js
-// type signature
-toggleGroupCollapsed: (key: string) => void
+```ts
+type toggleGroupCollapsed = (key: string) => void
 ```
 
 #### action: resizeGroupHeight
@@ -1503,205 +1466,176 @@ seeding from the displayed height only on the first frame. When the override
 already runs past the real content (displayed height < override), clamp back to
 one row of headroom so reversing the drag responds immediately.
 
-```js
-// type signature
-resizeGroupHeight: (key: string, dy: number) => void
+```ts
+type resizeGroupHeight = (key: string, dy: number) => void
 ```
 
 #### action: setScaleType
 
-```js
-// type signature
-setScaleType: (val: string) => void
+```ts
+type setScaleType = (val: string) => void
 ```
 
 #### action: setAutoscale
 
-```js
-// type signature
-setAutoscale: (val?: string | undefined) => void
+```ts
+type setAutoscale = (val?: string | undefined) => void
 ```
 
 #### action: setMinScore
 
-```js
-// type signature
-setMinScore: (val?: number | undefined) => void
+```ts
+type setMinScore = (val?: number | undefined) => void
 ```
 
 #### action: setMaxScore
 
-```js
-// type signature
-setMaxScore: (val?: number | undefined) => void
+```ts
+type setMaxScore = (val?: number | undefined) => void
 ```
 
 #### action: setFeatureHeight
 
-```js
-// type signature
-setFeatureHeight: (height?: number | undefined) => void
+```ts
+type setFeatureHeight = (height?: number | undefined) => void
 ```
 
 #### action: setFeatureSpacing
 
-```js
-// type signature
-setFeatureSpacing: (spacing?: number | undefined) => void
+```ts
+type setFeatureSpacing = (spacing?: number | undefined) => void
 ```
 
 #### action: setMaxHeight
 
-```js
-// type signature
-setMaxHeight: (height?: number | undefined) => void
+```ts
+type setMaxHeight = (height?: number | undefined) => void
 ```
 
 #### action: setCompactness
 
-```js
-// type signature
-setCompactness: (level: "normal" | "compact" | "super-compact") => void
+```ts
+type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
 ```
 
 #### action: setShowSashimiArcs
 
-```js
-// type signature
-setShowSashimiArcs: (show: boolean) => void
+```ts
+type setShowSashimiArcs = (show: boolean) => void
 ```
 
 #### action: toggleSashimiArcs
 
-```js
-// type signature
-toggleSashimiArcs: () => void
+```ts
+type toggleSashimiArcs = () => void
 ```
 
 #### action: setReadConnections
 
-```js
-// type signature
-setReadConnections: (mode: ReadConnectionsMode) => void
+```ts
+type setReadConnections = (mode: ReadConnectionsMode) => void
 ```
 
 #### action: setReadConnectionsDown
 
-```js
-// type signature
-setReadConnectionsDown: (down: boolean) => void
+```ts
+type setReadConnectionsDown = (down: boolean) => void
 ```
 
 #### action: setShowCoverage
 
-```js
-// type signature
-setShowCoverage: (show: boolean) => void
+```ts
+type setShowCoverage = (show: boolean) => void
 ```
 
 #### action: setCoverageHeight
 
-```js
-// type signature
-setCoverageHeight: (height: number) => void
+```ts
+type setCoverageHeight = (height: number) => void
 ```
 
 #### action: setReadConnectionsHeight
 
-```js
-// type signature
-setReadConnectionsHeight: (height: number) => void
+```ts
+type setReadConnectionsHeight = (height: number) => void
 ```
 
 #### action: setSashimiArcsHeight
 
-```js
-// type signature
-setSashimiArcsHeight: (height: number) => void
+```ts
+type setSashimiArcsHeight = (height: number) => void
 ```
 
 #### action: setMinSashimiScore
 
-```js
-// type signature
-setMinSashimiScore: (score: number) => void
+```ts
+type setMinSashimiScore = (score: number) => void
 ```
 
 #### action: setReadConnectionsLineWidth
 
-```js
-// type signature
-setReadConnectionsLineWidth: (width: number) => void
+```ts
+type setReadConnectionsLineWidth = (width: number) => void
 ```
 
 #### action: setDrawInter
 
-```js
-// type signature
-setDrawInter: (draw: boolean) => void
+```ts
+type setDrawInter = (draw: boolean) => void
 ```
 
 #### action: setDrawLongRange
 
-```js
-// type signature
-setDrawLongRange: (draw: boolean) => void
+```ts
+type setDrawLongRange = (draw: boolean) => void
 ```
 
 #### action: setColorByType
 
-```js
-// type signature
-setColorByType: (type: ArcColorByType) => void
+```ts
+type setColorByType = (type: ArcColorByType) => void
 ```
 
 #### action: setShowMismatches
 
-```js
-// type signature
-setShowMismatches: (show: boolean) => void
+```ts
+type setShowMismatches = (show: boolean) => void
 ```
 
 #### action: setShowLegend
 
-```js
-// type signature
-setShowLegend: (show: boolean | undefined) => void
+```ts
+type setShowLegend = (show: boolean | undefined) => void
 ```
 
 #### action: setDrawSingletons
 
-```js
-// type signature
-setDrawSingletons: (flag: boolean) => void
+```ts
+type setDrawSingletons = (flag: boolean) => void
 ```
 
 #### action: setDrawProperPairs
 
-```js
-// type signature
-setDrawProperPairs: (flag: boolean) => void
+```ts
+type setDrawProperPairs = (flag: boolean) => void
 ```
 
 #### action: setShowInterbaseIndicators
 
-```js
-// type signature
-setShowInterbaseIndicators: (show: boolean) => void
+```ts
+type setShowInterbaseIndicators = (show: boolean) => void
 ```
 
 #### action: setFlipStrandLongReadChains
 
-```js
-// type signature
-setFlipStrandLongReadChains: (flag: boolean) => void
+```ts
+type setFlipStrandLongReadChains = (flag: boolean) => void
 ```
 
 #### action: setLinkedReads
 
-```js
-// type signature
-setLinkedReads: (mode: LinkedReadsMode) => void
+```ts
+type setLinkedReads = (mode: LinkedReadsMode) => void
 ```
 
 #### action: setShowBezierConnections
@@ -1710,121 +1644,109 @@ Toggle the paired-read connection overlay. A main-thread tier-2/4 setting (read
 in `laidOutPileupMap` + `renderState`), not in `rpcProps` — toggling it never
 refetches.
 
-```js
-// type signature
-setShowBezierConnections: (flag: boolean) => void
+```ts
+type setShowBezierConnections = (flag: boolean) => void
 ```
 
 #### action: updateVisibleModifications
 
-```js
-// type signature
-updateVisibleModifications: (uniqueModifications: string[]) => void
+```ts
+type updateVisibleModifications = (uniqueModifications: string[]) => void
 ```
 
 #### action: setModificationsReady
 
-```js
-// type signature
-setModificationsReady: (flag: boolean) => void
+```ts
+type setModificationsReady = (flag: boolean) => void
 ```
 
 #### action: setFeatureIdUnderMouse
 
-```js
-// type signature
-setFeatureIdUnderMouse: (feature?: string | undefined) => void
+```ts
+type setFeatureIdUnderMouse = (feature?: string | undefined) => void
 ```
 
 #### action: setMouseoverExtraInformation
 
-```js
-// type signature
-setMouseoverExtraInformation: (extra?: TooltipPayload | undefined) => void
+```ts
+type setMouseoverExtraInformation = (extra?: TooltipPayload | undefined) => void
 ```
 
 #### action: setHoverState
 
-```js
-// type signature
-setHoverState: (state: { overCigarItem: boolean; featureIdUnderMouse: string | undefined; mouseoverExtraInformation: TooltipPayload | undefined; hoverCoverageBand?: { topOffset: number; coverageHeight: number; } | undefined; }) => void
+```ts
+type setHoverState = (state: {
+  overCigarItem: boolean
+  featureIdUnderMouse: string | undefined
+  mouseoverExtraInformation: TooltipPayload | undefined
+  hoverCoverageBand?: { topOffset: number; coverageHeight: number } | undefined
+}) => void
 ```
 
 #### action: setContextMenuFeature
 
-```js
-// type signature
-setContextMenuFeature: (feature?: Feature | undefined) => void
+```ts
+type setContextMenuFeature = (feature?: Feature | undefined) => void
 ```
 
 #### action: setContextMenuCoord
 
-```js
-// type signature
-setContextMenuCoord: (coord?: [number, number] | undefined) => void
+```ts
+type setContextMenuCoord = (coord?: [number, number] | undefined) => void
 ```
 
 #### action: setContextMenuCigarHit
 
-```js
-// type signature
-setContextMenuCigarHit: (hit?: CigarHitResult | undefined) => void
+```ts
+type setContextMenuCigarHit = (hit?: CigarHitResult | undefined) => void
 ```
 
 #### action: setContextMenuIndicatorHit
 
-```js
-// type signature
-setContextMenuIndicatorHit: (hit?: IndicatorHitResult | undefined) => void
+```ts
+type setContextMenuIndicatorHit = (hit?: IndicatorHitResult | undefined) => void
 ```
 
 #### action: clearContextMenu
 
-```js
-// type signature
-clearContextMenu: () => void
+```ts
+type clearContextMenu = () => void
 ```
 
 #### action: setContextMenuRefName
 
-```js
-// type signature
-setContextMenuRefName: (refName?: string | undefined) => void
+```ts
+type setContextMenuRefName = (refName?: string | undefined) => void
 ```
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+```ts
+type selectFeature = (feature: Feature) => void
 ```
 
 #### action: startRenderingBackend
 
-```js
-// type signature
-startRenderingBackend: (backend: AlignmentsRenderingBackend) => void
+```ts
+type startRenderingBackend = (backend: AlignmentsRenderingBackend) => void
 ```
 
 #### action: selectFeatureById
 
-```js
-// type signature
-selectFeatureById: (featureId: string) => Promise<void>
+```ts
+type selectFeatureById = (featureId: string) => Promise<void>
 ```
 
 #### action: setContextMenuFeatureById
 
-```js
-// type signature
-setContextMenuFeatureById: (featureId: string) => Promise<void>
+```ts
+type setContextMenuFeatureById = (featureId: string) => Promise<void>
 ```
 
 #### action: getByteEstimateConfig
 
-```js
-// type signature
-getByteEstimateConfig: () => {
+```ts
+type getByteEstimateConfig = () => {
   adapterConfig: any
   fetchSizeLimit: number
   userByteSizeLimit: number | undefined
@@ -1834,16 +1756,16 @@ getByteEstimateConfig: () => {
 
 #### action: fetchNeeded
 
-```js
-// type signature
-fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
+```ts
+type fetchNeeded = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+) => Promise<void>
 ```
 
 #### action: renderSvg
 
-```js
-// type signature
-renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
+```ts
+type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
 ```
 
 </details>

@@ -235,22 +235,22 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Properties</summary>
+<summary>LinearWiggleDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearWiggleDisplay">
+type type = ISimpleType<'LinearWiggleDisplay'>
 // code
 type: types.literal('LinearWiggleDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -258,13 +258,13 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Volatiles</summary>
+<summary>LinearWiggleDisplay - Volatiles</summary>
 
 #### volatile: featureUnderMouse
 
-```js
+```ts
 // type signature
-WiggleFeatureUnderMouse | undefined
+type featureUnderMouse = WiggleFeatureUnderMouse | undefined
 // code
 featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 ```
@@ -272,60 +272,55 @@ featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Getters</summary>
+<summary>LinearWiggleDisplay - Getters</summary>
 
 #### getter: DisplayMessageComponent
 
-```js
-// type
-LazyExoticComponent<({ model, }: { model: WiggleDisplayModel; }) => Element>
+```ts
+type DisplayMessageComponent = LazyExoticComponent<
+  ({ model }: { model: WiggleDisplayModel }) => Element
+>
 ```
 
 #### getter: color
 
-```js
-// type
-string
+```ts
+type color = string
 ```
 
 #### getter: useBicolor
 
-```js
-// type
-boolean
+```ts
+type useBicolor = boolean
 ```
 
 #### getter: isDensityMode
 
-```js
-// type
-boolean
+```ts
+type isDensityMode = boolean
 ```
 
 #### getter: ticks
 
-```js
-// type
-YScaleTicks | undefined
+```ts
+type ticks = YScaleTicks | undefined
 ```
 
 #### getter: renderState
 
-```js
-// type
-WiggleGPURenderState | undefined
+```ts
+type renderState = WiggleGPURenderState | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Methods</summary>
+<summary>LinearWiggleDisplay - Methods</summary>
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => {
+```ts
+type rpcProps = () => {
   useBicolor: boolean
   bicolorPivot: number
   resolution: number
@@ -342,14 +337,9 @@ single-source gpuProps mapped onto the multi-source build path:
   modes use the user's color; density uses posColor (multi default, so leave
   source.color undefined)
 
-```js
-// type signature
-gpuProps: () => {
-  sources: {
-    name: string
-    color: string | undefined
-  }
-  ;[]
+```ts
+type gpuProps = () => {
+  sources: { name: string; color: string | undefined }[]
   posColor: string
   negColor: string
   summaryScoreMode: string
@@ -360,77 +350,69 @@ gpuProps: () => {
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```ts
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Actions</summary>
+<summary>LinearWiggleDisplay - Actions</summary>
 
 #### action: setRpcData
 
-```js
-// type signature
-setRpcData: (displayedRegionIndex: number, data: WiggleDataResult) => void
+```ts
+type setRpcData = (displayedRegionIndex: number, data: WiggleDataResult) => void
 ```
 
 #### action: setUseBicolor
 
-```js
-// type signature
-setUseBicolor: (val?: boolean | undefined) => void
+```ts
+type setUseBicolor = (val?: boolean | undefined) => void
 ```
 
 #### action: setPosColor
 
-```js
-// type signature
-setPosColor: (color?: string | undefined) => void
+```ts
+type setPosColor = (color?: string | undefined) => void
 ```
 
 #### action: setNegColor
 
-```js
-// type signature
-setNegColor: (color?: string | undefined) => void
+```ts
+type setNegColor = (color?: string | undefined) => void
 ```
 
 #### action: setFeatureUnderMouse
 
-```js
-// type signature
-setFeatureUnderMouse: (feat?: WiggleFeatureUnderMouse | undefined) => void
+```ts
+type setFeatureUnderMouse = (feat?: WiggleFeatureUnderMouse | undefined) => void
 ```
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feat: WiggleFeatureUnderMouse) => void
+```ts
+type selectFeature = (feat: WiggleFeatureUnderMouse) => void
 ```
 
 #### action: fetchNeeded
 
-```js
-// type signature
-fetchNeeded: (needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
+```ts
+type fetchNeeded = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+) => Promise<void>
 ```
 
 #### action: renderSvg
 
-```js
-// type signature
-renderSvg: (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
+```ts
+type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
 ```
 
 #### action: startRenderingBackend
 
-```js
-// type signature
-startRenderingBackend: (backend: WiggleRenderingBackend) => void
+```ts
+type startRenderingBackend = (backend: WiggleRenderingBackend) => void
 ```
 
 </details>

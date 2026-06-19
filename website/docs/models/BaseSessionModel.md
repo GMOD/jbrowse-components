@@ -42,31 +42,31 @@ and docs.
 [removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Properties</summary>
+<summary>BaseSessionModel - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: name
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type name = ISimpleType<string>
 // code
 name: types.string
 ```
 
 #### property: margin
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type margin = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 margin: types.stripDefault(types.number, 0)
 ```
@@ -75,9 +75,9 @@ margin: types.stripDefault(types.number, 0)
 
 used to keep track of which view is in focus
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type focusedViewId = IMaybe<ISimpleType<string>>
 // code
 focusedViewId: types.maybe(types.string)
 ```
@@ -85,16 +85,16 @@ focusedViewId: types.maybe(types.string)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Volatiles</summary>
+<summary>BaseSessionModel - Volatiles</summary>
 
 #### volatile: selection
 
 this is the globally "selected" object. can be anything. code that wants to deal
 with this should examine it to see what kind of thing it is.
 
-```js
+```ts
 // type signature
-unknown
+type selection = unknown
 // code
 selection: undefined as unknown
 ```
@@ -104,18 +104,18 @@ selection: undefined as unknown
 this is the globally "hovered" object. can be anything. code that wants to deal
 with this should examine it to see what kind of thing it is.
 
-```js
+```ts
 // type signature
-unknown
+type hovered = unknown
 // code
 hovered: undefined as unknown
 ```
 
 #### volatile: queueOfDialogs
 
-```js
+```ts
 // type signature
-[DialogComponentType, Record<string, unknown>][]
+type queueOfDialogs = [DialogComponentType, Record<string, unknown>][]
 // code
 queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 ```
@@ -123,128 +123,112 @@ queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Getters</summary>
+<summary>BaseSessionModel - Getters</summary>
 
 #### getter: root
 
-```js
-// type
-TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>
+```ts
+type root = TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>
 ```
 
 #### getter: jbrowse
 
-```js
-// type
-any
+```ts
+type jbrowse = any
 ```
 
 #### getter: rpcManager
 
-```js
-// type
-RpcManager
+```ts
+type rpcManager = RpcManager
 ```
 
 #### getter: configuration
 
-```js
-// type
-Instance<JB_CONFIG_SCHEMA>
+```ts
+type configuration = Instance<JB_CONFIG_SCHEMA>
 ```
 
 #### getter: adminMode
 
-```js
-// type
-boolean
+```ts
+type adminMode = boolean
 ```
 
 #### getter: textSearchManager
 
-```js
-// type
-TextSearchManager
+```ts
+type textSearchManager = TextSearchManager
 ```
 
 #### getter: assemblies
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type assemblies = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: DialogComponent
 
-```js
-// type
-DialogComponentType
+```ts
+type DialogComponent = DialogComponentType
 ```
 
 #### getter: DialogProps
 
-```js
-// type
-Record<string, unknown>
+```ts
+type DialogProps = Record<string, unknown>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Actions</summary>
+<summary>BaseSessionModel - Actions</summary>
 
 #### action: setSelection
 
 set the global selection, i.e. the globally-selected object. can be a feature, a
 view, just about anything
 
-```js
-// type signature
-setSelection: (thing: unknown) => void
+```ts
+type setSelection = (thing: unknown) => void
 ```
 
 #### action: clearSelection
 
 clears the global selection
 
-```js
-// type signature
-clearSelection: () => void
+```ts
+type clearSelection = () => void
 ```
 
 #### action: setHovered
 
-```js
-// type signature
-setHovered: (thing: unknown) => void
+```ts
+type setHovered = (thing: unknown) => void
 ```
 
 #### action: setName
 
-```js
-// type signature
-setName: (str: string) => void
+```ts
+type setName = (str: string) => void
 ```
 
 #### action: setFocusedViewId
 
-```js
-// type signature
-setFocusedViewId: (viewId: string) => void
+```ts
+type setFocusedViewId = (viewId: string) => void
 ```
 
 #### action: removeActiveDialog
 
-```js
-// type signature
-removeActiveDialog: () => void
+```ts
+type removeActiveDialog = () => void
 ```
 
 #### action: queueDialog
 
-```js
-// type signature
-queueDialog: (doneCallback: DoneCallback) => void
+```ts
+type queueDialog = (doneCallback: DoneCallback) => void
 ```
 
 </details>

@@ -87,24 +87,24 @@ and docs.
 [removeReferring](../referencemanagementsessionmixin#action-removereferring)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SessionTracksManagerSessionMixin - Properties</summary>
+<summary>SessionTracksManagerSessionMixin - Properties</summary>
 
 #### property: sessionTracks
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
+type sessionTracks = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
 // code
 sessionTracks: types.stripDefault(
-        types.array(pluginManager.pluggableConfigSchemaType('track')),
-        [],
-      )
+  types.array(pluginManager.pluggableConfigSchemaType('track')),
+  [],
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SessionTracksManagerSessionMixin - Getters</summary>
+<summary>SessionTracksManagerSessionMixin - Getters</summary>
 
 #### getter: tracks
 
@@ -113,21 +113,19 @@ same trackId, so a non-admin's edits to a config track (stored as a same-id
 session override, see updateTrackConfiguration) replace the original everywhere
 it's resolved without showing a duplicate.
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SessionTracksManagerSessionMixin - Actions</summary>
+<summary>SessionTracksManagerSessionMixin - Actions</summary>
 
 #### action: addTrackConf
 
-```js
-// type signature
-addTrackConf: (trackConf: AnyConfiguration) => any
+```ts
+type addTrackConf = (trackConf: AnyConfiguration) => any
 ```
 
 #### action: updateTrackConfiguration
@@ -137,9 +135,11 @@ else gets a session-track override (same trackId) so the edits persist with the
 session and are shared, instead of being a throwaway in-memory mutation of an
 admin-owned config track.
 
-```js
-// type signature
-updateTrackConfiguration: (trackConf: { [key: string]: unknown; trackId: string; }) => void
+```ts
+type updateTrackConfiguration = (trackConf: {
+  [key: string]: unknown
+  trackId: string
+}) => void
 ```
 
 #### action: resetTrackConfiguration
@@ -150,16 +150,14 @@ deleteTrackConf this does not dereference the track from open views — the
 same-trackId config track re-resolves in place, so an open track stays open and
 simply reverts.
 
-```js
-// type signature
-resetTrackConfiguration: (trackId: string) => void
+```ts
+type resetTrackConfiguration = (trackId: string) => void
 ```
 
 #### action: deleteTrackConf
 
-```js
-// type signature
-deleteTrackConf: (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any[] | undefined
+```ts
+type deleteTrackConf = (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any[] | undefined
 ```
 
 </details>

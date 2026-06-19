@@ -22,58 +22,61 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DrawerWidgetSessionMixin - Properties</summary>
+<summary>DrawerWidgetSessionMixin - Properties</summary>
 
 #### property: drawerPosition
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type drawerPosition = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 drawerPosition: types.optional(
-        types.string,
-        () => localStorageGetItem('drawerPosition') ?? 'right',
-      )
+  types.string,
+  () => localStorageGetItem('drawerPosition') ?? 'right',
+)
 ```
 
 #### property: drawerWidth
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type drawerWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 drawerWidth: types.stripDefault(
-        types.refinement(types.integer, width => width >= minDrawerWidth),
-        384,
-      )
+  types.refinement(types.integer, width => width >= minDrawerWidth),
+  384,
+)
 ```
 
 #### property: widgets
 
-```js
+```ts
 // type signature
-IOptionalIType<IMapType<IAnyType>, [undefined]>
+type widgets = IOptionalIType<IMapType<IAnyType>, [undefined]>
 // code
 widgets: types.stripDefault(types.map(widgetStateModelType), {})
 ```
 
 #### property: activeWidgets
 
-```js
+```ts
 // type signature
-IOptionalIType<IMapType<IMaybe<IReferenceType<IAnyType>>>, [undefined]>
+type activeWidgets = IOptionalIType<
+  IMapType<IMaybe<IReferenceType<IAnyType>>>,
+  [undefined]
+>
 // code
 activeWidgets: types.stripDefault(
-        types.map(types.safeReference(widgetStateModelType)),
-        {},
-      )
+  types.map(types.safeReference(widgetStateModelType)),
+  {},
+)
 ```
 
 #### property: minimized
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type minimized = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 minimized: types.stripDefault(types.boolean, false)
 ```
@@ -81,81 +84,76 @@ minimized: types.stripDefault(types.boolean, false)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DrawerWidgetSessionMixin - Getters</summary>
+<summary>DrawerWidgetSessionMixin - Getters</summary>
 
 #### getter: visibleWidget
 
-```js
-// type
-any
+```ts
+type visibleWidget = any
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DrawerWidgetSessionMixin - Actions</summary>
+<summary>DrawerWidgetSessionMixin - Actions</summary>
 
 #### action: setDrawerPosition
 
-```js
-// type signature
-setDrawerPosition: (arg: string) => void
+```ts
+type setDrawerPosition = (arg: string) => void
 ```
 
 #### action: updateDrawerWidth
 
-```js
-// type signature
-updateDrawerWidth: (drawerWidth: number) => number
+```ts
+type updateDrawerWidth = (drawerWidth: number) => number
 ```
 
 #### action: resizeDrawer
 
-```js
-// type signature
-resizeDrawer: (distance: number) => number
+```ts
+type resizeDrawer = (distance: number) => number
 ```
 
 #### action: addWidget
 
-```js
-// type signature
-addWidget: (typeName: string, id: string, initialState?: any, conf?: unknown) => any
+```ts
+type addWidget = (
+  typeName: string,
+  id: string,
+  initialState?: any,
+  conf?: unknown,
+) => any
 ```
 
 #### action: showWidget
 
-```js
-// type signature
-showWidget: (widget: any) => void
+```ts
+type showWidget = (widget: any) => void
 ```
 
 #### action: hideWidget
 
-```js
-// type signature
-hideWidget: (widget: any) => void
+```ts
+type hideWidget = (widget: any) => void
 ```
 
 #### action: minimizeWidgetDrawer
 
-```js
-// type signature
-minimizeWidgetDrawer: () => void
+```ts
+type minimizeWidgetDrawer = () => void
 ```
 
 #### action: showWidgetDrawer
 
-```js
-// type signature
-showWidgetDrawer: () => void
+```ts
+type showWidgetDrawer = () => void
 ```
 
 #### action: hideAllWidgets
 
-```js
-// type signature
-hideAllWidgets: () => void
+```ts
+type hideAllWidgets = () => void
 ```
 
 #### action: editConfiguration
@@ -163,9 +161,8 @@ hideAllWidgets: () => void
 opens a configuration editor to configure the given thing, and sets the current
 task to be configuring it
 
-```js
-// type signature
-editConfiguration: (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
+```ts
+type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
 ```
 
 </details>

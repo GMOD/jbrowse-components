@@ -43,22 +43,22 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Properties</summary>
+<summary>WiggleScoreConfigMixin - Properties</summary>
 
 #### property: resolution
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type resolution = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 resolution: types.stripDefault(types.number, 1)
 ```
 
 #### property: displayCrossHatches
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type displayCrossHatches = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 displayCrossHatches: types.stripDefault(types.boolean, false)
 ```
@@ -66,13 +66,13 @@ displayCrossHatches: types.stripDefault(types.boolean, false)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Volatiles</summary>
+<summary>WiggleScoreConfigMixin - Volatiles</summary>
 
 #### volatile: loadedBpPerPx
 
-```js
+```ts
 // type signature
-number | undefined
+type loadedBpPerPx = number | undefined
 // code
 loadedBpPerPx: undefined as number | undefined
 ```
@@ -80,195 +80,169 @@ loadedBpPerPx: undefined as number | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Getters</summary>
+<summary>WiggleScoreConfigMixin - Getters</summary>
 
 #### getter: scalebarOverlapLeft
 
-```js
-// type
-number
+```ts
+type scalebarOverlapLeft = number
 ```
 
 #### getter: posColor
 
-```js
-// type
-string
+```ts
+type posColor = string
 ```
 
 #### getter: negColor
 
-```js
-// type
-string
+```ts
+type negColor = string
 ```
 
 #### getter: bicolorPivot
 
-```js
-// type
-number
+```ts
+type bicolorPivot = number
 ```
 
 #### getter: scaleType
 
-```js
-// type
-string
+```ts
+type scaleType = string
 ```
 
 #### getter: autoscaleType
 
-```js
-// type
-string
+```ts
+type autoscaleType = string
 ```
 
 #### getter: numStdDev
 
-```js
-// type
-number
+```ts
+type numStdDev = number
 ```
 
 #### getter: scatterPointSize
 
-```js
-// type
-number
+```ts
+type scatterPointSize = number
 ```
 
 #### getter: summaryScoreMode
 
-```js
-// type
-string
+```ts
+type summaryScoreMode = string
 ```
 
 #### getter: renderingType
 
-```js
-// type
-string
+```ts
+type renderingType = string
 ```
 
 #### getter: minScore
 
-```js
-// type
-number
+```ts
+type minScore = number
 ```
 
 #### getter: maxScore
 
-```js
-// type
-number
+```ts
+type maxScore = number
 ```
 
 #### getter: minScoreBound
 
-```js
-// type
-number | undefined
+```ts
+type minScoreBound = number | undefined
 ```
 
 #### getter: maxScoreBound
 
-```js
-// type
-number | undefined
+```ts
+type maxScoreBound = number | undefined
 ```
 
 #### getter: hasResolution
 
-```js
-// type
-boolean
+```ts
+type hasResolution = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Actions</summary>
+<summary>WiggleScoreConfigMixin - Actions</summary>
 
 #### action: toggleCrossHatches
 
-```js
-// type signature
-toggleCrossHatches: () => void
+```ts
+type toggleCrossHatches = () => void
 ```
 
 #### action: setResolution
 
-```js
-// type signature
-setResolution: (res: number) => void
+```ts
+type setResolution = (res: number) => void
 ```
 
 #### action: setLoadedBpPerPx
 
-```js
-// type signature
-setLoadedBpPerPx: (bpPerPx: number | undefined) => void
+```ts
+type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
 ```
 
 #### action: setScaleType
 
-```js
-// type signature
-setScaleType: (scaleType: string) => void
+```ts
+type setScaleType = (scaleType: string) => void
 ```
 
 #### action: setColor
 
-```js
-// type signature
-setColor: (color?: string | undefined) => void
+```ts
+type setColor = (color?: string | undefined) => void
 ```
 
 #### action: setMinScore
 
-```js
-// type signature
-setMinScore: (val?: number | undefined) => void
+```ts
+type setMinScore = (val?: number | undefined) => void
 ```
 
 #### action: setMaxScore
 
-```js
-// type signature
-setMaxScore: (val?: number | undefined) => void
+```ts
+type setMaxScore = (val?: number | undefined) => void
 ```
 
 #### action: setRenderingType
 
-```js
-// type signature
-setRenderingType: (type: string) => void
+```ts
+type setRenderingType = (type: string) => void
 ```
 
 #### action: setSummaryScoreMode
 
-```js
-// type signature
-setSummaryScoreMode: (val: string) => void
+```ts
+type setSummaryScoreMode = (val: string) => void
 ```
 
 #### action: setAutoscale
 
-```js
-// type signature
-setAutoscale: (val?: string | undefined) => void
+```ts
+type setAutoscale = (val?: string | undefined) => void
 ```
 
 #### action: isCacheValid
 
 Strict zoom equality: see adr-008.
 
-```js
-// type signature
-isCacheValid: (_displayedRegionIndex: number) => boolean
+```ts
+type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 </details>

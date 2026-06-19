@@ -28,53 +28,49 @@ compose one mixin instead of re-declaring (and diverging on) the same root
 delegations. The root must satisfy .
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppSessionMixin - Getters</summary>
+<summary>AppSessionMixin - Getters</summary>
 
 #### getter: root
 
-```js
-// type
-AppRootModel
+```ts
+type root = AppRootModel
 ```
 
 #### getter: version
 
-```js
-// type
-string
+```ts
+type version = string
 ```
 
 #### getter: gitCommit
 
-```js
-// type
-string | undefined
+```ts
+type gitCommit = string | undefined
 ```
 
 #### getter: history
 
-```js
-// type
-{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } | undefined
+```ts
+type history =
+  | { canUndo: boolean; canRedo: boolean; undo(): void; redo(): void }
+  | undefined
 ```
 
 #### getter: assemblyManager
 
-```js
-// type
-ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...
+```ts
+type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppSessionMixin - Methods</summary>
+<summary>AppSessionMixin - Methods</summary>
 
 #### method: renderProps
 
-```js
-// type signature
-renderProps: () => {
+```ts
+type renderProps = () => {
   theme: SerializableThemeArgs
   highResolutionScaling: any
 }
@@ -82,21 +78,19 @@ renderProps: () => {
 
 #### method: menus
 
-```js
-// type signature
-menus: () => Menu[]
+```ts
+type menus = () => Menu[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppSessionMixin - Actions</summary>
+<summary>AppSessionMixin - Actions</summary>
 
 #### action: renameCurrentSession
 
-```js
-// type signature
-renameCurrentSession: (sessionName: string) => void
+```ts
+type renameCurrentSession = (sessionName: string) => void
 ```
 
 </details>

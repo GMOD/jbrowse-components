@@ -25,13 +25,13 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssembliesMixin - Properties</summary>
+<summary>AssembliesMixin - Properties</summary>
 
 #### property: sessionAssemblies
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaT...
+type sessionAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaT...
 // code
 sessionAssemblies: types.stripDefault(
         types.array(assemblyConfigSchemasType),
@@ -41,9 +41,9 @@ sessionAssemblies: types.stripDefault(
 
 #### property: temporaryAssemblies
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaT...
+type temporaryAssemblies = IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; refNameAliases: ConfigurationSchemaType<...>; cytobands: ConfigurationSchemaT...
 // code
 temporaryAssemblies: types.stripDefault(
         types.array(assemblyConfigSchemasType),
@@ -54,74 +54,66 @@ temporaryAssemblies: types.stripDefault(
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssembliesMixin - Getters</summary>
+<summary>AssembliesMixin - Getters</summary>
 
 #### getter: assemblies
 
 sessionAssemblies plus jbrowse config assemblies. Does not include
 temporaryAssemblies; this is the list shown in the AssemblySelector dropdown.
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type assemblies = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: assemblyNames
 
 names of the assemblies returned by the `assemblies` getter
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssembliesMixin - Actions</summary>
+<summary>AssembliesMixin - Actions</summary>
 
 #### action: addSessionAssembly
 
-```js
-// type signature
-addSessionAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type addSessionAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### action: addAssembly
 
-```js
-// type signature
-addAssembly: (conf: AnyConfiguration) => void
+```ts
+type addAssembly = (conf: AnyConfiguration) => void
 ```
 
 #### action: removeAssembly
 
-```js
-// type signature
-removeAssembly: (name: string) => void
+```ts
+type removeAssembly = (name: string) => void
 ```
 
 #### action: removeSessionAssembly
 
-```js
-// type signature
-removeSessionAssembly: (assemblyName: string) => void
+```ts
+type removeSessionAssembly = (assemblyName: string) => void
 ```
 
 #### action: addTemporaryAssembly
 
 used for read vs ref type assemblies.
 
-```js
-// type signature
-addTemporaryAssembly: (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeTemporaryAssembly
 
-```js
-// type signature
-removeTemporaryAssembly: (name: string) => void
+```ts
+type removeTemporaryAssembly = (name: string) => void
 ```
 
 </details>

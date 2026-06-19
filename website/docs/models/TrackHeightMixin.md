@@ -22,7 +22,7 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Properties</summary>
+<summary>TrackHeightMixin - Properties</summary>
 
 #### property: heightOverride
 
@@ -31,29 +31,25 @@ resolves this over the config `height` slot. Named with the `Override` suffix to
 match the override convention used elsewhere (`configOverrides`, `setOverride`);
 the bare `height` name belongs to the resolving getter.
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type heightOverride = IMaybe<ISimpleType<number>>
 // code
 heightOverride: types.maybe(
-        types.refinement(
-          'displayHeight',
-          types.number,
-          n => n >= minDisplayHeight,
-        ),
-      )
+  types.refinement('displayHeight', types.number, n => n >= minDisplayHeight),
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Volatiles</summary>
+<summary>TrackHeightMixin - Volatiles</summary>
 
 #### volatile: scrollTop
 
-```js
+```ts
 // type signature
-number
+type scrollTop = number
 // code
 scrollTop: 0
 ```
@@ -61,39 +57,35 @@ scrollTop: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Getters</summary>
+<summary>TrackHeightMixin - Getters</summary>
 
 #### getter: height
 
-```js
-// type
-number
+```ts
+type height = number
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Actions</summary>
+<summary>TrackHeightMixin - Actions</summary>
 
 #### action: setScrollTop
 
-```js
-// type signature
-setScrollTop: (scrollTop: number) => void
+```ts
+type setScrollTop = (scrollTop: number) => void
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (displayHeight: number) => number
+```ts
+type setHeight = (displayHeight: number) => number
 ```
 
 #### action: resizeHeight
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 </details>

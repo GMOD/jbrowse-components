@@ -144,13 +144,13 @@ and docs.
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Properties</summary>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Properties</summary>
 
 #### property: view
 
-```js
+```ts
 // type signature
-IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>
+type view = IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>
 // code
 view: pluginManager.getViewType('LinearGenomeView')!
         .stateModel as LinearGenomeViewStateModel
@@ -159,96 +159,82 @@ view: pluginManager.getViewType('LinearGenomeView')!
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Getters</summary>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Getters</summary>
 
 #### getter: version
 
-```js
-// type
-any
+```ts
+type version = any
 ```
 
 #### getter: disableAddTracks
 
-```js
-// type
-any
+```ts
+type disableAddTracks = any
 ```
 
 #### getter: assemblies
 
-```js
-// type
-any[]
+```ts
+type assemblies = any[]
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-any[]
+```ts
+type assemblyNames = any[]
 ```
 
 #### getter: connections
 
-```js
-// type
-any
+```ts
+type connections = any
 ```
 
 #### getter: assemblyManager
 
-```js
-// type
-any
+```ts
+type assemblyManager = any
 ```
 
 #### getter: views
 
-```js
-// type
-(ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>)[]
+```ts
+type views = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: theme
 
-```js
-// type
-Theme
+```ts
+type theme = Theme
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Methods</summary>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Methods</summary>
 
 #### method: renderProps
 
-```js
-// type signature
-renderProps: () => {
-  theme: any
-  highResolutionScaling: any
-}
+```ts
+type renderProps = () => { theme: any; highResolutionScaling: any }
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Actions</summary>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Actions</summary>
 
 #### action: addView
 
-```js
-// type signature
-addView: (typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>
+```ts
+type addView = (typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>
 ```
 
 #### action: removeView
 
-```js
-// type signature
-removeView: () => void
+```ts
+type removeView = () => void
 ```
 
 </details>

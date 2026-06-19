@@ -46,52 +46,55 @@ and docs.
 [setMinimized](../baseviewmodel#action-setminimized)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Properties</summary>
+<summary>SvInspectorView - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"SvInspectorView">
+type type = ISimpleType<'SvInspectorView'>
 // code
 type: types.literal('SvInspectorView')
 ```
 
 #### property: height
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: onlyDisplayRelevantRegionsInCircularView
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type onlyDisplayRelevantRegionsInCircularView = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
 // code
 onlyDisplayRelevantRegionsInCircularView: types.stripDefault(
-          types.boolean,
-          false,
-        )
+  types.boolean,
+  false,
+)
 ```
 
 #### property: spreadsheetView
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
+type spreadsheetView = IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; } | { ...; }>, [...]>
 // code
 spreadsheetView: types.optional(SpreadsheetModel, () =>
           SpreadsheetModel.create({
@@ -103,9 +106,9 @@ spreadsheetView: types.optional(SpreadsheetModel, () =>
 
 #### property: circularView
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
+type circularView = IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>
 // code
 circularView: types.optional(CircularModel, () =>
           CircularModel.create({
@@ -121,9 +124,13 @@ circularView: types.optional(CircularModel, () =>
 
 used for initializing the view from a session snapshot
 
-```js
+```ts
 // type signature
-IType<SvInspectorViewInit | undefined, SvInspectorViewInit | undefined, SvInspectorViewInit | undefined>
+type init = IType<
+  SvInspectorViewInit | undefined,
+  SvInspectorViewInit | undefined,
+  SvInspectorViewInit | undefined
+>
 // code
 init: types.frozen<SvInspectorViewInit | undefined>()
 ```
@@ -131,40 +138,40 @@ init: types.frozen<SvInspectorViewInit | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Volatiles</summary>
+<summary>SvInspectorView - Volatiles</summary>
 
 #### volatile: width
 
-```js
+```ts
 // type signature
-number
+type width = number
 // code
 width: 800
 ```
 
 #### volatile: SpreadsheetViewReactComponent
 
-```js
+```ts
 // type signature
-ViewComponentType
+type SpreadsheetViewReactComponent = ViewComponentType
 // code
 SpreadsheetViewReactComponent: SpreadsheetViewType.ReactComponent
 ```
 
 #### volatile: CircularViewReactComponent
 
-```js
+```ts
 // type signature
-ViewComponentType
+type CircularViewReactComponent = ViewComponentType
 // code
 CircularViewReactComponent: CircularViewType.ReactComponent
 ```
 
 #### volatile: circularViewOptionsBarHeight
 
-```js
+```ts
 // type signature
-number
+type circularViewOptionsBarHeight = number
 // code
 circularViewOptionsBarHeight: 52
 ```
@@ -172,121 +179,113 @@ circularViewOptionsBarHeight: 52
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Getters</summary>
+<summary>SvInspectorView - Getters</summary>
 
 #### getter: assemblyName
 
-```js
-// type
-string | undefined
+```ts
+type assemblyName = string | undefined
 ```
 
 #### getter: showCircularView
 
-```js
-// type
-boolean
+```ts
+type showCircularView = boolean
 ```
 
 #### getter: features
 
-```js
-// type
-SimpleFeatureSerialized[]
+```ts
+type features = SimpleFeatureSerialized[]
 ```
 
 #### getter: featuresAdapterConfigSnapshot
 
-```js
-// type
-{ type: string; features: SimpleFeatureSerialized[]; }
+```ts
+type featuresAdapterConfigSnapshot = {
+  type: string
+  features: SimpleFeatureSerialized[]
+}
 ```
 
 #### getter: featureRefNames
 
-```js
-// type
-string[]
+```ts
+type featureRefNames = string[]
 ```
 
 #### getter: currentAssembly
 
-```js
-// type
-(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+```ts
+type currentAssembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: canonicalFeatureRefNameSet
 
-```js
-// type
-Set<string>
+```ts
+type canonicalFeatureRefNameSet = Set<string>
 ```
 
 #### getter: variantTrackId
 
-```js
-// type
-string
+```ts
+type variantTrackId = string
 ```
 
 #### getter: featuresCircularTrackConfiguration
 
-```js
-// type
-{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
+```ts
+type featuresCircularTrackConfiguration = { type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Methods</summary>
+<summary>SvInspectorView - Methods</summary>
 
 #### method: menuItems
 
-```js
-// type signature
-menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]
+```ts
+type menuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  onClick: () => void
+}[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Actions</summary>
+<summary>SvInspectorView - Actions</summary>
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => void
+```ts
+type setWidth = (newWidth: number) => void
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (newHeight: number) => number
+```ts
+type setHeight = (newHeight: number) => number
 ```
 
 #### action: setOnlyDisplayRelevantRegionsInCircularView
 
-```js
-// type signature
-setOnlyDisplayRelevantRegionsInCircularView: (val: boolean) => void
+```ts
+type setOnlyDisplayRelevantRegionsInCircularView = (val: boolean) => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: SvInspectorViewInit | undefined) => void
+```ts
+type setInit = (init?: SvInspectorViewInit | undefined) => void
 ```
 
 #### action: resizeHeight
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 </details>

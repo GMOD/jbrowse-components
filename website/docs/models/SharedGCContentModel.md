@@ -239,16 +239,16 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Properties</summary>
+<summary>SharedGCContentModel - Properties</summary>
 
 #### property: windowSizeOverride
 
 explicit override; the `windowSize` getter resolves it over the config
 `windowSize` slot
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type windowSizeOverride = IMaybe<ISimpleType<number>>
 // code
 windowSizeOverride: types.maybe(types.number)
 ```
@@ -257,9 +257,9 @@ windowSizeOverride: types.maybe(types.number)
 
 explicit override; resolved by the `windowDelta` getter
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<number>>
+type windowDeltaOverride = IMaybe<ISimpleType<number>>
 // code
 windowDeltaOverride: types.maybe(types.number)
 ```
@@ -268,39 +268,34 @@ windowDeltaOverride: types.maybe(types.number)
 
 explicit override; resolved by the `gcMode` getter
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<"content" | "skew">>
+type gcModeOverride = IMaybe<ISimpleType<'content' | 'skew'>>
 // code
-gcModeOverride: types.maybe(
-          types.enumeration('gcMode', ['content', 'skew']),
-        )
+gcModeOverride: types.maybe(types.enumeration('gcMode', ['content', 'skew']))
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Getters</summary>
+<summary>SharedGCContentModel - Getters</summary>
 
 #### getter: windowSize
 
-```js
-// type
-any
+```ts
+type windowSize = any
 ```
 
 #### getter: windowDelta
 
-```js
-// type
-any
+```ts
+type windowDelta = any
 ```
 
 #### getter: gcMode
 
-```js
-// type
-any
+```ts
+type gcMode = any
 ```
 
 #### getter: adapterConfig
@@ -308,9 +303,8 @@ any
 retrieves the sequence adapter from parent track, and puts it as a subadapter on
 a GCContentAdapter
 
-```js
-// type
-{
+```ts
+type adapterConfig = {
   type: string
   sequenceAdapter: any
   windowSize: any
@@ -322,32 +316,35 @@ a GCContentAdapter
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Methods</summary>
+<summary>SharedGCContentModel - Methods</summary>
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```ts
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Actions</summary>
+<summary>SharedGCContentModel - Actions</summary>
 
 #### action: setGCContentParams
 
-```js
-// type signature
-setGCContentParams: ({ windowSize, windowDelta, }: { windowSize: number; windowDelta: number; }) => void
+```ts
+type setGCContentParams = ({
+  windowSize,
+  windowDelta,
+}: {
+  windowSize: number
+  windowDelta: number
+}) => void
 ```
 
 #### action: setGCMode
 
-```js
-// type signature
-setGCMode: (mode: "content" | "skew") => void
+```ts
+type setGCMode = (mode: 'content' | 'skew') => void
 ```
 
 </details>

@@ -151,22 +151,22 @@ and docs.
 [forceLoad](../regiontoolargemixin#action-forceload)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Properties</summary>
+<summary>LinearArcDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearArcDisplay">
+type type = ISimpleType<'LinearArcDisplay'>
 // code
 type: types.literal('LinearArcDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -176,9 +176,9 @@ configuration: ConfigurationReference(configSchema)
 explicit display-mode override; the `displayMode` getter resolves it over the
 config `displayMode` slot
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type displayModeOverride = IMaybe<ISimpleType<string>>
 // code
 displayModeOverride: types.maybe(types.string)
 ```
@@ -186,22 +186,22 @@ displayModeOverride: types.maybe(types.string)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Volatiles</summary>
+<summary>LinearArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
-```js
+```ts
 // type signature
-Feature[] | undefined
+type features = Feature[] | undefined
 // code
 features: undefined as Feature[] | undefined
 ```
 
 #### volatile: loading
 
-```js
+```ts
 // type signature
-false
+type loading = false
 // code
 loading: false
 ```
@@ -209,7 +209,7 @@ loading: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Getters</summary>
+<summary>LinearArcDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -217,23 +217,20 @@ the config typed off the concrete schema; `ConfigurationReference` erases
 `self.configuration` to `any`, so reads route through this to stay typed (same
 move as `BaseAdapter<CONF>`)
 
-```js
-// type
-ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### getter: fetchSettled
 
-```js
-// type
-boolean
+```ts
+type fetchSettled = boolean
 ```
 
 #### getter: displayMode
 
-```js
-// type
-string
+```ts
+type displayMode = string
 ```
 
 #### getter: arcStyles
@@ -242,78 +239,73 @@ per-feature arc styling, evaluated once when features/config change. Kept out of
 the render loop so panning (which only changes pixel positions) doesn't re-run
 these jexl expressions per feature per frame.
 
-```js
-// type
-{
-  feature: Feature
-  color: string
-  thickness: any
-  label: string
-  caption: string
-  arcHeight: number
-}
-;[] | undefined
+```ts
+type arcStyles =
+  | {
+      feature: Feature
+      color: string
+      thickness: any
+      label: string
+      caption: string
+      arcHeight: number
+    }[]
+  | undefined
 ```
 
 #### getter: selectedFeatureId
 
 returns the id of the globally-selected feature, used to highlight it
 
-```js
-// type
-string | undefined
+```ts
+type selectedFeatureId = string | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Methods</summary>
+<summary>LinearArcDisplay - Methods</summary>
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```ts
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Actions</summary>
+<summary>LinearArcDisplay - Actions</summary>
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+```ts
+type selectFeature = (feature: Feature) => void
 ```
 
 #### action: setLoading
 
-```js
-// type signature
-setLoading: (flag: boolean) => void
+```ts
+type setLoading = (flag: boolean) => void
 ```
 
 #### action: setFeatures
 
-```js
-// type signature
-setFeatures: (f: Feature[]) => void
+```ts
+type setFeatures = (f: Feature[]) => void
 ```
 
 #### action: setDisplayMode
 
-```js
-// type signature
-setDisplayMode: (flag: string) => void
+```ts
+type setDisplayMode = (flag: string) => void
 ```
 
 #### action: renderSvg
 
-```js
-// type signature
-renderSvg: (opts: { rasterizeLayers?: boolean | undefined; }) => Promise<ReactNode>
+```ts
+type renderSvg = (opts: {
+  rasterizeLayers?: boolean | undefined
+}) => Promise<ReactNode>
 ```
 
 </details>

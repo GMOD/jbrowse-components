@@ -27,15 +27,15 @@ capture, status reporting); consumers see only `runFetch`, `cancelFetch`,
 `isLoading`, `error`, `statusMessage`, and `fetchGeneration`.
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FetchMixin - Volatiles</summary>
+<summary>FetchMixin - Volatiles</summary>
 
 #### volatile: activeStopToken
 
 stop token of the in-flight fetch, or undefined when idle
 
-```js
+```ts
 // type signature
-StopToken | undefined
+type activeStopToken = StopToken | undefined
 // code
 activeStopToken: undefined as StopToken | undefined
 ```
@@ -45,9 +45,9 @@ activeStopToken: undefined as StopToken | undefined
 bumps at every fetch end; autoruns read it to re-evaluate, and it doubles as the
 staleness epoch inside runFetch
 
-```js
+```ts
 // type signature
-number
+type fetchGeneration = number
 // code
 fetchGeneration: 0
 ```
@@ -56,9 +56,9 @@ fetchGeneration: 0
 
 last non-abort fetch error, or undefined
 
-```js
+```ts
 // type signature
-unknown
+type error = unknown
 // code
 error: undefined as unknown
 ```
@@ -67,9 +67,9 @@ error: undefined as unknown
 
 work-in-progress status string
 
-```js
+```ts
 // type signature
-string | undefined
+type statusMessage = string | undefined
 // code
 statusMessage: undefined as string | undefined
 ```
@@ -79,9 +79,9 @@ statusMessage: undefined as string | undefined
 determinate progress fraction [0,1] for the current status, or undefined when
 the in-flight phase is indeterminate
 
-```js
+```ts
 // type signature
-number | undefined
+type statusProgress = number | undefined
 // code
 statusProgress: undefined as number | undefined
 ```
@@ -94,9 +94,9 @@ it does not retrigger the fetch autoruns — so the load stays stopped until the
 user retries (`reload`) or the viewport changes. Any new fetch clears it
 (`runFetch` resets it at the start).
 
-```js
+```ts
 // type signature
-false
+type fetchCanceled = false
 // code
 fetchCanceled: false
 ```
@@ -109,9 +109,9 @@ reactively; setRegionStatus derives the observable statusMessage/statusProgress
 from it on every update so N parallel region fetches aggregate into one bar
 instead of clobbering.
 
-```js
+```ts
 // type signature
-Map<number, RpcStatus>
+type regionStatuses = Map<number, RpcStatus>
 // code
 regionStatuses: new Map<number, RpcStatus>()
 ```
@@ -119,34 +119,31 @@ regionStatuses: new Map<number, RpcStatus>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FetchMixin - Getters</summary>
+<summary>FetchMixin - Getters</summary>
 
 #### getter: isLoading
 
 true while a fetch is active
 
-```js
-// type
-boolean
+```ts
+type isLoading = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FetchMixin - Actions</summary>
+<summary>FetchMixin - Actions</summary>
 
 #### action: setError
 
-```js
-// type signature
-setError: (error?: unknown) => void
+```ts
+type setError = (error?: unknown) => void
 ```
 
 #### action: setStatusMessage
 
-```js
-// type signature
-setStatusMessage: (status?: RpcStatus | undefined) => void
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
 
 #### action: setRegionStatus
@@ -156,9 +153,8 @@ statusMessage/statusProgress as the aggregate across all in-flight keys. Pass
 undefined to drop a key. Used by displays that fan a single fetch out into
 parallel per-region RPCs.
 
-```js
-// type signature
-setRegionStatus: (key: number, status?: RpcStatus | undefined) => void
+```ts
+type setRegionStatus = (key: number, status?: RpcStatus | undefined) => void
 ```
 
 #### action: cancelFetch
@@ -168,9 +164,8 @@ can retrigger fetch autoruns even when nothing was in flight). This is the
 _internal_ reset used by clearAllRpcData/invalidateLoadedRegions — it clears any
 user-cancel flag so the retrigger actually re-fetches.
 
-```js
-// type signature
-cancelFetch: () => void
+```ts
+type cancelFetch = () => void
 ```
 
 #### action: cancelFetchByUser
@@ -181,9 +176,8 @@ fetchGeneration — so the fetch autoruns don't immediately restart the load. Th
 user retries via `reload` (the overlay's retry button), or it clears on the next
 viewport change.
 
-```js
-// type signature
-cancelFetchByUser: () => void
+```ts
+type cancelFetchByUser = () => void
 ```
 
 #### action: runFetch
@@ -193,9 +187,8 @@ FetchContext with a stopToken to forward to the RPC and an isStale() check to
 short-circuit commits once the user has moved on. Abort errors are swallowed;
 others are stored in `error` if not stale.
 
-```js
-// type signature
-runFetch: (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```ts
+type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
 ```
 
 </details>

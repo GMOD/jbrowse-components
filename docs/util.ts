@@ -893,6 +893,30 @@ export function codeBlock(...lines: string[]) {
   return ['```js', ...lines, '```'].join('\n')
 }
 
+// A member's documented type is a bare type expression. Emitting it on its own
+// line in a ```js block lets prettier parse it as a statement, so e.g. an object
+// type followed by `[]` gets ASI-split into a `;[]` line. Wrapping it as a
+// `type` alias in a ```ts block keeps prettier in type position, where it
+// formats correctly.
+export function typeAliasBlock(name: string, signature: string) {
+  return ['```ts', `type ${name} = ${signature}`, '```'].join('\n')
+}
+
+// Properties/volatiles document both a type and the source line that declares
+// them. The source (`name: value`) is a labeled statement that prettier leaves
+// alone, but the type alias still has to carry the type to avoid the same
+// statement-position mangling typeAliasBlock guards against.
+export function typeAndCodeBlock(name: string, signature: string, code: string) {
+  return [
+    '```ts',
+    '// type signature',
+    `type ${name} = ${signature}`,
+    '// code',
+    code,
+    '```',
+  ].join('\n')
+}
+
 // The shared skeleton every generated config/model page wears: Docusaurus
 // frontmatter, a "this is auto-generated" preamble, a Links section pointing at
 // the source and the GitHub-hosted doc, then the page body. The config and

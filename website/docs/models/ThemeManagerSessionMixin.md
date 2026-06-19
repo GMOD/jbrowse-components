@@ -22,13 +22,13 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ThemeManagerSessionMixin - Volatiles</summary>
+<summary>ThemeManagerSessionMixin - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
-```js
+```ts
 // type signature
-string
+type sessionThemeName = string
 // code
 sessionThemeName: localStorageGetItem('themeName') ?? 'default'
 ```
@@ -36,51 +36,46 @@ sessionThemeName: localStorageGetItem('themeName') ?? 'default'
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ThemeManagerSessionMixin - Getters</summary>
+<summary>ThemeManagerSessionMixin - Getters</summary>
 
 #### getter: themeName
 
-```js
-// type
-string
+```ts
+type themeName = string
 ```
 
 #### getter: themeOptions
 
-```js
-// type
-SerializableThemeArgs
+```ts
+type themeOptions = SerializableThemeArgs
 ```
 
 #### getter: theme
 
-```js
-// type
-Theme
+```ts
+type theme = Theme
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ThemeManagerSessionMixin - Methods</summary>
+<summary>ThemeManagerSessionMixin - Methods</summary>
 
 #### method: allThemes
 
-```js
-// type signature
-allThemes: () => ThemeMap
+```ts
+type allThemes = () => ThemeMap
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ThemeManagerSessionMixin - Actions</summary>
+<summary>ThemeManagerSessionMixin - Actions</summary>
 
 #### action: setThemeName
 
-```js
-// type signature
-setThemeName: (name: string) => void
+```ts
+type setThemeName = (name: string) => void
 ```
 
 </details>

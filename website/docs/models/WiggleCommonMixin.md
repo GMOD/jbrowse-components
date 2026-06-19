@@ -80,13 +80,13 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleCommonMixin - Volatiles</summary>
+<summary>WiggleCommonMixin - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
-```js
+```ts
 // type signature
-ObservableMap<number, WiggleDataResult>
+type rpcDataMap = ObservableMap<number, WiggleDataResult>
 // code
 rpcDataMap: observable.map<number, WiggleDataResult>()
 ```
@@ -94,32 +94,29 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleCommonMixin - Getters</summary>
+<summary>WiggleCommonMixin - Getters</summary>
 
 #### getter: visibleScoreRange
 
-```js
-// type
-;[number, number] | undefined
+```ts
+type visibleScoreRange = [number, number] | undefined
 ```
 
 #### getter: domain
 
-```js
-// type
-;[number, number] | undefined
+```ts
+type domain = [number, number] | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleCommonMixin - Actions</summary>
+<summary>WiggleCommonMixin - Actions</summary>
 
 #### action: clearDisplaySpecificData
 
-```js
-// type signature
-clearDisplaySpecificData: () => void
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 </details>

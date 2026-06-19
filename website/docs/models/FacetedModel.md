@@ -22,96 +22,96 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Properties</summary>
+<summary>FacetedModel - Properties</summary>
 
 #### property: filterText
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type filterText = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 filterText: types.optional(types.string, '')
 ```
 
 #### property: showSparse
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showSparse = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showSparse: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showSparse', false),
-      )
+  localStorageGetBoolean('facet-showSparse', false),
+)
 ```
 
 #### property: showFilters
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type showFilters = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showFilters: types.optional(types.boolean, () =>
-        localStorageGetBoolean('facet-showFilters', true),
-      )
+  localStorageGetBoolean('facet-showFilters', true),
+)
 ```
 
 #### property: panelWidth
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type panelWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 panelWidth: types.optional(types.number, () =>
-        localStorageGetNumber('facet-panelWidth', 400),
-      )
+  localStorageGetNumber('facet-panelWidth', 400),
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Volatiles</summary>
+<summary>FacetedModel - Volatiles</summary>
 
 #### volatile: visible
 
-```js
+```ts
 // type signature
-Record<string, boolean>
+type visible = Record<string, boolean>
 // code
 visible: {} as Record<string, boolean>
 ```
 
 #### volatile: useShoppingCart
 
-```js
+```ts
 // type signature
-false
+type useShoppingCart = false
 // code
 useShoppingCart: false
 ```
 
 #### volatile: filters
 
-```js
+```ts
 // type signature
-ObservableMap<string, string[]>
+type filters = ObservableMap<string, string[]>
 // code
 filters: observable.map<string, string[]>()
 ```
 
 #### volatile: trackConfigurations
 
-```js
+```ts
 // type signature
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+type trackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 // code
 trackConfigurations: [] as AnyConfigurationModel[]
 ```
 
 #### volatile: session
 
-```js
+```ts
 // type signature
-AbstractSessionModel | undefined
+type session = AbstractSessionModel | undefined
 // code
 session: undefined as AbstractSessionModel | undefined
 ```
@@ -119,53 +119,49 @@ session: undefined as AbstractSessionModel | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Getters</summary>
+<summary>FacetedModel - Getters</summary>
 
 #### getter: allRows
 
 Builds row objects from track configs. Cached and only recomputes when track
 configurations change, not on every filterText keystroke.
 
-```js
-// type
-{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+```ts
+type allRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: rows
 
 Text-filtered rows. Cheap string filtering on already-built allRows.
 
-```js
-// type
-{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+```ts
+type rows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: filteredNonMetadataKeys
 
-```js
-// type
-string[] | readonly ["category", "adapter", "description"]
+```ts
+type filteredNonMetadataKeys =
+  | string[]
+  | readonly ['category', 'adapter', 'description']
 ```
 
 #### getter: metadataKeys
 
-```js
-// type
-string[]
+```ts
+type metadataKeys = string[]
 ```
 
 #### getter: filteredMetadataKeys
 
-```js
-// type
-string[]
+```ts
+type filteredMetadataKeys = string[]
 ```
 
 #### getter: fields
 
-```js
-// type
-string[]
+```ts
+type fields = string[]
 ```
 
 #### getter: nonMetadataFieldSet
@@ -173,16 +169,14 @@ string[]
 Used to detect when a metadata key collides with a non-metadata column name (so
 the header can show "x (from metadata)").
 
-```js
-// type
-Set<string>
+```ts
+type nonMetadataFieldSet = Set<string>
 ```
 
 #### getter: filteredRows
 
-```js
-// type
-{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+```ts
+type filteredRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: facetCategoryCounts
@@ -192,9 +186,8 @@ recomputes only when rows or filters change, not on every render. Active-filter
 facets are counted first against the pre-filter row set so their counts reflect
 drill-down.
 
-```js
-// type
-Map<string, Map<string, number>>
+```ts
+type facetCategoryCounts = Map<string, Map<string, number>>
 ```
 
 #### getter: initialWidths
@@ -202,70 +195,61 @@ Map<string, Map<string, number>>
 Measured pixel widths for every column. Measured over allRows so widths stay
 stable and don't recompute on every filterText keystroke.
 
-```js
-// type
-Record<string, number>
+```ts
+type initialWidths = Record<string, number>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Actions</summary>
+<summary>FacetedModel - Actions</summary>
 
 #### action: setTrackConfigurations
 
-```js
-// type signature
-setTrackConfigurations: (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel) => void
+```ts
+type setTrackConfigurations = (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel) => void
 ```
 
 #### action: setFilter
 
-```js
-// type signature
-setFilter: (key: string, value: string[]) => void
+```ts
+type setFilter = (key: string, value: string[]) => void
 ```
 
 #### action: setPanelWidth
 
-```js
-// type signature
-setPanelWidth: (width: number) => number
+```ts
+type setPanelWidth = (width: number) => number
 ```
 
 #### action: setUseShoppingCart
 
-```js
-// type signature
-setUseShoppingCart: (f: boolean) => void
+```ts
+type setUseShoppingCart = (f: boolean) => void
 ```
 
 #### action: setFilterText
 
-```js
-// type signature
-setFilterText: (str: string) => void
+```ts
+type setFilterText = (str: string) => void
 ```
 
 #### action: setShowSparse
 
-```js
-// type signature
-setShowSparse: (f: boolean) => void
+```ts
+type setShowSparse = (f: boolean) => void
 ```
 
 #### action: setShowFilters
 
-```js
-// type signature
-setShowFilters: (f: boolean) => void
+```ts
+type setShowFilters = (f: boolean) => void
 ```
 
 #### action: setVisible
 
-```js
-// type signature
-setVisible: (args: Record<string, boolean>) => void
+```ts
+type setVisible = (args: Record<string, boolean>) => void
 ```
 
 </details>

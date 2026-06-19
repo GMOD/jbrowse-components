@@ -37,32 +37,35 @@ that persists via the snapshot mechanism. They are accepted by
 (which requires a config-slot fallback).
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConfigOverrideMixin - Properties</summary>
+<summary>ConfigOverrideMixin - Properties</summary>
 
 #### property: configOverrides
 
-```js
+```ts
 // type signature
-IOptionalIType<IType<Record<string, unknown>, Record<string, unknown>, Record<string, unknown>>, [undefined]>
+type configOverrides = IOptionalIType<
+  IType<
+    Record<string, unknown>,
+    Record<string, unknown>,
+    Record<string, unknown>
+  >,
+  [undefined]
+>
 // code
-configOverrides: types.optional(
-        types.frozen<Record<string, unknown>>(),
-        {},
-      )
+configOverrides: types.optional(types.frozen<Record<string, unknown>>(), {})
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConfigOverrideMixin - Methods</summary>
+<summary>ConfigOverrideMixin - Methods</summary>
 
 #### method: getOverride
 
 the override value for a key, or undefined if not overridden
 
-```js
-// type signature
-getOverride: <T>(key: AnyKey) => T | undefined
+```ts
+type getOverride = <T>(key: AnyKey) => T | undefined
 ```
 
 #### method: getConfWithOverride
@@ -71,28 +74,31 @@ the override value if set, otherwise the resolved config slot value. Return type
 is derived from the schema slot (scalar slots are typed precisely;
 object/array/frozen slots degrade to `any`), mirroring the adapter `getConf`.
 
-```js
-// type signature
-getConfWithOverride: <SLOT extends SlotName = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>>(key: SLOT) => ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
+```ts
+type getConfWithOverride = <
+  SLOT extends SlotName = ConfigurationSlotName<
+    ConfigurationSchemaForModel<CONF>
+  >,
+>(
+  key: SLOT,
+) => ConfigurationSlotValue<ConfigurationSchemaForModel<CONF>, SLOT>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConfigOverrideMixin - Actions</summary>
+<summary>ConfigOverrideMixin - Actions</summary>
 
 #### action: setOverride
 
-```js
-// type signature
-setOverride: (key: AnyKey, value: unknown) => void
+```ts
+type setOverride = (key: AnyKey, value: unknown) => void
 ```
 
 #### action: clearOverride
 
-```js
-// type signature
-clearOverride: (key: AnyKey) => void
+```ts
+type clearOverride = (key: AnyKey) => void
 ```
 
 </details>

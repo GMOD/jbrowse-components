@@ -56,22 +56,22 @@ and docs.
 [getFetcher](../oauthinternetaccount#action-getfetcher)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Properties</summary>
+<summary>GoogleDriveOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"GoogleDriveOAuthInternetAccount">
+type type = ISimpleType<'GoogleDriveOAuthInternetAccount'>
 // code
 type: types.literal('GoogleDriveOAuthInternetAccount')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -79,53 +79,53 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Getters</summary>
+<summary>GoogleDriveOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents
 
 The FileSelector icon for Google drive
 
-```js
-// type
-Element
+```ts
+type toggleContents = Element
 ```
 
 #### getter: selectorLabel
 
-```js
-// type
-string
+```ts
+type selectorLabel = string
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Methods</summary>
+<summary>GoogleDriveOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
-```js
-// type signature
-getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInitWithMetadata | undefined) => Promise<Response>
+```ts
+type getFetcher = (
+  location?: UriLocation | undefined,
+) => (
+  input: RequestInfo,
+  init?: RequestInitWithMetadata | undefined,
+) => Promise<Response>
 ```
 
 #### method: openLocation
 
-```js
-// type signature
-openLocation: (location: UriLocation) => GoogleDriveFile
+```ts
+type openLocation = (location: UriLocation) => GoogleDriveFile
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Actions</summary>
+<summary>GoogleDriveOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 
-```js
-// type signature
-validateToken: (token: string, location: UriLocation) => Promise<string>
+```ts
+type validateToken = (token: string, location: UriLocation) => Promise<string>
 ```
 
 </details>

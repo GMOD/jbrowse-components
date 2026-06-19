@@ -26,67 +26,62 @@ config models are MST trees themselves, which is why this state model is allowed
 to build on one. Generally found on a property named rootModel.jbrowse
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppCoreJBrowseModel - Getters</summary>
+<summary>AppCoreJBrowseModel - Getters</summary>
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: rpcManager
 
-```js
-// type
-RpcManager
+```ts
+type rpcManager = RpcManager
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppCoreJBrowseModel - Actions</summary>
+<summary>AppCoreJBrowseModel - Actions</summary>
 
 #### action: addAssemblyConf
 
-```js
-// type signature
-addAssemblyConf: (conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>
+```ts
+type addAssemblyConf = (conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>
 ```
 
 #### action: removeAssemblyConf
 
-```js
-// type signature
-removeAssemblyConf: (assemblyName: string) => void
+```ts
+type removeAssemblyConf = (assemblyName: string) => void
 ```
 
 #### action: addTrackConf
 
-```js
-// type signature
-addTrackConf: (trackConf: { trackId: string; type: string; }) => { [key: string]: unknown; trackId: string; } | undefined
+```ts
+type addTrackConf = (trackConf: {
+  trackId: string
+  type: string
+}) => { [key: string]: unknown; trackId: string } | undefined
 ```
 
 #### action: addConnectionConf
 
-```js
-// type signature
-addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type addConnectionConf = (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteConnectionConf
 
-```js
-// type signature
-deleteConnectionConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
+```ts
+type deleteConnectionConf = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
 
 #### action: deleteTrackConf
 
-```js
-// type signature
-deleteTrackConf: (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
+```ts
+type deleteTrackConf = (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
 #### action: updateTrackConf
@@ -94,44 +89,41 @@ deleteTrackConf: (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { se
 Updates an existing track configuration. Used to sync editable configs back to
 the frozen tracks array.
 
-```js
-// type signature
-updateTrackConf: (trackConf: { [key: string]: unknown; trackId: string; }) => void
+```ts
+type updateTrackConf = (trackConf: {
+  [key: string]: unknown
+  trackId: string
+}) => void
 ```
 
 #### action: addPlugin
 
-```js
-// type signature
-addPlugin: (pluginDefinition: PluginDefinition) => void
+```ts
+type addPlugin = (pluginDefinition: PluginDefinition) => void
 ```
 
 #### action: removePlugin
 
-```js
-// type signature
-removePlugin: (pluginDefinition: PluginDefinition) => void
+```ts
+type removePlugin = (pluginDefinition: PluginDefinition) => void
 ```
 
 #### action: setDefaultSessionConf
 
-```js
-// type signature
-setDefaultSessionConf: (sessionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```ts
+type setDefaultSessionConf = (sessionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
 ```
 
 #### action: addInternetAccountConf
 
-```js
-// type signature
-addInternetAccountConf: (internetAccountConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type addInternetAccountConf = (internetAccountConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: deleteInternetAccountConf
 
-```js
-// type signature
-deleteInternetAccountConf: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
+```ts
+type deleteInternetAccountConf = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean
 ```
 
 </details>

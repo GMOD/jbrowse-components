@@ -150,22 +150,22 @@ and docs.
 [forceLoad](../regiontoolargemixin#action-forceload)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Properties</summary>
+<summary>LinearPairedArcDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearPairedArcDisplay">
+type type = ISimpleType<'LinearPairedArcDisplay'>
 // code
 type: types.literal('LinearPairedArcDisplay')
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -173,22 +173,22 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Volatiles</summary>
+<summary>LinearPairedArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
-```js
+```ts
 // type signature
-Feature[] | undefined
+type features = Feature[] | undefined
 // code
 features: undefined as Feature[] | undefined
 ```
 
 #### volatile: loading
 
-```js
+```ts
 // type signature
-false
+type loading = false
 // code
 loading: false
 ```
@@ -196,7 +196,7 @@ loading: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Getters</summary>
+<summary>LinearPairedArcDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -204,16 +204,14 @@ the config typed off the concrete schema; `ConfigurationReference` erases
 `self.configuration` to `any`, so reads route through this to stay typed (same
 move as `BaseAdapter<CONF>`)
 
-```js
-// type
-ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```ts
+type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### getter: fetchSettled
 
-```js
-// type
-boolean
+```ts
+type fetchSettled = boolean
 ```
 
 #### getter: arcStyles
@@ -222,42 +220,58 @@ per-arc styling and endpoint pairs (one per ALT), evaluated once when
 features/config change. Keeps the color jexl and makeFeaturePair (which runs
 parseSvAlt) out of the per-pan render loop.
 
-```js
-// type
-{ k1: { refName: string; start: number; end: number; strand: 0 | 1 | -1; mateDirection: number; }; k2: { refName: string; start: number; end: number; mateDirection?: number | undefined; }; feature: Feature; alt: string | undefined; color: string; }[] | undefined
+```ts
+type arcStyles =
+  | {
+      k1: {
+        refName: string
+        start: number
+        end: number
+        strand: 0 | 1 | -1
+        mateDirection: number
+      }
+      k2: {
+        refName: string
+        start: number
+        end: number
+        mateDirection?: number | undefined
+      }
+      feature: Feature
+      alt: string | undefined
+      color: string
+    }[]
+  | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Actions</summary>
+<summary>LinearPairedArcDisplay - Actions</summary>
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+```ts
+type selectFeature = (feature: Feature) => void
 ```
 
 #### action: setLoading
 
-```js
-// type signature
-setLoading: (flag: boolean) => void
+```ts
+type setLoading = (flag: boolean) => void
 ```
 
 #### action: setFeatures
 
-```js
-// type signature
-setFeatures: (f: Feature[]) => void
+```ts
+type setFeatures = (f: Feature[]) => void
 ```
 
 #### action: renderSvg
 
-```js
-// type signature
-renderSvg: (opts: { rasterizeLayers?: boolean | undefined; }) => Promise<ReactNode>
+```ts
+type renderSvg = (opts: {
+  rasterizeLayers?: boolean | undefined
+}) => Promise<ReactNode>
 ```
 
 </details>

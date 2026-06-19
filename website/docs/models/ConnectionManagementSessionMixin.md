@@ -22,77 +22,70 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConnectionManagementSessionMixin - Properties</summary>
+<summary>ConnectionManagementSessionMixin - Properties</summary>
 
 #### property: connectionInstances
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IAnyType>, [undefined]>
+type connectionInstances = IOptionalIType<IArrayType<IAnyType>, [undefined]>
 // code
 connectionInstances: types.stripDefault(
-        types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
-        [],
-      )
+  types.array(pluginManager.pluggableMstType('connection', 'stateModel')),
+  [],
+)
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConnectionManagementSessionMixin - Getters</summary>
+<summary>ConnectionManagementSessionMixin - Getters</summary>
 
 #### getter: connections
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConnectionManagementSessionMixin - Actions</summary>
+<summary>ConnectionManagementSessionMixin - Actions</summary>
 
 #### action: makeConnection
 
-```js
-// type signature
-makeConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
+```ts
+type makeConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any
 ```
 
 #### action: prepareToBreakConnection
 
-```js
-// type signature
-prepareToBreakConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => [...] | undefined
+```ts
+type prepareToBreakConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => [...] | undefined
 ```
 
 #### action: breakConnection
 
-```js
-// type signature
-breakConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
+```ts
+type breakConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
 ```
 
 #### action: deleteConnection
 
-```js
-// type signature
-deleteConnection: (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type deleteConnection = (configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: addConnectionConf
 
-```js
-// type signature
-addConnectionConf: (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
+```ts
+type addConnectionConf = (connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
 ```
 
 #### action: clearConnections
 
-```js
-// type signature
-clearConnections: () => void
+```ts
+type clearConnections = () => void
 ```
 
 </details>

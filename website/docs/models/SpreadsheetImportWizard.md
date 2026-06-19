@@ -22,22 +22,25 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Properties</summary>
+<summary>SpreadsheetImportWizard - Properties</summary>
 
 #### property: fileType
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<"VCF" | "BED" | "BEDPE" | "STAR-Fusion">, [undefined]>
+type fileType = IOptionalIType<
+  ISimpleType<'VCF' | 'BED' | 'BEDPE' | 'STAR-Fusion'>,
+  [undefined]
+>
 // code
 fileType: types.stripDefault(types.enumeration(fileTypes), 'VCF')
 ```
 
 #### property: selectedAssemblyName
 
-```js
+```ts
 // type signature
-IMaybe<ISimpleType<string>>
+type selectedAssemblyName = IMaybe<ISimpleType<string>>
 // code
 selectedAssemblyName: types.maybe(types.string)
 ```
@@ -46,9 +49,13 @@ selectedAssemblyName: types.maybe(types.string)
 
 used specifically for UriLocation's
 
-```js
+```ts
 // type signature
-IType<FileLocation | undefined, FileLocation | undefined, FileLocation | undefined>
+type cachedFileLocation = IType<
+  FileLocation | undefined,
+  FileLocation | undefined,
+  FileLocation | undefined
+>
 // code
 cachedFileLocation: types.frozen<FileLocation | undefined>()
 ```
@@ -56,31 +63,31 @@ cachedFileLocation: types.frozen<FileLocation | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Volatiles</summary>
+<summary>SpreadsheetImportWizard - Volatiles</summary>
 
 #### volatile: fileSource
 
-```js
+```ts
 // type signature
-FileLocation | undefined
+type fileSource = FileLocation | undefined
 // code
 fileSource: undefined as FileLocation | undefined
 ```
 
 #### volatile: error
 
-```js
+```ts
 // type signature
-unknown
+type error = unknown
 // code
 error: undefined as unknown
 ```
 
 #### volatile: loading
 
-```js
+```ts
 // type signature
-false
+type loading = false
 // code
 loading: false
 ```
@@ -88,79 +95,70 @@ loading: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Getters</summary>
+<summary>SpreadsheetImportWizard - Getters</summary>
 
 #### getter: isReadyToOpen
 
-```js
-// type
-boolean
+```ts
+type isReadyToOpen = boolean
 ```
 
 #### getter: fileName
 
-```js
-// type
-string | undefined
+```ts
+type fileName = string | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Methods</summary>
+<summary>SpreadsheetImportWizard - Methods</summary>
 
 #### method: tracksForAssembly
 
-```js
-// type signature
-tracksForAssembly: (selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: FileLocation; }[]
+```ts
+type tracksForAssembly = (selectedAssembly: string) => { track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; label: string; type: "VCF" | ... 2 more ... | "STAR-Fusion"; loc: FileLocation; }[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Actions</summary>
+<summary>SpreadsheetImportWizard - Actions</summary>
 
 #### action: setSelectedAssemblyName
 
-```js
-// type signature
-setSelectedAssemblyName: (s: string) => void
+```ts
+type setSelectedAssemblyName = (s: string) => void
 ```
 
 #### action: setFileSource
 
-```js
-// type signature
-setFileSource: (newSource: FileLocation | undefined) => void
+```ts
+type setFileSource = (newSource: FileLocation | undefined) => void
 ```
 
 #### action: setFileType
 
-```js
-// type signature
-setFileType: (typeName: string) => void
+```ts
+type setFileType = (typeName: string) => void
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (error: unknown) => void
+```ts
+type setError = (error: unknown) => void
 ```
 
 #### action: setLoading
 
-```js
-// type signature
-setLoading: (arg: boolean) => void
+```ts
+type setLoading = (arg: boolean) => void
 ```
 
 #### action: setCachedFileHandle
 
-```js
-// type signature
-setCachedFileHandle: (arg: FileLocation) => void
+```ts
+type setCachedFileHandle = (arg: FileLocation) => void
 ```
 
 #### action: import
@@ -169,9 +167,8 @@ fetch and parse the file, returning a spreadsheet snapshot for the owning view
 to display (the view owns displaySpreadsheet; this stays a pure fetch/parse with
 no reach into the parent)
 
-```js
-// type signature
-import: (assemblyName: string) => Promise<ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { ...; }[], { ...; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined>
+```ts
+type import = (assemblyName: string) => Promise<ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { ...; }[], { ...; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; }>> | undefined>
 ```
 
 </details>

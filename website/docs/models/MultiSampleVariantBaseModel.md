@@ -192,52 +192,55 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Properties</summary>
+<summary>MultiSampleVariantBaseModel - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type type = ISimpleType<string>
 // code
 type: types.string
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
 
 #### property: rowHeightMode
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type rowHeightMode = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 rowHeightMode: types.stripDefault(types.number, 0)
 ```
 
 #### property: jexlFilters
 
-```js
+```ts
 // type signature
-IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>
+type jexlFilters = IOptionalIType<
+  IMaybe<IArrayType<ISimpleType<string>>>,
+  [undefined]
+>
 // code
 jexlFilters: types.stripDefault(
-            types.maybe(types.array(types.string)),
-            undefined,
-          )
+  types.maybe(types.array(types.string)),
+  undefined,
+)
 ```
 
 #### property: lineZoneHeight
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type lineZoneHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 lineZoneHeight: types.stripDefault(types.number, 0)
 ```
@@ -245,53 +248,55 @@ lineZoneHeight: types.stripDefault(types.number, 0)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Volatiles</summary>
+<summary>MultiSampleVariantBaseModel - Volatiles</summary>
 
 #### volatile: showLegend
 
-```js
+```ts
 // type signature
-true
+type showLegend = true
 // code
 showLegend: true
 ```
 
 #### volatile: sourcesLoadingStopToken
 
-```js
+```ts
 // type signature
-StopToken | undefined
+type sourcesLoadingStopToken = StopToken | undefined
 // code
 sourcesLoadingStopToken: undefined as StopToken | undefined
 ```
 
 #### volatile: contextMenuFeature
 
-```js
+```ts
 // type signature
-Feature | undefined
+type contextMenuFeature = Feature | undefined
 // code
 contextMenuFeature: undefined as Feature | undefined
 ```
 
 #### volatile: sourcesVolatile
 
-```js
+```ts
 // type signature
-Source[] | undefined
+type sourcesVolatile = Source[] | undefined
 // code
 sourcesVolatile: undefined as Source[] | undefined
 ```
 
 #### volatile: hoveredGenotype
 
-```js
+```ts
 // type signature
-(Record<string, unknown> & { genotype: string; name: string; }) | undefined
+type hoveredGenotype =
+  | (Record<string, unknown> & { genotype: string; name: string })
+  | undefined
 // code
 hoveredGenotype: undefined as
-          | (Record<string, unknown> & { genotype: string; name: string })
-          | undefined
+  | (Record<string, unknown> & { genotype: string; name: string })
+  | undefined
 ```
 
 #### volatile: cellData
@@ -300,36 +305,36 @@ Single source of truth for fetched per-display data. hasPhased, sampleInfo, and
 featuresVolatile are derived from this via getters — fetchNeeded only needs to
 call setCellData(result).
 
-```js
+```ts
 // type signature
-CellDataResult | undefined
+type cellData = CellDataResult | undefined
 // code
 cellData: undefined as CellDataResult | undefined
 ```
 
 #### volatile: loadedBpPerPx
 
-```js
+```ts
 // type signature
-number | undefined
+type loadedBpPerPx = number | undefined
 // code
 loadedBpPerPx: undefined as number | undefined
 ```
 
 #### volatile: reloadCount
 
-```js
+```ts
 // type signature
-number
+type reloadCount = number
 // code
 reloadCount: 0
 ```
 
 #### volatile: pendingClusterTree
 
-```js
+```ts
 // type signature
-string | undefined
+type pendingClusterTree = string | undefined
 // code
 pendingClusterTree: undefined as string | undefined
 ```
@@ -337,7 +342,7 @@ pendingClusterTree: undefined as string | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Getters</summary>
+<summary>MultiSampleVariantBaseModel - Getters</summary>
 
 #### getter: featuresVolatile
 
@@ -352,16 +357,14 @@ returns undefined); summary facts are computed in the worker and exposed as
 scalars (hasPhased/hasSecondaryAlt/ hasUnphased), and per-feature genotype info
 lives in the cell-data featureGenotypeMap/featureData.
 
-```js
-// type
-Feature[] | undefined
+```ts
+type featuresVolatile = Feature[] | undefined
 ```
 
 #### getter: hasPhased
 
-```js
-// type
-boolean
+```ts
+type hasPhased = boolean
 ```
 
 #### getter: hasSecondaryAlt
@@ -370,9 +373,8 @@ Whether any visible site is multiallelic (drives the "Other alt allele" legend
 entry). Computed in the worker since the simplified features sent to the client
 don't carry ALT.
 
-```js
-// type
-boolean
+```ts
+type hasSecondaryAlt = boolean
 ```
 
 #### getter: hasUnphased
@@ -380,51 +382,42 @@ boolean
 Whether any genotype call is unphased (drives the "Unphased" legend entry in
 phased mode).
 
-```js
-// type
-boolean
+```ts
+type hasUnphased = boolean
 ```
 
 #### getter: sampleInfo
 
-```js
-// type
-Record<string, SampleInfo> | undefined
+```ts
+type sampleInfo = Record<string, SampleInfo> | undefined
 ```
 
 #### getter: renderingMode
 
 Returns the effective rendering mode, falling back to config
 
-```js
-// type
-string
+```ts
+type renderingMode = string
 ```
 
 #### getter: featureWidgetType
 
-```js
-// type
-{
-  type: string
-  id: string
-}
+```ts
+type featureWidgetType = { type: string; id: string }
 ```
 
 #### getter: fetchSizeLimit
 
-```js
-// type
-number
+```ts
+type fetchSizeLimit = number
 ```
 
 #### getter: minorAlleleFrequencyFilter
 
 Returns the effective minor allele frequency filter, falling back to config
 
-```js
-// type
-number
+```ts
+type minorAlleleFrequencyFilter = number
 ```
 
 #### getter: filters
@@ -435,51 +428,44 @@ MultiSampleVariantGet{CellData,GenotypeMatrix,ClusterGenotypeMatrix} all extend
 RpcMethodTypeWithFiltersAndRenameRegions, which serializes this to string[] and
 rebuilds it in the worker with pluginManager.jexl.
 
-```js
-// type
-SerializableFilterChain | undefined
+```ts
+type filters = SerializableFilterChain | undefined
 ```
 
 #### getter: showSidebarLabels
 
-```js
-// type
-boolean
+```ts
+type showSidebarLabels = boolean
 ```
 
 #### getter: showTree
 
-```js
-// type
-boolean
+```ts
+type showTree = boolean
 ```
 
 #### getter: showBranchLength
 
-```js
-// type
-boolean
+```ts
+type showBranchLength = boolean
 ```
 
 #### getter: referenceDrawingMode
 
-```js
-// type
-string
+```ts
+type referenceDrawingMode = string
 ```
 
 #### getter: sourcesWithoutLayout
 
-```js
-// type
-ProcessedSource[] | undefined
+```ts
+type sourcesWithoutLayout = ProcessedSource[] | undefined
 ```
 
 #### getter: sourcesBase
 
-```js
-// type
-ProcessedSource[] | undefined
+```ts
+type sourcesBase = ProcessedSource[] | undefined
 ```
 
 #### getter: sources
@@ -487,9 +473,8 @@ ProcessedSource[] | undefined
 sourcesBase expanded for phased rendering when sampleInfo is available. Sources
 already carrying HP (from clustering) pass through unchanged.
 
-```js
-// type
-ProcessedSource[] | undefined
+```ts
+type sources = ProcessedSource[] | undefined
 ```
 
 #### getter: editableSources
@@ -499,39 +484,34 @@ NOT apply the subtree filter — submitting the dialog persists every row back t
 `layout`, so filtered samples must be present or they would be wiped from layout
 on submit.
 
-```js
-// type
-ProcessedSource[] | undefined
+```ts
+type editableSources = ProcessedSource[] | undefined
 ```
 
 #### getter: sourceMap
 
-```js
-// type
-{ [k: string]: Source; } | undefined
+```ts
+type sourceMap = { [k: string]: Source } | undefined
 ```
 
 #### getter: availableHeight
 
 Available height for rows (total height minus lineZoneHeight)
 
-```js
-// type
-number
+```ts
+type availableHeight = number
 ```
 
 #### getter: nrow
 
-```js
-// type
-number
+```ts
+type nrow = number
 ```
 
 #### getter: autoRowHeight
 
-```js
-// type
-number
+```ts
+type autoRowHeight = number
 ```
 
 #### getter: rowHeight
@@ -541,175 +521,175 @@ positive value is a user-pinned height. `resizeHeight` scales pinned values
 proportionally so manual + display-resize stay in sync without snap-back
 fuzziness.
 
-```js
-// type
-number
+```ts
+type rowHeight = number
 ```
 
 #### getter: hierarchy
 
-```js
-// type
-PositionedHierarchyNode<NewickNode> | undefined
+```ts
+type hierarchy = PositionedHierarchyNode<NewickNode> | undefined
 ```
 
 #### getter: spatialIndex
 
-```js
-// type
-{ index: Flatbush; nodes: ClusterHierarchyNode[]; } | undefined
+```ts
+type spatialIndex =
+  | { index: Flatbush; nodes: ClusterHierarchyNode[] }
+  | undefined
 ```
 
 #### getter: hoveredTooltipSource
 
-```js
-// type
-{ [x: string]: unknown; genotype: string; name: string; baseUri?: string | undefined; sampleName?: string | undefined; color?: string | undefined; group?: string | undefined; HP?: number | undefined; } | undefined
+```ts
+type hoveredTooltipSource =
+  | {
+      [x: string]: unknown
+      genotype: string
+      name: string
+      baseUri?: string | undefined
+      sampleName?: string | undefined
+      color?: string | undefined
+      group?: string | undefined
+      HP?: number | undefined
+    }
+  | undefined
 ```
 
 #### getter: canDisplayLabels
 
-```js
-// type
-boolean
+```ts
+type canDisplayLabels = boolean
 ```
 
 #### getter: totalHeight
 
-```js
-// type
-number
+```ts
+type totalHeight = number
 ```
 
 #### getter: featuresReady
 
-```js
-// type
-boolean
+```ts
+type featuresReady = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Methods</summary>
+<summary>MultiSampleVariantBaseModel - Methods</summary>
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => { sources: ProcessedSource[] | undefined; minorAlleleFrequencyFilter: number; filters: SerializableFilterChain | undefined; renderingMode: string; referenceDrawingMode: string; }
+```ts
+type rpcProps = () => {
+  sources: ProcessedSource[] | undefined
+  minorAlleleFrequencyFilter: number
+  filters: SerializableFilterChain | undefined
+  renderingMode: string
+  referenceDrawingMode: string
+}
 ```
 
 #### method: showSubmenuItems
 
-```js
-// type signature
-showSubmenuItems: () => MenuItem[]
+```ts
+type showSubmenuItems = () => MenuItem[]
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => MenuItem[]
+```ts
+type trackMenuItems = () => MenuItem[]
 ```
 
 #### method: contextMenuItems
 
-```js
-// type signature
-contextMenuItems: () => MenuItem[]
+```ts
+type contextMenuItems = () => MenuItem[]
 ```
 
 #### method: getPortableSettings
 
-```js
-// type signature
-getPortableSettings: () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
+```ts
+type getPortableSettings = () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
 ```
 
 #### method: legendItems
 
 Returns legend items for rendering colors based on current mode
 
-```js
-// type signature
-legendItems: () => LegendItem[]
+```ts
+type legendItems = () => LegendItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Actions</summary>
+<summary>MultiSampleVariantBaseModel - Actions</summary>
 
 #### action: setCellData
 
-```js
-// type signature
-setCellData: (data: CellDataResult | undefined) => void
+```ts
+type setCellData = (data: CellDataResult | undefined) => void
 ```
 
 #### action: setContextMenuFeature
 
-```js
-// type signature
-setContextMenuFeature: (feature?: Feature | undefined) => void
+```ts
+type setContextMenuFeature = (feature?: Feature | undefined) => void
 ```
 
 #### action: setLoadedBpPerPx
 
-```js
-// type signature
-setLoadedBpPerPx: (bpPerPx: number | undefined) => void
+```ts
+type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
 ```
 
 #### action: setJexlFilters
 
-```js
-// type signature
-setJexlFilters: (f?: string[] | undefined) => void
+```ts
+type setJexlFilters = (f?: string[] | undefined) => void
 ```
 
 #### action: setShowLegend
 
-```js
-// type signature
-setShowLegend: (s: boolean) => void
+```ts
+type setShowLegend = (s: boolean) => void
 ```
 
 #### action: selectFeature
 
-```js
-// type signature
-selectFeature: (feature: Feature) => void
+```ts
+type selectFeature = (feature: Feature) => void
 ```
 
 #### action: setRowHeight
 
-```js
-// type signature
-setRowHeight: (arg: number) => void
+```ts
+type setRowHeight = (arg: number) => void
 ```
 
 #### action: setHoveredGenotype
 
-```js
-// type signature
-setHoveredGenotype: (arg?: (Record<string, unknown> & { genotype: string; name: string; }) | undefined) => void
+```ts
+type setHoveredGenotype = (
+  arg?:
+    | (Record<string, unknown> & { genotype: string; name: string })
+    | undefined,
+) => void
 ```
 
 #### action: setSourcesLoading
 
-```js
-// type signature
-setSourcesLoading: (token: StopToken) => void
+```ts
+type setSourcesLoading = (token: StopToken) => void
 ```
 
 #### action: setSources
 
-```js
-// type signature
-setSources: (sources: Source[]) => void
+```ts
+type setSources = (sources: Source[]) => void
 ```
 
 #### action: clearLayout
@@ -719,60 +699,52 @@ cluster tree, then re-applies the `colorBy` palette if one is configured.
 Overrides the mixin's `clearLayout` so the user gets the same starting state
 they had on initial load.
 
-```js
-// type signature
-clearLayout: () => void
+```ts
+type clearLayout = () => void
 ```
 
 #### action: setMafFilter
 
-```js
-// type signature
-setMafFilter: (arg: number) => void
+```ts
+type setMafFilter = (arg: number) => void
 ```
 
 #### action: setShowSidebarLabels
 
-```js
-// type signature
-setShowSidebarLabels: (arg: boolean) => void
+```ts
+type setShowSidebarLabels = (arg: boolean) => void
 ```
 
 #### action: setShowTree
 
-```js
-// type signature
-setShowTree: (arg: boolean) => void
+```ts
+type setShowTree = (arg: boolean) => void
 ```
 
 #### action: setShowBranchLength
 
-```js
-// type signature
-setShowBranchLength: (arg: boolean) => void
+```ts
+type setShowBranchLength = (arg: boolean) => void
 ```
 
 #### action: setLayoutAndPendingClusterTree
 
-```js
-// type signature
-setLayoutAndPendingClusterTree: (layout: Source[], tree: string) => void
+```ts
+type setLayoutAndPendingClusterTree = (layout: Source[], tree: string) => void
 ```
 
 #### action: setPhasedMode
 
-```js
-// type signature
-setPhasedMode: (arg: string) => void
+```ts
+type setPhasedMode = (arg: string) => void
 ```
 
 #### action: setFitToHeight
 
 Toggle auto height mode. When turning off, uses default of 10px per row.
 
-```js
-// type signature
-setFitToHeight: () => void
+```ts
+type setFitToHeight = () => void
 ```
 
 #### action: resizeHeight
@@ -780,58 +752,52 @@ setFitToHeight: () => void
 Override resizeHeight to scale row heights proportionally when the display is
 vertically resized
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 #### action: setReferenceDrawingMode
 
-```js
-// type signature
-setReferenceDrawingMode: (arg: string) => void
+```ts
+type setReferenceDrawingMode = (arg: string) => void
 ```
 
 #### action: sortByGenotype
 
-```js
-// type signature
-sortByGenotype: (featureId: string) => void
+```ts
+type sortByGenotype = (featureId: string) => void
 ```
 
 #### action: clearDisplaySpecificData
 
-```js
-// type signature
-clearDisplaySpecificData: () => void
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 #### action: isCacheValid
 
-```js
-// type signature
-isCacheValid: (_displayedRegionIndex: number) => boolean
+```ts
+type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 #### action: getByteEstimateConfig
 
-```js
-// type signature
-getByteEstimateConfig: () => ByteEstimateConfig | null
+```ts
+type getByteEstimateConfig = () => ByteEstimateConfig | null
 ```
 
 #### action: fetchNeeded
 
-```js
-// type signature
-fetchNeeded: (_needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>
+```ts
+type fetchNeeded = (
+  _needed: { region: Region; displayedRegionIndex: number }[],
+) => Promise<void>
 ```
 
 #### action: reload
 
-```js
-// type signature
-reload: () => void
+```ts
+type reload = () => void
 ```
 
 </details>

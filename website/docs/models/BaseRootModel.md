@@ -24,15 +24,15 @@ reference the markdown files in our repo of the checked out git tag
 factory function for the Base-level root model shared by all products
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseRootModel - Properties</summary>
+<summary>BaseRootModel - Properties</summary>
 
 #### property: jbrowse
 
 `jbrowse` is a mapping of the config.json into the in-memory state tree
 
-```js
+```ts
 // type signature
-IAnyType
+type jbrowse = IAnyType
 // code
 jbrowse: jbrowseModelType
 ```
@@ -42,27 +42,27 @@ jbrowse: jbrowseModelType
 `session` encompasses the currently active state of the app, including views
 open, tracks open in those views, etc.
 
-```js
+```ts
 // type signature
-IMaybe<IAnyType>
+type session = IMaybe<IAnyType>
 // code
 session: types.maybe(sessionModelType)
 ```
 
 #### property: sessionPath
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type sessionPath = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 sessionPath: types.stripDefault(types.string, '')
 ```
 
 #### property: assemblyManager
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...
+type assemblyManager = IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<...>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...
 // code
 assemblyManager: types.optional(
         assemblyManagerFactory(assemblyConfigSchema, pluginManager),
@@ -73,49 +73,49 @@ assemblyManager: types.optional(
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseRootModel - Volatiles</summary>
+<summary>BaseRootModel - Volatiles</summary>
 
 #### volatile: rpcManager
 
-```js
+```ts
 // type signature
-RpcManager
+type rpcManager = RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc)
 ```
 
 #### volatile: adminMode
 
-```js
+```ts
 // type signature
-false
+type adminMode = false
 // code
 adminMode: false
 ```
 
 #### volatile: error
 
-```js
+```ts
 // type signature
-unknown
+type error = unknown
 // code
 error: undefined as unknown
 ```
 
 #### volatile: textSearchManager
 
-```js
+```ts
 // type signature
-TextSearchManager
+type textSearchManager = TextSearchManager
 // code
 textSearchManager: new TextSearchManager(pluginManager)
 ```
 
 #### volatile: pluginManager
 
-```js
+```ts
 // type signature
-PluginManager
+type pluginManager = PluginManager
 // code
 pluginManager
 ```
@@ -123,13 +123,12 @@ pluginManager
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseRootModel - Actions</summary>
+<summary>BaseRootModel - Actions</summary>
 
 #### action: setError
 
-```js
-// type signature
-setError: (error: unknown) => void
+```ts
+type setError = (error: unknown) => void
 ```
 
 #### action: setSession
@@ -140,30 +139,26 @@ tree to drop undefined references in arrays/maps so shared sessions still load
 when referencing tracks/widgets that no longer exist. If filtering throws, the
 previous session is restored.
 
-```js
-// type signature
-setSession: (sessionSnapshot?: any) => void
+```ts
+type setSession = (sessionSnapshot?: any) => void
 ```
 
 #### action: setDefaultSession
 
-```js
-// type signature
-setDefaultSession: () => void
+```ts
+type setDefaultSession = () => void
 ```
 
 #### action: setSessionPath
 
-```js
-// type signature
-setSessionPath: (path: string) => void
+```ts
+type setSessionPath = (path: string) => void
 ```
 
 #### action: renameCurrentSession
 
-```js
-// type signature
-renameCurrentSession: (newName: string) => void
+```ts
+type renameCurrentSession = (newName: string) => void
 ```
 
 </details>

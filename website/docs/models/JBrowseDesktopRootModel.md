@@ -77,13 +77,13 @@ and docs.
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Properties</summary>
+<summary>JBrowseDesktopRootModel - Properties</summary>
 
 #### property: jobsManager
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken | undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+type jobsManager = IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken | undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 jobsManager: types.optional(JobsManager, {})
 ```
@@ -91,31 +91,31 @@ jobsManager: types.optional(JobsManager, {})
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Volatiles</summary>
+<summary>JBrowseDesktopRootModel - Volatiles</summary>
 
 #### volatile: version
 
-```js
+```ts
 // type signature
-string
+type version = string
 // code
 version: packageJSON.version
 ```
 
 #### volatile: adminMode
 
-```js
+```ts
 // type signature
-true
+type adminMode = true
 // code
 adminMode: true
 ```
 
 #### volatile: rpcManager
 
-```js
+```ts
 // type signature
-RpcManager
+type rpcManager = RpcManager
 // code
 rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
   makeWorkerInstance,
@@ -125,44 +125,41 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 
 #### volatile: openNewSessionCallback
 
-```js
+```ts
 // type signature
-(_path: string) => Promise<void>
+type openNewSessionCallback = (_path: string) => Promise<void>
 // code
 openNewSessionCallback: async (_path: string) => {
-          console.error('openNewSessionCallback unimplemented')
-        }
+  console.error('openNewSessionCallback unimplemented')
+}
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Methods</summary>
+<summary>JBrowseDesktopRootModel - Methods</summary>
 
 #### method: menus
 
-```js
-// type signature
-menus: () => Menu[]
+```ts
+type menus = () => Menu[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Actions</summary>
+<summary>JBrowseDesktopRootModel - Actions</summary>
 
 #### action: setOpenNewSessionCallback
 
-```js
-// type signature
-setOpenNewSessionCallback: (cb: (arg: string) => Promise<void>) => void
+```ts
+type setOpenNewSessionCallback = (cb: (arg: string) => Promise<void>) => void
 ```
 
 #### action: saveSession
 
-```js
-// type signature
-saveSession: (val: unknown) => Promise<void>
+```ts
+type saveSession = (val: unknown) => Promise<void>
 ```
 
 #### action: setPluginsUpdated
@@ -171,9 +168,8 @@ Persist the session, then rebuild the plugin manager from disk so the changed
 plugin set takes effect (Loader wires openNewSessionCallback to reload from the
 session path).
 
-```js
-// type signature
-setPluginsUpdated: () => Promise<void>
+```ts
+type setPluginsUpdated = () => Promise<void>
 ```
 
 </details>

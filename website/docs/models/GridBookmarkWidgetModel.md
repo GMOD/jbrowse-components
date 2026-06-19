@@ -22,40 +22,40 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Properties</summary>
+<summary>GridBookmarkWidgetModel - Properties</summary>
 
 #### property: label
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type label = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 label: types.optional(types.string, '')
 ```
 
 #### property: highlight
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type highlight = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 highlight: types.optional(types.string, DEFAULT_HIGHLIGHT)
 ```
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"GridBookmarkWidget">
+type type = ISimpleType<'GridBookmarkWidget'>
 // code
 type: types.literal('GridBookmarkWidget')
 ```
@@ -65,9 +65,9 @@ type: types.literal('GridBookmarkWidget')
 loaded from localStorage when not present in snapshot; sharedBookmarks from a
 shared URL are merged in via preProcessSnapshot
 
-```js
+```ts
 // type signature
-IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
+type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
 // code
 bookmarks: types.optional(types.array(LabeledRegionModel), () =>
         JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
@@ -77,13 +77,13 @@ bookmarks: types.optional(types.array(LabeledRegionModel), () =>
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Volatiles</summary>
+<summary>GridBookmarkWidgetModel - Volatiles</summary>
 
 #### volatile: selectedBookmarks
 
-```js
+```ts
 // type signature
-IExtendedLabeledRegionModel[]
+type selectedBookmarks = IExtendedLabeledRegionModel[]
 // code
 selectedBookmarks: [] as IExtendedLabeledRegionModel[]
 ```
@@ -92,9 +92,9 @@ selectedBookmarks: [] as IExtendedLabeledRegionModel[]
 
 undefined = "all valid assemblies"; an array = explicit filter
 
-```js
+```ts
 // type signature
-string[] | undefined
+type selectedAssembliesPre = string[] | undefined
 // code
 selectedAssembliesPre: undefined as string[] | undefined
 ```
@@ -103,9 +103,9 @@ selectedAssembliesPre: undefined as string[] | undefined
 
 which grid tab is visible: bookmarks or highlights
 
-```js
+```ts
 // type signature
-string
+type gridView = string
 // code
 gridView: 'bookmarks'
 ```
@@ -113,165 +113,149 @@ gridView: 'bookmarks'
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Getters</summary>
+<summary>GridBookmarkWidgetModel - Getters</summary>
 
 #### getter: bookmarkAssemblies
 
-```js
-// type
-string[]
+```ts
+type bookmarkAssemblies = string[]
 ```
 
 #### getter: validAssemblies
 
-```js
-// type
-Set<string>
+```ts
+type validAssemblies = Set<string>
 ```
 
 #### getter: areBookmarksHighlightedOnAllOpenViews
 
-```js
-// type
-boolean
+```ts
+type areBookmarksHighlightedOnAllOpenViews = boolean
 ```
 
 #### getter: areBookmarksHighlightLabelsOnAllOpenViews
 
-```js
-// type
-boolean
+```ts
+type areBookmarksHighlightLabelsOnAllOpenViews = boolean
 ```
 
 #### getter: bookmarksWithValidAssemblies
 
-```js
-// type
-(ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]
+```ts
+type bookmarksWithValidAssemblies = (ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: selectedAssemblies
 
-```js
-// type
-string[]
+```ts
+type selectedAssemblies = string[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Actions</summary>
+<summary>GridBookmarkWidgetModel - Actions</summary>
 
 #### action: setLabel
 
-```js
-// type signature
-setLabel: (label: string) => void
+```ts
+type setLabel = (label: string) => void
 ```
 
 #### action: setHighlight
 
-```js
-// type signature
-setHighlight: (color: string) => void
+```ts
+type setHighlight = (color: string) => void
 ```
 
 #### action: setSelectedAssemblies
 
-```js
-// type signature
-setSelectedAssemblies: (assemblies?: string[] | undefined) => void
+```ts
+type setSelectedAssemblies = (assemblies?: string[] | undefined) => void
 ```
 
 #### action: setGridView
 
-```js
-// type signature
-setGridView: (arg: "bookmarks" | "highlights") => void
+```ts
+type setGridView = (arg: 'bookmarks' | 'highlights') => void
 ```
 
 #### action: importBookmarks
 
-```js
-// type signature
-importBookmarks: (regions: Region[]) => void
+```ts
+type importBookmarks = (regions: Region[]) => void
 ```
 
 #### action: addBookmark
 
-```js
-// type signature
-addBookmark: (region: Region) => void
+```ts
+type addBookmark = (region: Region) => void
 ```
 
 #### action: updateBookmarkLabel
 
-```js
-// type signature
-updateBookmarkLabel: (bookmark: IExtendedLabeledRegionModel, label: string) => void
+```ts
+type updateBookmarkLabel = (
+  bookmark: IExtendedLabeledRegionModel,
+  label: string,
+) => void
 ```
 
 #### action: updateBookmarkHighlight
 
-```js
-// type signature
-updateBookmarkHighlight: (bookmark: IExtendedLabeledRegionModel, color: string) => void
+```ts
+type updateBookmarkHighlight = (
+  bookmark: IExtendedLabeledRegionModel,
+  color: string,
+) => void
 ```
 
 #### action: updateBulkBookmarkHighlights
 
-```js
-// type signature
-updateBulkBookmarkHighlights: (color: string) => void
+```ts
+type updateBulkBookmarkHighlights = (color: string) => void
 ```
 
 #### action: setSelectedBookmarks
 
-```js
-// type signature
-setSelectedBookmarks: (bookmarks: IExtendedLabeledRegionModel[]) => void
+```ts
+type setSelectedBookmarks = (bookmarks: IExtendedLabeledRegionModel[]) => void
 ```
 
 #### action: setBookmarkedRegions
 
-```js
-// type signature
-setBookmarkedRegions: (regions: IMSTArray<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
+```ts
+type setBookmarkedRegions = (regions: IMSTArray<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void
 ```
 
 #### action: setBookmarkHighlightsVisible
 
-```js
-// type signature
-setBookmarkHighlightsVisible: (arg: boolean) => void
+```ts
+type setBookmarkHighlightsVisible = (arg: boolean) => void
 ```
 
 #### action: setBookmarkLabelsVisible
 
-```js
-// type signature
-setBookmarkLabelsVisible: (arg: boolean) => void
+```ts
+type setBookmarkLabelsVisible = (arg: boolean) => void
 ```
 
 #### action: clearBookmarksForLoadedAssemblies
 
-```js
-// type signature
-clearBookmarksForLoadedAssemblies: () => void
+```ts
+type clearBookmarksForLoadedAssemblies = () => void
 ```
 
 #### action: clearSelectedBookmarks
 
-```js
-// type signature
-clearSelectedBookmarks: () => void
+```ts
+type clearSelectedBookmarks = () => void
 ```
 
 #### action: removeBookmarkObject
 
-```js
-// type signature
-removeBookmarkObject: (arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void
+```ts
+type removeBookmarkObject = (arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void
 ```
 
 </details>

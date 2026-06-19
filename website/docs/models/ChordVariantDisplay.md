@@ -83,31 +83,31 @@ and docs.
 [reload](../basedisplay#action-reload)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Properties</summary>
+<summary>ChordVariantDisplay - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"ChordVariantDisplay">
+type type = ISimpleType<'ChordVariantDisplay'>
 // code
 type: types.literal('ChordVariantDisplay')
 ```
 
 #### property: bezierRadiusRatio
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type bezierRadiusRatio = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 bezierRadiusRatio: types.stripDefault(types.number, 0.1)
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -115,22 +115,22 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Volatiles</summary>
+<summary>ChordVariantDisplay - Volatiles</summary>
 
 #### volatile: features
 
-```js
+```ts
 // type signature
-Feature[] | undefined
+type features = Feature[] | undefined
 // code
 features: undefined as Feature[] | undefined
 ```
 
 #### volatile: refNameMap
 
-```js
+```ts
 // type signature
-Record<string, string> | undefined
+type refNameMap = Record<string, string> | undefined
 // code
 refNameMap: undefined as Record<string, string> | undefined
 ```
@@ -138,65 +138,60 @@ refNameMap: undefined as Record<string, string> | undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Getters</summary>
+<summary>ChordVariantDisplay - Getters</summary>
 
 #### getter: ready
 
-```js
-// type
-boolean
+```ts
+type ready = boolean
 ```
 
 #### getter: blocksForRefs
 
-```js
-// type
-Record<string, Block>
+```ts
+type blocksForRefs = Record<string, Block>
 ```
 
 #### getter: selectedFeatureId
 
-```js
-// type
-string | undefined
+```ts
+type selectedFeatureId = string | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Methods</summary>
+<summary>ChordVariantDisplay - Methods</summary>
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (_opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => Promise<Element | null>
+```ts
+type renderSvg = (
+  _opts: ExportSvgOptions & { theme?: ThemeOptions | undefined },
+) => Promise<Element | null>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Actions</summary>
+<summary>ChordVariantDisplay - Actions</summary>
 
 #### action: onChordClick
 
-```js
-// type signature
-onChordClick: (feature: Feature) => void
+```ts
+type onChordClick = (feature: Feature) => void
 ```
 
 #### action: setFeatures
 
-```js
-// type signature
-setFeatures: (features: Feature[] | undefined) => void
+```ts
+type setFeatures = (features: Feature[] | undefined) => void
 ```
 
 #### action: setRefNameMap
 
-```js
-// type signature
-setRefNameMap: (refNameMap: Record<string, string>) => void
+```ts
+type setRefNameMap = (refNameMap: Record<string, string>) => void
 ```
 
 </details>

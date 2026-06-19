@@ -22,31 +22,31 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Properties</summary>
+<summary>BaseInternetAccountModel - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type type = ISimpleType<string>
 // code
 type: types.string
 ```
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(BaseInternetAccountConfig)
 ```
@@ -54,57 +54,50 @@ configuration: ConfigurationReference(BaseInternetAccountConfig)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Getters</summary>
+<summary>BaseInternetAccountModel - Getters</summary>
 
 #### getter: name
 
-```js
-// type
-string
+```ts
+type name = string
 ```
 
 #### getter: description
 
-```js
-// type
-string
+```ts
+type description = string
 ```
 
 #### getter: internetAccountId
 
-```js
-// type
-string
+```ts
+type internetAccountId = string
 ```
 
 #### getter: authHeader
 
-```js
-// type
-string
+```ts
+type authHeader = string
 ```
 
 #### getter: tokenType
 
-```js
-// type
-string
+```ts
+type tokenType = string
 ```
 
 #### getter: domains
 
-```js
-// type
-string[]
+```ts
+type domains = string[]
 ```
 
 #### getter: toggleContents
 
 Can use this to customize what is displayed in fileSelector's toggle box
 
-```js
-// type
-ReactNode
+```ts
+type toggleContents = ReactNode
 ```
 
 #### getter: SelectorComponent
@@ -112,9 +105,8 @@ ReactNode
 Can use this to customize what the fileSelector. It takes a prop called
 `setLocation` that should be used to set a UriLocation
 
-```js
-// type
-AnyReactComponentType | undefined
+```ts
+type SelectorComponent = AnyReactComponentType | undefined
 ```
 
 #### getter: selectorLabel
@@ -122,68 +114,64 @@ AnyReactComponentType | undefined
 Can use this to add a label to the UrlChooser. Has no effect if a custom
 SelectorComponent is supplied
 
-```js
-// type
-string | undefined
+```ts
+type selectorLabel = string | undefined
 ```
 
 #### getter: tokenKey
 
 The key used to store this internetAccount's token in sessionStorage
 
-```js
-// type
-string
+```ts
+type tokenKey = string
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Methods</summary>
+<summary>BaseInternetAccountModel - Methods</summary>
 
 #### method: handlesLocation
 
 Determine whether this internetAccount provides credentials for a URL
 
-```js
-// type signature
-handlesLocation: (location: UriLocation) => boolean
+```ts
+type handlesLocation = (location: UriLocation) => boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Actions</summary>
+<summary>BaseInternetAccountModel - Actions</summary>
 
 #### action: getTokenFromUser
 
 Must be implemented by a model extending or composing this one. Pass the user's
 token to `resolve`.
 
-```js
-// type signature
-getTokenFromUser: (_resolve: (token: string) => void, _reject: (error: Error) => void) => void
+```ts
+type getTokenFromUser = (
+  _resolve: (token: string) => void,
+  _reject: (error: Error) => void,
+) => void
 ```
 
 #### action: storeToken
 
-```js
-// type signature
-storeToken: (token: string) => void
+```ts
+type storeToken = (token: string) => void
 ```
 
 #### action: removeToken
 
-```js
-// type signature
-removeToken: () => void
+```ts
+type removeToken = () => void
 ```
 
 #### action: retrieveToken
 
-```js
-// type signature
-retrieveToken: () => string | null
+```ts
+type retrieveToken = () => string | null
 ```
 
 #### action: validateToken
@@ -195,9 +183,8 @@ expects the token to be returned so that this action can also be used to
 generate a new token (e.g. by using a refresh token) if the original one was
 invalid. Should throw an error if a token is invalid.
 
-```js
-// type signature
-validateToken: (token: string, _loc: UriLocation) => Promise<string>
+```ts
+type validateToken = (token: string, _loc: UriLocation) => Promise<string>
 ```
 
 #### action: getToken
@@ -205,16 +192,14 @@ validateToken: (token: string, _loc: UriLocation) => Promise<string>
 Try to get the token from the location pre-auth, from local storage, or from a
 previously cached promise. If token is not available, uses `getTokenFromUser`.
 
-```js
-// type signature
-getToken: (location?: UriLocation | undefined) => Promise<string>
+```ts
+type getToken = (location?: UriLocation | undefined) => Promise<string>
 ```
 
 #### action: addAuthHeaderToInit
 
-```js
-// type signature
-addAuthHeaderToInit: (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
+```ts
+type addAuthHeaderToInit = (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
 ```
 
 #### action: getPreAuthorizationInformation
@@ -222,9 +207,13 @@ addAuthHeaderToInit: (init?: RequestInit | undefined, token?: string | undefined
 Gets the token and returns it along with the information needed to create a new
 internetAccount.
 
-```js
-// type signature
-getPreAuthorizationInformation: (location: UriLocation) => Promise<{ internetAccountType: string; authInfo: { token: string; configuration: any; }; }>
+```ts
+type getPreAuthorizationInformation = (
+  location: UriLocation,
+) => Promise<{
+  internetAccountType: string
+  authInfo: { token: string; configuration: any }
+}>
 ```
 
 #### action: getFetcher
@@ -233,18 +222,18 @@ Get a fetch method that will add any needed authentication headers to the
 request before sending it. If location is provided, it will be checked to see if
 it includes a token in it pre-auth information.
 
-```js
-// type signature
-getFetcher: (loc?: UriLocation | undefined) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
+```ts
+type getFetcher = (
+  loc?: UriLocation | undefined,
+) => (input: RequestInfo, init?: RequestInit | undefined) => Promise<Response>
 ```
 
 #### action: openLocation
 
 Gets a filehandle that uses a fetch that adds auth headers
 
-```js
-// type signature
-openLocation: (location: UriLocation) => RemoteFileWithRangeCache
+```ts
+type openLocation = (location: UriLocation) => RemoteFileWithRangeCache
 ```
 
 </details>

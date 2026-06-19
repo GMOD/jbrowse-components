@@ -22,15 +22,14 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ReferenceManagementSessionMixin - Methods</summary>
+<summary>ReferenceManagementSessionMixin - Methods</summary>
 
 #### method: getReferring
 
 See if any MST nodes currently have a types.reference to this object.
 
-```js
-// type signature
-getReferring: (object: IAnyStateTreeNode) => ReferringNode[]
+```ts
+type getReferring = (object: IAnyStateTreeNode) => ReferringNode[]
 ```
 
 #### method: getReferringMultiple
@@ -39,21 +38,21 @@ Batch version of getReferring: walks the tree once and returns a map from
 trackId to referring nodes. Use this instead of calling getReferring() in a loop
 to avoid O(n × treeSize) traversals.
 
-```js
-// type signature
-getReferringMultiple: (tracks: IAnyStateTreeNode[]) => Map<string, ReferringNode[]>
+```ts
+type getReferringMultiple = (
+  tracks: IAnyStateTreeNode[],
+) => Map<string, ReferringNode[]>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ReferenceManagementSessionMixin - Actions</summary>
+<summary>ReferenceManagementSessionMixin - Actions</summary>
 
 #### action: removeReferring
 
-```js
-// type signature
-removeReferring: (referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
+```ts
+type removeReferring = (referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void
 ```
 
 </details>

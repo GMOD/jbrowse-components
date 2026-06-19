@@ -154,13 +154,13 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Properties</summary>
+<summary>SharedLDModel - Properties</summary>
 
 #### property: configuration
 
-```js
+```ts
 // type signature
-ITypeUnion<any, any, any>
+type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
 ```
@@ -168,13 +168,13 @@ configuration: ConfigurationReference(configSchema)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Volatiles</summary>
+<summary>SharedLDModel - Volatiles</summary>
 
 #### volatile: rpcData
 
-```js
+```ts
 // type signature
-LDDataResult | null
+type rpcData = LDDataResult | null
 // code
 rpcData: null as LDDataResult | null
 ```
@@ -183,9 +183,9 @@ rpcData: null as LDDataResult | null
 
 Bumped by `reload()` to retrigger the fetch autorun.
 
-```js
+```ts
 // type signature
-number
+type reloadCounter = number
 // code
 reloadCounter: 0
 ```
@@ -193,132 +193,114 @@ reloadCounter: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Getters</summary>
+<summary>SharedLDModel - Getters</summary>
 
 #### getter: prefersOffset
 
-```js
-// type
-boolean
+```ts
+type prefersOffset = boolean
 ```
 
 #### getter: minorAlleleFrequencyFilter
 
-```js
-// type
-number
+```ts
+type minorAlleleFrequencyFilter = number
 ```
 
 #### getter: lengthCutoffFilter
 
-```js
-// type
-number
+```ts
+type lengthCutoffFilter = number
 ```
 
 #### getter: lineZoneHeight
 
-```js
-// type
-number
+```ts
+type lineZoneHeight = number
 ```
 
 #### getter: ldMetric
 
-```js
-// type
-'r2' | 'dprime'
+```ts
+type ldMetric = 'r2' | 'dprime'
 ```
 
 #### getter: showLegend
 
-```js
-// type
-boolean
+```ts
+type showLegend = boolean
 ```
 
 #### getter: showLDTriangle
 
-```js
-// type
-boolean
+```ts
+type showLDTriangle = boolean
 ```
 
 #### getter: showRecombination
 
-```js
-// type
-boolean
+```ts
+type showRecombination = boolean
 ```
 
 #### getter: recombinationZoneHeight
 
-```js
-// type
-number
+```ts
+type recombinationZoneHeight = number
 ```
 
 #### getter: fitToHeight
 
-```js
-// type
-boolean
+```ts
+type fitToHeight = boolean
 ```
 
 #### getter: hweFilterThreshold
 
-```js
-// type
-number
+```ts
+type hweFilterThreshold = number
 ```
 
 #### getter: callRateFilter
 
-```js
-// type
-number
+```ts
+type callRateFilter = number
 ```
 
 #### getter: showVerticalGuides
 
-```js
-// type
-boolean
+```ts
+type showVerticalGuides = boolean
 ```
 
 #### getter: showLabels
 
-```js
-// type
-boolean
+```ts
+type showLabels = boolean
 ```
 
 #### getter: tickHeight
 
-```js
-// type
-number
+```ts
+type tickHeight = number
 ```
 
 #### getter: useGenomicPositions
 
-```js
-// type
-boolean
+```ts
+type useGenomicPositions = boolean
 ```
 
 #### getter: signedLD
 
-```js
-// type
-boolean
+```ts
+type signedLD = boolean
 ```
 
 #### getter: jexlFilters
 
-```js
-// type
-string[]
+```ts
+type jexlFilters = string[]
 ```
 
 #### getter: snps
@@ -326,37 +308,34 @@ string[]
 Returns true if this display uses pre-computed LD data (PLINK, ldmat) rather
 than computing LD from VCF genotypes
 
-```js
-// type
-LDSnp[]
+```ts
+type snps = LDSnp[]
 ```
 
 #### getter: cellWidth
 
-```js
-// type
-number
+```ts
+type cellWidth = number
 ```
 
 #### getter: filterStats
 
-```js
-// type
-FilterStats | undefined
+```ts
+type filterStats = FilterStats | undefined
 ```
 
 #### getter: recombination
 
-```js
-// type
-{ values: Float32Array<ArrayBufferLike>; positions: number[]; } | undefined
+```ts
+type recombination =
+  | { values: Float32Array<ArrayBufferLike>; positions: number[] }
+  | undefined
 ```
 
 #### getter: isPrecomputedLD
 
-```js
-// type
-boolean
+```ts
+type isPrecomputedLD = boolean
 ```
 
 #### getter: effectiveLineZoneHeight
@@ -365,9 +344,8 @@ Pixel height of the SVG zone above the canvas (variant labels + lines, or
 recombination scale). The hit-test subtracts this from mouseY before reversing
 the render transform.
 
-```js
-// type
-number
+```ts
+type effectiveLineZoneHeight = number
 ```
 
 #### getter: ldCanvasHeight
@@ -375,9 +353,8 @@ number
 Effective height for the LD canvas (total height minus the zone the
 recombination overlay / variant lines occupy above the matrix).
 
-```js
-// type
-number
+```ts
+type ldCanvasHeight = number
 ```
 
 #### getter: yScalar
@@ -386,9 +363,8 @@ Per-frame yScalar squash factor. When fitToHeight is on, squashes the natural
 (canvasWidth/2) triangle into ldCanvasHeight. Lives on the main thread so resize
 doesn't trigger a worker re-fetch.
 
-```js
-// type
-number
+```ts
+type yScalar = number
 ```
 
 #### getter: renderTransform
@@ -397,9 +373,8 @@ Forward transform { scale, viewOffsetX } shared by GPU render, mouse hit-test,
 and the matrix→genomic-position SVG lines. See `computeRenderTransform` for the
 math.
 
-```js
-// type
-RenderTransform
+```ts
+type renderTransform = RenderTransform
 ```
 
 #### getter: renderState
@@ -408,21 +383,38 @@ Per-frame render state for the GPU backend. Read by the upload/render autorun �
 every change to any tracked observable (view.bpPerPx, view.offsetPx,
 model.fitToHeight, rpcData contents, …) re-fires it.
 
-```js
-// type
-{ yScalar: number; canvasWidth: number; canvasHeight: number; signedLD: boolean; viewScale: number; viewOffsetX: number; uniformW: number; } | undefined
+```ts
+type renderState =
+  | {
+      yScalar: number
+      canvasWidth: number
+      canvasHeight: number
+      signedLD: boolean
+      viewScale: number
+      viewOffsetX: number
+      uniformW: number
+    }
+  | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Methods</summary>
+<summary>SharedLDModel - Methods</summary>
 
 #### method: rpcProps
 
-```js
-// type signature
-rpcProps: () => { ldMetric: "r2" | "dprime"; minorAlleleFrequencyFilter: number; lengthCutoffFilter: number; hweFilterThreshold: number; callRateFilter: number; jexlFilters: string[]; signedLD: boolean; useGenomicPositions: boolean; }
+```ts
+type rpcProps = () => {
+  ldMetric: 'r2' | 'dprime'
+  minorAlleleFrequencyFilter: number
+  lengthCutoffFilter: number
+  hweFilterThreshold: number
+  callRateFilter: number
+  jexlFilters: string[]
+  signedLD: boolean
+  useGenomicPositions: boolean
+}
 ```
 
 #### method: hitTest
@@ -432,175 +424,151 @@ Inverse of `renderTransform` for the LD matrix: takes mouse coords
 Mirrors plugins/hic's `hitTest` so both contact maps keep the forward and
 inverse transforms paired on the model.
 
-```js
-// type signature
-hitTest: (mouseX: number, mouseY: number) => LDFlatbushItem | undefined
+```ts
+type hitTest = (mouseX: number, mouseY: number) => LDFlatbushItem | undefined
 ```
 
 #### method: filterMenuItems
 
-```js
-// type signature
-filterMenuItems: () => { label: string; onClick: () => void; }[]
+```ts
+type filterMenuItems = () => { label: string; onClick: () => void }[]
 ```
 
 #### method: legendItems
 
-```js
-// type signature
-legendItems: () => LegendItem[]
+```ts
+type legendItems = () => LegendItem[]
 ```
 
 #### method: svgLegendWidth
 
-```js
-// type signature
-svgLegendWidth: () => number
+```ts
+type svgLegendWidth = () => number
 ```
 
 #### method: trackMenuItems
 
-```js
-// type signature
-trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+```ts
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg
 
-```js
-// type signature
-renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
+```ts
+type renderSvg = (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Actions</summary>
+<summary>SharedLDModel - Actions</summary>
 
 #### action: setRpcData
 
-```js
-// type signature
-setRpcData: (data: LDDataResult | null) => void
+```ts
+type setRpcData = (data: LDDataResult | null) => void
 ```
 
 #### action: setLineZoneHeight
 
-```js
-// type signature
-setLineZoneHeight: (n: number) => void
+```ts
+type setLineZoneHeight = (n: number) => void
 ```
 
 #### action: setMafFilter
 
-```js
-// type signature
-setMafFilter: (arg: number) => void
+```ts
+type setMafFilter = (arg: number) => void
 ```
 
 #### action: setLengthCutoffFilter
 
-```js
-// type signature
-setLengthCutoffFilter: (arg: number) => void
+```ts
+type setLengthCutoffFilter = (arg: number) => void
 ```
 
 #### action: setLDMetric
 
-```js
-// type signature
-setLDMetric: (metric: LDMetric) => void
+```ts
+type setLDMetric = (metric: LDMetric) => void
 ```
 
 #### action: setShowLegend
 
-```js
-// type signature
-setShowLegend: (show: boolean) => void
+```ts
+type setShowLegend = (show: boolean) => void
 ```
 
 #### action: setShowLDTriangle
 
-```js
-// type signature
-setShowLDTriangle: (show: boolean) => void
+```ts
+type setShowLDTriangle = (show: boolean) => void
 ```
 
 #### action: setShowRecombination
 
-```js
-// type signature
-setShowRecombination: (show: boolean) => void
+```ts
+type setShowRecombination = (show: boolean) => void
 ```
 
 #### action: setRecombinationZoneHeight
 
-```js
-// type signature
-setRecombinationZoneHeight: (n: number) => void
+```ts
+type setRecombinationZoneHeight = (n: number) => void
 ```
 
 #### action: setFitToHeight
 
-```js
-// type signature
-setFitToHeight: (value: boolean) => void
+```ts
+type setFitToHeight = (value: boolean) => void
 ```
 
 #### action: setHweFilter
 
-```js
-// type signature
-setHweFilter: (threshold: number) => void
+```ts
+type setHweFilter = (threshold: number) => void
 ```
 
 #### action: setCallRateFilter
 
-```js
-// type signature
-setCallRateFilter: (threshold: number) => void
+```ts
+type setCallRateFilter = (threshold: number) => void
 ```
 
 #### action: setShowVerticalGuides
 
-```js
-// type signature
-setShowVerticalGuides: (show: boolean) => void
+```ts
+type setShowVerticalGuides = (show: boolean) => void
 ```
 
 #### action: setShowLabels
 
-```js
-// type signature
-setShowLabels: (show: boolean) => void
+```ts
+type setShowLabels = (show: boolean) => void
 ```
 
 #### action: setTickHeight
 
-```js
-// type signature
-setTickHeight: (height: number) => void
+```ts
+type setTickHeight = (height: number) => void
 ```
 
 #### action: setUseGenomicPositions
 
-```js
-// type signature
-setUseGenomicPositions: (value: boolean) => void
+```ts
+type setUseGenomicPositions = (value: boolean) => void
 ```
 
 #### action: setSignedLD
 
-```js
-// type signature
-setSignedLD: (value: boolean) => void
+```ts
+type setSignedLD = (value: boolean) => void
 ```
 
 #### action: setJexlFilters
 
-```js
-// type signature
-setJexlFilters: (filters: string[] | undefined) => void
+```ts
+type setJexlFilters = (filters: string[] | undefined) => void
 ```
 
 #### action: startRenderingBackend
@@ -608,9 +576,8 @@ setJexlFilters: (filters: string[] | undefined) => void
 Starts the upload/render autorun. Data + color ramp both derive from the same
 rpcData object, so a single identity-diffed slot handles both uploads.
 
-```js
-// type signature
-startRenderingBackend: (backend: LDRenderingBackend) => void
+```ts
+type startRenderingBackend = (backend: LDRenderingBackend) => void
 ```
 
 #### action: performLDFetch
@@ -618,16 +585,14 @@ startRenderingBackend: (backend: LDRenderingBackend) => void
 Re-fetches LD matrix for the current viewport. Both the autorun (in
 `afterAttach`) and `reload()` invoke this directly.
 
-```js
-// type signature
-performLDFetch: () => Promise<void>
+```ts
+type performLDFetch = () => Promise<void>
 ```
 
 #### action: reload
 
-```js
-// type signature
-reload: () => void
+```ts
+type reload = () => void
 ```
 
 </details>

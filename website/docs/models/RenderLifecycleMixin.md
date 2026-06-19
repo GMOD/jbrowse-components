@@ -46,15 +46,15 @@ content (flips `canvasDrawn`), `false` to skip this tick (e.g. `renderState` not
 yet computed or no regions loaded).
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RenderLifecycleMixin - Volatiles</summary>
+<summary>RenderLifecycleMixin - Volatiles</summary>
 
 #### volatile: canvasDrawn
 
 flips true on first paint; read by test selectors to detect render
 
-```js
+```ts
 // type signature
-false
+type canvasDrawn = false
 // code
 canvasDrawn: false
 ```
@@ -67,9 +67,9 @@ non-generic factory, so the per-display backend type `B` isn't known here — it
 supplied at `attachRenderingBackend<B>` and narrowed with `as B` inside the
 autoruns. Don't "fix" the cast.
 
-```js
+```ts
 // type signature
-undefined
+type currentRenderingBackend = undefined
 // code
 currentRenderingBackend: undefined
 ```
@@ -78,9 +78,9 @@ currentRenderingBackend: undefined
 
 counter the render autorun observes; bumped to force a re-render
 
-```js
+```ts
 // type signature
-number
+type renderTick = number
 // code
 renderTick: 0
 ```
@@ -89,9 +89,9 @@ renderTick: 0
 
 guards attachRenderingBackend so the autorun pair spawns once per instance
 
-```js
+```ts
 // type signature
-false
+type autorunsInstalled = false
 // code
 autorunsInstalled: false
 ```
@@ -105,9 +105,9 @@ not React-local hook state — owns every terminal state. Read by
 `loadingOverlayVisible` (suppresses the scrim) and by `DisplayChrome` (shows the
 retry overlay).
 
-```js
+```ts
 // type signature
-undefined
+type renderError = undefined
 // code
 renderError: undefined
 ```
@@ -115,34 +115,30 @@ renderError: undefined
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RenderLifecycleMixin - Actions</summary>
+<summary>RenderLifecycleMixin - Actions</summary>
 
 #### action: markCanvasDrawn
 
-```js
-// type signature
-markCanvasDrawn: () => void
+```ts
+type markCanvasDrawn = () => void
 ```
 
 #### action: resetCanvasDrawn
 
-```js
-// type signature
-resetCanvasDrawn: () => void
+```ts
+type resetCanvasDrawn = () => void
 ```
 
 #### action: stopRenderingBackend
 
-```js
-// type signature
-stopRenderingBackend: () => void
+```ts
+type stopRenderingBackend = () => void
 ```
 
 #### action: renderNow
 
-```js
-// type signature
-renderNow: () => void
+```ts
+type renderNow = () => void
 ```
 
 #### action: setRenderError
@@ -151,9 +147,8 @@ set/clear the render-backend error. Called by `useRenderingBackend`: with the
 error when the canvas factory rejects (or context-loss re-init fails), and with
 `undefined` on successful (re)init and on retry.
 
-```js
-// type signature
-setRenderError: (error: unknown) => void
+```ts
+type setRenderError = (error: unknown) => void
 ```
 
 #### action: attachRenderingBackend
@@ -161,9 +156,11 @@ setRenderError: (error: unknown) => void
 attach a GPU/Canvas2D backend and install the upload + render autorun pair
 (idempotent — re-calling only swaps the backend)
 
-```js
-// type signature
-attachRenderingBackend: <B>(backend: B, cbs: RenderingBackendCallbacks<B>) => void
+```ts
+type attachRenderingBackend = <B>(
+  backend: B,
+  cbs: RenderingBackendCallbacks<B>,
+) => void
 ```
 
 </details>

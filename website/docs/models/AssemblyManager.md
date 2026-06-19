@@ -22,16 +22,16 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Properties</summary>
+<summary>AssemblyManager - Properties</summary>
 
 #### property: assemblies
 
 this is automatically managed by an autorun which looks in the parent
 session.assemblies, session.sessionAssemblies, and session.temporaryAssemblies
 
-```js
+```ts
 // type signature
-IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<string, Promise<...>>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCustomized>>
+type assemblies = IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> | undefined; adapterLoads: QuickLRU<string, Promise<...>>; ... 5 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCustomized>>
 // code
 assemblies: types.array(assemblyFactory(conf, pm))
 ```
@@ -39,20 +39,18 @@ assemblies: types.array(assemblyFactory(conf, pm))
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Getters</summary>
+<summary>AssemblyManager - Getters</summary>
 
 #### getter: assemblyNameMap
 
-```js
-// type
-Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>>
+```ts
+type assemblyNameMap = Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>>
 ```
 
 #### getter: assemblyNamesList
 
-```js
-// type
-any[]
+```ts
+type assemblyNamesList = any[]
 ```
 
 #### getter: assemblyList
@@ -60,42 +58,37 @@ any[]
 combined jbrowse.assemblies, session.sessionAssemblies, and
 session.temporaryAssemblies
 
-```js
-// type
-(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```ts
+type assemblyList = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
 #### getter: rpcManager
 
-```js
-// type
-RpcManager
+```ts
+type rpcManager = RpcManager
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Methods</summary>
+<summary>AssemblyManager - Methods</summary>
 
 #### method: getCanonicalAssemblyName
 
-```js
-// type signature
-getCanonicalAssemblyName: (asmName: string) => string
+```ts
+type getCanonicalAssemblyName = (asmName: string) => string
 ```
 
 #### method: getDisplayName
 
-```js
-// type signature
-getDisplayName: (asmName: string) => string
+```ts
+type getDisplayName = (asmName: string) => string
 ```
 
 #### method: get
 
-```js
-// type signature
-get: (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+```ts
+type get = (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### method: waitForAssembly
@@ -103,29 +96,30 @@ get: (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IRefer
 use this method instead of assemblyManager.get(assemblyName) to get an assembly
 with regions loaded
 
-```js
-// type signature
-waitForAssembly: (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 12 more ... & IStateTreeNode<...>) | undefined>
+```ts
+type waitForAssembly = (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 12 more ... & IStateTreeNode<...>) | undefined>
 ```
 
 #### method: getRefNameMapForAdapter
 
-```js
-// type signature
-getRefNameMapForAdapter: (adapterConf: AdapterConf, assemblyName: string | undefined, opts: AssemblyBaseOpts) => Promise<RefNameAliases | undefined>
+```ts
+type getRefNameMapForAdapter = (
+  adapterConf: AdapterConf,
+  assemblyName: string | undefined,
+  opts: AssemblyBaseOpts,
+) => Promise<RefNameAliases | undefined>
 ```
 
 #### method: isValidRefName
 
-```js
-// type signature
-isValidRefName: (refName: string, assemblyName: string) => boolean
+```ts
+type isValidRefName = (refName: string, assemblyName: string) => boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Actions</summary>
+<summary>AssemblyManager - Actions</summary>
 
 #### action: removeAssembly
 
@@ -133,9 +127,8 @@ private: you would generally want to add to manipulate jbrowse.assemblies,
 session.sessionAssemblies, or session.temporaryAssemblies instead of using this
 directly
 
-```js
-// type signature
-removeAssembly: (asm: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) => void
+```ts
+type removeAssembly = (asm: ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) => void
 ```
 
 #### action: addAssembly
@@ -148,9 +141,8 @@ this can take an active instance of an assembly, in which case it is referred
 to, or it can take an identifier e.g. assembly name, which is used as a
 reference. snapshots cannot be used
 
-```js
-// type signature
-addAssembly: (configuration: any) => void
+```ts
+type addAssembly = (configuration: any) => void
 ```
 
 </details>

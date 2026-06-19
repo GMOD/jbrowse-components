@@ -25,49 +25,52 @@ used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Properties</summary>
+<summary>Base1DView - Properties</summary>
 
 #### property: id
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 id: ElementId
 ```
 
 #### property: displayedRegions
 
-```js
+```ts
 // type signature
-IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
+type displayedRegions = IOptionalIType<
+  IType<Region[], Region[], Region[]>,
+  [undefined]
+>
 // code
 displayedRegions: types.optional(types.frozen<IRegion[]>(), [])
 ```
 
 #### property: bpPerPx
 
-```js
+```ts
 // type signature
-number
+type bpPerPx = number
 // code
 bpPerPx: 0
 ```
 
 #### property: offsetPx
 
-```js
+```ts
 // type signature
-number
+type offsetPx = number
 // code
 offsetPx: 0
 ```
 
 #### property: minimumBlockWidth
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minimumBlockWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 minimumBlockWidth: types.stripDefault(types.number, 0)
 ```
@@ -75,22 +78,22 @@ minimumBlockWidth: types.stripDefault(types.number, 0)
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Volatiles</summary>
+<summary>Base1DView - Volatiles</summary>
 
 #### volatile: features
 
-```js
+```ts
 // type signature
-Feature[] | undefined
+type features = Feature[] | undefined
 // code
 features: undefined as undefined | Feature[]
 ```
 
 #### volatile: volatileWidth
 
-```js
+```ts
 // type signature
-number
+type volatileWidth = number
 // code
 volatileWidth: 0
 ```
@@ -98,121 +101,124 @@ volatileWidth: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Getters</summary>
+<summary>Base1DView - Getters</summary>
 
 #### getter: width
 
-```js
-// type
-number
+```ts
+type width = number
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: displayedRegionsTotalPx
 
-```js
-// type
-number
+```ts
+type displayedRegionsTotalPx = number
 ```
 
 #### getter: maxOffset
 
-```js
-// type
-number
+```ts
+type maxOffset = number
 ```
 
 #### getter: minOffset
 
-```js
-// type
-number
+```ts
+type minOffset = number
 ```
 
 #### getter: totalBp
 
-```js
-// type
-number
+```ts
+type totalBp = number
 ```
 
 #### getter: dynamicBlocks
 
-```js
-// type
-BlockSet
+```ts
+type dynamicBlocks = BlockSet
 ```
 
 #### getter: staticBlocks
 
-```js
-// type
-BlockSet
+```ts
+type staticBlocks = BlockSet
 ```
 
 #### getter: currBp
 
-```js
-// type
-number
+```ts
+type currBp = number
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Methods</summary>
+<summary>Base1DView - Methods</summary>
 
 #### method: pxToBp
 
-```js
-// type signature
-pxToBp: (px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean | undefined; }
+```ts
+type pxToBp = (px: number) => {
+  coord: number
+  index: number
+  refName: string
+  oob: boolean
+  assemblyName: string
+  offset: number
+  start: number
+  end: number
+  reversed?: boolean | undefined
+}
 ```
 
 #### method: bpToPx
 
-```js
-// type signature
-bpToPx: ({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number | undefined; }) => number | undefined
+```ts
+type bpToPx = ({
+  refName,
+  coord,
+  displayedRegionIndex,
+}: {
+  refName: string
+  coord: number
+  displayedRegionIndex?: number | undefined
+}) => number | undefined
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Actions</summary>
+<summary>Base1DView - Actions</summary>
 
 #### action: setDisplayedRegions
 
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
+```ts
+type setDisplayedRegions = (regions: Region[]) => void
 ```
 
 #### action: setBpPerPx
 
-```js
-// type signature
-setBpPerPx: (val: number) => void
+```ts
+type setBpPerPx = (val: number) => void
 ```
 
 #### action: setVolatileWidth
 
-```js
-// type signature
-setVolatileWidth: (width: number) => void
+```ts
+type setVolatileWidth = (width: number) => void
 ```
 
 #### action: setFeatures
 
-```js
-// type signature
-setFeatures: (features: Feature[]) => void
+```ts
+type setFeatures = (features: Feature[]) => void
 ```
 
 #### action: showAllRegions
@@ -220,53 +226,50 @@ setFeatures: (features: Feature[]) => void
 this makes a zoomed out view that shows all displayedRegions that makes the
 overview bar square with the scale bar
 
-```js
-// type signature
-showAllRegions: () => void
+```ts
+type showAllRegions = () => void
 ```
 
 #### action: zoomOut
 
-```js
-// type signature
-zoomOut: () => void
+```ts
+type zoomOut = () => void
 ```
 
 #### action: zoomIn
 
-```js
-// type signature
-zoomIn: () => void
+```ts
+type zoomIn = () => void
 ```
 
 #### action: zoomTo
 
-```js
-// type signature
-zoomTo: (bpPerPx: number, offset?: any) => number
+```ts
+type zoomTo = (bpPerPx: number, offset?: any) => number
 ```
 
 #### action: scrollTo
 
-```js
-// type signature
-scrollTo: (offsetPx: number) => number
+```ts
+type scrollTo = (offsetPx: number) => number
 ```
 
 #### action: centerAt
 
-```js
-// type signature
-centerAt: (coord: number, refName: string | undefined, displayedRegionIndex: number) => void
+```ts
+type centerAt = (
+  coord: number,
+  refName: string | undefined,
+  displayedRegionIndex: number,
+) => void
 ```
 
 #### action: scroll
 
 note: the scroll is clamped to keep the view on the main screen
 
-```js
-// type signature
-scroll: (distance: number) => number
+```ts
+type scroll = (distance: number) => number
 ```
 
 #### action: moveTo
@@ -274,9 +277,8 @@ scroll: (distance: number) => number
 offset is the base-pair-offset in the displayed region, index is the index of
 the displayed region in the linear genome view
 
-```js
-// type signature
-moveTo: (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
+```ts
+type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
 
 </details>

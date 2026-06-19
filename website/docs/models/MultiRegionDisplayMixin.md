@@ -89,16 +89,16 @@ and docs.
 [runFetch](../fetchmixin#action-runfetch)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiRegionDisplayMixin - Volatiles</summary>
+<summary>MultiRegionDisplayMixin - Volatiles</summary>
 
 #### volatile: loadedRegions
 
 regions whose data has been fetched and committed, keyed by
 displayedRegionIndex; populated only after the fetch work callback returns
 
-```js
+```ts
 // type signature
-ObservableMap<number, Region>
+type loadedRegions = ObservableMap<number, Region>
 // code
 loadedRegions: observable.map<number, Region>()
 ```
@@ -106,15 +106,14 @@ loadedRegions: observable.map<number, Region>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiRegionDisplayMixin - Getters</summary>
+<summary>MultiRegionDisplayMixin - Getters</summary>
 
 #### getter: isReady
 
 true once the canvas has painted and no fetch is in flight
 
-```js
-// type
-boolean
+```ts
+type isReady = boolean
 ```
 
 #### getter: viewportWithinLoadedData
@@ -125,9 +124,8 @@ zoom-out/pan. Drives the loading overlay through the pre-refetch debounce.
 Spatial only; see CLAUDE.md for why this is exact and for the
 resolution-staleness gap.
 
-```js
-// type
-boolean
+```ts
+type viewportWithinLoadedData = boolean
 ```
 
 #### getter: svgReady
@@ -140,9 +138,8 @@ inlining the condition. Regions stream in one at a time, so gating on
 multi-region/whole-genome exports complete; `loadedRegions.size` guards the
 vacuously-true empty-viewport case.
 
-```js
-// type
-boolean
+```ts
+type svgReady = boolean
 ```
 
 #### getter: svgReadyExtraTerminal
@@ -152,9 +149,8 @@ terminal state where off-screen export can proceed with no loaded data. Sequence
 sets it when zoomed past base resolution — it renders a static "zoom in" message
 and fetches nothing, so `svgReady` would otherwise never resolve.
 
-```js
-// type
-boolean
+```ts
+type svgReadyExtraTerminal = boolean
 ```
 
 #### getter: renderBlocks
@@ -165,9 +161,8 @@ screen). Plugins that want to suppress rendering in certain states (e.g. no
 domain yet) can override this getter to return [] — the autorun lifecycle will
 then issue an empty-blocks render that clears the canvas.
 
-```js
-// type
-RenderBlock[]
+```ts
+type renderBlocks = RenderBlock[]
 ```
 
 #### getter: displayPhase
@@ -176,9 +171,8 @@ The display's mutually-exclusive visual state, precedence single-sourced in
 `computeDisplayPhase`. Here `loading` means data isn't ready yet, or stale data
 (viewport past loaded) is still on screen through the pre-refetch debounce.
 
-```js
-// type
-DisplayPhase
+```ts
+type displayPhase = DisplayPhase
 ```
 
 #### getter: loadingOverlayVisible
@@ -188,32 +182,29 @@ The single signal every display's loading overlay reads. Derived from
 subtraction. Separate `.views` block so it can read the sibling `displayPhase`
 getter through `self`.
 
-```js
-// type
-boolean
+```ts
+type loadingOverlayVisible = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiRegionDisplayMixin - Actions</summary>
+<summary>MultiRegionDisplayMixin - Actions</summary>
 
 #### action: setLoadedRegion
 
 Action wrapper so callers after async boundaries stay in MST strict mode.
 
-```js
-// type signature
-setLoadedRegion: (displayedRegionIndex: number, region: Region) => void
+```ts
+type setLoadedRegion = (displayedRegionIndex: number, region: Region) => void
 ```
 
 #### action: clearDisplaySpecificData
 
 no-op base — subclasses override to clear rpcDataMap etc.
 
-```js
-// type signature
-clearDisplaySpecificData: () => void
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 #### action: clearAllRpcData
@@ -221,9 +212,8 @@ clearDisplaySpecificData: () => void
 full reset: cancels fetch, clears error, regionTooLarge, loadedRegions,
 display-specific data, and the canvas-drawn flag
 
-```js
-// type signature
-clearAllRpcData: () => void
+```ts
+type clearAllRpcData = () => void
 ```
 
 #### action: reload
@@ -231,9 +221,8 @@ clearAllRpcData: () => void
 Default reload: full reset. Subclasses with extra teardown can override (and
 chain to `clearAllRpcData` directly if needed).
 
-```js
-// type signature
-reload: () => void
+```ts
+type reload = () => void
 ```
 
 #### action: invalidateLoadedRegions
@@ -241,9 +230,8 @@ reload: () => void
 lighter reset: cancels fetch and clears loadedRegions, leaving error and
 regionTooLarge intact
 
-```js
-// type signature
-invalidateLoadedRegions: () => void
+```ts
+type invalidateLoadedRegions = () => void
 ```
 
 #### action: fetchNeeded
@@ -251,9 +239,10 @@ invalidateLoadedRegions: () => void
 Overridable hook (no-op base): override to call
 `this.fetchRegions(needed, async ctx => { ... })`.
 
-```js
-// type signature
-fetchNeeded: (_needed: { region: Region; displayedRegionIndex: number; }[]) => void
+```ts
+type fetchNeeded = (
+  _needed: { region: Region; displayedRegionIndex: number }[],
+) => void
 ```
 
 #### action: isCacheValid
@@ -261,18 +250,16 @@ fetchNeeded: (_needed: { region: Region; displayedRegionIndex: number; }[]) => v
 Overridable hook: return `false` to force re-fetch at the current zoom (wiggle
 uses this for zoom-level changes).
 
-```js
-// type signature
-isCacheValid: (_displayedRegionIndex: number) => boolean
+```ts
+type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 #### action: getByteEstimateConfig
 
 Overridable hook: return config to enable byte-estimate gating before fetch.
 
-```js
-// type signature
-getByteEstimateConfig: () => ByteEstimateConfig | null
+```ts
+type getByteEstimateConfig = () => ByteEstimateConfig | null
 ```
 
 #### action: fetchRegions
@@ -282,9 +269,11 @@ AFTER the work callback has populated display-specific data (rpcDataMap,
 cellData, etc) so the GPU upload autorun sees committed data when it observes
 loadedRegions.
 
-```js
-// type signature
-fetchRegions: (needed: { region: Region; displayedRegionIndex: number; }[], work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```ts
+type fetchRegions = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+  work: (ctx: FetchContext) => Promise<void>,
+) => Promise<void>
 ```
 
 #### action: afterAttach
@@ -292,9 +281,8 @@ fetchRegions: (needed: { region: Region; displayedRegionIndex: number; }[], work
 installs the four fetch-lifecycle autoruns (DisplayedRegionsChange,
 FetchVisibleRegions, SettingsInvalidate, ClearBlockingStateOnViewportChange)
 
-```js
-// type signature
-afterAttach: () => void
+```ts
+type afterAttach = () => void
 ```
 
 </details>

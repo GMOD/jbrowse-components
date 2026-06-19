@@ -22,13 +22,13 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Job - Properties</summary>
+<summary>Job - Properties</summary>
 
 #### property: name
 
-```js
+```ts
 // type signature
-ISimpleType<string>
+type name = ISimpleType<string>
 // code
 name: types.string
 ```
@@ -36,22 +36,22 @@ name: types.string
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Job - Volatiles</summary>
+<summary>Job - Volatiles</summary>
 
 #### volatile: statusMessage
 
-```js
+```ts
 // type signature
-string | undefined
+type statusMessage = string | undefined
 // code
 statusMessage: undefined as string | undefined
 ```
 
 #### volatile: progressPct
 
-```js
+```ts
 // type signature
-number
+type progressPct = number
 // code
 progressPct: 0
 ```
@@ -59,27 +59,24 @@ progressPct: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Job - Actions</summary>
+<summary>Job - Actions</summary>
 
 #### action: setCancelCallback
 
-```js
-// type signature
-setCancelCallback: (cancelCallback: () => void) => void
+```ts
+type setCancelCallback = (cancelCallback: () => void) => void
 ```
 
 #### action: setStatusMessage
 
-```js
-// type signature
-setStatusMessage: (message?: string | undefined) => void
+```ts
+type setStatusMessage = (message?: string | undefined) => void
 ```
 
 #### action: setProgressPct
 
-```js
-// type signature
-setProgressPct: (pct: number) => void
+```ts
+type setProgressPct = (pct: number) => void
 ```
 
 </details>

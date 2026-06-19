@@ -99,7 +99,7 @@ and docs.
 [runFetch](../fetchmixin#action-runfetch)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GlobalDataDisplayMixin - Getters</summary>
+<summary>GlobalDataDisplayMixin - Getters</summary>
 
 #### getter: displayPhase
 
@@ -108,9 +108,8 @@ Same precedence as MultiRegionDisplayMixin (single-sourced in
 either has its one dataset or is fetching it — so its `loading` axis is simply
 "fetch in flight".
 
-```js
-// type
-DisplayPhase
+```ts
+type displayPhase = DisplayPhase
 ```
 
 #### getter: loadingOverlayVisible
@@ -121,9 +120,8 @@ stays hidden over a display that's intentionally empty (e.g. LD with the
 triangle toggled off, which fetches nothing). Separate `.views` block so it can
 read the sibling `displayPhase` getter.
 
-```js
-// type
-boolean
+```ts
+type loadingOverlayVisible = boolean
 ```
 
 #### getter: svgReady
@@ -138,9 +136,8 @@ an off-screen export never sets. Off-screen renderers gate on it via
 `awaitSvgReady(model)` instead of inlining a `data != null || error || ...`
 condition.
 
-```js
-// type
-boolean
+```ts
+type svgReady = boolean
 ```
 
 </details>

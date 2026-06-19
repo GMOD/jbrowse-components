@@ -22,15 +22,15 @@ reference the markdown files in our repo of the checked out git tag
 ## Overview
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HistoryManagementMixin - Properties</summary>
+<summary>HistoryManagementMixin - Properties</summary>
 
 #### property: history
 
 used for undo/redo
 
-```js
+```ts
 // type signature
-IOptionalIType<IModelType<{ undoIdx: IType<number | undefined, number, number>; targetPath: IType<string | undefined, string, string>; }, { history: unknown[]; notTrackingUndo: boolean; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
+type history = IOptionalIType<IModelType<{ undoIdx: IType<number | undefined, number, number>; targetPath: IType<string | undefined, string, string>; }, { history: unknown[]; notTrackingUndo: boolean; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>
 // code
 history: types.optional(TimeTraveller, { targetPath: '../session' })
 ```

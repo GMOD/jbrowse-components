@@ -56,13 +56,13 @@ and docs.
 [setMinimized](../baseviewmodel#action-setminimized)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Properties</summary>
+<summary>CircularView - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"CircularView">
+type type = ISimpleType<'CircularView'>
 // code
 type: types.literal('CircularView')
 ```
@@ -71,137 +71,132 @@ type: types.literal('CircularView')
 
 similar to offsetPx in linear genome view
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type offsetRadians = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 offsetRadians: types.stripDefault(types.number, defaultOffsetRadians)
 ```
 
 #### property: bpPerPx
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type bpPerPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 bpPerPx: types.stripDefault(types.number, defaultBpPerPx)
 ```
 
 #### property: tracks
 
-```js
+```ts
 // type signature
-IArrayType<IAnyType>
+type tracks = IArrayType<IAnyType>
 // code
-tracks: types.array(
-          pluginManager.pluggableMstType('track', 'stateModel'),
-        )
+tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
 ```
 
 #### property: hideVerticalResizeHandle
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideVerticalResizeHandle = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
 // code
 hideVerticalResizeHandle: types.stripDefault(types.boolean, false)
 ```
 
 #### property: hideTrackSelectorButton
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type hideTrackSelectorButton = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 hideTrackSelectorButton: types.stripDefault(types.boolean, false)
 ```
 
 #### property: disableImportForm
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type disableImportForm = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 disableImportForm: types.stripDefault(types.boolean, false)
 ```
 
 #### property: height
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
 ```
 
 #### property: displayedRegions
 
-```js
+```ts
 // type signature
-IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>
+type displayedRegions = IOptionalIType<
+  IType<Region[], Region[], Region[]>,
+  [undefined]
+>
 // code
 displayedRegions: types.stripDefault(types.frozen<Region[]>(), [])
 ```
 
 #### property: minimumRadiusPx
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minimumRadiusPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minimumRadiusPx: types.stripDefault(
-          types.number,
-          defaultMinimumRadiusPx,
-        )
+minimumRadiusPx: types.stripDefault(types.number, defaultMinimumRadiusPx)
 ```
 
 #### property: spacingPx
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type spacingPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 spacingPx: types.stripDefault(types.number, defaultSpacingPx)
 ```
 
 #### property: paddingPx
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type paddingPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 paddingPx: types.stripDefault(types.number, defaultPaddingPx)
 ```
 
 #### property: minVisibleWidth
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minVisibleWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minVisibleWidth: types.stripDefault(
-          types.number,
-          defaultMinVisibleWidth,
-        )
+minVisibleWidth: types.stripDefault(types.number, defaultMinVisibleWidth)
 ```
 
 #### property: minimumBlockWidth
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minimumBlockWidth = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-minimumBlockWidth: types.stripDefault(
-          types.number,
-          defaultMinimumBlockWidth,
-        )
+minimumBlockWidth: types.stripDefault(types.number, defaultMinimumBlockWidth)
 ```
 
 #### property: trackSelectorType
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
@@ -210,9 +205,13 @@ trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 
 used for initializing the view from a session snapshot
 
-```js
+```ts
 // type signature
-IType<CircularViewInit | undefined, CircularViewInit | undefined, CircularViewInit | undefined>
+type init = IType<
+  CircularViewInit | undefined,
+  CircularViewInit | undefined,
+  CircularViewInit | undefined
+>
 // code
 init: types.frozen<CircularViewInit | undefined>()
 ```
@@ -220,40 +219,40 @@ init: types.frozen<CircularViewInit | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Volatiles</summary>
+<summary>CircularView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
-```js
+```ts
 // type signature
-number | undefined
+type volatileWidth = number | undefined
 // code
 volatileWidth: undefined as number | undefined
 ```
 
 #### volatile: volatileError
 
-```js
+```ts
 // type signature
-unknown
+type volatileError = unknown
 // code
 volatileError: undefined as unknown
 ```
 
 #### volatile: panX
 
-```js
+```ts
 // type signature
-number
+type panX = number
 // code
 panX: 0
 ```
 
 #### volatile: panY
 
-```js
+```ts
 // type signature
-number
+type panY = number
 // code
 panY: 0
 ```
@@ -261,102 +260,86 @@ panY: 0
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Getters</summary>
+<summary>CircularView - Getters</summary>
 
 #### getter: width
 
-```js
-// type
-number
+```ts
+type width = number
 ```
 
 #### getter: visibleSection
 
-```js
-// type
-{
-  rho: [number, number]
-  theta: [number, number]
-}
+```ts
+type visibleSection = { rho: [number, number]; theta: [number, number] }
 ```
 
 #### getter: circumferencePx
 
-```js
-// type
-number
+```ts
+type circumferencePx = number
 ```
 
 #### getter: radiusPx
 
-```js
-// type
-number
+```ts
+type radiusPx = number
 ```
 
 #### getter: bpPerRadian
 
-```js
-// type
-number
+```ts
+type bpPerRadian = number
 ```
 
 #### getter: centerXY
 
-```js
-// type
-;[number, number]
+```ts
+type centerXY = [number, number]
 ```
 
 #### getter: totalBp
 
-```js
-// type
-number
+```ts
+type totalBp = number
 ```
 
 #### getter: maximumRadiusPx
 
-```js
-// type
-number
+```ts
+type maximumRadiusPx = number
 ```
 
 #### getter: maxBpPerPx
 
-```js
-// type
-number
+```ts
+type maxBpPerPx = number
 ```
 
 #### getter: minBpPerPx
 
-```js
-// type
-number
+```ts
+type minBpPerPx = number
 ```
 
 #### getter: atMaxBpPerPx
 
-```js
-// type
-boolean
+```ts
+type atMaxBpPerPx = boolean
 ```
 
 #### getter: atMinBpPerPx
 
-```js
-// type
-boolean
+```ts
+type atMinBpPerPx = boolean
 ```
 
 #### getter: figureSize
 
 figure is always square, so width === height
 
-```js
-// type
-number
+```ts
+type figureSize = number
 ```
 
 #### getter: elidedRegions
@@ -364,62 +347,54 @@ number
 this is displayedRegions, post-processed to elide regions that are too small to
 see reasonably
 
-```js
-// type
-SliceRegion[]
+```ts
+type elidedRegions = SliceRegion[]
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-string[]
+```ts
+type assemblyNames = string[]
 ```
 
 #### getter: initialized
 
-```js
-// type
-boolean
+```ts
+type initialized = boolean
 ```
 
 #### getter: assemblyErrors
 
-```js
-// type
-string
+```ts
+type assemblyErrors = string
 ```
 
 #### getter: error
 
-```js
-// type
-unknown
+```ts
+type error = unknown
 ```
 
 #### getter: hasSomethingToShow
 
-```js
-// type
-boolean
+```ts
+type hasSomethingToShow = boolean
 ```
 
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view
 
-```js
-// type
-boolean
+```ts
+type showLoading = boolean
 ```
 
 #### getter: showView
 
 Whether the view is fully initialized and ready to display
 
-```js
-// type
-boolean
+```ts
+type showView = boolean
 ```
 
 #### getter: showImportForm
@@ -427,107 +402,94 @@ boolean
 Whether to show the import form (when not ready to display and import form is
 enabled, or when there's an error)
 
-```js
-// type
-boolean
+```ts
+type showImportForm = boolean
 ```
 
 #### getter: staticSlices
 
-```js
-// type
-Slice[]
+```ts
+type staticSlices = Slice[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Methods</summary>
+<summary>CircularView - Methods</summary>
 
 #### method: menuItems
 
 return the view menu items
 
-```js
-// type signature
-menuItems: () => MenuItem[]
+```ts
+type menuItems = () => MenuItem[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Actions</summary>
+<summary>CircularView - Actions</summary>
 
 #### action: fitToWindow
 
-```js
-// type signature
-fitToWindow: () => void
+```ts
+type fitToWindow = () => void
 ```
 
 #### action: setWidth
 
-```js
-// type signature
-setWidth: (newWidth: number) => number
+```ts
+type setWidth = (newWidth: number) => number
 ```
 
 #### action: setHeight
 
-```js
-// type signature
-setHeight: (newHeight: number) => number
+```ts
+type setHeight = (newHeight: number) => number
 ```
 
 #### action: rotateClockwiseButton
 
-```js
-// type signature
-rotateClockwiseButton: () => void
+```ts
+type rotateClockwiseButton = () => void
 ```
 
 #### action: rotateCounterClockwiseButton
 
-```js
-// type signature
-rotateCounterClockwiseButton: () => void
+```ts
+type rotateCounterClockwiseButton = () => void
 ```
 
 #### action: rotate
 
-```js
-// type signature
-rotate: (delta: number) => void
+```ts
+type rotate = (delta: number) => void
 ```
 
 #### action: resetView
 
 reset rotation, pan, and zoom back to the default fit-to-window view
 
-```js
-// type signature
-resetView: () => void
+```ts
+type resetView = () => void
 ```
 
 #### action: zoomInButton
 
-```js
-// type signature
-zoomInButton: () => void
+```ts
+type zoomInButton = () => void
 ```
 
 #### action: zoomOutButton
 
-```js
-// type signature
-zoomOutButton: () => void
+```ts
+type zoomOutButton = () => void
 ```
 
 #### action: setBpPerPx
 
-```js
-// type signature
-setBpPerPx: (newVal: number) => void
+```ts
+type setBpPerPx = (newVal: number) => void
 ```
 
 #### action: zoomToPoint
@@ -535,95 +497,85 @@ setBpPerPx: (newVal: number) => void
 zoom toward/away from a specific angle on the circle, keeping the genome
 position at that angle visually fixed under the cursor
 
-```js
-// type signature
-zoomToPoint: (newBpPerPx: number, cursorAngle: number) => void
+```ts
+type zoomToPoint = (newBpPerPx: number, cursorAngle: number) => void
 ```
 
 #### action: setDisplayedRegions
 
-```js
-// type signature
-setDisplayedRegions: (regions: Region[]) => void
+```ts
+type setDisplayedRegions = (regions: Region[]) => void
 ```
 
 #### action: activateTrackSelector
 
-```js
-// type signature
-activateTrackSelector: () => Widget | undefined
+```ts
+type activateTrackSelector = () => Widget | undefined
 ```
 
 #### action: toggleTrack
 
-```js
-// type signature
-toggleTrack: (trackId: string) => boolean
+```ts
+type toggleTrack = (trackId: string) => boolean
 ```
 
 #### action: setError
 
-```js
-// type signature
-setError: (error: unknown) => void
+```ts
+type setError = (error: unknown) => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: CircularViewInit | undefined) => void
+```ts
+type setInit = (init?: CircularViewInit | undefined) => void
 ```
 
 #### action: showTrack
 
-```js
-// type signature
-showTrack: (trackId: string, initialSnapshot?: any) => any
+```ts
+type showTrack = (trackId: string, initialSnapshot?: any) => any
 ```
 
 #### action: addTrackConf
 
-```js
-// type signature
-addTrackConf: (configuration: Record<string, unknown>, initialSnapshot?: any) => any
+```ts
+type addTrackConf = (
+  configuration: Record<string, unknown>,
+  initialSnapshot?: any,
+) => any
 ```
 
 #### action: hideTrack
 
-```js
-// type signature
-hideTrack: (trackId: string) => boolean
+```ts
+type hideTrack = (trackId: string) => boolean
 ```
 
 #### action: openExportDialog
 
-```js
-// type signature
-openExportDialog: () => void
+```ts
+type openExportDialog = () => void
 ```
 
 #### action: exportSvg
 
 creates an svg export and save using FileSaver
 
-```js
-// type signature
-exportSvg: (opts?: ExportSvgOptions) => Promise<void>
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### action: resizeHeight
 
-```js
-// type signature
-resizeHeight: (distance: number) => number
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 #### action: resizeWidth
 
-```js
-// type signature
-resizeWidth: (distance: number) => number
+```ts
+type resizeWidth = (distance: number) => number
 ```
 
 </details>

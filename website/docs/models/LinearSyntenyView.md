@@ -102,43 +102,43 @@ and docs.
 [setMinimized](../baseviewmodel#action-setminimized)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Properties</summary>
+<summary>LinearSyntenyView - Properties</summary>
 
 #### property: type
 
-```js
+```ts
 // type signature
-ISimpleType<"LinearSyntenyView">
+type type = ISimpleType<'LinearSyntenyView'>
 // code
 type: types.literal('LinearSyntenyView')
 ```
 
 #### property: cigarMode
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type cigarMode = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 cigarMode: types.stripDefault(
-          types.enumeration(['off', 'matches', 'full']),
-          'full',
-        )
+  types.enumeration(['off', 'matches', 'full']),
+  'full',
+)
 ```
 
 #### property: drawCurves
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawCurves = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawCurves: types.stripDefault(types.boolean, false)
 ```
 
 #### property: drawLocationMarkers
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type drawLocationMarkers = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 drawLocationMarkers: types.stripDefault(types.boolean, false)
 ```
@@ -147,18 +147,18 @@ drawLocationMarkers: types.stripDefault(types.boolean, false)
 
 pixels beyond the visible viewport edge that synteny lines are still drawn
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type overdrawPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX)
 ```
 
 #### property: alpha
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type alpha = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 alpha: types.stripDefault(types.number, 0.2)
 ```
@@ -169,9 +169,9 @@ Hide alignment blocks shorter than this many bp. Enforced per-feature by its own
 span in buildSyntenyGeometry, then culled in the shader (isCulled) and pick
 engine. Cuts whole-genome hairball noise.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<number>, [undefined]>
+type minAlignmentLength = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 minAlignmentLength: types.stripDefault(types.number, 0)
 ```
@@ -182,21 +182,24 @@ Level-of-detail tier selection for PIF adapters. 'auto' uses the adapter's
 bpPerPx threshold; 'fine' forces the per-row CIGAR tier (t/q); 'coarse' forces
 the no-CIGAR tier (T/Q) when present.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<"auto" | "fine" | "coarse">, [undefined]>
+type lodMode = IOptionalIType<
+  ISimpleType<'auto' | 'fine' | 'coarse'>,
+  [undefined]
+>
 // code
 lodMode: types.stripDefault(
-          types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-          'auto',
-        )
+  types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+  'auto',
+)
 ```
 
 #### property: colorBy
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<string>, [undefined]>
+type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
 // code
 colorBy: types.stripDefault(types.string, 'default')
 ```
@@ -207,9 +210,9 @@ Fade alignment blocks by per-feature identity (lower identity = more
 transparent). Orthogonal to colorBy — surfaces identity-dropoff zones without
 consuming the color channel.
 
-```js
+```ts
 // type signature
-IOptionalIType<ISimpleType<boolean>, [undefined]>
+type opacityByIdentity = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 opacityByIdentity: types.stripDefault(types.boolean, false)
 ```
@@ -231,9 +234,13 @@ has two entries. example:
 }
 ```
 
-```js
+```ts
 // type signature
-IType<LinearSyntenyViewInit | undefined, LinearSyntenyViewInit | undefined, LinearSyntenyViewInit | undefined>
+type init = IType<
+  LinearSyntenyViewInit | undefined,
+  LinearSyntenyViewInit | undefined,
+  LinearSyntenyViewInit | undefined
+>
 // code
 init: types.frozen<LinearSyntenyViewInit | undefined>()
 ```
@@ -241,16 +248,15 @@ init: types.frozen<LinearSyntenyViewInit | undefined>()
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Volatiles</summary>
+<summary>LinearSyntenyView - Volatiles</summary>
 
 #### volatile: importFormSyntenyTrackSelections
 
-```js
+```ts
 // type signature
-IObservableArray<ImportFormSyntenyTrack>
+type importFormSyntenyTrackSelections = IObservableArray<ImportFormSyntenyTrack>
 // code
-importFormSyntenyTrackSelections:
-        observable.array<ImportFormSyntenyTrack>()
+importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
 ```
 
 #### volatile: awaitingAutoDiagonalize
@@ -259,9 +265,9 @@ True while the init autorun is waiting for the first synteny RPC so it can
 diagonalize. Used to gate the canvas off — otherwise the user watches an
 undiagonalized hairball flash before the reorder kicks in.
 
-```js
+```ts
 // type signature
-false
+type awaitingAutoDiagonalize = false
 // code
 awaitingAutoDiagonalize: false
 ```
@@ -269,27 +275,24 @@ awaitingAutoDiagonalize: false
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Getters</summary>
+<summary>LinearSyntenyView - Getters</summary>
 
 #### getter: hasSomethingToShow
 
-```js
-// type
-boolean
+```ts
+type hasSomethingToShow = boolean
 ```
 
 #### getter: drawCIGAR
 
-```js
-// type
-boolean
+```ts
+type drawCIGAR = boolean
 ```
 
 #### getter: drawCIGARMatchesOnly
 
-```js
-// type
-boolean
+```ts
+type drawCIGARMatchesOnly = boolean
 ```
 
 #### getter: hasLodCapableAdapter
@@ -298,9 +301,8 @@ True if any track on any level has an adapter that declares the 'lod'
 capability. Used to gate the LOD menu — adapters without tiered storage (e.g.
 PAFAdapter, BlastTabularAdapter) have nothing to switch between.
 
-```js
-// type
-boolean
+```ts
+type hasLodCapableAdapter = boolean
 ```
 
 #### getter: hasCigarData
@@ -310,18 +312,16 @@ CIGAR. Used to gate CIGAR-related menu items — coarse-tier PIF files and
 CIGAR-less PAFs have nothing to show. Returns true while no data has loaded yet
 so the menu doesn't flicker between renders.
 
-```js
-// type
-boolean
+```ts
+type hasCigarData = boolean
 ```
 
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view
 
-```js
-// type
-boolean
+```ts
+type showLoading = boolean
 ```
 
 #### getter: loadingMessage
@@ -329,30 +329,27 @@ boolean
 Label for the loading spinner: a helpful message during the autoDiagonalize
 wait, otherwise just "Loading".
 
-```js
-// type
-;'Loading' | 'Reordering chromosomes' | undefined
+```ts
+type loadingMessage = 'Loading' | 'Reordering chromosomes' | undefined
 ```
 
 #### getter: showImportForm
 
 Whether to show the import form
 
-```js
-// type
-boolean
+```ts
+type showImportForm = boolean
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Methods</summary>
+<summary>LinearSyntenyView - Methods</summary>
 
 #### method: showMenuItems
 
-```js
-// type signature
-showMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```ts
+type showMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 #### method: headerMenuItems
@@ -360,133 +357,118 @@ showMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMen
 includes a subset of view menu options because the full list is a little
 overwhelming
 
-```js
-// type signature
-headerMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+```ts
+type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
 ```
 
 #### method: menuItems
 
-```js
-// type signature
-menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+```ts
+type menuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Actions</summary>
+<summary>LinearSyntenyView - Actions</summary>
 
 #### action: importFormRemoveRow
 
-```js
-// type signature
-importFormRemoveRow: (idx: number) => void
+```ts
+type importFormRemoveRow = (idx: number) => void
 ```
 
 #### action: clearImportFormSyntenyTracks
 
-```js
-// type signature
-clearImportFormSyntenyTracks: () => void
+```ts
+type clearImportFormSyntenyTracks = () => void
 ```
 
 #### action: setImportFormSyntenyTrack
 
-```js
-// type signature
-setImportFormSyntenyTrack: (arg: number, val: ImportFormSyntenyTrack) => void
+```ts
+type setImportFormSyntenyTrack = (
+  arg: number,
+  val: ImportFormSyntenyTrack,
+) => void
 ```
 
 #### action: setDrawCurves
 
-```js
-// type signature
-setDrawCurves: (arg: boolean) => void
+```ts
+type setDrawCurves = (arg: boolean) => void
 ```
 
 #### action: setCigarMode
 
-```js
-// type signature
-setCigarMode: (arg: "off" | "matches" | "full") => void
+```ts
+type setCigarMode = (arg: 'off' | 'matches' | 'full') => void
 ```
 
 #### action: setDrawLocationMarkers
 
-```js
-// type signature
-setDrawLocationMarkers: (arg: boolean) => void
+```ts
+type setDrawLocationMarkers = (arg: boolean) => void
 ```
 
 #### action: setOverdrawPx
 
-```js
-// type signature
-setOverdrawPx: (arg: number) => void
+```ts
+type setOverdrawPx = (arg: number) => void
 ```
 
 #### action: setAlpha
 
-```js
-// type signature
-setAlpha: (arg: number) => void
+```ts
+type setAlpha = (arg: number) => void
 ```
 
 #### action: setMinAlignmentLength
 
-```js
-// type signature
-setMinAlignmentLength: (arg: number) => void
+```ts
+type setMinAlignmentLength = (arg: number) => void
 ```
 
 #### action: setLodMode
 
-```js
-// type signature
-setLodMode: (arg: "auto" | "fine" | "coarse") => void
+```ts
+type setLodMode = (arg: 'auto' | 'fine' | 'coarse') => void
 ```
 
 #### action: setColorBy
 
-```js
-// type signature
-setColorBy: (arg: SyntenyColorBy) => void
+```ts
+type setColorBy = (arg: SyntenyColorBy) => void
 ```
 
 #### action: setOpacityByIdentity
 
-```js
-// type signature
-setOpacityByIdentity: (arg: boolean) => void
+```ts
+type setOpacityByIdentity = (arg: boolean) => void
 ```
 
 #### action: showAllRegions
 
-```js
-// type signature
-showAllRegions: () => void
+```ts
+type showAllRegions = () => void
 ```
 
 #### action: setInit
 
-```js
-// type signature
-setInit: (init?: LinearSyntenyViewInit | undefined) => void
+```ts
+type setInit = (init?: LinearSyntenyViewInit | undefined) => void
 ```
 
 #### action: setAwaitingAutoDiagonalize
 
-```js
-// type signature
-setAwaitingAutoDiagonalize: (arg: boolean) => void
+```ts
+type setAwaitingAutoDiagonalize = (arg: boolean) => void
 ```
 
 #### action: exportSvg
 
-```js
-// type signature
-exportSvg: (opts: ExportSvgOptions) => Promise<void>
+```ts
+type exportSvg = (opts: ExportSvgOptions) => Promise<void>
 ```
 
 </details>

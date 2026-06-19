@@ -131,13 +131,13 @@ and docs.
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
 
 #### property: view
 
-```js
+```ts
 // type signature
-IAnyModelType
+type view = IAnyModelType
 // code
 view: pluginManager.getViewType('CircularView').stateModel
 ```
@@ -145,93 +145,80 @@ view: pluginManager.getViewType('CircularView').stateModel
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
 
 #### getter: version
 
-```js
-// type
-any
+```ts
+type version = any
 ```
 
 #### getter: assemblies
 
-```js
-// type
-any[]
+```ts
+type assemblies = any[]
 ```
 
 #### getter: assemblyNames
 
-```js
-// type
-any[]
+```ts
+type assemblyNames = any[]
 ```
 
 #### getter: connections
 
-```js
-// type
-any
+```ts
+type connections = any
 ```
 
 #### getter: assemblyManager
 
-```js
-// type
-any
+```ts
+type assemblyManager = any
 ```
 
 #### getter: views
 
-```js
-// type
-any[]
+```ts
+type views = any[]
 ```
 
 #### getter: theme
 
-```js
-// type
-Theme
+```ts
+type theme = Theme
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
 
 #### method: renderProps
 
-```js
-// type signature
-renderProps: () => {
-  theme: any
-  highResolutionScaling: any
-}
+```ts
+type renderProps = () => { theme: any; highResolutionScaling: any }
 ```
 
 </details>
 
 <details open>
-<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Actions</summary>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Actions</summary>
 
 #### action: addView
 
 replaces view in this case
 
-```js
-// type signature
-addView: (typeName: string, initialState?: any) => any
+```ts
+type addView = (typeName: string, initialState?: any) => any
 ```
 
 #### action: removeView
 
 does nothing
 
-```js
-// type signature
-removeView: () => void
+```ts
+type removeView = () => void
 ```
 
 </details>
