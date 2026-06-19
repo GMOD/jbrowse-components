@@ -687,11 +687,11 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.3.1
-        version: 7.3.1
+        specifier: ^7.3.2
+        version: 7.3.2
       '@gmod/cram':
-        specifier: ^8.3.0
-        version: 8.3.0
+        specifier: ^8.3.1
+        version: 8.3.1
       '@jbrowse/alignments-core':
         specifier: workspace:^
         version: link:../../packages/alignments-core
@@ -811,8 +811,8 @@ importers:
         specifier: ^2.2.6
         version: 2.2.6
       '@gmod/tabix':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -931,8 +931,8 @@ importers:
   plugins/comparative-adapters:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils
@@ -1130,8 +1130,8 @@ importers:
   plugins/gff3:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1184,8 +1184,8 @@ importers:
   plugins/gtf:
     dependencies:
       '@gmod/tabix':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       '@jbrowse/core':
         specifier: workspace:^
         version: link:../../packages/core
@@ -1655,8 +1655,8 @@ importers:
         specifier: 3.0.14
         version: 3.0.14
       '@gmod/tabix':
-        specifier: ^3.4.0
-        version: 3.4.0
+        specifier: ^3.4.1
+        version: 3.4.1
       '@gmod/vcf':
         specifier: ^7.0.9
         version: 7.0.9
@@ -4094,8 +4094,8 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.3.1':
-    resolution: {integrity: sha512-mhUffINaC9qLydyR9/QrBuwfI0uMAqx6QesMESQdjZozYy2V3VsdqoxBG1GlIg2QCcquWyNM23cH9EanYw7DrA==}
+  '@gmod/bam@7.3.2':
+    resolution: {integrity: sha512-mOjpo0/4XC0YqBjlqikVgQSAmI2Gr/yNthmswy44SaaflFMJDIZtyWNB+DMyXTDjQnX44IHQvMd1EI/cjWqh5A==}
 
   '@gmod/bbi@9.2.1':
     resolution: {integrity: sha512-T8whRWIzvx9zFZldCCs90hPPTGTCWiBXEkXpoMhO3rFbEaOyTCxtSpN7ot62TvXjT9EP+H5HwwatzabJSy8uRg==}
@@ -4106,8 +4106,8 @@ packages:
   '@gmod/bgzf-filehandle@6.2.0':
     resolution: {integrity: sha512-az2V3+hhpEUHBdJsN6SuSHu7rHFqIIssuZFeerRe8fvEcI/qW+BqB3vT5YC0CNU/SqQB8HREeWu8RoLQbmumdw==}
 
-  '@gmod/cram@8.3.0':
-    resolution: {integrity: sha512-LJVc6R+IQMwklI2xzohbRLDOPu0W1FJtTg7VmFA+8k2xmMpfwi8hx/ZWzIpUGPimhsS5QbmCQaw4mQNcTfqpiw==}
+  '@gmod/cram@8.3.1':
+    resolution: {integrity: sha512-EDRrjVf7qsCmZdjUy7XGZmSwXN9com2YR58trWp5lDCbNQ6LYFXlVtRqY5kWQbho6rMFXeBGdCUeb+w6xbU5YQ==}
 
   '@gmod/faidx@2.0.0':
     resolution: {integrity: sha512-PAHRE9+qYsLO8AgytokgEPn9eof6vGxliaJsOQka/qaQBN15pIMY11diTLFSHy3QScNSo3lAnn+P8dIJokN0Qg==}
@@ -4122,8 +4122,8 @@ packages:
   '@gmod/nclist@3.0.10':
     resolution: {integrity: sha512-L2D7a6O9pzzCxPxBh75T3fFRayF3oLqY77UsL9wXMTBHCr7gifeetCcBPoZfxNImWWcB0+U3uAQ8OEAGjTzmaw==}
 
-  '@gmod/tabix@3.4.0':
-    resolution: {integrity: sha512-RQtmvvw93KmIOplkp5oVbKZkiXoVDD6Ied0GeTeq8/BmujHzu9pZnnD6ztJkx+mfPPYz1cUDpdtlucwD0rQGpQ==}
+  '@gmod/tabix@3.4.1':
+    resolution: {integrity: sha512-LFqii3U8phfO5B8yt6rd65DICONZVTRtnIzVLvwlHbMioP8U3I1s8I6+rRglKNSsEVCB78zOB54WYX2fv8CS9g==}
 
   '@gmod/trix@3.0.16':
     resolution: {integrity: sha512-KCHswOgkZTjs2JnfX8H5j7NFwwVtEhtpuW/zQBYBX0dK4km5xU500LWGTE69cBs+hWlwg93ThxuQBMBn0NRpog==}
@@ -11881,7 +11881,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.3.1':
+  '@gmod/bam@7.3.2':
     dependencies:
       '@gmod/bgzf-filehandle': 6.2.0
       '@jbrowse/quick-lru': 7.3.5
@@ -11903,7 +11903,7 @@ snapshots:
       generic-filehandle2: 2.2.0
       pako-esm2: 2.0.2
 
-  '@gmod/cram@8.3.0':
+  '@gmod/cram@8.3.1':
     dependencies:
       '@jbrowse/quick-lru': 7.3.5
       crc: 4.3.2
@@ -11928,7 +11928,7 @@ snapshots:
       '@jbrowse/quick-lru': 7.3.5
       '@jridgewell/resolve-uri': 3.1.2
 
-  '@gmod/tabix@3.4.0':
+  '@gmod/tabix@3.4.1':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@gmod/bgzf-filehandle': 6.2.0

@@ -1,6 +1,6 @@
 import { BamFile } from '@gmod/bam'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { downloadStatus, updateStatus, withProgress } from '@jbrowse/core/util'
+import { downloadStatus, withProgress } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
@@ -100,13 +100,13 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
 
   private async setup(opts?: BaseOptions) {
     const { statusCallback } = opts ?? {}
-    this.setupP ??= updateStatus(
+    this.setupP ??= downloadStatus(
       'Downloading index',
       statusCallback,
-      async () => {
+      async onProgress => {
         try {
           const { bam } = this.configure()
-          const rawHeader = await bam.getHeader()
+          const rawHeader = await bam.getHeader({ onProgress })
           this.samHeader = parseSamHeader(rawHeader ?? [])
           return { samHeader: this.samHeader, bam }
         } catch (e) {
