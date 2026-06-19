@@ -20,9 +20,18 @@ export function readSessionFromStorage(query: string) {
     const str = sessionStorage.getItem('current')
     if (str) {
       const snap = JSON.parse(str).session ?? {}
+      console.log('[localsession] readSessionFromStorage', {
+        query,
+        storedId: snap.id,
+        match: query === snap.id,
+      })
       if (query === snap.id) {
         return snap as Snap
       }
+    } else {
+      console.log('[localsession] readSessionFromStorage: no "current" key', {
+        query,
+      })
     }
   } catch (e) {
     console.error(e)

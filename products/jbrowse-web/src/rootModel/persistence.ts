@@ -51,6 +51,10 @@ export async function setupSessionDB(self: WebRootModel) {
               // else it can create an infinite loop
               const s = self.session
               await sessionDB.put('sessions', getSnapshot(s), s.id)
+              console.log('[localsession] IDB write', {
+                id: s.id,
+                time: performance.now(),
+              })
               if (!isAlive(self)) {
                 return
               }
@@ -110,6 +114,10 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
                 createdAt: new Date(),
               }),
             )
+            console.log('[localsession] sessionStorage write', {
+              id: (sessionSnap as { id?: string }).id,
+              time: performance.now(),
+            })
             if (savingFailed) {
               savingFailed = false
               s.notify('Auto-saving restored', 'info')

@@ -411,10 +411,16 @@ const SessionLoader = types
       session: Snap,
       userAcceptedConfirmation?: boolean,
     ) {
+      const newId = createElementId()
+      console.log('[localsession] loadDecodedSession mint id', {
+        oldId: (session as { id?: string }).id,
+        newId,
+        time: performance.now(),
+      })
       await this.loadSession(
         {
           ...session,
-          id: createElementId(),
+          id: newId,
         },
         userAcceptedConfirmation,
       )
@@ -433,10 +439,21 @@ const SessionLoader = types
      */
     async fetchLocalSession() {
       const query = stripPrefix(self.sessionQuery!)
-      const snap =
-        readSessionFromStorage(query) ?? (await readSessionFromIDB(query))
+      const fromStorage = readSessionFromStorage(query)
+      const fromIDB = fromStorage ? undefined : await readSessionFromIDB(query)
+      const snap = fromStorage ?? fromIDB
+      console.log('[localsession] fetchLocalSession', {
+        query,
+        foundInStorage: !!fromStorage,
+        foundInIDB: !!fromIDB,
+        time: performance.now(),
+      })
       if (snap) {
-        await this.loadDecodedSession(snap)
+        // preserve the existing id (the URL's local-<id>) rather than minting a
+        // fresh one: a new id would leave the URL pointing at a not-yet-persisted
+        // session during the autosave debounce window (refresh -> "not found"),
+        // and would orphan a new IndexedDB autosave entry on every reload
+        await this.loadSession({ ...snap, id: query })
       } else {
         throw new Error('Local session not found')
       }
