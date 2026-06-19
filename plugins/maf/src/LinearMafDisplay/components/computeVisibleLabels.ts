@@ -1,6 +1,9 @@
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
 import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
+
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 
 export interface VisibleLabel {
@@ -10,19 +13,8 @@ export interface VisibleLabel {
   lowerBase: string
 }
 
-interface LabelView {
-  visibleRegions: {
-    displayedRegionIndex: number
-    start: number
-    end: number
-    screenStartPx: number
-    reversed?: boolean
-  }[]
-  bpPerPx: number
-}
-
 interface ComputeVisibleLabelsParams {
-  view: LabelView
+  view: VisibleRegionsView
   rpcDataMap: { get(idx: number): MafRegionData | undefined }
   rowHeight: number
   rowProportion: number
@@ -43,28 +35,17 @@ export function computeVisibleLabels(
   } = params
 
   const labels: VisibleLabel[] = []
-  const scale = 1 / view.bpPerPx
-  if (scale < CHAR_SIZE_WIDTH) {
+  if (1 / view.bpPerPx < CHAR_SIZE_WIDTH) {
     return labels
   }
 
-  const h = rowHeight * rowProportion
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const hp2 = h / 2
-  const offset = (rowHeight - h) / 2
-  const halfScale = scale / 2
 
-  for (const vr of view.visibleRegions) {
-    const regionData = rpcDataMap.get(vr.displayedRegionIndex)
-    if (!regionData) {
-      continue
-    }
-    const reversed = vr.reversed ?? false
-    const bpEdge = reversed ? vr.end : vr.start
-    // Center of the cell at bp = bpEdge ± offset, switching pivot for reversed
-    // so labels land in the middle of their cell in either orientation.
-    const bpCenterToPx = reversed
-      ? (bp: number) => vr.screenStartPx + (bpEdge - bp) * scale - halfScale
-      : (bp: number) => vr.screenStartPx + (bp - bpEdge) * scale + halfScale
+  for (const { data: regionData, bpToPx } of eachVisibleRegion(
+    view,
+    rpcDataMap,
+  )) {
     for (const block of regionData.blocks) {
       const refSeqBytes = block.refSeqBytes
 
@@ -90,7 +71,8 @@ export function computeVisibleLabels(
                   ? alnCode & ~LOWER_BIT
                   : alnCode
                 labels.push({
-                  x: bpCenterToPx(block.startBp + genomicOffset),
+                  // +0.5 → cell center, orientation-aware via bpToPx
+                  x: bpToPx(block.startBp + genomicOffset + 0.5),
                   y: yPos,
                   text: String.fromCharCode(displayCode),
                   lowerBase: String.fromCharCode(alnCode | LOWER_BIT),

@@ -1,3 +1,6 @@
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafStatus, MafSummaryRecord } from '../../types.ts'
 
 export interface SummaryBar {
@@ -10,19 +13,8 @@ export interface SummaryBar {
   rightStatus?: MafStatus
 }
 
-interface SummaryView {
-  visibleRegions: {
-    displayedRegionIndex: number
-    start: number
-    end: number
-    screenStartPx: number
-    reversed?: boolean
-  }[]
-  bpPerPx: number
-}
-
 interface ComputeVisibleSummaryBarsParams {
-  view: SummaryView
+  view: VisibleRegionsView
   summaryDataMap: { get(idx: number): MafSummaryRecord[] | undefined }
   /**
    * Resolves a summary row's `src` (species name) to its display row index.
@@ -48,19 +40,12 @@ export function computeVisibleSummaryBars(
   const { view, summaryDataMap, rowIndexBySrc, rowHeight, rowProportion } =
     params
   const bars: SummaryBar[] = []
-  const scale = 1 / view.bpPerPx
-  const h = rowHeight * rowProportion
-  const offset = (rowHeight - h) / 2
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
 
-  for (const vr of view.visibleRegions) {
-    const records = summaryDataMap.get(vr.displayedRegionIndex)
-    if (!records) {
-      continue
-    }
-    const reversed = vr.reversed ?? false
-    const bpToPx = reversed
-      ? (bp: number) => vr.screenStartPx + (vr.end - bp) * scale
-      : (bp: number) => vr.screenStartPx + (bp - vr.start) * scale
+  for (const { data: records, bpToPx } of eachVisibleRegion(
+    view,
+    summaryDataMap,
+  )) {
     for (const r of records) {
       const rowIndex = rowIndexBySrc.get(r.src)
       if (rowIndex === undefined) {

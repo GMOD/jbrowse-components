@@ -1,3 +1,6 @@
+import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
+
+import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafStatus } from '../../types.ts'
 
@@ -9,19 +12,8 @@ export interface EmptyLineSegment {
   status: MafStatus
 }
 
-interface EmptyLineView {
-  visibleRegions: {
-    displayedRegionIndex: number
-    start: number
-    end: number
-    screenStartPx: number
-    reversed?: boolean
-  }[]
-  bpPerPx: number
-}
-
 interface ComputeVisibleEmptyLinesParams {
-  view: EmptyLineView
+  view: VisibleRegionsView
   rpcDataMap: { get(idx: number): MafRegionData | undefined }
   rowHeight: number
   rowProportion: number
@@ -38,19 +30,12 @@ export function computeVisibleEmptyLines(
 ): EmptyLineSegment[] {
   const { view, rpcDataMap, rowHeight, rowProportion } = params
   const segments: EmptyLineSegment[] = []
-  const scale = 1 / view.bpPerPx
-  const h = rowHeight * rowProportion
-  const offset = (rowHeight - h) / 2
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
 
-  for (const vr of view.visibleRegions) {
-    const regionData = rpcDataMap.get(vr.displayedRegionIndex)
-    if (!regionData) {
-      continue
-    }
-    const reversed = vr.reversed ?? false
-    const bpToPx = reversed
-      ? (bp: number) => vr.screenStartPx + (vr.end - bp) * scale
-      : (bp: number) => vr.screenStartPx + (bp - vr.start) * scale
+  for (const { data: regionData, bpToPx } of eachVisibleRegion(
+    view,
+    rpcDataMap,
+  )) {
     for (const block of regionData.blocks) {
       if (block.empties.length === 0) {
         continue
