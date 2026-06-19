@@ -1,4 +1,5 @@
 import { Box, Button, FormControl, Typography } from '@mui/material'
+import { observer } from 'mobx-react'
 
 declare global {
   interface Window {
@@ -201,7 +202,7 @@ function ReloadPrompt({
   )
 }
 
-function LocalFileChooser({
+const LocalFileChooser = observer(function LocalFileChooser({
   location,
   setLocation,
 }: {
@@ -232,6 +233,6 @@ function LocalFileChooser({
       </Box>
     </Box>
   )
-}
+})
 
 export default LocalFileChooser

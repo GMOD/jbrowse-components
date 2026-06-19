@@ -4,6 +4,7 @@ import {
   isRoot,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
+import { observable, runInAction } from 'mobx'
 
 import {
   getFileHandle,
@@ -150,30 +151,38 @@ export function storeBlobLocation(
   return location
 }
 
-// openLocation is synchronous, so File objects are cached here after async handle resolution
-const fileHandleCache: Record<string, File> = {}
+// openLocation is synchronous, so File objects are cached here after async handle
+// resolution. Observable so an open LocalFileChooser reactively clears its "needs
+// reload" notice once a restore (afterAttach / "Restore access") populates the
+// cache; the worker/RPC readers run outside any reaction so nothing else
+// subscribes.
+const fileHandleCache = observable.map<string, File>()
 
 export function getFileFromCache(handleId: string) {
-  return fileHandleCache[handleId]
+  return fileHandleCache.get(handleId)
 }
 
 export function setFileInCache(handleId: string, file: File) {
-  fileHandleCache[handleId] = file
+  runInAction(() => {
+    fileHandleCache.set(handleId, file)
+  })
 }
 
 export function clearFileFromCache(handleId: string) {
-  delete fileHandleCache[handleId]
+  runInAction(() => {
+    fileHandleCache.delete(handleId)
+  })
 }
 
 export function hasFileHandlesInCache() {
-  return Object.keys(fileHandleCache).length > 0
+  return fileHandleCache.size > 0
 }
 
 export async function ensureFileHandleReady(
   handleId: string,
   requestPermission = true,
 ) {
-  const cached = fileHandleCache[handleId]
+  const cached = fileHandleCache.get(handleId)
   if (cached) {
     return cached
   }
@@ -193,7 +202,7 @@ export async function ensureFileHandleReady(
   }
 
   const file = await handle.getFile()
-  fileHandleCache[handleId] = file
+  setFileInCache(handleId, file)
   return file
 }
 
@@ -202,7 +211,7 @@ export async function storeFileHandleLocation(
 ): Promise<FileHandleLocation> {
   const handleId = await storeFileHandle(handle)
   const file = await handle.getFile()
-  fileHandleCache[handleId] = file
+  setFileInCache(handleId, file)
   return {
     locationType: 'FileHandleLocation',
     name: handle.name,
