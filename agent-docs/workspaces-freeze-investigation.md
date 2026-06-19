@@ -6,6 +6,16 @@ User **likes dockview and wants to keep it**. So: do NOT remove/disable
 workspaces or change the global-flag persistence. Find and fix **why dockview is
 slow with many views**, keeping dockview working.
 
+## Cross-ref
+
+Part of the PneumoBrowse2 v5.0.0 beta report triage —
+[`pneumobrowse-v5-bugreport-triage.md`](./pneumobrowse-v5-bugreport-triage.md)
+issue #2. The reporter's separate "can't scroll the genome list on my main
+browser, but incognito is fine" complaint is the **same bug**: their main browser
+has `localStorage['useWorkspaces']` persisted on, so it loads straight into
+dockview and freezes. New data point: their freeze is ~25 real genome views with
+real tracks (CRAM/synteny/wiggle), reproducible just by toggling the flag.
+
 ## Background
 
 Reporter opens a stack of genome views (strains: D39V + others). With
