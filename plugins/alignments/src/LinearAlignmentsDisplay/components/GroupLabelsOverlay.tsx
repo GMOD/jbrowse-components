@@ -2,6 +2,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
+import { groupReadCount } from '../groupLayout.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
@@ -35,18 +36,6 @@ const useStyles = makeStyles()(theme => ({
     },
   },
 }))
-
-// Count of laid-out reads in a group across its visible regions — shown in the
-// section label so each group's depth is legible at a glance.
-function groupReadCount(map: {
-  values(): IterableIterator<{ readIds: string[] }>
-}) {
-  let n = 0
-  for (const data of map.values()) {
-    n += data.readIds.length
-  }
-  return n
-}
 
 // Inline section dividers + labels between stacked groups (in-track group-by).
 // Only rendered when grouping is active; ungrouped displays show nothing. The
