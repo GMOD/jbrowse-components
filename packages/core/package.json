@@ -85,6 +85,7 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/RubberbandTooltip": "./src/ui/RubberbandTooltip.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
+    "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
     "./ui/colors": "./src/ui/colors.ts",
@@ -449,6 +450,10 @@
       "./ui/SanitizedHTML": {
         "types": "./esm/ui/SanitizedHTML.d.ts",
         "import": "./esm/ui/SanitizedHTML.js"
+      },
+      "./ui/ShareLinkField": {
+        "types": "./esm/ui/ShareLinkField.d.ts",
+        "import": "./esm/ui/ShareLinkField.js"
       },
       "./ui/Snackbar": {
         "types": "./esm/ui/Snackbar.d.ts",
@@ -863,6 +868,9 @@
         ],
         "ui/SanitizedHTML": [
           "esm/ui/SanitizedHTML.d.ts"
+        ],
+        "ui/ShareLinkField": [
+          "esm/ui/ShareLinkField.d.ts"
         ],
         "ui/Snackbar": [
           "esm/ui/Snackbar.d.ts"

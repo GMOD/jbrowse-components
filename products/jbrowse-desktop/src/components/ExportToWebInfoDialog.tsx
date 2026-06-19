@@ -1,7 +1,7 @@
 import { Dialog } from '@jbrowse/core/ui'
 import { DialogContent, DialogContentText } from '@mui/material'
 
-export default function InfoDialog({
+export default function ExportToWebInfoDialog({
   onClose,
   open,
 }: {
@@ -11,32 +11,32 @@ export default function InfoDialog({
   return (
     <Dialog
       open={open}
-      title="Info about session URLs"
+      title="About exporting to the web"
       onClose={() => {
         onClose()
       }}
     >
       <DialogContent>
         <DialogContentText>
-          A session encodes your tracks, views, and selections in the URL, so it
-          can get long. All three formats below carry the same data.
+          This opens your desktop session in jbrowse-web. Tracks pointing at
+          remote URLs load directly; local files are not accessible from the web
+          and will not load.
         </DialogContentText>
         <DialogContentText>
-          <strong>Short URL</strong> (recommended): the session is encrypted in
+          <strong>Short link</strong> (recommended): the session is encrypted in
           your browser with a random password, then uploaded to a central
-          database. The password lives only in the URL, never on the server, so
-          short URLs are effectively end-to-end encrypted — only someone with
-          the link can read the session.
+          database. The password lives only in the link, never on the server, so
+          short links are effectively end-to-end encrypted.
         </DialogContentText>
         <DialogContentText>
-          <strong>Long URL</strong>: the full session is compressed into the URL
-          itself. Nothing is uploaded, but the URL can get long enough to break
-          some programs.
+          <strong>Long link</strong>: the full session is compressed into the
+          URL itself. Nothing is uploaded, but the URL can get long enough to
+          break some programs.
         </DialogContentText>
         <DialogContentText>
           <strong>Plaintext JSON</strong>: the readable session embedded in the
           URL, uncompressed. Longest of the three, but lets you inspect exactly
-          what the session contains.
+          what will be opened on the web.
         </DialogContentText>
       </DialogContent>
     </Dialog>

@@ -1,6 +1,8 @@
-import { Suspense, lazy, useState } from 'react'
+import { useState } from 'react'
 
-import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
+import { Dialog, ErrorBanner, MonospaceTextField } from '@jbrowse/core/ui'
+import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
+import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import {
   type AbstractSessionModel,
   localStorageGetItem,
@@ -12,23 +14,29 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import SettingsIcon from '@mui/icons-material/Settings'
 import {
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
   DialogContentText,
-  IconButton,
+  FormControlLabel,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import ShareDialogLinkField from './ShareDialogLinkField.tsx'
+import ShareInfoDialog from './ShareInfoDialog.tsx'
 import {
   SHARE_URL_LOCALSTORAGE_KEY,
+  buildJsonShareUrl,
   buildLongShareUrl,
   buildShortShareUrl,
 } from './buildShareUrl.ts'
 import { setQueryParams } from '../useQueryParam.ts'
 
-const SettingsDialog = lazy(() => import('./ShareSettingsDialog.tsx'))
+const SHARE_MODES = [
+  { value: 'short', label: 'Short URL' },
+  { value: 'long', label: 'Long URL' },
+  { value: 'json', label: 'Plaintext JSON' },
+] as const
 
 const ShareDialog = observer(function ShareDialog({
   handleClose,
@@ -37,7 +45,8 @@ const ShareDialog = observer(function ShareDialog({
   handleClose: () => void
   session: AbstractSessionModel & { shareURL: string }
 }) {
-  const [settingsDialogOpen, setSettingsDialogOpen] = useState(false)
+  const [infoDialogOpen, setInfoDialogOpen] = useState(false)
+  const [showReadableJson, setShowReadableJson] = useState(false)
 
   const shareURL = session.shareURL
   const [currentSetting, setCurrentSetting] = useState(
@@ -52,13 +61,18 @@ const ShareDialog = observer(function ShareDialog({
     error,
     isLoading: loading,
     mutate,
-  } = useFetch(['shareUrl', currentSetting], () =>
-    currentSetting === 'short'
-      ? buildShortShareUrl(snap, shareURL)
-      : buildLongShareUrl(snap),
-  )
+  } = useFetch(['shareUrl', currentSetting], () => {
+    if (currentSetting === 'short') {
+      return buildShortShareUrl(snap, shareURL)
+    } else if (currentSetting === 'json') {
+      return Promise.resolve(buildJsonShareUrl(snap))
+    } else {
+      return buildLongShareUrl(snap)
+    }
+  })
 
   const url = data?.url ?? ''
+  const plaintext = data?.plaintext
   const disabled = loading || !!error
   return (
     <>
@@ -71,13 +85,28 @@ const ShareDialog = observer(function ShareDialog({
         <DialogContent>
           <DialogContentText>
             Copy the URL below to share your current JBrowse session.
-            <IconButton
-              onClick={() => {
-                setSettingsDialogOpen(true)
-              }}
+            <CascadingMenuButton
+              tooltip="Session sharing settings"
+              menuItems={[
+                ...SHARE_MODES.map(({ value, label }) => ({
+                  label,
+                  type: 'radio' as const,
+                  checked: currentSetting === value,
+                  onClick: () => {
+                    localStorage.setItem(SHARE_URL_LOCALSTORAGE_KEY, value)
+                    setCurrentSetting(value)
+                  },
+                })),
+                {
+                  label: 'About session URLs',
+                  onClick: () => {
+                    setInfoDialogOpen(true)
+                  },
+                },
+              ]}
             >
               <SettingsIcon />
-            </IconButton>
+            </CascadingMenuButton>
           </DialogContentText>
 
           {error ? (
@@ -89,11 +118,33 @@ const ShareDialog = observer(function ShareDialog({
               }}
             />
           ) : loading ? (
-            <Typography>
-              Generating {currentSetting === 'short' ? 'short' : 'long'} URL...
-            </Typography>
+            <Typography>Generating {currentSetting} URL...</Typography>
           ) : (
-            <ShareDialogLinkField url={url} />
+            <>
+              <ShareLinkField value={url} />
+              {plaintext ? (
+                <FormControlLabel
+                  control={
+                    <Checkbox
+                      checked={showReadableJson}
+                      onChange={event => {
+                        setShowReadableJson(event.target.checked)
+                      }}
+                    />
+                  }
+                  label="Show readable JSON"
+                />
+              ) : null}
+              {plaintext && showReadableJson ? (
+                <MonospaceTextField
+                  label="Session JSON"
+                  value={plaintext}
+                  readOnly
+                  fullWidth
+                  maxRows={20}
+                />
+              ) : null}
+            </>
           )}
         </DialogContent>
         <DialogActions>
@@ -126,24 +177,23 @@ const ShareDialog = observer(function ShareDialog({
             Copy to Clipboard
           </Button>
 
-          <Button onClick={handleClose} autoFocus>
+          <Button
+            onClick={() => {
+              handleClose()
+            }}
+            autoFocus
+          >
             Close
           </Button>
         </DialogActions>
       </Dialog>
 
-      <Suspense fallback={null}>
-        <SettingsDialog
-          open={settingsDialogOpen}
-          currentSetting={currentSetting}
-          onClose={setting => {
-            setSettingsDialogOpen(false)
-            if (setting) {
-              setCurrentSetting(setting)
-            }
-          }}
-        />
-      </Suspense>
+      <ShareInfoDialog
+        open={infoDialogOpen}
+        onClose={() => {
+          setInfoDialogOpen(false)
+        }}
+      />
     </>
   )
 })

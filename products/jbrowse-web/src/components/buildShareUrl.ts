@@ -7,6 +7,9 @@ export interface ShareUrlResult {
   url: string
   sessionParam: string
   passwordParam: string
+  // human-readable session text shown in the dialog instead of the URL (only
+  // set for the plaintext json mode)
+  plaintext?: string
 }
 
 export async function buildShortShareUrl(
@@ -34,4 +37,22 @@ export async function buildLongShareUrl(
   params.set('session', sessionParam)
   locationUrl.search = params.toString()
   return { url: locationUrl.toString(), sessionParam, passwordParam: '' }
+}
+
+// human-readable, uncompressed session embedded directly in the URL via the
+// `json-` prefix (decoded by SessionLoader.decodeJsonUrlSession). Lets users
+// inspect exactly what their session contains. The URL stores compact JSON; the
+// dialog shows the pretty-printed `plaintext` so it's actually readable.
+export function buildJsonShareUrl(snap: unknown): ShareUrlResult {
+  const sessionParam = `json-${JSON.stringify({ session: snap })}`
+  const locationUrl = new URL(window.location.href)
+  const params = new URLSearchParams(locationUrl.search)
+  params.set('session', sessionParam)
+  locationUrl.search = params.toString()
+  return {
+    url: locationUrl.toString(),
+    sessionParam,
+    passwordParam: '',
+    plaintext: JSON.stringify({ session: snap }, null, 2),
+  }
 }
