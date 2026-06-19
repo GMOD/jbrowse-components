@@ -5,6 +5,7 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  statusFraction,
   statusMessageText,
   useLocalStorage,
 } from '@jbrowse/core/util'
@@ -16,6 +17,7 @@ import {
   Button,
   DialogActions,
   DialogContent,
+  LinearProgress,
   TextField,
   Typography,
 } from '@mui/material'
@@ -37,7 +39,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   children: React.ReactNode
   handleClose: () => void
 }) {
-  const [progress, setProgress] = useState('')
+  const [status, setStatus] = useState<RpcStatus>()
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
   const [stopToken, setStopToken] = useState<StopToken>()
@@ -46,6 +48,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
     'cluster-samplesPerPixel',
     '1',
   )
+  const fraction = statusFraction(status)
 
   return (
     <>
@@ -81,7 +84,12 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
         <div>
           {loading ? (
             <div style={{ padding: 50 }}>
-              <span>{progress || 'Loading...'}</span>
+              <span>
+                {statusMessageText(status) || 'Loading...'}
+                {fraction === undefined
+                  ? null
+                  : ` ${Math.round(fraction * 100)}%`}
+              </span>
               <Button
                 onClick={() => {
                   stopStopToken(stopToken)
@@ -89,6 +97,13 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               >
                 Stop
               </Button>
+              {fraction === undefined ? null : (
+                <LinearProgress
+                  variant="determinate"
+                  value={Math.min(100, fraction * 100)}
+                  style={{ marginTop: 8 }}
+                />
+              )}
             </div>
           ) : null}
           {error ? <ErrorBanner error={error} /> : null}
@@ -101,7 +116,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
           onClick={async () => {
             try {
               setError(undefined)
-              setProgress('Initializing')
+              setStatus('Initializing')
               setLoading(true)
               const view = getContainingView(model) as LinearGenomeViewModel
               if (!view.initialized) {
@@ -125,7 +140,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                     bpPerPx:
                       view.bpPerPx / parseSamplesPerPixel(samplesPerPixel),
                     statusCallback: (arg: RpcStatus) => {
-                      setProgress(statusMessageText(arg) ?? '')
+                      setStatus(arg)
                     },
                   },
                 )
@@ -147,7 +162,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               }
             } finally {
               setLoading(false)
-              setProgress('')
+              setStatus(undefined)
               setStopToken(undefined)
             }
           }}

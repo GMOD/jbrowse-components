@@ -1,7 +1,8 @@
 import { IntervalTree } from './IntervalTree.ts'
-import { getProgressDisplayStr } from './index.ts'
 
-export type StatusCallback = (arg: string) => void
+import type { RpcStatus } from './progress.ts'
+
+export type StatusCallback = (arg: RpcStatus) => void
 export type LineCallback = (
   line: string,
   lineIndex: number,
@@ -104,9 +105,11 @@ export function parseLineByLine(
     }
 
     if (i++ % 10_000 === 0) {
-      statusCallback(
-        `Loading ${getProgressDisplayStr(blockStart, buffer.length)}`,
-      )
+      statusCallback({
+        message: 'Loading',
+        current: blockStart,
+        total: buffer.length,
+      })
     }
 
     // If no newline found, we've reached the end

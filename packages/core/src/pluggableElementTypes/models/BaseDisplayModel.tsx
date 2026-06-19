@@ -8,11 +8,13 @@ import {
   getContainingTrack,
   getContainingView,
   getEnv,
+  statusMessageText,
 } from '../../util/index.ts'
 import { getParentRenderProps } from '../../util/tracks.ts'
 import { ElementId } from '../../util/types/mst.ts'
 
 import type { MenuItem } from '../../ui/index.ts'
+import type { RpcStatus } from '../../util/progress.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -203,8 +205,10 @@ function stateModelFactory() {
       /**
        * #action
        */
-      setStatusMessage(arg?: string) {
-        self.statusMessage = arg
+      setStatusMessage(arg?: RpcStatus) {
+        // base displays render only the indeterminate label; FetchMixin
+        // overrides this to also derive a determinate `statusProgress`
+        self.statusMessage = statusMessageText(arg)
       },
       /**
        * #action

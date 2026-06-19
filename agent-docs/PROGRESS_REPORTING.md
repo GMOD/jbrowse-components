@@ -103,6 +103,20 @@ only `signal` + `lineCallback` + `onProgress`. (`fetchAndMaybeUnzip` *does*
 spread `...opts` into `readFile`, but that's safe: `BaseOptions` carries no
 `onProgress`, so the explicit `onProgress` we add is the only one.)
 
+## Parse phase: `parseLineByLine`
+
+`parseLineByLine` (`util/parseLineByLine.ts`) is the central line scanner behind
+the flat-file adapters (PAF/MashMap/Delta/Blast comparative, plaintext
+GFF3/GTF/BED via `groupLinesByRef`, VCF). It tracks `blockStart` against
+`buffer.length`, so it now emits a **determinate** `StatusWithProgress`
+(`{ message: 'Loading', current: blockStart, total: buffer.length }`) every
+10k lines instead of the old baked `Loading 1.2/3.4Mb` string. Its local
+`StatusCallback` type is now the canonical `(arg: RpcStatus) => void`, so the
+parse phase lights up the same determinate bar the download phase already had.
+`ChainAdapter/util.ts` (a bespoke byte-loop, not using `parseLineByLine`) was
+converted the same way. `getProgressDisplayStr` (bpUtils) is no longer used by
+either — left in place as a public util.
+
 ## Whole-file reads: `fetchAndMaybeUnzip`
 
 `fetchAndMaybeUnzip` (`util/index.ts`) is the central whole-file reader behind
@@ -162,10 +176,32 @@ canceled" + a refresh button in the canceled branch.
   vcf/splitvcf use `downloadStatus`; `fetchAndMaybeUnzip` forwards
   generic-filehandle2 progress (covers bigwig/bigbed/hic/comparative/sequence).
 - **DONE — cancel is durable + retryable** (see the cancel section above).
-- **Legacy string-only consumers** (synteny display, dotplot/wiggle progress
-  dialogs) extract `statusMessageText(msg)` and show no bar. Upgrading them to a
-  determinate bar means storing `RpcStatus` (not a `string`) in their state /
-  FetchMixin migration — optional, low priority.
+- **DONE — comparative/dialog consumers upgraded to determinate.** The synteny
+  display now stores `RpcStatus` (`statusMessage` + derived `statusProgress`,
+  mirroring `FetchMixin`) and passes `progress` to `LoadingOverlay`; its RPC
+  forwards `statusCallback` into the adapter (it previously wrapped the fetch in
+  an indeterminate `updateStatus('Loading')` that swallowed the adapter's
+  determinate ticks). The wiggle-cluster and dotplot-diagonalization dialogs
+  store `RpcStatus` and render a determinate `LinearProgress` when a fraction is
+  present (`DiagonalizeDotplot` now forwards `statusCallback` into its feature
+  fetch). `BaseDisplayModel.setStatusMessage` and the `WorkerHandle.call`
+  interface now type the callback as `RpcStatus`, not `string`.
+- **DONE — dotplot display fetch is determinate.** `DotplotGetFeaturesAndPositions`
+  takes a `statusCallback` and forwards it into the adapter; the display
+  (`DotplotDisplay`) overrides `setStatusMessage` to derive `statusProgress`
+  (pairing with BaseDisplay's `statusMessage`), cleared in `setRpcData`/`setError`.
+  `DisplayStatusOverlays` renders the message under the `LoadingEllipses` plus a
+  determinate `LinearProgress` when a fraction is present (the first-load
+  centered overlay; the corner refetch overlay shows the label only).
+- **Still indeterminate by nature:** the linear-comparative
+  `DiagonalizationProgressDialog` runs `runDiagonalize` *synchronously on the
+  main thread* (no RPC, no `statusCallback`), so its bar stays indeterminate —
+  correct for a blocking op with no progress channel.
+- **Not wired (different context, low priority):** text-indexing
+  (`packages/text-indexing`) reports byte counts as plain strings to the admin
+  CLI, not the loading overlay; worker CPU sort/layout loops (synteny dedup/sort,
+  `collectRenderData`) emit no per-iteration progress. Both have the data to go
+  determinate via `createProgressReporter` if a context ever surfaces them.
 
 ## Don't
 

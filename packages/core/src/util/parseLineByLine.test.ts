@@ -81,9 +81,13 @@ line2`
       mockStatusCallback,
     )
 
-    expect(mockStatusCallback).toHaveBeenCalledWith(
-      expect.stringContaining('Loading'),
-    )
+    // determinate progress: a StatusWithProgress object carrying byte offset
+    // (current) against the buffer size (total), not a baked percentage string
+    expect(mockStatusCallback).toHaveBeenCalledWith({
+      message: 'Loading',
+      current: expect.any(Number),
+      total: buffer.length,
+    })
   })
 
   it('should provide line index to callback', () => {

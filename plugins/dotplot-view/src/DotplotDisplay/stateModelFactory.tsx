@@ -1,5 +1,6 @@
 import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
+import { statusFraction, statusMessageText } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { renderSvg } from './renderSvg.tsx'
@@ -8,6 +9,7 @@ import type { DotplotGeometryData } from './dotplotRenderingBackendTypes.ts'
 import type { DotplotRpcData } from './types.ts'
 import type { ExportSvgOptions } from '../DotplotView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -61,6 +63,13 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
            */
           geometry: undefined as DotplotGeometryData | undefined,
           fetchStopToken: undefined as StopToken | undefined,
+          /**
+           * #volatile
+           * determinate progress fraction [0,1] for the current status, or
+           * undefined when the in-flight phase is indeterminate. Pairs with the
+           * `statusMessage` volatile inherited from BaseDisplay.
+           */
+          statusProgress: undefined as number | undefined,
           fetchWarnings: [] as { message: string; effect: string }[],
           // Set once at view load by a refName-comparison check, independent of
           // the per-render fetch. See afterAttach.
@@ -102,6 +111,16 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => ({
       /**
        * #action
+       * Status callback for the in-flight fetch; derives the indeterminate
+       * message and the determinate progress fraction. Overrides BaseDisplay's
+       * string-only setter so the dotplot loading overlay can show a bar.
+       */
+      setStatusMessage(status?: RpcStatus) {
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
+      },
+      /**
+       * #action
        */
       setLoading(stopToken: StopToken) {
         self.fetchStopToken = stopToken
@@ -113,6 +132,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setRpcData(data: DotplotRpcData) {
         self.rpcData = data
         self.fetchStopToken = undefined
+        self.statusMessage = undefined
+        self.statusProgress = undefined
       },
       setWarnings(w: { message: string; effect: string }[]) {
         self.fetchWarnings = w
@@ -130,6 +151,8 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         console.error(error)
         self.error = error
         self.fetchStopToken = undefined
+        self.statusMessage = undefined
+        self.statusProgress = undefined
       },
       /**
        * #action

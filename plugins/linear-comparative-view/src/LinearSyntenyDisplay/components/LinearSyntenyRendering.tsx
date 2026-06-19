@@ -13,11 +13,16 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
 }: {
   model: LinearSyntenyDisplayModel
 }) {
-  const { tooltipText, statusMessage, loading, contextMenuAnchor } = model
+  const { tooltipText, statusMessage, statusProgress, loading, contextMenuAnchor } =
+    model
 
   return (
     <>
-      <LoadingOverlay statusMessage={statusMessage} isVisible={loading} />
+      <LoadingOverlay
+        statusMessage={statusMessage}
+        progress={statusProgress}
+        isVisible={loading}
+      />
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {contextMenuAnchor ? (
         <SyntenyContextMenu

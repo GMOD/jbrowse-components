@@ -1,6 +1,10 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  statusFraction,
+  statusMessageText,
+} from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { applyAlpha, colorSchemes, getQueryColor } from '@jbrowse/synteny-core'
 
@@ -12,6 +16,7 @@ import type { ClickCoord } from './components/util.ts'
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { ColorScheme, SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -149,6 +154,12 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       clickedFeatureIdx: -1,
       contextMenuAnchor: undefined as ClickCoord | undefined,
       statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       * determinate progress fraction [0,1] for the current status, or
+       * undefined when the in-flight phase is indeterminate
+       */
+      statusProgress: undefined as number | undefined,
       // Set once at view load by a refName-comparison check, independent of the
       // per-render fetch. See afterAttach.
       assembliesSwapped: false,
@@ -166,8 +177,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         self.featureData = featureData
         self.instanceData = instanceData
       },
-      setStatusMessage(msg?: string) {
-        self.statusMessage = msg
+      setStatusMessage(status?: RpcStatus) {
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
       },
       setAssembliesSwapped(arg: boolean) {
         self.assembliesSwapped = arg

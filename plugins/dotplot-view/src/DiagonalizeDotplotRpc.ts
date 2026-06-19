@@ -64,6 +64,8 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
         (dataAdapter as BaseFeatureDataAdapter)
           .getFeaturesInMultipleRegions(view.hview.displayedRegions, {
             sessionId,
+            stopToken,
+            statusCallback,
           })
           .pipe(toArray()),
       ),

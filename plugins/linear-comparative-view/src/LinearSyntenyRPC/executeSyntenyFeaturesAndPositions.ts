@@ -66,16 +66,17 @@ export async function executeSyntenyFeaturesAndPositions({
   ).dataAdapter as BaseFeatureDataAdapter
 
   const bpPerPx = viewSnaps[level]!.bpPerPx
-  const allFeatures = await updateStatus('Loading', statusCallback, () =>
-    firstValueFrom(
-      dataAdapter
-        .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
-          stopToken,
-          bpPerPx,
-          lodMode,
-        })
-        .pipe(toArray()),
-    ),
+  // forward statusCallback so the adapter's determinate download + parse phases
+  // drive the bar; the loading overlay shows a plain "Loading" label otherwise
+  const allFeatures = await firstValueFrom(
+    dataAdapter
+      .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
+        stopToken,
+        bpPerPx,
+        lodMode,
+        statusCallback,
+      })
+      .pipe(toArray()),
   )
   const seen = new Set<string>()
   const deduped = allFeatures.filter(f => {

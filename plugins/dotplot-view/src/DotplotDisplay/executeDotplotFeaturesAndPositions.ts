@@ -11,7 +11,7 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
@@ -70,6 +70,7 @@ export async function executeDotplotFeaturesAndPositions({
   vViewSnap,
   stopToken,
   lodMode,
+  statusCallback,
 }: {
   pluginManager: PluginManager
   sessionId: string
@@ -79,6 +80,7 @@ export async function executeDotplotFeaturesAndPositions({
   vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
   lodMode?: BaseOptions['lodMode']
+  statusCallback?: StatusCallback
 }) {
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
@@ -89,6 +91,7 @@ export async function executeDotplotFeaturesAndPositions({
         stopToken,
         bpPerPx: hViewSnap.bpPerPx,
         lodMode,
+        statusCallback,
       })
       .pipe(toArray()),
   )

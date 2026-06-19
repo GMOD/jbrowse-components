@@ -2,7 +2,7 @@ import RpcMethodType from '@jbrowse/core/pluggableElementTypes/RpcMethodType'
 
 import type { DotplotFeaturesAndPositionsResult } from './executeDotplotFeaturesAndPositions.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap } from '@jbrowse/synteny-core'
 
@@ -14,6 +14,7 @@ export interface DotplotGetFeaturesAndPositionsArgs {
   vViewSnap: BpIndexViewSnap
   stopToken?: StopToken
   lodMode?: BaseOptions['lodMode']
+  statusCallback?: StatusCallback
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

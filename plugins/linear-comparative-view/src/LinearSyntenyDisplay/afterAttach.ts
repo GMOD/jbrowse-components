@@ -2,7 +2,6 @@ import {
   getContainingView,
   getSession,
   isAbortException,
-  statusMessageText,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -100,7 +99,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               lodMode,
               statusCallback: (msg: RpcStatus) => {
                 if (thisStopToken === currentStopToken && isAlive(self)) {
-                  self.setStatusMessage(statusMessageText(msg))
+                  self.setStatusMessage(msg)
                 }
               },
             },

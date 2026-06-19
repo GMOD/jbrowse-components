@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import { statusMessageText } from '@jbrowse/core/util'
+import { statusFraction, statusMessageText } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   Button,
@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import { runDotplotDiagonalize } from '../util/runDotplotDiagonalize.ts'
 
 import type { DotplotViewModel } from '../model.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const DiagonalizationProgressDialog = observer(
@@ -25,7 +26,9 @@ const DiagonalizationProgressDialog = observer(
     handleClose: () => void
     model: DotplotViewModel
   }) {
-    const [message, setMessage] = useState('Ready to start diagonalization')
+    const [status, setStatus] = useState<RpcStatus>(
+      'Ready to start diagonalization',
+    )
     const [error, setError] = useState<unknown>()
     const [isRunning, setIsRunning] = useState(false)
     const [stopToken, setStopToken] = useState<StopToken>()
@@ -36,14 +39,14 @@ const DiagonalizationProgressDialog = observer(
 
       try {
         setIsRunning(true)
-        setMessage('Preparing diagonalization...')
+        setStatus('Preparing diagonalization...')
         const result = await runDotplotDiagonalize(model, {
           stopToken: token,
           statusCallback: msg => {
-            setMessage(statusMessageText(msg) ?? '')
+            setStatus(msg)
           },
         })
-        setMessage(
+        setStatus(
           result
             ? `Diagonalization complete! Reordered ${result.totalReordered} regions, reversed ${result.totalReversed}`
             : 'No regions to reorder',
@@ -71,6 +74,9 @@ const DiagonalizationProgressDialog = observer(
       }
     }
 
+    const fraction = statusFraction(status)
+    const message = statusMessageText(status)
+
     return (
       <Dialog
         open
@@ -83,9 +89,20 @@ const DiagonalizationProgressDialog = observer(
             Reorders the vertical axis to match the horizontal. Uses all
             alignments across the currently displayed chromosomes.
           </Typography>
-          {message ? <Typography>{message}</Typography> : null}
+          {message ? (
+            <Typography>
+              {message}
+              {fraction === undefined ? null : ` ${Math.round(fraction * 100)}%`}
+            </Typography>
+          ) : null}
           {error ? <ErrorBanner error={error} /> : null}
-          {isRunning ? <LinearProgress style={{ marginTop: 16 }} /> : null}
+          {isRunning ? (
+            <LinearProgress
+              style={{ marginTop: 16 }}
+              variant={fraction === undefined ? 'indeterminate' : 'determinate'}
+              value={fraction === undefined ? undefined : fraction * 100}
+            />
+          ) : null}
         </DialogContent>
         <DialogActions>
           {isRunning ? (

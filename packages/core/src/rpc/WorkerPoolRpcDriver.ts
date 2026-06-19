@@ -4,6 +4,7 @@ import { clamp } from '../util/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
+import type { RpcStatus } from '../util/progress.ts'
 
 export interface WorkerHandle {
   destroy(): void
@@ -11,7 +12,9 @@ export interface WorkerHandle {
     functionName: string,
     args?: unknown,
     options?: {
-      statusCallback?(message: string): void
+      // out-of-band progress handle; carries a determinate StatusWithProgress
+      // object as readily as a plain string label (see WebWorkerHandle.call)
+      statusCallback?(status: RpcStatus): void
       rpcDriverClassName: string
     },
   ): Promise<unknown>

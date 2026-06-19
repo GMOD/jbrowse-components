@@ -16,6 +16,7 @@ import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAnd
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap, SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -69,6 +70,11 @@ export function doAfterAttach(
               vViewSnap,
               stopToken: thisStopToken,
               lodMode,
+              statusCallback: (msg: RpcStatus) => {
+                if (thisStopToken === currentStopToken && isAlive(self)) {
+                  self.setStatusMessage(msg)
+                }
+              },
             } satisfies DotplotGetFeaturesAndPositionsArgs,
           )
           if (thisStopToken !== currentStopToken || !isAlive(self)) {
