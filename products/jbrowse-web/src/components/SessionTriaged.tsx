@@ -17,7 +17,7 @@ const SessionTriaged = observer(function SessionTriaged({
     <PluginWarningDialog
       kind="session"
       onConfirm={async () => {
-        await loader.loadDecodedSession(sessionTriaged.snap, true)
+        await loader.loadImportedSession(sessionTriaged.snap, true)
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {

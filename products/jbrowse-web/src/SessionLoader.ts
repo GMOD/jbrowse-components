@@ -402,17 +402,21 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Helper to load a decoded session with a fresh ID. New IDs prevent
-     * conflicts when the same session is open in multiple tabs. Pass
-     * `userAcceptedConfirmation` when the caller has shown the user a triage
-     * dialog and they accepted.
+     * Loads a session that arrived from OUTSIDE this browser's local storage
+     * (a share link, a url-encoded/json session, or a triage-accepted session)
+     * and gives it a fresh local id. The new id makes it an independent local
+     * session, so opening the same external URL in two tabs doesn't make them
+     * autosave over each other. Contrast `fetchLocalSession`, which restores an
+     * already-local session and keeps its id. Pass `userAcceptedConfirmation`
+     * when the caller has shown the user a plugin triage dialog and they
+     * accepted.
      */
-    async loadDecodedSession(
+    async loadImportedSession(
       session: Snap,
       userAcceptedConfirmation?: boolean,
     ) {
       const newId = createElementId()
-      console.log('[localsession] loadDecodedSession mint id', {
+      console.log('[localsession] loadImportedSession mint id', {
         oldId: (session as { id?: string }).id,
         newId,
         time: performance.now(),
@@ -435,7 +439,10 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Tries sessionStorage (current) then IndexedDB (autosaved).
+     * Restores an already-local session named by the URL's `local-<id>`. Tries
+     * sessionStorage (current) then IndexedDB (autosaved), and keeps the
+     * existing id (unlike `loadImportedSession`) so the URL keeps pointing at a
+     * session that is already persisted.
      */
     async fetchLocalSession() {
       const query = stripPrefix(self.sessionQuery!)
@@ -449,10 +456,9 @@ const SessionLoader = types
         time: performance.now(),
       })
       if (snap) {
-        // preserve the existing id (the URL's local-<id>) rather than minting a
-        // fresh one: a new id would leave the URL pointing at a not-yet-persisted
-        // session during the autosave debounce window (refresh -> "not found"),
-        // and would orphan a new IndexedDB autosave entry on every reload
+        // keep id = query: a fresh id would point the URL at a session not yet
+        // written by the debounced autosave (refresh -> "not found") and orphan
+        // a new IndexedDB autosave entry on every reload
         await this.loadSession({ ...snap, id: query })
       } else {
         throw new Error('Local session not found')
@@ -468,7 +474,7 @@ const SessionLoader = types
         self.sessionQuery ?? '',
         self.password ?? '',
       )
-      await this.loadDecodedSession(JSON.parse(await fromUrlSafeB64(decrypted)))
+      await this.loadImportedSession(JSON.parse(await fromUrlSafeB64(decrypted)))
     },
     /**
      * #action
@@ -477,14 +483,14 @@ const SessionLoader = types
       const session = JSON.parse(
         await fromUrlSafeB64(stripPrefix(self.sessionQuery!)),
       )
-      await this.loadDecodedSession(session)
+      await this.loadImportedSession(session)
     },
     /**
      * #action
      */
     async decodeJsonUrlSession() {
       const { session } = JSON.parse(stripPrefix(self.sessionQuery!))
-      await this.loadDecodedSession(session)
+      await this.loadImportedSession(session)
     },
     /**
      * #action
