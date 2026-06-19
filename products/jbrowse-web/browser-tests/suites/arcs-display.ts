@@ -150,14 +150,19 @@ const suite: TestSuite = {
         await collapseItem.click()
         await delay(300)
 
-        const submitBtn = await findByText(page, /^Submit$/, 10000)
-        if (!submitBtn) {
-          throw new Error('Submit button not found in collapse introns dialog')
+        // CollapseIntronsDialog offers "Replace current view" (collapse in
+        // place) or "Open in new view" (add a second LGV). We want the latter
+        // so the snapshot shows both the original and the collapsed view.
+        const openInNewView = await findByText(page, 'Open in new view', 10000)
+        if (!openInNewView) {
+          throw new Error(
+            '"Open in new view" not found in collapse introns dialog',
+          )
         }
-        await submitBtn.click()
+        await openInNewView.click()
 
-        // A new LGV is added with displayedRegions set to the EDEN exon
-        // blocks; wait for its pileup canvas to finish drawing
+        // The new LGV has displayedRegions set to the EDEN exon blocks; wait
+        // for its pileup canvas to finish drawing
         await waitForElementCount(
           page,
           '[data-testid="pileup-display-done"]',
