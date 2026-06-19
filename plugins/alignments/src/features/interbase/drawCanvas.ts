@@ -18,9 +18,9 @@ export function drawInterbaseCanvas(
     region.interbasePackedBuffer,
     region.interbaseMaxCount,
     {
-      insertion: rgb255(state.colors.colorInsertion),
-      softclip: rgb255(state.colors.colorSoftclip),
-      hardclip: rgb255(state.colors.colorHardclip),
+      insertion: rgb255(state.colors.colorInsertionIndicator),
+      softclip: rgb255(state.colors.colorSoftclipIndicator),
+      hardclip: rgb255(state.colors.colorHardclipIndicator),
     },
     bpToX,
     viewWidth,

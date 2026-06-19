@@ -15,7 +15,7 @@ import {
 import { toRgb } from '../shaders/colors.ts'
 
 import type { CigarCoords } from '../../shared/hitTestTypes.ts'
-import type { ColorPalette } from '../shaders/colors.ts'
+import type { ColorPalette, RGBColor } from '../shaders/colors.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { Theme } from '@mui/material'
 
@@ -27,8 +27,23 @@ export function makeBpToScreenX(view: LinearGenomeViewModel) {
   }
 }
 
+// Mix a normalized RGB color toward white by `amt` (0 = unchanged, 1 = white).
+function lighten([r, g, b]: RGBColor, amt: number): RGBColor {
+  return [r + (1 - r) * amt, g + (1 - g) * amt, b + (1 - b) * amt]
+}
+
+// Coverage-track indicator marks sit on the dark track background in dark mode,
+// where the saturated on-read insertion/clip colors wash out. Lighten them for
+// that context only; the on-read box/bar/text keep the saturated base color.
+const INDICATOR_DARK_LIGHTEN = 0.45
+
 export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
   const { palette } = theme
+  // 0 in light mode leaves the indicator colors equal to the base colors
+  const indicatorLighten = palette.mode === 'dark' ? INDICATOR_DARK_LIGHTEN : 0
+  const colorInsertion = toRgb(palette.insertion)
+  const colorSoftclip = toRgb(palette.softclip)
+  const colorHardclip = toRgb(palette.hardclip)
   return {
     colorFwdStrand: toRgb(colorFwdStrand),
     colorRevStrand: toRgb(colorRevStrand),
@@ -44,11 +59,14 @@ export function buildColorPaletteFromTheme(theme: Theme): ColorPalette {
     colorBaseG: toRgb(palette.bases.G.main),
     colorBaseT: toRgb(palette.bases.T.main),
     colorBaseN: toRgb(palette.bases.N.main),
-    colorInsertion: toRgb(palette.insertion),
+    colorInsertion,
     colorDeletion: toRgb(palette.deletion),
     colorSkip: toRgb(palette.skip),
-    colorSoftclip: toRgb(palette.softclip),
-    colorHardclip: toRgb(palette.hardclip),
+    colorSoftclip,
+    colorHardclip,
+    colorInsertionIndicator: lighten(colorInsertion, indicatorLighten),
+    colorSoftclipIndicator: lighten(colorSoftclip, indicatorLighten),
+    colorHardclipIndicator: lighten(colorHardclip, indicatorLighten),
     colorCoverage: toRgb(palette.coverage),
     colorModificationFwd: toRgb(palette.modificationFwd),
     colorModificationRev: toRgb(palette.modificationRev),

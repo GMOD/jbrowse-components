@@ -95,6 +95,10 @@ public struct Uniforms {
   public uint colorSkip;
   public uint colorSoftclip;
   public uint colorHardclip;
+  // Coverage-track indicator variants (lightened in dark mode); see clipKindColor.
+  public uint colorInsertionIndicator;
+  public uint colorSoftclipIndicator;
+  public uint colorHardclipIndicator;
   public uint colorCoverage;
   public uint colorModFwd;
   public uint colorModRev;
@@ -193,12 +197,14 @@ public float3 arcColorByIndex(uint idx, Uniforms u) {
 }
 
 // Interbase-histogram / indicator clip-kind palette: 1=insertion 2=softclip
-// 3=hardclip (anything else falls through to hardclip).
+// 3=hardclip (anything else falls through to hardclip). Uses the *Indicator
+// colors — coverage-track marks sit on the dark track background, where the
+// saturated on-read colors (insertion.slang / clip.slang) would wash out.
 public float3 clipKindColor(float ct, Uniforms u) {
   int ci = int(ct);
-  if (ci == 1) { return unpackRGBA(u.colorInsertion).xyz; }
-  if (ci == 2) { return unpackRGBA(u.colorSoftclip).xyz; }
-  return unpackRGBA(u.colorHardclip).xyz;
+  if (ci == 1) { return unpackRGBA(u.colorInsertionIndicator).xyz; }
+  if (ci == 2) { return unpackRGBA(u.colorSoftclipIndicator).xyz; }
+  return unpackRGBA(u.colorHardclipIndicator).xyz;
 }
 
 // Widen a [x1,x2] clip-space span to a minimum of 1 CSS pixel, centered, so
