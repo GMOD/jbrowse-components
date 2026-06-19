@@ -177,8 +177,19 @@ export function RenderLifecycleMixin() {
               if (b === undefined) {
                 return
               }
-              if (cbs.render(b)) {
-                self.markCanvasDrawn()
+              // A throw in the render callback (e.g. an invalid render-state
+              // input like an empty rendering type) would otherwise escape as
+              // an uncaught reaction error and leave the display stuck on
+              // "loading" forever. Route it to `renderError` so it surfaces as
+              // the render-error overlay (with the message + retry) instead.
+              // Setting `renderError` unmounts the canvas and disposes the
+              // backend, so this can't re-fire into a loop.
+              try {
+                if (cbs.render(b)) {
+                  self.markCanvasDrawn()
+                }
+              } catch (e) {
+                self.setRenderError(e)
               }
             },
             { name: 'RenderLifecycle:render' },

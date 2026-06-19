@@ -141,6 +141,26 @@ test('re-calling attachRenderingBackend swaps backend without re-installing auto
   expect(backend2.renders).toBeGreaterThan(0)
 })
 
+test('a throw in the render callback sets renderError instead of escaping (no infinite loading)', () => {
+  const model = TestModel.create()
+  const backend: FakeRenderingBackend = { uploads: [], renders: 0 }
+
+  expect(model.renderError).toBeUndefined()
+
+  const err = new Error('Unknown wiggle rendering type: ')
+  model.attachRenderingBackend<FakeRenderingBackend>(backend, {
+    upload: () => {},
+    render: () => {
+      throw err
+    },
+  })
+
+  // The throw is caught and routed to renderError (which drives the
+  // 'renderError' display phase), and canvasDrawn never flips.
+  expect(model.renderError).toBe(err)
+  expect(model.canvasDrawn).toBe(false)
+})
+
 test('canvasDrawn resets to false when directly cleared (clearAllRpcData contract)', () => {
   const model = TestModel.create()
   const backend: FakeRenderingBackend = { uploads: [], renders: 0 }

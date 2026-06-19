@@ -73,6 +73,18 @@ describe('migrateWiggleSnapshot', () => {
     expect(result).toEqual({ defaultRendering: 'line' })
   })
 
+  test('empty-string selectedRendering does not become a defaultRendering override', () => {
+    // Legacy configs saved `selectedRendering: ''`; it must NOT migrate to
+    // `defaultRendering: ''` (which throws "Unknown wiggle rendering type:")
+    const result = migrateWiggleSnapshot({ selectedRendering: '', resolution: 1 })
+    expect(result).toEqual({ resolution: 1 })
+  })
+
+  test('empty-string rendererTypeNameState/renderingTypeSetting are ignored', () => {
+    expect(migrateWiggleSnapshot({ rendererTypeNameState: '' })).toEqual({})
+    expect(migrateWiggleSnapshot({ renderingTypeSetting: '' })).toEqual({})
+  })
+
   test('rendererTypeNameState takes precedence over selectedRendering', () => {
     const result = migrateWiggleSnapshot({
       rendererTypeNameState: 'density',

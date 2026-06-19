@@ -41,8 +41,12 @@ function scatterEquivalent(
   return SCATTER_EQUIVALENT[base] ?? rendering
 }
 
-function asString(v: unknown): string | undefined {
-  return typeof v === 'string' ? v : undefined
+// Empty-string rendering values are a legacy "no selection" sentinel; treat
+// them as absent so they fall back to the config-default rendering instead of
+// becoming an invalid '' defaultRendering override (which throws "Unknown
+// wiggle rendering type:" and leaves the display stuck loading).
+function asRendering(v: unknown): string | undefined {
+  return typeof v === 'string' && v !== '' ? v : undefined
 }
 
 function asNumber(v: unknown): number | undefined {
@@ -107,9 +111,9 @@ export function migrateWiggleSnapshot(
 
   const multiWiggle = opts?.multiWiggle ?? false
   const oldRendering =
-    asString(rendererTypeNameState) ?? asString(selectedRendering)
+    asRendering(rendererTypeNameState) ?? asRendering(selectedRendering)
   const resolvedRendering =
-    asString(renderingTypeSetting) ??
+    asRendering(renderingTypeSetting) ??
     (multiWiggle && oldRendering === 'xyplot' ? 'multixyplot' : oldRendering)
 
   const defaultRendering =
