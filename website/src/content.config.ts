@@ -18,7 +18,7 @@ const docsSchema = z.object({
  * so it serves as the docs root at /docs/.
  */
 function jbrowseDocsLoader(): Loader {
-  const inner = glob({ base: docsBase, pattern: ['**/*.md', '!CLAUDE.md'] })
+  const inner = glob({ base: docsBase, pattern: ['**/*.md', '!**/CLAUDE.md*'] })
   return {
     name: 'jbrowse-docs-loader',
     async load(ctx) {
