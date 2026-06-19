@@ -173,6 +173,28 @@ function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
+// Expand a menu drill-down into wait/hover/delay actions: each non-terminal item
+// is hovered to open its submenu; the terminal item is only waited for. The
+// caller lists the whole path, so an intermediate level can't be skipped — the
+// failure that left `modifications1` waiting on a submenu its parent never
+// opened. Pair with `cascadeBoxes` to keep the callout boxes on the same path.
+function menuCascade(path: string[], delayMs = 500): ScreenshotAction[] {
+  return path.flatMap((text, i) => {
+    const parent = path[i - 1]
+    return [
+      ...(parent ? [{ type: 'hover' as const, text: parent }] : []),
+      { type: 'waitForText' as const, text },
+      { type: 'delay' as const, ms: delayMs },
+    ]
+  })
+}
+
+// Box every item along a menu path — the callout counterpart to `menuCascade`,
+// so the highlighted items can't drift from the items actually hovered.
+function cascadeBoxes(path: string[]): Annotation[] {
+  return path.map(text => ({ type: 'box' as const, anchor: { text } }))
+}
+
 function cgiabUrl(session?: object) {
   if (!session) {
     return CGIAB_BASE
@@ -690,10 +712,7 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'delay', ms: 500 },
-          { type: 'hover', text: 'Show...' },
-          { type: 'waitForText', text: 'Show soft clipping' },
-          { type: 'delay', ms: 500 },
+          ...menuCascade(['Show...', 'Show soft clipping']),
         ],
         // box both the parent "Show..." submenu and the "Show soft clipping"
         // item it opens (reviewer asked to also circle "Show...")
@@ -934,11 +953,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Show...' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Show...' },
-      { type: 'waitForText', text: 'Show center line' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Show...', 'Show center line']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
   },
@@ -992,11 +1007,7 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'rightclick', from: { x: 550, y: 272 } },
-          { type: 'waitForText', text: 'SNP/Mismatch' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'SNP/Mismatch' },
-          { type: 'waitForText', text: 'Sort by base at position' },
-          { type: 'delay', ms: 500 },
+          ...menuCascade(['SNP/Mismatch', 'Sort by base at position']),
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Sort by base at position' } },
@@ -2159,11 +2170,7 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Score' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'Score' },
-          { type: 'waitForText', text: 'Set min/max score' },
-          { type: 'delay', ms: 300 },
+          ...menuCascade(['Score', 'Set min/max score'], 300),
           { type: 'click', text: 'Set min/max score' },
           { type: 'waitForText', text: 'Set min/max score for track' },
           { type: 'delay', ms: 500 },
@@ -2199,11 +2206,7 @@ export const specs: ScreenshotSpec[] = [
         closeMenusFirst: true,
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Rendering type' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'Rendering type' },
-          { type: 'waitForText', text: 'Overlapping scatter' },
-          { type: 'delay', ms: 300 },
+          ...menuCascade(['Rendering type', 'Overlapping scatter'], 300),
           { type: 'click', text: 'Overlapping scatter' },
           { type: 'delay', ms: 12000 },
         ],
@@ -2744,11 +2747,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Track labels' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Track labels' },
-      { type: 'waitForText', text: 'Overlapping' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Track labels', 'Overlapping']),
     ],
     annotations: [
       {
@@ -2781,18 +2780,11 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Track actions' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Track actions' },
-      { type: 'waitForText', text: 'Settings' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Track actions', 'Settings']),
     ],
     // box the "Track actions" parent submenu and the "Settings" item it opens
     // (reviewer asked to also highlight "Track actions")
-    annotations: [
-      { type: 'box', anchor: { text: 'Track actions' } },
-      { type: 'box', anchor: { text: 'Settings' } },
-    ],
+    annotations: cascadeBoxes(['Track actions', 'Settings']),
   },
 
   // Drawer widget position, two-stage figure. Top frame opens the drawer's
@@ -2957,11 +2949,7 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
       // open the bookmark widget
       { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Bookmarks/highlights' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Bookmarks/highlights' },
-      { type: 'waitForText', text: 'Open bookmark widget' },
-      { type: 'delay', ms: 300 },
+      ...menuCascade(['Bookmarks/highlights', 'Open bookmark widget'], 300),
       { type: 'click', text: 'Open bookmark widget' },
       { type: 'waitForText', text: 'Add label...' },
       { type: 'delay', ms: 1000 },
@@ -3023,11 +3011,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Set feature height...' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Set feature height...' },
-      { type: 'waitForText', text: 'Compact' },
-      { type: 'delay', ms: 800 },
+      ...menuCascade(['Set feature height...', 'Compact'], 800),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Compact' } }],
   },
@@ -3059,11 +3043,7 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Read connections' },
-          { type: 'delay', ms: 300 },
-          { type: 'hover', text: 'Read connections' },
-          { type: 'waitForText', text: 'Show read arcs' },
-          { type: 'delay', ms: 600 },
+          ...menuCascade(['Read connections', 'Show read arcs'], 600),
         ],
         // box the "Read connections" parent submenu plus the two options it
         // opens (reviewer asked to also highlight "Read connections")
@@ -3120,9 +3100,10 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 35000,
     // colorBy:modifications is set declaratively so the mod data is already
     // loaded and painted by the time the menu opens. Then drive the live Color
-    // by → Base modifications → All modification types path so the figure shows
-    // the menu route, not just the result (reviewer asked to actually open the
-    // menu). The selector is scoped by data-trackid to the COLO829 alignments
+    // by → Base modifications → Color by modification type → All modification
+    // types path so the figure shows the menu route, not just the result
+    // (reviewer asked to actually open the menu). The selector is scoped by
+    // data-trackid to the COLO829 alignments
     // track — the bare track_menu_icon matched the CpG-island feature track
     // first, whose Color by menu has no modifications options.
     actions: [
@@ -3131,20 +3112,22 @@ export const specs: ScreenshotSpec[] = [
         selector:
           '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
       },
-      { type: 'waitForText', text: 'Color by...' },
-      { type: 'delay', ms: 1000 },
-      { type: 'hover', text: 'Color by...' },
-      { type: 'waitForText', text: 'Base modifications (MM tag)' },
-      { type: 'delay', ms: 800 },
-      { type: 'hover', text: 'Base modifications (MM tag)' },
-      { type: 'waitForText', text: 'All modification types' },
-      { type: 'delay', ms: 800 },
+      ...menuCascade(
+        [
+          'Color by...',
+          'Base modifications (MM tag)',
+          'Color by modification type',
+          'All modification types',
+        ],
+        800,
+      ),
     ],
-    annotations: [
-      { type: 'box', anchor: { text: 'Color by...' } },
-      { type: 'box', anchor: { text: 'Base modifications (MM tag)' } },
-      { type: 'box', anchor: { text: 'All modification types' } },
-    ],
+    annotations: cascadeBoxes([
+      'Color by...',
+      'Base modifications (MM tag)',
+      'Color by modification type',
+      'All modification types',
+    ]),
   },
 
   // ────────────────────────────────────────────────────────────────────────
@@ -3184,11 +3167,7 @@ export const specs: ScreenshotSpec[] = [
       // open the hamburger menu, then open the Collapse... submenu so its
       // options are visible alongside the main menu
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      { type: 'waitForText', text: 'Collapse...' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Collapse...' },
-      { type: 'waitForText', text: 'Collapse top-level categories' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Collapse...', 'Collapse top-level categories']),
     ],
     annotations: [
       { type: 'box', anchor: { text: 'Collapse top-level categories' } },
@@ -3368,11 +3347,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Rendering type' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Rendering type' },
-      { type: 'waitForText', text: 'Multi-row XY plot' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Rendering type', 'Multi-row XY plot']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Rendering type' } }],
   },
@@ -3885,11 +3860,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Display types' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Display types' },
-      { type: 'waitForText', text: 'Multi-sample variant display (matrix)' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Display types', 'Multi-sample variant display (matrix)']),
     ],
     annotations: [
       {
@@ -3926,11 +3897,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      { type: 'waitForText', text: 'Rendering mode' },
-      { type: 'delay', ms: 300 },
-      { type: 'hover', text: 'Rendering mode' },
-      { type: 'waitForText', text: 'Phased' },
-      { type: 'delay', ms: 500 },
+      ...menuCascade(['Rendering mode', 'Phased']),
     ],
     annotations: [{ type: 'box', anchor: { text: 'Phased' } }],
   },
@@ -4136,10 +4103,7 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 500 },
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      { type: 'waitForText', text: 'Collapse...' },
-      { type: 'hover', text: 'Collapse...' },
-      { type: 'waitForText', text: 'Collapse top-level categories' },
-      { type: 'delay', ms: 300 },
+      ...menuCascade(['Collapse...', 'Collapse top-level categories'], 300),
       { type: 'click', text: 'Collapse top-level categories' },
       { type: 'delay', ms: 1000 },
     ],
@@ -4165,10 +4129,7 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 500 },
       { type: 'click', selector: '[data-testid="track-selector-hamburger"]' },
-      { type: 'waitForText', text: 'Collapse...' },
-      { type: 'hover', text: 'Collapse...' },
-      { type: 'waitForText', text: 'Collapse subcategories' },
-      { type: 'delay', ms: 300 },
+      ...menuCascade(['Collapse...', 'Collapse subcategories'], 300),
       { type: 'click', text: 'Collapse subcategories' },
       { type: 'delay', ms: 1000 },
     ],

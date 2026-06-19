@@ -1,5 +1,12 @@
 import type { Page } from 'puppeteer'
 
+// Fixed-duration sleep. Shared by the browser-test suites and the website
+// screenshot generator so the helper isn't redefined per consumer.
+export const delay = (ms: number) =>
+  new Promise<void>(resolve => {
+    setTimeout(resolve, ms)
+  })
+
 // Wait until the LoadingOverlay test-id is gone. NOTE: the overlay keeps the
 // literal text "Loading" in the DOM (hidden via opacity), so a text-based wait
 // burns its full timeout — only the `loading-overlay` test-id count is a

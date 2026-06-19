@@ -1,8 +1,10 @@
+import { delay } from '@jbrowse/browser-test-utils'
+
 import type { ScreenshotAction } from './screenshot-specs.ts'
 import type { ElementHandle, Page } from 'puppeteer'
 
-export const delay = (ms: number) =>
-  new Promise<void>(resolve => setTimeout(resolve, ms))
+// re-exported so generate-screenshots.ts keeps importing it from './actions'
+export { delay }
 
 // Default wait for an element to appear/become-visible before acting on it.
 export const FIND_TIMEOUT = 30000
@@ -126,10 +128,22 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     await page.mouse.move(action.to.x, action.to.y, { steps: 20 })
     await page.mouse.up()
   } else if (action.type === 'waitForSelector' && action.selector) {
-    await waitForVisible(page, action.selector, { hidden: action.hidden })
+    // rethrow puppeteer's parsed-selector blob ([[[{name,value}]]]) as the
+    // readable selector so a timeout names what was missing
+    await waitForVisible(page, action.selector, {
+      hidden: action.hidden,
+    }).catch(() => {
+      throw new Error(
+        `waitForSelector: ${action.hidden ? 'still visible' : 'never found'} "${action.selector}"`,
+      )
+    })
   } else if (action.type === 'waitForText' && action.text) {
     await waitForVisible(page, textSelector(action.text), {
       hidden: action.hidden,
+    }).catch(() => {
+      throw new Error(
+        `waitForText: ${action.hidden ? 'text still visible' : 'never found visible text'} "${action.text}"`,
+      )
     })
   }
 }

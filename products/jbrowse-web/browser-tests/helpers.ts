@@ -1,4 +1,5 @@
 import {
+  delay,
   encodeSessionSpec,
   waitForLoadingComplete,
 } from '@jbrowse/browser-test-utils'
@@ -7,6 +8,9 @@ import { analyzeCanvasPng, assertNonBlank } from './canvasContent.ts'
 import { snapshotConfig } from './snapshot.ts'
 
 import type { Browser, ElementHandle, Page } from 'puppeteer'
+
+// re-exported so the suites keep importing it from './helpers'
+export { delay }
 
 export const PORT = 3333
 export const OAUTH_PORT = 3030
@@ -21,8 +25,6 @@ export function appendGpuParam(url: string) {
   return `${url}${sep}renderer=${backend}`
 }
 
-export const delay = (ms: number) =>
-  new Promise(resolve => setTimeout(resolve, ms))
 
 export async function findByTestId(
   page: Page,
