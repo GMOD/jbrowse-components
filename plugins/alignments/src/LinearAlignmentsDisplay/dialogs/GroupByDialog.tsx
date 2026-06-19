@@ -58,8 +58,9 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const [groupByTag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
   const [type, setType] = useState(model.groupBy?.type)
   // Grouping by a tag almost always pairs with coloring by it (e.g. HP
-  // haplotype), so the checkbox defaults on. Reflects the current scheme when
-  // reopening so it isn't silently re-enabled after the user turned it off.
+  // haplotype), so the checkbox defaults on. The one case it opens unchecked is
+  // when reads are already colored by a *different* tag, so reopening doesn't
+  // silently clobber that unrelated scheme.
   const [colorByTag, setColorByTag] = useState(
     model.colorBy.type !== 'tag' || model.colorBy.tag === model.groupBy?.tag,
   )
@@ -97,8 +98,17 @@ const GroupByDialog = observer(function GroupByDialog(props: {
         type,
         tag: type === 'tag' ? groupByTag : undefined,
       })
-      if (type === 'tag' && colorByTag) {
-        model.setColorScheme({ type: 'tag', tag: groupByTag })
+      if (type === 'tag') {
+        if (colorByTag) {
+          model.setColorScheme({ type: 'tag', tag: groupByTag })
+        } else if (
+          // Unchecking turns off tag-coloring only when it's the coloring this
+          // dialog turned on (same tag) — otherwise leave an unrelated scheme be.
+          model.colorBy.type === 'tag' &&
+          model.colorBy.tag === groupByTag
+        ) {
+          model.setColorScheme({ type: 'normal' })
+        }
       }
     }
     handleClose()

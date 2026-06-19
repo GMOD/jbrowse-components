@@ -24,8 +24,9 @@ function getFlags(feature: Feature) {
   return (feature.get('flags') as number | undefined) ?? 0
 }
 
-// QNAME; the empty string is the sentinel for a read with no name, which
-// partitionChains treats as its own one-read chain.
+// QNAME used as the chain key. A missing name falls back to '', so any reads
+// lacking a QNAME collapse into one shared chain — acceptable since QNAME is
+// mandatory in SAM and linked-read data always carries it.
 function getName(feature: Feature) {
   return feature.get('name') ?? ''
 }
@@ -137,6 +138,13 @@ function appendFeature(
   }
 }
 
+// The ungrouped result: one section keyed '' holding every feature. Both
+// partitioners return this when no groupBy is set, so grouped and ungrouped
+// fetches share one downstream shape.
+function singleSection(features: Feature[]): FeatureGroup[] {
+  return [{ key: '', label: '', features }]
+}
+
 // Partition the fetched reads into ordered groups. Without groupBy this is a
 // single group with `key: ''` holding every feature, giving one uniform code
 // path for grouped and ungrouped fetches.
@@ -145,7 +153,7 @@ export function partitionFeatures(
   groupBy: GroupBy | undefined,
 ): FeatureGroup[] {
   if (!groupBy) {
-    return [{ key: '', label: '', features }]
+    return singleSection(features)
   }
   const groups = new Map<string, FeatureGroup>()
   for (const feature of features) {
@@ -251,7 +259,7 @@ export function partitionChains(
   groupBy: GroupBy | undefined,
 ): FeatureGroup[] {
   if (!groupBy) {
-    return [{ key: '', label: '', features }]
+    return singleSection(features)
   }
   const chains = new Map<string, Feature[]>()
   for (const feature of features) {

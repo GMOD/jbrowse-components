@@ -31,9 +31,13 @@ Chain numbering (`readChainIndices` → chainIdx) is **per worker call** (per
 region _and_ per group), so the same integer means different chains across
 calls. Anything unioning chains across calls must key by chain **name**
 (`chainNames`), not chainIdx — see `buildChainIdMap` / `mergeChains`.
-Cross-region edge: a chain whose grouping tag is present on some mates but
-missing on others can still split, since each region keys its local reads from
-what it can see.
+Cross-region edge: a chain can still split when its representative read differs
+per region, since each region keys its local reads from what it can see. Two
+cases: (a) a grouping **tag** present on some mates but missing on others, and
+(b) **firstOfPairStrand**, where a split/supplementary alignment mapped to the
+opposite strand keys differently than the primary — so a chain spanning regions
+whose far end is a strand-flipped supplement can land in two sections. Both are
+accepted limitations of per-region partitioning, not bugs to fix.
 
 ## Known limitation: `computeMultiRegionLayout`
 

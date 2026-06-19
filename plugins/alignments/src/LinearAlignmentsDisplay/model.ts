@@ -31,7 +31,10 @@ import { observable } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { readColorCategory } from './colorUtils.ts'
-import { CIGAR_TYPE_LABELS } from './components/alignmentComponentUtils.ts'
+import {
+  CIGAR_TYPE_LABELS,
+  buildColorPaletteFromTheme,
+} from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
@@ -82,6 +85,7 @@ import type {
 } from '../RenderAlignmentDataRPC/types'
 import type { ArcsUploadData } from '../features/arcs/types.ts'
 import type { CigarHitResult } from '../shared/hitTestTypes.ts'
+import type { ScrollModel } from './components/sectionScreen.ts'
 import type { TooltipPayload } from './components/tooltipUtils.ts'
 import type { AlignmentsRenderingBackend } from './renderers/rendererTypes.ts'
 import type { IndicatorHitResult } from '../features/indicator/types.ts'
@@ -549,10 +553,6 @@ export default function stateModelFactory(
           hoverCoverageBand: undefined as
             | { topOffset: number; coverageHeight: number }
             | undefined,
-          /**
-           * #volatile
-           */
-          colorPalette: null as ColorPalette | null,
         }
       })
       // Named getters for frequently-tested conditions so the inline boolean
@@ -865,19 +865,24 @@ export default function stateModelFactory(
         },
 
         /**
+         * #getter
+         */
+        // Derived from the session theme so it's always available — including
+        // headless SVG export and RPC, where no component mounts to seed it.
+        get colorPalette(): ColorPalette {
+          return buildColorPaletteFromTheme(getSession(self).theme)
+        },
+
+        /**
          * #method
          */
         legendItems() {
-          // No palette yet (set by the display's mount effect) → no legend.
-          const palette = self.colorPalette
-          return palette
-            ? getReadDisplayLegendItems(
-                this.colorBy,
-                this.colorLegendCategories,
-                palette,
-                self.visibleModifications,
-              )
-            : []
+          return getReadDisplayLegendItems(
+            this.colorBy,
+            this.colorLegendCategories,
+            this.colorPalette,
+            self.visibleModifications,
+          )
         },
 
         /**
@@ -898,7 +903,7 @@ export default function stateModelFactory(
           return buildLaidOutByGroup({
             order: this.groupOrder,
             rawByGroup: this.rawDataByGroup,
-            isChainMode: self.linkedReads === 'normal',
+            isChainMode: self.isChainMode,
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
             maxRows: maxRowsFor(
@@ -1289,6 +1294,21 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * The scroll-projection inputs (`sectionScreen.ts`) every overlay needs
+         * to map a content-space Y into screen space. Built once here so the
+         * label / resize-handle / coverage-axis overlays don't each re-assemble
+         * `{ isGrouped, scrollTop, canvasHeight }` inline.
+         */
+        get scrollModel(): ScrollModel {
+          return {
+            isGrouped: this.isGrouped,
+            scrollTop: self.scrollTop,
+            canvasHeight: self.height,
+          }
+        },
+
+        /**
+         * #getter
          * Height of the scrollable viewport. Ungrouped excludes the sticky
          * coverage band; grouped scrolls the entire display.
          */
@@ -1477,10 +1497,10 @@ export default function stateModelFactory(
          */
         get renderState() {
           const view = getContainingView(self) as LGV
-          const palette = self.colorPalette
-          if (!view.initialized || !palette) {
+          if (!view.initialized) {
             return undefined
           }
+          const palette = self.colorPalette
           return {
             scrollTop: self.scrollTop,
             colorScheme: self.colorSchemeIndex,
@@ -1683,13 +1703,6 @@ export default function stateModelFactory(
            */
           setOverCigarItem(flag: boolean) {
             self.overCigarItem = flag
-          },
-
-          /**
-           * #action
-           */
-          setColorPalette(palette: ColorPalette | null) {
-            self.colorPalette = palette
           },
 
           /**
