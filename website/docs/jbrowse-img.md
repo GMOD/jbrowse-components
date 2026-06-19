@@ -688,16 +688,26 @@ convert -size 2048x out.svg out.png
 
 ## Troubleshooting
 
-### I don't get any outputted svg and no message
+### `ENOENT: ... .fa.fai` (or `.bai` / `.tbi` / `.crai`)
 
-The error reporting from the app is not very good at the moment so often has
-silent failures. Confirm that your fasta file to your pass to --fasta is indexed
-in this case e.g. `samtools faidx yourfile.fa` so that your have a
-yourfile.fa.fai alongside yourfile.fa
+Data files are read alongside their index, so generate the index next to the
+file first:
 
-### I get a lot of warnings during npm install -g @jbrowse/img
+```bash
+samtools faidx yourfile.fa     # -> yourfile.fa.fai
+samtools index yourfile.bam    # -> yourfile.bam.bai
+tabix -p vcf yourfile.vcf.gz   # -> yourfile.vcf.gz.tbi
+```
 
-There are some new features in the latest NPM (2021, v7) related to
-peerDependencies that may produce some warnings. It should work even despite
-making warnings, but you can use yarn to install or use legacy peer dependencies
-if you want to avoid install time warningsvg
+### `unknown reference sequence name in location ...`
+
+The refname in `--loc` doesn't match the FASTA. Use the name exactly as it
+appears in the FASTA, or pass `--aliases` to reconcile differing naming styles
+(e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files — see
+[Use with remote files](#use-with-remote-files).
+
+### A track renders empty when zoomed far out
+
+Some track types (alignments, genes) refuse to render past a feature-density
+limit. Add `force:true` after the track to override it — see
+[Force render a large region](#force-render-a-large-region).
