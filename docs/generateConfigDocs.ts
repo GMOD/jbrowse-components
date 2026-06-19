@@ -7,13 +7,16 @@ import {
   collectTransitive,
   docPage,
   exampleSection,
+  lookupByIdOrName,
+  mapByKey,
   overviewSection,
   parseNode,
   repoRelative,
   section,
   suffixCategory,
-  warnCoverageGap,
   warnDuplicateHeader,
+  warnHeaderGaps,
+  withHeaders,
 } from './util.ts'
 import { writeFormatted } from './format.ts'
 
@@ -100,13 +103,14 @@ export function accumulateConfig(
 // first, else by the config name recovered from a dynamic getDisplayType('Name')
 // reference, and only when the config actually derives from something.
 function resolveBase(config: Config, index: ConfigIndex) {
-  const byId = config.baseDeclId
-    ? index.byDeclId.get(config.baseDeclId)
+  return config.derives
+    ? lookupByIdOrName(
+        index.byDeclId,
+        index.byName,
+        config.baseDeclId,
+        config.baseConfigName,
+      )
     : undefined
-  const byName = config.baseConfigName
-    ? index.byName.get(config.baseConfigName)
-    : undefined
-  return config.derives ? (byId ?? byName) : undefined
 }
 
 // The transitive base chain (direct base first), via the shared graph walk.
@@ -294,15 +298,9 @@ export async function writeConfigDocs(
 ) {
   const dir = 'website/docs/config'
   fs.mkdirSync(dir, { recursive: true })
-  const withHeader = Object.values(byFile).filter((c): c is ConfigWithHeader =>
-    Boolean(c.header),
-  )
-  const byDeclId = new Map(
-    withHeader
-      .filter(c => c.header.declId)
-      .map(c => [c.header.declId!, c] as const),
-  )
-  const byName = new Map(withHeader.map(c => [c.header.name, c] as const))
+  const withHeader = withHeaders(byFile)
+  const byDeclId = mapByKey(withHeader, c => c.header.declId)
+  const byName = mapByKey(withHeader, c => c.header.name)
   const index: ConfigIndex = { byDeclId, byName }
   const links: DisplayLinkContext = { displayTypesByTrack, byName, modelNames }
   warnUnresolvedBases(withHeader, index)
@@ -312,20 +310,12 @@ export async function writeConfigDocs(
       renderConfig(cfg, collectBaseConfigs(cfg, index), links),
     )
   }
-  warnCoverageGap({
-    items: withHeader.filter(c => !c.header.examples.length),
-    total: withHeader.length,
+  warnHeaderGaps({
+    items: withHeader,
     kind: 'configs',
-    reason: 'have no #example',
     getName: c => c.header.name,
-  })
-  warnCoverageGap({
-    items: withHeader.filter(
-      c => configCategory(c.header.name, c.header.category) === 'General',
-    ),
-    total: withHeader.length,
-    kind: 'configs',
-    reason: 'resolved to the General category (consider adding #category)',
-    getName: c => c.header.name,
+    hasExample: c => c.header.examples.length > 0,
+    isGeneralCategory: c =>
+      configCategory(c.header.name, c.header.category) === 'General',
   })
 }

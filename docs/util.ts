@@ -926,6 +926,82 @@ export function warnCoverageGap<T>({
   }
 }
 
+// The two coverage warnings both generators emit after writing their pages:
+// which headers carry no #example, and which fell back to the General category.
+// Shared so the reason strings can't drift between the config and model passes.
+export function warnHeaderGaps<T>({
+  items,
+  kind,
+  getName,
+  hasExample,
+  isGeneralCategory,
+}: {
+  items: T[]
+  kind: string
+  getName: (item: T) => string
+  hasExample: (item: T) => boolean
+  isGeneralCategory: (item: T) => boolean
+}) {
+  warnCoverageGap({
+    items: items.filter(item => !hasExample(item)),
+    total: items.length,
+    kind,
+    reason: 'have no #example',
+    getName,
+  })
+  warnCoverageGap({
+    items: items.filter(isGeneralCategory),
+    total: items.length,
+    kind,
+    reason: 'resolved to the General category (consider adding #category)',
+    getName,
+  })
+}
+
+// Narrow a by-file record to the entries that actually carry a #config/#stateModel
+// header, with `header` typed non-optional. Both generators open their write pass
+// with this filter.
+export function withHeaders<T extends { header?: object }>(
+  byFile: Record<string, T>,
+): (T & { header: NonNullable<T['header']> })[] {
+  return Object.values(byFile).filter(
+    (v): v is T & { header: NonNullable<T['header']> } => Boolean(v.header),
+  )
+}
+
+// Build a Map keyed by an accessor, dropping items whose key is undefined (last
+// wins on collision, matching `new Map(entries)`). Shared by both generators'
+// index construction: byDeclId from an optional declaration id, byName/bySlug
+// from the always-present name/slug.
+export function mapByKey<T>(
+  items: T[],
+  key: (item: T) => string | undefined,
+): Map<string, T> {
+  const map = new Map<string, T>()
+  for (const item of items) {
+    const k = key(item)
+    if (k) {
+      map.set(k, item)
+    }
+  }
+  return map
+}
+
+// Resolve an entity by declaration id first, then by a name key, against the two
+// index maps both generators keep — how a config's baseConfiguration and a
+// model's composed ref each link back to the page that documents them.
+export function lookupByIdOrName<T>(
+  byDeclId: Map<string, T>,
+  byName: Map<string, T>,
+  declId: string | undefined,
+  nameKey: string | undefined,
+): T | undefined {
+  return (
+    (declId ? byDeclId.get(declId) : undefined) ??
+    (nameKey ? byName.get(nameKey) : undefined)
+  )
+}
+
 // Join non-empty parts with blank lines between them. Falsy parts (including the
 // `0` from `arr.length && ...`) are dropped, so empty sections vanish cleanly.
 export function section(...parts: (string | false | 0 | undefined)[]) {

@@ -7,14 +7,17 @@ import {
   collectTransitive,
   docPage,
   exampleSection,
+  lookupByIdOrName,
+  mapByKey,
   overviewSection,
   parseNode,
   repoRelative,
   section,
   stripComposedBlock,
   suffixCategory,
-  warnCoverageGap,
   warnDuplicateHeader,
+  warnHeaderGaps,
+  withHeaders,
 } from './util.ts'
 import { writeFormatted } from './format.ts'
 
@@ -110,11 +113,12 @@ export function accumulateModel(
 // documented #stateModels (plain types.model mixins, config bases) resolve to
 // undefined.
 function resolveComposedRef(ref: ComposedRef, index: ModelIndex) {
-  const byId = ref.declId ? index.byDeclId.get(ref.declId) : undefined
-  const byName = ref.name
-    ? index.bySlug.get(slugify(ref.name, { lower: true }))
-    : undefined
-  return byId ?? byName
+  return lookupByIdOrName(
+    index.byDeclId,
+    index.bySlug,
+    ref.declId,
+    ref.name ? slugify(ref.name, { lower: true }) : undefined,
+  )
 }
 
 // The transitive composition chain (direct parents first), via the shared graph
@@ -275,16 +279,10 @@ function memberSection(
 export async function writeModelDocs(byFile: Record<string, StateModel>) {
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
-  const withHeader = Object.values(byFile).filter((m): m is ModelWithHeader =>
-    Boolean(m.header),
-  )
+  const withHeader = withHeaders(byFile)
   const index: ModelIndex = {
-    byDeclId: new Map(
-      withHeader
-        .filter(m => m.header.selfDeclId)
-        .map(m => [m.header.selfDeclId!, m] as const),
-    ),
-    bySlug: new Map(withHeader.map(m => [m.header.id, m] as const)),
+    byDeclId: mapByKey(withHeader, m => m.header.selfDeclId),
+    bySlug: mapByKey(withHeader, m => m.header.id),
   }
   for (const model of withHeader) {
     const ancestors = collectAncestors(model, index)
@@ -293,20 +291,12 @@ export async function writeModelDocs(byFile: Record<string, StateModel>) {
       renderModel(model, ancestors),
     )
   }
-  warnCoverageGap({
-    items: withHeader.filter(m => !m.header.examples.length),
-    total: withHeader.length,
+  warnHeaderGaps({
+    items: withHeader,
     kind: 'models',
-    reason: 'have no #example',
     getName: m => m.header.name,
-  })
-  warnCoverageGap({
-    items: withHeader.filter(
-      m => stateModelCategory(m.header.name, m.header.category) === 'General',
-    ),
-    total: withHeader.length,
-    kind: 'models',
-    reason: 'resolved to the General category (consider adding #category)',
-    getName: m => m.header.name,
+    hasExample: m => m.header.examples.length > 0,
+    isGeneralCategory: m =>
+      stateModelCategory(m.header.name, m.header.category) === 'General',
   })
 }
