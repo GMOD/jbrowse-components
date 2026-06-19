@@ -42,6 +42,7 @@ declare module '@mui/material/styles' {
     mutedSnpBase: string
     gridlineMinor: string
     gridlineMajor: string
+    featureHover: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -76,6 +77,7 @@ declare module '@mui/material/styles' {
     mutedSnpBase?: string
     gridlineMinor?: string
     gridlineMajor?: string
+    featureHover?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -159,6 +161,11 @@ const gridlineMajor = 'rgba(0,0,0,0.26)'
 const gridlineMinorDark = 'rgba(255,255,255,0.06)'
 const gridlineMajorDark = 'rgba(255,255,255,0.15)'
 
+// Hover shading over a feature. Same asymmetry as gridlines: darkening works on
+// a light track, but on a dark track it must lighten instead or it's invisible.
+const featureHover = 'rgba(0,0,0,0.15)'
+const featureHoverDark = 'rgba(255,255,255,0.25)'
+
 // Alignment read fill colors — exported as plain constants (not palette entries)
 // so they can be imported in RPC workers that have no MUI theme context.
 export const colorFwdStrandNotProper = '#ECC8C8'
@@ -174,7 +181,7 @@ export const colorRevDiffChr = '#969696'
 /** #color alignments-pair-orientation | LR (→ ←, normal proper pair) | Concordant */
 export const colorPairLR = '#d3d3d3'
 // Dimmer grey for dark mode: the light #d3d3d3 reads as near-white glaring
-// blocks against a dark track background. Selected in buildColorPaletteFromTheme.
+// blocks against a dark track background. Wired into darkPalette.alignmentFill.
 export const colorPairLRDark = '#8a8a8a'
 /** #color alignments-pair-orientation | RL (← →, mates point away from each other) | Abnormal orientation */
 export const colorPairRL = '#0099bb'
@@ -239,6 +246,7 @@ const stringColorDefaults = {
   mutedSnpBase,
   gridlineMinor,
   gridlineMajor,
+  featureHover,
 }
 
 const defaults = {
@@ -255,12 +263,25 @@ const defaults = {
   alignmentFill,
 }
 
-// palette entries that differ in dark mode, shared by the dark themes
-const darkPalette = {
-  mode: 'dark' as const,
+// string color defaults that differ in dark mode (gentler gridlines/hover,
+// darker coverage). Layered under any dark theme — built-in or config-defined —
+// by addMissingColors so a custom dark theme inherits the dark-tuned values.
+const darkStringColorDefaults = {
   coverage: grey[700],
   gridlineMinor: gridlineMinorDark,
   gridlineMajor: gridlineMajorDark,
+  featureHover: featureHoverDark,
+}
+
+// spread the light alignmentFill so only pairLR changes (the light #d3d3d3 reads
+// as glaring near-white blocks on a dark track)
+const darkAlignmentFill = { ...alignmentFill, pairLR: colorPairLRDark }
+
+// palette entries that differ in dark mode, shared by the dark themes
+const darkPalette = {
+  mode: 'dark' as const,
+  ...darkStringColorDefaults,
+  alignmentFill: darkAlignmentFill,
 }
 
 const stock = { palette: { ...defaults, mode: undefined } }
@@ -309,16 +330,19 @@ function overwriteArrayMerge(_: unknown, sourceArray: unknown[]) {
 // dark mode, so fall back to a text-like color there. The extra selectors let
 // callers also recolor checked/focused states.
 // xref https://stackoverflow.com/a/72546130/2129219
-function darkModeContrastOverride(extraSelectors: string[] = []) {
+function darkModeContrastOverride(
+  extraSelectors: string[] = [],
+  textColor: 'primary' | 'secondary' = 'secondary',
+) {
   return {
     root: ({ theme }: { theme: Theme }) =>
       theme.palette.mode === 'dark'
         ? {
-            color: theme.palette.text.secondary,
+            color: theme.palette.text[textColor],
             ...Object.fromEntries(
               extraSelectors.map(selector => [
                 selector,
-                { color: theme.palette.text.secondary },
+                { color: theme.palette.text[textColor] },
               ]),
             ),
           }
@@ -328,7 +352,7 @@ function darkModeContrastOverride(extraSelectors: string[] = []) {
 
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   const themeP: ThemeOptions = {
-    palette: theme?.palette,
+    // palette is merged in via the final deepmerge(themeP, theme) below
     typography: {
       fontSize: 12,
     },
@@ -345,17 +369,10 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
         defaultProps: {
           size: 'small' as const,
         },
-        styleOverrides: {
-          // the default button, especially when not using variant=contained,
-          // uses theme.palette.primary.main for text which is very bad with
-          // dark mode+midnight primary
-          root: ({ theme }) =>
-            theme.palette.mode === 'dark'
-              ? {
-                  color: theme.palette.text.primary,
-                }
-              : undefined,
-        },
+        // the default button, especially when not using variant=contained, uses
+        // theme.palette.primary.main for text which is very bad with dark
+        // mode+midnight primary
+        styleOverrides: darkModeContrastOverride([], 'primary'),
       },
       MuiAccordion: {
         defaultProps: {
@@ -571,6 +588,8 @@ export function createJBrowseTheme(
 
   const theme = createTheme(
     createJBrowseBaseTheme(
+      // only the 'default' theme draws from configTheme — the named themes are
+      // fixed presets and intentionally ignore config palette/spacing/etc
       themeName === 'default'
         ? deepmerge(themes.default!, augmentThemeColors(configTheme), {
             arrayMerge: overwriteArrayMerge,
@@ -619,6 +638,9 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
 // secondary are intentionally left to MUI.
 function addMissingColors(theme: ThemeOptions = {}) {
   const { palette } = theme
+  // a config-defined theme can opt into dark mode without spreading the built-in
+  // darkPalette, so pick the dark-tuned defaults off its declared mode
+  const isDark = palette?.mode === 'dark'
   const resolved = deepmerge(
     theme,
     {
@@ -628,7 +650,10 @@ function addMissingColors(theme: ThemeOptions = {}) {
         highlight: palette?.highlight ?? mandarin,
         textHighlight: palette?.textHighlight ?? textHighlight,
         bases: { ...bases, ...palette?.bases },
-        alignmentFill: { ...alignmentFill, ...palette?.alignmentFill },
+        alignmentFill: {
+          ...(isDark ? darkAlignmentFill : alignmentFill),
+          ...palette?.alignmentFill,
+        },
       },
     },
     { arrayMerge: overwriteArrayMerge },
@@ -637,7 +662,14 @@ function addMissingColors(theme: ThemeOptions = {}) {
     // overwrite (don't concatenate) the frames/framesCDS arrays, matching the
     // default-theme merge in createJBrowseTheme
     deepmerge(
-      { palette: { ...stringColorDefaults, frames, framesCDS } },
+      {
+        palette: {
+          ...stringColorDefaults,
+          ...(isDark ? darkStringColorDefaults : {}),
+          frames,
+          framesCDS,
+        },
+      },
       resolved,
       { arrayMerge: overwriteArrayMerge },
     ),
