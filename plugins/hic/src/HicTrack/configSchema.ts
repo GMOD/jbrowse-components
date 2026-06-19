@@ -8,7 +8,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * #category track
  *
  * #example
- * A minimal `HicTrack` config:
+ * A minimal `HicTrack` config. See the
+ * [Hi-C track guide](/docs/config_guides/hic_track) for all options:
  * ```js
  * {
  *   type: 'HicTrack',
@@ -23,7 +24,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * With log scale and a coarser resolution (`resolutionBias` nudges the
  * auto-picked binsize; negative = finer, positive = coarser). The `displays`
  * object shorthand applies settings to whichever display uses them — equivalent
- * to a full `displays: [{ type, displayId, ... }]` array:
+ * to a full `displays: [{ type, displayId, ... }]` array. See
+ * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
  *   type: 'HicTrack',

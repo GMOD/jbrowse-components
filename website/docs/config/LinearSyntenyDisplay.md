@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 (first) and target (second) assembly names, matched by the track's
-`assemblyNames`:
+`assemblyNames`. See the
+[synteny track guide](/docs/config_guides/synteny_track) for all options:
 
 ```js
 {

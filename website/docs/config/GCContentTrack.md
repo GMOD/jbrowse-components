@@ -43,7 +43,8 @@ its own track):
 GC-skew mode with a small, overlapping sliding window for a smoother signal
 (`windowDelta` smaller than `windowSize` means windows overlap). The `displays`
 object shorthand applies settings to whichever display uses them — equivalent to
-writing a full `displays: [{ type, displayId, ... }]` array:
+writing a full `displays: [{ type, displayId, ... }]` array. See
+[configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
 {

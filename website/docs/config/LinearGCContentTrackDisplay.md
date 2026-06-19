@@ -42,7 +42,8 @@ its own track):
 
 GC-skew mode with overlapping windows for a smoother signal. The `displays`
 object shorthand applies settings to whichever display uses them — equivalent to
-a full `displays: [{ type, displayId, ... }]` array:
+a full `displays: [{ type, displayId, ... }]` array. See
+[configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
 {

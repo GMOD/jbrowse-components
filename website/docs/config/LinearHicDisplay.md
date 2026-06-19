@@ -19,7 +19,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A minimal `HicTrack` config:
+A minimal `HicTrack` config. See the
+[Hi-C track guide](/docs/config_guides/hic_track) for all options:
 
 ```js
 {
@@ -34,7 +35,8 @@ A minimal `HicTrack` config:
 With log scale and a coarser resolution (`resolutionBias` nudges the auto-picked
 binsize; negative = finer, positive = coarser). The `displays` object shorthand
 applies settings to whichever display uses them — equivalent to a full
-`displays: [{ type, displayId, ... }]` array:
+`displays: [{ type, displayId, ... }]` array. See
+[configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
 {

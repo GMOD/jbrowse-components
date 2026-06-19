@@ -11,10 +11,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * configuration schema for the LinearAlignmentsDisplay
  *
  * #example
- * The display goes in a track's `displays` array; here are three complete
- * `AlignmentsTrack` configs to paste into `tracks`.
- *
- * Basic BAM, opened taller:
+ * Minimal BAM track — no display override needed for defaults. See the
+ * [alignments track guide](/docs/config_guides/alignments_track) for all
+ * adapter and display options:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -22,17 +21,15 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'NGS reads',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/sample.bam' },
- *   displays: [
- *     {
- *       type: 'LinearAlignmentsDisplay',
- *       displayId: 'ngs_reads-LinearAlignmentsDisplay',
- *       height: 250,
- *     },
- *   ],
  * }
  * ```
  *
- * CRAM colored by CpG methylation (modBAM MM/ML tags):
+ * #example
+ * CRAM colored by CpG methylation (modBAM MM/ML tags). The `displays` object
+ * shorthand applies settings without spelling out the display `type` or
+ * `displayId` — equivalent to `displays: [{ type: 'LinearAlignmentsDisplay',
+ * displayId: '...', colorBy: ... }]`. See
+ * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -40,17 +37,13 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Methylation',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
- *   displays: [
- *     {
- *       type: 'LinearAlignmentsDisplay',
- *       displayId: 'methylation-LinearAlignmentsDisplay',
- *       colorBy: { type: 'methylation' },
- *     },
- *   ],
+ *   displays: { colorBy: { type: 'methylation' } },
  * }
  * ```
  *
- * Long reads with soft-clipping shown and split/mate reads connected by arcs:
+ * #example
+ * Long reads — taller track, soft-clipping shown, split/chimeric reads
+ * connected by arcs:
  * ```js
  * {
  *   type: 'AlignmentsTrack',
@@ -58,16 +51,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Long reads',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/longreads.bam' },
- *   displays: [
- *     {
- *       type: 'LinearAlignmentsDisplay',
- *       displayId: 'long_reads-LinearAlignmentsDisplay',
- *       height: 400,
- *       showSoftClipping: true,
- *       linkedReads: 'normal',
- *       readConnections: 'arc',
- *     },
- *   ],
+ *   displays: {
+ *     height: 400,
+ *     showSoftClipping: true,
+ *     linkedReads: 'normal',
+ *     readConnections: 'arc',
+ *   },
  * }
  * ```
  */
