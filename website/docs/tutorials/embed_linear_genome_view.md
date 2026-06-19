@@ -24,7 +24,7 @@ embedded packages (app, linear, circular) and bundler setups, see the
 
 A text editor and a local HTTP server. JBrowse won't load if you open the HTML
 file directly — it needs to be served. If you have Node.js installed,
-`npx serve` in the directory works.
+`npx serve -S` in the directory works.
 
 ## Create a web page
 
@@ -40,9 +40,12 @@ Create a folder, then an `index.html` inside it with this content:
 
 ## Start the server
 
-In the folder, run `npx serve`. It prints a local URL (typically
+In the folder, run `npx serve -S`. It prints a local URL (typically
 `http://localhost:3000`). Open it in your browser — you should see "Hello
 world!".
+
+The `-S` flag tells `serve` to resolve symlinks rather than return a 404, so
+data files you symlink into the folder will load.
 
 ## Add JBrowse
 

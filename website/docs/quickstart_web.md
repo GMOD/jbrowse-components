@@ -6,11 +6,12 @@ title: JBrowse web setup using the CLI
 
 - Install Node.js 18+, samtools, tabix
 - `npm install -g @jbrowse/cli`
-- `jbrowse create jbrowse2 && cd jbrowse2 && npx serve -S .`
+- `jbrowse create jbrowse2 && cd jbrowse2`
 - `samtools faidx genome.fa && jbrowse add-assembly genome.fa --load copy`
 - `samtools index file.bam && jbrowse add-track file.bam --load copy`
 - `bgzip file.vcf && tabix file.vcf.gz && jbrowse add-track file.vcf.gz --load copy`
 - `jbrowse text-index`
+- `npx serve -S .`
 
 ## Prerequisites
 
@@ -60,8 +61,11 @@ cd jbrowse2/
 npx serve -S .
 ```
 
-Navigate to `http://localhost:3000`. Click the sample config to confirm things
-are working.
+The `-S` flag tells `serve` to resolve symlinks rather than return a 404 —
+relevant if you later add tracks with `--load symlink`.
+
+Navigate to `http://localhost:3000`. Click the sample config to confirm the
+install works.
 
 For production, place the folder in your web server's static directory (e.g.
 `/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
@@ -72,19 +76,25 @@ For production, place the folder in your web server's static directory (e.g.
 
 ## Adding tracks
 
+The examples below write to a production path (`--out /var/www/html/jbrowse2`).
+`--out` accepts either a directory (it updates the `config.json` inside) or a
+path to a specific config file. If you're running commands from inside the
+`jbrowse2/` directory, omit `--out` — it defaults to the current directory. Run
+`jbrowse add-track --help` for the full set of options.
+
 ### Genome assembly (FASTA)
 
 ```bash
 samtools faidx genome.fa
-jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse2/
+jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse2
 ```
 
 This writes an assembly entry to `config.json` and copies `genome.fa` and
 `genome.fa.fai` into the output directory. Use `--load symlink` to symlink
-instead of copying. If you're running commands from inside the `jbrowse2/`
-directory, omit `--out` (it defaults to `.`).
+instead of copying.
 
-Use `--name` to set a human-readable assembly name (defaults to the filename).
+Use `--name` (shorthand `-n`) to set a human-readable assembly name (defaults to
+the filename).
 
 JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 
@@ -96,8 +106,6 @@ JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 samtools index file.bam   # or file.cram
 jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse2
 ```
-
-Run `jbrowse add-track --help` for more options.
 
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
 
