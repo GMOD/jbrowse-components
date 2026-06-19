@@ -144,12 +144,18 @@ export function isDragInProgress(
 // listeners — no orphan document handlers, no double-fire. Using document
 // listeners (vs React canvas events) means the drag continues when the
 // cursor leaves the source element, with no "isDragging" flag needed.
+//
+// stopPropagation keeps the mousedown from also reaching the view's own
+// click-drag pan handler (would double-pan). We deliberately do NOT
+// preventDefault the mousedown: that cancels its native focus shift and leaves
+// a focused popup (e.g. the location-search Autocomplete, which only closes on
+// blur) stuck open. Text selection is suppressed per-move instead — the same
+// approach as the LGV's useSideScroll.
 export function startDocumentDrag(
   e: React.MouseEvent,
   controllerRef: React.RefObject<AbortController | null>,
   onMove: (dx: number, dy: number) => void,
 ) {
-  e.preventDefault()
   e.stopPropagation()
   controllerRef.current?.abort()
   const ac = new AbortController()
@@ -159,6 +165,7 @@ export function startDocumentDrag(
   document.addEventListener(
     'mousemove',
     me => {
+      me.preventDefault()
       onMove(me.clientX - startX, me.clientY - startY)
     },
     { signal: ac.signal },

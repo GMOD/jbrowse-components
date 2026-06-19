@@ -75,13 +75,16 @@ export function useVariantVirtualScroll({
     : 0
 
   function handleScrollbarMouseDown(e: React.MouseEvent) {
-    e.preventDefault()
+    // stopPropagation keeps the drag from also panning the view. No
+    // preventDefault on mousedown so its native focus shift can close any open
+    // popup (e.g. location search); selection is suppressed per-move below.
     e.stopPropagation()
     const startY = e.clientY
     const startScroll = scrollTop
     const usableTrack = viewportHeight - thumbHeight
 
     const onMouseMove = (me: MouseEvent) => {
+      me.preventDefault()
       const dy = me.clientY - startY
       const scrollDelta =
         usableTrack > 0 ? (dy / usableTrack) * scrollableHeight : 0
