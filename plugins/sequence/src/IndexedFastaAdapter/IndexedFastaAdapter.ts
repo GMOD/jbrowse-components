@@ -1,7 +1,7 @@
 import AbortablePromiseCache from '@gmod/abortable-promise-cache'
 import { IndexedFasta } from '@gmod/indexedfasta'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, updateStatus2 } from '@jbrowse/core/util'
+import { SimpleFeature, updateStatus } from '@jbrowse/core/util'
 import QuickLRU from '@jbrowse/core/util/QuickLRU'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
@@ -69,10 +69,9 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
     const { statusCallback = () => {}, stopToken } = opts ?? {}
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
-      await updateStatus2(
+      await updateStatus(
         'Downloading sequence',
         statusCallback,
-        stopToken,
         async () => {
           const { fasta } = await this.setup()
           const size = await fasta.getSequenceSize(refName)
@@ -112,6 +111,7 @@ export default class IndexedFastaAdapter extends BaseSequenceAdapter {
             )
           }
         },
+        stopToken,
       )
       observer.complete()
     })

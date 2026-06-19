@@ -687,8 +687,8 @@ importers:
   plugins/alignments:
     dependencies:
       '@gmod/bam':
-        specifier: ^7.3.0
-        version: 7.3.0
+        specifier: ^7.3.1
+        version: 7.3.1
       '@gmod/cram':
         specifier: ^8.3.0
         version: 8.3.0
@@ -805,8 +805,8 @@ importers:
   plugins/bed:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.2.0
-        version: 9.2.0
+        specifier: ^9.2.1
+        version: 9.2.1
       '@gmod/bed':
         specifier: ^2.2.6
         version: 2.2.6
@@ -1715,8 +1715,8 @@ importers:
   plugins/wiggle:
     dependencies:
       '@gmod/bbi':
-        specifier: ^9.2.0
-        version: 9.2.0
+        specifier: ^9.2.1
+        version: 9.2.1
       '@gmod/hclust':
         specifier: 3.0.14
         version: 3.0.14
@@ -4094,11 +4094,11 @@ packages:
   '@gmod/abortable-promise-cache@3.0.4':
     resolution: {integrity: sha512-kxRJj5fyRKFuZDp/YvnHeadYCV2EEUKyH2T4a2Iz9O7T/thOWWHUDiiD/Mg6WZP/RNNDIcfSHl/xVHHy/+j8qg==}
 
-  '@gmod/bam@7.3.0':
-    resolution: {integrity: sha512-oP4K1flKGUg/1Vg96K9of0Z2rO+6OG4BYJDaXc15GXuZeGJlcvJfKQU0ppoCg46UzVud1tzB114p8mU3t4HIsA==}
+  '@gmod/bam@7.3.1':
+    resolution: {integrity: sha512-mhUffINaC9qLydyR9/QrBuwfI0uMAqx6QesMESQdjZozYy2V3VsdqoxBG1GlIg2QCcquWyNM23cH9EanYw7DrA==}
 
-  '@gmod/bbi@9.2.0':
-    resolution: {integrity: sha512-IhVQ+shoJBnaV2ERkLzRZ81HwzxfxdZqzCr1fU6cI7kxsuXJj6nxuA/h4p6M/2QHrlbbtxr6/ajlqVZNTnR72w==}
+  '@gmod/bbi@9.2.1':
+    resolution: {integrity: sha512-T8whRWIzvx9zFZldCCs90hPPTGTCWiBXEkXpoMhO3rFbEaOyTCxtSpN7ot62TvXjT9EP+H5HwwatzabJSy8uRg==}
 
   '@gmod/bed@2.2.6':
     resolution: {integrity: sha512-6L2EaYIHts/C3BQ4bcERUH24MPlQ2jpuq+qKWzG7ZWNOLrHx2YplYlXMuVZEiLmmiNShJnH1PFYWNGtM1QaS6Q==}
@@ -11881,7 +11881,7 @@ snapshots:
 
   '@gmod/abortable-promise-cache@3.0.4': {}
 
-  '@gmod/bam@7.3.0':
+  '@gmod/bam@7.3.1':
     dependencies:
       '@gmod/bgzf-filehandle': 6.2.0
       '@jbrowse/quick-lru': 7.3.5
@@ -11890,7 +11890,7 @@ snapshots:
     transitivePeerDependencies:
       - buffer
 
-  '@gmod/bbi@9.2.0':
+  '@gmod/bbi@9.2.1':
     dependencies:
       '@gmod/abortable-promise-cache': 3.0.4
       '@jbrowse/quick-lru': 7.3.5

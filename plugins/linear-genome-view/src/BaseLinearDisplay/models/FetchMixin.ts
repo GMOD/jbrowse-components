@@ -129,6 +129,19 @@ export default function FetchMixin() {
       },
       /**
        * #action
+       * Drop the active stop token and clear all status bookkeeping. Shared by
+       * both cancel paths and runFetch's cleanup.
+       */
+      resetStatus() {
+        self.activeStopToken = undefined
+        self.statusMessage = undefined
+        self.statusProgress = undefined
+        self.regionStatuses.clear()
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * Record one concurrent operation's latest status (keyed) and recompute
        * the shared statusMessage/statusProgress as the aggregate across all
        * in-flight keys. Pass undefined to drop a key. Used by displays that fan
@@ -140,9 +153,7 @@ export default function FetchMixin() {
         } else {
           self.regionStatuses.set(key, status)
         }
-        const aggregate = aggregateStatus([...self.regionStatuses.values()])
-        self.statusMessage = statusMessageText(aggregate)
-        self.statusProgress = statusFraction(aggregate)
+        self.setStatusMessage(aggregateStatus([...self.regionStatuses.values()]))
       },
       /**
        * #action
@@ -154,10 +165,7 @@ export default function FetchMixin() {
       cancelFetch() {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
-          self.activeStopToken = undefined
-          self.statusMessage = undefined
-          self.statusProgress = undefined
-          self.regionStatuses.clear()
+          self.resetStatus()
         }
         self.fetchCanceled = false
         self.fetchGeneration++
@@ -173,10 +181,7 @@ export default function FetchMixin() {
       cancelFetchByUser() {
         if (self.activeStopToken) {
           stopStopToken(self.activeStopToken)
-          self.activeStopToken = undefined
-          self.statusMessage = undefined
-          self.statusProgress = undefined
-          self.regionStatuses.clear()
+          self.resetStatus()
         }
         self.fetchCanceled = true
       },
@@ -216,10 +221,7 @@ export default function FetchMixin() {
           }
         } finally {
           if (!isStale()) {
-            self.activeStopToken = undefined
-            self.statusMessage = undefined
-            self.statusProgress = undefined
-            self.regionStatuses.clear()
+            self.resetStatus()
             self.fetchGeneration++
           }
         }

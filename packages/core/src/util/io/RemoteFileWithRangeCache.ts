@@ -207,6 +207,15 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     return result.subarray(0, written)
   }
 
+  // NOTE: range reads return a fully-assembled in-memory Response, so
+  // generic-filehandle2's streaming `onProgress` (toBytesWithProgress) sees the
+  // whole buffer at once and reports 0→100 instantly — per-byte download
+  // progress does not flow through this layer. That's intentional: the indexed
+  // parsers (@gmod/bam, cram, tabix, bbi) self-report at block granularity from
+  // their index metadata, which is the meaningful unit and also reflects cache
+  // hits. Only whole-file readFile (no range header → super.fetch below) streams
+  // for real. Don't try to "restore" streaming progress here expecting it to
+  // surface in the loading UI.
   public async fetch(
     url: string | RequestInfo,
     init?: RequestInit,

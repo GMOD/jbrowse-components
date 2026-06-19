@@ -8,30 +8,19 @@ import type { StopToken, StopTokenChecker } from './stopToken.ts'
 
 /**
  * Indeterminate phase: set `label` on the status channel, run `fn`, then clear
- * it. The determinate counterpart is {@link withProgress}.
+ * it. Pass `stopToken` to check for cancellation before clearing (a no-op when
+ * undefined). The determinate counterpart is {@link withProgress}.
  */
 export async function updateStatus<U>(
   msg: string,
   cb: StatusCallback | undefined,
   fn: () => U | Promise<U>,
+  stopToken?: StopToken,
 ) {
   cb?.(msg)
   const res = await fn()
-  cb?.('')
-  return res
-}
-
-/** {@link updateStatus} that also checks the stop token before clearing. */
-export async function updateStatus2<U>(
-  msg: string,
-  cb: StatusCallback,
-  stopToken: StopToken | undefined,
-  fn: () => U | Promise<U>,
-) {
-  cb(msg)
-  const res = await fn()
   checkStopToken(stopToken)
-  cb('')
+  cb?.('')
   return res
 }
 

@@ -4,7 +4,7 @@ import {
   aggregateQuantitativeStats,
   blankStats,
 } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
-import { updateStatus } from '@jbrowse/core/util'
+import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import { rectifyStats } from '@jbrowse/core/util/stats'
@@ -159,13 +159,14 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
 
     const { bigwig } = await this.setup(opts)
 
-    const arrays = await updateStatus(
+    const arrays = await downloadStatus(
       'Downloading bigwig data',
       statusCallback,
-      () =>
+      onProgress =>
         bigwig.getFeaturesAsArrays(refName, start, end, {
           ...opts,
           basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+          onProgress,
         }),
     )
 
