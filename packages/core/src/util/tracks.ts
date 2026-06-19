@@ -4,7 +4,7 @@ import {
   isRoot,
   isStateTreeNode,
 } from '@jbrowse/mobx-state-tree'
-import { observable, runInAction } from 'mobx'
+import { observable, runInAction, untracked } from 'mobx'
 
 import {
   getFileHandle,
@@ -175,7 +175,9 @@ export function clearFileFromCache(handleId: string) {
 }
 
 export function hasFileHandlesInCache() {
-  return fileHandleCache.size > 0
+  // read in RpcMethodType.serializeArguments, which an RPC-fetch autorun can
+  // reach; untracked so populating the cache never re-triggers that autorun
+  return untracked(() => fileHandleCache.size > 0)
 }
 
 export async function ensureFileHandleReady(
