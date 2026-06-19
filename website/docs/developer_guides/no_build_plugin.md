@@ -250,5 +250,5 @@ const state = createViewState({ config, plugins: [MyPlugin] })
 ```
 
 See the
-[Using Plugins](https://jbrowse.org/storybook/app/main/?path=/docs/using-plugins--docs)
-story in the `@jbrowse/react-app2` storybook for a live example.
+[With external plugin](https://jbrowse.org/storybook/app/with-external-plugin/)
+example in the `@jbrowse/react-app2` examples site for a live example.

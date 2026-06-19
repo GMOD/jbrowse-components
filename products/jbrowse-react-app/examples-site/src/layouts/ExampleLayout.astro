@@ -1,17 +1,29 @@
 ---
 import { Code } from 'astro:components'
 
+import type { MarkdownInstance } from 'astro'
+
 import Shell from './Shell.astro'
 import { examples } from '../examples.ts'
 import { componentLabel, mainMaxWidth } from '../siteMeta.ts'
 
 interface Props {
+  slug: string
   title: string
   description?: string
   code: string
 }
 
-const { title, description, code } = Astro.props
+const { slug, title, description, code } = Astro.props
+
+// each example page may have a hand-written doc at src/docs/<slug>.md; render it
+// above the live demo when present
+const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
+  '../docs/*.md',
+)
+const loader = docs[`../docs/${slug}.md`]
+const doc = loader ? await loader() : undefined
+const Doc = doc?.Content
 ---
 
 <Shell
@@ -24,6 +36,24 @@ const { title, description, code } = Astro.props
     .lead {
       font-size: 1.05em;
       color: var(--muted);
+    }
+    .doc h2 {
+      margin-top: 28px;
+      border-bottom: 1px solid #eee;
+      padding-bottom: 4px;
+    }
+    .doc h3 {
+      margin-top: 20px;
+    }
+    .doc code {
+      background: #f4f4f4;
+      padding: 1px 4px;
+      border-radius: 3px;
+      font-size: 0.9em;
+    }
+    .doc pre code {
+      background: none;
+      padding: 0;
     }
     .demo {
       border: 1px solid var(--border);
@@ -55,6 +85,7 @@ const { title, description, code } = Astro.props
   </style>
   <h1>{title}</h1>
   {description && <p class="lead">{description}</p>}
+  {Doc && <div class="doc"><Doc /></div>}
   <h2>Live demo</h2>
   <div class="demo"><slot /></div>
   <details class="source">

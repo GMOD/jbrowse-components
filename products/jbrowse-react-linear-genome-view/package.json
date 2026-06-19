@@ -34,8 +34,6 @@
     "build:esm": "tsgo --build tsconfig.build.esm.json",
     "build:webpack": "webpack -c webpack.config.mjs",
     "clean": "rimraf esm *.tsbuildinfo",
-    "storybook": "storybook dev --port 6006",
-    "storybook:build": "storybook build",
     "prebuild": "pnpm clean",
     "prepack": "pnpm build"
   },

@@ -7,6 +7,11 @@ import { SequenceFeatureDetailsF } from './model.ts'
 import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
 
+// Usage reference for the public SequencePanel component (it has external
+// consumers): each test below renders <SequencePanel> with a different mode and
+// coordinate setting, showing how to wire up the model, sequence, and feature
+// props.
+
 afterEach(() => {
   localStorage.clear()
 })

@@ -37,8 +37,8 @@ Run from root:
 - **Web**: `cd products/jbrowse-web && pnpm start`
 - **Desktop**: Run `pnpm start` then `pnpm electron` in
   `products/jbrowse-desktop`.
-- **Storybook**:
-  `cd products/jbrowse-react-linear-genome-view && pnpm storybook`
+- **Embedded component examples**:
+  `cd products/jbrowse-react-linear-genome-view/examples-site && pnpm dev`
 
 ## Project Structure
 

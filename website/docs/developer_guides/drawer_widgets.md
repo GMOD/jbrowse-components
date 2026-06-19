@@ -120,6 +120,6 @@ fetched when it first opens.
 
 ## Storybook example
 
-See the `WithDrawerWidget` example in the JBrowse Storybook:
+See the `WithDrawerWidget` example in the JBrowse examples site:
 
-https://jbrowse.org/storybook/lgv/main/?path=/story/source-code-for-examples--with-drawer-widget
+https://jbrowse.org/storybook/lgv/with-drawer-widget/

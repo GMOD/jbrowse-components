@@ -33,8 +33,10 @@ Alternatively, to boot up JBrowse Desktop, you can go to the
 `products/jbrowse-desktop` directory.
 
 For the embedded components e.g. `products/jbrowse-react-linear-genome-view`,
-use `pnpm storybook` instead of `pnpm start`. (Note: the source folder names in
-`products/` do not include the trailing `2`, but the published npm packages do:
+run `pnpm dev` in the `examples-site` subfolder (e.g.
+`products/jbrowse-react-linear-genome-view/examples-site`) instead of
+`pnpm start`. (Note: the source folder names in `products/` do not include the
+trailing `2`, but the published npm packages do:
 `@jbrowse/react-linear-genome-view2`, `@jbrowse/react-app2`,
 `@jbrowse/react-circular-genome-view2`.)
 

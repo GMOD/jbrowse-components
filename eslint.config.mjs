@@ -17,7 +17,6 @@ export default defineConfig(
       '**/dist*',
       '**/esm',
       '**/public',
-      '**/storybook-static',
       '**/.astro',
 
       // Config and tooling
@@ -28,7 +27,6 @@ export default defineConfig(
       'eslint.config.mjs',
       'products/**/webpack.config.js',
       'products/**/webpack.config.mjs',
-      '**/.storybook',
       '**/umd_plugin.js',
 
       'products/jbrowse-desktop/test/**',
@@ -60,6 +58,7 @@ export default defineConfig(
       'products/jbrowse-desktop/linux-sandbox-fix.js',
       'products/jbrowse-desktop/sign.js',
       'products/jbrowse-web/scripts',
+      'products/**/examples-site/scripts',
       'products/jbrowse-img/src/bin.js',
 
       // jbrowse-img integration tests + their tsx loader hook run via node:test
@@ -374,6 +373,22 @@ export default defineConfig(
     rules: {
       'react-compiler/react-compiler': 'off',
       'react-refresh/only-export-components': 'off',
+    },
+  },
+  // Each product's examples-site is a standalone Astro app excluded from the
+  // root tsconfig, so type-aware linting must use its own tsconfig. These are
+  // demonstrative examples, so `console.log` (e.g. logging a patch/region to
+  // show how to observe state) is legitimate, not a leftover debug statement.
+  {
+    files: ['products/*/examples-site/src/**/*.{ts,tsx}'],
+    languageOptions: {
+      parserOptions: {
+        project: ['./products/*/examples-site/tsconfig.json'],
+        tsconfigRootDir: import.meta.dirname,
+      },
+    },
+    rules: {
+      'no-console': 'off',
     },
   },
   // useEffectEvent returns a stale closure inside mobx-react observer()

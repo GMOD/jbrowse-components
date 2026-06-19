@@ -27,7 +27,6 @@ test_data/soa4
 test/data
 *.log
 .cache/
-debug-storybook.log
 website/.astro/
 
 # generated each build/dev start with the current git hash

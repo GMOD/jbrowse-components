@@ -78,6 +78,6 @@ a full walkthrough.
 `myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained
 and has no external imports. If it does import other modules, use the template.
 For embedded components, see the
-[storybook example](https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page).
+[inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
 :::

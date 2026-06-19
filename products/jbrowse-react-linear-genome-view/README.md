@@ -3,7 +3,7 @@
 React component for the [JBrowse 2](https://jbrowse.org/jb2/) linear genome
 view.
 
-Docs and live examples: https://jbrowse.org/storybook/lgv/main
+Docs and live examples: https://jbrowse.org/storybook/lgv/
 
 ## Install
 

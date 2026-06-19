@@ -144,8 +144,6 @@
   ],
   "scripts": {
     "test": "cd ../..; jest --passWithNoTests packages/core",
-    "storybook": "storybook dev --port 6006",
-    "storybook:build": "storybook build",
     "coverage": "pnpm test --coverage",
     "clean": "rimraf esm *.tsbuildinfo",
     "prebuild": "pnpm clean",

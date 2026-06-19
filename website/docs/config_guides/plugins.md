@@ -6,7 +6,7 @@ guide_category: Core configuration
 
 In jbrowse-web and jbrowse-desktop, plugins are added via `config.json`.
 Embedded components use a different approach — see the
-[storybook example](https://jbrowse.org/storybook/lgv/main/?path=/story/using-plugins--page).
+[inline plugins example](https://jbrowse.org/storybook/lgv/with-inline-plugins/).
 
 External plugins can be added to the config.json file like so:
 

@@ -8,8 +8,8 @@ import { currentVersion } from '../config.ts'
 const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
 const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
 const webZip = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}/jbrowse-web-${currentVersion}.zip`
-const lgvStorybook = `https://jbrowse.org/storybook/lgv/${currentVersion}/?path=/story/getting-started--page`
-const cgvStorybook = `https://jbrowse.org/storybook/cgv/${currentVersion}/?path=/story/getting-started--page`
+const lgvExamples = 'https://jbrowse.org/storybook/lgv/'
+const cgvExamples = 'https://jbrowse.org/storybook/cgv/'
 
 const desktopDownloads = [
   { os: 'MacOS', suffix: 'mac.dmg', icon: 'mdi:apple' },
@@ -101,8 +101,8 @@ const desktopDownloads = [
         >
           @jbrowse/react-linear-genome-view
         </a>
-        — linear genome browser React component on NPM (<a href={lgvStorybook}
-          >storybook docs</a
+        — linear genome browser React component on NPM (<a href={lgvExamples}
+          >live examples</a
         >)
       </li>
       <li>
@@ -111,8 +111,8 @@ const desktopDownloads = [
         >
           @jbrowse/react-circular-genome-view
         </a>
-        — circular genome browser React component on NPM (<a href={cgvStorybook}
-          >storybook docs</a
+        — circular genome browser React component on NPM (<a href={cgvExamples}
+          >live examples</a
         >)
       </li>
     </ul>

@@ -3,8 +3,7 @@
 React component for the [JBrowse 2](https://jbrowse.org/jb2/) circular genome
 view.
 
-Docs and live examples:
-https://jbrowse.org/storybook/cgv/main/?path=/story/getting-started--page
+Docs and live examples: https://jbrowse.org/storybook/cgv/
 
 ## Install
 
