@@ -5,6 +5,7 @@ import CreateMultiWiggleExtensionF from './CreateMultiWiggleExtension/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import LinearWiggleDisplayF from './LinearWiggleDisplay/index.ts'
 import MultiLinearWiggleDisplayF from './MultiLinearWiggleDisplay/index.ts'
+import MigrateMultiWiggleConfigF from './MultiLinearWiggleDisplay/preProcessTrackConfig.ts'
 import MultiQuantitativeTrackF from './MultiQuantitativeTrack/index.ts'
 import MultiWiggleAdapterF from './MultiWiggleAdapter/index.ts'
 import MultiWiggleAddTrackWorkflowF from './MultiWiggleAddTrackWorkflow/index.ts'
@@ -29,6 +30,7 @@ export default class WigglePlugin extends Plugin {
     MultiQuantitativeTrackF(pm)
     LinearWiggleDisplayF(pm)
     MultiLinearWiggleDisplayF(pm)
+    MigrateMultiWiggleConfigF(pm)
     MultiWiggleAddTrackWorkflowF(pm)
     CreateMultiWiggleExtensionF(pm)
     GuessAdapterF(pm)

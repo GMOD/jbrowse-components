@@ -15,6 +15,20 @@ const SINGLE_TO_MULTI_RENDERING: Record<string, string> = {
   scatter: 'multiscatter',
 }
 
+// Rewrites a single-source `defaultRendering` to its multi-source equivalent on
+// a MultiLinearWiggleDisplay snapshot. Shared by this schema's
+// preProcessSnapshot and the Core-preProcessTrackConfig handler — the latter is
+// needed because preProcessSnapshot does NOT run while a types.union validates
+// the display snapshot (union dispatch checks the raw snapshot).
+export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
+  const { defaultRendering } = snap
+  const remapped =
+    typeof defaultRendering === 'string'
+      ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
+      : undefined
+  return remapped ? { ...snap, defaultRendering: remapped } : snap
+}
+
 /**
  * #config MultiLinearWiggleDisplay
  * #category display
@@ -114,13 +128,12 @@ export default ConfigurationSchema(
   {
     explicitlyTyped: true,
     explicitIdentifier: 'displayId',
-    preProcessSnapshot: (snap: Record<string, unknown>) => {
-      const { defaultRendering, ...rest } = snap
-      const remapped =
-        typeof defaultRendering === 'string'
-          ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
-          : undefined
-      return remapped ? { ...rest, defaultRendering: remapped } : snap
-    },
+    // NOTE: this only fires on a direct schema create. The display config is
+    // normally reached through a types.union (a track's `displays` array), and
+    // union dispatch validates the RAW snapshot without running
+    // preProcessSnapshot — so the same remap is also registered as a
+    // Core-preProcessTrackConfig handler (see ./preProcessTrackConfig.ts).
+    preProcessSnapshot: (snap: Record<string, unknown>) =>
+      remapMultiWiggleRendering(snap),
   },
 )

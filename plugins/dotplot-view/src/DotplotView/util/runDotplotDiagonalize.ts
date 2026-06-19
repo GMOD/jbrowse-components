@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
 
 import type { DiagonalizeDotplotArgs } from '../../DiagonalizeDotplotRpc.ts'
@@ -31,17 +32,21 @@ export async function runDotplotDiagonalize(
   if (!display) {
     return undefined
   }
-  const session = getSession(model)
-  const result = await session.rpcManager.call(model.id, 'DiagonalizeDotplot', {
-    sessionId: `diagonalize-${Date.now()}`,
-    view: { hview: model.hview, vview: model.vview },
-    adapterConfig: display.adapterConfig,
-    stopToken: opts.stopToken,
-    statusCallback: opts.statusCallback,
-  } satisfies DiagonalizeDotplotArgs)
-  if (result.newRegions.length === 0) {
-    return undefined
-  }
+  // Reuse the same rpcSessionId the display renders with (it lives on the
+  // track), so this lands on the same sticky worker and hits its already-set-up
+  // (parsed) adapter instead of re-parsing the file into a fresh adapter cache.
+  const sessionId = getRpcSessionId(display)
+  const result = await getSession(model).rpcManager.call(
+    sessionId,
+    'DiagonalizeDotplot',
+    {
+      sessionId,
+      view: { hview: model.hview, vview: model.vview },
+      adapterConfig: display.adapterConfig,
+      stopToken: opts.stopToken,
+      statusCallback: opts.statusCallback,
+    } satisfies DiagonalizeDotplotArgs,
+  )
   transaction(() => {
     model.vview.setDisplayedRegions(result.newRegions)
   })

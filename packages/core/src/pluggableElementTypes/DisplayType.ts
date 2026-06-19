@@ -39,7 +39,9 @@ export default class DisplayType extends PluggableElementBase {
    * Older display type names that should be remapped to this one when loading
    * sessions/configs. Each entry is the legacy `type` value previously used.
    * Per-display `preProcessSnapshot` hooks then handle any property migrations
-   * within the renamed type.
+   * within the renamed type. For migrations that rewrite the value of an
+   * existing constrained slot (enum rename, type narrow), use
+   * `addDisplayConfigMigration` instead — see that helper for why.
    */
   aliases?: string[]
 

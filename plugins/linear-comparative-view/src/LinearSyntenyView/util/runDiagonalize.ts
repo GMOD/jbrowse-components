@@ -1,4 +1,5 @@
 import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
 
 import type { DiagonalizeSyntenyArgs } from '../../DiagonalizeSyntenyRpc.ts'
@@ -51,24 +52,30 @@ export async function runDiagonalize(
   if (model.views.length < 2) {
     return undefined
   }
-  const levels = model.levels.map((level: Level, i: number) => ({
-    adapterConfigs: level.linearSyntenyDisplays.map(
-      (d: LinearSyntenyDisplayModel) => d.adapterConfig,
-    ),
-    referenceRegions: model.views[i]!.displayedRegions,
-    currentRegions: model.views[i + 1]!.displayedRegions,
-    bpPerPx: model.views[i]!.bpPerPx,
-  }))
-
-  const { results } = await getSession(model).rpcManager.call(
-    model.id,
-    'DiagonalizeSynteny',
-    {
-      sessionId: `diagonalize-${model.id}`,
-      levels,
-      stopToken: opts.stopToken,
-      statusCallback: opts.statusCallback,
-    } satisfies DiagonalizeSyntenyArgs,
+  // One RPC call per level, each routed to the same rpcSessionId its track
+  // renders with (rpcSessionId lives on the track), so it lands on that track's
+  // sticky worker and hits the already-set-up (parsed) adapter instead of
+  // re-parsing into a fresh adapter cache. Results align to `levels`; a level
+  // returns null when it has nothing to reorder (no displays / no alignments).
+  const results = await Promise.all(
+    model.levels.map((level: Level, i: number) => {
+      const displays = level.linearSyntenyDisplays
+      if (displays.length === 0) {
+        return Promise.resolve(null)
+      }
+      const sessionId = getRpcSessionId(displays[0])
+      return getSession(model).rpcManager.call(sessionId, 'DiagonalizeSynteny', {
+        sessionId,
+        adapterConfigs: displays.map(
+          (d: LinearSyntenyDisplayModel) => d.adapterConfig,
+        ),
+        referenceRegions: model.views[i]!.displayedRegions,
+        currentRegions: model.views[i + 1]!.displayedRegions,
+        bpPerPx: model.views[i]!.bpPerPx,
+        stopToken: opts.stopToken,
+        statusCallback: opts.statusCallback,
+      } satisfies DiagonalizeSyntenyArgs)
+    }),
   )
 
   let totalReversed = 0

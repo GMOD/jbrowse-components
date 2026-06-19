@@ -16,93 +16,79 @@ import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 // One synteny level (the gap between two adjacent views): the alignment
-// adapters drawn there plus the region sets of the reference view (above) and
-// the view being reordered (below).
-export interface DiagonalizeSyntenyLevel {
+// adapters drawn there, the region set of the reference view (above), and the
+// region set of the view being reordered (below). Called once per level so each
+// routes to the same worker its track renders on (rpcSessionId is per-track),
+// reusing that worker's already-parsed adapters.
+export interface DiagonalizeSyntenyArgs {
+  sessionId: string
   adapterConfigs: Record<string, unknown>[]
   referenceRegions: Region[]
   currentRegions: Region[]
   bpPerPx: number
-}
-
-export interface DiagonalizeSyntenyArgs {
-  sessionId: string
-  levels: DiagonalizeSyntenyLevel[]
   stopToken?: StopToken
   statusCallback?: StatusCallback
-}
-
-// Per-level result, parallel to the input `levels`; null where a level has no
-// alignments to reorder. The caller applies result[i].newRegions to view i+1.
-export interface DiagonalizeSyntenyResult {
-  results: (DiagonalizationResult | null)[]
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
     DiagonalizeSynteny: {
       args: DiagonalizeSyntenyArgs
-      return: DiagonalizeSyntenyResult
+      // null when the level has no alignments to reorder
+      return: DiagonalizationResult | null
     }
   }
 }
 
-// Worker-side counterpart to DiagonalizeDotplot: fetches each level's
-// alignments and runs the shared diagonalizeRegions off the main thread.
-// Synteny is multi-level (N views -> N-1 levels), so it loops where the dotplot
-// RPC handles a single pair.
+// Worker-side counterpart to DiagonalizeDotplot: fetches a level's alignments
+// and runs the shared diagonalizeRegions off the main thread.
 export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRenameRegions {
   name = 'DiagonalizeSynteny'
 
   async execute(args: DiagonalizeSyntenyArgs, rpcDriverClassName: string) {
-    const { levels, sessionId, stopToken, statusCallback } =
-      await this.deserializeArguments(args, rpcDriverClassName)
+    const {
+      adapterConfigs,
+      referenceRegions,
+      currentRegions,
+      bpPerPx,
+      sessionId,
+      stopToken,
+      statusCallback,
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     if (!sessionId) {
       throw new Error('must pass a unique session id')
     }
 
-    const results: (DiagonalizationResult | null)[] = []
-    for (const [i, level] of levels.entries()) {
-      checkStopToken(stopToken)
-      statusCallback?.(`Diagonalizing level ${i + 1} of ${levels.length}`)
-
-      const alignments: AlignmentData[] = []
-      for (const adapterConfig of level.adapterConfigs) {
-        const { dataAdapter } = await getAdapter(
-          this.pluginManager,
-          sessionId,
-          adapterConfig,
-        )
-        const feats = dedupe(
-          await firstValueFrom(
-            (dataAdapter as BaseFeatureDataAdapter)
-              .getFeaturesInMultipleRegions(level.referenceRegions, {
-                stopToken,
-                bpPerPx: level.bpPerPx,
-                statusCallback,
-              })
-              .pipe(toArray()),
-          ),
-          f => f.id(),
-        )
-        alignments.push(...extractAlignmentData(feats))
-      }
-
-      results.push(
-        alignments.length === 0
-          ? null
-          : await diagonalizeRegions(
-              alignments,
-              level.referenceRegions,
-              level.currentRegions,
-              () => {
-                checkStopToken(stopToken)
-              },
-            ),
+    const alignments: AlignmentData[] = []
+    for (const adapterConfig of adapterConfigs) {
+      const { dataAdapter } = await getAdapter(
+        this.pluginManager,
+        sessionId,
+        adapterConfig,
       )
+      const feats = dedupe(
+        await firstValueFrom(
+          (dataAdapter as BaseFeatureDataAdapter)
+            .getFeaturesInMultipleRegions(referenceRegions, {
+              stopToken,
+              bpPerPx,
+              statusCallback,
+            })
+            .pipe(toArray()),
+        ),
+        f => f.id(),
+      )
+      alignments.push(...extractAlignmentData(feats))
     }
 
-    return { results }
+    if (alignments.length === 0) {
+      return null
+    }
+
+    statusCallback?.(`Running diagonalization on ${alignments.length} alignments`)
+    return diagonalizeRegions(alignments, referenceRegions, currentRegions, () => {
+      checkStopToken(stopToken)
+    })
   }
 }
