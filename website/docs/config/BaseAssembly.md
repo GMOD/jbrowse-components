@@ -46,7 +46,12 @@ This corresponds to the assemblies section of the config
 
 ### BaseAssembly - Identifier
 
-#### slot: name
+Every BaseAssembly has a unique `name`, a required top-level field that
+identifies it (not one of the config slots below).
+
+there is no separate "id" field on an assembly: the "name" is the id, usually a
+short machine-readable string like hg38. For a longer human-readable label, set
+the "displayName" config slot instead
 
 <details open>
 <summary>BaseAssembly - Slots</summary>

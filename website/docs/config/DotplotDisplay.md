@@ -48,4 +48,5 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 
 ### DotplotDisplay - Identifier
 
-#### slot: explicitIdentifier
+Every DotplotDisplay has a unique `displayId`, a required top-level field that
+identifies it (not one of the config slots below).

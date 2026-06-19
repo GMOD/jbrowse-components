@@ -23,7 +23,8 @@ note: metadata about tracks and assemblies covered by text search adapter
 
 ### JBrowse1TextSearchAdapter - Identifier
 
-#### slot: explicitIdentifier
+Every JBrowse1TextSearchAdapter has a unique `textSearchAdapterId`, a required
+top-level field that identifies it (not one of the config slots below).
 
 <details open>
 <summary>JBrowse1TextSearchAdapter - Slots</summary>

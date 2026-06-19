@@ -23,7 +23,8 @@ the "base" internet account type
 
 ### BaseInternetAccount - Identifier
 
-#### slot: explicitIdentifier
+Every BaseInternetAccount has a unique `internetAccountId`, a required top-level
+field that identifies it (not one of the config slots below).
 
 <details open>
 <summary>BaseInternetAccount - Slots</summary>

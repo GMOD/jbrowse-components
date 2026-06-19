@@ -21,7 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ### BaseConnection - Identifier
 
-#### slot: explicitIdentifier
+Every BaseConnection has a unique `connectionId`, a required top-level field
+that identifies it (not one of the config slots below).
 
 <details open>
 <summary>BaseConnection - Slots</summary>

@@ -34,7 +34,8 @@ preprocessor to allow minimal config, assumes file.ixx also exists:
 
 ### TrixTextSearchAdapter - Identifier
 
-#### slot: explicitIdentifier
+Every TrixTextSearchAdapter has a unique `textSearchAdapterId`, a required
+top-level field that identifies it (not one of the config slots below).
 
 <details open>
 <summary>TrixTextSearchAdapter - Slots</summary>

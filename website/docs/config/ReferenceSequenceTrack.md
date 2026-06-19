@@ -51,7 +51,8 @@ on its display type(s):
 
 ### ReferenceSequenceTrack - Identifier
 
-#### slot: explicitIdentifier
+Every ReferenceSequenceTrack has a unique `trackId`, a required top-level field
+that identifies it (not one of the config slots below).
 
 <details open>
 <summary>ReferenceSequenceTrack - Slots</summary>

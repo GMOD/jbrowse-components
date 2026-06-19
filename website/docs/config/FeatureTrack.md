@@ -73,7 +73,8 @@ on its display type(s):
 
 ### FeatureTrack - Identifier
 
-#### slot: explicitIdentifier
+Every FeatureTrack has a unique `trackId`, a required top-level field that
+identifies it (not one of the config slots below).
 
 ## Inherited config slots
 

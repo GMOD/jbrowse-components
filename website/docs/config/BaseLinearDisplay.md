@@ -26,7 +26,8 @@ it, and third-party plugins extend it too.
 
 ### BaseLinearDisplay - Identifier
 
-#### slot: explicitIdentifier
+Every BaseLinearDisplay has a unique `displayId`, a required top-level field
+that identifies it (not one of the config slots below).
 
 <details open>
 <summary>BaseLinearDisplay - Slots</summary>

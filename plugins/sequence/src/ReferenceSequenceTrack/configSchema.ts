@@ -130,7 +130,6 @@ export function createReferenceSeqTrackConfig(pluginManager: PluginManager) {
       },
       /**
        * #identifier
-       * all tracks have a globally unique 'trackId'
        */
       explicitIdentifier: 'trackId',
       explicitlyTyped: true,

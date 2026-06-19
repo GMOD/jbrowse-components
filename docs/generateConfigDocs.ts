@@ -225,7 +225,8 @@ function renderConfig(
     identifier &&
       section(
         `### ${header.name} - Identifier`,
-        `#### slot: ${identifier.name}`,
+        `Every ${header.name} has a unique \`${identifierField(identifier)}\`, a required top-level field that identifies it (not one of the config slots below).`,
+        identifier.docs,
       ),
     slots.length &&
       collapsible(`${header.name} - Slots`, ...slots.map(s => slotBlock(s))),
@@ -266,6 +267,17 @@ reference the markdown files in our repo of the checked out git tag`,
     githubDocPath: `website/docs/config/${header.name}.md`,
     body: section(exSection, docsSection),
   })
+}
+
+// The `#identifier` tag sits on the schema's `explicitIdentifier: '<field>'`
+// option, so the extracted `name` is the literal property `explicitIdentifier`,
+// not the field it points at. Pull the actual identifier field (e.g. `trackId`)
+// out of the value — that field is stored at the top level of the snapshot and
+// is not declared as a config slot.
+function identifierField(identifier: Item) {
+  return stripPropertyName(identifier.code)
+    .trim()
+    .replace(/^['"]|['"]$/g, '')
 }
 
 function slotBlock({ name, docs, examples, code }: Item) {

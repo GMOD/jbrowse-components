@@ -25,7 +25,8 @@ fields in addition to its own.
 
 ### BaseTrack - Identifier
 
-#### slot: explicitIdentifier
+Every BaseTrack has a unique `trackId`, a required top-level field that
+identifies it (not one of the config slots below).
 
 <details open>
 <summary>BaseTrack - Slots</summary>
