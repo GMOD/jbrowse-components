@@ -152,6 +152,18 @@ string | undefined
 statusMessage: undefined as string | undefined
 ```
 
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate
+
+```js
+// type signature
+number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
 #### volatile: assembliesSwapped
 
 ```js
@@ -360,7 +372,7 @@ setRpcData: (featureData: SyntenyFeatureData | undefined, instanceData: SyntenyG
 
 ```js
 // type signature
-setStatusMessage: (msg?: string | undefined) => void
+setStatusMessage: (status?: RpcStatus | undefined) => void
 ```
 
 #### action: setAssembliesSwapped

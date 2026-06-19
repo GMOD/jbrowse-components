@@ -203,7 +203,7 @@ regionCannotBeRendered: () => null
 
 ```js
 // type signature
-setStatusMessage: (arg?: string | undefined) => void
+setStatusMessage: (arg?: RpcStatus | undefined) => void
 ```
 
 #### action: setError

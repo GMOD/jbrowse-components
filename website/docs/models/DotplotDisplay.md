@@ -124,6 +124,19 @@ StopToken | undefined
 fetchStopToken: undefined as StopToken | undefined
 ```
 
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate. Pairs with the `statusMessage` volatile
+inherited from BaseDisplay.
+
+```js
+// type signature
+number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
 #### volatile: fetchWarnings
 
 ```js
@@ -181,6 +194,17 @@ renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => P
 ```
 
 ### DotplotDisplay - Actions
+
+#### action: setStatusMessage
+
+Status callback for the in-flight fetch; derives the indeterminate message and
+the determinate progress fraction. Overrides BaseDisplay's string-only setter so
+the dotplot loading overlay can show a bar.
+
+```js
+// type signature
+setStatusMessage: (status?: RpcStatus | undefined) => void
+```
 
 #### action: setLoading
 
