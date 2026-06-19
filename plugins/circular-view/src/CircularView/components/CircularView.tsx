@@ -10,8 +10,6 @@ import Ruler from './Ruler.tsx'
 
 import type { CircularViewModel } from '../model.ts'
 
-const dragHandleHeight = 3
-
 const useStyles = makeStyles()(theme => ({
   root: {
     position: 'relative',
@@ -38,13 +36,9 @@ const useStyles = makeStyles()(theme => ({
     transition: 'none',
   },
   resizeHandle: {
-    height: dragHandleHeight,
     position: 'absolute',
     bottom: 0,
     left: 0,
-    background: '#ccc',
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
   },
 }))
 
@@ -210,6 +204,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       <Controls model={model} />
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
+          bar
           onDrag={distance => model.resizeHeight(distance)}
           className={classes.resizeHandle}
         />

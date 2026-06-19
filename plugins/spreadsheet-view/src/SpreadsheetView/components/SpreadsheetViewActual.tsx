@@ -13,11 +13,6 @@ const useStyles = makeStyles()(theme => ({
     marginBottom: theme.spacing(1),
     background: theme.palette.background.paper,
   },
-  resizeHandle: {
-    height: 5,
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
-  },
 }))
 
 const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
@@ -34,8 +29,8 @@ const SpreadsheetViewActual = observer(function SpreadsheetViewActual({
       </div>
       {hideVerticalResizeHandle ? null : (
         <ResizeHandle
+          bar
           onDrag={delta => model.setHeight(height - delta)}
-          className={classes.resizeHandle}
         />
       )}
     </>

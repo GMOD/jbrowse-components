@@ -19,7 +19,7 @@ interface TrackDisplay {
   RenderingComponent: React.FC<{ model: TrackDisplay }>
 }
 
-const useStyles = makeStyles()(() => ({
+const useStyles = makeStyles()({
   container: {
     display: 'grid',
   },
@@ -28,14 +28,10 @@ const useStyles = makeStyles()(() => ({
     gridArea: '1/1',
     pointerEvents: 'none',
   },
-  resizeHandle: {
-    height: 4,
-    background: '#ccc',
-  },
   wrapper: {
     position: 'relative',
   },
-}))
+})
 
 function View({ view }: { view: LinearGenomeViewModel }) {
   const { pluginManager } = getEnv(view)
@@ -84,11 +80,11 @@ const LevelSection = observer(function LevelSection({
         </div>
       </div>
       <ResizeHandle
+        bar
         onDrag={n => {
           level.setHeight(level.height + n)
           return undefined
         }}
-        className={classes.resizeHandle}
       />
     </>
   )

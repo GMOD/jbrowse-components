@@ -22,8 +22,6 @@ const useStyles = makeStyles()({
     background: 'none',
   },
   resizeHandle: {
-    height: 4,
-    boxSizing: 'border-box',
     position: 'relative',
   },
   trackLabel: {
@@ -76,6 +74,7 @@ const TrackContainer = observer(function TrackContainer({
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle
+        bar
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}
       />

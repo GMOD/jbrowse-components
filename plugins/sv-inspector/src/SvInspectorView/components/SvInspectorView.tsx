@@ -6,26 +6,14 @@ import CircularViewOptions from './CircularViewOptions.tsx'
 
 import type { SvInspectorViewModel } from '../model.ts'
 
-const useStyles = makeStyles()(theme => ({
-  resizeHandleVert: {
-    background: theme.palette.action.selected,
-    width: 4,
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
-  },
-  resizeHandleHoriz: {
-    background: theme.palette.action.selected,
-    height: 4,
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
-  },
+const useStyles = makeStyles()({
   viewsContainer: {
     display: 'flex',
   },
   container: {
     overflow: 'hidden',
   },
-}))
+})
 
 const SvInspectorView = observer(function SvInspectorView({
   model,
@@ -55,12 +43,12 @@ const SvInspectorView = observer(function SvInspectorView({
         {showCircularView ? (
           <>
             <ResizeHandle
+              bar
+              vertical
               onDrag={distance => {
                 const ret1 = model.circularView.resizeWidth(-distance)
                 return model.spreadsheetView.resizeWidth(-ret1)
               }}
-              vertical
-              className={classes.resizeHandleVert}
             />
             <div style={{ width: model.circularView.width }}>
               <CircularViewOptions svInspector={model} />
@@ -70,8 +58,8 @@ const SvInspectorView = observer(function SvInspectorView({
         ) : null}
       </div>
       <ResizeHandle
+        bar
         onDrag={distance => model.resizeHeight(distance)}
-        className={classes.resizeHandleHoriz}
       />
     </div>
   )

@@ -43,11 +43,6 @@ const useStyles = makeStyles()(theme => ({
     gridColumn: '2/2',
     gridRow: '1/2',
   },
-  resizeHandle: {
-    height: 4,
-    boxSizing: 'border-box',
-    borderTop: '1px solid #fafafa',
-  },
 }))
 
 const DotplotCanvas = observer(function DotplotCanvas({
@@ -113,8 +108,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
           <SelectionContextMenu model={model} interaction={interaction} />
         </div>
         <ResizeHandle
+          bar
           onDrag={n => model.setHeight(model.height + n)}
-          className={classes.resizeHandle}
         />
       </div>
     </div>
