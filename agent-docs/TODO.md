@@ -24,54 +24,13 @@ I checked the Canvas2D backend first: it also keeps a this.regions map built in 
 
 What I did instead targets the actual fragility — the GPU sync() mutated-and-manually-pruned (active array + activeSet delete loop), the dual-tracking that can desync. Canvas2D just rebuilds wholesale. Now the GPU sync() does too: this.regions.clear() up front, and the manual prune + active bookkeeping are deleted. HAL buffer lifecycle was already handled by beginUpload/endUpload, so the prune was redundant; removing it makes a stale region impossible by construction. The two existing "buffer drops out" tests still pass (they assert on HAL buffer counts, which endUpload owns).
 
-## Add prefix to autogen docs
-
-Help organize things
 
 ## Coloring
 
 Swap order in colo829
 
 
-
-
-
-## Progress
-
-long time 'computing sample info'...any more fine grained progress? Any indicator that it is 'doing too much' e.g. to cancel it also?
-
-
-
-## Protein viewer
-
-Compactify header more
-
-Thinner tracks
-
 ## links for color by strand, PUR
-
-
-## config model testing
-
-we saw an issue with ldheatmap giving error
-
- ldheatmap display is producing Fetch failed: DOMException: Proxy object could not be cloned.
-      call webpack://@jbrowse/web/../../packages/core/src/rpc/RpcClient.ts?:108
-      call webpack://@jbrowse/web/../../packages/core/src/rpc/RpcClient.ts?:103
-      call webpack://@jbrowse/web/../../packages/core/src/rpc/WebWorkerRpcDriver.ts?:36
-      transport webpack://@jbrowse/web/../../packages/core/src/rpc/WorkerPoolRpcDriver.ts?:94
-  FetchMixin.ts:125:19
-      runFetch webpack://@jbrowse/web/../../plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.ts?:125
-      MobX 7
-
-  the diagnosis:
-
-
-Root cause: LDDisplay's jexlFilters getter (plugins/variants/src/LDDisplay/shared.ts:219-221) returned the live MST/MobX-observable array straight from getConfWithOverride('jexlFilters'). That getter intentionally returns the raw config value (for referential stability — see ConfigOverrideMixin.ts:138-142) rather than a snapshot, since most callers read scalar slots. jexlFilters is the only stringArray-typed slot read this way, and the resulting MST array (a Proxy) was passed directly into the RenderLDData RPC payload (rpcProps()) and failed postMessage's structured clone.
-plugins/linear-genome-view/src/BaseLinearDisplay/models/ConfigOverrideMixin.test.ts
-
-1. Nested-submodel slots — the real risk wasn't another clone error, it'd be getSnapshot silently freezing un-evaluated jexl strings if any getConfWithOverride call targeted a nested config sub-model. Checked every slot key used across every call site against its schema definition — the only frozen-typed ones (colorBy/filterBy in alignments) are already plain JS, not MST nodes, so isStateTreeNode correctly skips them. No nested-model case exists today.
-2. Test coverage gap — ConfigOverrideMixin.test.ts existed but never exercised getConfWithOverride at all, only getOverride/setOverride. That's the exact function I changed, in shared infra used by every linear display. I added 4 tes-wins,
 
 
 ## treesidebar
@@ -89,7 +48,6 @@ plugins/linear-genome-view/src/BaseLinearDisplay/models/ConfigOverrideMixin.test
 
 
 
-## When cancelling, need a 'retry' too
 
 ## Fused abortsignal+stoptoken?
 
