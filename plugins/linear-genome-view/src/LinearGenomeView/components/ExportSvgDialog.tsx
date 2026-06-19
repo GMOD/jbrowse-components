@@ -25,35 +25,35 @@ export default function ExportSvgDialog({
       exportSvg={opts =>
         model.exportSvg({ ...opts, trackLabels, showGridlines })
       }
+      checkboxes={
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showGridlines}
+              onChange={() => {
+                setShowGridlines(val => !val)
+              }}
+            />
+          }
+          label="Show gridlines"
+        />
+      }
     >
-      <div>
-        <TextField
-          select
-          label="Track label positioning"
-          variant="outlined"
-          style={{ width: 150 }}
-          value={trackLabels}
-          onChange={event => {
-            setTrackLabels(event.target.value as TrackLabelMode)
-          }}
-        >
-          <MenuItem value="offset">Offset</MenuItem>
-          <MenuItem value="overlay">Overlay</MenuItem>
-          <MenuItem value="left">Left</MenuItem>
-          <MenuItem value="none">None</MenuItem>
-        </TextField>
-      </div>
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={showGridlines}
-            onChange={() => {
-              setShowGridlines(val => !val)
-            }}
-          />
-        }
-        label="Show gridlines"
-      />
+      <TextField
+        select
+        label="Track label positioning"
+        variant="outlined"
+        style={{ width: 150 }}
+        value={trackLabels}
+        onChange={event => {
+          setTrackLabels(event.target.value as TrackLabelMode)
+        }}
+      >
+        <MenuItem value="offset">Offset</MenuItem>
+        <MenuItem value="overlay">Overlay</MenuItem>
+        <MenuItem value="left">Left</MenuItem>
+        <MenuItem value="none">None</MenuItem>
+      </TextField>
     </BaseExportSvgDialog>
   )
 }

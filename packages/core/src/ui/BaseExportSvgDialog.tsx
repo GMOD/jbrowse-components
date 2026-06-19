@@ -41,11 +41,13 @@ export default function BaseExportSvgDialog({
   handleClose,
   exportSvg,
   children,
+  checkboxes,
 }: {
   model: IAnyStateTreeNode
   handleClose: () => void
   exportSvg: (opts: BaseExportSvgOptions) => Promise<void>
   children?: React.ReactNode
+  checkboxes?: React.ReactNode
 }) {
   const session = getSession(model)
   const offscreenCanvas = typeof OffscreenCanvas !== 'undefined'
@@ -87,40 +89,41 @@ export default function BaseExportSvgDialog({
       ) : loading ? (
         <LoadingMessage format={format} />
       ) : null}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-        <TextField
-          label="Filename"
-          value={filename}
-          onChange={event => {
-            setFilename(event.target.value)
-          }}
-        />
-        <ToggleButtonGroup
-          value={format}
-          exclusive
-          onChange={(_event, value: 'svg' | 'png' | null) => {
-            if (value) {
-              setFormat(value)
-              if (filename.endsWith('.svg') && value === 'png') {
-                setFilename(filename.replace(/\.svg$/, '.png'))
-              } else if (filename.endsWith('.png') && value === 'svg') {
-                setFilename(filename.replace(/\.png$/, '.svg'))
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <TextField
+            label="Filename"
+            value={filename}
+            onChange={event => {
+              setFilename(event.target.value)
+            }}
+          />
+          <ToggleButtonGroup
+            value={format}
+            exclusive
+            onChange={(_event, value: 'svg' | 'png' | null) => {
+              if (value) {
+                setFormat(value)
+                if (filename.endsWith('.svg') && value === 'png') {
+                  setFilename(filename.replace(/\.svg$/, '.png'))
+                } else if (filename.endsWith('.png') && value === 'svg') {
+                  setFilename(filename.replace(/\.png$/, '.svg'))
+                }
               }
-            }
-          }}
-          size="small"
-        >
-          <ToggleButton value="svg">SVG</ToggleButton>
-          <ToggleButton value="png">PNG</ToggleButton>
-        </ToggleButtonGroup>
-      </div>
-      {children}
-      {session.allThemes ? (
-        <div>
+            }}
+            size="small"
+          >
+            <ToggleButton value="svg">SVG</ToggleButton>
+            <ToggleButton value="png">PNG</ToggleButton>
+          </ToggleButtonGroup>
+        </div>
+        {children}
+        {session.allThemes ? (
           <TextField
             select
             label="Theme"
             variant="outlined"
+            style={{ width: 150 }}
             value={themeName}
             onChange={event => {
               setThemeName(event.target.value)
@@ -132,26 +135,29 @@ export default function BaseExportSvgDialog({
               </MenuItem>
             ))}
           </TextField>
-        </div>
-      ) : null}
-      {offscreenCanvas ? (
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={rasterizeLayers}
-              onChange={() => {
-                setRasterizeLayers(val => !val)
-              }}
+        ) : null}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {checkboxes}
+          {offscreenCanvas ? (
+            <FormControlLabel
+              control={
+                <Checkbox
+                  checked={rasterizeLayers}
+                  onChange={() => {
+                    setRasterizeLayers(val => !val)
+                  }}
+                />
+              }
+              label="Rasterize canvas based tracks? File may be much larger if this is turned off"
             />
-          }
-          label="Rasterize canvas based tracks? File may be much larger if this is turned off"
-        />
-      ) : (
-        <Typography>
-          Note: rasterizing layers not yet supported in this browser, so SVG
-          size may be large
-        </Typography>
-      )}
+          ) : (
+            <Typography>
+              Note: rasterizing layers not yet supported in this browser, so SVG
+              size may be large
+            </Typography>
+          )}
+        </div>
+      </div>
     </SubmitDialog>
   )
 }
