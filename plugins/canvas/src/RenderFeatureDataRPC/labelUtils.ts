@@ -1,5 +1,5 @@
 import { LABEL_FONT_SIZE } from './constants.ts'
-import { readConfigValue } from './renderConfig.ts'
+import { readConfigValueSafe } from './renderConfig.ts'
 import { hasVisibleText, truncateLabel } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
@@ -36,10 +36,22 @@ export function readFeatureLabels(
 ): { name: string | undefined; description: string | undefined } {
   return {
     name: toLabelString(
-      readConfigValue(config, ['labels', 'name'], feature, jexl),
+      readConfigValueSafe<unknown>(
+        config,
+        ['labels', 'name'],
+        feature,
+        jexl,
+        undefined,
+      ),
     ),
     description: toLabelString(
-      readConfigValue(config, ['labels', 'description'], feature, jexl),
+      readConfigValueSafe<unknown>(
+        config,
+        ['labels', 'description'],
+        feature,
+        jexl,
+        undefined,
+      ),
     ),
   }
 }

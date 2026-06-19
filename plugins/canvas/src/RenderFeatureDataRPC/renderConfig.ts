@@ -1,4 +1,31 @@
-export { readConfigValue } from '@jbrowse/core/configuration'
+import { readConfigValue } from '@jbrowse/core/configuration'
+
+import type { Feature } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+
+export { readConfigValue }
+
+// Evaluate a (possibly `jexl:`) config slot against a feature, degrading to
+// `fallback` when the expression throws — e.g. a custom `mouseover`/`labels`
+// jexl referencing a missing plugin function or reading an attribute off a
+// feature that doesn't carry it. The legacy SVG renderer evaluated these lazily
+// on the main thread on hover, so a bad expression only broke that one tooltip;
+// here every feature is evaluated up front in the worker, so an unguarded throw
+// would fail the entire track render.
+export function readConfigValueSafe<T>(
+  config: Record<string, unknown>,
+  key: string | string[],
+  feature: Feature,
+  jexl: JexlInstance | undefined,
+  fallback: T,
+): T {
+  try {
+    const value = readConfigValue<T>(config, key, feature, jexl)
+    return value === undefined ? fallback : value
+  } catch {
+    return fallback
+  }
+}
 
 // Sentinel used as the config default for connectorColor (stroke) to mean
 // "derive from theme text colour". The runtime check in getStrokeColor compares

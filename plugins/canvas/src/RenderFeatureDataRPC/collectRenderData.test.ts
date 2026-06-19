@@ -146,6 +146,23 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
     expect(result.flatbushItems[0]!.tooltip).toBe('static text')
   })
 
+  it('degrades to the feature name when a custom mouseover jexl throws', () => {
+    const feature = mockFeature({ type: 'm6A', id: 'm1', start: 0, end: 50 })
+    // references a jexl function not registered in this instance, which throws
+    const cfg = mockDisplayConfig({
+      mouseover: `jexl:qvscore(get(feature,'identificationqv'))`,
+    })
+    const result = collectRenderData(
+      [boxLayout(feature)],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+    )
+    expect(result.flatbushItems[0]!.tooltip).toBe('m1')
+  })
+
   it('the default slot resolves to the feature id when there is no name', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
     const result = collectRenderData(

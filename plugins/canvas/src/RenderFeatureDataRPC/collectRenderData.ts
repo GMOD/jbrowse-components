@@ -1,4 +1,3 @@
-import { readConfigValue } from '@jbrowse/core/configuration'
 import {
   cssColorToABGR as colorToUint32,
   formatHEX,
@@ -13,6 +12,7 @@ import {
 import { getFeatureName, readFeatureLabels } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { aminoAcidsBySegment } from './peptides/aggregateAminoAcids.ts'
+import { readConfigValueSafe } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isCDS, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
@@ -159,10 +159,17 @@ function emitCodonRects(
 // full feature (the same slot the old SVG renderer used on the main thread), so
 // a custom override — including one calling a plugin-registered jexl function —
 // drives the text. Done worker-side because the full feature is already here;
-// shipping a large feature back just to format a string would be wasteful.
+// shipping a large feature back just to format a string would be wasteful. A
+// throwing override degrades to the feature name rather than failing the render.
 function featureTooltip(feature: Feature, ctx: RenderContext) {
   return String(
-    readConfigValue(ctx.config, 'mouseover', feature, ctx.jexl) ?? '',
+    readConfigValueSafe<unknown>(
+      ctx.config,
+      'mouseover',
+      feature,
+      ctx.jexl,
+      getFeatureName(feature) ?? '',
+    ),
   )
 }
 

@@ -24,10 +24,10 @@ height" feature (contra a note from Garrett).
 |---|-------|----------|--------|
 | 1 | Multi-wiggle `defaultRendering: "xyplot"` → MST union error | **High** | **Fixed** (`Core-preProcessTrackConfig` handler in wiggle plugin) |
 | 2 | Workspaces (dockview) freeze with many stacked views | **High** | See existing investigation; reporter's bug #1 is the same |
-| 3 | Custom `mouseover` jexl callback ignored on GPU feature path | **High** | Strong hypothesis, needs confirm |
+| 3 | Custom `mouseover` jexl callback ignored on GPU feature path | **High** | **Fixed** (`7e576348e8`+`5f14a7f406`; worker reads `mouseover` slot w/ worker jexl) + crash-hardened |
 | 4 | GC content track stuck on "loading" | **High** | Adapter OK in jest; GPU wiggle render/stats path suspect — needs browser repro |
-| 5 | Two tooltips (glyph + floating name label) | Medium | Hypothesis, needs confirm |
-| 6 | Gene tooltip now shows "name - description" | Medium | Needs confirm (config default vs data) |
+| 5 | Two tooltips (glyph + floating name label) | Medium | **Fixed** (`7e576348e8`; glyph+label share `feature.tooltip`) |
+| 6 | Gene tooltip now shows "name - description" | Medium | **Fixed** (`7e576348e8`; old `buildFeatureTooltip` concatenation removed) |
 | 7 | Cluster-rows-by-score dialog "X" doesn't close | Medium | **Already fixed in HEAD** (`40a74d3634`) |
 | 8 | Protein3D plugin `TypeError: …reading 'id'` on launch | Low (external) | External plugin v0.4.10 — out of core scope |
 | 9 | Feature-detail table column order changed | Info | Likely intentional (now preserves attribute order) |
