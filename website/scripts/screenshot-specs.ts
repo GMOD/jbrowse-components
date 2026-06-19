@@ -624,6 +624,55 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
+  // Color-by-CDS frame coloring on a gene track: human BRCA1 (hg19 NCBI RefSeq)
+  // with colorByCDS on at the view level, so each CDS segment is tinted by its
+  // reading frame. The window spans several small coding exons whose reading
+  // frames differ, so the per-frame colors are visible. Too zoomed-out for
+  // peptide lettering, so only the frame colors show.
+  {
+    mode: 'url',
+    name: 'gene_track_color_by_cds',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr17:41,222,000-41,235,000',
+          colorByCDS: true,
+          tracks: ['ncbi_gff_hg19'],
+        },
+      ],
+    }),
+    readyText: 'RefSeq',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportHeight: 500,
+  },
+
+  // Peptide lettering: zoomed into the large BRCA1 exon 11 with the reference
+  // sequence track above, colorByCDS on. Below ~1/8 bp/px the per-codon amino
+  // acid letters are drawn over the frame-colored CDS, lined up with the codons
+  // in the sequence track.
+  {
+    mode: 'url',
+    name: 'gene_track_peptides',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr17:41,244,000-41,244,120',
+          colorByCDS: true,
+          tracks: ['Pd8Wh30ei9R', 'ncbi_gff_hg19'],
+        },
+      ],
+    }),
+    readyText: 'RefSeq',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportHeight: 500,
+  },
+
   // Location-search autocomplete: typing a gene name into the search box surfaces
   // matching features from the assembly's text-search index. Uses config_demo's
   // hg19 (whose trix index covers RefSeq/Gencode names) searching "brca".

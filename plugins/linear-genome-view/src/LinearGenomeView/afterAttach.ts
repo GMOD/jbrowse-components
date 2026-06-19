@@ -23,6 +23,7 @@ const knownInitKeyMap: Record<keyof InitState, true> = {
   highlight: true,
   showCenterLine: true,
   trackLabels: true,
+  colorByCDS: true,
 }
 const knownInitKeys = new Set(Object.keys(knownInitKeyMap))
 
@@ -202,6 +203,9 @@ async function applyInit(self: LinearGenomeViewModel, init: InitState) {
   }
   if (init.trackLabels !== undefined) {
     self.setTrackLabels(init.trackLabels)
+  }
+  if (init.colorByCDS !== undefined) {
+    self.setColorByCDS(init.colorByCDS)
   }
   backfillHighlightAssemblies(self)
   applyInitHighlights(self, session, init)

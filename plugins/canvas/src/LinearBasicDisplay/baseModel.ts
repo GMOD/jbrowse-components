@@ -46,6 +46,7 @@ import {
 } from './components/hitTesting.ts'
 import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
+import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
@@ -106,9 +107,6 @@ const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
 
-// rgba string used when outline is toggled on via the menu; schema stores the
-// raw color so users can still set their own via setOverride('outlineColor', …).
-const OUTLINE_DEFAULT_RGBA = 'rgba(0,0,0,0.3)'
 
 // Schema defaults for the picker swatch when no override is set. Kept in sync
 // with baseConfigSchema.ts color/utrColor defaults.
@@ -1082,7 +1080,9 @@ export default function baseStateModelFactory(
          * #action
          */
         setShowOutline(value: boolean) {
-          self.setOverride('outlineColor', value ? OUTLINE_DEFAULT_RGBA : '')
+          // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
+          // theme-appropriate outline so it stays visible on dark tracks too.
+          self.setOverride('outlineColor', value ? THEME_DERIVED_COLOR : '')
         },
 
         /**

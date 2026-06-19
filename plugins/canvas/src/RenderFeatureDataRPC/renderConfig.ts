@@ -27,11 +27,13 @@ export function readConfigValueSafe<T>(
   }
 }
 
-// Sentinel used as the config default for connectorColor (stroke) to mean
-// "derive from theme text colour". The runtime check in getStrokeColor compares
-// against this exact string. Using a named constant here makes both sides of
-// the contract explicit.
+// Sentinel config color (connectorColor stroke, outlineColor) meaning "derive
+// from the theme". The worker swaps it for `fallback` via resolveThemeColor.
 export const THEME_DERIVED_COLOR = '#f0f'
+
+export function resolveThemeColor(value: string, fallback: string) {
+  return value === THEME_DERIVED_COLOR ? fallback : value
+}
 
 export type DisplayMode =
   | 'normal'

@@ -1,6 +1,6 @@
 import { getFrame, measureText } from '@jbrowse/core/util'
 
-import { THEME_DERIVED_COLOR, readConfigValue } from './renderConfig.ts'
+import { readConfigValue, resolveThemeColor } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
@@ -123,5 +123,5 @@ export function getStrokeColor({
   // text.secondary is translucent; keep its alpha so connector lines and strand
   // arrows blend into the track as a subtle grey rather than glaring full-white
   // (dark mode) or full-black (light mode) at forced opacity.
-  return c === THEME_DERIVED_COLOR ? theme.palette.text.secondary : c
+  return resolveThemeColor(c, theme.palette.text.secondary)
 }

@@ -3,6 +3,7 @@ import {
   formatHEX,
   parseCssColor,
 } from '@jbrowse/core/util/colorBits'
+import { colord } from '@jbrowse/core/util/colord'
 import { lighten } from '@mui/material'
 
 import {
@@ -12,7 +13,7 @@ import {
 import { getFeatureName, readFeatureLabels } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { aminoAcidsBySegment } from './peptides/aggregateAminoAcids.ts'
-import { readConfigValueSafe } from './renderConfig.ts'
+import { readConfigValueSafe, resolveThemeColor } from './renderConfig.ts'
 import { getBoxColor, getStrokeColor, isCDS, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
@@ -190,6 +191,16 @@ function strokeColor(feature: Feature, ctx: RenderContext) {
     theme: ctx.theme,
     jexl: ctx.jexl,
   })
+}
+
+// Feature-box outline. Empty means no outline (packed as 0). The menu toggle
+// stores THEME_DERIVED_COLOR, resolved to text.primary at low alpha so the
+// outline stays visible on both light and dark tracks (a fixed black outline
+// vanishes on a dark background); in light mode this matches the old black-0.3.
+function resolveOutlineColor(outlineColor: string, theme: Theme) {
+  const faint = colord(theme.palette.text.primary).alpha(0.3).toRgbString()
+  const c = resolveThemeColor(outlineColor, faint)
+  return c ? colorToUint32(c) : 0
 }
 
 // CDS segments in transcription order (ascending genomic start on +, descending
@@ -560,9 +571,7 @@ export function collectRenderData(
     aminoAcidOverlay: [],
   }
 
-  const outlineColor = config.outlineColor
-    ? colorToUint32(config.outlineColor)
-    : 0
+  const outlineColor = resolveOutlineColor(config.outlineColor, theme)
 
   for (const layout of layouts) {
     processFeatureRecord(layout, ctx, collector)

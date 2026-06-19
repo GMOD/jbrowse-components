@@ -75,4 +75,7 @@ export interface InitState {
   // track-label placement mode, matching the view's setTrackLabels action (not
   // the ExportSvg TrackLabelMode enum)
   trackLabels?: 'overlapping' | 'offset' | 'hidden'
+  // color CDS segments by reading frame and draw amino acid lettering on gene
+  // tracks (matches the view's setColorByCDS action)
+  colorByCDS?: boolean
 }
