@@ -10,7 +10,10 @@ import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
 } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
-import { ARC_FAR_SCREEN_WIDTHS } from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
+import {
+  ARC_FAR_SCREEN_WIDTHS,
+  ARC_FLAT_MIN_PX,
+} from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
@@ -112,9 +115,13 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     ctx.strokeStyle = paletteForShape[colorIdx % paletteLen]!
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
+      // clamp to a minimum drawn width (centered on the midpoint) so
+      // short-insert pairs stay visible; mirrors arc.slang's flat-line clamp
+      const mid = (sx1 + sx2) / 2
+      const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
       ctx.beginPath()
-      ctx.moveTo(sx1, apexY)
-      ctx.lineTo(sx2, apexY)
+      ctx.moveTo(mid - halfPx, apexY)
+      ctx.lineTo(mid + halfPx, apexY)
       ctx.stroke()
     } else {
       // far is purely a function of on-screen span — no bp limit.

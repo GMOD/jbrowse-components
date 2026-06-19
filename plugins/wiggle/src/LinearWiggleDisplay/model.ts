@@ -176,6 +176,7 @@ export default function stateModelFactory(
               width,
               height,
               1,
+              self.scatterPointSize,
             ),
         )
       },

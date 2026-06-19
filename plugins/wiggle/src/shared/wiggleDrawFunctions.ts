@@ -197,6 +197,7 @@ export function drawScatter(
   domainY: [number, number],
   scaleType: number,
   rgb: string,
+  pointSize: number,
 ) {
   ctx.fillStyle = rgb
   const scoreToY = makeScoreToY(rowHeight, domainY, scaleType)
@@ -204,6 +205,7 @@ export function drawScatter(
   const scores = source.featureScores
   const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
+  const halfPoint = pointSize / 2
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
       positions[i * 2]!,
@@ -224,6 +226,6 @@ export function drawScatter(
     const scoreY = scoreToY(scores[i]!) + rowTop
     const left = Math.min(x1, x2)
     const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
-    ctx.fillRect(left, scoreY - 1, w, 2)
+    ctx.fillRect(left, scoreY - halfPoint, w, pointSize)
   }
 }

@@ -80,6 +80,7 @@ describe('Canvas2DWiggleRenderer', () => {
     canvasWidth: 800,
     canvasHeight: 200,
     numRows: 1,
+    scatterPointSize: 2,
   }
 
   test('renderBlocks draws XY plot rectangles', () => {
@@ -251,6 +252,7 @@ const lineState = {
   canvasWidth: 800,
   canvasHeight: 200,
   numRows: 1,
+  scatterPointSize: 2,
 }
 const zeroY = 200
 const score5Y = 100

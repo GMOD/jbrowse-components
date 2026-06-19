@@ -89,6 +89,7 @@ export class GpuWiggleRenderer
     // resolves to a stable 1.5 CSS px floor across DPRs, matching
     // WIGGLE_MIN_PX in the Canvas2D path.
     this.uniformF32[U.viewportWidth] = clip.scissorW
+    this.uniformF32[U.scatterPointSize] = state.scatterPointSize
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(passId, block.displayedRegionIndex, PASS_FILL)

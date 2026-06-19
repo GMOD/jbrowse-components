@@ -176,6 +176,7 @@ export default function stateModelFactory(
               width,
               height,
               self.isOverlay ? 1 : self.numSources,
+              self.scatterPointSize,
             ),
         )
       },

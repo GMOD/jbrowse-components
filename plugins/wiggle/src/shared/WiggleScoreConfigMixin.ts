@@ -17,6 +17,7 @@ const WIGGLE_SCORE_CONFIG_KEYS = [
   'scaleType',
   'autoscale',
   'numStdDev',
+  'scatterPointSize',
   'summaryScoreMode',
   'defaultRendering',
   'minScore',
@@ -103,6 +104,12 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
        */
       get numStdDev(): number {
         return self.getConfWithOverride('numStdDev')
+      },
+      /**
+       * #getter
+       */
+      get scatterPointSize(): number {
+        return self.getConfWithOverride('scatterPointSize')
       },
       /**
        * #getter

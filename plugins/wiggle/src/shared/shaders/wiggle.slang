@@ -35,6 +35,7 @@ struct Uniforms {
   float  domainYMax;
   float  zero;
   float  viewportWidth;
+  float  scatterPointSize;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -128,8 +129,9 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       botPx = rowTop + rowHeight;
     } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
       float scoreY = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
-      topPx = scoreY - 1.0;
-      botPx = scoreY + 1.0;
+      float half = u.scatterPointSize * 0.5;
+      topPx = scoreY - half;
+      botPx = scoreY + half;
     } else {
       float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
       float originY = scoreToY(0.0,        u.domainYMin, u.domainYMax, rowHeight, u.scaleType);

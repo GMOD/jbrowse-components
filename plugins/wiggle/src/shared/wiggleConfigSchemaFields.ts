@@ -55,4 +55,11 @@ export const wiggleConfigSchemaFields = {
       'Number of standard deviations to use for autoscale types globalsd or localsd',
     advanced: true,
   },
+  scatterPointSize: {
+    type: 'number',
+    defaultValue: 2,
+    description:
+      'Point height in px for scatterplot ("scatter"/"multiscatter") rendering',
+    advanced: true,
+  },
 } as const

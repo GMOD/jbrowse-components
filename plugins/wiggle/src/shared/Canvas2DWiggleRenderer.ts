@@ -36,6 +36,7 @@ function drawWiggleBlocks(
     scaleType,
     domainY,
     numRows,
+    scatterPointSize,
   } = state
   const rowHeight = canvasHeight / numRows
 
@@ -86,6 +87,7 @@ function drawWiggleBlocks(
           domainY,
           scaleType,
           rgb,
+          scatterPointSize,
         )
       } else {
         drawXYPlot(

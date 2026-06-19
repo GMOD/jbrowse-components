@@ -1,12 +1,15 @@
 // Multi-variant matrix renderer: one instance per cell (variant × sample).
-// Each cell is a column by subpixel-precise row strip. Columns are narrower
-// than a pixel when there are more variants than screen pixels, so the column
-// is rasterized at whole-pixel granularity but its true (fractional) horizontal
-// coverage is computed analytically in the fragment and carried in alpha. With
-// the premultiplied OVER blend this reproduces the canvas2d coverage-composite
-// look (smooth blended columns) instead of pixel-snapped opaque overwrite.
-// Color is per-cell (not from a ramp) — the upstream worker picks an RGBA value
-// per cell based on genotype/quality.
+// Each cell is a column by subpixel-precise row strip, drawn as a crisp opaque
+// rectangle: each physical pixel is painted by exactly one column (the one whose
+// span contains the pixel center), fully opaque, so adjacent cell colors never
+// blend at the seam — the clean "lighter" look of the original canvas2d-in-worker
+// renderer. (NB the Canvas2DVariantMatrixRenderer fallback intentionally keeps a
+// smoother float-coord/overdraw-AA rendering, so the two backends differ on
+// sub-pixel anti-aliasing.) Sub-pixel columns are widened to MIN_COL_PX (centered)
+// so they still paint instead of vanishing between pixel centers; overlapping
+// widened columns resolve last-wins via the premultiplied-OVER blend with opaque
+// alpha. Color is per-cell (not from a ramp) — the upstream worker picks an RGBA
+// value per cell based on genotype/quality.
 //! targets: wgsl, glsl
 
 import colorPack;
@@ -14,11 +17,9 @@ import hpmath;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
-// Left-edge overdraw in CSS px, mirroring `f2` in shared/constants.ts and the
-// canvas2d fallback's fillRect(x - f2, ...). Columns overlap their left
-// neighbor so premultiplied-OVER coverage composites back to ~full opacity (no
-// washout) — the same trick the canvas2d / origin-main renderers use.
-static const float OVERDRAW_CSS_PX = 0.3;
+// Minimum drawn column width in physical px, so sub-pixel columns (more variants
+// than screen pixels) still cover a pixel center and paint.
+static const float MIN_COL_PX = 1.0;
 
 struct CellInstance {
   float featureIndex : ATTR0;
@@ -50,15 +51,20 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // Column edges in physical (framebuffer) pixels. canvasWidth is CSS pixels,
   // gl_FragCoord / @builtin(position) are physical, so scale by dpr to match.
   float widthPx = u.canvasWidth * u.devicePixelRatio;
-  float x1px =
-    inst.featureIndex / u.numFeatures * widthPx
-    - OVERDRAW_CSS_PX * u.devicePixelRatio;
+  float x1px = inst.featureIndex / u.numFeatures * widthPx;
   float x2px = (inst.featureIndex + 1.0) / u.numFeatures * widthPx;
 
-  // Expand the drawn quad out to whole physical pixels so every pixel the
-  // column touches is fully rasterized — no sub-pixel column is dropped, and
-  // MSAA sees full horizontal geometry coverage (the partial coverage lives in
-  // alpha instead). Min one pixel wide keeps zero-width columns visible.
+  // Widen sub-pixel columns to MIN_COL_PX (centered on their true center) so
+  // they still cover a pixel center and paint. Wider columns keep true edges.
+  if (x2px - x1px < MIN_COL_PX) {
+    float center = (x1px + x2px) * 0.5;
+    x1px = center - MIN_COL_PX * 0.5;
+    x2px = center + MIN_COL_PX * 0.5;
+  }
+
+  // Expand the drawn quad out to whole physical pixels so every pixel whose
+  // center falls in the span is rasterized; the fragment then keeps only the
+  // pixel(s) whose center is actually inside the span (crisp opaque columns).
   float ex1 = floor(x1px);
   float ex2 = max(ceil(x2px), ex1 + 1.0);
   float clipX = lerp(ex1 / widthPx, ex2 / widthPx, lx) * 2.0 - 1.0;
@@ -81,13 +87,11 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Fraction of this physical pixel horizontally covered by the column's true
-  // edges. fragIn.position.x is the framebuffer pixel center (gl_FragCoord.x).
-  float px = floor(fragIn.position.x);
-  float coverage = clamp(
-    min(fragIn.xspan.y, px + 1.0) - max(fragIn.xspan.x, px),
-    0.0,
-    1.0);
-  float a = fragIn.color.a * coverage;
+  // Crisp opaque columns: this pixel is painted only if its center falls inside
+  // the column's span, so each pixel is a single pure cell color (no neighbor
+  // blending). fragIn.position.x is the framebuffer pixel center (gl_FragCoord.x).
+  float center = floor(fragIn.position.x) + 0.5;
+  float inside = (center >= fragIn.xspan.x && center < fragIn.xspan.y) ? 1.0 : 0.0;
+  float a = fragIn.color.a * inside;
   return float4(fragIn.color.rgb * a, a);
 }

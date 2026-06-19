@@ -52,6 +52,7 @@ const DEFAULT_STATE = {
   scaleType: SCALE_TYPE_LINEAR,
   domainY: [0, 20] as [number, number],
   numRows: 1,
+  scatterPointSize: 2,
 }
 
 describe('GpuWiggleRenderer', () => {

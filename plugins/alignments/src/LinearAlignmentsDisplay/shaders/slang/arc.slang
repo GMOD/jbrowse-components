@@ -14,7 +14,7 @@
 // height; for flat it is the line's Y. Samplot sets yBp = |tlen|; arc mode sets
 // yBp = |x2-x1|/2 (the genomic radius).
 //! targets: wgsl, glsl
-//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS
+//! export-consts: ARC_HEIGHT_MARGIN, ARC_FAR_SCREEN_WIDTHS, ARC_FLAT_MIN_PX
 
 import alignmentsUniforms;
 import colorPack;
@@ -34,6 +34,10 @@ static const float PI = 3.14159265359;
 // dome to a full-size circle (so the band clips it down to near-vertical lines
 // at each endpoint). Mirrored in drawCanvas.ts.
 static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
+// Minimum drawn width (CSS px) of a flat samplot line. Short-insert pairs span
+// far less than a pixel, so without a floor the line collapses to an invisible
+// zero-length stroke. Mirrored in drawCanvas.ts.
+static const float ARC_FLAT_MIN_PX = 1.5;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -84,9 +88,12 @@ ArcPoint evalArcPoint(float t, Instance inst, Uniforms u) {
   ArcPoint ap;
   if (inst.shapeType > 0.5) {
     // Flat line (samplot): x interpolates from x1 to x2, y is constant at destY.
-    float xNorm = x1Norm + t * (x2Norm - x1Norm);
-    ap.pos = float2(u.blockStartPx + xNorm * u.blockWidth, destY * yDir);
-    ap.tang = float2((x2Norm - x1Norm) * u.blockWidth, 0.0);
+    // Clamp the span to ARC_FLAT_MIN_PX (centered on the midpoint). The line is
+    // horizontal, so its stroke normal is vertical and the span sign is moot.
+    float mid = u.blockStartPx + (x1Norm + x2Norm) * 0.5 * u.blockWidth;
+    float halfPx = max(abs(x2Norm - x1Norm) * u.blockWidth, ARC_FLAT_MIN_PX) * 0.5;
+    ap.pos = float2(mid + (2.0 * t - 1.0) * halfPx, destY * yDir);
+    ap.tang = float2(2.0 * halfPx, 0.0);
   } else {
     // Paired arc. `far` is purely a function of on-screen span — no bp limit.
     float cxNorm = (x1Norm + x2Norm) * 0.5;
