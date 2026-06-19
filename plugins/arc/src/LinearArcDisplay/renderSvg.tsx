@@ -1,5 +1,5 @@
 import { getContainingView, when } from '@jbrowse/core/util'
-import { SvgClipRect } from '@jbrowse/core/util/svgExport'
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/SvgExport'
 
 import Arcs from './components/Arcs.tsx'
 
@@ -18,12 +18,12 @@ export async function renderArcSvg(
 ) {
   await when(() => model.fetchSettled)
   const view = getContainingView(model) as LinearGenomeViewModel
+  const width = view.dynamicBlocks.totalWidthPx
+  if (model.error) {
+    return <SVGErrorBox error={model.error} width={width} height={model.height} />
+  }
   return (
-    <SvgClipRect
-      id={`arc-${model.id}`}
-      width={view.dynamicBlocks.totalWidthPx}
-      height={model.height}
-    >
+    <SvgClipRect id={`arc-${model.id}`} width={width} height={model.height}>
       <Arcs model={model} exportSVG={true} />
     </SvgClipRect>
   )

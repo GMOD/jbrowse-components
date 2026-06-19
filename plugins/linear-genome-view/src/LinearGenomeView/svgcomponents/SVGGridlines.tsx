@@ -1,5 +1,5 @@
 import { getStrokeProps } from '@jbrowse/core/util'
-import { SvgClipRect } from '@jbrowse/core/util/svgExport'
+import { SvgClipRect } from '@jbrowse/core/util/SvgExport'
 import { useTheme } from '@mui/material'
 
 import { makeBlockTicks } from '../util.ts'

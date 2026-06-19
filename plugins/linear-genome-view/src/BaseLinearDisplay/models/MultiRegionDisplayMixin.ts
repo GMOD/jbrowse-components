@@ -105,8 +105,8 @@ export default function MultiRegionDisplayMixin() {
        * #getter
        * true once an off-screen (SVG) export can safely read this display's
        * data: every visible region has loaded, or the fetch reached a terminal
-       * error / too-large state. Off-screen renderers await
-       * `when(() => model.svgReady)` instead of inlining the condition. Regions
+       * error / too-large state. Off-screen renderers gate on it via
+       * `awaitSvgReady(model)` instead of inlining the condition. Regions
        * stream in one at a time, so gating on `viewportWithinLoadedData` (not the
        * first datum) is what keeps multi-region/whole-genome exports complete;
        * `loadedRegions.size` guards the vacuously-true empty-viewport case.

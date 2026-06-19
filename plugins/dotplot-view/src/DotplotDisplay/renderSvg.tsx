@@ -1,6 +1,6 @@
 import { getContainingView } from '@jbrowse/core/util'
+import { SVGErrorBox } from '@jbrowse/core/util/SvgExport'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox } from '@jbrowse/core/util/svgExport'
 import { when } from 'mobx'
 
 import { drawDotplotInstances } from './drawDotplot.ts'

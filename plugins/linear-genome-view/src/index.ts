@@ -139,7 +139,7 @@ export {
   renderToSvg,
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
-export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/svgExport'
+export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/SvgExport'
 export { awaitSvgReady } from '@jbrowse/core/util/svgReady'
 export type { SvgExportable } from '@jbrowse/core/util/svgReady'
 export { totalHeight } from './LinearGenomeView/svgcomponents/util.ts'

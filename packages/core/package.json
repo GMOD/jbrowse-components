@@ -97,6 +97,7 @@
     "./util/FileSaver": "./src/util/FileSaver/index.ts",
     "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
+    "./util/SvgExport": "./src/util/SvgExport.tsx",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/aborting": "./src/util/aborting.ts",
     "./util/analytics": "./src/util/analytics.ts",
@@ -129,7 +130,6 @@
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
-    "./util/svgExport": "./src/util/svgExport.tsx",
     "./util/svgReady": "./src/util/svgReady.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
@@ -498,6 +498,10 @@
         "types": "./esm/util/SvgCanvas.d.ts",
         "import": "./esm/util/SvgCanvas.js"
       },
+      "./util/SvgExport": {
+        "types": "./esm/util/SvgExport.d.ts",
+        "import": "./esm/util/SvgExport.js"
+      },
       "./util/TimeTraveller": {
         "types": "./esm/util/TimeTraveller.d.ts",
         "import": "./esm/util/TimeTraveller.js"
@@ -625,10 +629,6 @@
       "./util/stopToken": {
         "types": "./esm/util/stopToken.d.ts",
         "import": "./esm/util/stopToken.js"
-      },
-      "./util/svgExport": {
-        "types": "./esm/util/svgExport.d.ts",
-        "import": "./esm/util/svgExport.js"
       },
       "./util/svgReady": {
         "types": "./esm/util/svgReady.d.ts",
@@ -900,6 +900,9 @@
         "util/SvgCanvas": [
           "esm/util/SvgCanvas.d.ts"
         ],
+        "util/SvgExport": [
+          "esm/util/SvgExport.d.ts"
+        ],
         "util/TimeTraveller": [
           "esm/util/TimeTraveller.d.ts"
         ],
@@ -995,9 +998,6 @@
         ],
         "util/stopToken": [
           "esm/util/stopToken.d.ts"
-        ],
-        "util/svgExport": [
-          "esm/util/svgExport.d.ts"
         ],
         "util/svgReady": [
           "esm/util/svgReady.d.ts"

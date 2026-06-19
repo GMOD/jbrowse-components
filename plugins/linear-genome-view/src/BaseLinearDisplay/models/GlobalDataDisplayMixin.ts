@@ -75,9 +75,9 @@ export default function GlobalDataDisplayMixin() {
        * tooLarge), or is intentionally empty. This waits out an in-place
        * refetch (which keeps stale `rpcData` until the new result commits) and,
        * unlike `isReady`, never gates on `canvasDrawn`, which an off-screen
-       * export never sets. Off-screen renderers await `when(() =>
-       * model.svgReady)` instead of inlining a `data != null || error || ...`
-       * condition.
+       * export never sets. Off-screen renderers gate on it via
+       * `awaitSvgReady(model)` instead of inlining a `data != null || error ||
+       * ...` condition.
        */
       get svgReady(): boolean {
         return self.displayPhase !== 'loading'
