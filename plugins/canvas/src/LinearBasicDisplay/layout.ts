@@ -13,7 +13,6 @@ import type {
   FeatureLabelData,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-const LABEL_PADDING_PX = 8
 export const LAYOUT_Y_PADDING = 5
 
 // Y offset applied to features that overflow GranularRectLayout's maxHeight.
@@ -30,19 +29,45 @@ export interface LayoutInputs {
   displayMode: DisplayMode
 }
 
+// Reserve strand-arrow space only on the side the arrow actually points,
+// matching the per-direction padding the legacy renderer used. A forward
+// feature points right (left in a reversed region) and vice versa, so the
+// overhang lands on exactly one side; padding both sides made every gene
+// STRAND_ARROW_WIDTH wider than needed and hurt packing density. A feature
+// spanning both reversed and non-reversed regions points opposite ways in
+// each, so it legitimately reserves on both sides.
+function strandArrowPadding(ext: {
+  strand: number
+  hasReversed: boolean
+  hasNonReversed: boolean
+}) {
+  const arrow = ext.strand ? STRAND_ARROW_WIDTH : 0
+  const pointsLeft =
+    (ext.hasNonReversed && ext.strand === -1) ||
+    (ext.hasReversed && ext.strand === 1)
+  const pointsRight =
+    (ext.hasNonReversed && ext.strand === 1) ||
+    (ext.hasReversed && ext.strand === -1)
+  return {
+    left: pointsLeft ? arrow : 0,
+    right: pointsRight ? arrow : 0,
+  }
+}
+
 function reservedLabelWidthPx(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
   showSubfeatureLabels: boolean,
 ) {
-  const width = maxLabelTextWidth(
+  // Reserve exactly the measured text width, matching the legacy renderer — no
+  // extra padding, which would widen every labeled feature and cut density.
+  return maxLabelTextWidth(
     labelData,
     showLabels,
     showDescriptions,
     showSubfeatureLabels,
   )
-  return width > 0 ? width + LABEL_PADDING_PX : 0
 }
 
 // Scales all height/y fields in a cloned FeatureDataResult by the compact
@@ -407,9 +432,9 @@ function packRef(
     height: number
   } | null = null
   for (const [id, ext] of sorted) {
-    const arrowPadding = ext.strand ? STRAND_ARROW_WIDTH : 0
-    const leftPx = ext.layoutStartBp / bpPerPx - arrowPadding
-    const rightPx = ext.layoutEndBp / bpPerPx + arrowPadding
+    const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
+    const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
+    const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
     const top = layout.addRect(id, leftPx, rightPx, ext.height)
     if (top === null) {
       overflowCount++

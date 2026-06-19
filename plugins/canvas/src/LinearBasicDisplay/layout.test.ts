@@ -376,15 +376,29 @@ test('showLabels adds label height to the feature row', () => {
   )
 })
 
-test('strand arrow padding prevents adjacent stranded features from sharing a row', () => {
+test("forward feature's right arrow overhang pushes a feature in its gap to another row", () => {
   const data = makeFeatureData({
     features: [
       { featureId: 'f1', startBp: 100, endBp: 200, height: 20, strand: 1 },
-      { featureId: 'f2', startBp: 208, endBp: 300, height: 20, strand: 1 },
+      // starts 4bp past f1's end, inside the 8px right arrow overhang
+      { featureId: 'f2', startBp: 204, endBp: 300, height: 20, strand: 1 },
     ],
   })
   const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
   expect(out.get(0)!.flatbushItems[1]!.topPx).toBeGreaterThan(0)
+})
+
+test('arrow padding is directional: forward features just past the arrow share a row', () => {
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 200, height: 20, strand: 1 },
+      // starts past f1's 8px right arrow; f2 has no left arrow, so they pack
+      { featureId: 'f2', startBp: 220, endBp: 300, height: 20, strand: 1 },
+    ],
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1)
+  expect(out.get(0)!.flatbushItems[0]!.topPx).toBe(0)
+  expect(out.get(0)!.flatbushItems[1]!.topPx).toBe(0)
 })
 
 test('unstranded features without arrow padding can share a row when close', () => {
