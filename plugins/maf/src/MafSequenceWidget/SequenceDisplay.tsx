@@ -1,6 +1,8 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import { useCallback, useState } from 'react'
 
+import { ResizeHandle } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import useMeasure from '@jbrowse/core/util/useMeasure'
 import { alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -34,13 +36,6 @@ const useStyles = makeStyles()(theme => ({
     position: 'absolute',
     top: 0,
     right: 0,
-    width: 4,
-    height: '100%',
-    cursor: 'col-resize',
-    backgroundColor: theme.palette.divider,
-    '&:hover': {
-      backgroundColor: theme.palette.primary.main,
-    },
   },
   sequenceWrapper: {
     flexGrow: 1,
@@ -78,13 +73,11 @@ const SequenceDisplay = observer(function SequenceDisplay({
   showSampleNames,
 }: SequenceDisplayProps) {
   const { classes } = useStyles()
-  const seqWrapperRef = useRef<HTMLDivElement>(null)
+  const [seqWrapperRef, { width, height }] = useMeasure()
   const { samples, regions } = model
 
   const [scrollTop, setScrollTop] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
-  const [containerHeight, setContainerHeight] = useState(400)
-  const [containerWidth, setContainerWidth] = useState(800)
   const [labelWidth, setLabelWidth] = useState(DEFAULT_LABEL_WIDTH)
   const [hoveredCol, setHoveredCol] = useState<number>()
   const [hoveredRow, setHoveredRow] = useState<number>()
@@ -93,55 +86,6 @@ const SequenceDisplay = observer(function SequenceDisplay({
   const seqLength = sequences[0]?.length ?? 0
   const totalSeqWidth = seqLength * CHAR_WIDTH
   const totalHeight = samples ? samples.length * ROW_HEIGHT : 0
-
-  useEffect(() => {
-    const seqWrapper = seqWrapperRef.current
-    if (!seqWrapper) {
-      return
-    }
-    const resizeObserver = new ResizeObserver(entries => {
-      for (const entry of entries) {
-        const { height, width } = entry.contentRect
-        if (height > 0) {
-          setContainerHeight(height)
-        }
-        if (width > 0) {
-          setContainerWidth(width)
-        }
-      }
-    })
-    resizeObserver.observe(seqWrapper)
-    return () => {
-      resizeObserver.disconnect()
-    }
-  }, [])
-
-  // Handle resize drag
-  const handleResizeMouseDown = useCallback(
-    (e: React.MouseEvent) => {
-      e.preventDefault()
-      const startX = e.clientX
-      const startWidth = labelWidth
-
-      const handleMouseMove = (moveEvent: MouseEvent) => {
-        const delta = moveEvent.clientX - startX
-        const newWidth = Math.min(
-          MAX_LABEL_WIDTH,
-          Math.max(MIN_LABEL_WIDTH, startWidth + delta),
-        )
-        setLabelWidth(newWidth)
-      }
-
-      const handleMouseUp = () => {
-        document.removeEventListener('mousemove', handleMouseMove)
-        document.removeEventListener('mouseup', handleMouseUp)
-      }
-
-      document.addEventListener('mousemove', handleMouseMove)
-      document.addEventListener('mouseup', handleMouseUp)
-    },
-    [labelWidth],
-  )
 
   const handleHover = useCallback(
     (
@@ -203,23 +147,31 @@ const SequenceDisplay = observer(function SequenceDisplay({
 
   return (
     <div className={classes.container}>
-      {showSampleNames && (
+      {showSampleNames && height !== undefined && (
         <div
           className={classes.labelsWrapper}
-          style={{ width: labelWidth, height: containerHeight }}
+          style={{ width: labelWidth, height }}
         >
           <LabelsCanvas
             samples={samples}
             labelWidth={labelWidth}
             scrollTop={scrollTop}
-            containerHeight={containerHeight}
+            containerHeight={height}
           />
-          <div
+          <ResizeHandle
+            bar
+            vertical
             className={classes.resizeHandle}
-            onMouseDown={handleResizeMouseDown}
+            onDrag={d => {
+              setLabelWidth(w =>
+                Math.min(MAX_LABEL_WIDTH, Math.max(MIN_LABEL_WIDTH, w + d)),
+              )
+            }}
           />
         </div>
       )}
+      {/* The wrapper renders unconditionally so `useMeasure` can size it; the
+          canvas paints only once measured, avoiding a guessed-size first frame. */}
       <div
         ref={seqWrapperRef}
         className={classes.sequenceWrapper}
@@ -232,17 +184,19 @@ const SequenceDisplay = observer(function SequenceDisplay({
           className={classes.sequenceInner}
           style={{ width: totalSeqWidth, height: totalHeight }}
         >
-          <SequenceCanvas
-            samples={samples}
-            sequences={sequences}
-            colorBackground={colorBackground}
-            scrollTop={scrollTop}
-            scrollLeft={scrollLeft}
-            containerHeight={containerHeight}
-            containerWidth={containerWidth}
-            onHover={handleHover}
-            onLeave={handleLeave}
-          />
+          {width !== undefined && height !== undefined ? (
+            <SequenceCanvas
+              samples={samples}
+              sequences={sequences}
+              colorBackground={colorBackground}
+              scrollTop={scrollTop}
+              scrollLeft={scrollLeft}
+              containerHeight={height}
+              containerWidth={width}
+              onHover={handleHover}
+              onLeave={handleLeave}
+            />
+          ) : null}
           {hoveredCol !== undefined ? (
             <div
               className={classes.hoverColumn}
