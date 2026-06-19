@@ -59,9 +59,25 @@ export function buildColorPalette(theme: Theme): ColorPalette {
   }
 }
 
-export const startsSet = new Set(defaultStarts)
-export const stopsSet = new Set(defaultStops)
+const startsSet = new Set(defaultStarts)
+const stopsSet = new Set(defaultStops)
 
+export type CodonKind = 'start' | 'stop' | 'normal'
+
+export function codonKind(upperCodon: string): CodonKind {
+  return startsSet.has(upperCodon)
+    ? 'start'
+    : stopsSet.has(upperCodon)
+      ? 'stop'
+      : 'normal'
+}
+
+/**
+ * `frameShift` is the index of the first in-frame codon boundary (so the codon
+ * grid is anchored to absolute genomic coordinate mod 3, independent of where
+ * the fetched region happens to start); `sliceEnd` is the index just past the
+ * last complete codon.
+ */
 export function frameShiftBounds(seq: string, seqStart: number, frame: Frame) {
   const normalizedFrame = Math.abs(frame) - 1
   const seqFrame = seqStart % 3
@@ -69,4 +85,43 @@ export function frameShiftBounds(seq: string, seqStart: number, frame: Frame) {
   const adjLen = seq.length - frameShift
   const sliceEnd = frameShift + adjLen - (adjLen % 3)
   return { frameShift, sliceEnd }
+}
+
+/**
+ * Half-open `[start, end)` index range into a sequence that overlaps a block.
+ * `Math.floor`/`Math.ceil` cover fractional bpPerPx where block edges land on
+ * non-integer genomic positions.
+ */
+export function visibleRange(
+  blockStart: number,
+  blockEnd: number,
+  seqStart: number,
+  seqLen: number,
+) {
+  return {
+    start: Math.max(0, Math.floor(blockStart - seqStart)),
+    end: Math.min(seqLen, Math.ceil(blockEnd - seqStart)),
+  }
+}
+
+/**
+ * Codon-aligned half-open `[start, end)` index range to paint for one frame:
+ * the visible range widened by one codon of slop (so a codon straddling either
+ * edge still renders), snapped back to the `frameShift` codon grid, and clamped
+ * to the last complete codon (`sliceEnd`).
+ */
+export function visibleCodonRange(
+  blockStart: number,
+  blockEnd: number,
+  seqStart: number,
+  seqLen: number,
+  frameShift: number,
+  sliceEnd: number,
+) {
+  const { start, end } = visibleRange(blockStart, blockEnd, seqStart, seqLen)
+  const from = Math.max(frameShift, start - 3)
+  return {
+    start: from - ((from - frameShift) % 3),
+    end: Math.min(sliceEnd, end + 3),
+  }
 }

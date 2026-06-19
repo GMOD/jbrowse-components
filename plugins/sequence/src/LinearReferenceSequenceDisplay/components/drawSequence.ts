@@ -4,7 +4,12 @@ import {
   clipBlockForCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { frameShiftBounds, startsSet, stopsSet } from './sequenceGeometry.ts'
+import {
+  codonKind,
+  frameShiftBounds,
+  visibleCodonRange,
+  visibleRange,
+} from './sequenceGeometry.ts'
 
 import type { ColorEntry, ColorPalette } from './sequenceGeometry.ts'
 import type { SequenceRegionData } from '../model.ts'
@@ -61,6 +66,19 @@ function bpRangeToScreen(block: RenderBlock, absBp: number, bpWidth: number) {
   return x1 < x2 ? { x: x1, w: x2 - x1 } : { x: x2, w: x1 - x2 }
 }
 
+function centerText(
+  ctx: Ctx2D,
+  text: string,
+  x: number,
+  w: number,
+  y: number,
+  rowHeight: number,
+  color: string,
+) {
+  ctx.fillStyle = color
+  ctx.fillText(text, x + w / 2, y + rowHeight / 2)
+}
+
 interface RowDrawCommon {
   ctx: Ctx2D
   block: RenderBlock
@@ -85,10 +103,9 @@ function drawBaseRow({
   palette,
   textColors,
 }: RowDrawCommon & { isDna: boolean }) {
-  const iStart = Math.max(0, Math.floor(block.start - seqStart))
-  const iEnd = Math.min(seq.length, Math.ceil(block.end - seqStart))
+  const { start, end } = visibleRange(block.start, block.end, seqStart, seq.length)
 
-  for (let i = iStart; i < iEnd; i++) {
+  for (let i = start; i < end; i++) {
     const letter = seq[i]!
     const upper = letter.toUpperCase()
     const color = palette.bases.get(upper) ?? palette.fallback
@@ -99,10 +116,10 @@ function drawBaseRow({
 
     if (showBorders) {
       ctx.strokeRect(x, y, w, rowHeight)
-      ctx.fillStyle = isDna
+      const textColor = isDna
         ? (textColors.baseContrast.get(upper) ?? '#000')
         : '#000'
-      ctx.fillText(letter, x + w / 2, y + rowHeight / 2)
+      centerText(ctx, letter, x, w, y, rowHeight, textColor)
     }
   }
 }
@@ -139,41 +156,38 @@ function drawTranslationRow({
     ctx.fillRect(x, y, w, rowHeight)
   }
 
-  const clipStart = Math.max(0, Math.floor(block.start - seqStart) - 3)
-  const clipEnd = Math.min(seq.length, Math.ceil(block.end - seqStart) + 3)
-  const rawStart = Math.max(frameShift, clipStart)
-  const codonAlignedStart = rawStart - ((rawStart - frameShift) % 3)
+  const { start, end } = visibleCodonRange(
+    block.start,
+    block.end,
+    seqStart,
+    seq.length,
+    frameShift,
+    sliceEnd,
+  )
 
-  for (let i = codonAlignedStart; i < Math.min(sliceEnd, clipEnd); i += 3) {
+  for (let i = start; i < end; i += 3) {
     const codon = seq.slice(i, i + 3)
     const normalizedCodon = reversed ? revcom(codon) : codon
-    const upperCodon = normalizedCodon.toUpperCase()
+    const kind = codonKind(normalizedCodon.toUpperCase())
     const { x, w } = bpRangeToScreen(block, seqStart + i, 3)
 
-    const isStart = startsSet.has(upperCodon)
-    const isStop = stopsSet.has(upperCodon)
-
+    // background was already painted for normal codons, so the no-border path
+    // only repaints start/stop highlights
+    const cell = kind === 'start' ? palette.start : kind === 'stop' ? palette.stop : bg
     if (showBorders) {
-      const color = isStart ? palette.start : isStop ? palette.stop : bg
-      ctx.fillStyle = color.style
+      ctx.fillStyle = cell.style
       ctx.fillRect(x, y, w, rowHeight)
       ctx.strokeRect(x, y, w, rowHeight)
-    } else if (isStart) {
-      ctx.fillStyle = palette.start.style
+      const textColor =
+        kind === 'start'
+          ? textColors.startContrast
+          : kind === 'stop'
+            ? textColors.stopContrast
+            : '#000'
+      centerText(ctx, codonTable[normalizedCodon] ?? '', x, w, y, rowHeight, textColor)
+    } else if (kind !== 'normal') {
+      ctx.fillStyle = cell.style
       ctx.fillRect(x, y, w, rowHeight)
-    } else if (isStop) {
-      ctx.fillStyle = palette.stop.style
-      ctx.fillRect(x, y, w, rowHeight)
-    }
-
-    if (showBorders) {
-      const letter = codonTable[normalizedCodon] ?? ''
-      ctx.fillStyle = isStart
-        ? textColors.startContrast
-        : isStop
-          ? textColors.stopContrast
-          : '#000'
-      ctx.fillText(letter, x + w / 2, y + rowHeight / 2)
     }
   }
 }
