@@ -25,17 +25,6 @@ const useStyles = makeStyles()(theme => ({
     width: '100%',
     height: '100%',
   },
-  tick: {
-    position: 'absolute',
-    height: '100%',
-    width: 1,
-  },
-  majorTick: {
-    background: theme.palette.action.disabled,
-  },
-  minorTick: {
-    background: theme.palette.divider,
-  },
   block: {
     position: 'absolute',
     height: '100%',
@@ -48,6 +37,12 @@ const useStyles = makeStyles()(theme => ({
   },
   elided: {
     ...elidedBlockStyles,
+  },
+  minorLine: {
+    stroke: theme.palette.gridlineMinor,
+  },
+  majorLine: {
+    stroke: theme.palette.gridlineMajor,
   },
 }))
 
@@ -63,6 +58,23 @@ const GridlinesContent = observer(function GridlinesContent({
   const { staticBlocks, gridlineTicks } = model
   const blocks = staticBlocks.blocks
   const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+
+  // All tick marks collapse into two <path>s (minor + major) rather than one div
+  // each: zoom rebuilds two `d` strings and patches two attributes instead of
+  // reconciling ~150 nodes per frame. Vector stays crisp at any DPR with no
+  // canvas pixel-buffer size cap; +0.5 centers the 1px stroke on a pixel column
+  // to match the old divs; lines run to y=100000 and are clipped by the svg box,
+  // so we never measure the height.
+  let minorD = ''
+  let majorD = ''
+  for (const { x, major } of gridlineTicks) {
+    const seg = `M${x + 0.5} 0V100000`
+    if (major) {
+      majorD += seg
+    } else {
+      minorD += seg
+    }
+  }
 
   return (
     <>
@@ -96,18 +108,10 @@ const GridlinesContent = observer(function GridlinesContent({
           )
         })}
       </div>
-      <div className={classes.absoluteFill}>
-        {gridlineTicks.map(({ key, x, major }) => (
-          <div
-            key={key}
-            className={cx(
-              classes.tick,
-              major ? classes.majorTick : classes.minorTick,
-            )}
-            style={{ transform: `translateX(${x}px)` }}
-          />
-        ))}
-      </div>
+      <svg className={classes.absoluteFill}>
+        <path d={minorD} className={classes.minorLine} strokeWidth={1} />
+        <path d={majorD} className={classes.majorLine} strokeWidth={1} />
+      </svg>
     </>
   )
 })

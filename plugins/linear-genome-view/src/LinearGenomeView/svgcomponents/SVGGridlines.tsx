@@ -1,8 +1,8 @@
-import { stripAlpha } from '@jbrowse/core/util'
+import { getStrokeProps } from '@jbrowse/core/util'
 import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { useTheme } from '@mui/material'
 
-import { makeTicks } from '../util.ts'
+import { makeBlockTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 
@@ -21,14 +21,17 @@ export default function SVGGridlines({
     bpPerPx,
   } = model
   const theme = useTheme()
-  const c = stripAlpha(theme.palette.divider)
+  // share the on-screen gridline colors; getStrokeProps splits the rgba alpha
+  // into strokeOpacity so the exported SVG stays renderer-safe
+  const minor = getStrokeProps(theme.palette.gridlineMinor)
+  const major = getStrokeProps(theme.palette.gridlineMajor)
 
   return (
     <>
       {contentBlocks.map(block => {
-        const { start, end, key, reversed, offsetPx, widthPx } = block
+        const { key, offsetPx, widthPx } = block
         const offset = offsetPx - viewOffsetPx
-        const ticks = makeTicks(start, end, bpPerPx, true, true)
+        const ticks = makeBlockTicks(block, bpPerPx)
         return (
           <g key={key} transform={`translate(${offset} 0)`}>
             <SvgClipRect
@@ -36,23 +39,17 @@ export default function SVGGridlines({
               width={widthPx}
               height={height}
             >
-              {ticks.map(tick => {
-                const x =
-                  (reversed ? end - tick.base : tick.base - start) / bpPerPx
-                const isMajor = tick.type === 'major'
-                return (
-                  <line
-                    key={`gridline-${tick.base}`}
-                    x1={x}
-                    x2={x}
-                    y1={0}
-                    y2={height}
-                    strokeWidth={1}
-                    stroke={c}
-                    strokeOpacity={isMajor ? 0.3 : 0.15}
-                  />
-                )
-              })}
+              {ticks.map(({ base, type, x }) => (
+                <line
+                  key={`gridline-${base}`}
+                  x1={x}
+                  x2={x}
+                  y1={0}
+                  y2={height}
+                  strokeWidth={1}
+                  {...(type === 'major' ? major : minor)}
+                />
+              ))}
             </SvgClipRect>
           </g>
         )

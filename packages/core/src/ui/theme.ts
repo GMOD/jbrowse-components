@@ -40,6 +40,8 @@ declare module '@mui/material/styles' {
     modificationFwd: string
     modificationRev: string
     mutedSnpBase: string
+    gridlineMinor: string
+    gridlineMajor: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -72,6 +74,8 @@ declare module '@mui/material/styles' {
     modificationFwd?: string
     modificationRev?: string
     mutedSnpBase?: string
+    gridlineMinor?: string
+    gridlineMajor?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -148,6 +152,13 @@ const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
 const mutedSnpBase = '#888'
 
+// vertical gridlines behind the genome. white-on-dark reads far stronger than
+// dark-on-white at the same alpha, so dark mode uses a gentler stroke
+const gridlineMinor = 'rgba(0,0,0,0.12)'
+const gridlineMajor = 'rgba(0,0,0,0.26)'
+const gridlineMinorDark = 'rgba(255,255,255,0.06)'
+const gridlineMajorDark = 'rgba(255,255,255,0.15)'
+
 // Alignment read fill colors — exported as plain constants (not palette entries)
 // so they can be imported in RPC workers that have no MUI theme context.
 export const colorFwdStrandNotProper = '#ECC8C8'
@@ -162,6 +173,9 @@ export const colorFwdDiffChr = '#000'
 export const colorRevDiffChr = '#969696'
 /** #color alignments-pair-orientation | LR (→ ←, normal proper pair) | Concordant */
 export const colorPairLR = '#d3d3d3'
+// Dimmer grey for dark mode: the light #d3d3d3 reads as near-white glaring
+// blocks against a dark track background. Selected in buildColorPaletteFromTheme.
+export const colorPairLRDark = '#8a8a8a'
 /** #color alignments-pair-orientation | RL (← →, mates point away from each other) | Abnormal orientation */
 export const colorPairRL = '#0099bb'
 /** #color alignments-pair-orientation | LL (→ →, both mates forward strand) | Abnormal orientation */
@@ -207,13 +221,11 @@ const alignmentFill = {
   pairRR: colorPairRR,
 }
 
-const defaults = {
-  primary: midnight,
-  secondary: grape,
-  tertiary: forest,
-  quaternary: mandarin,
-  highlight: mandarin,
-  textHighlight,
+// plain-string domain colors. shared between `defaults` and `addMissingColors`
+// so a new color only needs adding here (plus the Palette interfaces) — these
+// can all be layered as a deepmerge base since a user theme's string value
+// cleanly overrides rather than partially merging
+const stringColorDefaults = {
   stopCodon,
   startCodon,
   coverage,
@@ -221,14 +233,34 @@ const defaults = {
   deletion,
   softclip,
   hardclip,
+  skip,
   modificationFwd,
   modificationRev,
   mutedSnpBase,
+  gridlineMinor,
+  gridlineMajor,
+}
+
+const defaults = {
+  primary: midnight,
+  secondary: grape,
+  tertiary: forest,
+  quaternary: mandarin,
+  highlight: mandarin,
+  textHighlight,
+  ...stringColorDefaults,
   bases,
   frames,
   framesCDS,
-  skip,
   alignmentFill,
+}
+
+// palette entries that differ in dark mode, shared by the dark themes
+const darkPalette = {
+  mode: 'dark' as const,
+  coverage: grey[700],
+  gridlineMinor: gridlineMinorDark,
+  gridlineMajor: gridlineMajorDark,
 }
 
 const stock = { palette: { ...defaults, mode: undefined } }
@@ -249,8 +281,7 @@ export const defaultThemes = {
     name: 'Dark (minimal)',
     palette: {
       ...defaults,
-      mode: 'dark',
-      coverage: grey[700],
+      ...darkPalette,
       primary: { main: grey[700] },
       secondary: { main: grey[800] },
       tertiary: { main: grey[900] },
@@ -258,7 +289,10 @@ export const defaultThemes = {
   },
   darkStock: {
     name: 'Dark (stock)',
-    palette: { ...defaults, mode: 'dark', coverage: grey[700] },
+    palette: {
+      ...defaults,
+      ...darkPalette,
+    },
     components: {
       // enableColorOnDark keeps the AppBar tinted with primary.main in dark
       // mode (default MUI behavior is to flatten it to the paper color)
@@ -577,37 +611,34 @@ function augmentThemeColors(theme: ThemeOptions = {}) {
     : theme
 }
 
-// adds missing colors to users theme
+// fills in JBrowse-specific colors a user/config theme omits. string colors and
+// arrays layer underneath via deepmerge (the theme cleanly overrides them);
+// PaletteColor entries (tertiary/quaternary/highlight/textHighlight) and the
+// per-key `bases`/`alignmentFill` maps are resolved wholesale, since a deep
+// merge would splice the theme's `main` onto stale light/dark shades. primary/
+// secondary are intentionally left to MUI.
 function addMissingColors(theme: ThemeOptions = {}) {
   const { palette } = theme
-  return augmentThemeColors(
-    deepmerge(
-      theme,
-      {
-        palette: {
-          quaternary: palette?.quaternary ?? lightgrey,
-          tertiary: palette?.tertiary ?? lightgrey,
-          highlight: palette?.highlight ?? mandarin,
-          textHighlight: palette?.textHighlight ?? textHighlight,
-          coverage: palette?.coverage ?? coverage,
-          insertion: palette?.insertion ?? insertion,
-          softclip: palette?.softclip ?? softclip,
-          skip: palette?.skip ?? skip,
-          hardclip: palette?.hardclip ?? hardclip,
-          deletion: palette?.deletion ?? deletion,
-          modificationFwd: palette?.modificationFwd ?? modificationFwd,
-          modificationRev: palette?.modificationRev ?? modificationRev,
-          mutedSnpBase: palette?.mutedSnpBase ?? mutedSnpBase,
-          startCodon: palette?.startCodon ?? startCodon,
-          stopCodon: palette?.stopCodon ?? stopCodon,
-          bases: { ...bases, ...palette?.bases },
-          frames: palette?.frames ?? frames,
-          framesCDS: palette?.framesCDS ?? framesCDS,
-          alignmentFill: { ...alignmentFill, ...palette?.alignmentFill },
-        },
+  const resolved = deepmerge(
+    theme,
+    {
+      palette: {
+        quaternary: palette?.quaternary ?? lightgrey,
+        tertiary: palette?.tertiary ?? lightgrey,
+        highlight: palette?.highlight ?? mandarin,
+        textHighlight: palette?.textHighlight ?? textHighlight,
+        bases: { ...bases, ...palette?.bases },
+        alignmentFill: { ...alignmentFill, ...palette?.alignmentFill },
       },
-      // overwrite (don't concatenate) the frames/framesCDS arrays, matching
-      // the default-theme merge in createJBrowseTheme
+    },
+    { arrayMerge: overwriteArrayMerge },
+  )
+  return augmentThemeColors(
+    // overwrite (don't concatenate) the frames/framesCDS arrays, matching the
+    // default-theme merge in createJBrowseTheme
+    deepmerge(
+      { palette: { ...stringColorDefaults, frames, framesCDS } },
+      resolved,
       { arrayMerge: overwriteArrayMerge },
     ),
   )
