@@ -12,7 +12,23 @@ need to run this tool is
 
 ## Screenshot
 
-![A JBrowse 2 view exported to a static image](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
+A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus — NCBI RefSeq
+genes, ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore
+reads — rendered straight from public files in a single command (`--aliases`
+reconciles the `1` / `chr1` / `NC_000001.10` refname styles across the files):
+
+![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
+
+```bash
+jb2export \
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
+  --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz \
+  --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
+  --bigwig https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
+  --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
+  --loc 1:19,197,000-19,233,000 --width 1200 --out overview.png
+```
 
 More examples [EXAMPLES.md](EXAMPLES.md)
 

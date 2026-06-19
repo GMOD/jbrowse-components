@@ -30,6 +30,18 @@ render() {
   OUTS+=("$out")
 }
 
+# Headline (README "## Screenshot"): a multi-track human view from public files —
+# NCBI RefSeq genes, ClinGen gene-disease, phyloP conservation, SKBR3 nanopore.
+# --aliases reconciles the 1 / chr1 / NC_000001.10 refname styles across files.
+render img/1.png \
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --aliases https://jbrowse.org/genomes/hg19/hg19_aliases.txt \
+  --gffgz https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz \
+  --bigbed https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb \
+  --bigwig https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw \
+  --cram https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram \
+  --loc 1:19,197,000-19,233,000 --width 1200
+
 # Whole-genome dotplot: every YJM1447 contig (x) vs every R64 contig (y).
 render img/yeast_dotplot.png dotplot \
   --fasta "$YEAST/yjm1447.fa" \
