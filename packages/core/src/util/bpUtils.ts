@@ -53,16 +53,6 @@ export function getBpDisplayStr(total: number) {
   }
 }
 
-export function getProgressDisplayStr(current: number, total: number) {
-  if (Math.floor(total / 1_000_000) > 0) {
-    return `${reducePrecision(current / 1_000_000)}/${reducePrecision(total / 1_000_000)}Mb`
-  } else if (Math.floor(total / 1_000) > 0) {
-    return `${reducePrecision(current / 1_000)}/${reducePrecision(total / 1_000)}Kb`
-  } else {
-    return `${reducePrecision(current)}/${reducePrecision(total)} bytes`
-  }
-}
-
 export function getTickDisplayStr(totalBp: number, bpPerPx: number) {
   return Math.floor(bpPerPx / 1_000) > 0
     ? `${toLocale(Number.parseFloat((totalBp / 1_000_000).toFixed(2)))}M`

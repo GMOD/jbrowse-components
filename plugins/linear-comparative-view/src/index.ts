@@ -2,6 +2,7 @@ import Plugin from '@jbrowse/core/Plugin'
 import { isAbstractMenuManager } from '@jbrowse/core/util'
 import CalendarIcon from '@mui/icons-material/CalendarViewDay'
 
+import DiagonalizeSyntenyRpc from './DiagonalizeSyntenyRpc.ts'
 import LGVSyntenyDisplayF from './LGVSyntenyDisplay/index.ts'
 import LaunchLinearSyntenyViewF from './LaunchLinearSyntenyView.ts'
 import LinearReadVsRefMenuItemF from './LinearReadVsRef/index.ts'
@@ -34,6 +35,7 @@ export default class LinearComparativeViewPlugin extends Plugin {
     pluginManager.addRpcMethod(
       () => new SyntenyGetFeaturesAndPositions(pluginManager),
     )
+    pluginManager.addRpcMethod(() => new DiagonalizeSyntenyRpc(pluginManager))
   }
 
   configure(pluginManager: PluginManager) {

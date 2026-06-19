@@ -1,12 +1,11 @@
 import { useState } from 'react'
 
-import { ErrorBanner } from '@jbrowse/core/ui'
+import { ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import {
   getContainingView,
   getSession,
   isAbortException,
-  statusFraction,
-  statusMessageText,
+  statusProgressLabel,
   useLocalStorage,
 } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
@@ -17,7 +16,6 @@ import {
   Button,
   DialogActions,
   DialogContent,
-  LinearProgress,
   TextField,
   Typography,
 } from '@mui/material'
@@ -48,8 +46,6 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
     'cluster-samplesPerPixel',
     '1',
   )
-  const fraction = statusFraction(status)
-
   return (
     <>
       <DialogContent>
@@ -84,12 +80,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
         <div>
           {loading ? (
             <div style={{ padding: 50 }}>
-              <span>
-                {statusMessageText(status) || 'Loading...'}
-                {fraction === undefined
-                  ? null
-                  : ` ${Math.round(fraction * 100)}%`}
-              </span>
+              <span>{statusProgressLabel(status) || 'Loading...'}</span>
               <Button
                 onClick={() => {
                   stopStopToken(stopToken)
@@ -97,13 +88,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               >
                 Stop
               </Button>
-              {fraction === undefined ? null : (
-                <LinearProgress
-                  variant="determinate"
-                  value={Math.min(100, fraction * 100)}
-                  style={{ marginTop: 8 }}
-                />
-              )}
+              <StatusProgressBar status={status} style={{ marginTop: 8 }} />
             </div>
           ) : null}
           {error ? <ErrorBanner error={error} /> : null}

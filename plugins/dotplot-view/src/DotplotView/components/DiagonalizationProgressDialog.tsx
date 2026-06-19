@@ -1,15 +1,9 @@
 import { useState } from 'react'
 
-import { Dialog, ErrorBanner } from '@jbrowse/core/ui'
-import { statusFraction, statusMessageText } from '@jbrowse/core/util'
+import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
+import { statusProgressLabel } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  LinearProgress,
-  Typography,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { runDotplotDiagonalize } from '../util/runDotplotDiagonalize.ts'
@@ -74,8 +68,7 @@ const DiagonalizationProgressDialog = observer(
       }
     }
 
-    const fraction = statusFraction(status)
-    const message = statusMessageText(status)
+    const message = statusProgressLabel(status)
 
     return (
       <Dialog
@@ -89,19 +82,10 @@ const DiagonalizationProgressDialog = observer(
             Reorders the vertical axis to match the horizontal. Uses all
             alignments across the currently displayed chromosomes.
           </Typography>
-          {message ? (
-            <Typography>
-              {message}
-              {fraction === undefined ? null : ` ${Math.round(fraction * 100)}%`}
-            </Typography>
-          ) : null}
+          {message ? <Typography>{message}</Typography> : null}
           {error ? <ErrorBanner error={error} /> : null}
           {isRunning ? (
-            <LinearProgress
-              style={{ marginTop: 16 }}
-              variant={fraction === undefined ? 'indeterminate' : 'determinate'}
-              value={fraction === undefined ? undefined : fraction * 100}
-            />
+            <StatusProgressBar status={status} style={{ marginTop: 16 }} />
           ) : null}
         </DialogContent>
         <DialogActions>

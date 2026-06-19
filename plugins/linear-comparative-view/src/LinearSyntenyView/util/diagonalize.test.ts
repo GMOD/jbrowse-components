@@ -1,6 +1,7 @@
-import { diagonalizeRegions } from './diagonalize.ts'
+import { diagonalizeRegions } from '@jbrowse/core/util/diagonalizeRegions'
 
-import type { AlignmentData, Region } from './diagonalize.ts'
+import type { Region } from '@jbrowse/core/util'
+import type { AlignmentData } from '@jbrowse/core/util/diagonalizeRegions'
 
 // Primary alignments from r64_vs_yjm1447.cigar.paf.gz (tp:A:P filter)
 // refRefName = r64 chromosome (hview/x-axis), queryRefName = yjm1447 chromosome (vview/y-axis)

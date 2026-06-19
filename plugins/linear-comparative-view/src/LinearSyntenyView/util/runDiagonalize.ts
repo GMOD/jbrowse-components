@@ -1,40 +1,22 @@
+import { getSession } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
-import { diagonalizeRegions } from './diagonalize.ts'
-
-import type { AlignmentData } from './diagonalize.ts'
-import type { SyntenyFeatureData } from '../../LinearSyntenyDisplay/model.ts'
+import type { DiagonalizeSyntenyArgs } from '../../DiagonalizeSyntenyRpc.ts'
+import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
+import type { StatusCallback } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 type Level = LinearSyntenyViewModel['levels'][number]
-
-export function collectAlignments(level: Level): AlignmentData[] {
-  const out: AlignmentData[] = []
-  for (const track of level.tracks) {
-    for (const display of track.displays) {
-      const fd = (display as { featureData?: SyntenyFeatureData }).featureData
-      if (!fd) {
-        continue
-      }
-      for (let i = 0; i < fd.refNames.length; i++) {
-        out.push({
-          refRefName: fd.refNames[i]!,
-          queryRefName: fd.mateRefNames[i]!,
-          refStart: fd.starts[i]!,
-          refEnd: fd.ends[i]!,
-          queryStart: fd.mateStarts[i]!,
-          queryEnd: fd.mateEnds[i]!,
-          strand: fd.strands[i]!,
-        })
-      }
-    }
-  }
-  return out
-}
 
 export interface RunDiagonalizeResult {
   totalReordered: number
   totalReversed: number
+}
+
+export interface RunDiagonalizeOpts {
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
 }
 
 // Whether every synteny display across every level has either populated
@@ -57,40 +39,48 @@ export function displaysReady(model: LinearSyntenyViewModel): boolean {
   return true
 }
 
-// Collects loaded feature data from every level's synteny displays, runs the
-// diagonalization algorithm per level, and applies the resulting region
-// reorderings/reversals atomically. Shared by the menu dialog (UI wrapper) and
-// the init autorun (autoDiagonalize flag).
+// Runs the DiagonalizeSynteny RPC (one entry per level — the worker fetches the
+// alignments and runs the algorithm off the main thread, mirroring the dotplot
+// path) and applies the resulting region reorderings/reversals atomically.
+// Shared by the menu dialog (UI wrapper) and the init autorun (autoDiagonalize
+// flag).
 export async function runDiagonalize(
   model: LinearSyntenyViewModel,
+  opts: RunDiagonalizeOpts = {},
 ): Promise<RunDiagonalizeResult | undefined> {
   if (model.views.length < 2) {
     return undefined
   }
-  const perLevel: {
-    queryView: LinearSyntenyViewModel['views'][number]
-    result: Awaited<ReturnType<typeof diagonalizeRegions>>
-  }[] = []
-  for (const [i, level] of model.levels.entries()) {
-    const alignments = collectAlignments(level)
-    if (alignments.length > 0) {
-      const queryView = model.views[i + 1]!
-      const result = await diagonalizeRegions(
-        alignments,
-        model.views[i]!.displayedRegions,
-        queryView.displayedRegions,
-      )
-      perLevel.push({ queryView, result })
-    }
-  }
+  const levels = model.levels.map((level: Level, i: number) => ({
+    adapterConfigs: level.linearSyntenyDisplays.map(
+      (d: LinearSyntenyDisplayModel) => d.adapterConfig,
+    ),
+    referenceRegions: model.views[i]!.displayedRegions,
+    currentRegions: model.views[i + 1]!.displayedRegions,
+    bpPerPx: model.views[i]!.bpPerPx,
+  }))
+
+  const { results } = await getSession(model).rpcManager.call(
+    model.id,
+    'DiagonalizeSynteny',
+    {
+      sessionId: `diagonalize-${model.id}`,
+      levels,
+      stopToken: opts.stopToken,
+      statusCallback: opts.statusCallback,
+    } satisfies DiagonalizeSyntenyArgs,
+  )
+
   let totalReversed = 0
   let totalReordered = 0
   transaction(() => {
-    for (const { queryView, result } of perLevel) {
-      queryView.setDisplayedRegions(result.newRegions)
-      totalReversed += result.stats.regionsReversed
-      totalReordered += result.stats.regionsReordered
-    }
+    results.forEach((result, i) => {
+      if (result) {
+        model.views[i + 1]!.setDisplayedRegions(result.newRegions)
+        totalReversed += result.stats.regionsReversed
+        totalReordered += result.stats.regionsReordered
+      }
+    })
   })
   return { totalReordered, totalReversed }
 }

@@ -2,11 +2,11 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
 import { dedupe } from '@jbrowse/core/util'
 import {
-  type AlignmentData,
   type DiagonalizationResult,
   diagonalizeRegions,
 } from '@jbrowse/core/util/diagonalizeRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
+import { extractAlignmentData } from '@jbrowse/synteny-core'
 import { firstValueFrom } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
@@ -75,29 +75,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     checkStopToken(stopToken)
     statusCallback?.('Extracting alignment data...')
 
-    const alignments: AlignmentData[] = []
-
-    for (const feat of feats) {
-      const mate = feat.get('mate') as
-        | {
-            refName: string
-            start: number
-            end: number
-          }
-        | undefined
-
-      if (mate) {
-        alignments.push({
-          refRefName: feat.get('refName'),
-          queryRefName: mate.refName,
-          refStart: feat.get('start'),
-          refEnd: feat.get('end'),
-          queryStart: mate.start,
-          queryEnd: mate.end,
-          strand: feat.get('strand') ?? 1,
-        })
-      }
-    }
+    const alignments = extractAlignmentData(feats)
 
     if (alignments.length === 0) {
       throw new Error('No alignments found to diagonalize')

@@ -193,10 +193,23 @@ canceled" + a refresh button in the canceled branch.
   `DisplayStatusOverlays` renders the message under the `LoadingEllipses` plus a
   determinate `LinearProgress` when a fraction is present (the first-load
   centered overlay; the corner refetch overlay shows the label only).
-- **Still indeterminate by nature:** the linear-comparative
-  `DiagonalizationProgressDialog` runs `runDiagonalize` *synchronously on the
-  main thread* (no RPC, no `statusCallback`), so its bar stays indeterminate —
-  correct for a blocking op with no progress channel.
+- **DONE — synteny diagonalize unified onto the dotplot RPC pattern.** The
+  linear-comparative diagonalize previously ran `diagonalizeRegions`
+  *synchronously on the main thread* (reading already-loaded `featureData`),
+  diverging from the dotplot's worker RPC. It now goes through a
+  `DiagonalizeSynteny` RPC that fetches each level's alignments and runs the
+  shared algorithm in the worker — `runDiagonalize` is a thin wrapper (the
+  `setTimeout(0)` paint hack is gone), and the dialog shows determinate progress
+  + cancels via stop token. Both diagonalize RPCs now share
+  `extractAlignmentData` (synteny-core: features → `AlignmentData[]`). Because
+  the synteny render path uses raw (non-canonicalized) refNames, the re-fetch is
+  refName-equivalent to the old loaded-`featureData` path while covering the full
+  displayed regions (no more "zoom out for best results" caveat).
+- **DONE — shared loading-UI helpers.** `StatusProgressBar` (`@jbrowse/core/ui`,
+  determinate-vs-indeterminate `LinearProgress` from an `RpcStatus`) and
+  `statusProgressLabel` (`progress.ts`, message + rounded `%`) collapse the
+  duplicated inline logic across the diagonalize/clustering dialogs. Dead
+  `getProgressDisplayStr` removed from `bpUtils.ts`.
 - **Not wired (different context, low priority):** text-indexing
   (`packages/text-indexing`) reports byte counts as plain strings to the admin
   CLI, not the loading overlay; worker CPU sort/layout loops (synteny dedup/sort,

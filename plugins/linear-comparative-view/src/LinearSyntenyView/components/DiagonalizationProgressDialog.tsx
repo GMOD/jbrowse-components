@@ -1,19 +1,15 @@
 import { useEffect, useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
-import { getSession } from '@jbrowse/core/util'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  LinearProgress,
-  Typography,
-} from '@mui/material'
+import { Dialog, StatusProgressBar } from '@jbrowse/core/ui'
+import { getSession, statusProgressLabel } from '@jbrowse/core/util'
+import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { runDiagonalize } from '../util/runDiagonalize.ts'
 
 import type { LinearSyntenyViewModel } from '../model.ts'
+import type { RpcStatus } from '@jbrowse/core/util'
 
 const DiagonalizationProgressDialog = observer(
   function DiagonalizationProgressDialog({
@@ -24,11 +20,12 @@ const DiagonalizationProgressDialog = observer(
     model: LinearSyntenyViewModel
   }) {
     const [done, setDone] = useState(false)
-    const [message, setMessage] = useState('Reordering chromosomes...')
+    const [status, setStatus] = useState<RpcStatus>('Reordering chromosomes...')
     const [error, setError] = useState<string>()
 
     useEffect(() => {
       let cancelled = false
+      const stopToken = createStopToken()
       const run = async () => {
         try {
           if (model.views.length < 2) {
@@ -37,19 +34,19 @@ const DiagonalizationProgressDialog = observer(
             return
           }
 
-          // Yield so the LinearProgress paints before the synchronous
-          // collect+diagonalize work blocks the main thread.
-          await new Promise(resolve => {
-            // eslint-disable-next-line @eslint-react/web-api-no-leaked-timeout -- yields to paint, Promise resolves once
-            setTimeout(resolve, 0)
+          const stats = await runDiagonalize(model, {
+            stopToken,
+            statusCallback: msg => {
+              if (!cancelled) {
+                setStatus(msg)
+              }
+            },
           })
-
-          const stats = await runDiagonalize(model)
           if (cancelled) {
             return
           }
 
-          setMessage(
+          setStatus(
             stats
               ? `Done: reordered ${stats.totalReordered} regions, reversed ${stats.totalReversed}`
               : 'No alignments to diagonalize',
@@ -70,6 +67,7 @@ const DiagonalizationProgressDialog = observer(
       run()
       return () => {
         cancelled = true
+        stopStopToken(stopToken)
       }
     }, [model, handleClose])
 
@@ -77,18 +75,19 @@ const DiagonalizationProgressDialog = observer(
       <Dialog open title="Re-order chromosomes" onClose={handleClose}>
         <DialogContent style={{ minWidth: 400 }}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
-            Reorders the bottom assembly to match the top. Uses alignment data
-            currently loaded in the view — zoom out to show whole chromosomes
-            for best results.
+            Reorders the bottom assembly to match the top, using all alignment
+            data across the currently displayed chromosomes.
           </Typography>
           <Typography
             variant="body1"
             gutterBottom
             color={error ? 'error' : 'inherit'}
           >
-            {error ?? message}
+            {error ?? statusProgressLabel(status)}
           </Typography>
-          {done ? null : <LinearProgress style={{ marginTop: 16 }} />}
+          {done ? null : (
+            <StatusProgressBar status={status} style={{ marginTop: 16 }} />
+          )}
         </DialogContent>
         <DialogActions>
           <Button

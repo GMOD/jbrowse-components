@@ -75,6 +75,18 @@ export function statusFraction(status: RpcStatus | undefined) {
 }
 
 /**
+ * Human label for a status: the message, with a rounded percentage appended
+ * when the status is determinate (e.g. `"Downloading 45%"`). The single place
+ * the percentage suffix is formatted, shared by the loading dialogs/overlays.
+ */
+export function statusProgressLabel(status: RpcStatus | undefined) {
+  const message = statusMessageText(status)
+  const fraction = statusFraction(status)
+  const percent = fraction === undefined ? '' : `${Math.round(fraction * 100)}%`
+  return [message, percent].filter(Boolean).join(' ')
+}
+
+/**
  * Adapt the byte-granularity download callback exposed by the readers
  * (generic-filehandle2 `readFile`, @gmod/tabix `getLines`, @gmod/bam /
  * @gmod/cram `getRecordsForRange`) to the structured {@link StatusCallback}
