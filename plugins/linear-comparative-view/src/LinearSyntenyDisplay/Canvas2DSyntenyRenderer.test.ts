@@ -144,6 +144,27 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(pathOps.filter(op => op === 'closePath')).toHaveLength(1)
   })
 
+  test('bakes yTop into draw coordinates rather than the canvas transform', () => {
+    // Regression: the SVG-export raster pre-scales the canvas via ctx.scale(dpr),
+    // so drawSyntenyTrack must NOT own the transform (a setTransform there
+    // clobbered the raster scale and rendered the ribbon at half size). It draws
+    // in logical coords with yTop folded into the y values instead.
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 300
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 300)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams({ yTop: 100, height: 100 })]]))
+
+    // straight-feature path: top edge at y=yTop (100), bottom at yTop+height (200)
+    const ys = pathOps
+      .filter(op => op.startsWith('moveTo') || op.startsWith('lineTo'))
+      .map(op => Number(/,([\d.]+)\)/.exec(op)![1]))
+    expect(Math.min(...ys)).toBeCloseTo(100)
+    expect(Math.max(...ys)).toBeCloseTo(200)
+  })
+
   test('render draws curved features with native cubic beziers', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800

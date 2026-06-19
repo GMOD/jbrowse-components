@@ -140,12 +140,11 @@ export function getNumber(
   return Number.isFinite(n) ? n : fallback
 }
 
+const trackLabelModes: TrackLabelMode[] = ['offset', 'overlay', 'left', 'none']
+
 export function getTrackLabels(rest: Record<string, unknown>) {
   const v = getString(rest, 'trackLabels')
-  const modes = ['offset', 'overlay', 'left', 'none']
-  return v !== undefined && modes.includes(v)
-    ? (v as TrackLabelMode)
-    : undefined
+  return trackLabelModes.find(mode => mode === v)
 }
 
 export const knownOptions = new Set([

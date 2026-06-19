@@ -13,14 +13,6 @@ export interface CanvasLike {
   fillStyle: string | CanvasGradient | CanvasPattern
   strokeStyle: string | CanvasGradient | CanvasPattern
   lineWidth: number
-  setTransform(
-    a: number,
-    b: number,
-    c: number,
-    d: number,
-    e: number,
-    f: number,
-  ): void
   beginPath(): void
   closePath(): void
   moveTo(x: number, y: number): void
@@ -59,21 +51,23 @@ export interface PickCanvasLike extends CanvasLike {
 export function buildFeaturePath(
   ctx: CanvasLike,
   c: ProjectedCorners,
+  yTop: number,
   height: number,
   isCurve: boolean,
 ) {
+  const yBot = yTop + height
   ctx.beginPath()
   if (isCurve) {
-    const halfH = height * 0.5
-    ctx.moveTo(c.sx1, 0)
-    ctx.bezierCurveTo(c.sx1, halfH, c.sx4, halfH, c.sx4, height)
-    ctx.lineTo(c.sx3, height)
-    ctx.bezierCurveTo(c.sx3, halfH, c.sx2, halfH, c.sx2, 0)
+    const halfH = yTop + height * 0.5
+    ctx.moveTo(c.sx1, yTop)
+    ctx.bezierCurveTo(c.sx1, halfH, c.sx4, halfH, c.sx4, yBot)
+    ctx.lineTo(c.sx3, yBot)
+    ctx.bezierCurveTo(c.sx3, halfH, c.sx2, halfH, c.sx2, yTop)
   } else {
-    ctx.moveTo(c.sx1, 0)
-    ctx.lineTo(c.sx4, height)
-    ctx.lineTo(c.sx3, height)
-    ctx.lineTo(c.sx2, 0)
+    ctx.moveTo(c.sx1, yTop)
+    ctx.lineTo(c.sx4, yBot)
+    ctx.lineTo(c.sx3, yBot)
+    ctx.lineTo(c.sx2, yTop)
   }
   ctx.closePath()
 }
@@ -252,7 +246,8 @@ export function pickFeatureAtPoint(
       }
 
       const c = projectCorners(data, i, transform)
-      buildFeaturePath(ctx, c, height, params.drawCurves)
+      // Path built in track-local space (yTop=0) to match localY below.
+      buildFeaturePath(ctx, c, 0, height, params.drawCurves)
 
       if (ctx.isPointInPath(x, localY)) {
         return { key, featureIndex: i }

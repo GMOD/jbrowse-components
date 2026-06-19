@@ -31,6 +31,7 @@ function drawInstances(
   leftLimit: number,
   rightLimit: number,
   fillStyleCache: Map<number, string>,
+  yTop: number,
 ) {
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.alignmentLengths[i]! < minAlignmentLength) {
@@ -108,17 +109,17 @@ function drawInstances(
       ctx.strokeStyle = fillStyle
       ctx.lineWidth = 1
       ctx.beginPath()
-      ctx.moveTo(xt, 0)
+      ctx.moveTo(xt, yTop)
       if (drawCurves) {
         const halfH = height * 0.5
-        ctx.bezierCurveTo(xt, halfH, xb, halfH, xb, height)
+        ctx.bezierCurveTo(xt, yTop + halfH, xb, yTop + halfH, xb, yTop + height)
       } else {
-        ctx.lineTo(xb, height)
+        ctx.lineTo(xb, yTop + height)
       }
       ctx.stroke()
     } else {
       ctx.fillStyle = fillStyle
-      buildFeaturePath(ctx, c, height, drawCurves)
+      buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {
         ctx.strokeStyle = 'rgba(0,0,0,0.4)'
@@ -129,13 +130,16 @@ function drawInstances(
   }
 }
 
+// Draws in logical (CSS-px) coordinates with yTop baked into the y values, so
+// the caller's canvas transform only ever carries the device scale — the SVG
+// raster export's pre-applied ctx.scale(dpr) and the interactive backend's
+// single setTransform(dpr) both work without this function touching it.
 export function drawSyntenyTrack(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
   params: SyntenyTrackRenderParams,
   logicalW: number,
   overdrawPx: number,
-  dpr = 1,
 ) {
   const {
     yTop,
@@ -147,15 +151,15 @@ export function drawSyntenyTrack(
     drawCurves,
   } = params
 
-  ctx.setTransform(dpr, 0, 0, dpr, 0, yTop * dpr)
-
   const transform = computeTransform(params)
   // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
   // for the common case of many instances sharing a color (CIGAR fills).
   const fillStyleCache = new Map<number, string>()
   const leftLimit = -overdrawPx
   const rightLimit = logicalW + overdrawPx
-  const args = [
+
+  drawInstances(
+    ctx,
     data,
     transform,
     alpha,
@@ -167,9 +171,8 @@ export function drawSyntenyTrack(
     leftLimit,
     rightLimit,
     fillStyleCache,
-  ] as const
-
-  drawInstances(ctx, ...args)
+    yTop,
+  )
 }
 
 export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
@@ -218,6 +221,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
     const logicalW = this.canvas.width / dpr
     const logicalH = this.canvas.height / dpr
 
+    // Single device-scale transform for the whole pass; drawSyntenyTrack draws
+    // in logical coords and bakes each track's yTop into its y values.
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     ctx.fillStyle = '#fff'
     ctx.fillRect(0, 0, logicalW, logicalH)
@@ -228,10 +233,8 @@ export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
       if (!data || data.instanceCount === 0) {
         continue
       }
-      drawSyntenyTrack(ctx, data, params, logicalW, overdrawPx, dpr)
+      drawSyntenyTrack(ctx, data, params, logicalW, overdrawPx)
     }
-
-    ctx.setTransform(dpr, 0, 0, dpr, 0, 0)
     return true
   }
 

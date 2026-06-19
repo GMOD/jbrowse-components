@@ -21,8 +21,9 @@ export type PaintLayerOpts = SvgRasterCanvasOpts & {
  *
  * Used by every renderSvg.tsx that has a heavy draw path: the same `paint`
  * callback runs on both surfaces, with `paint(ctx)` doing whatever drawing
- * the plugin needs. Width 0 or height 0 falls through to the vector branch
- * (canvas creation rejects 0×0).
+ * the plugin needs in logical coordinates (the raster canvas is pre-scaled, so
+ * callbacks never deal with devicePixelRatio). Width 0 or height 0 falls
+ * through to the vector branch (canvas creation rejects 0×0).
  */
 export function paintLayer(
   width: number,

@@ -1,22 +1,19 @@
 export type Entry = [string, string[]]
 
+// A `-`-prefixed token opens a new entry; the values that follow accumulate
+// onto it until the next flag.
 export function parseArgv(rawArgv: string[]) {
-  const map: Entry[] = []
-  let argv = rawArgv
-  while (argv.length) {
-    const val = argv[0]!.slice(2)
-    argv = argv.slice(1)
-    const next = argv.findIndex(arg => arg.startsWith('-'))
-
-    if (next !== -1) {
-      map.push([val, argv.slice(0, next)])
-      argv = argv.slice(next)
+  const entries: Entry[] = []
+  let current: string[] | undefined
+  for (const arg of rawArgv) {
+    if (arg.startsWith('-')) {
+      current = []
+      entries.push([arg.slice(2), current])
     } else {
-      map.push([val, argv])
-      break
+      current?.push(arg)
     }
   }
-  return map
+  return entries
 }
 
 export function standardizeArgv(

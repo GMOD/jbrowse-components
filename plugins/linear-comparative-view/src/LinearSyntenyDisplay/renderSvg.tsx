@@ -34,8 +34,9 @@ export async function renderSvg(
   }
   // paintLayer dispatches to a 2× raster canvas when opts.rasterizeLayers is
   // set, falling back to SvgCanvas otherwise. drawSyntenyTrack duck-types
-  // against either Ctx2D variant so the same slope-aware widening / culling
-  // path runs in both modes.
+  // against either Ctx2D variant and draws in logical coords (paintLayer's
+  // canvas is pre-scaled), so the same draw path runs identically here and in
+  // the interactive Canvas2D backend.
   const node = paintLayer(view.width, model.height, opts, ctx => {
     drawSyntenyTrack(ctx, data, params, view.width, view.overdrawPx)
   })
