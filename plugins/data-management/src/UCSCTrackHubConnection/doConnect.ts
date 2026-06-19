@@ -69,7 +69,15 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       const genomeName = genome.name!
 
       if (!assemblyManager.get(genomeName)) {
-        session.addSessionAssembly?.(generateAssembly(genome, hubUri))
+        if (session.addSessionAssembly) {
+          session.addSessionAssembly(generateAssembly(genome, hubUri))
+        } else {
+          // the hub's single genome isn't present and can't be added, so its
+          // tracks would have nowhere to attach
+          throw new Error(
+            `Cannot load hub: assembly ${genomeName} is not present and this session cannot add assemblies`,
+          )
+        }
       }
       const tracksNew = generateTracks({
         trackDb: tracks,
