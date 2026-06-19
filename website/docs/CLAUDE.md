@@ -14,7 +14,7 @@ the source instead.
 | `api/*.md` (plugin-export API)                           | `pnpm autogen` (repo root)   | `#api <group>` JSDoc tags in source (`docs/generateApiDocs.ts`)                     |
 | color swatch tables between `<!-- COLOR_TABLE … -->`     | `pnpm autogen` (repo root)   | color constants in `theme.ts` + alignments `color.ts` (`docs/generateColorDocs.ts`) |
 | `user_guide.md`, `config_guide.md`, `developer_guide.md` | `pnpm lint-docs` (repo root) | `website/scripts/generate-guide-indexes.ts` + per-guide frontmatter                 |
-| `img.md` (@jbrowse/img static-export tool)               | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)            |
+| `jbrowse-img.md` (@jbrowse/img static-export tool)       | `pnpm autogen` (repo root)   | `products/jbrowse-img/README.md` (`website/scripts/generate-img-doc.ts`)            |
 
 - `config/`, `models/`, and `api/` are all wiped and rebuilt by a single
   `pnpm autogen` (= `pnpm gendocs` + prettier). Run `autogen`, not `gendocs`
@@ -43,11 +43,17 @@ the source instead.
   `@jbrowse/cli --help` output. Change flags/descriptions at the CLI source
   (`products/jbrowse-cli/src/commands/`), not here. Only the hand-written intro
   prose at the top is editable in place.
-- **`img.md`**: fully generated from `products/jbrowse-img/README.md` by
+- **`jbrowse-img.md`**: fully generated from `products/jbrowse-img/README.md` by
   `website/scripts/generate-img-doc.ts` (runs in `pnpm autogen`). It drops the
   README's H1, adds frontmatter, rewrites repo-relative links to GitHub URLs,
-  and runs the result through prettier. Edit the README, not `img.md`.
-  `pnpm lint-docs-check` (CI) runs `gen-img-doc --check` and fails on drift.
+  and runs the result through prettier. It also copies the README's example
+  images from `products/jbrowse-img/img/` into `static/img/jbrowse-img/` and
+  repoints the `raw.githubusercontent` URLs at those local copies, so the page
+  renders without a GitHub-raw dependency (e.g. offline/staging builds), and
+  converts the markdown images to `<Figure>` components (the alt text becomes
+  the caption). Edit the README, not `jbrowse-img.md`. `pnpm lint-docs-check`
+  (CI) runs `gen-img-doc --check` and fails on drift in either the doc or the
+  copied images.
 
 Everything else under `docs/` (the quickstarts, `user_guides/*`,
 `config_guides/*`, `developer_guides/*`, `tutorials/*`, `faq.md`,

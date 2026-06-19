@@ -7,7 +7,7 @@ and upgrade JBrowse, add assemblies and tracks to a `config.json`, build text
 indexes, sort and prepare data files, and more.
 
 For the `@jbrowse/img` static export tool, see
-https://www.npmjs.com/package/@jbrowse/img.
+[Static image export (@jbrowse/img)](/docs/jbrowse-img).
 
 ## Installation
 

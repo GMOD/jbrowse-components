@@ -51,8 +51,7 @@ variants, quantitative/coverage, GWAS/Manhattan, and Hi-C data.
 - [FAQ](/docs/faq) - some Q&A for troubleshooting or other topics
 - [@jbrowse/cli](/docs/cli) - docs for our CLI tools for loading tracks,
   assemblies, text indexing, and more
-- [@jbrowse/img](https://www.npmjs.com/package/@jbrowse/img) - docs for our
-  command line image generator
+- [@jbrowse/img](/docs/jbrowse-img) - docs for our command line image generator
 - [Embedded components](/docs/embedded_components) - docs for our reusable React
   components on NPM
 - [JBrowseR](https://gmod.github.io/JBrowseR/) - docs for our R htmlwidget

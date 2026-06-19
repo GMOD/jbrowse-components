@@ -1,20 +1,39 @@
-import { readFileSync, writeFileSync } from 'fs'
+import {
+  copyFileSync,
+  existsSync,
+  mkdirSync,
+  readFileSync,
+  writeFileSync,
+} from 'fs'
 import { join } from 'path'
 
 import { format, resolveConfig } from 'prettier'
 
-// Mirrors products/jbrowse-img/README.md into website/docs/img.md so the
+// Mirrors products/jbrowse-img/README.md into website/docs/jbrowse-img.md so the
 // @jbrowse/img static-export docs live alongside the CLI docs (cli.md). The
 // README is the source of truth — edit it there, then run `pnpm autogen` (or
 // this script directly) to regenerate. CI parity via `--check`.
 
 const repoRoot = join(import.meta.dirname, '..', '..')
-const readmePath = join(repoRoot, 'products', 'jbrowse-img', 'README.md')
-const outPath = join(repoRoot, 'website', 'docs', 'img.md')
+const productDir = join(repoRoot, 'products', 'jbrowse-img')
+const readmePath = join(productDir, 'README.md')
+const outPath = join(repoRoot, 'website', 'docs', 'jbrowse-img.md')
+const imgSrcDir = join(productDir, 'img')
+const imgDestDir = join(repoRoot, 'website', 'static', 'img', 'jbrowse-img')
 const check = process.argv.includes('--check')
 
 const githubBase =
   'https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img'
+
+// The README points its example images at the in-repo copies via raw.github
+// URLs (so they render on npm/GitHub). For the docs site we serve them from the
+// website's own static dir instead, so the page is self-contained: versioned
+// with the docs, rendering in offline/staging builds, with no raw.github
+// runtime dependency. Astro's rehype-base-urls prefixes the `/img/...` path with
+// the site base path, matching every other figure on the site.
+const rawImgRe =
+  /https:\/\/raw\.githubusercontent\.com\/GMOD\/jbrowse-components\/main\/products\/jbrowse-img\/img\/([\w.-]+)/g
+const localImgUrl = '/img/jbrowse-img/'
 
 const title = 'Static image export (@jbrowse/img)'
 
@@ -28,6 +47,28 @@ function rewriteRelativeLinks(md: string) {
   })
 }
 
+// Repoint raw.github image URLs at the local static dir; collect the referenced
+// filenames so they can be copied/verified alongside the doc.
+function rewriteImages(md: string) {
+  const names = new Set<string>()
+  const out = md.replace(rawImgRe, (_match, name: string) => {
+    names.add(name)
+    return `${localImgUrl}${name}`
+  })
+  return { out, names }
+}
+
+// The site renders captioned figures via the <Figure> component (handled by
+// remark-figure), so convert the README's plain markdown images into <Figure>s
+// — the image alt text becomes the figcaption.
+function imagesToFigures(md: string) {
+  return md.replace(
+    /!\[([^\]]*)\]\(([^)]+)\)/g,
+    (_match, alt: string, src: string) =>
+      `<Figure src="${src}" caption="${alt}" />`,
+  )
+}
+
 // Format through prettier with the repo config so the output matches what
 // `pnpm format` (postautogen) produces — otherwise the committed file and the
 // --check comparison would disagree on line wrapping.
@@ -36,6 +77,8 @@ async function generate() {
   // Drop the leading "# @jbrowse/img" H1 — the frontmatter title supplies the
   // page heading. Keep everything after it.
   const body = readme.replace(/^# @jbrowse\/img\n+/, '')
+  const { out, names } = rewriteImages(body)
+  const withFigures = imagesToFigures(out)
   const raw = [
     '---',
     `title: ${title}`,
@@ -45,24 +88,63 @@ async function generate() {
     'website/scripts/generate-img-doc.ts — edit the README, then run',
     '`pnpm autogen` -->',
     '',
-    rewriteRelativeLinks(body),
+    rewriteRelativeLinks(withFigures),
   ].join('\n')
   const prettierConfig = await resolveConfig(outPath)
-  return format(raw, { ...prettierConfig, filepath: outPath })
+  const md = await format(raw, { ...prettierConfig, filepath: outPath })
+  return { md, names }
 }
 
-const generated = await generate()
+// Copy each referenced example image into the website's static dir (or, in check
+// mode, list the ones that are missing/out of date so CI fails when a source
+// image changed but wasn't re-synced).
+function syncImages(names: Set<string>) {
+  const stale: string[] = []
+  for (const name of names) {
+    const src = join(imgSrcDir, name)
+    if (!existsSync(src)) {
+      throw new Error(
+        `README references ${localImgUrl}${name} but ${src} does not exist`,
+      )
+    }
+    const dest = join(imgDestDir, name)
+    const upToDate =
+      existsSync(dest) && readFileSync(dest).equals(readFileSync(src))
+    if (!upToDate) {
+      stale.push(name)
+      if (!check) {
+        mkdirSync(imgDestDir, { recursive: true })
+        copyFileSync(src, dest)
+      }
+    }
+  }
+  return stale
+}
+
+const { md, names } = await generate()
+const staleImages = syncImages(names)
 
 if (check) {
-  const current = readFileSync(outPath, 'utf8')
-  if (current !== generated) {
-    console.error(
-      `${outPath} is out of date. Run \`pnpm autogen\` to regenerate.`,
-    )
+  const docStale = readFileSync(outPath, 'utf8') !== md
+  if (docStale || staleImages.length > 0) {
+    if (docStale) {
+      console.error(`${outPath} is out of date.`)
+    }
+    if (staleImages.length > 0) {
+      console.error(
+        `images out of date in ${imgDestDir}: ${staleImages.join(', ')}`,
+      )
+    }
+    console.error('Run `pnpm autogen` to regenerate.')
     process.exit(1)
   }
-  console.log('img.md is up to date')
+  console.log('jbrowse-img.md is up to date')
 } else {
-  writeFileSync(outPath, generated)
+  writeFileSync(outPath, md)
   console.log(`wrote ${outPath}`)
+  if (staleImages.length > 0) {
+    console.log(
+      `copied ${staleImages.length} image(s) to ${imgDestDir}: ${staleImages.join(', ')}`,
+    )
+  }
 }
