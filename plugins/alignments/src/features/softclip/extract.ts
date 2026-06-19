@@ -1,33 +1,31 @@
 import type { SoftclipData } from '../../shared/webglRpcTypes.ts'
-import type { ClipMismatch } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 export function emitSoftclip(
-  mm: ClipMismatch,
+  start: number,
+  cliplen: number,
   featureId: string,
   featureStart: number,
   feature: Feature,
   softclipsData: SoftclipData[],
   showSoftClipping: boolean,
 ) {
-  const isLeftClip = mm.start === 0
-  const clipStart = isLeftClip
-    ? featureStart - mm.cliplen
-    : featureStart + mm.start
+  const isLeftClip = start === 0
+  const clipStart = isLeftClip ? featureStart - cliplen : featureStart + start
   const seq = showSoftClipping
     ? (feature.get('seq') as string | undefined)
     : undefined
   const sequence = seq
     ? seq.slice(
-        isLeftClip ? 0 : seq.length - mm.cliplen,
-        isLeftClip ? mm.cliplen : seq.length,
+        isLeftClip ? 0 : seq.length - cliplen,
+        isLeftClip ? cliplen : seq.length,
       )
     : undefined
   softclipsData.push({
     featureId,
-    position: featureStart + mm.start,
+    position: featureStart + start,
     clipStart,
-    length: mm.cliplen,
+    length: cliplen,
     sequence,
   })
 }

@@ -132,7 +132,6 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
     const { refName, start, end, originalRefName } = region
     const { stopToken, filterBy, statusCallback = () => {} } = opts ?? {}
     return ObservableCreate<Feature>(async observer => {
-      const sequenceAdapter = await this.getSequenceAdapter()
       const { bam } = await this.setup(opts)
       checkStopToken(stopToken)
 
@@ -154,7 +153,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       checkStopToken(stopToken)
 
       const { readName, tagFilter } = filterBy ?? {}
+      // only reads lacking an MD tag need the reference; defer loading the
+      // sequence adapter (and the fetch) until we know at least one does
       const span = seqFetchSpan(records)
+      const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
         sequenceAdapter && span
           ? await sequenceAdapter.getSequence({
@@ -187,10 +189,9 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
             record.adapter = this
 
             if (!record.NUMERIC_MD && regionSeq && span) {
-              record.ref = regionSeq.slice(
-                record.start - span.start,
-                record.end - span.start,
-              )
+              // share the one region string; refOffset locates this read in it
+              record.ref = regionSeq
+              record.refOffset = record.start - span.start
             }
 
             observer.next(record)

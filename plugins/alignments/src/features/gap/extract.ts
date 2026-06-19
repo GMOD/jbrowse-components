@@ -1,5 +1,4 @@
 import type { GapData } from '../../shared/webglRpcTypes.ts'
-import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
 function getEffectiveStrand(feature: Feature) {
@@ -16,7 +15,9 @@ function getEffectiveStrand(feature: Feature) {
 }
 
 export function emitGap(
-  mm: Extract<Mismatch, { type: 'deletion' | 'skip' }>,
+  type: 'deletion' | 'skip',
+  start: number,
+  length: number,
   featureId: string,
   featureStart: number,
   strand: number,
@@ -25,10 +26,10 @@ export function emitGap(
 ) {
   gapsData.push({
     featureId,
-    start: featureStart + mm.start,
-    end: featureStart + mm.start + mm.length,
-    type: mm.type,
-    strand: mm.type === 'deletion' ? strand : getEffectiveStrand(feature),
+    start: featureStart + start,
+    end: featureStart + start + length,
+    type,
+    strand: type === 'deletion' ? strand : getEffectiveStrand(feature),
     featureStrand: strand,
   })
 }

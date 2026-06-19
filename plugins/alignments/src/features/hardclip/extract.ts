@@ -1,15 +1,15 @@
 import type { HardclipData } from '../../shared/webglRpcTypes.ts'
-import type { ClipMismatch } from '@jbrowse/alignments-core'
 
 export function emitHardclip(
-  mm: ClipMismatch,
+  start: number,
+  cliplen: number,
   featureId: string,
   featureStart: number,
   hardclipsData: HardclipData[],
 ) {
   hardclipsData.push({
     featureId,
-    position: featureStart + mm.start,
-    length: mm.cliplen,
+    position: featureStart + start,
+    length: cliplen,
   })
 }

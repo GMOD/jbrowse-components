@@ -28,8 +28,11 @@ import type { MismatchCallback } from './mismatchCallback.ts'
  * @param seqLength - Length of sequence
  * @param md - MD tag as byte array (or undefined)
  * @param qual - Quality scores (or undefined)
- * @param ref - Reference sequence for comparison when no MD tag
+ * @param ref - Reference sequence for comparison when no MD tag. May be a
+ *   shared region-wide string covering many reads; `refOffset` locates this
+ *   read's start within it (avoids slicing a substring per read).
  * @param callback - Called for each mismatch/indel/clip
+ * @param refOffset - Index in `ref` of this read's first reference base
  */
 export function forEachMismatchNumeric(
   cigar: ArrayLike<number>,
@@ -39,6 +42,7 @@ export function forEachMismatchNumeric(
   qual: ArrayLike<number> | null | undefined,
   ref: string | undefined,
   callback: MismatchCallback,
+  refOffset = 0,
 ) {
   // Fast path for reads with no sequence (e.g. secondary alignments with SEQ='*')
   if (seqLength === 0) {
@@ -146,7 +150,7 @@ export function forEachMismatchNumeric(
           const sb = numericSeq[seqIdx >> 1]!
           const nibble = (sb >> ((1 - (seqIdx & 1)) << 2)) & 0xf
           const seqBaseCode = SEQRET_NUMERIC_DECODER[nibble]!
-          const refCharCode = ref.charCodeAt(roffset + j)
+          const refCharCode = ref.charCodeAt(refOffset + roffset + j)
           // Compare case-insensitively (| 0x20 converts uppercase to lowercase)
           if (seqBaseCode !== (refCharCode | 0x20)) {
             callback(
@@ -242,7 +246,7 @@ export function forEachMismatchNumeric(
           }
         } else if (ref) {
           // No MD tag - get reference base from ref string
-          altbaseCode = ref.charCodeAt(roffset + j)
+          altbaseCode = ref.charCodeAt(refOffset + roffset + j)
         }
 
         callback(

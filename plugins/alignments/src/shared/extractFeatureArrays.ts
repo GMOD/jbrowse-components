@@ -10,6 +10,7 @@ import {
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
+import type { MismatchFeature } from './extractCigarFeatures.ts'
 import type { ColorBy } from './types.ts'
 import type {
   FeatureData,
@@ -22,7 +23,6 @@ import type {
 } from './webglRpcTypes.ts'
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
-import type { Mismatch } from '@jbrowse/alignments-core'
 import type { Feature, Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'
 
@@ -89,20 +89,16 @@ export function extractFeatureArrays<T extends FeatureData>(
       sortTagValues.push(extractFeatureTagValue(feature, sortTag))
     }
 
-    const featureMismatches = feature.get('mismatches') as
-      | Mismatch[]
-      | undefined
-    if (featureMismatches) {
-      extractCigarFeatures(
-        featureMismatches,
-        featureId,
-        featureStart,
-        strand,
-        feature,
-        cigarOutput,
-        showSoftClipping,
-      )
-    }
+    // alignment features (BAM/CRAM) implement forEachMismatch; drive CIGAR
+    // extraction off it directly rather than allocating a Mismatch[] per read
+    extractCigarFeatures(
+      feature as MismatchFeature,
+      featureId,
+      featureStart,
+      strand,
+      cigarOutput,
+      showSoftClipping,
+    )
 
     const modData = extractModifications(
       feature,

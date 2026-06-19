@@ -1,8 +1,8 @@
 import type { MismatchData } from '../../shared/webglRpcTypes.ts'
-import type { Mismatch } from '@jbrowse/alignments-core'
 
 export function emitMismatch(
-  mm: Extract<Mismatch, { type: 'mismatch' }>,
+  start: number,
+  base: string,
   featureId: string,
   featureStart: number,
   strand: number,
@@ -10,8 +10,10 @@ export function emitMismatch(
 ) {
   mismatchesData.push({
     featureId,
-    position: featureStart + mm.start,
-    base: mm.base.toUpperCase().charCodeAt(0),
+    position: featureStart + start,
+    // uppercase the single ASCII base without allocating a string (CRAM may
+    // emit lowercase); ~2x faster than base.toUpperCase().charCodeAt(0)
+    base: base.charCodeAt(0) & ~0x20,
     strand: strand === -1 ? -1 : 1,
   })
 }

@@ -23,7 +23,10 @@ export default class BamSlightlyLazyFeature
   implements Feature
 {
   public adapter!: BamAdapter
+  // shared region-wide reference string (covers many reads); refOffset locates
+  // this read's start within it, so no per-read substring is allocated
   public ref?: string
+  public refOffset = 0
   private _cachedFields?: SimpleFeatureSerialized
 
   id() {
@@ -96,6 +99,7 @@ export default class BamSlightlyLazyFeature
       this.qual,
       this.ref,
       callback,
+      this.refOffset,
     )
   }
 

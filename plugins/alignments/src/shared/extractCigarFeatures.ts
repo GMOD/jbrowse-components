@@ -1,3 +1,11 @@
+import {
+  DELETION_TYPE,
+  INSERTION_TYPE,
+  MISMATCH_TYPE,
+  SKIP_TYPE,
+  SOFTCLIP_TYPE,
+} from '@jbrowse/cigar-utils'
+
 import { emitGap } from '../features/gap/extract.ts'
 import { emitHardclip } from '../features/hardclip/extract.ts'
 import { emitInsertion } from '../features/insertion/extract.ts'
@@ -11,8 +19,14 @@ import type {
   MismatchData,
   SoftclipData,
 } from './webglRpcTypes.ts'
-import type { Mismatch } from '@jbrowse/alignments-core'
+import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature } from '@jbrowse/core/util'
+
+// Alignment features (BAM/CRAM) expose a zero-alloc mismatch iterator on top of
+// the base Feature interface.
+export interface MismatchFeature extends Feature {
+  forEachMismatch: (callback: MismatchCallback) => void
+}
 
 // Output buffers each emitter pushes into. Bundled to keep the dispatch
 // signature short; the caller allocates this once per region (not per
@@ -25,37 +39,73 @@ export interface CigarEmitOutput {
   hardclips: HardclipData[]
 }
 
-// Single dispatch loop emitting per-feature CIGAR data. Each branch routes
-// into a feature folder's emitter. Per-feature primitives are passed
-// directly — extractFeatureArrays runs this for thousands of features per
-// region, so we avoid allocating a context object per feature.
+// Single dispatch loop emitting per-feature CIGAR data. Driven by
+// forEachMismatch so no intermediate Mismatch[] is allocated — each branch
+// routes the callback primitives straight into a feature folder's emitter.
+// extractFeatureArrays runs this for thousands of features per region.
 export function extractCigarFeatures(
-  featureMismatches: Mismatch[],
+  feature: MismatchFeature,
   featureId: string,
   featureStart: number,
   strand: number,
-  feature: Feature,
   output: CigarEmitOutput,
   showSoftClipping: boolean,
 ) {
-  for (const mm of featureMismatches) {
-    if (mm.type === 'deletion' || mm.type === 'skip') {
-      emitGap(mm, featureId, featureStart, strand, feature, output.gaps)
-    } else if (mm.type === 'mismatch') {
-      emitMismatch(mm, featureId, featureStart, strand, output.mismatches)
-    } else if (mm.type === 'insertion') {
-      emitInsertion(mm, featureId, featureStart, output.insertions)
-    } else if (mm.type === 'softclip') {
-      emitSoftclip(
-        mm,
-        featureId,
-        featureStart,
-        feature,
-        output.softclips,
-        showSoftClipping,
-      )
-    } else {
-      emitHardclip(mm, featureId, featureStart, output.hardclips)
-    }
-  }
+  feature.forEachMismatch(
+    (type, start, length, base, qual, altbase, cliplen) => {
+      if (type === MISMATCH_TYPE) {
+        emitMismatch(
+          start,
+          base,
+          featureId,
+          featureStart,
+          strand,
+          output.mismatches,
+        )
+      } else if (type === INSERTION_TYPE) {
+        emitInsertion(
+          start,
+          cliplen!,
+          base,
+          featureId,
+          featureStart,
+          output.insertions,
+        )
+      } else if (type === SOFTCLIP_TYPE) {
+        emitSoftclip(
+          start,
+          cliplen!,
+          featureId,
+          featureStart,
+          feature,
+          output.softclips,
+          showSoftClipping,
+        )
+      } else if (type === DELETION_TYPE) {
+        emitGap(
+          'deletion',
+          start,
+          length,
+          featureId,
+          featureStart,
+          strand,
+          feature,
+          output.gaps,
+        )
+      } else if (type === SKIP_TYPE) {
+        emitGap(
+          'skip',
+          start,
+          length,
+          featureId,
+          featureStart,
+          strand,
+          feature,
+          output.gaps,
+        )
+      } else {
+        emitHardclip(start, cliplen!, featureId, featureStart, output.hardclips)
+      }
+    },
+  )
 }
