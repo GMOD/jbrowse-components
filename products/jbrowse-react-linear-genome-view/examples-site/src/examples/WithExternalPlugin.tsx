@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
+
 import { ErrorBanner } from '@jbrowse/core/ui'
 import {
+  JBrowseLinearGenomeView,
   createViewState,
   loadPlugins,
-  JBrowseLinearGenomeView,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {

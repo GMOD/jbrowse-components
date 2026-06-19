@@ -1,9 +1,14 @@
 import { createElement, useEffect, useRef, useState } from 'react'
+
 import createCache from '@emotion/cache'
 import { CacheProvider } from '@emotion/react'
+import {
+  JBrowseLinearGenomeView,
+  createViewState,
+} from '@jbrowse/react-linear-genome-view2'
 import r2wc from '@r2wc/react-to-web-component'
 import { createPortal } from 'react-dom'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
 import type { EmotionCache } from '@emotion/cache'
 
 const assembly = {
@@ -26,8 +31,14 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz' },
-      index: { location: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi' } },
+      gffGzLocation: {
+        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi',
+        },
+      },
     },
   },
 ]
@@ -41,10 +52,14 @@ const ShadowComponent = () => {
   const [cacheNode, setCacheNode] = useState<EmotionCache>()
   const [config, setConfig] = useState<ViewState>()
   useEffect(() => {
-    if (!nodeRef.current) return
+    if (!nodeRef.current) {
+      return
+    }
     const root = nodeRef.current.attachShadow({ mode: 'open' })
     setRootNode(root)
-    setCacheNode(createCache({ key: 'react-shadow', prepend: true, container: root }))
+    setCacheNode(
+      createCache({ key: 'react-shadow', prepend: true, container: root }),
+    )
     // eslint-disable-next-line @eslint-react/set-state-in-effect -- shadow DOM setup requires setState in effect
     setConfig(
       createViewState({
@@ -55,13 +70,25 @@ const ShadowComponent = () => {
           theme: {
             palette: { primary: { main: '#4400a6' } },
             components: {
-              MuiPopover: { defaultProps: { container: () => nodeForPinRef.current } },
-              MuiPopper: { defaultProps: { container: () => nodeForPinRef.current } },
-              MuiTooltip: {
-                defaultProps: { slotProps: { popper: { container: () => nodeForPinRef.current } } },
+              MuiPopover: {
+                defaultProps: { container: () => nodeForPinRef.current },
               },
-              MuiModal: { defaultProps: { container: () => nodeForPinRef.current } },
-              MuiMenu: { defaultProps: { container: () => nodeForPinRef.current } },
+              MuiPopper: {
+                defaultProps: { container: () => nodeForPinRef.current },
+              },
+              MuiTooltip: {
+                defaultProps: {
+                  slotProps: {
+                    popper: { container: () => nodeForPinRef.current },
+                  },
+                },
+              },
+              MuiModal: {
+                defaultProps: { container: () => nodeForPinRef.current },
+              },
+              MuiMenu: {
+                defaultProps: { container: () => nodeForPinRef.current },
+              },
             },
           },
         },

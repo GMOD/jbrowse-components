@@ -1,7 +1,8 @@
 import { useState } from 'react'
+
 import {
-  createViewState,
   JBrowseLinearGenomeView,
+  createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -69,7 +70,12 @@ export default function App() {
           init: {
             loc: 'chr1:11,106,077-11,261,675',
             assembly: 'hg38',
-            tracks: [{ trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } }],
+            tracks: [
+              {
+                trackId: 'ncbi-refseq-genes',
+                displaySnapshot: { height: 200 },
+              },
+            ],
           },
         },
       },

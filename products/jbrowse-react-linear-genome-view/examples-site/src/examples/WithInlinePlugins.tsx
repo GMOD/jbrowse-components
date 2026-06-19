@@ -1,5 +1,9 @@
 import Plugin from '@jbrowse/core/Plugin'
-import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import {
+  JBrowseLinearGenomeView,
+  useCreateViewState,
+} from '@jbrowse/react-linear-genome-view2'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { PluggableElementType } from '@jbrowse/core/pluggableElementTypes'
 import type ViewType from '@jbrowse/core/pluggableElementTypes/ViewType'
@@ -24,8 +28,14 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz' },
-      index: { location: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi' } },
+      gffGzLocation: {
+        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi',
+        },
+      },
     },
   },
 ]
@@ -50,7 +60,9 @@ class HighlightRegionPlugin extends Plugin {
                       label: 'Console log selected region',
                       onClick: () => {
                         const { leftOffset, rightOffset } = self
-                        console.log(self.getSelectedRegions(leftOffset, rightOffset))
+                        console.log(
+                          self.getSelectedRegions(leftOffset, rightOffset),
+                        )
                       },
                     },
                   ]

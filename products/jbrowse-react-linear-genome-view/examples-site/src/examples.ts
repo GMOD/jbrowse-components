@@ -281,16 +281,13 @@ export const examples: ExampleMeta[] = [
     description: 'Access authenticated data sources via internet accounts.',
     group: 'Plugins & accounts',
   },
-  // DISABLED: the RPC worker does not bundle under Vite/Rollup (circular-dep
-  // temporal-dead-zone). Example source kept at src/examples/WithWebWorker.tsx
-  // and src/pages/with-web-worker.astro.disabled. See WEBWORKER_CIRCULAR_DEP.md.
-  // {
-  //   slug: 'with-web-worker',
-  //   name: 'WithWebWorker',
-  //   title: 'Web worker RPC',
-  //   description: 'Offload data parsing/rendering to a web worker.',
-  //   group: 'Plugins & accounts',
-  // },
+  {
+    slug: 'with-web-worker',
+    name: 'WithWebWorker',
+    title: 'Web worker RPC',
+    description: 'Offload data parsing/rendering to a web worker.',
+    group: 'Plugins & accounts',
+  },
   {
     slug: 'with-drawer-widget',
     name: 'WithDrawerWidget',

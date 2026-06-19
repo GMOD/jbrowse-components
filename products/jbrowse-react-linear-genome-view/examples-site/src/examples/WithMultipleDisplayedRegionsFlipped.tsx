@@ -1,9 +1,11 @@
 import { useState } from 'react'
-import { observer } from 'mobx-react'
+
 import {
-  createViewState,
   JBrowseLinearGenomeView,
+  createViewState,
 } from '@jbrowse/react-linear-genome-view2'
+import { observer } from 'mobx-react'
+
 import type { ViewModel } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {

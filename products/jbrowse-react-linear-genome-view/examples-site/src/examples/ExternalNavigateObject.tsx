@@ -56,7 +56,9 @@ export default function App() {
             style={{ marginRight: 8 }}
             onClick={() => {
               state.session.view
-                .navToLocations([{ refName: h.refName, start: h.start, end: h.end }])
+                .navToLocations([
+                  { refName: h.refName, start: h.start, end: h.end },
+                ])
                 .catch((e: unknown) => {
                   console.error(e)
                 })

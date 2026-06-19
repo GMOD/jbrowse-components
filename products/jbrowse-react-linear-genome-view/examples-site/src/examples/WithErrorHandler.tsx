@@ -1,8 +1,9 @@
 import { useState } from 'react'
+
 import { ErrorBanner } from '@jbrowse/core/ui'
 import {
-  createViewState,
   JBrowseLinearGenomeView,
+  createViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
@@ -16,20 +17,6 @@ const assembly = {
     },
   },
 }
-
-const tracks = [
-  {
-    type: 'FeatureTrack',
-    trackId: 'volvox_gff3',
-    name: 'Volvox genes',
-    assemblyNames: ['volvox'],
-    adapter: {
-      type: 'Gff3TabixAdapter',
-      gffGzLocation: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz' },
-      index: { location: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi' } },
-    },
-  },
-]
 
 export default function App() {
   const [{ viewState, error }] = useState(() => {

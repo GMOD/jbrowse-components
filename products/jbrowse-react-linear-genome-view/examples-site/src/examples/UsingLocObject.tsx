@@ -1,4 +1,7 @@
-import { useCreateViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+import {
+  JBrowseLinearGenomeView,
+  useCreateViewState,
+} from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {
   name: 'volvox',
@@ -20,8 +23,14 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz' },
-      index: { location: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi' } },
+      gffGzLocation: {
+        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi',
+        },
+      },
     },
   },
 ]

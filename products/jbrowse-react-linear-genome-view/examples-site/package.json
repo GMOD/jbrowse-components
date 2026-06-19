@@ -6,7 +6,9 @@
   "scripts": {
     "dev": "astro dev",
     "build": "astro build",
-    "preview": "astro preview"
+    "preview": "astro preview",
+    "typecheck": "astro check",
+    "smoke": "node scripts/smoke.mjs"
   },
   "dependencies": {
     "@astrojs/react": "^5.0.7",
@@ -25,6 +27,7 @@
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.9",
+    "@jbrowse/browser-test-utils": "workspace:*",
     "typescript": "^5.9.3"
   }
 }

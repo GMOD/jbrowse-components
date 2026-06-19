@@ -1,5 +1,9 @@
 import { useState } from 'react'
-import { createViewState, JBrowseLinearGenomeView } from '@jbrowse/react-linear-genome-view2'
+
+import {
+  JBrowseLinearGenomeView,
+  createViewState,
+} from '@jbrowse/react-linear-genome-view2'
 // Vite/Astro apps construct the RPC worker with Vite's `?worker` suffix. (With
 // a webpack/CRA setup you'd instead import the package's prebuilt
 // `@jbrowse/react-linear-genome-view2/esm/makeWorkerInstance`.)
@@ -25,8 +29,14 @@ const tracks = [
     assemblyNames: ['volvox'],
     adapter: {
       type: 'Gff3TabixAdapter',
-      gffGzLocation: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz' },
-      index: { location: { uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi' } },
+      gffGzLocation: {
+        uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz',
+      },
+      index: {
+        location: {
+          uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox.sort.gff3.gz.tbi',
+        },
+      },
     },
   },
 ]

@@ -1,6 +1,6 @@
 import {
-  useCreateViewState,
   JBrowseLinearGenomeView,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
 
 const assembly = {

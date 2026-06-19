@@ -43,7 +43,9 @@ export default function App() {
         loc: 'chr1:11,106,077-11,261,675',
         tracklist: true,
         nav: true,
-        tracks: [{ trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } }],
+        tracks: [
+          { trackId: 'ncbi-refseq-genes', displaySnapshot: { height: 200 } },
+        ],
         highlight: ['chr1:11,170,000-11,190,000'],
       }}
     />

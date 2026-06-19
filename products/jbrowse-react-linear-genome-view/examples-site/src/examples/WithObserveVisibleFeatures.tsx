@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
+
 import { getConf } from '@jbrowse/core/configuration'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  JBrowseLinearGenomeView,
+  useCreateViewState,
+} from '@jbrowse/react-linear-genome-view2'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
-import {
-  useCreateViewState,
-  JBrowseLinearGenomeView,
-} from '@jbrowse/react-linear-genome-view2'
+
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'

@@ -1,8 +1,9 @@
-import { observer } from 'mobx-react'
 import {
-  useCreateViewState,
   JBrowseLinearGenomeView,
+  useCreateViewState,
 } from '@jbrowse/react-linear-genome-view2'
+import { observer } from 'mobx-react'
+
 import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 const assembly = {

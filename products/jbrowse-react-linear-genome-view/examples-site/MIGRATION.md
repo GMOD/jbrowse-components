@@ -5,30 +5,32 @@
 **LGV migration complete (2026-06-18).** All 41 LGV stories are now live Astro
 pages. `pnpm build` produces a static `dist/` (42 pages incl. index) with
 `base: '/storybook/lgv'` baked in, and a browser smoke test (Puppeteer, headless
-Chrome) confirms **40/41 examples render with no console/page errors**.
+Chrome) confirms **41/41 examples render with no console/page errors**.
 
 Structure:
 
 - `src/examples/<Name>.tsx` — one self-contained, default-exported example per
   story (public API only). The displayed source _is_ this file.
 - `src/pages/<slug>.astro` — a ~10-line page per example: imports the component
-  + its `?raw` source, looks up title/description in the registry, renders via
-  the shared layout.
+  - its `?raw` source, looks up title/description in the registry, renders via
+    the shared layout.
 - `src/examples.ts` — single source of truth (slug/name/title/description/group)
   driving the gallery index and each page's metadata.
-- `src/layouts/ExampleLayout.astro` — shared chrome (live demo + `<Code>` source).
+- `src/layouts/ExampleLayout.astro` — shared chrome (live demo + `<Code>`
+  source).
 - `src/pages/index.astro` — grouped gallery linking every example.
 
-Known issue — **`with-web-worker`** is the one example that does not render. The
-RPC worker (imported via Vite's `?worker`) bundles the whole JBrowse worker
-graph, and under Rollup's strict ESM that graph hits a circular-dependency
-init-order error (`Cannot access TextSearchManager before initialization`).
-Webpack's CJS interop tolerates the same cycle, which is why the published
-package's webpack-built worker is fine. This is a real Rollup-vs-webpack
-difference, not a config typo (disabling minification did not change it — the
-error survives with the unminified symbol name). Resolving it means either
-breaking the core circular dependency or shipping the worker as a prebuilt
-classic asset; left as a follow-up.
+Previously-known issue — **`with-web-worker`** — is **resolved**. Under Rollup's
+strict ESM the RPC worker graph hit a circular-dependency init-order error
+(`Cannot access TextSearchManager before initialization`) that webpack's CJS
+interop tolerated. Root cause: `packages/core/src/util/types/index.ts` had a
+gratuitous _value_ re-export of the `TextSearchManager` class in a barrel
+imported pervasively across core. That dragged the class into the `coreUtil`
+namespace object, which Rollup evaluates at module-init — but the class
+declaration is ordered later in the cycle, so it threw. Nothing imported
+`TextSearchManager` from the barrel (all real consumers use the direct path
+`@jbrowse/core/TextSearch/TextSearchManager`), so removing that one line breaks
+the cycle. All 42 pages now build and render.
 
 Convention changes made during the migration:
 
@@ -42,8 +44,14 @@ Convention changes made during the migration:
   examples also needed `refNameAliases` added (the hg38 prefix FASTA uses
   non-`chr` refnames).
 
-Everything below this point is the original plan / remaining work (CGV +
-react-app sites, CI, removal of old Storybook).
+**CGV + react-app sites and CI are now done.** All three products
+(`lgv`/`app`/`cgv`) have an examples-site. CI (`.github/workflows/push.yml`,
+`examples_site_smoke` matrix) typechecks (`astro check`), builds, and
+smoke-tests each on every push, and the `deploy` job publishes each to its
+`s3://jbrowse.org/storybook/{lgv,app,cgv}/` root on main/tags (replacing the old
+per-package Storybook deploy). Each site is excluded from the root `tsconfig`
+(like `website/`) and typechecked by its own `astro check`. Remaining: deleting
+the now-unused `.storybook/` configs + `storybook:build` scripts.
 
 ## Why
 
