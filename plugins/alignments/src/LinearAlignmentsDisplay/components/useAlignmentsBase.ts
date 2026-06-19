@@ -1,12 +1,11 @@
 import type React from 'react'
-import { useEffect, useMemo, useRef } from 'react'
+import { useMemo, useRef } from 'react'
 
 import { clamp, getContainingView } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
 import {
   CLICK_SUPPRESS_THRESHOLD_PX,
-  buildColorPaletteFromTheme,
   getCanvasCoords,
   isDragInProgress,
   startDocumentDrag,
@@ -61,7 +60,6 @@ export function useAlignmentsBase(
   const dragMovedRef = useRef(false)
 
   const theme = useTheme()
-  const colorPalette = useMemo(() => buildColorPaletteFromTheme(theme), [theme])
   const contrastMap = useMemo(
     () =>
       getMismatchContrastMap(
@@ -336,12 +334,6 @@ export function useAlignmentsBase(
         return
     }
   }
-
-  // --- Effects ---
-
-  useEffect(() => {
-    model.setColorPalette(colorPalette)
-  }, [model, colorPalette])
 
   return {
     width,

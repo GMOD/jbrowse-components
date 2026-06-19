@@ -836,6 +836,23 @@ main-thread layout (+ connecting-line / Flatbush in chain mode). Raw
 shape/contents of per-region data; use `gpuProps()` for scalars fed to an
 encoder.
 
+### Theme-derived render inputs are session getters, not pushed volatiles
+
+Color palettes are a pure function of the active theme, so derive them in a
+model getter — `buildColorPaletteFromTheme(getSession(self).theme)` — that
+`gpuProps()` / `renderState` read directly. Do **not** stage them in a volatile
+that a React `useEffect` pushes in via a `setColorPalette` action: the effect
+only runs when the component mounts, so SVG export and RPC (no component) saw a
+null palette and rendered blank, forcing per-call seeding hacks. As a getter the
+value is always present and MobX recomputes it only when the theme changes —
+same re-encode invalidation, no mount dependency. `session.theme` is the
+resolved MUI `Theme` (required on `AbstractSessionModel`); embedded products
+without `ThemeManagerSessionMixin` supply a minimal `get theme()` =
+`createJBrowseTheme(getConf(self, 'theme'))`. SVG export still overrides the
+palette with the *export* theme (`opts.theme`) so it matches the labels/contrast
+that already follow it. (Applies equally to alignments, MAF, and the reference
+sequence display.)
+
 ---
 
 ## Per-region zoom-staleness

@@ -1,4 +1,5 @@
 import { getConf } from '@jbrowse/core/configuration'
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { cast, getParent, types } from '@jbrowse/mobx-state-tree'
 import {
   BaseSessionModel,
@@ -69,6 +70,15 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
        */
       get views() {
         return [self.view]
+      },
+      /**
+       * #getter
+       */
+      // Resolved MUI theme from the config `theme` slot, mirroring the
+      // product's ThemeProvider. Lets headless/RPC consumers derive
+      // theme-dependent state without a mounted component.
+      get theme() {
+        return createJBrowseTheme(getConf(self, 'theme'))
       },
       /**
        * #method

@@ -1,12 +1,8 @@
-import { useEffect, useMemo } from 'react'
-
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { Alert, useTheme } from '@mui/material'
+import { Alert } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { SequenceRenderer } from './Canvas2DSequenceRenderer.ts'
-import { buildTextColors } from './drawSequence.ts'
-import { buildColorPalette } from './sequenceGeometry.ts'
 
 import type { LinearReferenceSequenceDisplayModel } from '../model.ts'
 
@@ -33,15 +29,6 @@ const SequenceDisplayComponent = observer(function SequenceDisplayComponent({
   model: LinearReferenceSequenceDisplayModel
 }) {
   const { height } = model
-  const theme = useTheme()
-  const palette = useMemo(() => buildColorPalette(theme), [theme])
-  const textColors = useMemo(
-    () => buildTextColors(palette, theme),
-    [palette, theme],
-  )
-  useEffect(() => {
-    model.setColorState(palette, textColors)
-  }, [model, palette, textColors])
 
   return (
     <DisplayChrome

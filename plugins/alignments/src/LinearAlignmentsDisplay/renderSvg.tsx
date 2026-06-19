@@ -11,6 +11,7 @@ import { when } from 'mobx'
 import PileupBezierArcsSvg from './components/PileupBezierArcsSvg.tsx'
 import SashimiArcsSvg from './components/SashimiArcsSvg.tsx'
 import TlenAxisLabel from './components/TlenAxisLabel.tsx'
+import { buildColorPaletteFromTheme } from './components/alignmentComponentUtils.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { drawAlignmentLabels } from './components/drawAlignmentLabels.ts'
 import { drawAlignmentsToCtx } from './renderers/Canvas2DAlignmentsRenderer.ts'
@@ -65,6 +66,9 @@ export async function renderSvg(
     scrollTop: 0,
     canvasWidth: totalWidth,
     canvasHeight: displayHeight,
+    // Export colors follow the export theme (opts.theme), not the live session
+    // theme, so the pileup matches the labels/contrast which already use it.
+    colors: buildColorPaletteFromTheme(theme),
     sections: buildSectionRenders(model.sections, {
       scrollTop: 0,
       canvasHeight: displayHeight,

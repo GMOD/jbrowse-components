@@ -41,6 +41,7 @@ import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
+import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
 import type {
   MafGPURenderState,
@@ -226,15 +227,6 @@ export default function stateModelFactory(
        * rather than re-fetching it.
        */
       treeNewickVolatile: undefined as string | undefined,
-      /**
-       * #volatile
-       * Theme-derived color palette (per-base colors + match/gap/mismatch/
-       * unknown/insertion). Pushed in from the React component via
-       * `setColorPalette`. Read by `gpuProps()` and `renderState`, so theme
-       * changes trigger a main-thread re-encode but never an RPC refetch.
-       * Mirrors the `ColorPalette` pattern in plugin-alignments.
-       */
-      colorPalette: undefined as MafColorPalette | undefined,
     }))
     .actions(self => ({
       /**
@@ -260,14 +252,6 @@ export default function stateModelFactory(
        */
       setMismatchRendering(f: boolean) {
         self.mismatchRendering = f
-      },
-      /**
-       * #action
-       * Push the theme-derived color palette in from the React layer.
-       * Callers useMemo by theme so the reference is stable across renders.
-       */
-      setColorPalette(p: MafColorPalette) {
-        self.colorPalette = p
       },
       /**
        * #action
@@ -506,13 +490,26 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * Theme-derived color palette (per-base colors + match/gap/mismatch/
+       * unknown/insertion), read by `gpuProps()` and `renderState`. Derived
+       * from the session theme so it's always available — including headless
+       * SVG export and RPC, where no component mounts to seed it. Theme changes
+       * trigger a main-thread re-encode but never an RPC refetch.
+       */
+      get colorPalette(): MafColorPalette {
+        return getMafColorPalette(getSession(self).theme)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Render state passed to GPU/Canvas2D backend each frame. Uses the rows-
        * only height so the GPU canvas only paints the per-sample band; the
        * coverage band is drawn on a separate Canvas2D overlay above.
        */
       get renderState(): MafGPURenderState | undefined {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized || !self.sources || !self.colorPalette) {
+        if (!view.initialized || !self.sources) {
           return undefined
         }
         return {
@@ -533,10 +530,7 @@ export default function stateModelFactory(
        * and view-shape props (rowHeight, rowProportion — driven by shader
        * uniforms).
        */
-      gpuProps(): MafGpuProps | undefined {
-        if (!self.colorPalette) {
-          return undefined
-        }
+      gpuProps(): MafGpuProps {
         return {
           palette: self.colorPalette,
           showAllLetters: self.showAllLetters,
@@ -875,21 +869,15 @@ export default function stateModelFactory(
         // Per-region streamed upload. The encode callback builds the GPU
         // instance buffer on the main thread from raw region data + gpuProps,
         // so theme / showAllLetters / mismatchRendering changes re-encode
-        // without an RPC roundtrip. Returning undefined while gpuProps isn't
-        // ready (theme not yet pushed in by the React bridge) holds the
-        // upload until it is — see installPerRegionLifecycle.
+        // without an RPC roundtrip.
         installPerRegionLifecycle(
           self,
           self.rpcDataMap,
           backend,
           regionData => {
-            const props = self.gpuProps()
-            if (!props) {
-              return undefined
-            }
             const { buffer, count } = buildInstanceBuffer({
               blocks: regionData.blocks,
-              ...props,
+              ...self.gpuProps(),
             })
             return { instanceBuffer: buffer, instanceCount: count }
           },

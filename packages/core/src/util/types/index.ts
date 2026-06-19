@@ -23,7 +23,7 @@ import type {
   Instance,
   SnapshotIn,
 } from '@jbrowse/mobx-state-tree'
-import type { ThemeOptions } from '@mui/material'
+import type { Theme, ThemeOptions } from '@mui/material'
 
 export type * from './util.ts'
 
@@ -118,7 +118,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   selection?: unknown
   focusedViewId?: string
   themeName?: string
-  theme?: ThemeOptions
+  theme: Theme
   themeOptions?: SerializableThemeArgs
   hovered: unknown
   setHovered: (arg: unknown) => void
@@ -635,5 +635,3 @@ export type PreFileLocation =
   | PreLocalPathLocation
   | PreBlobLocation
   | PreFileHandleLocation
-
-export { default as TextSearchManager } from '../../TextSearch/TextSearchManager.ts'

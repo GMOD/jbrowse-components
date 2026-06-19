@@ -1,9 +1,8 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
-import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
@@ -21,7 +20,6 @@ import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
-import { getMafColorPalette } from '../../LinearMafRenderer/util.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -80,20 +78,11 @@ const MafBody = observer(function MafBody({
     sources,
     samples,
   } = model
-  const theme = useTheme()
   const [resizeActive, setResizeActive] = useState(false)
   const session = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
-
-  // Push theme-derived color palette into the model. Drives `gpuProps()`,
-  // so theme changes re-encode on the main thread (no RPC refetch). The
-  // palette also flows through `renderState` to the Canvas2D path so MAF
-  // colors stay in lockstep with the user's theme.
-  const palette = useMemo(() => getMafColorPalette(theme), [theme])
-  useEffect(() => {
-    model.setColorPalette(palette)
-  }, [model, palette])
+  const { colorPalette } = model
 
   const {
     isDragging,
@@ -141,19 +130,19 @@ const MafBody = observer(function MafBody({
           segments={model.visibleEmptyLines}
           width={width}
           height={rowsHeight}
-          palette={palette}
+          palette={colorPalette}
         />
         <SummaryBarsOverlay
           bars={model.visibleSummaryBars}
           width={width}
           height={rowsHeight}
-          palette={palette}
+          palette={colorPalette}
         />
         <InsertionsOverlay
           markers={model.visibleInsertions}
           width={width}
           height={rowsHeight}
-          palette={palette}
+          palette={colorPalette}
           pxPerBp={1 / view.bpPerPx}
         />
         <DeletionsOverlay

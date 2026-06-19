@@ -19,12 +19,11 @@ import {
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import { observable } from 'mobx'
 
+import { buildTextColors } from './components/drawSequence.ts'
+import { buildColorPalette } from './components/sequenceGeometry.ts'
+
 import type { Canvas2DSequenceRenderer } from './components/Canvas2DSequenceRenderer.ts'
-import type {
-  DrawSequenceState,
-  TextColors,
-} from './components/drawSequence.ts'
-import type { ColorPalette } from './components/sequenceGeometry.ts'
+import type { DrawSequenceState } from './components/drawSequence.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
 import type {
@@ -102,15 +101,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     )
     .volatile(() => ({
       sequenceData: observable.map<number, SequenceRegionData>(),
-      /**
-       * #volatile
-       * theme-derived colors, pushed from the component (theme lives in
-       * React/MUI). Feeds `renderState`; until set, `renderState` is undefined
-       * and the render autorun skips — same pattern as wiggle/MAF.
-       */
-      colorState: undefined as
-        | { palette: ColorPalette; textColors: TextColors }
-        | undefined,
     }))
     .views(self => ({
       /**
@@ -118,6 +108,17 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get sequenceType() {
         return getConf(getContainingTrack(self), 'sequenceType')
+      },
+      /**
+       * #getter
+       * Theme-derived palette + text colors, derived from the session theme so
+       * they're always available — including headless SVG export and RPC, where
+       * no component mounts to seed them.
+       */
+      get colorState() {
+        const { theme } = getSession(self)
+        const palette = buildColorPalette(theme)
+        return { palette, textColors: buildTextColors(palette, theme) }
       },
     }))
     .views(self => ({
@@ -187,16 +188,11 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     .views(self => ({
       /**
        * #getter
-       * everything the Canvas2D backend needs to paint a frame, or undefined
-       * until the theme-derived colors arrive (render autorun skips on
-       * undefined).
+       * everything the Canvas2D backend needs to paint a frame
        */
-      get renderState(): DrawSequenceState | undefined {
-        const { colorState } = self
-        if (!colorState) {
-          return undefined
-        }
+      get renderState(): DrawSequenceState {
         const view = getContainingView(self) as LGV
+        const { palette, textColors } = self.colorState
         return {
           bpPerPx: view.bpPerPx,
           showForward: self.showForward,
@@ -204,8 +200,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           showTranslation: self.effectiveShowTranslation,
           isDna: self.isDna,
           rowHeight: self.rowHeight,
-          palette: colorState.palette,
-          textColors: colorState.textColors,
+          palette,
+          textColors,
           canvasWidth: view.trackWidthPx,
           canvasHeight: self.height,
         }
@@ -229,13 +225,6 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
     .actions(self => ({
       setSequenceRegion(idx: number, data: SequenceRegionData) {
         self.sequenceData.set(idx, data)
-      },
-      /**
-       * #action
-       * push theme-derived colors in from the component
-       */
-      setColorState(palette: ColorPalette, textColors: TextColors) {
-        self.colorState = { palette, textColors }
       },
       clearDisplaySpecificData() {
         self.sequenceData.clear()
@@ -276,11 +265,10 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           backend,
           data => data,
           (b, regions) => {
-            const state = self.renderState
-            if (!state || self.zoomedOut) {
+            if (self.zoomedOut) {
               return false
             }
-            b.renderBlocks(self.renderBlocks, regions, state)
+            b.renderBlocks(self.renderBlocks, regions, self.renderState)
             return true
           },
         )
