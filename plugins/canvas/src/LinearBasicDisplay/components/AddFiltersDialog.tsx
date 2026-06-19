@@ -1,21 +1,17 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()({
-  dialogContent: {
+  textArea: {
     width: '80em',
   },
   textAreaFont: {
     fontFamily: 'Courier New',
-  },
-  error: {
-    color: 'red',
-    fontSize: '0.8em',
   },
 })
 
@@ -59,8 +55,10 @@ const AddFiltersDialog = observer(function AddFiltersDialog({
     <Dialog maxWidth="xl" open onClose={handleClose} title="Add track filters">
       <DialogContent>
         <div>
-          Add filters, in jexl format, one per line, starting with the string
-          jexl:. Examples:{' '}
+          <p>
+            Add filters, in jexl format, one per line, starting with the string
+            jexl:. Examples:
+          </p>
           <ul>
             <li>
               <code>jexl:get(feature,'name')=='BRCA1'</code> - show only
@@ -88,13 +86,13 @@ const AddFiltersDialog = observer(function AddFiltersDialog({
           </p>
         </div>
 
-        {error ? <p className={classes.error}>{`${error}`}</p> : null}
+        {error ? <ErrorMessage error={error} /> : null}
         <TextField
           variant="outlined"
           multiline
           minRows={5}
           maxRows={10}
-          className={classes.dialogContent}
+          className={classes.textArea}
           fullWidth
           value={data}
           onChange={event => {

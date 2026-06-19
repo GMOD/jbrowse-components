@@ -10,7 +10,10 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
 import { forEachRenderedPeptide } from './components/peptidePositioning.ts'
-import { LABEL_FONT_SIZE } from './components/sharedRendererConstants.ts'
+import {
+  LABEL_FONT_SIZE,
+  LABEL_OVERLAY_BACKGROUND,
+} from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -54,7 +57,7 @@ function renderLabels(
     (_, labels) => {
       for (const { label, labelX, labelY } of labels) {
         if (label.isOverlay) {
-          ctx.fillStyle = 'rgba(255,255,255,0.8)'
+          ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
           ctx.fillRect(
             labelX - 1,
             labelY,

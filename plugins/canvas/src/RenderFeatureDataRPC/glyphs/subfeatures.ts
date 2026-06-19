@@ -1,6 +1,6 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { findGlyph } from './findGlyph.ts'
-import { getFeatureHeightPx, hasCodingSubfeature } from './glyphUtils.ts'
+import { hasCodingSubfeature } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -38,7 +38,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { geneGlyphMode, transcriptTypes, subfeatureLabels } = config
 
-  const heightPx = getFeatureHeightPx(config)
+  const heightPx = config.featureHeight
 
   let subfeatures = [...(feature.get('subfeatures') ?? [])]
   if (geneGlyphMode === 'longestCoding') {

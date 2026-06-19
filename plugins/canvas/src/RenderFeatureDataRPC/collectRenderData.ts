@@ -13,8 +13,9 @@ import {
 import { getFeatureName, readFeatureLabels } from './labelUtils.ts'
 import { packRenderArrays } from './packRenderArrays.ts'
 import { aminoAcidsBySegment } from './peptides/aggregateAminoAcids.ts'
+import { dedupedSortedCDS } from './peptides/cdsSegments.ts'
 import { readConfigValueSafe, resolveThemeColor } from './renderConfig.ts'
-import { getBoxColor, getStrokeColor, isCDS, isUTR } from './util.ts'
+import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
 import type {
@@ -203,25 +204,12 @@ function resolveOutlineColor(outlineColor: string, theme: Theme) {
   return c ? colorToUint32(c) : 0
 }
 
-// CDS segments in transcription order (ascending genomic start on +, descending
-// on -), deduped on start/end. Duplicate CDS rows (e.g. Gencode v36) would
-// otherwise shift the translation frame; this matches the dedup the peptide
-// string was translated with so protein indices align.
+// CDS segments in transcription order: dedupedSortedCDS yields ascending genomic
+// start, reversed here for the - strand. Shares the frameshift-guarding dedup
+// with the peptide translation so protein indices align with the rendered rects.
 function transcriptCDS(feature: Feature, strand: number): CdsSegment[] {
-  const seen = new Set<string>()
-  const cds: CdsSegment[] = []
-  for (const sub of feature.get('subfeatures') ?? []) {
-    const start = sub.get('start')
-    const end = sub.get('end')
-    if (isCDS(sub) && start < end) {
-      const key = `${start}-${end}`
-      if (!seen.has(key)) {
-        seen.add(key)
-        cds.push({ start, end, phase: sub.get('phase') ?? 0 })
-      }
-    }
-  }
-  return cds.sort((a, b) => strand * (a.start - b.start))
+  const cds = dedupedSortedCDS(feature)
+  return strand === -1 ? cds.reverse() : cds
 }
 
 function pushBoxRect(

@@ -3,8 +3,8 @@ import { codonTable, revcom, revlist } from '@jbrowse/core/util'
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import { firstValueFrom, toArray } from 'rxjs'
 
+import { dedupedSortedCDS } from './cdsSegments.ts'
 import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
-import { isCDS } from '../util.ts'
 
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -80,29 +80,17 @@ export function findTranscriptsWithCDS(
   return transcripts
 }
 
+// Feature-relative CDS segments for translation. dedupedSortedCDS supplies the
+// absolute, ascending, frameshift-guarded segments (shared with the amino-acid
+// overlay); we only subtract featureStart to make them relative to the sequence
+// slice handed to the codon translator.
 function extractCDSRegions(feature: Feature) {
-  const subfeatures = feature.get('subfeatures') ?? []
   const featureStart = feature.get('start')
-
-  const regions = subfeatures
-    .filter(sub => isCDS(sub) && sub.get('start') < sub.get('end'))
-    .sort((a, b) => a.get('start') - b.get('start'))
-    .map(sub => ({
-      start: sub.get('start') - featureStart,
-      end: sub.get('end') - featureStart,
-      phase: sub.get('phase') ?? 0,
-    }))
-
-  // Dedupe CDS rows sharing start/end: GFF3 files (e.g. Gencode v36) can repeat
-  // a CDS, which would otherwise stitch the duplicated bases into the translated
-  // sequence and frameshift the protein. Matches the dedup in the g2p mapper so
-  // the peptide string and the amino-acid rects stay index-aligned.
-  return regions.filter(
-    (r, i) =>
-      i === 0 ||
-      r.start !== regions[i - 1]!.start ||
-      r.end !== regions[i - 1]!.end,
-  )
+  return dedupedSortedCDS(feature).map(({ start, end, phase }) => ({
+    start: start - featureStart,
+    end: end - featureStart,
+    phase: phase ?? 0,
+  }))
 }
 
 export function processTranscriptFromSeq(

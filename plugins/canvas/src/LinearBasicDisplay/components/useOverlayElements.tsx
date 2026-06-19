@@ -6,7 +6,10 @@ import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
 import { forEachRenderedPeptide } from './peptidePositioning.ts'
-import { LABEL_FONT_SIZE } from './sharedRendererConstants.ts'
+import {
+  LABEL_FONT_SIZE,
+  LABEL_OVERLAY_BACKGROUND,
+} from './sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
@@ -61,7 +64,7 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
   },
   floatingLabelOverlay: {
-    background: 'rgba(255,255,255,0.65)',
+    background: LABEL_OVERLAY_BACKGROUND,
     color: theme.palette.common.black,
   },
   aminoAcid: {

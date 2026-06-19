@@ -1,8 +1,4 @@
-import {
-  getFeatureHeightPx,
-  layoutChild,
-  sortByPosition,
-} from './glyphUtils.ts'
+import { layoutChild, sortByPosition } from './glyphUtils.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -28,7 +24,7 @@ export function hasMatureProteinChildren(feature: Feature) {
 export function layoutMatureProteinRegion(args: LayoutArgs): FeatureLayout {
   const { feature, config } = args
   const { subfeatureLabels } = config
-  const heightPx = getFeatureHeightPx(config)
+  const heightPx = config.featureHeight
 
   const matureProteins = getMatureProteinChildren(feature)
   const sortedChildren = sortByPosition(

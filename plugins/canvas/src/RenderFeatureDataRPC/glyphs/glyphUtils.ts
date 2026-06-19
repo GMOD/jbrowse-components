@@ -1,6 +1,6 @@
 import { isCDS } from '../util.ts'
 
-import type { DisplayConfig, DisplayMode } from '../renderConfig.ts'
+import type { DisplayMode } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -26,13 +26,6 @@ export function sortByPosition(children: FeatureLayout[]) {
     }
     return b.feature.get('end') - a.feature.get('end')
   })
-}
-
-// Worker always returns geometry at multiplier=1 (normal scale). The compact
-// multiplier is applied on the main thread in layout.ts so switching
-// compact/superCompact doesn't invalidate the RPC cache.
-export function getFeatureHeightPx(config: DisplayConfig) {
-  return config.featureHeight
 }
 
 // Direct CDS child: picks the ProcessedTranscript layout (CDS + implied UTRs)
@@ -63,7 +56,7 @@ export function hasCodingSubfeature(feature: Feature): boolean {
 export const STRAND_ARROW_WIDTH = 8
 
 export function layoutChild(child: Feature, args: LayoutArgs): FeatureLayout {
-  const height = getFeatureHeightPx(args.config)
+  const height = args.config.featureHeight
   return {
     feature: child,
     glyphType: 'Box',
@@ -81,7 +74,7 @@ export function layoutContainerGlyph(
   args: LayoutArgs,
   subfeatures: Feature[],
 ): FeatureLayout {
-  const heightPx = getFeatureHeightPx(args.config)
+  const heightPx = args.config.featureHeight
   const children = sortByPosition(
     subfeatures.map(child => layoutChild(child, args)),
   )

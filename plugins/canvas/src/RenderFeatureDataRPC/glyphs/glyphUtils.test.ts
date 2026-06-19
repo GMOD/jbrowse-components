@@ -1,6 +1,6 @@
 import { layoutBox } from './box.ts'
 import { findGlyph } from './findGlyph.ts'
-import { getFeatureHeightPx, sortByPosition } from './glyphUtils.ts'
+import { sortByPosition } from './glyphUtils.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutSegments } from './segments.ts'
 import { mockDisplayConfig } from '../testUtils.ts'
@@ -72,18 +72,6 @@ describe('sortByPosition', () => {
     const original = [...layouts]
     sortByPosition(layouts)
     expect(layouts).toEqual(original)
-  })
-})
-
-describe('getFeatureHeightPx', () => {
-  it('returns config.featureHeight unchanged (multiplier applied main-thread)', () => {
-    expect(getFeatureHeightPx(mockDisplayConfig())).toBe(10)
-  })
-
-  it('returns config.featureHeight even with compact in config (multiplier is main-thread only)', () => {
-    expect(getFeatureHeightPx(mockDisplayConfig({ featureHeight: 10 }))).toBe(
-      10,
-    )
   })
 })
 

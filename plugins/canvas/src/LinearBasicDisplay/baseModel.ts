@@ -107,11 +107,9 @@ const AddFiltersDialog = lazy(() => import('./components/AddFiltersDialog.tsx'))
 const STRAND_COLOR_JEXL =
   "jexl:get(feature,'strand')==1?'tomato':get(feature,'strand')==-1?'cornflowerblue':'goldenrod'"
 
-
-// Schema defaults for the picker swatch when no override is set. Kept in sync
-// with baseConfigSchema.ts color/utrColor defaults.
+// Swatch fallback when the active color is a jexl (per-feature) expression
+// rather than a solid CSS color. Mirrors the baseConfigSchema.ts color default.
 const FEATURE_COLOR_DEFAULT = 'goldenrod'
-const UTR_COLOR_DEFAULT = '#357089'
 
 /**
  * #stateModel LinearCanvasBaseDisplay
@@ -245,6 +243,22 @@ export default function baseStateModelFactory(
       }))
       .views(self => ({
         /**
+         * #method
+         */
+        // Highest features-per-pixel across the visible regions at the given
+        // bpPerPx, from cached per-region counts. Shared by the density gate
+        // (debounced coarseBpPerPx) and the force-load baseline (live bpPerPx).
+        observedMaxDensity(bpPerPx: number) {
+          return Math.max(
+            0,
+            ...getView(self).visibleRegions.map(r => {
+              const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
+              return ds ? screenDensity(ds, bpPerPx) : 0
+            }),
+          )
+        },
+
+        /**
          * #getter
          */
         // Current features-per-pixel across the visible regions, recomputed
@@ -255,14 +269,7 @@ export default function baseStateModelFactory(
         // per-frame relayout/banner flicker when a smooth zoom hovers near a
         // threshold. Still far faster than the old fetch-time snapshot.
         get visibleFeatureDensityPerPx() {
-          const view = getView(self)
-          return Math.max(
-            0,
-            ...view.visibleRegions.map(r => {
-              const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-              return ds ? screenDensity(ds, view.coarseBpPerPx) : 0
-            }),
-          )
+          return this.observedMaxDensity(getView(self).coarseBpPerPx)
         },
       }))
       .views(self => ({
@@ -380,7 +387,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get utrColor() {
-          return self.getOverride<string>('utrColor') ?? UTR_COLOR_DEFAULT
+          return self.getConfWithOverride('utrColor')
         },
 
         /**
@@ -965,17 +972,7 @@ export default function baseStateModelFactory(
             // regions, not past the current `maxFeatureDensity`. The latter
             // already includes any prior force-load, so basing on it
             // multiplied force-load attempts exponentially.
-            const view = getView(self)
-            let observedMax = 0
-            for (const r of view.visibleRegions) {
-              const ds = self.densityStatsPerRegion.get(r.displayedRegionIndex)
-              if (ds) {
-                const d = screenDensity(ds, view.bpPerPx)
-                if (d > observedMax) {
-                  observedMax = d
-                }
-              }
-            }
+            const observedMax = self.observedMaxDensity(getView(self).bpPerPx)
             const baseline =
               observedMax > 0
                 ? observedMax

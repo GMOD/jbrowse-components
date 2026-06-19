@@ -1,9 +1,25 @@
-import { readConfigValue } from '@jbrowse/core/configuration'
+import { readConfigValue as coreReadConfigValue } from '@jbrowse/core/configuration'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
-export { readConfigValue }
+// DisplayConfig-typed wrapper over the core reader. The core reader takes a
+// `Record<string, unknown>` for generic config snapshots; the single cast here
+// localizes that structural widening so every worker call site keeps the
+// precisely-typed DisplayConfig (and its property typos stay type errors).
+export function readConfigValue<T>(
+  config: DisplayConfig,
+  key: string | string[],
+  feature: Feature,
+  jexl?: JexlInstance,
+): T {
+  return coreReadConfigValue<T>(
+    config as unknown as Record<string, unknown>,
+    key,
+    feature,
+    jexl,
+  )
+}
 
 // Evaluate a (possibly `jexl:`) config slot against a feature, degrading to
 // `fallback` when the expression throws — e.g. a custom `mouseover`/`labels`
@@ -13,7 +29,7 @@ export { readConfigValue }
 // here every feature is evaluated up front in the worker, so an unguarded throw
 // would fail the entire track render.
 export function readConfigValueSafe<T>(
-  config: Record<string, unknown>,
+  config: DisplayConfig,
   key: string | string[],
   feature: Feature,
   jexl: JexlInstance | undefined,
@@ -42,8 +58,11 @@ export type DisplayMode =
   | 'reducedRepresentation'
   | 'collapse'
 
+// Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
+// any property is a type error rather than silently typing as `unknown`. The
+// widening to `Record<string, unknown>` that the core config reader wants is
+// confined to the readConfigValue wrapper above.
 export interface DisplayConfig {
-  [key: string]: unknown
   // displayMode is NOT sent to the worker — compact/superCompact scaling and
   // collapse-mode label decimation are applied on the main thread so switching
   // modes skips an RPC round-trip.

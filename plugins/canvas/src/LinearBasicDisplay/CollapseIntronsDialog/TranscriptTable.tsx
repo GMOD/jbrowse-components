@@ -8,6 +8,7 @@ import {
   TableHead,
   TableRow,
 } from '@mui/material'
+import { observer } from 'mobx-react'
 
 import { collapseIntrons, getExonsAndCDS, replaceIntrons } from './util.ts'
 import { isExon } from '../../RenderFeatureDataRPC/util.ts'
@@ -47,7 +48,7 @@ function buildRows(transcripts: Feature[]): TranscriptRow[] {
     .sort((a, b) => b.lengthBp - a.lengthBp)
 }
 
-export default function TranscriptTable({
+const TranscriptTable = observer(function TranscriptTable({
   transcripts,
   view,
   assembly,
@@ -131,7 +132,7 @@ export default function TranscriptTable({
                       }
                     }}
                   >
-                    Launch
+                    Open in new view
                   </Button>
                 ) : null}
               </TableCell>
@@ -141,4 +142,6 @@ export default function TranscriptTable({
       </Table>
     </Box>
   )
-}
+})
+
+export default TranscriptTable

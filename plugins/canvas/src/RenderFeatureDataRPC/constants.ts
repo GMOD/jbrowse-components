@@ -7,3 +7,10 @@ export const LABEL_FONT_SIZE = 11
 // this width at creation, so the stored textWidth is bounded by construction and
 // layout/hit-test reservations always match what is drawn.
 export const MAX_DESCRIPTION_LABEL_WIDTH_PX = 200
+
+// Translucent light backing rect drawn behind an "overlay"-style label so its
+// (theme.palette.common.black) text stays readable over the colored feature box.
+// Single source so the on-screen DOM overlay and the SVG export use the same
+// backing. Not a theme token — a fixed translucent white that works over any
+// feature fill.
+export const LABEL_OVERLAY_BACKGROUND = 'rgba(255,255,255,0.65)'

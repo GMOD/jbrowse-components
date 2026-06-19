@@ -9,6 +9,7 @@ import {
   DialogContentText,
 } from '@mui/material'
 import { isObservableArray } from 'mobx'
+import { observer } from 'mobx-react'
 
 import TranscriptTable from './TranscriptTable.tsx'
 import { collapseIntrons, replaceIntrons } from './util.ts'
@@ -17,7 +18,9 @@ import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export default function CollapseIntronsDialog({
+const DEFAULT_WINDOW_SIZE = 100
+
+const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   view,
   transcripts,
   assembly,
@@ -29,7 +32,9 @@ export default function CollapseIntronsDialog({
   handleClose: () => void
 }) {
   const [showAll, setShowAll] = useState(false)
-  const [windowSize, setWindowSize] = useState<number | undefined>(100)
+  const [windowSize, setWindowSize] = useState<number | undefined>(
+    DEFAULT_WINDOW_SIZE,
+  )
   const validWindowSize = windowSize !== undefined
   const canLaunchView = isObservableArray(getSession(view).views)
 
@@ -57,7 +62,7 @@ export default function CollapseIntronsDialog({
         </DialogContentText>
         <NumberTextField
           label="Number of bp around splice site to include"
-          defaultValue={100}
+          defaultValue={DEFAULT_WINDOW_SIZE}
           onValueChange={setWindowSize}
           min={0}
           errorText="Must be a non-negative number"
@@ -144,4 +149,6 @@ export default function CollapseIntronsDialog({
       </DialogActions>
     </Dialog>
   )
-}
+})
+
+export default CollapseIntronsDialog
