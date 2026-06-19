@@ -64,17 +64,9 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 
   const labels = []
 
-  if (blocks[0]?.type !== 'ContentBlock' && val) {
-    labels.push(
-      <span
-        key="b0"
-        className={cx(classes.b0, classes.refLabel)}
-        data-testid="refLabel-prefix"
-      >
-        {val}
-      </span>,
-    )
-  }
+  // Set once the sticky far-left label renders the prefix inline (e.g.
+  // "hg38:chr5"); the standalone prefix below is then skipped to show it once.
+  let stickyHasVal = false
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]!
@@ -91,6 +83,9 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
     }
     const { transform, maxWidth } = layout
     const { refName, displayedRegionIndex } = block
+    if (sticky && val) {
+      stickyHasVal = true
+    }
     labels.push(
       <span
         key={block.key}
@@ -115,6 +110,20 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
         }}
       >
         {sticky && val ? `${val}:${refName}` : refName}
+      </span>,
+    )
+  }
+
+  // Fallback: show the bare assembly name pinned far-left only when no sticky
+  // region label carried it (e.g. the leftmost region was too narrow to label).
+  if (val && !stickyHasVal) {
+    labels.push(
+      <span
+        key="b0"
+        className={cx(classes.b0, classes.refLabel)}
+        data-testid="refLabel-prefix"
+      >
+        {val}
       </span>,
     )
   }

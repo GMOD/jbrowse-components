@@ -129,7 +129,9 @@ describe('Scalebar genome view component', () => {
     const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
     model.scalebarDisplayPrefix = () => 'volvox'
 
-    const { getByTestId, container } = render(<Scalebar model={model} />)
+    const { getByTestId, queryByTestId, container } = render(
+      <Scalebar model={model} />,
+    )
     await waitFor(() => {
       const labelA = getByTestId('refLabel-ctgA')
       const labelB = getByTestId('refLabel-ctgB')
@@ -138,6 +140,9 @@ describe('Scalebar genome view component', () => {
       expect(labelB.textContent).toBe('ctgB')
       // Verify only one instance of the prefix exists
       expect(container.textContent.match(/volvox:/g)?.length).toBe(1)
+      // The sticky label carries the prefix, so the standalone bare-assembly
+      // prefix must not also render (would show "volvox" twice)
+      expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
 
     // Restore original function
@@ -169,7 +174,7 @@ describe('Scalebar genome view component', () => {
     const originalScaleBarDisplayPrefix = model.scalebarDisplayPrefix
     model.scalebarDisplayPrefix = () => 'volvox'
 
-    const { container } = render(<Scalebar model={model} />)
+    const { queryByTestId, container } = render(<Scalebar model={model} />)
     await waitFor(() => {
       // The pinned label should have the prefix, non-pinned labels should not
       // Verify only one instance of the prefix exists (on the pinned label)
@@ -179,6 +184,9 @@ describe('Scalebar genome view component', () => {
       // ctgB should appear without prefix
       expect(container.textContent).toContain('ctgB')
       expect(container.textContent).not.toContain('volvox:ctgB')
+      // The sticky label carries the prefix, so the standalone bare-assembly
+      // prefix must not also render
+      expect(queryByTestId('refLabel-prefix')).toBeNull()
     })
 
     // Restore original function
