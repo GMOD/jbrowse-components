@@ -34,6 +34,8 @@ import type {
 type LGV = LinearGenomeViewModel
 
 const ZOOMED_OUT_BP_PER_PX = 10
+const ROW_HEIGHT_PX = 15
+const COLLAPSED_HEIGHT_PX = 50
 
 export interface SequenceRegionData {
   seq: string
@@ -163,7 +165,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         return baseRows * (self.effectiveShowTranslation ? 4 : 1)
       },
       get sequenceHeight() {
-        return this.numRows * 15
+        return this.numRows * ROW_HEIGHT_PX
       },
       /**
        * #getter
@@ -171,7 +173,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * the view initializes; otherwise sized to fit the visible rows.
        */
       get computedHeight() {
-        return this.zoomedOut ? 50 : this.sequenceHeight
+        return this.zoomedOut ? COLLAPSED_HEIGHT_PX : this.sequenceHeight
       },
       /**
        * #getter
