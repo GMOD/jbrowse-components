@@ -76,8 +76,8 @@ and docs.
 [appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-<details>
-<summary>JBrowseWebRootModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Properties</summary>
 
 #### property: configPath
 
@@ -90,8 +90,8 @@ configPath: types.maybe(types.string)
 
 </details>
 
-<details>
-<summary>JBrowseWebRootModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Volatiles</summary>
 
 #### volatile: adminMode
 
@@ -175,8 +175,8 @@ reloadPluginManagerCallback: (
 
 </details>
 
-<details>
-<summary>JBrowseWebRootModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Methods</summary>
 
 #### method: menus
 
@@ -187,8 +187,8 @@ menus: () => Menu[]
 
 </details>
 
-<details>
-<summary>JBrowseWebRootModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseWebRootModel - Actions</summary>
 
 #### action: setSavedSessionMetadata
 

@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>BaseInternetAccountModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Properties</summary>
 
 #### property: id
 
@@ -53,8 +53,8 @@ configuration: ConfigurationReference(BaseInternetAccountConfig)
 
 </details>
 
-<details>
-<summary>BaseInternetAccountModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Getters</summary>
 
 #### getter: name
 
@@ -138,8 +138,8 @@ string
 
 </details>
 
-<details>
-<summary>BaseInternetAccountModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Methods</summary>
 
 #### method: handlesLocation
 
@@ -152,8 +152,8 @@ handlesLocation: (location: UriLocation) => boolean
 
 </details>
 
-<details>
-<summary>BaseInternetAccountModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseInternetAccountModel - Actions</summary>
 
 #### action: getTokenFromUser
 

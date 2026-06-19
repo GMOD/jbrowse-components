@@ -235,8 +235,8 @@ and docs.
 [moveViewToTopInPanel](../dockviewlayoutmixin#action-moveviewtotopinpanel),
 [moveViewToBottomInPanel](../dockviewlayoutmixin#action-moveviewtobottominpanel)
 
-<details>
-<summary>BaseWebSessionModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Properties</summary>
 
 #### property: sessionPlugins
 
@@ -251,8 +251,8 @@ sessionPlugins: types.array(
 
 </details>
 
-<details>
-<summary>BaseWebSessionModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Volatiles</summary>
 
 #### volatile: sessionThemeName
 
@@ -274,8 +274,8 @@ pendingFileHandleIds: [] as string[]
 
 </details>
 
-<details>
-<summary>BaseWebSessionModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Getters</summary>
 
 #### getter: root
 
@@ -309,8 +309,8 @@ TextSearchManager
 
 </details>
 
-<details>
-<summary>BaseWebSessionModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Methods</summary>
 
 #### method: canEditTrack
 
@@ -360,8 +360,8 @@ getTrackActionMenuItems: ({ config, effectiveConfig, extraTrackActions, view, }:
 
 </details>
 
-<details>
-<summary>BaseWebSessionModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseWebSessionModel - Actions</summary>
 
 #### action: addAssemblyConf
 

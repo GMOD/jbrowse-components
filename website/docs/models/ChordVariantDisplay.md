@@ -82,8 +82,8 @@ and docs.
 [setRpcDriverName](../basedisplay#action-setrpcdrivername),
 [reload](../basedisplay#action-reload)
 
-<details>
-<summary>ChordVariantDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Properties</summary>
 
 #### property: type
 
@@ -114,8 +114,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>ChordVariantDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -137,8 +137,8 @@ refNameMap: undefined as Record<string, string> | undefined
 
 </details>
 
-<details>
-<summary>ChordVariantDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Getters</summary>
 
 #### getter: ready
 
@@ -163,8 +163,8 @@ string | undefined
 
 </details>
 
-<details>
-<summary>ChordVariantDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -175,8 +175,8 @@ renderSvg: (_opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => 
 
 </details>
 
-<details>
-<summary>ChordVariantDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ChordVariantDisplay - Actions</summary>
 
 #### action: onChordClick
 

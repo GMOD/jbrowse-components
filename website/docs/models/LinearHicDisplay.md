@@ -176,8 +176,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LinearHicDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Properties</summary>
 
 #### property: type
 
@@ -260,8 +260,8 @@ mode: types.stripDefault(
 
 </details>
 
-<details>
-<summary>LinearHicDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Volatiles</summary>
 
 #### volatile: rpcData
 
@@ -303,8 +303,8 @@ reloadCounter: 0
 
 </details>
 
-<details>
-<summary>LinearHicDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Getters</summary>
 
 #### getter: colorScheme
 
@@ -379,8 +379,8 @@ RenderTransform
 
 </details>
 
-<details>
-<summary>LinearHicDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Methods</summary>
 
 #### method: rpcProps
 
@@ -452,8 +452,8 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 
 </details>
 
-<details>
-<summary>LinearHicDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearHicDisplay - Actions</summary>
 
 #### action: setRpcData
 

@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>HierarchicalTrackSelectorWidget - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Properties</summary>
 
 #### property: id
 
@@ -55,8 +55,8 @@ view: types.safeReference(
 
 </details>
 
-<details>
-<summary>HierarchicalTrackSelectorWidget - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Volatiles</summary>
 
 #### volatile: favorites
 
@@ -156,8 +156,8 @@ favoritesCounter: 0
 
 </details>
 
-<details>
-<summary>HierarchicalTrackSelectorWidget - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Getters</summary>
 
 #### getter: shownTrackIds
 
@@ -293,8 +293,8 @@ boolean
 
 </details>
 
-<details>
-<summary>HierarchicalTrackSelectorWidget - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Methods</summary>
 
 #### method: isSelected
 
@@ -333,8 +333,8 @@ itemOffsets: (height: number, scrollTop: number) => { startIndex: number; endInd
 
 </details>
 
-<details>
-<summary>HierarchicalTrackSelectorWidget - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">HierarchicalTrackSelectorWidget - Actions</summary>
 
 #### action: setSortTrackNames
 

@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>ReferenceManagementSessionMixin - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ReferenceManagementSessionMixin - Methods</summary>
 
 #### method: getReferring
 
@@ -46,8 +46,8 @@ getReferringMultiple: (tracks: IAnyStateTreeNode[]) => Map<string, ReferringNode
 
 </details>
 
-<details>
-<summary>ReferenceManagementSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ReferenceManagementSessionMixin - Actions</summary>
 
 #### action: removeReferring
 

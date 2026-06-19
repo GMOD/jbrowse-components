@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>SpreadsheetImportWizard - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Properties</summary>
 
 #### property: fileType
 
@@ -55,8 +55,8 @@ cachedFileLocation: types.frozen<FileLocation | undefined>()
 
 </details>
 
-<details>
-<summary>SpreadsheetImportWizard - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Volatiles</summary>
 
 #### volatile: fileSource
 
@@ -87,8 +87,8 @@ loading: false
 
 </details>
 
-<details>
-<summary>SpreadsheetImportWizard - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Getters</summary>
 
 #### getter: isReadyToOpen
 
@@ -106,8 +106,8 @@ string | undefined
 
 </details>
 
-<details>
-<summary>SpreadsheetImportWizard - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Methods</summary>
 
 #### method: tracksForAssembly
 
@@ -118,8 +118,8 @@ tracksForAssembly: (selectedAssembly: string) => { track: ModelInstanceTypeProps
 
 </details>
 
-<details>
-<summary>SpreadsheetImportWizard - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetImportWizard - Actions</summary>
 
 #### action: setSelectedAssemblyName
 

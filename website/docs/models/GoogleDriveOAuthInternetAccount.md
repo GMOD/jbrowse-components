@@ -55,8 +55,8 @@ and docs.
 [validateToken](../oauthinternetaccount#action-validatetoken),
 [getFetcher](../oauthinternetaccount#action-getfetcher)
 
-<details>
-<summary>GoogleDriveOAuthInternetAccount - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -78,8 +78,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>GoogleDriveOAuthInternetAccount - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents
 
@@ -99,8 +99,8 @@ string
 
 </details>
 
-<details>
-<summary>GoogleDriveOAuthInternetAccount - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
@@ -118,8 +118,8 @@ openLocation: (location: UriLocation) => GoogleDriveFile
 
 </details>
 
-<details>
-<summary>GoogleDriveOAuthInternetAccount - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GoogleDriveOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 

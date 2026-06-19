@@ -42,8 +42,8 @@ and docs.
 [addConnectionConf](../connectionmanagementsessionmixin#action-addconnectionconf),
 [clearConnections](../connectionmanagementsessionmixin#action-clearconnections)
 
-<details>
-<summary>WebSessionConnectionsMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionConnectionsMixin - Properties</summary>
 
 #### property: sessionConnections
 
@@ -59,8 +59,8 @@ sessionConnections: types.stripDefault(
 
 </details>
 
-<details>
-<summary>WebSessionConnectionsMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionConnectionsMixin - Actions</summary>
 
 #### action: addConnectionConf
 

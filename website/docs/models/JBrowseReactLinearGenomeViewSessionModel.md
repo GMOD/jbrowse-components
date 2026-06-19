@@ -143,8 +143,8 @@ and docs.
 **Methods:**
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
-<details>
-<summary>JBrowseReactLinearGenomeViewSessionModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Properties</summary>
 
 #### property: view
 
@@ -158,8 +158,8 @@ view: pluginManager.getViewType('LinearGenomeView')!
 
 </details>
 
-<details>
-<summary>JBrowseReactLinearGenomeViewSessionModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Getters</summary>
 
 #### getter: version
 
@@ -219,8 +219,8 @@ Theme
 
 </details>
 
-<details>
-<summary>JBrowseReactLinearGenomeViewSessionModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Methods</summary>
 
 #### method: renderProps
 
@@ -234,8 +234,8 @@ renderProps: () => {
 
 </details>
 
-<details>
-<summary>JBrowseReactLinearGenomeViewSessionModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewSessionModel - Actions</summary>
 
 #### action: addView
 

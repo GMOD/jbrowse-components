@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>InternetAccountsMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">InternetAccountsMixin - Properties</summary>
 
 #### property: internetAccounts
 
@@ -37,8 +37,8 @@ internetAccounts: types.array(
 
 </details>
 
-<details>
-<summary>InternetAccountsMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">InternetAccountsMixin - Actions</summary>
 
 #### action: initializeInternetAccount
 

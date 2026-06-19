@@ -24,8 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 used in non-lgv view representations of a 1d view e.g. the two axes of the
 dotplot use this
 
-<details>
-<summary>Base1DView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Properties</summary>
 
 #### property: id
 
@@ -74,8 +74,8 @@ minimumBlockWidth: types.stripDefault(types.number, 0)
 
 </details>
 
-<details>
-<summary>Base1DView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Volatiles</summary>
 
 #### volatile: features
 
@@ -97,8 +97,8 @@ volatileWidth: 0
 
 </details>
 
-<details>
-<summary>Base1DView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Getters</summary>
 
 #### getter: width
 
@@ -165,8 +165,8 @@ number
 
 </details>
 
-<details>
-<summary>Base1DView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Methods</summary>
 
 #### method: pxToBp
 
@@ -184,8 +184,8 @@ bpToPx: ({ refName, coord, displayedRegionIndex, }: { refName: string; coord: nu
 
 </details>
 
-<details>
-<summary>Base1DView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Base1DView - Actions</summary>
 
 #### action: setDisplayedRegions
 

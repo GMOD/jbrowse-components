@@ -299,8 +299,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LinearBasicDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearBasicDisplay - Getters</summary>
 
 #### getter: subfeatureLabels
 
@@ -339,8 +339,8 @@ boolean
 
 </details>
 
-<details>
-<summary>LinearBasicDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearBasicDisplay - Methods</summary>
 
 #### method: rpcProps
 
@@ -372,8 +372,8 @@ contextMenuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeM
 
 </details>
 
-<details>
-<summary>LinearBasicDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearBasicDisplay - Actions</summary>
 
 #### action: setSubfeatureLabels
 

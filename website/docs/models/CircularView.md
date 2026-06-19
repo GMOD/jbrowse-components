@@ -55,8 +55,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>CircularView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Properties</summary>
 
 #### property: type
 
@@ -219,8 +219,8 @@ init: types.frozen<CircularViewInit | undefined>()
 
 </details>
 
-<details>
-<summary>CircularView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -260,8 +260,8 @@ panY: 0
 
 </details>
 
-<details>
-<summary>CircularView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Getters</summary>
 
 #### getter: width
 
@@ -441,8 +441,8 @@ Slice[]
 
 </details>
 
-<details>
-<summary>CircularView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Methods</summary>
 
 #### method: menuItems
 
@@ -455,8 +455,8 @@ menuItems: () => MenuItem[]
 
 </details>
 
-<details>
-<summary>CircularView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">CircularView - Actions</summary>
 
 #### action: fitToWindow
 
@@ -498,6 +498,15 @@ rotateCounterClockwiseButton: () => void
 ```js
 // type signature
 rotate: (delta: number) => void
+```
+
+#### action: resetView
+
+reset rotation, pan, and zoom back to the default fit-to-window view
+
+```js
+// type signature
+resetView: () => void
 ```
 
 #### action: zoomInButton

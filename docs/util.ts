@@ -1070,18 +1070,19 @@ export function overviewSection(...parts: (string | false | 0 | undefined)[]) {
   return body ? `## Overview\n\n${body}` : ''
 }
 
-// Wrap content in a collapsed-by-default `<details>` block whose `<summary>` is
-// the section title. The blank lines around the body are required: by CommonMark
-// (which Astro's remark follows) a blank line ends the raw-HTML block, so the
-// enclosed headings/code render as markdown instead of literal HTML. Returns
-// empty string when all parts are falsy, matching section().
+// Wrap content in an expanded-by-default `<details>` block (collapsible via the
+// `<summary>` section title) so a reader can fold sections away but sees them all
+// up front. The blank lines around the body are required: by CommonMark (which
+// Astro's remark follows) a blank line ends the raw-HTML block, so the enclosed
+// headings/code render as markdown instead of literal HTML. Returns empty string
+// when all parts are falsy, matching section().
 export function collapsible(
   summary: string,
   ...parts: (string | false | 0 | undefined)[]
 ) {
   const body = section(...parts)
   return body
-    ? `<details>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
+    ? `<details open>\n<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">${summary}</summary>\n\n${body}\n\n</details>`
     : ''
 }
 

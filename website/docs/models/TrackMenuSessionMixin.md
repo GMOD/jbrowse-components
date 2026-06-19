@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>TrackMenuSessionMixin - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackMenuSessionMixin - Methods</summary>
 
 #### method: getTrackActionMenuItems
 

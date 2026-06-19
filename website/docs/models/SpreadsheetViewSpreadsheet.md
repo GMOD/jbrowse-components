@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>SpreadsheetViewSpreadsheet - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Properties</summary>
 
 #### property: rowSet
 
@@ -65,8 +65,8 @@ visibleColumns: types.optional(
 
 </details>
 
-<details>
-<summary>SpreadsheetViewSpreadsheet - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Volatiles</summary>
 
 #### volatile: visibleRowFlags
 
@@ -79,8 +79,8 @@ visibleRowFlags: undefined as Record<number, boolean> | undefined
 
 </details>
 
-<details>
-<summary>SpreadsheetViewSpreadsheet - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Getters</summary>
 
 #### getter: rows
 
@@ -112,8 +112,8 @@ GridRow[] | undefined
 
 </details>
 
-<details>
-<summary>SpreadsheetViewSpreadsheet - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetViewSpreadsheet - Actions</summary>
 
 #### action: setVisibleRows
 

@@ -40,8 +40,8 @@ and docs.
 [setTrackConfs](../baseconnectionmodel#action-settrackconfs),
 [clear](../baseconnectionmodel#action-clear)
 
-<details>
-<summary>JB2TrackHubConnection - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JB2TrackHubConnection - Properties</summary>
 
 #### property: configuration
 
@@ -63,8 +63,8 @@ type: types.literal('JB2TrackHubConnection')
 
 </details>
 
-<details>
-<summary>JB2TrackHubConnection - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JB2TrackHubConnection - Actions</summary>
 
 #### action: connect
 

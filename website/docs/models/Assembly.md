@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>Assembly - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Properties</summary>
 
 #### property: configuration
 
@@ -35,8 +35,8 @@ configuration: types.safeReference(assemblyConfigType)
 
 </details>
 
-<details>
-<summary>Assembly - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Volatiles</summary>
 
 #### volatile: error
 
@@ -134,8 +134,8 @@ allRefNamesWithLowerCase: undefined as Set<string> | undefined
 
 </details>
 
-<details>
-<summary>Assembly - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Getters</summary>
 
 #### getter: name
 
@@ -224,8 +224,8 @@ Map<string, number> | undefined
 
 </details>
 
-<details>
-<summary>Assembly - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Methods</summary>
 
 #### method: getConf
 
@@ -299,8 +299,8 @@ getRefNameMapForAdapter: (adapterConf: AdapterConf, options: BaseOptions) => Pro
 
 </details>
 
-<details>
-<summary>Assembly - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Assembly - Actions</summary>
 
 #### action: setLoaded
 

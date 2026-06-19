@@ -26,8 +26,8 @@ contents of what is displayed
 
 see: formatDetails-\>feature,formatDetails-\>subfeatures
 
-<details>
-<summary>BaseFeatureWidget - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseFeatureWidget - Properties</summary>
 
 #### property: id
 
@@ -152,8 +152,8 @@ descriptions: types.optional(
 
 </details>
 
-<details>
-<summary>BaseFeatureWidget - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseFeatureWidget - Volatiles</summary>
 
 #### volatile: error
 
@@ -166,8 +166,8 @@ error: undefined
 
 </details>
 
-<details>
-<summary>BaseFeatureWidget - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseFeatureWidget - Actions</summary>
 
 #### action: setFeatureData
 

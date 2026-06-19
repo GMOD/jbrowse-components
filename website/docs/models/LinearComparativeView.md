@@ -40,8 +40,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>LinearComparativeView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearComparativeView - Properties</summary>
 
 #### property: id
 
@@ -151,8 +151,8 @@ viewTrackConfigs: types.stripDefault(
 
 </details>
 
-<details>
-<summary>LinearComparativeView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearComparativeView - Volatiles</summary>
 
 #### volatile: width
 
@@ -165,8 +165,8 @@ width: undefined as number | undefined
 
 </details>
 
-<details>
-<summary>LinearComparativeView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearComparativeView - Getters</summary>
 
 #### getter: initialized
 
@@ -191,8 +191,8 @@ string[]
 
 </details>
 
-<details>
-<summary>LinearComparativeView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearComparativeView - Methods</summary>
 
 #### method: isViewCompact
 
@@ -237,8 +237,8 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 
 </details>
 
-<details>
-<summary>LinearComparativeView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearComparativeView - Actions</summary>
 
 #### action: reconcileLevels
 

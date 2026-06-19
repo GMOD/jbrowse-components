@@ -191,8 +191,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>MultiSampleVariantBaseModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Properties</summary>
 
 #### property: type
 
@@ -244,8 +244,8 @@ lineZoneHeight: types.stripDefault(types.number, 0)
 
 </details>
 
-<details>
-<summary>MultiSampleVariantBaseModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Volatiles</summary>
 
 #### volatile: showLegend
 
@@ -336,8 +336,8 @@ pendingClusterTree: undefined as string | undefined
 
 </details>
 
-<details>
-<summary>MultiSampleVariantBaseModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Getters</summary>
 
 #### getter: featuresVolatile
 
@@ -590,8 +590,8 @@ boolean
 
 </details>
 
-<details>
-<summary>MultiSampleVariantBaseModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Methods</summary>
 
 #### method: rpcProps
 
@@ -639,8 +639,8 @@ legendItems: () => LegendItem[]
 
 </details>
 
-<details>
-<summary>MultiSampleVariantBaseModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiSampleVariantBaseModel - Actions</summary>
 
 #### action: setCellData
 

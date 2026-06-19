@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>RootAppMenuMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RootAppMenuMixin - Volatiles</summary>
 
 #### volatile: mutableMenuActions
 
@@ -35,8 +35,8 @@ mutableMenuActions: [] as MenuAction[]
 
 </details>
 
-<details>
-<summary>RootAppMenuMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RootAppMenuMixin - Actions</summary>
 
 #### action: setMenus
 

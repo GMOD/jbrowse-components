@@ -387,8 +387,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LGVSyntenyDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Properties</summary>
 
 #### property: type
 
@@ -410,8 +410,8 @@ configuration: ConfigurationReference(schema)
 
 </details>
 
-<details>
-<summary>LGVSyntenyDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Getters</summary>
 
 #### getter: featureWidgetType
 
@@ -425,8 +425,8 @@ configuration: ConfigurationReference(schema)
 
 </details>
 
-<details>
-<summary>LGVSyntenyDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Methods</summary>
 
 #### method: contextMenuItems
 
@@ -444,8 +444,8 @@ trackMenuItems: () => ({ label: string; type: "subMenu"; icon: OverridableCompon
 
 </details>
 
-<details>
-<summary>LGVSyntenyDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LGVSyntenyDisplay - Actions</summary>
 
 #### action: selectFeature
 

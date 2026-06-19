@@ -25,8 +25,8 @@ built on the [JBrowseRootConfig](/docs/config/jbrowserootconfig) config model â€
 config models are MST trees themselves, which is why this state model is allowed
 to build on one. Generally found on a property named rootModel.jbrowse
 
-<details>
-<summary>AppCoreJBrowseModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppCoreJBrowseModel - Getters</summary>
 
 #### getter: assemblyNames
 
@@ -44,8 +44,8 @@ RpcManager
 
 </details>
 
-<details>
-<summary>AppCoreJBrowseModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppCoreJBrowseModel - Actions</summary>
 
 #### action: addAssemblyConf
 

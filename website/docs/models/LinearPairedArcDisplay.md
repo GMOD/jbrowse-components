@@ -149,8 +149,8 @@ and docs.
 [reload](../regiontoolargemixin#action-reload),
 [forceLoad](../regiontoolargemixin#action-forceload)
 
-<details>
-<summary>LinearPairedArcDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Properties</summary>
 
 #### property: type
 
@@ -172,8 +172,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>LinearPairedArcDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -195,8 +195,8 @@ loading: false
 
 </details>
 
-<details>
-<summary>LinearPairedArcDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -229,8 +229,8 @@ parseSvAlt) out of the per-pan render loop.
 
 </details>
 
-<details>
-<summary>LinearPairedArcDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearPairedArcDisplay - Actions</summary>
 
 #### action: selectFeature
 

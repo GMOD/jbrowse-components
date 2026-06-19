@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>JobsListModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JobsListModel - Properties</summary>
 
 #### property: id
 
@@ -80,8 +80,8 @@ aborted: types.array(Job)
 
 </details>
 
-<details>
-<summary>JobsListModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JobsListModel - Actions</summary>
 
 #### action: addJob
 

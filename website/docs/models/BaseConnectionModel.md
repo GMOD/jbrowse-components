@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>BaseConnectionModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseConnectionModel - Properties</summary>
 
 #### property: tracks
 
@@ -44,8 +44,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>BaseConnectionModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseConnectionModel - Getters</summary>
 
 #### getter: connectionId
 
@@ -66,8 +66,8 @@ string
 
 </details>
 
-<details>
-<summary>BaseConnectionModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseConnectionModel - Actions</summary>
 
 #### action: connect
 

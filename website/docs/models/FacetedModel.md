@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>FacetedModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Properties</summary>
 
 #### property: filterText
 
@@ -68,8 +68,8 @@ panelWidth: types.optional(types.number, () =>
 
 </details>
 
-<details>
-<summary>FacetedModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Volatiles</summary>
 
 #### volatile: visible
 
@@ -118,8 +118,8 @@ session: undefined as AbstractSessionModel | undefined
 
 </details>
 
-<details>
-<summary>FacetedModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Getters</summary>
 
 #### getter: allRows
 
@@ -209,8 +209,8 @@ Record<string, number>
 
 </details>
 
-<details>
-<summary>FacetedModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FacetedModel - Actions</summary>
 
 #### action: setTrackConfigurations
 

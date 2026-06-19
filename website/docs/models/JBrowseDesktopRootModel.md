@@ -76,8 +76,8 @@ and docs.
 [appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-<details>
-<summary>JBrowseDesktopRootModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Properties</summary>
 
 #### property: jobsManager
 
@@ -90,8 +90,8 @@ jobsManager: types.optional(JobsManager, {})
 
 </details>
 
-<details>
-<summary>JBrowseDesktopRootModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Volatiles</summary>
 
 #### volatile: version
 
@@ -136,8 +136,8 @@ openNewSessionCallback: async (_path: string) => {
 
 </details>
 
-<details>
-<summary>JBrowseDesktopRootModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Methods</summary>
 
 #### method: menus
 
@@ -148,8 +148,8 @@ menus: () => Menu[]
 
 </details>
 
-<details>
-<summary>JBrowseDesktopRootModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseDesktopRootModel - Actions</summary>
 
 #### action: setOpenNewSessionCallback
 

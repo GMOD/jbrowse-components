@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>BaseDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Properties</summary>
 
 #### property: id
 
@@ -53,8 +53,8 @@ rpcDriverName: types.maybe(types.string)
 
 </details>
 
-<details>
-<summary>BaseDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Volatiles</summary>
 
 #### volatile: error
 
@@ -76,8 +76,8 @@ statusMessage: undefined as string | undefined
 
 </details>
 
-<details>
-<summary>BaseDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Getters</summary>
 
 #### getter: parentTrack
 
@@ -166,8 +166,8 @@ MenuItem[]
 
 </details>
 
-<details>
-<summary>BaseDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Methods</summary>
 
 #### method: renderProps
 
@@ -209,8 +209,8 @@ regionCannotBeRendered: () => null
 
 </details>
 
-<details>
-<summary>BaseDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseDisplay - Actions</summary>
 
 #### action: setStatusMessage
 

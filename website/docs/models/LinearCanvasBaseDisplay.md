@@ -168,8 +168,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LinearCanvasBaseDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Properties</summary>
 
 #### property: configuration
 
@@ -196,8 +196,8 @@ jexlFiltersSetting: types.maybe(types.array(types.string))
 
 </details>
 
-<details>
-<summary>LinearCanvasBaseDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -302,8 +302,8 @@ incrementalLayout: createIncrementalLayout()
 
 </details>
 
-<details>
-<summary>LinearCanvasBaseDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -600,8 +600,8 @@ Map<number, FlatbushRegionIndexes>
 
 </details>
 
-<details>
-<summary>LinearCanvasBaseDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Methods</summary>
 
 #### method: activeFilters
 
@@ -693,8 +693,8 @@ trackMenuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMa
 
 </details>
 
-<details>
-<summary>LinearCanvasBaseDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearCanvasBaseDisplay - Actions</summary>
 
 #### action: expandToFit
 

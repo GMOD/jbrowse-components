@@ -40,8 +40,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>SpreadsheetView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Properties</summary>
 
 #### property: type
 
@@ -121,8 +121,8 @@ init: types.frozen<SpreadsheetViewInit | undefined>()
 
 </details>
 
-<details>
-<summary>SpreadsheetView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Volatiles</summary>
 
 #### volatile: width
 
@@ -135,8 +135,8 @@ width: 400
 
 </details>
 
-<details>
-<summary>SpreadsheetView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Getters</summary>
 
 #### getter: assembly
 
@@ -147,8 +147,8 @@ any
 
 </details>
 
-<details>
-<summary>SpreadsheetView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Methods</summary>
 
 #### method: menuItems
 
@@ -159,8 +159,8 @@ menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, 
 
 </details>
 
-<details>
-<summary>SpreadsheetView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SpreadsheetView - Actions</summary>
 
 #### action: setWidth
 

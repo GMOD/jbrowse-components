@@ -71,8 +71,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>LinearGenomeView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Properties</summary>
 
 #### property: id
 
@@ -348,8 +348,8 @@ init: types.frozen<InitState | undefined>()
 
 </details>
 
-<details>
-<summary>LinearGenomeView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -482,8 +482,8 @@ volatileGuides: [] as VolatileGuide[]
 
 </details>
 
-<details>
-<summary>LinearGenomeView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Getters</summary>
 
 #### getter: pinnedTracks
 
@@ -974,8 +974,8 @@ string
 
 </details>
 
-<details>
-<summary>LinearGenomeView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Methods</summary>
 
 #### method: scalebarDisplayPrefix
 
@@ -1145,8 +1145,8 @@ highlightMenuItems: (_highlight: HighlightType) => MenuItem[]
 
 </details>
 
-<details>
-<summary>LinearGenomeView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearGenomeView - Actions</summary>
 
 #### action: setShowTrackOutlines
 

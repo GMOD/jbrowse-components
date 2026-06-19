@@ -90,8 +90,8 @@ and docs.
 [hideAllWidgets](../drawerwidgetsessionmixin#action-hideallwidgets),
 [editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)
 
-<details>
-<summary>MultipleViewsSessionMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultipleViewsSessionMixin - Properties</summary>
 
 #### property: views
 
@@ -130,8 +130,8 @@ useWorkspaces: types.optional(types.boolean, () =>
 
 </details>
 
-<details>
-<summary>MultipleViewsSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultipleViewsSessionMixin - Actions</summary>
 
 #### action: moveViewDown
 

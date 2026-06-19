@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>AssemblyManager - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Properties</summary>
 
 #### property: assemblies
 
@@ -38,8 +38,8 @@ assemblies: types.array(assemblyFactory(conf, pm))
 
 </details>
 
-<details>
-<summary>AssemblyManager - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Getters</summary>
 
 #### getter: assemblyNameMap
 
@@ -74,8 +74,8 @@ RpcManager
 
 </details>
 
-<details>
-<summary>AssemblyManager - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Methods</summary>
 
 #### method: getCanonicalAssemblyName
 
@@ -124,8 +124,8 @@ isValidRefName: (refName: string, assemblyName: string) => boolean
 
 </details>
 
-<details>
-<summary>AssemblyManager - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssemblyManager - Actions</summary>
 
 #### action: removeAssembly
 

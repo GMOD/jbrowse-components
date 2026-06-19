@@ -79,8 +79,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>WiggleCommonMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleCommonMixin - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -93,8 +93,8 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 
 </details>
 
-<details>
-<summary>WiggleCommonMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleCommonMixin - Getters</summary>
 
 #### getter: visibleScoreRange
 
@@ -112,8 +112,8 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 
 </details>
 
-<details>
-<summary>WiggleCommonMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleCommonMixin - Actions</summary>
 
 #### action: clearDisplaySpecificData
 

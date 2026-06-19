@@ -76,8 +76,8 @@ and docs.
 **Actions:**
 [removeReferring](../referencemanagementsessionmixin#action-removereferring)
 
-<details>
-<summary>TracksManagerSessionMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TracksManagerSessionMixin - Getters</summary>
 
 #### getter: tracks
 
@@ -110,8 +110,8 @@ Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slot
 
 </details>
 
-<details>
-<summary>TracksManagerSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TracksManagerSessionMixin - Actions</summary>
 
 #### action: addTrackConf
 

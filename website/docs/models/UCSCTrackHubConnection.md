@@ -40,8 +40,8 @@ and docs.
 [setTrackConfs](../baseconnectionmodel#action-settrackconfs),
 [clear](../baseconnectionmodel#action-clear)
 
-<details>
-<summary>UCSCTrackHubConnection - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">UCSCTrackHubConnection - Properties</summary>
 
 #### property: configuration
 
@@ -63,8 +63,8 @@ type: types.literal('UCSCTrackHubConnection')
 
 </details>
 
-<details>
-<summary>UCSCTrackHubConnection - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">UCSCTrackHubConnection - Actions</summary>
 
 #### action: connect
 

@@ -72,8 +72,8 @@ and docs.
 [appendToSubMenu](../rootappmenumixin#action-appendtosubmenu),
 [insertInSubMenu](../rootappmenumixin#action-insertinsubmenu)
 
-<details>
-<summary>JBrowseReactAppRootModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactAppRootModel - Volatiles</summary>
 
 #### volatile: version
 
@@ -110,8 +110,8 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 
 </details>
 
-<details>
-<summary>JBrowseReactAppRootModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactAppRootModel - Methods</summary>
 
 #### method: menus
 
@@ -122,8 +122,8 @@ menus: () => Menu[]
 
 </details>
 
-<details>
-<summary>JBrowseReactAppRootModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactAppRootModel - Actions</summary>
 
 #### action: setPluginsUpdated
 

@@ -238,8 +238,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>SharedGCContentModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Properties</summary>
 
 #### property: windowSizeOverride
 
@@ -279,8 +279,8 @@ gcModeOverride: types.maybe(
 
 </details>
 
-<details>
-<summary>SharedGCContentModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Getters</summary>
 
 #### getter: windowSize
 
@@ -321,8 +321,8 @@ a GCContentAdapter
 
 </details>
 
-<details>
-<summary>SharedGCContentModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Methods</summary>
 
 #### method: trackMenuItems
 
@@ -333,8 +333,8 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 </details>
 
-<details>
-<summary>SharedGCContentModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedGCContentModel - Actions</summary>
 
 #### action: setGCContentParams
 

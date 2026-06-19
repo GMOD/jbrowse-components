@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewRootModel - Properties</summary>
 
 #### property: config
 
@@ -82,8 +82,8 @@ internetAccounts: types.array(
 
 </details>
 
-<details>
-<summary>JBrowseReactLinearGenomeViewRootModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewRootModel - Volatiles</summary>
 
 #### volatile: error
 
@@ -138,8 +138,8 @@ version
 
 </details>
 
-<details>
-<summary>JBrowseReactLinearGenomeViewRootModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewRootModel - Getters</summary>
 
 #### getter: jbrowse
 
@@ -150,8 +150,8 @@ ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: Configura
 
 </details>
 
-<details>
-<summary>JBrowseReactLinearGenomeViewRootModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactLinearGenomeViewRootModel - Actions</summary>
 
 #### action: setSession
 

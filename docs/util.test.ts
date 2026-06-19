@@ -129,7 +129,7 @@ describe('section / overviewSection', () => {
 
   test('collapsible wraps content with blank lines so inner markdown renders', () => {
     expect(collapsible('Title', '#### a', '#### b')).toBe(
-      '<details>\n<summary>Title</summary>\n\n#### a\n\n#### b\n\n</details>',
+      '<details open>\n<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Title</summary>\n\n#### a\n\n#### b\n\n</details>',
     )
     expect(collapsible('Title', '', false, undefined)).toBe('')
   })

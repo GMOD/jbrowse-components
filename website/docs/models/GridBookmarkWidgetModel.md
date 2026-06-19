@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>GridBookmarkWidgetModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Properties</summary>
 
 #### property: label
 
@@ -76,8 +76,8 @@ bookmarks: types.optional(types.array(LabeledRegionModel), () =>
 
 </details>
 
-<details>
-<summary>GridBookmarkWidgetModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Volatiles</summary>
 
 #### volatile: selectedBookmarks
 
@@ -112,8 +112,8 @@ gridView: 'bookmarks'
 
 </details>
 
-<details>
-<summary>GridBookmarkWidgetModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Getters</summary>
 
 #### getter: bookmarkAssemblies
 
@@ -159,8 +159,8 @@ string[]
 
 </details>
 
-<details>
-<summary>GridBookmarkWidgetModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GridBookmarkWidgetModel - Actions</summary>
 
 #### action: setLabel
 

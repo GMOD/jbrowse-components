@@ -150,8 +150,8 @@ and docs.
 [reload](../regiontoolargemixin#action-reload),
 [forceLoad](../regiontoolargemixin#action-forceload)
 
-<details>
-<summary>LinearArcDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Properties</summary>
 
 #### property: type
 
@@ -185,8 +185,8 @@ displayModeOverride: types.maybe(types.string)
 
 </details>
 
-<details>
-<summary>LinearArcDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Volatiles</summary>
 
 #### volatile: features
 
@@ -208,8 +208,8 @@ loading: false
 
 </details>
 
-<details>
-<summary>LinearArcDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -266,8 +266,8 @@ string | undefined
 
 </details>
 
-<details>
-<summary>LinearArcDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Methods</summary>
 
 #### method: trackMenuItems
 
@@ -278,8 +278,8 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 </details>
 
-<details>
-<summary>LinearArcDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearArcDisplay - Actions</summary>
 
 #### action: selectFeature
 

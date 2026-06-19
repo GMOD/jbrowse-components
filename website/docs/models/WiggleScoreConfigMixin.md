@@ -42,8 +42,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>WiggleScoreConfigMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Properties</summary>
 
 #### property: resolution
 
@@ -65,8 +65,8 @@ displayCrossHatches: types.stripDefault(types.boolean, false)
 
 </details>
 
-<details>
-<summary>WiggleScoreConfigMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Volatiles</summary>
 
 #### volatile: loadedBpPerPx
 
@@ -79,8 +79,8 @@ loadedBpPerPx: undefined as number | undefined
 
 </details>
 
-<details>
-<summary>WiggleScoreConfigMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Getters</summary>
 
 #### getter: scalebarOverlapLeft
 
@@ -189,8 +189,8 @@ boolean
 
 </details>
 
-<details>
-<summary>WiggleScoreConfigMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WiggleScoreConfigMixin - Actions</summary>
 
 #### action: toggleCrossHatches
 

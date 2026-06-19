@@ -177,8 +177,8 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-<details>
-<summary>LinearMafDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearMafDisplay - Properties</summary>
 
 #### property: type
 
@@ -314,8 +314,8 @@ coverageHeight: types.stripDefault(
 
 </details>
 
-<details>
-<summary>LinearMafDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearMafDisplay - Volatiles</summary>
 
 #### volatile: rpcDataMap
 
@@ -378,8 +378,8 @@ treeNewickVolatile: undefined as string | undefined
 
 </details>
 
-<details>
-<summary>LinearMafDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearMafDisplay - Getters</summary>
 
 #### getter: conf
 
@@ -604,8 +604,8 @@ MsaHighlight[]
 
 </details>
 
-<details>
-<summary>LinearMafDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearMafDisplay - Methods</summary>
 
 #### method: gpuProps
 
@@ -681,8 +681,8 @@ trackMenuItems: () => MenuItem[]
 
 </details>
 
-<details>
-<summary>LinearMafDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearMafDisplay - Actions</summary>
 
 #### action: setRowHeight
 

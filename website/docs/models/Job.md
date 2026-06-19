@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>Job - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Job - Properties</summary>
 
 #### property: name
 
@@ -35,8 +35,8 @@ name: types.string
 
 </details>
 
-<details>
-<summary>Job - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Job - Volatiles</summary>
 
 #### volatile: statusMessage
 
@@ -58,8 +58,8 @@ progressPct: 0
 
 </details>
 
-<details>
-<summary>Job - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Job - Actions</summary>
 
 #### action: setCancelCallback
 

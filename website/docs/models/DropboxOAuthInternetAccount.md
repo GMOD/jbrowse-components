@@ -55,8 +55,8 @@ and docs.
 [validateToken](../oauthinternetaccount#action-validatetoken),
 [getFetcher](../oauthinternetaccount#action-getfetcher)
 
-<details>
-<summary>DropboxOAuthInternetAccount - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Properties</summary>
 
 #### property: type
 
@@ -78,8 +78,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>DropboxOAuthInternetAccount - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Getters</summary>
 
 #### getter: toggleContents
 
@@ -99,8 +99,8 @@ string
 
 </details>
 
-<details>
-<summary>DropboxOAuthInternetAccount - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Methods</summary>
 
 #### method: getFetcher
 
@@ -111,8 +111,8 @@ getFetcher: (location?: UriLocation | undefined) => (input: RequestInfo, init?: 
 
 </details>
 
-<details>
-<summary>DropboxOAuthInternetAccount - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DropboxOAuthInternetAccount - Actions</summary>
 
 #### action: validateToken
 

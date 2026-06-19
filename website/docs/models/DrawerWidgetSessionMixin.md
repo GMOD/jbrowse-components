@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>DrawerWidgetSessionMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DrawerWidgetSessionMixin - Properties</summary>
 
 #### property: drawerPosition
 
@@ -80,8 +80,8 @@ minimized: types.stripDefault(types.boolean, false)
 
 </details>
 
-<details>
-<summary>DrawerWidgetSessionMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DrawerWidgetSessionMixin - Getters</summary>
 
 #### getter: visibleWidget
 
@@ -92,8 +92,8 @@ any
 
 </details>
 
-<details>
-<summary>DrawerWidgetSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DrawerWidgetSessionMixin - Actions</summary>
 
 #### action: setDrawerPosition
 

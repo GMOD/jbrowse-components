@@ -36,8 +36,8 @@ that persists via the snapshot mechanism. They are accepted by
 `getOverride`/`setOverride`/`clearOverride` but NOT by `getConfWithOverride`
 (which requires a config-slot fallback).
 
-<details>
-<summary>ConfigOverrideMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConfigOverrideMixin - Properties</summary>
 
 #### property: configOverrides
 
@@ -53,8 +53,8 @@ configOverrides: types.optional(
 
 </details>
 
-<details>
-<summary>ConfigOverrideMixin - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConfigOverrideMixin - Methods</summary>
 
 #### method: getOverride
 
@@ -78,8 +78,8 @@ getConfWithOverride: <SLOT extends SlotName = ConfigurationSlotName<Configuratio
 
 </details>
 
-<details>
-<summary>ConfigOverrideMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConfigOverrideMixin - Actions</summary>
 
 #### action: setOverride
 

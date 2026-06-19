@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>AddTrackModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Properties</summary>
 
 #### property: id
 
@@ -55,8 +55,8 @@ view: types.safeReference(
 
 </details>
 
-<details>
-<summary>AddTrackModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Getters</summary>
 
 #### getter: trackAdapter
 
@@ -161,8 +161,8 @@ string
 
 </details>
 
-<details>
-<summary>AddTrackModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Methods</summary>
 
 #### method: getTrackConfig
 
@@ -173,8 +173,8 @@ getTrackConfig: (timestamp: number) => { [x: string]: ...; } | undefined
 
 </details>
 
-<details>
-<summary>AddTrackModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AddTrackModel - Actions</summary>
 
 #### action: setMixinData
 

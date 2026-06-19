@@ -88,8 +88,8 @@ and docs.
 [setRpcDriverName](../basedisplay#action-setrpcdrivername),
 [reload](../basedisplay#action-reload)
 
-<details>
-<summary>LinearSyntenyDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Properties</summary>
 
 #### property: type
 
@@ -111,8 +111,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>LinearSyntenyDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Volatiles</summary>
 
 #### volatile: featureData
 
@@ -195,8 +195,8 @@ assembliesSwapped: false
 
 </details>
 
-<details>
-<summary>LinearSyntenyDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Getters</summary>
 
 #### getter: parentHelper
 
@@ -372,8 +372,8 @@ yTop before handing this to the backend.
 
 </details>
 
-<details>
-<summary>LinearSyntenyDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Methods</summary>
 
 #### method: getFeature
 
@@ -384,8 +384,8 @@ getFeature: (index: number) => FeatPos | undefined
 
 </details>
 
-<details>
-<summary>LinearSyntenyDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyDisplay - Actions</summary>
 
 #### action: setRpcData
 

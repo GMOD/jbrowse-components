@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>ConnectionManagementSessionMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConnectionManagementSessionMixin - Properties</summary>
 
 #### property: connectionInstances
 
@@ -38,8 +38,8 @@ connectionInstances: types.stripDefault(
 
 </details>
 
-<details>
-<summary>ConnectionManagementSessionMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConnectionManagementSessionMixin - Getters</summary>
 
 #### getter: connections
 
@@ -50,8 +50,8 @@ connectionInstances: types.stripDefault(
 
 </details>
 
-<details>
-<summary>ConnectionManagementSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">ConnectionManagementSessionMixin - Actions</summary>
 
 #### action: makeConnection
 

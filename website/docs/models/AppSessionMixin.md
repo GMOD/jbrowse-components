@@ -27,8 +27,8 @@ plus `renderProps` and `renameCurrentSession`. Centralized here so the products
 compose one mixin instead of re-declaring (and diverging on) the same root
 delegations. The root must satisfy .
 
-<details>
-<summary>AppSessionMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppSessionMixin - Getters</summary>
 
 #### getter: root
 
@@ -67,8 +67,8 @@ ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMay
 
 </details>
 
-<details>
-<summary>AppSessionMixin - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppSessionMixin - Methods</summary>
 
 #### method: renderProps
 
@@ -89,8 +89,8 @@ menus: () => Menu[]
 
 </details>
 
-<details>
-<summary>AppSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AppSessionMixin - Actions</summary>
 
 #### action: renameCurrentSession
 

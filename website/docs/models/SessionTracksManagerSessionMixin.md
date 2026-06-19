@@ -86,8 +86,8 @@ and docs.
 **Actions:**
 [removeReferring](../referencemanagementsessionmixin#action-removereferring)
 
-<details>
-<summary>SessionTracksManagerSessionMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SessionTracksManagerSessionMixin - Properties</summary>
 
 #### property: sessionTracks
 
@@ -103,8 +103,8 @@ sessionTracks: types.stripDefault(
 
 </details>
 
-<details>
-<summary>SessionTracksManagerSessionMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SessionTracksManagerSessionMixin - Getters</summary>
 
 #### getter: tracks
 
@@ -120,8 +120,8 @@ it's resolved without showing a duplicate.
 
 </details>
 
-<details>
-<summary>SessionTracksManagerSessionMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SessionTracksManagerSessionMixin - Actions</summary>
 
 #### action: addTrackConf
 

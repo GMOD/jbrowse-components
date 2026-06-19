@@ -98,8 +98,8 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-<details>
-<summary>GlobalDataDisplayMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">GlobalDataDisplayMixin - Getters</summary>
 
 #### getter: displayPhase
 

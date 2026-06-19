@@ -41,8 +41,8 @@ and docs.
 [popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
 [removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
 
-<details>
-<summary>BaseSessionModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Properties</summary>
 
 #### property: id
 
@@ -84,8 +84,8 @@ focusedViewId: types.maybe(types.string)
 
 </details>
 
-<details>
-<summary>BaseSessionModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Volatiles</summary>
 
 #### volatile: selection
 
@@ -122,8 +122,8 @@ queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 
 </details>
 
-<details>
-<summary>BaseSessionModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Getters</summary>
 
 #### getter: root
 
@@ -190,8 +190,8 @@ Record<string, unknown>
 
 </details>
 
-<details>
-<summary>BaseSessionModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseSessionModel - Actions</summary>
 
 #### action: setSelection
 

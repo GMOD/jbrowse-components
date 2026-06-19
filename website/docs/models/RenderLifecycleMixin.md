@@ -45,8 +45,8 @@ multi-entry config. `render` returns `true` when the backend actually painted
 content (flips `canvasDrawn`), `false` to skip this tick (e.g. `renderState` not
 yet computed or no regions loaded).
 
-<details>
-<summary>RenderLifecycleMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RenderLifecycleMixin - Volatiles</summary>
 
 #### volatile: canvasDrawn
 
@@ -114,8 +114,8 @@ renderError: undefined
 
 </details>
 
-<details>
-<summary>RenderLifecycleMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RenderLifecycleMixin - Actions</summary>
 
 #### action: markCanvasDrawn
 

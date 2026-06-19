@@ -25,8 +25,8 @@ Saved-session-database actions (favorites, recent sessions, activate/delete)
 delegating to the root's . Composed only by the full-app jbrowse-web session;
 react-app omits it (its root has no session database).
 
-<details>
-<summary>WebSessionManagementMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionManagementMixin - Getters</summary>
 
 #### getter: savedSessionMetadata
 
@@ -37,8 +37,8 @@ SessionMetadata[] | undefined
 
 </details>
 
-<details>
-<summary>WebSessionManagementMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">WebSessionManagementMixin - Actions</summary>
 
 #### action: deleteSavedSession
 

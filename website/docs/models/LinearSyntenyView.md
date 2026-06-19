@@ -101,8 +101,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>LinearSyntenyView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Properties</summary>
 
 #### property: type
 
@@ -240,8 +240,8 @@ init: types.frozen<LinearSyntenyViewInit | undefined>()
 
 </details>
 
-<details>
-<summary>LinearSyntenyView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Volatiles</summary>
 
 #### volatile: importFormSyntenyTrackSelections
 
@@ -268,8 +268,8 @@ awaitingAutoDiagonalize: false
 
 </details>
 
-<details>
-<summary>LinearSyntenyView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Getters</summary>
 
 #### getter: hasSomethingToShow
 
@@ -345,8 +345,8 @@ boolean
 
 </details>
 
-<details>
-<summary>LinearSyntenyView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Methods</summary>
 
 #### method: showMenuItems
 
@@ -374,8 +374,8 @@ menuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuIte
 
 </details>
 
-<details>
-<summary>LinearSyntenyView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearSyntenyView - Actions</summary>
 
 #### action: importFormRemoveRow
 

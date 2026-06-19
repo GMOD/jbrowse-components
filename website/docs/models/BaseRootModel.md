@@ -23,8 +23,8 @@ reference the markdown files in our repo of the checked out git tag
 
 factory function for the Base-level root model shared by all products
 
-<details>
-<summary>BaseRootModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseRootModel - Properties</summary>
 
 #### property: jbrowse
 
@@ -72,8 +72,8 @@ assemblyManager: types.optional(
 
 </details>
 
-<details>
-<summary>BaseRootModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseRootModel - Volatiles</summary>
 
 #### volatile: rpcManager
 
@@ -122,8 +122,8 @@ pluginManager
 
 </details>
 
-<details>
-<summary>BaseRootModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseRootModel - Actions</summary>
 
 #### action: setError
 

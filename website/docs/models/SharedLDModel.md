@@ -153,8 +153,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>SharedLDModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Properties</summary>
 
 #### property: configuration
 
@@ -167,8 +167,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>SharedLDModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Volatiles</summary>
 
 #### volatile: rpcData
 
@@ -192,8 +192,8 @@ reloadCounter: 0
 
 </details>
 
-<details>
-<summary>SharedLDModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Getters</summary>
 
 #### getter: prefersOffset
 
@@ -415,8 +415,8 @@ model.fitToHeight, rpcData contents, …) re-fires it.
 
 </details>
 
-<details>
-<summary>SharedLDModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Methods</summary>
 
 #### method: rpcProps
 
@@ -474,8 +474,8 @@ renderSvg: (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 
 </details>
 
-<details>
-<summary>SharedLDModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SharedLDModel - Actions</summary>
 
 #### action: setRpcData
 

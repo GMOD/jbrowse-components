@@ -130,8 +130,8 @@ and docs.
 **Methods:**
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
-<details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
 
 #### property: view
 
@@ -144,8 +144,8 @@ view: pluginManager.getViewType('CircularView').stateModel
 
 </details>
 
-<details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
 
 #### getter: version
 
@@ -198,8 +198,8 @@ Theme
 
 </details>
 
-<details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
 
 #### method: renderProps
 
@@ -213,8 +213,8 @@ renderProps: () => {
 
 </details>
 
-<details>
-<summary>JBrowseReactCircularGenomeViewSessionModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewSessionModel - Actions</summary>
 
 #### action: addView
 

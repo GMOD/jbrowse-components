@@ -40,8 +40,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>BreakpointSplitView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Properties</summary>
 
 #### property: type
 
@@ -131,8 +131,8 @@ init: types.frozen<BreakpointSplitViewInit | undefined>()
 
 </details>
 
-<details>
-<summary>BreakpointSplitView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Volatiles</summary>
 
 #### volatile: width
 
@@ -156,8 +156,8 @@ matchedTrackFeatures: {
 
 </details>
 
-<details>
-<summary>BreakpointSplitView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Getters</summary>
 
 #### getter: hasSomethingToShow
 
@@ -212,8 +212,8 @@ Map<string, OverlayMatch>
 
 </details>
 
-<details>
-<summary>BreakpointSplitView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Methods</summary>
 
 #### method: exportSvg
 
@@ -276,8 +276,8 @@ rubberBandMenuItems: () => { label: string; onClick: () => void; }[]
 
 </details>
 
-<details>
-<summary>BreakpointSplitView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BreakpointSplitView - Actions</summary>
 
 #### action: setWidth
 

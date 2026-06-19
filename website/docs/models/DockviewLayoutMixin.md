@@ -24,8 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 Session mixin that persists dockview layout state. Each dockview panel can
 contain multiple views stacked vertically.
 
-<details>
-<summary>DockviewLayoutMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DockviewLayoutMixin - Properties</summary>
 
 #### property: dockviewLayout
 
@@ -91,8 +91,8 @@ activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 
 </details>
 
-<details>
-<summary>DockviewLayoutMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DockviewLayoutMixin - Getters</summary>
 
 #### getter: getViewIdsForPanel
 
@@ -115,8 +115,8 @@ list, and the view's index within it (or undefined if unassigned)
 
 </details>
 
-<details>
-<summary>DockviewLayoutMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DockviewLayoutMixin - Actions</summary>
 
 #### action: setDockviewLayout
 

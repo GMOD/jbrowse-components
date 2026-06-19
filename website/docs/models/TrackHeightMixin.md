@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>TrackHeightMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Properties</summary>
 
 #### property: heightOverride
 
@@ -46,8 +46,8 @@ heightOverride: types.maybe(
 
 </details>
 
-<details>
-<summary>TrackHeightMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Volatiles</summary>
 
 #### volatile: scrollTop
 
@@ -60,8 +60,8 @@ scrollTop: 0
 
 </details>
 
-<details>
-<summary>TrackHeightMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Getters</summary>
 
 #### getter: height
 
@@ -72,8 +72,8 @@ number
 
 </details>
 
-<details>
-<summary>TrackHeightMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">TrackHeightMixin - Actions</summary>
 
 #### action: setScrollTop
 

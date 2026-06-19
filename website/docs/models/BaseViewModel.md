@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>BaseViewModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Properties</summary>
 
 #### property: id
 
@@ -56,8 +56,8 @@ minimized: types.stripDefault(types.boolean, false)
 
 </details>
 
-<details>
-<summary>BaseViewModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Volatiles</summary>
 
 #### volatile: width
 
@@ -70,8 +70,8 @@ width: 800
 
 </details>
 
-<details>
-<summary>BaseViewModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Getters</summary>
 
 #### getter: menuItems
 
@@ -82,8 +82,8 @@ width: 800
 
 </details>
 
-<details>
-<summary>BaseViewModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseViewModel - Actions</summary>
 
 #### action: setDisplayName
 

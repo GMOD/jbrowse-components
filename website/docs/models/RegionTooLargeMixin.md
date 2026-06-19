@@ -31,8 +31,8 @@ LinearBasicDisplay).
 Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
 forceLoad.
 
-<details>
-<summary>RegionTooLargeMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Properties</summary>
 
 #### property: userByteSizeLimit
 
@@ -47,8 +47,8 @@ userByteSizeLimit: types.maybe(types.number)
 
 </details>
 
-<details>
-<summary>RegionTooLargeMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Volatiles</summary>
 
 #### volatile: regionTooLargeState
 
@@ -79,8 +79,8 @@ featureDensityStats: undefined as FeatureDensityStats | undefined
 
 </details>
 
-<details>
-<summary>RegionTooLargeMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Getters</summary>
 
 #### getter: regionTooLarge
 
@@ -98,8 +98,8 @@ string
 
 </details>
 
-<details>
-<summary>RegionTooLargeMixin - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Methods</summary>
 
 #### method: regionCannotBeRenderedText
 
@@ -113,8 +113,8 @@ regionCannotBeRenderedText: (_region?: Region | undefined) => "" | "Force load t
 
 </details>
 
-<details>
-<summary>RegionTooLargeMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">RegionTooLargeMixin - Actions</summary>
 
 #### action: setRegionTooLarge
 

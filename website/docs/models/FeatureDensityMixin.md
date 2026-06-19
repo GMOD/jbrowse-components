@@ -58,8 +58,8 @@ and docs.
 [reload](../regiontoolargemixin#action-reload),
 [forceLoad](../regiontoolargemixin#action-forceload)
 
-<details>
-<summary>FeatureDensityMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Properties</summary>
 
 #### property: userBpPerPxLimit
 
@@ -72,8 +72,8 @@ userBpPerPxLimit: types.maybe(types.number)
 
 </details>
 
-<details>
-<summary>FeatureDensityMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Volatiles</summary>
 
 #### volatile: featureDensityStatsP
 
@@ -97,8 +97,8 @@ currStatsBpPerPx: 0
 
 </details>
 
-<details>
-<summary>FeatureDensityMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Getters</summary>
 
 #### getter: currentBytesRequested
 
@@ -172,8 +172,8 @@ boolean
 
 </details>
 
-<details>
-<summary>FeatureDensityMixin - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Methods</summary>
 
 #### method: regionCannotBeRendered
 
@@ -184,8 +184,8 @@ regionCannotBeRendered: (_region: Region) => Element | null
 
 </details>
 
-<details>
-<summary>FeatureDensityMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">FeatureDensityMixin - Actions</summary>
 
 #### action: setCurrStatsBpPerPx
 

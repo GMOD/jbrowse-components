@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewRootModel - Properties</summary>
 
 #### property: config
 
@@ -64,8 +64,8 @@ internetAccounts: types.array(
 
 </details>
 
-<details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewRootModel - Volatiles</summary>
 
 #### volatile: error
 
@@ -116,8 +116,8 @@ textSearchManager: new TextSearchManager(pluginManager)
 
 </details>
 
-<details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewRootModel - Getters</summary>
 
 #### getter: jbrowse
 
@@ -135,8 +135,8 @@ PluginManager
 
 </details>
 
-<details>
-<summary>JBrowseReactCircularGenomeViewRootModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">JBrowseReactCircularGenomeViewRootModel - Actions</summary>
 
 #### action: setSession
 

@@ -56,8 +56,8 @@ and docs.
 [setRpcDriverName](../basedisplay#action-setrpcdrivername),
 [reload](../basedisplay#action-reload)
 
-<details>
-<summary>DotplotDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Properties</summary>
 
 #### property: type
 
@@ -108,8 +108,8 @@ minAlignmentLength: types.optional(types.number, 0)
 
 </details>
 
-<details>
-<summary>DotplotDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Volatiles</summary>
 
 #### volatile: rpcData
 
@@ -177,8 +177,8 @@ assembliesSwapped: false
 
 </details>
 
-<details>
-<summary>DotplotDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Getters</summary>
 
 #### getter: isLoading
 
@@ -209,8 +209,8 @@ Per-render fetch warnings, plus the load-time reversed-assembly hint.
 
 </details>
 
-<details>
-<summary>DotplotDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -221,8 +221,8 @@ renderSvg: (opts: ExportSvgOptions & { theme?: ThemeOptions | undefined; }) => P
 
 </details>
 
-<details>
-<summary>DotplotDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotDisplay - Actions</summary>
 
 #### action: setStatusMessage
 

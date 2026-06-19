@@ -25,8 +25,8 @@ these MST models only exist for tracks that are _shown_. they should contain
 only UI state for the track, and have a reference to a track configuration. note
 that multiple displayed tracks could use the same configuration.
 
-<details>
-<summary>BaseTrackModel - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Properties</summary>
 
 #### property: id
 
@@ -84,8 +84,8 @@ displays: types.array(pm.pluggableMstType('display', 'stateModel'))
 
 </details>
 
-<details>
-<summary>BaseTrackModel - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Getters</summary>
 
 #### getter: trackId
 
@@ -156,8 +156,8 @@ AdapterType
 
 </details>
 
-<details>
-<summary>BaseTrackModel - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Methods</summary>
 
 #### method: saveTrackFileFormatOptions
 
@@ -175,8 +175,8 @@ trackMenuItems: () => MenuItem[]
 
 </details>
 
-<details>
-<summary>BaseTrackModel - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">BaseTrackModel - Actions</summary>
 
 #### action: setPinned
 

@@ -178,8 +178,8 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-<details>
-<summary>LinearReferenceSequenceDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Properties</summary>
 
 #### property: type
 
@@ -228,8 +228,8 @@ showTranslation: types.stripDefault(types.boolean, true)
 
 </details>
 
-<details>
-<summary>LinearReferenceSequenceDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Volatiles</summary>
 
 #### volatile: sequenceData
 
@@ -242,8 +242,8 @@ sequenceData: observable.map<number, SequenceRegionData>()
 
 </details>
 
-<details>
-<summary>LinearReferenceSequenceDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Getters</summary>
 
 #### getter: sequenceType
 
@@ -378,8 +378,8 @@ DisplayPhase
 
 </details>
 
-<details>
-<summary>LinearReferenceSequenceDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Methods</summary>
 
 #### method: renderSvg
 
@@ -397,8 +397,8 @@ trackMenuItems: () => { label: string; type: string; checked: boolean; onClick: 
 
 </details>
 
-<details>
-<summary>LinearReferenceSequenceDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearReferenceSequenceDisplay - Actions</summary>
 
 #### action: setSequenceRegion
 

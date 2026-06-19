@@ -45,8 +45,8 @@ and docs.
 [setWidth](../baseviewmodel#action-setwidth),
 [setMinimized](../baseviewmodel#action-setminimized)
 
-<details>
-<summary>SvInspectorView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Properties</summary>
 
 #### property: id
 
@@ -130,8 +130,8 @@ init: types.frozen<SvInspectorViewInit | undefined>()
 
 </details>
 
-<details>
-<summary>SvInspectorView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Volatiles</summary>
 
 #### volatile: width
 
@@ -171,8 +171,8 @@ circularViewOptionsBarHeight: 52
 
 </details>
 
-<details>
-<summary>SvInspectorView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Getters</summary>
 
 #### getter: assemblyName
 
@@ -239,8 +239,8 @@ string
 
 </details>
 
-<details>
-<summary>SvInspectorView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Methods</summary>
 
 #### method: menuItems
 
@@ -251,8 +251,8 @@ menuItems: () => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, 
 
 </details>
 
-<details>
-<summary>SvInspectorView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">SvInspectorView - Actions</summary>
 
 #### action: setWidth
 

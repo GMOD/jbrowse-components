@@ -293,8 +293,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LinearVariantDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearVariantDisplay - Properties</summary>
 
 #### property: type
 
@@ -307,8 +307,8 @@ type: types.literal('LinearVariantDisplay')
 
 </details>
 
-<details>
-<summary>LinearVariantDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearVariantDisplay - Getters</summary>
 
 #### getter: featureWidgetType
 
@@ -322,8 +322,8 @@ type: types.literal('LinearVariantDisplay')
 
 </details>
 
-<details>
-<summary>LinearVariantDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearVariantDisplay - Methods</summary>
 
 #### method: colorMenuItems
 

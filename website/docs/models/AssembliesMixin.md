@@ -24,8 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 `temporaryAssemblies` (used for ad-hoc read-vs-ref style assemblies).
 
-<details>
-<summary>AssembliesMixin - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssembliesMixin - Properties</summary>
 
 #### property: sessionAssemblies
 
@@ -53,8 +53,8 @@ temporaryAssemblies: types.stripDefault(
 
 </details>
 
-<details>
-<summary>AssembliesMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssembliesMixin - Getters</summary>
 
 #### getter: assemblies
 
@@ -77,8 +77,8 @@ string[]
 
 </details>
 
-<details>
-<summary>AssembliesMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">AssembliesMixin - Actions</summary>
 
 #### action: addSessionAssembly
 

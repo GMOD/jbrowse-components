@@ -228,8 +228,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LinearAlignmentsDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Properties</summary>
 
 #### property: type
 
@@ -450,8 +450,8 @@ showSoftClipping: types.stripDefault(types.boolean, false)
 
 </details>
 
-<details>
-<summary>LinearAlignmentsDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Volatiles</summary>
 
 #### volatile: featureIdUnderMouse
 
@@ -641,8 +641,8 @@ hoverCoverageBand: undefined as
 
 </details>
 
-<details>
-<summary>LinearAlignmentsDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Getters</summary>
 
 #### getter: isChainMode
 
@@ -1234,8 +1234,8 @@ SimpleFeature | undefined
 
 </details>
 
-<details>
-<summary>LinearAlignmentsDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Methods</summary>
 
 #### method: isGroupCollapsed
 
@@ -1319,8 +1319,8 @@ contextMenuItems: () => MenuItem[]
 
 </details>
 
-<details>
-<summary>LinearAlignmentsDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearAlignmentsDisplay - Actions</summary>
 
 #### action: clearMouseoverState
 

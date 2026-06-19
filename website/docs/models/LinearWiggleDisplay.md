@@ -234,8 +234,8 @@ and docs.
 **Actions:** [setOverride](../configoverridemixin#action-setoverride),
 [clearOverride](../configoverridemixin#action-clearoverride)
 
-<details>
-<summary>LinearWiggleDisplay - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Properties</summary>
 
 #### property: type
 
@@ -257,8 +257,8 @@ configuration: ConfigurationReference(configSchema)
 
 </details>
 
-<details>
-<summary>LinearWiggleDisplay - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Volatiles</summary>
 
 #### volatile: featureUnderMouse
 
@@ -271,8 +271,8 @@ featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined
 
 </details>
 
-<details>
-<summary>LinearWiggleDisplay - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Getters</summary>
 
 #### getter: DisplayMessageComponent
 
@@ -318,8 +318,8 @@ WiggleGPURenderState | undefined
 
 </details>
 
-<details>
-<summary>LinearWiggleDisplay - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Methods</summary>
 
 #### method: rpcProps
 
@@ -367,8 +367,8 @@ trackMenuItems: () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMe
 
 </details>
 
-<details>
-<summary>LinearWiggleDisplay - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">LinearWiggleDisplay - Actions</summary>
 
 #### action: setRpcData
 

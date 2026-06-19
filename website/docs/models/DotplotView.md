@@ -71,8 +71,8 @@ and docs.
 [setRenderError](../renderlifecyclemixin#action-setrendererror),
 [attachRenderingBackend](../renderlifecyclemixin#action-attachrenderingbackend)
 
-<details>
-<summary>DotplotView - Properties</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Properties</summary>
 
 #### property: id
 
@@ -296,8 +296,8 @@ highlightsVisible: types.stripDefault(types.boolean, true)
 
 </details>
 
-<details>
-<summary>DotplotView - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Volatiles</summary>
 
 #### volatile: volatileWidth
 
@@ -375,8 +375,8 @@ awaitingAutoDiagonalize: false
 
 </details>
 
-<details>
-<summary>DotplotView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Getters</summary>
 
 #### getter: width
 
@@ -561,8 +561,8 @@ unknown
 
 </details>
 
-<details>
-<summary>DotplotView - Methods</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Methods</summary>
 
 #### method: renderProps
 
@@ -605,8 +605,8 @@ menuItems: () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{},
 
 </details>
 
-<details>
-<summary>DotplotView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">DotplotView - Actions</summary>
 
 #### action: setImportFormSyntenyTrack
 

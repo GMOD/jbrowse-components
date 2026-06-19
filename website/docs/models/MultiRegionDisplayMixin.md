@@ -88,8 +88,8 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-<details>
-<summary>MultiRegionDisplayMixin - Volatiles</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiRegionDisplayMixin - Volatiles</summary>
 
 #### volatile: loadedRegions
 
@@ -105,8 +105,8 @@ loadedRegions: observable.map<number, Region>()
 
 </details>
 
-<details>
-<summary>MultiRegionDisplayMixin - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiRegionDisplayMixin - Getters</summary>
 
 #### getter: isReady
 
@@ -195,8 +195,8 @@ boolean
 
 </details>
 
-<details>
-<summary>MultiRegionDisplayMixin - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">MultiRegionDisplayMixin - Actions</summary>
 
 #### action: setLoadedRegion
 

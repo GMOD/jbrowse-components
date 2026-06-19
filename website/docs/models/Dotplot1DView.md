@@ -24,8 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 ref https://@jbrowse/mobx-state-tree.js.org/concepts/volatiles on volatile state
 used here
 
-<details>
-<summary>Dotplot1DView - Getters</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Dotplot1DView - Getters</summary>
 
 #### getter: dynamicBlocks
 
@@ -66,8 +66,8 @@ number
 
 </details>
 
-<details>
-<summary>Dotplot1DView - Actions</summary>
+<details open>
+<summary style="cursor: pointer; font-size: 1.25em; font-weight: bold">Dotplot1DView - Actions</summary>
 
 #### action: center
 
