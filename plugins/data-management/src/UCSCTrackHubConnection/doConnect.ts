@@ -1,6 +1,11 @@
 import { HubFile, SingleFileHub } from '@gmod/ucsc-hub'
 import { getConf } from '@jbrowse/core/configuration'
-import { getEnv, getSession, isUriLocation } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  isLocalPathLocation,
+  isUriLocation,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
 import { generateAssembly } from './generateAssembly.ts'
@@ -9,8 +14,8 @@ import {
   fetchGenomesFile,
   fetchTrackDbFile,
   formatHubLoadSummary,
+  hubBaseUrl,
   makeLocFromUri,
-  resolve,
 } from './util.ts'
 
 import type { ConnectionDoConnectArg } from '../lazyConnect.ts'
@@ -49,11 +54,14 @@ export async function doConnect(self: ConnectionDoConnectArg) {
   const notLoadedAssemblies: string[] = []
   try {
     const hubFileLocation = getConf(self, 'hubTxtLocation')
-    if (!isUriLocation(hubFileLocation)) {
-      throw new Error('UCSC track hubs must be loaded from a URL')
+    if (
+      !isUriLocation(hubFileLocation) &&
+      !isLocalPathLocation(hubFileLocation)
+    ) {
+      throw new Error('UCSC track hubs must be loaded from a URL or local file')
     }
     const hubFileText = await openLocation(hubFileLocation).readFile('utf8')
-    const hubUri = resolve(hubFileLocation.uri, hubFileLocation.baseUri)
+    const hubUri = hubBaseUrl(hubFileLocation)
     const { assemblyManager } = session
     if (hubFileText.includes('useOneFile on')) {
       const hub = new SingleFileHub(hubFileText)
@@ -86,7 +94,7 @@ export async function doConnect(self: ConnectionDoConnectArg) {
       const genomesLoc = makeLocFromUri(genomeFile, hubUri)
       const genomesFile = await fetchGenomesFile(genomesLoc)
       const assemblyNames = getConf(self, 'assemblyNames')
-      const genomesBaseUri = genomesLoc.uri
+      const genomesBaseUri = hubBaseUrl(genomesLoc)
       const trackCounts: Record<string, number> = {}
       for (const [genomeName, genome] of Object.entries(genomesFile.data)) {
         if (assemblyNames.length > 0 && !assemblyNames.includes(genomeName)) {

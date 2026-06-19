@@ -1,6 +1,6 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
 
-import { htmlLink, makeLocFromUri, resolve } from './util.ts'
+import { htmlLink, makeLocFromUri } from './util.ts'
 
 import type { RaStanza } from '@gmod/ucsc-hub'
 
@@ -37,7 +37,7 @@ export function generateAssembly(genome: RaStanza, baseUri: string) {
           refNameAliases: {
             adapter: {
               type: 'BigBedAdapter',
-              uri: resolve(data.chromAliasBb, baseUri),
+              bigBedLocation: makeLocFromUri(data.chromAliasBb, baseUri),
             },
           },
         }

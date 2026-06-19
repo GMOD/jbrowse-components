@@ -3,8 +3,8 @@ import { generateUnknownTrackConf } from '@jbrowse/core/util/tracks'
 
 import { htmlLink, makeLoc } from './util.ts'
 
+import type { HubLocation } from './util.ts'
 import type { RaStanza, TrackDbFile } from '@gmod/ucsc-hub'
-import type { UriLocation } from '@jbrowse/core/util'
 
 export function generateTracks({
   trackDb,
@@ -13,7 +13,7 @@ export function generateTracks({
   baseUrl,
 }: {
   trackDb: TrackDbFile
-  trackDbLoc: UriLocation
+  trackDbLoc: HubLocation
   assemblyName: string
   baseUrl: string
 }) {
@@ -73,7 +73,7 @@ function makeTrackConfig({
   trackDb,
 }: {
   track: RaStanza
-  trackDbLoc: UriLocation
+  trackDbLoc: HubLocation
   trackDb: TrackDbFile
 }) {
   const { data } = track

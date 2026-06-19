@@ -1,7 +1,15 @@
 import { GenomesFile, TrackDbFile } from '@gmod/ucsc-hub'
+import { isUriLocation } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 
-import type { FileLocation, UriLocation } from '@jbrowse/core/util'
+import type {
+  FileLocation,
+  LocalPathLocation,
+  UriLocation,
+} from '@jbrowse/core/util'
+
+// the location kinds a hub file can be loaded from and resolve children against
+export type HubLocation = UriLocation | LocalPathLocation
 
 export async function fetchGenomesFile(genomesLoc: FileLocation) {
   const genomesFileText = await openLocation(genomesLoc).readFile('utf8')
@@ -13,19 +21,47 @@ export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
   return new TrackDbFile(text)
 }
 
+// local path <-> file:// url so that relative paths and `..` segments resolve
+// through the same new URL() machinery used for remote hubs
+function localPathToFileUrl(localPath: string) {
+  const p = localPath.replace(/\\/g, '/')
+  return `file://${p.startsWith('/') ? '' : '/'}${p}`
+}
+
+function fileUrlToLocalPath(fileUrl: string) {
+  const p = decodeURIComponent(new URL(fileUrl).pathname)
+  // windows drive paths come back as /C:/... , strip the leading slash
+  return /^\/[a-zA-Z]:/.test(p) ? p.slice(1) : p
+}
+
+// absolute base url for a hub file, against which its relative children resolve;
+// http(s) urls pass through, local paths become file:// urls
+export function hubBaseUrl(base: HubLocation) {
+  return isUriLocation(base)
+    ? resolve(base.uri, base.baseUri)
+    : localPathToFileUrl(base.localPath)
+}
+
 // resolve a track's data path against its trackDb location. `fallback` supplies
 // a default path (e.g. an index sitting next to its data file) when `path` is
 // empty.
-export function makeLoc(path: string, base: UriLocation, fallback?: string) {
-  return makeLocFromUri(path || fallback || '', resolve(base.uri, base.baseUri))
+export function makeLoc(path: string, base: HubLocation, fallback?: string) {
+  return makeLocFromUri(path || fallback || '', hubBaseUrl(base))
 }
 
-// build a UriLocation for a hub-relative path resolved against a base uri
-export function makeLocFromUri(path: string, baseUri: string) {
-  return {
-    uri: resolve(path, baseUri),
-    locationType: 'UriLocation' as const,
-  }
+// build a location for a hub-relative path resolved against a base url; emits a
+// LocalPathLocation when the base is a file:// (local desktop) url
+export function makeLocFromUri(path: string, baseUrl: string): HubLocation {
+  const uri = resolve(path, baseUrl)
+  return uri.startsWith('file://')
+    ? {
+        localPath: fileUrlToLocalPath(uri),
+        locationType: 'LocalPathLocation' as const,
+      }
+    : {
+        uri,
+        locationType: 'UriLocation' as const,
+      }
 }
 
 export function resolve(uri: string, baseUri?: string) {
