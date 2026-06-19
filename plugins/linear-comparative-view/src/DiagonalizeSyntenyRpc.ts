@@ -79,7 +79,12 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
         ),
         f => f.id(),
       )
-      alignments.push(...extractAlignmentData(feats))
+      // append element-by-element, not `push(...arr)`: whole-genome synteny
+      // yields hundreds of thousands of alignments, and spreading that many
+      // args overflows the call stack ("Maximum call stack size exceeded")
+      for (const a of extractAlignmentData(feats)) {
+        alignments.push(a)
+      }
     }
 
     if (alignments.length === 0) {

@@ -1,6 +1,9 @@
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
-import { extractCigarFeatures } from './extractCigarFeatures.ts'
+import {
+  extractCigarFeatures,
+  isMismatchFeature,
+} from './extractCigarFeatures.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 import {
   extractBisulfite,
@@ -10,7 +13,6 @@ import {
 import { extractPerBaseLetter } from '../features/perBaseLetter/extract.ts'
 import { extractPerBaseQuality } from '../features/perBaseQuality/extract.ts'
 
-import type { MismatchFeature } from './extractCigarFeatures.ts'
 import type { ColorBy } from './types.ts'
 import type {
   FeatureData,
@@ -93,15 +95,19 @@ export function extractFeatureArrays<T extends FeatureData>(
     }
 
     // alignment features (BAM/CRAM) implement forEachMismatch; drive CIGAR
-    // extraction off it directly rather than allocating a Mismatch[] per read
-    extractCigarFeatures(
-      feature as MismatchFeature,
-      readIndex,
-      featureStart,
-      strand,
-      cigarOutput,
-      showSoftClipping,
-    )
+    // extraction off it directly rather than allocating a Mismatch[] per read.
+    // Synteny features (LGVSyntenyDisplay reuses this path) have no such method,
+    // so skip them — otherwise the call throws and fails the whole RPC.
+    if (isMismatchFeature(feature)) {
+      extractCigarFeatures(
+        feature,
+        readIndex,
+        featureStart,
+        strand,
+        cigarOutput,
+        showSoftClipping,
+      )
+    }
 
     const modData = extractModifications(
       feature,

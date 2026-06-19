@@ -782,9 +782,9 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Filter by' },
+      { type: 'click', text: 'Filter...' },
       { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Edit filters' },
+      { type: 'click', text: 'Edit filters...' },
       { type: 'delay', ms: 1000 },
     ],
   },
@@ -3259,6 +3259,9 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 600,
     settleMs: 8000,
+    // single frame: open a track so it lands in "recently used", then open the
+    // recently-used dropdown and highlight both the trigger icon and the popover
+    // together (reviewer: one stage with both the icon and the popover ringed)
     actions: [
       // open the track selector directly via the header button — with no tracks
       // active the view body also renders an "Open track selector" button, so a
@@ -3274,9 +3277,6 @@ export const specs: ScreenshotSpec[] = [
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
       { type: 'delay', ms: 800 },
       { type: 'click', text: 'NCBI RefSeq w/ subfeature details' },
-      // wait for the just-opened track to finish loading so the first frame
-      // isn't captured mid-"Loading" (reviewer)
-      { type: 'waitForText', text: 'Loading', hidden: true },
       { type: 'delay', ms: 1500 },
       // clear the filter (target the actual input, not the floating label, so
       // select-all + Backspace empties it) so the tracklist behind the dropdown
@@ -3288,35 +3288,24 @@ export const specs: ScreenshotSpec[] = [
         clear: true,
       },
       { type: 'delay', ms: 800 },
-    ],
-    stages: [
+      // open the recently-used dropdown so the popover is visible in-frame
       {
-        annotations: [
-          {
-            type: 'circle',
-            anchor: {
-              selector: '[data-testid="recently-used-tracks-button"]',
-            },
-          },
-        ],
+        type: 'click',
+        selector: '[data-testid="recently-used-tracks-button"]',
+      },
+      { type: 'waitForText', text: 'NCBI RefSeq w/ subfeature details' },
+      { type: 'delay', ms: 500 },
+    ],
+    annotations: [
+      // ring the recently-used trigger icon and box its open popover together
+      {
+        type: 'circle',
+        anchor: { selector: '[data-testid="recently-used-tracks-button"]' },
       },
       {
-        actions: [
-          {
-            type: 'click',
-            selector: '[data-testid="recently-used-tracks-button"]',
-          },
-          { type: 'waitForText', text: 'NCBI RefSeq w/ subfeature details' },
-          { type: 'delay', ms: 500 },
-        ],
-        // box the opened recently-used popover (reviewer)
-        annotations: [
-          {
-            type: 'box',
-            anchor: { selector: '.MuiPopover-paper' },
-            strokeWidth: 5,
-          },
-        ],
+        type: 'box',
+        anchor: { selector: '.MuiPopover-paper' },
+        strokeWidth: 5,
       },
     ],
   },

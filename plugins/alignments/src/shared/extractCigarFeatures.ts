@@ -28,6 +28,14 @@ export interface MismatchFeature extends Feature {
   forEachMismatch: (callback: MismatchCallback) => void
 }
 
+// Only BAM/CRAM features carry per-base mismatch/CIGAR detail. Other features
+// routed through the alignments render path — notably synteny features shown in
+// an LGVSyntenyDisplay — have no `forEachMismatch`, so skip CIGAR extraction for
+// them (mirrors the pre-refactor `if (feature.get('mismatches'))` guard).
+export function isMismatchFeature(feature: Feature): feature is MismatchFeature {
+  return 'forEachMismatch' in feature
+}
+
 // Output buffers each emitter pushes into. Bundled to keep the dispatch
 // signature short; the caller allocates this once per region (not per
 // feature) and the per-feature emitters share it.
