@@ -52,23 +52,29 @@ broke that one tooltip (it evaluated lazily on hover). Both now go through
 labels to `undefined`. Test: `collectRenderData.test.ts` "degrades to the
 feature name when a custom mouseover jexl throws".
 
-## Priority 2 — GC content stuck on "loading" (#4)
+## Priority 2 — GC content stuck on "loading" (#4): FIXED
 
-Reporter's `GCContentTrack`/`LinearGCContentTrackDisplay` never renders.
-- Adapter logic is fine — all 13 `plugins/gccontent` jest tests pass. The hang
-  is in the **GPU wiggle render/stats path**, not the adapter.
-- GC content renders via the wiggle display
-  (`SharedModelF` composes `linearWiggleDisplayModelFactory`,
-  `LinearGCContentDisplay/shared.ts:21-28`; `adapterConfig` wraps the sequence
-  adapter in a `GCContentAdapter`, `shared.ts:111-120`).
-- **First action:** reproduce in-browser on the GPU build; watch the worker. Does
-  `RenderWiggleDataRPC` / the quantitative-stats estimation resolve?
-  `GCContentAdapter` advertises `capabilities = ['hasLocalStats']`
-  (`GCContentAdapter.ts:17`) — verify the wiggle display's stats path actually
-  calls into it and gets a result on this branch. A permanent "loading" = the RPC
-  promise never resolves or render never completes; instrument both.
-- Ignore the earlier "generic `BaseSequenceAdapter` cast" theory — type-only, not
-  a runtime hang.
+Reproduced with the reporter's exact `gc_content_D39V` config + `D39V.fna` and
+fixed. **Not** stats and **not** the adapter — the trigger was the legacy
+`"selectedRendering": ""` in their saved display snapshot:
+
+- `migrateWiggleSnapshot` turned `selectedRendering: ""` into a
+  `defaultRendering: ""` override (`asString("")` returns `""`, `filterDefined`
+  only drops `undefined`), so `renderingType` resolved to `""` and
+  `renderingTypeToInt("")` threw `Unknown wiggle rendering type:` inside the
+  `RenderLifecycle:render` reaction. The throw was swallowed → `canvasDrawn`
+  never flipped, no `renderError` set → permanent loading. Backend-independent
+  (reproduced on webgl + canvas2d; WebGPU was incidental — the "GPU render/stats
+  path" suspicion was the wrong mechanism).
+
+Fix (verified end-to-end on the rebuilt build, renders in ~2s):
+- `migrateWiggleSnapshot` drops empty-string rendering values (`asRendering`
+  helper) → config default `xyplot` applies.
+- `RenderLifecycleMixin` render autorun now catches a throwing render callback
+  and routes it to `setRenderError`, so render-input bugs surface as the
+  render-error overlay (message + retry) instead of infinite loading.
+
+See the triage doc §4 for the full write-up.
 
 ## Priority 3 — workspaces (dockview) freeze (#2)
 

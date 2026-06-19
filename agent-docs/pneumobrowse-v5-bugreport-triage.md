@@ -16,6 +16,12 @@ Strongly in favor of **scroll-zoom enabled by default** ("works great… would b
 shame to have it behind a button"). No scrollbar artifacts seen on the "auto
 height" feature (contra a note from Garrett).
 
+> **Doc roles.** This file is the **historical record** — what was reported and
+> what each issue turned out to be (past tense once resolved). The living plan for
+> the still-open items (#4, #2) is
+> [`pneumobrowse-v5-next-steps.md`](./pneumobrowse-v5-next-steps.md); update there,
+> not here, so the two don't drift.
+
 ---
 
 ## Issue index (by severity)
@@ -25,7 +31,7 @@ height" feature (contra a note from Garrett).
 | 1 | Multi-wiggle `defaultRendering: "xyplot"` → MST union error | **High** | **Fixed** (`Core-preProcessTrackConfig` handler in wiggle plugin) |
 | 2 | Workspaces (dockview) freeze with many stacked views | **High** | See existing investigation; reporter's bug #1 is the same |
 | 3 | Custom `mouseover` jexl callback ignored on GPU feature path | **High** | **Fixed** (`7e576348e8`+`5f14a7f406`; worker reads `mouseover` slot w/ worker jexl) + crash-hardened |
-| 4 | GC content track stuck on "loading" | **High** | Adapter OK in jest; GPU wiggle render/stats path suspect — needs browser repro |
+| 4 | GC content track stuck on "loading" | **High** | **Fixed** — legacy `selectedRendering: ""` migrated to an empty `defaultRendering` → render threw "Unknown wiggle rendering type:" and hung. Migration now drops empty rendering; render throws now surface as a render-error overlay |
 | 5 | Two tooltips (glyph + floating name label) | Medium | **Fixed** (`7e576348e8`; glyph+label share `feature.tooltip`) |
 | 6 | Gene tooltip now shows "name - description" | Medium | **Fixed** (`7e576348e8`; old `buildFeatureTooltip` concatenation removed) |
 | 7 | Cluster-rows-by-score dialog "X" doesn't close | Medium | **Already fixed in HEAD** (`40a74d3634`) |
@@ -120,82 +126,106 @@ the flag. See that doc's "virtualize the panel view-stack" lead.
 
 ---
 
-## 3. Custom `mouseover` jexl callback ignored on GPU feature path (High)
+## 3. Custom `mouseover` jexl callback ignored on GPU feature path (High) — FIXED
 
 **Symptom.** Their methylation track config (confirmed in their repo) sets
 `"mouseover": "jexl:qvscore(get(feature,'identificationqv'))"`. v4 hover showed
-`QV Score: 186` (image9); v5 hover shows just the feature name `m6A` (image10) —
-the custom callback is silently ignored and it falls back to the name.
+`QV Score: 186` (image9); the reporter's v5 build showed just the feature name
+`m6A` (image10) — the custom callback was silently ignored and fell back to name.
 
-**Hypothesis (from `plugins/canvas` investigation).** Tooltip text is now computed
-**in the RPC worker** (`RenderFeatureDataRPC/collectRenderData.ts:163-167`,
-`featureTooltip()` → `readConfigValue(config,'mouseover',feature,jexl)`), whereas
-the legacy SVG path evaluated `mouseover` on the **main thread**. Two ways this
-breaks the reporter's callback:
+**Root cause.** The GPU tooltip path built tooltip text from `name`/`description`/
+`type` and **never read the `mouseover` slot at all** — so any custom callback was
+ignored. Fixed on this branch **after the reporter's tested build**
+(`7e576348e8`, `5f14a7f406`): `collectRenderData.featureTooltip` now evaluates the
+`mouseover` slot with the **worker** pluginManager's jexl
+(`pluginManager.jexl`, threaded through `executeRenderFeatureData` →
+`collectRenderData`).
 
-- **Custom jexl function `qvscore`** is registered by their plugin on the main
-  thread but likely **not present in the worker's jexl instance**, so evaluation
-  throws and falls back to name.
-- The worker-side feature serialization may **drop the `identificationqv`
-  attribute**, so `get(feature,'identificationqv')` is `undefined`.
+**Both original hypotheses were disproven — do not re-check them.**
 
-Either way the configured callback produces nothing and the renderer falls back
-to name. **To confirm:** check whether plugin-registered jexl functions are
-available in the RenderFeatureDataRPC worker, and whether non-standard GFF
-attributes survive the worker feature payload. This is the most impactful of the
-tooltip changes because it silently breaks user-authored configs.
+- *"Worker is missing the custom `qvscore` jexl fn"* — wrong. The worker calls
+  `.configure()` on all runtime plugins (`rpcWorker.ts:53`), and the reporter's
+  `QVScore.js` registers `qvscore` in its `configure()`, so it resolves in the
+  worker jexl instance.
+- *"Worker drops the `identificationqv` attribute"* — wrong. The worker fetches
+  features itself, so non-standard GFF attributes survive the payload.
+
+**Hardening (`6b8809bb91`).** A throwing custom `mouseover`/`labels` jexl (missing
+plugin fn, attribute off an absent feature) was evaluated unguarded in the worker,
+so one bad expression failed the *entire* track render — worse than the legacy SVG
+path, which evaluated lazily on hover and only broke that one tooltip. Both
+`featureTooltip` and `readFeatureLabels` now route through `readConfigValueSafe`
+(`RenderFeatureDataRPC/renderConfig.ts`): tooltip degrades to the feature name,
+labels to `undefined`. Tests: `collectRenderData.test.ts` "tooltip (mouseover
+slot)" + "degrades to the feature name when a custom mouseover jexl throws".
 
 ---
 
-## 4. GC content track stuck on "loading" (High)
+## 4. GC content track stuck on "loading" (High) — FIXED
 
 **Symptom.** Toggling a GC content track leaves it permanently "loading"
 (image8). Their track is `GCContentTrack` → `LinearGCContentTrackDisplay`
 (`IndexedFastaAdapter` sequence source). They note they already migrated to the
 native GC-content plugin around v4.0.3.
 
-**Findings.** The GC content **adapter logic is fine** — all 13 jest tests in
-`plugins/gccontent` pass. GC content renders through the **wiggle GPU path**
-(`SharedModelF` composes `linearWiggleDisplayModelFactory`,
-`shared.ts:21-28`; `adapterConfig` wraps the sequence adapter in a
-`GCContentAdapter`, `shared.ts:111-120`). A permanent "loading" on a wiggle
-display almost always means **stats estimation or the render RPC never resolves**,
-not an adapter bug. The earlier "generic `BaseSequenceAdapter` cast" theory is a
-type-only concern and would not cause a runtime hang — discount it.
+**Root cause (reproduced with their exact `gc_content_D39V` config + `D39V.fna`).**
+**Not** stats and **not** the adapter — all 13 `plugins/gccontent` jest tests
+pass, and the GC track renders fine with any config that lacks one legacy field.
+The trigger is `"selectedRendering": ""` saved in their display snapshot:
 
-**Next step.** Reproduce in-browser on the GPU build with a GC content track and
-watch the worker: does `RenderWiggleDataRPC` / the quantitative-stats estimation
-complete? `GCContentAdapter` advertises `capabilities = ['hasLocalStats']`
-(`GCContentAdapter.ts:17`) — verify the wiggle display's stats path actually calls
-into it and gets a result on the GPU branch.
+- `migrateWiggleSnapshot` mapped `selectedRendering` → a `defaultRendering`
+  override. `asString("")` returned `""` and `filterDefined` only drops
+  `undefined`, so it emitted `defaultRendering: ""`.
+- `renderingType` getter → `getConfWithOverride('defaultRendering')` → `""`
+  (`WiggleScoreConfigMixin.ts`), then `renderingTypeToInt("")` throws
+  `Unknown wiggle rendering type:` (`wiggleComponentUtils.ts`).
+- That throw happened inside the `RenderLifecycle:render` reaction (in the
+  backend-agnostic `renderState` getter, `LinearWiggleDisplay/model.ts`), was
+  swallowed as an uncaught reaction error, so `canvasDrawn` never flipped and no
+  `renderError` was set → permanent `loading`. **Backend-independent** —
+  reproduced identically on webgl and canvas2d; the reporter's WebGPU was
+  incidental (the earlier "GPU stats path" suspicion was the wrong mechanism).
+
+**Fix (done).** Two parts:
+
+- `migrateWiggleSnapshot` now treats an empty-string rendering value as absent
+  (`asRendering` helper) so it never becomes an invalid `defaultRendering`
+  override; the config default (`xyplot`) applies. Tests in
+  `migrateWiggleSnapshot.test.ts`.
+- Hardening: the `RenderLifecycle:render` autorun
+  (`packages/render-core/src/RenderLifecycleMixin.ts`) now catches a throwing
+  render callback and routes it to `setRenderError`, so any render-input bug
+  surfaces as the render-error overlay (message + retry) instead of an infinite
+  loading state. Test in `RenderLifecycleMixin.test.ts`.
+
+Verified end-to-end against the reporter's exact config/data on the rebuilt
+`jbrowse-web` (renders in ~2s on both webgl and canvas2d).
 
 ---
 
-## 5. Two tooltips: glyph + floating name label (Medium)
+## 5. Two tooltips: glyph + floating name label (Medium) — FIXED
 
-**Symptom.** Previously only the glyph showed a hover box; now both the glyph and
-the on-canvas name label produce separate boxes with different info.
+**Symptom.** Previously only the glyph showed a hover box; in the reporter's build
+both the glyph and the on-canvas name label produced separate boxes with different
+info.
 
-**Hypothesis.** In `plugins/canvas/src/LinearBasicDisplay`, both the feature glyph
-and the floating label are hit-test targets that call `model.setHover()`
-(`FeatureComponent.tsx:260-278` and `:321-327`). The `featureItemMap` builder
-(`baseModel.ts:762-780`) prioritizes `SubfeatureInfo` over `FlatbushItem`, but
-`SubfeatureInfo` has **no `tooltip` field** (`rpcTypes.ts:162-166`), so the label
-hover resolves to a different/empty tooltip source than the glyph. Needs
-confirmation; fix is to make the label and glyph resolve the same tooltip (or give
-the label no independent tooltip).
+**Root cause + fix (`7e576348e8`).** The old glyph handler resolved subfeature
+hovers as `sub ? (sub.tooltip ?? sub.type) : feature.tooltip`, and `SubfeatureInfo`
+has no `tooltip` field — so it fell to `sub.type`, diverging from the label's text.
+Now both the glyph and the label resolve `result.feature.tooltip`
+(`FeatureComponent.tsx:267-274`, `:321-327`) — one tooltip per top-level feature.
 
-## 6. Gene tooltip now "name - description" (Medium)
+## 6. Gene tooltip now "name - description" (Medium) — FIXED
 
-**Symptom.** Hover on `dnaN` previously showed `dnaN` (image11); now shows
-`dnaN - DNA polymerase III beta subunit` (image12). Reporter says config did not
+**Symptom.** Hover on `dnaN` previously showed `dnaN` (image11); the reporter's
+build showed `dnaN - DNA polymerase III beta subunit` (image12) with no config
 change.
 
-**Hypothesis (needs confirm).** Either the default `mouseover` slot / tooltip
-builder now concatenates description, or the name+description floating-label text
-is bleeding into the tooltip. Check `BaseLinearDisplay` default `mouseover` slot
-(`models/configSchema.ts:47-52`) and the canvas tooltip builder. Lower priority
-than #3 but same subsystem — fix together.
+**Root cause + fix (`7e576348e8`).** The old `buildFeatureTooltip` literally did
+`` `${name}${description ? ` - ${description}` : ''}` ``. It was replaced by
+`featureTooltip()` reading the `mouseover` slot, whose default is name-only → hover
+shows `dnaN` again. Same root cause and same commit as #3/#5 (the GPU tooltip path
+ignoring the slot).
 
 ## 7. Cluster-rows-by-score dialog "X" doesn't close — ALREADY FIXED
 
