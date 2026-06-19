@@ -25,9 +25,10 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await when(
-    () => model.cellData != null || !!model.error || model.regionTooLarge,
-  )
+  // svgReady waits for every visible region to load (not just the first datum)
+  // and goes false during an in-place refetch, so exports never capture a
+  // partial or stale viewport.
+  await when(() => model.svgReady)
   const cellData = model.cellData as
     | { perRegionCellData: Record<number, VariantCellData> }
     | undefined

@@ -34,6 +34,7 @@ interface RenderSvgModel {
   renderState?: ManhattanRenderState
   error: unknown
   regionTooLarge: boolean
+  svgReady: boolean
   colorBy: 'normal' | 'ld'
   showLdLegend: boolean
 }

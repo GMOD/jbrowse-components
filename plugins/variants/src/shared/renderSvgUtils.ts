@@ -5,6 +5,7 @@ export interface RenderSvgBaseModel {
   cellData: unknown
   error: unknown
   regionTooLarge: boolean
+  svgReady: boolean
   rowHeight: number
   scrollTop: number
   availableHeight: number

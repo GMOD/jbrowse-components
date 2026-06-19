@@ -25,7 +25,10 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
 ) {
   const view = getContainingView(self) as LGV
-  await when(() => self.rpcData != null || !!self.error || self.regionTooLarge)
+  // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
+  // holds stale rpcData until the new result commits — so exports never
+  // capture a partial or stale viewport.
+  await when(() => self.svgReady)
   const { rpcData } = self
   const height = opts.overrideHeight ?? self.height
 

@@ -30,7 +30,10 @@ export async function renderSvg(
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LinearGenomeViewModel
-  await when(() => !!model.error || model.renderState !== undefined)
+  // svgReady waits for every visible region to load (not just sources to
+  // resolve) and goes false during an in-place refetch, so exports never
+  // capture a partial or stale viewport.
+  await when(() => model.svgReady)
 
   if (model.error) {
     return (

@@ -696,7 +696,7 @@ between raw data and paint, not on its upload pattern.
 SVG export in `renderSvg.tsx` follows this recipe:
 
 ```tsx
-await when(() => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge)
+await when(() => model.svgReady)
 if (model.error) return <SVGErrorBox …/>
 const renderBlocks = buildRenderBlocks(view.visibleRegions)
 const node = paintLayer(totalWidth, height, opts, ctx => {
@@ -704,6 +704,44 @@ const node = paintLayer(totalWidth, height, opts, ctx => {
   // OR, for multi-source: drawXxxToCtx(ctx, sources, renderBlocks, state)
 })
 ```
+
+### The `svgReady` gate (single source of truth for "safe to export")
+
+Every GPU display exposes a **`svgReady`** getter and the off-screen renderer
+awaits only that — never an inlined `data != null || error || regionTooLarge`.
+The inline form resolved on the *first datum* (so multi-region/whole-genome
+exports drew a partial viewport) and stayed true through an in-place refetch (so
+a pan/zoom export captured stale data). `svgReady` fixes both, and deliberately
+**excludes `canvasDrawn`/`isReady`** — an off-screen export runs on a display
+whose on-screen canvas may never have painted (e.g. headless jbrowse-img), so
+gating on the paint flag would hang forever. Two definitions, one per fetch
+mixin:
+
+- **`MultiRegionDisplayMixin.svgReady`** (per-region streamed displays — canvas,
+  alignments, MAF, manhattan, wiggle / multi-wiggle, multi-variant,
+  multi-variant-matrix): `(viewportWithinLoadedData && loadedRegions.size > 0)
+  || error || regionTooLarge`. The spatial-coverage check is what waits for
+  *every* visible region (not the first to stream in) and goes false the instant
+  a pan/zoom moves the viewport past loaded data. Wiggle-family + manhattan call
+  it through the `waitForRenderableState(model)` helper in `@jbrowse/wiggle-core`.
+- **`GlobalDataDisplayMixin.svgReady`** (whole-view single-blob displays — HiC,
+  LD): `displayPhase !== 'loading'`. A global display has no per-region spatial
+  axis, so "settled" (has its one dataset / terminal / intentionally empty, and
+  not mid-fetch) is the analog. Reuses `displayPhase` because the Global loading
+  predicate is just `isLoading || fetchCanceled` — no `canvasDrawn` — whereas
+  MultiRegion's loading predicate *does* fold in `canvasDrawn`, which is why that
+  mixin needs a separate getter rather than `displayPhase !== 'loading'`.
+
+The sequence display layers one extra disjunct (`svgReady || zoomedOut`) because
+zoomed past its base-render threshold it shows a static "zoom in" message and
+issues no fetch, so `svgReady` alone would never resolve.
+
+**Displays outside the two LGV GPU mixins keep their own condition** — they
+don't track `loadedRegions`/`displayPhase` the same way: arc / paired-arc
+(`FeatureDensityMixin`, single `features` array) use `fetchSettled`; the
+non-LGV views — dotplot (`!!geometry || !!error`), multi-LGV-synteny
+(`featureData != null || error`), circular chord (`ready || error`) — gate on
+their own data-presence getter.
 
 `paintLayer` (in `@jbrowse/core/util/paintLayer`) decides between a 2× DPR
 raster canvas (when `opts.rasterizeLayers`) or an `SvgCanvas`, and returns
