@@ -62,7 +62,7 @@ import {
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
-  makeTicks,
+  makeBlockTicks,
 } from './util.ts'
 
 import type {
@@ -76,7 +76,7 @@ import type {
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type BaseResult from '@jbrowse/core/TextSearch/BaseResults'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { ParsedLocString } from '@jbrowse/core/util'
+import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
 import type { BlockSet, ContentBlock } from '@jbrowse/core/util/blockTypes'
 import type { Region } from '@jbrowse/core/util/types'
@@ -112,6 +112,83 @@ function resolveCanonicalRefName(
 }
 
 export const AUTO_FORCE_LOAD_BP = 20_000
+
+// most zoomed-in level: 50px per bp
+const MIN_BP_PER_PX = 1 / 50
+
+// fraction of the view width the whole genome fills at the most zoomed-out
+// level, leaving a 10% margin
+const SHOW_ALL_REGIONS_FILL = 0.9
+
+// bpPerPx deltas smaller than this are treated as no zoom change, avoiding
+// pointless offset re-anchoring on micro-steps
+const BP_PER_PX_EPSILON = 0.000001
+
+/**
+ * Resolve a NavLocation's refName to the assembly's canonical name, falling
+ * back to the raw refName (and the view's default assembly) when the assembly
+ * is missing or unknown.
+ */
+function navLocationRefName(
+  assemblyManager: AssemblyManager,
+  defaultAssemblyName: string,
+  location: NavLocation,
+) {
+  return (
+    assemblyManager
+      .get(location.assemblyName || defaultAssemblyName)
+      ?.getCanonicalRefName(location.refName) || location.refName
+  )
+}
+
+/**
+ * Resolve one end of a navigation range to the displayedRegion index that
+ * contains it plus the bp offset into that region. `side` selects which edge of
+ * the (grow-expanded) interval anchors the offset — 'left' for the range start,
+ * 'right' for the range end — accounting for reversed regions. Both the default
+ * region and the containing index use first-occurrence lookups so they agree
+ * when a refName is displayed more than once.
+ */
+function resolveNavEndpoint({
+  location,
+  refName,
+  side,
+  displayedRegions,
+  grow,
+}: {
+  location: NavLocation
+  refName: string
+  side: 'left' | 'right'
+  displayedRegions: Region[]
+  grow?: number
+}) {
+  const region = displayedRegions.find(r => r.refName === refName)
+  if (!region) {
+    throw new Error(`could not find a region with refName "${refName}"`)
+  }
+  let start = location.start ?? region.start
+  let end = location.end ?? region.end
+  if (grow) {
+    ;({ start, end } = expandRegion(start, end, grow, region.start, region.end))
+  }
+  const index = displayedRegions.findIndex(
+    r =>
+      r.refName === refName &&
+      start >= r.start &&
+      start <= r.end &&
+      end <= r.end &&
+      end >= r.start,
+  )
+  if (index === -1) {
+    throw new Error(
+      `could not find a region that contained "${assembleLocString(location)}"`,
+    )
+  }
+  const r = displayedRegions[index]!
+  const leftEdge = r.reversed ? r.end - end : start - r.start
+  const rightEdge = r.reversed ? r.end - start : end - r.start
+  return { index, offset: side === 'left' ? leftEdge : rightEdge }
+}
 
 /**
  * #stateModel LinearGenomeView
@@ -675,14 +752,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
         if (this.totalBp === 0 || self.width === 0) {
           return 1
         }
-        return this.totalBp / (self.width * 0.9)
+        return this.totalBp / (self.width * SHOW_ALL_REGIONS_FILL)
       },
 
       /**
        * #getter
        */
       get minBpPerPx() {
-        return 1 / 50
+        return MIN_BP_PER_PX
       },
 
       /**
@@ -948,7 +1025,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
       zoomTo(bpPerPx: number, offset = self.width / 2) {
         const newBpPerPx = clamp(bpPerPx, self.minBpPerPx, self.maxBpPerPx)
         const oldBpPerPx = self.bpPerPx
-        if (Math.abs(oldBpPerPx - newBpPerPx) < 0.000001) {
+        if (Math.abs(oldBpPerPx - newBpPerPx) < BP_PER_PX_EPSILON) {
           return oldBpPerPx
         }
         if (!self.displayedRegions.length) {
@@ -1246,10 +1323,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return
         }
         this.setDisplayedRegions(regions)
-        self.zoomTo(self.maxBpPerPx)
-        self.scrollTo(
-          getCenteredOffsetPx(self.displayedRegionsTotalPx, self.width),
-        )
+        this.showAllRegions()
       },
 
       /**
@@ -1569,22 +1643,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const { bpPerPx } = self
           const blocks = this.staticBlocks.blocks
           const firstBlockOffset = blocks[0]?.offsetPx ?? 0
-          const ticks: { key: string; x: number; major: boolean }[] = []
+          const ticks: { x: number; major: boolean }[] = []
           for (const block of blocks) {
-            if (block.type !== 'ContentBlock') {
-              continue
-            }
-            const { start, end, reversed, widthPx } = block
-            const blockLeft = block.offsetPx - firstBlockOffset
-            for (const { type, base } of makeTicks(start, end, bpPerPx)) {
-              const x =
-                blockLeft + (reversed ? end - base : base - start) / bpPerPx
-              if (x >= blockLeft && x <= blockLeft + widthPx) {
-                ticks.push({
-                  key: `${block.key}-${base}`,
-                  x,
-                  major: type === 'major' || type === 'labeledMajor',
-                })
+            if (block.type === 'ContentBlock') {
+              const blockLeft = block.offsetPx - firstBlockOffset
+              for (const { type, x } of makeBlockTicks(block, bpPerPx)) {
+                if (x >= 0 && x <= block.widthPx) {
+                  ticks.push({ x: blockLeft + x, major: type === 'major' })
+                }
               }
             }
           }
@@ -1811,11 +1877,23 @@ export function stateModelFactory(pluginManager: PluginManager) {
             },
           ])
 
-          // Navigate to the specific coordinates within the region
+          // Navigate to the specific coordinates within the region, clamping
+          // into the parentRegion bounds. The lower bound is parentRegion.start
+          // (not 0): the region we just displayed is parentRegion, so a start
+          // below parentRegion.start would fail navTo's containment check when
+          // the parentRegion doesn't begin at 0.
           this.navTo({
             ...location,
-            start: clamp(start ?? 0, 0, parentRegion.end),
-            end: clamp(end ?? parentRegion.end, 0, parentRegion.end),
+            start: clamp(
+              start ?? parentRegion.start,
+              parentRegion.start,
+              parentRegion.end,
+            ),
+            end: clamp(
+              end ?? parentRegion.end,
+              parentRegion.start,
+              parentRegion.end,
+            ),
           })
         }
         // Handle multiple locations case
@@ -1884,121 +1962,34 @@ export function stateModelFactory(pluginManager: PluginManager) {
           return
         }
 
-        // Get assembly information
         const defaultAssemblyName = self.assemblyNames[0]!
         const { assemblyManager } = getSession(self)
-
-        // Process first location
-        const firstAssembly = assemblyManager.get(
-          firstLocation.assemblyName || defaultAssemblyName,
-        )
-        const firstRefName =
-          firstAssembly?.getCanonicalRefName(firstLocation.refName) ||
-          firstLocation.refName
-        const firstRegion = self.displayedRegions.find(
-          r => r.refName === firstRefName,
-        )
-
-        // Process last location
-        const lastAssembly = assemblyManager.get(
-          lastLocation.assemblyName || defaultAssemblyName,
-        )
-        const lastRefName =
-          lastAssembly?.getCanonicalRefName(lastLocation.refName) ||
-          lastLocation.refName
-        const lastRegion = self.displayedRegions.findLast(
-          r => r.refName === lastRefName,
-        )
-
-        // Validate regions exist
-        if (!firstRegion) {
-          throw new Error(
-            `could not find a region with refName "${firstRefName}"`,
-          )
-        }
-        if (!lastRegion) {
-          throw new Error(
-            `could not find a region with refName "${lastRefName}"`,
-          )
-        }
-
-        // Calculate coordinates, using region bounds if not specified
-        let firstStart = firstLocation.start ?? firstRegion.start
-        let firstEnd = firstLocation.end ?? firstRegion.end
-        let lastStart = lastLocation.start ?? lastRegion.start
-        let lastEnd = lastLocation.end ?? lastRegion.end
-
-        // pad each region's sub-interval within its own bounds (same as one
-        // expand when first and last are the same region)
-        if (grow) {
-          const first = expandRegion(
-            firstStart,
-            firstEnd,
-            grow,
-            firstRegion.start,
-            firstRegion.end,
-          )
-          const last = expandRegion(
-            lastStart,
-            lastEnd,
-            grow,
-            lastRegion.start,
-            lastRegion.end,
-          )
-          firstStart = first.start
-          firstEnd = first.end
-          lastStart = last.start
-          lastEnd = last.end
-        }
-
-        // Find region indices that contain our locations
-        const firstIndex = self.displayedRegions.findIndex(
-          r =>
-            firstRefName === r.refName &&
-            firstStart >= r.start &&
-            firstStart <= r.end &&
-            firstEnd <= r.end &&
-            firstEnd >= r.start,
-        )
-
-        const lastIndex = self.displayedRegions.findIndex(
-          r =>
-            lastRefName === r.refName &&
-            lastStart >= r.start &&
-            lastStart <= r.end &&
-            lastEnd <= r.end &&
-            lastEnd >= r.start,
-        )
-
-        if (firstIndex === -1 || lastIndex === -1) {
-          throw new Error(
-            `could not find a region that contained "${locations.map(l =>
-              assembleLocString(l),
-            )}"`,
-          )
-        }
-
-        const startDisplayedRegion = self.displayedRegions[firstIndex]!
-        const endDisplayedRegion = self.displayedRegions[lastIndex]!
-
-        // Calculate offsets, accounting for reversed regions
-        const startOffset = startDisplayedRegion.reversed
-          ? startDisplayedRegion.end - firstEnd
-          : firstStart - startDisplayedRegion.start
-
-        const endOffset = endDisplayedRegion.reversed
-          ? endDisplayedRegion.end - lastStart
-          : lastEnd - endDisplayedRegion.start
-
+        const { displayedRegions } = self
+        // The range spans from the first location's left edge to the last
+        // location's right edge (any locations in between are ignored).
         this.moveTo(
-          {
-            index: firstIndex,
-            offset: startOffset,
-          },
-          {
-            index: lastIndex,
-            offset: endOffset,
-          },
+          resolveNavEndpoint({
+            location: firstLocation,
+            refName: navLocationRefName(
+              assemblyManager,
+              defaultAssemblyName,
+              firstLocation,
+            ),
+            side: 'left',
+            displayedRegions,
+            grow,
+          }),
+          resolveNavEndpoint({
+            location: lastLocation,
+            refName: navLocationRefName(
+              assemblyManager,
+              defaultAssemblyName,
+              lastLocation,
+            ),
+            side: 'right',
+            displayedRegions,
+            grow,
+          }),
         )
       },
     }))

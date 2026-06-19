@@ -142,6 +142,23 @@ export function makeTicks(
 }
 
 /**
+ * makeTicks plus each tick's pixel x within its block, accounting for reversed
+ * regions. Single source of the tick→px formula shared by gridlines, the
+ * scalebar coordinate labels, and SVG export so their positions can't drift.
+ */
+export function makeBlockTicks(
+  { start, end, reversed = false }: { start: number; end: number; reversed?: boolean },
+  bpPerPx: number,
+  emitMajor = true,
+  emitMinor = true,
+) {
+  return makeTicks(start, end, bpPerPx, emitMajor, emitMinor).map(tick => ({
+    ...tick,
+    x: (reversed ? end - tick.base : tick.base - start) / bpPerPx,
+  }))
+}
+
+/**
  * Generate location objects for a set of parsed locstrings, which includes
  * translating the refNames to assembly-canonical refNames and adding the
  * 'parentRegion'

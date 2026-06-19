@@ -2,7 +2,7 @@ import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
 import { SvgClipRect } from '@jbrowse/core/util/svgExport'
 import { useTheme } from '@mui/material'
 
-import { makeTicks } from '../util.ts'
+import { makeBlockTicks } from '../util.ts'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -30,10 +30,7 @@ function Ruler({
 }) {
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.secondary)
-  const ticks = makeTicks(start, end, bpPerPx, major, minor).map(tick => ({
-    ...tick,
-    x: (reversed ? end - tick.base : tick.base - start) / bpPerPx,
-  }))
+  const ticks = makeBlockTicks({ start, end, reversed }, bpPerPx, major, minor)
   return (
     <>
       {ticks.map(({ base, type, x }) => (

@@ -477,6 +477,33 @@ test('can navToMultiple', () => {
   expect(model.bpPerPx).toBeCloseTo(25)
 })
 
+// when a refName appears twice with different bounds and the navigated
+// location omits start/end, the default coords must come from the same
+// (first) occurrence that the index resolution picks, else navigation lands
+// on the wrong sub-interval
+test('navTo with omitted coords on a duplicated refName', () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const session = Session.create({ configuration: {} })
+  const width = 800
+  const model = session.setView(
+    LinearGenomeModel.create({
+      id: 'testNavToDuplicateRefName',
+      type: 'LinearGenomeView',
+    }),
+  )
+  model.setWidth(width)
+  model.setDisplayedRegions([
+    { assemblyName: 'volvox', refName: 'ctgC', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgB', start: 0, end: 10000 },
+    { assemblyName: 'volvox', refName: 'ctgC', start: 2000, end: 8000 },
+  ])
+
+  // shows the full first ctgC (0-10000), not 0-8000 borrowed from the second
+  model.navTo({ refName: 'ctgC' })
+  expect(model.offsetPx).toBe(0)
+  expect(model.bpPerPx).toBeCloseTo(12.5)
+})
+
 describe('Zoom to selected displayed regions', () => {
   const { Session, LinearGenomeModel } = initialize()
   let model: LGV

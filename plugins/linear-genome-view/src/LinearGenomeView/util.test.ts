@@ -1,4 +1,4 @@
-import { makeOverviewTicks, makeTicks } from './util.ts'
+import { makeBlockTicks, makeOverviewTicks, makeTicks } from './util.ts'
 
 // overviewScale=5000 → chooseGridPitch gives majorPitch=1_000_000
 const SCALE = 5000
@@ -79,5 +79,20 @@ describe('tick calculation', () => {
       { type: 'minor', base: 59, index: 4 },
       { type: 'minor', base: 79, index: 5 },
     ])
+  })
+})
+
+describe('makeBlockTicks', () => {
+  test('forward x = (base - start) / bpPerPx', () => {
+    const result = makeBlockTicks({ start: 0, end: 50 }, 1)
+    expect(result.map(t => t.x)).toEqual([-21, -1, 19, 39, 59, 79])
+  })
+  test('reversed x = (end - base) / bpPerPx', () => {
+    const result = makeBlockTicks({ start: 0, end: 50, reversed: true }, 1)
+    expect(result.map(t => t.x)).toEqual([71, 51, 31, 11, -9, -29])
+  })
+  test('emitMinor=false keeps only major ticks', () => {
+    const result = makeBlockTicks({ start: 0, end: 50 }, 1, true, false)
+    expect(result.map(t => t.type)).toEqual(['major'])
   })
 })
