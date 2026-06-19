@@ -1,14 +1,26 @@
 ---
 import { Code } from 'astro:components'
 
+import type { MarkdownInstance } from 'astro'
+
 interface Props {
+  slug: string
   title: string
   description?: string
   code: string
 }
 
-const { title, description, code } = Astro.props
+const { slug, title, description, code } = Astro.props
 const base = import.meta.env.BASE_URL
+
+// each example page may have a hand-written doc at src/docs/<slug>.md; render it
+// above the live demo when present
+const docs = import.meta.glob<MarkdownInstance<Record<string, unknown>>>(
+  '../docs/*.md',
+)
+const loader = docs[`../docs/${slug}.md`]
+const doc = loader ? await loader() : undefined
+const Doc = doc?.Content
 ---
 
 <html lang="en">
@@ -24,6 +36,7 @@ const base = import.meta.env.BASE_URL
           -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica,
           Arial, sans-serif;
         color: #1a1a1a;
+        line-height: 1.55;
       }
       header {
         padding: 8px 16px;
@@ -35,12 +48,37 @@ const base = import.meta.env.BASE_URL
         text-decoration: none;
       }
       main {
-        max-width: 1200px;
+        max-width: 900px;
         margin: 0 auto;
-        padding: 16px;
+        padding: 16px 16px 64px;
       }
       h1 {
         margin-top: 0;
+      }
+      .lead {
+        font-size: 1.05em;
+        color: #444;
+      }
+      .doc h2 {
+        margin-top: 28px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 4px;
+      }
+      .doc h3 {
+        margin-top: 20px;
+      }
+      .doc a {
+        color: #135ba8;
+      }
+      .doc code {
+        background: #f4f4f4;
+        padding: 1px 4px;
+        border-radius: 3px;
+        font-size: 0.9em;
+      }
+      .doc pre code {
+        background: none;
+        padding: 0;
       }
       .demo {
         border: 1px solid #ddd;
@@ -58,7 +96,9 @@ const base = import.meta.env.BASE_URL
     <header><a href={base}>← All examples</a></header>
     <main>
       <h1>{title}</h1>
-      {description && <p>{description}</p>}
+      {description && <p class="lead">{description}</p>}
+      {Doc && <div class="doc"><Doc /></div>}
+      <h2>Live demo</h2>
       <div class="demo"><slot /></div>
       <h2>Source</h2>
       <Code code={code} lang="tsx" />

@@ -7,6 +7,6 @@ import { examples } from '../examples.ts'
 const meta = examples.find(e => e.slug === 'with-external-plugin')!
 ---
 
-<Layout title={meta.title} description={meta.description} code={code}>
+<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
   <Example client:only="react" />
 </Layout>
