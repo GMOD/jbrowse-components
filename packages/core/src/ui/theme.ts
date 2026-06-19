@@ -271,6 +271,9 @@ const darkStringColorDefaults = {
   gridlineMinor: gridlineMinorDark,
   gridlineMajor: gridlineMajorDark,
   featureHover: featureHoverDark,
+  // the deletion rect replaces the read on the dark track background, where the
+  // mid-grey #808080 reads as a muddy block; lighten it so the gap stands out
+  deletion: '#c8c8c8',
 }
 
 // spread the light alignmentFill so only pairLR changes (the light #d3d3d3 reads

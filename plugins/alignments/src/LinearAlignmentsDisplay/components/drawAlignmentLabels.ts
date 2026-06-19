@@ -33,7 +33,9 @@ export function drawAlignmentLabels(
     } else if (label.type === 'mismatch') {
       fillColor = contrastMap[label.text] ?? 'black'
     } else if (label.type === 'deletion') {
-      fillColor = white
+      // the deletion length sits on the grey deletion rect (mid-grey in light
+      // mode, lightened in dark mode); dark text contrasts it in both
+      fillColor = palette.common.black
     } else {
       fillColor = white
     }
