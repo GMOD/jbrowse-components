@@ -1,6 +1,12 @@
 import { lazy, useState } from 'react'
 
-import { getEnv, getPluginUpdate, getSession } from '@jbrowse/core/util'
+import { pluginUrl } from '@jbrowse/core/PluginLoader'
+import {
+  getEnv,
+  getPluginUpdate,
+  getSession,
+  installedVersionFromUrl,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import DeleteIcon from '@mui/icons-material/Delete'
@@ -96,19 +102,19 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
   plugin,
   model,
   update,
+  fromVersion,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
   update: PluginUpdate
+  fromVersion?: string
 }) {
   const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { jbrowse, adminMode } = session
   const [queued, setQueued] = useState(false)
   return (
-    <Tooltip
-      title={`Update from v${plugin.version} to v${update.pluginVersion}`}
-    >
+    <Tooltip title={`Update from v${fromVersion} to v${update.pluginVersion}`}>
       <Button
         size="small"
         variant="outlined"
@@ -149,11 +155,18 @@ const InstalledPlugin = observer(function InstalledPlugin({
   storeEntry?: JBrowsePlugin
 }) {
   const { classes } = useStyles()
+  const { pluginManager } = getEnv(model)
   const session = getSession(model)
   const { adminMode } = session
   const updatable = adminMode || isSessionPlugin(plugin, session)
+  // read the installed version from the store-minted, version-pinned url rather
+  // than the plugin's self-declared version, which is optional and often unset
+  const metadata = pluginManager.pluginMetadata[plugin.name]
+  const installedVersion = metadata
+    ? installedVersionFromUrl(pluginUrl(metadata), storeEntry?.packageName)
+    : undefined
   const update = storeEntry
-    ? getPluginUpdate(storeEntry, session.version, plugin.version)
+    ? getPluginUpdate(storeEntry, session.version, installedVersion)
     : undefined
 
   return (
@@ -168,7 +181,12 @@ const InstalledPlugin = observer(function InstalledPlugin({
         {plugin.version ? ` (v${plugin.version})` : ''}
       </Typography>
       {update && updatable ? (
-        <UpdatePluginButton plugin={plugin} model={model} update={update} />
+        <UpdatePluginButton
+          plugin={plugin}
+          model={model}
+          update={update}
+          fromVersion={installedVersion}
+        />
       ) : null}
     </ListItem>
   )

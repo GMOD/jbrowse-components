@@ -109,6 +109,7 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
     <CascadingMenuButton
       menuItems={getMenuItems}
       data-testid="track_menu_icon"
+      data-trackid={track.trackId}
       tooltip="Track settings"
     >
       <MoreVertIcon fontSize="small" />

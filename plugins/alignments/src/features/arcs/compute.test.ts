@@ -733,9 +733,7 @@ describe('computeArcsFromPileupData', () => {
     // seg1→seg2→seg0, so the two junctions are (seg1,seg2) and (seg2,seg0).
     const data = makePileupData({
       regionStart: 1000,
-      readPositions: new Uint32Array([
-        1000, 1200, 2000, 2200, 3000, 3200,
-      ]),
+      readPositions: new Uint32Array([1000, 1200, 2000, 2200, 3000, 3200]),
       readFlags: new Uint16Array([
         SAM_FLAG_SUPPLEMENTARY,
         0,

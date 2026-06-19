@@ -421,14 +421,19 @@ async function main() {
   // touch committed files.
   async function checkSpec(spec: ScreenshotSpec) {
     console.log(`  → ${spec.name}`)
-    const a = await withFreshPage(spec, p => renderSpecToTemp(p, spec, port, '-a'))
-    const b = await withFreshPage(spec, p => renderSpecToTemp(p, spec, port, '-b'))
+    const a = await withFreshPage(spec, p =>
+      renderSpecToTemp(p, spec, port, '-a'),
+    )
+    const b = await withFreshPage(spec, p =>
+      renderSpecToTemp(p, spec, port, '-b'),
+    )
     const frac = pngDiffFraction(a, b)
     fs.rmSync(a, { force: true })
     fs.rmSync(b, { force: true })
     const limit = spec.diffThreshold ?? diffThreshold
     if (frac === null || frac >= limit) {
-      const pct = frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
+      const pct =
+        frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
       console.log(`  ✗ ${spec.name} FLAKY (${pct} between two renders)`)
       flaky.push({ name: spec.name, frac: frac ?? 1 })
     } else {
@@ -482,7 +487,9 @@ async function main() {
     console.error(`FLAKY SPECS (${flaky.length}) — nondeterministic renders`)
     console.error('='.repeat(60))
     for (const { name, frac } of flaky) {
-      console.error(`• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`)
+      console.error(
+        `• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`,
+      )
     }
     console.error(`\n${'='.repeat(60)}`)
     process.exit(1)

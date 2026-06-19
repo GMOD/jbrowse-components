@@ -6,7 +6,10 @@ import {
 import { featurizeSA } from '@jbrowse/cigar-utils'
 
 import { readGroupConnections } from '../../shared/readGroupConnections.ts'
-import { readLeadingBp, readTrailingBp } from '../../shared/splitReadEndpoints.ts'
+import {
+  readLeadingBp,
+  readTrailingBp,
+} from '../../shared/splitReadEndpoints.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'

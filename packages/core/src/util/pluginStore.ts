@@ -113,6 +113,28 @@ export function resolvePlugin(
         }
 }
 
+// The store mints version-pinned install urls as
+// `<base>/<packageName>/<version>/<umdPath>`, so the installed version is the
+// path segment immediately after the package name. This is authoritative (the
+// store put it there at install time) unlike a plugin's self-declared version.
+// Returns undefined for custom or pre-versioning urls that don't follow this
+// layout, which correctly surfaces as "no update available".
+export function installedVersionFromUrl(
+  url: string | undefined,
+  packageName: string | undefined,
+) {
+  let version: string | undefined
+  if (url !== undefined && packageName !== undefined) {
+    const marker = `/${packageName}/`
+    const start = url.indexOf(marker)
+    if (start !== -1) {
+      const [segment] = url.slice(start + marker.length).split('/')
+      version = segment ? segment : undefined
+    }
+  }
+  return version
+}
+
 // Given the store entry for an already-installed plugin and the version it is
 // currently running, returns the newest compatible published version when one
 // exists that is strictly newer than installed, else undefined. Installs pin a

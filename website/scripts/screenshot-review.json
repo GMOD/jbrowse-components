@@ -127,9 +127,9 @@
   },
   "cnv": {
     "name": "cnv",
-    "status": "bad",
-    "note": "can you increase resolution slightly for the wiggle track",
-    "reviewedAt": "2026-06-19T18:41:33.126Z"
+    "status": "good",
+    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) — scatter now resolves finer copy-number structure (12.33% diff).",
+    "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "smalldel": {
     "name": "smalldel",
@@ -151,9 +151,9 @@
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
-    "status": "bad",
-    "note": "this is showing black on grey text for deletions, which we made for deletions in dark mode only. for light mode it should be white on grey.",
-    "reviewedAt": "2026-06-19T18:40:50.711Z"
+    "status": "good",
+    "note": "Deletion-length labels now white-on-grey in light mode (drawAlignmentLabels: palette.mode-aware; was hardcoded black). Track order reads,variants / variants,reads retained.",
+    "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -169,9 +169,9 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "bad",
-    "note": "the text bubble saying \"Annotated as INVdup\" is covering arcs which are useful to see what is going on",
-    "reviewedAt": "2026-06-19T18:42:09.199Z"
+    "status": "good",
+    "note": "moved 'Annotated as INVdup' text bubble down into the empty pileup band so it no longer covers the top arcs (reviewer).",
+    "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -211,9 +211,9 @@
   },
   "linear_synteny": {
     "name": "linear_synteny",
-    "status": "bad",
-    "note": "increase opacity a little bit",
-    "reviewedAt": "2026-06-19T18:42:18.120Z"
+    "status": "good",
+    "note": "alpha raised 0.5->0.65 for stronger ribbon color (reviewer: increase opacity a little).",
+    "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "about_track": {
     "name": "about_track",
@@ -391,9 +391,9 @@
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "bad",
-    "note": " click on the \"Fab\" so it shows the add track menu",
-    "reviewedAt": "2026-06-19T18:39:14.666Z"
+    "status": "good",
+    "note": "Clicking the add-track FAB now opens its popup menu; 'Add track' item boxed (reviewer: show the add track menu the FAB launches).",
+    "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",

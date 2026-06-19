@@ -84,9 +84,12 @@ test('makeLoc resolves .. segments', () => {
 })
 
 test('makeLoc uses the fallback when the path is empty', () => {
-  expect(makeLoc('', local('/home/u/volvox/trackDb.txt'), 'tiny.bam.bai')).toEqual(
-    { localPath: '/home/u/volvox/tiny.bam.bai', locationType: 'LocalPathLocation' },
-  )
+  expect(
+    makeLoc('', local('/home/u/volvox/trackDb.txt'), 'tiny.bam.bai'),
+  ).toEqual({
+    localPath: '/home/u/volvox/tiny.bam.bai',
+    locationType: 'LocalPathLocation',
+  })
   expect(
     makeLoc('', uri('https://x.org/volvox/trackDb.txt'), 'tiny.bam.bai'),
   ).toEqual({

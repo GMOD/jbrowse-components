@@ -19,7 +19,8 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A complete `VariantTrack` config to paste into `tracks`:
+Minimal `VariantTrack` config. See the
+[variant track guide](/docs/config_guides/variant_track) for all options:
 
 ```js
 {
@@ -31,13 +32,24 @@ A complete `VariantTrack` config to paste into `tracks`:
     type: 'VcfTabixAdapter',
     uri: 'https://example.com/variants.vcf.gz',
   },
-  displays: [
-    {
-      type: 'LinearVariantDisplay',
-      displayId: 'variants-LinearVariantDisplay',
-      height: 150,
-    },
-  ],
+}
+```
+
+Taller track. The `displays` object shorthand is equivalent to
+`displays: [{ type: 'LinearVariantDisplay', displayId: '...', ... }]` — see
+[configuring displays](/docs/config_guides/tracks#configuring-displays):
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'variants',
+  name: 'Variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/variants.vcf.gz',
+  },
+  displays: { height: 200 },
 }
 ```
 

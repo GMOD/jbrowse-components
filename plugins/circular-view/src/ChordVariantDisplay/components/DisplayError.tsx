@@ -21,7 +21,13 @@ const DisplayError = observer(function DisplayError({
   return (
     <g
       style={onClick ? { cursor: 'pointer' } : undefined}
-      onClick={onClick ? () => { onClick() } : undefined}
+      onClick={
+        onClick
+          ? () => {
+              onClick()
+            }
+          : undefined
+      }
     >
       <HatchCircle
         radius={radius}

@@ -216,7 +216,9 @@ test('planWebExport reuses the hosted base, carrying only user-added tracks', ()
     {
       assemblies: [{ name: 'hg38' }],
       tracks: [hubTrack, userTrack],
-      configuration: { sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json' },
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
       defaultSession: { name: 'session', views: [] },
     },
     { assemblies: [{ name: 'hg38' }], tracks: [hubTrack] },
@@ -245,7 +247,9 @@ test('planWebExport falls back to self-contained when an assembly is not in the 
     {
       assemblies: [{ name: 'hg38' }, { name: 'myCustomAsm' }],
       tracks: [],
-      configuration: { sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json' },
+      configuration: {
+        sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      },
       defaultSession: { name: 'session' },
     },
     { assemblies: [{ name: 'hg38' }], tracks: [] },

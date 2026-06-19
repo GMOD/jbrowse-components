@@ -1,5 +1,8 @@
 import { readGroupConnections } from '../../shared/readGroupConnections.ts'
-import { readLeadingBp, readTrailingBp } from '../../shared/splitReadEndpoints.ts'
+import {
+  readLeadingBp,
+  readTrailingBp,
+} from '../../shared/splitReadEndpoints.ts'
 
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'

@@ -1307,8 +1307,10 @@ export const specs: ScreenshotSpec[] = [
                 defaultRendering: 'multiscatter',
                 // even finer binning (basesPerSpan = bpPerPx/resolution) so the
                 // scatter resolves copy-number structure (reviewer: even finer,
-                // then bumped again for slightly higher resolution)
-                resolution: 20,
+                // then bumped again for slightly higher resolution — the BigWig
+                // zoom levels are discrete, so this has to cross a level to add
+                // detail)
+                resolution: 50,
                 // shrink scatter points (default 2px) so the dense CNV cloud
                 // reads as fine structure rather than blobs (reviewer)
                 scatterPointSize: 1,
@@ -2313,10 +2315,10 @@ export const specs: ScreenshotSpec[] = [
           // latter is silently dropped, which is why the band stayed short.
           levelHeights: [260],
           // drop short noisy alignments and lighten the ribbons so the dense
-          // "dark areas" (many tiny overlapping anchors stacking opacity) read
-          // as clean syntenic blocks (reviewer)
-          minAlignmentLength: 10000,
-          alpha: 0.15,
+          // "dark areas" (many overlapping anchors stacking opacity into solid
+          // fans) read as clean syntenic blocks (reviewer)
+          minAlignmentLength: 50000,
+          alpha: 0.2,
           tracks: ['HG008T.hap1_pif'],
           views: [
             {
@@ -2641,29 +2643,19 @@ export const specs: ScreenshotSpec[] = [
         selector: '[data-testid="hierarchical_track_selector"]',
       },
       { type: 'delay', ms: 500 },
-      // click the add-track FAB so the add-track form opens (reviewer: show the
-      // add track menu the FAB launches, not just a ring around it)
+      // click the add-track FAB so its popup menu opens (reviewer: show the add
+      // track menu the FAB launches, not just a ring around the button)
       { type: 'click', selector: '[data-testid="hierarchical-add-track-fab"]' },
-      { type: 'waitForText', text: 'Enter track data' },
-      { type: 'delay', ms: 800 },
+      { type: 'waitForText', text: 'Add track' },
+      { type: 'delay', ms: 600 },
     ],
     annotations: [
-      // box + label the FAB that launched the form
+      // ring the FAB and box the "Add track" item in the menu it opened
       {
         type: 'box',
         anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
       },
-      {
-        type: 'text',
-        text: 'Add track',
-        anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
-        dx: -70,
-        dy: -52,
-        background: 'rgba(0,0,0,0.78)',
-        textColor: '#fff',
-      },
-      // box the add-track form the FAB opened
-      { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
+      { type: 'box', anchor: { text: 'Add track' } },
     ],
   },
 
@@ -3126,6 +3118,33 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'COLO829',
     readyTimeout: 60000,
     settleMs: 35000,
+    // colorBy:modifications is set declaratively so the mod data is already
+    // loaded and painted by the time the menu opens. Then drive the live Color
+    // by → Base modifications → All modification types path so the figure shows
+    // the menu route, not just the result (reviewer asked to actually open the
+    // menu). The selector is scoped by data-trackid to the COLO829 alignments
+    // track — the bare track_menu_icon matched the CpG-island feature track
+    // first, whose Color by menu has no modifications options.
+    actions: [
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
+      },
+      { type: 'waitForText', text: 'Color by...' },
+      { type: 'delay', ms: 1000 },
+      { type: 'hover', text: 'Color by...' },
+      { type: 'waitForText', text: 'Base modifications (MM tag)' },
+      { type: 'delay', ms: 800 },
+      { type: 'hover', text: 'Base modifications (MM tag)' },
+      { type: 'waitForText', text: 'All modification types' },
+      { type: 'delay', ms: 800 },
+    ],
+    annotations: [
+      { type: 'box', anchor: { text: 'Color by...' } },
+      { type: 'box', anchor: { text: 'Base modifications (MM tag)' } },
+      { type: 'box', anchor: { text: 'All modification types' } },
+    ],
   },
 
   // ────────────────────────────────────────────────────────────────────────

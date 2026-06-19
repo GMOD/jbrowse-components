@@ -11,9 +11,8 @@ import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
  * configuration for the Manhattan plot display used by GWAS tracks
  *
  * #example
- * A complete `GWASTrack` config to paste into `tracks`, LocusZoom-style:
- * `colorBy: 'ld'` colors each point by its r² to the index SNP, read from
- * `ldAdapter`:
+ * Minimal `GWASTrack` config. See the
+ * [GWAS track guide](/docs/config_guides/gwas_track) for all options:
  * ```js
  * {
  *   type: 'GWASTrack',
@@ -24,17 +23,33 @@ import { linearWiggleDisplayConfigSchema } from '@jbrowse/plugin-wiggle'
  *     type: 'GWASAdapter',
  *     uri: 'https://example.com/gwas.bed.gz',
  *   },
- *   displays: [
- *     {
- *       type: 'LinearManhattanDisplay',
- *       displayId: 'gwas-LinearManhattanDisplay',
- *       colorBy: 'ld',
- *       ldAdapter: {
- *         type: 'PlinkLDTabixAdapter',
- *         uri: 'https://example.com/plink.ld.gz',
- *       },
+ * }
+ * ```
+ *
+ * #example
+ * Taller track, LocusZoom-style coloring: `colorBy: 'ld'` colors each point
+ * by its r² to the index SNP read from `ldAdapter`. The `displays` object
+ * shorthand is equivalent to `displays: [{ type: 'LinearManhattanDisplay',
+ * displayId: '...', ... }]` — see
+ * [configuring displays](/docs/config_guides/tracks#configuring-displays):
+ * ```js
+ * {
+ *   type: 'GWASTrack',
+ *   trackId: 'gwas',
+ *   name: 'GWAS results',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'GWASAdapter',
+ *     uri: 'https://example.com/gwas.bed.gz',
+ *   },
+ *   displays: {
+ *     height: 400,
+ *     colorBy: 'ld',
+ *     ldAdapter: {
+ *       type: 'PlinkLDTabixAdapter',
+ *       uri: 'https://example.com/plink.ld.gz',
  *     },
- *   ],
+ *   },
  * }
  * ```
  */

@@ -35,30 +35,17 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
  * configuration for the multi-wiggle display, which draws several quantitative
  * subtracks (e.g. BigWig files) on a shared Y axis
  *
- * These are display-level slots: set them inside a track's `displays` array to
+ * These are display-level slots: set them inside a track's `displays` to
  * change its defaults (setting them at the track top level has no effect).
- *
- * ```json
- * {
- *   "type": "MultiQuantitativeTrack",
- *   "trackId": "my_multiwig_track",
- *   "name": "My MultiWig Track",
- *   "assemblyNames": ["hg19"],
- *   "adapter": { "type": "MultiWiggleAdapter", "subadapters": [] },
- *   "displays": [
- *     {
- *       "type": "MultiLinearWiggleDisplay",
- *       "defaultRendering": "multirowxy",
- *       "autoscale": "globalsd"
- *     }
- *   ]
- * }
- * ```
+ * The object shorthand `displays: { key: value }` is equivalent to the full
+ * `displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
+ * array form — see
+ * [configuring displays](/docs/config_guides/tracks#configuring-displays).
  *
  * #example
- * A complete `MultiQuantitativeTrack` config to paste into `tracks`, overlaying
- * two samples in one shared plot (`multixyplot`) instead of the default
- * stacked-per-subtrack layout:
+ * Minimal `MultiQuantitativeTrack` config. See the
+ * [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)
+ * for all adapter and display options:
  * ```js
  * {
  *   type: 'MultiQuantitativeTrack',
@@ -72,13 +59,26 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
  *       'https://example.com/sample2.bw',
  *     ],
  *   },
- *   displays: [
- *     {
- *       type: 'MultiLinearWiggleDisplay',
- *       displayId: 'coverage_by_sample-MultiLinearWiggleDisplay',
- *       defaultRendering: 'multixyplot',
- *     },
- *   ],
+ * }
+ * ```
+ *
+ * #example
+ * Taller track overlaying two samples in one shared plot (`multixyplot`)
+ * instead of the default stacked-per-subtrack layout:
+ * ```js
+ * {
+ *   type: 'MultiQuantitativeTrack',
+ *   trackId: 'coverage_by_sample',
+ *   name: 'Coverage by sample',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'MultiWiggleAdapter',
+ *     bigWigs: [
+ *       'https://example.com/sample1.bw',
+ *       'https://example.com/sample2.bw',
+ *     ],
+ *   },
+ *   displays: { height: 300, defaultRendering: 'multixyplot' },
  * }
  * ```
  */

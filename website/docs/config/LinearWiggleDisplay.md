@@ -19,10 +19,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
-common display-level override; score-range and rendering options (autoscale,
-min/max score, renderer) are config slots on the track itself — see the
-`QuantitativeTrack` config:
+Minimal `QuantitativeTrack` config. See the
+[quantitative track guide](/docs/config_guides/quantitative_track) for all
+adapter and display options:
 
 ```js
 {
@@ -31,13 +30,19 @@ min/max score, renderer) are config slots on the track itself — see the
   name: 'Coverage',
   assemblyNames: ['hg38'],
   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
-  displays: [
-    {
-      type: 'LinearWiggleDisplay',
-      displayId: 'coverage-LinearWiggleDisplay',
-      height: 100,
-    },
-  ],
+}
+```
+
+Taller track, log scale, custom color:
+
+```js
+{
+  type: 'QuantitativeTrack',
+  trackId: 'coverage',
+  name: 'Coverage',
+  assemblyNames: ['hg38'],
+  adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
+  displays: { height: 200, scaleType: 'log', color: 'darkgreen' },
 }
 ```
 
@@ -48,25 +53,12 @@ _See the **Slots** section below for all available configuration fields._
 configuration for the wiggle (quantitative/numeric) display showing XY plot,
 density, line, or scatter renderings
 
-These are display-level slots: set them inside a track's `displays` array to
-change its defaults (setting them at the track top level has no effect).
-
-```json
-{
-  "type": "QuantitativeTrack",
-  "trackId": "my_wiggle_track",
-  "name": "My Wiggle Track",
-  "assemblyNames": ["hg19"],
-  "adapter": { "type": "BigWigAdapter", "uri": "http://yourhost/file.bw" },
-  "displays": [
-    {
-      "type": "LinearWiggleDisplay",
-      "scaleType": "log",
-      "autoscale": "global"
-    }
-  ]
-}
-```
+These are display-level slots: set them inside a track's `displays` to change
+its defaults (setting them at the track top level has no effect). The object
+shorthand `displays: { key: value }` is equivalent to the full
+`displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
+array form — see
+[configuring displays](/docs/config_guides/tracks#configuring-displays).
 
 <details open>
 <summary>LinearWiggleDisplay - Slots</summary>

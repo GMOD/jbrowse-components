@@ -906,7 +906,11 @@ export function typeAliasBlock(name: string, signature: string) {
 // them. The source (`name: value`) is a labeled statement that prettier leaves
 // alone, but the type alias still has to carry the type to avoid the same
 // statement-position mangling typeAliasBlock guards against.
-export function typeAndCodeBlock(name: string, signature: string, code: string) {
+export function typeAndCodeBlock(
+  name: string,
+  signature: string,
+  code: string,
+) {
   return [
     '```ts',
     '// type signature',

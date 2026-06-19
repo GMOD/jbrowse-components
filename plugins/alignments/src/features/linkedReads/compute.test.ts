@@ -367,10 +367,14 @@ describe('readGroupConnections', () => {
     // link sourced from each mate's primary (idx0, idx2).
     expect(cs).toHaveLength(2)
     expect([cs[0]!.e1.readIdx, cs[0]!.e2.readIdx, cs[0]!.isSplit]).toEqual([
-      0, 1, true,
+      0,
+      1,
+      true,
     ])
     expect([cs[1]!.e1.readIdx, cs[1]!.e2.readIdx, cs[1]!.isSplit]).toEqual([
-      0, 2, false,
+      0,
+      2,
+      false,
     ])
   })
 })

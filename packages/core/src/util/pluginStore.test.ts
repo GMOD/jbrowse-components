@@ -1,4 +1,8 @@
-import { getPluginUpdate, resolvePlugin } from './pluginStore.ts'
+import {
+  getPluginUpdate,
+  installedVersionFromUrl,
+  resolvePlugin,
+} from './pluginStore.ts'
 
 import type { JBrowsePlugin } from './types/index.ts'
 
@@ -86,6 +90,36 @@ describe('resolvePlugin', () => {
       url: 'https://x/p.js',
       integrity: 'sha384-z',
     })
+  })
+})
+
+describe('installedVersionFromUrl', () => {
+  const pkg = 'jbrowse-plugin-msaview'
+  const url = `https://jbrowse.org/plugins/${pkg}/2.5.0/dist/x.umd.min.js`
+
+  it('reads the version segment after the package name', () => {
+    expect(installedVersionFromUrl(url, pkg)).toBe('2.5.0')
+  })
+
+  it('handles scoped package names', () => {
+    const u = 'https://jbrowse.org/plugins/@org/p/1.2.3/dist/x.js'
+    expect(installedVersionFromUrl(u, '@org/p')).toBe('1.2.3')
+  })
+
+  it('returns undefined for a custom url without the package name', () => {
+    expect(installedVersionFromUrl('https://other/x.js', pkg)).toBeUndefined()
+  })
+
+  it('returns undefined when url or packageName is missing', () => {
+    expect(installedVersionFromUrl(undefined, pkg)).toBeUndefined()
+    expect(installedVersionFromUrl(url, undefined)).toBeUndefined()
+  })
+
+  it('returns undefined for a pre-versioning unversioned url', () => {
+    // legacy layout has the umd path, not a version, after the package name;
+    // that segment fails to compare as a version so no update is offered
+    const u = `https://jbrowse.org/plugins/${pkg}/dist/x.umd.min.js`
+    expect(installedVersionFromUrl(u, pkg)).toBe('dist')
   })
 })
 

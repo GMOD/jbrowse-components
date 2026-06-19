@@ -1227,9 +1227,7 @@ type groupLaidOutMap = (key: string) => Map<number, PileupDataResult>
 #### method: findFeatureInRpcData
 
 ```ts
-type findFeatureInRpcData = (
-  featureId: string,
-) =>
+type findFeatureInRpcData = (featureId: string) =>
   | {
       displayedRegionIndex: number
       idx: number
@@ -1251,9 +1249,7 @@ type searchFeatureByID = (
 #### method: getFeatureInfoById
 
 ```ts
-type getFeatureInfoById = (
-  featureId: string,
-) =>
+type getFeatureInfoById = (featureId: string) =>
   | {
       id: string
       name: string
