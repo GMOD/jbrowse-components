@@ -34,7 +34,7 @@ export function printFileSizesAfterBuild(
           }
         }),
     )
-    .reduce((single, all) => all.concat(single), [])
+    .flat()
 
   assets.sort((a, b) => b.size - a.size)
   for (const asset of assets) {

@@ -7,8 +7,6 @@ import webpack from 'webpack'
 // eslint-disable-next-line import-x/default
 import WebpackDevServer from 'webpack-dev-server'
 
-import { createCompiler } from '../WebpackDevServerUtils.ts'
-
 process.on('unhandledRejection', err => {
   throw err
 })
@@ -42,7 +40,21 @@ export default async function startWebpack(config: webpack.Configuration) {
   const appName = JSON.parse(fs.readFileSync('package.json', 'utf8'))
     .name as string
   const wsProtocol = process.env.HTTPS === 'true' ? 'wss' : 'ws'
-  const compiler = createCompiler({ config })
+
+  // Quiet webpack-dev-server's startup chatter (Project is running at /
+  // Loopback / Content not from webpack). Compile status and errors still
+  // print via webpack's own 'errors-warnings' stats output.
+  config.infrastructureLogging = { level: 'warn' }
+  const compiler = webpack(config)
+
+  // Re-print the URL after every successful compile so the port stays visible
+  // instead of scrolling off above the recompile messages.
+  let viewMessage = ''
+  compiler.hooks.done.tap('print-url', stats => {
+    if (viewMessage && !stats.hasErrors()) {
+      console.log(viewMessage)
+    }
+  })
 
   const devServer = new WebpackDevServer(
     {
@@ -76,9 +88,8 @@ export default async function startWebpack(config: webpack.Configuration) {
     }
     const addr = devServer.server?.address()
     if (typeof addr === 'object' && addr) {
-      console.log(
-        `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`,
-      )
+      viewMessage = `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`
+      console.log(viewMessage)
     }
   })
 }
