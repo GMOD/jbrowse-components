@@ -31,6 +31,8 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *       type: 'LinearGCContentTrackDisplay',
  *       displayId: 'gc-LinearGCContentTrackDisplay',
  *       gcMode: 'skew',
+ *       windowSize: 50,
+ *       windowDelta: 10,
  *     },
  *   ],
  * }

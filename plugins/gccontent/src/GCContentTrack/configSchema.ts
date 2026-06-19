@@ -25,11 +25,33 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
  *     },
  *   },
+ * }
+ * ```
+ *
+ * #example
+ * GC-skew mode with a small, overlapping sliding window for a smoother signal
+ * (`windowDelta` smaller than `windowSize` means windows overlap):
+ * ```js
+ * {
+ *   type: 'GCContentTrack',
+ *   trackId: 'gc',
+ *   name: 'GC skew',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'GCContentAdapter',
+ *     sequenceAdapter: {
+ *       type: 'IndexedFastaAdapter',
+ *       fastaLocation: { uri: 'https://example.com/genome.fa' },
+ *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
+ *     },
+ *   },
  *   displays: [
  *     {
  *       type: 'LinearGCContentTrackDisplay',
  *       displayId: 'gc-LinearGCContentTrackDisplay',
  *       gcMode: 'skew',
+ *       windowSize: 50,
+ *       windowDelta: 10,
  *     },
  *   ],
  * }

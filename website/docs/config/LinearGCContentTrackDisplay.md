@@ -42,6 +42,8 @@ its own track):
       type: 'LinearGCContentTrackDisplay',
       displayId: 'gc-LinearGCContentTrackDisplay',
       gcMode: 'skew',
+      windowSize: 50,
+      windowDelta: 10,
     },
   ],
 }
