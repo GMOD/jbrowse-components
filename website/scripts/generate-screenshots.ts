@@ -331,9 +331,20 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
 }
 
 async function main() {
-  const filteredSpecs = filter
-    ? specs.filter(s => (exact ? s.name === filter : s.name.includes(filter)))
-    : specs
+  // `--filter a,b,c` matches a spec when any comma-separated token matches, so
+  // "re-render these few" is one invocation instead of a shell loop.
+  const filterTokens = filter
+    ? filter
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean)
+    : []
+  const filteredSpecs =
+    filterTokens.length > 0
+      ? specs.filter(s =>
+          filterTokens.some(t => (exact ? s.name === t : s.name.includes(t))),
+        )
+      : specs
 
   if (filteredSpecs.length === 0) {
     console.error(`No specs match filter: ${filter}`)

@@ -33,10 +33,20 @@ export function waitForVisible(
 }
 
 // Resolve an action's target element from either a CSS selector or visible text.
+// On timeout, rethrow with the human target (the spec's `text`/`selector`) so a
+// renamed menu item reads as `click target not found: text "Settings"` instead
+// of puppeteer's parsed-selector blob ([[[{name,value}]]]).
 function resolveTarget(page: Page, action: ScreenshotAction) {
   const selector =
     action.selector ?? (action.text ? textSelector(action.text) : undefined)
-  return selector ? waitForVisible(page, selector) : null
+  return selector
+    ? waitForVisible(page, selector).catch(() => {
+        const target = action.selector
+          ? `selector "${action.selector}"`
+          : `text "${action.text}"`
+        throw new Error(`${action.type} target not found: ${target}`)
+      })
+    : null
 }
 
 // Click a resolved element. A real mouse click at the element's center is
