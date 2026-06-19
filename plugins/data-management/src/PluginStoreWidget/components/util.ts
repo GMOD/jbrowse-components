@@ -12,9 +12,11 @@ import type {
 } from '@jbrowse/core/util/types'
 
 export function useFetchPlugins() {
-  const { data, error } = useFetch('jbrowse-plugin-store', () =>
+  // v2 manifest adds per-version JBrowse compatibility ranges + integrity hashes;
+  // the v1 plugins.json remains served for older clients that predate this.
+  const { data, error } = useFetch('jbrowse-plugin-store-v2', () =>
     fetchJson<{ plugins: JBrowsePlugin[] }>(
-      'https://jbrowse.org/plugin-store/plugins.json',
+      'https://jbrowse.org/plugin-store/v2/plugins.json',
     ),
   )
   return { plugins: data?.plugins, error }

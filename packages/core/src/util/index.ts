@@ -18,6 +18,7 @@ import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
 import type { GenericFilehandle } from 'generic-filehandle2'
 
 export * from './types/index.ts'
+export * from './pluginStore.ts'
 export * from './progress.ts'
 export * from './when.ts'
 export * from './range.ts'

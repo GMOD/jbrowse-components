@@ -410,6 +410,9 @@ importers:
       canvas-sequencer-ts:
         specifier: ^3.1.3
         version: 3.1.3
+      compare-versions:
+        specifier: ^6.1.1
+        version: 6.1.1
       deepmerge:
         specifier: ^4.3.1
         version: 4.3.1
@@ -2163,6 +2166,49 @@ importers:
         specifier: '>=18.0.0'
         version: 19.2.7
 
+  products/jbrowse-react-app/examples-site:
+    dependencies:
+      '@astrojs/react':
+        specifier: ^5.0.7
+        version: 5.0.7(@types/node@25.9.3)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(terser@5.48.0)(yaml@2.9.0)
+      '@emotion/cache':
+        specifier: ^11.14.0
+        version: 11.14.0
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+      '@jbrowse/core':
+        specifier: workspace:*
+        version: link:../../../packages/core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.11.1
+        version: 5.11.1(mobx@6.16.1)
+      '@jbrowse/react-app2':
+        specifier: workspace:*
+        version: link:..
+      astro:
+        specifier: ^6.4.8
+        version: 6.4.8(@types/node@25.9.3)(rollup@4.62.0)(terser@5.48.0)(yaml@2.9.0)
+      mobx:
+        specifier: ^6.16.1
+        version: 6.16.1
+      mobx-react:
+        specifier: ^9.2.2
+        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.2.7
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.2.7
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@astrojs/check':
+        specifier: ^0.9.9
+        version: 0.9.9(prettier-plugin-astro@0.14.1)(prettier@3.8.4)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
+
   products/jbrowse-react-circular-genome-view:
     dependencies:
       '@emotion/cache':
@@ -2219,6 +2265,49 @@ importers:
       react:
         specifier: '>=18.0.0'
         version: 19.2.7
+
+  products/jbrowse-react-circular-genome-view/examples-site:
+    dependencies:
+      '@astrojs/react':
+        specifier: ^5.0.7
+        version: 5.0.7(@types/node@25.9.3)(@types/react-dom@19.2.3(@types/react@19.2.17))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)(terser@5.48.0)(yaml@2.9.0)
+      '@emotion/cache':
+        specifier: ^11.14.0
+        version: 11.14.0
+      '@emotion/react':
+        specifier: ^11.14.0
+        version: 11.14.0(@types/react@19.2.17)(react@19.2.7)
+      '@jbrowse/core':
+        specifier: workspace:*
+        version: link:../../../packages/core
+      '@jbrowse/mobx-state-tree':
+        specifier: ^5.11.1
+        version: 5.11.1(mobx@6.16.1)
+      '@jbrowse/react-circular-genome-view2':
+        specifier: workspace:*
+        version: link:..
+      astro:
+        specifier: ^6.4.8
+        version: 6.4.8(@types/node@25.9.3)(rollup@4.62.0)(terser@5.48.0)(yaml@2.9.0)
+      mobx:
+        specifier: ^6.16.1
+        version: 6.16.1
+      mobx-react:
+        specifier: ^9.2.2
+        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: ^19.2.7
+        version: 19.2.7
+      react-dom:
+        specifier: ^19.2.7
+        version: 19.2.7(react@19.2.7)
+    devDependencies:
+      '@astrojs/check':
+        specifier: ^0.9.9
+        version: 0.9.9(prettier-plugin-astro@0.14.1)(prettier@3.8.4)(typescript@5.9.3)
+      typescript:
+        specifier: ^5.9.3
+        version: 5.9.3
 
   products/jbrowse-react-linear-genome-view:
     dependencies:

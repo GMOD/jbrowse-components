@@ -9,16 +9,19 @@ export interface UMDLocPluginDefinition {
     baseUri?: string
   }
   name: string
+  integrity?: string
 }
 
 export interface UMDUrlPluginDefinition {
   umdUrl: string
   name: string
+  integrity?: string
 }
 
 export interface LegacyUMDPluginDefinition {
   url: string
   name: string
+  integrity?: string
 }
 
 type UMDPluginDefinition = UMDLocPluginDefinition | UMDUrlPluginDefinition
@@ -53,11 +56,19 @@ export interface CJSPluginDefinition {
   cjsUrl: string
 }
 
-function promisifiedLoadScript(src: string) {
+function promisifiedLoadScript(src: string, integrity?: string) {
   return new Promise<string>((resolve, reject) => {
     const script = document.createElement('script')
     script.type = 'text/javascript'
     script.async = true
+    // Subresource integrity guarantees the fetched bytes match the hash the
+    // plugin store published, so a tampered or swapped artifact fails to load.
+    // crossOrigin is required for the browser to enforce integrity on a
+    // cross-origin script.
+    if (integrity) {
+      script.integrity = integrity
+      script.crossOrigin = 'anonymous'
+    }
     script.src = src
     script.onload = () => {
       resolve(script.src)
@@ -75,10 +86,10 @@ function hasImportScripts(
   return 'importScripts' in scope
 }
 
-async function loadScript(scriptUrl: string) {
+async function loadScript(scriptUrl: string, integrity?: string) {
   const scope = globalThis
   if (!isInWebWorker()) {
-    return promisifiedLoadScript(scriptUrl)
+    return promisifiedLoadScript(scriptUrl, integrity)
   } else if (hasImportScripts(scope)) {
     scope.importScripts(scriptUrl)
     return
@@ -230,7 +241,13 @@ export default class PluginLoader {
     assertHttpProtocol(parsedUrl)
     const moduleName = def.name
     const umdName = `JBrowsePlugin${moduleName}`
-    await loadScript(addCacheBuster(parsedUrl.href))
+    // a cache buster query string would change the bytes the browser hashes for
+    // SRI, so skip it when an integrity hash is present (the url is already
+    // version-pinned and immutable, so cache-busting is unnecessary anyway)
+    await loadScript(
+      def.integrity ? parsedUrl.href : addCacheBuster(parsedUrl.href),
+      def.integrity,
+    )
 
     const plugin = (globalThis as Record<string, unknown>)[umdName] as
       | { default: PluginConstructor }

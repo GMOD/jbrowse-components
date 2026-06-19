@@ -61,8 +61,21 @@ export interface BasePlugin {
   url?: string
 }
 
+// A single published plugin version and the semver range of JBrowse versions it
+// supports. The url fields mirror the top-level JBrowsePlugin url fields.
+export interface JBrowsePluginVersion {
+  pluginVersion: string
+  jbrowseRange: string
+  url?: string
+  umdUrl?: string
+  esmUrl?: string
+  cjsUrl?: string
+  integrity?: string
+}
+
 export interface JBrowsePlugin {
   name: string
+  packageName?: string
   authors: string[]
   description: string
   location: string
@@ -70,6 +83,10 @@ export interface JBrowsePlugin {
   umdUrl?: string
   esmUrl?: string
   cjsUrl?: string
+  integrity?: string
+  // v2 plugin store entries list per-version urls + JBrowse compatibility ranges.
+  // When absent, the top-level url applies to all JBrowse versions.
+  versions?: JBrowsePluginVersion[]
   license: string
   image?: string
 }

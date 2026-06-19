@@ -1,21 +1,31 @@
 import { checkPluginsAgainstStore, fetchPlugins } from './checkPlugins.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
+import type { JBrowsePlugin } from '@jbrowse/core/util/types'
+
+// fills the required JBrowsePlugin metadata so tests can specify just urls
+function store(entries: Partial<JBrowsePlugin>[]): {
+  plugins: JBrowsePlugin[]
+} {
+  return {
+    plugins: entries.map(e => ({
+      name: 'StorePlugin',
+      authors: [],
+      description: '',
+      location: '',
+      license: '',
+      ...e,
+    })),
+  }
+}
 
 describe('checkPluginsAgainstStore', () => {
-  const mockStorePlugins: { plugins: PluginDefinition[] } = {
-    plugins: [
-      { name: 'StorePlugin1', umdUrl: 'https://example.com/plugin1.umd.js' },
-      { name: 'StorePlugin2', url: 'https://example.com/plugin2.js' },
-      { esmUrl: 'https://example.com/plugin3.esm.js' },
-      { cjsUrl: 'https://example.com/plugin4.cjs.js' },
-      {
-        name: 'StorePluginLoc',
-        umdLoc: { uri: 'plugin5.umd.js', baseUri: 'https://example.com/' },
-      },
-      { esmLoc: { uri: 'plugin6.esm.js', baseUri: 'https://example.com/' } },
-    ],
-  }
+  const mockStorePlugins = store([
+    { umdUrl: 'https://example.com/plugin1.umd.js' },
+    { url: 'https://example.com/plugin2.js' },
+    { esmUrl: 'https://example.com/plugin3.esm.js' },
+    { cjsUrl: 'https://example.com/plugin4.cjs.js' },
+  ])
 
   it('returns true for empty plugin list', () => {
     expect(checkPluginsAgainstStore([], mockStorePlugins)).toBe(true)
@@ -86,24 +96,37 @@ describe('checkPluginsAgainstStore', () => {
     expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(true)
   })
 
-  describe('umdLoc format', () => {
-    it('matches plugin defined with umdLoc against store with umdLoc', () => {
-      const plugins: PluginDefinition[] = [
-        {
-          name: 'TestPlugin',
-          umdLoc: { uri: 'plugin5.umd.js', baseUri: 'https://example.com/' },
-        },
-      ]
-      expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(true)
-    })
-  })
+  describe('versioned store entries', () => {
+    const versionedStore = store([
+      {
+        url: 'https://example.com/plugin/3.0.0/plugin.umd.js',
+        versions: [
+          {
+            pluginVersion: '1.4.0',
+            jbrowseRange: '>=2.0.0 <3.0.0',
+            url: 'https://example.com/plugin/1.4.0/plugin.umd.js',
+          },
+          {
+            pluginVersion: '3.0.0',
+            jbrowseRange: '>=3.0.0',
+            url: 'https://example.com/plugin/3.0.0/plugin.umd.js',
+          },
+        ],
+      },
+    ])
 
-  describe('esmLoc format', () => {
-    it('matches plugin defined with esmLoc against store with esmLoc', () => {
+    it('matches a version-pinned url from versions[]', () => {
       const plugins: PluginDefinition[] = [
-        { esmLoc: { uri: 'plugin6.esm.js', baseUri: 'https://example.com/' } },
+        { name: 'P', url: 'https://example.com/plugin/1.4.0/plugin.umd.js' },
       ]
-      expect(checkPluginsAgainstStore(plugins, mockStorePlugins)).toBe(true)
+      expect(checkPluginsAgainstStore(plugins, versionedStore)).toBe(true)
+    })
+
+    it('rejects a url not in any version', () => {
+      const plugins: PluginDefinition[] = [
+        { name: 'P', url: 'https://example.com/plugin/9.9.9/plugin.umd.js' },
+      ]
+      expect(checkPluginsAgainstStore(plugins, versionedStore)).toBe(false)
     })
   })
 
