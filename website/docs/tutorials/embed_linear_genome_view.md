@@ -354,9 +354,9 @@ browser.
 
 ## Further reading
 
-This tutorial above is just a simple example to get you started. There is much
+The tutorial above is just a simple example to get you started. There is much
 more you can do with this component, such as programmatically controlling it,
-customizing it, and more. Here is some further reading
+customizing it, and more. Here is some further reading:
 
 - Link to a live example of the instance set up above
   https://jbrowse.org/demos/lgv-vanillajs/ (source code:

@@ -19,7 +19,7 @@ will have top-level menus, though. JBrowse Web and JBrowse Desktop have them,
 but something like JBrowse Linear View (which is just a single view designed to
 be embedded in another page) does not. This means you need to check whether or
 not menus are supported using `isAbstractMenuManager` in the `configure` method.
-This way the rest of the plugin will still work if there is not a menu. Here's
+This way the rest of the plugin will still work if there is no menu. Here's
 an example that adds an "Open My View" item to the `Add` menu.
 
 ```js

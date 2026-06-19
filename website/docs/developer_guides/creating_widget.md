@@ -4,9 +4,7 @@ description: Add new drawer/panel UI components
 guide_category: Creating pluggable elements
 ---
 
-Here is an example of registering a custom widget
-
-index.tsx
+Here is an example of registering a custom widget in `index.tsx`:
 
 ```tsx
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
@@ -55,7 +53,7 @@ export default (pluginManager: PluginManager) => {
 }
 ```
 
-This can then be used in code by saying
+You can then use it in code:
 
 ```typescript
 const widget = session.addWidget('MyWidget', 'instanceOfMyWidget', {

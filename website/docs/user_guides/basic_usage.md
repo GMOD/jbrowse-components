@@ -184,7 +184,7 @@ always available from the track selector.
 
 <Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with its track menu open" src="/img/track_menu.png" />
 
-### Recently used and Favorite tracks
+### Favorite and recently used tracks
 
 You can mark favorite tracks from the Track menu and view them using the star
 icon in the top right corner of the Available tracks widget.

@@ -23,7 +23,7 @@ A "regular" JBrowse plugin uses the
 
 In contrast, "no-build" plugins have no build step and can be hand edited. This
 can be useful for adding
-[extra jexl config callbacks for making extra config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
+[extra jexl config callbacks or similar modifications](/docs/config_guides/customizing_feature_colors/).
 
 ## Writing a "no-build" plugin
 

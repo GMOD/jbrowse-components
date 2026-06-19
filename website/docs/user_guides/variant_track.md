@@ -9,7 +9,7 @@ that produced the calls:
 
 <Figure caption="Variant track indicating a SNP alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
-### Variant widget
+## Variant widget
 
 Clicking a variant opens a widget with a per-sample genotype table. Multi-sample
 VCFs (like 1000 Genomes) can contain thousands of samples.

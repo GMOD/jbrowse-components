@@ -95,7 +95,7 @@ strand of the gene. Blue arcs indicate reverse-strand splicing events, and red
 arcs indicate forward-strand splicing events.
 
 Recall that DNA is a double helix with a forward and a reverse strand (sometimes
-called the Watson and Crick strands; 5'→3' is forward and 3'→5' is reverse).
+called the Watson and Crick strands).
 
 ## Looking at a specific read
 
