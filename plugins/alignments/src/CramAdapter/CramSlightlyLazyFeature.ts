@@ -163,6 +163,24 @@ export default class CramSlightlyLazyFeature implements Feature {
     switch (field) {
       case 'mismatches':
         return this.mismatches
+      case 'name':
+        return this.name
+      case 'start':
+        return this.start
+      case 'end':
+        return this.end
+      case 'refName':
+        return this.refName
+      case 'strand':
+        return this.strand
+      case 'score':
+        return this.score
+      case 'flags':
+        return this.flags
+      case 'seq':
+        return this.seq
+      case 'tags':
+        return this.tags
       case 'qual':
         return this.qual
       case 'NUMERIC_QUAL':
@@ -171,6 +189,18 @@ export default class CramSlightlyLazyFeature implements Feature {
         return this.CIGAR
       case 'NUMERIC_CIGAR':
         return this.NUMERIC_CIGAR
+      case 'seq_length':
+        return this.record.readLength
+      case 'pair_orientation':
+        return this.pair_orientation
+      case 'next_ref':
+        return this.next_ref
+      case 'next_pos':
+        return this.next_pos
+      case 'next_segment_position':
+        return this.next_segment_position
+      case 'template_length':
+        return this.template_length
       default:
         return this.fields[field]
     }
@@ -324,9 +354,8 @@ export default class CramSlightlyLazyFeature implements Feature {
       strand: this.strand,
       template_length: this.template_length,
       flags: this.flags,
-      tags: convertTagsToPlainArrays(this.tags),
+      tags: this.tags,
       refName: this.refName,
-      seq: this.seq,
       type: 'match',
       pair_orientation: this.pair_orientation,
       next_ref: this.next_ref,
@@ -339,9 +368,9 @@ export default class CramSlightlyLazyFeature implements Feature {
   toJSON(): SimpleFeatureSerialized {
     return {
       ...this.fields,
-      // lazy
       CIGAR: this.CIGAR,
-      // lazy
+      seq: this.seq,
+      tags: convertTagsToPlainArrays(this.tags),
       qual: this.qual,
     }
   }
@@ -350,4 +379,3 @@ export default class CramSlightlyLazyFeature implements Feature {
 cacheGetter(CramSlightlyLazyFeature, 'fields')
 cacheGetter(CramSlightlyLazyFeature, 'CIGAR')
 cacheGetter(CramSlightlyLazyFeature, 'NUMERIC_CIGAR')
-cacheGetter(CramSlightlyLazyFeature, 'mismatches')
