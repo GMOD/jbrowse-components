@@ -293,6 +293,56 @@ jb2export --loc all \
   --config data/config.json
 ```
 
+### Alignments tracks
+
+A `--bam`/`--cram` track renders a coverage histogram over a read pileup, with
+mismatches highlighted. Reproducible with the bundled volvox alignments:
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
+  --loc ctgA:1-20000 --width 1200 --out pileup.png
+```
+
+<Figure src="/img/jbrowse-img/alignments_pileup.png" caption="A coverage histogram over a read pileup, with mismatches highlighted" />
+
+The track modifiers (see [Customizing track](#customizing-track) for the full
+list) color, sort, and group the reads. Here the reads are colored and sorted by
+their read-group (`RG`) tag:
+
+```bash
+jb2export --fasta data/volvox/volvox.fa \
+  --bam data/volvox/volvox-rg.bam color:tag:RG sort:tag:RG height:300 \
+  --loc ctgA:1000-2000 --width 1200 --out readgroup.png
+```
+
+<Figure src="/img/jbrowse-img/alignments_readgroup.png" caption="Reads colored and sorted by their read-group tag" />
+
+`group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
+HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
+by the `HP` tag — the heterozygous deletion shows in one haplotype and not the
+other:
+
+```bash
+jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --bam https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam \
+  group:tag:HP color:tag:HP height:400 \
+  --loc 1:63,005,675-63,007,432 --width 1200 --out haplotype.png
+```
+
+<Figure src="/img/jbrowse-img/alignments_haplotype.png" caption="Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype" />
+
+### Variant tracks
+
+A `--vcfgz` track draws each variant with its reference-to-alternate change.
+Reproducible with the bundled volvox VCF:
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.gz \
+  --loc ctgA:1-20000 --width 1200 --out variants.png
+```
+
+<Figure src="/img/jbrowse-img/variants.png" caption="A variant track drawing each SNV with its reference-to-alternate change" />
+
 ### Gene / feature tracks
 
 Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with

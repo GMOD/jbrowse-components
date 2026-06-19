@@ -85,6 +85,25 @@ render img/dark_theme.png --fasta data/volvox/volvox.fa \
 render img/sequence.png --fasta data/volvox/volvox.fa \
   --loc ctgA:108-208 --refseq --width 1500
 
+# Alignments: a plain pileup, then reads colored+sorted by read-group tag.
+render img/alignments_pileup.png --fasta data/volvox/volvox.fa \
+  --bam data/volvox/volvox-sorted.bam --loc ctgA:1-20000 --width 1200
+render img/alignments_readgroup.png --fasta data/volvox/volvox.fa \
+  --bam data/volvox/volvox-rg.bam color:tag:RG sort:tag:RG height:300 \
+  --loc ctgA:1000-2000 --width 1200
+
+# group:tag:HP splits the pileup into one sub-track per haplotype. HG002
+# ultralong ONT (hg19) streamed from the GIAB FTP; the het deletion sits in one
+# haplotype only.
+render img/alignments_haplotype.png \
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --bam "https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam" \
+  group:tag:HP color:tag:HP height:400 --loc 1:63,005,675-63,007,432 --width 1200
+
+# Variant track (bundled volvox VCF).
+render img/variants.png --fasta data/volvox/volvox.fa \
+  --vcfgz data/volvox/volvox.filtered.vcf.gz --loc ctgA:1-20000 --width 1200
+
 # Shrink the committed PNGs (flat-color renders quantize cleanly). --nofs matches
 # the website pipeline: no dithering, so an unchanged render re-quantizes to the
 # same bytes instead of churning git. Best-effort — skipped if pngquant is absent.
