@@ -1,6 +1,7 @@
 ---
 title: Gene tracks
-description: Color by CDS reading frame and peptide lettering on gene/transcript tracks
+description:
+  Color by CDS reading frame and peptide lettering on gene/transcript tracks
 guide_category: Track types
 ---
 
@@ -19,7 +20,7 @@ Enable it from the linear genome view's hamburger menu → **Color by CDS and dr
 amino acids**. The setting applies to every gene track in that view and is
 remembered across sessions.
 
-<Figure caption="The EDEN gene with color-by-CDS turned on. Each CDS segment is tinted by its reading frame; UTRs keep the UTR color and introns are drawn as the connecting line." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="The human BRCA1 gene (hg19, NCBI RefSeq) with color-by-CDS turned on. Each CDS exon is tinted by its reading frame, so neighboring coding exons in different frames get different colors; introns are drawn as the connecting line." src="/img/gene_track_color_by_cds.png" />
 
 ### Peptide lettering
 
@@ -50,9 +51,9 @@ transcript-to-protein mapping. Right click a gene and launch the protein
 structure viewer to open an interactive 3D structure (from AlphaFold DB or
 UniProt) linked to the genome view: hovering a position in the genome highlights
 the corresponding residue on the structure, and vice versa. Color-by-CDS and the
-peptide lettering give you the protein in the linear track, while Protein3d shows
-where each residue sits in the folded structure — useful for seeing whether a
-coding variant lands in a functional domain.
+peptide lettering give you the protein in the linear track, while Protein3d
+shows where each residue sits in the folded structure — useful for seeing
+whether a coding variant lands in a functional domain.
 
 See the
 [Protein structures and multiple sequence alignments tutorial](/docs/tutorials/protein_structure)

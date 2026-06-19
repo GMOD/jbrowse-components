@@ -12,6 +12,7 @@ import {
   isBrowserConsoleNoise,
   waitForDisplaysDone,
   waitForLoadingComplete,
+  waitForQuiescent,
 } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
@@ -148,6 +149,7 @@ async function captureLGV(
   // Wait for the view to be fully initialized (ctgA appears in the default volvox session)
   await waitForVisible(page, textSelector('ctgA'))
   await waitForLoadingComplete(page, { waitForDownloads: true })
+  await waitForQuiescent(page)
 
   if (spec.loc) {
     await setLocation(page, spec.loc)
@@ -199,6 +201,10 @@ async function captureUrl(
     waitForDownloads: true,
     timeout: readyTimeout,
   })
+  // Data is loaded by this point, so any residual status text (e.g. "computing
+  // alignment") clears fast — use the helper's short default rather than the
+  // long readyTimeout, which is sized for slow remote downloads.
+  await waitForQuiescent(page)
   await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
 }
 

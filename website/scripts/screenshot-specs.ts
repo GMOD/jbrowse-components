@@ -3909,7 +3909,10 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 12000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Display types', 'Multi-sample variant display (matrix)']),
+      ...menuCascade([
+        'Display types',
+        'Multi-sample variant display (matrix)',
+      ]),
     ],
     annotations: [
       {
@@ -4315,9 +4318,14 @@ export const specs: ScreenshotSpec[] = [
         ],
       })}`,
     )}`,
-    readySelector: 'canvas',
+    // ProteinView flips this test-id once the structure is loaded and no
+    // pairwise alignment is pending (standalone structures have none), so the
+    // load wait is deterministic instead of a fixed delay. settleMs is no longer
+    // covering load — it's just a paint beat for molstar's software-WebGL raster
+    // at deviceScaleFactor 2, which can lag a frame behind the model state.
+    readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 60000,
-    settleMs: 15000,
+    settleMs: 6000,
   },
 
   // Connected genome + protein demo (TP53 / UniProt P04637). A single ProteinView
@@ -4352,9 +4360,13 @@ export const specs: ScreenshotSpec[] = [
         ],
       })}`,
     )}`,
-    readySelector: 'canvas',
+    // Waits for both the structure load and the genome↔structure pairwise
+    // alignment to settle (this view has a connected transcript, so the test-id
+    // only flips once the alignment is computed). settleMs is the molstar raster
+    // paint beat, as in protein/structure.
+    readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
-    settleMs: 15000,
+    settleMs: 6000,
   },
 
   // ────────────────────────────────────────────────────────────────────────

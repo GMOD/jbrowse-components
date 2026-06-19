@@ -122,8 +122,8 @@ for details.
 ## See also
 
 - [Gene tracks](/docs/user_guides/gene_track) — color-by-CDS reading frames and
-  peptide lettering on the linear gene track, from the same transcript-to-protein
-  mapping the protein viewer uses
+  peptide lettering on the linear gene track, from the same
+  transcript-to-protein mapping the protein viewer uses
 - [Variant tracks](/docs/user_guides/variant_track) — loading and filtering VCFs
   such as ClinVar in the genome view
 - [Plugin store](/docs/user_guides/plugin_store) — installing Protein3d,
