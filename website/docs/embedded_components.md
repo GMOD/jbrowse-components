@@ -6,26 +6,23 @@ JBrowse's embedded components let you add genome browsing to any webpage.
 
 See the [embedding tutorial](/docs/tutorials/embed_linear_genome_view) and the
 [FAQ entry on embedded vs. full JBrowse](/docs/faq#embedded-views-versus-full-jbrowse-app)
-for background.
+for background. The [initializing and launching views](/docs/initializing_views)
+page documents the `init` fields these components accept (assembly, location,
+tracks, etc.).
 
 ## Choosing the right package
 
 | Goal                                                           | Package                                                                                                                                                             |
 | -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full JBrowse UI (multiple views, synteny, file import dialogs) | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [Storybook](https://jbrowse.org/storybook/app/main/)                                   |
-| Single linear genome view, API-controlled data                 | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [Storybook](https://jbrowse.org/storybook/lgv/main/)     |
-| Single circular genome view (e.g. for SV chord diagrams)       | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2) — [Storybook](https://jbrowse.org/storybook/cgv/main/) |
+| Full JBrowse UI (multiple views, synteny, file import dialogs) | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [Examples](https://jbrowse.org/storybook/app/)                                   |
+| Single linear genome view, API-controlled data                 | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [Examples](https://jbrowse.org/storybook/lgv/)     |
+| Single circular genome view (e.g. for SV chord diagrams)       | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2) — [Examples](https://jbrowse.org/storybook/cgv/) |
 | Static deployment with no build step (script tag)              | [jbrowse-web UMD bundle](/docs/tutorials/embed_linear_genome_view)                                                                                                  |
 
 ## @jbrowse/react-app2
 
 This package bundles the entire jbrowse-web application as an npm-installable
 React component.
-
-- [@jbrowse/react-app2](https://www.npmjs.com/package/@jbrowse/react-app2)
-  jbrowse app component on NPM
-- [Storybook](https://jbrowse.org/storybook/app/main/) - docs for the app
-  component
 
 Bundler examples for `@jbrowse/react-app2`:
 
@@ -40,11 +37,6 @@ Bundler examples for `@jbrowse/react-app2`:
 
 A single linear genome view as an npm-installable React component.
 
-- [@jbrowse/react-linear-genome-view2](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2)
-  linear genome view React component on NPM
-- [Storybook](https://jbrowse.org/storybook/lgv/main/) - docs for the linear
-  genome view React component
-
 Bundler examples for `@jbrowse/react-linear-genome-view2`:
 
 | Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                  |
@@ -57,11 +49,6 @@ Bundler examples for `@jbrowse/react-linear-genome-view2`:
 ## @jbrowse/react-circular-genome-view2
 
 A single JBrowse 2 circular view as an npm-installable React component.
-
-- [@jbrowse/react-circular-genome-view2](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2)
-  circular genome view React component on NPM
-- [Storybook](https://jbrowse.org/storybook/cgv/main/) - docs for the circular
-  genome view React component
 
 Bundler examples for `@jbrowse/react-circular-genome-view2`:
 
