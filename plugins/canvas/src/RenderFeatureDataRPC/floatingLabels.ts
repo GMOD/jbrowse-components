@@ -4,16 +4,16 @@ import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
 import { hasVisibleText, truncateLabel, truncateToWidth } from './util.ts'
 
 import type { LabelItem } from './rpcTypes.ts'
-
-const FEATURE_NAME_COLOR = 'black'
-const FEATURE_DESCRIPTION_COLOR = 'blue'
+import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
 
 export function createFeatureFloatingLabels({
   name: rawName,
   description: rawDescription,
+  theme,
 }: {
   name: string | undefined
   description: string | undefined
+  theme: Theme
 }) {
   const name = truncateLabel(rawName ?? '')
   const description = truncateToWidth(
@@ -29,7 +29,7 @@ export function createFeatureFloatingLabels({
     ? {
         text: name,
         relativeY: 0,
-        color: FEATURE_NAME_COLOR,
+        color: theme.palette.text.primary,
         textWidth: measureText(name, LABEL_FONT_SIZE),
       }
     : undefined
@@ -38,7 +38,7 @@ export function createFeatureFloatingLabels({
     ? {
         text: description,
         relativeY: shouldShowLabel ? LABEL_FONT_SIZE : 0,
-        color: FEATURE_DESCRIPTION_COLOR,
+        color: theme.palette.featureDescription,
         textWidth: measureText(description, LABEL_FONT_SIZE),
       }
     : undefined
@@ -51,11 +51,13 @@ export function createTranscriptFloatingLabel({
   featureHeight,
   subfeatureLabels,
   parentFeatureId,
+  theme,
 }: {
   displayLabel: string
   featureHeight: number
   subfeatureLabels: string
   parentFeatureId: string
+  theme: Theme
 }) {
   const truncatedName = truncateLabel(displayLabel)
 
@@ -66,7 +68,11 @@ export function createTranscriptFloatingLabel({
     subfeatureLabel: {
       text: truncatedName,
       relativeY,
-      color: FEATURE_NAME_COLOR,
+      // overlay labels sit on a light backing rect, so keep them dark; inline
+      // ones read against the track and follow the theme text color
+      color: isOverlay
+        ? theme.palette.common.black
+        : theme.palette.text.primary,
       textWidth: measureText(truncatedName, LABEL_FONT_SIZE),
       isOverlay,
     },

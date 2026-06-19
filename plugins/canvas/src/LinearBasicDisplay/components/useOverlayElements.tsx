@@ -38,9 +38,10 @@ interface HighlightModel {
 }
 
 const useStyles = makeStyles()(theme => ({
-  // Default label color is theme-responsive (white in dark mode) since the
-  // worker-computed label.color is theme-blind. Description labels and the
-  // light-background overlay labels override it below.
+  // Labels re-derive their color from the theme here (rather than reusing the
+  // worker's label.color, which the SVG export consumes) so a theme switch
+  // recolors them instantly without re-running the worker. Description and
+  // light-background overlay labels override the default below.
   floatingLabel: {
     position: 'absolute',
     fontSize: LABEL_FONT_SIZE,
@@ -229,9 +230,13 @@ export function useAminoAcidOverlay(
             height: item.heightPx,
             fontSize: cell.fontSize,
             lineHeight: `${item.heightPx}px`,
+            // Codon cells are always a lightened feature color (see
+            // emitCodonRects), so black reads regardless of the page theme —
+            // text.primary would be white-on-light in dark mode. Matches the
+            // SVG export (renderPeptides).
             color: item.isStopOrNonTriplet
               ? theme.palette.error.main
-              : theme.palette.text.primary,
+              : theme.palette.common.black,
           }}
         >
           {cell.text}

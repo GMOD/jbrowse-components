@@ -376,6 +376,7 @@ function processTranscriptLayout(
       featureHeight: transcript.height,
       subfeatureLabels: config.subfeatureLabels,
       parentFeatureId: parentFeature.id(),
+      theme: ctx.theme,
     })
     collector.floatingLabelsData[transcriptFeature.id()] = {
       featureId: transcriptFeature.id(),
@@ -412,6 +413,7 @@ function processFeatureRecord(
   const { nameLabel, descriptionLabel } = createFeatureFloatingLabels({
     name,
     description,
+    theme: ctx.theme,
   })
 
   if (nameLabel || descriptionLabel) {

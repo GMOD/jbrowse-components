@@ -1,4 +1,4 @@
-import { getFrame, measureText, stripAlpha } from '@jbrowse/core/util'
+import { getFrame, measureText } from '@jbrowse/core/util'
 
 import { THEME_DERIVED_COLOR, readConfigValue } from './renderConfig.ts'
 
@@ -120,7 +120,8 @@ export function getStrokeColor({
   jexl?: JexlInstance
 }) {
   const c = readConfigValue<string>(config, 'connectorColor', feature, jexl)
-  return c === THEME_DERIVED_COLOR
-    ? stripAlpha(theme.palette.text.secondary)
-    : c
+  // text.secondary is translucent; keep its alpha so connector lines and strand
+  // arrows blend into the track as a subtle grey rather than glaring full-white
+  // (dark mode) or full-black (light mode) at forced opacity.
+  return c === THEME_DERIVED_COLOR ? theme.palette.text.secondary : c
 }

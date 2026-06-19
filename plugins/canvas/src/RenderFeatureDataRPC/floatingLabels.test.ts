@@ -1,3 +1,4 @@
+import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { measureText } from '@jbrowse/core/util'
 
 import { LABEL_FONT_SIZE, MAX_DESCRIPTION_LABEL_WIDTH_PX } from './constants.ts'
@@ -6,12 +7,15 @@ import {
   createTranscriptFloatingLabel,
 } from './floatingLabels.ts'
 
+const theme = createJBrowseTheme()
+
 describe('floatingLabels', () => {
   describe('createFeatureFloatingLabels', () => {
     it('creates both name and description labels when text is present', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
+        theme,
       })
       expect(result.nameLabel).toBeDefined()
       expect(result.nameLabel!.text).toBe('Gene1')
@@ -19,10 +23,23 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel!.text).toBe('A gene')
     })
 
+    it('colors labels from the theme so the SVG export matches the app', () => {
+      const result = createFeatureFloatingLabels({
+        name: 'Gene1',
+        description: 'A gene',
+        theme,
+      })
+      expect(result.nameLabel!.color).toBe(theme.palette.text.primary)
+      expect(result.descriptionLabel!.color).toBe(
+        theme.palette.featureDescription,
+      )
+    })
+
     it('returns no labels when name and description are whitespace-only', () => {
       const result = createFeatureFloatingLabels({
         name: ' '.repeat(3),
         description: ' '.repeat(3),
+        theme,
       })
       expect(result.nameLabel).toBeUndefined()
       expect(result.descriptionLabel).toBeUndefined()
@@ -32,6 +49,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
+        theme,
       })
       expect(result.nameLabel!.relativeY).toBe(0)
       expect(result.descriptionLabel!.relativeY).toBe(LABEL_FONT_SIZE)
@@ -41,6 +59,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
+        theme,
       })
       expect(result.nameLabel!.textWidth).toBeGreaterThan(0)
       expect(result.descriptionLabel!.textWidth).toBeGreaterThan(0)
@@ -52,6 +71,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: longDescription,
+        theme,
       })
       const label = result.descriptionLabel!
       expect(label.text).toContain('…')
@@ -68,6 +88,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: '',
+        theme,
       })
       expect(result.nameLabel).toBeDefined()
       expect(result.descriptionLabel).toBeUndefined()
@@ -77,6 +98,7 @@ describe('floatingLabels', () => {
       const result = createFeatureFloatingLabels({
         name: '',
         description: 'A gene',
+        theme,
       })
       expect(result.nameLabel).toBeUndefined()
       expect(result.descriptionLabel).toBeDefined()
@@ -90,6 +112,7 @@ describe('floatingLabels', () => {
       featureHeight: 10,
       subfeatureLabels: 'below',
       parentFeatureId: 'parent-gene-123',
+      theme,
     }
 
     it('includes parentFeatureId in the result', () => {
@@ -104,6 +127,7 @@ describe('floatingLabels', () => {
       })
       expect(result.subfeatureLabel.isOverlay).toBe(false)
       expect(result.subfeatureLabel.relativeY).toBe(0)
+      expect(result.subfeatureLabel.color).toBe(theme.palette.text.primary)
     })
 
     it('sets isOverlay to true for "overlay" mode', () => {
@@ -114,6 +138,7 @@ describe('floatingLabels', () => {
       })
       expect(result.subfeatureLabel.isOverlay).toBe(true)
       expect(result.subfeatureLabel.relativeY).toBe(-20)
+      expect(result.subfeatureLabel.color).toBe(theme.palette.common.black)
     })
 
     it('truncates long labels', () => {
