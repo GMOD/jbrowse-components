@@ -89,6 +89,13 @@ interface CommonSpecFields {
   // suppress the hover/right-click BaseTooltip (which lingers while a context
   // menu is open) so it doesn't clutter the capture
   hideTooltip?: boolean
+  // per-spec override of the content-stable diff gate (fraction of pixels in
+  // [0,1]). Raise it for specs with irreducible render jitter — remote-data
+  // timing, heavy text, animated chrome — so an unchanged capture isn't
+  // re-committed every regen. Prefer making the capture reproducible first;
+  // reach for this only when the jitter can't be designed out. Defaults to the
+  // global DEFAULT_DIFF_THRESHOLD.
+  diffThreshold?: number
 }
 
 // Mode 1: navigate to app, interact via UI to open tracks.
@@ -452,12 +459,27 @@ export const specs: ScreenshotSpec[] = [
   // signature. At ~615 kb the window is far above AUTO_FORCE_LOAD_BP (20 kb), so
   // the BAM would normally show a force-load prompt; userByteSizeLimit lifts the
   // fetch-size gate (same mechanism the smalldel/multisv specs use) so the reads
-  // auto-load headless instead of sitting on the prompt. Remote DEMO_CONFIG
-  // data, slow to load.
+  // auto-load headless instead of sitting on the prompt. Uses a region-slice of
+  // the Illumina BAM (1:72.6-73.1Mb, ~111k reads, 19MB) rehosted on
+  // jbrowse.org/demos/hg002 — the full remote NCBI ftp-trace BAM intermittently
+  // timed out here (60s nav). Arcs only need each read's stored mate position
+  // (RNEXT/PNEXT), so a region slice renders the same discordant signature.
   {
     mode: 'url',
     name: 'alignments/arc_display',
     url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_illumina_chr1_arc_slice',
+          name: 'HG002 Illumina hs37d5.2x250 (chr1 arc slice)',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'BamAdapter',
+            uri: 'https://jbrowse.org/demos/hg002/HG002.hs37d5.2x250.chr1_72.6-73.1Mb.bam',
+          },
+        },
+      ],
       views: [
         {
           type: 'LinearGenomeView',
@@ -466,7 +488,7 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             'variants_hg002',
             {
-              trackId: 'illumina_hg002',
+              trackId: 'hg002_illumina_chr1_arc_slice',
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'arc',
@@ -481,7 +503,6 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'HG002 Illumina',
-    readyTimeout: 60000,
     settleMs: 15000,
   },
 

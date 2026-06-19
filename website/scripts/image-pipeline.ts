@@ -11,7 +11,7 @@ import fs from 'fs'
 
 // Fraction in [0,1] of pixels that differ (fuzz-tolerant), or null when the two
 // images are different sizes / the comparison couldn't run (treated as changed).
-function pngDiffFraction(a: string, b: string): number | null {
+export function pngDiffFraction(a: string, b: string): number | null {
   // `compare` writes the metric to stderr and exits 0 (within fuzz), 1
   // (differ), or 2 (error, e.g. dimension mismatch).
   const cmp = spawnSync(
@@ -74,11 +74,29 @@ export function commitScreenshot(
 // no perceptible quality loss — worth it for a static site served over the
 // network. Best-effort: if pngquant isn't installed (or the result would be
 // larger), leave the original untouched and keep going.
+//
+// `--nofs` disables Floyd-Steinberg dithering. Dithering is the wrong tool for
+// flat UI screenshots: it scatters error-diffusion noise across translucent
+// chrome (button hover/focus fills, overlays), and that noise pattern is
+// *amplified* from sub-pixel render jitter — two byte-different-but-visually-
+// identical renders dither into wildly different speckle, flipping enough pixels
+// to blow past the content-stable diff gate and churn the committed PNG on every
+// regen. Without dithering, near-identical input maps to the same palette colors,
+// so an unchanged spec re-renders byte-for-byte. Bonus: it also shrinks the files
+// (~40% on chrome-heavy captures) since the dither noise was pure entropy.
 export function optimizePng(file: string) {
   try {
     execFileSync(
       'pngquant',
-      ['--quality=70-90', '--skip-if-larger', '--force', '--ext', '.png', file],
+      [
+        '--nofs',
+        '--quality=70-90',
+        '--skip-if-larger',
+        '--force',
+        '--ext',
+        '.png',
+        file,
+      ],
       { stdio: 'ignore' },
     )
   } catch (e) {

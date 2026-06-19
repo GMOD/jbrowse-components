@@ -28,7 +28,11 @@ import {
   drawAnnotations,
   hideLingeringTooltip,
 } from './annotations.ts'
-import { commitScreenshot, optimizePng } from './image-pipeline.ts'
+import {
+  commitScreenshot,
+  optimizePng,
+  pngDiffFraction,
+} from './image-pipeline.ts'
 import { specs } from './screenshot-specs.ts'
 
 import type {
@@ -56,6 +60,9 @@ const { values } = parseArgs({
     concurrency: { type: 'string' },
     // overwrite every PNG, bypassing the content-stable diff gate
     force: { type: 'boolean', default: false },
+    // render each spec twice and fail if the two captures drift past threshold,
+    // without touching committed PNGs — a CI guard against newly-flaky specs
+    check: { type: 'boolean', default: false },
     // fraction-of-pixels diff below which a re-render keeps the committed PNG
     'diff-threshold': { type: 'string' },
   },
@@ -67,12 +74,14 @@ function numOpt(raw: string | undefined, fallback: number) {
   return Number.isFinite(n) ? n : fallback
 }
 
-const { headed, filter, exact, force } = values
-// Rendering is deterministic (an unchanged spec re-renders byte-for-byte), so a
-// tight default keeps identical images stable while still letting genuine small
-// edits — a legend, an annotation box — through. Raise it to absorb jitter on
-// timing/remote-data specs.
-const DEFAULT_DIFF_THRESHOLD = 0.001
+const { headed, filter, exact, force, check } = values
+// With dithering disabled (see optimizePng) flat-UI specs re-render byte-for-
+// byte, but text-heavy specs still drift ~0.2% from headless-Chrome sub-pixel
+// glyph-positioning jitter (ruler/track labels, SNP ticks render a hair
+// differently run-to-run). 0.5% absorbs that with ~2.5x margin while still
+// letting a genuine edit — a new legend, a moved element — through. Raise it
+// further for timing/remote-data specs.
+const DEFAULT_DIFF_THRESHOLD = 0.005
 const diffThreshold = numOpt(values['diff-threshold'], DEFAULT_DIFF_THRESHOLD)
 const externalPortVal = numOpt(values.port, Number.NaN)
 const externalPort = Number.isFinite(externalPortVal)
@@ -201,6 +210,19 @@ async function shoot(
   annotations: Annotation[] | undefined,
   file: string,
 ) {
+  // Freeze CSS transitions/animations so menus, ripples, and MUI Grow/Fade
+  // fly-outs snap to their settled state instead of being caught mid-transition
+  // — the dominant source of large run-to-run diffs on menu-capture specs.
+  await page.evaluate(() => {
+    const id = '__screenshot_freeze_anim'
+    if (!document.getElementById(id)) {
+      const style = document.createElement('style')
+      style.id = id
+      style.textContent =
+        '*,*::before,*::after{transition:none !important;animation:none !important;}'
+      document.head.appendChild(style)
+    }
+  })
   if (spec.hideTooltip) {
     await hideLingeringTooltip(page)
   }
@@ -209,13 +231,22 @@ async function shoot(
   } else {
     await clearAnnotations(page)
   }
+  // Wait for the browser to actually rasterize the current DOM before capturing.
+  // A single rAF callback fires *before* paint, so a freshly-composited layer —
+  // e.g. a just-opened menu Popper, on its own GPU layer that software-GL
+  // (swiftshader) rasterizes a frame late at deviceScaleFactor 2 — can be fully
+  // settled in the DOM (opacity:1, laid out) yet still absent from the capture,
+  // the dominant cause of menu-spec flakiness. Two chained rAFs guarantee a full
+  // frame committed; the trailing settle gives slow layer rasterization a beat.
   await page.evaluate(
     () =>
-      new Promise<void>(resolve =>
+      new Promise<void>(resolve => {
         requestAnimationFrame(() => {
-          resolve()
-        }),
-      ),
+          requestAnimationFrame(() => {
+            setTimeout(resolve, 50)
+          })
+        })
+      }),
   )
   const clip = spec.crop
   await page.screenshot(clip ? { path: file, clip } : { path: file })
@@ -234,9 +265,15 @@ async function runActions(
   }
 }
 
-async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
-  console.log(`  → ${spec.name}`)
-
+// Drive the page through the spec and produce one finished, optimized PNG in a
+// temp file (caller decides whether to commit it or diff it). `suffix` keeps the
+// two captures of a --check run from colliding on the same temp path.
+async function renderSpecToTemp(
+  page: Page,
+  spec: ScreenshotSpec,
+  port: number,
+  suffix = '',
+) {
   if (spec.mode === 'url') {
     await captureUrl(page, spec, port)
   } else {
@@ -246,15 +283,10 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)
 
-  const outputPath = path.join(outDir, `${spec.name}.png`)
-  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
-
-  // render into a temp file first; commitScreenshot decides whether it actually
-  // replaces the committed PNG (content-stable diff gate)
   const safeSpecName = spec.name.replace(/\//g, '_')
   const renderPath = path.join(
     os.tmpdir(),
-    `jb-final-${process.pid}-${safeSpecName}.png`,
+    `jb-final-${process.pid}-${safeSpecName}${suffix}.png`,
   )
 
   if (spec.stages && spec.stages.length > 0) {
@@ -284,7 +316,18 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
     await shoot(page, spec, spec.annotations, renderPath)
   }
   optimizePng(renderPath)
-  commitScreenshot(renderPath, outputPath, spec.name, { force, diffThreshold })
+  return renderPath
+}
+
+async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
+  console.log(`  → ${spec.name}`)
+  const renderPath = await renderSpecToTemp(page, spec, port)
+  const outputPath = path.join(outDir, `${spec.name}.png`)
+  fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+  commitScreenshot(renderPath, outputPath, spec.name, {
+    force,
+    diffThreshold: spec.diffThreshold ?? diffThreshold,
+  })
 }
 
 async function main() {
@@ -342,13 +385,14 @@ async function main() {
   let passed = 0
   let failed = 0
   const failures: { name: string; error: string }[] = []
+  const flaky: { name: string; frac: number }[] = []
 
-  async function runSpec(spec: ScreenshotSpec) {
-    if (spec.curated) {
-      console.log(`  ⊘ ${spec.name} (curated, keeping committed image)`)
-      return
-    }
-    // Fresh browser per spec to avoid service worker caching between navigations
+  // Fresh browser per call (avoids service-worker caching between navigations),
+  // viewport set per spec, then run the body with the prepared page.
+  async function withFreshPage<T>(
+    spec: ScreenshotSpec,
+    body: (page: Page) => Promise<T>,
+  ) {
     const browser = await launch(launchOptions)
     try {
       const page = await browser.newPage()
@@ -365,15 +409,50 @@ async function main() {
           console.error(`    browser[${t}]: ${msg.text().substring(0, 300)}`)
         }
       })
-      await captureSpec(page, spec, port)
+      return await body(page)
+    } finally {
+      await browser.close()
+    }
+  }
+
+  // --check: render the spec twice (fresh browser each) and compare the two
+  // captures to each other. A drift past threshold means the spec is
+  // nondeterministic — it would churn its committed PNG on every regen. Doesn't
+  // touch committed files.
+  async function checkSpec(spec: ScreenshotSpec) {
+    console.log(`  → ${spec.name}`)
+    const a = await withFreshPage(spec, p => renderSpecToTemp(p, spec, port, '-a'))
+    const b = await withFreshPage(spec, p => renderSpecToTemp(p, spec, port, '-b'))
+    const frac = pngDiffFraction(a, b)
+    fs.rmSync(a, { force: true })
+    fs.rmSync(b, { force: true })
+    const limit = spec.diffThreshold ?? diffThreshold
+    if (frac === null || frac >= limit) {
+      const pct = frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
+      console.log(`  ✗ ${spec.name} FLAKY (${pct} between two renders)`)
+      flaky.push({ name: spec.name, frac: frac ?? 1 })
+    } else {
+      console.log(`  ✓ ${spec.name} stable (${(frac * 100).toFixed(3)}%)`)
+    }
+  }
+
+  async function runSpec(spec: ScreenshotSpec) {
+    if (spec.curated) {
+      console.log(`  ⊘ ${spec.name} (curated, keeping committed image)`)
+      return
+    }
+    try {
+      if (check) {
+        await checkSpec(spec)
+      } else {
+        await withFreshPage(spec, page => captureSpec(page, spec, port))
+      }
       passed++
     } catch (err) {
       const error = err instanceof Error ? err.message : String(err)
       console.error(`  ✗ ${spec.name}: ${error}`)
       failed++
       failures.push({ name: spec.name, error })
-    } finally {
-      await browser.close()
     }
   }
 
@@ -393,7 +472,21 @@ async function main() {
     server?.close()
   }
 
-  console.log(`\n${passed} succeeded, ${failed} failed`)
+  console.log(
+    `\n${passed} ${check ? 'checked' : 'succeeded'}, ${failed} failed${
+      check ? `, ${flaky.length} flaky` : ''
+    }`,
+  )
+  if (flaky.length > 0) {
+    console.error(`\n${'='.repeat(60)}`)
+    console.error(`FLAKY SPECS (${flaky.length}) — nondeterministic renders`)
+    console.error('='.repeat(60))
+    for (const { name, frac } of flaky) {
+      console.error(`• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`)
+    }
+    console.error(`\n${'='.repeat(60)}`)
+    process.exit(1)
+  }
   if (failures.length > 0) {
     console.error(`\n${'='.repeat(60)}`)
     console.error(`FAILURE SUMMARY (${failures.length})`)
