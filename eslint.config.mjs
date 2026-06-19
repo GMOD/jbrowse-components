@@ -85,6 +85,7 @@ export default defineConfig(
       'website/.astro',
       'website/.prettierrc.mjs',
       'website/astro.config.mjs',
+      'products/*/examples-site/astro.config.mjs',
       'docs',
       'benchmarks',
       'auth_test_utils',
@@ -259,6 +260,7 @@ export default defineConfig(
       'babel.config.js',
       'webpack/**/*',
       'scripts/**/*',
+      'website/scripts/**/*',
       'products/jbrowse-img/**/*',
       'products/jbrowse-web/scripts/*',
       'products/jbrowse-cli/**/*',
@@ -277,6 +279,9 @@ export default defineConfig(
       '@typescript-eslint/use-unknown-in-catch-callback-variable': 'off',
       'no-console': 'off',
       'no-undef': 'off',
+      // Node-only build scripts/CLIs: baseline-js checks browser feature
+      // availability, which is irrelevant here (top-level await etc. are fine).
+      'baseline-js/use-baseline': 'off',
     },
   },
   {

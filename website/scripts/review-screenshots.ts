@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 import { spawn } from 'child_process'
 import path from 'path'
 import readline from 'readline'

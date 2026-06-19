@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // Renders the social-card image used in <meta property="og:image">.
 // Run: node --experimental-strip-types scripts/generate-og-image.ts
 //
@@ -70,6 +69,5 @@ const svg = `<svg xmlns="http://www.w3.org/2000/svg" width="${WIDTH}" height="${
   ${wordmark}
 </svg>`
 
-// eslint-disable-next-line baseline-js/use-baseline
 await sharp(new TextEncoder().encode(svg)).png().toFile(outPath)
 console.log(`wrote ${path.relative(websiteRoot, outPath)}`)
