@@ -81,7 +81,7 @@ export function makeOverviewTicks(
   start: number,
   end: number,
   overviewScale: number,
-  reversed: boolean,
+  reversed = false,
 ) {
   const { majorPitch } = chooseGridPitch(overviewScale, 120, 15)
   const firstTick = reversed

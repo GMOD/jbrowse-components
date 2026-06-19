@@ -104,7 +104,8 @@ const Cytobands = observer(function Cytobands({
   return (
     <g transform={`translate(-${offsetPx})`}>
       {bands.map(({ args, s, e, color, isFirstAcen }, index) => {
-        const k = args.name
+        // name can be missing or duplicated; start/end uniquely identify a band
+        const k = `${args.start}-${args.end}`
         const { type } = args
         const l = Math.min(s, e)
         const w = Math.abs(e - s)

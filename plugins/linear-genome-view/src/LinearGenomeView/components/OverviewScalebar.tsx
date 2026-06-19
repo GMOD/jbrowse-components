@@ -1,8 +1,6 @@
 import type { ReactNode } from 'react'
 
 import { getEnv, getSession } from '@jbrowse/core/util'
-import { getContentBlocksPxSpan } from '@jbrowse/core/util/Base1DUtils'
-import calculateDynamicBlocks from '@jbrowse/core/util/calculateDynamicBlocks'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography, alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -107,8 +105,8 @@ const OverviewBox = observer(function OverviewBox({
   const assembly = assemblyManager.get(assemblyName)
   const refNameColor = assembly?.getRefNameColor(refName)
 
-  const cytobands = getCytobands(assembly, block.refName)
-  const canDisplayCytobands = showCytobands && cytobands.length > 0
+  const cytobands = showCytobands ? getCytobands(assembly, block.refName) : []
+  const canDisplayCytobands = cytobands.length > 0
 
   if (canDisplayCytobands) {
     return (
@@ -162,7 +160,11 @@ const OverviewBox = observer(function OverviewBox({
       >
         {refName}
       </Typography>
-      <OverviewScalebarTickLabels model={model} block={block} />
+      <OverviewScalebarTickLabels
+        model={model}
+        block={block}
+        refNameColor={refNameColor}
+      />
     </div>
   )
 })
@@ -175,11 +177,8 @@ const VisibleRegionBox = observer(function VisibleRegionBox({
   className: string
 }) {
   const theme = useTheme()
-  const { dynamicBlocks, showCytobands, cytobandOffset, overviewLayout } = model
-  const span = getContentBlocksPxSpan(
-    overviewLayout,
-    dynamicBlocks.contentBlocks,
-  )
+  const { showCytobands, cytobandOffset, overviewContentBlocksPxSpan: span } =
+    model
   if (!span) {
     return null
   }
@@ -208,8 +207,7 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
 }) {
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
-  const overview = model.overviewLayout
-  const overviewVisibleRegions = calculateDynamicBlocks(overview).blocks
+  const { overviewLayout: overview, overviewBlocks } = model
 
   const additional = pluginManager.evaluateExtensionPoint(
     'LinearGenomeView-OverviewScalebarComponent',
@@ -223,7 +221,7 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
         model={model}
         className={classes.scalebarVisibleRegion}
       />
-      {overviewVisibleRegions.map(block =>
+      {overviewBlocks.map(block =>
         block.type !== 'ContentBlock' ? (
           <div
             key={block.offsetPx}

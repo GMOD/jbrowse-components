@@ -1,4 +1,4 @@
-import { getSession, getTickDisplayStr } from '@jbrowse/core/util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -24,22 +24,16 @@ const OverviewScalebarTickLabels = observer(
   function OverviewScalebarTickLabels({
     block,
     model,
+    refNameColor,
   }: {
     model: LinearGenomeViewModel
     block: ContentBlock
+    refNameColor: string | undefined
   }) {
     const { classes } = useStyles()
-    const { start, end, reversed, refName, assemblyName } = block
+    const { start, end, reversed } = block
     const { overviewScale, overviewLayout } = model
-    const { assemblyManager } = getSession(model)
-    const assembly = assemblyManager.get(assemblyName)
-    const refNameColor = assembly?.getRefNameColor(refName)
-    const ticks = makeOverviewTicks(
-      start,
-      end,
-      overviewScale,
-      reversed ?? false,
-    )
+    const ticks = makeOverviewTicks(start, end, overviewScale, reversed)
     return ticks.map(({ genomicCoord, offsetPx }) => (
       <Typography
         key={genomicCoord}

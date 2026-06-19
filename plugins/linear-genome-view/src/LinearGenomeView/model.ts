@@ -20,6 +20,7 @@ import {
   bpToPx,
   computeMoveToLayout,
   createOverviewLayout,
+  getContentBlocksPxSpan,
   getLayoutHighlightCoords,
   moveTo,
   offsetBpToPx,
@@ -1607,6 +1608,27 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get dynamicBlocks() {
           return calculateDynamicBlocks(self)
+        },
+        /**
+         * #getter
+         * all overview scalebar blocks (content + elided), laid out on the
+         * overviewLayout. memoized so the scalebar doesn't recompute it per
+         * render
+         */
+        get overviewBlocks() {
+          return calculateDynamicBlocks(self.overviewLayout).blocks
+        },
+        /**
+         * #getter
+         * leading/trailing pixel span of the visible content blocks projected
+         * onto the overviewLayout — the geometry shared by the overview's "you
+         * are here" rectangle and polygon
+         */
+        get overviewContentBlocksPxSpan() {
+          return getContentBlocksPxSpan(
+            self.overviewLayout,
+            this.dynamicBlocks.contentBlocks,
+          )
         },
         /**
          * #getter
