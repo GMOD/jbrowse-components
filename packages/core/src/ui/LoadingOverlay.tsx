@@ -9,6 +9,10 @@ import { cx, makeStyles } from '../util/tss-react/index.ts'
 
 const cancelDelayMs = 5000
 
+// suppress the overlay for the first moments of a load so quick loads stay
+// silent and only genuinely slow loads ever draw the indicator
+const flashDelayMs = 250
+
 const useStyles = makeStyles()({
   overlay: {
     position: 'absolute',
@@ -37,7 +41,7 @@ const useStyles = makeStyles()({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 2,
-    background: 'rgba(255,255,255,0.85)',
+    background: 'rgba(255,255,255,0.4)',
     borderRadius: 4,
     padding: '2px 8px',
   },
@@ -82,6 +86,23 @@ export default function LoadingOverlay({
   const { classes } = useStyles()
   const hasProgress = progress !== undefined
 
+  // anti-flash: only render after the load has run long enough to be worth
+  // signaling, so fast loads show nothing at all
+  const [shown, setShown] = useState(false)
+  useEffect(() => {
+    if (isVisible) {
+      const id = setTimeout(() => {
+        setShown(true)
+      }, flashDelayMs)
+      return () => {
+        clearTimeout(id)
+      }
+    } else {
+      setShown(false)
+      return undefined
+    }
+  }, [isVisible])
+
   // only offer cancel after the overlay has been continuously visible for a few
   // seconds, so a quick load can't be canceled by an accidental click
   const [cancelable, setCancelable] = useState(false)
@@ -101,8 +122,8 @@ export default function LoadingOverlay({
 
   return (
     <span
-      className={cx(classes.overlay, isVisible && classes.visible)}
-      data-testid={isVisible ? 'loading-overlay' : undefined}
+      className={cx(classes.overlay, shown && classes.visible)}
+      data-testid={shown ? 'loading-overlay' : undefined}
     >
       <span className={classes.content}>
         {canceled ? (
