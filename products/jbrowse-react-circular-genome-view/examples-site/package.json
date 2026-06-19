@@ -1,0 +1,28 @@
+{
+  "name": "cgv-examples-site",
+  "private": true,
+  "type": "module",
+  "version": "0.0.0",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview"
+  },
+  "dependencies": {
+    "@astrojs/react": "^5.0.7",
+    "@emotion/cache": "^11.14.0",
+    "@emotion/react": "^11.14.0",
+    "@jbrowse/core": "workspace:*",
+    "@jbrowse/mobx-state-tree": "^5.11.1",
+    "@jbrowse/react-circular-genome-view2": "workspace:*",
+    "astro": "^6.4.8",
+    "mobx": "^6.16.1",
+    "mobx-react": "^9.2.2",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7"
+  },
+  "devDependencies": {
+    "@astrojs/check": "^0.9.9",
+    "typescript": "^5.9.3"
+  }
+}

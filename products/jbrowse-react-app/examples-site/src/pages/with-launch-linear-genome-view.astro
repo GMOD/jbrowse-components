@@ -1,0 +1,12 @@
+---
+import Layout from "../layouts/ExampleLayout.astro"
+import Example from "../examples/WithLaunchLinearGenomeView.tsx"
+import code from "../examples/WithLaunchLinearGenomeView.tsx?raw"
+import { examples } from "../examples.ts"
+
+const meta = examples.find(e => e.slug === "with-launch-linear-genome-view")!
+---
+
+<Layout title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>
