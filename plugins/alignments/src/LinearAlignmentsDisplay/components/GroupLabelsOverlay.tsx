@@ -62,7 +62,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
     return null
   }
   // Grouping is active here, so the coverage band scrolls with its section.
-  const scroll = model.scrollModel
+  const { scrollModel: scroll } = model
   return (
     <>
       {model.renderSections.map((section, i) => {

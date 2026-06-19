@@ -292,8 +292,7 @@ const ConnectionBandResizeHandles = observer(
   }: {
     model: LinearAlignmentsDisplayModel
   }) {
-    const { belowCoverageBands: bands, height } = model
-    const scroll = model.scrollModel
+    const { belowCoverageBands: bands, height, scrollModel: scroll } = model
     const arcHandleTop = bandScreenTop(
       bands.sashimiBandTop - YSCALEBAR_LABEL_OFFSET,
       scroll,
@@ -341,8 +340,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
   if (!model.isGrouped) {
     return null
   }
-  const { height } = model
-  const scroll = model.scrollModel
+  const { height, scrollModel: scroll } = model
   return (
     <>
       {model.renderSections.map(section => {
@@ -448,8 +446,7 @@ const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  const { coverageTicks, renderSections } = model
-  const scroll = model.scrollModel
+  const { coverageTicks, renderSections, scrollModel: scroll } = model
   const section = renderSections.find(s =>
     bandOnScreen(
       bandScreenTop(s.coverageTop, scroll),
