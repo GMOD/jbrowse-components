@@ -26,6 +26,7 @@ export interface RenderSvgModel {
   height: number
   error: unknown
   regionTooLarge: boolean
+  svgReady: boolean
   laidOutDataMap: Map<number, FeatureDataResult>
   showLabels: boolean
   effectiveShowDescriptions: boolean
@@ -90,10 +91,9 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   const view = getContainingView(model) as LGV
-  await when(
-    () =>
-      model.laidOutDataMap.size > 0 || !!model.error || model.regionTooLarge,
-  )
+  // svgReady waits for ALL visible regions, not just the first to stream in, so
+  // whole-genome / multi-region exports aren't partially drawn.
+  await when(() => model.svgReady)
 
   if (model.error) {
     return (

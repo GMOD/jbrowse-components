@@ -52,9 +52,11 @@ export function useSideScroll(model: LinearGenomeViewModel) {
     if (event.shiftKey) {
       return
     }
-    // check if clicking a draggable element or a resize handle
+    // skip the click-drag pan when pressing an interactive control: a
+    // draggable element, a resize handle, or a button (e.g. the menu button on
+    // a highlight/bookmark chip, whose actual target is the icon inside it)
     const target = event.target as HTMLElement
-    if (target.draggable || target.dataset.resizer) {
+    if (target.draggable || target.dataset.resizer || target.closest('button')) {
       return
     }
 

@@ -108,6 +108,31 @@ test('frames arrays are not duplicated for named themes', () => {
   }
 })
 
+test('config-defined dark theme inherits dark-tuned color defaults', () => {
+  const light = createJBrowseTheme()
+  const customDark = createJBrowseTheme({}, undefined, 'darkStock')
+  const fromArgs = createJBrowseTheme(
+    {},
+    {
+      myDark: {
+        name: 'My Dark',
+        // opts into dark mode without spreading the built-in darkPalette
+        palette: { mode: 'dark', primary: { main: '#abcdef' } },
+      },
+    },
+    'myDark',
+  )
+  expect(fromArgs.palette.mode).toBe('dark')
+  // gridlines/coverage/hover resolve to the dark variants, not the light ones
+  expect(fromArgs.palette.coverage).toBe(customDark.palette.coverage)
+  expect(fromArgs.palette.coverage).not.toBe(light.palette.coverage)
+  expect(fromArgs.palette.gridlineMinor).toBe(customDark.palette.gridlineMinor)
+  expect(fromArgs.palette.featureHover).toBe(customDark.palette.featureHover)
+  expect(fromArgs.palette.alignmentFill.pairLR).toBe(
+    customDark.palette.alignmentFill.pairLR,
+  )
+})
+
 test('orientation alignmentFill colors present for named themes', () => {
   const theme = createJBrowseTheme({}, undefined, 'darkStock')
   expect(theme.palette.alignmentFill.pairLR).toBeTruthy()

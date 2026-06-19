@@ -103,6 +103,24 @@ export default function MultiRegionDisplayMixin() {
 
       /**
        * #getter
+       * true once an off-screen (SVG) export can safely read this display's
+       * data: every visible region has loaded, or the fetch reached a terminal
+       * error / too-large state. Off-screen renderers await
+       * `when(() => model.svgReady)` instead of inlining the condition. Regions
+       * stream in one at a time, so gating on `viewportWithinLoadedData` (not the
+       * first datum) is what keeps multi-region/whole-genome exports complete;
+       * `loadedRegions.size` guards the vacuously-true empty-viewport case.
+       */
+      get svgReady(): boolean {
+        return (
+          (this.viewportWithinLoadedData && self.loadedRegions.size > 0) ||
+          !!self.error ||
+          self.regionTooLarge
+        )
+      },
+
+      /**
+       * #getter
        * Shared cached view for every LGV-based GPU display. A single
        * displayedRegion may produce multiple render blocks (shared GPU
        * buffer, different scissor clips on screen). Plugins that want to

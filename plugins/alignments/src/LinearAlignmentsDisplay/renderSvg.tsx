@@ -30,9 +30,9 @@ export async function renderSvg(
 ): Promise<React.ReactNode> {
   const theme = createJBrowseTheme(opts?.theme)
   const view = getContainingView(model) as LinearGenomeViewModel
-  await when(
-    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
-  )
+  // svgReady waits for ALL visible regions, not just the first to stream in, so
+  // whole-genome / multi-region exports aren't partially drawn.
+  await when(() => model.svgReady)
 
   if (model.error) {
     return (

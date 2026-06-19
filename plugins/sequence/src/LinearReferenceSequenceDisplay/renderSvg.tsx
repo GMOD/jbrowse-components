@@ -2,6 +2,7 @@ import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { SvgClipRect } from '@jbrowse/plugin-linear-genome-view'
+import { when } from 'mobx'
 
 import {
   buildTextColors,
@@ -26,6 +27,7 @@ interface SequenceDisplayModel {
   renderBlocks: RenderBlock[]
   renderState: DrawSequenceState
   zoomedOut: boolean
+  svgReady: boolean
 }
 
 export async function renderSvg(
@@ -33,8 +35,13 @@ export async function renderSvg(
   opts?: ExportSvgDisplayOptions,
 ) {
   const view = getContainingView(model) as LGV
-  const { sequenceData } = model
 
+  // Wait for all visible regions to load before reading sequenceData (it streams
+  // in one region at a time). zoomedOut is also terminal — it renders the "zoom
+  // in" message with no fetch, so svgReady alone would never resolve.
+  await when(() => model.svgReady || model.zoomedOut)
+
+  const { sequenceData } = model
   if (sequenceData.size === 0 || model.zoomedOut) {
     return null
   }

@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import CloseIcon from '@mui/icons-material/Close'
 import RefreshIcon from '@mui/icons-material/Refresh'
 import { IconButton, Tooltip } from '@mui/material'
+import { alpha } from '@mui/material/styles'
 
 import LoadingDots from './LoadingDots.tsx'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
@@ -13,15 +14,18 @@ const cancelDelayMs = 5000
 // silent and only genuinely slow loads ever draw the indicator
 const flashDelayMs = 250
 
-const useStyles = makeStyles()({
+const useStyles = makeStyles()(theme => {
+  // derive the stripe + chip tints from the theme so the "something's happening"
+  // signal stays subtle and equally visible in light and dark mode
+  const stripe = alpha(theme.palette.text.primary, 0.05)
+  return {
   overlay: {
     position: 'absolute',
     top: 0,
     left: 0,
     right: 0,
     bottom: 0,
-    background:
-      'repeating-linear-gradient(45deg, transparent, transparent 8px, rgba(0, 0, 0, 0.05) 8px, rgba(0, 0, 0, 0.05) 16px)',
+    background: `repeating-linear-gradient(45deg, transparent, transparent 8px, ${stripe} 8px, ${stripe} 16px)`,
     pointerEvents: 'none',
     zIndex: 1,
     display: 'flex',
@@ -41,7 +45,7 @@ const useStyles = makeStyles()({
     flexDirection: 'column',
     alignItems: 'center',
     gap: 2,
-    background: 'rgba(255,255,255,0.4)',
+    background: alpha(theme.palette.background.paper, 0.4),
     borderRadius: 4,
     padding: '2px 8px',
   },
@@ -58,7 +62,7 @@ const useStyles = makeStyles()({
     width: 160,
     height: 4,
     borderRadius: 2,
-    background: 'rgba(0,0,0,0.15)',
+    background: alpha(theme.palette.text.primary, 0.15),
     overflow: 'hidden',
   },
   barFill: {
@@ -66,6 +70,7 @@ const useStyles = makeStyles()({
     background: '#3f88c5',
     transition: 'width 0.15s linear',
   },
+  }
 })
 
 export default function LoadingOverlay({

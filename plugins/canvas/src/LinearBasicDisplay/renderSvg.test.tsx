@@ -97,6 +97,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     height: 100,
     error: undefined,
     regionTooLarge: false,
+    svgReady: true,
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
     showLabels: true,
     effectiveShowDescriptions: true,

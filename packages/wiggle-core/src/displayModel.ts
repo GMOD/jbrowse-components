@@ -35,17 +35,9 @@ export interface WiggleGpuDisplayModel<
 }
 
 // SVG export and any other off-screen renderer must wait until the display has
-// reached a terminal state — either some data arrived, the fetch errored, or
-// the region was rejected as too large. Returning early any other time would
-// emit an empty SVG node that doesn't reflect what the user sees on-screen.
-// Loose typing: MST models expose `error` as `unknown` and may add more keys,
-// so we only require the predicates we read.
-export function waitForRenderableState(model: {
-  rpcDataMap: { size: number }
-  error: unknown
-  regionTooLarge: boolean
-}) {
-  return when(
-    () => model.rpcDataMap.size > 0 || !!model.error || model.regionTooLarge,
-  )
+// reached a terminal state before reading its data. That whole policy lives in
+// the `svgReady` getter (MultiRegionDisplayMixin) so it stays in one place and
+// out of the renderers; this just awaits it.
+export function waitForRenderableState(model: { svgReady: boolean }) {
+  return when(() => model.svgReady)
 }
