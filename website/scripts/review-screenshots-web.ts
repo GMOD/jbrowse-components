@@ -206,7 +206,7 @@ const PAGE = /* html */ `<!doctype html>
   }
   header h1 { font-size: 16px; margin: 0; }
   header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid #ccc; border-radius: 6px; }
-  header label { font-size: 13px; display: flex; gap: 5px; align-items: center; }
+  header label { font-size: 13px; display: flex; gap: 5px; align-items: center; cursor: pointer; }
   .tabs { display: flex; gap: 6px; }
   .tab {
     padding: 7px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff;
@@ -222,6 +222,8 @@ const PAGE = /* html */ `<!doctype html>
   .pill.auto { background: #dbeafe; color: #1e40af; }
   .pill.curated { background: #fef3c7; color: #92400e; }
   .pill.manual { background: #f3e8ff; color: #6b21a8; }
+  .pill.new { background: #cffafe; color: #155e63; }
+  .pill.changed { background: #fde68a; color: #854d0e; }
   main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; margin: 0 auto; }
   .card {
     background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;
@@ -263,47 +265,47 @@ const PAGE = /* html */ `<!doctype html>
 <header>
   <h1>Screenshot review</h1>
   <div class="tabs">
-    <button class="tab active" id="tab-automated" onclick="setPage('automated')">Automated<span class="tabcount" id="tabcount-automated"></span></button>
-    <button class="tab" id="tab-manual" onclick="setPage('manual')">Manual<span class="tabcount" id="tabcount-manual"></span></button>
+    <button class="tab" data-page="automated">Automated<span class="tabcount" data-count="page-automated"></span></button>
+    <button class="tab" data-page="manual">Manual<span class="tabcount" data-count="page-manual"></span></button>
   </div>
   <input id="search" type="search" placeholder="filter by name…" />
   <div class="tabs">
-    <button class="tab active" id="status-all" onclick="setStatus('all')">All</button>
-    <button class="tab" id="status-unreviewed" onclick="setStatus('unreviewed')">Unreviewed</button>
-    <button class="tab" id="status-bad" onclick="setStatus('bad')">Denied</button>
+    <button class="tab" data-status="all">All</button>
+    <button class="tab" data-status="unreviewed">Unreviewed</button>
+    <button class="tab" data-status="bad">Denied</button>
+  </div>
+  <div class="tabs" title="compare against origin/main">
+    <button class="tab" data-diff="all">All</button>
+    <button class="tab" data-diff="new">New<span class="tabcount" data-count="diff-new"></span></button>
+    <button class="tab" data-diff="changed">Changed<span class="tabcount" data-count="diff-changed"></span></button>
+    <button class="tab" data-diff="touched">Both</button>
   </div>
   <div class="counts" id="counts"></div>
 </header>
 <main id="main"></main>
 <script>
 let data = []
-let page = 'automated'
-let status = 'all'
+const filters = { page: 'automated', status: 'all', diff: 'all' }
 // Names acted on since the current filter view was entered. They stay visible
 // even once their new verdict no longer matches the filter, so you can still
 // type a reason after clicking Deny in the unreviewed/denied queue.
 let justActed = new Set()
 
-function setPage(p) {
-  page = p
-  justActed = new Set()
-  document.getElementById('tab-automated').classList.toggle('active', p === 'automated')
-  document.getElementById('tab-manual').classList.toggle('active', p === 'manual')
-  render()
-}
+const $ = sel => document.querySelector(sel)
+const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+const pill = (cls, text) => '<span class="pill ' + cls + '">' + text + '</span>'
 
-function setStatus(s) {
-  status = s
-  justActed = new Set()
-  for (const id of ['all', 'unreviewed', 'bad']) {
-    document.getElementById('status-' + id).classList.toggle('active', id === s)
-  }
-  render()
-}
+// Diff vs origin/main, the screenshots a branch review cares about:
+// "new" = added on this branch (not on main); "changed" = on main but the
+// working-tree pixels differ (an update). \`s.changed\` is computed server-side.
+const isNew = s => s.exists && !s.existsOnMain
+const isChanged = s => s.changed
 
-function esc(s) {
-  return String(s ?? '').replace(/[&<>"]/g, c =>
-    ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
+function changeFilter(key, value) {
+  filters[key] = value
+  justActed = new Set()
+  render()
 }
 
 async function load() {
@@ -312,22 +314,30 @@ async function load() {
 }
 
 function renderUsages(usages) {
-  if (!usages.length) {
-    return '<div class="noref">⚠ not referenced in any doc / blog / gallery page</div>'
-  }
-  return '<div class="usages">' + usages.map(u =>
-    '<div class="usage">' +
-      '<div class="loc">' + esc(u.file) + ':' + u.line + '</div>' +
-      (u.caption ? '<div class="caption">' + esc(u.caption) + '</div>' : '') +
-      (u.context ? '<div class="context">' + esc(u.context) + '</div>' : '') +
-    '</div>'
-  ).join('') + '</div>'
+  return usages.length
+    ? '<div class="usages">' + usages.map(u =>
+        '<div class="usage">' +
+          '<div class="loc">' + esc(u.file) + ':' + u.line + '</div>' +
+          (u.caption ? '<div class="caption">' + esc(u.caption) + '</div>' : '') +
+          (u.context ? '<div class="context">' + esc(u.context) + '</div>' : '') +
+        '</div>'
+      ).join('') + '</div>'
+    : '<div class="noref">⚠ not referenced in any doc / blog / gallery page</div>'
 }
 
-function statusPill(spec) {
-  if (spec.autogenerated) return '<span class="pill auto">autogenerated</span>'
-  if (spec.hasSpec) return '<span class="pill curated">curated</span>'
-  return '<span class="pill manual">manual</span>'
+function kindPill(spec) {
+  return spec.autogenerated
+    ? pill('auto', 'autogenerated')
+    : spec.hasSpec
+      ? pill('curated', 'curated')
+      : pill('manual', 'manual')
+}
+
+function imgCol(label, inner) {
+  return '<div class="imgcol">' +
+    '<div class="imglabel">' + label + '</div>' +
+    '<div class="imgwrap">' + inner + '</div>' +
+  '</div>'
 }
 
 function card(spec) {
@@ -341,17 +351,13 @@ function card(spec) {
     : '<div class="missing" style="color:#aaa">not on origin/main</div>'
   return '<div class="card ' + status + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
     '<div class="card-images">' +
-      '<div class="imgcol">' +
-        '<div class="imglabel">current branch</div>' +
-        '<div class="imgwrap">' + currentImg + '</div>' +
-      '</div>' +
-      '<div class="imgcol">' +
-        '<div class="imglabel">origin/main</div>' +
-        '<div class="imgwrap">' + mainImg + '</div>' +
-      '</div>' +
+      imgCol('current branch', currentImg) +
+      imgCol('origin/main', mainImg) +
     '</div>' +
     '<div class="meta">' +
-      '<h2>' + esc(spec.name) + ' ' + statusPill(spec) + '</h2>' +
+      '<h2>' + esc(spec.name) + ' ' + kindPill(spec) +
+        (isNew(spec) ? ' ' + pill('new', 'new') : '') +
+        (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') + '</h2>' +
       renderUsages(spec.usages) +
       '<input class="note" placeholder="note (optional)" value="' + esc(v ? v.note : '') + '" onchange="saveNote(this)" />' +
       '<div class="actions">' +
@@ -364,20 +370,24 @@ function card(spec) {
   '</div>'
 }
 
-function cardEl(btn) { return btn.closest('.card') }
+const cardEl = btn => btn.closest('.card')
 
-async function setVerdict(btn, verdictStatus) {
-  const el = cardEl(btn)
-  const name = el.dataset.name
-  const note = el.querySelector('.note').value
+async function postVerdict(name, status, note) {
   await fetch('/api/verdict', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ name, status: verdictStatus, note }),
+    body: JSON.stringify({ name, status, note }),
   })
+}
+
+async function setVerdict(btn, status) {
+  const el = cardEl(btn)
+  const name = el.dataset.name
+  const note = el.querySelector('.note').value
+  await postVerdict(name, status, note)
   const spec = data.find(s => s.name === name)
   if (spec) {
-    spec.verdict = { name, status: verdictStatus, note, reviewedAt: new Date().toISOString() }
+    spec.verdict = { name, status, note, reviewedAt: new Date().toISOString() }
   }
   justActed.add(name)
   updateCard(name)
@@ -390,13 +400,8 @@ async function saveNote(input) {
   const name = cardEl(input).dataset.name
   const spec = data.find(s => s.name === name)
   if (spec && spec.verdict) {
-    const note = input.value
-    spec.verdict = { ...spec.verdict, note }
-    await fetch('/api/verdict', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ name, status: spec.verdict.status, note }),
-    })
+    spec.verdict = { ...spec.verdict, note: input.value }
+    await postVerdict(name, spec.verdict.status, input.value)
   }
 }
 
@@ -414,41 +419,57 @@ async function clearVerdict(btn) {
   updateCard(name)
 }
 
-function specsInPage() {
-  return data.filter(s => page === 'automated' ? s.autogenerated : !s.autogenerated)
+const specsInPage = () =>
+  data.filter(s => filters.page === 'automated' ? s.autogenerated : !s.autogenerated)
+
+function syncControls() {
+  for (const key of ['page', 'status', 'diff']) {
+    for (const b of document.querySelectorAll('header [data-' + key + ']')) {
+      b.classList.toggle('active', b.dataset[key] === filters[key])
+    }
+  }
 }
 
 function renderCounts() {
   const inPage = specsInPage()
-  document.getElementById('tabcount-automated').textContent = data.filter(s => s.autogenerated).length
-  document.getElementById('tabcount-manual').textContent = data.filter(s => !s.autogenerated).length
+  $('[data-count="page-automated"]').textContent = data.filter(s => s.autogenerated).length
+  $('[data-count="page-manual"]').textContent = data.filter(s => !s.autogenerated).length
+  $('[data-count="diff-new"]').textContent = inPage.filter(isNew).length
+  $('[data-count="diff-changed"]').textContent = inPage.filter(isChanged).length
 
   const good = inPage.filter(s => s.verdict?.status === 'good').length
   const bad = inPage.filter(s => s.verdict?.status === 'bad').length
-  const none = inPage.length - good - bad
-  const curatedCount = inPage.filter(s => s.hasSpec && !s.autogenerated).length
-  const handCount = inPage.filter(s => !s.hasSpec).length
-  document.getElementById('counts').innerHTML =
-    '<span class="pill good">' + good + ' approved</span>' +
-    '<span class="pill bad">' + bad + ' denied</span>' +
-    '<span class="pill none">' + none + ' unreviewed</span>' +
-    (page === 'automated'
-      ? '<span class="pill auto">' + inPage.length + ' autogenerated</span>'
-      : '<span class="pill curated">' + curatedCount + ' curated</span>' +
-        '<span class="pill manual">' + handCount + ' manual</span>')
+  const kindCounts = filters.page === 'automated'
+    ? pill('auto', inPage.length + ' autogenerated')
+    : pill('curated', inPage.filter(s => s.hasSpec && !s.autogenerated).length + ' curated') +
+      pill('manual', inPage.filter(s => !s.hasSpec).length + ' manual')
+  $('#counts').innerHTML =
+    pill('good', good + ' approved') +
+    pill('bad', bad + ' denied') +
+    pill('none', (inPage.length - good - bad) + ' unreviewed') +
+    kindCounts
+}
+
+function matchesFilters(s, q) {
+  const matchesQuery = !q || s.name.toLowerCase().includes(q)
+  const matchesStatus =
+    filters.status === 'all' ||
+    (filters.status === 'unreviewed' && !s.verdict) ||
+    (filters.status === 'bad' && s.verdict?.status === 'bad')
+  const matchesDiff =
+    filters.diff === 'all' ||
+    (filters.diff === 'new' && isNew(s)) ||
+    (filters.diff === 'changed' && isChanged(s)) ||
+    (filters.diff === 'touched' && (isNew(s) || isChanged(s)))
+  return matchesQuery && (justActed.has(s.name) || (matchesStatus && matchesDiff))
 }
 
 function render() {
+  syncControls()
   renderCounts()
-  const q = document.getElementById('search').value.toLowerCase()
-  const visible = specsInPage().filter(s => {
-    if (q && !s.name.toLowerCase().includes(q)) { return false }
-    if (justActed.has(s.name)) { return true }
-    if (status === 'unreviewed' && s.verdict) { return false }
-    if (status === 'bad' && s.verdict?.status !== 'bad') { return false }
-    return true
-  })
-  document.getElementById('main').innerHTML = visible.map(card).join('')
+  const q = $('#search').value.toLowerCase()
+  const visible = specsInPage().filter(s => matchesFilters(s, q))
+  $('#main').innerHTML = visible.map(card).join('')
 }
 
 // Re-render a single card in place rather than rebuilding all of main, so
@@ -462,7 +483,14 @@ function updateCard(name) {
   renderCounts()
 }
 
-document.getElementById('search').addEventListener('input', render)
+$('header').addEventListener('click', e => {
+  const btn = e.target.closest('[data-page],[data-status],[data-diff]')
+  if (btn) {
+    const key = btn.dataset.page ? 'page' : btn.dataset.status ? 'status' : 'diff'
+    changeFilter(key, btn.dataset[key])
+  }
+})
+$('#search').addEventListener('input', render)
 load()
 </script>
 </body>
