@@ -5,15 +5,18 @@ import slugify from 'slugify'
 import {
   categoryLabel,
   codeBlock,
+  collectTransitive,
+  docPage,
   exampleSection,
   overviewSection,
   parseTaggedComment,
   removeComments,
+  repoRelative,
   section,
   stripComposedBlock,
   warnCoverageGap,
-  writeFormatted,
 } from './util.ts'
+import { writeFormatted } from './format.ts'
 
 import type { ComposedRef, Example, ExtractedNode } from './util.ts'
 
@@ -49,9 +52,6 @@ export interface StateModel {
   filename: string
 }
 type ModelWithHeader = StateModel & { header: ModelHeader }
-interface Ancestor {
-  model: ModelWithHeader
-}
 interface ModelIndex {
   byDeclId: Map<string, ModelWithHeader>
   bySlug: Map<string, ModelWithHeader>
@@ -73,8 +73,6 @@ function buildMember(obj: ExtractedNode): Member & { category?: string } {
   }
 }
 
-const cwd = `${process.cwd()}/`
-
 // Route one extracted node into its file's state-model bucket. Called from the
 // shared single-program-load driver in generate.ts.
 export function accumulateModel(
@@ -88,12 +86,27 @@ export function accumulateModel(
     getters: [],
     methods: [],
     actions: [],
-    filename: fn.replace(cwd, ''),
+    filename: repoRelative(fn),
   }
   const file = byFile[fn]
   const member = buildMember(obj)
 
   if (obj.type === 'stateModel') {
+    // A #stateModel const is tagged twice (VariableStatement + its inner
+    // declaration); the statement half can resolve to an empty name when the tag
+    // carries none, so only treat two *non-empty, differently named* #stateModel
+    // in one file as the violation the README warns about (the second silently
+    // wins).
+    if (
+      file.header &&
+      file.header.name &&
+      member.name &&
+      member.name !== file.header.name
+    ) {
+      console.warn(
+        `${file.filename}: multiple #stateModel tags ("${file.header.name}" then "${member.name}"); only the last is documented (one #stateModel per file)`,
+      )
+    }
     file.header = {
       name: member.name,
       docs: stripComposedBlock(member.docs),
@@ -116,30 +129,30 @@ export function accumulateModel(
   }
 }
 
-// Walk the composition graph transitively, depth-first, deduping by declId and
-// guarding cycles. Returns ancestors in reading order (direct parents first,
-// then their parents). Composed models that aren't documented #stateModels
-// (plain types.model mixins, config bases) resolve to nothing and are skipped —
-// they contribute no member section.
-function collectAncestors(
-  model: ModelWithHeader,
-  index: ModelIndex,
-  seen = new Set<string>(),
-): Ancestor[] {
-  const out: Ancestor[] = []
-  for (const ref of model.header.composedOf) {
-    const parent =
-      (ref.declId ? index.byDeclId.get(ref.declId) : undefined) ??
-      (ref.name
-        ? index.bySlug.get(slugify(ref.name, { lower: true }))
-        : undefined)
-    if (parent && !seen.has(parent.header.id)) {
-      seen.add(parent.header.id)
-      out.push({ model: parent })
-      out.push(...collectAncestors(parent, index, seen))
-    }
-  }
-  return out
+// One composed reference resolved to the documented #stateModel it names, by
+// declId first then by slugified name. References to models that aren't
+// documented #stateModels (plain types.model mixins, config bases) resolve to
+// undefined.
+function resolveComposedRef(ref: ComposedRef, index: ModelIndex) {
+  const byId = ref.declId ? index.byDeclId.get(ref.declId) : undefined
+  const byName = ref.name
+    ? index.bySlug.get(slugify(ref.name, { lower: true }))
+    : undefined
+  return byId ?? byName
+}
+
+// The transitive composition chain (direct parents first), via the shared graph
+// walk. Composed models that don't resolve to a documented #stateModel are
+// skipped — they contribute no member section.
+function collectAncestors(model: ModelWithHeader, index: ModelIndex) {
+  return collectTransitive(
+    model,
+    m => m.header.id,
+    m =>
+      m.header.composedOf
+        .map(ref => resolveComposedRef(ref, index))
+        .filter((m): m is ModelWithHeader => Boolean(m)),
+  )
 }
 
 // Determine the sidebar category for a state model. A `*Mixin` name always
@@ -183,8 +196,8 @@ function memberLine(label: string, members: Member[]) {
 // A compact, single-page overview of every member reachable through
 // composition, grouped by the model that defines it, so a reader does not have
 // to traverse the whole inheritance chain to learn what is available.
-function inheritedSection(ancestors: Ancestor[]) {
-  const blocks = ancestors.flatMap(({ model }) => {
+function inheritedSection(ancestors: ModelWithHeader[]) {
+  const blocks = ancestors.flatMap(model => {
     const lines = [
       memberLine('Properties', model.properties),
       memberLine('Volatiles', model.volatiles),
@@ -220,7 +233,7 @@ function renderModel(
     actions,
     filename,
   }: ModelWithHeader,
-  ancestors: Ancestor[],
+  ancestors: ModelWithHeader[],
 ): string {
   const sections = section(
     memberSection(header.name, 'Properties', properties, p =>
@@ -248,28 +261,21 @@ function renderModel(
   )
 
   const category = stateModelCategory(header.name, header.category)
-  return `---
-id: ${header.id}
-title: ${header.name}
-sidebar_label: ${category} -> ${header.name}
----
-
-Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
+  return docPage({
+    id: header.id,
+    title: header.name,
+    sidebarLabel: `${category} -> ${header.name}`,
+    notes: `Note: this document is automatically generated from @jbrowse/mobx-state-tree objects in
 our source code. See [Core concepts and intro to pluggable
 elements](/docs/developer_guide/) for more info
 
 Also note: this document represents the state model API for the current released
 version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/${header.name}.md)
-
-${section(exSection, docsSection)}
-`
+reference the markdown files in our repo of the checked out git tag`,
+    sourcePath: filename,
+    githubDocPath: `website/docs/models/${header.name}.md`,
+    body: section(exSection, docsSection),
+  })
 }
 
 function memberSection(

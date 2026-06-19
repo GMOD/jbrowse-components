@@ -5,14 +5,17 @@ import slugify from 'slugify'
 import {
   categoryLabel,
   codeBlock,
+  collectTransitive,
+  docPage,
   exampleSection,
   overviewSection,
   parseTaggedComment,
   removeComments,
+  repoRelative,
   section,
   warnCoverageGap,
-  writeFormatted,
 } from './util.ts'
+import { writeFormatted } from './format.ts'
 
 import type { Example, ExtractedNode } from './util.ts'
 
@@ -48,8 +51,9 @@ export interface Config {
   filename: string
 }
 type ConfigWithHeader = Config & { header: ConfigHeader }
-interface BaseRef {
-  config?: ConfigWithHeader
+interface ConfigIndex {
+  byDeclId: Map<string, ConfigWithHeader>
+  byName: Map<string, ConfigWithHeader>
 }
 
 function buildItem(obj: ExtractedNode): Item & { category?: string } {
@@ -61,8 +65,6 @@ function buildItem(obj: ExtractedNode): Item & { category?: string } {
   return { name, docs, examples, category, code: removeComments(obj.node) }
 }
 
-const cwd = `${process.cwd()}/`
-
 // Route one extracted node into its file's config bucket. Called from the shared
 // single-program-load driver in generate.ts.
 export function accumulateConfig(
@@ -70,11 +72,26 @@ export function accumulateConfig(
   obj: ExtractedNode,
 ) {
   const fn = obj.filename
-  byFile[fn] ??= { slots: [], filename: fn.replace(cwd, '') }
+  byFile[fn] ??= { slots: [], filename: repoRelative(fn) }
   const file = byFile[fn]
   const item = buildItem(obj)
 
   if (obj.type === 'config') {
+    // A #config const is tagged twice (VariableStatement + its inner
+    // declaration); the statement half can resolve to an empty name when the tag
+    // carries none, so only treat two *non-empty, differently named* #config in
+    // one file as the violation the README warns about (the second silently
+    // wins).
+    if (
+      file.header &&
+      file.header.name &&
+      item.name &&
+      item.name !== file.header.name
+    ) {
+      console.warn(
+        `${file.filename}: multiple #config tags ("${file.header.name}" then "${item.name}"); only the last is documented (one #config per file)`,
+      )
+    }
     file.header = {
       name: item.name,
       docs: item.docs,
@@ -96,50 +113,37 @@ export function accumulateConfig(
   }
 }
 
-// Resolve a config's base: by declaration identity first, else by the config
-// name recovered from a dynamic getDisplayType('Name') reference.
-function resolveBase(
-  config: Config,
-  byDeclId: Map<string, ConfigWithHeader>,
-  byName: Map<string, ConfigWithHeader>,
-) {
-  const byId = config.baseDeclId ? byDeclId.get(config.baseDeclId) : undefined
-  return (
-    byId ??
-    (config.baseConfigName ? byName.get(config.baseConfigName) : undefined)
-  )
+// Resolve a config's documented base, or undefined: by declaration identity
+// first, else by the config name recovered from a dynamic getDisplayType('Name')
+// reference, and only when the config actually derives from something.
+function resolveBase(config: Config, index: ConfigIndex) {
+  const byId = config.baseDeclId
+    ? index.byDeclId.get(config.baseDeclId)
+    : undefined
+  const byName = config.baseConfigName
+    ? index.byName.get(config.baseConfigName)
+    : undefined
+  return config.derives ? (byId ?? byName) : undefined
 }
 
-// Walk the derivation graph transitively, deduping and guarding cycles. Returns
-// bases in reading order (direct base first). A config that derives but whose
-// base didn't resolve to a documented #config yields an entry with config
-// undefined (so callers can warn).
-function collectBaseConfigs(
-  config: Config,
-  byDeclId: Map<string, ConfigWithHeader>,
-  byName: Map<string, ConfigWithHeader>,
-  seen = new Set<string>(),
-): BaseRef[] {
-  const out: BaseRef[] = []
-  if (config.derives) {
-    const base = resolveBase(config, byDeclId, byName)
-    if (!base) {
-      out.push({ config: undefined })
-    } else if (!seen.has(base.header.id)) {
-      seen.add(base.header.id)
-      out.push({ config: base })
-      out.push(...collectBaseConfigs(base, byDeclId, byName, seen))
-    }
-  }
-  return out
+// The transitive base chain (direct base first), via the shared graph walk.
+function collectBaseConfigs(config: ConfigWithHeader, index: ConfigIndex) {
+  return collectTransitive(
+    config,
+    c => c.header.id,
+    c => {
+      const base = resolveBase(c, index)
+      return base ? [base] : []
+    },
+  )
 }
 
 // Full slot detail for every inherited config, grouped by the base it comes
 // from, so a config page is self-contained — a reader configuring this track
 // sees every available slot (own + inherited) without chasing links.
-function inheritedSlotsSection(bases: BaseRef[]) {
-  const blocks = bases.flatMap(({ config }) =>
-    config?.slots.length
+function inheritedSlotsSection(bases: ConfigWithHeader[]) {
+  const blocks = bases.flatMap(config =>
+    config.slots.length
       ? [
           section(
             `### Inherited from [${config.header.name}](../${config.header.id})`,
@@ -222,10 +226,10 @@ function renderConfig(
     slots,
     filename,
   }: ConfigWithHeader,
-  bases: BaseRef[],
+  bases: ConfigWithHeader[],
   links: DisplayLinkContext,
 ): string {
-  const directBase = bases[0]?.config
+  const directBase = bases[0]
   const sections = section(
     displayTypesSection(header.name, links),
     preProcess &&
@@ -254,8 +258,7 @@ function renderConfig(
       ),
   )
 
-  const hasSlots =
-    slots.length > 0 || bases.some(b => (b.config?.slots.length ?? 0) > 0)
+  const hasSlots = slots.length > 0 || bases.some(b => b.slots.length > 0)
   const slotsNote = hasSlots
     ? 'See the **Slots** section below for all available configuration fields.'
     : ''
@@ -267,27 +270,20 @@ function renderConfig(
   const docsSection = overviewSection(header.docs, sections)
 
   const category = configCategory(header.name, header.category)
-  return `---
-id: ${header.id}
-title: ${header.name}
-sidebar_label: ${category} -> ${header.name}
----
-
-Note: this document is automatically generated from configuration objects in
+  return docPage({
+    id: header.id,
+    title: header.name,
+    sidebarLabel: `${category} -> ${header.name}`,
+    notes: `Note: this document is automatically generated from configuration objects in
 our source code. See [Config guide](/docs/config_guide) for more info
 
 Also note: this document represents the config API for the current released
 version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/${header.name}.md)
-
-${section(exSection, docsSection)}
-`
+reference the markdown files in our repo of the checked out git tag`,
+    sourcePath: filename,
+    githubDocPath: `website/docs/config/${header.name}.md`,
+    body: section(exSection, docsSection),
+  })
 }
 
 function slotBlock({ name, docs, examples, code }: Item) {
@@ -299,10 +295,15 @@ function slotBlock({ name, docs, examples, code }: Item) {
   )
 }
 
-function validateBaseConfig(config: ConfigWithHeader, bases: BaseRef[]) {
-  for (const { config: base } of bases) {
-    if (!base) {
-      const codeLine = config.derives?.code.replace(/\s+/g, ' ').trim()
+// Warn once per config that declares a `baseConfiguration` we couldn't link to a
+// documented #config. Driven off the full config set rather than per-render-pass
+// base chains, so each unresolved derivation is reported exactly once and always
+// attributed to the config that actually declares it (not a page that inherits
+// it transitively).
+function warnUnresolvedBases(configs: ConfigWithHeader[], index: ConfigIndex) {
+  for (const config of configs) {
+    if (config.derives && !resolveBase(config, index)) {
+      const codeLine = config.derives.code.replace(/\s+/g, ' ').trim()
       console.warn(
         `${config.header.name}: baseConfiguration "${codeLine}" could not be resolved to a documented #config`,
       )
@@ -326,13 +327,13 @@ export async function writeConfigDocs(
       .map(c => [c.header.declId!, c] as const),
   )
   const byName = new Map(withHeader.map(c => [c.header.name, c] as const))
+  const index: ConfigIndex = { byDeclId, byName }
   const links: DisplayLinkContext = { displayTypesByTrack, byName, modelNames }
+  warnUnresolvedBases(withHeader, index)
   for (const cfg of withHeader) {
-    const bases = collectBaseConfigs(cfg, byDeclId, byName)
-    validateBaseConfig(cfg, bases)
     await writeFormatted(
       `${dir}/${cfg.header.name}.md`,
-      renderConfig(cfg, bases, links),
+      renderConfig(cfg, collectBaseConfigs(cfg, index), links),
     )
   }
   warnCoverageGap(

@@ -6,9 +6,10 @@ import {
   codeBlock,
   exampleSection,
   parseTaggedComment,
+  repoRelative,
   section,
-  writeFormatted,
 } from './util.ts'
+import { writeFormatted } from './format.ts'
 
 import type { Example, ExtractedNode } from './util.ts'
 
@@ -25,14 +26,12 @@ export interface ApiGroup {
   exports: ApiExport[]
 }
 
-const cwd = `${process.cwd()}/`
-
 // `#api` with no explicit group name defaults to the package the file lives in,
 // e.g. packages/cigar-utils/src/mismatchParser.ts -> "cigar-utils", so a bare
 // `#api` groups every tagged export in a package onto one page. Pass a name
 // (`#api core/util`) to split a package across finer-grained pages.
 function groupFromFilename(filename: string) {
-  const relative = filename.replace(cwd, '')
+  const relative = repoRelative(filename)
   const root = packageRoot(relative)
   return root?.split('/').at(-1) ?? relative.split('/').at(-2) ?? 'api'
 }
@@ -63,7 +62,7 @@ export function accumulateApi(
       docs,
       examples,
       signature: obj.signature,
-      filename: obj.filename.replace(cwd, ''),
+      filename: repoRelative(obj.filename),
     })
   }
 }

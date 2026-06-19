@@ -1,23 +1,18 @@
 import { exec } from 'child_process'
-import fs from 'fs'
 import { promisify } from 'util'
 
-import { format, resolveConfig } from 'prettier'
 import * as ts from 'typescript'
 
 const exec2 = promisify(exec)
 
-// Generated markdown is hand-authored prose (docstrings) reassembled by code,
-// so its line breaks/blank lines don't reliably match what `pnpm format`
-// would produce. Run it through prettier before writing so generated output
-// is format-clean and `pnpm gendocs` is idempotent.
-export async function writeFormatted(path: string, content: string) {
-  const config = await resolveConfig(path)
-  const formatted = await format(content, {
-    ...config,
-    filepath: path,
-  })
-  fs.writeFileSync(path, formatted)
+const cwd = `${process.cwd()}/`
+
+// Strip the repo-root prefix off an absolute source path, e.g.
+// /abs/repo/plugins/foo/src/x.ts -> plugins/foo/src/x.ts. Used everywhere a
+// generator turns a TypeScript source filename into a repo-relative one for
+// links and grouping.
+export function repoRelative(filename: string) {
+  return filename.replace(cwd, '')
 }
 
 export type TagType = (typeof TAG_TYPES)[number]
@@ -230,10 +225,9 @@ function isUndocumentedLocal(
 
 function reportBlindSpots(blindSpots: BlindSpot[]) {
   if (blindSpots.length) {
-    const cwd = `${process.cwd()}/`
     const byFile = new Map<string, BlindSpot[]>()
     for (const spot of blindSpots) {
-      const file = spot.filename.replace(cwd, '')
+      const file = repoRelative(spot.filename)
       byFile.set(file, [...(byFile.get(file) ?? []), spot])
     }
     console.warn(
@@ -624,9 +618,16 @@ function stringPropValue(obj: ts.ObjectLiteralExpression, key: string) {
     : undefined
 }
 
+// True when `text` contains the JSDoc tag `#name` as a whole token, i.e. not as
+// a prefix of a longer word — so `#getter` does not match `#getterById`, nor
+// `#category` match `#categoryManagement`. Used both for the whole-comment tag
+// scan (hasTag) and the per-line parse in parseTaggedComment.
+function containsTag(text: string, name: string) {
+  return new RegExp(`#${name}(?![A-Za-z0-9_])`).test(text)
+}
+
 function hasTag(comment: string, tag: TagType) {
-  // require word boundary so #getter doesn't also match #getterById
-  return new RegExp(`#${tag}(?![A-Za-z0-9_])`).test(comment)
+  return containsTag(comment, tag)
 }
 
 function getNameNode(node: ts.Node): ts.Node | undefined {
@@ -641,6 +642,21 @@ function getNameNode(node: ts.Node): ts.Node | undefined {
   return undefined
 }
 
+// Flatten the comment bodies of a node's `jsDoc` parser array into one string. A
+// JSDoc comment is either a plain string or an array of parts (when it contains
+// `{@link}`-style nodes), so both shapes are normalized here. Shared by every
+// place that reads JSDoc text off a node.
+export function jsDocText(node: ts.Node): string {
+  const jsDoc = (node as { jsDoc?: ts.JSDoc[] }).jsDoc
+  return (jsDoc ?? [])
+    .map(jd =>
+      typeof jd.comment === 'string'
+        ? jd.comment
+        : (jd.comment?.map(p => p.text).join('') ?? ''),
+    )
+    .join('\n')
+}
+
 // JSDoc body text directly attached to this node (not inherited from
 // ancestors). Uses the internal `jsDoc` parser property — unlike
 // `getJSDocCommentsAndTags`, this does not walk up, so reference nodes like
@@ -650,20 +666,7 @@ function getNameNode(node: ts.Node): ts.Node | undefined {
 // For VariableDeclaration, the JSDoc above `const Foo = ...` attaches to the
 // parent VariableStatement, so we look there instead.
 function getOwnJSDocText(node: ts.Node): string {
-  const target: ts.Node = ts.isVariableDeclaration(node)
-    ? node.parent.parent
-    : node
-  const jsDoc = (target as { jsDoc?: ts.JSDoc[] }).jsDoc
-  if (!jsDoc) {
-    return ''
-  }
-  return jsDoc
-    .map(jd =>
-      typeof jd.comment === 'string'
-        ? jd.comment
-        : (jd.comment?.map(p => p.text).join('') ?? ''),
-    )
-    .join('\n')
+  return jsDocText(ts.isVariableDeclaration(node) ? node.parent.parent : node)
 }
 
 export interface Example {
@@ -682,8 +685,8 @@ export interface Example {
 //   ```
 // Multiple #example blocks are supported; an optional label follows the tag
 // (#example minimal, #example full). Returns { name, docs, examples }.
-// Examples are authored LAST so they stay out of the prose `docs` and the
-// `extends` block that parseExtends reads from docs.
+// Examples are authored LAST so they stay out of the prose `docs` and any
+// legacy `extends`/`composed of` block that stripComposedBlock removes.
 export function parseTaggedComment(
   comment: string,
   type: TagType,
@@ -697,7 +700,7 @@ export function parseTaggedComment(
   const examples: Example[] = []
   let current: { label: string; lines: string[] } | undefined
   for (const line of lines) {
-    if (line.includes('#example')) {
+    if (containsTag(line, 'example')) {
       if (current) {
         examples.push({
           label: current.label,
@@ -705,12 +708,12 @@ export function parseTaggedComment(
         })
       }
       current = { label: line.replace(/.*#example\s*/, '').trim(), lines: [] }
-    } else if (line.includes(tag)) {
+    } else if (containsTag(line, type)) {
       const fromTag = line.replace(tag, '').trim()
       if (fromTag) {
         name = fromTag
       }
-    } else if (line.includes('#category')) {
+    } else if (containsTag(line, 'category')) {
       category = line.replace(/.*#category\s*/, '').trim() || undefined
     } else if (current) {
       current.lines.push(line)
@@ -767,9 +770,76 @@ export function removeComments(string: string) {
   return out.trim()
 }
 
+// Transitive closure of a node's documented parents — model composition or
+// config derivation — in reading order (direct parents first, then theirs),
+// deduped by id and cycle-safe. The graph shape lives here; each generator only
+// supplies how to resolve a node's direct parents (`getParents`) and identity
+// (`getId`). Mirrors how MST composition and config inheritance are both
+// "follow the parent links and flatten" with different link sources.
+export function collectTransitive<T>(
+  root: T,
+  getId: (node: T) => string,
+  getParents: (node: T) => T[],
+): T[] {
+  const out: T[] = []
+  const seen = new Set<string>()
+  const visit = (node: T) => {
+    for (const parent of getParents(node)) {
+      const id = getId(parent)
+      if (!seen.has(id)) {
+        seen.add(id)
+        out.push(parent)
+        visit(parent)
+      }
+    }
+  }
+  visit(root)
+  return out
+}
+
 // Shared markdown builders used by both generators.
 export function codeBlock(...lines: string[]) {
   return ['```js', ...lines, '```'].join('\n')
+}
+
+// The shared skeleton every generated config/model page wears: Docusaurus
+// frontmatter, a "this is auto-generated" preamble, a Links section pointing at
+// the source and the GitHub-hosted doc, then the page body. The config and
+// model generators differ only in `notes`, `sourcePath`, and `githubDocPath`, so
+// the skeleton lives here to stay single-sourced.
+export function docPage({
+  id,
+  title,
+  sidebarLabel,
+  notes,
+  sourcePath,
+  githubDocPath,
+  body,
+}: {
+  id: string
+  title: string
+  sidebarLabel: string
+  notes: string
+  sourcePath: string
+  githubDocPath: string
+  body: string
+}) {
+  return `---
+id: ${id}
+title: ${title}
+sidebar_label: ${sidebarLabel}
+---
+
+${notes}
+
+## Links
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${sourcePath})
+
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/${githubDocPath})
+
+${body}
+`
 }
 
 // Logs a coverage-gap warning shared by both generators' write*Docs entry

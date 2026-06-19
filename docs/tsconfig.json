@@ -13,7 +13,9 @@
     "types": ["node"]
   },
   "include": [
+    "format.ts",
     "generate.ts",
+    "generateApiDocs.ts",
     "generateColorDocs.ts",
     "generateConfigDocs.ts",
     "generateStateModelDocs.ts",

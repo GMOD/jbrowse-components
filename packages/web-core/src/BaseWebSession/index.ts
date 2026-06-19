@@ -335,11 +335,11 @@ export function finalizeWebSession<T extends IAnyModelType>(
 }
 
 /**
- * #stateModel BaseWebSession
- * #category session
- * Finalized web session without the session-database management surface. Used
+ * Finalized web session without the session-database management surface, used
  * by the embedded react-app; jbrowse-web composes `WebSessionManagementMixin`
- * before finalizing.
+ * before finalizing. This is just {@link BaseWebSessionModel} run through
+ * {@link finalizeWebSession}, so its state-model shape is documented there (the
+ * autogen documents a single composable model per source file).
  */
 export function BaseWebSession(args: {
   pluginManager: PluginManager

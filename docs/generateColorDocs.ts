@@ -3,6 +3,8 @@ import path from 'path'
 
 import * as ts from 'typescript'
 
+import { jsDocText } from './util.ts'
+
 // Render small color-swatch tables into the hand-written guides, sourced from
 // the actual color constants so the docs can never drift from the code (the
 // soft-clip/hard-clip legend in two guides once disagreed because both were
@@ -40,17 +42,6 @@ function parseFile(file: string) {
     ts.ScriptTarget.Latest,
     true,
   )
-}
-
-function jsDocText(node: ts.Node) {
-  const jsDoc = (node as { jsDoc?: ts.JSDoc[] }).jsDoc
-  return jsDoc
-    ?.map(jd =>
-      typeof jd.comment === 'string'
-        ? jd.comment
-        : (jd.comment?.map(p => p.text).join('') ?? ''),
-    )
-    .join('\n')
 }
 
 // `#color <group> | <label> | <description>` -> structured parts, or undefined
