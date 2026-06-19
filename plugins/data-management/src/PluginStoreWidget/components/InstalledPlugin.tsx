@@ -1,23 +1,34 @@
-import { lazy } from 'react'
+import { lazy, useState } from 'react'
 
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { getEnv, getPluginUpdate, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import DeleteIcon from '@mui/icons-material/Delete'
 import LockIcon from '@mui/icons-material/Lock'
-import { IconButton, ListItem, Tooltip, Typography } from '@mui/material'
+import UpgradeIcon from '@mui/icons-material/Upgrade'
+import {
+  Button,
+  IconButton,
+  ListItem,
+  Tooltip,
+  Typography,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { isSessionPlugin } from './util.ts'
 
 import type { PluginStoreModel } from '../model.ts'
-import type { BasePlugin } from '@jbrowse/core/util/types'
+import type { PluginUpdate } from '@jbrowse/core/util'
+import type { BasePlugin, JBrowsePlugin } from '@jbrowse/core/util/types'
 
 // lazies
 const DeletePluginDialog = lazy(() => import('./DeletePluginDialog.tsx'))
 
 const useStyles = makeStyles()(() => ({
   iconMargin: {
+    marginRight: '0.5rem',
+  },
+  name: {
     marginRight: '0.5rem',
   },
 }))
@@ -81,27 +92,84 @@ const UninstallPluginIconButton = observer(function UninstallPluginIconButton({
   )
 })
 
-const InstalledPlugin = observer(function InstalledPlugin({
+const UpdatePluginButton = observer(function UpdatePluginButton({
   plugin,
   model,
+  update,
 }: {
   plugin: BasePlugin
   model: PluginStoreModel
+  update: PluginUpdate
 }) {
+  const { pluginManager } = getEnv(model)
+  const session = getSession(model)
+  const { jbrowse, adminMode } = session
+  const [queued, setQueued] = useState(false)
+  return (
+    <Tooltip
+      title={`Update from v${plugin.version} to v${update.pluginVersion}`}
+    >
+      <Button
+        size="small"
+        variant="outlined"
+        startIcon={<UpgradeIcon />}
+        disabled={queued}
+        data-testid={`updatePlugin-${plugin.name}`}
+        onClick={() => {
+          // swap the version-pinned definition: remove the current url, add the
+          // newer one. Both actions flag pluginsUpdated, prompting a reload that
+          // loads the new build.
+          const current = pluginManager.pluginMetadata[plugin.name]
+          const next = { ...update.definition, name: plugin.name }
+          if (adminMode) {
+            jbrowse.removePlugin(current)
+            jbrowse.addPlugin(next)
+          } else if (isSessionWithSessionPlugins(session)) {
+            session.removeSessionPlugin(current)
+            session.addSessionPlugin(next)
+          } else {
+            session.notify('No way to update plugin')
+          }
+          setQueued(true)
+        }}
+      >
+        {queued ? 'Update queued' : `Update to v${update.pluginVersion}`}
+      </Button>
+    </Tooltip>
+  )
+})
+
+const InstalledPlugin = observer(function InstalledPlugin({
+  plugin,
+  model,
+  storeEntry,
+}: {
+  plugin: BasePlugin
+  model: PluginStoreModel
+  storeEntry?: JBrowsePlugin
+}) {
+  const { classes } = useStyles()
   const session = getSession(model)
   const { adminMode } = session
+  const updatable = adminMode || isSessionPlugin(plugin, session)
+  const update = storeEntry
+    ? getPluginUpdate(storeEntry, session.version, plugin.version)
+    : undefined
 
   return (
     <ListItem key={plugin.name}>
-      {adminMode || isSessionPlugin(plugin, session) ? (
+      {updatable ? (
         <UninstallPluginIconButton plugin={plugin} model={model} />
       ) : (
         <LockedPluginIconButton />
       )}
-      <Typography>
+      <Typography className={classes.name}>
         {plugin.name}
         {plugin.version ? ` (v${plugin.version})` : ''}
       </Typography>
+      {update && updatable ? (
+        <UpdatePluginButton plugin={plugin} model={model} update={update} />
+      ) : null}
     </ListItem>
   )
 })

@@ -1,4 +1,4 @@
-import { resolvePlugin } from './pluginStore.ts'
+import { getPluginUpdate, resolvePlugin } from './pluginStore.ts'
 
 import type { JBrowsePlugin } from './types/index.ts'
 
@@ -86,5 +86,39 @@ describe('resolvePlugin', () => {
       url: 'https://x/p.js',
       integrity: 'sha384-z',
     })
+  })
+})
+
+describe('getPluginUpdate', () => {
+  it('offers the newest compatible version when newer than installed', () => {
+    const u = getPluginUpdate(versioned, '4.3.0', '1.4.0')
+    expect(u?.pluginVersion).toBe('3.0.0')
+    expect(u?.definition).toEqual({
+      name: 'Test',
+      url: 'https://x/3.0.0/p.js',
+      integrity: 'sha384-new',
+    })
+  })
+
+  it('offers nothing when already on the newest compatible version', () => {
+    expect(getPluginUpdate(versioned, '4.3.0', '3.0.0')).toBeUndefined()
+  })
+
+  it('does not offer a version incompatible with the running JBrowse', () => {
+    // installed 1.4.0 on JBrowse 2.5.0; 3.0.0 needs JBrowse >=3 so no update
+    expect(getPluginUpdate(versioned, '2.5.0', '1.4.0')).toBeUndefined()
+  })
+
+  it('offers nothing when the installed version is unknown', () => {
+    expect(getPluginUpdate(versioned, '4.3.0', undefined)).toBeUndefined()
+  })
+
+  it('offers nothing for an entry without resolvable versions', () => {
+    const p = plugin({ url: 'https://x/p.js' })
+    expect(getPluginUpdate(p, '4.3.0', '1.0.0')).toBeUndefined()
+  })
+
+  it('tolerates an unparseable installed version', () => {
+    expect(getPluginUpdate(versioned, '4.3.0', 'garbage')).toBeUndefined()
   })
 })

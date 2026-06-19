@@ -100,7 +100,11 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
           <Typography variant="h5">Installed plugins</Typography>
         </AccordionSummary>
         <div className={classes.m}>
-          <InstalledPluginsList pluginManager={pluginManager} model={model} />
+          <InstalledPluginsList
+            pluginManager={pluginManager}
+            model={model}
+            storePlugins={plugins}
+          />
         </div>
       </Accordion>
       <Accordion defaultExpanded>

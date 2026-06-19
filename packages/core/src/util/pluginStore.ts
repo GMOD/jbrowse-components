@@ -20,6 +20,13 @@ export interface ResolvedPlugin {
   definition: PluginDefinition
 }
 
+export interface PluginUpdate {
+  // the newest compatible published version, strictly newer than installed
+  pluginVersion: string
+  // the version-pinned definition to install in place of the current one
+  definition: PluginDefinition
+}
+
 // `*` (and empty) mean "any JBrowse version"; compare-versions throws on those,
 // so handle them directly. A malformed range simply fails to match rather than
 // breaking the store UI — producer-side validation is the place to reject those.
@@ -59,6 +66,19 @@ function highestVersion(versions: JBrowsePluginVersion[]) {
   )[0]
 }
 
+// compareVersions throws on non-semver input; an unparseable installed version
+// simply means "can't tell", so treat it as no-update-available rather than
+// breaking the installed-plugins list.
+function isNewer(candidate: string, installed: string) {
+  let newer: boolean
+  try {
+    newer = compareVersions(candidate, installed) > 0
+  } catch {
+    newer = false
+  }
+  return newer
+}
+
 // Picks the newest plugin version whose declared JBrowse range covers the
 // running JBrowse version. Plugins with no versions[] use their top-level url
 // for all JBrowse versions.
@@ -91,4 +111,24 @@ export function resolvePlugin(
           supportedRanges,
           definition: definitionFrom(plugin.name, plugin),
         }
+}
+
+// Given the store entry for an already-installed plugin and the version it is
+// currently running, returns the newest compatible published version when one
+// exists that is strictly newer than installed, else undefined. Installs pin a
+// version-immutable url, so an installed plugin never auto-updates; this is what
+// surfaces a manual "update available" affordance. Entries without a resolvable
+// pluginVersion (no versions[]) yield undefined since their version is unknown.
+export function getPluginUpdate(
+  plugin: JBrowsePlugin,
+  jbrowseVersion: string,
+  installedVersion: string | undefined,
+): PluginUpdate | undefined {
+  const resolved = resolvePlugin(plugin, jbrowseVersion)
+  return resolved.compatible &&
+    resolved.pluginVersion !== undefined &&
+    installedVersion !== undefined &&
+    isNewer(resolved.pluginVersion, installedVersion)
+    ? { pluginVersion: resolved.pluginVersion, definition: resolved.definition }
+    : undefined
 }

@@ -135,7 +135,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       CanvasPlugin
                     </p>
@@ -168,7 +168,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       LinearGenomeViewPlugin
                     </p>
@@ -201,7 +201,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       AlignmentsPlugin
                     </p>
@@ -234,7 +234,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       AuthenticationPlugin
                     </p>
@@ -267,7 +267,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       BedPlugin
                     </p>
@@ -300,7 +300,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       CircularViewPlugin
                     </p>
@@ -333,7 +333,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       ConfigurationPlugin
                     </p>
@@ -366,7 +366,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       DataManagementPlugin
                     </p>
@@ -399,7 +399,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       DotplotPlugin
                     </p>
@@ -432,7 +432,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       GTFPlugin
                     </p>
@@ -465,7 +465,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       GFF3Plugin
                     </p>
@@ -498,7 +498,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       JobsManagementPlugin
                     </p>
@@ -531,7 +531,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       LegacyJBrowsePlugin
                     </p>
@@ -564,7 +564,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       LinearComparativeViewPlugin
                     </p>
@@ -597,7 +597,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       MenusPlugin
                     </p>
@@ -630,7 +630,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       RdfPlugin
                     </p>
@@ -663,7 +663,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       SequencePlugin
                     </p>
@@ -696,7 +696,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       VariantsPlugin
                     </p>
@@ -729,7 +729,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       WigglePlugin
                     </p>
@@ -762,7 +762,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       GCContentPlugin
                     </p>
@@ -795,7 +795,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       MafPlugin
                     </p>
@@ -828,7 +828,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       SpreadsheetViewPlugin
                     </p>
@@ -861,7 +861,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       SvInspectorViewPlugin
                     </p>
@@ -894,7 +894,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       BreakpointSplitViewPlugin
                     </p>
@@ -927,7 +927,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       HicPlugin
                     </p>
@@ -960,7 +960,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       TrixPlugin
                     </p>
@@ -993,7 +993,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       GridBookmarkPlugin
                     </p>
@@ -1026,7 +1026,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       ComparativeAdaptersPlugin
                     </p>
@@ -1059,7 +1059,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       ArcRenderer
                     </p>
@@ -1092,7 +1092,7 @@ exports[`renders with the available plugins 1`] = `
                       </button>
                     </span>
                     <p
-                      class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                      class="MuiTypography-root MuiTypography-body1 css-1qz0c31-MuiTypography-root"
                     >
                       GWASPlugin
                     </p>
