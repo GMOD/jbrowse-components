@@ -7,7 +7,10 @@ import {
   writeConf,
 } from './config-utils.ts'
 import { indexDriver } from './indexing-utils.ts'
-import { validateAssembliesForPerTrack } from './validators.ts'
+import {
+  validateAssembliesForPerTrack,
+  validateTrackConfigs,
+} from './validators.ts'
 import { resolveConfigPath } from '../../utils.ts'
 
 import type { TextIndexFlags } from './index.ts'
@@ -38,11 +41,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     undefined,
     parseCommaSeparatedString(excludeTracks),
   )
-  if (!confs.length) {
-    throw new Error(
-      'Tracks not found in config.json, please add track configurations before indexing.',
-    )
-  }
+  validateTrackConfigs(confs)
   let hasChanges = false
   for (const trackConfig of confs) {
     const { textSearching, trackId, assemblyNames } = trackConfig

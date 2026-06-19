@@ -242,7 +242,7 @@ export async function run(args?: string[]) {
   const updatedConfig = { ...configContents, tracks }
 
   await loadFiles({
-    files: Object.values(guessFileNames({ location, index, bed1, bed2 })),
+    files: guessFileNames({ location, index, bed1, bed2 }),
     destDir: configDir,
     mode: load,
     subDir,

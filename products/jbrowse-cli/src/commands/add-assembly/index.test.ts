@@ -24,6 +24,16 @@ test('add-assembly no load flag', async () => {
   expect(error?.message).toMatchSnapshot()
 })
 
+test('fails on invalid --load value', async () => {
+  const { error } = await runCommand([
+    'add-assembly',
+    dataDir('simple.fasta'),
+    '--load',
+    'coyp',
+  ])
+  expect(error?.message).toMatchSnapshot()
+})
+
 test('fails if using inline JSON sequence custom with no --name', async () => {
   const { error } = await runCommand(['add-assembly', '{}', '--load', 'copy'])
   expect(error?.message).toMatchSnapshot()

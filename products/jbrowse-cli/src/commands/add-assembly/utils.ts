@@ -56,26 +56,23 @@ export function isValidJSON(string: string) {
   }
 }
 
+// recognized FASTA extensions, shared by sequence-type guessing and basename
+// stripping so the list lives in one place
+const fastaExts = 'fa|fna|fasta|mfa'
+const fastaRegex = new RegExp(`\\.(${fastaExts})$`, 'i')
+const bgzipFastaRegex = new RegExp(`\\.(${fastaExts})\\.gz$`, 'i')
+const fastaExtRegex = new RegExp(`\\.(${fastaExts})(\\.gz)?$`, 'i')
+
 function basenameWithoutFastaExt(p: string) {
-  return path.basename(p).replace(/\.(fa|fasta|fna|mfa)(\.gz)?$/i, '')
+  return path.basename(p).replace(fastaExtRegex, '')
 }
 
 export function guessSequenceType(sequence: string) {
   const s = sequence.toLowerCase()
-  if (
-    s.endsWith('.fa') ||
-    s.endsWith('.fna') ||
-    s.endsWith('.fasta') ||
-    s.endsWith('.mfa')
-  ) {
+  if (fastaRegex.test(s)) {
     return 'indexedFasta'
   }
-  if (
-    s.endsWith('.fa.gz') ||
-    s.endsWith('.fna.gz') ||
-    s.endsWith('.fasta.gz') ||
-    s.endsWith('.mfa.gz')
-  ) {
+  if (bgzipFastaRegex.test(s)) {
     return 'bgzipFasta'
   }
   if (s.endsWith('.2bit')) {

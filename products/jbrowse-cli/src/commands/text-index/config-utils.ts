@@ -13,7 +13,7 @@ export function validatePrefixSize(
     return undefined
   }
   const parsed = typeof value === 'number' ? value : parseInt(value, 10)
-  if (isNaN(parsed) || parsed < 0) {
+  if (isNaN(parsed) || parsed <= 0) {
     throw new Error(
       `Invalid prefixSize: "${value}". Must be a positive number.`,
     )

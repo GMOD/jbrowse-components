@@ -11,6 +11,7 @@ import {
 } from './utils.ts'
 import { debug, printHelp } from '../../utils.ts'
 import { loadFiles } from '../add-track-utils/file-operations.ts'
+import { validateLoadOption } from '../add-track-utils/validators.ts'
 import { saveConfigAndReport } from '../shared/config-operations.ts'
 
 export async function run(args?: string[]) {
@@ -135,6 +136,8 @@ export async function run(args?: string[]) {
     })
     return
   }
+
+  validateLoadOption(runFlags.load)
 
   const argsSequence = positionals[0]
   if (!argsSequence) {

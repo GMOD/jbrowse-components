@@ -220,100 +220,114 @@ function indexType(index: string | undefined, fallback: 'BAI' | 'TBI'): string {
   return index?.toUpperCase().endsWith('CSI') ? 'CSI' : fallback
 }
 
-function specToFiles(
-  spec: AdapterSpec,
-  location: string,
-  index: string | undefined,
-  bed1: string | undefined,
-  bed2: string | undefined,
-): Record<string, string | undefined> {
-  switch (spec.kind) {
-    case 'bam':
-      return { file: location, index: index || `${location}.bai` }
-    case 'cram':
-      return { file: location, index: index || `${location}.crai` }
-    case 'tabix':
-      return { file: location, index: index || `${location}.tbi` }
-    case 'indexed-fasta':
-      return { file: location, index: index || `${location}.fai` }
-    case 'bgzip-fasta':
-      return {
-        file: location,
-        index: `${location}.fai`,
-        index2: `${location}.gzi`,
-      }
-    case 'anchors':
-      return { file: location, bed1, bed2 }
-    case 'single':
-    case 'nclist':
-    case 'sparql':
-      return { file: location }
-    case 'unsupported':
-      return {}
-  }
+interface SpecContext {
+  location: string
+  index?: string
+  bed1?: string
+  bed2?: string
+  makeLocation: (l: string) => Location
 }
 
-function specToAdapter(
+// builds the adapter object and the list of source files for a spec in one
+// place, so the config it writes and the files add-track copies can never drift
+function buildFromSpec(
   spec: AdapterSpec,
-  location: string,
-  index: string | undefined,
-  bed1: string | undefined,
-  bed2: string | undefined,
-  makeLocation: (l: string) => Location,
-): Adapter {
+  { location, index, bed1, bed2, makeLocation }: SpecContext,
+): { adapter: Adapter; files: (string | undefined)[] } {
   switch (spec.kind) {
     case 'single':
-      return { type: spec.adapterType, [spec.locField]: makeLocation(location) }
-    case 'bam':
       return {
-        type: 'BamAdapter',
-        bamLocation: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.bai`),
-          indexType: indexType(index, 'BAI'),
+        adapter: { type: spec.adapterType, [spec.locField]: makeLocation(location) },
+        files: [location],
+      }
+    case 'bam': {
+      const idx = index || `${location}.bai`
+      return {
+        adapter: {
+          type: 'BamAdapter',
+          bamLocation: makeLocation(location),
+          index: {
+            location: makeLocation(idx),
+            indexType: indexType(index, 'BAI'),
+          },
         },
+        files: [location, idx],
       }
-    case 'cram':
+    }
+    case 'cram': {
+      const idx = index || `${location}.crai`
       return {
-        type: 'CramAdapter',
-        cramLocation: makeLocation(location),
-        craiLocation: makeLocation(index || `${location}.crai`),
-      }
-    case 'tabix':
-      return {
-        type: spec.adapterType,
-        [spec.locField]: makeLocation(location),
-        index: {
-          location: makeLocation(index || `${location}.tbi`),
-          indexType: indexType(index, 'TBI'),
+        adapter: {
+          type: 'CramAdapter',
+          cramLocation: makeLocation(location),
+          craiLocation: makeLocation(idx),
         },
+        files: [location, idx],
       }
-    case 'indexed-fasta':
+    }
+    case 'tabix': {
+      const idx = index || `${location}.tbi`
       return {
-        type: 'IndexedFastaAdapter',
-        fastaLocation: makeLocation(location),
-        faiLocation: makeLocation(index || `${location}.fai`),
+        adapter: {
+          type: spec.adapterType,
+          [spec.locField]: makeLocation(location),
+          index: {
+            location: makeLocation(idx),
+            indexType: indexType(index, 'TBI'),
+          },
+        },
+        files: [location, idx],
       }
-    case 'bgzip-fasta':
+    }
+    case 'indexed-fasta': {
+      const idx = index || `${location}.fai`
       return {
-        type: 'BgzipFastaAdapter',
-        fastaLocation: makeLocation(location),
-        faiLocation: makeLocation(`${location}.fai`),
-        gziLocation: makeLocation(`${location}.gzi`),
+        adapter: {
+          type: 'IndexedFastaAdapter',
+          fastaLocation: makeLocation(location),
+          faiLocation: makeLocation(idx),
+        },
+        files: [location, idx],
       }
+    }
+    case 'bgzip-fasta': {
+      const fai = `${location}.fai`
+      const gzi = `${location}.gzi`
+      return {
+        adapter: {
+          type: 'BgzipFastaAdapter',
+          fastaLocation: makeLocation(location),
+          faiLocation: makeLocation(fai),
+          gziLocation: makeLocation(gzi),
+        },
+        files: [location, fai, gzi],
+      }
+    }
     case 'anchors':
       return {
-        type: spec.adapterType,
-        [spec.locField]: makeLocation(location),
-        bed1Location: bed1 ? makeLocation(bed1) : undefined,
-        bed2Location: bed2 ? makeLocation(bed2) : undefined,
+        adapter: {
+          type: spec.adapterType,
+          [spec.locField]: makeLocation(location),
+          bed1Location: bed1 ? makeLocation(bed1) : undefined,
+          bed2Location: bed2 ? makeLocation(bed2) : undefined,
+        },
+        files: [location, bed1, bed2],
       }
     case 'nclist':
-      return { type: 'NCListAdapter', rootUrlTemplate: makeLocation(location) }
+      return {
+        adapter: {
+          type: 'NCListAdapter',
+          rootUrlTemplate: makeLocation(location),
+        },
+        files: [location],
+      }
     case 'sparql':
-      return { type: 'SPARQLAdapter', endpoint: location }
+      return {
+        adapter: { type: 'SPARQLAdapter', endpoint: location },
+        files: [location],
+      }
     case 'unsupported':
-      return { type: 'UNSUPPORTED' }
+      return { adapter: { type: 'UNSUPPORTED' }, files: [] }
   }
 }
 
@@ -343,9 +357,18 @@ export function guessFileNames({
   index?: string
   bed1?: string
   bed2?: string
-}) {
+}): (string | undefined)[] {
   const spec = matchFormat(location)
-  return spec ? specToFiles(spec, location, index, bed1, bed2) : {}
+  // makeLocation only shapes the adapter, which is discarded here
+  return spec
+    ? buildFromSpec(spec, {
+        location,
+        index,
+        bed1,
+        bed2,
+        makeLocation: makeLocationProtocol('uri'),
+      }).files
+    : []
 }
 
 export function guessAdapter({
@@ -363,28 +386,29 @@ export function guessAdapter({
   bed2?: string
   adapterType?: string
 }): Adapter {
-  const makeLocation = makeLocationProtocol(protocol)
+  const ctx = {
+    location,
+    index,
+    bed1,
+    bed2,
+    makeLocation: makeLocationProtocol(protocol),
+  }
   const spec = matchFormat(location)
 
   if (adapterType) {
     const known = adapterTypeToSpec[adapterType]
     if (known) {
       // explicit --adapterType resolves back to its known file layout
-      return specToAdapter(known, location, index, bed1, bed2, makeLocation)
+      return buildFromSpec(known, ctx).adapter
     } else if (spec && locationKinds.has(spec.kind)) {
       // unknown adapter type, but the extension has a fixed location layout we
       // can reuse, just relabeling the adapter type
-      return {
-        ...specToAdapter(spec, location, index, bed1, bed2, makeLocation),
-        type: adapterType,
-      }
+      return { ...buildFromSpec(spec, ctx).adapter, type: adapterType }
     } else {
       return { type: adapterType }
     }
   } else {
-    return spec
-      ? specToAdapter(spec, location, index, bed1, bed2, makeLocation)
-      : { type: 'UNKNOWN' }
+    return spec ? buildFromSpec(spec, ctx).adapter : { type: 'UNKNOWN' }
   }
 }
 
