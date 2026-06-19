@@ -3,16 +3,15 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
-  categoryLabel,
   codeBlock,
   collectTransitive,
   docPage,
   exampleSection,
   overviewSection,
-  parseTaggedComment,
-  removeComments,
+  parseNode,
   repoRelative,
   section,
+  suffixCategory,
   warnCoverageGap,
   warnDuplicateHeader,
 } from './util.ts'
@@ -24,6 +23,7 @@ interface Item {
   name: string
   docs: string
   examples: Example[]
+  category?: string
   code: string
 }
 interface ConfigHeader {
@@ -57,15 +57,6 @@ interface ConfigIndex {
   byName: Map<string, ConfigWithHeader>
 }
 
-function buildItem(obj: ExtractedNode): Item & { category?: string } {
-  const { name, docs, examples, category } = parseTaggedComment(
-    obj.comment,
-    obj.type,
-    obj.name,
-  )
-  return { name, docs, examples, category, code: removeComments(obj.node) }
-}
-
 // Route one extracted node into its file's config bucket. Called from the shared
 // single-program-load driver in generate.ts.
 export function accumulateConfig(
@@ -75,7 +66,7 @@ export function accumulateConfig(
   const fn = obj.filename
   byFile[fn] ??= { slots: [], filename: repoRelative(fn) }
   const file = byFile[fn]
-  const item = buildItem(obj)
+  const item = parseNode(obj)
 
   if (obj.type === 'config') {
     warnDuplicateHeader({
@@ -153,24 +144,17 @@ function inheritedSlotsSection(bases: ConfigWithHeader[]) {
     : ''
 }
 
-// Determine the sidebar category for a config: an explicit #category tag wins,
-// else fall back to a name-suffix heuristic.
+// Name-suffix heuristic for a config's sidebar category, checked in order.
+const CONFIG_CATEGORIES: [string, string][] = [
+  ['Adapter', 'Adapter'],
+  ['Track', 'Track'],
+  ['Display', 'Display'],
+  ['Connection', 'Connection'],
+  ['InternetAccount', 'Internet Account'],
+]
+
 function configCategory(name: string, explicit?: string): string {
-  if (explicit) {
-    return categoryLabel(explicit)
-  } else if (name.endsWith('Adapter')) {
-    return 'Adapter'
-  } else if (name.endsWith('Track')) {
-    return 'Track'
-  } else if (name.endsWith('Display')) {
-    return 'Display'
-  } else if (name.endsWith('Connection')) {
-    return 'Connection'
-  } else if (name.endsWith('InternetAccount')) {
-    return 'Internet Account'
-  } else {
-    return 'General'
-  }
+  return suffixCategory(name, explicit, CONFIG_CATEGORIES)
 }
 
 // Everything renderConfig/displayTypesSection need to resolve a Track's

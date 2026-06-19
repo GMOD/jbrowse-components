@@ -729,6 +729,35 @@ export function parseTaggedComment(
   }
 }
 
+export interface ParsedNode {
+  name: string
+  docs: string
+  examples: Example[]
+  category?: string
+  code: string
+  signature: string
+}
+
+// Parse one extracted node into the fields the config and state-model generators
+// both build their Item/Member records from: the tag-parsed name/docs/examples/
+// category, plus the comment-stripped source and type signature. Shared so the
+// two near-identical buildItem/buildMember helpers don't drift.
+export function parseNode(obj: ExtractedNode): ParsedNode {
+  const { name, docs, examples, category } = parseTaggedComment(
+    obj.comment,
+    obj.type,
+    obj.name,
+  )
+  return {
+    name,
+    docs,
+    examples,
+    category,
+    code: removeComments(obj.node),
+    signature: obj.signature,
+  }
+}
+
 // Turns a #category tag value (a bare camelCase word, e.g. "assemblyManagement")
 // into a sidebar-friendly label ("Assembly Management"). Shared by the config and
 // state-model generators so a new category tag needs no label-table update.
@@ -736,6 +765,19 @@ export function categoryLabel(key: string): string {
   return key
     .replace(/([a-z])([A-Z])/g, '$1 $2')
     .replace(/^./, c => c.toUpperCase())
+}
+
+// The sidebar category for a config/model: an explicit #category tag wins, else
+// the first matching name suffix from `suffixes` (checked in order), else
+// "General". Shared by both generators so they only differ by their suffix table.
+export function suffixCategory(
+  name: string,
+  explicit: string | undefined,
+  suffixes: [suffix: string, category: string][],
+): string {
+  return explicit
+    ? categoryLabel(explicit)
+    : (suffixes.find(([suffix]) => name.endsWith(suffix))?.[1] ?? 'General')
 }
 
 // Strip JSDoc/inline comments from extracted source. Token-aware (via the TS

@@ -3,17 +3,16 @@ import fs from 'fs'
 import slugify from 'slugify'
 
 import {
-  categoryLabel,
   codeBlock,
   collectTransitive,
   docPage,
   exampleSection,
   overviewSection,
-  parseTaggedComment,
-  removeComments,
+  parseNode,
   repoRelative,
   section,
   stripComposedBlock,
+  suffixCategory,
   warnCoverageGap,
   warnDuplicateHeader,
 } from './util.ts'
@@ -25,6 +24,7 @@ interface Member {
   name: string
   docs: string
   examples: Example[]
+  category?: string
   code: string
   signature: string
 }
@@ -58,22 +58,6 @@ interface ModelIndex {
   bySlug: Map<string, ModelWithHeader>
 }
 
-function buildMember(obj: ExtractedNode): Member & { category?: string } {
-  const { name, docs, examples, category } = parseTaggedComment(
-    obj.comment,
-    obj.type,
-    obj.name,
-  )
-  return {
-    name,
-    docs,
-    examples,
-    category,
-    code: removeComments(obj.node),
-    signature: obj.signature,
-  }
-}
-
 // Route one extracted node into its file's state-model bucket. Called from the
 // shared single-program-load driver in generate.ts.
 export function accumulateModel(
@@ -90,7 +74,7 @@ export function accumulateModel(
     filename: repoRelative(fn),
   }
   const file = byFile[fn]
-  const member = buildMember(obj)
+  const member = parseNode(obj)
 
   if (obj.type === 'stateModel') {
     warnDuplicateHeader({
@@ -147,36 +131,32 @@ function collectAncestors(model: ModelWithHeader, index: ModelIndex) {
   )
 }
 
-// Determine the sidebar category for a state model. A `*Mixin` name always
-// wins, regardless of any #category tag: composition mixins are never used
-// standalone, so grouping them under one "Mixin" bucket keeps the domain
-// categories (Display, Session, Root, ...) limited to models a reader would
-// actually instantiate. Otherwise an explicit #category tag wins, else a
-// name-suffix heuristic, else General.
+// Name-suffix heuristic for a model's sidebar category, checked in order. The
+// `Assembly`/`AssemblyManager` rows match those exact names via endsWith.
+const MODEL_CATEGORIES: [string, string][] = [
+  ['View', 'View'],
+  ['Display', 'Display'],
+  ['ConnectionModel', 'Connection'],
+  ['Connection', 'Connection'],
+  ['InternetAccount', 'Internet Account'],
+  ['WidgetModel', 'Widget'],
+  ['Widget', 'Widget'],
+  ['SessionModel', 'Session'],
+  ['RootModel', 'Root'],
+  ['ConfigModel', 'Root'],
+  ['AssemblyManager', 'Assembly Management'],
+  ['Assembly', 'Assembly Management'],
+]
+
+// A `*Mixin` name always wins, regardless of any #category tag: composition
+// mixins are never used standalone, so grouping them under one "Mixin" bucket
+// keeps the domain categories (Display, Session, Root, ...) limited to models a
+// reader would actually instantiate. Otherwise the shared explicit-tag / suffix /
+// General resolution applies.
 function stateModelCategory(name: string, explicit?: string): string {
-  if (name.endsWith('Mixin')) {
-    return 'Mixin'
-  } else if (explicit) {
-    return categoryLabel(explicit)
-  } else if (name.endsWith('View')) {
-    return 'View'
-  } else if (name.endsWith('Display')) {
-    return 'Display'
-  } else if (name.endsWith('Connection') || name.endsWith('ConnectionModel')) {
-    return 'Connection'
-  } else if (name.endsWith('InternetAccount')) {
-    return 'Internet Account'
-  } else if (name.endsWith('Widget') || name.endsWith('WidgetModel')) {
-    return 'Widget'
-  } else if (name.endsWith('SessionModel')) {
-    return 'Session'
-  } else if (name.endsWith('RootModel') || name.endsWith('ConfigModel')) {
-    return 'Root'
-  } else if (name === 'Assembly' || name === 'AssemblyManager') {
-    return 'Assembly Management'
-  } else {
-    return 'General'
-  }
+  return name.endsWith('Mixin')
+    ? 'Mixin'
+    : suffixCategory(name, explicit, MODEL_CATEGORIES)
 }
 
 function memberLine(label: string, members: Member[]) {
