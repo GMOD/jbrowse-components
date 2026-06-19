@@ -26,7 +26,7 @@ void build(desktopConfig(configFactory()))
       console.log('Removed test_data from build')
     }
   })
-  .catch(err => {
+  .catch((err: unknown) => {
     if (customVersion) {
       fs.writeFileSync(pkgPath, originalPkgContent)
     }

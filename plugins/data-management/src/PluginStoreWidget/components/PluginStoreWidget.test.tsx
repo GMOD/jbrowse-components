@@ -73,8 +73,8 @@ test('Installs a session plugin', async () => {
   // installs the resolved, installable definition (name + url) rather than the
   // full store metadata entry
   expect(getSnapshot(session.sessionPlugins)[0]).toEqual({
-    name: plugins.plugins[0].name,
-    url: plugins.plugins[0].url,
+    name: plugins.plugins[0]!.name,
+    url: plugins.plugins[0]!.url,
   })
 })
 
