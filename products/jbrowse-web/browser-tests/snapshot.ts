@@ -21,6 +21,20 @@ export const snapshotConfig = {
   },
 }
 
+// canvas2d is a software renderer: targeted canvas captures are byte-identical
+// run-to-run (measured noise floor 0%), so its goldens are held to a tight
+// threshold that catches real regressions a loose, GPU-oriented threshold would
+// mask. (A split-read arc bug shifted 3.6% of pixels yet slipped under the old
+// 5%.) webgl/webgpu keep the caller's looser threshold to absorb GPU/driver
+// nondeterminism, which has no comparable measured floor.
+const CANVAS2D_TARGETED_MAX_THRESHOLD = 0.01
+
+function targetedThreshold(threshold: number) {
+  return snapshotConfig.backend === 'canvas2d'
+    ? Math.min(threshold, CANVAS2D_TARGETED_MAX_THRESHOLD)
+    : threshold
+}
+
 function compareImages(
   name: string,
   actualBuffer: Buffer | Uint8Array,
@@ -148,7 +162,7 @@ export async function canvasSnapshot(
   if (assertContent) {
     assertNonBlank(analyzeCanvasPng(screenshot), `${name} (${selector})`)
   }
-  const result = compareImages(name, screenshot, threshold)
+  const result = compareImages(name, screenshot, targetedThreshold(threshold))
   if (!result.passed) {
     throw new Error(result.message)
   }
