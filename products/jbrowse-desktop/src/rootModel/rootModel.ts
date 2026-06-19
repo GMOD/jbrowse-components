@@ -6,6 +6,7 @@ import {
   processMutableMenuActions,
 } from '@jbrowse/app-core'
 import assemblyConfigSchemaF from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
+import { readConfObject } from '@jbrowse/core/configuration'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
 import { DNA } from '@jbrowse/core/ui/Icons'
 import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
@@ -24,6 +25,7 @@ import {
 import AppsIcon from '@mui/icons-material/Apps'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
+import PublicIcon from '@mui/icons-material/Public'
 import SaveAsIcon from '@mui/icons-material/SaveAs'
 import { autorun } from 'mobx'
 
@@ -44,6 +46,9 @@ import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 // lazies
 const PreferencesDialog = lazy(
   () => import('@jbrowse/product-core/src/ui/PreferencesDialog'),
+)
+const ExportToWebDialog = lazy(
+  () => import('../components/ExportToWebDialog.tsx'),
 )
 
 const { ipcRenderer } = window.require('electron')
@@ -208,6 +213,29 @@ export default function rootModelFactory({
                       } catch (e) {
                         console.error(e)
                         self.session?.notifyError(`${e}`, e)
+                      }
+                    },
+                  },
+                  {
+                    label: 'Export session to web...',
+                    icon: PublicIcon,
+                    onClick: () => {
+                      const session = self.session as BaseSession | undefined
+                      if (session) {
+                        session.queueDialog(doneCallback => [
+                          ExportToWebDialog,
+                          {
+                            snapshot: getSaveSession(self),
+                            shareURL: readConfObject(
+                              self.jbrowse.configuration,
+                              'shareURL',
+                            ),
+                            session,
+                            handleClose: () => {
+                              doneCallback()
+                            },
+                          },
+                        ])
                       }
                     },
                   },

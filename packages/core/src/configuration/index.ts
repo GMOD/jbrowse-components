@@ -2,6 +2,7 @@ export {
   ConfigurationReference,
   ConfigurationSchema,
 } from './configurationSchema.ts'
+export type { ConfigurationSchemaDefinition } from './configurationSchema.ts'
 
 export type {
   AnyConfiguration,

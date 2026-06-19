@@ -9,7 +9,10 @@ import { JBrowseConfigF } from '../JBrowseConfig/index.ts'
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationModel,
+  ConfigurationSchemaDefinition,
+} from '@jbrowse/core/configuration'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
 // This config model always lives at rootModel.jbrowse, so its MST parent is the
@@ -34,12 +37,18 @@ interface JBrowseModelParent {
 export function JBrowseModelF({
   pluginManager,
   assemblyConfigSchema,
+  extraConfigSlots,
 }: {
   adminMode?: boolean
   pluginManager: PluginManager
   assemblyConfigSchema: BaseAssemblyConfigSchema
+  extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
-  const model = JBrowseConfigF({ pluginManager, assemblyConfigSchema })
+  const model = JBrowseConfigF({
+    pluginManager,
+    assemblyConfigSchema,
+    extraConfigSlots,
+  })
     .views(self => ({
       /**
        * #getter

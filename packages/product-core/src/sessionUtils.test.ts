@@ -7,7 +7,13 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import { runInAction } from 'mobx'
 
-import { addRelativeUris, filterSessionInPlace } from './sessionUtils.ts'
+import {
+  addRelativeUris,
+  analyzeWebPortability,
+  buildWebExportUrl,
+  filterSessionInPlace,
+  planWebExport,
+} from './sessionUtils.ts'
 
 const Item = types.model('Item', {
   id: types.identifier,
@@ -126,4 +132,227 @@ test('addRelativeUris tolerates null', () => {
   expect(() => {
     addRelativeUris(null, new URL('https://example.com/'))
   }).not.toThrow()
+})
+
+test('analyzeWebPortability reports an all-remote session as portable', () => {
+  const snap = {
+    assemblies: [
+      {
+        name: 'hg38',
+        sequence: {
+          trackId: 'hg38-ref',
+          adapter: {
+            type: 'TwoBitAdapter',
+            twoBitLocation: {
+              locationType: 'UriLocation',
+              uri: 'https://example.com/hg38.2bit',
+            },
+          },
+        },
+      },
+    ],
+    tracks: [
+      {
+        trackId: 't1',
+        name: 'remote bam',
+        adapter: {
+          bamLocation: {
+            locationType: 'UriLocation',
+            uri: 'https://example.com/a.bam',
+          },
+        },
+      },
+    ],
+  }
+  const report = analyzeWebPortability(snap)
+  expect(report.portable).toBe(true)
+  expect(report.nonPortable).toEqual([])
+})
+
+test('analyzeWebPortability flags a desktop local path and names its track', () => {
+  const snap = {
+    tracks: [
+      {
+        trackId: 'local-bam',
+        name: 'My local alignments',
+        adapter: {
+          bamLocation: {
+            locationType: 'LocalPathLocation',
+            localPath: '/home/user/data/a.bam',
+          },
+          index: {
+            indexType: 'BAI',
+            location: {
+              locationType: 'LocalPathLocation',
+              localPath: '/home/user/data/a.bam.bai',
+            },
+          },
+        },
+      },
+    ],
+  }
+  const report = analyzeWebPortability(snap)
+  expect(report.portable).toBe(false)
+  expect(report.nonPortable).toEqual([
+    {
+      locationType: 'LocalPathLocation',
+      name: '/home/user/data/a.bam',
+      trackId: 'local-bam',
+      trackName: 'My local alignments',
+    },
+    {
+      locationType: 'LocalPathLocation',
+      name: '/home/user/data/a.bam.bai',
+      trackId: 'local-bam',
+      trackName: 'My local alignments',
+    },
+  ])
+})
+
+test('planWebExport reuses the hosted base, carrying only user-added tracks', () => {
+  const hubTrack = { trackId: 'hub-track', name: 'Hub track' }
+  const userTrack = { trackId: 'user-track', name: 'My track' }
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }],
+      tracks: [hubTrack, userTrack],
+      configuration: { sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json' },
+      defaultSession: { name: 'session', views: [] },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [hubTrack] },
+  )
+  expect(plan.strategy).toBe('hostedConfigBase')
+  expect(plan.configUrl).toBe('https://jbrowse.org/ucsc/hg38/config.json')
+  expect(plan.session.sessionTracks).toEqual([userTrack])
+  expect(plan.session).not.toHaveProperty('sessionAssemblies')
+})
+
+test('planWebExport falls back to self-contained without a source config', () => {
+  const t1 = { trackId: 't1', name: 'remote' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [t1],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.strategy).toBe('selfContained')
+  expect(plan.configUrl).toBeUndefined()
+  expect(plan.session.sessionAssemblies).toEqual([{ name: 'mine' }])
+  expect(plan.session.sessionTracks).toEqual([t1])
+})
+
+test('planWebExport falls back to self-contained when an assembly is not in the base', () => {
+  const plan = planWebExport(
+    {
+      assemblies: [{ name: 'hg38' }, { name: 'myCustomAsm' }],
+      tracks: [],
+      configuration: { sourceConfigUrl: 'https://jbrowse.org/ucsc/hg38/config.json' },
+      defaultSession: { name: 'session' },
+    },
+    { assemblies: [{ name: 'hg38' }], tracks: [] },
+  )
+  expect(plan.strategy).toBe('selfContained')
+})
+
+test('planWebExport carries the portability report through', () => {
+  const plan = planWebExport({
+    assemblies: [{ name: 'mine' }],
+    tracks: [
+      {
+        trackId: 'local',
+        name: 'Local track',
+        adapter: {
+          bamLocation: {
+            locationType: 'LocalPathLocation',
+            localPath: '/data/a.bam',
+          },
+        },
+      } as { trackId: string },
+    ],
+    defaultSession: { name: 'session' },
+  })
+  expect(plan.report.portable).toBe(false)
+  expect(plan.report.nonPortable[0]?.trackId).toBe('local')
+})
+
+test('buildWebExportUrl points config at the hosted base and session at encoded-', () => {
+  const url = buildWebExportUrl(
+    {
+      strategy: 'hostedConfigBase',
+      configUrl: 'https://jbrowse.org/ucsc/hg38/config.json',
+      session: {},
+      report: { nonPortable: [], portable: true },
+    },
+    'encoded-ABC',
+  )
+  const parsed = new URL(url)
+  expect(parsed.origin + parsed.pathname).toBe(
+    'https://jbrowse.org/code/jb2/latest/',
+  )
+  expect(parsed.searchParams.get('config')).toBe(
+    'https://jbrowse.org/ucsc/hg38/config.json',
+  )
+  expect(parsed.searchParams.get('session')).toBe('encoded-ABC')
+})
+
+test('buildWebExportUrl uses config=none for a self-contained session', () => {
+  const url = buildWebExportUrl(
+    {
+      strategy: 'selfContained',
+      session: {},
+      report: { nonPortable: [], portable: true },
+    },
+    'encoded-XYZ',
+  )
+  const parsed = new URL(url)
+  expect(parsed.searchParams.get('config')).toBe('none')
+  expect(parsed.searchParams.get('session')).toBe('encoded-XYZ')
+})
+
+test('buildWebExportUrl adds the password param for a short share link', () => {
+  const url = buildWebExportUrl(
+    {
+      strategy: 'selfContained',
+      session: {},
+      report: { nonPortable: [], portable: true },
+    },
+    'share-abc123',
+    { password: 'sekret' },
+  )
+  const parsed = new URL(url)
+  expect(parsed.searchParams.get('session')).toBe('share-abc123')
+  expect(parsed.searchParams.get('password')).toBe('sekret')
+})
+
+test('analyzeWebPortability flags blob and file-handle locations by name', () => {
+  const snap = {
+    tracks: [
+      {
+        trackId: 'blob-track',
+        name: 'Dropped file',
+        adapter: {
+          bamLocation: {
+            locationType: 'BlobLocation',
+            name: 'dropped.bam',
+            blobId: 'b123',
+          },
+        },
+      },
+      {
+        trackId: 'handle-track',
+        name: 'Picked file',
+        adapter: {
+          bamLocation: {
+            locationType: 'FileHandleLocation',
+            name: 'picked.bam',
+            handleId: 'fh123',
+          },
+        },
+      },
+    ],
+  }
+  const report = analyzeWebPortability(snap)
+  expect(report.nonPortable.map(l => [l.locationType, l.name])).toEqual([
+    ['BlobLocation', 'dropped.bam'],
+    ['FileHandleLocation', 'picked.bam'],
+  ])
 })

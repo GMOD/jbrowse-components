@@ -4,7 +4,10 @@ import RootConfiguration from './RootConfiguration.ts'
 
 import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type {
+  AnyConfigurationSchemaType,
+  ConfigurationSchemaDefinition,
+} from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseRootConfig
@@ -21,14 +24,17 @@ import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 export function JBrowseConfigF({
   pluginManager,
   assemblyConfigSchema,
+  extraConfigSlots,
 }: {
   pluginManager: PluginManager
   assemblyConfigSchema: AnyConfigurationSchemaType
   adminMode?: boolean
+  extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
   return types.model('JBrowseConfig', {
     configuration: RootConfiguration({
       pluginManager,
+      extraConfigSlots,
     }),
     /**
      * #slot

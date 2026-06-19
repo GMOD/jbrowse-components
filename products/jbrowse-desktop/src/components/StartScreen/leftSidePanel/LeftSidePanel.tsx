@@ -31,7 +31,14 @@ async function fetchData(sel: { shortName: string; jbrowseConfig: string }[]) {
     sel.map(async r => {
       const ret = await fetchjson(r.jbrowseConfig)
       addRelativeUris(ret as Record<string, unknown>, new URL(r.jbrowseConfig))
-      return ret as JBrowseConfig
+      // record where this hub config came from so "export to web" can reuse it
+      // as the session base (?config=<sourceConfigUrl>)
+      const cfg = ret as JBrowseConfig
+      cfg.configuration = {
+        ...cfg.configuration,
+        sourceConfigUrl: r.jbrowseConfig,
+      }
+      return cfg
     }),
   )
 }
@@ -60,10 +67,16 @@ export default function LeftSidePanel({
     try {
       setLoading('Loading session')
       const entries = await getEntries()
+      const merged = deepmerge.all(entries) as JBrowseConfig
+      // a single hub config can be reused as the export base; merging several
+      // leaves no single source config, so drop the marker the entries carry
+      if (entries.length > 1 && merged.configuration) {
+        merged.configuration = { ...merged.configuration, sourceConfigUrl: '' }
+      }
       setPluginManager(
         await loadPluginManager(
           await ipcRenderer.invoke('createInitialAutosaveFile', {
-            ...deepmerge.all(entries),
+            ...merged,
             defaultSession: entries[0]?.defaultSession ?? {
               name: `New session ${new Date().toLocaleString('en-US')}`,
             },

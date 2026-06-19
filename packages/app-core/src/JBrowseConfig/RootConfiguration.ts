@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { ConfigurationSchemaDefinition } from '@jbrowse/core/configuration'
 
 /**
  * #config JBrowseConfiguration
@@ -23,10 +24,15 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  */
 export default function RootConfiguration({
   pluginManager,
+  extraConfigSlots = {},
 }: {
   pluginManager: PluginManager
+  // product-specific config slots, e.g. desktop's sourceConfigUrl; kept out of
+  // the shared schema so they don't appear on web/embedded
+  extraConfigSlots?: ConfigurationSchemaDefinition
 }) {
   return ConfigurationSchema('Root', {
+    ...extraConfigSlots,
     /**
      * #slot configuration.rpc
      */
