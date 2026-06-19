@@ -289,50 +289,70 @@ jobs:
           aws s3 sync --delete --exclude="*.map" . s3://jbrowse.org/code/jb2/${REF_NAME}
           aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/code/jb2/${REF_NAME}/*"
 
-      - name: Build LGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-linear-genome-view
-      - name: Deploy LGV storybook
+      # The Astro examples-sites replace the old per-package Storybooks at the
+      # same public URLs (/storybook/{lgv,app,cgv}/). Their astro `base` is the
+      # fixed, unversioned prefix, so each deploys to the prefix root. No
+      # --delete: the canonical site overlays the prefix without touching any
+      # historical per-ref Storybook subdirs (e.g. /storybook/lgv/v3.0.0/).
+      - name: Build and deploy LGV examples-site
         if:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/lgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/lgv/${REF_NAME}/*"
-        working-directory: products/jbrowse-react-linear-genome-view
+          pnpm --filter lgv-examples-site build
+          aws s3 sync products/jbrowse-react-linear-genome-view/examples-site/dist s3://jbrowse.org/storybook/lgv
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/lgv/*"
 
-      - name: Build React App storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-app
-      - name: Deploy React App storybook
+      - name: Build and deploy React App examples-site
         if:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/app/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/app/${REF_NAME}/*"
-        working-directory: products/jbrowse-react-app
+          pnpm --filter app-examples-site build
+          aws s3 sync products/jbrowse-react-app/examples-site/dist s3://jbrowse.org/storybook/app
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/app/*"
 
-      - name: Build CGV storybook
-        if:
-          github.ref == 'refs/heads/main' || startsWith(github.ref,
-          'refs/tags/')
-        run: pnpm storybook:build
-        working-directory: products/jbrowse-react-circular-genome-view
-      - name: Deploy CGV storybook
+      - name: Build and deploy CGV examples-site
         if:
           github.ref == 'refs/heads/main' || startsWith(github.ref,
           'refs/tags/')
         run: |
-          aws s3 sync --delete storybook-static s3://jbrowse.org/storybook/cgv/${REF_NAME}
-          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/cgv/${REF_NAME}/*"
-        working-directory: products/jbrowse-react-circular-genome-view
+          pnpm --filter cgv-examples-site build
+          aws s3 sync products/jbrowse-react-circular-genome-view/examples-site/dist s3://jbrowse.org/storybook/cgv
+          aws cloudfront create-invalidation --distribution-id ${{ env.CLOUDFRONT_DISTRIBUTION_ID }} --paths "/storybook/cgv/*"
+
+  # Builds each Astro examples-site with Vite/Rollup (whose strict ESM surfaces
+  # circular-dependency init-order errors that webpack tolerates), then loads
+  # every page in headless Chrome. The web-worker examples assert an RPC worker
+  # actually spawns — the guard for the TextSearchManager-class of TDZ crashes.
+  # See products/jbrowse-react-linear-genome-view/examples-site/MIGRATION.md.
+  examples_site_smoke:
+    name: Smoke-test ${{ matrix.site }} examples-site
+    needs: check_commit_message
+    if: needs.check_commit_message.outputs.skip_jobs != 'true'
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        site: [lgv-examples-site, app-examples-site, cgv-examples-site]
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+        with:
+          persist-credentials: false
+      - uses: pnpm/action-setup@0e279bb959325dab635dd2c09392533439d90093 # v6.0.8
+        with:
+          version: 10
+      - uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6.4.0  # zizmor: ignore[cache-poisoning]
+        with:
+          node-version: '24'
+      - name: Install deps
+        run: pnpm install --frozen-lockfile
+      - name: Typecheck examples-site
+        run: pnpm --filter ${{ matrix.site }} typecheck
+      - name: Build examples-site
+        run: pnpm --filter ${{ matrix.site }} build
+      - name: Smoke-test examples-site
+        run: pnpm --filter ${{ matrix.site }} smoke
 
   buildwebsite:
     name: Build website
