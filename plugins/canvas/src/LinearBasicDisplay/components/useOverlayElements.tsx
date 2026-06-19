@@ -48,14 +48,9 @@ const useStyles = makeStyles()(theme => ({
     whiteSpace: 'nowrap',
     color: theme.palette.text.primary,
   },
-  // Keep a blue accent for descriptions, but use a softer, lighter blue in dark
-  // mode so it stays readable against the dark track background instead of the
-  // old near-black CSS 'blue'.
+  // theme-aware blue accent for descriptions — see theme.ts featureDescription
   floatingLabelDescription: {
-    color:
-      theme.palette.mode === 'dark'
-        ? theme.palette.info.light
-        : theme.palette.info.main,
+    color: theme.palette.featureDescription,
   },
   floatingLabelClickable: {
     pointerEvents: 'auto',

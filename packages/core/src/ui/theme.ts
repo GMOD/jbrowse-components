@@ -43,6 +43,7 @@ declare module '@mui/material/styles' {
     gridlineMinor: string
     gridlineMajor: string
     featureHover: string
+    featureDescription: string
     bases: {
       A: PaletteColor
       C: PaletteColor
@@ -78,6 +79,7 @@ declare module '@mui/material/styles' {
     gridlineMinor?: string
     gridlineMajor?: string
     featureHover?: string
+    featureDescription?: string
     bases?: {
       A?: PaletteColorOptions
       C?: PaletteColorOptions
@@ -166,6 +168,12 @@ const gridlineMajorDark = 'rgba(255,255,255,0.15)'
 const featureHover = 'rgba(0,0,0,0.15)'
 const featureHoverDark = 'rgba(255,255,255,0.25)'
 
+// Blue accent for feature description labels (e.g. gene descriptions). The
+// plain CSS 'blue' reads as near-black against a dark track background, so
+// dark mode uses a lighter blue instead.
+const featureDescription = 'blue'
+const featureDescriptionDark = blue[300]
+
 // Alignment read fill colors — exported as plain constants (not palette entries)
 // so they can be imported in RPC workers that have no MUI theme context.
 export const colorFwdStrandNotProper = '#ECC8C8'
@@ -247,6 +255,7 @@ const stringColorDefaults = {
   gridlineMinor,
   gridlineMajor,
   featureHover,
+  featureDescription,
 }
 
 const defaults = {
@@ -271,6 +280,7 @@ const darkStringColorDefaults = {
   gridlineMinor: gridlineMinorDark,
   gridlineMajor: gridlineMajorDark,
   featureHover: featureHoverDark,
+  featureDescription: featureDescriptionDark,
   // the deletion rect replaces the read on the dark track background, where the
   // mid-grey #808080 reads as a muddy block; lighten it so the gap stands out
   deletion: '#c8c8c8',
