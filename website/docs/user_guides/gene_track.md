@@ -37,6 +37,24 @@ The translation follows the transcript's strand and CDS phase, and codons that
 straddle an exon boundary are split across the two exons. Only the standard
 genetic code is used; alternative codon tables are not currently applied here.
 
+### Mature peptides (polyproteins)
+
+Many viral genomes encode a single large polyprotein that is cleaved into
+several mature peptides. When a CDS has `mature_protein_region` (or
+`mature_protein_region_of_CDS`) subfeatures, each cleavage product is drawn as
+its own stacked row, colored from a distinct palette so adjacent peptides are
+easy to tell apart. Each region is individually hoverable and clickable, and its
+name comes from the feature's `product` attribute when the track's
+`labels.name` is configured to read it, e.g.:
+
+```json
+"labels": {
+  "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
+}
+```
+
+<Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each drawn on its own row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
+
 ### Reading a feature's protein sequence
 
 To extract the full protein (or CDS, cDNA, or genomic sequence) for a single

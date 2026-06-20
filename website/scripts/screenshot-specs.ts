@@ -710,6 +710,35 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 500,
   },
 
+  // Viral polyprotein: the enterovirus D ORF1 CDS is cleaved into mature
+  // peptides (mature_protein_region_of_CDS). They render as stacked rows, each
+  // colored from a distinct palette and individually hoverable; the labels.name
+  // config in the track surfaces each region's GFF `product` (VP1, 2A, 3C, …).
+  {
+    mode: 'url',
+    name: 'gene_track_mature_peptides',
+    url: sessionSpec('test_data/enterovirus_d/config.json', {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GCF_000861205.1',
+          loc: 'NC_001430.1:727-7,311',
+          tracks: [
+            {
+              trackId: 'ncbi_genes_enterovirus_d',
+              // tall enough for the gene row + all 12 stacked mature peptides
+              displaySnapshot: { type: 'LinearBasicDisplay', height: 220 },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'NCBI genes',
+    readyTimeout: 30000,
+    settleMs: 4000,
+    viewportHeight: 360,
+  },
+
   // Location-search autocomplete: typing a gene name into the search box surfaces
   // matching features from the assembly's text-search index. Uses config_demo's
   // hg19 (whose trix index covers RefSeq/Gencode names) searching "brca".
