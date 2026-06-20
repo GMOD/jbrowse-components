@@ -18,18 +18,27 @@ export function useSequenceFetch({
   upDownBp: number
 }) {
   const [forceLoad, setForceLoad] = useState(false)
+  const session = getSession(model)
+  const assemblyName = model.view?.assemblyNames?.[0]
   const { sequence, error } = useFeatureSequence({
-    assemblyName: model.view?.assemblyNames?.[0],
-    session: getSession(model),
+    assemblyName,
+    session,
     start: feature.start,
     end: feature.end,
     refName: feature.refName,
     upDownBp,
     forceLoad,
   })
+  // assembly-configured translation table for the feature's contig (e.g. a
+  // mitochondrial contig = 2); the protein panel uses it as the fallback when
+  // the feature itself carries no transl_table attribute
+  const assembly = assemblyName
+    ? session.assemblyManager.get(assemblyName)
+    : undefined
   return {
     sequence,
     error,
+    assemblyGeneticCodeId: assembly?.getGeneticCodeId(feature.refName),
     onForceLoad: () => {
       setForceLoad(true)
     },

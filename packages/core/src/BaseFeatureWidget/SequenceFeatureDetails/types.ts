@@ -12,5 +12,6 @@ export interface SequencePanelProps {
   feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
+  assemblyGeneticCodeId?: number
   ref?: RefObject<HTMLDivElement | null>
 }

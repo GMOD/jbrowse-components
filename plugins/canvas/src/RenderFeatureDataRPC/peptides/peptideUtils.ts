@@ -99,14 +99,20 @@ function extractCDSRegions(feature: Feature) {
 }
 
 // NCBI translation table for a transcript: `transl_table` is carried on the CDS
-// (e.g. mitochondrial = 2), occasionally on the transcript itself. Undefined
+// (e.g. mitochondrial = 2), occasionally on the transcript itself. When the
+// features carry no transl_table (e.g. UCSC genePred-derived GFFs), fall back to
+// the assembly-configured code for the contig (assemblyGeneticCodeId). Undefined
 // falls back to the standard code, preserving prior behavior for unannotated
 // data.
-function transcriptGeneticCodeId(transcript: Feature) {
+export function transcriptGeneticCodeId(
+  transcript: Feature,
+  assemblyGeneticCodeId: number | undefined,
+) {
   const cds = (transcript.get('subfeatures') ?? []).find(f => isCDS(f))
   return (
     parseTranslTable(transcript.get('transl_table')) ??
-    parseTranslTable(cds?.get('transl_table'))
+    parseTranslTable(cds?.get('transl_table')) ??
+    assemblyGeneticCodeId
   )
 }
 
@@ -145,6 +151,7 @@ export async function fetchPeptideData(
   props: PeptideFetchProps,
   features: Map<string, Feature>,
   transcriptTypes: readonly string[],
+  assemblyGeneticCodeId?: number,
 ): Promise<Map<string, PeptideData>> {
   const peptideDataMap = new Map<string, PeptideData>()
 
@@ -177,7 +184,9 @@ export async function fetchPeptideData(
     const tStart = transcript.get('start')
     const tEnd = transcript.get('end')
     const seq = wholeSeq.slice(tStart - bulkStart, tEnd - bulkStart)
-    const { codonTable } = getGeneticCode(transcriptGeneticCodeId(transcript))
+    const { codonTable } = getGeneticCode(
+      transcriptGeneticCodeId(transcript, assemblyGeneticCodeId),
+    )
     const peptideData = processTranscriptFromSeq(seq, transcript, codonTable)
     if (peptideData) {
       peptideDataMap.set(transcript.id(), peptideData)

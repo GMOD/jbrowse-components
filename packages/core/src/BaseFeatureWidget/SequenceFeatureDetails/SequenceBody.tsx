@@ -19,6 +19,7 @@ export default function SequenceBody({
   seqPanelRef,
   model,
   mode,
+  assemblyGeneticCodeId,
   onForceLoad,
 }: {
   error: unknown
@@ -27,6 +28,7 @@ export default function SequenceBody({
   seqPanelRef: RefObject<HTMLDivElement | null>
   model: SequenceFeatureDetailsModel
   mode: SequenceDisplayMode
+  assemblyGeneticCodeId?: number
   onForceLoad: () => void
 }) {
   return (
@@ -60,6 +62,7 @@ export default function SequenceBody({
           sequence={sequence}
           model={model}
           mode={mode}
+          assemblyGeneticCodeId={assemblyGeneticCodeId}
         />
       )}
     </div>

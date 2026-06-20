@@ -37,6 +37,7 @@ export async function executeRenderFeatureData({
     region,
     bpPerPx: requestedBpPerPx,
     colorByCDS,
+    geneticCodeId,
     sequenceAdapter,
     showOnlyGenes,
     maxFeatureDensity,
@@ -147,6 +148,7 @@ export async function executeRenderFeatureData({
           },
           features,
           displayConfig.transcriptTypes,
+          geneticCodeId,
         ),
     )
   }

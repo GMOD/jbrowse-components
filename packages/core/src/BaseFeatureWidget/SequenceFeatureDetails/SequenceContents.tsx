@@ -16,12 +16,18 @@ import type { Feat, SeqState } from '../util.tsx'
 
 // CDS-bound translation reads `transl_table` off the CDS subfeature (or the
 // feature itself), so e.g. a mitochondrial gene translates with table 2 rather
-// than the standard code. Undefined falls back to the standard code.
-function proteinCodonTable(feature: SimpleFeatureSerialized) {
+// than the standard code. When the feature carries no transl_table (e.g. UCSC
+// genePred-derived GFFs), fall back to the assembly-configured code for the
+// contig. Undefined falls back to the standard code.
+function proteinCodonTable(
+  feature: SimpleFeatureSerialized,
+  assemblyGeneticCodeId: number | undefined,
+) {
   const cds = feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
   const id =
     parseTranslTable(feature.transl_table) ??
-    parseTranslTable(cds?.transl_table)
+    parseTranslTable(cds?.transl_table) ??
+    assemblyGeneticCodeId
   return getGeneticCode(id).codonTable
 }
 
@@ -29,11 +35,13 @@ function RenderedSequenceComponent({
   mode,
   feature,
   model,
+  assemblyGeneticCodeId,
   sequenceData,
 }: {
   mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
   model: SequenceFeatureDetailsModel
+  assemblyGeneticCodeId?: number
   sequenceData: {
     seq: string
     upstream?: string
@@ -68,7 +76,7 @@ function RenderedSequenceComponent({
           model={model}
           cds={cds}
           sequence={seq}
-          codonTable={proteinCodonTable(feature)}
+          codonTable={proteinCodonTable(feature, assemblyGeneticCodeId)}
         />
       )
 
@@ -104,11 +112,13 @@ const SequenceContents = observer(function SequenceContents({
   feature,
   sequence,
   model,
+  assemblyGeneticCodeId,
 }: {
   mode: SequenceDisplayMode
   feature: SimpleFeatureSerialized
   sequence: SeqState
   model: SequenceFeatureDetailsModel
+  assemblyGeneticCodeId?: number
 }) {
   const sequenceData = getSequenceData({
     feature,
@@ -119,6 +129,7 @@ const SequenceContents = observer(function SequenceContents({
       mode={mode}
       feature={feature}
       model={model}
+      assemblyGeneticCodeId={assemblyGeneticCodeId}
       sequenceData={sequenceData}
     />
   ) : null

@@ -30,6 +30,11 @@ export interface RenderFeatureDataArgs {
   }
   bpPerPx: number
   colorByCDS?: boolean
+  // NCBI genetic-code id for this region, resolved from the assembly's
+  // geneticCodes config (e.g. a mitochondrial contig = 2). Used as the
+  // translation-table fallback for transcripts whose features lack a
+  // transl_table attribute (e.g. UCSC genePred-derived GFFs).
+  geneticCodeId?: number
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   maxFeatureDensity?: number

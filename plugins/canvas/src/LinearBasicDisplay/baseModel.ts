@@ -1385,13 +1385,19 @@ export default function baseStateModelFactory(
           stopToken: StopToken,
         ): Promise<FetchResult | TooLargeResult> {
           const sessionId = getRpcSessionId(self)
-          const result = await getSession(self).rpcManager.call(
+          const session = getSession(self)
+          // Per-region translation table from the assembly's geneticCodes
+          // config (alias-bridged via getGeneticCodeId), so the worker can
+          // translate peptides on contigs whose features carry no transl_table.
+          const assembly = session.assemblyManager.get(region.assemblyName)
+          const result = await session.rpcManager.call(
             sessionId,
             'RenderFeatureData',
             {
               sessionId,
               adapterConfig: self.adapterConfig,
               sequenceAdapter: self.sequenceAdapter,
+              geneticCodeId: assembly?.getGeneticCodeId(region.refName),
               ...self.rpcProps(),
               region,
               bpPerPx,

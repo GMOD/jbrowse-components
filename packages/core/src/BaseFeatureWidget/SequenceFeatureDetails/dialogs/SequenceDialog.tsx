@@ -30,6 +30,7 @@ const SequenceDialog = observer(function SequenceDialog({
   setMode,
   sequence,
   error,
+  assemblyGeneticCodeId,
   onForceLoad,
 }: {
   handleClose: () => void
@@ -39,6 +40,7 @@ const SequenceDialog = observer(function SequenceDialog({
   setMode: (mode: SequenceDisplayMode) => void
   sequence: SeqState | ErrorState | undefined
   error: unknown
+  assemblyGeneticCodeId?: number
   onForceLoad: () => void
 }) {
   const { classes } = useStyles()
@@ -74,6 +76,7 @@ const SequenceDialog = observer(function SequenceDialog({
           seqPanelRef={seqPanelRef}
           model={sequenceFeatureDetails}
           mode={mode}
+          assemblyGeneticCodeId={assemblyGeneticCodeId}
           onForceLoad={onForceLoad}
         />
       </DialogContent>

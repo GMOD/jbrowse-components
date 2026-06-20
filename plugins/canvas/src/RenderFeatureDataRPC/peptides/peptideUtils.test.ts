@@ -3,6 +3,7 @@ import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   findTranscriptsWithCDS,
   processTranscriptFromSeq,
+  transcriptGeneticCodeId,
 } from './peptideUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -20,10 +21,12 @@ const DEFAULT_TRANSCRIPT_TYPES = [
 function createMockFeature(opts: {
   id?: string
   type?: string
+  transl_table?: number
   subfeatures?: Feature[]
 }): Feature {
   const data: Record<string, unknown> = {
     type: opts.type,
+    transl_table: opts.transl_table,
     subfeatures: opts.subfeatures,
   }
   return {
@@ -249,6 +252,49 @@ function createCoordFeature(opts: {
     id: () => 'transcript-1',
   } as unknown as Feature
 }
+
+describe('transcriptGeneticCodeId', () => {
+  it('reads transl_table off the CDS subfeature', () => {
+    const transcript = createMockFeature({
+      type: 'mRNA',
+      subfeatures: [createMockFeature({ type: 'CDS', transl_table: 2 })],
+    })
+    expect(transcriptGeneticCodeId(transcript, undefined)).toBe(2)
+  })
+
+  it('prefers the transcript transl_table over the CDS', () => {
+    const transcript = createMockFeature({
+      type: 'mRNA',
+      transl_table: 5,
+      subfeatures: [createMockFeature({ type: 'CDS', transl_table: 2 })],
+    })
+    expect(transcriptGeneticCodeId(transcript, undefined)).toBe(5)
+  })
+
+  it('falls back to the assembly genetic code when no transl_table is present', () => {
+    const transcript = createMockFeature({
+      type: 'mRNA',
+      subfeatures: [createMockFeature({ type: 'CDS' })],
+    })
+    expect(transcriptGeneticCodeId(transcript, 2)).toBe(2)
+  })
+
+  it('prefers a feature transl_table over the assembly genetic code', () => {
+    const transcript = createMockFeature({
+      type: 'mRNA',
+      subfeatures: [createMockFeature({ type: 'CDS', transl_table: 3 })],
+    })
+    expect(transcriptGeneticCodeId(transcript, 2)).toBe(3)
+  })
+
+  it('is undefined (standard code) when neither source provides one', () => {
+    const transcript = createMockFeature({
+      type: 'mRNA',
+      subfeatures: [createMockFeature({ type: 'CDS' })],
+    })
+    expect(transcriptGeneticCodeId(transcript, undefined)).toBeUndefined()
+  })
+})
 
 describe('processTranscriptFromSeq', () => {
   // ATG=M, AAA=K

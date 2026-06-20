@@ -43,6 +43,7 @@ const SequencePanel = observer(function SequencePanel({
   model,
   feature,
   mode,
+  assemblyGeneticCodeId,
   ref,
 }: SequencePanelProps) {
   const { showCoordinates } = model
@@ -60,6 +61,7 @@ const SequencePanel = observer(function SequencePanel({
           mode={mode}
           feature={feature}
           sequence={sequence}
+          assemblyGeneticCodeId={assemblyGeneticCodeId}
         />
       </Container>
     </div>
