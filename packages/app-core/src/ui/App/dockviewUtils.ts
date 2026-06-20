@@ -6,11 +6,7 @@ import type {
   SessionWithDockviewLayout,
 } from '../../DockviewLayout/index.ts'
 import type { AbstractViewModel } from '@jbrowse/core/util'
-import type {
-  DockviewApi,
-  DockviewGroupPanel,
-  SerializedDockview,
-} from 'dockview-react'
+import type { DockviewApi, DockviewGroupPanel } from 'dockview-react'
 
 /**
  * Single source of truth for the panel-id format. Every panel id is created
@@ -36,69 +32,18 @@ export function getViewsForPanel(
 // No `title`: an unset title makes JBrowseViewTab derive the tab name from the
 // panel's views (see getTabDisplayName). A title is only ever set when the user
 // explicitly renames a tab via api.setTitle.
-export function createPanelConfig(
-  panelId: string,
-  session: DockviewSessionType & SessionWithDockviewLayout,
-) {
+//
+// `params` carries only the panelId (a plain string), so the layout serializes
+// cleanly via api.toJSON() with no live MST session embedded (which would be a
+// circular snapshot). Panel/tab components read the live session from
+// DockviewContext instead.
+export function createPanelConfig(panelId: string) {
   return {
     id: panelId,
     component: 'jbrowseView' as const,
     tabComponent: 'jbrowseTab' as const,
-    params: { panelId, session },
+    params: { panelId },
   }
-}
-
-/**
- * Blank each panel's `params` before persisting. `params.session` is a live MST
- * node, so leaving it in would make `toJSON()` serialize the whole session into
- * the layout that is itself stored on that session (a circular snapshot).
- * `updatePanelParams` re-injects the session on restore.
- */
-export function cleanLayoutForStorage(
-  layout: ReturnType<DockviewApi['toJSON']>,
-): ReturnType<DockviewApi['toJSON']> {
-  return {
-    ...layout,
-    panels: Object.fromEntries(
-      Object.entries(layout.panels).map(([id, panel]) => [
-        id,
-        { ...panel, params: {} },
-      ]),
-    ),
-  }
-}
-
-export function updatePanelParams(
-  api: DockviewApi,
-  session: DockviewSessionType & SessionWithDockviewLayout,
-) {
-  for (const panel of api.panels) {
-    panel.update({ params: { panelId: panel.id, session } })
-  }
-}
-
-/**
- * Serialize the live layout for persistence. Pairs `toJSON` with the
- * param-stripping of `cleanLayoutForStorage` so a layout can never be persisted
- * with the live MST session embedded in it (which would be a circular snapshot).
- */
-export function serializeLayout(api: DockviewApi) {
-  return cleanLayoutForStorage(api.toJSON())
-}
-
-/**
- * Restore a persisted layout and re-inject the live session in one step.
- * `fromJSON` alone would leave every panel with the blanked params produced by
- * `serializeLayout` (no session -> permanent "Loading..."), so the restore and
- * the `updatePanelParams` re-injection always travel together.
- */
-export function restoreLayout(
-  api: DockviewApi,
-  session: DockviewSessionType & SessionWithDockviewLayout,
-  layout: SerializedDockview,
-) {
-  api.fromJSON(layout)
-  updatePanelParams(api, session)
 }
 
 export function getPanelPosition(
@@ -137,7 +82,7 @@ export function applyInitLayout(
         firstPanelId = panelId
       }
       api.addPanel({
-        ...createPanelConfig(panelId, session),
+        ...createPanelConfig(panelId),
         position: getPanelPosition(referenceGroup, direction),
       })
       for (const viewId of node.viewIds) {

@@ -1,4 +1,3 @@
-import type { SessionWithDockviewLayout } from '../../DockviewLayout/index.ts'
 import type { Menu } from '../../menus.ts'
 import type { SnackbarMessage } from '@jbrowse/core/ui/SnackbarModel'
 import type { SessionWithFocusedViewAndDrawerWidgets } from '@jbrowse/core/util'
@@ -21,5 +20,4 @@ export type DockviewSessionType = SessionWithFocusedViewAndDrawerWidgets & {
 
 export interface JBrowseViewPanelParams {
   panelId: string
-  session?: DockviewSessionType & SessionWithDockviewLayout
 }

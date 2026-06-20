@@ -16,8 +16,6 @@ import {
   createPanelConfig,
   createPanelId,
   getPanelPosition,
-  restoreLayout,
-  serializeLayout,
 } from './dockviewUtils.ts'
 
 import type { DockviewSessionType } from './types.ts'
@@ -91,7 +89,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       const panelId = createPanelId()
       const group = targetGroup ?? api.activeGroup
       api.addPanel({
-        ...createPanelConfig(panelId, session),
+        ...createPanelConfig(panelId),
         position: getPanelPosition(group),
       })
       session.setActivePanelId(panelId)
@@ -109,7 +107,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       const panelId = createPanelId()
       api.addPanel({
-        ...createPanelConfig(panelId, session),
+        ...createPanelConfig(panelId),
         position: getPanelPosition(api.activeGroup, direction),
       })
       session.assignViewToPanel(panelId, viewId)
@@ -121,6 +119,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
   const contextValue = useMemo(
     () => ({
       api,
+      session,
       rearrangePanels,
       addEmptyTab,
       moveViewToNewTab: moveViewToPanel,
@@ -128,7 +127,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         moveViewToPanel(viewId, 'right')
       },
     }),
-    [api, rearrangePanels, addEmptyTab, moveViewToPanel],
+    [api, session, rearrangePanels, addEmptyTab, moveViewToPanel],
   )
 
   const createInitialPanels = useCallback((dockviewApi: DockviewApi) => {
@@ -146,7 +145,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         session.setActivePanelId(firstPanelId)
         dockviewApi.getPanel(firstPanelId)?.api.setActive()
       }
-      session.setDockviewLayout(serializeLayout(dockviewApi))
+      session.setDockviewLayout(dockviewApi.toJSON())
       return
     }
 
@@ -167,7 +166,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       let firstGroup: DockviewGroupPanel | undefined
       if (otherViewIds.length > 0) {
         const firstPanelId = createPanelId()
-        dockviewApi.addPanel(createPanelConfig(firstPanelId, session))
+        dockviewApi.addPanel(createPanelConfig(firstPanelId))
         firstGroup = dockviewApi.getPanel(firstPanelId)?.group
         for (const viewId of otherViewIds) {
           session.assignViewToPanel(firstPanelId, viewId)
@@ -177,7 +176,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       const pendingPanelId = createPanelId()
       const direction = type === 'splitRight' ? 'right' : undefined
       dockviewApi.addPanel({
-        ...createPanelConfig(pendingPanelId, session),
+        ...createPanelConfig(pendingPanelId),
         position: getPanelPosition(firstGroup, direction),
       })
       session.assignViewToPanel(pendingPanelId, pendingViewId)
@@ -187,14 +186,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       // dockview's onDidLayoutChange fires asynchronously, so without this the
       // second mount would find dockviewLayout still undefined and fall back to
       // creating a single panel instead of restoring the split.
-      session.setDockviewLayout(serializeLayout(dockviewApi))
+      session.setDockviewLayout(dockviewApi.toJSON())
 
       session.setPendingMove(undefined)
     } else {
       const panelId = createPanelId()
-      dockviewApi.addPanel(createPanelConfig(panelId, session))
+      dockviewApi.addPanel(createPanelConfig(panelId))
       session.setActivePanelId(panelId)
-      session.setDockviewLayout(serializeLayout(dockviewApi))
+      session.setDockviewLayout(dockviewApi.toJSON())
     }
   }, [])
 
@@ -223,7 +222,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
 
       event.api.onDidLayoutChange(() => {
         if (!rearrangingRef.current) {
-          sessionRef.current.setDockviewLayout(serializeLayout(event.api))
+          sessionRef.current.setDockviewLayout(event.api.toJSON())
         }
       })
 
@@ -233,7 +232,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       if (savedLayout) {
         withSuppressedSync(() => {
           try {
-            restoreLayout(event.api, sessionRef.current, savedLayout)
+            event.api.fromJSON(savedLayout)
             if (event.api.panels.length === 0) {
               throw new Error('No panels after fromJSON restore')
             }
@@ -267,7 +266,7 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
               activePanelId = firstPanel.id
             } else {
               activePanelId = createPanelId()
-              api.addPanel(createPanelConfig(activePanelId, session))
+              api.addPanel(createPanelConfig(activePanelId))
             }
             session.setActivePanelId(activePanelId)
           }
@@ -298,14 +297,14 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
         return
       }
 
-      const currentLayout = serializeLayout(api)
+      const currentLayout = api.toJSON()
       if (JSON.stringify(currentLayout) === JSON.stringify(dockviewLayout)) {
         return
       }
 
       withSuppressedSync(() => {
         try {
-          restoreLayout(api, sessionRef.current, dockviewLayout)
+          api.fromJSON(dockviewLayout)
         } catch (e) {
           console.error('Failed to restore dockview layout from undo:', e)
         }

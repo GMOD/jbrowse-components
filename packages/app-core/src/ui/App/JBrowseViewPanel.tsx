@@ -3,6 +3,7 @@ import { Suspense, lazy } from 'react'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { useDockview } from './DockviewContext.tsx'
 import ViewContainer from './ViewContainer.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
@@ -33,13 +34,18 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 const JBrowseViewPanel = observer(function JBrowseViewPanel({
-  params,
+  api,
 }: IDockviewPanelProps<JBrowseViewPanelParams>) {
-  const { panelId, session } = params
+  // Panel identity is the dockview panel id, not params — so layouts persisted
+  // before params carried the panelId (blanked to {}) still restore correctly.
+  const panelId = api.id
+  const { session } = useDockview()
   const { classes } = useStyles()
 
+  // session is always provided by TiledViewsContainer's DockviewContext; the
+  // guard only satisfies the optional default-context type.
   if (!session) {
-    return <div className={classes.container}>Loading...</div>
+    return null
   }
 
   const views = getViewsForPanel(panelId, session)

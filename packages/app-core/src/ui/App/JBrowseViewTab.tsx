@@ -4,6 +4,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { InputBase, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { useDockview } from './DockviewContext.tsx'
 import JBrowseTabMenu from './JBrowseTabMenu.tsx'
 import { getViewsForPanel } from './dockviewUtils.ts'
 
@@ -72,20 +73,20 @@ function getTabDisplayName(
 }
 
 const JBrowseViewTab = observer(function JBrowseViewTab({
-  params,
   api,
 }: IDockviewPanelHeaderProps<JBrowseViewPanelParams>) {
-  const { panelId, session } = params
+  // Panel identity is the dockview panel id, not params — so layouts persisted
+  // before params carried the panelId (blanked to {}) still restore correctly.
+  const panelId = api.id
+  const { session } = useDockview()
   const { classes } = useStyles()
   const [isEditing, setIsEditing] = useState(false)
   const [editValue, setEditValue] = useState('')
 
+  // session is always provided by TiledViewsContainer's DockviewContext; the
+  // guard only satisfies the optional default-context type.
   if (!session) {
-    return (
-      <div className={classes.tabContainer}>
-        <span className={classes.tabTitleText}>Loading...</span>
-      </div>
-    )
+    return null
   }
 
   const views = getViewsForPanel(panelId, session)

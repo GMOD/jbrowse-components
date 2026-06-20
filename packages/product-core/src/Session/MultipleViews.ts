@@ -1,6 +1,7 @@
 import {
   localStorageGetBoolean,
   localStorageSetBoolean,
+  reorder,
 } from '@jbrowse/core/util'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -48,26 +49,26 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        */
       moveViewDown(id: string) {
         const idx = self.views.findIndex(v => v.id === id)
-        if (idx !== -1 && idx < self.views.length - 1) {
-          self.views.splice(idx, 2, self.views[idx + 1], self.views[idx])
+        if (idx !== -1) {
+          self.views = cast(reorder(self.views, idx, 'down'))
         }
       },
       /**
        * #action
        */
       moveViewUp(id: string) {
-        const idx = self.views.findIndex(view => view.id === id)
-        if (idx > 0) {
-          self.views.splice(idx - 1, 2, self.views[idx], self.views[idx - 1])
+        const idx = self.views.findIndex(v => v.id === id)
+        if (idx !== -1) {
+          self.views = cast(reorder(self.views, idx, 'up'))
         }
       },
       /**
        * #action
        */
       moveViewToTop(id: string) {
-        const view = self.views.find(v => v.id === id)
-        if (view) {
-          self.views = cast([view, ...self.views.filter(v => v.id !== id)])
+        const idx = self.views.findIndex(v => v.id === id)
+        if (idx !== -1) {
+          self.views = cast(reorder(self.views, idx, 'top'))
         }
       },
 
@@ -75,9 +76,9 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
        * #action
        */
       moveViewToBottom(id: string) {
-        const view = self.views.find(v => v.id === id)
-        if (view) {
-          self.views = cast([...self.views.filter(v => v.id !== id), view])
+        const idx = self.views.findIndex(v => v.id === id)
+        if (idx !== -1) {
+          self.views = cast(reorder(self.views, idx, 'bottom'))
         }
       },
 

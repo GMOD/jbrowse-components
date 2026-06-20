@@ -1,3 +1,4 @@
+import { reorder } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
@@ -52,21 +53,20 @@ export function DockviewLayoutMixin() {
       ),
       /**
        * #property
-       * Initial layout configuration from URL params. Processed once then cleared.
-       */
-      init: types.frozen<DockviewLayoutNode | undefined>(),
-      /**
-       * #property
-       * A view move queued before workspaces were enabled. Consumed once when
-       * the dockview container mounts, then cleared.
-       */
-      pendingMove: types.frozen<PendingMove | undefined>(),
-      /**
-       * #property
        * The currently active panel ID in dockview
        */
       activePanelId: types.stripDefault(types.maybe(types.string), undefined),
     })
+    // Both are transient: set once (init from URL params, pendingMove from a
+    // queued move) and consumed when the dockview container mounts. Volatile so
+    // they are never persisted — no snapshot strip needed.
+    .volatile<{
+      init: DockviewLayoutNode | undefined
+      pendingMove: PendingMove | undefined
+    }>(() => ({
+      init: undefined,
+      pendingMove: undefined,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -166,9 +166,11 @@ export function DockviewLayoutMixin() {
        */
       moveViewUpInPanel(viewId: string) {
         const loc = self.getPanelContainingView(viewId)
-        if (loc && loc.idx > 0) {
-          const { viewIds, idx } = loc
-          viewIds.splice(idx - 1, 2, viewIds[idx]!, viewIds[idx - 1]!)
+        if (loc) {
+          self.panelViewAssignments.set(
+            loc.panelId,
+            reorder(loc.viewIds, loc.idx, 'up'),
+          )
         }
       },
 
@@ -178,9 +180,11 @@ export function DockviewLayoutMixin() {
        */
       moveViewDownInPanel(viewId: string) {
         const loc = self.getPanelContainingView(viewId)
-        if (loc && loc.idx < loc.viewIds.length - 1) {
-          const { viewIds, idx } = loc
-          viewIds.splice(idx, 2, viewIds[idx + 1]!, viewIds[idx]!)
+        if (loc) {
+          self.panelViewAssignments.set(
+            loc.panelId,
+            reorder(loc.viewIds, loc.idx, 'down'),
+          )
         }
       },
 
@@ -190,9 +194,11 @@ export function DockviewLayoutMixin() {
        */
       moveViewToTopInPanel(viewId: string) {
         const loc = self.getPanelContainingView(viewId)
-        if (loc && loc.idx > 0) {
-          loc.viewIds.splice(loc.idx, 1)
-          loc.viewIds.unshift(viewId)
+        if (loc) {
+          self.panelViewAssignments.set(
+            loc.panelId,
+            reorder(loc.viewIds, loc.idx, 'top'),
+          )
         }
       },
 
@@ -202,22 +208,14 @@ export function DockviewLayoutMixin() {
        */
       moveViewToBottomInPanel(viewId: string) {
         const loc = self.getPanelContainingView(viewId)
-        if (loc && loc.idx < loc.viewIds.length - 1) {
-          loc.viewIds.splice(loc.idx, 1)
-          loc.viewIds.push(viewId)
+        if (loc) {
+          self.panelViewAssignments.set(
+            loc.panelId,
+            reorder(loc.viewIds, loc.idx, 'bottom'),
+          )
         }
       },
     }))
-    .postProcessSnapshot(snap => {
-      // init/pendingMove are transient, processed once then cleared, never
-      // persisted (unconditional drop, so not a stripDefault)
-      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-      if (!snap) {
-        return snap
-      }
-      const { init: _init, pendingMove: _pendingMove, ...rest } = snap
-      return rest as typeof snap
-    })
 }
 
 export type DockviewLayoutMixinType = ReturnType<typeof DockviewLayoutMixin>
