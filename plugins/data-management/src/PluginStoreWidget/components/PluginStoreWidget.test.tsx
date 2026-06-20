@@ -190,10 +190,10 @@ test('plugin store admin - removes a custom plugin correctly', async () => {
       <PluginStoreWidget model={model} />
     </ThemeProvider>,
   )
-  expect(getSnapshot(session.jbrowse).plugins).toHaveLength(1)
+  expect(session.jbrowse.plugins).toHaveLength(1)
   await user.click(await findByTestId('removePlugin-MsaView'))
   await user.click(await findByText('Remove'))
   await waitFor(() => {
-    expect(getSnapshot(session.jbrowse).plugins).toHaveLength(0)
+    expect(session.jbrowse.plugins).toHaveLength(0)
   })
 })

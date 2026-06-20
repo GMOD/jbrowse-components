@@ -5,6 +5,7 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
+import type { PluginDefinition } from '@jbrowse/core/PluginLoader'
 import type { BaseConnectionConfigModel } from '@jbrowse/core/pluggableElementTypes/models/baseConnectionConfig'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
 
@@ -22,6 +23,7 @@ export interface AbstractJBrowseModel {
   readonly assemblies: BaseAssemblyConfigModel[]
   readonly connections: BaseConnectionConfigModel[]
   readonly tracks: readonly { trackId: string; [key: string]: unknown }[]
+  readonly plugins: PluginDefinition[]
   addAssemblyConf(conf: AnyConfiguration): unknown
   removeAssemblyConf(name: string): void
   addConnectionConf(conf: AnyConfigurationModel): unknown
