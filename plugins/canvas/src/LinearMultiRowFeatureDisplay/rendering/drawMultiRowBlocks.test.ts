@@ -1,0 +1,88 @@
+import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+
+import { drawMultiRowBlocks } from './drawMultiRowBlocks.ts'
+
+import type {
+  MultiRowRegionData,
+  MultiRowRenderState,
+} from './multiRowRenderingBackendTypes.ts'
+import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+
+interface FillRectCall {
+  x: number
+  y: number
+  w: number
+  h: number
+  fillStyle: string
+}
+
+function mockCtx() {
+  const calls: FillRectCall[] = []
+  const ctx = {
+    fillStyle: '',
+    save() {},
+    restore() {},
+    beginPath() {},
+    rect() {},
+    clip() {},
+    fillRect(x: number, y: number, w: number, h: number) {
+      calls.push({ x, y, w, h, fillStyle: this.fillStyle })
+    },
+  }
+  return { ctx: ctx as unknown as Ctx2D, calls }
+}
+
+const RED = 0xff0000ff
+const BLUE = 0xffff0000
+
+// One region with two features on two rows; 1000px maps 100bp → 10px/bp.
+const region: MultiRowRegionData = {
+  featureStarts: Uint32Array.from([10, 50]),
+  featureEnds: Uint32Array.from([20, 60]),
+  featureColors: Uint32Array.from([RED, BLUE]),
+  partitionValues: ['mom', 'dad'],
+  featurePartitionIndex: Uint32Array.from([0, 1]),
+  featureNames: ['a', 'b'],
+}
+
+const block: RenderBlock = {
+  displayedRegionIndex: 0,
+  refName: 'ctgA',
+  start: 0,
+  end: 100,
+  screenStartPx: 0,
+  screenEndPx: 1000,
+  reversed: false,
+}
+
+const state: MultiRowRenderState = {
+  canvasWidth: 1000,
+  canvasHeight: 40,
+  rowHeight: 20,
+  rowProportion: 1,
+  rowIndexByValue: new Map([
+    ['mom', 0],
+    ['dad', 1],
+  ]),
+}
+
+test('draws one rect per feature at its row + genomic span and color', () => {
+  const { ctx, calls } = mockCtx()
+  drawMultiRowBlocks(ctx, new Map([[0, region]]), [block], state)
+  expect(calls).toEqual([
+    { x: 100, y: 0, w: 100, h: 20, fillStyle: abgrToCssRgba(RED) },
+    { x: 500, y: 20, w: 100, h: 20, fillStyle: abgrToCssRgba(BLUE) },
+  ])
+})
+
+test('skips features whose row is filtered out of rowIndexByValue', () => {
+  const { ctx, calls } = mockCtx()
+  drawMultiRowBlocks(ctx, new Map([[0, region]]), [block], {
+    ...state,
+    rowIndexByValue: new Map([['mom', 0]]),
+  })
+  expect(calls).toEqual([
+    { x: 100, y: 0, w: 100, h: 20, fillStyle: abgrToCssRgba(RED) },
+  ])
+})
