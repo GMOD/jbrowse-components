@@ -115,6 +115,180 @@ describe('collectRenderData peptide overlay', () => {
   })
 })
 
+// Viral polyprotein: gene → one CDS (the whole ORF) → mature_protein_region
+// children. The gene routes to Subfeatures, the CDS to MatureProteinRegion;
+// protein is keyed by the gene id. Each region becomes a stacked row.
+function polyproteinLayout(
+  cdsStart: number,
+  cdsEnd: number,
+  regions: { start: number; end: number }[],
+  strand = 1,
+) {
+  const matures = regions.map((r, i) =>
+    mockFeature({
+      type: 'mature_protein_region_of_CDS',
+      id: `mp${i}`,
+      start: r.start,
+      end: r.end,
+      strand,
+    }),
+  )
+  const cds = mockFeature({
+    type: 'CDS',
+    id: 'cds1',
+    start: cdsStart,
+    end: cdsEnd,
+    strand,
+    subfeatures: matures,
+  })
+  const gene = mockFeature({
+    type: 'gene',
+    id: 'g1',
+    start: cdsStart,
+    end: cdsEnd,
+    strand,
+    subfeatures: [cds],
+  })
+  const matureLayout: FeatureLayout = {
+    feature: cds,
+    glyphType: 'MatureProteinRegion',
+    y: 0,
+    height: regions.length * 10,
+    totalLayoutHeight: regions.length * 10,
+    children: matures.map((m, i) => ({ ...boxLayout(m), y: i * 10 })),
+  }
+  return {
+    layout: {
+      feature: gene,
+      glyphType: 'Subfeatures' as const,
+      y: 0,
+      height: matureLayout.height,
+      totalLayoutHeight: matureLayout.height,
+      children: [matureLayout],
+    },
+  }
+}
+
+describe('collectRenderData polyprotein mature-peptide overlay', () => {
+  it('clips the ORF translation to each cleavage-product region', () => {
+    // CDS 100-118 = 6 codons (MFKLST); two regions of 3 codons each
+    const { layout } = polyproteinLayout(100, 118, [
+      { start: 100, end: 109 },
+      { start: 109, end: 118 },
+    ])
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      true,
+      new Map([['g1', { protein: 'MFKLST' }]]),
+    )
+
+    const overlay = result.aminoAcidOverlay!
+    expect(overlay).toBeDefined()
+    const topRow = overlay.filter(a => a.topPx === 0).map(a => a.aminoAcid)
+    const lowerRow = overlay.filter(a => a.topPx === 10).map(a => a.aminoAcid)
+    expect(topRow.sort()).toEqual(['F', 'K', 'M'])
+    expect(lowerRow.sort()).toEqual(['L', 'S', 'T'])
+  })
+
+  // Real enterovirus shape: VP0 (the precursor) overlaps its own cleavage
+  // products VP4 and VP2, all siblings under the CDS. Each row independently
+  // shows the residues it covers — VP0 shows all six, VP4/VP2 their halves.
+  it('shows residues independently for an overlapping precursor and its products', () => {
+    const { layout } = polyproteinLayout(100, 118, [
+      { start: 100, end: 118 }, // VP0 precursor (spans both)
+      { start: 100, end: 109 }, // VP4
+      { start: 109, end: 118 }, // VP2
+    ])
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      true,
+      new Map([['g1', { protein: 'MFKLST' }]]),
+    )
+
+    const overlay = result.aminoAcidOverlay!
+    const byRow = (y: number) =>
+      overlay
+        .filter(a => a.topPx === y)
+        .map(a => a.aminoAcid)
+        .sort()
+    expect(byRow(0)).toEqual(['F', 'K', 'L', 'M', 'S', 'T']) // VP0
+    expect(byRow(10)).toEqual(['F', 'K', 'M']) // VP4
+    expect(byRow(20)).toEqual(['L', 'S', 'T']) // VP2
+  })
+
+  // The CDS spans the stop codon (118-121) but no mature region covers it, so
+  // the stop is excluded from every row — it is not part of any mature peptide.
+  it('excludes the trailing stop codon from every region', () => {
+    const { layout } = polyproteinLayout(100, 121, [{ start: 100, end: 118 }])
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      true,
+      new Map([['g1', { protein: 'MFKLST*' }]]),
+    )
+    const overlay = result.aminoAcidOverlay!
+    expect(overlay.map(a => a.aminoAcid).sort()).toEqual([
+      'F',
+      'K',
+      'L',
+      'M',
+      'S',
+      'T',
+    ])
+    expect(overlay.some(a => a.aminoAcid === '*')).toBe(false)
+  })
+
+  // On the - strand the protein's N-terminus (M) is at the highest genomic
+  // coordinate; clipping is purely genomic, so each region still gets the codons
+  // that physically fall within it regardless of translation direction.
+  it('clips by genomic position on the - strand', () => {
+    const { layout } = polyproteinLayout(
+      100,
+      118,
+      [
+        { start: 100, end: 109 },
+        { start: 109, end: 118 },
+      ],
+      -1,
+    )
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      true,
+      new Map([['g1', { protein: 'MFKLST' }]]),
+    )
+    const byRow = (y: number) =>
+      result
+        .aminoAcidOverlay!.filter(a => a.topPx === y)
+        .map(a => a.aminoAcid)
+        .sort()
+    // codons T(100) S(103) L(106) fall in the low region; K(109) F(112) M(115)
+    // in the high region
+    expect(byRow(0)).toEqual(['L', 'S', 'T'])
+    expect(byRow(10)).toEqual(['F', 'K', 'M'])
+  })
+
+  it('emits no amino-acid overlay when peptide data is absent', () => {
+    const { layout } = polyproteinLayout(100, 118, [{ start: 100, end: 118 }])
+    const result = collectRenderData([layout], 0, 1000, config, theme, true)
+    expect(result.aminoAcidOverlay).toBeUndefined()
+  })
+})
+
 describe('collectRenderData tooltip (mouseover slot)', () => {
   it('evaluates a custom mouseover jexl override against the feature', () => {
     const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })

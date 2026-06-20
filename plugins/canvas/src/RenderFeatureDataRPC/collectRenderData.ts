@@ -212,6 +212,32 @@ function transcriptCDS(feature: Feature, strand: number): CdsSegment[] {
   return strand === -1 ? cds.reverse() : cds
 }
 
+// Maps the feature's pre-translated protein (computed worker-side in
+// fetchPeptideData, keyed by feature id) back onto its CDS segments. Returns
+// undefined when no peptide data is present (zoomed out, or colorByCDS off) so
+// callers fall back to plain boxes. Single source for both the exon overlay and
+// the polyprotein overlay so their genomic-to-residue mapping can never drift.
+function aminoAcidsByFeature(feature: Feature, ctx: RenderContext) {
+  const strand = feature.get('strand') ?? 0
+  const protein = ctx.peptideDataMap?.get(feature.id())?.protein
+  return protein
+    ? aminoAcidsBySegment(transcriptCDS(feature, strand), protein, strand)
+    : undefined
+}
+
+// A polyprotein is translated as one ORF, then cleaved *between* residues into
+// mature peptides — so each codon belongs to exactly one cleavage product. We
+// assign by the codon's genomic start; a codon straddling a boundary that isn't
+// codon-aligned (a data quirk — real cleavage sites fall between codons) goes to
+// the product its start lands in, never to both.
+function aminoAcidsInRange(
+  aminoAcids: AggregatedAminoAcid[],
+  start: number,
+  end: number,
+) {
+  return aminoAcids.filter(aa => aa.startBp >= start && aa.startBp < end)
+}
+
 function pushBoxRect(
   feature: Feature,
   baseTopPx: number,
@@ -286,16 +312,9 @@ function emitExonRects(
   collector: Collector,
 ) {
   const transcriptFeature = transcript.feature
-  const transcriptStrand = transcriptFeature.get('strand') ?? 0
-  const protein = ctx.peptideDataMap?.get(transcriptFeature.id())?.protein
-
-  const aminoAcidsBySeg = protein
-    ? aminoAcidsBySegment(
-        transcriptCDS(transcriptFeature, transcriptStrand),
-        protein,
-        transcriptStrand,
-      )
-    : undefined
+  // exon path: CDS children align 1:1 with the translation segments, so each
+  // child's residues are an exact `start-end` key lookup
+  const aminoAcidsBySeg = aminoAcidsByFeature(transcriptFeature, ctx)
 
   for (const childLayout of transcript.children) {
     const childFeature = childLayout.feature
@@ -519,7 +538,7 @@ function processSubfeaturesLayout(
 // Each mature-protein region gets a distinct fill from this palette (by row
 // order) so adjacent cleavage products are visually separable; matches the
 // legacy CanvasFeatureRenderer.
-const MATURE_PROTEIN_COLORS = [
+const MATURE_PROTEIN_COLOR_HEX = [
   '#1f77b4', // blue
   '#ff7f0e', // orange
   '#2ca02c', // green
@@ -532,7 +551,8 @@ const MATURE_PROTEIN_COLORS = [
   '#17becf', // cyan
   '#aec7e8', // light blue
   '#ffbb78', // light orange
-].map(c => colorToUint32(c))
+]
+const MATURE_PROTEIN_COLORS = MATURE_PROTEIN_COLOR_HEX.map(c => colorToUint32(c))
 
 // Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
 // stacked in rows by layoutMatureProteinRegion. Each child already carries its
@@ -542,6 +562,13 @@ const MATURE_PROTEIN_COLORS = [
 // rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
 // by id); each region is registered as a subfeature off it so it is individually
 // hoverable and selectable.
+//
+// When zoomed in far enough that peptide data is present, each region shows the
+// amino-acid letters of its slice of the polyprotein. The protein is translated
+// once from the whole ORF (keyed by rootFeature.id() in peptideDataMap), then
+// each residue is assigned to the region containing its genomic start — so
+// nested/overlapping cleavage products (e.g. VP0 over VP4+VP2) each get the
+// residues they cover without double-translating or drifting out of frame.
 function processMatureProteinLayout(
   layout: FeatureLayout,
   rootFeature: Feature,
@@ -550,18 +577,42 @@ function processMatureProteinLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
+  // one flat residue list for the whole ORF; the polyprotein CDS is a single
+  // reading frame, so mature regions are sub-slices of it rather than the
+  // segment-aligned children the exon path keys on
+  const byCdsSegment = aminoAcidsByFeature(rootFeature, ctx)
+  const aminoAcids = byCdsSegment && [...byCdsSegment.values()].flat()
+
   for (const [i, childLayout] of layout.children.entries()) {
     const childFeature = childLayout.feature
     const topPx = baseTopPx + childLayout.y
-    pushBoxRect(
-      childFeature,
-      topPx,
-      childLayout.height,
-      flatbushIdx,
-      ctx,
-      collector.rects,
-      MATURE_PROTEIN_COLORS[i % MATURE_PROTEIN_COLORS.length],
-    )
+    const colorIdx = i % MATURE_PROTEIN_COLORS.length
+    const cStart = childFeature.get('start')
+    const cEnd = childFeature.get('end')
+    const childAminoAcids =
+      aminoAcids && aminoAcidsInRange(aminoAcids, cStart, cEnd)
+
+    if (childAminoAcids?.length) {
+      emitCodonRects(
+        childAminoAcids,
+        MATURE_PROTEIN_COLOR_HEX[colorIdx]!,
+        topPx,
+        childLayout.height,
+        flatbushIdx,
+        collector.rects,
+        collector.aminoAcidOverlay,
+      )
+    } else {
+      pushBoxRect(
+        childFeature,
+        topPx,
+        childLayout.height,
+        flatbushIdx,
+        ctx,
+        collector.rects,
+        MATURE_PROTEIN_COLORS[colorIdx],
+      )
+    }
     collector.subfeatureInfos.push({
       kind: 'subfeature',
       featureId: childFeature.id(),
