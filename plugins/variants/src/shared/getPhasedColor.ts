@@ -2,6 +2,15 @@ import { set1 } from '@jbrowse/core/ui/colors'
 
 import { REFERENCE_COLOR, UNPHASED_COLOR } from './constants.ts'
 
+// Fast-path diploid genotype split. The 3-char form "a|b" hits on the vast
+// majority of human VCFs; the general split handles polyploid or multi-digit
+// allele indices ("10|0").
+export function splitPhasedAlleles(genotype: string) {
+  return genotype.length === 3
+    ? [genotype[0]!, genotype[2]!]
+    : genotype.split('|')
+}
+
 export function getPhasedColor(
   alleles: string[],
   HP: number,

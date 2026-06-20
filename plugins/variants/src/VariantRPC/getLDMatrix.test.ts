@@ -1,7 +1,6 @@
 // Helper functions copied from getLDMatrix.ts for testing
 // These are internal functions that we want to test directly
 
-import { packHaplotypesFromRaw } from './getLDMatrix.ts'
 
 const SPLITTER = /[/|]/
 
@@ -613,87 +612,5 @@ describe('calculateLDStatsPhased', () => {
     expect(stats.r2).toBeLessThanOrEqual(1)
     expect(stats.dprime).toBeGreaterThanOrEqual(0)
     expect(stats.dprime).toBeLessThanOrEqual(1)
-  })
-})
-
-describe('packHaplotypesFromRaw', () => {
-  // Raw encoding: 0 = ref, >0 = alt, -1 = missing ('.'), -2 = ploidy padding.
-  it('packs diploid genotypes with counts', () => {
-    // s0=0/0, s1=0/1, s2=1/1, s3=./.
-    const gt = Int8Array.from([0, 0, 0, 1, 1, 1, -1, -1])
-    const r = packHaplotypesFromRaw(gt, undefined, 2, 4)
-    expect(r.nValid).toBe(3)
-    expect(r.nHomRef).toBe(1)
-    expect(r.nHet).toBe(1)
-    expect(r.nHomAlt).toBe(1)
-    expect(r.validH1[0]).toBe(0b111)
-    expect(r.validH2[0]).toBe(0b111)
-    expect(r.altH1[0]).toBe(0b100)
-    expect(r.altH2[0]).toBe(0b110)
-  })
-
-  it('skips unphased samples when a phased mask is given', () => {
-    const gt = Int8Array.from([0, 0, 0, 1, 1, 1, -1, -1])
-    const phased = Uint8Array.from([1, 0, 1, 1])
-    const r = packHaplotypesFromRaw(gt, phased, 2, 4)
-    expect(r.nValid).toBe(2)
-    expect(r.nHomRef).toBe(1)
-    expect(r.nHet).toBe(0)
-    expect(r.nHomAlt).toBe(1)
-    expect(r.validH1[0]).toBe(0b101)
-    expect(r.altH1[0]).toBe(0b100)
-  })
-
-  it('counts a half-missing genotype as valid for neither haplotype pair', () => {
-    // s0=0/0 (valid), s1=0/. (one allele present, one missing)
-    const gt = Int8Array.from([0, 0, 0, -1])
-    const r = packHaplotypesFromRaw(gt, undefined, 2, 2)
-    expect(r.nValid).toBe(1)
-    expect(r.nHomRef).toBe(1)
-    expect(r.validH1[0]).toBe(0b11) // both H1 alleles present
-    expect(r.validH2[0]).toBe(0b01) // only s0 has an H2 allele
-  })
-
-  it('skips padded second alleles (haploid sample in a diploid matrix)', () => {
-    const gt = Int8Array.from([0, 0, 0, -2])
-    const r = packHaplotypesFromRaw(gt, undefined, 2, 2)
-    expect(r.nValid).toBe(1)
-    expect(r.nHomRef).toBe(1)
-    expect(r.validH1[0]).toBe(0b01)
-  })
-
-  it('excludes all haploid samples (no second allele for LD)', () => {
-    const gt = Int8Array.from([0, 1, 1])
-    const r = packHaplotypesFromRaw(gt, undefined, 1, 3)
-    expect(r.nValid).toBe(0)
-    expect(r.validH1[0]).toBe(0)
-    expect(r.altH1[0]).toBe(0)
-  })
-
-  it('uses only the first two alleles of higher ploidy', () => {
-    // s0=0/0/1, s1=1/1/0 -> classified on first two alleles
-    const gt = Int8Array.from([0, 0, 1, 1, 1, 0])
-    const r = packHaplotypesFromRaw(gt, undefined, 3, 2)
-    expect(r.nValid).toBe(2)
-    expect(r.nHomRef).toBe(1)
-    expect(r.nHomAlt).toBe(1)
-    expect(r.altH1[0]).toBe(0b10)
-    expect(r.altH2[0]).toBe(0b10)
-  })
-
-  it('treats any alt allele index as alt', () => {
-    // s0=0/2, s1=3/3
-    const gt = Int8Array.from([0, 2, 3, 3])
-    const r = packHaplotypesFromRaw(gt, undefined, 2, 2)
-    expect(r.nHet).toBe(1)
-    expect(r.nHomAlt).toBe(1)
-    expect(r.altH2[0]).toBe(0b11)
-    expect(r.altH1[0]).toBe(0b10)
-  })
-
-  it('allocates one word per 32 samples', () => {
-    const r = packHaplotypesFromRaw(new Int8Array(40 * 2), undefined, 2, 40)
-    expect(r.words).toBe(2)
-    expect(r.validH1.length).toBe(2)
   })
 })

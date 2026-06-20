@@ -137,45 +137,24 @@ function computeSampleInfo(
     if (alt && alt.length > 1) {
       hasSecondaryAlt = true
     }
-    const callGenotype = feature.get('callGenotype') as Int8Array | undefined
-    if (callGenotype) {
-      const sampleNames = feature.get('sampleNames') as string[]
-      const ploidy = feature.get('ploidy') as number
-      const callGenotypePhased = feature.get('callGenotypePhased') as
-        | Uint8Array
-        | undefined
-      for (let si = 0; si < sampleNames.length; si++) {
-        const sampleName = sampleNames[si]!
-        const isPhased = callGenotypePhased
-          ? Boolean(callGenotypePhased[si])
-          : false
-        hasPhased ||= isPhased
-        // Multi-allele calls render with a '/' separator when unphased, so a
-        // non-haploid unphased sample is a black "Unphased" cell in phased mode.
-        hasUnphased ||= ploidy > 1 && !isPhased
-        accumulateSampleInfo(sampleInfo, sampleName, ploidy, isPhased)
-      }
-    } else {
-      let samp = genotypesCache.get(featureId)
-      if (!samp) {
-        samp = feature.get('genotypes') as Record<string, string>
-        genotypesCache.set(featureId, samp)
-      }
-
-      for (const key in samp) {
-        const val = samp[key]!
-        const isPhased = val.includes('|')
-        hasPhased ||= isPhased
-        hasUnphased ||= val.includes('/')
-        let ploidy = 1
-        for (let i = 0, l = val.length; i < l; i++) {
-          const char = val[i]
-          if (char === '|' || char === '/') {
-            ploidy++
-          }
+    let samp = genotypesCache.get(featureId)
+    if (!samp) {
+      samp = feature.get('genotypes') as Record<string, string>
+      genotypesCache.set(featureId, samp)
+    }
+    for (const key in samp) {
+      const val = samp[key]!
+      const isPhased = val.includes('|')
+      hasPhased ||= isPhased
+      hasUnphased ||= val.includes('/')
+      let ploidy = 1
+      for (let i = 0, l = val.length; i < l; i++) {
+        const char = val[i]
+        if (char === '|' || char === '/') {
+          ploidy++
         }
-        accumulateSampleInfo(sampleInfo, key, ploidy, isPhased)
       }
+      accumulateSampleInfo(sampleInfo, key, ploidy, isPhased)
     }
 
     simplifiedFeatures[featureIdx] = {

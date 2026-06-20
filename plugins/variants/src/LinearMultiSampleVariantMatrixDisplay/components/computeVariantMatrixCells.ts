@@ -1,13 +1,9 @@
 import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
-import { getAlleleColor, getRawAlleleCountColor } from '../../shared/drawAlleleCount.ts'
-import { getPhasedColor } from '../../shared/getPhasedColor.ts'
+import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
-  buildSampleIndices,
-  genotypeStringFromRaw,
-  getPhasedColorFromRaw,
-  getRawCallGenotype,
+  getPhasedColor,
   splitPhasedAlleles,
-} from '../../shared/rawGenotypes.ts'
+} from '../../shared/getPhasedColor.ts'
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
@@ -58,7 +54,6 @@ export function computeVariantMatrixCells({
   report?: ProgressReporter
 }): MatrixCellData {
   const alleleColorCache: Record<string, string | undefined> = {}
-  const rawColorCache = new Map<number, string>()
 
   const numFeatures = mafs.length
   const numSources = sources.length
@@ -90,8 +85,6 @@ export function computeVariantMatrixCells({
 
   const featureData: FeatureData[] = []
 
-  const sampleIndices = buildSampleIndices(mafs[0]?.feature, sources)
-
   const isPhasedMode = renderingMode === 'phased'
 
   for (let idx = 0; idx < numFeatures; idx++) {
@@ -102,132 +95,70 @@ export function computeVariantMatrixCells({
       'PS',
     )
 
-    const callGt = getRawCallGenotype(feature)
-    if (hasPhaseSet || !callGt || !sampleIndices) {
-      let samp: Record<string, Record<string, string[]>> | undefined
-      let stringGenotypes: Record<string, string> | undefined
-      if (hasPhaseSet) {
-        samp = feature.get('samples') as Record<
-          string,
-          Record<string, string[]>
-        >
-        const genotypes: Record<string, string> = {}
-        for (const sampleName in samp) {
-          const gt = samp[sampleName]!.GT?.[0]
-          if (gt) {
-            genotypes[sampleName] = gt
-          }
-        }
-        featureData.push(makeFeatureData(feature, featureId, genotypes))
-      } else {
-        stringGenotypes = genotypesCache.get(featureId)
-        if (!stringGenotypes) {
-          stringGenotypes = feature.get('genotypes') as Record<string, string>
-          genotypesCache.set(featureId, stringGenotypes)
-        }
-        featureData.push(makeFeatureData(feature, featureId, stringGenotypes))
-      }
-
-      if (isPhasedMode) {
-        for (let j = 0; j < numSources; j++) {
-          const { HP, sampleName } = sources[j]!
-          let genotype: string | undefined
-          let PS: string | undefined
-          if (samp) {
-            const s = samp[sampleName]
-            genotype = s?.GT?.[0]
-            PS = s?.PS?.[0]
-          } else {
-            genotype = stringGenotypes![sampleName]
-          }
-          if (!genotype) {
-            continue
-          }
-          if (genotype.includes('|')) {
-            const c = getPhasedColor(
-              splitPhasedAlleles(genotype),
-              HP!,
-              mostFrequentAlt,
-              PS,
-            )
-            if (c) {
-              addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-            }
-          } else {
-            addCell(idx, j, BLACK_ABGR, false)
-          }
-        }
-      } else {
-        for (let j = 0; j < numSources; j++) {
-          const { sampleName } = sources[j]!
-          const genotype = samp
-            ? samp[sampleName]?.GT?.[0]
-            : stringGenotypes![sampleName]
-          if (!genotype) {
-            continue
-          }
-          const c = getAlleleColor(genotype, mostFrequentAlt, alleleColorCache)
-          if (c) {
-            addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-          }
-        }
-      }
-    } else {
-      const callGtPhased = feature.get('callGenotypePhased') as
-        | Uint8Array
-        | undefined
-      const ploidy = feature.get('ploidy') as number
-      const mostFreqAltInt = Number.parseInt(mostFrequentAlt, 10)
+    let samp: Record<string, Record<string, string[]>> | undefined
+    let stringGenotypes: Record<string, string> | undefined
+    if (hasPhaseSet) {
+      samp = feature.get('samples') as Record<string, Record<string, string[]>>
       const genotypes: Record<string, string> = {}
-
-      if (isPhasedMode) {
-        for (let j = 0; j < numSources; j++) {
-          const { sampleName, HP } = sources[j]!
-          const si = sampleIndices[j]!
-          if (si < 0) {
-            continue
-          }
-          const gtStr = genotypeStringFromRaw(callGt, si, ploidy, callGtPhased)
-          const isPhased = callGtPhased ? Boolean(callGtPhased[si]) : false
-          if (isPhased) {
-            const allele = callGt[si * ploidy + HP!]!
-            const c = getPhasedColorFromRaw(allele, mostFreqAltInt)
-            if (c) {
-              addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-              genotypes[sampleName] = gtStr
-            }
-          } else {
-            addCell(idx, j, BLACK_ABGR, false)
-            genotypes[sampleName] = gtStr
-          }
-        }
-      } else {
-        for (let j = 0; j < numSources; j++) {
-          const { sampleName } = sources[j]!
-          const si = sampleIndices[j]!
-          if (si < 0) {
-            continue
-          }
-          const c = getRawAlleleCountColor(
-            callGt,
-            si * ploidy,
-            ploidy,
-            mostFreqAltInt,
-            true,
-            rawColorCache,
-          )
-          if (c) {
-            addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
-            genotypes[sampleName] = genotypeStringFromRaw(
-              callGt,
-              si,
-              ploidy,
-              callGtPhased,
-            )
-          }
+      for (const sampleName in samp) {
+        const gt = samp[sampleName]!.GT?.[0]
+        if (gt) {
+          genotypes[sampleName] = gt
         }
       }
       featureData.push(makeFeatureData(feature, featureId, genotypes))
+    } else {
+      stringGenotypes = genotypesCache.get(featureId)
+      if (!stringGenotypes) {
+        stringGenotypes = feature.get('genotypes') as Record<string, string>
+        genotypesCache.set(featureId, stringGenotypes)
+      }
+      featureData.push(makeFeatureData(feature, featureId, stringGenotypes))
+    }
+
+    if (isPhasedMode) {
+      for (let j = 0; j < numSources; j++) {
+        const { HP, sampleName } = sources[j]!
+        let genotype: string | undefined
+        let PS: string | undefined
+        if (samp) {
+          const s = samp[sampleName]
+          genotype = s?.GT?.[0]
+          PS = s?.PS?.[0]
+        } else {
+          genotype = stringGenotypes![sampleName]
+        }
+        if (!genotype) {
+          continue
+        }
+        if (genotype.includes('|')) {
+          const c = getPhasedColor(
+            splitPhasedAlleles(genotype),
+            HP!,
+            mostFrequentAlt,
+            PS,
+          )
+          if (c) {
+            addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
+          }
+        } else {
+          addCell(idx, j, BLACK_ABGR, false)
+        }
+      }
+    } else {
+      for (let j = 0; j < numSources; j++) {
+        const { sampleName } = sources[j]!
+        const genotype = samp
+          ? samp[sampleName]?.GT?.[0]
+          : stringGenotypes![sampleName]
+        if (!genotype) {
+          continue
+        }
+        const c = getAlleleColor(genotype, mostFrequentAlt, alleleColorCache)
+        if (c) {
+          addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
+        }
+      }
     }
   }
 

@@ -46,61 +46,6 @@ export function getAlleleColor(
   return c
 }
 
-// Per-cell allele-count color from a packed int8 callGenotype slice. Tallies
-// the ploidy alleles at `offset` (-2 = ploidy padding, skipped) and resolves a
-// color via `getColorAlleleCount`, memoized on the packed counts in `cache`.
-// Returns undefined when the sample has no called alleles (caller skips the
-// cell); an empty string from `getColorAlleleCount` means "drawn ref omitted"
-// and is likewise falsy. Shared by the regular + matrix cell computations.
-export function getRawAlleleCountColor(
-  callGt: Int8Array,
-  offset: number,
-  ploidy: number,
-  mostFreqAltInt: number,
-  drawReference: boolean,
-  cache: Map<number, string>,
-): string | undefined {
-  let refCount = 0
-  let altCount = 0
-  let alt2Count = 0
-  let uncalled = 0
-  let total = 0
-  for (let pi = 0; pi < ploidy; pi++) {
-    const a = callGt[offset + pi]!
-    if (a === -2) {
-      continue
-    }
-    total++
-    if (a === 0) {
-      refCount++
-    } else if (a === -1) {
-      uncalled++
-    } else if (a === mostFreqAltInt) {
-      altCount++
-    } else {
-      alt2Count++
-    }
-  }
-  if (total === 0) {
-    return undefined
-  }
-  const colorKey =
-    refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
-  let c = cache.get(colorKey)
-  if (c === undefined) {
-    c = getColorAlleleCount(
-      refCount,
-      altCount,
-      alt2Count,
-      uncalled,
-      total,
-      drawReference,
-    )
-    cache.set(colorKey, c)
-  }
-  return c
-}
-
 export function getColorAlleleCount(
   ref: number,
   alt: number,

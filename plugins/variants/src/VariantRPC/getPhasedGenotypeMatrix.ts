@@ -3,7 +3,6 @@ import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
-import { detectRawMode, getRawCallGenotype } from '../shared/rawGenotypes.ts'
 
 import type { SampleInfo, Source } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -56,7 +55,6 @@ export async function getPhasedGenotypeMatrix({
     name: s.name,
     key: s.sampleName ?? s.name,
     maxPloidy: sampleInfo[s.name]?.maxPloidy ?? 2,
-    rawIdx: -1,
   }))
 
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
@@ -83,54 +81,23 @@ export async function getPhasedGenotypeMatrix({
     return arrs
   })
 
-  const raw = detectRawMode(mafs)
-  if (raw) {
-    for (const r of resolved) {
-      const idx = raw.sampleIndexMap.get(r.key)
-      r.rawIdx = idx ?? -1
-    }
-  }
   for (let f = 0; f < numFeatures; f++) {
     const feature = mafs[f]!.feature
-    const callGt = getRawCallGenotype(feature)
-    if (callGt && raw) {
-      const callGtPhased = feature.get('callGenotypePhased') as
-        | Uint8Array
-        | undefined
-      const gtPloidy = feature.get('ploidy') as number
-      for (let k = 0; k < resolved.length; k++) {
-        const r = resolved[k]!
-        const si = r.rawIdx
-        const phased = si !== -1 && callGtPhased?.[si]
-        const arrs = rowArraysBySrc[k]!
-        if (!phased) {
-          for (let hp = 0; hp < r.maxPloidy; hp++) {
-            arrs[hp]![f] = -1
-          }
-        } else {
-          for (let hp = 0; hp < r.maxPloidy; hp++) {
-            const a = hp < gtPloidy ? callGt[si * gtPloidy + hp]! : -1
-            arrs[hp]![f] = a === -1 || a === -2 ? -1 : a
-          }
+    const genotypes = feature.get('genotypes') as Record<string, string>
+    for (let k = 0; k < resolved.length; k++) {
+      const r = resolved[k]!
+      const val = genotypes[r.key]!
+      const arrs = rowArraysBySrc[k]!
+      if (val.includes('|')) {
+        const alleles = val.split('|')
+        for (let hp = 0; hp < r.maxPloidy; hp++) {
+          const allele = alleles[hp]
+          const value = allele === '.' || allele === undefined ? -1 : +allele
+          arrs[hp]![f] = value
         }
-      }
-    } else {
-      const genotypes = feature.get('genotypes') as Record<string, string>
-      for (let k = 0; k < resolved.length; k++) {
-        const r = resolved[k]!
-        const val = genotypes[r.key]!
-        const arrs = rowArraysBySrc[k]!
-        if (val.includes('|')) {
-          const alleles = val.split('|')
-          for (let hp = 0; hp < r.maxPloidy; hp++) {
-            const allele = alleles[hp]
-            const value = allele === '.' || allele === undefined ? -1 : +allele
-            arrs[hp]![f] = value
-          }
-        } else {
-          for (let hp = 0; hp < r.maxPloidy; hp++) {
-            arrs[hp]![f] = -1
-          }
+      } else {
+        for (let hp = 0; hp < r.maxPloidy; hp++) {
+          arrs[hp]![f] = -1
         }
       }
     }

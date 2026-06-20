@@ -71,23 +71,32 @@ connector lines, GPU/Canvas render, hit-test, and SVG export all key off
 `view.totalWidthPxWithoutBorders` (the rounded width) so columns/lines/clicks
 stay pixel-aligned.
 
-## Allele counting: three implementations on purpose, count inline
+## Allele counting: two implementations on purpose, count inline
 
-`shared/alleleCounts.ts` keeps three counters that look like duplication but are
+`shared/alleleCounts.ts` keeps two counters that look like duplication but are
 context-tuned — don't merge into a shared accumulator + per-allele helper:
 
 - `calculateAlleleCountsFast` (VCF hot path) accumulates into an object `b`
   because it runs inside the `processGenotypes` closure (mutating captured
   primitive `let`s forces a V8 Context deopt).
-- `calculateAlleleCounts` (genotypes object) and `calculateAlleleCountsFromRaw`
-  (int8) are plain loops, so they use local-variable counters (faster than
-  object fields).
+- `calculateAlleleCounts` (genotypes object) is a plain loop, so it uses
+  local-variable counters (faster than object fields).
 
 Rule: count inline while iterating; a transform-then-tally shape or per-allele
 function call regresses the hot loop. Length filtering is no longer built in —
 use a jexl filter (`jexl:get(feature,'end')-get(feature,'start')<N`), like the
 `maf()` jexl function in `index.ts`. `lengthCutoffFilter` was removed here (no
 UI, never set); LD keeps its functional one.
+
+## Genotypes: string `genotypes` map is the only representation
+
+Features carry genotypes as a `Record<sampleName, string>` (`feature.get(
+'genotypes')`) or the faster `processGenotypes` callback (`VcfFeature`). A packed
+int8 `callGenotype` path used to exist across the cell, LD, and clustering
+computations as anticipatory infra for a non-VCF binary adapter, but no shipping
+adapter ever set the field, so it was dead and has been removed. If a binary
+genotype adapter is added later, reintroduce a raw fast path behind a real
+feature field rather than resurrecting the untestable branches.
 
 ## Edit-filters (jexl) wiring
 

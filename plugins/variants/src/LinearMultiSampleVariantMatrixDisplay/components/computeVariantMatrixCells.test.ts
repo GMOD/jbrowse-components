@@ -11,17 +11,10 @@ function makeFeature(props: Record<string, unknown>): Feature {
   } as unknown as Feature
 }
 
-describe('computeVariantMatrixCells phased raw callGenotype path', () => {
+describe('computeVariantMatrixCells phased genotypes', () => {
   // Two diploid samples, each split into two haplotype sources.
-  // S1: alleles [1, 0] → "1|0"   S2: alleles [1, 1] → "1|1"
-  const callGt = new Int8Array([1, 0, 1, 1])
-  const callGtPhased = new Uint8Array([1, 1])
-
   const feature = makeFeature({
-    callGenotype: callGt,
-    callGenotypePhased: callGtPhased,
-    ploidy: 2,
-    sampleNames: ['S1', 'S2'],
+    genotypes: { S1: '1|0', S2: '1|1' },
     FORMAT: [],
     ALT: ['A'],
     REF: 'G',

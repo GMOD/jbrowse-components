@@ -1,9 +1,7 @@
 import {
   calculateAlleleCounts,
   calculateAlleleCountsFast,
-  calculateAlleleCountsFromRaw,
 } from './alleleCounts.ts'
-import { getRawCallGenotype } from './rawGenotypes.ts'
 
 import type VcfFeature from '../VcfFeature/index.ts'
 import type SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
@@ -47,8 +45,8 @@ export interface MAFFilteredFeature {
 }
 
 // Resolve allele counts from whichever genotype representation a feature
-// carries: VcfFeature's processGenotypes callback (fastest), a packed int8
-// callGenotype array, or a plain genotypes object (cached per feature id).
+// carries: VcfFeature's processGenotypes callback (fastest), or a plain
+// genotypes object (cached per feature id).
 function computeAlleleCounts(
   feature: Feature,
   genotypesCache?: Map<string, Record<string, string>>,
@@ -57,18 +55,13 @@ function computeAlleleCounts(
   if ('processGenotypes' in feature) {
     alleleCounts = calculateAlleleCountsFast(feature as VcfFeature)
   } else {
-    const rawGt = getRawCallGenotype(feature)
-    if (rawGt) {
-      alleleCounts = calculateAlleleCountsFromRaw(rawGt)
-    } else {
-      const featureId = feature.id()
-      let genotypes = genotypesCache?.get(featureId)
-      if (!genotypes) {
-        genotypes = feature.get('genotypes') as Record<string, string>
-        genotypesCache?.set(featureId, genotypes)
-      }
-      alleleCounts = calculateAlleleCounts(genotypes)
+    const featureId = feature.id()
+    let genotypes = genotypesCache?.get(featureId)
+    if (!genotypes) {
+      genotypes = feature.get('genotypes') as Record<string, string>
+      genotypesCache?.set(featureId, genotypes)
     }
+    alleleCounts = calculateAlleleCounts(genotypes)
   }
   return alleleCounts
 }

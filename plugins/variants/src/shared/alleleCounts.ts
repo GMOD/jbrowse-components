@@ -2,14 +2,14 @@ import { GENOTYPE_SPLITTER } from './constants.ts'
 
 import type VcfFeature from '../VcfFeature/index.ts'
 
-// Genotype string -> allele-count utilities. Three variants exist on purpose,
+// Genotype string -> allele-count utilities. Two variants exist on purpose,
 // each tuned to its execution context, NOT accidental duplication:
 //
 // - calculateAlleleCountsFast runs inside the processGenotypes callback and
 //   accumulates into an object (`b`) because a closure mutating captured
 //   primitives would force a V8 Context allocation on the hottest path.
-// - calculateAlleleCounts / calculateAlleleCountsFromRaw are plain for-loops, so
-//   they use local-variable counters (faster than object-property increments).
+// - calculateAlleleCounts is a plain for-loop, so it uses local-variable
+//   counters (faster than object-property increments).
 //
 // Don't "DRY" these into one shared buckets/helper: the per-allele indirection
 // and the wrong accumulator shape regress the per-feature x per-sample loop.
@@ -249,47 +249,6 @@ export function calculateAlleleCounts(genotypes: Record<string, string>) {
       } else {
         otherCounts[allele] = (otherCounts[allele] ?? 0) + 1
       }
-    }
-  }
-
-  return buildAlleleCounts(
-    count0,
-    count1,
-    count2,
-    count3,
-    countDot,
-    otherCounts,
-  )
-}
-
-/**
- * Count alleles from a packed int8 callGenotype array (-2 = ploidy padding).
- */
-export function calculateAlleleCountsFromRaw(callGenotype: Int8Array) {
-  let count0 = 0
-  let count1 = 0
-  let count2 = 0
-  let count3 = 0
-  let countDot = 0
-  const otherCounts: Record<string, number> = {}
-
-  for (const a of callGenotype) {
-    if (a === -2) {
-      continue
-    }
-    if (a === 0) {
-      count0++
-    } else if (a === 1) {
-      count1++
-    } else if (a === 2) {
-      count2++
-    } else if (a === 3) {
-      count3++
-    } else if (a === -1) {
-      countDot++
-    } else {
-      const key = String(a)
-      otherCounts[key] = (otherCounts[key] ?? 0) + 1
     }
   }
 
