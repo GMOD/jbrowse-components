@@ -6,7 +6,6 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { calculateDprime, calculateLDStats } from '@jbrowse/ld-core'
-import { firstValueFrom, toArray } from 'rxjs'
 
 import {
   computeLDMatrixGPU,
@@ -724,9 +723,7 @@ export async function getLDMatrix({
     'Loading features',
     statusCallback,
     () =>
-      firstValueFrom(
-        dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-      ),
+      dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
   )
   const totalVariants = rawFeatures.length
 

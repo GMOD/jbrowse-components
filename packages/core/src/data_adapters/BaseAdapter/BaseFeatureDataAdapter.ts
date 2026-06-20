@@ -117,6 +117,20 @@ export abstract class BaseFeatureDataAdapter<
   }
 
   /**
+   * {@link getFeaturesArray} across multiple regions — collects
+   * {@link getFeaturesInMultipleRegions} into an array. The common shape in
+   * matrix/comparative RPC methods (variants, synteny, dotplot, breakpoint).
+   */
+  public getFeaturesInMultipleRegionsArray(
+    regions: Region[],
+    opts: BaseOptions = {},
+  ) {
+    return firstValueFrom(
+      this.getFeaturesInMultipleRegions(regions, opts).pipe(toArray()),
+    )
+  }
+
+  /**
    * Check if the store has data for the given reference name.
    * @param refName - Name of the reference sequence
    * @returns Whether data source has data for the given reference name

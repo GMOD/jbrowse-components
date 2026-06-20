@@ -1,7 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom, toArray } from 'rxjs'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 import { classifyGenotypeDosage } from '../shared/parseGenotypeDosage.ts'
@@ -77,9 +76,7 @@ export async function getGenotypeMatrix({
     filterChain: filters,
     report: createProgressReporter({ stopTokenCheck }),
     features: await updateStatus('Loading features', statusCallback, () =>
-      firstValueFrom(
-        dataAdapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-      ),
+      dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
     ),
   })
 

@@ -8,8 +8,6 @@ import {
 } from '@jbrowse/core/util/diagonalizeRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { extractAlignmentData } from '@jbrowse/synteny-core'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -68,15 +66,13 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
         adapterConfig,
       )
       const feats = dedupe(
-        await firstValueFrom(
-          (dataAdapter as BaseFeatureDataAdapter)
-            .getFeaturesInMultipleRegions(referenceRegions, {
-              stopToken,
-              bpPerPx,
-              statusCallback,
-            })
-            .pipe(toArray()),
-        ),
+        await (
+          dataAdapter as BaseFeatureDataAdapter
+        ).getFeaturesInMultipleRegionsArray(referenceRegions, {
+          stopToken,
+          bpPerPx,
+          statusCallback,
+        }),
         f => f.id(),
       )
       // append element-by-element, not `push(...arr)`: whole-genome synteny

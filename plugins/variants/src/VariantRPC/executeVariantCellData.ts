@@ -1,7 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
-import { firstValueFrom, toArray } from 'rxjs'
 
 import { computeVariantCells } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
 import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisplay/components/computeVariantMatrixCells.ts'
@@ -182,9 +181,7 @@ export async function executeVariantCellData({
     'Loading features',
     statusCallback,
     () =>
-      firstValueFrom(
-        adapter.getFeaturesInMultipleRegions(regions, args).pipe(toArray()),
-      ),
+      adapter.getFeaturesInMultipleRegionsArray(regions, args),
   )
 
   const genotypesCache = new Map<string, Record<string, string>>()

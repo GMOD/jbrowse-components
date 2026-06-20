@@ -7,8 +7,6 @@ import {
 } from '@jbrowse/core/util/diagonalizeRegions'
 import { checkStopToken } from '@jbrowse/core/util/stopToken'
 import { extractAlignmentData } from '@jbrowse/synteny-core'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
@@ -60,15 +58,13 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
       adapterConfig,
     )
     const feats = dedupe(
-      await firstValueFrom(
-        (dataAdapter as BaseFeatureDataAdapter)
-          .getFeaturesInMultipleRegions(view.hview.displayedRegions, {
-            sessionId,
-            stopToken,
-            statusCallback,
-          })
-          .pipe(toArray()),
-      ),
+      await (
+        dataAdapter as BaseFeatureDataAdapter
+      ).getFeaturesInMultipleRegionsArray(view.hview.displayedRegions, {
+        sessionId,
+        stopToken,
+        statusCallback,
+      }),
       f => f.id(),
     )
 

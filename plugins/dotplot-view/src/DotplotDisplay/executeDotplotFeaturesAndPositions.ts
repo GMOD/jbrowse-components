@@ -3,8 +3,6 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { dedupe } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
@@ -85,15 +83,14 @@ export async function executeDotplotFeaturesAndPositions({
   const adapter = await getAdapter(pluginManager, sessionId, adapterConfig)
   const dataAdapter = adapter.dataAdapter as BaseFeatureDataAdapter
 
-  const rawFeatures = await firstValueFrom(
-    dataAdapter
-      .getFeaturesInMultipleRegions(regions, {
-        stopToken,
-        bpPerPx: hViewSnap.bpPerPx,
-        lodMode,
-        statusCallback,
-      })
-      .pipe(toArray()),
+  const rawFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
+    regions,
+    {
+      stopToken,
+      bpPerPx: hViewSnap.bpPerPx,
+      lodMode,
+      statusCallback,
+    },
   )
   const features = dedupe(rawFeatures, f => f.id())
 

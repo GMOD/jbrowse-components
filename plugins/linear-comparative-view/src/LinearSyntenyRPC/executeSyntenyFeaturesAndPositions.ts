@@ -7,10 +7,11 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
-import { buildSyntenyGeometry } from './buildSyntenyGeometry.ts'
+import {
+  MIN_CIGAR_PX_WIDTH,
+  buildSyntenyGeometry,
+} from './buildSyntenyGeometry.ts'
 
 import type { SyntenyGeometry } from './buildSyntenyGeometry.ts'
 import type { SyntenyFeatureData } from '../LinearSyntenyDisplay/model.ts'
@@ -68,15 +69,14 @@ export async function executeSyntenyFeaturesAndPositions({
   const bpPerPx = viewSnaps[level]!.bpPerPx
   // forward statusCallback so the adapter's determinate download + parse phases
   // drive the bar; the loading overlay shows a plain "Loading" label otherwise
-  const allFeatures = await firstValueFrom(
-    dataAdapter
-      .getFeaturesInMultipleRegions(viewSnaps[level]!.displayedRegions, {
-        stopToken,
-        bpPerPx,
-        lodMode,
-        statusCallback,
-      })
-      .pipe(toArray()),
+  const allFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
+    viewSnaps[level]!.displayedRegions,
+    {
+      stopToken,
+      bpPerPx,
+      lodMode,
+      statusCallback,
+    },
   )
   const seen = new Set<string>()
   const deduped = allFeatures.filter(f => {
