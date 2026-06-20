@@ -229,6 +229,32 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "jexl_callbacks_demo_hg19",
+      "name": "Jexl callback examples (color by type, property access)",
+      "assemblyNames": ["hg19"],
+      "category": ["Annotation", "Jexl callback examples"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "jexl_callbacks_demo_hg19-LinearBasicDisplay",
+          "color": "jexl:{CDS:'#d62728',exon:'#2ca02c',gene:'#1f77b4',mRNA:'#9467bd'}[feature.type] || 'gray'",
+          "mouseover": "jexl:`${feature.name} [${feature.type}] ${feature.start}-${feature.end}`"
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19_2",
       "name": "NCBI RefSeq w/ top-level feature details",
       "formatDetails": {
