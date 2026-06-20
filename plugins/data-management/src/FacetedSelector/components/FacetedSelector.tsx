@@ -1,16 +1,13 @@
-import { useSyncExternalStore } from 'react'
-
 import { ResizeHandle } from '@jbrowse/core/ui'
-import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import FacetFilters from './FacetFilters.tsx'
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import FacetedHeader from './FacetedHeader.tsx'
-import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
+import { getFacetedColumns } from './getFacetedColumns.tsx'
+import { useWindowSize } from './useWindowSize.ts'
 
-import type { FacetedColumn } from './FacetedDataGrid.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
 
@@ -38,13 +35,6 @@ const useStyles = makeStyles()({
 
 const frac = 0.75
 
-const subscribeToResize = (cb: () => void) => {
-  window.addEventListener('resize', cb)
-  return () => {
-    window.removeEventListener('resize', cb)
-  }
-}
-
 const FacetedSelector = observer(function FacetedSelector({
   model,
   faceted,
@@ -53,57 +43,18 @@ const FacetedSelector = observer(function FacetedSelector({
   faceted: FacetedModel
 }) {
   const { classes } = useStyles()
-  const windowWidth = useSyncExternalStore(
-    subscribeToResize,
-    () => window.innerWidth,
-  )
-  const windowHeight = useSyncExternalStore(
-    subscribeToResize,
-    () => window.innerHeight,
-  )
+  const { width, height } = useWindowSize()
   const { selection, shownTrackIds } = model
-  const {
-    panelWidth,
-    showFilters,
-    filteredNonMetadataKeys,
-    filteredMetadataKeys,
-    nonMetadataFieldSet,
-  } = faceted
+  const { panelWidth, showFilters } = faceted
 
-  const columns: FacetedColumn[] = [
-    {
-      id: 'name',
-      header: 'name',
-      cell: row => (
-        <div className={classes.cell}>
-          <SanitizedHTML html={row.name} />
-          <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
-        </div>
-      ),
-    },
-    ...filteredNonMetadataKeys.map(
-      e =>
-        ({
-          id: e,
-          header: e,
-          cell: row => row[e as 'category' | 'adapter' | 'description'],
-        }) satisfies FacetedColumn,
-    ),
-    ...filteredMetadataKeys.map(
-      e =>
-        ({
-          id: `metadata.${e}`,
-          header: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
-          cell: row => {
-            const val = row.metadata[e]
-            return val != null ? `${val}` : null
-          },
-        }) satisfies FacetedColumn,
-    ),
-  ]
+  const columns = getFacetedColumns({
+    faceted,
+    model,
+    nameClassName: classes.cell,
+  })
 
-  const h = windowHeight * frac
-  const w = windowWidth * frac
+  const h = height * frac
+  const w = width * frac
 
   return (
     <>

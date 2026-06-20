@@ -1,7 +1,9 @@
 import { notEmpty } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
+import type { FacetedRow } from './facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 /**
  * Select or deselect a set of tracks by id. In shopping-cart mode this mutates
@@ -38,5 +40,52 @@ export function setTracksSelected(
         }
       }
     })
+  }
+}
+
+/**
+ * Derives the current selection state for the faceted grid and returns the
+ * toggle handlers for the select-all and per-row checkboxes. In shopping-cart
+ * mode "selected" means present in the selection set; otherwise it means the
+ * track is shown on the view.
+ */
+export function getRowSelectionState({
+  model,
+  useShoppingCart,
+  shownTrackIds,
+  selection,
+  filteredRows,
+}: {
+  model: HierarchicalTrackSelectorModel
+  useShoppingCart: boolean
+  shownTrackIds: Set<string>
+  selection: AnyConfigurationModel[]
+  filteredRows: FacetedRow[]
+}) {
+  const selectedIds = useShoppingCart
+    ? new Set(selection.map(s => `${s.trackId}`))
+    : shownTrackIds
+  const allSelected =
+    filteredRows.length > 0 && filteredRows.every(row => selectedIds.has(row.id))
+  const someSelected =
+    !allSelected && filteredRows.some(row => selectedIds.has(row.id))
+
+  return {
+    selectedIds,
+    allSelected,
+    someSelected,
+    toggleAll: () => {
+      // allSelected implies every filtered row is selected, so deselect all;
+      // otherwise select the rows that aren't yet selected
+      const ids = allSelected
+        ? filteredRows.map(row => row.id)
+        : filteredRows
+            .filter(row => !selectedIds.has(row.id))
+            .map(row => row.id)
+      setTracksSelected(model, ids, !allSelected, useShoppingCart)
+    },
+    toggleRow: (rowId: string) => {
+      setTracksSelected(model, [rowId], !selectedIds.has(rowId), useShoppingCart)
+    },
   }
 }
