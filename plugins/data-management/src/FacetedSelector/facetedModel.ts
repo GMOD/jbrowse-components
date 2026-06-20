@@ -11,7 +11,11 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import { autorun, observable } from 'mobx'
 
-import { getRowStr } from './components/util.ts'
+import {
+  computeFacetCategoryCounts,
+  filterRowsByFacets,
+  filterRowsByText,
+} from './facetedFilter.ts'
 import { findNonSparseKeys, getRootKeys } from './facetedUtil.ts'
 import { measureNameColumnWidth } from '../HierarchicalTrackSelectorWidget/components/shared/trackGridUtils.ts'
 
@@ -187,22 +191,7 @@ export function facetedStateTreeF() {
        * Text-filtered rows. Cheap string filtering on already-built allRows.
        */
       get rows() {
-        const queryLower = self.filterText.toLowerCase()
-        if (!queryLower) {
-          return self.allRows
-        }
-        return self.allRows.filter(
-          row =>
-            row.name.toLowerCase().includes(queryLower) ||
-            row.category?.toLowerCase().includes(queryLower) ||
-            row.description?.toLowerCase().includes(queryLower) ||
-            Object.values(row.metadata).some(
-              v =>
-                v !== null &&
-                v !== undefined &&
-                `${v}`.toLowerCase().includes(queryLower),
-            ),
-        )
+        return filterRowsByText(self.allRows, self.filterText)
       },
     }))
 
@@ -261,47 +250,19 @@ export function facetedStateTreeF() {
        * #getter
        */
       get filteredRows() {
-        const arrFilters = [...self.filters.entries()]
-          .filter(f => f[1].length > 0)
-          .map(([key, val]) => [key, new Set(val)] as const)
-        return self.rows.filter(row =>
-          arrFilters.every(([key, val]) => val.has(getRowStr(key, row))),
-        )
+        return filterRowsByFacets(self.rows, self.filters)
       },
       /**
        * #getter
        * Per-facet category counts for the filter sidebar. Cached by MobX so it
        * recomputes only when rows or filters change, not on every render.
-       * Active-filter facets are counted first against the pre-filter row set
-       * so their counts reflect drill-down.
        */
       get facetCategoryCounts() {
-        const facets = this.fields.slice(1)
-        const counts = new Map(
-          facets.map(f => [f, new Map<string, number>()] as const),
+        return computeFacetCategoryCounts(
+          self.rows,
+          this.fields.slice(1),
+          self.filters,
         )
-        const orderedFacets = [
-          ...facets.filter(f => self.filters.get(f)?.length),
-          ...facets.filter(f => !self.filters.get(f)?.length),
-        ]
-        let currentRows = self.rows
-        for (const facet of orderedFacets) {
-          const categoryCountMap = counts.get(facet)!
-          for (const row of currentRows) {
-            const key = getRowStr(facet, row)
-            if (key) {
-              categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
-            }
-          }
-          const filterValues = self.filters.get(facet)
-          if (filterValues?.length) {
-            const filterSet = new Set(filterValues)
-            currentRows = currentRows.filter(row =>
-              filterSet.has(getRowStr(facet, row)),
-            )
-          }
-        }
-        return counts
       },
       /**
        * #getter

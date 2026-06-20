@@ -1,7 +1,6 @@
 import { notEmpty } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
-import type { FacetedRow } from './facetedModel.ts'
 import type { HierarchicalTrackSelectorModel } from '../HierarchicalTrackSelectorWidget/model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
@@ -60,7 +59,7 @@ export function getRowSelectionState({
   useShoppingCart: boolean
   shownTrackIds: Set<string>
   selection: AnyConfigurationModel[]
-  filteredRows: FacetedRow[]
+  filteredRows: { id: string }[]
 }) {
   const selectedIds = useShoppingCart
     ? new Set(selection.map(s => `${s.trackId}`))
