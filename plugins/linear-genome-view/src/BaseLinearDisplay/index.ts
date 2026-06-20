@@ -21,6 +21,7 @@ export {
   type ByteEstimateConfig,
   type FetchContext,
   type MultiRegionDisplayMixinType,
+  autorunOnReadyView,
   default as MultiRegionDisplayMixin,
   onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'

@@ -97,6 +97,70 @@ test('filterSessionInPlace drops an element whose walk throws, keeps the rest', 
   errorSpy.mockRestore()
 })
 
+// Models a track (resolvable `configuration` reference) whose subtree contains
+// a child that throws when instantiated — standing in for a display whose
+// afterAttach reads view.width before the view is measured. The walk must
+// validate the track via its config reference WITHOUT descending into the
+// subtree, so a throwing child can't make a valid track get dropped.
+const ConfigBearingChild = types.model('ConfigBearingChild', {
+  id: types.identifier,
+  configuration: types.reference(Item, {
+    get(id, parent) {
+      const item = resolveIdentifier(Item, getRoot(parent), id)
+      if (!item) {
+        throw new Error(`cannot hydrate config "${id}"`)
+      }
+      return item
+    },
+    set(value: { id: string }) {
+      return value.id
+    },
+  }),
+  // never reached by the walk; throws if it ever is
+  subtree: types.array(ExplodingChild),
+})
+
+const ConfigBearingContainer = types.model('ConfigBearingContainer', {
+  items: types.map(Item),
+  children: types.array(ConfigBearingChild),
+})
+
+test('filterSessionInPlace validates a config-bearing element by its config, not by walking its subtree', () => {
+  const container = ConfigBearingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      // valid config; a child in its subtree would throw if walked
+      {
+        id: 'keep',
+        configuration: 'a',
+        subtree: [{ id: 'boom', target: 'x' }],
+      },
+    ],
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.children.map(c => c.id)).toEqual(['keep'])
+})
+
+test('filterSessionInPlace drops a config-bearing element whose config is dangling', () => {
+  const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
+  const container = ConfigBearingContainer.create({
+    items: { a: { id: 'a', name: 'A' } },
+    children: [
+      { id: 'keep', configuration: 'a' },
+      { id: 'drop', configuration: 'missing' },
+    ],
+  })
+  unprotect(container)
+  runInAction(() => {
+    filterSessionInPlace(container, getType(container))
+  })
+  expect(container.children.map(c => c.id)).toEqual(['keep'])
+  errorSpy.mockRestore()
+})
+
 test('addRelativeUris stamps baseUri next to a uri key', () => {
   const config: Record<string, unknown> = { uri: 'data.bam' }
   addRelativeUris(config, new URL('https://example.com/config/'))

@@ -1,5 +1,4 @@
 import { addDisposer, getSnapshot, isAlive } from '@jbrowse/mobx-state-tree'
-import { summarizeSessionTracks } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
 import { openSessionDB } from '../openSessionDB.ts'
@@ -103,13 +102,6 @@ export function setupSessionStorageAutosave(self: WebRootModel) {
         if (self.session) {
           const s = self.session as AbstractSessionModel
           const sessionSnap = getSnapshot(s)
-          // [snap-trace] what gets written to sessionStorage on every edit;
-          // this is what an HMR/page reload restores from.
-          // eslint-disable-next-line no-console
-          console.log(
-            '[snap-trace] sessionStorage autosave:',
-            summarizeSessionTracks(sessionSnap),
-          )
           try {
             sessionStorage.setItem(
               'current',

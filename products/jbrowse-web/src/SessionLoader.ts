@@ -1,6 +1,5 @@
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
-import { summarizeSessionTracks } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
 import { createPluginManager } from './createPluginManager.ts'
@@ -320,13 +319,6 @@ const SessionLoader = types
         // the snapshot (xref #5414)
         if (session && isAlive(session)) {
           const snapshot = getSnapshot(session)
-          // [snap-trace] HMR/reload dispose path: this snapshot is stashed in
-          // sessionSource and used to restore after the plugin manager rebuilds.
-          // eslint-disable-next-line no-console
-          console.log(
-            '[snap-trace] disposePluginManager save:',
-            summarizeSessionTracks(snapshot),
-          )
           self.sessionSource = {
             type: 'snapshot',
             snapshot,

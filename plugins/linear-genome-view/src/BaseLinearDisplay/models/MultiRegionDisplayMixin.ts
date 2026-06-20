@@ -21,6 +21,7 @@ import type { LinearGenomeViewModel } from '../../LinearGenomeView/model.ts'
 import type { Region } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
+import type { IAutorunOptions } from 'mobx'
 
 export type { ByteEstimateConfig } from './fetchHelpers.ts'
 export type { FetchContext } from './FetchMixin.ts'
@@ -312,103 +313,86 @@ export default function MultiRegionDisplayMixin() {
         // model, so any mutation replaces the reference and the
         // autorun re-fires on the bare read below. Fires once at
         // mount as a harmless no-op (nothing loaded yet).
-        addDisposer(
+        autorunOnReadyView(
           self,
-          autorun(
-            () => {
-              const view = getContainingView(self) as LinearGenomeViewModel
-              if (!view.initialized) {
-                return
-              }
-              void view.displayedRegions
-              self.clearAllRpcData()
-            },
-            { name: 'DisplayedRegionsChange' },
-          ),
+          view => {
+            void view.displayedRegions
+            self.clearAllRpcData()
+          },
+          { name: 'DisplayedRegionsChange' },
         )
 
         // Autorun: fetch data when the visible viewport isn't covered
         // by loaded data. Fetches with an explicit buffer for smooth
         // scrolling without blank gaps.
-        addDisposer(
+        autorunOnReadyView(
           self,
-          autorun(
-            () => {
-              const view = getContainingView(self) as LinearGenomeViewModel
-              void self.fetchGeneration
+          view => {
+            void self.fetchGeneration
+            if (self.error || self.regionTooLarge || self.fetchCanceled) {
+              return
+            }
+
+            // perf guard: isLoading flip would re-fire this autorun mid-fetch;
+            // fetchGeneration (bumped after fetch) is the real re-trigger.
+            if (untracked(() => self.isLoading)) {
+              return
+            }
+
+            const { assemblyManager } = getSession(self)
+            const trackAssemblyNames = getTrackAssemblyNames(
+              getContainingTrack(self),
+            )
+            const visibleRegions = view.visibleRegions
+            for (const block of visibleRegions) {
+              const regionAsm = block.assemblyName
               if (
-                !view.initialized ||
-                self.error ||
-                self.regionTooLarge ||
-                self.fetchCanceled
-              ) {
-                return
-              }
-
-              // perf guard: isLoading flip would re-fire this autorun mid-fetch;
-              // fetchGeneration (bumped after fetch) is the real re-trigger.
-              if (untracked(() => self.isLoading)) {
-                return
-              }
-
-              const { assemblyManager } = getSession(self)
-              const trackAssemblyNames = getTrackAssemblyNames(
-                getContainingTrack(self),
-              )
-              const visibleRegions = view.visibleRegions
-              for (const block of visibleRegions) {
-                const regionAsm = block.assemblyName
-                if (
-                  !trackAssemblyNames.includes(regionAsm) &&
-                  !trackAssemblyNames.some(name =>
-                    assemblyManager.get(name)?.hasName(regionAsm),
-                  )
-                ) {
-                  self.setError(
-                    new Error(
-                      `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
-                    ),
-                  )
-                  return
-                }
-              }
-
-              const bufferedByIndex = new Map(
-                view.bufferedVisibleRegions.map(b => [
-                  b.displayedRegionIndex,
-                  b,
-                ]),
-              )
-              const needed: {
-                region: Region
-                displayedRegionIndex: number
-              }[] = []
-              for (const block of visibleRegions) {
-                // perf guard: loadedRegions population would re-fire this autorun;
-                // fetchGeneration bump after setLoadedRegion is the real signal.
-                const loaded = untracked(() =>
-                  self.loadedRegions.get(block.displayedRegionIndex),
+                !trackAssemblyNames.includes(regionAsm) &&
+                !trackAssemblyNames.some(name =>
+                  assemblyManager.get(name)?.hasName(regionAsm),
                 )
-                if (
-                  isBlockCovered(loaded, block) &&
-                  self.isCacheValid(block.displayedRegionIndex)
-                ) {
-                  continue
-                }
-                const buffered = bufferedByIndex.get(block.displayedRegionIndex)
-                if (buffered) {
-                  needed.push(buffered)
-                }
+              ) {
+                self.setError(
+                  new Error(
+                    `region assembly (${regionAsm}) does not match track assemblies (${trackAssemblyNames})`,
+                  ),
+                )
+                return
               }
-              if (needed.length > 0) {
-                self.fetchNeeded(needed)
+            }
+
+            const bufferedByIndex = new Map(
+              view.bufferedVisibleRegions.map(b => [b.displayedRegionIndex, b]),
+            )
+            const needed: {
+              region: Region
+              displayedRegionIndex: number
+            }[] = []
+            for (const block of visibleRegions) {
+              // perf guard: loadedRegions population would re-fire this autorun;
+              // fetchGeneration bump after setLoadedRegion is the real signal.
+              const loaded = untracked(() =>
+                self.loadedRegions.get(block.displayedRegionIndex),
+              )
+              if (
+                isBlockCovered(loaded, block) &&
+                self.isCacheValid(block.displayedRegionIndex)
+              ) {
+                continue
               }
-            },
-            {
-              name: 'FetchVisibleRegions',
-              delay: 600,
-            },
-          ),
+              const buffered = bufferedByIndex.get(block.displayedRegionIndex)
+              if (buffered) {
+                needed.push(buffered)
+              }
+            }
+            if (needed.length > 0) {
+              self.fetchNeeded(needed)
+            }
+          },
+          {
+            name: 'FetchVisibleRegions',
+            delay: 600,
+          },
         )
 
         // Re-fetch when track config changes. Each subclass defines its own
@@ -418,19 +402,13 @@ export default function MultiRegionDisplayMixin() {
         // return types unwidened by a base default).
         const rpcProps = (self as { rpcProps?: () => unknown }).rpcProps
         if (rpcProps) {
-          addDisposer(
+          autorunOnReadyView(
             self,
-            autorun(
-              () => {
-                const view = getContainingView(self) as LinearGenomeViewModel
-                if (!view.initialized) {
-                  return
-                }
-                void rpcProps.call(self)
-                self.clearAllRpcData()
-              },
-              { name: 'SettingsInvalidate' },
-            ),
+            () => {
+              void rpcProps.call(self)
+              self.clearAllRpcData()
+            },
+            { name: 'SettingsInvalidate' },
           )
         }
 
@@ -439,25 +417,19 @@ export default function MultiRegionDisplayMixin() {
         // retries. Reads them untracked so setting them doesn't trigger
         // this autorun to immediately wipe them — only the viewport read
         // should fire it.
-        addDisposer(
+        autorunOnReadyView(
           self,
-          autorun(
-            () => {
-              const view = getContainingView(self) as LinearGenomeViewModel
-              if (!view.initialized) {
-                return
-              }
-              void view.visibleRegions
-              if (
-                untracked(
-                  () => self.regionTooLarge || self.fetchCanceled || self.error,
-                )
-              ) {
-                self.clearAllRpcData()
-              }
-            },
-            { name: 'ClearBlockingStateOnViewportChange' },
-          ),
+          view => {
+            void view.visibleRegions
+            if (
+              untracked(
+                () => self.regionTooLarge || self.fetchCanceled || self.error,
+              )
+            ) {
+              self.clearAllRpcData()
+            }
+          },
+          { name: 'ClearBlockingStateOnViewportChange' },
         )
       },
     }))
@@ -466,6 +438,29 @@ export default function MultiRegionDisplayMixin() {
 export type MultiRegionDisplayMixinType = ReturnType<
   typeof MultiRegionDisplayMixin
 >
+
+// Install an autorun on a display whose body only runs once the containing
+// LGV is initialized (measured width + ready assemblies). Centralizes the
+// `if (!view.initialized) return` guard every LGV-display autorun needs:
+// before init, view-derived getters like `view.width` throw by design, so a
+// body that reads them must not run yet. `initialized` is observable, so the
+// body re-runs automatically the moment the view becomes ready. The view is
+// passed in so callers don't re-fetch it.
+export function autorunOnReadyView(
+  self: IAnyStateTreeNode,
+  fn: (view: LinearGenomeViewModel) => void,
+  opts?: IAutorunOptions,
+) {
+  addDisposer(
+    self,
+    autorun(() => {
+      const view = getContainingView(self) as LinearGenomeViewModel
+      if (view.initialized) {
+        fn(view)
+      }
+    }, opts),
+  )
+}
 
 // Run `clear` whenever the containing view's `displayedRegions` reference
 // changes (chromosome navigation, region reorder, etc). Use for state keyed
@@ -480,18 +475,12 @@ export function onDisplayedRegionsChange(
   clear: () => void,
   name = 'OnDisplayedRegionsChange',
 ) {
-  addDisposer(
+  autorunOnReadyView(
     self,
-    autorun(
-      () => {
-        const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized) {
-          return
-        }
-        void view.displayedRegions
-        clear()
-      },
-      { name },
-    ),
+    view => {
+      void view.displayedRegions
+      clear()
+    },
+    { name },
   )
 }

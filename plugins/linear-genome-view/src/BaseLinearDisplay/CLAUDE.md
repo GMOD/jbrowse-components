@@ -15,9 +15,17 @@
 | `SettingsInvalidate`                 | `self.rpcProps()` (any field it reads); installed only when subclass defines the method                 | `clearAllRpcData()`                                       |
 | `ClearBlockingStateOnViewportChange` | `view.visibleRegions`                                                                                   | `clearAllRpcData()` if `regionTooLarge` or `error` is set |
 
-All four early-return on `!view.initialized`. The track-vs-region assembly
-mismatch check lives inside `FetchVisibleRegions`, so a mismatch error surfaces
-only after its 600 ms debounce.
+All four are installed via `autorunOnReadyView(self, view => …, opts)`, which
+runs its body only once `view.initialized` (measured width + ready assemblies)
+and passes the view in. Use it for **any** view-dependent autorun on an LGV
+display — before init, view-derived getters like `view.width` throw by design,
+and an unguarded read in an `afterAttach` body propagates out of display
+instantiation and gets misread by the session loader as an invalid track (it
+then drops it). Never read `view.width`/`dynamicBlocks`/`showLabels`-style
+getters synchronously in an `afterAttach` body; do it inside
+`autorunOnReadyView`. The track-vs-region assembly mismatch check lives inside
+`FetchVisibleRegions`, so a mismatch error surfaces only after its 600 ms
+debounce.
 
 `onDisplayedRegionsChange(self, clear, name?)` (exported helper, NOT a 5th
 installed autorun) is opt-in for per-region state keyed by

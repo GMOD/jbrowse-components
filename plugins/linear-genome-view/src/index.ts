@@ -88,6 +88,7 @@ export {
   StaleViewportRescaleMixin,
   TooLargeMessage,
   TrackHeightMixin,
+  autorunOnReadyView,
   baseLinearDisplayConfigSchema,
   computeRenderTransform,
   drawCanvasImageData,

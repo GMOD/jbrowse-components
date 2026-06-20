@@ -54,8 +54,22 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
     }
   } else if (isModelType(type)) {
     const { properties } = getPropertyMembers(node)
-    for (const [pname, ptype] of Object.entries(properties)) {
-      filterSessionInPlace(node[pname], ptype)
+    // A node holding a `configuration` reference is a track/display/connection.
+    // Its only load-time integrity concern is that the config resolves: reading
+    // it throws for a dangling id or a structurally-invalid config, which the
+    // caller turns into a drop. Stop here instead of recursing — the first
+    // config-bearing node on the path to a display is the track itself, and
+    // recursing past it would eagerly instantiate child state models (displays)
+    // and run their afterAttach before the view is measured. That throws on
+    // view.width and would be misread as an invalid node, dropping a valid
+    // track. Display configs resolve through their own safety net (the track
+    // config's preProcessSnapshot injects a stub display per registered type).
+    if ('configuration' in properties) {
+      void node.configuration
+    } else {
+      for (const [pname, ptype] of Object.entries(properties)) {
+        filterSessionInPlace(node[pname], ptype)
+      }
     }
   }
 }
@@ -75,55 +89,9 @@ function walkChildOrDrop(
     filterSessionInPlace(get(), childType)
     return true
   } catch (e) {
-    // [snap-trace] surface WHAT is being dropped, not just the error. A track
-    // or display dropped here is the prime suspect for `displays[0] undefined`.
-    let dropped = 'unknown'
-    try {
-      dropped = JSON.stringify(get())
-    } catch {
-      /* node may be unwalkable */
-    }
-
-    console.warn(
-      `[snap-trace] walkChildOrDrop DROPPING child (childType=${childType.name})`,
-      {
-        error: `${e}`,
-        dropped,
-        // full stack so we can see the getter chain that read view.width
-        stack: e instanceof Error ? e.stack : undefined,
-      },
-    )
+    console.error(e)
     return false
   }
-}
-
-// [snap-trace] Compact summary of a session snapshot's view→track→display
-// structure, for logging both ends of the save/restore round-trip.
-export function summarizeSessionTracks(snap: unknown): string {
-  const s = snap as
-    | { views?: { type?: string; tracks?: unknown[] }[] }
-    | undefined
-  const views = s?.views ?? []
-  return views
-    .map((v, vi) => {
-      const tracks = (v.tracks ?? []) as {
-        type?: string
-        configuration?: unknown
-        displays?: { type?: string }[]
-      }[]
-      const trackSummary = tracks
-        .map(t => {
-          const displays = t.displays ?? []
-          const conf =
-            typeof t.configuration === 'string' ? t.configuration : '?'
-          return `${conf}[${t.type}]{displays:${displays.length}:${displays
-            .map(d => d.type)
-            .join(',')}}`
-        })
-        .join(' ')
-      return `view#${vi}(${v.type}) tracks=${tracks.length} ${trackSummary}`
-    })
-    .join(' | ')
 }
 
 // A file location that will not open on jbrowse-web: a desktop LocalPathLocation
