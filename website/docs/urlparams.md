@@ -411,6 +411,44 @@ Expanded JSON:
 }
 ```
 
+#### Live example: linked-read bezier connections
+
+`showBezierConnections` draws a curved connector between the mates of each
+aberrant pair and across split-read junctions, so structural-variant signal
+stands out over the pileup. Each curve is the same horizontal-tangent shape a
+breakpoint split view draws. Coloring by pair orientation makes the abnormal
+orientations easy to pick out:
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":300,"showBezierConnections":true,"colorBy":{"type":"pairOrientation"}}}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":300,"showBezierConnections":true,"colorBy":{"type":"pairOrientation"}}}]}]})
+
+Expanded JSON:
+
+```json
+{
+  "views": [
+    {
+      "assembly": "volvox",
+      "loc": "ctgA:1-10000",
+      "type": "LinearGenomeView",
+      "tracks": [
+        {
+          "trackId": "volvox_sv_cram",
+          "displaySnapshot": {
+            "height": 300,
+            "showBezierConnections": true,
+            "colorBy": { "type": "pairOrientation" }
+          }
+        }
+      ]
+    }
+  ]
+}
+```
+
 #### Live example: feature track color
 
 Setting a track's color is one of the most common things people want to do. For
