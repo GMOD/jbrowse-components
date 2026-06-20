@@ -120,6 +120,21 @@ type queueOfDialogs = [DialogComponentType, Record<string, unknown>][]
 queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
 ```
 
+#### volatile: preferencesOverrides
+
+runtime user-preference overrides keyed by preference id, resolved by
+`getPreference` against the `configuration.preferences` admin defaults. Empty
+here (config-only); products that let users edit preferences load and persist
+these via localStorage. Mirrors the display-level `ConfigOverrideMixin`, kept
+off the snapshot since prefs are local UI.
+
+```ts
+// type signature
+type preferencesOverrides = Record<string, unknown>
+// code
+preferencesOverrides: {} as Record<string, unknown>
+```
+
 </details>
 
 <details open>
@@ -179,6 +194,29 @@ type DialogComponent = DialogComponentType
 type DialogProps = Record<string, unknown>
 ```
 
+#### getter: animationMode
+
+resolved feature-layout animation mode (never undefined)
+
+```ts
+type animationMode = AnimationMode
+```
+
+</details>
+
+<details open>
+<summary>BaseSessionModel - Methods</summary>
+
+#### method: getPreference
+
+resolved value of a user preference: a runtime override if the user set one,
+otherwise the admin/embedder `configuration.preferences` default. The override
+map is empty unless the product loads it (web/desktop).
+
+```ts
+type getPreference = (key: string) => unknown
+```
+
 </details>
 
 <details open>
@@ -205,6 +243,15 @@ type clearSelection = () => void
 
 ```ts
 type setHovered = (thing: unknown) => void
+```
+
+#### action: setPreferenceOverride
+
+set a runtime user-preference override (see `getPreference`). Mutates volatile
+state; products persist these to localStorage.
+
+```ts
+type setPreferenceOverride = (key: string, value: unknown) => void
 ```
 
 #### action: setName

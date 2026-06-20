@@ -1,7 +1,7 @@
 ---
-id: tracksmanagersessionmixin
-title: TracksManagerSessionMixin
-sidebar_label: Mixin -> TracksManagerSessionMixin
+id: preferencessessionmixin
+title: PreferencesSessionMixin
+sidebar_label: Mixin -> PreferencesSessionMixin
 ---
 
 Note: this document is automatically generated from @jbrowse/mobx-state-tree
@@ -15,11 +15,16 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Tracks.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Preferences.ts)
 
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/TracksManagerSessionMixin.md)
+[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/PreferencesSessionMixin.md)
 
 ## Overview
+
+loads and persists user-preference overrides (the BaseSession
+`preferencesOverrides` volatile) to localStorage. Compose into products that let
+users edit preferences (web, desktop); embedded sessions omit it and resolve
+preferences from `configuration.preferences` admin defaults only.
 
 ## Inherited members
 
@@ -71,73 +76,3 @@ and docs.
 [pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
 [popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
 [removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
-
-### Available via [ReferenceManagementSessionMixin](../referencemanagementsessionmixin)
-
-**Methods:**
-[getReferring](../referencemanagementsessionmixin#method-getreferring),
-[getReferringMultiple](../referencemanagementsessionmixin#method-getreferringmultiple)
-
-**Actions:**
-[removeReferring](../referencemanagementsessionmixin#action-removereferring)
-
-<details open>
-<summary>TracksManagerSessionMixin - Getters</summary>
-
-#### getter: tracks
-
-```ts
-type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
-```
-
-#### getter: getTracksById
-
-Map of trackId → config for all tracks, assemblies, and connections. Frozen
-jbrowse.tracks are returned as plain objects here; hydration to MST models
-happens lazily in TrackConfigurationReference on first access. MobX caches this
-until any dependency changes.
-
-```ts
-type getTracksById = () => Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
-```
-
-#### getter: tracksById
-
-MobX-cached map of trackId → config for all tracks, assemblies, and connections.
-Recomputes only when dependencies change.
-
-```ts
-type tracksById = Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
-```
-
-</details>
-
-<details open>
-<summary>TracksManagerSessionMixin - Actions</summary>
-
-#### action: addTrackConf
-
-```ts
-type addTrackConf = (trackConf: AnyConfiguration) => any
-```
-
-#### action: updateTrackConfiguration
-
-Persist edited track config back to the in-memory jbrowse config. The
-session-tracks mixin overrides this so a non-admin's edits become a shareable
-session-track override instead.
-
-```ts
-type updateTrackConfiguration = (trackConf: {
-  [key: string]: unknown
-  trackId: string
-}) => void
-```
-
-#### action: deleteTrackConf
-
-```ts
-type deleteTrackConf = (trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any
-```
-
-</details>

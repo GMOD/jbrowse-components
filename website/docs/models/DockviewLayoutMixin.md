@@ -61,37 +61,6 @@ panelViewAssignments: types.stripDefault(
 )
 ```
 
-#### property: init
-
-Initial layout configuration from URL params. Processed once then cleared.
-
-```ts
-// type signature
-type init = IType<
-  DockviewLayoutNode | undefined,
-  DockviewLayoutNode | undefined,
-  DockviewLayoutNode | undefined
->
-// code
-init: types.frozen<DockviewLayoutNode | undefined>()
-```
-
-#### property: pendingMove
-
-A view move queued before workspaces were enabled. Consumed once when the
-dockview container mounts, then cleared.
-
-```ts
-// type signature
-type pendingMove = IType<
-  PendingMove | undefined,
-  PendingMove | undefined,
-  PendingMove | undefined
->
-// code
-pendingMove: types.frozen<PendingMove | undefined>()
-```
-
 #### property: activePanelId
 
 The currently active panel ID in dockview
@@ -101,6 +70,29 @@ The currently active panel ID in dockview
 type activePanelId = IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
 // code
 activePanelId: types.stripDefault(types.maybe(types.string), undefined)
+```
+
+</details>
+
+<details open>
+<summary>DockviewLayoutMixin - Volatiles</summary>
+
+#### volatile: init
+
+```ts
+// type signature
+type init = undefined
+// code
+init: undefined
+```
+
+#### volatile: pendingMove
+
+```ts
+// type signature
+type pendingMove = undefined
+// code
+pendingMove: undefined
 ```
 
 </details>

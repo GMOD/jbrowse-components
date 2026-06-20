@@ -76,7 +76,8 @@ and docs.
 
 **Volatiles:** [selection](../basesessionmodel#volatile-selection),
 [hovered](../basesessionmodel#volatile-hovered),
-[queueOfDialogs](../basesessionmodel#volatile-queueofdialogs)
+[queueOfDialogs](../basesessionmodel#volatile-queueofdialogs),
+[preferencesOverrides](../basesessionmodel#volatile-preferencesoverrides)
 
 **Getters:** [root](../basesessionmodel#getter-root),
 [jbrowse](../basesessionmodel#getter-jbrowse),
@@ -86,11 +87,15 @@ and docs.
 [textSearchManager](../basesessionmodel#getter-textsearchmanager),
 [assemblies](../basesessionmodel#getter-assemblies),
 [DialogComponent](../basesessionmodel#getter-dialogcomponent),
-[DialogProps](../basesessionmodel#getter-dialogprops)
+[DialogProps](../basesessionmodel#getter-dialogprops),
+[animationMode](../basesessionmodel#getter-animationmode)
+
+**Methods:** [getPreference](../basesessionmodel#method-getpreference)
 
 **Actions:** [setSelection](../basesessionmodel#action-setselection),
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
+[setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
 [setName](../basesessionmodel#action-setname),
 [setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
 [removeActiveDialog](../basesessionmodel#action-removeactivedialog),
@@ -214,9 +219,10 @@ and docs.
 **Properties:**
 [dockviewLayout](../dockviewlayoutmixin#property-dockviewlayout),
 [panelViewAssignments](../dockviewlayoutmixin#property-panelviewassignments),
-[init](../dockviewlayoutmixin#property-init),
-[pendingMove](../dockviewlayoutmixin#property-pendingmove),
 [activePanelId](../dockviewlayoutmixin#property-activepanelid)
+
+**Volatiles:** [init](../dockviewlayoutmixin#volatile-init),
+[pendingMove](../dockviewlayoutmixin#volatile-pendingmove)
 
 **Getters:**
 [getViewIdsForPanel](../dockviewlayoutmixin#getter-getviewidsforpanel),
@@ -385,7 +391,7 @@ type setDefaultSession = () => void
 #### action: setSession
 
 ```ts
-type setSession = (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<...>; focu...
+type setSession = (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalI...
 ```
 
 #### action: editTrackConfiguration

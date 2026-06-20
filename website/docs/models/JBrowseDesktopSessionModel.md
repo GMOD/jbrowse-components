@@ -83,7 +83,8 @@ and docs.
 
 **Volatiles:** [selection](../basesessionmodel#volatile-selection),
 [hovered](../basesessionmodel#volatile-hovered),
-[queueOfDialogs](../basesessionmodel#volatile-queueofdialogs)
+[queueOfDialogs](../basesessionmodel#volatile-queueofdialogs),
+[preferencesOverrides](../basesessionmodel#volatile-preferencesoverrides)
 
 **Getters:** [root](../basesessionmodel#getter-root),
 [jbrowse](../basesessionmodel#getter-jbrowse),
@@ -93,11 +94,15 @@ and docs.
 [textSearchManager](../basesessionmodel#getter-textsearchmanager),
 [assemblies](../basesessionmodel#getter-assemblies),
 [DialogComponent](../basesessionmodel#getter-dialogcomponent),
-[DialogProps](../basesessionmodel#getter-dialogprops)
+[DialogProps](../basesessionmodel#getter-dialogprops),
+[animationMode](../basesessionmodel#getter-animationmode)
+
+**Methods:** [getPreference](../basesessionmodel#method-getpreference)
 
 **Actions:** [setSelection](../basesessionmodel#action-setselection),
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
+[setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
 [setName](../basesessionmodel#action-setname),
 [setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
 [removeActiveDialog](../basesessionmodel#action-removeactivedialog),
@@ -114,44 +119,6 @@ and docs.
 [pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
 [popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
 [removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)
-
-### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
-
-**Properties:** [views](../multipleviewssessionmixin#property-views),
-[stickyViewHeaders](../multipleviewssessionmixin#property-stickyviewheaders),
-[useWorkspaces](../multipleviewssessionmixin#property-useworkspaces)
-
-**Actions:** [moveViewDown](../multipleviewssessionmixin#action-moveviewdown),
-[moveViewUp](../multipleviewssessionmixin#action-moveviewup),
-[moveViewToTop](../multipleviewssessionmixin#action-moveviewtotop),
-[moveViewToBottom](../multipleviewssessionmixin#action-moveviewtobottom),
-[addView](../multipleviewssessionmixin#action-addview),
-[removeView](../multipleviewssessionmixin#action-removeview),
-[setStickyViewHeaders](../multipleviewssessionmixin#action-setstickyviewheaders),
-[setUseWorkspaces](../multipleviewssessionmixin#action-setuseworkspaces)
-
-### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
-
-**Properties:**
-[drawerPosition](../drawerwidgetsessionmixin#property-drawerposition),
-[drawerWidth](../drawerwidgetsessionmixin#property-drawerwidth),
-[widgets](../drawerwidgetsessionmixin#property-widgets),
-[activeWidgets](../drawerwidgetsessionmixin#property-activewidgets),
-[minimized](../drawerwidgetsessionmixin#property-minimized)
-
-**Getters:** [visibleWidget](../drawerwidgetsessionmixin#getter-visiblewidget)
-
-**Actions:**
-[setDrawerPosition](../drawerwidgetsessionmixin#action-setdrawerposition),
-[updateDrawerWidth](../drawerwidgetsessionmixin#action-updatedrawerwidth),
-[resizeDrawer](../drawerwidgetsessionmixin#action-resizedrawer),
-[addWidget](../drawerwidgetsessionmixin#action-addwidget),
-[showWidget](../drawerwidgetsessionmixin#action-showwidget),
-[hideWidget](../drawerwidgetsessionmixin#action-hidewidget),
-[minimizeWidgetDrawer](../drawerwidgetsessionmixin#action-minimizewidgetdrawer),
-[showWidgetDrawer](../drawerwidgetsessionmixin#action-showwidgetdrawer),
-[hideAllWidgets](../drawerwidgetsessionmixin#action-hideallwidgets),
-[editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)
 
 ### Available via [AssembliesMixin](../assembliesmixin)
 
@@ -195,9 +162,10 @@ and docs.
 **Properties:**
 [dockviewLayout](../dockviewlayoutmixin#property-dockviewlayout),
 [panelViewAssignments](../dockviewlayoutmixin#property-panelviewassignments),
-[init](../dockviewlayoutmixin#property-init),
-[pendingMove](../dockviewlayoutmixin#property-pendingmove),
 [activePanelId](../dockviewlayoutmixin#property-activepanelid)
+
+**Volatiles:** [init](../dockviewlayoutmixin#volatile-init),
+[pendingMove](../dockviewlayoutmixin#volatile-pendingmove)
 
 **Getters:**
 [getViewIdsForPanel](../dockviewlayoutmixin#getter-getviewidsforpanel),
@@ -215,3 +183,41 @@ and docs.
 [moveViewDownInPanel](../dockviewlayoutmixin#action-moveviewdowninpanel),
 [moveViewToTopInPanel](../dockviewlayoutmixin#action-moveviewtotopinpanel),
 [moveViewToBottomInPanel](../dockviewlayoutmixin#action-moveviewtobottominpanel)
+
+### Available via [MultipleViewsSessionMixin](../multipleviewssessionmixin)
+
+**Properties:** [views](../multipleviewssessionmixin#property-views),
+[stickyViewHeaders](../multipleviewssessionmixin#property-stickyviewheaders),
+[useWorkspaces](../multipleviewssessionmixin#property-useworkspaces)
+
+**Actions:** [moveViewDown](../multipleviewssessionmixin#action-moveviewdown),
+[moveViewUp](../multipleviewssessionmixin#action-moveviewup),
+[moveViewToTop](../multipleviewssessionmixin#action-moveviewtotop),
+[moveViewToBottom](../multipleviewssessionmixin#action-moveviewtobottom),
+[addView](../multipleviewssessionmixin#action-addview),
+[removeView](../multipleviewssessionmixin#action-removeview),
+[setStickyViewHeaders](../multipleviewssessionmixin#action-setstickyviewheaders),
+[setUseWorkspaces](../multipleviewssessionmixin#action-setuseworkspaces)
+
+### Available via [DrawerWidgetSessionMixin](../drawerwidgetsessionmixin)
+
+**Properties:**
+[drawerPosition](../drawerwidgetsessionmixin#property-drawerposition),
+[drawerWidth](../drawerwidgetsessionmixin#property-drawerwidth),
+[widgets](../drawerwidgetsessionmixin#property-widgets),
+[activeWidgets](../drawerwidgetsessionmixin#property-activewidgets),
+[minimized](../drawerwidgetsessionmixin#property-minimized)
+
+**Getters:** [visibleWidget](../drawerwidgetsessionmixin#getter-visiblewidget)
+
+**Actions:**
+[setDrawerPosition](../drawerwidgetsessionmixin#action-setdrawerposition),
+[updateDrawerWidth](../drawerwidgetsessionmixin#action-updatedrawerwidth),
+[resizeDrawer](../drawerwidgetsessionmixin#action-resizedrawer),
+[addWidget](../drawerwidgetsessionmixin#action-addwidget),
+[showWidget](../drawerwidgetsessionmixin#action-showwidget),
+[hideWidget](../drawerwidgetsessionmixin#action-hidewidget),
+[minimizeWidgetDrawer](../drawerwidgetsessionmixin#action-minimizewidgetdrawer),
+[showWidgetDrawer](../drawerwidgetsessionmixin#action-showwidgetdrawer),
+[hideAllWidgets](../drawerwidgetsessionmixin#action-hideallwidgets),
+[editConfiguration](../drawerwidgetsessionmixin#action-editconfiguration)

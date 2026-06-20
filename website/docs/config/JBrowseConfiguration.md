@@ -68,6 +68,12 @@ when true, URL params like `&loc=` navigate within the configured defaultSession
 }
 ```
 
+#### slot: configuration.preferences
+
+```js
+PreferencesConfigSchemaFactory()
+```
+
 #### slot: configuration.theme
 
 ```js
