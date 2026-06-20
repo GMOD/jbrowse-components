@@ -4,8 +4,9 @@ import {
   filterRowsByText,
 } from './facetedFilter.ts'
 
-interface TestRow {
-  id: string
+import type { Row } from './components/util.ts'
+
+interface TestRow extends Row {
   name: string
   category?: string
   description?: string
