@@ -1,6 +1,8 @@
 ---
 title: Multiple alignment (MAF) track configuration
-description: Multiple alignment tracks using the MafTabixAdapter, BigMafAdapter, and BgzipTaffyAdapter
+description:
+  Multiple alignment tracks using the MafTabixAdapter, BigMafAdapter, and
+  BgzipTaffyAdapter
 guide_category: Track types
 ---
 
@@ -12,11 +14,11 @@ reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
 
 ## Adapters
 
-| Format         | Adapter                                                 |
-| -------------- | ------------------------------------------------------- |
-| BigMaf         | [BigMafAdapter](/docs/config/bigmafadapter)             |
-| MAF (tabix)    | [MafTabixAdapter](/docs/config/maftabixadapter)         |
-| TAF (bgzipped) | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter)     |
+| Format         | Adapter                                             |
+| -------------- | --------------------------------------------------- |
+| BigMaf         | [BigMafAdapter](/docs/config/bigmafadapter)         |
+| MAF (tabix)    | [MafTabixAdapter](/docs/config/maftabixadapter)     |
+| TAF (bgzipped) | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter) |
 
 Provide the aligned species either as a `samples` array (in track order) or via
 an `nhLocation` Newick tree, which both supplies the species and orders/labels
@@ -33,13 +35,17 @@ phylogenetic tree):
   "assemblyNames": ["ce11"],
   "adapter": {
     "type": "MafTabixAdapter",
-    "bedGzLocation": { "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz" },
+    "bedGzLocation": {
+      "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz"
+    },
     "nhLocation": {
       "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/multiz26way/ce11.26way.nh"
     },
     "index": {
       "indexType": "TBI",
-      "location": { "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz.tbi" }
+      "location": {
+        "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz.tbi"
+      }
     }
   }
 }
@@ -71,6 +77,6 @@ Each species row can also show its **own** percent identity to the reference —
 the fraction of that row's aligned bases matching the reference over the visible
 region — as a `NN%` readout next to its row label (and in the per-base hover
 tooltip). Where the conservation band summarizes all species into one profile,
-this breaks the signal out per species, so you can see *which* genomes are
+this breaks the signal out per species, so you can see _which_ genomes are
 diverging in a region. It's computed from the alignment (no extra files) and is
 toggled from the track menu; the reference row itself is excluded.

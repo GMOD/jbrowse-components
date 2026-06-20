@@ -26,8 +26,13 @@ const MAFTooltip = observer(function ({
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
-  const { showCoverage, coverageDisplayHeight, rowsTopOffset, rowHeight, scrollTop } =
-    model
+  const {
+    showCoverage,
+    coverageDisplayHeight,
+    rowsTopOffset,
+    rowHeight,
+    scrollTop,
+  } = model
   // Controlled point for floating-ui. Without it, `useClientPoint` enters
   // pointer-tracking mode: a window `mousemove` listener that allocates a fresh
   // virtual reference every move. Every other display tooltip passes this.

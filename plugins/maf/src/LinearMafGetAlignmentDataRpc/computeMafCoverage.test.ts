@@ -151,7 +151,9 @@ test('sample N counts against identity (it is a mismatch to a known ref)', () =>
 })
 
 test('positions with no non-reference aligned base are NaN', () => {
-  const blocks: MafBlock[] = [block(0, 'ACGT', [row(0, 'ACGT'), row(1, 'AC--')])]
+  const blocks: MafBlock[] = [
+    block(0, 'ACGT', [row(0, 'ACGT'), row(1, 'AC--')]),
+  ]
   const r = computeMafCoverage(blocks, 0, 4, 0)
   // single non-ref row covers pos0-1 only; pos2-3 have no classifiable base.
   expect(r.identity[0]).toBe(1)
