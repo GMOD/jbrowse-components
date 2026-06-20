@@ -119,8 +119,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
   // The first caller's onProgress drives the determinate bar; later callers
   // still see the label (their onProgress no-ops against the cached download).
   private async setup(opts?: BaseOptions) {
-    return downloadStatus('Downloading index', opts?.statusCallback, onProgress =>
-      this.setupOnce(onProgress),
+    return downloadStatus(
+      'Downloading index',
+      opts?.statusCallback,
+      onProgress => this.setupOnce(onProgress),
     )
   }
 
