@@ -122,6 +122,10 @@ export const recentConfigs: readonly SampleLink[] = [
     href: '?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-{"views":[{"assembly":"hg38","loc":"chr17:43044000-43126000","type":"LinearGenomeView","tracks":["hg38-cactus447way"]}]}',
     label: 'hg38 MAF (447-way)',
   },
+  {
+    href: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true,"rowHeight":8}}]}]}',
+    label: 'C. elegans MAF (26-way, conservation band)',
+  },
 ]
 
 const hs1Mm39DotplotSpec = encodeURIComponent(

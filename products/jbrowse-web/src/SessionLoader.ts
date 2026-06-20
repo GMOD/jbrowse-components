@@ -1,3 +1,4 @@
+import { dropVendoredPlugins } from '@jbrowse/core/PluginLoader'
 import { createElementId } from '@jbrowse/core/util/types/mst'
 import { destroy, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -353,7 +354,7 @@ const SessionLoader = types
       userAcceptedConfirmation?: boolean,
     ) {
       try {
-        const sessionPlugins = snap.sessionPlugins ?? []
+        const sessionPlugins = dropVendoredPlugins(snap.sessionPlugins ?? [])
         if ((await checkPlugins(sessionPlugins)) || userAcceptedConfirmation) {
           self.setSessionPlugins(await loadPluginRecords(sessionPlugins))
           self.setSessionSource({
@@ -388,7 +389,11 @@ const SessionLoader = types
         await this.loadConfigAndPlugins({})
       } else {
         const { config, configUri } = await fetchRemoteConfig(configPath)
-        const configPlugins = config.plugins ?? []
+        // Vendored plugins (e.g. MafViewer) are dropped at load time because
+        // core already provides them, so they must not trip the cross-origin
+        // trust prompt either — otherwise every remote config that still lists
+        // one (jbrowse.org demos do) needs a needless "trust this plugin" click.
+        const configPlugins = dropVendoredPlugins(config.plugins ?? [])
         const isCrossOrigin = configUri.origin !== window.location.origin
         if (isCrossOrigin && !(await checkPlugins(configPlugins))) {
           self.setSessionTriaged({
