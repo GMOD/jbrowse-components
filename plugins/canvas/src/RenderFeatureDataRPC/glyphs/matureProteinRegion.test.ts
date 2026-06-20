@@ -15,10 +15,19 @@ function mockFeature(opts: {
   start: number
   end: number
   strand?: number
+  product?: string
   subfeatures?: ReturnType<typeof mockFeature>[]
   parentFeature?: Feature
 }): Feature {
-  const { type, start, end, strand = 1, subfeatures = [], parentFeature } = opts
+  const {
+    type,
+    start,
+    end,
+    strand = 1,
+    product,
+    subfeatures = [],
+    parentFeature,
+  } = opts
   const f = {
     get: (key: string) => {
       const map: Record<string, unknown> = {
@@ -27,6 +36,7 @@ function mockFeature(opts: {
         start,
         end,
         strand,
+        product,
         subfeatures,
       }
       return map[key]
@@ -199,6 +209,51 @@ describe('collectRenderData for mature protein regions', () => {
     expect(result.arrowXs).toHaveLength(1)
     expect(result.arrowXs[0]).toBe(feature.get('end'))
     expect(result.arrowDirections[0]).toBe(1)
+    // each region gets a distinct palette color
+    expect(new Set(result.rectColors).size).toBe(3)
+    // each region is individually hoverable/selectable via subfeature hit info,
+    // parented to the top-level CDS
+    expect(result.subfeatureInfos).toHaveLength(3)
+    expect(
+      result.subfeatureInfos.every(s => s.parentFeatureId === feature.id()),
+    ).toBe(true)
+  })
+
+  it('resolves the subfeature hover label from the labels.name config', () => {
+    const matures = [
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 100,
+        end: 200,
+        product: 'protein VP0',
+      }),
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 200,
+        end: 300,
+        product: 'capsid protein VP1',
+      }),
+    ]
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 300,
+      subfeatures: matures,
+    })
+    // mirrors the test_data configs: prefer the GFF `product` attribute
+    const config = mockDisplayConfig({
+      labels: {
+        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        description: '',
+      },
+    })
+    const layout = findGlyph(feature, config)({ feature, config })
+
+    const result = collectRenderData([layout], 0, 10000, config, theme, false)
+    expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
+      'protein VP0',
+      'capsid protein VP1',
+    ])
   })
 
   it('omits the strand arrow when the CDS is not top-level', () => {
@@ -220,5 +275,64 @@ describe('collectRenderData for mature protein regions', () => {
     const result = collectRenderData([layout], 0, 10000, config, theme, false)
     expect(result.rectPositions).toHaveLength(2 * 2)
     expect(result.arrowXs).toHaveLength(0)
+  })
+
+  // Real NCBI SARS-CoV-2 shape (test_data/sars-cov2/ncbi_original.gff3):
+  // gene → CDS (no mRNA layer) → mature_protein_region_of_CDS. The gene routes
+  // to Subfeatures and the CDS child to MatureProteinRegion; the cleavage
+  // products must still be emitted as individual rows rather than collapsed to
+  // a single flat box.
+  it('renders mature regions of a CDS nested directly under a gene', () => {
+    const matures = [
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 266,
+        end: 805,
+      }),
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 805,
+        end: 2719,
+      }),
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 2719,
+        end: 8554,
+      }),
+    ]
+    const cds = mockFeature({
+      type: 'CDS',
+      start: 266,
+      end: 8554,
+      subfeatures: matures,
+    })
+    const gene = mockFeature({
+      type: 'gene',
+      start: 266,
+      end: 8554,
+      subfeatures: [cds],
+    })
+    const config = mockDisplayConfig()
+    const layout = findGlyph(gene, config)({ feature: gene, config })
+    expect(layout.glyphType).toBe('Subfeatures')
+
+    const result = collectRenderData([layout], 0, 100000, config, theme, false)
+    // one rect per mature region, not a single collapsed box
+    expect(result.rectPositions).toHaveLength(3 * 2)
+    expect([...result.rectPositions]).toEqual([266, 805, 805, 2719, 2719, 8554])
+    // rows are stacked, not all at the same y
+    expect(new Set(result.rectYs).size).toBe(3)
+    // distinct palette colors per region
+    expect(new Set(result.rectColors).size).toBe(3)
+    // each region is hoverable as a subfeature, parented to the top-level gene
+    // (the id GetCanvasFeatureDetails can resolve) so findSubfeatureById can
+    // recurse gene → CDS → region
+    expect(result.subfeatureInfos).toHaveLength(3)
+    expect(
+      result.subfeatureInfos.every(s => s.parentFeatureId === gene.id()),
+    ).toBe(true)
+    expect(result.subfeatureInfos.map(s => s.featureId)).toEqual(
+      matures.map(m => m.id()),
+    )
   })
 })

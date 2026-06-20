@@ -274,16 +274,12 @@ const FeatureBody = observer(function FeatureBody({
           tick()
         })
       } else {
-        // eslint-disable-next-line no-console
-        console.log('[yMorph] settle')
         model.endYMorph()
         running = false
       }
     }
     const dispose = autorun(() => {
       if (model.morphFromTops !== undefined && !running) {
-        // eslint-disable-next-line no-console
-        console.log('[yMorph] clock start')
         running = true
         raf = requestAnimationFrame(() => {
           tick()
@@ -318,13 +314,12 @@ const FeatureBody = observer(function FeatureBody({
     setClientXY([e.clientX, e.clientY])
     const result = hitTestAtEvent(e)
     if (result.feature) {
-      // One tooltip per top-level feature (the resolved `mouseover` slot),
-      // shared by the glyph, its subfeatures, and its label — they can't
-      // diverge. subfeatureId is still tracked for selection/highlight.
+      // Hovering a subfeature shows its own name (e.g. a mature-peptide
+      // product); otherwise the top-level feature's resolved `mouseover` slot.
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
-        result.feature.tooltip,
+        result.subfeature?.displayLabel ?? result.feature.tooltip,
       )
     } else {
       model.clearHover()

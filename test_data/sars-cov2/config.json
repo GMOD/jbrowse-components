@@ -40,6 +40,28 @@
         }
       },
       "assemblyNames": ["Wuhan-Hu-1"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes_with_mature_peptides",
+      "name": "NCBI genes (with mature peptides)",
+      "adapter": {
+        "type": "Gff3Adapter",
+        "gffLocation": {
+          "uri": "ncbi_original.gff3",
+          "locationType": "UriLocation"
+        }
+      },
+      "assemblyNames": ["Wuhan-Hu-1"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "ncbi_genes_with_mature_peptides-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
+          }
+        }
+      ]
     }
   ],
   "defaultSession": {
@@ -94,7 +116,7 @@
                 "type": "LinearBasicDisplay",
                 "heightPreConfig": 280,
                 "configuration": "sequence-LinearBasicDisplay",
-                "jexlFilters": ["jexl:get(feature,'type')=='gene'"]
+                "jexlFilters": ["jexl:feature.type=='gene'"]
               }
             ]
           }

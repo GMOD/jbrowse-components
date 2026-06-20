@@ -103,6 +103,14 @@ export const recentConfigs: readonly SampleLink[] = [
     label: 'GWAS LocusZoom LD (GIANT BMI, FTO locus)',
   },
   {
+    href: '?config=test_data/sars-cov2/config.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","tracks":["ncbi_genes_with_mature_peptides"]}]}',
+    label: 'SARS-CoV2 polyprotein (ORF1ab mature peptides)',
+  },
+  {
+    config: 'test_data/enterovirus_d/config.json',
+    label: 'Enterovirus D polyprotein (mature peptides)',
+  },
+  {
     config: 'test_data/arabidopsis_methylation/config.json',
     label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
   },

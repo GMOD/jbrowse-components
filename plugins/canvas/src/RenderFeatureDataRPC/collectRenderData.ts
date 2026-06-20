@@ -219,6 +219,9 @@ function pushBoxRect(
   flatbushIdx: number,
   ctx: RenderContext,
   rects: RectData[],
+  // packed RGBA32 override (mature-protein palette); 0 is a valid color so the
+  // guard is `=== undefined`, not a falsy/`??` check
+  colorOverride?: number,
 ) {
   const [y, height] = applyUTRSizing(baseTopPx, baseHeight, isUTR(feature))
   rects.push({
@@ -226,7 +229,10 @@ function pushBoxRect(
     end: feature.get('end'),
     y,
     height,
-    color: colorToUint32(boxColor(feature, ctx)),
+    color:
+      colorOverride === undefined
+        ? colorToUint32(boxColor(feature, ctx))
+        : colorOverride,
     flatbushIdx,
   })
 }
@@ -453,7 +459,14 @@ function processFeatureRecord(
       processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
       break
     case 'MatureProteinRegion':
-      processMatureProteinLayout(layout, flatbushIdx, ctx, collector)
+      processMatureProteinLayout(
+        layout,
+        feature,
+        0,
+        flatbushIdx,
+        ctx,
+        collector,
+      )
       break
     case 'Box':
       processDefaultLayout(layout, flatbushIdx, ctx, collector)
@@ -478,6 +491,19 @@ function processSubfeaturesLayout(
         ctx,
         collector,
       )
+    } else if (childLayout.glyphType === 'MatureProteinRegion') {
+      // A polyprotein CDS nested under a container (gene → CDS → mature
+      // regions); emit its stacked cleavage-product rows at the child's offset
+      // rather than collapsing it to a single flat box. The container feature is
+      // the top-level (root) feature for subfeature hit resolution.
+      processMatureProteinLayout(
+        childLayout,
+        feature,
+        childLayout.y,
+        flatbushIdx,
+        ctx,
+        collector,
+      )
     } else {
       pushBoxRect(
         childLayout.feature,
@@ -491,25 +517,68 @@ function processSubfeaturesLayout(
   }
 }
 
+// Each mature-protein region gets a distinct fill from this palette (by row
+// order) so adjacent cleavage products are visually separable; matches the
+// legacy CanvasFeatureRenderer.
+const MATURE_PROTEIN_COLORS = [
+  '#1f77b4', // blue
+  '#ff7f0e', // orange
+  '#2ca02c', // green
+  '#d62728', // red
+  '#9467bd', // purple
+  '#8c564b', // brown
+  '#e377c2', // pink
+  '#7f7f7f', // gray
+  '#bcbd22', // olive
+  '#17becf', // cyan
+  '#aec7e8', // light blue
+  '#ffbb78', // light orange
+].map(c => colorToUint32(c))
+
 // Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
 // stacked in rows by layoutMatureProteinRegion. Each child already carries its
 // own y/height; draw a strand arrow on the parent CDS when it is top-level so
-// it shows direction like every other glyph.
+// it shows direction like every other glyph. baseTopPx shifts the rows when the
+// CDS is nested inside a container glyph (gene → CDS → mature regions).
+// rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
+// by id); each region is registered as a subfeature off it so it is individually
+// hoverable and selectable.
 function processMatureProteinLayout(
   layout: FeatureLayout,
+  rootFeature: Feature,
+  baseTopPx: number,
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
 ) {
-  for (const childLayout of layout.children) {
+  for (const [i, childLayout] of layout.children.entries()) {
+    const childFeature = childLayout.feature
+    const topPx = baseTopPx + childLayout.y
     pushBoxRect(
-      childLayout.feature,
-      childLayout.y,
+      childFeature,
+      topPx,
       childLayout.height,
       flatbushIdx,
       ctx,
       collector.rects,
+      MATURE_PROTEIN_COLORS[i % MATURE_PROTEIN_COLORS.length],
     )
+    collector.subfeatureInfos.push({
+      kind: 'subfeature',
+      featureId: childFeature.id(),
+      parentFeatureId: rootFeature.id(),
+      type: childFeature.get('type'),
+      startBp: childFeature.get('start'),
+      endBp: childFeature.get('end'),
+      topPx,
+      bottomPx: topPx + childLayout.height,
+      // config-driven name so a `labels.name` override can surface e.g. the
+      // GFF `product` attribute (mature peptides carry no `name`); falls back to
+      // the plain name/id
+      displayLabel:
+        readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
+        getFeatureName(childFeature),
+    })
   }
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }
