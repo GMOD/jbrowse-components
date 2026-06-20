@@ -287,11 +287,12 @@ describe('Canvas2DSyntenyRenderer', () => {
     canvas.height = 100
     const renderer = new Canvas2DSyntenyRenderer(canvas)
     renderer.resize(800, 100)
-    // top width = |10.5-10| = 0.5px, bottom width = |20.5-20| = 0.5px → maxW 0.5
+    // vertical ribbon (top & bottom centered at 10.25 → slope 0, perpFactor 1),
+    // 0.5px wide on both ends → perpW 0.5
     const c1 = bpHiLo([10])
     const c2 = bpHiLo([10.5])
-    const c3 = bpHiLo([20.5])
-    const c4 = bpHiLo([20])
+    const c3 = bpHiLo([10.5])
+    const c4 = bpHiLo([10])
     renderer.uploadGeometry(
       0,
       makeInstanceData(1, {
@@ -308,9 +309,42 @@ describe('Canvas2DSyntenyRenderer', () => {
     )
     renderer.render(makeState([[0, makeParams()]]))
 
-    // base alpha 0x80/255, scaled by the 0.5px on-screen width
+    // base alpha 0x80/255, scaled by the 0.5px perpendicular width
     expect(strokeAlphas).toHaveLength(1)
     expect(strokeAlphas[0]!).toBeCloseTo((0x80 / 255) * 0.5, 3)
+  })
+
+  test('steep thin diagonal strokes its centerline rather than filling a sliver', () => {
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    // 2px wide horizontally on both ends, but the centerline shifts 100→500 over
+    // height 100 (slope 4 → perpFactor ~4.12), so perpendicular width ~0.49px.
+    // A horizontal-width test would have filled a ragged sliver here.
+    const c1 = bpHiLo([100])
+    const c2 = bpHiLo([102])
+    const c3 = bpHiLo([502])
+    const c4 = bpHiLo([500])
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1Hi: c1.hi,
+        bp1Lo: c1.lo,
+        bp2Hi: c2.hi,
+        bp2Lo: c2.lo,
+        bp3Hi: c3.hi,
+        bp3Lo: c3.lo,
+        bp4Hi: c4.hi,
+        bp4Lo: c4.lo,
+      }),
+    )
+    renderer.render(makeState([[0, makeParams()]]))
+
+    expect(pathOps.filter(op => op === 'fill')).toHaveLength(0)
+    expect(pathOps).toContain('moveTo(101.0,0.0)')
+    expect(pathOps).toContain('lineTo(501.0,100.0)')
   })
 
   test('deleteGeometry removes a track from rendering', () => {

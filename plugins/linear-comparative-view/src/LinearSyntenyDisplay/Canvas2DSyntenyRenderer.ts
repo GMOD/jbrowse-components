@@ -107,20 +107,24 @@ function drawInstances(
     }
     const [r, g, b, fa] = rgba
 
-    // A geometric ctx.fill() of a sub-pixel quad deposits near-zero ink, so
-    // where the GPU's fillCoverage keeps a sub-pixel ribbon as a ~1px AA band
-    // the canvas2d backend would render near-blank. When the ribbon is
-    // sub-pixel on both ends, stroke its centerline at 1px to reproduce that
-    // footprint; otherwise fill the silhouette.
-    // SYNC: scale the BASE stroke alpha by the on-screen width (clamped to
-    // [0,1]) to mirror fillCoverage's widthFade — a lone thin ribbon stays a
-    // faint locatable line while a whole-genome tangle fades instead of stacking
-    // hard full-opacity lines. CIGAR keeps full alpha (hard-cut in the shader).
-    const maxW = Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3))
-    if (maxW < 1) {
-      const xt = (c.sx1 + c.sx2) * 0.5
-      const xb = (c.sx3 + c.sx4) * 0.5
-      ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * maxW})`
+    // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
+    // not horizontal span: a steep diagonal can be several px wide horizontally
+    // yet razor-thin perpendicular, and ctx.fill() of such a degenerate sliver
+    // antialiases poorly (ragged diagonals in SVG export). Below 1px thick we
+    // instead stroke the centerline at 1px, which canvas renders cleanly at any
+    // slope; above it we fill the silhouette.
+    // SYNC: perpFactor and the BASE alpha fade (×perpW, clamped ≤1) mirror
+    // fillCoverage's perpFactor/widthFade — a lone thin ribbon stays a faint
+    // locatable line while a whole-genome tangle fades instead of stacking hard
+    // full-opacity lines. CIGAR keeps full alpha (hard-cut in the shader).
+    const xt = (c.sx1 + c.sx2) * 0.5
+    const xb = (c.sx3 + c.sx4) * 0.5
+    const slope = (xb - xt) / Math.max(height, 1)
+    const perpFactor = Math.sqrt(1 + slope * slope)
+    const perpW =
+      Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3)) / perpFactor
+    if (perpW < 1) {
+      ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * perpW})`
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(xt, yTop)
