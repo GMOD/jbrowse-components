@@ -3,6 +3,7 @@ import {
   computeMultiRegionLayout,
   computeSortedLayout,
 } from './sortLayout.ts'
+import { INTERBASE_SOFTCLIP } from '../shared/types.ts'
 
 import type { PileupDataResult } from './types.ts'
 import type { SortedBy } from '../shared/types.ts'
@@ -12,6 +13,8 @@ interface Read {
   end: number
   baseAtSortPos?: string
   tagValue?: string
+  // A soft clip at genomic `pos` of `length` bp (left clip when pos <= start).
+  softclip?: { pos: number; length: number }
 }
 
 function makePileupData(opts: {
@@ -60,6 +63,22 @@ function makePileupData(opts: {
     mismatchBases[i] = e.base
   }
 
+  const softclipEntries = reads.flatMap((r, i) =>
+    r.softclip ? [{ readIdx: i, ...r.softclip }] : [],
+  )
+  const numSoftclips = softclipEntries.length
+  const interbasePositions = new Uint32Array(numSoftclips)
+  const interbaseLengths = new Uint16Array(numSoftclips)
+  const interbaseTypes = new Uint8Array(numSoftclips)
+  const interbaseReadIndices = new Uint32Array(numSoftclips)
+  for (let i = 0; i < numSoftclips; i++) {
+    const e = softclipEntries[i]!
+    interbasePositions[i] = e.pos
+    interbaseLengths[i] = e.length
+    interbaseTypes[i] = INTERBASE_SOFTCLIP
+    interbaseReadIndices[i] = e.readIdx
+  }
+
   return {
     readIds,
     readNames,
@@ -92,13 +111,13 @@ function makePileupData(opts: {
     softclipBaseYs: new Uint16Array(0),
     softclipBaseBases: new Uint8Array(0),
     softclipBaseReadIndices: new Uint32Array(0),
-    interbasePositions: new Uint32Array(0),
-    interbaseYs: new Uint16Array(0),
-    interbaseLengths: new Uint16Array(0),
-    interbaseTypes: new Uint8Array(0),
-    interbaseReadIndices: new Uint32Array(0),
+    interbasePositions,
+    interbaseYs: new Uint16Array(numSoftclips),
+    interbaseLengths,
+    interbaseTypes,
+    interbaseReadIndices,
     interbaseSequences: [],
-    interbaseFrequencies: new Uint8Array(0),
+    interbaseFrequencies: new Uint8Array(numSoftclips),
     coverageDepths: new Float32Array(0),
     coverageFwdDepths: new Float32Array(0),
     coverageRevDepths: new Float32Array(0),
@@ -144,7 +163,7 @@ function makePileupData(opts: {
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
     numInsertions: 0,
-    numSoftclips: 0,
+    numSoftclips,
     numHardclips: 0,
     detectedModifications: [],
     maxY: 0,
@@ -203,6 +222,54 @@ describe('computeLayout', () => {
     const data = makePileupData({ regionStart: 0, reads: [] })
     const { maxY } = computeLayout(data)
     expect(maxY).toBe(0)
+  })
+
+  describe('softclip expansion direction', () => {
+    // A read whose alignment begins to the left of the region (its readPosition
+    // start is clamped to regionStart) with a left soft clip must expand its
+    // layout extent leftward, not rightward.
+    test('left clip on a read starting before the region expands leftward', () => {
+      // readA aligns [80,200] but is clamped to [100,200]; a 30bp left clip
+      // sits at genomic 80, covering [50,80). readB occupies [40,75], which
+      // overlaps readA's expanded left edge — so they cannot share a row.
+      const data = makePileupData({
+        regionStart: 100,
+        reads: [
+          { start: 100, end: 200, softclip: { pos: 80, length: 30 } },
+          { start: 40, end: 75 },
+        ],
+      })
+      const { readYs, maxY } = computeLayout(data, true)
+      expect(readYs[0]).not.toBe(readYs[1])
+      expect(maxY).toBe(2)
+    })
+
+    test('left clip wholly within the region still expands leftward', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          { start: 100, end: 200, softclip: { pos: 100, length: 30 } },
+          { start: 40, end: 75 },
+        ],
+      })
+      const { readYs, maxY } = computeLayout(data, true)
+      expect(readYs[0]).not.toBe(readYs[1])
+      expect(maxY).toBe(2)
+    })
+
+    test('right clip expands rightward', () => {
+      const data = makePileupData({
+        regionStart: 0,
+        reads: [
+          { start: 100, end: 200, softclip: { pos: 200, length: 30 } },
+          { start: 210, end: 250 },
+        ],
+      })
+      const { readYs, maxY } = computeLayout(data, true)
+      // readA expands to [100,230], colliding with readB [210,250]
+      expect(readYs[0]).not.toBe(readYs[1])
+      expect(maxY).toBe(2)
+    })
   })
 
   test('non-overlapping reads share a row', () => {

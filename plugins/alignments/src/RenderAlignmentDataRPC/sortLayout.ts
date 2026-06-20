@@ -40,7 +40,14 @@ function buildSoftclipExpansions(data: PileupDataResult) {
     const pos = data.interbasePositions[i]!
     const len = data.interbaseLengths[i]!
     const readStart = data.readPositions[readIdx * 2]!
-    const clipStart = pos === readStart ? pos - len : pos
+    // A left clip sits at the read's leftmost mapped base and expands the read
+    // leftward; a right clip sits past the rightmost base and expands rightward.
+    // `readStart` is clamped to the region start (buildBaseReadArrays), so a read
+    // beginning left of the region has its left clip at `pos < readStart` — use
+    // `<=`, not `===`, or that clip is misread as a right clip and expands the
+    // wrong way.
+    const isLeftClip = pos <= readStart
+    const clipStart = isLeftClip ? pos - len : pos
     const clipEnd = clipStart + len
     const existing = expansions.get(readIdx)
     if (!existing) {

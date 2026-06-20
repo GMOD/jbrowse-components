@@ -37,10 +37,13 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
     for (const region of regions) {
       const features = await dataAdapter.getFeaturesArray(region, { stopToken })
       for (const feature of features) {
-        const val = (
-          feature.get('tags') as Record<string, unknown> | undefined
-        )?.[tag]
-        if (val !== undefined) {
+        // Mirror extractFeatureTagValue's source order (tags object, else the
+        // bare field) so every value the render path can color by is discovered
+        // here — otherwise a field-backed tag colors per read but never gets a
+        // palette entry, leaving those reads on the no-tag fallback.
+        const tags = feature.get('tags') as Record<string, unknown> | undefined
+        const val = tags ? tags[tag] : feature.get(tag)
+        if (val != null) {
           tagValues.add(`${val}`)
         }
       }
