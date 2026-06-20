@@ -5,6 +5,7 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
+import PaddingBlocks from './PaddingBlocks.tsx'
 import TrackLabel from './TrackLabel.tsx'
 import TrackRenderingContainer from './TrackRenderingContainer.tsx'
 
@@ -74,6 +75,8 @@ const TrackContainer = observer(function TrackContainer({
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
+      {/* offset 1px since for left track border; over the track content */}
+      {track.pinned ? <PaddingBlocks model={model} offset={1} /> : null}
       <ResizeHandle
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}

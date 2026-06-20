@@ -8,13 +8,14 @@ import { observer } from 'mobx-react'
 
 import Gridlines from './Gridlines.tsx'
 import OverviewHighlightBand from './OverviewHighlightBand.tsx'
+import PaddingBlocks from './PaddingBlocks.tsx'
 import RangeSelectOverlay from './RangeSelectOverlay.tsx'
 import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
+import { useRangeSelect } from './useRangeSelect.ts'
 import { getHighlightColor } from './util.ts'
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
-import { useRangeSelect } from './useRangeSelect.ts'
 import { useSideScroll } from './useSideScroll.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -122,6 +123,7 @@ const TracksContainer = observer(function TracksContainer({
       <HighlightGroup model={model} />
       {additional}
       {children}
+      {showGridlines ? <PaddingBlocks model={model} /> : null}
     </div>
   )
 })
