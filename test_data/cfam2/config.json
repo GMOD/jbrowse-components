@@ -84,7 +84,7 @@
                 "heightPreConfig": 190,
                 "configuration": "genes.gff-LinearBasicDisplay",
                 "trackDisplayMode": "compact",
-                "jexlFiltersSetting": ["jexl:get(feature,'type')=='gene'"]
+                "jexlFiltersSetting": ["jexl:feature.type=='gene'"]
               }
             ]
           }

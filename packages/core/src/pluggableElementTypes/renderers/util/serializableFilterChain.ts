@@ -1,4 +1,5 @@
 import { stringToJexlExpression } from '../../../util/jexlStrings.ts'
+import { isFeature, jexlFeatureProxy } from '../../../util/simpleFeature.ts'
 
 import type { JexlExpression, JexlInstance } from '../../../util/jexlStrings.ts'
 
@@ -29,8 +30,9 @@ export default class SerializableFilterChain {
   }
 
   passes(...args: unknown[]) {
+    const feature = isFeature(args[0]) ? jexlFeatureProxy(args[0]) : args[0]
     for (const entry of this.filterChain) {
-      if (!entry.expr.eval({ feature: args[0] })) {
+      if (!entry.expr.eval({ feature })) {
         return false
       }
     }

@@ -1,4 +1,5 @@
 import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { isFeature, jexlFeatureProxy } from '../util/simpleFeature.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
 
@@ -29,9 +30,15 @@ export function evaluateJexl(
   args: Record<string, unknown>,
   jexl?: JexlInstance,
 ) {
-  return value.length > 'jexl:'.length
-    ? stringToJexlExpression(value, jexl).eval(args)
-    : value
+  if (value.length <= 'jexl:'.length) {
+    return value
+  }
+  // wrap a feature arg so callbacks can read `feature.score` directly, while
+  // `get(feature,'score')` keeps working
+  const context = isFeature(args.feature)
+    ? { ...args, feature: jexlFeatureProxy(args.feature) }
+    : args
+  return stringToJexlExpression(value, jexl).eval(context)
 }
 
 const fallbackDefaults: Record<string, unknown> = {

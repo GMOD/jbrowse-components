@@ -45,6 +45,35 @@ export function isFeature(thing: unknown): thing is Feature {
   )
 }
 
+/**
+ * Wrap a feature so jexl callbacks can read attributes as plain properties
+ * (`feature.score`) instead of `get(feature,'score')`. Since jexl has no
+ * member-call syntax, attributes resolve to values: any property (including
+ * `id`, i.e. a data field such as a GFF3 `ID=`) is forwarded to
+ * `feature.get(name)` where a SimpleFeature keeps its data, and `parent`
+ * resolves to the parent feature (re-wrapped so `feature.parent.type` works).
+ * `get` is the one method kept callable, so the legacy
+ * `get(feature,'x')`/`getTag(feature,'x')` forms still work; the `parent`/`id`
+ * jexl functions tolerate the value form (see jexl.ts).
+ */
+export function jexlFeatureProxy(feature: Feature): Feature {
+  return new Proxy(feature, {
+    get(target, prop) {
+      if (typeof prop !== 'string') {
+        return Reflect.get(target, prop)
+      }
+      if (prop === 'get') {
+        return target.get.bind(target)
+      }
+      if (prop === 'parent') {
+        const p = target.parent?.()
+        return p ? jexlFeatureProxy(p) : undefined
+      }
+      return target.get(prop)
+    },
+  })
+}
+
 export interface SimpleFeatureArgs {
   /** key-value data, must include 'start' and 'end' */
   data: Record<string, unknown>

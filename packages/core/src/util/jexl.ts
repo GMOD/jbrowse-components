@@ -13,9 +13,17 @@ export default function JexlF(/* config?: any*/) {
 
   // below are core functions
   j.addFunction('get', (feature: Feature, data: string) => feature.get(data))
-  j.addFunction('parent', (feature: Feature) => feature.parent?.())
 
-  j.addFunction('id', (feature: Feature) => feature.id())
+  // parent/id read as a method on a raw feature, but as a value on a
+  // jexlFeatureProxy (jexl has no member-call syntax) — tolerate both
+  j.addFunction('parent', (feature: Feature) => {
+    const p: unknown = feature.parent
+    return typeof p === 'function' ? p.call(feature) : p
+  })
+  j.addFunction('id', (feature: Feature) => {
+    const i: unknown = feature.id
+    return typeof i === 'function' ? i.call(feature) : i
+  })
 
   // let user cast a jexl type into a javascript type
   j.addFunction('cast', (arg: unknown) => arg)

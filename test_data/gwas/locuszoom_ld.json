@@ -107,7 +107,7 @@
           "type": "LinearBasicDisplay",
           "height": 150,
           "labels": {
-            "name": "jexl:get(feature,'gene_id') || get(feature,'name') || get(feature,'id')"
+            "name": "jexl:feature.gene_id || feature.name || feature.id"
           }
         }
       ]

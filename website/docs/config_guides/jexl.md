@@ -10,26 +10,35 @@ callbacks.
 A Jexl configuration callback looks like this:
 
 ```json
-    "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
+    "color": "jexl:feature.strand==-1?'red':'blue'"
 ```
 
-The notation `get(feature,'strand')` is the same as `feature.get('strand')` in
-javascript code.
+**Feature operations**
 
-We have a number of functions available in jexl, such as:
-
-**Feature operations - get**
+Read any feature attribute as a plain property, e.g. `feature.strand`. Nested
+attributes work too (`feature.INFO.SVTYPE`), and `feature.parent` gives the
+parent feature:
 
 ```js
-jexl: get(feature, 'start') // start coordinate, 0-based half open
-jexl: get(feature, 'end') // end coordinate, 0-based half open
-jexl: get(feature, 'refName') // chromosome or reference sequence name
-jexl: get(feature, 'CIGAR') // BAM or CRAM feature CIGAR string
-jexl: get(feature, 'seq') // BAM or CRAM feature sequence
-jexl: get(feature, 'type') // feature type e.g. mRNA or gene
-jexl: parent(feature) // parent feature, e.g. the gene of an mRNA (undefined if none)
-jexl: id(feature) // the feature's unique id
+jexl: feature.start // start coordinate, 0-based half open
+jexl: feature.end // end coordinate, 0-based half open
+jexl: feature.refName // chromosome or reference sequence name
+jexl: feature.CIGAR // BAM or CRAM feature CIGAR string
+jexl: feature.seq // BAM or CRAM feature sequence
+jexl: feature.type // feature type e.g. mRNA or gene
+jexl: feature.id // the feature's id attribute, e.g. a GFF3 ID=
+jexl: feature.parent // parent feature, e.g. the gene of an mRNA (undefined if none)
 ```
+
+:::note
+
+The older `get(feature,'start')` function form is equivalent to `feature.start`
+and still works, so existing configs need no changes. New configs can use
+whichever reads more clearly.
+
+:::
+
+We have a number of other functions available in jexl, such as:
 
 **Feature operations - getTag**
 
@@ -82,11 +91,19 @@ jexl: parseInt('2')
 jexl: parseFloat('2.054')
 ```
 
+**Lookup tables**
+
+Index an object literal by a feature attribute to map values to outputs. Types
+not in the map return undefined, so pair it with `||` for a default:
+
+```js
+jexl: { mRNA: 'green', pseudogene: 'purple' }[feature.type] || 'gray'
+```
+
 **Console logging**
 
 ```js
 jexl: log(feature) // console.logs output and returns value
-jexl: cast({ mRNA: 'green', pseudogene: 'purple' })[get(feature, 'type')] // looks the feature type up in the map; cast() makes the object literal indexable in jexl. Types not in the map return undefined
 ```
 
 **Binary operators**
@@ -191,9 +208,10 @@ use the custom `jexl` function in your config callbacks as follows:
 }
 ```
 
-The feature in the callback is a "SimpleFeature" type object; you can call
-`feature.get('start')`, `feature.get('end')`, `feature.get('refName')`, or
-`feature.get('other_attribute')` for e.g. a field in a GFF3 column 9.
+The feature in the callback is a "SimpleFeature" type object; read any attribute
+as a property — `feature.start`, `feature.end`, `feature.refName`, or
+`feature.other_attribute` for e.g. a field in a GFF3 column 9 (the equivalent
+`feature.get('start')` method form also works).
 
 See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 a full walkthrough of setting up a plugin like this.

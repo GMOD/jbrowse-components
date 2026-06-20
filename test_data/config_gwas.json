@@ -131,7 +131,7 @@
         {
           "displayId": "gwas_display_custom_color_callback_display",
           "type": "LinearManhattanDisplay",
-          "color": "jexl:'hsl('+get(feature,'start')/100000+',50%,50%)'"
+          "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
         }
       ]
     },

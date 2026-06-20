@@ -1321,7 +1321,7 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3tabix_genes_jexl_color_linear",
-          "color": "jexl:get(feature,'type')=='CDS'?'#d62728':get(feature,'type')=='exon'?'#2ca02c':'#1f77b4'"
+          "color": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'"
         }
       ]
     },
@@ -1351,9 +1351,9 @@
         {
           "type": "LinearBasicDisplay",
           "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
-          "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+          "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
           "labels": {
-            "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'"
+            "name": "jexl:feature.name+' ['+feature.type+']'"
           }
         }
       ]
@@ -1405,9 +1405,9 @@
         }
       },
       "displays": {
-        "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+        "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
         "labels": {
-          "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'"
+          "name": "jexl:feature.name+' ['+feature.type+']'"
         }
       }
     },
@@ -1867,7 +1867,7 @@
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'"
+            "color1": "jexl:feature.type=='SNV'?'green':'purple'"
           }
         }
       ]
@@ -2142,7 +2142,7 @@
           "displayId": "arc_track_custom_height_linear",
           "renderer": {
             "type": "ArcRenderer",
-            "height": "jexl:log10(get(feature,'end')-get(feature,'start'))*20"
+            "height": "jexl:log10(feature.end-feature.start)*20"
           }
         }
       ]
@@ -2670,11 +2670,11 @@
           "displayId": "gff3_custom_tooltips_linear",
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "mouseover": "jexl:`${get(feature,'name')} [${get(feature,'type')}] at ${get(feature,'start')} - ${get(feature,'end')} (strand: ${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})`",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+            "mouseover": "jexl:`${feature.name} [${feature.type}] at ${feature.start} - ${feature.end} (strand: ${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})`",
+            "subfeatureMouseover": "jexl:feature.name + ' (' + feature.type + ') - parent: ' + feature.parent.name",
             "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+              "name": "jexl:feature.name || feature.id",
+              "description": "jexl:feature.note || feature.description || ''"
             },
             "showLabels": true,
             "showDescriptions": true,
@@ -2706,8 +2706,8 @@
           "renderer": {
             "type": "CanvasFeatureRenderer",
             "labels": {
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''"
+              "name": "jexl:feature.name || feature.id",
+              "description": "jexl:feature.note || feature.description || ''"
             },
             "showLabels": true,
             "showDescriptions": false,
@@ -2767,10 +2767,10 @@
         {
           "type": "LinearVariantDisplay",
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
-          "jexlFilters": ["get(feature,'start')<8000"],
+          "jexlFilters": ["feature.start<8000"],
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'"
+            "color1": "jexl:feature.start>5000?'darkgreen':'red'"
           }
         }
       ]

@@ -347,7 +347,7 @@
         {
           "type": "LinearManhattanDisplay",
           "displayId": "gwas_hg19_color_callback-LinearManhattanDisplay",
-          "color": "jexl:'hsl('+get(feature,'start')/100000+',50%,50%)'"
+          "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
         }
       ]
     },
@@ -515,7 +515,7 @@
           "displayId": "clinvar_ncbi-LinearVariantDisplay",
           "renderer": {
             "type": "CanvasFeatureRenderer",
-            "color1": "jexl:s = get(feature,'INFO').CLNSIG; ({'Benign':'blue','Likely_benign':'deepskyblue','Uncertain_significance':'gray','Pathogenic':'red','Likely_pathogenic':'orange','Conflicting_interpretations_of_pathogenicity':'brown'})[s] || 'purple'"
+            "color1": "jexl:s = feature.INFO.CLNSIG; ({'Benign':'blue','Likely_benign':'deepskyblue','Uncertain_significance':'gray','Pathogenic':'red','Likely_pathogenic':'orange','Conflicting_interpretations_of_pathogenicity':'brown'})[s] || 'purple'"
           }
         }
       ]
@@ -545,7 +545,7 @@
           "displayId": "clinvar_ncbi_hg38-LinearVariantDisplay",
           "renderer": {
             "type": "SvgFeatureRenderer",
-            "color1": "jexl:get(feature,'INFO').CLNSIG=='Benign'?'blue':get(feature,'INFO').CLNSIG=='Likely_benign'?'deepskyblue':get(feature,'INFO').CLNSIG=='Uncertain_significance'?'gray':get(feature,'INFO').CLNSIG=='Pathogenic'?'red':get(feature,'INFO').CLNSIG=='Likely_pathogenic'?'orange':get(feature,'INFO').CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
+            "color1": "jexl:feature.INFO.CLNSIG=='Benign'?'blue':feature.INFO.CLNSIG=='Likely_benign'?'deepskyblue':feature.INFO.CLNSIG=='Uncertain_significance'?'gray':feature.INFO.CLNSIG=='Pathogenic'?'red':feature.INFO.CLNSIG=='Likely_pathogenic'?'orange':feature.INFO.CLNSIG=='Conflicting_interpretations_of_pathogenicity'?'brown':'purple'"
           }
         },
         {
@@ -5085,7 +5085,7 @@
           "renderer": {
             "type": "SvgFeatureRenderer",
             "labels": {
-              "description": "jexl:get(feature,'geneSymbol')"
+              "description": "jexl:feature.geneSymbol"
             }
           }
         }
