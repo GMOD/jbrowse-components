@@ -1,4 +1,5 @@
-import { max, measureText } from '@jbrowse/core/util'
+import { getFillProps, measureText } from '@jbrowse/core/util'
+import { alpha, useTheme } from '@mui/material'
 
 export function SvgRowLabels({
   sources,
@@ -13,15 +14,22 @@ export function SvgRowLabels({
   scrollTop?: number
   availableHeight?: number
 }) {
+  const theme = useTheme()
   if (rowHeight < 6) {
     return null
   }
   const fontSize = Math.min(rowHeight, 12)
   const boxHeight = Math.min(rowHeight, 20)
-  // `name` is the identity (used as key + hit-test); `label` is the displayed
-  // string if the adapter config supplied one.
-  const display = sources.map(s => s.label ?? s.name)
-  const labelWidth = max(display.map(d => measureText(d, fontSize))) + 10
+
+  // `name` is the identity (key + hit-test); `label` is the displayed string if
+  // the adapter config supplied one.
+  let labelWidth = 10
+  for (const source of sources) {
+    const w = measureText(source.label ?? source.name, fontSize) + 10
+    labelWidth = Math.max(labelWidth, w)
+  }
+
+  const defaultBackground = alpha(theme.palette.background.paper, 0.8)
   return (
     <g transform={`translate(${labelOffset} 0)`}>
       {sources.map((source, idx) => {
@@ -40,16 +48,18 @@ export function SvgRowLabels({
               y={y}
               width={labelWidth}
               height={boxHeight}
-              fill={lc ?? 'rgba(255,255,255,0.8)'}
+              {...getFillProps(lc ?? defaultBackground)}
             />
             <text
               x={4}
               y={y + boxHeight / 2}
               fontSize={fontSize}
               dominantBaseline="central"
-              fill={lc ? 'white' : 'black'}
+              {...getFillProps(
+                lc ? theme.palette.getContrastText(lc) : theme.palette.text.primary,
+              )}
             >
-              {display[idx]}
+              {source.label ?? source.name}
             </text>
           </g>
         )
