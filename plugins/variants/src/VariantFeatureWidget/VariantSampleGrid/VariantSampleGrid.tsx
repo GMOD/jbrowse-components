@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react'
+import { useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorBanner } from '@jbrowse/core/ui'
@@ -12,7 +12,7 @@ import { DataGrid } from '@mui/x-data-grid'
 
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
-import { getSampleGridRows } from './getSampleGridRows.ts'
+import { filterSampleRows, getSampleGridRows } from './getSampleGridRows.ts'
 
 import type { Filters, VariantFieldDescriptions } from './types.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
@@ -40,36 +40,32 @@ export default function VariantSampleGrid({
   const [selectedGenotypes, setSelectedGenotypes] =
     useState<Set<string> | null>(null)
 
-  const { rows, error } = getSampleGridRows(
+  const rows = getSampleGridRows(
     feature.samples ?? {},
     feature.REF ?? '',
     feature.ALT ?? [],
-    filter,
     useCounts,
   )
 
-  const filteredRows = useMemo(
-    () =>
-      selectedGenotypes === null
-        ? rows
-        : rows.filter(row => selectedGenotypes.has(row.GT)),
-    [rows, selectedGenotypes],
-  )
+  const { rows: textFilteredRows, error } = filterSampleRows(rows, filter)
 
-  const columns = useMemo(() => {
-    const keys = [
-      'sample',
-      ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
-    ]
-    return keys.map(
-      field =>
-        ({
-          field,
-          description: descriptions?.FORMAT?.[field]?.Description,
-          width: measureGridWidth(filteredRows.map(r => r[field])),
-        }) satisfies GridColDef<(typeof rows)[0]>,
-    )
-  }, [rows, filteredRows, descriptions])
+  const filteredRows =
+    selectedGenotypes === null
+      ? textFilteredRows
+      : textFilteredRows.filter(row => selectedGenotypes.has(row.GT))
+
+  const keys = [
+    'sample',
+    ...Object.keys(rows[0] ?? {}).filter(k => k !== 'id' && k !== 'sample'),
+  ]
+  const columns = keys.map(
+    field =>
+      ({
+        field,
+        description: descriptions?.FORMAT?.[field]?.Description,
+        width: measureGridWidth(rows.map(r => r[field])),
+      }) satisfies GridColDef<(typeof rows)[0]>,
+  )
 
   return !rows.length ? null : (
     <BaseCard title="Samples">
@@ -149,7 +145,7 @@ export default function VariantSampleGrid({
           </Typography>
           <ErrorBoundary FallbackComponent={ErrorBanner}>
             <VariantGenotypeFrequencyTable
-              rows={rows}
+              rows={textFilteredRows}
               selectedGenotypes={selectedGenotypes}
               setSelectedGenotypes={setSelectedGenotypes}
               showToolbar={showToolbar}
@@ -161,8 +157,8 @@ export default function VariantSampleGrid({
       <Typography variant="subtitle2" style={{ marginTop: 16 }}>
         Samples{' '}
         {selectedGenotypes !== null
-          ? `(${filteredRows.length} of ${rows.length})`
-          : `(${rows.length})`}
+          ? `(${filteredRows.length} of ${textFilteredRows.length})`
+          : `(${textFilteredRows.length})`}
       </Typography>
       <DataGridFlexContainer>
         <DataGrid

@@ -55,33 +55,38 @@ export function getSampleGridRows(
   samples: Record<string, InfoFields>,
   REF: string,
   ALT: string[],
-  filter: Filters,
   useCounts = false,
+): VariantSampleGridRow[] {
+  return Object.entries(samples).map(([sample, fields]) =>
+    makeSampleGridRow(sample, fields, REF, ALT, useCounts),
+  )
+}
+
+// Applies the per-column case-insensitive regex filters to already-built rows.
+// Separated from row building so an invalid regex (or a filter matching nothing)
+// surfaces an error/empty result without discarding the rows the column and
+// filter UI are derived from.
+export function filterSampleRows(
+  rows: VariantSampleGridRow[],
+  filter: Filters,
 ): {
   rows: VariantSampleGridRow[]
   error: unknown
 } {
-  let error: unknown
-  let rows: VariantSampleGridRow[] = []
-
   try {
-    const compiledFilters = Object.keys(filter).map(k => ({
-      key: k,
-      re: filter[k] ? new RegExp(filter[k], 'i') : null,
-    }))
-    rows = Object.entries(samples)
-      .map(([sample, fields]) =>
-        makeSampleGridRow(sample, fields, REF, ALT, useCounts),
-      )
-      .filter(row =>
-        compiledFilters.every(({ key, re }) =>
-          re ? re.exec(row[key] ?? '') : true,
-        ),
-      )
+    const compiledFilters = Object.keys(filter)
+      .filter(k => filter[k])
+      .map(k => ({ key: k, re: new RegExp(filter[k]!, 'i') }))
+    return {
+      rows: compiledFilters.length
+        ? rows.filter(row =>
+            compiledFilters.every(({ key, re }) => re.exec(row[key] ?? '')),
+          )
+        : rows,
+      error: undefined,
+    }
   } catch (e) {
     console.error(e)
-    error = e
+    return { rows, error: e }
   }
-
-  return { rows, error }
 }

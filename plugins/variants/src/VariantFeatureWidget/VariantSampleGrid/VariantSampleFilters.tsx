@@ -2,7 +2,7 @@ import { useState, useTransition } from 'react'
 
 import { TextField, Typography } from '@mui/material'
 
-type Filters = Record<string, string>
+import type { Filters } from './types.ts'
 
 export default function VariantSampleFilters({
   columns,
