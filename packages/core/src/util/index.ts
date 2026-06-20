@@ -364,6 +364,10 @@ export { useRenderingBackend } from './useRenderingBackend.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
 export { cmpStr } from './cmpStr.ts'
 export {
+  bezierConnectorHandlePx,
+  bezierConnectorPath,
+} from './bezierConnector.ts'
+export {
   type AlignmentData,
   type DiagonalizationResult,
   type DiagonalizeTick,

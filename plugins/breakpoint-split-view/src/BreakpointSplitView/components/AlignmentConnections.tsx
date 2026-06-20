@@ -1,4 +1,9 @@
-import { getSession, getStrokeProps } from '@jbrowse/core/util'
+import { readLeadingBp, readTrailingBp } from '@jbrowse/cigar-utils'
+import {
+  bezierConnectorPath,
+  getSession,
+  getStrokeProps,
+} from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -75,9 +80,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
       const colorReason =
         orientation?.label ??
         'interchromosomal connection (different reference sequences)'
-      const p1 = c1[s1 === -1 ? LEFT : RIGHT]
-      const sn2 = s2 === -1
-      const p2 = hasPaired ? c2[sn2 ? LEFT : RIGHT] : c2[sn2 ? RIGHT : LEFT]
+      // First endpoint: this segment's read-trailing (3') edge. Second: the
+      // mate's 3' edge for a pair, or the next segment's read-leading (5') edge
+      // for a split junction (shared rule — see @jbrowse/cigar-utils).
+      const p1 = readTrailingBp(s1, c1[LEFT], c1[RIGHT])
+      const p2 = hasPaired
+        ? readTrailingBp(s2, c2[LEFT], c2[RIGHT])
+        : readLeadingBp(s2, c2[LEFT], c2[RIGHT])
       const x1 = getX(level1, f1ref, p1)
       const x2 = getX(level2, f2ref, p2)
       if (x1 == null || x2 == null) {
@@ -98,7 +107,20 @@ const AlignmentConnections = observer(function AlignmentConnections({
       const cy2 = abnormalSpecialRenderFlag
         ? Math.min(y0 + trackHeight, y2 + trackHeight)
         : y2
-      const path = `M ${x1} ${y1} C ${x1 + 200 * s1 * rf1} ${cy1} ${x2 - 200 * s2 * rf2 * pf1} ${cy2} ${x2} ${y2}`
+      // Cross-view connections in a stacked split view keep their fixed 200px
+      // handle (ends separated vertically); rf flips for reversed regions and
+      // pf1 flips the mate handle for paired vs split. Same curve idiom as the
+      // alignments overlay — see bezierConnectorPath.
+      const path = bezierConnectorPath({
+        x1,
+        y1,
+        x2,
+        y2,
+        dx1: 200 * s1 * rf1,
+        dx2: -200 * s2 * rf2 * pf1,
+        cy1,
+        cy2,
+      })
       const id = `${f1.id()}-${f2.id()}`
       return [
         {

@@ -5,6 +5,7 @@ import {
   SAM_FLAG_SECONDARY,
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
+import { readLeadingBp, readTrailingBp } from '@jbrowse/cigar-utils'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
@@ -24,12 +25,55 @@ export interface ReadConnection<E> {
   isSplit: boolean
 }
 
+export interface ConnectionEndpoints {
+  bp1: number
+  s1: number
+  bp2: number
+  s2: number
+}
+
 function clipAt(e: MinEntry) {
   return e.data.readClipAtStart?.[e.readIdx] ?? 0
 }
 
 function flagsOf(e: MinEntry) {
   return e.data.readFlags[e.readIdx]!
+}
+
+function strandOf(e: MinEntry) {
+  return e.data.readStrands[e.readIdx]!
+}
+
+function startEndOf(e: MinEntry) {
+  return [
+    e.data.readPositions[e.readIdx * 2]!,
+    e.data.readPositions[e.readIdx * 2 + 1]!,
+  ] as const
+}
+
+// The two absolute-bp endpoints (+ strands) of a resolved connection — the
+// single endpoint rule shared by the arc and linked-read paths. The first
+// endpoint is always its segment's read-trailing (3') edge. The second is the
+// next segment's read-leading (5') edge for a split junction (so a fwd→rev
+// inversion lands on the breakpoint, not the far edge of the reverse segment),
+// or the mate's read-trailing (3') edge for a pair.
+export function connectionEndpoints<E extends MinEntry>({
+  e1,
+  e2,
+  isSplit,
+}: ReadConnection<E>): ConnectionEndpoints {
+  const s1 = strandOf(e1)
+  const s2 = strandOf(e2)
+  const [start1, end1] = startEndOf(e1)
+  const [start2, end2] = startEndOf(e2)
+  return {
+    bp1: readTrailingBp(s1, start1, end1),
+    s1,
+    bp2: isSplit
+      ? readLeadingBp(s2, start2, end2)
+      : readTrailingBp(s2, start2, end2),
+    s2,
+  }
 }
 
 // Order one read's segments along the read (5'→3', by clip-at-start-of-read,

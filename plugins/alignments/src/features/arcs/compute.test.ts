@@ -796,6 +796,43 @@ describe('computeArcsFromPileupData', () => {
     // arc[1] = the read1↔read2 mate link, still colored by pair semantics.
     expect([arcs[1]!.p1.bp, arcs[1]!.p2.bp]).toEqual([1200, 5000])
   })
+
+  test('mixed dataset: a lone unpaired SA read draws its split junction, not a mate arc', () => {
+    // A paired pair (idx 0/1, both mates on screen) makes the dataset globally
+    // paired, alongside a lone unpaired read (idx 2) carrying an SA tag (its
+    // supplementary is off-screen). The single-entry path must key off the
+    // read's own PAIRED flag: the lone read is unpaired, so it draws an SA split
+    // junction rather than a spurious mate arc to readNextPositions (0 for an
+    // unpaired read).
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1200, 1800, 2000, 5000, 5200]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+        0,
+      ]),
+      readStrands: new Int8Array([1, -1, 1]),
+      readInsertSizes: new Float32Array([1000, 1000, 0]),
+      readPairOrientations: new Uint8Array([1, 1, 0]),
+      readNames: ['pair', 'pair', 'lone'],
+      readSuppAlignments: ['', '', 'chr1,7001,+,200M,60,0;'],
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 8000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    // one mate-link arc for the pair + one SA split junction for the lone read
+    expect(arcs).toHaveLength(2)
+    const loneArc = arcs.find(a => a.p1.bp === 5200)!
+    // lone read's SA junction: primary fwd end (5200) → supplementary fwd
+    // start (7000), NOT a mate arc to position 0
+    expect(loneArc.p2.bp).toBe(7000)
+  })
 })
 
 describe('groupArcsByRef', () => {

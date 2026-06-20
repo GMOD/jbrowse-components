@@ -1,8 +1,7 @@
-import { readGroupConnections } from '../../shared/readGroupConnections.ts'
 import {
-  readLeadingBp,
-  readTrailingBp,
-} from '../../shared/splitReadEndpoints.ts'
+  connectionEndpoints,
+  readGroupConnections,
+} from '../../shared/readGroupConnections.ts'
 
 import type { LinkedReadLinesUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -24,37 +23,17 @@ export interface ReadEntry {
   data: PileupDataResult
 }
 
-// Genomic connection endpoint for a linked-read line, in read coordinates.
-// Paired: the 3' end of each read (mate trailing edge). Split: the first
-// segment's read-trailing (3') edge joins the next segment's read-leading (5')
-// edge — strand-correct, so inversion junctions land on the breakpoint rather
-// than the far edge of the reverse segment.
-export function connectionBp(
-  hasPaired: boolean,
-  strand: number,
-  start: number,
-  end: number,
-  isSecond: boolean,
-) {
-  if (!hasPaired) {
-    return isSecond
-      ? readLeadingBp(strand, start, end)
-      : readTrailingBp(strand, start, end)
-  }
-  return readTrailingBp(strand, start, end)
-}
-
 // Normal LR pairs (orient 0/1) and same-strand split reads get a straight line;
-// aberrant orientations get a bezier curve to stand out visually.
-// Callers pass the classifier-encoded second strand (paired: s2; split: -s2),
-// so `s1 === -classifierS2` collapses to "same-strand pair" for both cases.
+// aberrant orientations get a bezier curve to stand out visually. A split read
+// is "normal" (a plain deletion) when both segments keep the same strand;
+// opposite strands flag an inversion.
 export function isNormalOrientation(
   hasPaired: boolean,
   orientNum: number,
   s1: number,
-  classifierS2: number,
+  s2: number,
 ) {
-  return hasPaired ? orientNum <= 1 : s1 === -classifierS2
+  return hasPaired ? orientNum <= 1 : s1 === s2
 }
 
 function pairedColorType(orientNum: number) {
@@ -64,10 +43,13 @@ function pairedColorType(orientNum: number) {
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
-// Same actual strand (s1 === -classifierS2, since classifierS2 = -s2) → simple
-// deletion. Different actual strands → inversion.
-export function splitColorType(s1: number, classifierS2: number) {
-  return s1 === -classifierS2
+// Same strand → simple deletion. Opposite strands → inversion. Classifies pair
+// orientation into GPU palette indices; BreakpointSplitView's getOrientationColor
+// makes the equivalent call for MUI theme colors. Kept separate on purpose — the
+// strand signature is shared but the output vocabularies (palette index vs theme
+// color) are medium-specific; keep these two in sync.
+export function splitColorType(s1: number, s2: number) {
+  return s1 === s2
     ? LINKED_READ_COLOR_SPLIT_NORMAL
     : LINKED_READ_COLOR_SPLIT_INV
 }
@@ -119,31 +101,12 @@ export function classifyPair(
   isSplit: boolean,
 ): ClassifiedPair {
   const hasPaired = !isSplit
-  const s1 = e1.data.readStrands[e1.readIdx]!
-  const s2 = e2.data.readStrands[e2.readIdx]!
-  const bp1 = connectionBp(
-    hasPaired,
-    s1,
-    e1.data.readPositions[e1.readIdx * 2]!,
-    e1.data.readPositions[e1.readIdx * 2 + 1]!,
-    false,
-  )
-  const bp2 = connectionBp(
-    hasPaired,
-    s2,
-    e2.data.readPositions[e2.readIdx * 2]!,
-    e2.data.readPositions[e2.readIdx * 2 + 1]!,
-    true,
-  )
-  // Negate s2 for split reads so `s1 === -classifierS2` collapses both paired
-  // and split into one "same-strand?" test below. Classifier-internal only —
-  // never expose; geometry uses real s2.
-  const classifierS2 = hasPaired ? s2 : -s2
+  const { bp1, s1, bp2, s2 } = connectionEndpoints({ e1, e2, isSplit })
   const orientNum = e1.data.readPairOrientations[e1.readIdx] ?? 0
-  const isNormal = isNormalOrientation(hasPaired, orientNum, s1, classifierS2)
+  const isNormal = isNormalOrientation(hasPaired, orientNum, s1, s2)
   const colorType = hasPaired
     ? pairedColorType(orientNum)
-    : splitColorType(s1, classifierS2)
+    : splitColorType(s1, s2)
   return { bp1, bp2, s1, s2, isNormal, colorType, hasPaired }
 }
 

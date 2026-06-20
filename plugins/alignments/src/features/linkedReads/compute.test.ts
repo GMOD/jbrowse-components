@@ -16,11 +16,13 @@ import {
   LINKED_READ_COLOR_SPLIT_NORMAL,
   classifyPair,
   computeLinkedReadLinesByRegion,
-  connectionBp,
   groupReadsByName,
   isNormalOrientation,
 } from './compute.ts'
-import { readGroupConnections } from '../../shared/readGroupConnections.ts'
+import {
+  connectionEndpoints,
+  readGroupConnections,
+} from '../../shared/readGroupConnections.ts'
 
 import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -62,28 +64,38 @@ function makeEntry(
   return { data, readIdx, displayedRegionIndex }
 }
 
-describe('connectionBp', () => {
-  it('paired forward: 3-prime end', () => {
-    expect(connectionBp(true, 1, 100, 200, false)).toBe(200)
+describe('connectionEndpoints', () => {
+  const conn = (s1: number, s2: number, isSplit: boolean) => {
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, 0],
+      strands: [s1, s2],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      orientations: [0, 0],
+      ys: [0, 0],
+    })
+    return connectionEndpoints({
+      e1: makeEntry(data, 0),
+      e2: makeEntry(data, 1),
+      isSplit,
+    })
+  }
+
+  it('paired: both endpoints are the read-trailing (3-prime) edge', () => {
+    expect(conn(1, 1, false)).toMatchObject({ bp1: 200, bp2: 400 })
+    expect(conn(-1, -1, false)).toMatchObject({ bp1: 100, bp2: 300 })
   })
 
-  it('paired reverse: 3-prime end (start)', () => {
-    expect(connectionBp(true, -1, 100, 200, false)).toBe(100)
+  it('split: e1 read-trailing (3-prime), e2 read-leading (5-prime)', () => {
+    expect(conn(1, 1, true)).toMatchObject({ bp1: 200, bp2: 300 })
+    expect(conn(-1, -1, true)).toMatchObject({ bp1: 100, bp2: 400 })
   })
 
-  it('paired isSecond: same 3-prime formula for both reads', () => {
-    expect(connectionBp(true, 1, 100, 200, true)).toBe(200)
-    expect(connectionBp(true, -1, 100, 200, true)).toBe(100)
-  })
-
-  it('split first: read-trailing (3-prime) edge, strand-dependent', () => {
-    expect(connectionBp(false, 1, 100, 200, false)).toBe(200)
-    expect(connectionBp(false, -1, 100, 200, false)).toBe(100)
-  })
-
-  it('split second: next segment read-leading (5-prime) edge, strand-dependent', () => {
-    expect(connectionBp(false, 1, 100, 200, true)).toBe(100)
-    expect(connectionBp(false, -1, 100, 200, true)).toBe(200)
+  it('split inversion joins the breakpoint edges, exposing real strands', () => {
+    expect(conn(1, -1, true)).toMatchObject({ bp1: 200, bp2: 400, s1: 1, s2: -1 })
   })
 })
 
@@ -108,20 +120,20 @@ describe('isNormalOrientation', () => {
     expect(isNormalOrientation(true, 4, 1, -1)).toBe(false)
   })
 
-  it('split FR (s1=1, classifierS2=-1) → normal', () => {
-    expect(isNormalOrientation(false, 0, 1, -1)).toBe(true)
+  it('split both fwd (s1=1, s2=1) → normal (deletion)', () => {
+    expect(isNormalOrientation(false, 0, 1, 1)).toBe(true)
   })
 
-  it('split RF (s1=-1, classifierS2=1) → normal (reverse-strand deletion)', () => {
-    expect(isNormalOrientation(false, 0, -1, 1)).toBe(true)
+  it('split both rev (s1=-1, s2=-1) → normal (reverse-strand deletion)', () => {
+    expect(isNormalOrientation(false, 0, -1, -1)).toBe(true)
   })
 
-  it('split fwd+rev inversion (s1=1, classifierS2=1) → not normal', () => {
-    expect(isNormalOrientation(false, 0, 1, 1)).toBe(false)
+  it('split fwd+rev inversion (s1=1, s2=-1) → not normal', () => {
+    expect(isNormalOrientation(false, 0, 1, -1)).toBe(false)
   })
 
-  it('split rev+fwd inversion (s1=-1, classifierS2=-1) → not normal', () => {
-    expect(isNormalOrientation(false, 0, -1, -1)).toBe(false)
+  it('split rev+fwd inversion (s1=-1, s2=1) → not normal', () => {
+    expect(isNormalOrientation(false, 0, -1, 1)).toBe(false)
   })
 })
 
@@ -174,9 +186,9 @@ describe('classifyPair — paired reads', () => {
 })
 
 describe('classifyPair — split long reads', () => {
-  // Internally the classifier flips s2 (-s2) so the same `s1 === -classifierS2`
-  // expression works for paired and split — but classifyPair exposes the real
-  // s2 on the returned record, for downstream geometry.
+  // A split read is normal (a plain deletion) when both segments share a strand,
+  // and an inversion when they differ. classifyPair exposes the real BAM s1/s2
+  // on the returned record for downstream geometry.
 
   it('both fwd, read order e1→e2 → SPLIT_NORMAL, a.end→b.start junction', () => {
     const data = makeData({

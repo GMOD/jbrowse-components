@@ -64,6 +64,11 @@ const pairOrientationLabels: Record<PairDirection, string> = {
   RL: 'outward-facing pair orientation (RL) — possible duplication/insertion',
 }
 
+// Pair-orientation classification for the SVG overlay. The alignments plugin
+// makes the equivalent calls (pairedColorType/splitColorType in
+// linkedReads/compute.ts, unpairedOrientationColor in arcs/compute.ts) but emits
+// GPU palette indices instead of theme colors. Kept separate on purpose — same
+// strand signature, medium-specific output — keep the two in sync.
 export function useOrientationColor() {
   const { palette } = useTheme()
   const { pairLR, pairRL, pairLL, pairRR } = palette.alignmentFill

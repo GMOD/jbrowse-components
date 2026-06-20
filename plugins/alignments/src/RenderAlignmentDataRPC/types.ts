@@ -285,7 +285,7 @@ export interface PileupDataResult {
 
   // Per-read soft/hard-clip length at the 5' start of the read, in read
   // coordinates (getClip, strand-aware). Read-order sort key so split segments
-  // chain in true read order rather than genomic order (see splitReadEndpoints).
+  // chain in true read order rather than genomic order (see readGroupConnections).
   readClipAtStart?: Uint32Array
 }
 

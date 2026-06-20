@@ -1,3 +1,5 @@
+import { bezierConnectorHandlePx, bezierConnectorPath } from '@jbrowse/core/util'
+
 import { iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
@@ -5,29 +7,19 @@ import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/pa
 import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
-// Minimum horizontal bezier handle in screen pixels so the tangent direction
-// stays visible even for tightly-spaced pairs.
-const MIN_TANGENT_PX = 15
-
-// Bezier handle length as a fraction of the horizontal span. The control points
-// sit at each endpoint's own Y (no apex), so the curve leaves each read
-// horizontally in its 5'→3' direction — the BreakpointSplitView
-// AlignmentConnections oval, not an arch.
-const TANGENT_FACTOR = 0.3
-
 // The control points sit at the endpoints' own Y, so the curve stays within the
 // [min, max] Y band — no apex to extend the bounds.
 function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
   return Math.min(sy1, sy2) < viewportBottom && Math.max(sy1, sy2) > 0
 }
 
-// Horizontal-tangent curve matching BreakpointSplitView's AlignmentConnections:
-// each control point sits at its endpoint's Y and is offset horizontally along
-// the read's actual BAM strand (fwd → right, rev → left), so the curve leaves
-// each read horizontally and arcs across as a flat oval. Use the real strand
-// (not the classifier-negated one): for split reads `connectionBp` puts sx1 at
-// read1's right edge and sx2 at read2's left edge, and the tangent must still
-// follow the strand.
+// Horizontal-tangent oval shared with BreakpointSplitView's AlignmentConnections
+// (see bezierConnectorPath). Each control point sits at its endpoint's Y and is
+// offset horizontally along the read's actual BAM strand (fwd → right, rev →
+// left), so the curve leaves each read horizontally. For split reads
+// `connectionEndpoints` puts sx1 at read1's read-trailing edge and sx2 at
+// read2's read-leading edge, and the tangent still follows each segment's
+// strand.
 function bezierPath(
   sx1: number,
   sy1: number,
@@ -36,13 +28,15 @@ function bezierPath(
   s1: number,
   s2: number,
 ) {
-  const tangentDx = Math.max(
-    MIN_TANGENT_PX,
-    Math.abs(sx2 - sx1) * TANGENT_FACTOR,
-  )
-  const cp1x = sx1 + s1 * tangentDx
-  const cp2x = sx2 + s2 * tangentDx
-  return `M ${sx1} ${sy1} C ${cp1x} ${sy1} ${cp2x} ${sy2} ${sx2} ${sy2}`
+  const tangentDx = bezierConnectorHandlePx(sx1, sx2)
+  return bezierConnectorPath({
+    x1: sx1,
+    y1: sy1,
+    x2: sx2,
+    y2: sy2,
+    dx1: s1 * tangentDx,
+    dx2: s2 * tangentDx,
+  })
 }
 
 export interface PileupArc {

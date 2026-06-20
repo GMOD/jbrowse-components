@@ -3,13 +3,16 @@ import {
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
 } from '@jbrowse/alignments-core'
-import { featurizeSA } from '@jbrowse/cigar-utils'
-
-import { readGroupConnections } from '../../shared/readGroupConnections.ts'
 import {
+  featurizeSA,
   readLeadingBp,
   readTrailingBp,
-} from '../../shared/splitReadEndpoints.ts'
+} from '@jbrowse/cigar-utils'
+
+import {
+  connectionEndpoints,
+  readGroupConnections,
+} from '../../shared/readGroupConnections.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -90,6 +93,8 @@ const COLOR_PAIR_RL = 6
 const COLOR_UNPAIRED_FR = 4
 const COLOR_UNPAIRED_RF = 7
 
+// Strand signature mirrors BreakpointSplitView's getLongReadOrientation, but
+// emits GPU palette indices rather than theme colors — keep the two in sync.
 function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
   return p1Strand === -1 && p2Strand === 1
     ? COLOR_UNPAIRED_RF
@@ -339,7 +344,7 @@ function mateArc(entry: ReadEntry): PendingArc {
   const mateRef = data.readNextRefs?.[readIdx] ?? ''
   return {
     p1Ref: refName,
-    p1Bp: strand === -1 ? start : end,
+    p1Bp: readTrailingBp(strand, start, end),
     p1Strand: strand,
     p2Ref: mateRef || refName,
     p2Bp: data.readNextPositions?.[readIdx] ?? 0,
@@ -408,25 +413,15 @@ function splitArcsFromSA(entry: ReadEntry): PendingArc[] {
 // segment's read-trailing (3') edge to the next segment's read-leading (5')
 // edge — the inversion breakpoint, not the far edge of the reverse segment — and
 // the mate link joins each read's 3' end.
-function pendingArcFromConnection({
-  e1,
-  e2,
-  isSplit,
-}: ReadConnection<ReadEntry>): PendingArc {
-  const s1 = e1.data.readStrands[e1.readIdx]!
-  const s2 = e2.data.readStrands[e2.readIdx]!
-  const start1 = e1.data.readPositions[e1.readIdx * 2]!
-  const end1 = e1.data.readPositions[e1.readIdx * 2 + 1]!
-  const start2 = e2.data.readPositions[e2.readIdx * 2]!
-  const end2 = e2.data.readPositions[e2.readIdx * 2 + 1]!
+function pendingArcFromConnection(c: ReadConnection<ReadEntry>): PendingArc {
+  const { e1, e2, isSplit } = c
+  const { bp1, s1, bp2, s2 } = connectionEndpoints(c)
   return {
     p1Ref: e1.refName,
-    p1Bp: readTrailingBp(s1, start1, end1),
+    p1Bp: bp1,
     p1Strand: s1,
     p2Ref: e2.refName,
-    p2Bp: isSplit
-      ? readLeadingBp(s2, start2, end2)
-      : readTrailingBp(s2, start2, end2),
+    p2Bp: bp2,
     p2Strand: s2,
     pairOrientationNum: isSplit
       ? undefined
@@ -438,18 +433,21 @@ function pendingArcFromConnection({
 
 function collectPendingArcs(
   readsByName: Map<string, ReadEntry[]>,
-  hasPaired: boolean,
   drawLongRange: boolean,
 ) {
   const pendingArcs: PendingArc[] = []
   for (const entries of readsByName.values()) {
     if (entries.length === 1) {
       // A lone read connects to an off-screen mate / supplementary block — only
-      // drawn when long-range connections are enabled.
+      // drawn when long-range connections are enabled. Whether it links to its
+      // mate or chains its SA segments is the read's own property (its PAIRED
+      // flag), not the dataset-global one — so a split read still draws its SA
+      // junctions in a dataset that also contains paired reads.
       if (drawLongRange) {
         const entry = entries[0]!
         const flags = entry.data.readFlags[entry.readIdx]!
-        const isMateMapped = hasPaired && !(flags & SAM_FLAG_MATE_UNMAPPED)
+        const isMateMapped =
+          flags & SAM_FLAG_PAIRED && !(flags & SAM_FLAG_MATE_UNMAPPED)
         pendingArcs.push(
           ...(isMateMapped ? [mateArc(entry)] : splitArcsFromSA(entry)),
         )
@@ -474,7 +472,7 @@ export function computeArcsFromPileupData(
   const { colorByType, samplot = false, drawInter, drawLongRange } = settings
   const readsByName = groupReadsByName(rpcDataMap, regions)
   const { hasPaired, stats } = computePairingInfo(rpcDataMap)
-  const pendingArcs = collectPendingArcs(readsByName, hasPaired, drawLongRange)
+  const pendingArcs = collectPendingArcs(readsByName, drawLongRange)
 
   const longRangeThreshold = computeLongRangeThreshold(pendingArcs)
 
