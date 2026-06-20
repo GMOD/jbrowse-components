@@ -1,0 +1,12 @@
+---
+import Layout from '../layouts/ExampleLayout.astro'
+import Example from '../examples/WithWiggleTrack.tsx'
+import code from '../examples/WithWiggleTrack.tsx?raw'
+import { examples } from '../examples.ts'
+
+const meta = examples.find(e => e.slug === 'with-wiggle-track')!
+---
+
+<Layout slug={meta.slug} title={meta.title} description={meta.description} code={code}>
+  <Example client:only="react" />
+</Layout>

@@ -16,3 +16,9 @@ The props are **initial values** — read once on mount. This is the
 lowest-ceremony way to drop a view onto a page. When you need to read or drive
 the underlying model from outside, use the unmanaged
 [`createViewState`](../volvox/) flow instead.
+
+See the
+[embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/)
+for the component API and the
+[CircularView state model](https://jbrowse.org/jb2/docs/models/circularview/)
+for the model you'd drive.

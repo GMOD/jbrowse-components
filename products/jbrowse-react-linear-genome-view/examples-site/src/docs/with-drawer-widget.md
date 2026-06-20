@@ -17,3 +17,8 @@ constrains the embedded view's grid container while a drawer is open, giving the
 drawer a fixed scroll region; when no drawer widget is visible the view sizes to
 its parent as usual. The drawer is resizable (drag the handle), repositionable
 left ↔ right via the ⋮ menu, minimizable, and closeable.
+
+The widget shown here is the
+[BaseFeatureWidget](https://jbrowse.org/jb2/docs/models/basefeaturewidget/);
+[customizing feature details](https://jbrowse.org/jb2/docs/config_guides/customizing_feature_details/)
+covers tailoring what it displays.

@@ -33,5 +33,4 @@ but we recommend enabling it whenever your toolchain supports it. If you also
 load [plugins](../embedded-plugin/), they must be registered in **both** the
 main thread and the worker. The `rpc` config block (driver, worker count,
 timeouts) is documented in
-[WebWorkerRpcDriver](https://jbrowse.org/jb2/docs/config/webworkerrpcdriver/)
-and [BaseRpcDriver](https://jbrowse.org/jb2/docs/config/baserpcdriver/).
+[RpcOptions](https://jbrowse.org/jb2/docs/config/rpcoptions/).

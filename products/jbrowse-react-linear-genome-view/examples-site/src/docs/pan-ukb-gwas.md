@@ -8,3 +8,9 @@ This demonstrates driving the view from an external control — selecting a
 phenotype updates both the track and the view location. GWAS rendering is built
 in (the GWAS plugin ships as a core plugin of the package). For LD-colored
 Manhattan plots, see [LocusZoom-style LD](../locus-zoom-ld/).
+
+See the
+[GWAS track guide](https://jbrowse.org/jb2/docs/config_guides/gwas_track/) and
+the [GWASTrack](https://jbrowse.org/jb2/docs/config/gwastrack/) /
+[GWASAdapter](https://jbrowse.org/jb2/docs/config/gwasadapter/) config reference
+for the underlying track setup.

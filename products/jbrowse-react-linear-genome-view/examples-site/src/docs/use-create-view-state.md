@@ -20,3 +20,7 @@ function MyComponent() {
 
 If you instead call `createViewState` yourself, wrap it in `useState(() => …)`
 (as the other examples here do) to get the same stability.
+
+See the
+[embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/)
+for the full `createViewState` options.

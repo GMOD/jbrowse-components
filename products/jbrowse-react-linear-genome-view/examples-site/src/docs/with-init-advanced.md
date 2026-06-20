@@ -18,5 +18,12 @@ init: {
 }
 ```
 
-For an alignments-specific `displaySnapshot`, see
+The fields a `displaySnapshot` accepts are documented per display type in the
+state-model reference — e.g.
+[LinearBasicDisplay](https://jbrowse.org/jb2/docs/models/linearbasicdisplay/)
+(feature tracks) and
+[LinearWiggleDisplay](https://jbrowse.org/jb2/docs/models/linearwiggledisplay/)
+(quantitative tracks) — and the URL-param form is covered in
+[URL query parameters](https://jbrowse.org/jb2/docs/urlparams/). For an
+alignments-specific `displaySnapshot`, see
 [initializing an alignments display](../with-init-alignments-display/).

@@ -17,3 +17,7 @@ navigates if the target lies **inside the currently displayed regions** — it
 won't re-set them. `navToLocations` (and `navToLocString`) will re-set displayed
 regions as needed, so they're almost always what you want for external
 navigation.
+
+All three actions are part of the
+[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/),
+which documents the full navigation API.

@@ -9,4 +9,6 @@ s.session.view.showTrack('volvox_sv_test')
 ```
 
 For tracks you want open on first paint, list their trackIds in the view's
-[`init`](../volvox/) field instead.
+[`init`](../volvox/) field instead. `showTrack` and the view's other actions are
+documented in the
+[CircularView state model](https://jbrowse.org/jb2/docs/models/circularview/).

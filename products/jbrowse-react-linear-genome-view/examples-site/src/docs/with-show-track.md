@@ -11,3 +11,6 @@ effect. For tracks you want open on first paint instead, list their trackIds in
 the [`init`](../with-init/) field. `showTrack` is also the way to layer a heavy
 track (e.g. a CRAM alignments track) on top of an existing `init` session — see
 the [human exome example](../human-exome-example/).
+
+`showTrack` (and its counterpart `hideTrack`) are documented in the
+[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

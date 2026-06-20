@@ -23,4 +23,7 @@ view: {
 ```
 
 The simpler [`init.highlight`](../with-init-advanced/) field also exists, but it
-only accepts plain loc-strings (no per-highlight color or label).
+only accepts plain loc-strings (no per-highlight color or label). The
+`highlight` property and its `addToHighlights`/`removeHighlight` actions are
+documented in the
+[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

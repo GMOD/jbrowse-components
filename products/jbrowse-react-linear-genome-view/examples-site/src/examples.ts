@@ -178,6 +178,14 @@ export const examples: ExampleMeta[] = [
     group: 'Track display & coloring',
   },
   {
+    slug: 'with-wiggle-track',
+    name: 'WithWiggleTrack',
+    title: 'Quantitative (BigWig) track',
+    description:
+      'Render quantitative signal from a BigWig as a wiggle display, configured via the displays shorthand.',
+    group: 'Track display & coloring',
+  },
+  {
     slug: 'with-init-alignments-display',
     name: 'WithInitAlignmentsDisplay',
     title: 'Initialize an alignments display',

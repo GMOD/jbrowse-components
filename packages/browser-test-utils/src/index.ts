@@ -1,5 +1,10 @@
 export { createTestServer } from './server.ts'
 export { smokeExamplesSite } from './examplesSmoke.ts'
+export {
+  buildDocIndex,
+  findBrokenDocLinks,
+  suggestDocLinks,
+} from './docLinks.ts'
 export { encodeSessionSpec, sessionSpecQuery } from './session.ts'
 export {
   delay,
@@ -15,3 +20,4 @@ export {
 
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
+export type { BrokenLink, DocPage, DocSuggestion } from './docLinks.ts'

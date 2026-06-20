@@ -27,3 +27,7 @@ same `init` shape used in [`defaultSession.views`](../basic-example/). This is
 the lowest-ceremony way to drop the app onto a page. When you need to read or
 drive the underlying model from outside (observers, imperative navigation), use
 the unmanaged [`createViewState`](../basic-example/) flow instead.
+
+See the
+[embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/)
+for the full `@jbrowse/react-app2` API.

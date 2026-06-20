@@ -10,4 +10,7 @@ frame. Track the region with an `autorun` inside an effect and short-circuit
 when it's unchanged.
 
 For the simpler case of just reading the visible coordinates, see
-[observe visible regions](../with-observe-visible-regions/).
+[observe visible regions](../with-observe-visible-regions/). The
+`coarseDynamicBlocks` property and the other observable view state are listed in
+the
+[LinearGenomeView state model](https://jbrowse.org/jb2/docs/models/lineargenomeview/).

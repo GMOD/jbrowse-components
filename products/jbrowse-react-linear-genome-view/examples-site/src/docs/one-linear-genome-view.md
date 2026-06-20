@@ -20,4 +20,6 @@ const state = createViewState({
 For most apps the [`init`](../with-init/) field is the more ergonomic way to
 specify the opening state. This example uses the top-level `location` shortcut
 instead — see [Using a location object](../using-loc-object/) for the parsed
-form.
+form, and the
+[embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/)
+for `createViewState` and the `onChange` callback.
