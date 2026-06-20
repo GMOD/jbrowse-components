@@ -1,14 +1,15 @@
+import { normalizeTrackLevels } from './LinearSyntenyView/util/initHelpers.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { TrackInit } from '@jbrowse/plugin-linear-genome-view'
 import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
-
-function isNestedTracks(t: string[] | string[][]): t is string[][] {
-  return Array.isArray(t[0])
-}
 
 export interface LaunchLinearSyntenyViewArgs extends SyntenyViewSharedInit {
   session: AbstractSessionModel
-  views: { loc?: string; assembly: string; tracks?: string[] }[]
+  // a bare trackId string, or { trackId, displaySnapshot, trackSnapshot } to
+  // configure the per-panel track (matches LinearSyntenyViewInit.views)
+  views: { loc?: string; assembly: string; tracks?: TrackInit[] }[]
   tracks?: string[] | string[][]
   levelHeights?: number[]
   drawCurves?: boolean
@@ -32,18 +33,14 @@ export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
         'LinearSyntenyView requires at least 2 views to be specified',
       )
     }
-    // 2D tracks targets one entry per level (between views[i] and
-    // views[i+1]); flat 1D tracks goes to level 0; empty stays empty.
+    // tracks is one entry per level (between views[i] and views[i+1]); a flat
+    // string[] is shorthand for "all on level 0". The rest of the init fields
+    // (colorBy, autoDiagonalize, levelHeights, ...) forward verbatim.
     session.addView('LinearSyntenyView', {
       init: {
         views,
-        tracks: isNestedTracks(tracks) ? tracks : tracks.length ? [tracks] : [],
-        autoDiagonalize: rest.autoDiagonalize,
-        colorBy: rest.colorBy,
-        minAlignmentLength: rest.minAlignmentLength,
-        levelHeights: rest.levelHeights,
-        drawCurves: rest.drawCurves,
-        alpha: rest.alpha,
+        tracks: normalizeTrackLevels(tracks),
+        ...rest,
       },
     })
     return args

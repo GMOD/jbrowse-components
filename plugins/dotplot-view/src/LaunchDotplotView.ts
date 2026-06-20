@@ -26,19 +26,10 @@ export default function LaunchDotplotView(pluginManager: PluginManager) {
     if (views.length < 2) {
       throw new Error('DotplotView requires 2 views to be specified')
     }
+    // remaining init fields (colorBy, autoDiagonalize, highlight, ...) forward
+    // verbatim; the init autorun guards each on undefined
     session.addView('DotplotView', {
-      init: {
-        views,
-        tracks,
-        ...(rest.autoDiagonalize !== undefined && {
-          autoDiagonalize: rest.autoDiagonalize,
-        }),
-        ...(rest.colorBy !== undefined && { colorBy: rest.colorBy }),
-        ...(rest.minAlignmentLength !== undefined && {
-          minAlignmentLength: rest.minAlignmentLength,
-        }),
-        ...(rest.highlight !== undefined && { highlight: rest.highlight }),
-      },
+      init: { views, tracks, ...rest },
     })
     return args
   })
