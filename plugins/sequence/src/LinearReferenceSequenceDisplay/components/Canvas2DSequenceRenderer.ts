@@ -11,8 +11,8 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 // (no `createRenderingBackend` HAL ladder). It plugs into the shared
 // RenderLifecycle/DisplayChrome machinery like every other display: the model
 // owns `sequenceData` and `renderState`, this backend just paints the visible
-// blocks each frame. The base `renderBlocks` runs `prepareCanvas`; this `draw`
-// adds the opaque white background that sequence text needs before painting.
+// blocks each frame. The per-base/per-codon fills in drawSequenceBlocks cover
+// every visible pixel, so no full-canvas background fill is needed.
 export class Canvas2DSequenceRenderer extends Canvas2DPerRegionRenderingBackend<
   SequenceRegionData,
   DrawSequenceState
@@ -22,8 +22,6 @@ export class Canvas2DSequenceRenderer extends Canvas2DPerRegionRenderingBackend<
     regions: ReadonlyMap<number, SequenceRegionData>,
     state: DrawSequenceState,
   ) {
-    this.ctx.fillStyle = '#fff'
-    this.ctx.fillRect(0, 0, state.canvasWidth, state.canvasHeight)
     drawSequenceBlocks(this.ctx, regions, blocks, state)
   }
 }
