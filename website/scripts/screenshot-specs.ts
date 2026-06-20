@@ -162,8 +162,8 @@ const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
 // Local config that loads the Protein3d plugin from the jbrowse.org plugin-store
-// rehosting (versioned UMD), not unpkg. Pins the plugin version — bump it here
-// when republishing protein3d. See products/jbrowse-web/test_data/.
+// rehosting's version-agnostic `latest/` path (not unpkg, no version to bump).
+// See products/jbrowse-web/test_data/.
 const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 // Load the remote demo configs against the *local* build (a bare ?config= url
 // that the generator prefixes with localhost), so unreleased display settings
@@ -4298,12 +4298,10 @@ export const specs: ScreenshotSpec[] = [
   // AlphaFold DB and renders on the mol* WebGL canvas (software WebGL via
   // --enable-unsafe-swiftshader is sufficient headless).
   //
-  // Loads protein3d from the jbrowse.org plugin-store rehosting (a local config,
-  // PROTEIN3D_CONFIG, pins the versioned jbrowse.org UMD) — NOT unpkg. The
-  // plugin's own dist config.json still points at unpkg-latest, whose CDN serves
-  // stale code for ~5min after a publish and which we're moving off entirely, so
-  // a regen right after a `pnpm dep` would otherwise capture the old plugin.
-  // Bump the version in PROTEIN3D_CONFIG when republishing the plugin.
+  // Loads protein3d from the jbrowse.org plugin-store rehosting's version-
+  // agnostic `latest/` UMD (PROTEIN3D_CONFIG) — NOT unpkg, and nothing to bump
+  // on a plugin release. `latest/` is served no-cache, so a regen after a
+  // `pnpm dep` picks up the newest plugin without the unpkg CDN's stale window.
   {
     mode: 'url',
     name: 'protein/structure',
