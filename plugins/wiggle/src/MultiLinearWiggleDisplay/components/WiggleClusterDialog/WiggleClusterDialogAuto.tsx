@@ -41,7 +41,10 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState(false)
   const [stopToken, setStopToken] = useState<StopToken>()
-  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [showAdvanced, setShowAdvanced] = useLocalStorage(
+    'cluster-showAdvanced',
+    false,
+  )
   const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
     'cluster-samplesPerPixel',
     '1',
