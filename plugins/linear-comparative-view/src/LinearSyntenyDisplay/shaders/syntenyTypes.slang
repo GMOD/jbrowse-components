@@ -134,14 +134,18 @@ public float fillCoverage(float2 localPos, float xL, float xR,
     cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
   } else {
     // Density-honest sub-pixel fade. The footprint floor above keeps a thin
-    // BASE ribbon a ~1px band, but its opacity scales with the true on-screen
-    // (horizontal) width so a lone thin alignment fades gently and a
+    // BASE ribbon a ~1px band, but its opacity scales with the ribbon's
+    // perpendicular (visual) width so a lone thin alignment fades gently and a
     // whole-genome tangle of them stops reading as hard full-opacity lines —
-    // dense overlaps still accumulate via alpha blend. Ribbons ≥1px wide
-    // saturate widthFade at 1 and are unaffected.
-    // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch scales its centerline
-    // stroke alpha by the same clamp(width, 0, 1).
-    float widthFade = clamp(xR - xL, 0.0, 1.0);
+    // dense overlaps still accumulate via alpha blend. Using perpendicular
+    // width (the same metric as halfPerpW, not horizontal span) means steep
+    // diagonal ribbons — the crossing-line hairball of rearranged genomes —
+    // fade by their true thinness rather than escaping via a wide x-span.
+    // Ribbons ≥1px wide saturate widthFade at 1 and are unaffected.
+    // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch (entered only for
+    // near-vertical ribbons, where perpFactor≈1) scales its centerline stroke
+    // alpha by the equivalent clamp(width, 0, 1).
+    float widthFade = clamp((xR - xL) / perpFactor, 0.0, 1.0);
     float aaPerp = max(fwidth(perpDist), 1e-4);
     cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
                            halfPerpW + aaPerp * 0.5,
