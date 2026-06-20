@@ -40,8 +40,15 @@ function makeContext(ctx: object): RenderingContext {
       bridgeLineColor: '#888888',
       missingDataColor: '#ffffcc',
     },
-    showAllLetters: false,
-    mismatchRendering: true,
+    cellColorConfig: {
+      colorForBase: { a: '#f00', c: '#0f0', g: '#00f', t: '#ff0', n: '#888' },
+      matchColor: '#d3d3d3',
+      gapColor: '#1e1e1e',
+      mismatchOffColor: '#ffa500',
+      unknownBaseColor: '#000',
+      showAllLetters: false,
+      mismatchRendering: true,
+    },
     reversed: false,
     bpToCellLeftPx: bp => bp * 10,
   }
