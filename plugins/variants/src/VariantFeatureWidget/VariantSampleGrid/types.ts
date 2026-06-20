@@ -6,6 +6,13 @@ export interface FrequencyTableEntry {
 
 export type FrequencyTable = Record<string, FrequencyTableEntry>
 
+export interface AlleleFrequency {
+  id: string
+  allele: string
+  count: number
+  frequency: string
+}
+
 export interface VariantSampleGridRow {
   sample: string
   id: string

@@ -10,15 +10,27 @@ import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
+import VariantAlleleFrequencyTable from './VariantAlleleFrequencyTable.tsx'
 import VariantGenotypeFrequencyTable from './VariantGenotypeFrequencyTable.tsx'
 import SampleFilters from './VariantSampleFilters.tsx'
-import { filterSampleRows, getSampleGridRows } from './getSampleGridRows.ts'
+import {
+  filterSampleRows,
+  getAlleleFrequencies,
+  getSampleGridRows,
+} from './getSampleGridRows.ts'
+import { usePersistedBoolean, usePersistedEnum } from './persistedState.ts'
 
 import type { Filters, VariantFieldDescriptions } from './types.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
 import type { GridColDef } from '@mui/x-data-grid'
 
 type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'
+
+const columnDisplayModes: readonly ColumnDisplayMode[] = [
+  'all',
+  'gtOnly',
+  'gtAndGenotype',
+]
 
 const gtOnlyFields = new Set(['sample', 'GT'])
 const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
@@ -31,12 +43,31 @@ export default function VariantSampleGrid({
   descriptions?: VariantFieldDescriptions | null
 }) {
   const [filter, setFilter] = useState<Filters>({})
-  const [columnDisplayMode, setColumnDisplayMode] =
-    useState<ColumnDisplayMode>('all')
-  const [showFilters, setShowFilters] = useState(false)
-  const [showFrequencyTable, setShowFrequencyTable] = useState(true)
-  const [showToolbar, setShowToolbar] = useState(false)
-  const [useCounts, setUseCounts] = useState(false)
+  const [columnDisplayMode, setColumnDisplayMode] = usePersistedEnum(
+    'variantSampleGrid-columnDisplayMode',
+    columnDisplayModes,
+    'all',
+  )
+  const [showFilters, setShowFilters] = usePersistedBoolean(
+    'variantSampleGrid-showFilters',
+    false,
+  )
+  const [showFrequencyTable, setShowFrequencyTable] = usePersistedBoolean(
+    'variantSampleGrid-showFrequencyTable',
+    true,
+  )
+  const [showAlleleFrequencies, setShowAlleleFrequencies] = usePersistedBoolean(
+    'variantSampleGrid-showAlleleFrequencies',
+    true,
+  )
+  const [showToolbar, setShowToolbar] = usePersistedBoolean(
+    'variantSampleGrid-showToolbar',
+    false,
+  )
+  const [useCounts, setUseCounts] = usePersistedBoolean(
+    'variantSampleGrid-useCounts',
+    false,
+  )
   const [selectedGenotypes, setSelectedGenotypes] =
     useState<Set<string> | null>(null)
 
@@ -45,6 +76,12 @@ export default function VariantSampleGrid({
     feature.REF ?? '',
     feature.ALT ?? [],
     useCounts,
+  )
+
+  const alleleFrequencies = getAlleleFrequencies(
+    feature.samples ?? {},
+    feature.REF ?? '',
+    feature.ALT ?? [],
   )
 
   const { rows: textFilteredRows, error } = filterSampleRows(rows, filter)
@@ -85,11 +122,19 @@ export default function VariantSampleGrid({
               },
             },
             {
-              label: 'Show frequency table',
+              label: 'Show genotype frequency table',
               type: 'checkbox',
               checked: showFrequencyTable,
               onClick: () => {
                 setShowFrequencyTable(!showFrequencyTable)
+              },
+            },
+            {
+              label: 'Show allele frequency table',
+              type: 'checkbox',
+              checked: showAlleleFrequencies,
+              onClick: () => {
+                setShowAlleleFrequencies(!showAlleleFrequencies)
               },
             },
             {
@@ -150,6 +195,17 @@ export default function VariantSampleGrid({
               setSelectedGenotypes={setSelectedGenotypes}
               showToolbar={showToolbar}
             />
+          </ErrorBoundary>
+        </>
+      ) : null}
+
+      {showAlleleFrequencies && alleleFrequencies.length ? (
+        <>
+          <Typography variant="subtitle2" style={{ marginTop: 8 }}>
+            Allele frequencies
+          </Typography>
+          <ErrorBoundary FallbackComponent={ErrorBanner}>
+            <VariantAlleleFrequencyTable frequencies={alleleFrequencies} />
           </ErrorBoundary>
         </>
       ) : null}

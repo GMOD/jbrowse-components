@@ -1,4 +1,8 @@
-import { filterSampleRows, getSampleGridRows } from './getSampleGridRows.ts'
+import {
+  filterSampleRows,
+  getAlleleFrequencies,
+  getSampleGridRows,
+} from './getSampleGridRows.ts'
 
 const samples = {
   HG001: { GT: ['0/1'] },
@@ -42,4 +46,17 @@ test('an invalid regex surfaces an error but keeps the rows', () => {
   const { rows: filtered, error } = filterSampleRows(rows, { sample: '[' })
   expect(error).toBeDefined()
   expect(filtered).toBe(rows)
+})
+
+test('allele frequencies count called alleles, excluding missing', () => {
+  // HG001 0/1, HG002 1/1, HG003 ./. -> ref x1, T x3, missing excluded
+  expect(getAlleleFrequencies(samples, 'A', ['T'])).toEqual([
+    { id: 'T', allele: 'T', count: 3, frequency: '75.0%' },
+    { id: 'ref(A)', allele: 'ref(A)', count: 1, frequency: '25.0%' },
+  ])
+})
+
+test('allele frequencies are empty when no sample has a GT call', () => {
+  expect(getAlleleFrequencies({ HG001: { DP: [30] } }, 'A', ['T'])).toEqual([])
+  expect(getAlleleFrequencies({}, 'A', ['T'])).toEqual([])
 })

@@ -1,7 +1,12 @@
 import { makeSimpleAltString, resolveAllele } from '../../VcfFeature/util.ts'
 import { GENOTYPE_SPLITTER } from '../../shared/constants.ts'
 
-import type { Filters, InfoFields, VariantSampleGridRow } from './types.ts'
+import type {
+  AlleleFrequency,
+  Filters,
+  InfoFields,
+  VariantSampleGridRow,
+} from './types.ts'
 
 function countAlleles(gt: string, resolve: (allele: string) => string) {
   const counts: Record<string, number> = {}
@@ -60,6 +65,42 @@ export function getSampleGridRows(
   return Object.entries(samples).map(([sample, fields]) =>
     makeSampleGridRow(sample, fields, REF, ALT, useCounts),
   )
+}
+
+// Allele frequencies over all called alleles across samples. Missing ('.') and
+// empty alleles are excluded from both the counts and the denominator (the
+// standard AN/AC/AF definition), so a variant whose samples carry no GT call
+// yields [] and the table simply doesn't render rather than showing a bogus
+// all-ref result.
+export function getAlleleFrequencies(
+  samples: Record<string, InfoFields>,
+  REF: string,
+  ALT: string[],
+): AlleleFrequency[] {
+  const counts: Record<string, number> = {}
+  let total = 0
+  for (const sample in samples) {
+    const gt = samples[sample]?.GT?.[0]
+    if (gt) {
+      for (const allele of `${gt}`.split(GENOTYPE_SPLITTER)) {
+        if (allele && allele !== '.') {
+          const key = resolveAllele(allele, REF, ALT)
+          counts[key] = (counts[key] ?? 0) + 1
+          total++
+        }
+      }
+    }
+  }
+  return total === 0
+    ? []
+    : Object.entries(counts)
+        .map(([allele, count]) => ({
+          id: allele,
+          allele,
+          count,
+          frequency: `${((count / total) * 100).toPrecision(3)}%`,
+        }))
+        .sort((a, b) => b.count - a.count)
 }
 
 // Applies the per-column case-insensitive regex filters to already-built rows.
