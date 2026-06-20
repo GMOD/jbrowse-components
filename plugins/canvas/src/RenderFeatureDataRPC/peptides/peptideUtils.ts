@@ -170,24 +170,11 @@ export async function fetchPeptideData(
     return peptideDataMap
   }
 
-  // resolve each distinct genetic code once — most transcripts in a region share
-  // one (typically the standard code), and getGeneticCode expands a 64-codon
-  // table per call
-  const codonTableById = new Map<number, Record<string, string>>()
-  const codonTableFor = (id: number) => {
-    let table = codonTableById.get(id)
-    if (!table) {
-      table = getGeneticCode(id).codonTable
-      codonTableById.set(id, table)
-    }
-    return table
-  }
-
   for (const transcript of transcripts) {
     const tStart = transcript.get('start')
     const tEnd = transcript.get('end')
     const seq = wholeSeq.slice(tStart - bulkStart, tEnd - bulkStart)
-    const codonTable = codonTableFor(transcriptGeneticCodeId(transcript) ?? 1)
+    const { codonTable } = getGeneticCode(transcriptGeneticCodeId(transcript))
     const peptideData = processTranscriptFromSeq(seq, transcript, codonTable)
     if (peptideData) {
       peptideDataMap.set(transcript.id(), peptideData)

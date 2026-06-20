@@ -70,32 +70,43 @@ export function parseTranslTable(value: unknown): number | undefined {
   return Number.isInteger(n) && n > 0 ? n : undefined
 }
 
+// codon i = BASE1[i] + BASE2[i] + BASE3[i]
+const CODONS = Array.from(
+  { length: 64 },
+  (_, i) => BASE1[i]! + BASE2[i]! + BASE3[i]!,
+)
+
 const ncbiCodeById = new Map(ncbiGeneticCodes.map(t => [t.id, t]))
 
-// Resolves the codon map + start set for an NCBI translation-table id, falling
-// back to the standard code (1) for an unrecognized id. Pure; callers that
-// translate many features should resolve each distinct id once rather than per
-// feature, since this expands a 64-codon table on every call.
-export function getGeneticCode(id = 1): GeneticCode {
+function buildGeneticCode(id: number): GeneticCode {
   const def = ncbiCodeById.get(id)
   if (!def && id !== 1) {
     console.warn(`Unknown genetic code (transl_table=${id}); using standard code`)
   }
-  const resolved = def ?? ncbiCodeById.get(1)!
-
+  const { id: resolvedId, name, ncbieaa, sncbieaa } = def ?? ncbiCodeById.get(1)!
   const table: Record<string, string> = {}
   const starts: string[] = []
-  for (let i = 0; i < 64; i++) {
-    const codon = BASE1[i]! + BASE2[i]! + BASE3[i]!
-    table[codon] = resolved.ncbieaa[i]!
-    if (resolved.sncbieaa[i] === 'M') {
+  for (const [i, codon] of CODONS.entries()) {
+    table[codon] = ncbieaa[i]!
+    if (sncbieaa[i] === 'M') {
       starts.push(codon)
     }
   }
-  return {
-    id: resolved.id,
-    name: resolved.name,
-    codonTable: generateCodonTable(table),
-    starts,
+  return { id: resolvedId, name, codonTable: generateCodonTable(table), starts }
+}
+
+const geneticCodeCache = new Map<number, GeneticCode>()
+
+// Resolves the codon map + start set for an NCBI translation-table id, falling
+// back to the standard code (1) for an unrecognized id. Memoized: the result is
+// immutable and there are only ~27 tables, so hot callers (the per-frame
+// sequence-translation paint) reuse one expanded 64-codon table instead of
+// rebuilding it.
+export function getGeneticCode(id = 1): GeneticCode {
+  let code = geneticCodeCache.get(id)
+  if (!code) {
+    code = buildGeneticCode(id)
+    geneticCodeCache.set(id, code)
   }
+  return code
 }

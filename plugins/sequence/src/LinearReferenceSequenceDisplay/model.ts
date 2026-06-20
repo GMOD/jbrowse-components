@@ -41,6 +41,10 @@ export interface SequenceRegionData {
   seq: string
   start: number
   end: number
+  // NCBI genetic-code id for this region's refName (1 = standard); resolved from
+  // the assembly's geneticCodes config so mitochondrial/plastid contigs
+  // translate with the right table
+  geneticCodeId: number
 }
 
 /**
@@ -291,7 +295,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
           return
         }
         await self.fetchRegions(needed, async ctx => {
-          const { rpcManager } = getSession(self)
+          const session = getSession(self)
+          const { rpcManager, assemblyManager } = session
           const sessionId = getRpcSessionId(self)
           const adapterConfig = self.adapterConfig
           for (const { region, displayedRegionIndex } of needed) {
@@ -303,6 +308,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
             if (ctx.isStale()) {
               return
             }
+            const assembly = assemblyManager.get(region.assemblyName)
+            const geneticCodeId = assembly?.getGeneticCodeId(region.refName) ?? 1
             for (const f of dedupe(features, f => f.id())) {
               const seq = f.get('seq') as string | undefined
               if (seq) {
@@ -310,6 +317,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                   seq,
                   start: f.get('start'),
                   end: f.get('end'),
+                  geneticCodeId,
                 })
               }
             }

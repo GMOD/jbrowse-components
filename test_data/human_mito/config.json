@@ -3,6 +3,9 @@
     {
       "name": "human_mito",
       "displayName": "Human mitochondrion (NC_012920.1)",
+      "geneticCodes": {
+        "NC_012920.1": 2
+      },
       "sequence": {
         "type": "ReferenceSequenceTrack",
         "trackId": "human_mito-ReferenceSequenceTrack",

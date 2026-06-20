@@ -61,6 +61,38 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
           'Define custom colors for each reference sequence. Will cycle through this list if there are not enough colors for every sequence.',
       },
 
+      /**
+       * #slot
+       * Maps a reference sequence name to an NCBI genetic-code (translation
+       * table) id for sequences that don't use the standard code, e.g.
+       * `{ "chrM": 2 }` for the vertebrate mitochondrial code or
+       * `{ "chrPltd": 11 }` for a plastid. Drives the reference sequence track's
+       * translation rows; unlisted refNames use the standard code (1). CDS-level
+       * translation reads the GFF `transl_table` attribute directly and ignores
+       * this.
+       */
+      geneticCodes: {
+        type: 'frozen',
+        defaultValue: {},
+        description:
+          'Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { "chrM": 2 }',
+      },
+
+      /**
+       * #slot
+       * Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments
+       * allowed) to load the same refName-to-genetic-code mapping from, instead
+       * of inlining it — useful when a config generator emits a sidecar rather
+       * than inlining per assembly. Entries in the inline `geneticCodes` slot
+       * take precedence over the file.
+       */
+      geneticCodesLocation: {
+        type: 'fileLocation',
+        defaultValue: { uri: '', locationType: 'UriLocation' },
+        description:
+          'Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map',
+      },
+
       refNameAliases: ConfigurationSchema(
         'RefNameAliases',
         {

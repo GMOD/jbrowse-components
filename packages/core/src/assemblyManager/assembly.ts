@@ -9,6 +9,8 @@ import { onBecomeObserved } from 'mobx'
 import { getConf } from '../configuration/index.ts'
 import { adapterConfigCacheKey } from '../data_adapters/dataAdapterCache.ts'
 import QuickLRU from '../util/QuickLRU/index.ts'
+import { parseTranslTable } from '../util/geneticCodes.ts'
+import { openLocation } from '../util/io/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
@@ -21,6 +23,7 @@ import type {
 } from '../data_adapters/BaseAdapter/index.ts'
 import type RpcManager from '../rpc/RpcManager.ts'
 import type { Feature, Region } from '../util/index.ts'
+import type { FileLocation } from '../util/types/index.ts'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 
 type AdapterConf = Record<string, unknown>
@@ -267,6 +270,12 @@ export default function assemblyFactory(
         cytobands: undefined as Feature[] | undefined,
         /**
          * #volatile
+         * refName -> NCBI genetic-code id loaded from `geneticCodesLocation`;
+         * merged with (and overridden by) the inline `geneticCodes` config slot
+         */
+        loadedGeneticCodes: undefined as Record<string, number> | undefined,
+        /**
+         * #volatile
          * Precomputed in loadPre to avoid expensive synchronous computation
          * when MobX triggers the autorun after setLoaded
          */
@@ -344,13 +353,19 @@ export default function assemblyFactory(
         allRefNamesWithLowerCase,
         canonicalToSeqAdapterRefNames,
         cytobands,
-      }: RefNameMaps & { regions: Region[]; cytobands: Feature[] }) {
+        geneticCodes,
+      }: RefNameMaps & {
+        regions: Region[]
+        cytobands: Feature[]
+        geneticCodes: Record<string, number>
+      }) {
         self.volatileRegions = regions
         self.refNameAliases = refNameAliases
         self.lowerCaseRefNameAliases = lowerCaseRefNameAliases
         self.allRefNamesWithLowerCase = allRefNamesWithLowerCase
         self.canonicalToSeqAdapterRefNames = canonicalToSeqAdapterRefNames
         self.cytobands = cytobands
+        self.loadedGeneticCodes = geneticCodes
       },
       /**
        * #action
@@ -397,6 +412,11 @@ export default function assemblyFactory(
           pluginManager,
         })
 
+        const geneticCodes = await getGeneticCodesFromFile({
+          location: self.getConf('geneticCodesLocation'),
+          pluginManager,
+        })
+
         this.setLoaded({
           ...maps,
           regions: regions.map(r => ({
@@ -405,6 +425,7 @@ export default function assemblyFactory(
             assemblyName,
           })),
           cytobands,
+          geneticCodes,
         })
       },
     }))
@@ -538,6 +559,16 @@ export default function assemblyFactory(
       },
       /**
        * #method
+       * NCBI genetic-code (translation table) id for a refName, from the
+       * assembly's `geneticCodes` config map (e.g. a mitochondrial contig = 2).
+       * Falls back to the standard code (1) for unlisted refNames.
+       */
+      getGeneticCodeId(refName: string) {
+        const inline: Record<string, number> = self.getConf('geneticCodes') ?? {}
+        return inline[refName] ?? self.loadedGeneticCodes?.[refName] ?? 1
+      },
+      /**
+       * #method
        * Given a canonical refName, returns the refName used by the sequence
        * adapter (what's in the FASTA file). Falls back to the input if no
        * mapping exists.
@@ -636,6 +667,36 @@ async function getCytobands({
     pluginManager,
   )
   return adapter.getData()
+}
+
+// Loads an optional `refName<TAB>geneticCodeId` TSV (# comments allowed) into a
+// map; an empty location yields {} so the inline geneticCodes slot is the only
+// source. Kept as a plain file read rather than a pluggable adapter because the
+// mapping is trivial and format-fixed.
+async function getGeneticCodesFromFile({
+  location,
+  pluginManager,
+}: {
+  location: FileLocation | undefined
+  pluginManager: PluginManager
+}): Promise<Record<string, number>> {
+  const map: Record<string, number> = {}
+  const uri = location && 'uri' in location ? location.uri : undefined
+  const localPath =
+    location && 'localPath' in location ? location.localPath : undefined
+  if (location && (uri || localPath)) {
+    const text = await openLocation(location, pluginManager).readFile('utf8')
+    for (const line of text.split(/\r\n|\r|\n/)) {
+      if (line && !line.startsWith('#')) {
+        const [refName, codeColumn] = line.split('\t')
+        const id = parseTranslTable(codeColumn)
+        if (refName && id !== undefined) {
+          map[refName] = id
+        }
+      }
+    }
+  }
+  return map
 }
 
 async function getAssemblyRegions({

@@ -1,4 +1,4 @@
-import { defaultStarts, defaultStops } from '@jbrowse/core/util'
+import { defaultStarts } from '@jbrowse/core/util'
 
 import type { Frame } from '@jbrowse/core/util'
 import type { Theme } from '@mui/material'
@@ -60,14 +60,21 @@ export function buildColorPalette(theme: Theme): ColorPalette {
 }
 
 const startsSet = new Set(defaultStarts)
-const stopsSet = new Set(defaultStops)
 
 export type CodonKind = 'start' | 'stop' | 'normal'
 
-export function codonKind(upperCodon: string): CodonKind {
+// Stops come from the active genetic code (a codon mapping to '*'), so e.g. the
+// mitochondrial code marks AGA/AGG as stops and TGA as Trp. Start highlighting
+// stays ATG-only: alternative initiators (GTG/TTG) only act as starts at a true
+// CDS 5' end, so flagging every occurrence in a raw 3-frame translation would be
+// misleading noise.
+export function codonKind(
+  upperCodon: string,
+  codonTable: Record<string, string>,
+): CodonKind {
   return startsSet.has(upperCodon)
     ? 'start'
-    : stopsSet.has(upperCodon)
+    : codonTable[upperCodon] === '*'
       ? 'stop'
       : 'normal'
 }

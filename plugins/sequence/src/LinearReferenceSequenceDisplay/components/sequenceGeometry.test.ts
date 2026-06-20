@@ -1,3 +1,5 @@
+import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
+
 import {
   codonKind,
   frameShiftBounds,
@@ -6,6 +8,9 @@ import {
 } from './sequenceGeometry.ts'
 
 import type { Frame } from '@jbrowse/core/util'
+
+const standard = getGeneticCode(1).codonTable
+const vertebrateMito = getGeneticCode(2).codonTable
 
 test('visibleRange clamps to sequence bounds', () => {
   // block fully inside the fetched region
@@ -55,9 +60,19 @@ test('visibleCodonRange snaps to the frame grid and clamps to complete codons', 
   expect(r.start).toBeLessThanOrEqual(15)
 })
 
-test('codonKind classifies start/stop/normal', () => {
-  expect(codonKind('ATG')).toBe('start')
-  expect(codonKind('TAA')).toBe('stop')
-  expect(codonKind('TAG')).toBe('stop')
-  expect(codonKind('AAA')).toBe('normal')
+test('codonKind classifies start/stop/normal under the standard code', () => {
+  expect(codonKind('ATG', standard)).toBe('start')
+  expect(codonKind('TAA', standard)).toBe('stop')
+  expect(codonKind('TAG', standard)).toBe('stop')
+  expect(codonKind('TGA', standard)).toBe('stop')
+  expect(codonKind('AAA', standard)).toBe('normal')
+})
+
+test('codonKind stops follow the genetic code (vertebrate mitochondrial)', () => {
+  // TGA is Trp (not a stop) and AGA/AGG are stops under the mito code
+  expect(codonKind('TGA', vertebrateMito)).toBe('normal')
+  expect(codonKind('AGA', vertebrateMito)).toBe('stop')
+  expect(codonKind('AGG', vertebrateMito)).toBe('stop')
+  // ATG start highlighting is unchanged across codes
+  expect(codonKind('ATG', vertebrateMito)).toBe('start')
 })

@@ -1,4 +1,5 @@
-import { codonTable, complement, revcom } from '@jbrowse/core/util'
+import { complement, revcom } from '@jbrowse/core/util'
+import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
 import {
   bpToScreenPx,
   clipBlockForCanvas,
@@ -89,6 +90,9 @@ interface RowDrawCommon {
   showBorders: boolean
   palette: ColorPalette
   textColors: TextColors
+  // case-insensitive codon -> amino acid for this region's genetic code, '*' for
+  // a stop; varies per refName (e.g. mitochondrial contigs)
+  codonTable: Record<string, string>
 }
 
 function drawBaseRow({
@@ -141,6 +145,7 @@ function drawTranslationRow({
   showBorders,
   palette,
   textColors,
+  codonTable,
 }: RowDrawCommon & { frame: Frame; reversed: boolean }) {
   const bg = palette.frames.get(frame) ?? palette.fallback
   const { frameShift, sliceEnd } = frameShiftBounds(seq, seqStart, frame)
@@ -173,7 +178,7 @@ function drawTranslationRow({
   for (let i = start; i < end; i += 3) {
     const codon = seq.slice(i, i + 3)
     const normalizedCodon = reversed ? revcom(codon) : codon
-    const kind = codonKind(normalizedCodon.toUpperCase())
+    const kind = codonKind(normalizedCodon.toUpperCase(), codonTable)
     const { x, w } = bpRangeToScreen(block, seqStart + i, 3)
 
     // background was already painted for normal codons, so the no-border path
@@ -279,6 +284,7 @@ export function drawSequenceBlocks(
       showBorders,
       palette,
       textColors,
+      codonTable: getGeneticCode(data.geneticCodeId).codonTable,
     }
 
     for (const frame of topFrames) {
