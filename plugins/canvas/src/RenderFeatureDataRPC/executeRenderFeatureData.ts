@@ -59,10 +59,19 @@ export async function executeRenderFeatureData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
+  // pass statusCallback + stopToken so the adapter's own determinate download/
+  // processing progress reaches the display (overriding the "Fetching features"
+  // fallback label) and so a long fetch is interruptible mid-flight, not just at
+  // the checkStopToken2 below
   const featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
-    () => firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
+    () =>
+      firstValueFrom(
+        dataAdapter
+          .getFeatures(region, { statusCallback, stopToken })
+          .pipe(toArray()),
+      ),
   )
   checkStopToken2(stopTokenCheck)
 
