@@ -6,8 +6,6 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import { collectRenderData } from './collectRenderData.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
@@ -66,12 +64,7 @@ export async function executeRenderFeatureData({
   const featuresArray = await updateStatus(
     'Fetching features',
     statusCallback,
-    () =>
-      firstValueFrom(
-        dataAdapter
-          .getFeatures(region, { statusCallback, stopToken })
-          .pipe(toArray()),
-      ),
+    () => dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
   checkStopToken2(stopTokenCheck)
 

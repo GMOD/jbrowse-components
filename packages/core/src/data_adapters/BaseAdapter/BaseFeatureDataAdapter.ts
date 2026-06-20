@@ -106,6 +106,17 @@ export abstract class BaseFeatureDataAdapter<
   }
 
   /**
+   * Convenience wrapper that collects {@link getFeatures} for a region into an
+   * array — the common shape across RPC methods (RenderFeatureData, Manhattan,
+   * Wiggle, etc.). Pass `opts` so `statusCallback`/`stopToken` reach the
+   * adapter; omitting them means no download progress and a fetch that can't be
+   * interrupted mid-flight.
+   */
+  public getFeaturesArray(region: Region, opts: BaseOptions = {}) {
+    return firstValueFrom(this.getFeatures(region, opts).pipe(toArray()))
+  }
+
+  /**
    * Check if the store has data for the given reference name.
    * @param refName - Name of the reference sequence
    * @returns Whether data source has data for the given reference name

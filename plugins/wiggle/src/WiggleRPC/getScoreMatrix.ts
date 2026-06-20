@@ -1,7 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { groupBy } from '@jbrowse/core/util'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom, toArray } from 'rxjs'
 
 import type { GetScoreMatrixArgs } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -28,9 +27,7 @@ export async function getScoreMatrix({
   const r0 = regions[0]!
   const r0len = r0.end - r0.start
   const w = Math.floor(r0len / bpPerPx)
-  const feats = await firstValueFrom(
-    dataAdapter.getFeatures(r0, args).pipe(toArray()),
-  )
+  const feats = await dataAdapter.getFeaturesArray(r0, args)
 
   const groups = groupBy(feats, f => f.get('source')!)
   const rows: Record<string, Float32Array> = {}

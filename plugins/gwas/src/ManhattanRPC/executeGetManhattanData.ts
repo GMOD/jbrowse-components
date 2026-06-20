@@ -6,8 +6,6 @@ import {
   checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
@@ -115,11 +113,7 @@ export async function executeGetManhattanData({
   ).dataAdapter as BaseFeatureDataAdapter
 
   const features = await updateStatus('Loading GWAS data', statusCallback, () =>
-    firstValueFrom(
-      dataAdapter
-        .getFeatures(region, { statusCallback, stopToken })
-        .pipe(toArray()),
-    ),
+    dataAdapter.getFeaturesArray(region, { statusCallback, stopToken }),
   )
 
   checkStopToken2(stopTokenCheck)

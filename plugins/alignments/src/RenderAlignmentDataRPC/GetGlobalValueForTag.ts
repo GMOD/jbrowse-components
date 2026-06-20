@@ -1,7 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region } from '@jbrowse/core/util'
@@ -37,9 +35,7 @@ export default class PileupGetGlobalValueForTag extends RpcMethodTypeWithFilters
 
     const tagValues = new Set<string>()
     for (const region of regions) {
-      const features = await firstValueFrom(
-        dataAdapter.getFeatures(region, { stopToken }).pipe(toArray()),
-      )
+      const features = await dataAdapter.getFeaturesArray(region, { stopToken })
       for (const feature of features) {
         const val = (
           feature.get('tags') as Record<string, unknown> | undefined

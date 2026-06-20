@@ -6,8 +6,6 @@ import {
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { collectWiggleTransferables } from '@jbrowse/wiggle-core'
-import { firstValueFrom } from 'rxjs'
-import { toArray } from 'rxjs/operators'
 
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
@@ -83,9 +81,7 @@ export async function executeRenderWiggleData({
       )
     : featuresToRaw(
         await updateStatus('Loading wiggle data', statusCallback, () =>
-          firstValueFrom(
-            dataAdapter.getFeatures(region, fetchOpts).pipe(toArray()),
-          ),
+          dataAdapter.getFeaturesArray(region, fetchOpts),
         ),
       )
 

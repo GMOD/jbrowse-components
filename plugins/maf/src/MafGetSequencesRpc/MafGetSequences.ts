@@ -1,6 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableElementTypes/RpcMethodTypeWithFiltersAndRenameRegions'
-import { firstValueFrom, toArray } from 'rxjs'
 
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
@@ -53,8 +52,9 @@ export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRe
       await getAdapter(this.pluginManager, sessionId, adapterConfig)
     ).dataAdapter as BaseFeatureDataAdapter
 
-    const features = await firstValueFrom(
-      dataAdapter.getFeatures(regions[0]!, deserializedArgs).pipe(toArray()),
+    const features = await dataAdapter.getFeaturesArray(
+      regions[0]!,
+      deserializedArgs,
     )
     return processFeaturesToFasta({
       features: new Map(features.map(f => [f.id(), f])),
