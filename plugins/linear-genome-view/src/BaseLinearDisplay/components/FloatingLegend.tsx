@@ -1,6 +1,9 @@
+import { useState } from 'react'
+
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
+import Link from '@mui/material/Link'
 import { observer } from 'mobx-react'
 
 const useStyles = makeStyles()(theme => ({
@@ -41,7 +44,15 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     textOverflow: 'ellipsis',
   },
+  toggle: {
+    cursor: 'pointer',
+    marginTop: 2,
+    display: 'block',
+    fontSize: 10,
+  },
 }))
+
+const DEFAULT_MAX_ITEMS = 12
 
 export interface LegendItem {
   color?: string
@@ -51,15 +62,22 @@ export interface LegendItem {
 const FloatingLegend = observer(function FloatingLegend({
   items,
   onDismiss,
+  maxItems = DEFAULT_MAX_ITEMS,
 }: {
   items: LegendItem[]
   onDismiss?: () => void
+  maxItems?: number
 }) {
   const { classes } = useStyles()
+  const [expanded, setExpanded] = useState(false)
 
   if (items.length === 0) {
     return null
   }
+
+  const collapsible = items.length > maxItems
+  const shown = collapsible && !expanded ? items.slice(0, maxItems) : items
+  const hiddenCount = items.length - maxItems
 
   return (
     <div className={cx(classes.legend, onDismiss && classes.withClose)}>
@@ -75,7 +93,7 @@ const FloatingLegend = observer(function FloatingLegend({
           <CloseIcon fontSize="inherit" />
         </IconButton>
       ) : null}
-      {items.map(item => (
+      {shown.map(item => (
         <div key={item.label} className={classes.item}>
           <div
             className={classes.colorBox}
@@ -84,6 +102,18 @@ const FloatingLegend = observer(function FloatingLegend({
           <span className={classes.label}>{item.label}</span>
         </div>
       ))}
+      {collapsible ? (
+        <Link
+          component="button"
+          underline="hover"
+          className={classes.toggle}
+          onClick={() => {
+            setExpanded(!expanded)
+          }}
+        >
+          {expanded ? 'Show less' : `Show ${hiddenCount} more…`}
+        </Link>
+      ) : null}
     </div>
   )
 })
