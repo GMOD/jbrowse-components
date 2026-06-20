@@ -8,7 +8,7 @@ A MAF track shows a multiple alignment of several species against a reference
 genome: one row per aligned species, with a coverage summary on top. JBrowse
 reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
 
-<Figure src="/img/maf_track.png" caption="A MAF track: the coverage band on top, then one row per species (ordered by the guide tree shown in the left sidebar), with positions where a species differs from the reference drawn as colored marks."/>
+<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes): the coverage band on top, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks."/>
 
 ## Adapters
 
@@ -18,25 +18,28 @@ reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
 | MAF (tabix)    | [MafTabixAdapter](/docs/config/maftabixadapter)         |
 | TAF (bgzipped) | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter)     |
 
-The `samples` array lists the aligned species in track order, and an optional
-`nhLocation` supplies a Newick guide tree that orders and labels the rows.
+Provide the aligned species either as a `samples` array (in track order) or via
+an `nhLocation` Newick tree, which both supplies the species and orders/labels
+the rows as a dendrogram.
 
-Example using the tabix-indexed BED form:
+Example using the tabix-indexed BED form (the UCSC ce11 26-way, ordered by its
+phylogenetic tree):
 
 ```json
 {
   "type": "MafTrack",
-  "trackId": "volvox_maf",
-  "name": "MAF",
-  "assemblyNames": ["volvox"],
+  "trackId": "ce11.26way",
+  "name": "UCSC 26-way multiple alignment",
+  "assemblyNames": ["ce11"],
   "adapter": {
     "type": "MafTabixAdapter",
-    "samples": ["volvox", "simvolvox", "minivolvox", "microvolvox"],
-    "bedGzLocation": { "uri": "volvox.maf.bed.gz" },
-    "nhLocation": { "uri": "volvox.maf.nh" },
+    "bedGzLocation": { "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz" },
+    "nhLocation": {
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/ce11/multiz26way/ce11.26way.nh"
+    },
     "index": {
       "indexType": "TBI",
-      "location": { "uri": "volvox.maf.bed.gz.tbi" }
+      "location": { "uri": "https://jbrowse.org/demos/ce/ce11.26way.bed.gz.tbi" }
     }
   }
 }
@@ -56,7 +59,7 @@ versus divergent regions stand out without having to read individual bases. It
 is computed from the alignment itself, so it appears at the zoom levels where
 the per-species rows are loaded. Toggle it from the track menu.
 
-<Figure src="/img/maf_conservation.png" caption="Enabling the conservation band from the track menu (top), and the resulting percent-identity profile drawn above the alignment rows on a 0–100% scale (bottom)."/>
+<Figure src="/img/maf_conservation.png" caption="Enabling the conservation band from the track menu (top), and the resulting percent-identity profile on the 26-way alignment drawn above the rows on a 0–100% scale (bottom) — high over the conserved exon, dropping off in the divergent flanks."/>
 
 This is a true identity metric and is distinct from the score shaded into the
 zoomed-out summary bars, which comes from the UCSC `bigMafSummary` — a

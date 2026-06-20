@@ -221,6 +221,14 @@ function kgUrl(session: object) {
   return `?config=${encodeURIComponent(KG_CONFIG)}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
+// Thin local config wiring the ce11 assembly + the real UCSC ce11 26-way multiz
+// MAF (data hosted on jbrowse.org/demos/ce + UCSC) to the *built-in* MAF
+// support. The jbrowse.org/demos/ce config itself loads the old external
+// mafviewer UMD plugin, which would shadow the built-in conservation band and
+// trip the cross-origin-plugin trust dialog — so a local config path is used to
+// render with the local build's code instead.
+const CE_MAF = 'test_data/ce_maf.json'
+
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
 // each adjacent pair and a gene annotation track on each genome, used by the
 // synteny_visualization.md tutorial.
@@ -5090,47 +5098,69 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
   {
-    // A MAF (multiple alignment) track zoomed in enough to read bases: the
-    // coverage band on top, then one row per aligned species (tree sidebar on
-    // the left from the track's .nh), each base colored by match/mismatch.
+    // The UCSC ce11 26-way multiz alignment (real cross-species nematode data):
+    // the coverage band on top, then one row per aligned species (guide tree on
+    // the left from the track's .nh), zoomed in enough to read bases — each
+    // colored where a species differs from the reference. Remote 26-way data is
+    // slow to fetch + render, so the settle is long.
     mode: 'url',
     name: 'maf_track',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(CE_MAF, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-150',
-          tracks: ['volvox_maf'],
+          assembly: 'ce11',
+          loc: 'chrI:3,000,948-3,001,068',
+          tracks: [
+            {
+              trackId: 'ce11.26way',
+              displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 12 },
+            },
+          ],
         },
       ],
     }),
-    readyText: 'ctgA',
+    readyText: 'chrI',
+    readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 420,
-    settleMs: 4000,
+    viewportHeight: 640,
+    settleMs: 18000,
+    hideTooltip: true,
+    // park the cursor in the nav bar so no coverage-band hover tooltip lingers
+    // over the capture
+    actions: [
+      { type: 'hover', from: { x: 250, y: 100 } },
+      { type: 'delay', ms: 2000 },
+    ],
   },
   {
-    // The conservation (percent identity) band: toggle it on via the track menu
-    // (top frame) and the resulting per-base identity-to-reference profile
-    // appears above the alignment rows (bottom frame). Zoomed out so the
-    // sliding-window profile is the readable signal rather than the bases.
+    // The conservation (percent identity) band on the real 26-way alignment:
+    // toggle it on via the track menu (top frame) and the per-base
+    // identity-to-reference profile appears above the rows (bottom frame).
+    // Zoomed out across several kb so the sliding-window profile — conserved
+    // (coding) vs divergent regions — is the readable signal, not the bases.
     mode: 'url',
     name: 'maf_conservation',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(CE_MAF, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-8000',
-          tracks: ['volvox_maf'],
+          assembly: 'ce11',
+          loc: 'chrI:2,998,500-3,001,800',
+          tracks: [
+            {
+              trackId: 'ce11.26way',
+              displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 8 },
+            },
+          ],
         },
       ],
     }),
-    readyText: 'ctgA',
+    readyText: 'chrI',
+    readyTimeout: 90000,
     viewportWidth: 1000,
-    viewportHeight: 520,
-    settleMs: 4000,
+    viewportHeight: 560,
+    settleMs: 10000,
     hideTooltip: true,
     stages: [
       {
