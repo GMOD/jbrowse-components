@@ -1,9 +1,14 @@
+import { getGeneticCode } from '@jbrowse/core/util/geneticCodes'
+
 import {
   findTranscriptsWithCDS,
   processTranscriptFromSeq,
 } from './peptideUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+
+const standardCode = getGeneticCode(1).codonTable
+const vertebrateMitoCode = getGeneticCode(2).codonTable
 
 const DEFAULT_TRANSCRIPT_TYPES = [
   'mRNA',
@@ -257,7 +262,9 @@ describe('processTranscriptFromSeq', () => {
       strand: 1,
       subfeatures: [createCoordFeature({ type: 'CDS', start: 0, end: 6 })],
     })
-    expect(processTranscriptFromSeq(seq, transcript)?.protein).toBe('MK')
+    expect(processTranscriptFromSeq(seq, transcript, standardCode)?.protein).toBe(
+      'MK',
+    )
   })
 
   it('dedupes duplicate CDS rows so the protein is not frameshifted', () => {
@@ -272,6 +279,28 @@ describe('processTranscriptFromSeq', () => {
       ],
     })
     // without dedup the duplicate row would stitch to ATGAAAATGAAA -> MKMK
-    expect(processTranscriptFromSeq(seq, transcript)?.protein).toBe('MK')
+    expect(processTranscriptFromSeq(seq, transcript, standardCode)?.protein).toBe(
+      'MK',
+    )
+  })
+
+  // TGA codes Trp (not stop) under the vertebrate mitochondrial code, so the
+  // same sequence translates differently depending on the table passed in
+  it('honors an alternative genetic code (vertebrate mitochondrial)', () => {
+    // ATG TGA AAA: M, (TGA), K
+    const mitoSeq = 'ATGTGAAAA'
+    const transcript = createCoordFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 9,
+      strand: 1,
+      subfeatures: [createCoordFeature({ type: 'CDS', start: 0, end: 9 })],
+    })
+    expect(
+      processTranscriptFromSeq(mitoSeq, transcript, standardCode)?.protein,
+    ).toBe('M*K')
+    expect(
+      processTranscriptFromSeq(mitoSeq, transcript, vertebrateMitoCode)?.protein,
+    ).toBe('MWK')
   })
 })

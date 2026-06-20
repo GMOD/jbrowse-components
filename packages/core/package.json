@@ -114,6 +114,7 @@
     "./util/fileHandleStore": "./src/util/fileHandleStore.ts",
     "./util/flatbush": "./src/util/flatbush/index.ts",
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
+    "./util/geneticCodes": "./src/util/geneticCodes.ts",
     "./util/getRelativeX": "./src/util/getRelativeX.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
@@ -567,6 +568,10 @@
         "types": "./esm/util/formatFastaStrings.d.ts",
         "import": "./esm/util/formatFastaStrings.js"
       },
+      "./util/geneticCodes": {
+        "types": "./esm/util/geneticCodes.d.ts",
+        "import": "./esm/util/geneticCodes.js"
+      },
       "./util/getRelativeX": {
         "types": "./esm/util/getRelativeX.d.ts",
         "import": "./esm/util/getRelativeX.js"
@@ -955,6 +960,9 @@
         ],
         "util/formatFastaStrings": [
           "esm/util/formatFastaStrings.d.ts"
+        ],
+        "util/geneticCodes": [
+          "esm/util/geneticCodes.d.ts"
         ],
         "util/getRelativeX": [
           "esm/util/getRelativeX.d.ts"

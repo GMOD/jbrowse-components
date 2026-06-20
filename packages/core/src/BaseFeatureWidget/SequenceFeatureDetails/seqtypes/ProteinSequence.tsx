@@ -1,7 +1,6 @@
 import { observer } from 'mobx-react'
 
 import { convertCodingSequenceToPeptides } from '../../../util/convertCodingSequenceToPeptides.ts'
-import { codonTable } from '../../../util/index.ts'
 import { proteinColor } from '../consts.ts'
 import { splitString } from '../util.ts'
 import SequenceDisplay from './SequenceDisplay.tsx'
@@ -13,10 +12,12 @@ const ProteinSequence = observer(function ProteinSequence({
   cds,
   sequence,
   model,
+  codonTable,
 }: {
   cds: Feat[]
   sequence: string
   model: SequenceFeatureDetailsModel
+  codonTable: Record<string, string>
 }) {
   const { charactersPerRow, showCoordinates } = model
   const str = convertCodingSequenceToPeptides({ cds, sequence, codonTable })

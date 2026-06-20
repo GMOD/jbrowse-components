@@ -1,0 +1,76 @@
+{
+  "assemblies": [
+    {
+      "name": "human_mito",
+      "displayName": "Human mitochondrion (NC_012920.1)",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "human_mito-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "sequence.fasta.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "sequence.fasta.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "sequence.fasta.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {
+    "disableAnalytics": true
+  },
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "ncbi_genes_human_mito",
+      "name": "NCBI genes (transl_table=2, vertebrate mitochondrial)",
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "mito.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "mito.gff.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "assemblyNames": ["human_mito"],
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "ncbi_genes_human_mito-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:get(feature,'gene') || get(feature,'product') || get(feature,'name') || get(feature,'id')"
+          }
+        }
+      ]
+    }
+  ],
+  "defaultSession": {
+    "name": "Human mitochondrial genetic code",
+    "views": [
+      {
+        "type": "LinearGenomeView",
+        "init": {
+          "assembly": "human_mito",
+          "loc": "NC_012920.1:3307-4262",
+          "tracks": [
+            "human_mito-ReferenceSequenceTrack",
+            "ncbi_genes_human_mito"
+          ]
+        }
+      }
+    ]
+  }
+}

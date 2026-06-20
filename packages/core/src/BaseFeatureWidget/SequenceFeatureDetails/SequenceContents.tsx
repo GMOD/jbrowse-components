@@ -5,6 +5,7 @@ import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
 import { getSequenceData } from './useSequenceData.ts'
+import { getGeneticCode, parseTranslTable } from '../../util/geneticCodes.ts'
 
 import type {
   SequenceDisplayMode,
@@ -12,6 +13,17 @@ import type {
 } from './model.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
+
+// CDS-bound translation reads `transl_table` off the CDS subfeature (or the
+// feature itself), so e.g. a mitochondrial gene translates with table 2 rather
+// than the standard code. Undefined falls back to the standard code.
+function proteinCodonTable(feature: SimpleFeatureSerialized) {
+  const cds = feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
+  const id =
+    parseTranslTable(feature.transl_table) ??
+    parseTranslTable(cds?.transl_table)
+  return getGeneticCode(id).codonTable
+}
 
 function RenderedSequenceComponent({
   mode,
@@ -51,7 +63,14 @@ function RenderedSequenceComponent({
       return <CDSSequence model={model} cds={cds} sequence={seq} />
 
     case 'protein':
-      return <ProteinSequence model={model} cds={cds} sequence={seq} />
+      return (
+        <ProteinSequence
+          model={model}
+          cds={cds}
+          sequence={seq}
+          codonTable={proteinCodonTable(feature)}
+        />
+      )
 
     // cdna and the gene_* variants all render the spliced transcript; introns
     // and up/downstream flanks are toggled by the mode name
