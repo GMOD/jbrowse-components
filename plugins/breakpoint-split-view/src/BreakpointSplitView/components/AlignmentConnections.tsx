@@ -1,9 +1,5 @@
 import { readLeadingBp, readTrailingBp } from '@jbrowse/cigar-utils'
-import {
-  bezierConnectorPath,
-  getSession,
-  getStrokeProps,
-} from '@jbrowse/core/util'
+import { bezierConnectorPath, getSession, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -92,14 +88,13 @@ const AlignmentConnections = observer(function AlignmentConnections({
       if (x1 == null || x2 == null) {
         return []
       }
-      const rf1 = views[level1]!.pxToBp(x1).reversed ? -1 : 1
-      const rf2 = views[level2]!.pxToBp(x2).reversed ? -1 : 1
+      const reversed1 = views[level1]!.pxToBp(x1).reversed
+      const reversed2 = views[level2]!.pxToBp(x2).reversed
       const y1 = getY(level1, c1)
       const y2 = getY(level2, c2)
       const sameLevel = level1 === level2
       const abnormalSpecialRenderFlag = sameLevel && isAbnormal
       const trackHeight = abnormalSpecialRenderFlag ? heights[level1]! : 0
-      const pf1 = hasPaired ? -1 : 1
       const y0 = yOffsets[level1]!
       const cy1 = abnormalSpecialRenderFlag
         ? Math.min(y0 + trackHeight, y1 + trackHeight)
@@ -107,17 +102,21 @@ const AlignmentConnections = observer(function AlignmentConnections({
       const cy2 = abnormalSpecialRenderFlag
         ? Math.min(y0 + trackHeight, y2 + trackHeight)
         : y2
-      // Cross-view connections in a stacked split view keep their fixed 200px
-      // handle (ends separated vertically); rf flips for reversed regions and
-      // pf1 flips the mate handle for paired vs split. Same curve idiom as the
-      // alignments overlay — see bezierConnectorPath.
+      // Cross-view connections in a stacked split view use a fixed 200px handle
+      // (ends are separated vertically). Endpoint 1 is read1's 3' edge; endpoint
+      // 2 is the next segment's 5' leading edge for a split junction, or the
+      // mate's 3' edge for a pair. Same shared curve as the alignments overlay.
       const path = bezierConnectorPath({
         x1,
         y1,
         x2,
         y2,
-        dx1: 200 * s1 * rf1,
-        dx2: -200 * s2 * rf2 * pf1,
+        s1,
+        s2,
+        leadingEnd2: !hasPaired,
+        reversed1,
+        reversed2,
+        handlePx: 200,
         cy1,
         cy2,
       })

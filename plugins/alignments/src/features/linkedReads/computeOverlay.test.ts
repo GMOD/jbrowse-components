@@ -5,6 +5,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
+import { LINKED_READ_COLOR_PAIR_RR } from './compute.ts'
 import { computePileupBezierArcs } from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -16,6 +17,7 @@ function makeData(opts: {
   strands: number[]
   positions: number[][]
   ys: number[]
+  orientations?: number[]
 }): PileupDataResult {
   const n = opts.names.length
   const readPositions = new Uint32Array(n * 2)
@@ -29,7 +31,7 @@ function makeData(opts: {
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),
     readPositions,
-    readPairOrientations: new Uint8Array(n),
+    readPairOrientations: Uint8Array.from(opts.orientations ?? Array(n).fill(0)),
     readYs: new Uint16Array(opts.ys),
   } as unknown as PileupDataResult
 }
@@ -64,11 +66,13 @@ function controlPoints(d: string) {
 }
 
 describe('computePileupBezierArcs — split-read tangent direction', () => {
-  // Regression guard for the "fix split-read bezier tangent" change: the bezier
-  // handles must leave each endpoint along the read's *actual* BAM strand, not
-  // the classifier-negated strand. fwd primary → handle heads right; rev
-  // supplementary → handle heads left.
-  it('fwd+rev split inversion: cp1x right of sx1, cp2x left of sx2', () => {
+  // Mirrors BreakpointSplitView's AlignmentConnections (shared bezierTangentSign):
+  // sx1 is segment1's read-trailing (3') edge, so its handle leaves along the
+  // read's strand; sx2 is segment2's read-leading (5') edge, so for a split
+  // junction its handle FLIPS and the curve folds back into the reversed segment
+  // (it does not cut straight across). fwd primary → cp1x right; the rev
+  // supplementary's 5' handle folds back the same way (right of sx2).
+  it('fwd+rev split inversion: cp1x right of sx1, cp2x right of sx2', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -85,11 +89,11 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
-    expect(cp1x).toBeGreaterThan(sx1) // s1 = +1 → right
-    expect(cp2x).toBeLessThan(sx2) // s2 = -1 → left (the fix)
+    expect(cp1x).toBeGreaterThan(sx1) // s1 = +1, trailing → right
+    expect(cp2x).toBeGreaterThan(sx2) // s2 = -1, leading split → folds back right
   })
 
-  it('rev+fwd split inversion: cp1x left of sx1, cp2x right of sx2', () => {
+  it('rev+fwd split inversion: cp1x left of sx1, cp2x left of sx2', () => {
     const data = makeData({
       names: ['r', 'r'],
       flags: [0, SAM_FLAG_SUPPLEMENTARY],
@@ -106,8 +110,8 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
-    expect(cp1x).toBeLessThan(sx1) // s1 = -1 → left
-    expect(cp2x).toBeGreaterThan(sx2) // s2 = +1 → right
+    expect(cp1x).toBeLessThan(sx1) // s1 = -1, trailing → left
+    expect(cp2x).toBeLessThan(sx2) // s2 = +1, leading split → folds back left
   })
 
   it('emits no NaN coordinates', () => {
@@ -126,6 +130,37 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
       laidOutPileupMap: new Map([[0, data]]),
     })
     expect(arcs[0]!.d).not.toMatch(/NaN/)
+  })
+})
+
+describe('computePileupBezierArcs — paired tangent direction', () => {
+  // A mate link joins two 3' (trailing) edges, so neither handle is a 5' leading
+  // edge and neither flips (unlike a split junction). Both handles leave along
+  // their read's strand — for an aberrant same-strand (RR) pair that means both
+  // point right, the consistent oval the breakpoint view also draws.
+  it('aberrant RR pair: both handles leave along strand, no fold-back', () => {
+    const data = makeData({
+      names: ['p', 'p'],
+      flags: [
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+      ],
+      strands: [1, 1],
+      orientations: [LINKED_READ_COLOR_PAIR_RR, LINKED_READ_COLOR_PAIR_RR],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      ys: [0, 1],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      laidOutPileupMap: new Map([[0, data]]),
+    })
+    expect(arcs).toHaveLength(1)
+    const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
+    expect(cp1x).toBeGreaterThan(sx1) // s1 = +1 → right
+    expect(cp2x).toBeGreaterThan(sx2) // s2 = +1, paired (no flip) → right
   })
 })
 
