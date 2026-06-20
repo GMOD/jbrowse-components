@@ -3,8 +3,6 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
-import { getMafColorPalette } from '../../LinearMafRenderer/util.ts'
-
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -93,7 +91,10 @@ export function drawConservation(
       )
     }
   }
-  ctx.fillStyle = getMafColorPalette(theme).matchColor
+  // The coverage palette color (grey[700]) — a readable, theme-driven
+  // quantitative-profile fill; the 0-100% Y-axis distinguishes it from the
+  // depth coverage band above.
+  ctx.fillStyle = theme.palette.coverage
   for (let x = 0; x < width; x++) {
     const c = count[x]!
     if (c > 0) {

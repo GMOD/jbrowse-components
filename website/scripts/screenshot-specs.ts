@@ -568,6 +568,76 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
+  // Same HG002 discordant-arc display as arc_display, but with the arc track's
+  // menu opened to Show... → Advanced — the two toggles that control the
+  // off-screen / inter-chromosomal "vertical line" arcs. Replaces the hand-made
+  // arc_selector.png whose menu predated the rename (the old "Draw inter-region
+  // vertical lines" / "Draw inter-region connections" items are now "Show
+  // off-screen mate connections" / "Show inter-chromosomal pairs" under
+  // Advanced). The track-menu icon is targeted by data-trackid so the menu opens
+  // on the arc track, not the variant track above it.
+  {
+    mode: 'url',
+    name: 'alignments/arc_selector',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_illumina_chr1_arc_slice',
+          name: 'HG002 Illumina hs37d5.2x250 (chr1 arc slice)',
+          assemblyNames: ['hg19'],
+          adapter: {
+            type: 'BamAdapter',
+            uri: 'https://jbrowse.org/demos/hg002/HG002.hs37d5.2x250.chr1_72.6-73.1Mb.bam',
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr1:72,650,000-73,060,000',
+          tracks: [
+            'variants_hg002',
+            {
+              trackId: 'hg002_illumina_chr1_arc_slice',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                readConnections: 'arc',
+                readConnectionsDown: true,
+                showPileup: false,
+                readConnectionsHeight: 220,
+                height: 290,
+                featureHeight: 3,
+                featureSpacing: 0,
+                userByteSizeLimit: 500_000_000,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG002 Illumina',
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="hg002_illumina_chr1_arc_slice"]',
+      },
+      ...menuCascade([
+        'Show...',
+        'Advanced',
+        'Show off-screen mate connections',
+      ]),
+    ],
+    annotations: [
+      { type: 'box', anchor: { text: 'Show off-screen mate connections' } },
+      { type: 'box', anchor: { text: 'Show inter-chromosomal pairs' } },
+    ],
+  },
+
   // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
   // (drawn pink) separate from background. Drawn below the coverage band
@@ -1715,6 +1785,52 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
+  // Phased HG002 ONT reads grouped AND colored by the HP tag (alignments_track.md
+  // "Sort, color, and filter by tag"). Replaces a 5-stage menu-walkthrough figure
+  // with the single end state: groupBy + colorBy HP splits the pileup into one
+  // tinted section per haplotype, so the phased reads read at a glance. Same
+  // built-in HP grouping the smalldel figure uses, on the same HG002 ultralong
+  // ONT track; userByteSizeLimit lifts the force-load gate, readySelector waits
+  // for the pileup canvas to paint.
+  {
+    mode: 'url',
+    name: 'alignments/haplotype',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_nanopore_hp',
+          name: 'HG002 ONT',
+          assemblyNames: ['hg19'],
+          adapter: HG002_NANOPORE_ADAPTER,
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:63,002,000-63,009,000',
+          tracks: [
+            {
+              trackId: 'hg002_nanopore_hp',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                height: 500,
+                userByteSizeLimit: 200_000_000,
+                groupBy: { type: 'tag', tag: 'HP' },
+                colorBy: { type: 'tag', tag: 'HP' },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    viewportHeight: 700,
+    settleMs: 15000,
+  },
+
   // The nssv15767046 insertion at ~1:55,705,920 (hg19) shown across HG002
   // nanopore (top), PacBio (middle), and Illumina (bottom) read tracks under the
   // HG002 dbVar variant call. Reconstructed from DEMO_CONFIG (was a share-link
@@ -2258,6 +2374,35 @@ export const specs: ScreenshotSpec[] = [
     annotations: [{ type: 'box', anchor: { text: 'SV inspector' } }],
   },
 
+  // The SV-inspector import form with "Open from track" selected. The
+  // TrackSelector auto-picks the first importable track (the CNV-calls BED), so
+  // open the Tracks dropdown and choose the somatic-stvar SV benchmark VCF
+  // instead — which flips File Type to VCF — matching the figure where the VCF
+  // is loaded from an in-session track rather than pasted as a URL. Cropped to
+  // the centered form.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/translocation_open_from_track',
+    url: cgiabUrl({ views: [{ type: 'SvInspectorView' }] }),
+    readyText: 'Open from track',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    viewportWidth: 1150,
+    viewportHeight: 360,
+    actions: [
+      { type: 'click', text: 'Open from track' },
+      { type: 'waitForText', text: 'Tracks' },
+      { type: 'delay', ms: 500 },
+      // clicking the current selection text opens the Tracks dropdown; pick the
+      // stvar VCF (substring match) so File Type switches to VCF
+      { type: 'click', text: 'somatic-CNV' },
+      { type: 'waitForText', text: 'somatic-stvar' },
+      { type: 'click', text: 'somatic-stvar' },
+      { type: 'delay', ms: 1000 },
+    ],
+    annotations: [{ type: 'box', anchor: { text: 'Open from track' } }],
+  },
+
   {
     mode: 'url',
     name: 'sv_cgiab/translocation_sv_inspector_view',
@@ -2273,6 +2418,71 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 10000,
+  },
+
+  // The chr3<->chr13 CHROMOPLEXY translocation that the chord in the SV inspector
+  // points at — benchmark call SV_20 joins chr3:139,976,414 to chr13:114,353,244.
+  // Built declaratively as a BreakpointSplitView (init.views resolves to the two
+  // child LGVs after attach), each panel showing the 116x tumor PacBio HiFi reads
+  // in Compact mode (featureHeight 3 / spacing 0). showIntraviewLinks draws the
+  // black splines between reads that map partially to each side of the junction.
+  // The PacBio BAM is the full 118 GB NCBI ftp-trace file (no rehosted slice
+  // exists for this locus), so the ~26 MB BAI index downloads on every fresh-tab
+  // capture — hence the long readyTimeout. userByteSizeLimit lifts the fetch-size
+  // gate so the reads auto-load headless instead of sitting on a force-load
+  // prompt.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/translocation_breakpoint_split',
+    url: cgiabUrl({
+      views: [
+        {
+          type: 'BreakpointSplitView',
+          // LaunchView-BreakpointSplitView takes the two child panels as a
+          // top-level `views` array (loc/assembly/tracks) — it wraps them into
+          // the view's transient `init` itself. Same shape as DotplotView /
+          // LinearSyntenyView session specs.
+          views: [
+            {
+              loc: 'chr3:139,971,414-139,981,414',
+              assembly: 'GRCh38_GIABv3',
+              tracks: [
+                {
+                  trackId:
+                    'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+                  displaySnapshot: {
+                    featureHeight: 3,
+                    featureSpacing: 0,
+                    height: 400,
+                    userByteSizeLimit: 500_000_000,
+                  },
+                },
+              ],
+            },
+            {
+              loc: 'chr13:114,348,244-114,358,244',
+              assembly: 'GRCh38_GIABv3',
+              tracks: [
+                {
+                  trackId:
+                    'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
+                  displaySnapshot: {
+                    featureHeight: 3,
+                    featureSpacing: 0,
+                    height: 400,
+                    userByteSizeLimit: 500_000_000,
+                  },
+                },
+              ],
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG008-T_PacBio',
+    readyTimeout: 180000,
+    viewportHeight: 900,
+    settleMs: 25000,
   },
 
   {
@@ -2679,6 +2889,38 @@ export const specs: ScreenshotSpec[] = [
     // gate on the grid labels then settle long for the heavy whole-genome PIF
     // fetch to paint its dots
     settleMs: 60000,
+  },
+
+  // The dotplot import form with HG008T.hap1 on one axis and GRCh38 on the other
+  // (tutorial caption). An empty DotplotView (views:[{},{}]) shows the form; both
+  // selectors default to the config's first assembly (GRCh38_GIABv3), so open the
+  // first (x-axis) selector and pick HG008T.hap1. Replaces a stale hand-made
+  // capture that showed unrelated generic assembly names. Selecting via the UI
+  // (not pre-setting assemblies in the snapshot) keeps the form open — pre-set
+  // assemblies auto-launch the view.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/dotplot_import_form',
+    url: cgiabUrl({ views: [{ type: 'DotplotView', views: [{}, {}] }] }),
+    readyText: 'Select assemblies for dotplot view',
+    readyTimeout: 60000,
+    settleMs: 3000,
+    viewportWidth: 1500,
+    // tall enough to include the optional synteny-track row below the assembly
+    // selectors and the full wrapped helper text
+    viewportHeight: 400,
+    actions: [
+      // both selectors show GRCh38_GIABv3; the first match is the x-axis one —
+      // open it and switch to HG008T.hap1. Let the menu's open animation settle
+      // before clicking the item, else the click misses mid-transition.
+      { type: 'click', text: 'GRCh38_GIABv3' },
+      { type: 'waitForText', text: 'HG008T.hap1' },
+      { type: 'delay', ms: 600 },
+      // target the MUI Select option by data-value (reliable vs a text click
+      // that can land on the backdrop during the menu transition)
+      { type: 'click', selector: 'li[data-value="HG008T.hap1"]' },
+      { type: 'delay', ms: 1000 },
+    ],
   },
 
   {
@@ -4843,6 +5085,67 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', text: 'Run clustering' },
           { type: 'waitForText', text: 'Run clustering', hidden: true },
           { type: 'delay', ms: 10000 },
+        ],
+      },
+    ],
+  },
+  {
+    // A MAF (multiple alignment) track zoomed in enough to read bases: the
+    // coverage band on top, then one row per aligned species (tree sidebar on
+    // the left from the track's .nh), each base colored by match/mismatch.
+    mode: 'url',
+    name: 'maf_track',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-150',
+          tracks: ['volvox_maf'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    viewportWidth: 1000,
+    viewportHeight: 420,
+    settleMs: 4000,
+  },
+  {
+    // The conservation (percent identity) band: toggle it on via the track menu
+    // (top frame) and the resulting per-base identity-to-reference profile
+    // appears above the alignment rows (bottom frame). Zoomed out so the
+    // sliding-window profile is the readable signal rather than the bases.
+    mode: 'url',
+    name: 'maf_conservation',
+    url: sessionSpec(VOLVOX, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-8000',
+          tracks: ['volvox_maf'],
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    viewportWidth: 1000,
+    viewportHeight: 520,
+    settleMs: 4000,
+    hideTooltip: true,
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          ...menuCascade(['Show...', 'Conservation']),
+        ],
+        annotations: cascadeBoxes(['Show...', 'Conservation']),
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Conservation' },
+          { type: 'waitForText', text: 'Conservation', hidden: true },
+          { type: 'hover', from: { x: 250, y: 100 } },
+          { type: 'delay', ms: 2500 },
         ],
       },
     ],

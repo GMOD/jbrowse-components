@@ -21,6 +21,7 @@ a JBrowse 2 session.
 - [Alignments track configuration](/docs/config_guides/alignments_track) - BAM/CRAM track config with BamAdapter and CramAdapter options
 - [GWAS track configuration](/docs/config_guides/gwas_track) - Preparing GWAS and LD files and configuring GWASTrack, GWASAdapter, and LinearManhattanDisplay
 - [Hi-C track configuration](/docs/config_guides/hic_track) - Contact matrix track config using the HicAdapter
+- [Multiple alignment (MAF) track configuration](/docs/config_guides/maf_track) - Multiple alignment tracks using the MafTabixAdapter, BigMafAdapter, and BgzipTaffyAdapter
 - [Multi-quantitative tracks](/docs/config_guides/multiquantitative_track) - Multiple BigWig/BedGraph signals combined into one display
 - [Quantitative tracks](/docs/config_guides/quantitative_track) - BigWig/BedGraph signal track config and display options
 - [Synteny track config](/docs/config_guides/synteny_track) - Synteny track config for dotplot and linear synteny views
