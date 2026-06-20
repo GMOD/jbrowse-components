@@ -14,8 +14,10 @@ const docsSchema = z.object({
 })
 
 /**
- * Wrap the glob loader to remap introduction.md (slug: /) to id "index"
- * so it serves as the docs root at /docs/.
+ * Wrap the glob loader to remap the doc with `slug: /` frontmatter
+ * (introduction.md) to id "index" so it serves as the docs root at /docs/.
+ * The glob loader keys entries by filename, so the remap must look the entry
+ * up by its parsed `slug`, not by a "/" store key.
  */
 function jbrowseDocsLoader(): Loader {
   const inner = glob({
@@ -30,10 +32,10 @@ function jbrowseDocsLoader(): Loader {
     name: 'jbrowse-docs-loader',
     async load(ctx) {
       await inner.load(ctx)
-      const slashEntry = ctx.store.get('/')
-      if (slashEntry) {
-        ctx.store.delete('/')
-        ctx.store.set({ ...slashEntry, id: 'index' })
+      const rootEntry = ctx.store.values().find(e => e.data.slug === '/')
+      if (rootEntry) {
+        ctx.store.delete(rootEntry.id)
+        ctx.store.set({ ...rootEntry, id: 'index' })
       }
     },
   }
