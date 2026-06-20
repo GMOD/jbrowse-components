@@ -309,7 +309,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
               return
             }
             const assembly = assemblyManager.get(region.assemblyName)
-            const geneticCodeId = assembly?.getGeneticCodeId(region.refName) ?? 1
+            const geneticCodeId =
+              assembly?.getGeneticCodeId(region.refName) ?? 1
             for (const f of dedupe(features, f => f.id())) {
               const seq = f.get('seq') as string | undefined
               if (seq) {

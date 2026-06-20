@@ -552,7 +552,9 @@ const MATURE_PROTEIN_COLOR_HEX = [
   '#aec7e8', // light blue
   '#ffbb78', // light orange
 ]
-const MATURE_PROTEIN_COLORS = MATURE_PROTEIN_COLOR_HEX.map(c => colorToUint32(c))
+const MATURE_PROTEIN_COLORS = MATURE_PROTEIN_COLOR_HEX.map(c =>
+  colorToUint32(c),
+)
 
 // Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
 // stacked in rows by layoutMatureProteinRegion. Each child already carries its

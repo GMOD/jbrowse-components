@@ -90,13 +90,14 @@ UI, never set); LD keeps its functional one.
 
 ## Genotypes: string `genotypes` map is the only representation
 
-Features carry genotypes as a `Record<sampleName, string>` (`feature.get(
-'genotypes')`) or the faster `processGenotypes` callback (`VcfFeature`). A packed
-int8 `callGenotype` path used to exist across the cell, LD, and clustering
-computations as anticipatory infra for a non-VCF binary adapter, but no shipping
-adapter ever set the field, so it was dead and has been removed. If a binary
-genotype adapter is added later, reintroduce a raw fast path behind a real
-feature field rather than resurrecting the untestable branches.
+Features carry genotypes as a `Record<sampleName, string>`
+(`feature.get( 'genotypes')`) or the faster `processGenotypes` callback
+(`VcfFeature`). A packed int8 `callGenotype` path used to exist across the cell,
+LD, and clustering computations as anticipatory infra for a non-VCF binary
+adapter, but no shipping adapter ever set the field, so it was dead and has been
+removed. If a binary genotype adapter is added later, reintroduce a raw fast
+path behind a real feature field rather than resurrecting the untestable
+branches.
 
 ## Edit-filters (jexl) wiring
 

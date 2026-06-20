@@ -1,4 +1,8 @@
-import { getGeneticCode, ncbiGeneticCodes, parseTranslTable } from './geneticCodes.ts'
+import {
+  getGeneticCode,
+  ncbiGeneticCodes,
+  parseTranslTable,
+} from './geneticCodes.ts'
 import { codonTable } from './seqUtils.ts'
 
 describe('getGeneticCode', () => {
@@ -49,9 +53,9 @@ describe('getGeneticCode', () => {
     for (const t of ncbiGeneticCodes) {
       expect(t.ncbieaa).toHaveLength(64)
       expect(t.sncbieaa).toHaveLength(64)
-      expect(Object.keys(getGeneticCode(t.id).codonTable).length).toBeGreaterThan(
-        0,
-      )
+      expect(
+        Object.keys(getGeneticCode(t.id).codonTable).length,
+      ).toBeGreaterThan(0)
     }
   })
 })

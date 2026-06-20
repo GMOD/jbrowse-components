@@ -31,8 +31,12 @@ const hiddenColumnsKey = 'facet-hiddenColumns'
 // corrupt/missing entry (falls back to none hidden).
 function readHiddenColumns(): string[] {
   try {
-    const parsed: unknown = JSON.parse(localStorageGetItem(hiddenColumnsKey) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : []
+    const parsed: unknown = JSON.parse(
+      localStorageGetItem(hiddenColumnsKey) ?? '[]',
+    )
+    return Array.isArray(parsed)
+      ? parsed.filter(x => typeof x === 'string')
+      : []
   } catch (e) {
     console.error(e)
     return []

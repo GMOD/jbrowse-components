@@ -4,7 +4,9 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Minimal coverage-only payload: depth 5 at the queried bin, split 3 fwd / 2
 // rev, no mismatches/interbase/gaps/mods.
-function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
+function makeRpcData(
+  overrides: Partial<PileupDataResult> = {},
+): PileupDataResult {
   return {
     coverageStartPos: 100,
     coverageDepths: new Float32Array([5]),
@@ -34,7 +36,10 @@ describe('getTooltipBin per-strand depth', () => {
   it('leaves fwd/rev undefined when no per-strand depths are present', () => {
     const bin = getTooltipBin(
       100,
-      makeRpcData({ coverageFwdDepths: new Float32Array(), coverageRevDepths: new Float32Array() }),
+      makeRpcData({
+        coverageFwdDepths: new Float32Array(),
+        coverageRevDepths: new Float32Array(),
+      }),
     )
     expect(bin?.depth).toBe(5)
     expect(bin?.fwdDepth).toBeUndefined()

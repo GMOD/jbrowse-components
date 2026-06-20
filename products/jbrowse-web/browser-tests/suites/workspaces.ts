@@ -254,13 +254,21 @@ const suite: TestSuite = {
         // the right.
         const sessionSpec = {
           views: [
-            { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-5000' },
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:1-5000',
+            },
             {
               type: 'LinearGenomeView',
               assembly: 'volvox',
               loc: 'ctgA:5000-10000',
             },
-            { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgB:1-5000' },
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgB:1-5000',
+            },
           ],
           layout: {
             direction: 'horizontal',
@@ -294,7 +302,8 @@ const suite: TestSuite = {
         let viewsAfter = 0
         for (let i = 0; i < 30; i++) {
           groupsAfter = (await page.$$('.dv-groupview')).length
-          viewsAfter = (await page.$$('[data-testid^="view-container-"]')).length
+          viewsAfter = (await page.$$('[data-testid^="view-container-"]'))
+            .length
           if (groupsAfter >= 2 && viewsAfter >= 3) {
             break
           }

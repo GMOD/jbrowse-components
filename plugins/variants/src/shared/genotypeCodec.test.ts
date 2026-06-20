@@ -30,7 +30,12 @@ describe('genotypeCodec', () => {
     const sampleNames = ['A', 'B', 'C']
     const dict: string[] = []
     const dictIndex = new Map<string, number>()
-    const codes = pack({ A: '0|0', B: '0|1', C: '1|1' }, sampleNames, dict, dictIndex)
+    const codes = pack(
+      { A: '0|0', B: '0|1', C: '1|1' },
+      sampleNames,
+      dict,
+      dictIndex,
+    )
     const sampleIndex = buildSampleIndex(sampleNames)
     expect(decodeGenotype(dict, sampleIndex, codes, 'B')).toBe('0|1')
     expect(decodeGenotype(dict, sampleIndex, codes, 'C')).toBe('1|1')

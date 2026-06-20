@@ -15,33 +15,195 @@ export interface NcbiGeneticCode {
 }
 
 export const ncbiGeneticCodes: NcbiGeneticCode[] = [
-  { id: 1, name: 'Standard', ncbieaa: 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '---M------**--*----M---------------M----------------------------' },
-  { id: 2, name: 'Vertebrate Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG', sncbieaa: '----------**--------------------MMMM----------**---M------------' },
-  { id: 3, name: 'Yeast Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------**----------------------MM---------------M------------' },
-  { id: 4, name: 'Mold Mitochondrial; Protozoan Mitochondrial; Coelenterate Mitochondrial; Mycoplasma; Spiroplasma', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '--MM------**-------M------------MMMM---------------M------------' },
-  { id: 5, name: 'Invertebrate Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG', sncbieaa: '---M------**--------------------MMMM---------------M------------' },
-  { id: 6, name: 'Ciliate Nuclear; Dasycladacean Nuclear; Hexamita Nuclear', ncbieaa: 'FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '--------------*--------------------M----------------------------' },
-  { id: 9, name: 'Echinoderm Mitochondrial; Flatworm Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG', sncbieaa: '----------**-----------------------M---------------M------------' },
-  { id: 10, name: 'Euplotid Nuclear', ncbieaa: 'FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------**-----------------------M----------------------------' },
-  { id: 11, name: 'Bacterial, Archaeal and Plant Plastid', ncbieaa: 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '---M------**--*----M------------MMMM---------------M------------' },
-  { id: 12, name: 'Alternative Yeast Nuclear', ncbieaa: 'FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------**--*----M---------------M----------------------------' },
-  { id: 13, name: 'Ascidian Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG', sncbieaa: '---M------**----------------------MM---------------M------------' },
-  { id: 14, name: 'Alternative Flatworm Mitochondrial', ncbieaa: 'FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG', sncbieaa: '-----------*-----------------------M----------------------------' },
-  { id: 15, name: 'Blepharisma Macronuclear', ncbieaa: 'FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------*---*--------------------M----------------------------' },
-  { id: 16, name: 'Chlorophycean Mitochondrial', ncbieaa: 'FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------*---*--------------------M----------------------------' },
-  { id: 21, name: 'Trematode Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG', sncbieaa: '----------**-----------------------M---------------M------------' },
-  { id: 22, name: 'Scenedesmus obliquus Mitochondrial', ncbieaa: 'FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '------*---*---*--------------------M----------------------------' },
-  { id: 23, name: 'Thraustochytrium Mitochondrial', ncbieaa: 'FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '--*-------**--*-----------------M--M---------------M------------' },
-  { id: 24, name: 'Rhabdopleuridae Mitochondrial', ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSSKVVVVAAAADDEEGGGG', sncbieaa: '---M------**-------M---------------M---------------M------------' },
-  { id: 25, name: 'Candidate Division SR1 and Gracilibacteria', ncbieaa: 'FFLLSSSSYY**CCGWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '---M------**-----------------------M---------------M------------' },
-  { id: 26, name: 'Pachysolen tannophilus Nuclear', ncbieaa: 'FFLLSSSSYY**CC*WLLLAPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------**--*----M---------------M----------------------------' },
-  { id: 27, name: 'Karyorelict Nuclear', ncbieaa: 'FFLLSSSSYYQQCCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '--------------*--------------------M----------------------------' },
-  { id: 28, name: 'Condylostoma Nuclear', ncbieaa: 'FFLLSSSSYYQQCCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------**--*--------------------M----------------------------' },
-  { id: 29, name: 'Mesodinium Nuclear', ncbieaa: 'FFLLSSSSYYYYCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '--------------*--------------------M----------------------------' },
-  { id: 30, name: 'Peritrich Nuclear', ncbieaa: 'FFLLSSSSYYEECC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '--------------*--------------------M----------------------------' },
-  { id: 31, name: 'Blastocrithidia Nuclear', ncbieaa: 'FFLLSSSSYYEECCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '----------**-----------------------M----------------------------' },
-  { id: 32, name: 'Balanophoraceae Plastid', ncbieaa: 'FFLLSSSSYY*WCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG', sncbieaa: '---M------*---*----M------------MMMM---------------M------------' },
-  { id: 33, name: 'Cephalodiscidae Mitochondrial', ncbieaa: 'FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSSKVVVVAAAADDEEGGGG', sncbieaa: '---M-------*-------M---------------M---------------M------------' },
+  {
+    id: 1,
+    name: 'Standard',
+    ncbieaa: 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------**--*----M---------------M----------------------------',
+  },
+  {
+    id: 2,
+    name: 'Vertebrate Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSS**VVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**--------------------MMMM----------**---M------------',
+  },
+  {
+    id: 3,
+    name: 'Yeast Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWTTTTPPPPHHQQRRRRIIMMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**----------------------MM---------------M------------',
+  },
+  {
+    id: 4,
+    name: 'Mold Mitochondrial; Protozoan Mitochondrial; Coelenterate Mitochondrial; Mycoplasma; Spiroplasma',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '--MM------**-------M------------MMMM---------------M------------',
+  },
+  {
+    id: 5,
+    name: 'Invertebrate Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSSSVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------**--------------------MMMM---------------M------------',
+  },
+  {
+    id: 6,
+    name: 'Ciliate Nuclear; Dasycladacean Nuclear; Hexamita Nuclear',
+    ncbieaa: 'FFLLSSSSYYQQCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '--------------*--------------------M----------------------------',
+  },
+  {
+    id: 9,
+    name: 'Echinoderm Mitochondrial; Flatworm Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**-----------------------M---------------M------------',
+  },
+  {
+    id: 10,
+    name: 'Euplotid Nuclear',
+    ncbieaa: 'FFLLSSSSYY**CCCWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**-----------------------M----------------------------',
+  },
+  {
+    id: 11,
+    name: 'Bacterial, Archaeal and Plant Plastid',
+    ncbieaa: 'FFLLSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------**--*----M------------MMMM---------------M------------',
+  },
+  {
+    id: 12,
+    name: 'Alternative Yeast Nuclear',
+    ncbieaa: 'FFLLSSSSYY**CC*WLLLSPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**--*----M---------------M----------------------------',
+  },
+  {
+    id: 13,
+    name: 'Ascidian Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNKKSSGGVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------**----------------------MM---------------M------------',
+  },
+  {
+    id: 14,
+    name: 'Alternative Flatworm Mitochondrial',
+    ncbieaa: 'FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNNKSSSSVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '-----------*-----------------------M----------------------------',
+  },
+  {
+    id: 15,
+    name: 'Blepharisma Macronuclear',
+    ncbieaa: 'FFLLSSSSYY*QCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------*---*--------------------M----------------------------',
+  },
+  {
+    id: 16,
+    name: 'Chlorophycean Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------*---*--------------------M----------------------------',
+  },
+  {
+    id: 21,
+    name: 'Trematode Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIMMTTTTNNNKSSSSVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**-----------------------M---------------M------------',
+  },
+  {
+    id: 22,
+    name: 'Scenedesmus obliquus Mitochondrial',
+    ncbieaa: 'FFLLSS*SYY*LCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '------*---*---*--------------------M----------------------------',
+  },
+  {
+    id: 23,
+    name: 'Thraustochytrium Mitochondrial',
+    ncbieaa: 'FF*LSSSSYY**CC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '--*-------**--*-----------------M--M---------------M------------',
+  },
+  {
+    id: 24,
+    name: 'Rhabdopleuridae Mitochondrial',
+    ncbieaa: 'FFLLSSSSYY**CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSSKVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------**-------M---------------M---------------M------------',
+  },
+  {
+    id: 25,
+    name: 'Candidate Division SR1 and Gracilibacteria',
+    ncbieaa: 'FFLLSSSSYY**CCGWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------**-----------------------M---------------M------------',
+  },
+  {
+    id: 26,
+    name: 'Pachysolen tannophilus Nuclear',
+    ncbieaa: 'FFLLSSSSYY**CC*WLLLAPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**--*----M---------------M----------------------------',
+  },
+  {
+    id: 27,
+    name: 'Karyorelict Nuclear',
+    ncbieaa: 'FFLLSSSSYYQQCCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '--------------*--------------------M----------------------------',
+  },
+  {
+    id: 28,
+    name: 'Condylostoma Nuclear',
+    ncbieaa: 'FFLLSSSSYYQQCCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**--*--------------------M----------------------------',
+  },
+  {
+    id: 29,
+    name: 'Mesodinium Nuclear',
+    ncbieaa: 'FFLLSSSSYYYYCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '--------------*--------------------M----------------------------',
+  },
+  {
+    id: 30,
+    name: 'Peritrich Nuclear',
+    ncbieaa: 'FFLLSSSSYYEECC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '--------------*--------------------M----------------------------',
+  },
+  {
+    id: 31,
+    name: 'Blastocrithidia Nuclear',
+    ncbieaa: 'FFLLSSSSYYEECCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '----------**-----------------------M----------------------------',
+  },
+  {
+    id: 32,
+    name: 'Balanophoraceae Plastid',
+    ncbieaa: 'FFLLSSSSYY*WCC*WLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSRRVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M------*---*----M------------MMMM---------------M------------',
+  },
+  {
+    id: 33,
+    name: 'Cephalodiscidae Mitochondrial',
+    ncbieaa: 'FFLLSSSSYYY*CCWWLLLLPPPPHHQQRRRRIIIMTTTTNNKKSSSKVVVVAAAADDEEGGGG',
+    sncbieaa:
+      '---M-------*-------M---------------M---------------M------------',
+  },
 ]
 
 // The codon order shared by every NCBI table — the Base1/Base2/Base3 comment
@@ -81,9 +243,16 @@ const ncbiCodeById = new Map(ncbiGeneticCodes.map(t => [t.id, t]))
 function buildGeneticCode(id: number): GeneticCode {
   const def = ncbiCodeById.get(id)
   if (!def && id !== 1) {
-    console.warn(`Unknown genetic code (transl_table=${id}); using standard code`)
+    console.warn(
+      `Unknown genetic code (transl_table=${id}); using standard code`,
+    )
   }
-  const { id: resolvedId, name, ncbieaa, sncbieaa } = def ?? ncbiCodeById.get(1)!
+  const {
+    id: resolvedId,
+    name,
+    ncbieaa,
+    sncbieaa,
+  } = def ?? ncbiCodeById.get(1)!
   const table: Record<string, string> = {}
   const starts: string[] = []
   for (const [i, codon] of CODONS.entries()) {

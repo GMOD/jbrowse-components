@@ -7,7 +7,9 @@ test('reads a top-level facet', () => {
 })
 
 test('reads a metadata facet via the metadata. prefix', () => {
-  expect(getRowStr('metadata.assay', { id: 't1', metadata: { assay: 'DNA' } })).toBe('DNA')
+  expect(
+    getRowStr('metadata.assay', { id: 't1', metadata: { assay: 'DNA' } }),
+  ).toBe('DNA')
 })
 
 test('missing values become an empty string', () => {

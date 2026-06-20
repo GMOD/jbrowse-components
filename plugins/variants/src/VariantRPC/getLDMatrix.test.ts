@@ -1,7 +1,6 @@
 // Helper functions copied from getLDMatrix.ts for testing
 // These are internal functions that we want to test directly
 
-
 const SPLITTER = /[/|]/
 
 function encodeGenotypes(

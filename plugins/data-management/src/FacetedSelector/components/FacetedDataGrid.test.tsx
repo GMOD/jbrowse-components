@@ -5,7 +5,6 @@ import { ThemeProvider } from '@mui/material'
 import { fireEvent, render, within } from '@testing-library/react'
 import { observer } from 'mobx-react'
 
-
 import FacetedDataGrid from './FacetedDataGrid.tsx'
 import { getFacetedColumns } from './getFacetedColumns.tsx'
 import { facetedStateTreeF } from '../facetedModel.ts'
@@ -57,7 +56,10 @@ function setup() {
   })
   const model = view.activateTrackSelector() as HierarchicalTrackSelectorModel
   const faceted = facetedStateTreeF().create({})
-  faceted.setTrackConfigurations(model.allTrackConfigurations, getSession(model))
+  faceted.setTrackConfigurations(
+    model.allTrackConfigurations,
+    getSession(model),
+  )
   return { view, model, faceted }
 }
 
@@ -120,7 +122,9 @@ test('shows an empty message when nothing matches the filter', () => {
   const { model, faceted } = setup()
   faceted.setFilterText('no-such-track-zzz')
   const { getByText, queryByText } = renderGrid(model, faceted)
-  expect(getByText('No tracks match the current search and filters')).toBeTruthy()
+  expect(
+    getByText('No tracks match the current search and filters'),
+  ).toBeTruthy()
   expect(queryByText('fooC')).toBeNull()
 })
 
@@ -128,7 +132,7 @@ test('a column hidden via visible is not rendered', () => {
   const { model, faceted } = setup()
   faceted.setShowSparse(true)
   // surface the adapter column, then hide it
-  faceted.setVisible({ ...faceted.visible, 'adapter': false })
+  faceted.setVisible({ ...faceted.visible, adapter: false })
   const { queryByText } = renderGrid(model, faceted)
   // the adapter header should be gone, but tracks still render
   expect(queryByText('adapter')).toBeNull()

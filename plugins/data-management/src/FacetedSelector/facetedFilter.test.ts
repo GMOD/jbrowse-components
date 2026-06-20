@@ -43,7 +43,9 @@ describe('filterRowsByText', () => {
     expect(filterRowsByText(rows, 'GEN').map(r => r.id)).toEqual(['t1'])
   })
   test('matches category', () => {
-    expect(filterRowsByText(rows, 'quantitative').map(r => r.id)).toEqual(['t3'])
+    expect(filterRowsByText(rows, 'quantitative').map(r => r.id)).toEqual([
+      't3',
+    ])
   })
   test('matches description', () => {
     expect(filterRowsByText(rows, 'calls').map(r => r.id)).toEqual(['t2'])

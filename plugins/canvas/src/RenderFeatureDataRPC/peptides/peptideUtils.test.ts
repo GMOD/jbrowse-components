@@ -262,9 +262,9 @@ describe('processTranscriptFromSeq', () => {
       strand: 1,
       subfeatures: [createCoordFeature({ type: 'CDS', start: 0, end: 6 })],
     })
-    expect(processTranscriptFromSeq(seq, transcript, standardCode)?.protein).toBe(
-      'MK',
-    )
+    expect(
+      processTranscriptFromSeq(seq, transcript, standardCode)?.protein,
+    ).toBe('MK')
   })
 
   it('dedupes duplicate CDS rows so the protein is not frameshifted', () => {
@@ -279,9 +279,9 @@ describe('processTranscriptFromSeq', () => {
       ],
     })
     // without dedup the duplicate row would stitch to ATGAAAATGAAA -> MKMK
-    expect(processTranscriptFromSeq(seq, transcript, standardCode)?.protein).toBe(
-      'MK',
-    )
+    expect(
+      processTranscriptFromSeq(seq, transcript, standardCode)?.protein,
+    ).toBe('MK')
   })
 
   // TGA codes Trp (not stop) under the vertebrate mitochondrial code, so the
@@ -300,7 +300,8 @@ describe('processTranscriptFromSeq', () => {
       processTranscriptFromSeq(mitoSeq, transcript, standardCode)?.protein,
     ).toBe('M*K')
     expect(
-      processTranscriptFromSeq(mitoSeq, transcript, vertebrateMitoCode)?.protein,
+      processTranscriptFromSeq(mitoSeq, transcript, vertebrateMitoCode)
+        ?.protein,
     ).toBe('MWK')
   })
 })

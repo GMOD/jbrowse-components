@@ -26,13 +26,13 @@ glyph** option in the track menu controls how a gene's transcripts are drawn:
 ### Collapsing introns
 
 Genes often span far more intronic than exonic sequence, so the coding parts are
-spread thinly across the view. Right-click a gene and choose **Collapse introns**
-to replace the view's displayed regions with just the gene's exons placed side by
-side, dropping the introns. A window-size setting controls how many base pairs of
-flanking sequence to keep around each splice boundary. By default the union of
-exons across all transcripts is used; you can instead pick a single transcript
-from the dialog. This makes it easy to read a gene's coding sequence — or inspect
-reads spanning it — without scrolling past large introns.
+spread thinly across the view. Right-click a gene and choose **Collapse
+introns** to replace the view's displayed regions with just the gene's exons
+placed side by side, dropping the introns. A window-size setting controls how
+many base pairs of flanking sequence to keep around each splice boundary. By
+default the union of exons across all transcripts is used; you can instead pick
+a single transcript from the dialog. This makes it easy to read a gene's coding
+sequence — or inspect reads spanning it — without scrolling past large introns.
 
 This pairs especially well with an RNA-seq track: the spliced reads draw
 **sashimi arcs** connecting splice donors and acceptors, and with the introns
@@ -86,8 +86,8 @@ several mature peptides. When a CDS has `mature_protein_region` (or
 `mature_protein_region_of_CDS`) subfeatures, each cleavage product is drawn as
 its own stacked row, colored from a distinct palette so adjacent peptides are
 easy to tell apart. Each region is individually hoverable and clickable, and its
-name comes from the feature's `product` attribute when the track's
-`labels.name` is configured to read it, e.g.:
+name comes from the feature's `product` attribute when the track's `labels.name`
+is configured to read it, e.g.:
 
 ```json
 "labels": {

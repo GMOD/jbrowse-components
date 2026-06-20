@@ -65,7 +65,8 @@ export function getRowSelectionState({
     ? new Set(selection.map(s => `${s.trackId}`))
     : shownTrackIds
   const allSelected =
-    filteredRows.length > 0 && filteredRows.every(row => selectedIds.has(row.id))
+    filteredRows.length > 0 &&
+    filteredRows.every(row => selectedIds.has(row.id))
   const someSelected =
     !allSelected && filteredRows.some(row => selectedIds.has(row.id))
 
@@ -84,7 +85,12 @@ export function getRowSelectionState({
       setTracksSelected(model, ids, !allSelected, useShoppingCart)
     },
     toggleRow: (rowId: string) => {
-      setTracksSelected(model, [rowId], !selectedIds.has(rowId), useShoppingCart)
+      setTracksSelected(
+        model,
+        [rowId],
+        !selectedIds.has(rowId),
+        useShoppingCart,
+      )
     },
   }
 }

@@ -203,9 +203,7 @@ export function CoverageTooltipContents({
           <td>{depth}</td>
           {hasModifications && <td />}
           {hasStrands && (
-            <td>
-              {hasTotalStrands ? `${fwdDepth}(+) ${revDepth}(-)` : null}
-            </td>
+            <td>{hasTotalStrands ? `${fwdDepth}(+) ${revDepth}(-)` : null}</td>
           )}
         </tr>
         {hasModifications

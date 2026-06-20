@@ -8,7 +8,6 @@ import {
 import { decimatesLabels } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
-
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
   FeatureDataResult,

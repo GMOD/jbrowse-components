@@ -1,7 +1,10 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { revcom, revlist } from '@jbrowse/core/util'
 import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
-import { getGeneticCode, parseTranslTable } from '@jbrowse/core/util/geneticCodes'
+import {
+  getGeneticCode,
+  parseTranslTable,
+} from '@jbrowse/core/util/geneticCodes'
 import { firstValueFrom, toArray } from 'rxjs'
 
 import { dedupedSortedCDS } from './cdsSegments.ts'
