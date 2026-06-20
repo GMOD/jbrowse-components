@@ -1,3 +1,10 @@
+import {
+  abgrAlpha,
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+} from '@jbrowse/core/util/colorBits'
+
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
   buildFeaturePath,
@@ -19,6 +26,42 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 
 export type { CanvasLike } from './syntenyPickEngine.ts'
 
+type Rgba = readonly [number, number, number, number]
+
+// Shade an instance's packed color into the final displayed fill — applying
+// hover darkening and the CIGAR white pre-blend — as 0..255 rgb + 0..1 alpha.
+// SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with white
+// at the (hover-boosted) alpha so indels fade against the page; BASE darkens by
+// 0.7 and boosts alpha ×5 (capped 0.35) on hover. Keep the two in lockstep.
+function shadeInstanceFill(
+  packed: number,
+  alpha: number,
+  isCigar: boolean,
+  isHovered: boolean,
+): Rgba {
+  const r = abgrRed(packed)
+  const g = abgrGreen(packed)
+  const b = abgrBlue(packed)
+  const a = abgrAlpha(packed) / 255
+  const darken = isHovered ? 0.7 : 1
+  if (isCigar) {
+    const blend = isHovered ? Math.min(a * alpha * 5, 0.35) : a * alpha
+    const white = 255 * (1 - blend)
+    return [
+      (r * darken * blend + white) | 0,
+      (g * darken * blend + white) | 0,
+      (b * darken * blend + white) | 0,
+      a,
+    ]
+  }
+  return [
+    (r * darken) | 0,
+    (g * darken) | 0,
+    (b * darken) | 0,
+    isHovered ? Math.min(a * alpha * 5, 0.35) : a * alpha,
+  ]
+}
+
 function drawInstances(
   ctx: CanvasLike,
   data: SyntenyInstanceData,
@@ -31,7 +74,7 @@ function drawInstances(
   drawCurves: boolean,
   leftLimit: number,
   rightLimit: number,
-  fillStyleCache: Map<number, string>,
+  shadeCache: Map<number, Rgba>,
   yTop: number,
 ) {
   for (let i = 0; i < data.instanceCount; i++) {
@@ -39,8 +82,7 @@ function drawInstances(
       continue
     }
     const packed = data.colors[i]!
-    const a = ((packed >>> 24) & 0xff) / 255
-    if (a < 0.01) {
+    if (abgrAlpha(packed) / 255 < 0.01) {
       continue
     }
 
@@ -52,62 +94,33 @@ function drawInstances(
     const featureId = data.instanceFeatureIdx[i]! + 1
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
-
     const isCigar = data.kinds[i]! >= KIND_CIGAR_MATCH
-    let fillStyle = fillStyleCache.get(packed)
-    if (isHovered) {
-      // SYNC: hover branch must match the fill shaders.
-      // CIGAR indels: darken the pre-blended color (same opaque path as normal).
-      // BASE blocks: standard 0.7 darkening + 5x alpha boost capped at 0.35.
-      const r = packed & 0xff
-      const g = (packed >> 8) & 0xff
-      const b = (packed >> 16) & 0xff
-      if (isCigar) {
-        // Apply 0.7 darkening inside the blend — same order as origin/main
-        // (darken first, then blend with white) so hover color matches exactly.
-        const blendAlpha = Math.min(a * alpha * 5, 0.35)
-        const pr = (r * 0.7 * blendAlpha + 255 * (1 - blendAlpha)) | 0
-        const pg = (g * 0.7 * blendAlpha + 255 * (1 - blendAlpha)) | 0
-        const pb = (b * 0.7 * blendAlpha + 255 * (1 - blendAlpha)) | 0
-        fillStyle = `rgba(${pr},${pg},${pb},${a})`
-      } else {
-        const dr = (r * 0.7) | 0
-        const dg = (g * 0.7) | 0
-        const db = (b * 0.7) | 0
-        const effectiveAlpha = Math.min(a * alpha * 5, 0.35)
-        fillStyle = `rgba(${dr},${dg},${db},${effectiveAlpha})`
-      }
-    } else if (fillStyle === undefined) {
-      const r = packed & 0xff
-      const g = (packed >> 8) & 0xff
-      const b = (packed >> 16) & 0xff
-      if (isCigar) {
-        // Pre-blend with white so indel quads visually fade against the page
-        // background rather than compositing semi-transparently over the base
-        // block (which would mix the indel color with the match/base color).
-        const pr = (r * alpha + 255 * (1 - alpha)) | 0
-        const pg = (g * alpha + 255 * (1 - alpha)) | 0
-        const pb = (b * alpha + 255 * (1 - alpha)) | 0
-        fillStyle = `rgba(${pr},${pg},${pb},${a})`
-      } else {
-        fillStyle = `rgba(${r},${g},${b},${a * alpha})`
-      }
-      fillStyleCache.set(packed, fillStyle)
-    }
 
-    // The fill shaders' fillCoverage gives a sub-pixel base ribbon a ~1px-wide
-    // AA footprint (smoothstep over fwidth floors the band at one pixel), so it
-    // keeps a ~0.5-coverage centerline and stays visible at whole-genome zoom.
-    // A geometric ctx.fill() of a sub-pixel quad instead deposits near-zero ink,
-    // so without this the canvas2d backend renders near-blank where the GPU
-    // shows dense ribbons. When the ribbon is sub-pixel on both ends, stroke its
-    // centerline at 1px to match that floor; otherwise fill the silhouette.
-    const topW = Math.abs(c.sx2 - c.sx1)
-    const botW = Math.abs(c.sx4 - c.sx3)
-    if (Math.max(topW, botW) < 1) {
+    // Hover recolors per-instance; everything else shares a color per packed
+    // value (e.g. the many tiles of a CIGAR fill), so cache the resolved rgba.
+    let rgba = isHovered ? undefined : shadeCache.get(packed)
+    if (!rgba) {
+      rgba = shadeInstanceFill(packed, alpha, isCigar, isHovered)
+      if (!isHovered) {
+        shadeCache.set(packed, rgba)
+      }
+    }
+    const [r, g, b, fa] = rgba
+
+    // A geometric ctx.fill() of a sub-pixel quad deposits near-zero ink, so
+    // where the GPU's fillCoverage keeps a sub-pixel ribbon as a ~1px AA band
+    // the canvas2d backend would render near-blank. When the ribbon is
+    // sub-pixel on both ends, stroke its centerline at 1px to reproduce that
+    // footprint; otherwise fill the silhouette.
+    // SYNC: scale the BASE stroke alpha by the on-screen width (clamped to
+    // [0,1]) to mirror fillCoverage's widthFade — a lone thin ribbon stays a
+    // faint locatable line while a whole-genome tangle fades instead of stacking
+    // hard full-opacity lines. CIGAR keeps full alpha (hard-cut in the shader).
+    const maxW = Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3))
+    if (maxW < 1) {
       const xt = (c.sx1 + c.sx2) * 0.5
       const xb = (c.sx3 + c.sx4) * 0.5
-      ctx.strokeStyle = fillStyle
+      ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * maxW})`
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(xt, yTop)
@@ -119,7 +132,7 @@ function drawInstances(
       }
       ctx.stroke()
     } else {
-      ctx.fillStyle = fillStyle
+      ctx.fillStyle = `rgba(${r},${g},${b},${fa})`
       buildFeaturePath(ctx, c, yTop, height, drawCurves)
       ctx.fill()
       if (isClicked && !isCigar) {
@@ -153,9 +166,9 @@ export function drawSyntenyTrack(
   } = params
 
   const transform = computeTransform(params)
-  // Canvas2D parses fillStyle on every assignment, so reuse the rgba string
-  // for the common case of many instances sharing a color (CIGAR fills).
-  const fillStyleCache = new Map<number, string>()
+  // Resolved color is shared by many instances of one packed value (e.g. the
+  // tiles of a CIGAR fill); cache the shading so it runs once per color.
+  const shadeCache = new Map<number, Rgba>()
   const leftLimit = -overdrawPx
   const rightLimit = logicalW + overdrawPx
 
@@ -171,7 +184,7 @@ export function drawSyntenyTrack(
     drawCurves,
     leftLimit,
     rightLimit,
-    fillStyleCache,
+    shadeCache,
     yTop,
   )
 }

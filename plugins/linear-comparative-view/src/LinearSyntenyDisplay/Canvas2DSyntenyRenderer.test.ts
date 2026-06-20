@@ -274,6 +274,45 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(outline).not.toContain('closePath')
   })
 
+  test('sub-pixel BASE ribbon fades its stroke alpha by on-screen width', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const strokeAlphas: number[] = []
+    ctx.stroke = jest.fn(() => {
+      const m = /rgba\(\d+,\d+,\d+,([\d.]+)\)/.exec(ctx.strokeStyle)
+      if (m) {
+        strokeAlphas.push(+m[1]!)
+      }
+    })
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    // top width = |10.5-10| = 0.5px, bottom width = |20.5-20| = 0.5px → maxW 0.5
+    const c1 = bpHiLo([10])
+    const c2 = bpHiLo([10.5])
+    const c3 = bpHiLo([20.5])
+    const c4 = bpHiLo([20])
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1Hi: c1.hi,
+        bp1Lo: c1.lo,
+        bp2Hi: c2.hi,
+        bp2Lo: c2.lo,
+        bp3Hi: c3.hi,
+        bp3Lo: c3.lo,
+        bp4Hi: c4.hi,
+        bp4Lo: c4.lo,
+        colors: new Uint32Array([0x80808080]),
+      }),
+    )
+    renderer.render(makeState([[0, makeParams()]]))
+
+    // base alpha 0x80/255, scaled by the 0.5px on-screen width
+    expect(strokeAlphas).toHaveLength(1)
+    expect(strokeAlphas[0]!).toBeCloseTo((0x80 / 255) * 0.5, 3)
+  })
+
   test('deleteGeometry removes a track from rendering', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800

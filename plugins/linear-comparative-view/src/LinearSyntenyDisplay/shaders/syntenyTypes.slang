@@ -120,11 +120,9 @@ public float fillCoverage(float2 localPos, float xL, float xR,
   float xC = (xL + xR) * 0.5;
   float perpDist = (localPos.x - xC) / perpFactor;
   // Both CIGAR tiles and whole-feature (base) ribbons keep a 0.5px half-width
-  // floor (1px minimum visual width). For base ribbons this keeps a sub-pixel
-  // alignment at full centerline brightness at whole-genome zoom instead of the
-  // ~0.5 coverage the bare smoothstep midpoint would give — matching the
-  // canvas2d backend's 1px centerline stroke (Canvas2DSyntenyRenderer.ts) so the
-  // two backends look the same. Wide ribbons (halfWidth > floor) are unaffected.
+  // floor (1px minimum visual footprint) so a sub-pixel ribbon stays a
+  // locatable, rasterizable band rather than dropping between sample points.
+  // Wide ribbons (halfWidth > floor) are unaffected.
   // NOTE: the floor only keeps a sub-pixel ribbon visible when the rasterizer
   // had ≥1px of geometry to fill (whole BASE ribbons do; a sub-pixel CIGAR tile
   // can still drop out — an accepted tradeoff, since CIGAR detail only shows
@@ -135,10 +133,19 @@ public float fillCoverage(float2 localPos, float xL, float xR,
   if (isCigar > 0.5) {
     cx = abs(perpDist) <= halfPerpW ? 1.0 : 0.0;
   } else {
+    // Density-honest sub-pixel fade. The footprint floor above keeps a thin
+    // BASE ribbon a ~1px band, but its opacity scales with the true on-screen
+    // (horizontal) width so a lone thin alignment fades gently and a
+    // whole-genome tangle of them stops reading as hard full-opacity lines —
+    // dense overlaps still accumulate via alpha blend. Ribbons ≥1px wide
+    // saturate widthFade at 1 and are unaffected.
+    // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch scales its centerline
+    // stroke alpha by the same clamp(width, 0, 1).
+    float widthFade = clamp(xR - xL, 0.0, 1.0);
     float aaPerp = max(fwidth(perpDist), 1e-4);
-    cx = 1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
-                          halfPerpW + aaPerp * 0.5,
-                          abs(perpDist));
+    cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
+                           halfPerpW + aaPerp * 0.5,
+                           abs(perpDist))) * widthFade;
   }
   float ay = max(fwidth(localPos.y), 1e-4) * 0.5;
   float cy = smoothstep(-ay, ay, localPos.y)
