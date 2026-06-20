@@ -4,7 +4,7 @@ import { clamp } from '../util/index.ts'
 
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
-import type { RpcStatus } from '../util/progress.ts'
+import type { StatusCallback } from '../util/progress.ts'
 
 export interface WorkerHandle {
   destroy(): void
@@ -14,7 +14,7 @@ export interface WorkerHandle {
     options?: {
       // out-of-band progress handle; carries a determinate StatusWithProgress
       // object as readily as a plain string label (see WebWorkerHandle.call)
-      statusCallback?(status: RpcStatus): void
+      statusCallback?: StatusCallback
       rpcDriverClassName: string
     },
   ): Promise<unknown>
@@ -132,7 +132,7 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
     sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: ((message: unknown) => void) | undefined,
+    statusCallback: StatusCallback | undefined,
     options: Record<string, unknown>,
   ) {
     const unextendedWorker = await this.getWorker(sessionId)

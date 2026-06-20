@@ -8,6 +8,7 @@ import type BaseRpcDriver from './BaseRpcDriver.ts'
 import type PluginManager from '../PluginManager.ts'
 import type { RpcArgs, RpcMethodName, RpcReturn } from './RpcRegistry.ts'
 import type { AnyConfigurationModel } from '../configuration/index.ts'
+import type { StatusCallback } from '../util/progress.ts'
 
 export type RpcDriverFactory = (
   config: AnyConfigurationModel,
@@ -122,7 +123,7 @@ export default class RpcManager {
     const a = { ...args, sessionId } as Record<string, unknown> & {
       sessionId: string
       rpcDriverName?: string
-      statusCallback?: (message: unknown) => void
+      statusCallback?: StatusCallback
     }
     const driverForCall = this.getDriverForCall(a, opts)
     try {

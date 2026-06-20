@@ -1,6 +1,7 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
+import type { StatusCallback } from '../util/progress.ts'
 
 /**
  * RPC driver that runs RPC functions in-band on the main thread. It owns no
@@ -15,7 +16,7 @@ export default class MainThreadRpcDriver extends BaseRpcDriver {
     _sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: ((message: unknown) => void) | undefined,
+    statusCallback: StatusCallback | undefined,
   ) {
     // re-attach the out-of-band statusCallback that BaseRpcDriver.call split off,
     // mirroring how the worker re-wires it on the far side of postMessage

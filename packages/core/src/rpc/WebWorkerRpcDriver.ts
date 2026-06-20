@@ -5,13 +5,14 @@ import { nanoid } from '../util/nanoid.ts'
 
 import type { RpcDriverConstructorArgs } from './BaseRpcDriver.ts'
 import type { PluginDefinition } from '../PluginLoader.ts'
+import type { RpcStatus, StatusCallback } from '../util/progress.ts'
 
 interface WebWorkerRpcDriverConstructorArgs extends RpcDriverConstructorArgs {
   makeWorkerInstance: () => Worker
 }
 
 interface Options {
-  statusCallback?: (arg0: unknown) => void
+  statusCallback?: StatusCallback
   rpcDriverClassName: string
 }
 
@@ -33,8 +34,12 @@ class WebWorkerHandle {
   async call(funcName: string, args: Record<string, unknown>, opts: Options) {
     const { statusCallback, rpcDriverClassName } = opts
     const channel = `message-${nanoid()}`
+    // RpcClient is a generic event emitter (it also carries 'error' events), so
+    // its listeners see `unknown`. This channel is dedicated to one method's
+    // status emits, which the worker only ever posts as RpcStatus (see
+    // wrapForRpc in rpcWorker.ts), so narrowing to RpcStatus here is sound.
     const listener = (message: unknown) => {
-      statusCallback?.(message)
+      statusCallback?.(message as RpcStatus)
     }
     this.client.on(channel, listener)
     try {
