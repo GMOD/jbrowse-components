@@ -8,6 +8,7 @@ import { getParent, types } from '@jbrowse/mobx-state-tree'
 import { FormatAboutConfigSchemaFactory } from './FormatAbout.ts'
 import { FormatDetailsConfigSchemaFactory } from './FormatDetails.ts'
 import { HierarchicalConfigSchemaFactory } from './HierarchicalConfig.ts'
+import { PreferencesConfigSchemaFactory } from './PreferencesConfig.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
@@ -32,6 +33,7 @@ export function createConfigModel(
           defaultValue: 2,
         },
         hierarchical: HierarchicalConfigSchemaFactory(),
+        preferences: PreferencesConfigSchemaFactory(),
         formatDetails: FormatDetailsConfigSchemaFactory(),
         formatAbout: FormatAboutConfigSchemaFactory(),
         theme: { type: 'frozen', defaultValue: {} },

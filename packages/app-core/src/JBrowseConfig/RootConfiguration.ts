@@ -4,6 +4,7 @@ import {
   FormatAboutConfigSchemaFactory,
   FormatDetailsConfigSchemaFactory,
   HierarchicalConfigSchemaFactory,
+  PreferencesConfigSchemaFactory,
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -75,6 +76,10 @@ export default function RootConfiguration({
     },
 
     hierarchical: HierarchicalConfigSchemaFactory(),
+    /**
+     * #slot configuration.preferences
+     */
+    preferences: PreferencesConfigSchemaFactory(),
     /**
      * #slot configuration.theme
      */

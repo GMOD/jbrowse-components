@@ -20,6 +20,7 @@ import {
 } from '@jbrowse/mobx-state-tree'
 import {
   MultipleViewsSessionMixin,
+  PreferencesSessionMixin,
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
@@ -68,6 +69,7 @@ export function BaseWebSessionModel({
       ReferenceManagementSessionMixin(pluginManager),
       ThemeManagerSessionMixin(pluginManager),
       MultipleViewsSessionMixin(pluginManager),
+      PreferencesSessionMixin(pluginManager),
       SessionTracksManagerSessionMixin(pluginManager),
       AssembliesMixin(pluginManager, assemblyConfigSchema),
       AppSessionMixin(pluginManager),

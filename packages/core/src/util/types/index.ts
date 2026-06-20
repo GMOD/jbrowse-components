@@ -106,6 +106,13 @@ export interface TrackActionView {
   getActiveDisplayId?: (trackId: string) => string | undefined
 }
 
+/**
+ * controls feature-layout animations. 'system' respects the OS
+ * prefers-reduced-motion setting, 'enabled' always animates, 'disabled' never
+ * animates
+ */
+export type AnimationMode = 'system' | 'enabled' | 'disabled'
+
 /** minimum interface that all session state models must implement */
 export interface AbstractSessionModel extends AbstractViewContainer {
   tracksById: Record<string, AnyConfigurationModel>
@@ -121,6 +128,9 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   themeName?: string
   theme: Theme
   themeOptions?: SerializableThemeArgs
+  animationMode: AnimationMode
+  getPreference: (key: string) => unknown
+  setPreferenceOverride?: (key: string, value: unknown) => void
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void

@@ -19,6 +19,7 @@ import { observer } from 'mobx-react'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { ThemeMap } from '@jbrowse/core/ui'
+import type { AnimationMode } from '@jbrowse/core/util'
 
 const useStyles = makeStyles()({
   container: {
@@ -26,6 +27,10 @@ const useStyles = makeStyles()({
   },
   panelHeading: {
     marginTop: 16,
+  },
+  field: {
+    marginTop: 16,
+    display: 'block',
   },
 })
 
@@ -37,7 +42,30 @@ export interface PreferencesDialogSession {
   setStickyViewHeaders: (sticky: boolean) => void
   useWorkspaces: boolean
   setUseWorkspaces: (useWorkspaces: boolean) => void
+  animationMode: AnimationMode
+  setPreferenceOverride: (key: string, value: unknown) => void
 }
+
+// declarative user-preference rows backed by the session preferences-override
+// system (BaseSession getPreference/setPreferenceOverride). Add a row here to
+// surface a new preference; resolution + persistence are already handled.
+const PREFERENCE_SELECTS: {
+  key: string
+  label: string
+  options: { value: string; label: string }[]
+  get: (session: PreferencesDialogSession) => string
+}[] = [
+  {
+    key: 'animationMode',
+    label: 'Animations',
+    options: [
+      { value: 'system', label: 'Follow system (reduced motion)' },
+      { value: 'enabled', label: 'Always on' },
+      { value: 'disabled', label: 'Off' },
+    ],
+    get: session => session.animationMode,
+  },
+]
 
 /**
  * Descriptor returned from the `Core-preferencesDialogPanels` extension point.
@@ -90,6 +118,24 @@ const PreferencesDialog = observer(function PreferencesDialog({
             </MenuItem>
           ))}
         </TextField>
+        {PREFERENCE_SELECTS.map(row => (
+          <TextField
+            key={row.key}
+            select
+            className={classes.field}
+            label={row.label}
+            value={row.get(session)}
+            onChange={event => {
+              session.setPreferenceOverride(row.key, event.target.value)
+            }}
+          >
+            {row.options.map(opt => (
+              <MenuItem key={opt.value} value={opt.value}>
+                {opt.label}
+              </MenuItem>
+            ))}
+          </TextField>
+        ))}
         <FormGroup>
           <FormControlLabel
             control={<Checkbox checked={session.stickyViewHeaders} />}

@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import SnackbarModel from '@jbrowse/core/ui/SnackbarModel'
 import { ElementId } from '@jbrowse/core/util/types/mst'
 import { getParent, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
@@ -6,12 +7,16 @@ import type { BaseRootModelType } from '../RootModel/BaseRootModel.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigModel } from '@jbrowse/core/assemblyManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { DialogComponentType } from '@jbrowse/core/util'
+import type { AnimationMode, DialogComponentType } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 type DoneCallback = (
   doneCallback: () => void,
 ) => [DialogComponentType, Record<string, unknown>]
+
+function isAnimationMode(val: unknown): val is AnimationMode {
+  return val === 'system' || val === 'enabled' || val === 'disabled'
+}
 
 /**
  * #stateModel BaseSessionModel
@@ -65,6 +70,16 @@ export function BaseSessionModel<
        * #volatile
        */
       queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][],
+      /**
+       * #volatile
+       * runtime user-preference overrides keyed by preference id, resolved by
+       * `getPreference` against the `configuration.preferences` admin defaults.
+       * Empty here (config-only); products that let users edit preferences load
+       * and persist these via localStorage. Mirrors the display-level
+       * `ConfigOverrideMixin`, kept off the snapshot since prefs are local UI.
+       */
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
+      preferencesOverrides: {} as Record<string, unknown>,
     }))
     .views(self => ({
       /**
@@ -127,6 +142,30 @@ export function BaseSessionModel<
         return self.queueOfDialogs[0]?.[1]
       },
     }))
+    .views(self => ({
+      /**
+       * #method
+       * resolved value of a user preference: a runtime override if the user set
+       * one, otherwise the admin/embedder `configuration.preferences` default.
+       * The override map is empty unless the product loads it (web/desktop).
+       */
+      getPreference(key: string): unknown {
+        const override = self.preferencesOverrides[key]
+        return override === undefined
+          ? getConf(self, ['preferences', key])
+          : override
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * resolved feature-layout animation mode (never undefined)
+       */
+      get animationMode(): AnimationMode {
+        const mode = self.getPreference('animationMode')
+        return isAnimationMode(mode) ? mode : 'system'
+      },
+    }))
     .actions(self => ({
       /**
        * #action
@@ -149,6 +188,14 @@ export function BaseSessionModel<
        */
       setHovered(thing: unknown) {
         self.hovered = thing
+      },
+      /**
+       * #action
+       * set a runtime user-preference override (see `getPreference`). Mutates
+       * volatile state; products persist these to localStorage.
+       */
+      setPreferenceOverride(key: string, value: unknown) {
+        self.preferencesOverrides = { ...self.preferencesOverrides, [key]: value }
       },
       /**
        * #action

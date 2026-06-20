@@ -7,6 +7,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   ConnectionManagementSessionMixin,
   MultipleViewsSessionMixin,
+  PreferencesSessionMixin,
   ReferenceManagementSessionMixin,
   ThemeManagerSessionMixin,
   TracksManagerSessionMixin,
@@ -35,7 +36,11 @@ export default function sessionModelFactory({
     ConnectionManagementSessionMixin(pluginManager),
     ThemeManagerSessionMixin(pluginManager),
     TracksManagerSessionMixin(pluginManager),
-    MultipleViewsSessionMixin(pluginManager),
+    // nested to stay within types.compose's 10-argument limit
+    types.compose(
+      MultipleViewsSessionMixin(pluginManager),
+      PreferencesSessionMixin(pluginManager),
+    ),
     AssembliesMixin(pluginManager, assemblyConfigSchema),
     AppSessionMixin(pluginManager),
     DesktopSessionTrackMenuMixin(pluginManager),

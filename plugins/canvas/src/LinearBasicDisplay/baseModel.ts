@@ -21,6 +21,7 @@ import {
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  autorunOnReadyView,
   getDisplayStr,
   onDisplayedRegionsChange,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -74,7 +75,7 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
+import type { AnimationMode, Feature, Region, RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -105,19 +106,19 @@ export function getView(self: IAnyStateTreeNode): LGV {
 const morphClockMs = () =>
   typeof performance === 'undefined' ? 0 : performance.now()
 
-// Only animate where a frame clock exists. NOTE: the prefers-reduced-motion
-// gate is temporarily disabled for testing — your machine reports
-// reduce=true, which is why morphs were skipped. Restore the gate (commented
-// below) before merge so reduced-motion users get instant snaps.
-function morphAllowed() {
-  if (typeof requestAnimationFrame !== 'function') {
-    return false
-  }
-  // return !(
-  //   typeof matchMedia === 'function' &&
-  //   matchMedia('(prefers-reduced-motion: reduce)').matches
-  // )
-  return true
+// Animate only where a frame clock exists and the resolved animation mode
+// allows it: 'enabled' always animates, 'disabled' never does, and 'system'
+// honors the OS prefers-reduced-motion setting (so reduced-motion users get
+// instant snaps unless they explicitly opt in). Mode comes from the session
+// preference (configuration.preferences.animationMode + user override).
+function morphAllowed(mode: AnimationMode) {
+  const hasFrameClock = typeof requestAnimationFrame === 'function'
+  const prefersReduced =
+    typeof matchMedia === 'function' &&
+    matchMedia('(prefers-reduced-motion: reduce)').matches
+  return (
+    hasFrameClock && (mode === 'enabled' || (mode === 'system' && !prefersReduced))
+  )
 }
 
 export type { Region } from '@jbrowse/core/util'
@@ -758,8 +759,6 @@ export default function baseStateModelFactory(
         // observes `morphFromTops`). Morphs (300ms) finish before the next
         // layout change (coarseBpPerPx is debounced 500ms), so no retarget.
         beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
-          // eslint-disable-next-line no-console
-          console.log('[yMorph] begin', { features: fromTops.size })
           self.morphFromTops = fromTops
           self.morphFromMaxY = fromMaxY
           self.morphStartMs = morphClockMs()
@@ -1593,62 +1592,62 @@ export default function baseStateModelFactory(
             // which alters row heights), animate from the previous rows to the
             // new ones; otherwise snap. Compares to the prior map kept in
             // closure so the trigger is the layout change itself.
+            // Seeded lazily on the autorun's first initialized run, NOT here:
+            // showLabels/effectiveShowDescriptions transitively read view.width
+            // (via the density gate), which throws before the view is measured.
+            // Reading them synchronously in afterAttach would throw during
+            // session restore — propagating out of display instantiation and
+            // making the session loader drop the display as "unhydratable".
+            // These prevs are only compared once prevLayout is non-undefined,
+            // which can't happen until after the first guarded run has set them.
             let prevLayout: Map<number, FeatureDataResult> | undefined
-            let prevMode = self.displayMode
-            let prevShowLabels = self.showLabels
-            let prevShowDescriptions = self.effectiveShowDescriptions
-            addDisposer(
+            let prevMode: string | undefined
+            let prevShowLabels: boolean | undefined
+            let prevShowDescriptions: boolean | undefined
+            // autorunOnReadyView gates on view.initialized — laidOutDataMap is
+            // empty until then, and showLabels/effectiveShowDescriptions read
+            // view.width (which throws pre-measure), so the body must not run
+            // until the view is ready. prevs stay undefined until the first
+            // ready run seeds them; they're only compared once prevLayout is
+            // non-undefined, which can't happen before that first run.
+            autorunOnReadyView(
               self,
-              autorun(
-                () => {
-                  // Track initialized so this re-runs once the view is ready;
-                  // laidOutDataMap is empty until then, so bail before touching
-                  // any layout state.
-                  if (!getView(self).initialized) {
-                    return
-                  }
-                  const current = self.laidOutDataMap
-                  const mode = self.displayMode
-                  const showLabels = self.showLabels
-                  const showDescriptions = self.effectiveShowDescriptions
-                  const scaleUnchanged =
-                    mode === prevMode &&
-                    showLabels === prevShowLabels &&
-                    showDescriptions === prevShowDescriptions
-                  const from = prevLayout
-                  prevLayout = current
-                  prevMode = mode
-                  prevShowLabels = showLabels
-                  prevShowDescriptions = showDescriptions
-                  // Not a real layout-to-layout transition (first data, an
-                  // empty map on nav) — nothing to morph or snap.
-                  if (
-                    from === undefined ||
-                    from === current ||
-                    from.size === 0 ||
-                    current.size === 0
-                  ) {
-                    return
-                  }
-                  const fromTops = captureFeatureTops(from)
-                  if (
-                    scaleUnchanged &&
-                    morphAllowed() &&
-                    canMorph(fromTops, current)
-                  ) {
-                    self.beginYMorph(fromTops, maxBottom(from))
-                  } else {
-                    // eslint-disable-next-line no-console
-                    console.log('[yMorph] skip', {
-                      scaleUnchanged,
-                      allowed: morphAllowed(),
-                      canMorph: canMorph(fromTops, current),
-                    })
-                    self.endYMorph()
-                  }
-                },
-                { name: 'CanvasYMorph' },
-              ),
+              () => {
+                const current = self.laidOutDataMap
+                const mode = self.displayMode
+                const showLabels = self.showLabels
+                const showDescriptions = self.effectiveShowDescriptions
+                const scaleUnchanged =
+                  mode === prevMode &&
+                  showLabels === prevShowLabels &&
+                  showDescriptions === prevShowDescriptions
+                const from = prevLayout
+                prevLayout = current
+                prevMode = mode
+                prevShowLabels = showLabels
+                prevShowDescriptions = showDescriptions
+                // Not a real layout-to-layout transition (first data, an
+                // empty map on nav) — nothing to morph or snap.
+                if (
+                  from === undefined ||
+                  from === current ||
+                  from.size === 0 ||
+                  current.size === 0
+                ) {
+                  return
+                }
+                const fromTops = captureFeatureTops(from)
+                if (
+                  scaleUnchanged &&
+                  morphAllowed(getSession(self).animationMode) &&
+                  canMorph(fromTops, current)
+                ) {
+                  self.beginYMorph(fromTops, maxBottom(from))
+                } else {
+                  self.endYMorph()
+                }
+              },
+              { name: 'CanvasYMorph' },
             )
           },
         }
