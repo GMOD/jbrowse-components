@@ -249,9 +249,10 @@ export async function executeSyntenyFeaturesAndPositions({
     // Only parse the CIGAR when it will actually be visited. Chromosome-scale
     // alignments can carry multi-megabyte CIGAR strings (~4 bytes/op in the
     // parsed Uint32Array, so tens of MB per feature). Gate matches the
-    // willDrawCigar predicate in buildSyntenyGeometry — drawCIGAR off or
-    // alignment narrower than minCigarPxWidth=4 means the visitor never fires,
-    // and addLocationMarkers operates on bp coords without needing the CIGAR.
+    // willDrawCigar predicate in buildSyntenyGeometry via the shared
+    // MIN_CIGAR_PX_WIDTH — drawCIGAR off or alignment narrower than that means
+    // the visitor never fires, and addLocationMarkers operates on bp coords
+    // without needing the CIGAR.
     const cigarStr = f.get('CIGAR') as string | undefined
     if (cigarStr) {
       hasCigar = true
@@ -259,7 +260,9 @@ export async function executeSyntenyFeaturesAndPositions({
     const widthPx0 = topMaxX - topMinX
     const widthPx1 = botMaxX - botMinX
     const willNeedCigar =
-      !!cigarStr && drawCIGAR && Math.max(widthPx0, widthPx1) >= 4
+      !!cigarStr &&
+      drawCIGAR &&
+      Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
     parsedCigars.push(willNeedCigar ? parseCigar2Typed(cigarStr) : EMPTY_CIGAR)
 
     validCount++

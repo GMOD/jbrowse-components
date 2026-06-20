@@ -68,7 +68,11 @@ and docs.
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
 [heightBeforeExpand](../linearcanvasbasedisplay#volatile-heightbeforeexpand),
-[incrementalLayout](../linearcanvasbasedisplay#volatile-incrementallayout)
+[incrementalLayout](../linearcanvasbasedisplay#volatile-incrementallayout),
+[morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
+[morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
+[morphStartMs](../linearcanvasbasedisplay#volatile-morphstartms),
+[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy)
 
 **Getters:** [conf](../linearcanvasbasedisplay#getter-conf),
 [visibleFeatureDensityPerPx](../linearcanvasbasedisplay#getter-visiblefeaturedensityperpx),
@@ -101,6 +105,7 @@ and docs.
 [regionTooLarge](../linearcanvasbasedisplay#getter-regiontoolarge),
 [regionTooLargeReason](../linearcanvasbasedisplay#getter-regiontoolargereason),
 [laidOutDataMap](../linearcanvasbasedisplay#getter-laidoutdatamap),
+[renderDataMap](../linearcanvasbasedisplay#getter-renderdatamap),
 [maxY](../linearcanvasbasedisplay#getter-maxy),
 [hasOverflow](../linearcanvasbasedisplay#getter-hasoverflow),
 [featureIdIndex](../linearcanvasbasedisplay#getter-featureidindex),
@@ -110,7 +115,9 @@ and docs.
 [featureItemMap](../linearcanvasbasedisplay#getter-featureitemmap),
 [flatbushIndexes](../linearcanvasbasedisplay#getter-flatbushindexes)
 
-**Methods:** [activeFilters](../linearcanvasbasedisplay#method-activefilters),
+**Methods:**
+[observedMaxDensity](../linearcanvasbasedisplay#method-observedmaxdensity),
+[activeFilters](../linearcanvasbasedisplay#method-activefilters),
 [rpcProps](../linearcanvasbasedisplay#method-rpcprops),
 [getFeatureById](../linearcanvasbasedisplay#method-getfeaturebyid),
 [searchFeatureByID](../linearcanvasbasedisplay#method-searchfeaturebyid),
@@ -121,7 +128,10 @@ and docs.
 [colorMenuItems](../linearcanvasbasedisplay#method-colormenuitems),
 [trackMenuItems](../linearcanvasbasedisplay#method-trackmenuitems)
 
-**Actions:** [expandToFit](../linearcanvasbasedisplay#action-expandtofit),
+**Actions:** [beginYMorph](../linearcanvasbasedisplay#action-beginymorph),
+[setMorphProgress](../linearcanvasbasedisplay#action-setmorphprogress),
+[endYMorph](../linearcanvasbasedisplay#action-endymorph),
+[expandToFit](../linearcanvasbasedisplay#action-expandtofit),
 [collapseFromExpand](../linearcanvasbasedisplay#action-collapsefromexpand),
 [clearHeightBeforeExpand](../linearcanvasbasedisplay#action-clearheightbeforeexpand),
 [setRpcData](../linearcanvasbasedisplay#action-setrpcdata),
@@ -277,6 +287,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[resetStatus](../fetchmixin#action-resetstatus),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),

@@ -212,6 +212,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[resetStatus](../fetchmixin#action-resetstatus),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -281,6 +282,19 @@ showBezierConnections: types.stripDefault(types.boolean, false)
 type showCoverage = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showCoverage: types.stripDefault(types.boolean, true)
+```
+
+#### property: showPileup
+
+Draw the stacked-read pileup band. Turn off to keep only the coverage histogram
+and read-connection arcs (the pileup band collapses to zero height), e.g. an
+arcs-only structural-variant view.
+
+```ts
+// type signature
+type showPileup = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showPileup: types.stripDefault(types.boolean, true)
 ```
 
 #### property: coverageHeight
@@ -1542,6 +1556,12 @@ type setReadConnectionsDown = (down: boolean) => void
 
 ```ts
 type setShowCoverage = (show: boolean) => void
+```
+
+#### action: setShowPileup
+
+```ts
+type setShowPileup = (show: boolean) => void
 ```
 
 #### action: setCoverageHeight

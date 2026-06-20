@@ -152,6 +152,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[resetStatus](../fetchmixin#action-resetstatus),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -303,6 +304,42 @@ type incrementalLayout = (
 ) => Map<number, FeatureDataResult>
 // code
 incrementalLayout: createIncrementalLayout()
+```
+
+#### volatile: morphFromTops
+
+```ts
+// type signature
+type morphFromTops = Map<string, number> | undefined
+// code
+morphFromTops: undefined as Map<string, number> | undefined
+```
+
+#### volatile: morphProgress
+
+```ts
+// type signature
+type morphProgress = number
+// code
+morphProgress: 1
+```
+
+#### volatile: morphStartMs
+
+```ts
+// type signature
+type morphStartMs = number
+// code
+morphStartMs: 0
+```
+
+#### volatile: morphFromMaxY
+
+```ts
+// type signature
+type morphFromMaxY = number
+// code
+morphFromMaxY: 0
 ```
 
 </details>
@@ -520,6 +557,12 @@ type regionTooLargeReason = string
 type laidOutDataMap = Map<number, FeatureDataResult>
 ```
 
+#### getter: renderDataMap
+
+```ts
+type renderDataMap = Map<number, FeatureDataResult>
+```
+
 #### getter: maxY
 
 ```ts
@@ -572,6 +615,12 @@ type flatbushIndexes = Map<number, FlatbushRegionIndexes>
 
 <details open>
 <summary>LinearCanvasBaseDisplay - Methods</summary>
+
+#### method: observedMaxDensity
+
+```ts
+type observedMaxDensity = (bpPerPx: number) => number
+```
 
 #### method: activeFilters
 
@@ -686,6 +735,24 @@ type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIcon
 
 <details open>
 <summary>LinearCanvasBaseDisplay - Actions</summary>
+
+#### action: beginYMorph
+
+```ts
+type beginYMorph = (fromTops: Map<string, number>, fromMaxY: number) => void
+```
+
+#### action: setMorphProgress
+
+```ts
+type setMorphProgress = (t: number) => void
+```
+
+#### action: endYMorph
+
+```ts
+type endYMorph = () => void
+```
 
 #### action: expandToFit
 

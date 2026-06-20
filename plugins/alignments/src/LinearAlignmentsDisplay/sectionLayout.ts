@@ -155,6 +155,12 @@ export function buildSectionRenders(
   if (!grouped) {
     const sec = layout.sections[0]
     const pileupTop = sec?.pileupTop ?? 0
+    // The sticky-coverage layout clips the pileup to the viewport below coverage
+    // (only the pileup content scrolls). But a section that reserves no pileup
+    // rows — `showPileup` off, or an empty/collapsed pileup — must clip to zero
+    // so its (still laid-out) reads don't paint into that viewport. An empty
+    // pileup draws nothing either way, so gating on `pileupHeight > 0` is safe.
+    const hasPileup = (sec?.pileupHeight ?? 0) > 0
     return [
       {
         pileupTopOffset: pileupTop,
@@ -162,7 +168,7 @@ export function buildSectionRenders(
         covClipTop: 0,
         covClipHeight: canvasHeight,
         pileupClipTop: pileupTop,
-        pileupClipHeight: Math.max(0, canvasHeight - pileupTop),
+        pileupClipHeight: hasPileup ? Math.max(0, canvasHeight - pileupTop) : 0,
         // Coverage + arc band are sticky in ungrouped mode (only the pileup
         // scrolls), so the arc band keeps its content-space top.
         arcBand: sec ? arcBandAt(sec, sec.arcBandTop) : undefined,

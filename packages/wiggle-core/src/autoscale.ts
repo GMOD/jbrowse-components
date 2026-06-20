@@ -50,21 +50,14 @@ function overlaps(
   return fEnd > visStart && fStart < visEnd
 }
 
-// Autoscale types whose stats come from every loaded region, not just the
-// visible window.
-function isGlobalAutoscale(autoscaleType: string) {
-  return autoscaleType === 'global' || autoscaleType === 'globalsd'
-}
-
 // Autoscale types that expand the domain by ±numStdDev around the mean.
 function isStdDevAutoscale(autoscaleType: string) {
-  return autoscaleType === 'localsd' || autoscaleType === 'globalsd'
+  return autoscaleType === 'localsd'
 }
 
 function computeStats(
   summaryScoreMode: string,
   datasets: Dataset[],
-  filterVisible: boolean,
 ): ScoreStats | undefined {
   const useWhiskers = summaryScoreMode === 'whiskers'
   let min = Infinity
@@ -85,7 +78,6 @@ function computeStats(
       : getEffectiveScores(data, summaryScoreMode)
     for (let i = 0; i < numFeatures; i++) {
       if (
-        filterVisible &&
         visStart !== undefined &&
         visEnd !== undefined &&
         !overlaps(
@@ -120,7 +112,7 @@ function computeStats(
 /**
  * #api
  * Converts score stats into a `[min, max]` domain, applying std-dev
- * expansion for `localsd`/`globalsd` autoscale types.
+ * expansion for the `localsd` autoscale type.
  */
 export function domainFromStats(
   stats: ScoreStats,
@@ -139,8 +131,8 @@ export function domainFromStats(
 
 /**
  * #api
- * Computes a score domain from feature arrays, scoping to visible or all
- * entries per the global/local autoscale type.
+ * Computes a score domain from the visible feature arrays for the `local` /
+ * `localsd` autoscale types.
  */
 export function computeAutoscaleDomain(
   autoscaleType: string,
@@ -151,11 +143,8 @@ export function computeAutoscaleDomain(
     visStart: number
     visEnd: number
   }[],
-  allEntries: { data: FeatureArrays }[],
 ): [number, number] | undefined {
-  const stats = isGlobalAutoscale(autoscaleType)
-    ? computeStats(summaryScoreMode, allEntries, false)
-    : computeStats(summaryScoreMode, visibleEntries, true)
+  const stats = computeStats(summaryScoreMode, visibleEntries)
   if (!stats) {
     return undefined
   }

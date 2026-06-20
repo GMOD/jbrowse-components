@@ -1,10 +1,11 @@
-import React, { useCallback, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useRef, useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
@@ -17,6 +18,7 @@ import {
   useHighlightOverlays,
 } from './useOverlayElements.tsx'
 import { useScrollSync } from './useScrollSync.ts'
+import { MORPH_DURATION_MS } from '../yMorph.ts'
 
 import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
 import type { FeatureItemEntry, FlatbushRegionIndexes } from './hitTesting.ts'
@@ -40,6 +42,11 @@ type LGV = LinearGenomeViewModel
 export interface LinearBasicDisplayModel {
   height: number
   laidOutDataMap: Map<number, FeatureDataResult>
+  renderDataMap: Map<number, FeatureDataResult>
+  morphFromTops: Map<string, number> | undefined
+  morphStartMs: number
+  setMorphProgress: (t: number) => void
+  endYMorph: () => void
   featureItemMap: Map<string, FeatureItemEntry>
   displayPhase: DisplayPhase
   loadingOverlayVisible: boolean
@@ -207,7 +214,10 @@ const FeatureBody = observer(function FeatureBody({
 
   const view = getContainingView(model) as LGV
 
-  const { laidOutDataMap } = model
+  // Overlays (labels, peptides) follow the animated rows so they move with the
+  // glyphs during a layout transition. Hit-testing below still reads
+  // model.laidOutDataMap (the destination), so hover targets the final layout.
+  const laidOutDataMap = model.renderDataMap
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
@@ -241,6 +251,50 @@ const FeatureBody = observer(function FeatureBody({
   // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
   // the model so the autorun picks it up as part of `renderState`.
   useScrollSync(scrollContainerRef, model, view)
+
+  // rAF clock for the feature-Y transition. The model decides when to morph
+  // (sets morphFromTops); this advances morphProgress 0->1 over
+  // MORPH_DURATION_MS, which re-derives renderDataMap each frame, then settles.
+  // Kept in the component because the frame loop is inherently a DOM-side effect.
+  useEffect(() => {
+    let raf = 0
+    let running = false
+    const tick = () => {
+      if (!isAlive(model) || model.morphFromTops === undefined) {
+        running = false
+        return
+      }
+      const t = Math.min(
+        1,
+        (performance.now() - model.morphStartMs) / MORPH_DURATION_MS,
+      )
+      model.setMorphProgress(t)
+      if (t < 1) {
+        raf = requestAnimationFrame(() => {
+          tick()
+        })
+      } else {
+        // eslint-disable-next-line no-console
+        console.log('[yMorph] settle')
+        model.endYMorph()
+        running = false
+      }
+    }
+    const dispose = autorun(() => {
+      if (model.morphFromTops !== undefined && !running) {
+        // eslint-disable-next-line no-console
+        console.log('[yMorph] clock start')
+        running = true
+        raf = requestAnimationFrame(() => {
+          tick()
+        })
+      }
+    })
+    return () => {
+      dispose()
+      cancelAnimationFrame(raf)
+    }
+  }, [model])
 
   const hitTestAtEvent = (e: React.MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()

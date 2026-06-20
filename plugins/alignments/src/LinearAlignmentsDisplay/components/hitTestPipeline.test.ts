@@ -60,6 +60,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   featureSpacing: 2,
   scrollTop: 0,
   isChainMode: false,
+  pileupVisible: true,
 }
 
 test('SNP_HIT_MAX_BP_PER_PX is 25', () => {

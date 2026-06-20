@@ -7,7 +7,10 @@
 import path from 'path'
 import { fileURLToPath } from 'url'
 
-import { findBrokenDocLinks, suggestDocLinks } from '@jbrowse/browser-test-utils'
+import {
+  findBrokenDocLinks,
+  suggestDocLinks,
+} from '@jbrowse/browser-test-utils'
 
 const here = path.dirname(fileURLToPath(import.meta.url))
 const root = path.join(here, '..')

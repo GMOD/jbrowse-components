@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
 
@@ -100,5 +101,12 @@ export default ConfigurationSchema(
       defaultValue: 'whiskers',
     },
   },
-  { explicitlyTyped: true, explicitIdentifier: 'displayId' },
+  {
+    explicitlyTyped: true,
+    explicitIdentifier: 'displayId',
+    // Map retired global/globalsd autoscale onto local/localsd so old configs
+    // don't trip the narrowed enum.
+    preProcessSnapshot: (snap: Record<string, unknown>) =>
+      remapRetiredAutoscale(snap),
+  },
 )

@@ -722,8 +722,7 @@ export async function getLDMatrix({
   const rawFeatures = await updateStatus(
     'Loading features',
     statusCallback,
-    () =>
-      dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
+    () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
   )
   const totalVariants = rawFeatures.length
 

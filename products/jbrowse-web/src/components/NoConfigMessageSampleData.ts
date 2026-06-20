@@ -19,8 +19,8 @@ export const sampleConfigs: readonly SampleLink[] = [
     label: 'Human basic',
   },
   {
-    config: 'test_data/config_demo.json',
-    label: 'Human sample data',
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"10:87863113-87971930","type":"LinearGenomeView","tracks":["ncbi_refseq_109_hg38_latest"]}]}',
+    label: 'Human PTEN gene (NCBI RefSeq GFF)',
   },
   {
     config: 'test_data/sars-cov2/config.json',

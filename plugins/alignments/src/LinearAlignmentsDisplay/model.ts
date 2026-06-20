@@ -367,6 +367,13 @@ export default function stateModelFactory(
           showCoverage: types.stripDefault(types.boolean, true),
           /**
            * #property
+           * Draw the stacked-read pileup band. Turn off to keep only the
+           * coverage histogram and read-connection arcs (the pileup band
+           * collapses to zero height), e.g. an arcs-only structural-variant view.
+           */
+          showPileup: types.stripDefault(types.boolean, true),
+          /**
+           * #property
            */
           coverageHeight: types.stripDefault(types.number, 45),
           /**
@@ -1207,16 +1214,19 @@ export default function stateModelFactory(
          */
         get sections(): SectionsLayout {
           const order = self.groupOrder
+          // showPileup off collapses every pileup band to zero height (coverage
+          // + arcs only), the same height-0 path collapsed groups use.
+          const groupMaxYFor = (key: string) =>
+            !self.showPileup || self.isGroupCollapsed(key)
+              ? 0
+              : groupMaxY(self.groupLaidOutMap(key))
           const groups =
             order.length === 0
-              ? [{ key: '', label: '', maxY: self.maxY }]
+              ? [{ key: '', label: '', maxY: self.showPileup ? self.maxY : 0 }]
               : order.map(({ key, label }) => ({
                   key,
                   label,
-                  // Collapsed groups show only their coverage band (pileup height 0).
-                  maxY: self.isGroupCollapsed(key)
-                    ? 0
-                    : groupMaxY(self.groupLaidOutMap(key)),
+                  maxY: groupMaxYFor(key),
                 }))
           return computeStackedSections(groups, {
             coverageHeight: self.coverageHeight,
@@ -2056,6 +2066,13 @@ export default function stateModelFactory(
            */
           setShowCoverage(show: boolean) {
             self.showCoverage = show
+          },
+
+          /**
+           * #action
+           */
+          setShowPileup(show: boolean) {
+            self.showPileup = show
           },
 
           /**

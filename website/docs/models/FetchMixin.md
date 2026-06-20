@@ -146,6 +146,15 @@ type setError = (error?: unknown) => void
 type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
 
+#### action: resetStatus
+
+Drop the active stop token and clear all status bookkeeping. Shared by both
+cancel paths and runFetch's cleanup.
+
+```ts
+type resetStatus = () => void
+```
+
 #### action: setRegionStatus
 
 Record one concurrent operation's latest status (keyed) and recompute the shared

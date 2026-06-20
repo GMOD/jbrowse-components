@@ -1,10 +1,19 @@
 import TextSearchManager from '@jbrowse/core/TextSearch/TextSearchManager'
 import assemblyManagerFactory from '@jbrowse/core/assemblyManager'
 import RpcManager from '@jbrowse/core/rpc/RpcManager'
-import { cast, getType, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getSnapshot,
+  getType,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { migrateSessionSnapshot } from '../sessionMigrations/index.ts'
-import { filterSessionInPlace } from '../sessionUtils.ts'
+import {
+  filterSessionInPlace,
+  summarizeSessionTracks,
+} from '../sessionUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
@@ -99,7 +108,21 @@ export function BaseRootModelFactory({
           sessionSnapshot && typeof sessionSnapshot === 'object'
             ? migrateSessionSnapshot(sessionSnapshot as Record<string, unknown>)
             : sessionSnapshot
+        // [snap-trace] what we were ASKED to restore (pre-hydration snapshot)
+        // eslint-disable-next-line no-console
+        console.log(
+          '[snap-trace] setSession INPUT:',
+          summarizeSessionTracks(migrated),
+        )
         self.session = cast(migrated)
+        // [snap-trace] what hydrated as MST, before filterSessionInPlace runs
+        // eslint-disable-next-line no-console
+        console.log(
+          '[snap-trace] setSession HYDRATED (pre-filter):',
+          summarizeSessionTracks(
+            self.session ? getSnapshot(self.session) : undefined,
+          ),
+        )
         if (self.session) {
           try {
             filterSessionInPlace(self.session, getType(self.session))
@@ -107,6 +130,12 @@ export function BaseRootModelFactory({
             self.session = oldSession
             throw error
           }
+          // [snap-trace] after filterSessionInPlace (drop-on-throw) ran
+          // eslint-disable-next-line no-console
+          console.log(
+            '[snap-trace] setSession POST-FILTER:',
+            summarizeSessionTracks(getSnapshot(self.session)),
+          )
         }
       },
       /**

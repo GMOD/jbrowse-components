@@ -60,11 +60,14 @@ export function buildSourceRenderData(
     const negColor = overlay ? posColor : defaultNegColor
     const row = overlay ? 0 : i
 
-    // Solid-color sources use summaryScoreMode-specific rendering.
-    // Bicolor (color undefined) always uses pos/neg avg split so the pivot
-    // is visible regardless of summaryScoreMode — whiskers and min/max do
-    // not have a meaningful bicolor variant.
-    if (orderedSource.color && summaryScoreMode === 'whiskers') {
+    // summaryScoreMode selects the rendering; the bicolor pos/neg split is the
+    // 'avg' presentation (the only mode with a meaningful pos/neg variant).
+    // whiskers/min/max read the full (unsplit) score arrays, so they render
+    // regardless of bicolor — they don't depend on a solid color being set,
+    // and the drawn output matches the autoscale domain (which already follows
+    // summaryScoreMode). density has no whiskers variant, so it falls through
+    // to the avg split.
+    if (summaryScoreMode === 'whiskers' && !isDensityMode) {
       for (const s of makeWhiskersSourceData(
         rpcSource,
         posColor,
@@ -74,10 +77,7 @@ export function buildSourceRenderData(
       )) {
         result.push(s)
       }
-    } else if (
-      orderedSource.color &&
-      (summaryScoreMode === 'min' || summaryScoreMode === 'max')
-    ) {
+    } else if (summaryScoreMode === 'min' || summaryScoreMode === 'max') {
       const scores = getEffectiveScores(rpcSource, summaryScoreMode)
       result.push({
         featurePositions: rpcSource.featurePositions,
@@ -87,6 +87,9 @@ export function buildSourceRenderData(
         rowIndex: row,
       })
     } else {
+      // avg: pos/neg split, each side colored by sign. Solid color is encoded
+      // upstream by the worker placing every feature in the pos arrays
+      // (useBicolor=false), so this same branch renders it as one color.
       if (rpcSource.posNumFeatures > 0) {
         result.push({
           featurePositions: rpcSource.posFeaturePositions,

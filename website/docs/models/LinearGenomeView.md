@@ -774,6 +774,27 @@ go offscreen while dynamic blocks represent exactly what is on screen
 type dynamicBlocks = BlockSet
 ```
 
+#### getter: overviewBlocks
+
+all overview scalebar blocks (content + elided), laid out on the overviewLayout.
+memoized so the scalebar doesn't recompute it per render
+
+```ts
+type overviewBlocks = BaseBlock[]
+```
+
+#### getter: overviewContentBlocksPxSpan
+
+leading/trailing pixel span of the visible content blocks projected onto the
+overviewLayout — the geometry shared by the overview's "you are here" rectangle
+and polygon
+
+```ts
+type overviewContentBlocksPxSpan =
+  | { leftPx: number; rightPx: number }
+  | undefined
+```
+
 #### getter: scalebarRegionEndPx
 
 Max right-edge pixel position for each displayedRegionIndex, derived from

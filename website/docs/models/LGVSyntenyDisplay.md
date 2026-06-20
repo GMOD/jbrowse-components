@@ -63,6 +63,7 @@ and docs.
 [linkedReads](../linearalignmentsdisplay#property-linkedreads),
 [showBezierConnections](../linearalignmentsdisplay#property-showbezierconnections),
 [showCoverage](../linearalignmentsdisplay#property-showcoverage),
+[showPileup](../linearalignmentsdisplay#property-showpileup),
 [coverageHeight](../linearalignmentsdisplay#property-coverageheight),
 [showMismatches](../linearalignmentsdisplay#property-showmismatches),
 [showInterbaseIndicators](../linearalignmentsdisplay#property-showinterbaseindicators),
@@ -217,6 +218,7 @@ and docs.
 [setReadConnections](../linearalignmentsdisplay#action-setreadconnections),
 [setReadConnectionsDown](../linearalignmentsdisplay#action-setreadconnectionsdown),
 [setShowCoverage](../linearalignmentsdisplay#action-setshowcoverage),
+[setShowPileup](../linearalignmentsdisplay#action-setshowpileup),
 [setCoverageHeight](../linearalignmentsdisplay#action-setcoverageheight),
 [setReadConnectionsHeight](../linearalignmentsdisplay#action-setreadconnectionsheight),
 [setSashimiArcsHeight](../linearalignmentsdisplay#action-setsashimiarcsheight),
@@ -371,6 +373,7 @@ and docs.
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
+[resetStatus](../fetchmixin#action-resetstatus),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),

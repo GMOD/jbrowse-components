@@ -12,6 +12,7 @@ import { packCoverageAreaForGpu } from './packCoverageArea.ts'
 import { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import { computeSashimiJunctions } from '../features/sashimi/compute.ts'
 
+import type { StrandBaseCounts } from './calculateModificationCounts.ts'
 import type {
   FeatureData,
   GapData,
@@ -30,9 +31,10 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
  * (compute → freqs → SNP → interbase → mod → mod-tooltip → sashimi → pack) cannot
  * drift between them.
  *
- * Pileup passes `regionSequence` to enable mod coverage; chain omits it so the
- * mod-coverage step is skipped and `packCoverageAreaForGpu` emits a 0-byte
- * mod-cov pass.
+ * Mod coverage runs whenever `trackStrands` is set (the modification color
+ * modes); chain mode leaves it off so `packCoverageAreaForGpu` emits a 0-byte
+ * mod-cov pass. Its modifiable/detectable denominator comes from a read-base
+ * pileup (`modBaseCounts`, IGV-style), so no reference sequence is needed here.
  */
 export async function runCoveragePipeline({
   features,
@@ -42,14 +44,13 @@ export async function runCoveragePipeline({
   softclips,
   hardclips,
   modifications,
+  modBaseCounts,
   simplexModifications,
   region,
   mismatchArrays,
   interbaseArrays,
   gapArrays,
   trackStrands,
-  regionSequence,
-  regionSequenceStart,
   statusCallback,
   stopTokenCheck,
 }: {
@@ -60,23 +61,23 @@ export async function runCoveragePipeline({
   softclips: SoftclipData[]
   hardclips: HardclipData[]
   modifications: ModificationEntry[]
+  modBaseCounts: ReadonlyMap<number, StrandBaseCounts>
   simplexModifications: ReadonlySet<string>
   region: Region
   mismatchArrays: Parameters<typeof computeFrequenciesAndThresholds>[0]
   interbaseArrays: Parameters<typeof computeFrequenciesAndThresholds>[1]
   gapArrays: Parameters<typeof computeFrequenciesAndThresholds>[2]
   trackStrands?: boolean
-  regionSequence?: string
-  regionSequenceStart?: number
   statusCallback: StatusCallback
   stopTokenCheck: StopTokenChecker
 }) {
   const { start: regionStart, end: regionEnd } = region
+  // Total depth only — mod coverage now derives its per-strand denominator from
+  // read bases (modBaseCounts), so the old per-strand depth sweep is unused.
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
-    async () =>
-      computeCoverage(features, gaps, regionStart, regionEnd, trackStrands),
+    async () => computeCoverage(features, gaps, regionStart, regionEnd),
   )
 
   checkStopToken2(stopTokenCheck)
@@ -99,18 +100,15 @@ export async function runCoveragePipeline({
     coverage,
   )
 
-  const modCoverage =
-    regionSequence !== undefined
-      ? computeModificationCoverage(
-          modifications,
-          mismatches,
-          regionStart,
-          coverage,
-          regionSequence,
-          regionSequenceStart ?? regionStart,
-          simplexModifications,
-        )
-      : undefined
+  const modCoverage = trackStrands
+    ? computeModificationCoverage(
+        modifications,
+        modBaseCounts,
+        regionStart,
+        coverage,
+        simplexModifications,
+      )
+    : undefined
 
   const modTooltipData = buildModTooltipData({ modifications, regionStart })
   const sashimi = computeSashimiJunctions(gaps)

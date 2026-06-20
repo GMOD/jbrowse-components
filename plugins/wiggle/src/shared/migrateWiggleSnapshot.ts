@@ -23,6 +23,8 @@
  * default.
  */
 
+import { mapRetiredAutoscale } from './remapRetiredAutoscale.ts'
+
 // fill:false was "no fill / scatter mode" on xyplot-type renderers. Maps to
 // the explicit scatter rendering types added in the current codebase.
 const SCATTER_EQUIVALENT: Partial<Record<string, string>> = {
@@ -130,7 +132,7 @@ export function migrateWiggleSnapshot(
   const overrides = filterDefined({
     defaultRendering,
     scaleType: scaleTypeSetting ?? scale,
-    autoscale: autoscaleSetting ?? autoscaleGen1,
+    autoscale: mapRetiredAutoscale(autoscaleSetting ?? autoscaleGen1),
     summaryScoreMode: summaryScoreModeSetting ?? summaryScoreModeGen1,
     minScore: asNumber(minScoreSetting) ?? asNumber(asRecord(constraints)?.min),
     maxScore: asNumber(maxScoreSetting) ?? asNumber(asRecord(constraints)?.max),

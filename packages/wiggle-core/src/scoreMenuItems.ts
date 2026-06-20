@@ -29,8 +29,6 @@ export interface ScoreScaleModel extends IAnyStateTreeNode {
 // its own option list.
 export const DEFAULT_AUTOSCALE_OPTIONS: [string, string][] = [
   ['local', 'Local'],
-  ['global', 'Global'],
-  ['globalsd', 'Global ± 3σ'],
   ['localsd', 'Local ± 3σ'],
 ]
 

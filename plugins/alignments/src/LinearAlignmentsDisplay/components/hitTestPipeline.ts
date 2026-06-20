@@ -48,12 +48,18 @@ export type HitTestResult =
 // too zoomed out to be meaningful.
 export const SNP_HIT_MAX_BP_PER_PX = 25
 
-function hitTestChain(coords: CigarCoords, rpcData: PileupDataResult) {
+function hitTestChain(
+  coords: CigarCoords,
+  rpcData: PileupDataResult,
+  featureHeight: number,
+) {
   if (!rpcData.chainFlatbush || !rpcData.chainFirstReadIndices) {
     return undefined
   }
-  const { adjustedY, genomicPos, row } = coords
-  if (adjustedY < 0) {
+  const { adjustedY, yWithinRow, genomicPos, row } = coords
+  // Same clickable band as hitTestFeature: the featureSpacing gap between rows
+  // must not register a hit (it rounds to the row above).
+  if (adjustedY < 0 || yWithinRow > featureHeight) {
     return undefined
   }
   const hits = rpcData.chainFlatbush.search(genomicPos, row, genomicPos, row)
@@ -78,6 +84,11 @@ export interface HitTestOptions {
   featureSpacing: number
   scrollTop: number
   isChainMode: boolean
+  // False when this section's pileup band is collapsed to zero height
+  // (`showPileup` off, or a collapsed group): reads are laid out but not drawn,
+  // so the per-read/cigar/modification tests must be skipped to avoid resolving
+  // a hover over the empty band. Coverage/indicator tests still run.
+  pileupVisible: boolean
 }
 
 // Priority chain across CIGAR features, top-down:
@@ -121,6 +132,7 @@ export function performHitTest(
     featureSpacing,
     scrollTop,
     isChainMode,
+    pileupVisible,
   } = options
 
   // Coverage/indicator strip tests are relative to this section's coverage top
@@ -163,6 +175,12 @@ export function performHitTest(
     )
     if (coverageHit) {
       return { type: 'coverage', hit: coverageHit, resolved }
+    }
+
+    // A collapsed pileup band (showPileup off / collapsed group) lays reads out
+    // but never paints them, so don't resolve hovers over the empty band.
+    if (!pileupVisible) {
+      return { type: 'none' }
     }
 
     const coords = canvasToGenomicCoords(
@@ -217,7 +235,7 @@ export function performHitTest(
     }
 
     const hit = isChainMode
-      ? hitTestChain(coords, resolved.rpcData)
+      ? hitTestChain(coords, resolved.rpcData, featureHeight)
       : hitTestFeature(resolved, coords, featureHeight)
     if (hit) {
       return { type: 'feature', hit, resolved }

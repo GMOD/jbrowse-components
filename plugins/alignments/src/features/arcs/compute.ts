@@ -266,8 +266,11 @@ function computeArcShape({
 }
 
 function computeLongRangeThreshold(pendingArcs: PendingArc[]) {
+  // Split-junction spans are breakpoint gaps, not paired-end insert radii;
+  // mixing them into the distribution skews mean + 3·std and mis-classifies the
+  // long-insert coloring. Characterize the threshold from mate-link arcs only.
   const radii = pendingArcs
-    .filter(a => a.p1Ref === a.p2Ref)
+    .filter(a => !a.isSplit && a.p1Ref === a.p2Ref)
     .map(a => Math.abs(a.p2Bp - a.p1Bp) / 2)
   if (radii.length === 0) {
     return Infinity

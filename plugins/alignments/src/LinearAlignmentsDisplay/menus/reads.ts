@@ -10,6 +10,8 @@ interface ReadsModel {
   setShowLegend: (show: boolean | undefined) => void
   showCoverage: boolean
   setShowCoverage: (show: boolean) => void
+  showPileup: boolean
+  setShowPileup: (show: boolean) => void
   showMismatches: boolean
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
@@ -56,6 +58,9 @@ export function getReadsMenuItem(
       }),
       checkboxItem('Show coverage', model.showCoverage, () => {
         model.setShowCoverage(!model.showCoverage)
+      }),
+      checkboxItem('Show pileup', model.showPileup, () => {
+        model.setShowPileup(!model.showPileup)
       }),
       checkboxItem('Show mismatches', model.showMismatches, () => {
         model.setShowMismatches(!model.showMismatches)

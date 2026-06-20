@@ -41,6 +41,12 @@ export interface SyntenyGeometry {
 
 export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 
+// Minimum on-screen alignment width (px) below which CIGAR detail is neither
+// parsed nor drawn. Shared with the parse gate in
+// executeSyntenyFeaturesAndPositions so a feature's CIGAR is parsed only when
+// it will actually be visited here.
+export const MIN_CIGAR_PX_WIDTH = 8
+
 export function buildSyntenyGeometry({
   p11_cumBp,
   p12_cumBp,
@@ -83,7 +89,6 @@ export function buildSyntenyGeometry({
   const emitRight = viewWidth + panBufferPx
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
-  const minCigarPxWidth = 8
 
   const alignmentLengths = new Float32Array(featureCount)
   // Per-feature: did we decide to draw CIGAR detail? Pass 1 always emits
@@ -118,7 +123,7 @@ export function buildSyntenyGeometry({
     if (
       cigar.length > 0 &&
       drawCIGAR &&
-      Math.max(widthPx0, widthPx1) >= minCigarPxWidth
+      Math.max(widthPx0, widthPx1) >= MIN_CIGAR_PX_WIDTH
     ) {
       willDrawCigarArr[i] = 1
       cigarBudget = Math.min(cigar.length, Math.ceil(widthPx0 + widthPx1) + 4)

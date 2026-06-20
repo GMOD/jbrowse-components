@@ -3,6 +3,7 @@ import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
 
+import { computeReadBaseCounts } from '../features/modCoverage/readBaseCounts.ts'
 import { buildAlignmentDetailArrays } from '../shared/buildAlignmentDetailArrays.ts'
 import {
   buildBaseFeatureData,
@@ -33,6 +34,7 @@ import type {
   PileupDataResult,
   RenderAlignmentDataArgs,
 } from './types.ts'
+import type { StrandBaseCounts } from '../shared/calculateModificationCounts.ts'
 import type { ChainFeatureData } from '../shared/webglRpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
@@ -142,8 +144,6 @@ interface GroupContext {
   region: Region
   effShowSoftClipping: boolean
   trackStrands: boolean
-  regionSequence: string | undefined
-  regionSequenceStart: number
   detectedSimplexModifications: ReadonlySet<string>
   // Shared insert-size color scale, pooled across every group of the fetch so
   // all stacked sections color long/short inserts on one comparable scale.
@@ -157,6 +157,9 @@ interface GroupContext {
 // fetches — ungrouped is just the one-group case.
 async function buildGroupResult(
   extraction: ReturnType<typeof extractFeatureArrays>,
+  // Raw reads for this group, needed to tally per-strand read bases at modified
+  // positions (the reference-free mod-coverage denominator).
+  rawFeatures: Feature[],
   ctx: GroupContext,
 ): Promise<PileupDataResult> {
   const {
@@ -183,8 +186,6 @@ async function buildGroupResult(
     region,
     effShowSoftClipping,
     trackStrands,
-    regionSequence,
-    regionSequenceStart,
     detectedSimplexModifications,
     insertSizeStats,
     statusCallback,
@@ -231,6 +232,16 @@ async function buildGroupResult(
 
   checkStopToken2(stopTokenCheck)
 
+  // IGV-style per-strand read-base pileup at the modified columns, computed from
+  // the reads themselves — the mod-coverage denominator, no reference needed.
+  // Only the modification color modes (trackStrands) draw mod coverage.
+  const modBaseCounts = trackStrands
+    ? computeReadBaseCounts(
+        rawFeatures,
+        new Set(modifications.map(m => m.position)),
+      )
+    : new Map<number, StrandBaseCounts>()
+
   const pipeline = await runCoveragePipeline({
     features,
     gaps,
@@ -239,14 +250,13 @@ async function buildGroupResult(
     softclips,
     hardclips,
     modifications,
+    modBaseCounts,
     simplexModifications: detectedSimplexModifications,
     region,
     mismatchArrays,
     interbaseArrays,
     gapArrays,
     trackStrands,
-    regionSequence,
-    regionSequenceStart,
     statusCallback,
     stopTokenCheck,
   })
@@ -366,8 +376,10 @@ export async function executeRenderAlignmentData({
     stopToken,
   })
 
-  // Chain mode dedupes + filters reads into chains up front; pileup mode
-  // fetches the reference sequence when coloring by methylation/modifications.
+  // Chain mode dedupes + filters reads into chains up front; only bisulfite
+  // needs the reference sequence (its methylation is read-vs-reference C->T).
+  // modBAM modifications/methylation derive everything from the reads, including
+  // the mod-coverage denominator (computeReadBaseCounts), so they fetch nothing.
   let inputFeatures = featuresArray
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
@@ -377,7 +389,7 @@ export async function executeRenderAlignmentData({
       drawSingletons,
       drawProperPairs,
     )
-  } else if (colorBy && isModificationScheme(colorBy.type) && sequenceAdapter) {
+  } else if (colorBy?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,
@@ -432,8 +444,8 @@ export async function executeRenderAlignmentData({
 
   checkStopToken2(stopTokenCheck)
 
-  // Pileup tracks per-base strands + reference sequence for modification
-  // coverage; chain omits both so runCoveragePipeline skips mod-coverage.
+  // Modification color modes (pileup only) draw mod coverage + track per-base
+  // strands; chain omits them so runCoveragePipeline skips mod-coverage.
   const trackStrands =
     !isChain && !!colorBy && isModificationScheme(colorBy.type)
 
@@ -442,8 +454,6 @@ export async function executeRenderAlignmentData({
     region,
     effShowSoftClipping,
     trackStrands,
-    regionSequence,
-    regionSequenceStart,
     detectedSimplexModifications,
     insertSizeStats: sharedInsertSizeStats,
     statusCallback,
@@ -453,7 +463,7 @@ export async function executeRenderAlignmentData({
   const groups: AlignmentGroup[] = []
   for (let i = 0; i < featureGroups.length; i++) {
     const fg = featureGroups[i]!
-    const data = await buildGroupResult(extractions[i]!, ctx)
+    const data = await buildGroupResult(extractions[i]!, fg.features, ctx)
     groups.push({ key: fg.key, label: fg.label, data })
   }
 

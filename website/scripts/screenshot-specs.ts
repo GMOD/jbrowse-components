@@ -390,11 +390,15 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'bigwig/whole_genome_coverage',
+    // start at a single chromosome so the figure can walk through the setup
+    // (reviewer: show how to build this view). Stage 1 opens the View → Show...
+    // menu with "Show all regions in assembly" boxed; stage 2 is the result.
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
+          loc: 'chr10',
           tracks: [
             {
               trackId: 'colo_tumor',
@@ -417,7 +421,30 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'COLO829',
     readyTimeout: 60000,
     settleMs: 15000,
-    crop: { x: 0, y: 0, width: 1500, height: 320 },
+    // tall enough to capture the open View → Show... submenu in stage 1
+    crop: { x: 0, y: 0, width: 1500, height: 420 },
+    stages: [
+      {
+        // top frame: single chromosome, View → Show... submenu open with
+        // "Show all regions in assembly" boxed — the one click that zooms the
+        // view out to the whole genome
+        actions: [
+          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+          ...menuCascade(['Show...', 'Show all regions in assembly']),
+        ],
+        annotations: [
+          { type: 'box', anchor: { text: 'Show all regions in assembly' } },
+        ],
+      },
+      {
+        // bottom frame: after the click the view spans every chromosome and the
+        // scatter coverage resolves whole-genome copy-number structure
+        actions: [
+          { type: 'click', text: 'Show all regions in assembly' },
+          { type: 'delay', ms: 12000 },
+        ],
+      },
+    ],
   },
 
   {
@@ -522,6 +549,12 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'arc',
                 readConnectionsDown: true,
+                // hide the stacked pileup so only the coverage histogram and the
+                // discordant-pair arcs show (reviewer: "Show pileup" track-menu
+                // toggle). The arc band gets the freed vertical room.
+                showPileup: false,
+                readConnectionsHeight: 220,
+                height: 290,
                 featureHeight: 3,
                 featureSpacing: 0,
                 userByteSizeLimit: 500_000_000,
@@ -1915,6 +1948,55 @@ export const specs: ScreenshotSpec[] = [
         x: 60,
         y: 470,
         text: 'The read pileup supports an INVdup: green same-orientation (LL/RR) pairs flag the inverted segment, while elevated coverage and the arc connections across the locus mark the extra duplicated copy.',
+        maxWidth: 520,
+      },
+    ],
+  },
+
+  // Same INVdup locus as inverted_duplication, but with the linked-read *bezier*
+  // connection mode (showBezierConnections) over an ordinary pileup instead of
+  // coverage-band arcs. Each pair is drawn as a horizontal-tangent oval curve
+  // spanning its two mates — the same curve shape BreakpointSplitView's
+  // AlignmentConnections draws in a single linear view — so the green LL / blue
+  // RR same-orientation pairs of the inverted segment stand out as bundled curves
+  // across the locus. linkedReads stays off (mates keep their own pileup rows,
+  // matching how a breakpoint split view lays reads out).
+  {
+    mode: 'url',
+    name: 'inverted_duplication_bezier',
+    url: kgUrl({
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: '1:39,658,200-39,661,800',
+          tracks: [
+            '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            {
+              trackId: 'HG02768.final',
+              displaySnapshot: {
+                showBezierConnections: true,
+                height: 1300,
+                coverageHeight: 120,
+                featureHeight: 9,
+                colorBy: { type: 'pairOrientation' },
+                showLegend: true,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'HG02768',
+    readyTimeout: 60000,
+    viewportHeight: 1600,
+    settleMs: 30000,
+    annotations: [
+      {
+        type: 'text',
+        x: 60,
+        y: 470,
+        text: 'Bezier connection mode: each read pair is a horizontal-tangent oval curve between its mates — the same curve shape a breakpoint split view draws. Green LL / blue RR same-orientation pairs bundle across the inverted-duplication locus.',
         maxWidth: 520,
       },
     ],

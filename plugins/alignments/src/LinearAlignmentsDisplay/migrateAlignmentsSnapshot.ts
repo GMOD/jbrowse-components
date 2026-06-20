@@ -139,6 +139,7 @@ export function migrateAlignmentsSnapshot(
       minSashimiScore: minArcScore ?? 0,
       showInterbaseIndicators: showInterbaseIndicators ?? true,
       showCoverage: true,
+      showPileup: true,
       coverageHeight: 45,
       showMismatches: true,
       colorBySetting,

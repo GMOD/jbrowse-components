@@ -171,7 +171,7 @@ function sortOverlappingByIndex(
 //
 // `maxRows` is bounded ≤ 65534 by the caller so the sentinel and every real row
 // index fit the Uint16Array — at >65535x coverage the raw count would wrap.
-function placeRectCapped(
+export function placeRectCapped(
   rows: number[][],
   start: number,
   end: number,

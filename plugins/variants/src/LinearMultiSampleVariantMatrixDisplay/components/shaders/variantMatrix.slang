@@ -1,15 +1,14 @@
 // Multi-variant matrix renderer: one instance per cell (variant × sample).
-// Each cell is a column by subpixel-precise row strip, drawn as a crisp opaque
-// rectangle: each physical pixel is painted by exactly one column (the one whose
-// span contains the pixel center), fully opaque, so adjacent cell colors never
-// blend at the seam — the clean "lighter" look of the original canvas2d-in-worker
-// renderer. (NB the Canvas2DVariantMatrixRenderer fallback intentionally keeps a
-// smoother float-coord/overdraw-AA rendering, so the two backends differ on
-// sub-pixel anti-aliasing.) Sub-pixel columns are widened to MIN_COL_PX (centered)
-// so they still paint instead of vanishing between pixel centers; overlapping
-// widened columns resolve last-wins via the premultiplied-OVER blend with opaque
-// alpha. Color is per-cell (not from a ramp) — the upstream worker picks an RGBA
-// value per cell based on genotype/quality.
+// Each cell is a column by subpixel-precise row strip. A column at least 1px
+// wide paints its pixels fully opaque (crisp seams, one pure cell color per
+// pixel). A sub-pixel column (more variants than screen pixels) is still widened
+// to MIN_COL_PX so it covers a pixel center and paints, but its alpha is scaled
+// by its TRUE width fraction so dense regions blend lighter via the
+// premultiplied-OVER blend — reproducing the canvas2d-in-worker sub-pixel AA on
+// origin/main (a solid 1px-per-column fill looked noticeably darker). Overlapping
+// widened columns accumulate OVER in feature order, the same as sequential
+// canvas2d fillRects. Color is per-cell (not from a ramp) — the upstream worker
+// picks an RGBA value per cell based on genotype/quality.
 //! targets: wgsl, glsl
 
 import colorPack;
@@ -38,9 +37,10 @@ struct Uniforms {
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct VsOut {
-  float4 position : SV_Position;
-  float4 color    : COLOR0;
-  float2 xspan    : COLOR1;
+  float4 position   : SV_Position;
+  float4 color      : COLOR0;
+  float2 xspan      : COLOR1;
+  float  colWidthPx : COLOR2;
 };
 
 [shader("vertex")]
@@ -53,6 +53,11 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   float widthPx = u.canvasWidth * u.devicePixelRatio;
   float x1px = inst.featureIndex / u.numFeatures * widthPx;
   float x2px = (inst.featureIndex + 1.0) / u.numFeatures * widthPx;
+
+  // True (pre-widening) column width in physical px. The fragment scales alpha
+  // by clamp(this, 0, 1) so sub-pixel columns blend lighter (canvas2d-AA parity)
+  // instead of painting a solid 1px column; >=1px columns stay fully opaque.
+  float colWidthPx = x2px - x1px;
 
   // Widen sub-pixel columns to MIN_COL_PX (centered on their true center) so
   // they still cover a pixel center and paint. Wider columns keep true edges.
@@ -82,6 +87,7 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   o.position = float4(clipX, clipY, 0.0, 1.0);
   o.color = unpackRGBA(inst.color);
   o.xspan = float2(x1px, x2px);
+  o.colWidthPx = colWidthPx;
   return o;
 }
 
@@ -92,6 +98,9 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   // blending). fragIn.position.x is the framebuffer pixel center (gl_FragCoord.x).
   float center = floor(fragIn.position.x) + 0.5;
   float inside = (center >= fragIn.xspan.x && center < fragIn.xspan.y) ? 1.0 : 0.0;
-  float a = fragIn.color.a * inside;
+  // Sub-pixel columns contribute proportional coverage so dense regions blend
+  // lighter (matches canvas2d AA); >=1px columns stay fully opaque.
+  float cov = clamp(fragIn.colWidthPx, 0.0, 1.0);
+  float a = fragIn.color.a * inside * cov;
   return float4(fragIn.color.rgb * a, a);
 }

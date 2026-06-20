@@ -1,6 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { remapRetiredAutoscale } from '../shared/remapRetiredAutoscale.ts'
 import { wiggleConfigSchemaFields } from '../shared/wiggleConfigSchemaFields.ts'
 import { MULTI_WIGGLE_RENDERING_TYPES } from '../util.ts'
 
@@ -27,6 +28,13 @@ export function remapMultiWiggleRendering(snap: Record<string, unknown>) {
       ? SINGLE_TO_MULTI_RENDERING[defaultRendering]
       : undefined
   return remapped ? { ...snap, defaultRendering: remapped } : snap
+}
+
+// Both legacy remaps a MultiLinearWiggleDisplay snapshot needs before the
+// types.union validates it: single-source rendering names and retired autoscale
+// values.
+export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
+  return remapRetiredAutoscale(remapMultiWiggleRendering(snap))
 }
 
 /**
@@ -134,6 +142,6 @@ export default ConfigurationSchema(
     // preProcessSnapshot — so the same remap is also registered as a
     // Core-preProcessTrackConfig handler (see ./preProcessTrackConfig.ts).
     preProcessSnapshot: (snap: Record<string, unknown>) =>
-      remapMultiWiggleRendering(snap),
+      remapMultiWiggleConfig(snap),
   },
 )

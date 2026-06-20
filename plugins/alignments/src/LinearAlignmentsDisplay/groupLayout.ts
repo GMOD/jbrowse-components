@@ -50,7 +50,7 @@ export function buildLaidOutByGroup({
   for (const { key } of order) {
     const dataMap = rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
     const base = isChainMode
-      ? buildLaidOutChainMap(dataMap)
+      ? buildLaidOutChainMap(dataMap, maxRowsOverrides?.get(key) ?? maxRows)
       : buildLaidOutPileupMap({
           dataMap,
           sortedBy,

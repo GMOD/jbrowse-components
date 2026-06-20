@@ -1,4 +1,7 @@
-import { bezierConnectorHandlePx, bezierConnectorPath } from '@jbrowse/core/util'
+import {
+  bezierConnectorHandlePx,
+  bezierConnectorPath,
+} from '@jbrowse/core/util'
 
 import { iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'

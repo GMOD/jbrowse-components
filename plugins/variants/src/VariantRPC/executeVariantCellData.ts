@@ -180,8 +180,7 @@ export async function executeVariantCellData({
   const rawFeatures = await updateStatus(
     'Loading features',
     statusCallback,
-    () =>
-      adapter.getFeaturesInMultipleRegionsArray(regions, args),
+    () => adapter.getFeaturesInMultipleRegionsArray(regions, args),
   )
 
   const genotypesCache = new Map<string, Record<string, string>>()

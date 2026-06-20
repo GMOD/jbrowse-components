@@ -1,7 +1,9 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
-import { placeRect } from '@jbrowse/core/util/layouts/placeRect'
 
-import { cloneWithLayout } from '../RenderAlignmentDataRPC/sortLayout.ts'
+import {
+  cloneWithLayout,
+  placeRectCapped,
+} from '../RenderAlignmentDataRPC/sortLayout.ts'
 import { isChainData } from '../RenderAlignmentDataRPC/types.ts'
 import { computeLinkedReadLinesByRegion } from '../features/linkedReads/compute.ts'
 import { emptyOverlapsUploadData } from '../features/overlap/types.ts'
@@ -15,14 +17,18 @@ function buildChainRowMap(
     maxEnd: number
     distance: number
   }[],
+  maxRows = Number.POSITIVE_INFINITY,
 ) {
   chains.sort((a, b) => a.distance - b.distance)
   const rows: number[][] = []
   const rowMap = new Map<string, number>()
+  let truncated = false
   for (const { name, minStart, maxEnd } of chains) {
-    rowMap.set(name, placeRect(rows, minStart, maxEnd))
+    const y = placeRectCapped(rows, minStart, maxEnd, maxRows)
+    rowMap.set(name, y)
+    truncated = truncated || y === maxRows
   }
-  return { rowMap, maxY: rows.length }
+  return { rowMap, maxY: rows.length, truncated }
 }
 
 // Chains spanning multiple regions are merged by name. min/max give the
@@ -84,10 +90,13 @@ export function readYsFromRowMap(
  * always share a row. Sorted by chain distance so shorter insert-size pairs
  * pack first.
  */
-export function computeChainLayout(data: PileupDataResult) {
+export function computeChainLayout(
+  data: PileupDataResult,
+  maxRows = Number.POSITIVE_INFINITY,
+) {
   const chains = mergeChains([data])
-  const { rowMap, maxY } = buildChainRowMap(chains)
-  return { readYs: readYsFromRowMap(data, rowMap), maxY }
+  const { rowMap, maxY, truncated } = buildChainRowMap(chains, maxRows)
+  return { readYs: readYsFromRowMap(data, rowMap), maxY, truncated }
 }
 
 /**
@@ -98,9 +107,10 @@ export function computeChainLayout(data: PileupDataResult) {
  */
 export function computeMultiRegionChainLayout(
   entries: [number, PileupDataResult][],
+  maxRows = Number.POSITIVE_INFINITY,
 ) {
   const chains = mergeChains(entries.map(([, d]) => d))
-  return buildChainRowMap(chains)
+  return buildChainRowMap(chains, maxRows)
 }
 
 export interface Span {
@@ -258,9 +268,10 @@ function cloneWithChainLayout(
   data: PileupDataResult,
   readYs: Uint16Array,
   maxY: number,
+  truncated: boolean,
 ): PileupDataResult {
   return {
-    ...cloneWithLayout(data, readYs, maxY),
+    ...cloneWithLayout(data, readYs, maxY, truncated),
     ...buildChainConnectingData(data, readYs),
   }
 }
@@ -297,6 +308,7 @@ export function attachLinkedReadLines(
  */
 export function buildLaidOutChainMap(
   dataMap: ReadonlyMap<number, PileupDataResult>,
+  maxRows = Number.POSITIVE_INFINITY,
 ): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
   const withReads: [number, PileupDataResult][] = []
@@ -310,10 +322,13 @@ export function buildLaidOutChainMap(
   if (withReads.length === 0) {
     return out
   }
-  const { rowMap, maxY } = computeMultiRegionChainLayout(withReads)
+  const { rowMap, maxY, truncated } = computeMultiRegionChainLayout(
+    withReads,
+    maxRows,
+  )
   for (const [idx, data] of withReads) {
     const readYs = readYsFromRowMap(data, rowMap)
-    out.set(idx, cloneWithChainLayout(data, readYs, maxY))
+    out.set(idx, cloneWithChainLayout(data, readYs, maxY, truncated))
   }
   return out
 }

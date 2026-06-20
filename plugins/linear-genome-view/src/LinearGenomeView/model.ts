@@ -691,9 +691,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
        */
       get trackHeights() {
         return sum(
-          self.tracks.map(t =>
-            t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height,
-          ),
+          self.tracks.map(t => {
+            // [snap-trace] crash site for `displays[0] undefined`. Name the
+            // offending track so we can correlate with the snapshot traces.
+            if (!t.minimized && !t.displays[0]) {
+              console.warn(
+                '[snap-trace] track has EMPTY displays in trackHeights',
+                {
+                  trackId: t.configuration.trackId,
+                  type: t.type,
+                  displays: t.displays.length,
+                },
+              )
+            }
+            return t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height
+          }),
         )
       },
 

@@ -115,6 +115,12 @@ function applyHeightScale(data: FeatureDataResult, multiplier: number) {
 export function computeLaidOutData(
   rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
   inputs: LayoutInputs,
+  // Per ref-group (`assembly:refName`) feature->row map from the previous
+  // layout, used to keep feature Y stable across re-layouts (see packRef).
+  seedLayoutMaps?: ReadonlyMap<string, ReadonlyMap<string, number>>,
+  // Filled (when provided) with this pass's per-ref-group feature->row maps so
+  // the next re-layout can seed from them.
+  outLayoutMaps?: Map<string, Map<string, number>>,
 ): Map<number, FeatureDataResult> {
   const {
     bpPerPx,
@@ -159,7 +165,7 @@ export function computeLaidOutData(
   const packShowLabels = showLabelsInLayout && showLabels
   const packShowDescriptions = showLabelsInLayout && showDescriptions
 
-  for (const [, regions] of refGroups) {
+  for (const [key, regions] of refGroups) {
     const { layoutMap, layoutHeights } = packRef(
       regions,
       bpPerPx,
@@ -167,7 +173,9 @@ export function computeLaidOutData(
       packShowDescriptions,
       showLabelsInLayout,
       reversedRegions,
+      seedLayoutMaps?.get(key),
     )
+    outLayoutMaps?.set(key, layoutMap)
     for (const [, data] of regions) {
       applyLayoutToRegion(data, layoutMap, layoutHeights)
     }
@@ -187,6 +195,8 @@ interface GroupCache {
   reversed: Set<number>
   // idx -> laid-out result, reused verbatim when the group is unchanged
   output: Map<number, FeatureDataResult>
+  // feature id -> row (px) from this group's last layout, used to seed the next
+  layoutMap: Map<string, number>
 }
 
 function groupUnchanged(
@@ -214,6 +224,20 @@ function groupUnchanged(
         prev.members.get(idx) === raw &&
         prev.reversed.has(idx) === reversedRegions.has(idx),
     )
+  )
+}
+
+// Seeding a re-layout from a prior one only makes sense when the vertical scale
+// is unchanged: display mode and label visibility set each feature's row height,
+// so if they differ the prior rows don't map to the new layout.
+function canSeedFrom(
+  prev: GroupCache | undefined,
+  inputs: LayoutInputs,
+): prev is GroupCache {
+  return (
+    prev?.displayMode === inputs.displayMode &&
+    prev.showLabels === inputs.showLabels &&
+    prev.showDescriptions === inputs.showDescriptions
   )
 }
 
@@ -261,7 +285,19 @@ export function createIncrementalLayout() {
         // `members` all share one key, so the pure pass lays out exactly this
         // group; passing the full `regionKeys`/`reversedRegions` is fine since
         // it only reads the keys of regions present in `members`.
-        const output = computeLaidOutData(members, inputs)
+        // Seed from the prior layout only when the vertical scale is unchanged
+        // (same display mode + label visibility); a scale change makes prior
+        // rows meaningless, so let it repack cleanly.
+        const seedLayoutMaps = canSeedFrom(prev, inputs)
+          ? new Map([[key, prev.layoutMap]])
+          : undefined
+        const outLayoutMaps = new Map<string, Map<string, number>>()
+        const output = computeLaidOutData(
+          members,
+          inputs,
+          seedLayoutMaps,
+          outLayoutMaps,
+        )
         const reversed = new Set<number>()
         for (const idx of members.keys()) {
           if (reversedRegions.has(idx)) {
@@ -279,6 +315,7 @@ export function createIncrementalLayout() {
           members: new Map(members),
           reversed,
           output,
+          layoutMap: outLayoutMaps.get(key) ?? new Map(),
         })
       }
     }
@@ -313,8 +350,12 @@ function packRef(
   showDescriptions: boolean,
   showSubfeatureLabels: boolean,
   reversedRegions: ReadonlySet<number>,
+  prevLayoutMap?: ReadonlyMap<string, number>,
 ) {
-  const layout = new GranularRectLayout({ displayMode: 'normal' })
+  const layout = new GranularRectLayout({
+    displayMode: 'normal',
+    stableSeeding: prevLayoutMap !== undefined,
+  })
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
 
@@ -435,7 +476,20 @@ function packRef(
     const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
     const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
     const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
-    const top = layout.addRect(id, leftPx, rightPx, ext.height)
+    // Seed with the prior row only when it landed on-screen last time; an
+    // overflowed feature (OFFSCREEN_Y) should repack from the top.
+    const prevTop = prevLayoutMap?.get(id)
+    const preferredRow =
+      prevTop !== undefined && prevTop >= 0 ? prevTop : undefined
+    const top = layout.addRect(
+      id,
+      leftPx,
+      rightPx,
+      ext.height,
+      undefined,
+      undefined,
+      preferredRow,
+    )
     if (top === null) {
       overflowCount++
       firstOverflowSample ??= { id, leftPx, rightPx, height: ext.height }

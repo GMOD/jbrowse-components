@@ -97,6 +97,7 @@ export function useAlignmentsBase(
         featureSpacing,
         scrollTop: model.scrollTop,
         isChainMode,
+        pileupVisible: (picked?.section.pileupHeight ?? 0) > 0,
       }),
     }
   }

@@ -581,6 +581,213 @@ test('incremental memo: flipping a region reversed recomputes its group', () => 
   expect(second.get(0)).not.toBe(first.get(0))
 })
 
+function withNameLabel(
+  data: FeatureDataResult,
+  labels: {
+    featureId: string
+    minX: number
+    maxX: number
+    textWidth: number
+  }[],
+) {
+  data.floatingLabelsData = Object.fromEntries(
+    labels.map(l => [
+      l.featureId,
+      {
+        featureId: l.featureId,
+        minX: l.minX,
+        maxX: l.maxX,
+        topY: 0,
+        featureHeight: 10,
+        nameLabel: {
+          text: l.featureId,
+          relativeY: 0,
+          color: 'black',
+          textWidth: l.textWidth,
+        },
+      },
+    ]),
+  )
+  return data
+}
+
+const tops = (r: FeatureDataResult) =>
+  new Map(r.flatbushItems.map(it => [it.featureId, it.topPx]))
+
+// Count features whose row changed between two layouts of the same data.
+function churn(a: FeatureDataResult, b: FeatureDataResult) {
+  const bt = tops(b)
+  let n = 0
+  for (const [id, t] of tops(a)) {
+    if (bt.get(id) !== t) {
+      n++
+    }
+  }
+  return n
+}
+
+const height = (r: FeatureDataResult) =>
+  r.flatbushItems.reduce((h, it) => Math.max(h, it.bottomPx), 0)
+
+// Glyph rectangles that share Y must not overlap in X — a packing-correctness
+// invariant that must survive stable seeding. Uses unstranded, label-free
+// features so the bp extent is exactly the packed extent.
+function hasGlyphOverlap(r: FeatureDataResult) {
+  const items = r.flatbushItems
+  for (let i = 0; i < items.length; i++) {
+    for (let j = i + 1; j < items.length; j++) {
+      const a = items[i]!
+      const b = items[j]!
+      const yOverlap = a.topPx < b.bottomPx && b.topPx < a.bottomPx
+      const xOverlap = a.startBp < b.endBp && b.startBp < a.endBp
+      if (yOverlap && xOverlap) {
+        return true
+      }
+    }
+  }
+  return false
+}
+
+test('stable seeding keeps a feature on its row when zoom would otherwise move it', () => {
+  // A's 300px name label overhangs B at bpPerPx=2 (300 > (1500-1000)/2) but not
+  // at bpPerPx=1, so a fresh layout drops B from row 1 to row 0 on zoom-in. B
+  // and A are the same height, so the one-row drop is within B's own-height
+  // slack and seeding keeps B put.
+  const mk = () =>
+    withNameLabel(
+      makeFeatureData({
+        features: [
+          { featureId: 'A', startBp: 1000, endBp: 1100, height: 10 },
+          { featureId: 'B', startBp: 1500, endBp: 1600, height: 10 },
+        ],
+      }),
+      [
+        { featureId: 'A', minX: 1000, maxX: 1100, textWidth: 300 },
+        { featureId: 'B', minX: 1500, maxX: 1600, textWidth: 1 },
+      ],
+    )
+  const keys = new Map([[0, 'v:ctgA']])
+  const memo = createIncrementalLayout()
+
+  const out = memo(new Map([[0, mk()]]), incInputs(keys, 2))
+  const bRowWhenZoomedOut = tops(out.get(0)!).get('B')!
+  expect(bRowWhenZoomedOut).toBeGreaterThan(0)
+
+  // Seeded zoom-in keeps B exactly where it was.
+  const seeded = memo(new Map([[0, mk()]]), incInputs(keys, 1))
+  expect(tops(seeded.get(0)!).get('B')).toBe(bRowWhenZoomedOut)
+
+  // A fresh (unseeded) layout at the same zoom would have snapped B to row 0.
+  const fresh = computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, 1))
+  expect(tops(fresh.get(0)!).get('B')).toBe(0)
+})
+
+test('stable seeding reduces churn across a zoom sweep without going sparse or overlapping', () => {
+  // A scattered, label-bearing feature set whose first-fit rows reshuffle as
+  // label bp-footprints change with zoom.
+  const N = 24
+  const specs = Array.from({ length: N }, (_, i) => {
+    const startBp = 1000 + ((i * 97) % 60) * 50
+    return {
+      featureId: `f${i}`,
+      startBp,
+      endBp: startBp + 120,
+      height: 10,
+      textWidth: 80 + ((i * 53) % 200),
+    }
+  })
+  const mk = () =>
+    withNameLabel(
+      makeFeatureData({ features: specs }),
+      specs.map(s => ({
+        featureId: s.featureId,
+        minX: s.startBp,
+        maxX: s.endBp,
+        textWidth: s.textWidth,
+      })),
+    )
+  const keys = new Map([[0, 'v:ctgA']])
+  const zoomLevels = [16, 8, 4, 2, 1]
+
+  const memo = createIncrementalLayout()
+  const seeded = zoomLevels.map(
+    bpPerPx => memo(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(0)!,
+  )
+  const fresh = zoomLevels.map(
+    bpPerPx =>
+      computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(
+        0,
+      )!,
+  )
+
+  const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)
+  const seededChurn = sum(seeded.slice(1).map((r, i) => churn(seeded[i]!, r)))
+  const freshChurn = sum(fresh.slice(1).map((r, i) => churn(fresh[i]!, r)))
+
+  // Seeding visibly steadies the layout...
+  expect(freshChurn).toBeGreaterThan(0)
+  expect(seededChurn).toBeLessThan(freshChurn)
+
+  // ...without leaving it overlapping or more than ~one row taller than the
+  // compact (fresh) layout at any zoom level. The seeding cap is a feature's
+  // own height snapped up to the layout's 10px pitch grid.
+  const pitchY = 10
+  const rowPx = 10 + LAYOUT_Y_PADDING + LABEL_FONT_SIZE
+  const oneRow = Math.ceil(rowPx / pitchY) * pitchY
+  for (let i = 0; i < zoomLevels.length; i++) {
+    expect(hasGlyphOverlap(seeded[i]!)).toBe(false)
+    expect(height(seeded[i]!)).toBeLessThanOrEqual(height(fresh[i]!) + oneRow)
+  }
+})
+
+test('chained seeding does not accumulate drift across a non-monotonic zoom path', () => {
+  // Because each step caps the kept row at one own-height above that step's
+  // compact first-fit, the result stays within ~one row of fresh regardless of
+  // the path taken to get there — no hysteresis from chaining layout->layout.
+  const N = 24
+  const specs = Array.from({ length: N }, (_, i) => {
+    const startBp = 1000 + ((i * 97) % 60) * 50
+    return {
+      featureId: `f${i}`,
+      startBp,
+      endBp: startBp + 120,
+      height: 10,
+      textWidth: 80 + ((i * 53) % 200),
+    }
+  })
+  const mk = () =>
+    withNameLabel(
+      makeFeatureData({ features: specs }),
+      specs.map(s => ({
+        featureId: s.featureId,
+        minX: s.startBp,
+        maxX: s.endBp,
+        textWidth: s.textWidth,
+      })),
+    )
+  const keys = new Map([[0, 'v:ctgA']])
+  const pitchY = 10
+  const oneRow =
+    Math.ceil((10 + LAYOUT_Y_PADDING + LABEL_FONT_SIZE) / pitchY) * pitchY
+
+  // zoom out -> all the way in -> back out to the start, chained through one memo
+  const memo = createIncrementalLayout()
+  const path = [16, 8, 4, 2, 1, 2, 4, 8, 16]
+  let last: FeatureDataResult | undefined
+  for (const bpPerPx of path) {
+    last = memo(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(0)!
+    expect(hasGlyphOverlap(last)).toBe(false)
+  }
+
+  // After the round trip, the chained layout is no sparser than a from-scratch
+  // layout at the returned zoom by more than one row.
+  const freshAtEnd = computeLaidOutData(
+    new Map([[0, mk()]]),
+    incInputs(keys, 16),
+  ).get(0)!
+  expect(height(last!)).toBeLessThanOrEqual(height(freshAtEnd) + oneRow)
+})
+
 test('incremental: adding a new region does not move features in existing regions', () => {
   const a = makeFeatureData({
     features: [

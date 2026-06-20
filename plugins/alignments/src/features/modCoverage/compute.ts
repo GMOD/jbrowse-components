@@ -3,10 +3,7 @@ import { packAbgr } from '@jbrowse/core/util/colorBits'
 import { calculateModificationCounts } from '../../shared/calculateModificationCounts.ts'
 
 import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
-import type {
-  MismatchData,
-  ModificationEntry,
-} from '../../shared/webglRpcTypes.ts'
+import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 
 interface ModificationColorEntry {
   r: number
@@ -58,25 +55,22 @@ function compareModEntries(
 
 export function computeModificationCoverage(
   modifications: ModificationEntry[],
-  mismatches: MismatchData[],
+  // Per-strand read-base pileup at modified positions (computeReadBaseCounts) —
+  // the modifiable/detectable denominator, counted from the reads' own bases,
+  // not a reference sequence. Mirrors IGV's DenseAlignmentCounts.
+  baseCounts: ReadonlyMap<number, StrandBaseCounts>,
   regionStart: number,
   coverage: {
     depths: Float32Array
     maxDepth: number
     startPos: number
-    fwdDepths: Float32Array | undefined
-    revDepths: Float32Array | undefined
   },
-  regionSequence: string | undefined,
-  regionSequenceStart: number,
   simplexModifications: ReadonlySet<string>,
 ) {
   const {
     depths,
     maxDepth: regionMaxDepth,
     startPos: depthStartOffset,
-    fwdDepths,
-    revDepths,
   } = coverage
   if (modifications.length === 0) {
     return {
@@ -86,34 +80,6 @@ export function computeModificationCoverage(
       colors: new Uint32Array(0),
       relDepths: new Float32Array(0),
       count: 0,
-    }
-  }
-
-  // The simplex denominator is computed from per-strand base counts, which the
-  // mod-coverage path always supplies (trackStrands is enabled whenever
-  // methylation/modification coloring is on). Treat their absence as a bug
-  // rather than silently falling back to a strand-blind count that would drop
-  // reverse-strand simplex calls.
-  if (!fwdDepths || !revDepths) {
-    throw new Error('modification coverage requires per-strand depths')
-  }
-
-  const snpByPosition = new Map<number, StrandBaseCounts>()
-  for (const mm of mismatches) {
-    if (mm.position < regionStart) {
-      continue
-    }
-    let entry = snpByPosition.get(mm.position)
-    if (!entry) {
-      entry = {}
-      snpByPosition.set(mm.position, entry)
-    }
-    const base = String.fromCharCode(mm.base)
-    entry[base] ??= { fwd: 0, rev: 0 }
-    if (mm.strand === 1) {
-      entry[base].fwd++
-    } else {
-      entry[base].rev++
     }
   }
 
@@ -170,31 +136,9 @@ export function computeModificationCoverage(
       continue
     }
 
-    const refbase = regionSequence
-      ? regionSequence[position - regionSequenceStart]!.toUpperCase()
-      : 'N'
-
-    // Copy the SNP strand counts and tally their per-strand totals in one pass;
-    // every non-SNP read shows the reference base, so the leftover fwd/rev depth
-    // is attributed to refbase. This is the single source for both the modifiable
-    // and detectable denominators (the strand-blind count is just fwd + rev).
-    // SNP bases never collide with refbase (a SNP is by definition a non-ref
-    // base), so the refbase entry below is always fresh.
-    const strandBaseCounts: StrandBaseCounts = {}
-    let snpFwd = 0
-    let snpRev = 0
-    const snpStrandBaseCounts = snpByPosition.get(position)
-    if (snpStrandBaseCounts) {
-      for (const base in snpStrandBaseCounts) {
-        const sc = snpStrandBaseCounts[base]!
-        strandBaseCounts[base] = { fwd: sc.fwd, rev: sc.rev }
-        snpFwd += sc.fwd
-        snpRev += sc.rev
-      }
-    }
-    const refFwd = Math.max(0, (fwdDepths[binIdx] ?? 0) - snpFwd)
-    const refRev = Math.max(0, (revDepths[binIdx] ?? 0) - snpRev)
-    strandBaseCounts[refbase] = { fwd: refFwd, rev: refRev }
+    // Per-strand counts of the actual read bases at this position — the
+    // modifiable/detectable denominator, straight from the reads (no reference).
+    const strandBaseCounts = baseCounts.get(position) ?? {}
 
     let yOffset = 0
     const orderedEntries = [...colorMap.values()].sort(compareModEntries)

@@ -118,5 +118,16 @@ export function migrateBasicSnapshot(
   set('displayMode', trackDisplayMode)
   set('displayDirectionalChevrons', trackDisplayDirectionalChevrons)
 
-  return { ...rest, ...migrated }
+  const result = { ...rest, ...migrated }
+  // [snap-trace] this preProcessSnapshot runs on every canvas display restore.
+  // If `type` is missing in the output, the display union can't dispatch and
+  // the display gets dropped -> `displays[0] undefined`.
+  // eslint-disable-next-line no-console
+  console.log('[snap-trace] migrateBasicSnapshot', {
+    inType: snap.type,
+    outType: result.type,
+    inKeys: Object.keys(snap),
+    outKeys: Object.keys(result),
+  })
+  return result
 }

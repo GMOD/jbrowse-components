@@ -39,12 +39,7 @@ export const wiggleConfigSchemaFields = {
   },
   autoscale: {
     type: 'stringEnum',
-    model: types.enumeration('Autoscale type', [
-      'local',
-      'global',
-      'globalsd',
-      'localsd',
-    ]),
+    model: types.enumeration('Autoscale type', ['local', 'localsd']),
     defaultValue: 'local',
     description: 'Autoscale type',
   },
@@ -52,7 +47,7 @@ export const wiggleConfigSchemaFields = {
     type: 'number',
     defaultValue: 3,
     description:
-      'Number of standard deviations to use for autoscale types globalsd or localsd',
+      'Number of standard deviations to use for the localsd autoscale type',
     advanced: true,
   },
   scatterPointSize: {

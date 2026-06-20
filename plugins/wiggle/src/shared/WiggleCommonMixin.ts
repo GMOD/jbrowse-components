@@ -49,15 +49,11 @@ export function WiggleCommonMixin(extraKeys: string[] = []) {
             data: source,
           }))
         })
-        const allEntries = [...self.rpcDataMap.values()].flatMap(regionData =>
-          regionData.sources.map(source => ({ data: source })),
-        )
         return computeAutoscaleDomain(
           self.autoscaleType,
           self.summaryScoreMode,
           numStdDev,
           visibleEntries,
-          allEntries,
         )
       },
     }))

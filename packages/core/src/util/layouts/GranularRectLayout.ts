@@ -240,10 +240,16 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private pTotalHeight: number
 
+  // When true, addRect honors its `preferredRow` argument (a feature's row from
+  // a previous layout), keeping a feature's Y steady across small layout
+  // changes. See addRect for the bounded-drift rule that caps sparsity.
+  private stableSeeding: boolean
+
   /**
    * pitchX - layout grid pitch in the X direction
    * pitchY - layout grid pitch in the Y direction
    * maxHeight - maximum layout height, default Infinity (no max)
+   * stableSeeding - honor addRect's preferredRow to keep feature Y stable
    */
   constructor({
     pitchX = 10,
@@ -251,18 +257,21 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     maxHeight = 10000,
     hardRowLimit = 10000,
     displayMode = 'normal',
+    stableSeeding = false,
   }: {
     pitchX?: number
     pitchY?: number
     maxHeight?: number
     displayMode?: string
     hardRowLimit?: number
+    stableSeeding?: boolean
   } = {}) {
     this.pitchX = pitchX
     this.pitchY = pitchY
     this.hardRowLimit = hardRowLimit
     this.maxHeightReached = false
     this.displayMode = displayMode
+    this.stableSeeding = stableSeeding
 
     // reduce the pitchY to try and pack the features tighter
     if (this.displayMode === 'compact') {
@@ -279,9 +288,11 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
-   * @param startingRow - Optional hint (in pixels) for where to start searching for free space.
-   *  Use when you know features overlap (e.g., sorted reads at the same position).
-   *  The hint is only used as a starting point; collision detection still verifies.
+   * @param preferredRow - Optional row (in pixels) from a previous layout. The
+   *  feature keeps this row when it is still collision-free and within
+   *  `stabilitySlackPx` of the compact first-fit row, so its Y stays steady
+   *  across small layout changes (e.g. labels shrinking on zoom). Otherwise the
+   *  normal compact first-fit row is used.
    */
   addRect(
     id: string,
@@ -290,7 +301,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     height: number,
     data?: T,
     serializableData?: T,
-    startingRow?: number,
+    preferredRow?: number,
   ): number | null {
     const pitchX = this.pitchX
     const pitchY = this.pitchY
@@ -336,11 +347,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     // Features starting at maxHeight or beyond are filtered out, but features
     // that start below maxHeight and extend past it are allowed
     const maxTop = this.maxHeight
-    // Use startingRow hint if provided (in pixels), convert to pitch rows
-    let top =
-      startingRow !== undefined
-        ? Math.min(Math.floor(startingRow / pitchY), maxTop)
-        : 0
+    let top = 0
 
     if (this.displayMode !== 'collapse') {
       // OPTIMIZATION: Inline collision checking for hot path
@@ -413,6 +420,24 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
         this.maxHeightReached = true
         return null
       }
+
+      // Stable seeding: prefer the feature's row from the previous layout when
+      // it is still collision-free and sits no more than its own height below
+      // the compact first-fit row found above. This absorbs the ±1-row jitter
+      // that small layout changes (e.g. labels shrinking on zoom) cause, while
+      // the own-height cap keeps a feature from floating far above its compact
+      // row, so the layout never goes more than ~1 row sparse.
+      if (this.stableSeeding && preferredRow !== undefined) {
+        const pref = Math.floor(preferredRow / pitchY)
+        if (
+          pref > top &&
+          pref <= maxTop &&
+          pref - top <= pHeight &&
+          this.isRangeClearAt(pLeft, pRight, pHeight, pref)
+        ) {
+          top = pref
+        }
+      }
     }
 
     rectangle.top = top
@@ -420,6 +445,26 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     this.rectangles.set(id, rectangle)
     this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
     return top * pitchY
+  }
+
+  // Whether a rect of the given pitch extents fits at `top` with no collision.
+  // Used only on the stable-seeding path, so a per-row method call is fine (the
+  // hot first-fit scan in addRect stays inlined).
+  private isRangeClearAt(
+    pLeft: number,
+    pRight: number,
+    pHeight: number,
+    top: number,
+  ) {
+    const bitmap = this.bitmap
+    const maxY = top + pHeight
+    for (let y = top; y < maxY; y += 1) {
+      const row = bitmap[y]
+      if (row && !row.isRangeClear(pLeft, pRight)) {
+        return false
+      }
+    }
+    return true
   }
 
   collides(rect: Rectangle<T>, top: number) {

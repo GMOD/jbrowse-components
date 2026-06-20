@@ -46,6 +46,13 @@ import {
 } from './components/hitTesting.ts'
 import { createIncrementalLayout } from './layout.ts'
 import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
+import {
+  canMorph,
+  captureFeatureTops,
+  easeInOutCubic,
+  interpolateYData,
+  maxBottom,
+} from './yMorph.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -93,6 +100,24 @@ type LoadedFeatureData = FeatureDataResult & {
 
 export function getView(self: IAnyStateTreeNode): LGV {
   return getContainingView(self) as LGV
+}
+
+const morphClockMs = () =>
+  typeof performance === 'undefined' ? 0 : performance.now()
+
+// Only animate where a frame clock exists. NOTE: the prefers-reduced-motion
+// gate is temporarily disabled for testing — your machine reports
+// reduce=true, which is why morphs were skipped. Restore the gate (commented
+// below) before merge so reduced-motion users get instant snaps.
+function morphAllowed() {
+  if (typeof requestAnimationFrame !== 'function') {
+    return false
+  }
+  // return !(
+  //   typeof matchMedia === 'function' &&
+  //   matchMedia('(prefers-reduced-motion: reduce)').matches
+  // )
+  return true
 }
 
 export type { Region } from '@jbrowse/core/util'
@@ -228,6 +253,23 @@ export default function baseStateModelFactory(
         // O(N). The volatile holds a stable reference; mutating its internal
         // cache is invisible to MobX, so reading it in the computed is safe.
         incrementalLayout: createIncrementalLayout(),
+        /**
+         * #volatile
+         */
+        // Feature-Y transition state. While `morphFromTops` is set,
+        // `renderDataMap` eases each feature from its previous row (id ->
+        // topPx here) toward its `laidOutDataMap` row by `morphProgress` (0->1,
+        // driven by a rAF clock). Render-only — hit-test and layout always read
+        // the destination `laidOutDataMap`.
+        morphFromTops: undefined as Map<string, number> | undefined,
+        /**
+         * #volatile
+         */
+        morphProgress: 1,
+        morphStartMs: 0,
+        // Height of the layout being animated away from; `maxY` holds at the
+        // taller of this and the destination during a morph (anti-clip).
+        morphFromMaxY: 0,
       }))
       .views(self => ({
         /**
@@ -689,6 +731,58 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // What the canvas + DOM overlays actually draw. Identical to
+        // `laidOutDataMap` except during a row re-pack, when feature Y eases
+        // from the previous layout to the new one (see yMorph). Returns the
+        // same object reference as `laidOutDataMap` when idle, so consumers
+        // don't re-upload/re-render unless an animation is in flight.
+        get renderDataMap(): Map<number, FeatureDataResult> {
+          const from = self.morphFromTops
+          if (from === undefined) {
+            return self.laidOutDataMap
+          }
+          return interpolateYData(
+            from,
+            self.laidOutDataMap,
+            easeInOutCubic(self.morphProgress),
+          )
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
+        // Start the feature-Y transition from `fromTops` (each feature's row in
+        // the layout being left) toward the current `laidOutDataMap`. The rAF
+        // clock that advances `morphProgress` lives in FeatureComponent (it
+        // observes `morphFromTops`). Morphs (300ms) finish before the next
+        // layout change (coarseBpPerPx is debounced 500ms), so no retarget.
+        beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
+          // eslint-disable-next-line no-console
+          console.log('[yMorph] begin', { features: fromTops.size })
+          self.morphFromTops = fromTops
+          self.morphFromMaxY = fromMaxY
+          self.morphStartMs = morphClockMs()
+          self.morphProgress = 0
+        },
+        /**
+         * #action
+         */
+        setMorphProgress(t: number) {
+          self.morphProgress = Math.min(1, Math.max(0, t))
+        },
+        /**
+         * #action
+         */
+        endYMorph() {
+          self.morphFromTops = undefined
+          self.morphProgress = 1
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         */
         get maxY() {
           let max = 0
           for (const data of self.laidOutDataMap.values()) {
@@ -698,7 +792,13 @@ export default function baseStateModelFactory(
               }
             }
           }
-          return max
+          // During a Y morph hold the height at the taller of the old/new
+          // layout so features animating up from a deeper row aren't clipped at
+          // the bottom; it settles to the destination height when the morph
+          // ends. Constant across the morph, so no per-frame reflow.
+          return self.morphFromTops === undefined
+            ? max
+            : Math.max(max, self.morphFromMaxY)
         },
 
         /**
@@ -928,15 +1028,18 @@ export default function baseStateModelFactory(
           >()
           self.attachRenderingBackend<CanvasFeatureRenderingBackend>(backend, {
             upload: b => {
-              syncRegions(b, self.laidOutDataMap)
+              // renderDataMap === laidOutDataMap when idle; during a Y morph it
+              // yields fresh per-frame region objects, so syncRegions re-uploads
+              // the interpolated rows each frame (and once more on settle).
+              syncRegions(b, self.renderDataMap)
             },
             render: b => {
-              if (self.laidOutDataMap.size === 0) {
+              if (self.renderDataMap.size === 0) {
                 return false
               }
               b.renderBlocks(
                 self.renderBlocks,
-                self.laidOutDataMap,
+                self.renderDataMap,
                 self.renderState,
               )
               return true
@@ -1482,6 +1585,69 @@ export default function baseStateModelFactory(
                   self.clearHover()
                 },
                 { name: 'CanvasClearHoverOnViewportChange' },
+              ),
+            )
+
+            // Drive the feature-Y transition. When laidOutDataMap re-packs at
+            // the same vertical scale (a zoom step — not a label/mode change,
+            // which alters row heights), animate from the previous rows to the
+            // new ones; otherwise snap. Compares to the prior map kept in
+            // closure so the trigger is the layout change itself.
+            let prevLayout: Map<number, FeatureDataResult> | undefined
+            let prevMode = self.displayMode
+            let prevShowLabels = self.showLabels
+            let prevShowDescriptions = self.effectiveShowDescriptions
+            addDisposer(
+              self,
+              autorun(
+                () => {
+                  // Track initialized so this re-runs once the view is ready;
+                  // laidOutDataMap is empty until then, so bail before touching
+                  // any layout state.
+                  if (!getView(self).initialized) {
+                    return
+                  }
+                  const current = self.laidOutDataMap
+                  const mode = self.displayMode
+                  const showLabels = self.showLabels
+                  const showDescriptions = self.effectiveShowDescriptions
+                  const scaleUnchanged =
+                    mode === prevMode &&
+                    showLabels === prevShowLabels &&
+                    showDescriptions === prevShowDescriptions
+                  const from = prevLayout
+                  prevLayout = current
+                  prevMode = mode
+                  prevShowLabels = showLabels
+                  prevShowDescriptions = showDescriptions
+                  // Not a real layout-to-layout transition (first data, an
+                  // empty map on nav) — nothing to morph or snap.
+                  if (
+                    from === undefined ||
+                    from === current ||
+                    from.size === 0 ||
+                    current.size === 0
+                  ) {
+                    return
+                  }
+                  const fromTops = captureFeatureTops(from)
+                  if (
+                    scaleUnchanged &&
+                    morphAllowed() &&
+                    canMorph(fromTops, current)
+                  ) {
+                    self.beginYMorph(fromTops, maxBottom(from))
+                  } else {
+                    // eslint-disable-next-line no-console
+                    console.log('[yMorph] skip', {
+                      scaleUnchanged,
+                      allowed: morphAllowed(),
+                      canMorph: canMorph(fromTops, current),
+                    })
+                    self.endYMorph()
+                  }
+                },
+                { name: 'CanvasYMorph' },
               ),
             )
           },

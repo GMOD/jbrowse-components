@@ -113,7 +113,9 @@ export function findBrokenDocLinks({
   }
   const broken: BrokenLink[] = []
   const linkRe = /https:\/\/jbrowse\.org\/jb2\/docs\/([A-Za-z0-9_/]+)/g
-  const files = contentDirs.flatMap(d => listFilesRecursive(d, ['.md', '.astro']))
+  const files = contentDirs.flatMap(d =>
+    listFilesRecursive(d, ['.md', '.astro']),
+  )
   for (const file of files) {
     const text = fs.readFileSync(file, 'utf8')
     for (const m of text.matchAll(linkRe)) {

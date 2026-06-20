@@ -113,14 +113,20 @@ describe('statusProgressLabel', () => {
 describe('updateStatus', () => {
   it('sets the label, runs fn, then clears with an empty string', async () => {
     const seen: RpcStatus[] = []
-    const result = await updateStatus('Working', s => seen.push(s), () => 42)
+    const result = await updateStatus(
+      'Working',
+      s => seen.push(s),
+      () => 42,
+    )
     expect(result).toBe(42)
     expect(seen).toEqual(['Working', ''])
   })
   it('awaits an async fn', async () => {
     const seen: RpcStatus[] = []
-    const result = await updateStatus('Working', s => seen.push(s), () =>
-      Promise.resolve('done'),
+    const result = await updateStatus(
+      'Working',
+      s => seen.push(s),
+      () => Promise.resolve('done'),
     )
     expect(result).toBe('done')
     expect(seen).toEqual(['Working', ''])
@@ -133,10 +139,14 @@ describe('updateStatus', () => {
 describe('downloadStatus', () => {
   it('labels the phase, hands fn a reporter, and clears when done', async () => {
     const seen: RpcStatus[] = []
-    const result = await downloadStatus('Downloading index', s => seen.push(s), onProgress => {
-      onProgress!(30, 60)
-      return 'ok'
-    })
+    const result = await downloadStatus(
+      'Downloading index',
+      s => seen.push(s),
+      onProgress => {
+        onProgress!(30, 60)
+        return 'ok'
+      },
+    )
     expect(result).toBe('ok')
     expect(seen).toEqual([
       'Downloading index',
@@ -148,9 +158,13 @@ describe('downloadStatus', () => {
     // generic-filehandle2 omits total when the response has no Content-Length:
     // the bar stays a spinner rather than rendering a bogus fraction
     const seen: RpcStatus[] = []
-    await downloadStatus('Downloading index', s => seen.push(s), onProgress => {
-      onProgress!(1024)
-    })
+    await downloadStatus(
+      'Downloading index',
+      s => seen.push(s),
+      onProgress => {
+        onProgress!(1024)
+      },
+    )
     expect(seen).toEqual(['Downloading index', 'Downloading index', ''])
     expect(seen.every(s => typeof s === 'string')).toBe(true)
   })

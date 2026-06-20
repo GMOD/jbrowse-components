@@ -95,7 +95,12 @@ describe('connectionEndpoints', () => {
   })
 
   it('split inversion joins the breakpoint edges, exposing real strands', () => {
-    expect(conn(1, -1, true)).toMatchObject({ bp1: 200, bp2: 400, s1: 1, s2: -1 })
+    expect(conn(1, -1, true)).toMatchObject({
+      bp1: 200,
+      bp2: 400,
+      s1: 1,
+      s2: -1,
+    })
   })
 })
 

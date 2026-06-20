@@ -2,20 +2,21 @@ import { abgrBlue, abgrRed } from '@jbrowse/core/util/colorBits'
 
 import { computeModificationCoverage } from './compute.ts'
 
+import type { StrandBaseCounts } from '../../shared/calculateModificationCounts.ts'
 import type { ModificationEntry } from '../../shared/webglRpcTypes.ts'
 
-// One C position, 10 forward reads, no mismatches → refbase C count = 10.
+// One C position, 10 forward C reads → modifiable C count = 10 (read-base
+// pileup, the IGV-style denominator, computed upstream by computeReadBaseCounts).
 const POS = 10
 const coverage = {
   depths: new Float32Array(20).fill(0),
   maxDepth: 10,
   startPos: 0,
-  fwdDepths: new Float32Array(20).fill(0),
-  revDepths: new Float32Array(20).fill(0),
 }
 coverage.depths[POS] = 10
-coverage.fwdDepths[POS] = 10
-const regionSequence = `${'N'.repeat(POS)}C`
+const baseCounts = new Map<number, StrandBaseCounts>([
+  [POS, { C: { fwd: 10, rev: 0 } }],
+])
 
 function modEntry(over: Partial<ModificationEntry>): ModificationEntry {
   return {
@@ -37,15 +38,7 @@ const red = modEntry({ r: 255, b: 0, prob: 1, noMod: false })
 const blue = modEntry({ r: 0, b: 255, prob: 0.8, noMod: true })
 
 function run(mods: ModificationEntry[]) {
-  return computeModificationCoverage(
-    mods,
-    [],
-    0,
-    coverage,
-    regionSequence,
-    0,
-    new Set(),
-  )
+  return computeModificationCoverage(mods, baseCounts, 0, coverage, new Set())
 }
 
 test('5mC (red) always stacks below unmodified (blue) regardless of input order', () => {

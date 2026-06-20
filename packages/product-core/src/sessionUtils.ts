@@ -75,9 +75,55 @@ function walkChildOrDrop(
     filterSessionInPlace(get(), childType)
     return true
   } catch (e) {
-    console.error(e)
+    // [snap-trace] surface WHAT is being dropped, not just the error. A track
+    // or display dropped here is the prime suspect for `displays[0] undefined`.
+    let dropped = 'unknown'
+    try {
+      dropped = JSON.stringify(get())
+    } catch {
+      /* node may be unwalkable */
+    }
+
+    console.warn(
+      `[snap-trace] walkChildOrDrop DROPPING child (childType=${childType.name})`,
+      {
+        error: `${e}`,
+        dropped,
+        // full stack so we can see the getter chain that read view.width
+        stack: e instanceof Error ? e.stack : undefined,
+      },
+    )
     return false
   }
+}
+
+// [snap-trace] Compact summary of a session snapshot's view→track→display
+// structure, for logging both ends of the save/restore round-trip.
+export function summarizeSessionTracks(snap: unknown): string {
+  const s = snap as
+    | { views?: { type?: string; tracks?: unknown[] }[] }
+    | undefined
+  const views = s?.views ?? []
+  return views
+    .map((v, vi) => {
+      const tracks = (v.tracks ?? []) as {
+        type?: string
+        configuration?: unknown
+        displays?: { type?: string }[]
+      }[]
+      const trackSummary = tracks
+        .map(t => {
+          const displays = t.displays ?? []
+          const conf =
+            typeof t.configuration === 'string' ? t.configuration : '?'
+          return `${conf}[${t.type}]{displays:${displays.length}:${displays
+            .map(d => d.type)
+            .join(',')}}`
+        })
+        .join(' ')
+      return `view#${vi}(${v.type}) tracks=${tracks.length} ${trackSummary}`
+    })
+    .join(' | ')
 }
 
 // A file location that will not open on jbrowse-web: a desktop LocalPathLocation
