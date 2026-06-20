@@ -159,6 +159,8 @@ export function CoverageTooltipContents({
   const {
     position,
     depth,
+    fwdDepth,
+    revDepth,
     interbaseDepth,
     snps,
     deletions,
@@ -176,8 +178,11 @@ export function CoverageTooltipContents({
       )
     : []
   const hasModifications = modEntries.length > 0
+  const hasTotalStrands = fwdDepth !== undefined && revDepth !== undefined
   const hasStrands =
-    hasModifications || snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0)
+    hasModifications ||
+    hasTotalStrands ||
+    snpEntries.some(([, d]) => d.fwd > 0 || d.rev > 0)
 
   return (
     <table>
@@ -197,7 +202,11 @@ export function CoverageTooltipContents({
           <td>Total</td>
           <td>{depth}</td>
           {hasModifications && <td />}
-          {hasStrands && <td />}
+          {hasStrands && (
+            <td>
+              {hasTotalStrands ? `${fwdDepth}(+) ${revDepth}(-)` : null}
+            </td>
+          )}
         </tr>
         {hasModifications
           ? modEntries.map(([modKey, data]) => {

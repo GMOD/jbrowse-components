@@ -22,6 +22,8 @@ export function buildCoverageResultFields(
   // the second RPC reply.
   return {
     coverageDepths: coverage.depths,
+    coverageFwdDepths: coverage.fwdDepths ?? new Float32Array(0),
+    coverageRevDepths: coverage.revDepths ?? new Float32Array(0),
     coverageMaxDepth: coverage.maxDepth,
     coverageStartPos: coverage.startPos,
 

@@ -72,12 +72,13 @@ export async function runCoveragePipeline({
   stopTokenCheck: StopTokenChecker
 }) {
   const { start: regionStart, end: regionEnd } = region
-  // Total depth only — mod coverage now derives its per-strand denominator from
-  // read bases (modBaseCounts), so the old per-strand depth sweep is unused.
+  // Per-strand depth sweep (fwd/revDepths) backs the coverage tooltip's
+  // strand breakdown; the totals are also where a stranded-coverage histogram
+  // would read from.
   const coverage = await updateStatus(
     'Computing coverage',
     statusCallback,
-    async () => computeCoverage(features, gaps, regionStart, regionEnd),
+    async () => computeCoverage(features, gaps, regionStart, regionEnd, true),
   )
 
   checkStopToken2(stopTokenCheck)

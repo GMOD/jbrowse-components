@@ -210,6 +210,10 @@ export function downsampleMinMax(
 export interface CoverageTooltipBin {
   position: number
   depth: number
+  // Total depth split by read strand. Undefined for callers that don't sweep
+  // per-strand coverage (e.g. MAF).
+  fwdDepth?: number
+  revDepth?: number
   interbaseDepth: number
   snps: Record<string, { count: number; fwd: number; rev: number }>
   deletions?: {

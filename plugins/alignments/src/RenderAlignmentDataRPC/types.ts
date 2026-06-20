@@ -114,6 +114,10 @@ export interface PileupDataResult {
   // Coverage data - depths[i] covers [coverageStartPos + i, coverageStartPos + i + 1)
   // (bin size is always 1bp). Coverage may extend beyond the requested region.
   coverageDepths: Float32Array
+  // Per-strand depths parallel to coverageDepths (forward/reverse read strand).
+  // Back the coverage tooltip's strand breakdown; empty when no features.
+  coverageFwdDepths: Float32Array
+  coverageRevDepths: Float32Array
   coverageMaxDepth: number
   coverageStartPos: number // absolute genomic bp where coverage depths[0] begins
   // Pre-packed GPU buffer for PASS_COVERAGE (worker-built, zero-offset

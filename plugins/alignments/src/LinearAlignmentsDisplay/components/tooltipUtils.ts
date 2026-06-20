@@ -170,6 +170,13 @@ export function getTooltipBin(
   }
   const binIdx = Math.floor(position - blockRpcData.coverageStartPos)
   const depth = blockRpcData.coverageDepths[binIdx] ?? 0
+  const hasStrandDepths = blockRpcData.coverageFwdDepths.length > 0
+  const fwdDepth = hasStrandDepths
+    ? (blockRpcData.coverageFwdDepths[binIdx] ?? 0)
+    : undefined
+  const revDepth = hasStrandDepths
+    ? (blockRpcData.coverageRevDepths[binIdx] ?? 0)
+    : undefined
 
   const snps = countSnpsAtPosition(position, blockRpcData)
 
@@ -281,6 +288,8 @@ export function getTooltipBin(
   return {
     position,
     depth,
+    fwdDepth,
+    revDepth,
     interbaseDepth,
     snps,
     interbase,

@@ -100,6 +100,8 @@ function makePileupData(opts: {
     interbaseSequences: [],
     interbaseFrequencies: new Uint8Array(0),
     coverageDepths: new Float32Array(0),
+    coverageFwdDepths: new Float32Array(0),
+    coverageRevDepths: new Float32Array(0),
     coverageMaxDepth: 0,
     coverageStartPos: 0,
     coveragePackedBuffer: new ArrayBuffer(0),
