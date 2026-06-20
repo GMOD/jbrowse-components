@@ -27,7 +27,7 @@ export async function testLinkedReadsDisplay({
   timeout?: number
 }) {
   const user = userEvent.setup()
-  const { view, findByTestId, findByText } = await createView()
+  const { view, findByTestId, findAllByTestId, findByText } = await createView()
   const opts = [{}, { timeout }] as const
 
   await view.navToLocString(loc)
@@ -41,4 +41,10 @@ export async function testLinkedReadsDisplay({
   const display = await findByTestId('pileup-display-done', ...opts)
   await new Promise(res => setTimeout(res, 2000))
   expectCanvasMatch(findCanvasIn(display))
+
+  // Bezier connections render in an SVG overlay, not the canvas, so the snapshot
+  // above can't see them — assert the overlay actually drew arc paths.
+  if (displayMode === 'bezier') {
+    expect((await findAllByTestId('pileup-bezier-arc', ...opts)).length).toBeGreaterThan(0)
+  }
 }

@@ -47,6 +47,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
 
   return (
     <svg
+      data-testid="pileup-bezier-overlay"
       style={{
         position: 'absolute',
         top: 0,
@@ -63,6 +64,7 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
         return (
           <path
             key={arcId}
+            data-testid="pileup-bezier-arc"
             d={arc.d}
             stroke={arc.stroke}
             strokeWidth={isSelected ? 5 : 1}
