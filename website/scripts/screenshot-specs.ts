@@ -739,6 +739,64 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 360,
   },
 
+  // Collapse introns + RNA-seq sashimi: BRCA1 (hg38) with the MANE transcript
+  // and a direct-RNA nanopore track. Right-clicking the gene and choosing
+  // "Collapse introns" reshapes the view to the exons placed side by side; the
+  // sashimi arcs from the RNA-seq splice junctions then connect adjacent exons.
+  {
+    mode: 'url',
+    name: 'gene_track_collapse_introns',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr17:43,044,295-43,125,483',
+          tracks: [
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              // one clean transcript per gene so the BRCA1 glyph + label is tidy
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+            'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
+          ],
+        },
+      ],
+    }),
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 90000,
+    settleMs: 6000,
+    viewportHeight: 600,
+    hideTooltip: true,
+    // remote nanopore RNA-seq: pileup/sashimi positions jitter run-to-run, so
+    // allow more drift before re-committing the PNG
+    diffThreshold: 0.03,
+    actions: [
+      // right-click the gene's floating-label DOM element (not a raw pixel) —
+      // robust and exercises the label's real context-menu affordance
+      { type: 'rightclick', text: 'BRCA1' },
+      { type: 'waitForText', text: 'Collapse introns' },
+      { type: 'delay', ms: 600 },
+      { type: 'click', text: 'Collapse introns' },
+      { type: 'waitForText', text: 'Replace current view' },
+      { type: 'delay', ms: 600 },
+      { type: 'click', text: 'Replace current view' },
+      { type: 'waitForText', text: 'Replace current view', hidden: true },
+      // let the reshaped view kick off its refetch, then wait out the remote
+      // RNA download so the sashimi arcs are present in the capture
+      { type: 'delay', ms: 2000 },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="loading-overlay"]',
+        hidden: true,
+      },
+      { type: 'delay', ms: 3000 },
+    ],
+  },
+
   // Location-search autocomplete: typing a gene name into the search box surfaces
   // matching features from the assembly's text-search index. Uses config_demo's
   // hg19 (whose trix index covers RefSeq/Gencode names) searching "brca".

@@ -34,6 +34,12 @@ exons across all transcripts is used; you can instead pick a single transcript
 from the dialog. This makes it easy to read a gene's coding sequence — or inspect
 reads spanning it — without scrolling past large introns.
 
+This pairs especially well with an RNA-seq track: the spliced reads draw
+**sashimi arcs** connecting splice donors and acceptors, and with the introns
+collapsed those arcs span directly between the adjacent exons.
+
+<Figure caption="BRCA1 (hg38) with its introns collapsed, so the exons sit side by side. The NA12878 direct-RNA nanopore track below shows per-exon coverage and sashimi arcs joining the spliced exon junctions." src="/img/gene_track_collapse_introns.png" />
+
 ### Display density and labels
 
 Several track-menu toggles tune how gene glyphs are drawn:
