@@ -83,6 +83,7 @@ const DEFAULTS = {
   coverageHeight: 45,
   showConservation: false,
   conservationHeight: 40,
+  showRowIdentity: false,
 } as const
 
 /**
@@ -210,6 +211,15 @@ export default function stateModelFactory(
         conservationHeight: types.stripDefault(
           types.number,
           DEFAULTS.conservationHeight,
+        ),
+        /**
+         * #property
+         * Show each species' percent identity to the reference (over the
+         * visible region) next to its row label. Off by default.
+         */
+        showRowIdentity: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showRowIdentity,
         ),
       }),
     )
@@ -343,6 +353,12 @@ export default function stateModelFactory(
        */
       setShowConservation(arg: boolean) {
         self.showConservation = arg
+      },
+      /**
+       * #action
+       */
+      setShowRowIdentity(arg: boolean) {
+        self.showRowIdentity = arg
       },
       /**
        * #action
@@ -656,6 +672,62 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       /**
+       * #getter
+       * Per-row percent identity to the reference (0..1), indexed to align with
+       * `sources`: each row's matching vs classifiable bases summed across the
+       * visible regions, then divided. `undefined` where the row has no
+       * classifiable base in view (or it's the reference row, which is excluded
+       * upstream). Derived from fetched data only — deliberately kept out of
+       * `rpcProps`/`sources` so it can't drive a refetch loop.
+       */
+      get rowIdentities(): (number | undefined)[] {
+        const { sources } = self
+        const view = getContainingView(self) as LinearGenomeViewModel
+        if (sources && view.initialized) {
+          const n = sources.length
+          const matches = new Float64Array(n)
+          const classifiable = new Float64Array(n)
+          // One coverage payload per displayedRegionIndex — dedupe so a region
+          // spanning several content blocks isn't counted multiple times.
+          const seen = new Set<number>()
+          for (const b of view.dynamicBlocks.contentBlocks) {
+            const idx = b.displayedRegionIndex
+            if (idx !== undefined && !seen.has(idx)) {
+              seen.add(idx)
+              const cov = self.rpcDataMap.get(idx)?.coverage
+              if (cov) {
+                const len = Math.min(n, cov.matchesPerRow.length)
+                for (let i = 0; i < len; i++) {
+                  matches[i]! += cov.matchesPerRow[i]!
+                  classifiable[i]! += cov.classifiablePerRow[i]!
+                }
+              }
+            }
+          }
+          return Array.from({ length: n }, (_, i) =>
+            classifiable[i]! > 0 ? matches[i]! / classifiable[i]! : undefined,
+          )
+        }
+        return []
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-row identity formatted as `"NN%"` for the row labels (aligned to
+       * `sources`), or undefined when the row-identity display is off. Rows with
+       * no classifiable base get undefined → no text.
+       */
+      get rowIdentityLabels(): (string | undefined)[] | undefined {
+        return self.showRowIdentity
+          ? self.rowIdentities.map(v =>
+              v === undefined ? undefined : `${Math.round(v * 100)}%`,
+            )
+          : undefined
+      },
+    }))
+    .views(self => ({
+      /**
        * #method
        * Resolve a hover hit on `rowIndex` at absolute genomic `bp` (uint32, per
        * worker-output convention): an aligned base (`cell`) or a bridged/empty
@@ -687,7 +759,11 @@ export default function stateModelFactory(
           return undefined
         }
         const source = sources[rowIndex]!
-        return { ...hit, sampleLabel: source.label ?? source.name }
+        return {
+          ...hit,
+          sampleLabel: source.label ?? source.name,
+          rowIdentity: self.rowIdentities[rowIndex],
+        }
       },
       /**
        * #method

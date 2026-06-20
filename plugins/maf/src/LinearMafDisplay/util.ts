@@ -16,7 +16,12 @@ export interface GenomicPosition {
   coord: number
 }
 
-export type MafHover = RowHit & { sampleLabel: string }
+export type MafHover = RowHit & {
+  sampleLabel: string
+  // This species' percent identity (0..1) to the reference over the visible
+  // region; undefined when unclassifiable or the row-identity display is off.
+  rowIdentity?: number
+}
 
 function strandStr(strand?: number) {
   return strand === -1 ? '-' : '+'

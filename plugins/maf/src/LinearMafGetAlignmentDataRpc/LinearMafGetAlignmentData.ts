@@ -206,6 +206,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
       region.start,
       region.end,
       refRowIndex,
+      rowOrder.length,
     )
 
     return { samples, treeNewick, regionData: { blocks, coverage } }

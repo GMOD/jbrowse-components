@@ -24,6 +24,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
+  showRowIdentity: boolean
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   clusterTree?: string
@@ -37,6 +38,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
+  setShowRowIdentity: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
@@ -133,6 +135,14 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           checked: self.showConservation,
           onClick: () => {
             self.setShowConservation(!self.showConservation)
+          },
+        },
+        {
+          label: 'Per-row identity %',
+          type: 'checkbox',
+          checked: self.showRowIdentity,
+          onClick: () => {
+            self.setShowRowIdentity(!self.showRowIdentity)
           },
         },
       ],

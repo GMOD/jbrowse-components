@@ -126,6 +126,7 @@ export async function renderSvg(
             sources={sources}
             rowHeight={rowHeight}
             labelOffset={labelOffset}
+            details={model.rowIdentityLabels}
           />
         ) : null}
       </g>

@@ -23,15 +23,23 @@ import type {
  *
  * `refRowIndex` (the reference assembly's display row) is forwarded to the
  * identity computation so the reference's self-match is excluded; `-1` when no
- * reference row is in the visible set.
+ * reference row is in the visible set. `nRows` (the display row count) sizes the
+ * per-row identity arrays.
  */
 export function buildMafCoverageRegion(
   blocks: MafBlock[],
   regionStart: number,
   regionEnd: number,
   refRowIndex = -1,
+  nRows?: number,
 ): MafCoverageRegion {
-  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd, refRowIndex)
+  const mafCov = computeMafCoverage(
+    blocks,
+    regionStart,
+    regionEnd,
+    refRowIndex,
+    nRows,
+  )
   const coverageForSnp = {
     depths: mafCov.depths,
     maxDepth: mafCov.maxDepth,
@@ -74,6 +82,8 @@ export function buildMafCoverageRegion(
     coverageStartPos: mafCov.startPos,
     coverageMaxDepth: mafCov.maxDepth,
     identityScores: mafCov.identity,
+    matchesPerRow: mafCov.matchesPerRow,
+    classifiablePerRow: mafCov.classifiablePerRow,
     mismatchPositions,
     mismatchBases,
     insertionPositions,
