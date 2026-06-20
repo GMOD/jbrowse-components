@@ -1,6 +1,7 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import {
   localStorageGetBoolean,
+  localStorageGetItem,
   localStorageGetNumber,
   localStorageSetBoolean,
   localStorageSetItem,
@@ -19,6 +20,20 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 const nonMetadataKeys = ['category', 'adapter', 'description'] as const
+
+const hiddenColumnsKey = 'facet-hiddenColumns'
+
+// Column names the user has hidden, persisted across sessions. Tolerant of a
+// corrupt/missing entry (falls back to none hidden).
+function readHiddenColumns(): string[] {
+  try {
+    const parsed: unknown = JSON.parse(localStorageGetItem(hiddenColumnsKey) ?? '[]')
+    return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : []
+  } catch (e) {
+    console.error(e)
+    return []
+  }
+}
 
 /**
  * #stateModel FacetedModel
@@ -130,6 +145,10 @@ export function facetedStateTreeF() {
        */
       setVisible(args: Record<string, boolean>) {
         self.visible = args
+        localStorageSetItem(
+          hiddenColumnsKey,
+          JSON.stringify(Object.keys(args).filter(k => !args[k])),
+        )
       },
     }))
     .views(self => ({
@@ -315,15 +334,17 @@ export function facetedStateTreeF() {
     }))
     .actions(self => ({
       afterAttach() {
+        const hidden = new Set(readHiddenColumns())
         addDisposer(
           self,
           autorun(
             function facetedVisibleAutorun() {
-              // Preserve user-hidden columns that still exist in the new field
-              // list; only default-show columns that are newly introduced.
+              // Preserve this session's visibility choices for columns that
+              // still exist; a newly-introduced column defaults to hidden if it
+              // was hidden in a previous session, otherwise visible.
               self.setVisible(
                 Object.fromEntries(
-                  self.fields.map(c => [c, self.visible[c] ?? true]),
+                  self.fields.map(c => [c, self.visible[c] ?? !hidden.has(c)]),
                 ),
               )
             },
