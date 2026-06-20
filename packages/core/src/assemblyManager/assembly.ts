@@ -115,6 +115,10 @@ async function loadRefNameMap(
       // stopToken intentionally not passed, fixes issues like #2221.
       // alternative fix #2540 was proposed but non-working currently
       stopToken: undefined,
+      // statusCallback IS forwarded (unlike stopToken): the data adapter's index
+      // download happens here during refname mapping (getRefNames -> setup), so
+      // this is the only place its "Downloading index" progress can surface.
+      statusCallback: options.statusCallback,
     },
     { timeout: 1000000 },
   )

@@ -18,6 +18,7 @@ export interface RpcRegistry {
       sequenceAdapter?: Record<string, unknown>
       assemblyName?: string
       stopToken?: StopToken
+      statusCallback?: StatusCallback
     }
     return: string[]
   }

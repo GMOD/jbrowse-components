@@ -2,6 +2,7 @@ import { isFeatureAdapter } from '../../data_adapters/BaseAdapter/index.ts'
 import { getAdapter } from '../../data_adapters/dataAdapterCache.ts'
 import RpcMethodType from '../../pluggableElementTypes/RpcMethodType.ts'
 
+import type { StatusCallback } from '../../util/progress.ts'
 import type { StopToken } from '../../util/stopToken.ts'
 
 export default class CoreGetRefNames extends RpcMethodType {
@@ -11,6 +12,7 @@ export default class CoreGetRefNames extends RpcMethodType {
     args: {
       sessionId: string
       stopToken?: StopToken
+      statusCallback?: StatusCallback
       adapterConfig: Record<string, unknown>
       assemblyName?: string
       sequenceAdapter?: Record<string, unknown>
