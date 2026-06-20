@@ -48,17 +48,16 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 
   const { staticBlocks, offsetPx } = model
   const blocks = staticBlocks.blocks
-  const val = model.scalebarDisplayPrefix()
+  const prefix = model.scalebarDisplayPrefix()
   const regionEndPx = model.scalebarRegionEndPx
 
   // Sticky label: rightmost content block whose left edge is within/before the
   // viewport. Falls back to the first content block if none are left of viewport.
-  const firstContentIdx = blocks.findIndex(b => b.type === 'ContentBlock')
-  let lastLeftBlock = firstContentIdx
-  for (let i = firstContentIdx + 1; i < blocks.length; i++) {
+  let stickyBlockIdx = -1
+  for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!
-    if (b.type === 'ContentBlock' && b.offsetPx < offsetPx) {
-      lastLeftBlock = i
+    if (b.type === 'ContentBlock' && (stickyBlockIdx === -1 || b.offsetPx < offsetPx)) {
+      stickyBlockIdx = i
     }
   }
 
@@ -66,14 +65,14 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
 
   // Set once the sticky far-left label renders the prefix inline (e.g.
   // "hg38:chr5"); the standalone prefix below is then skipped to show it once.
-  let stickyHasVal = false
+  let stickyHasPrefix = false
 
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]!
     if (block.type !== 'ContentBlock') {
       continue
     }
-    const sticky = i === lastLeftBlock
+    const sticky = i === stickyBlockIdx
     if (!block.isLeftEndOfDisplayedRegion && !sticky) {
       continue
     }
@@ -83,8 +82,8 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
     }
     const { transform, maxWidth } = layout
     const { refName, displayedRegionIndex } = block
-    if (sticky && val) {
-      stickyHasVal = true
+    if (sticky && prefix) {
+      stickyHasPrefix = true
     }
     labels.push(
       <span
@@ -109,21 +108,21 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
           })
         }}
       >
-        {sticky && val ? `${val}:${refName}` : refName}
+        {sticky && prefix ? `${prefix}:${refName}` : refName}
       </span>,
     )
   }
 
   // Fallback: show the bare assembly name pinned far-left only when no sticky
   // region label carried it (e.g. the leftmost region was too narrow to label).
-  if (val && !stickyHasVal) {
+  if (prefix && !stickyHasPrefix) {
     labels.push(
       <span
         key="b0"
         className={cx(classes.b0, classes.refLabel)}
         data-testid="refLabel-prefix"
       >
-        {val}
+        {prefix}
       </span>,
     )
   }
@@ -179,8 +178,11 @@ const RefNameMenu = observer(function RefNameMenu({
   onClose: () => void
 }) {
   const { displayedRegions } = model
-  const { refName, displayedRegionIndex } = menuState
+  const { refName, displayedRegionIndex: idx } = menuState
   const numRegions = displayedRegions.length
+  const canMoveLeft = idx > 0
+  const canMoveRight = idx < numRegions - 1
+  const manyRegions = numRegions > 2
 
   function moveRegion(fromIndex: number, toIndex: number) {
     const regions = [...displayedRegions]
@@ -221,62 +223,50 @@ const RefNameMenu = observer(function RefNameMenu({
           label: 'Actions',
           subMenu: [
             {
+              show: true,
               label: 'Reverse region',
               onClick: () => {
-                reverseRegion(displayedRegionIndex)
+                reverseRegion(idx)
               },
             },
-            ...(numRegions > 1 && displayedRegionIndex > 0
-              ? [
-                  {
-                    label: 'Move left',
-                    onClick: () => {
-                      moveRegion(displayedRegionIndex, displayedRegionIndex - 1)
-                    },
-                  },
-                ]
-              : []),
-            ...(numRegions > 1 && displayedRegionIndex < numRegions - 1
-              ? [
-                  {
-                    label: 'Move right',
-                    onClick: () => {
-                      moveRegion(displayedRegionIndex, displayedRegionIndex + 1)
-                    },
-                  },
-                ]
-              : []),
-            ...(numRegions > 2 && displayedRegionIndex > 0
-              ? [
-                  {
-                    label: 'Move to far left',
-                    onClick: () => {
-                      moveRegion(displayedRegionIndex, 0)
-                    },
-                  },
-                ]
-              : []),
-            ...(numRegions > 2 && displayedRegionIndex < numRegions - 1
-              ? [
-                  {
-                    label: 'Move to far right',
-                    onClick: () => {
-                      moveRegion(displayedRegionIndex, numRegions - 1)
-                    },
-                  },
-                ]
-              : []),
-            ...(numRegions > 1
-              ? [
-                  {
-                    label: 'Remove this region from view',
-                    onClick: () => {
-                      removeRegion(displayedRegionIndex)
-                    },
-                  },
-                ]
-              : []),
-          ],
+            {
+              show: canMoveLeft,
+              label: 'Move left',
+              onClick: () => {
+                moveRegion(idx, idx - 1)
+              },
+            },
+            {
+              show: canMoveRight,
+              label: 'Move right',
+              onClick: () => {
+                moveRegion(idx, idx + 1)
+              },
+            },
+            {
+              show: manyRegions && canMoveLeft,
+              label: 'Move to far left',
+              onClick: () => {
+                moveRegion(idx, 0)
+              },
+            },
+            {
+              show: manyRegions && canMoveRight,
+              label: 'Move to far right',
+              onClick: () => {
+                moveRegion(idx, numRegions - 1)
+              },
+            },
+            {
+              show: numRegions > 1,
+              label: 'Remove this region from view',
+              onClick: () => {
+                removeRegion(idx)
+              },
+            },
+          ]
+            .filter(item => item.show)
+            .map(({ label, onClick }) => ({ label, onClick })),
         },
       ]}
     />
