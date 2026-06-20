@@ -46,13 +46,29 @@ export default async function startWebpack(config: webpack.Configuration) {
   config.infrastructureLogging = { level: 'warn' }
   const compiler = webpack(config)
 
+  // Reprint a one-line status (with the URL) after every compile so the
+  // localhost address stays on screen and success<->error transitions are
+  // obvious. `url` is populated once the server is listening (below).
+  let url = ''
+  compiler.hooks.done.tap('startWebpack', stats => {
+    if (url) {
+      if (stats.hasErrors()) {
+        console.log(chalk.red(`Failed to compile — ${url}`))
+      } else if (stats.hasWarnings()) {
+        console.log(chalk.yellow(`Compiled with warnings — ${url}`))
+      } else {
+        console.log(chalk.green(`Compiled successfully — ${url}`))
+      }
+    }
+  })
+
   const devServer = new WebpackDevServer(
     {
       host: HOST,
       // webpack-dev-middleware unconditionally console.logs stats.toString()
-      // after every compile. Limiting stats to errors/warnings makes a clean
-      // recompile produce an empty string (so nothing prints) while still
-      // surfacing problems.
+      // after every compile. Limiting stats to errors/warnings still surfaces
+      // problem details while suppressing the noisy asset table; the done hook
+      // above prints the concise per-compile status line.
       devMiddleware: { stats: { all: false, errors: true, warnings: true } },
       port: process.env.PORT
         ? Number.parseInt(process.env.PORT, 10)
@@ -79,13 +95,11 @@ export default async function startWebpack(config: webpack.Configuration) {
     if (err) {
       console.log(err.message)
       process.exit(1)
-      return
     }
     const addr = devServer.server?.address()
     if (typeof addr === 'object' && addr) {
-      console.log(
-        `You can view ${chalk.bold(appName)} at http://localhost:${chalk.bold(addr.port)}`,
-      )
+      url = `http://localhost:${addr.port}`
+      console.log(`You can view ${chalk.bold(appName)} at ${chalk.bold(url)}`)
     }
   })
 }
