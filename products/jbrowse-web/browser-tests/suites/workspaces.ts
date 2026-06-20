@@ -247,6 +247,72 @@ const suite: TestSuite = {
         }
       },
     },
+    {
+      name: 'split layout persists across reload',
+      fn: async page => {
+        // Horizontal split: views [0,1] stacked in the left panel, [2] alone on
+        // the right.
+        const sessionSpec = {
+          views: [
+            { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgA:1-5000' },
+            {
+              type: 'LinearGenomeView',
+              assembly: 'volvox',
+              loc: 'ctgA:5000-10000',
+            },
+            { type: 'LinearGenomeView', assembly: 'volvox', loc: 'ctgB:1-5000' },
+          ],
+          layout: {
+            direction: 'horizontal',
+            children: [{ views: [0, 1] }, { views: [2] }],
+          },
+        }
+
+        await navigateWithSessionSpec(page, sessionSpec)
+        await waitForWorkspacesReady(page)
+
+        // The app rewrites the URL to session=local-<id> on load. Reloading that
+        // restores the autosaved session (with its serialized dockviewLayout)
+        // from sessionStorage, exercising the api.fromJSON restore path rather
+        // than re-deriving the layout from the URL spec.
+        await page.waitForFunction(
+          () => window.location.search.includes('session=local-'),
+          { timeout: 10000 },
+        )
+
+        const groupsBefore = (await page.$$('.dv-groupview')).length
+        if (groupsBefore < 2) {
+          throw new Error(
+            `Expected >=2 dockview groups before reload, got ${groupsBefore}`,
+          )
+        }
+
+        await page.reload({ timeout: 60000 })
+        await waitForWorkspacesReady(page)
+
+        let groupsAfter = 0
+        let viewsAfter = 0
+        for (let i = 0; i < 30; i++) {
+          groupsAfter = (await page.$$('.dv-groupview')).length
+          viewsAfter = (await page.$$('[data-testid^="view-container-"]')).length
+          if (groupsAfter >= 2 && viewsAfter >= 3) {
+            break
+          }
+          await delay(500)
+        }
+
+        if (groupsAfter < 2) {
+          throw new Error(
+            `Split layout not restored after reload: expected >=2 dockview groups, got ${groupsAfter} (the split collapsed to a single panel)`,
+          )
+        }
+        if (viewsAfter < 3) {
+          throw new Error(
+            `Views not restored after reload: expected 3 view containers, got ${viewsAfter}`,
+          )
+        }
+      },
+    },
   ],
 }
 
