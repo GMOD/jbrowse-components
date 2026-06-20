@@ -27,7 +27,7 @@ interface ReadsModel {
   flipStrandLongReadChains: boolean
   setFlipStrandLongReadChains: (flag: boolean) => void
   showSashimiArcs: boolean
-  toggleSashimiArcs: () => void
+  setShowSashimiArcs: (show: boolean) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
   readConnections: ReadConnectionsMode
@@ -69,7 +69,7 @@ export function getReadsMenuItem(
         model.toggleSoftClipping()
       }),
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
-        model.toggleSashimiArcs()
+        model.setShowSashimiArcs(!model.showSashimiArcs)
       }),
       ...(showPairFilters
         ? [

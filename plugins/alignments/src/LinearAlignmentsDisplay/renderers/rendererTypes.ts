@@ -52,15 +52,15 @@ export interface RenderState {
   // True when bezier connections are on AND linkedReads === 'off' (pileup).
   // Chain layout has its own connecting-line pass, so this is never needed there.
   showLinkedReadLines: boolean
-  flipStrandLongReadChains?: boolean
-  readConnectionsLineWidth?: number
+  flipStrandLongReadChains: boolean
+  readConnectionsLineWidth: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
   // autoscaled max |tlen| so Y is zoom-stable. See arc.slang `arcsYDomainBp`.
   arcsYDomainBp?: number
   readConnections: ReadConnectionsMode
-  readConnectionsDown?: boolean
-  readConnectionsHeight?: number
+  readConnectionsDown: boolean
+  readConnectionsHeight: number
   // Pileup row 0 top, screen px before scrollTop subtraction (GPU `covOffset`
   // uniform, Canvas2D `pileupRowY` base). For ungrouped this is the sticky
   // coverage height; the renderers override it per section while looping.
@@ -74,7 +74,7 @@ export interface RenderState {
   // The renderers loop these, cloning the per-section offsets into the state
   // they hand the draw helpers and clipping to each band.
   sections: SectionRender[]
-  showOutline?: boolean
+  showOutline: boolean
 }
 
 // One stacked section's resolved screen-space draw geometry. All values are
@@ -102,6 +102,19 @@ export const SECTION_KEY_STRIDE = 1 << 20
 
 export function sectionRegionKey(sectionIdx: number, regionIdx: number) {
   return sectionIdx * SECTION_KEY_STRIDE + regionIdx
+}
+
+// Each stacked section draws with its own vertical offsets. Shared by both
+// renderers so the per-section override list can't drift between backends.
+export function sectionRenderState(
+  state: RenderState,
+  sec: SectionRender,
+): RenderState {
+  return {
+    ...state,
+    pileupTopOffset: sec.pileupTopOffset,
+    coverageTopOffset: sec.coverageTopOffset,
+  }
 }
 
 export interface SectionSource {

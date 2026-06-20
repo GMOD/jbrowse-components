@@ -115,16 +115,16 @@ function createDisplay() {
 describe('alignments display cross-feature coupling', () => {
   // Sashimi only draws over the coverage band, so enabling it must enable
   // coverage or the toggle silently does nothing.
-  test('toggleSashimiArcs turns on coverage and flips visibility', () => {
+  test('setShowSashimiArcs turns on coverage when enabled', () => {
     const display = createDisplay()
     display.setShowSashimiArcs(false)
     display.setShowCoverage(false)
 
-    display.toggleSashimiArcs()
+    display.setShowSashimiArcs(true)
     expect(display.showSashimiArcs).toBe(true)
     expect(display.showCoverage).toBe(true)
 
-    display.toggleSashimiArcs()
+    display.setShowSashimiArcs(false)
     expect(display.showSashimiArcs).toBe(false)
   })
 

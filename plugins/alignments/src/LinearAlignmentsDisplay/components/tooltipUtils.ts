@@ -314,17 +314,12 @@ export function formatCoverageTooltip(
   position: number,
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
-  modType?: string,
 ): CoverageTooltipPayload | undefined {
   const bin = getTooltipBin(position, blockRpcData)
   if (!bin) {
     return undefined
   }
-  const filteredBin =
-    modType && bin.modifications?.[modType]
-      ? { ...bin, modifications: { [modType]: bin.modifications[modType] } }
-      : bin
-  return { type: 'coverage', bin: filteredBin, refName }
+  return { type: 'coverage', bin, refName }
 }
 
 export function formatModificationTooltip(

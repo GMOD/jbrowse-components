@@ -161,14 +161,14 @@ export function drawArcs(
     arcsTop,
     arcsH,
     pairedArcsDown,
-    lineWidth: state.readConnectionsLineWidth ?? 1,
+    lineWidth: state.readConnectionsLineWidth,
     palette: arcColorPalette,
     screenWidthPx,
   })
 
   // Interchromosomal connector ticks: a vertical line spanning the arc band at
   // the breakpoint, matching arcLine.slang's full-band ±1 span.
-  ctx.lineWidth = state.readConnectionsLineWidth ?? 1
+  ctx.lineWidth = state.readConnectionsLineWidth
   ctx.setLineDash([])
   for (let i = 0; i < region.numArcLines; i++) {
     const bp = region.arcLinePositions[i]!

@@ -14,6 +14,7 @@ import {
   interbaseRangeEnds,
   pileupRowY,
   sectionRegionKey,
+  sectionRenderState,
   shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
@@ -327,11 +328,7 @@ export function drawAlignmentBlocks(
       if (!region) {
         continue
       }
-      const sectionState: RenderState = {
-        ...state,
-        pileupTopOffset: sec.pileupTopOffset,
-        coverageTopOffset: sec.coverageTopOffset,
-      }
+      const sectionState = sectionRenderState(state, sec)
 
       if (state.showCoverage) {
         ctx.save()
@@ -464,7 +461,9 @@ function drawCoverage(
     drawModCoverageCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
     drawInterbaseCanvas(ctx, region, bpToX, viewWidth, state, domainMax)
   }
-  drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
+  if (state.showInterbaseIndicators) {
+    drawIndicatorCanvas(ctx, region, bpToX, viewWidth, state)
+  }
   ctx.restore()
 }
 

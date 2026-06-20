@@ -1654,6 +1654,15 @@ export default function stateModelFactory(
             self.highlightedChainIds = []
           }
         }
+        function setShowSashimiArcs(show: boolean) {
+          self.showSashimiArcs = show
+          // Sashimi only renders over the coverage band, so making it visible
+          // requires coverage. Keep this invariant here, not in the menu
+          // handler, so it holds for every caller.
+          if (show) {
+            self.showCoverage = true
+          }
+        }
         return {
           /**
            * #action
@@ -2023,26 +2032,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setShowSashimiArcs(show: boolean) {
-            self.showSashimiArcs = show
-            // Sashimi only renders over the coverage band, so making it
-            // visible requires coverage. Keep this invariant in the action,
-            // not in the menu handler, so it holds for every caller.
-            if (show) {
-              self.showCoverage = true
-            }
-          },
-
-          /**
-           * #action
-           */
-          toggleSashimiArcs() {
-            const show = !self.showSashimiArcs
-            self.showSashimiArcs = show
-            if (show) {
-              self.showCoverage = true
-            }
-          },
+          setShowSashimiArcs,
 
           /**
            * #action
@@ -2563,12 +2553,7 @@ export default function stateModelFactory(
                 label: 'Open feature details',
                 icon: MenuOpenIcon,
                 onClick: () => {
-                  openFeatureWidget(self, feat.toJSON(), {
-                    widget: {
-                      type: 'AlignmentsFeatureWidget',
-                      id: 'alignmentFeature',
-                    },
-                  })
+                  self.selectFeature(feat)
                 },
               },
               {

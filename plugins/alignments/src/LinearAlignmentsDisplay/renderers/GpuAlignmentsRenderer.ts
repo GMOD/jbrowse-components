@@ -8,6 +8,7 @@ import {
   buildReadIdToIndex,
   ensureRegion,
   sectionRegionKey,
+  sectionRenderState,
   shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import {
@@ -171,7 +172,7 @@ function fillFrameUniforms(
     region.interbaseMaxCount > 0
       ? (coverageLayout(state.coverageHeight).effectiveH / 2) * f[U.depthScale]!
       : 0
-  f[U.insertUpper] = region.insertSizeStats?.upper ?? 999999
+  f[U.insertUpper] = region.insertSizeStats?.upper ?? NO_INSERT_UPPER
   f[U.insertLower] = region.insertSizeStats?.lower ?? 0
   i[U.colorScheme] = state.colorScheme
   // Chain layout drives read-coloring (supplementary colors, strand flipping,
@@ -179,7 +180,7 @@ function fillFrameUniforms(
   // orthogonal and does not switch coloring into chain mode.
   i[U.chainMode] = state.linkedReads === 'normal' ? 1 : 0
   i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
-  i[U.flipStrandLongRead] = state.flipStrandLongReadChains !== false ? 1 : 0
+  i[U.flipStrandLongRead] = state.flipStrandLongReadChains ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
 }
 
@@ -221,7 +222,7 @@ function fillArcUniforms(f: Float32Array, a: ArcFrame) {
   // anti-alias and stairsteps. Floor at 1.5 device px (expressed in CSS px via
   // /dpr) so the AA always spans >1px. On HiDPI a 1px CSS line is already 2
   // device px, so the floor is below it and the look is unchanged.
-  f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth ?? 1, 1.5 / dpr)
+  f[U.lineWidthPx] = Math.max(state.readConnectionsLineWidth, 1.5 / dpr)
   f[U.pairedArcsDown] = state.readConnectionsDown ? 1 : 0
   // Samplot picks its own domain (autoscaled |tlen|); arc mode defaults to
   // the bp-span that fits availH at the current zoom, reproducing the prior
@@ -342,6 +343,10 @@ interface LocalRegion extends ChainBoundsRegion {
 
 const OVERLAY_REGION = 999999
 
+// Sentinel upper bound (bp) for the insert-size color cutoff when no paired
+// stats are available — effectively "no upper cutoff" in the read shader.
+const NO_INSERT_UPPER = 999999
+
 // A device-px vertical span: scissor/viewport top + height in backing-store px.
 interface DevBand {
   top: number
@@ -432,15 +437,22 @@ function pileupPassPlan(
   ]
 }
 
-// Coverage-band passes in z-order. All unconditional within the band; the band
-// itself is gated by `showCoverage` at the call site.
-const COVERAGE_PASSES = [
-  PASS_COVERAGE,
-  PASS_SNP_COV,
-  PASS_MOD_COV,
-  PASS_INTERBASE,
-  PASS_INDICATOR,
-]
+// Coverage-band passes in z-order; the band itself is gated by `showCoverage`
+// at the call site. The depth-scaled passes need the autoscaled domain max, so
+// they are skipped until coverage stats settle (coarseDynamicBlocks is
+// 500ms-debounced and `coverageMaxDepth` is undefined until then) — matching the
+// Canvas2D `domainMax !== undefined` gate. The fixed-size indicator triangles
+// are depth-independent but gated on the user's `showInterbaseIndicators`.
+function coveragePassPlan(state: RenderState): [pass: string, enabled: boolean][] {
+  const hasDomain = state.coverageMaxDepth !== undefined
+  return [
+    [PASS_COVERAGE, hasDomain],
+    [PASS_SNP_COV, hasDomain],
+    [PASS_MOD_COV, hasDomain],
+    [PASS_INTERBASE, hasDomain],
+    [PASS_INDICATOR, state.showInterbaseIndicators],
+  ]
+}
 
 // JBrowse brand blue (#00B8FF approx) in normalized linear RGB.
 const SELECTION_RGBA = [0, 0.722, 1, 1] as const
@@ -720,11 +732,7 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       canvasW: geom.scissorW,
       reversed: block.reversed,
     }
-    const sectionState: RenderState = {
-      ...state,
-      pileupTopOffset: sec.pileupTopOffset,
-      coverageTopOffset: sec.coverageTopOffset,
-    }
+    const sectionState = sectionRenderState(state, sec)
     this.writeUniforms(sectionState, frame)
     this.hal.setViewport(geom.vpX, 0, geom.vpW, bufH)
 
@@ -732,8 +740,10 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     const drewCoverage = state.showCoverage && cov.height > 0
     if (drewCoverage) {
       this.hal.setScissor(geom.vpX, cov.top, geom.vpW, cov.height)
-      for (const pass of COVERAGE_PASSES) {
-        this.hal.drawPass(pass, regionKey)
+      for (const [pass, enabled] of coveragePassPlan(state)) {
+        if (enabled) {
+          this.hal.drawPass(pass, regionKey)
+        }
       }
     }
 
