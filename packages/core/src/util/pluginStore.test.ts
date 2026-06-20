@@ -152,7 +152,7 @@ describe('getPluginUpdate', () => {
     expect(getPluginUpdate(p, '4.3.0', '1.0.0')).toBeUndefined()
   })
 
-  it('tolerates an unparseable installed version', () => {
+  it('tolerates an unparsable installed version', () => {
     expect(getPluginUpdate(versioned, '4.3.0', 'garbage')).toBeUndefined()
   })
 })

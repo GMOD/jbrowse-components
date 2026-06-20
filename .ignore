@@ -32,3 +32,5 @@ packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.test.t
 *.svg
 *.tai
 website/static/pagefind/
+packages/core/src/util/geneticCodes.mito.test.ts
+*.nh

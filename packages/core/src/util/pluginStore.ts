@@ -66,7 +66,7 @@ function highestVersion(versions: JBrowsePluginVersion[]) {
   )[0]
 }
 
-// compareVersions throws on non-semver input; an unparseable installed version
+// compareVersions throws on non-semver input; an unparsable installed version
 // simply means "can't tell", so treat it as no-update-available rather than
 // breaking the installed-plugins list.
 function isNewer(candidate: string, installed: string) {

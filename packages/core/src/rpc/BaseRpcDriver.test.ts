@@ -1,9 +1,9 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
-import type { StatusCallback } from '../util/progress.ts'
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
+import type { StatusCallback } from '../util/progress.ts'
 
 // captures exactly what the call() envelope hands to a driver's transport, so
 // we can assert the serialize/statusCallback/deserialize behavior without any
