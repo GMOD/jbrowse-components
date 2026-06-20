@@ -41,7 +41,12 @@ function hasFeatureArrays(
 ): adapter is BaseFeatureDataAdapter & {
   getFeatureArrays(
     region: Region,
-    opts: { bpPerPx: number; resolution: number },
+    opts: {
+      bpPerPx: number
+      resolution: number
+      statusCallback?: StatusCallback
+      stopToken?: StopToken
+    },
   ): Promise<RawFeatureArrays>
 } {
   return 'getFeatureArrays' in adapter
@@ -69,7 +74,9 @@ export async function executeRenderWiggleData({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const fetchOpts = { bpPerPx, resolution }
+  // statusCallback/stopToken let the adapter report determinate download progress
+  // (e.g. BigWig block fetches) and stay interruptible mid-fetch
+  const fetchOpts = { bpPerPx, resolution, statusCallback, stopToken }
   const raw = hasFeatureArrays(dataAdapter)
     ? await updateStatus('Loading wiggle data', statusCallback, () =>
         dataAdapter.getFeatureArrays(region, fetchOpts),

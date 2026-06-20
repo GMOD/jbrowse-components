@@ -115,7 +115,11 @@ export async function executeGetManhattanData({
   ).dataAdapter as BaseFeatureDataAdapter
 
   const features = await updateStatus('Loading GWAS data', statusCallback, () =>
-    firstValueFrom(dataAdapter.getFeatures(region).pipe(toArray())),
+    firstValueFrom(
+      dataAdapter
+        .getFeatures(region, { statusCallback, stopToken })
+        .pipe(toArray()),
+    ),
   )
 
   checkStopToken2(stopTokenCheck)
