@@ -90,6 +90,54 @@ describe('aminoAcidsBySegment', () => {
     })
   })
 
+  it('reverse strand: splits a codon straddling an exon boundary', () => {
+    // transcription order (reverse = descending genomic start): seg 200-205
+    // transcribed first. codon0 (M) = [202,205); codon1 (K) takes the last 2
+    // bases of seg1 ([200,202)) and the first base of seg2 ([101,102)); codon2
+    // (L) = [100,101). protein index stays continuous across the boundary and
+    // the higher-coordinate segment carries the lower index.
+    const result = aminoAcidsBySegment(
+      [
+        { start: 200, end: 205 },
+        { start: 100, end: 102 },
+      ],
+      'MKL',
+      -1,
+    )
+    const seg1 = result.get('200-205')!
+    const seg2 = result.get('100-102')!
+    expect(seg1).toHaveLength(2)
+    expect(seg1[0]).toMatchObject({
+      aminoAcid: 'M',
+      proteinIndex: 0,
+      startBp: 202,
+      endBp: 205,
+      isStopOrNonTriplet: false,
+    })
+    expect(seg1[1]).toMatchObject({
+      aminoAcid: 'K',
+      proteinIndex: 1,
+      startBp: 200,
+      endBp: 202,
+      isStopOrNonTriplet: true,
+    })
+    expect(seg2).toHaveLength(2)
+    expect(seg2[0]).toMatchObject({
+      aminoAcid: 'K',
+      proteinIndex: 1,
+      startBp: 101,
+      endBp: 102,
+      isStopOrNonTriplet: true,
+    })
+    expect(seg2[1]).toMatchObject({
+      aminoAcid: 'L',
+      proteinIndex: 2,
+      startBp: 100,
+      endBp: 101,
+      isStopOrNonTriplet: true,
+    })
+  })
+
   it('phase>0 reserves protein index 0 for the leading partial codon', () => {
     // phase 1: 1 leading base is the tail of an upstream codon → index 0 = '&'
     const result = aminoAcidsBySegment(

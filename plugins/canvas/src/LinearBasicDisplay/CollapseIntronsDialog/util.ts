@@ -139,6 +139,23 @@ export function replaceIntrons({
   view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
 }
 
+// Run a collapse/replace action, close the dialog on success, and surface any
+// failure through the session notifier. Accepts sync or async actions so the
+// "Replace" (sync) and "Open in new view" (async) buttons share one path.
+export async function runIntronAction(
+  view: LinearGenomeViewModel,
+  action: () => void | Promise<void>,
+  handleClose: () => void,
+) {
+  try {
+    await action()
+    handleClose()
+  } catch (e) {
+    getSession(view).notifyError(`${e}`, e)
+    console.error(e)
+  }
+}
+
 export async function collapseIntrons({
   view,
   transcripts,

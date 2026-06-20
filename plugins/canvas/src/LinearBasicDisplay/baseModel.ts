@@ -54,7 +54,10 @@ import {
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
-import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
+import {
+  THEME_DERIVED_COLOR,
+  decimatesLabels,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
@@ -75,7 +78,12 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnimationMode, Feature, Region, RpcStatus } from '@jbrowse/core/util'
+import type {
+  AnimationMode,
+  Feature,
+  Region,
+  RpcStatus,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -117,7 +125,8 @@ function morphAllowed(mode: AnimationMode) {
     typeof matchMedia === 'function' &&
     matchMedia('(prefers-reduced-motion: reduce)').matches
   return (
-    hasFrameClock && (mode === 'enabled' || (mode === 'system' && !prefersReduced))
+    hasFrameClock &&
+    (mode === 'enabled' || (mode === 'system' && !prefersReduced))
   )
 }
 
@@ -783,14 +792,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get maxY() {
-          let max = 0
-          for (const data of self.laidOutDataMap.values()) {
-            for (const item of data.flatbushItems) {
-              if (item.bottomPx > max) {
-                max = item.bottomPx
-              }
-            }
-          }
+          const max = maxBottom(self.laidOutDataMap)
           // During a Y morph hold the height at the taller of the old/new
           // layout so features animating up from a deeper row aren't clipped at
           // the bottom; it settles to the destination height when the morph
@@ -895,7 +897,7 @@ export default function baseStateModelFactory(
           const labels = {
             showLabels: self.showLabels,
             showDescriptions: self.effectiveShowDescriptions,
-            showSubfeatureLabels: self.displayMode !== 'collapse',
+            showSubfeatureLabels: !decimatesLabels(self.displayMode),
           }
           const reversedRegions = self.reversedRegions
           const bpPerPx = view.bpPerPx

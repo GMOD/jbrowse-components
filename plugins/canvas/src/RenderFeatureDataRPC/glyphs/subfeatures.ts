@@ -50,15 +50,9 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
       subfeatures.map(f => [f.id(), hasCodingSubfeature(f)]),
     )
     subfeatures.sort((a, b) => {
-      const aHasCDS = codingStatus.get(a.id())
-      const bHasCDS = codingStatus.get(b.id())
-      if (aHasCDS && !bHasCDS) {
-        return -1
-      }
-      if (!aHasCDS && bHasCDS) {
-        return 1
-      }
-      return 0
+      const aHasCDS = codingStatus.get(a.id()) ? 1 : 0
+      const bHasCDS = codingStatus.get(b.id()) ? 1 : 0
+      return bHasCDS - aHasCDS
     })
   }
 

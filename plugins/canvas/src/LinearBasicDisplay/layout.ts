@@ -5,7 +5,9 @@ import {
   HEIGHT_MULTIPLIERS,
   STRAND_ARROW_WIDTH,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
+import { decimatesLabels } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
+
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
@@ -161,7 +163,7 @@ export function computeLaidOutData(
 
   // In collapse mode, labels are decimated at render time and don't contribute
   // to feature stacking height, so treat them as absent for layout purposes.
-  const showLabelsInLayout = displayMode !== 'collapse'
+  const showLabelsInLayout = !decimatesLabels(displayMode)
   const packShowLabels = showLabelsInLayout && showLabels
   const packShowDescriptions = showLabelsInLayout && showDescriptions
 

@@ -58,6 +58,14 @@ export type DisplayMode =
   | 'reducedRepresentation'
   | 'collapse'
 
+// Collapse mode stacks every feature into one row, so per-feature and
+// subfeature labels are suppressed and overlapping labels decimated. Single
+// source of the rule consumed by the model, layout, hit testing, the DOM
+// overlay, and SVG export so they can't drift apart.
+export function decimatesLabels(displayMode: string) {
+  return displayMode === 'collapse'
+}
+
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
 // any property is a type error rather than silently typing as `unknown`. The
 // widening to `Record<string, unknown>` that the core config reader wants is

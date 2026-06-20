@@ -2,6 +2,7 @@ import { useState } from 'react'
 
 import { Dialog, NumberTextField } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
   DialogActions,
@@ -12,13 +13,23 @@ import { isObservableArray } from 'mobx'
 import { observer } from 'mobx-react'
 
 import TranscriptTable from './TranscriptTable.tsx'
-import { collapseIntrons, replaceIntrons } from './util.ts'
+import { collapseIntrons, replaceIntrons, runIntronAction } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const DEFAULT_WINDOW_SIZE = 100
+
+const useStyles = makeStyles()({
+  windowSizeField: {
+    marginBottom: 16,
+    width: 250,
+  },
+  showAllButton: {
+    float: 'right',
+  },
+})
 
 const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   view,
@@ -31,6 +42,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   assembly: Assembly
   handleClose: () => void
 }) {
+  const { classes } = useStyles()
   const [showAll, setShowAll] = useState(false)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
@@ -66,11 +78,11 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           onValueChange={setWindowSize}
           min={0}
           errorText="Must be a non-negative number"
-          style={{ marginBottom: 16, width: 250 }}
+          className={classes.windowSizeField}
         />
         {transcripts.length > 1 ? (
           <Button
-            style={{ float: 'right' }}
+            className={classes.showAllButton}
             onClick={() => {
               setShowAll(s => !s)
             }}
@@ -96,20 +108,20 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           variant="contained"
           color="primary"
           disabled={!validWindowSize}
-          onClick={() => {
-            try {
-              replaceIntrons({
-                view,
-                transcripts,
-                assembly,
-                padding: windowSize ?? 0,
-              })
-              handleClose()
-            } catch (e) {
-              getSession(view).notifyError(`${e}`, e)
-              console.error(e)
-            }
-          }}
+          onClick={() =>
+            runIntronAction(
+              view,
+              () => {
+                replaceIntrons({
+                  view,
+                  transcripts,
+                  assembly,
+                  padding: windowSize ?? 0,
+                })
+              },
+              handleClose,
+            )
+          }
         >
           Replace current view
         </Button>
@@ -119,20 +131,19 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             variant="contained"
             color="primary"
             disabled={!validWindowSize}
-            onClick={async () => {
-              try {
-                await collapseIntrons({
-                  view,
-                  transcripts,
-                  assembly,
-                  padding: windowSize ?? 0,
-                })
-                handleClose()
-              } catch (e) {
-                getSession(view).notifyError(`${e}`, e)
-                console.error(e)
-              }
-            }}
+            onClick={() =>
+              runIntronAction(
+                view,
+                () =>
+                  collapseIntrons({
+                    view,
+                    transcripts,
+                    assembly,
+                    padding: windowSize ?? 0,
+                  }),
+                handleClose,
+              )
+            }
           >
             Open in new view
           </Button>

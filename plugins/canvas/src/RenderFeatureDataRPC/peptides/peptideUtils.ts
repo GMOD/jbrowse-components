@@ -135,6 +135,10 @@ export async function fetchPeptideData(
     return peptideDataMap
   }
 
+  // RenderFeatureData runs per-region, so props.regions is single-element and
+  // every transcript here was fetched from that region — they all share its
+  // refName. One bulk sequence fetch spanning all transcripts (rather than one
+  // per transcript) is therefore safe and avoids N round trips.
   const baseRegion = props.regions[0]!
   const bulkStart = Math.max(
     0,

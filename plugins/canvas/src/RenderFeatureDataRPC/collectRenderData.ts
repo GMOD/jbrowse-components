@@ -15,7 +15,7 @@ import { packRenderArrays } from './packRenderArrays.ts'
 import { aminoAcidsBySegment } from './peptides/aggregateAminoAcids.ts'
 import { dedupedSortedCDS } from './peptides/cdsSegments.ts'
 import { readConfigValueSafe, resolveThemeColor } from './renderConfig.ts'
-import { getBoxColor, getStrokeColor, isUTR } from './util.ts'
+import { getBoxColor, getStrokeColor, hasVisibleText, isUTR } from './util.ts'
 
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
 import type {
@@ -246,16 +246,15 @@ function emitStrandArrow(
   arrows: ArrowData[],
 ) {
   const strand = feature.get('strand') ?? 0
-  if (strand === 0) {
-    return
+  if (strand !== 0) {
+    arrows.push({
+      x: strand === 1 ? feature.get('end') : feature.get('start'),
+      y: topPx + height / 2,
+      direction: strand,
+      color: strokeUint,
+      flatbushIdx,
+    })
   }
-  arrows.push({
-    x: strand === 1 ? feature.get('end') : feature.get('start'),
-    y: topPx + height / 2,
-    direction: strand,
-    color: strokeUint,
-    flatbushIdx,
-  })
 }
 
 // Top-level glyphs (no parent) get a strand arrow so they show direction like
@@ -302,21 +301,17 @@ function emitExonRects(
     const childFeature = childLayout.feature
     const childStart = childFeature.get('start')
     const childEnd = childFeature.get('end')
-    const childIsUTR = isUTR(childFeature)
 
+    // amino-acid segments key off CDS bounds, so any child matching one is
+    // coding — UTR sizing never applies on this branch
     const aminoAcids = aminoAcidsBySeg?.get(`${childStart}-${childEnd}`)
 
     if (aminoAcids?.length) {
-      const [childTopPx, childHeight] = applyUTRSizing(
-        transcriptTopPx,
-        transcript.height,
-        childIsUTR,
-      )
       emitCodonRects(
         aminoAcids,
         boxColor(childFeature, ctx),
-        childTopPx,
-        childHeight,
+        transcriptTopPx,
+        transcript.height,
         flatbushIdx,
         collector.rects,
         collector.aminoAcidOverlay,
@@ -375,7 +370,11 @@ function processTranscriptLayout(
   })
 
   const { config } = ctx
-  if (config.subfeatureLabels !== 'none' && transcriptName) {
+  if (
+    config.subfeatureLabels !== 'none' &&
+    transcriptName &&
+    hasVisibleText(transcriptName)
+  ) {
     const result = createTranscriptFloatingLabel({
       displayLabel: transcriptName,
       featureHeight: transcript.height,

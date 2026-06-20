@@ -10,6 +10,7 @@ import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
 } from './sharedRendererConstants.ts'
+import { decimatesLabels } from '../../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
@@ -102,7 +103,7 @@ export function useFloatingLabels(
     displayMode,
     selectFeatureById,
   } = model
-  const decimateLabels = displayMode === 'collapse'
+  const decimateLabels = decimatesLabels(displayMode)
 
   if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
     return null
@@ -267,7 +268,7 @@ export function useHighlightOverlays(
     effectiveShowDescriptions,
     displayMode,
   } = model
-  const decimateLabels = displayMode === 'collapse'
+  const decimateLabels = decimatesLabels(displayMode)
   const theme = useTheme()
   // theme-aware (lightens on dark tracks, darkens on light) — see theme.ts
   const hoverColor = theme.palette.featureHover

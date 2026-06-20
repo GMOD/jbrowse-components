@@ -14,6 +14,7 @@ import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
 } from './components/sharedRendererConstants.ts'
+import { decimatesLabels } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -131,7 +132,7 @@ export async function renderSvg(
     showLabels: model.showLabels,
     showDescriptions: model.effectiveShowDescriptions,
   }
-  const decimateLabels = model.displayMode === 'collapse'
+  const decimateLabels = decimatesLabels(model.displayMode)
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
   const textNode = paintLayer(totalWidth, height, undefined, ctx => {

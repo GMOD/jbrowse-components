@@ -1,4 +1,5 @@
-import { getSession, toLocale } from '@jbrowse/core/util'
+import { toLocale } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Box,
   Button,
@@ -10,12 +11,24 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { collapseIntrons, getExonsAndCDS, replaceIntrons } from './util.ts'
+import {
+  collapseIntrons,
+  getExonsAndCDS,
+  replaceIntrons,
+  runIntronAction,
+} from './util.ts'
 import { isExon } from '../../RenderFeatureDataRPC/util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+const useStyles = makeStyles()({
+  scrollContainer: {
+    maxHeight: 600,
+    overflow: 'auto',
+  },
+})
 
 interface TranscriptRow {
   transcript: Feature
@@ -65,10 +78,11 @@ const TranscriptTable = observer(function TranscriptTable({
   canLaunchView: boolean
   handleClose: () => void
 }) {
+  const { classes } = useStyles()
   const rows = buildRows(transcripts)
 
   return (
-    <Box sx={{ maxHeight: 600, overflow: 'auto' }}>
+    <Box className={classes.scrollContainer}>
       <Table size="small" stickyHeader>
         <TableHead>
           <TableRow>
@@ -94,20 +108,20 @@ const TranscriptTable = observer(function TranscriptTable({
                   variant="contained"
                   color="primary"
                   disabled={!validPadding}
-                  onClick={() => {
-                    try {
-                      replaceIntrons({
-                        view,
-                        transcripts: [row.transcript],
-                        assembly,
-                        padding,
-                      })
-                      handleClose()
-                    } catch (e) {
-                      getSession(view).notifyError(`${e}`, e)
-                      console.error(e)
-                    }
-                  }}
+                  onClick={() =>
+                    runIntronAction(
+                      view,
+                      () => {
+                        replaceIntrons({
+                          view,
+                          transcripts: [row.transcript],
+                          assembly,
+                          padding,
+                        })
+                      },
+                      handleClose,
+                    )
+                  }
                 >
                   Replace
                 </Button>
@@ -117,20 +131,19 @@ const TranscriptTable = observer(function TranscriptTable({
                     variant="contained"
                     color="primary"
                     disabled={!validPadding}
-                    onClick={async () => {
-                      try {
-                        await collapseIntrons({
-                          view,
-                          transcripts: [row.transcript],
-                          assembly,
-                          padding,
-                        })
-                        handleClose()
-                      } catch (e) {
-                        getSession(view).notifyError(`${e}`, e)
-                        console.error(e)
-                      }
-                    }}
+                    onClick={() =>
+                      runIntronAction(
+                        view,
+                        () =>
+                          collapseIntrons({
+                            view,
+                            transcripts: [row.transcript],
+                            assembly,
+                            padding,
+                          }),
+                        handleClose,
+                      )
+                    }
                   >
                     Open in new view
                   </Button>
