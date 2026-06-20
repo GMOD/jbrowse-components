@@ -214,7 +214,6 @@ and docs.
 [setMaxHeight](../linearalignmentsdisplay#action-setmaxheight),
 [setCompactness](../linearalignmentsdisplay#action-setcompactness),
 [setShowSashimiArcs](../linearalignmentsdisplay#action-setshowsashimiarcs),
-[toggleSashimiArcs](../linearalignmentsdisplay#action-togglesashimiarcs),
 [setReadConnections](../linearalignmentsdisplay#action-setreadconnections),
 [setReadConnectionsDown](../linearalignmentsdisplay#action-setreadconnectionsdown),
 [setShowCoverage](../linearalignmentsdisplay#action-setshowcoverage),

@@ -4665,6 +4665,54 @@
     },
     {
       "type": "FeatureTrack",
+      "trackId": "HG02024_VN049_KHVTrio.chr1.hapibd",
+      "name": "KHV trio hap-ibd haplotype blocks (chr1)",
+      "category": ["1000 Genomes"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "parenthap"
+        ],
+        "bedGzLocation": {
+          "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.hapibd.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/demos/kgp-trio/HG02024_VN049_KHVTrio.chr1.hapibd.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "HG02024_VN049_KHVTrio.chr1.hapibd-LinearMultiRowFeatureDisplay",
+          "partitionField": "parenthap",
+          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+          "rowOrder": [
+            "Father hap1",
+            "Father hap2",
+            "Mother hap1",
+            "Mother hap2"
+          ],
+          "rowHeight": 20
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
       "trackId": "chm13v2.0_rmsk",
       "name": "chm13v2.0_rmsk",
       "adapter": {

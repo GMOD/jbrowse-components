@@ -70,6 +70,8 @@ on its display type(s):
   ([state model](../../models/lineararcdisplay))
 - [LinearBasicDisplay](../linearbasicdisplay)
   ([state model](../../models/linearbasicdisplay))
+- [LinearMultiRowFeatureDisplay](../linearmultirowfeaturedisplay)
+  ([state model](../../models/linearmultirowfeaturedisplay))
 
 ### FeatureTrack - Identifier
 

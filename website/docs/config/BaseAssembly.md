@@ -88,6 +88,41 @@ pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 }
 ```
 
+#### slot: geneticCodes
+
+Maps a reference sequence name to an NCBI genetic-code (translation table) id
+for sequences that don't use the standard code, e.g. `{ "chrM": 2 }` for the
+vertebrate mitochondrial code or `{ "chrPltd": 11 }` for a plastid. Drives the
+reference sequence track's translation rows; unlisted refNames use the standard
+code (1). CDS-level translation reads the GFF `transl_table` attribute directly
+and ignores this.
+
+```js
+{
+  type: 'frozen',
+  defaultValue: {},
+  description:
+    'Map of reference sequence name to NCBI genetic-code (translation table) id for sequences not using the standard code, e.g. { "chrM": 2 }',
+}
+```
+
+#### slot: geneticCodesLocation
+
+Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments allowed)
+to load the same refName-to-genetic-code mapping from, instead of inlining it —
+useful when a config generator emits a sidecar rather than inlining per
+assembly. Entries in the inline `geneticCodes` slot take precedence over the
+file.
+
+```js
+{
+  type: 'fileLocation',
+  defaultValue: { uri: '', locationType: 'UriLocation' },
+  description:
+    'Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map',
+}
+```
+
 #### slot: refNameAliases.adapter
 
 refNameAliases help resolve e.g. chr1 and 1 as the same entity the data for

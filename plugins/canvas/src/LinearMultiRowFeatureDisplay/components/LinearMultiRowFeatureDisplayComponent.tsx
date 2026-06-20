@@ -81,7 +81,9 @@ const LinearMultiRowFeatureDisplayComponent = observer(
         factory={MultiRowRendererFactory}
         testid="multirow-display"
       >
-        {({ canvasRef }) => <MultiRowCanvas model={model} canvasRef={canvasRef} />}
+        {({ canvasRef }) => (
+          <MultiRowCanvas model={model} canvasRef={canvasRef} />
+        )}
       </DisplayChrome>
     )
   },

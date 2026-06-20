@@ -48,7 +48,7 @@ const region: MultiRowRegionData = {
 
 const block: RenderBlock = {
   displayedRegionIndex: 0,
-  refName: 'ctgA',
+  // refName: 'ctgA',
   start: 0,
   end: 100,
   screenStartPx: 0,

@@ -213,7 +213,8 @@ can be typed directly into the location search box. See the
 ## Next steps
 
 - [User guide](/docs/user_guide) — track types, views, and UI features
-- [Supported file types](/docs/config_guides/file_types) — every format and its adapter
+- [Supported file types](/docs/config_guides/file_types) — every format and its
+  adapter
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
 - [CLI reference](/docs/cli) — full reference for all CLI commands
 - [FAQ](/docs/faq) — common questions including text searching

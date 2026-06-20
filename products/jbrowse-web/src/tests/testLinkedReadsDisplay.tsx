@@ -45,6 +45,8 @@ export async function testLinkedReadsDisplay({
   // Bezier connections render in an SVG overlay, not the canvas, so the snapshot
   // above can't see them — assert the overlay actually drew arc paths.
   if (displayMode === 'bezier') {
-    expect((await findAllByTestId('pileup-bezier-arc', ...opts)).length).toBeGreaterThan(0)
+    expect(
+      (await findAllByTestId('pileup-bezier-arc', ...opts)).length,
+    ).toBeGreaterThan(0)
   }
 }

@@ -443,7 +443,9 @@ function pileupPassPlan(
 // 500ms-debounced and `coverageMaxDepth` is undefined until then) — matching the
 // Canvas2D `domainMax !== undefined` gate. The fixed-size indicator triangles
 // are depth-independent but gated on the user's `showInterbaseIndicators`.
-function coveragePassPlan(state: RenderState): [pass: string, enabled: boolean][] {
+function coveragePassPlan(
+  state: RenderState,
+): [pass: string, enabled: boolean][] {
   const hasDomain = state.coverageMaxDepth !== undefined
   return [
     [PASS_COVERAGE, hasDomain],

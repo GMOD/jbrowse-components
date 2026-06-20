@@ -1,6 +1,7 @@
 import BaseRpcDriver from './BaseRpcDriver.ts'
 import rpcConfigSchema from './configSchema.ts'
 
+import type { StatusCallback } from '../util/progress.ts'
 import type PluginManager from '../PluginManager.ts'
 import type RpcMethodType from '../pluggableElementTypes/RpcMethodType.ts'
 
@@ -12,12 +13,14 @@ class CapturingDriver extends BaseRpcDriver {
   transportCalls: {
     rpcMethod: RpcMethodType
     serializedArgs: Record<string, unknown>
-    statusCallback: ((message: unknown) => void) | undefined
+    statusCallback: StatusCallback | undefined
     options: Record<string, unknown>
   }[] = []
 
   constructor() {
-    super({ config: rpcConfigSchema.create({}) })
+    super({
+      config: rpcConfigSchema.create({}),
+    })
   }
 
   protected async transport(
@@ -25,7 +28,7 @@ class CapturingDriver extends BaseRpcDriver {
     _sessionId: string,
     rpcMethod: RpcMethodType,
     serializedArgs: Record<string, unknown>,
-    statusCallback: ((message: unknown) => void) | undefined,
+    statusCallback: StatusCallback | undefined,
     options: Record<string, unknown>,
   ) {
     this.transportCalls.push({

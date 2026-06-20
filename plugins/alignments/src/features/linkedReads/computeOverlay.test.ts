@@ -31,7 +31,9 @@ function makeData(opts: {
     readFlags: new Uint16Array(opts.flags),
     readStrands: new Int8Array(opts.strands),
     readPositions,
-    readPairOrientations: Uint8Array.from(opts.orientations ?? Array(n).fill(0)),
+    readPairOrientations: Uint8Array.from(
+      opts.orientations ?? Array(n).fill(0),
+    ),
     readYs: new Uint16Array(opts.ys),
   } as unknown as PileupDataResult
 }

@@ -55,12 +55,10 @@ function createBreakpointView(init: object) {
 }
 
 test('BreakpointSplitView initializes with init property', async () => {
-  const view = createBreakpointView({
-    views: [
-      { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
-      { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },
-    ],
-  })
+  const view = createBreakpointView([
+    { loc: 'chr3:186,700,000..186,701,000', assembly: 'hg19' },
+    { loc: 'chr6:56,758,000..56,759,000', assembly: 'hg19' },
+  ])
 
   expect(view.hasSomethingToShow).toBe(true)
 
@@ -78,20 +76,18 @@ test('BreakpointSplitView initializes with init property', async () => {
 }, 40000)
 
 test('BreakpointSplitView initializes with tracks', async () => {
-  const view = createBreakpointView({
-    views: [
-      {
-        loc: 'chr3:186,700,000..186,701,000',
-        assembly: 'hg19',
-        tracks: ['pacbio_vcf'],
-      },
-      {
-        loc: 'chr6:56,758,000..56,759,000',
-        assembly: 'hg19',
-        tracks: ['pacbio_vcf'],
-      },
-    ],
-  })
+  const view = createBreakpointView([
+    {
+      loc: 'chr3:186,700,000..186,701,000',
+      assembly: 'hg19',
+      tracks: ['pacbio_vcf'],
+    },
+    {
+      loc: 'chr6:56,758,000..56,759,000',
+      assembly: 'hg19',
+      tracks: ['pacbio_vcf'],
+    },
+  ])
 
   await waitFor(
     () => {
@@ -107,9 +103,10 @@ test('BreakpointSplitView initializes with tracks', async () => {
 }, 40000)
 
 test('BreakpointSplitView init without loc shows all regions', async () => {
-  const view = createBreakpointView({
-    views: [{ assembly: 'hg19' }, { assembly: 'hg19' }],
-  })
+  const view = createBreakpointView([
+    { assembly: 'hg19' },
+    { assembly: 'hg19' },
+  ])
 
   await waitFor(
     () => {
@@ -124,12 +121,10 @@ test('BreakpointSplitView init without loc shows all regions', async () => {
 }, 40000)
 
 test('BreakpointSplitView showImportForm is false when init is set', async () => {
-  const view = createBreakpointView({
-    views: [
-      { loc: 'chr3:1..1000', assembly: 'hg19' },
-      { loc: 'chr6:1..1000', assembly: 'hg19' },
-    ],
-  })
+  const view = createBreakpointView([
+    { loc: 'chr3:1..1000', assembly: 'hg19' },
+    { loc: 'chr6:1..1000', assembly: 'hg19' },
+  ])
 
   expect(view.showImportForm).toBe(false)
   expect(view.hasSomethingToShow).toBe(true)

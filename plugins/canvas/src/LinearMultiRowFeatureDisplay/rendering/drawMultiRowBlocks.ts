@@ -1,5 +1,8 @@
 import { setAbgrFill } from '@jbrowse/core/util/colorBits'
-import { clipBlockForCanvas, makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  clipBlockForCanvas,
+  makeBpMapper,
+} from '@jbrowse/render-core/canvas2dUtils'
 
 import type {
   MultiRowRegionData,
@@ -17,8 +20,13 @@ export function drawMultiRowBlocks(
   renderBlocks: RenderBlock[],
   state: MultiRowRenderState,
 ) {
-  const { canvasWidth, canvasHeight, rowHeight, rowProportion, rowIndexByValue } =
-    state
+  const {
+    canvasWidth,
+    canvasHeight,
+    rowHeight,
+    rowProportion,
+    rowIndexByValue,
+  } = state
   const h = rowHeight * rowProportion
   const offset = (rowHeight - h) / 2
 

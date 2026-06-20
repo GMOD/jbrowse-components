@@ -1534,12 +1534,6 @@ type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
 type setShowSashimiArcs = (show: boolean) => void
 ```
 
-#### action: toggleSashimiArcs
-
-```ts
-type toggleSashimiArcs = () => void
-```
-
 #### action: setReadConnections
 
 ```ts

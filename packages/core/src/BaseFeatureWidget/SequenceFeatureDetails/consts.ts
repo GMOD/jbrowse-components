@@ -6,3 +6,7 @@ export const proteinColor = 'rgb(220,160,220)'
 export const cdsColor = 'rgb(220,220,180)'
 export const updownstreamColor = 'rgb(250,200,200)'
 export const genomeColor = 'rgb(200,240,200)'
+
+// Amber highlight for residues whose translation was overridden by transl_except
+// (polyA-completed stops, selenocysteine, pyrrolysine).
+export const translExceptColor = 'rgb(255,200,80)'

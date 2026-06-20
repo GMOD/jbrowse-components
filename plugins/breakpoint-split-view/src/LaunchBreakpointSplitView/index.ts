@@ -44,7 +44,7 @@ export default function LaunchBreakpointSplitViewF(
     // regions once it has a width.
     session.addView('BreakpointSplitView', {
       ...rest,
-      init: { views },
+      init: views,
     })
     return args
   })

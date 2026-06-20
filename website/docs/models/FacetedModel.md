@@ -182,9 +182,7 @@ type filteredRows = { readonly id: string; readonly conf: ModelInstanceTypeProps
 #### getter: facetCategoryCounts
 
 Per-facet category counts for the filter sidebar. Cached by MobX so it
-recomputes only when rows or filters change, not on every render. Active-filter
-facets are counted first against the pre-filter row set so their counts reflect
-drill-down.
+recomputes only when rows or filters change, not on every render.
 
 ```ts
 type facetCategoryCounts = Map<string, Map<string, number>>

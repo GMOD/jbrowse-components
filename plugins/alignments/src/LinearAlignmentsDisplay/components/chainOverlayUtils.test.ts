@@ -11,6 +11,11 @@ import type { RenderState } from '../renderers/rendererTypes.ts'
 function makeState(overrides: Partial<RenderState> = {}): RenderState {
   return {
     scrollTop: 0,
+    flipStrandLongReadChains: false,
+    readConnectionsLineWidth: 1,
+    showOutline: false,
+    readConnectionsDown: false,
+    readConnectionsHeight: 100,
     colorScheme: 0,
     featureHeight: 10,
     featureSpacing: 2,

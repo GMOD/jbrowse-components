@@ -495,6 +495,16 @@ type editableSources = ProcessedSource[] | undefined
 type sourceMap = { [k: string]: Source } | undefined
 ```
 
+#### getter: genotypeSampleIndex
+
+sampleName -> column index into each feature's interned `genotypeCodes`. Rebuilt
+only when cellData changes. Used by the tooltips to decode a hovered cell's
+genotype (see genotypeCodec.ts).
+
+```ts
+type genotypeSampleIndex = Map<string, number> | undefined
+```
+
 #### getter: availableHeight
 
 Available height for rows (total height minus lineZoneHeight)

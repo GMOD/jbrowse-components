@@ -5,12 +5,18 @@ import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
 import ProteinSequence from './seqtypes/ProteinSequence.tsx'
 import { getSequenceData } from './useSequenceData.ts'
-import { getGeneticCode, parseTranslTable } from '../../util/geneticCodes.ts'
+import {
+  getGeneticCode,
+  parseTranslExcept,
+  parseTranslTable,
+} from '../../util/geneticCodes.ts'
+import { revlist } from '../../util/seqUtils.ts'
 
 import type {
   SequenceDisplayMode,
   SequenceFeatureDetailsModel,
 } from './model.ts'
+import type { TranslExcept } from '../../util/geneticCodes.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
 
@@ -29,6 +35,27 @@ function proteinCodonTable(
     parseTranslTable(cds?.transl_table) ??
     assemblyGeneticCodeId
   return getGeneticCode(id).codonTable
+}
+
+// Parses transl_except from the feature or its CDS subfeature, converting from
+// absolute genomic coords to the coordinate system used by convertCodingSequenceToPeptides
+// (i.e. relative to the feature's start, then revlisted for minus-strand genes).
+function featureTranslExcept(feature: SimpleFeatureSerialized): TranslExcept[] {
+  const cds = feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
+  const raw = feature.transl_except ?? cds?.transl_except
+  if (!raw) {
+    return []
+  }
+  const exceptions = parseTranslExcept(raw)
+  const featureStart = feature.start
+  const relative = exceptions.map(e => ({
+    ...e,
+    start: e.start - featureStart,
+    end: e.end - featureStart,
+  }))
+  return feature.strand === -1
+    ? revlist(relative, feature.end - featureStart)
+    : relative
 }
 
 function RenderedSequenceComponent({
@@ -70,15 +97,18 @@ function RenderedSequenceComponent({
     case 'cds':
       return <CDSSequence model={model} cds={cds} sequence={seq} />
 
-    case 'protein':
+    case 'protein': {
+      const translExcept = featureTranslExcept(feature)
       return (
         <ProteinSequence
           model={model}
           cds={cds}
           sequence={seq}
           codonTable={proteinCodonTable(feature, assemblyGeneticCodeId)}
+          translExcept={translExcept.length ? translExcept : undefined}
         />
       )
+    }
 
     // cdna and the gene_* variants all render the spliced transcript; introns
     // and up/downstream flanks are toggled by the mode name

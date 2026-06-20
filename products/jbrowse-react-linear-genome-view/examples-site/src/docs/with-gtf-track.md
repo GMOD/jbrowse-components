@@ -1,9 +1,9 @@
 Gene models from a GTF file load as a `FeatureTrack` backed by a
-[GtfAdapter](https://jbrowse.org/jb2/docs/config/gtfadapter/) (plain text, loaded
-into memory) or a
-[GtfTabixAdapter](https://jbrowse.org/jb2/docs/config/gtftabixadapter/) (bgzipped
-and tabix-indexed, for large files). The `uri` shorthand accepts a plain or
-gzipped path:
+[GtfAdapter](https://jbrowse.org/jb2/docs/config/gtfadapter/) (plain text,
+loaded into memory) or a
+[GtfTabixAdapter](https://jbrowse.org/jb2/docs/config/gtftabixadapter/)
+(bgzipped and tabix-indexed, for large files). The `uri` shorthand accepts a
+plain or gzipped path:
 
 ```js
 adapter: {

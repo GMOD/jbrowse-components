@@ -62,68 +62,347 @@ The hap-ibd program takes as input:
 - a genetic map in PLINK format (the README of hap-ibd provides these for
   GRCh38)
 
-## Converting hap-ibd data into a format for JBrowse
+## A quick aside: crossing over, and why grandparents matter
 
-By loading the hap-ibd data in JBrowse, hap-ibd can tell us which blocks of the
-chromosome are matches
-
-```bash
-#!/bin/bash
-# hap-ibd .ibd columns are: sample1, hap1, sample2, hap2, chr, start, end
-# we rearrange them into a BED file with columns: chr, start, end, sample1, hap1, sample2, hap2
-zcat result.ibd.gz | cut -f 5,6,7 > coords.bed
-zcat result.ibd.gz | cut -f 1,2,3,4 > samples.txt
-printf '#chr\tstart\tend\tsample1\thap1\tsample2\thap2\n' > out.bed
-paste coords.bed samples.txt >> out.bed
-```
-
-After this conversion, we can load this BED file into JBrowse. It is probably
-small enough that it doesn't even need tabix conversion. To label each block
-with the two haplotypes it connects, set the track's feature-label callback to a
-jexl expression like:
-
-```
-jexl:`${get(feature,'sample1')}:HP${get(feature,'hap1')} / ${get(feature,'sample2')}:HP${get(feature,'hap2')}`
-```
-
-## Background: relationship between phased blocks, and the biology of recombination
-
-Many people have heard of the term "recombination" or "crossing over" with
-regards to DNA, but what is it?
-
-The
-[NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
-defines it as "the exchange of DNA between paired homologous chromosomes (one
-from each parent) that occurs during the development of egg and sperm cells
-(meiosis)."
+Before we run the program, it helps to know what we are looking for.
+"Recombination" (or "crossing over") is, in the words of the
+[NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over),
+"the exchange of DNA between paired homologous chromosomes (one from each
+parent) that occurs during the development of egg and sperm cells (meiosis)."
 
 ![](/img/crossing_over.jpg) Figure from the
 [NHGRI genetics glossary](https://www.genome.gov/genetics-glossary/Crossing-Over)
 
-But there is a subtle but important point here: Your parents' genomes don't
-recombine during fertilization. Recombination happens during the production of
-their gametes. Therefore, your grandparents' genomes recombine during the
-production of your parents' sperm/eggs. We will see this visually below
+The subtle part: crossing over does not happen when the child is conceived — it
+happens earlier, when each parent's egg or sperm is made. So a crossover we
+detect along the child's chromosome is a recombination between the
+_grandparents'_ chromosomes, carried into the child through that parent. The
+hap-ibd painting below is what lets us see exactly where those crossovers fell.
 
-## Visualizing phased blocks and crossing over points in phased VCF files in JBrowse
+## Running hap-ibd
 
-After loading the hap-ibd track, we can see the blocks that hap-ibd calculated.
-We can additionally connect the lines onto the matrix view, though this isn't
-straightforward: you have to follow the lines from the genomic position to the
-matrix position. We can see this in the trio dataset, where the child has a
-mixture of the mom's and dad's haplotypes.
+hap-ibd needs the phased VCF and a genetic map. The trio VCF labels its
+chromosome `1` (no `chr` prefix), so use the `no_chr_in_chrom_field` variant of
+the GRCh38 PLINK map:
 
-<Figure caption="Screenshot showing the connection between hap-ibd annotations (orange) and the phased VCF matrix view. The colored blocks are marked-up using Google Slides. As a result of this visualization, we can see a crossing-over point that occurred (independently) in both the mom and dad at almost the same position, which form continuous blocks in the child." src="/img/trio-crossing-over.png"/>
+```bash
+java -jar hap-ibd.jar \
+  gt=HG02024_VN049_KHVTrio.chr1.vcf.gz \
+  map=plink.chr1.GRCh38.map \
+  out=trio min-seed=1.0 min-output=1.0
+```
 
-In the above screenshot, you can look at the 'barcode-like' patterns to see the
-matches between MOM A1 (allele 1) in mom and the child, MOM A2 (allele 2) in mom
-and child, DAD A1 (allele 1) in dad and child, DAD A2 (allele 2) in dad and
-child
+This writes `trio.ibd.gz`, one row per shared segment, with columns: sample1,
+hap1, sample2, hap2, chrom, start, end, cM-length. In a trio, every segment
+pairs the child with one parent, and the child's two haplotypes split cleanly
+between the parents:
 
-You can see why we mentioned the grandparents above: for instance, the DAD A1
-and DAD A2 alleles come from the crossing over of his two copies of his
-chromosomes that he got from his parents, which then recombine into a single
-chromosome in his child
+| child haplotype | matches parent   | inherited copy |
+| --------------- | ---------------- | -------------- |
+| HG02024:1       | HG02026 (father) | paternal       |
+| HG02024:2       | HG02025 (mother) | maternal       |
+
+(The parent roles come from the 1000 Genomes pedigree line
+`VN049 HG02024 HG02026 HG02025` — father HG02026, mother HG02025.) Within a
+child haplotype the matching _parental_ copy flips between the parent's copy 1
+and copy 2 at each recombination breakpoint — that flip is the crossing-over
+event we want to see.
+
+The raw segments are fragmented, though: hap-ibd only emits stretches that pass
+its cM-length thresholds, so there are gaps, and statistically-phased data (see
+[Is hap-ibd the right tool?](#is-hap-ibd-the-right-tool) below) sprinkles in
+short spurious flips. So we don't paint the raw segments — we first collapse
+them into clean inheritance blocks.
+
+## Converting hap-ibd data into painted inheritance blocks
+
+We want **one row per parental haplotype** — father copy 1, father copy 2,
+mother copy 1, mother copy 2 — and we want the child's inherited chromosome
+tiled across each parent's pair of rows, so that a crossover shows up as the
+painted block stepping from one row to its partner. The script below does three
+things per child haplotype: merges adjacent segments of the same parental copy
+into runs, drops short interior runs (the switch-error specks), and snaps each
+remaining crossover to the midpoint of the gap between runs so the blocks abut
+(leaving genuine large gaps, like the centromere, blank).
+
+```python
+import gzip
+
+CHILD, FATHER, MOTHER = 'HG02024', 'HG02026', 'HG02025'
+MAX_GAP, MIN_RUN_CM = 6_000_000, 2.5  # tiling cap; min interior-run length
+STYLE = {  # parental copy -> (row label, itemRgb): father blues, mother reds
+    (FATHER, 1): ('Father hap1', '31,120,180'),
+    (FATHER, 2): ('Father hap2', '166,206,227'),
+    (MOTHER, 1): ('Mother hap1', '227,26,28'),
+    (MOTHER, 2): ('Mother hap2', '251,154,153'),
+}
+
+segs = {1: [], 2: []}  # child haplotype 1 = paternal, 2 = maternal
+for line in gzip.open('trio.ibd.gz', 'rt'):
+    s1, h1, s2, h2, chrom, start, end, cm = line.split('\t')
+    child, chap, par, phap = (s1, int(h1), s2, int(h2)) if s1 == CHILD else (s2, int(h2), s1, int(h1))
+    segs[chap].append((int(start), int(end), par, phap, float(cm)))
+
+def runs(seglist):
+    seglist.sort()
+    out = []
+    for start, end, par, phap, cm in seglist:
+        if out and out[-1][2:4] == [par, phap]:
+            out[-1][1] = max(out[-1][1], end); out[-1][4] += cm
+        else:
+            out.append([start, end, par, phap, cm])
+    changed = True
+    while changed:  # drop short interior runs flanked by the same opposite copy
+        changed = False
+        for i in range(1, len(out) - 1):
+            if out[i][4] < MIN_RUN_CM and out[i - 1][2:4] == out[i + 1][2:4]:
+                out[i - 1][1] = max(out[i - 1][1], out[i + 1][1]); out[i - 1][4] += out[i + 1][4]
+                del out[i:i + 2]; changed = True; break
+    return out
+
+rows = []
+for chap in (1, 2):
+    paint = [[r[0], r[1], r[2], r[3]] for r in runs(segs[chap])]
+    for a, b in zip(paint, paint[1:]):
+        if b[0] - a[1] <= MAX_GAP:
+            a[1] = b[0] = (a[1] + b[0]) // 2  # snap crossover to the gap midpoint
+    rows += paint
+
+with open('trio.hapibd.bed', 'w') as fh:
+    fh.write('#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\tthickStart\tthickEnd\titemRgb\tparenthap\n')
+    for start, end, par, phap in sorted(rows):
+        label, rgb = STYLE[(par, phap)]
+        fh.write(f'1\t{start}\t{end}\t{label}\t0\t.\t{start}\t{end}\t{rgb}\t{label}\n')
+```
+
+```bash
+bgzip trio.hapibd.bed
+tabix -p bed trio.hapibd.bed.gz
+```
+
+Load the result as a `FeatureTrack` whose display is a
+`LinearMultiRowFeatureDisplay`: partition rows by the `parenthap` column, order
+the four rows father-then-mother, and read each block's color from `itemRgb`.
+
+```json
+{
+  "type": "FeatureTrack",
+  "trackId": "khv_trio_hapibd",
+  "name": "KHV trio hap-ibd haplotype blocks (chr1)",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BedTabixAdapter",
+    "disableGeneHeuristic": true,
+    "columnNames": [
+      "chrom",
+      "chromStart",
+      "chromEnd",
+      "name",
+      "score",
+      "strand",
+      "thickStart",
+      "thickEnd",
+      "itemRgb",
+      "parenthap"
+    ],
+    "bedGzLocation": { "uri": "trio.hapibd.bed.gz" },
+    "index": { "location": { "uri": "trio.hapibd.bed.gz.tbi" } }
+  },
+  "displays": [
+    {
+      "type": "LinearMultiRowFeatureDisplay",
+      "displayId": "khv_trio_hapibd-LinearMultiRowFeatureDisplay",
+      "partitionField": "parenthap",
+      "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+      "rowOrder": ["Father hap1", "Father hap2", "Mother hap1", "Mother hap2"]
+    }
+  ]
+}
+```
+
+## Visualizing crossing-over points
+
+The painting is now automatic — no manual markup needed. The four rows are the
+two parental copies of each parent (blues for father HG02026, reds for mother
+HG02025):
+
+<Figure caption="hap-ibd inheritance blocks painted with the multi-row feature display. The top two rows (blue) are father HG02026's two haplotypes; the bottom two (red) are mother HG02025's. The child's paternal chromosome is tiled across the two blue rows and its maternal chromosome across the two red rows, so each crossover is the crisp boundary where a painted block steps from one row to its partner." src="/img/trio-hapibd-painting.png"/>
+
+Read the two blue rows together as the child's single **paternal** chromosome:
+at any position exactly one of them is filled, telling you which of the father's
+two copies the child inherited there. Each place the block steps between the two
+blue rows is a **crossing-over point** — a recombination between the father's
+two chromosomes when his sperm was made. The two red rows are the same story for
+the **maternal** chromosome.
+
+This is why we mentioned grandparents earlier: the father's two haplotypes are
+themselves the chromosomes _he_ inherited from _his_ parents, so a step between
+the two blue rows is a recombination that happened in the grandparents' genomes,
+passed down through the father.
+
+## Relating the painting back to the genotypes
+
+Stacking the painting directly above the same VCF in the **phased multi-sample
+variant display** shows where the blocks come from. That display draws the
+genotypes at their genomic positions (use it rather than the _matrix_ mode,
+whose evenly-spaced columns no longer line up with the painting). It has six
+rows — the two haplotypes of each trio member — and the painting is just a
+summary of which parental haplotype the child's haplotype matches at each
+position.
+
+<Figure caption="The hap-ibd painting (top) above the trio VCF in the phased multi-sample variant display (bottom), over a window containing two crossovers. The maternal block steps from Mother hap1 to Mother hap2 around 62.3 Mb, and the paternal block steps from Father hap2 to Father hap1 around 65.3 Mb; the genotype rows below are drawn at the same genomic scale, so those boundaries line up." src="/img/trio-hapibd-matrix.png"/>
+
+Follow the child's paternal haplotype (HG02024 HP0) across the bottom track:
+left of ~65.3 Mb it tracks one of the father's haplotypes, and to the right it
+tracks the other — which is exactly the step you see in the blue rows of the
+painting above. The maternal haplotype (HG02024 HP1) does the same thing against
+the mother's haplotypes around 62.3 Mb.
+
+## Is hap-ibd the right tool?
+
+Not really — and it's worth being honest about why. hap-ibd is built to detect
+IBD between _distantly_ related individuals in large cohorts, so its cM-length
+thresholds are tuned to suppress false positives. A parent and child share a
+whole haplotype, which is a much stronger signal, so hap-ibd's thresholds end up
+fighting you: too strict and the blocks are sparse, too loose and short spurious
+segments creep in (which is why tuning the block-size parameters matters, and
+why we post-process into consensus runs above).
+
+The deeper issue is the input data. This 1000 Genomes VCF is _statistically_
+phased, not trio- or read-backed phased, so its haplotypes carry **switch
+errors** every megabase or so. If you skip hap-ibd entirely and read the
+inherited copy straight off the genotypes (at sites where a parent is
+heterozygous, the child's transmitted allele names the parental copy), chr1
+appears to have ~50 crossovers per parent — but a real human meiosis has only
+about [one to three per chromosome](https://www.nature.com/articles/ng.3669).
+Almost all of those apparent switches are phasing errors, not biology. hap-ibd's
+length threshold is, in effect, a switch-error filter, which is what makes its
+(post-processed) output look closer to the truth here.
+
+So for a clean, _exact_ crossover map you would first re-phase the trio with a
+pedigree-aware or read-backed phaser (e.g. SHAPEIT with the pedigree, or
+WhatsHap on long reads) and then read the mosaic directly from the genotypes.
+hap-ibd is a reasonable stand-in when all you have is a statistically-phased
+VCF, as long as you treat the block boundaries as approximate.
+
+## A direct alternative: read crossovers from the genotypes
+
+If you want to skip hap-ibd, the direct method is short enough to keep as a
+small command-line script. It produces the same painted BED (so it drops
+straight into the track config above), and the `--min-sites` smoothing parameter
+exposes the switch-error tradeoff directly: lower values track the noisy raw
+phasing, higher values collapse toward the few real crossovers.
+
+```python title="trio_crossovers.py"
+#!/usr/bin/env python3
+"""Call crossover blocks directly from a phased trio VCF (no hap-ibd).
+
+At a site where a parent is heterozygous, the child's transmitted allele names
+which of that parent's two haplotypes was passed on; a crossover is where that
+choice flips. Emits a BED painted for LinearMultiRowFeatureDisplay (one row per
+parental haplotype). It reads the phasing as-is, so it inherits the VCF's switch
+errors -- raise --min-sites to smooth them.
+"""
+import argparse
+import gzip
+
+STYLE = {
+    ('father', 1): ('Father hap1', '31,120,180'),
+    ('father', 2): ('Father hap2', '166,206,227'),
+    ('mother', 1): ('Mother hap1', '227,26,28'),
+    ('mother', 2): ('Mother hap2', '251,154,153'),
+}
+
+ap = argparse.ArgumentParser(description=__doc__)
+ap.add_argument('--vcf', required=True)
+ap.add_argument('--child', required=True)
+ap.add_argument('--father', required=True)
+ap.add_argument('--mother', required=True)
+ap.add_argument('--out', required=True)
+ap.add_argument('--min-sites', type=int, default=200,
+                help='merge runs shorter than this many informative sites')
+ap.add_argument('--max-gap', type=int, default=6_000_000)
+args = ap.parse_args()
+op = gzip.open if args.vcf.endswith('.gz') else open
+
+col, chrom, raw, votes = {}, '?', [], [0, 0]
+with op(args.vcf, 'rt') as fh:
+    for line in fh:
+        if line.startswith('##'):
+            continue
+        f = line.rstrip('\n').split('\t')
+        if line.startswith('#CHROM'):
+            col = {name: i for i, name in enumerate(f)}
+            continue
+        chrom = f[0]
+        c, fa, mo = (f[col[s]].split(':')[0].split('|')
+                     for s in (args.child, args.father, args.mother))
+        if not (len(c) == len(fa) == len(mo) == 2):
+            continue
+        raw.append((int(f[1]), c, fa, mo))
+        if fa[0] != fa[1]:  # vote: which child allele matches the father
+            votes[0 if c[0] in fa and c[1] not in fa else 1] += 1
+pat = 0 if votes[0] >= votes[1] else 1
+
+informative = {'father': [], 'mother': []}
+for pos, c, fa, mo in raw:
+    if fa[0] != fa[1] and c[pat] in fa:
+        informative['father'].append((pos, 1 if c[pat] == fa[0] else 2))
+    if mo[0] != mo[1] and c[1 - pat] in mo:
+        informative['mother'].append((pos, 1 if c[1 - pat] == mo[0] else 2))
+
+rows = []
+for role in ('father', 'mother'):
+    runs = []  # [start, end, copy, nsites]
+    for pos, copy in sorted(informative[role]):
+        if runs and runs[-1][2] == copy:
+            runs[-1][1], runs[-1][3] = pos, runs[-1][3] + 1
+        else:
+            runs.append([pos, pos, copy, 1])
+    changed = True
+    while changed:  # absorb short runs flanked by the same opposite copy
+        changed = False
+        for i in range(1, len(runs) - 1):
+            if runs[i][3] < args.min_sites and runs[i - 1][2] == runs[i + 1][2]:
+                runs[i - 1][1] = runs[i + 1][1]
+                runs[i - 1][3] += runs[i + 1][3]
+                del runs[i:i + 2]
+                changed = True
+                break
+    runs = [r for r in runs if r[3] >= args.min_sites]
+    merged = []
+    for r in runs:
+        if merged and merged[-1][2] == r[2]:
+            merged[-1][1] = r[1]
+        else:
+            merged.append(r[:])
+    paint = [[r[0], r[1], role, r[2]] for r in merged]
+    for a, b in zip(paint, paint[1:]):
+        if b[0] - a[1] <= args.max_gap:
+            a[1] = b[0] = (a[1] + b[0]) // 2
+    rows += paint
+    print(f'{role}: {len(merged)} blocks -> {max(len(merged) - 1, 0)} crossovers')
+
+with open(args.out, 'w') as fh:
+    fh.write('#chrom\tchromStart\tchromEnd\tname\tscore\tstrand\t'
+             'thickStart\tthickEnd\titemRgb\tparenthap\n')
+    for start, end, role, copy in sorted(rows):
+        label, rgb = STYLE[(role, copy)]
+        fh.write(f'{chrom}\t{start}\t{end}\t{label}\t0\t.\t{start}\t{end}\t{rgb}\t{label}\n')
+```
+
+```bash
+python trio_crossovers.py --vcf HG02024_VN049_KHVTrio.chr1.vcf.gz \
+  --child HG02024 --father HG02026 --mother HG02025 \
+  --out trio.direct.bed --min-sites 200
+bgzip trio.direct.bed && tabix -p bed trio.direct.bed.gz
+```
+
+On this VCF that reports 6 paternal and 8 maternal crossovers — still a few more
+than biology, because no amount of post-hoc smoothing fully undoes statistical
+phasing switch errors. That is the honest bottom line: this belongs in a
+command-line preprocessing step, not inside JBrowse, and the cleanest input is a
+well-phased trio VCF.
 
 ## See also
 
@@ -134,8 +413,5 @@ genotypes, trio inheritance of SVs, and a large chromosomal inversion — see th
 ## Live demo
 
 [Open this session](https://jbrowse.org/code/jb2/latest/?config=%2Fgenomes%2FGRCh38%2F1000genomes%2Fconfig_1000genomes.json&session=share-4gbEzsiqFe&password=Q2O2L)
-to explore the trio dataset described above.
-
-Note: the final visualization with marked-up crossing-over blocks was produced
-manually in an image editor. Automated detection of crossing-over points is not
-currently built into JBrowse.
+to explore the trio dataset described above. The "Open this view in JBrowse"
+link under the painting figure opens the hap-ibd track on its own.

@@ -37,9 +37,9 @@
   },
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
-    "status": "good",
-    "note": "viewportWidth 900\u2192700 (narrower per reviewer); regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "change viewport width back to 900, reduce height though",
+    "reviewedAt": "2026-06-20T20:39:54.090Z"
   },
   "alignments/arc_display": {
     "name": "alignments/arc_display",
@@ -61,9 +61,9 @@
   },
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
-    "status": "good",
-    "note": "fixed: gene track height 120 so the RefSeq gene models (PATL2/B2M/MIR10393) are visible above the sashimi arcs",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "status": "bad",
+    "note": "add tracklabels:'offset'",
+    "reviewedAt": "2026-06-20T20:40:57.151Z"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -80,14 +80,14 @@
   "sv_cgiab/translocation_sv_inspector_start": {
     "name": "sv_cgiab/translocation_sv_inspector_start",
     "status": "good",
-    "note": "dropped the 2nd (import-form) stage \u2192 single Add-menu frame; doc caption updated; regenerated + verified",
+    "note": "dropped the 2nd (import-form) stage → single Add-menu frame; doc caption updated; regenerated + verified",
     "reviewedAt": "2026-06-19T15:30:00.000Z"
   },
   "sv_synteny/dotplot_import": {
     "name": "sv_synteny/dotplot_import",
     "status": "good",
-    "note": "removed the redundant x/y-axis callouts (the import form already labels its selectors); regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-20T21:13:26.644Z"
   },
   "sv_synteny/dotplot": {
     "name": "sv_synteny/dotplot",
@@ -103,9 +103,9 @@
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
-    "status": "good",
-    "note": "FIXED: now a 2-stage setup walkthrough. Stage 1 = single chromosome (chr10) with View \u2192 Show... menu open and 'Show all regions in assembly' boxed; stage 2 = whole-genome scatter coverage result across all chromosomes. Regenerated via dev server (36.7% diff = new 2-frame figure).",
-    "reviewedAt": "2026-06-19T17:05:00.000Z"
+    "status": "bad",
+    "note": "please click add red circle annotation on 'view menu icon' too (hamburger menu)",
+    "reviewedAt": "2026-06-20T20:45:43.600Z"
   },
   "modifications": {
     "name": "modifications",
@@ -128,14 +128,14 @@
   "cnv": {
     "name": "cnv",
     "status": "good",
-    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) \u2014 scatter now resolves finer copy-number structure (12.33% diff).",
+    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) — scatter now resolves finer copy-number structure (12.33% diff).",
     "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "smalldel": {
     "name": "smalldel",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-15T13:24:51.687Z"
+    "status": "bad",
+    "note": "this is showing black text for the deletions, it should be white text on the grey deletions",
+    "reviewedAt": "2026-06-20T21:06:03.109Z"
   },
   "insertion": {
     "name": "insertion",
@@ -151,9 +151,9 @@
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
-    "status": "good",
-    "note": "Deletion-length labels now white-on-grey in light mode (drawAlignmentLabels: palette.mode-aware; was hardcoded black). Track order reads,variants / variants,reads retained.",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "status": "bad",
+    "note": "could be worth filtering out the super large 'inversions' for the screenshot in sniffles vcf (might use declarative filter in displaysnapshot using jexl)",
+    "reviewedAt": "2026-06-20T20:47:18.126Z"
   },
   "alignment_clipping_indicators": {
     "name": "alignment_clipping_indicators",
@@ -170,20 +170,20 @@
   "inverted_duplication": {
     "name": "inverted_duplication",
     "status": "good",
-    "note": "moved 'Annotated as INVdup' text bubble down into the empty pileup band so it no longer covers the top arcs (reviewer).",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "note": "the arrow showuld ideally connect from the \"Annotated as 'INVdup'' text box to the feature details",
+    "reviewedAt": "2026-06-20T20:52:44.799Z"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "bad",
-    "note": "DEFERRED: highlighting the specific chr3\u2194chr13 chord needs its feature id (chords are per-feature SVG paths whose ids depend on the remote VCF); requires running the app to identify the right chord.",
+    "note": "DEFERRED: highlighting the specific chr3↔chr13 chord needs its feature id (chords are per-feature SVG paths whose ids depend on the remote VCF); requires running the app to identify the right chord.",
     "reviewedAt": "2026-06-19T15:30:00.000Z"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
-    "status": "good",
-    "note": "Show all regions in assembly button already boxed; regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "if needed, make this a multi-panel where the results of clicking show all regions is next",
+    "reviewedAt": "2026-06-20T21:06:50.578Z"
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
@@ -205,15 +205,15 @@
   },
   "sv_cgiab/synteny_view": {
     "name": "sv_cgiab/synteny_view",
-    "status": "good",
-    "note": "FIXED: dark areas were dense overlapping anchors stacking opacity into solid fans. Spec now sets alpha:0.2 (lighten ribbons) + minAlignmentLength:50000 (drop short noisy alignments); regenerated via dev server (0.71% diff). Ribbons now read as clean light syntenic blocks.",
-    "reviewedAt": "2026-06-19T16:55:00.000Z"
+    "status": "bad",
+    "note": "explain to the user that min feature width was adjusted for this",
+    "reviewedAt": "2026-06-20T21:10:14.080Z"
   },
   "linear_synteny": {
     "name": "linear_synteny",
-    "status": "good",
-    "note": "alpha raised 0.5->0.65 for stronger ribbon color (reviewer: increase opacity a little).",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "status": "bad",
+    "note": "increase opacity a little",
+    "reviewedAt": "2026-06-20T20:54:48.756Z"
   },
   "about_track": {
     "name": "about_track",
@@ -229,9 +229,9 @@
   },
   "add_track_form": {
     "name": "add_track_form",
-    "status": "good",
-    "note": "single frame: File menu + add-track form shown together with an arrow between them; doc caption updated; regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "arrow should extend from the 'open track' annotation label...it currently extends from random point near 'duplicate session'",
+    "reviewedAt": "2026-06-20T20:39:23.997Z"
   },
   "alignments_center_line": {
     "name": "alignments_center_line",
@@ -247,15 +247,15 @@
   },
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
-    "status": "good",
-    "note": "already boxes both Show... and Show soft clipping; regenerated (byte-identical, already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "increase viewport width and height somewhat",
+    "reviewedAt": "2026-06-20T20:40:11.821Z"
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "good",
-    "note": "fixed: cropped each stage to header+pileup (height 430) so the two-frame figure is shorter",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "status": "bad",
+    "note": "make legend indicate that you can right-click variants themselves",
+    "reviewedAt": "2026-06-20T20:41:14.212Z"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -265,9 +265,9 @@
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
-    "status": "good",
-    "note": "FIXED: live menu cascade does open reliably \u2014 verified the committed PNG shows Color by... \u2192 Base modifications (MM tag) \u2192 Color by modification type \u2192 All modification types all open and red-boxed, reads colored by modification. The earlier deferral was stale; spec already drives the live menu (35s pre-menu settle lets COLO829 mod-data finish painting before the MUI cascade opens). Regenerated (0% diff, already correct).",
-    "reviewedAt": "2026-06-19T16:50:00.000Z"
+    "status": "bad",
+    "note": "we might have too many 'submenus'. we might want to try to make 'Color by modification type' and 'Color by methylation' into menus that are promoted one level up into Color by...",
+    "reviewedAt": "2026-06-20T20:44:27.351Z"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -277,15 +277,15 @@
   },
   "bookmark_widget_create": {
     "name": "bookmark_widget_create",
-    "status": "good",
-    "note": "fixed: switched to config_demo hg19 over the PTEN gene with ncbi_gff_hg19, shorter viewport (560) per reviewer",
-    "reviewedAt": "2026-06-11T13:30:00.000Z"
+    "status": "bad",
+    "note": "reduce height of viewport for both panels",
+    "reviewedAt": "2026-06-20T20:45:55.280Z"
   },
   "bookmark_widget_edit_label": {
     "name": "bookmark_widget_edit_label",
-    "status": "good",
-    "note": "callout already re-anchored on-screen (no longer off-screen); regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "move annotation down and to the right, and might add arrow from annotation text pointing at the  in screenshot label (says \"my region\")",
+    "reviewedAt": "2026-06-20T20:46:52.454Z"
   },
   "bookmark_widget_export_dialog": {
     "name": "bookmark_widget_export_dialog",
@@ -325,9 +325,9 @@
   },
   "hierarchical/hierarchical_user_menu-fs8": {
     "name": "hierarchical/hierarchical_user_menu-fs8",
-    "status": "good",
-    "note": "distracting gff3tabix gene track already removed (tracks:[]); regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "the 'view menu' is open in this screenshot currently. please close",
+    "reviewedAt": "2026-06-20T20:52:07.984Z"
   },
   "hs1_vs_mm39_synteny": {
     "name": "hs1_vs_mm39_synteny",
@@ -349,9 +349,9 @@
   },
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
-    "status": "good",
-    "note": "overlapping labels converted to text+arrow callouts placed in the app-bar / overview band; regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "the text placement is not good for 'drag to reorder track', 'track menu', 'add view' (has arrow on top of the add view box), and 'scroll-to-zoom' toggle.  also need to add box for 'open track selector'. if needed, split into a couple screenshots, we already have one that is good for highlighting the 'scroll to zoom' actually, so this might not be needed to highlight in this figure. ",
+    "reviewedAt": "2026-06-20T21:05:39.957Z"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
@@ -374,8 +374,8 @@
   "multiwig/multi_renderer_types": {
     "name": "multiwig/multi_renderer_types",
     "status": "good",
-    "note": "put red box around the 'Rendering type' field",
-    "reviewedAt": "2026-06-14T14:20:43.290Z"
+    "note": "",
+    "reviewedAt": "2026-06-20T20:58:02.136Z"
   },
   "multiwig/addtrack": {
     "name": "multiwig/addtrack",
@@ -385,15 +385,15 @@
   },
   "plugin_store": {
     "name": "plugin_store",
-    "status": "good",
-    "note": "already rings Tools and boxes the Plugin store widget; regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "make box around tools more square",
+    "reviewedAt": "2026-06-20T20:57:53.754Z"
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "good",
-    "note": "Clicking the add-track FAB now opens its popup menu; 'Add track' item boxed (reviewer: show the add track menu the FAB launches).",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "status": "bad",
+    "note": "the 'addtrack' popover covers up the fab. we might want to make the menu open above the fab",
+    "reviewedAt": "2026-06-20T20:39:22.294Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -439,9 +439,9 @@
   },
   "dotplot_add": {
     "name": "dotplot_add",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-19T12:15:44.664Z"
+    "status": "bad",
+    "note": "reduce the height of both screenshots slightly. also add annotation red box on the 'Add' menu in first one. also, this is a pretty low value screenshot. we should really guide people how to do 'new track' potentially in more detail.",
+    "reviewedAt": "2026-06-20T20:48:41.225Z"
   },
   "dotplot_menu": {
     "name": "dotplot_menu",
@@ -457,9 +457,9 @@
   },
   "edit_track_settings": {
     "name": "edit_track_settings",
-    "status": "good",
-    "note": "already boxes both Track actions and Settings; regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "please have the 'settings' sidebar open. also use volvox-bam instead of the gff3",
+    "reviewedAt": "2026-06-20T20:49:15.332Z"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
@@ -470,7 +470,7 @@
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
     "status": "good",
-    "note": "fixed: caption now describes the color coding \u2014 upstream/downstream (red), UTR (blue), CDS (yellow), intronic (white)",
+    "note": "fixed: caption now describes the color coding — upstream/downstream (red), UTR (blue), CDS (yellow), intronic (white)",
     "reviewedAt": "2026-06-11T14:06:37.359Z"
   },
   "hic_track": {
@@ -493,15 +493,15 @@
   },
   "recent_tracks": {
     "name": "recent_tracks",
-    "status": "good",
-    "note": "already single-frame with both the recently-used icon and popover highlighted; regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "you can remove the red box around the 'recent tracks' box",
+    "reviewedAt": "2026-06-20T21:03:27.519Z"
   },
   "rnaseq/compact_stacked": {
     "name": "rnaseq/compact_stacked",
     "status": "good",
-    "note": "Caption + prose nuanced: coverage broadly tracks expression but needs normalization for accurate estimate.",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-20T21:03:38.399Z"
   },
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
@@ -559,15 +559,15 @@
   },
   "sv_inspector_importform_after": {
     "name": "sv_inspector_importform_after",
-    "status": "good",
-    "note": "viewport\u21921150x620; Open-from-track radio ringed (anchored); kept single-stage because this fresh SvInspectorView has no in-session VCF to populate the Open-from-track dropdown; regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "probably can just delete the annotations and text",
+    "reviewedAt": "2026-06-20T21:11:05.966Z"
   },
   "synteny_from_dotplot_view": {
     "name": "synteny_from_dotplot_view",
     "status": "good",
-    "note": "drag-selection already reduced to ~75%; regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-20T21:13:42.531Z"
   },
   "top_level_menus": {
     "name": "top_level_menus",
@@ -578,8 +578,8 @@
   "track_menu": {
     "name": "track_menu",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:28:06.439Z"
+    "note": "reduce height of both screenshots a bit",
+    "reviewedAt": "2026-06-20T21:14:11.707Z"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -601,15 +601,15 @@
   },
   "trio-matrix-phased": {
     "name": "trio-matrix-phased",
-    "status": "good",
-    "note": "FIXED: matrix rendered darker than main because variantMatrix.slang widened sub-pixel variant columns to a solid opaque 1px (MIN_COL_PX=1.0), while main's canvas2d antialiases thin columns into lighter pixels. Shader now scales fragment alpha by the TRUE (pre-widening) column-width fraction (colWidthPx varying), so dense regions blend lighter via premult-OVER \u2014 canvas2d-AA parity. Connector lines were already byte-identical to main. gen:shaders + regen via dev server (14.5% diff). Same root cause as trio-matrix-phased-clean.",
-    "reviewedAt": "2026-06-19T17:25:00.000Z"
+    "status": "bad",
+    "note": "the 'lines connecting to genomic position' are weirdly greyish, on main they are black",
+    "reviewedAt": "2026-06-20T21:15:41.211Z"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
-    "status": "good",
-    "note": "FIXED with trio-matrix-phased: the 'lighter on main' / 'subpixel better' was canvas2d antialiasing thin variant columns vs the GPU painting solid opaque 1px columns. variantMatrix.slang now scales alpha by true sub-pixel column width so dense regions blend lighter. regen via dev server (18.9% diff).",
-    "reviewedAt": "2026-06-19T17:25:00.000Z"
+    "status": "bad",
+    "note": "the 'lines connecting to genomic position' are weirdly greyish, on main they are black",
+    "reviewedAt": "2026-06-20T21:16:02.856Z"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -619,44 +619,44 @@
   },
   "variant_panel": {
     "name": "variant_panel",
-    "status": "good",
-    "note": "viewport 1250x1000\u21921150x880; SAMPLES callout already correctly anchored; regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "the 'annotation text' should be too the left of the 'SAMPLES' text",
+    "reviewedAt": "2026-06-20T21:16:39.878Z"
   },
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
-    "status": "good",
-    "note": "FIXED (show-more): FloatingLegend now collapses past 12 items with a 'Show N more\u2026'/'Show less' toggle (DEFAULT_MAX_ITEMS); 1000genomes legend went from ~32 labels (5 genotype + 26 population codes + no-call) to 12 + 'Show 20 more\u2026'. Shared component, also benefits alignments pileup legend. Note: 'richer metadata' (3-letter pop codes\u2192full names) left out \u2014 needs a code\u2192description map not present in VCF metadata.",
-    "reviewedAt": "2026-06-19T12:39:15.954Z"
+    "status": "bad",
+    "note": "we may want to make a more rich notion of legend that incorporates that the sidebar label coloring is separate from the 'text' coloring. could be multiple 'legend panels' or divs inside legend that can be individually closed",
+    "reviewedAt": "2026-06-20T21:17:30.450Z"
   },
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
     "status": "good",
-    "note": "Manhattan track height 250\u2192200 + viewport\u2192410 so the 0-axis and low-score SNPs clear the viewport edge instead of being clipped; regenerated + verified",
+    "note": "Manhattan track height 250→200 + viewport→410 so the 0-axis and low-score SNPs clear the viewport edge instead of being clipped; regenerated + verified",
     "reviewedAt": "2026-06-19T15:30:00.000Z"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "fixed: whole-chromosome (chr2) Manhattan overview \u2014 full 243Mbp contig with the classic dense point field + peaks",
+    "note": "fixed: whole-chromosome (chr2) Manhattan overview — full 243Mbp contig with the classic dense point field + peaks",
     "reviewedAt": "2026-06-11T14:06:37.359Z"
   },
   "link_to_split_view": {
     "name": "link_to_split_view",
     "status": "good",
-    "note": "fixed: merged the two overlapping text annotations into one word-wrapped callout with a single arrow to the boxed split-view link.",
-    "reviewedAt": "2026-06-15T14:04:54.761Z"
+    "note": "",
+    "reviewedAt": "2026-06-20T20:55:07.565Z"
   },
   "menu_demo": {
     "name": "menu_demo",
     "status": "good",
-    "note": "keep curated: this is a standalone Menu-component demo matching the code listing in developer_guides/menus.md, not reproducible app state \u2014 the url/lgv screenshot generator drives the jbrowse-web app only. The committed hand-made PNG is correct.",
+    "note": "keep curated: this is a standalone Menu-component demo matching the code listing in developer_guides/menus.md, not reproducible app state — the url/lgv screenshot generator drives the jbrowse-web app only. The committed hand-made PNG is correct.",
     "reviewedAt": "2026-06-11T17:30:00.000Z"
   },
   "methylation/colo829_cram_and_bedmethyl": {
     "name": "methylation/colo829_cram_and_bedmethyl",
     "status": "good",
-    "note": "zoomed 5kb\u21922.5kb so per-base methylation calls are legible; regenerated + verified",
+    "note": "zoomed 5kb→2.5kb so per-base methylation calls are legible; regenerated + verified",
     "reviewedAt": "2026-06-19T15:30:00.000Z"
   },
   "methylation/per_read_mod_bam": {
@@ -667,9 +667,9 @@
   },
   "multiwig/trackselector": {
     "name": "multiwig/trackselector",
-    "status": "good",
-    "note": "viewport 1100x680\u2192950x600; category menu still uncllipped; regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "the red arrows kind of cover up the text of the menu items",
+    "reviewedAt": "2026-06-20T20:57:37.870Z"
   },
   "multi-sv-trio": {
     "name": "multi-sv-trio",
@@ -715,9 +715,9 @@
   },
   "sv_cgiab/cnv_multi_bigwig": {
     "name": "sv_cgiab/cnv_multi_bigwig",
-    "status": "good",
-    "note": "viewport 1800x800\u21921500x520; added 4th stage switching to overlapping scatter (normal vs tumor in one band); regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "delete the first and third rows of this multi-panel. i don't think they contribute much",
+    "reviewedAt": "2026-06-20T21:06:34.775Z"
   },
   "admin_settings_access": {
     "name": "admin_settings_access",
@@ -733,9 +733,9 @@
   },
   "alignments/arc_selector": {
     "name": "alignments/arc_selector",
-    "status": "good",
-    "note": "investigated: NOT a duplicate. Unique HG002 paired-arc deletion figure and the only one showing the inter-region-line context menu (arc_display=SKBR3/no-menu, select_arc_display=different menu, read_cloud=linked-reads). Kept as-is",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "we might not need to have the menu open at all for this one, so can remove the menu opening code and annotations on the menu items",
+    "reviewedAt": "2026-06-20T20:42:00.752Z"
   },
   "alignments/modifications3": {
     "name": "alignments/modifications3",
@@ -776,14 +776,14 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
     "name": "multiwig/cluster_dialog",
     "status": "good",
-    "note": "showTree:false hides the post-clustering dendrogram (per user: only the row reordering matters, a tree implies phylogeny); already in gallery.md; multiquantitative_track.md reframes the tree as the optional Show tree toggle; regenerated + verified",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-20T21:03:15.570Z"
   },
   "multiwig/multirow_xy": {
     "name": "multiwig/multirow_xy",
@@ -800,7 +800,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -838,5 +838,77 @@
     "status": "good",
     "note": "already single-frame (2nd frame removed); regenerated (already correct)",
     "reviewedAt": "2026-06-19T15:30:00.000Z"
+  },
+  "alignments/haplotype": {
+    "name": "alignments/haplotype",
+    "status": "bad",
+    "note": "might want to make another screenshot saying how to open the 'group by' with annotation. it could be a separate screenshot. might also zoom in a little bit on the linear genome view between 63,005,000-63,008,000",
+    "reviewedAt": "2026-06-20T20:43:21.467Z"
+  },
+  "alignments/modifications2": {
+    "name": "alignments/modifications2",
+    "status": "bad",
+    "note": "Add more explanation why methylation mode shows blue while the other track does not",
+    "reviewedAt": "2026-06-20T20:44:48.003Z"
+  },
+  "gene_track_collapse_introns": {
+    "name": "gene_track_collapse_introns",
+    "status": "bad",
+    "note": "please use display mode compact for the alignments track. might also consider a gene with less exons. use tracklabels offset also",
+    "reviewedAt": "2026-06-20T20:50:12.384Z"
+  },
+  "gene_track_color_by_cds": {
+    "name": "gene_track_color_by_cds",
+    "status": "bad",
+    "note": "may want to show the 'reference sequence track'also which colors by cds too, zoomed in to near base level on an exon",
+    "reviewedAt": "2026-06-20T20:50:38.163Z"
+  },
+  "gene_track_mature_peptides": {
+    "name": "gene_track_mature_peptides",
+    "status": "bad",
+    "note": "might want to enable showing the labels on the subfeatures",
+    "reviewedAt": "2026-06-20T20:50:53.435Z"
+  },
+  "gene_track_peptides": {
+    "name": "gene_track_peptides",
+    "status": "bad",
+    "note": "use tracklabels: offset, and also only show longest transcript. also, the reference sequence track is not coloring the frames by cds",
+    "reviewedAt": "2026-06-20T20:51:19.414Z"
+  },
+  "maf_conservation": {
+    "name": "maf_conservation",
+    "status": "bad",
+    "note": "i dont really understand the new 'conservation' measurement. should we even have this? we have phastcons tracks generally that have reliable calculations",
+    "reviewedAt": "2026-06-20T20:56:17.266Z"
+  },
+  "rnaseq/single_read": {
+    "name": "rnaseq/single_read",
+    "status": "bad",
+    "note": "this is probably unnecessary detail. can delete this screenshot, and incorporate the prose about this into the text just explaining it. note that the intronic skips are not black they are teal though.",
+    "reviewedAt": "2026-06-20T21:04:13.219Z"
+  },
+  "sv_cgiab/deletion_sv_inspector_search": {
+    "name": "sv_cgiab/deletion_sv_inspector_search",
+    "status": "bad",
+    "note": "I think that it is not filtering the circular view for the particular variant, when searching the particular element. it is supposed to filter the circular view",
+    "reviewedAt": "2026-06-20T21:09:12.166Z"
+  },
+  "sv_cgiab/translocation_breakpoint_split": {
+    "name": "sv_cgiab/translocation_breakpoint_split",
+    "status": "bad",
+    "note": "might want to use supercompact display height mode",
+    "reviewedAt": "2026-06-20T21:09:51.517Z"
+  },
+  "sv_inspector_importform_filtered": {
+    "name": "sv_inspector_importform_filtered",
+    "status": "bad",
+    "note": "referred to in other note but this is not filtering the circular view. we also previously searched for \"CHR2=17\" to filter those. also, i am not even sure this 'CHR2=17' is a great concept though, as clearl variants 'originating from 17' would not be caught. we might want to make a more expressive search language for this...",
+    "reviewedAt": "2026-06-20T21:12:20.847Z"
+  },
+  "trio-hapibd-matrix": {
+    "name": "trio-hapibd-matrix",
+    "status": "bad",
+    "note": "it is not clear from this screenshot where the haplotypes are. we may need to do a deep dive into this to help figure this out better. we could zoom more in on a boundary between haplotypes to try to see if that helps",
+    "reviewedAt": "2026-06-20T21:15:00.624Z"
   }
 }

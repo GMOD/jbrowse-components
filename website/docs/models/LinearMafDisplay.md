@@ -295,6 +295,59 @@ type coverageHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 coverageHeight: types.stripDefault(types.number, DEFAULTS.coverageHeight)
 ```
 
+#### property: showConservation
+
+Show the conservation band (per-bp percent identity to the reference, computed
+from the aligned species). Off by default. Independent of
+`showCoverage`/`showAlignments`.
+
+```ts
+// type signature
+type showConservation = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showConservation: types.stripDefault(types.boolean, DEFAULTS.showConservation)
+```
+
+#### property: conservationHeight
+
+```ts
+// type signature
+type conservationHeight = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+conservationHeight: types.stripDefault(
+  types.number,
+  DEFAULTS.conservationHeight,
+)
+```
+
+#### property: showRowIdentity
+
+Show each species' percent identity to the reference (over the visible region)
+next to its row label. Off by default.
+
+```ts
+// type signature
+type showRowIdentity = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showRowIdentity: types.stripDefault(types.boolean, DEFAULTS.showRowIdentity)
+```
+
+#### property: showRowIdentityHeatmap
+
+Shade each species row by its local (per-pixel) percent identity to the
+reference, on a divergent→conserved ramp drawn over the base coloring. Off by
+default. Independent of `showRowIdentity` (the per-label percentage).
+
+```ts
+// type signature
+type showRowIdentityHeatmap = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showRowIdentityHeatmap: types.stripDefault(
+  types.boolean,
+  DEFAULTS.showRowIdentityHeatmap,
+)
+```
+
 </details>
 
 <details open>
@@ -421,9 +474,28 @@ Height of the coverage band above the rows (0 when hidden).
 type coverageDisplayHeight = number
 ```
 
+#### getter: conservationDisplayHeight
+
+Height of the conservation (percent identity) band (0 when hidden).
+
+```ts
+type conservationDisplayHeight = number
+```
+
+#### getter: rowsTopOffset
+
+Top offset of the per-sample rows area = the stacked band heights above it
+(coverage + conservation). The single source of truth for "where the rows start"
+— every rows hit-test / draw / export offset routes through this so adding a
+band can't desync them.
+
+```ts
+type rowsTopOffset = number
+```
+
 #### getter: totalHeight
 
-Full display height = rows area + coverage band.
+Full display height = rows area + stacked bands.
 
 ```ts
 type totalHeight = number
@@ -503,6 +575,29 @@ Y-axis tick marks for the coverage band.
 
 ```ts
 type coverageTicks = YScaleTicks | undefined
+```
+
+#### getter: rowIdentities
+
+Per-row percent identity to the reference (0..1), indexed to align with
+`sources`: each row's matching vs classifiable bases summed across the visible
+regions, then divided. `undefined` where the row has no classifiable base in
+view (or it's the reference row, which is excluded upstream). Derived from
+fetched data only — deliberately kept out of `rpcProps`/`sources` so it can't
+drive a refetch loop.
+
+```ts
+type rowIdentities = (number | undefined)[]
+```
+
+#### getter: rowIdentityLabels
+
+Per-row identity formatted as `"NN%"` for the row labels (aligned to `sources`),
+or undefined when the row-identity display is off. Rows with no classifiable
+base get undefined → no text.
+
+```ts
+type rowIdentityLabels = (string | undefined)[] | undefined
 ```
 
 #### getter: visibleLabels
@@ -603,7 +698,7 @@ worker-output convention): an aligned base (`cell`) or a bridged/empty region
 block covers the bp, the row is out of range, or the cell is a gap.
 
 ```ts
-type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => { sampleLabel: string; kind: "cell"; base: string; chr?: string | undefined; pos?: number | undefined; strand?: number | undefined; context?: AlignmentContext | undefined; } | { ...; } | { ...; } | { ...; } | undefined
+type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => { sampleLabel: string; rowIdentity: number | undefined; kind: "cell"; base: string; chr?: string | undefined; pos?: number | undefined; strand?: number | undefined; context?: AlignmentContext | undefined; } | { ...; } | { ...; } |...
 ```
 
 #### method: coverageTooltipBin
@@ -616,11 +711,7 @@ they never mix into the depth/SNP table. Returns undefined when the region has
 no fetched data or depth is zero.
 
 ```ts
-type coverageTooltipBin = (
-  displayedRegionIndex: number,
-  position: number,
-  bpPerPx: number,
-) => CoverageTooltipBin | undefined
+type coverageTooltipBin = (displayedRegionIndex: number, position: number, bpPerPx: number) => { identity: number; position: number; depth: number; fwdDepth?: number | undefined; revDepth?: number | undefined; ... 4 more ...; modifications?: Record<...> | undefined; } | undefined
 ```
 
 #### method: coverageInsertionHit
@@ -727,6 +818,30 @@ type setShowAlignments = (arg: boolean) => void
 
 ```ts
 type setCoverageHeight = (arg: number) => void
+```
+
+#### action: setShowConservation
+
+```ts
+type setShowConservation = (arg: boolean) => void
+```
+
+#### action: setShowRowIdentity
+
+```ts
+type setShowRowIdentity = (arg: boolean) => void
+```
+
+#### action: setShowRowIdentityHeatmap
+
+```ts
+type setShowRowIdentityHeatmap = (arg: boolean) => void
+```
+
+#### action: setConservationHeight
+
+```ts
+type setConservationHeight = (arg: number) => void
 ```
 
 #### action: showInsertionSequenceDialog

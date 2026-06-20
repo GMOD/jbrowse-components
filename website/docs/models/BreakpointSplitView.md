@@ -120,17 +120,19 @@ views: types.array(
 
 #### property: init
 
-used for initializing the view from a session snapshot
+declarative child panels (loc/assembly/tracks) resolved into `views` once the
+view has a width; used for initializing from a session snapshot. Transient —
+stripped by postProcessSnapshot.
 
 ```ts
 // type signature
 type init = IType<
-  BreakpointSplitViewInit | undefined,
-  BreakpointSplitViewInit | undefined,
-  BreakpointSplitViewInit | undefined
+  BreakpointSplitViewInitView[] | undefined,
+  BreakpointSplitViewInitView[] | undefined,
+  BreakpointSplitViewInitView[] | undefined
 >
 // code
-init: types.frozen<BreakpointSplitViewInit | undefined>()
+init: types.frozen<BreakpointSplitViewInitView[] | undefined>()
 ```
 
 </details>
@@ -183,7 +185,7 @@ type showImportForm = boolean
 #### getter: assembly
 
 ```ts
-type assembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 6 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
+type assembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
 ```
 
 #### getter: matchedTracks
@@ -341,7 +343,7 @@ type squareView = () => void
 #### action: setInit
 
 ```ts
-type setInit = (init?: BreakpointSplitViewInit | undefined) => void
+type setInit = (init?: BreakpointSplitViewInitView[] | undefined) => void
 ```
 
 #### action: setViews

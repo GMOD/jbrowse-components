@@ -232,6 +232,45 @@ export function parseTranslTable(value: unknown): number | undefined {
   return Number.isInteger(n) && n > 0 ? n : undefined
 }
 
+// A single `transl_except` exception in 0-based half-open genomic coordinates.
+// `aa` is the amino acid that overrides the normal codon translation at this
+// position: '*' for a polyA-completed stop (TERM), 'U' for selenocysteine (Sec),
+// 'O' for pyrrolysine (Pyl), or another IUPAC 1-letter code for other cases.
+export interface TranslExcept {
+  start: number
+  end: number
+  aa: string
+}
+
+// Parses a GFF/GenBank `transl_except` attribute. The attribute value is one or
+// more parenthesised entries of the form `(pos:N,aa:X)` or `(pos:N..M,aa:X)`,
+// where positions are 1-based closed GFF coordinates. The GFF3 URL-encoding is
+// decoded by the parser before we see it (commas arrive as plain commas, not
+// %2C). Returns positions converted to 0-based half-open intervals.
+export function parseTranslExcept(value: unknown): TranslExcept[] {
+  const vals = Array.isArray(value)
+    ? value.map(String)
+    : typeof value === 'string'
+      ? [value]
+      : []
+  return vals.flatMap(v =>
+    [...v.matchAll(/\(pos:(\d+)(?:\.\.(\d+))?,aa:(\w+)\)/g)].map(m => {
+      const start1 = Number(m[1])
+      const end1 = m[2] !== undefined ? Number(m[2]) : start1
+      const rawAa = m[3]!
+      const aa =
+        rawAa === 'TERM'
+          ? '*'
+          : rawAa === 'Sec'
+            ? 'U'
+            : rawAa === 'Pyl'
+              ? 'O'
+              : rawAa
+      return { start: start1 - 1, end: end1, aa }
+    }),
+  )
+}
+
 // codon i = BASE1[i] + BASE2[i] + BASE3[i]
 const CODONS = Array.from(
   { length: 64 },

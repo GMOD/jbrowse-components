@@ -111,6 +111,10 @@ export const recentConfigs: readonly SampleLink[] = [
     label: 'Enterovirus D polyprotein (mature peptides)',
   },
   {
+    config: 'test_data/human_mito/config.json',
+    label: 'Human mitochondrion (transl_table=2 + transl_except polyA stops)',
+  },
+  {
     config: 'test_data/arabidopsis_methylation/config.json',
     label: 'Arabidopsis methylation (ONT 5mC/5hmC)',
   },

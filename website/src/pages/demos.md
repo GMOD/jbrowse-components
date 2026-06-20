@@ -40,6 +40,9 @@ desktop.
 - [hg38 MAF (447-way alignment, BRCA1)](https://jbrowse.org/code/jb2/latest/?config=https://jbrowse.org/ucsc/hg38/config.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22hg38%22%2C%22loc%22%3A%22chr17%3A43044000-43126000%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%22hg38-cactus447way%22%5D%7D%5D%7D)
 - [Arabidopsis methylation (ONT 5mC/5hmC)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Farabidopsis_methylation%2Fconfig.json)
 - [Arabidopsis methylation (EM-seq bisulfite)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Farabidopsis_methylation%2Fconfig_emseq_bisulfite.json)
+- [SARS-CoV2 polyprotein (ORF1ab mature peptides)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fsars-cov2%2Fconfig.json&session=spec-%7B%22views%22%3A%5B%7B%22assembly%22%3A%22Wuhan-Hu-1%22%2C%22loc%22%3A%22NC_045512.2%3A266-21555%22%2C%22type%22%3A%22LinearGenomeView%22%2C%22tracks%22%3A%5B%22ncbi_genes_with_mature_peptides%22%5D%7D%5D%7D)
+- [Enterovirus D polyprotein (mature peptides)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fenterovirus_d%2Fconfig.json)
+- [Human mitochondrion (vertebrate mitochondrial code + transl_except polyA-completed stops)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fhuman_mito%2Fconfig.json)
 
 **Conference and other guided demos**
 

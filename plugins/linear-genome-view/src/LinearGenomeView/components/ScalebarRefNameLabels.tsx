@@ -56,7 +56,10 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   let stickyBlockIdx = -1
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!
-    if (b.type === 'ContentBlock' && (stickyBlockIdx === -1 || b.offsetPx < offsetPx)) {
+    if (
+      b.type === 'ContentBlock' &&
+      (stickyBlockIdx === -1 || b.offsetPx < offsetPx)
+    ) {
       stickyBlockIdx = i
     }
   }

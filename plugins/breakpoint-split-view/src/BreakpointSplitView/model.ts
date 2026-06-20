@@ -30,7 +30,6 @@ import {
 } from './util.ts'
 
 import type {
-  BreakpointSplitViewInit,
   BreakpointSplitViewInitView,
   ExportSvgOptions,
   LayoutRecord,
@@ -91,9 +90,11 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         ),
         /**
          * #property
-         * used for initializing the view from a session snapshot
+         * declarative child panels (loc/assembly/tracks) resolved into `views`
+         * once the view has a width; used for initializing from a session
+         * snapshot. Transient — stripped by postProcessSnapshot.
          */
-        init: types.frozen<BreakpointSplitViewInit | undefined>(),
+        init: types.frozen<BreakpointSplitViewInitView[] | undefined>(),
       }),
     )
     .volatile<{
@@ -430,7 +431,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       /**
        * #action
        */
-      setInit(init?: BreakpointSplitViewInit) {
+      setInit(init?: BreakpointSplitViewInitView[]) {
         self.init = init
       },
 
@@ -467,7 +468,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 return
               }
 
-              self.setViews(init.views)
+              self.setViews(init)
               self.setInit(undefined)
             },
             { name: 'BreakpointSplitViewInit' },

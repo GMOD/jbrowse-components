@@ -16,20 +16,18 @@ export default function BreakpointSplitExample() {
             {
               id: 'breakpoint_split_view',
               type: 'BreakpointSplitView',
-              init: {
-                views: [
-                  {
-                    loc: 'ctgA:1-5000',
-                    assembly: 'volvox',
-                    tracks: ['volvox_sv_cram'],
-                  },
-                  {
-                    loc: 'ctgB:1-5000',
-                    assembly: 'volvox',
-                    tracks: ['volvox_sv_cram'],
-                  },
-                ],
-              },
+              init: [
+                {
+                  loc: 'ctgA:1-5000',
+                  assembly: 'volvox',
+                  tracks: ['volvox_sv_cram'],
+                },
+                {
+                  loc: 'ctgB:1-5000',
+                  assembly: 'volvox',
+                  tracks: ['volvox_sv_cram'],
+                },
+              ],
             },
           ],
         },

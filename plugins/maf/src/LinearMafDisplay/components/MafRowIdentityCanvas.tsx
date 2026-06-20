@@ -44,7 +44,14 @@ const MafRowIdentityCanvas = observer(function MafRowIdentityCanvas({
         })
       }
     })
-  }, [model, width, rowsHeight, rowHeight, rowProportion, showRowIdentityHeatmap])
+  }, [
+    model,
+    width,
+    rowsHeight,
+    rowHeight,
+    rowProportion,
+    showRowIdentityHeatmap,
+  ])
 
   return showRowIdentityHeatmap ? (
     <canvas

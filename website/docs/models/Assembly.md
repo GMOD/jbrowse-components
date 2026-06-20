@@ -106,6 +106,18 @@ type cytobands = Feature[] | undefined
 cytobands: undefined as Feature[] | undefined
 ```
 
+#### volatile: loadedGeneticCodes
+
+refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with
+(and overridden by) the inline `geneticCodes` config slot
+
+```ts
+// type signature
+type loadedGeneticCodes = Record<string, number> | undefined
+// code
+loadedGeneticCodes: undefined as Record<string, number> | undefined
+```
+
 #### volatile: lowerCaseRefNameAliases
 
 Precomputed in loadPre to avoid expensive synchronous computation when MobX
@@ -243,6 +255,16 @@ type getCanonicalRefName = (refName: string) => string
 type getRefNameColor = (refName: string) => string | undefined
 ```
 
+#### method: getGeneticCodeId
+
+NCBI genetic-code (translation table) id for a refName, from the assembly's
+`geneticCodes` config map (e.g. a mitochondrial contig = 2). Falls back to the
+standard code (1) for unlisted refNames.
+
+```ts
+type getGeneticCodeId = (refName: string) => number
+```
+
 #### method: getSeqAdapterRefName
 
 Given a canonical refName, returns the refName used by the sequence adapter
@@ -298,7 +320,12 @@ type setLoaded = ({
   allRefNamesWithLowerCase,
   canonicalToSeqAdapterRefNames,
   cytobands,
-}: RefNameMaps & { regions: Region[]; cytobands: Feature[] }) => void
+  geneticCodes,
+}: RefNameMaps & {
+  regions: Region[]
+  cytobands: Feature[]
+  geneticCodes: Record<string, number>
+}) => void
 ```
 
 #### action: setError

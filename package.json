@@ -45,7 +45,7 @@
     "@emotion/cache": "^11.14.0",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.1",
-    "@eslint-react/eslint-plugin": "^5.9.0",
+    "@eslint-react/eslint-plugin": "^5.9.1",
     "@eslint/js": "^10.0.1",
     "@jbrowse/mobx-state-tree": "^5.11.1",
     "@jbrowse/web": "workspace:^",

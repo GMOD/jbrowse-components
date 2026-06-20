@@ -28,10 +28,6 @@ export interface BreakpointSplitViewInitView {
   )[]
 }
 
-export interface BreakpointSplitViewInit {
-  views: BreakpointSplitViewInitView[]
-}
-
 export type LayoutRecord = [number, number, number, number]
 
 export interface LayoutMatch {

@@ -64,7 +64,7 @@ haplotype-correlated SNPs.
 You can sort, color, or filter reads by any BAM tag. A common workflow is
 coloring and sorting by the HP (haplotype) tag to see phased reads.
 
-<Figure caption="Step-by-step guide showing how to sort and color by haplotype with the HP tag." src="/img/alignments/haplotype.png" />
+<Figure caption="HG002 ONT reads grouped and colored by the HP (haplotype) tag — the pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
 
 ### Filtering reads
 
@@ -206,7 +206,7 @@ partners). The track menu has toggles to hide these if they're distracting.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 
-<Figure caption="Paired arcs showing a deletion with Illumina paired-end reads and Nanopore ultra-long reads on HG002. Also shows the menu-items for hiding inter-region lines." src="/img/alignments/arc_selector.png" />
+<Figure caption="Discordant paired-end arcs over an HG002 structural variant (Illumina 2x250 reads with the GIAB SV call above), with the track menu open at Show... → Advanced where the off-screen and inter-chromosomal arc toggles live." src="/img/alignments/arc_selector.png" />
 
 ### Linked reads
 

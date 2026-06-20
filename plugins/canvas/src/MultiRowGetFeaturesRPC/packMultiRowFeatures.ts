@@ -51,7 +51,9 @@ export function packMultiRowFeatures(
     } catch {
       css = 'goldenrod'
     }
-    featureColors[i] = cssColorToABGR(typeof css === 'string' ? css : 'goldenrod')
+    featureColors[i] = cssColorToABGR(
+      typeof css === 'string' ? css : 'goldenrod',
+    )
   }
 
   return {
