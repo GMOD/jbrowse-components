@@ -1,8 +1,5 @@
 import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
-import {
-  getAlleleColor,
-  getColorAlleleCount,
-} from '../../shared/drawAlleleCount.ts'
+import { getAlleleColor, getRawAlleleCountColor } from '../../shared/drawAlleleCount.ts'
 import { getPhasedColor } from '../../shared/getPhasedColor.ts'
 import {
   buildSampleIndices,
@@ -14,10 +11,13 @@ import {
 import { getCachedABGR } from '../../shared/variantWebglUtils.ts'
 
 import type { MAFFilteredFeature } from '../../shared/minorAlleleFrequencyUtils.ts'
-import type { ProcessedSource, VariantFeatureInfo } from '../../shared/types.ts'
+import type {
+  ProcessedSource,
+  VariantFeatureGenotypes,
+} from '../../shared/types.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
-type FeatureData = VariantFeatureInfo & { featureId: string }
+type FeatureData = VariantFeatureGenotypes & { featureId: string }
 
 function makeFeatureData(
   feature: Feature,
@@ -208,46 +208,14 @@ export function computeVariantMatrixCells({
           if (si < 0) {
             continue
           }
-          const offset = si * ploidy
-          let refCount = 0
-          let altCount = 0
-          let alt2Count = 0
-          let uncalled = 0
-          let total = 0
-          for (let pi = 0; pi < ploidy; pi++) {
-            const a = callGt[offset + pi]!
-            if (a === -2) {
-              continue
-            }
-            total++
-            if (a === 0) {
-              refCount++
-            } else if (a === -1) {
-              uncalled++
-            } else if (a === mostFreqAltInt) {
-              altCount++
-            } else {
-              alt2Count++
-            }
-          }
-          if (total === 0) {
-            continue
-          }
-
-          const colorKey =
-            refCount | (altCount << 8) | (alt2Count << 16) | (uncalled << 24)
-          let c = rawColorCache.get(colorKey)
-          if (c === undefined) {
-            c = getColorAlleleCount(
-              refCount,
-              altCount,
-              alt2Count,
-              uncalled,
-              total,
-              true,
-            )
-            rawColorCache.set(colorKey, c)
-          }
+          const c = getRawAlleleCountColor(
+            callGt,
+            si * ploidy,
+            ploidy,
+            mostFreqAltInt,
+            true,
+            rawColorCache,
+          )
           if (c) {
             addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
             genotypes[sampleName] = genotypeStringFromRaw(

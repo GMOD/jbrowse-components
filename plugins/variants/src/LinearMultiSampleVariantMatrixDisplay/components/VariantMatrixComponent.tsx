@@ -5,12 +5,13 @@ import { observer } from 'mobx-react'
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
-import type { MatrixCellData } from './computeVariantMatrixCells.ts'
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
+import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -19,7 +20,7 @@ type LGV = LinearGenomeViewModel
 const useStyles = makeStyles()(scrollbarStyles)
 
 interface MatrixHit extends VariantTooltipFields {
-  featureData: MatrixCellData['featureData'][number]
+  featureData: VariantFeatureInfo & { featureId: string }
 }
 
 // The matrix canvas + scrollbar + hit-test wiring. DisplayChrome (owned by the
@@ -75,7 +76,12 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     const feature = cellData.featureData[featureIdx]
     if (source && feature) {
       const sampleName = source.sampleName
-      const genotype = feature.genotypes[sampleName]
+      const genotype = decodeGenotype(
+        cellData.genotypeDict,
+        model.genotypeSampleIndex!,
+        feature.genotypeCodes,
+        sampleName,
+      )
       if (genotype) {
         return {
           ...buildVariantHit({

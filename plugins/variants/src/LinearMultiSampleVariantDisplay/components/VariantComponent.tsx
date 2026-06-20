@@ -8,12 +8,13 @@ import { observer } from 'mobx-react'
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
+import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
 import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
-import type { FeatureGenotypeInfo } from './computeVariantCells.ts'
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
+import type { VariantFeatureInfo } from '../../shared/types.ts'
 import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -29,7 +30,7 @@ interface HoveredCell {
 }
 
 interface VariantHit extends VariantTooltipFields {
-  featureInfo: FeatureGenotypeInfo
+  featureInfo: VariantFeatureInfo
   cell: HoveredCell
 }
 
@@ -120,7 +121,12 @@ function getFeatureUnderMouse(
   const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
   const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
   const info = regionCellData.featureGenotypeMap[featureId]!
-  const genotype = info.genotypes[source.sampleName]!
+  const genotype = decodeGenotype(
+    cellData.genotypeDict,
+    model.genotypeSampleIndex!,
+    info.genotypeCodes,
+    source.sampleName,
+  )!
   return {
     ...buildVariantHit({
       info,

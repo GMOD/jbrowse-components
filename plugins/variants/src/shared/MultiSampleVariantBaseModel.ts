@@ -26,6 +26,7 @@ import {
 import deepEqual from 'fast-deep-equal'
 
 import { GENOTYPE_SPLITTER, VARIANT_FEATURE_WIDGET } from './constants.ts'
+import { buildSampleIndex, decodeGenotypes } from './genotypeCodec.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import {
   variantContextMenuItems,
@@ -726,6 +727,17 @@ export default function MultiSampleVariantBaseModelF(
               )
             : undefined
         },
+        /**
+         * #getter
+         * sampleName -> column index into each feature's interned
+         * `genotypeCodes`. Rebuilt only when cellData changes. Used by the
+         * tooltips to decode a hovered cell's genotype (see genotypeCodec.ts).
+         */
+        get genotypeSampleIndex() {
+          return self.cellData
+            ? buildSampleIndex(self.cellData.sampleNames)
+            : undefined
+        },
         // Row-height model: keep `rowHeightMode`, `autoRowHeight`, `rowHeight`,
         // and the proportional `resizeHeight` in sync across related displays.
         /**
@@ -795,15 +807,19 @@ export default function MultiSampleVariantBaseModelF(
       }))
       .actions(self => ({
         sortByGenotype(featureId: string) {
+          const { cellData } = self
           const sources = self.sourcesWithoutLayout
-          if (!sources) {
-            return
+          if (cellData && sources) {
+            const info = getGenotypeMapForFeature(cellData, featureId)
+            if (info) {
+              const genotypes = decodeGenotypes(
+                cellData.genotypeDict,
+                cellData.sampleNames,
+                info.genotypeCodes,
+              )
+              self.setLayout(sortSourcesByGenotype(sources, genotypes))
+            }
           }
-          const info = getGenotypeMapForFeature(self.cellData, featureId)
-          if (!info) {
-            return
-          }
-          self.setLayout(sortSourcesByGenotype(sources, info.genotypes))
         },
       }))
       .views(self => ({
@@ -937,6 +953,9 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           const bpPerPx = view.bpPerPx
+          // The override narrows sources to ProcessedSource[]: the guard above
+          // proves self.sourcesBase is defined here, but rpcProps()'s own read
+          // of it is typed ProcessedSource[] | undefined.
           const sources = self.sourcesBase
           const rpcProps = { ...self.rpcProps(), sources }
           await self.fetchRegions(regions, async (ctx: FetchContext) => {
