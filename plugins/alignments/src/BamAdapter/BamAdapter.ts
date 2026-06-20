@@ -31,7 +31,7 @@ function seqFetchSpan(
       end = Math.max(end, record.end)
     }
   }
-  return end > 0 ? { start, end } : null
+  return start !== Infinity ? { start, end } : null
 }
 
 export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig> {
@@ -47,24 +47,22 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
   private sequenceAdapterP?: Promise<BaseSequenceAdapter | undefined>
 
   protected configure() {
-    if (!this.configureResult) {
-      const csi = this.getConf(['index', 'indexType']) === 'CSI'
-      const location = this.getConf(['index', 'location'])
-      this.configureResult = {
-        bam: new BamFile({
-          bamFilehandle: openLocation(
-            this.getConf('bamLocation'),
-            this.pluginManager,
-          ),
-          csiFilehandle: csi
-            ? openLocation(location, this.pluginManager)
-            : undefined,
-          baiFilehandle: !csi
-            ? openLocation(location, this.pluginManager)
-            : undefined,
-          recordClass: BamSlightlyLazyFeature,
-        }),
-      }
+    const csi = this.getConf(['index', 'indexType']) === 'CSI'
+    const location = this.getConf(['index', 'location'])
+    this.configureResult ??= {
+      bam: new BamFile({
+        bamFilehandle: openLocation(
+          this.getConf('bamLocation'),
+          this.pluginManager,
+        ),
+        csiFilehandle: csi
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+        baiFilehandle: !csi
+          ? openLocation(location, this.pluginManager)
+          : undefined,
+        recordClass: BamSlightlyLazyFeature,
+      }),
     }
     return this.configureResult
   }
@@ -143,21 +141,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       const { bam } = await this.setup(opts)
       checkStopToken(stopToken)
 
-      let records
-      try {
-        records = await downloadStatus(
-          'Downloading alignments',
-          statusCallback,
-          onProgress =>
-            bam.getRecordsForRange(refName, start, end, {
-              filterBy,
-              onProgress,
-            }),
-        )
-      } catch (e) {
+      const records = await downloadStatus(
+        'Downloading alignments',
+        statusCallback,
+        onProgress =>
+          bam.getRecordsForRange(refName, start, end, {
+            filterBy,
+            onProgress,
+          }),
+      ).catch((e: unknown) => {
         this.clearCaches()
         throw e
-      }
+      })
       checkStopToken(stopToken)
 
       const { readName, tagFilter } = filterBy ?? {}

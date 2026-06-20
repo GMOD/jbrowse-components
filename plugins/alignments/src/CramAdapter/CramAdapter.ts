@@ -96,7 +96,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
       return cramName
     }
     // fall back to whatever we have, even if not in the set
-    return originalName || cramName
+    return originalName ?? cramName
   }
 
   private async seqFetch(seqId: number, start: number, end: number) {
@@ -225,20 +225,17 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
       }
-      let records
-      try {
-        records = await downloadStatus(
-          'Downloading alignments',
-          statusCallback,
-          onProgress =>
-            cram.getRecordsForRange(refId, start, end, {
-              onProgress,
-            }),
-        )
-      } catch (e) {
+      const records = await downloadStatus(
+        'Downloading alignments',
+        statusCallback,
+        onProgress =>
+          cram.getRecordsForRange(refId, start, end, {
+            onProgress,
+          }),
+      ).catch((e: unknown) => {
         this.clearCaches()
         throw e
-      }
+      })
       checkStopToken(stopToken)
       await withProgress(
         {

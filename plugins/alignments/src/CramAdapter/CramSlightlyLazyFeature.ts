@@ -252,12 +252,10 @@ export default class CramSlightlyLazyFeature implements Feature {
             length,
             cliplen: cliplen!,
           })
-        } else {
-          mismatches.push({
-            type: type === 2 ? 'deletion' : 'skip',
-            start,
-            length,
-          })
+        } else if (type === DELETION_TYPE) {
+          mismatches.push({ type: 'deletion', start, length })
+        } else if (type === SKIP_TYPE) {
+          mismatches.push({ type: 'skip', start, length })
         }
       },
     )

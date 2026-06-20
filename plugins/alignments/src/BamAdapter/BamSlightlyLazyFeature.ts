@@ -3,9 +3,11 @@ import {
   CHAR_FROM_CODE,
   CIGAR_H,
   CIGAR_S,
+  DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
   MISMATCH_TYPE,
+  SKIP_TYPE,
   SOFTCLIP_TYPE,
   forEachMismatchNumeric,
 } from '@jbrowse/cigar-utils'
@@ -78,12 +80,10 @@ export default class BamSlightlyLazyFeature
             length,
             cliplen: cliplen!,
           })
-        } else {
-          mismatches.push({
-            type: type === 2 ? 'deletion' : 'skip',
-            start,
-            length,
-          })
+        } else if (type === DELETION_TYPE) {
+          mismatches.push({ type: 'deletion', start, length })
+        } else if (type === SKIP_TYPE) {
+          mismatches.push({ type: 'skip', start, length })
         }
       },
     )
