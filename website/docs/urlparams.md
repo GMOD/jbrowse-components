@@ -522,6 +522,32 @@ vertical); omit `loc` for a whole-genome overview:
 }
 ```
 
+#### Dotplot view init options
+
+Like the synteny view, the dotplot spec accepts extra top-level fields applied
+on load:
+
+- `colorBy`: same color modes as the
+  [synteny view](#linear-synteny-view-init-options) (e.g. `strand`, `identity`,
+  `mappingQuality`), applied to each dotplot display.
+- `minAlignmentLength`: hide alignments shorter than this many bp.
+- `autoDiagonalize`: reorder the vertical axis to follow the horizontal axis
+  after the first render, lining up the main diagonal.
+
+```json
+{
+  "views": [
+    {
+      "type": "DotplotView",
+      "views": [{ "assembly": "volvox" }, { "assembly": "volvox" }],
+      "tracks": ["volvox_fake_synteny"],
+      "colorBy": "strand",
+      "autoDiagonalize": true
+    }
+  ]
+}
+```
+
 #### Dotplot highlights
 
 The dotplot view accepts a `highlight` array in the same way the linear genome
@@ -631,6 +657,57 @@ Expanded, again showing a self-self alignment is allowed
   ]
 }
 ```
+
+#### Linear synteny view init options
+
+The synteny view spec accepts extra top-level fields that set the view's initial
+display state on load. This opens the same view colored by strand, with curved
+ribbons and stronger opacity:
+
+```
+https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"colorBy":"strand","drawCurves":true,"alpha":0.8,"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
+```
+
+[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"colorBy":"strand","drawCurves":true,"alpha":0.8,"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
+
+Expanded JSON:
+
+```json
+{
+  "views": [
+    {
+      "type": "LinearSyntenyView",
+      "tracks": ["volvox_fake_synteny"],
+      "colorBy": "strand",
+      "drawCurves": true,
+      "alpha": 0.8,
+      "views": [
+        { "loc": "ctgA:1-30000", "assembly": "volvox" },
+        { "loc": "ctgA:1000-31000", "assembly": "volvox" }
+      ]
+    }
+  ]
+}
+```
+
+Supported init fields:
+
+- `colorBy`: one of `default`, `strand`, `query`, `target`, `identity`,
+  `identityDiverging`, `meanQueryIdentity`, `meanQueryMappingQuality`,
+  `mappingQuality`. `query`/`target` paint ribbons by source/target chromosome —
+  useful for whole-genome views where the default grey blends ribbons into mud.
+- `drawCurves`: render ribbons as bezier curves rather than straight chords.
+  Reads better at whole-genome scale where straight crossings stack into noise.
+- `alpha`: per-feature opacity in `[0,1]` (default `0.2`, tuned for dense
+  hairballs). Raise it (~`0.4`) when `minAlignmentLength` has thinned the view.
+- `minAlignmentLength`: hide chains shorter than this many bp at the renderer —
+  cuts the genome-scale hairball down to the large syntenic blocks.
+- `autoDiagonalize`: after tracks load, reorder the bottom axis to follow the
+  top axis so the main diagonal lines up (shown behind a "Reordering
+  chromosomes…" spinner). Best for whole-genome all-vs-all views.
+- `levelHeights`: array of pixel heights, one per synteny strip (level). For a
+  multi-way view, `levelHeights[i]` is the strip between `views[i]` and
+  `views[i+1]`.
 
 ### Breakpoint split view
 
