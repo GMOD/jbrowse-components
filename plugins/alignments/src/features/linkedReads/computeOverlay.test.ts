@@ -114,6 +114,30 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     expect(cp2x).toBeLessThan(sx2) // s2 = +1, leading split → folds back left
   })
 
+  it('reverse-complemented region flips both handles', () => {
+    // Same fwd+rev split as above (handles both head right), but the displayed
+    // region is reversed, so screen-x is flipped and both handles flip with it.
+    const data = makeData({
+      names: ['r', 'r'],
+      flags: [0, SAM_FLAG_SUPPLEMENTARY],
+      strands: [1, -1],
+      positions: [
+        [100, 200],
+        [300, 400],
+      ],
+      ys: [0, 1],
+    })
+    const arcs = computePileupBezierArcs({
+      ...baseOpts,
+      displayedRegions: [{ refName: 'chr1', reversed: true }],
+      laidOutPileupMap: new Map([[0, data]]),
+    })
+    expect(arcs).toHaveLength(1)
+    const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
+    expect(cp1x).toBeLessThan(sx1) // flipped from the non-reversed fwd case
+    expect(cp2x).toBeLessThan(sx2) // flipped from the non-reversed split case
+  })
+
   it('emits no NaN coordinates', () => {
     const data = makeData({
       names: ['r', 'r'],
