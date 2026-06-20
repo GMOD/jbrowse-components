@@ -84,6 +84,7 @@ const DEFAULTS = {
   showConservation: false,
   conservationHeight: 40,
   showRowIdentity: false,
+  showRowIdentityHeatmap: false,
 } as const
 
 /**
@@ -220,6 +221,17 @@ export default function stateModelFactory(
         showRowIdentity: types.stripDefault(
           types.boolean,
           DEFAULTS.showRowIdentity,
+        ),
+        /**
+         * #property
+         * Shade each species row by its local (per-pixel) percent identity to
+         * the reference, on a divergent→conserved ramp drawn over the base
+         * coloring. Off by default. Independent of `showRowIdentity` (the
+         * per-label percentage).
+         */
+        showRowIdentityHeatmap: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showRowIdentityHeatmap,
         ),
       }),
     )
@@ -359,6 +371,12 @@ export default function stateModelFactory(
        */
       setShowRowIdentity(arg: boolean) {
         self.showRowIdentity = arg
+      },
+      /**
+       * #action
+       */
+      setShowRowIdentityHeatmap(arg: boolean) {
+        self.showRowIdentityHeatmap = arg
       },
       /**
        * #action

@@ -14,6 +14,10 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import { drawConservation } from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
+import {
+  ROW_IDENTITY_HEATMAP_ALPHA,
+  drawRowIdentityHeatmap,
+} from './components/drawRowIdentity.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
@@ -71,6 +75,8 @@ export async function renderSvg(
     coverageDomain,
     showConservation,
     conservationHeight,
+    showRowIdentityHeatmap,
+    rowProportion,
   } = model
   const treeShowing = showTree && !!hierarchy
   const labelOffset = treeShowing ? treeAreaWidth : 0
@@ -111,6 +117,15 @@ export async function renderSvg(
       <g transform={`translate(0, ${rowsTopOffset})`}>
         {paintLayer(width, rowsHeight, opts, ctx => {
           drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
+          if (showRowIdentityHeatmap && sources?.length) {
+            drawRowIdentityHeatmap(ctx, renderBlocks, model.rpcDataMap, {
+              rowHeight,
+              rowProportion,
+              nRows: sources.length,
+              canvasWidth: width,
+              alpha: ROW_IDENTITY_HEATMAP_ALPHA,
+            })
+          }
           drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
           drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
           drawMafLabels(

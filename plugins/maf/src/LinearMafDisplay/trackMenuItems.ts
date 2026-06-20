@@ -25,6 +25,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showAlignments: boolean
   showConservation: boolean
   showRowIdentity: boolean
+  showRowIdentityHeatmap: boolean
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   clusterTree?: string
@@ -39,6 +40,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
   setShowRowIdentity: (f: boolean) => void
+  setShowRowIdentityHeatmap: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
@@ -143,6 +145,14 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           checked: self.showRowIdentity,
           onClick: () => {
             self.setShowRowIdentity(!self.showRowIdentity)
+          },
+        },
+        {
+          label: 'Per-row identity heatmap',
+          type: 'checkbox',
+          checked: self.showRowIdentityHeatmap,
+          onClick: () => {
+            self.setShowRowIdentityHeatmap(!self.showRowIdentityHeatmap)
           },
         },
       ],

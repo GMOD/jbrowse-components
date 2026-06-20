@@ -16,6 +16,7 @@ import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
 import MafCoverageYScale from './MafCoverageYScale.tsx'
+import MafRowIdentityCanvas from './MafRowIdentityCanvas.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
@@ -130,6 +131,7 @@ const MafBody = observer(function MafBody({
             height: rowsHeight,
           }}
         />
+        <MafRowIdentityCanvas model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}
