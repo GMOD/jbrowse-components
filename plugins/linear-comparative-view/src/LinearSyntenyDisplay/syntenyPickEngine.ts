@@ -72,6 +72,35 @@ export function buildFeaturePath(
   ctx.closePath()
 }
 
+// Stroke only the two side (connecting) edges — left x1→x4, right x2→x3 —
+// matching the GPU edge passes (syntenyEdge{Straight,Curve}.slang), which
+// outline a clicked feature's connecting edges but NOT its top/bottom
+// genome-axis edges. A closed-path stroke (buildFeaturePath + ctx.stroke)
+// would draw two extra horizontal lines the GPU never shows.
+export function strokeFeatureSideEdges(
+  ctx: CanvasLike,
+  c: ProjectedCorners,
+  yTop: number,
+  height: number,
+  isCurve: boolean,
+) {
+  const yBot = yTop + height
+  ctx.beginPath()
+  if (isCurve) {
+    const halfH = yTop + height * 0.5
+    ctx.moveTo(c.sx1, yTop)
+    ctx.bezierCurveTo(c.sx1, halfH, c.sx4, halfH, c.sx4, yBot)
+    ctx.moveTo(c.sx2, yTop)
+    ctx.bezierCurveTo(c.sx2, halfH, c.sx3, halfH, c.sx3, yBot)
+  } else {
+    ctx.moveTo(c.sx1, yTop)
+    ctx.lineTo(c.sx4, yBot)
+    ctx.moveTo(c.sx2, yTop)
+    ctx.lineTo(c.sx3, yBot)
+  }
+  ctx.stroke()
+}
+
 export interface ComputedTransform {
   bpPerPxInv0: number
   bpPerPxInv1: number

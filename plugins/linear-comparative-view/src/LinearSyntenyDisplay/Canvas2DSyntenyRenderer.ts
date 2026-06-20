@@ -5,6 +5,7 @@ import {
   isEdgeCulled,
   pickFeatureAtPoint,
   projectCorners,
+  strokeFeatureSideEdges,
 } from './syntenyPickEngine.ts'
 import { KIND_CIGAR_MATCH } from '../LinearSyntenyRPC/syntenyColors.ts'
 
@@ -124,7 +125,7 @@ function drawInstances(
       if (isClicked && !isCigar) {
         ctx.strokeStyle = 'rgba(0,0,0,0.4)'
         ctx.lineWidth = 1
-        ctx.stroke()
+        strokeFeatureSideEdges(ctx, c, yTop, height, drawCurves)
       }
     }
   }

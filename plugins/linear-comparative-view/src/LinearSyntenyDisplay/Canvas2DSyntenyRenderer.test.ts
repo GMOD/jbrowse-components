@@ -250,6 +250,30 @@ describe('Canvas2DSyntenyRenderer', () => {
     expect(ctx.stroke).toHaveBeenCalled()
   })
 
+  test('clicked outline strokes only side edges, not top/bottom (GPU parity)', () => {
+    const { canvas, pathOps } = createMockCanvas()
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    renderer.uploadGeometry(0, makeInstanceData(1))
+    renderer.render(makeState([[0, makeParams({ clickedFeatureId: 1 })]]))
+
+    // Path ops after the fill belong to the clicked outline. The GPU edge
+    // passes outline only the two connecting edges (left sx1→sx4, right
+    // sx2→sx3) — two disjoint subpaths, no top/bottom genome-axis edges and
+    // no closing edge.
+    const outline = pathOps.slice(pathOps.indexOf('fill') + 1)
+    expect(outline).toEqual([
+      'beginPath',
+      'moveTo(10.0,0.0)',
+      'lineTo(20.0,100.0)',
+      'moveTo(100.0,0.0)',
+      'lineTo(110.0,100.0)',
+    ])
+    expect(outline).not.toContain('closePath')
+  })
+
   test('deleteGeometry removes a track from rendering', () => {
     const { canvas, pathOps } = createMockCanvas()
     canvas.width = 800
