@@ -5,7 +5,7 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import DataGridFlexContainer from '@jbrowse/core/ui/DataGridFlexContainer'
 import { ErrorBoundary } from '@jbrowse/core/ui/ErrorBoundary'
-import { measureGridWidth } from '@jbrowse/core/util'
+import { measureGridWidth, useLocalStorage } from '@jbrowse/core/util'
 import SettingsIcon from '@mui/icons-material/Settings'
 import { ToggleButton, ToggleButtonGroup, Typography } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
@@ -18,7 +18,6 @@ import {
   getAlleleFrequencies,
   getSampleGridRows,
 } from './getSampleGridRows.ts'
-import { usePersistedBoolean, usePersistedEnum } from './persistedState.ts'
 
 import type { Filters, VariantFieldDescriptions } from './types.ts'
 import type { VCFFeatureSerialized } from '../types.ts'
@@ -43,28 +42,32 @@ export default function VariantSampleGrid({
   descriptions?: VariantFieldDescriptions | null
 }) {
   const [filter, setFilter] = useState<Filters>({})
-  const [columnDisplayMode, setColumnDisplayMode] = usePersistedEnum(
-    'variantSampleGrid-columnDisplayMode',
-    columnDisplayModes,
-    'all',
-  )
-  const [showFilters, setShowFilters] = usePersistedBoolean(
+  const [storedColumnDisplayMode, setColumnDisplayMode] =
+    useLocalStorage<ColumnDisplayMode>(
+      'variantSampleGrid-columnDisplayMode',
+      'all',
+    )
+  // guard against a stale/corrupt stored value
+  const columnDisplayMode = columnDisplayModes.includes(storedColumnDisplayMode)
+    ? storedColumnDisplayMode
+    : 'all'
+  const [showFilters, setShowFilters] = useLocalStorage(
     'variantSampleGrid-showFilters',
     false,
   )
-  const [showFrequencyTable, setShowFrequencyTable] = usePersistedBoolean(
+  const [showFrequencyTable, setShowFrequencyTable] = useLocalStorage(
     'variantSampleGrid-showFrequencyTable',
     true,
   )
-  const [showAlleleFrequencies, setShowAlleleFrequencies] = usePersistedBoolean(
+  const [showAlleleFrequencies, setShowAlleleFrequencies] = useLocalStorage(
     'variantSampleGrid-showAlleleFrequencies',
     true,
   )
-  const [showToolbar, setShowToolbar] = usePersistedBoolean(
+  const [showToolbar, setShowToolbar] = useLocalStorage(
     'variantSampleGrid-showToolbar',
     false,
   )
-  const [useCounts, setUseCounts] = usePersistedBoolean(
+  const [useCounts, setUseCounts] = useLocalStorage(
     'variantSampleGrid-useCounts',
     false,
   )
