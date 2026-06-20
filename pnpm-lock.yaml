@@ -2359,6 +2359,9 @@ importers:
       '@jbrowse/plugin-gff3':
         specifier: workspace:^
         version: link:../../plugins/gff3
+      '@jbrowse/plugin-gtf':
+        specifier: workspace:^
+        version: link:../../plugins/gtf
       '@jbrowse/plugin-gwas':
         specifier: workspace:^
         version: link:../../plugins/gwas
