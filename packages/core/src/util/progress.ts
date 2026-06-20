@@ -86,8 +86,12 @@ export function statusProgressLabel(status: RpcStatus | undefined) {
  * (generic-filehandle2 omits it when the response has no Content-Length): with a
  * total we emit a determinate bar, without one we emit just the label so the UI
  * still shows the phase as an indeterminate spinner.
+ *
+ * Internal to this module — the only caller is {@link downloadStatus}, which is
+ * the API adapters use. Kept separate purely so the reporter logic reads on its
+ * own line.
  */
-export function downloadStatusReporter(
+function downloadStatusReporter(
   statusCallback: StatusCallback | undefined,
   message: string,
 ) {

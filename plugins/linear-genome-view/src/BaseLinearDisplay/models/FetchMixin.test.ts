@@ -254,6 +254,61 @@ describe('FetchMixin: status message', () => {
   })
 })
 
+describe('FetchMixin: progress reporting', () => {
+  it('setStatusMessage splits a determinate status into message + fraction', () => {
+    const m = makeModel()
+    m.setStatusMessage({ message: 'Downloading', current: 1, total: 4 })
+    expect(m.statusMessage).toBe('Downloading')
+    expect(m.statusProgress).toBe(0.25)
+  })
+
+  it('setStatusMessage leaves progress undefined for an indeterminate status', () => {
+    const m = makeModel()
+    m.setStatusMessage('Processing')
+    expect(m.statusMessage).toBe('Processing')
+    expect(m.statusProgress).toBeUndefined()
+  })
+
+  it('setRegionStatus aggregates concurrent regions into one bar', () => {
+    const m = makeModel()
+    // two regions downloading in parallel: the bar reflects Σcurrent/Σtotal,
+    // not whichever region reported last
+    m.setRegionStatus(0, { message: 'Downloading', current: 30, total: 100 })
+    m.setRegionStatus(1, { message: 'Downloading', current: 10, total: 100 })
+    expect(m.statusMessage).toBe('Downloading')
+    expect(m.statusProgress).toBeCloseTo(0.2)
+  })
+
+  it('setRegionStatus(key, undefined) drops a region from the aggregate', () => {
+    const m = makeModel()
+    m.setRegionStatus(0, { message: 'Downloading', current: 50, total: 100 })
+    m.setRegionStatus(1, { message: 'Downloading', current: 0, total: 100 })
+    expect(m.statusProgress).toBeCloseTo(0.25)
+    m.setRegionStatus(1, undefined)
+    expect(m.statusProgress).toBeCloseTo(0.5)
+  })
+
+  it('clears the aggregate when the last region finishes', () => {
+    const m = makeModel()
+    m.setRegionStatus(0, { message: 'Downloading', current: 1, total: 2 })
+    m.setRegionStatus(0, undefined)
+    expect(m.statusMessage).toBeUndefined()
+    expect(m.statusProgress).toBeUndefined()
+  })
+
+  it('cancelFetch clears statusProgress and the per-region bookkeeping', () => {
+    const m = makeModel()
+    m.runFetch(() => new Promise<void>(() => {}))
+    m.setRegionStatus(0, { message: 'Downloading', current: 1, total: 2 })
+    expect(m.statusProgress).toBeCloseTo(0.5)
+    m.cancelFetch()
+    expect(m.statusProgress).toBeUndefined()
+    // a fresh fetch must not inherit the stale region entry
+    m.setRegionStatus(1, { message: 'Downloading', current: 1, total: 4 })
+    expect(m.statusProgress).toBeCloseTo(0.25)
+  })
+})
+
 describe('FetchMixin: isStale contract for work callbacks', () => {
   it('isStale is false during a normal fetch', async () => {
     const m = makeModel()

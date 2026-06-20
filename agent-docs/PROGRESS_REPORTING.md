@@ -45,8 +45,7 @@ All status helpers now live in **one file** — `progress.ts`. `updateStatus` /
 
 | Helper | Use |
 | --- | --- |
-| `downloadStatus(label, statusCallback, fn(onProgress))` | **Preferred for download phases.** Combines `updateStatus` (label + clear) with `downloadStatusReporter` and hands the reporter to `fn`, so the phase label lives in **one** place — no risk of the `updateStatus` label and the `downloadStatusReporter` label drifting apart. All 7 download adapters (bam/cram/bed/gff3/gtf/vcf/splitvcf) + `fetchAndMaybeUnzip` use this. |
-| `downloadStatusReporter(statusCallback, label)` | The lower-level adapter behind `downloadStatus`. Adapts the byte-granularity `onProgress(bytes, total?)` from generic-filehandle2 / `@gmod/tabix` / `@gmod/bam` / `@gmod/cram` to the structured transport; returns `undefined` when no `statusCallback` so the reader skips bookkeeping. `total` is **optional** — readers that don't know the size up front (generic-filehandle2 with no Content-Length) emit just the label (indeterminate); with a total it's a determinate bar. Prefer `downloadStatus` over calling this directly. |
+| `downloadStatus(label, statusCallback, fn(onProgress))` | **The API for download phases.** Combines `updateStatus` (label + clear) with an internal byte-reporter and hands the reporter to `fn`, so the phase label lives in **one** place. The reporter adapts the byte-granularity `onProgress(bytes, total?)` from generic-filehandle2 / `@gmod/tabix` / `@gmod/bam` / `@gmod/cram`; `total` is **optional** — readers that don't know the size up front (generic-filehandle2 with no Content-Length) emit just the label (indeterminate spinner), with a total it's a determinate bar. Passes `undefined` to `fn` when there's no `statusCallback` so the reader skips bookkeeping. All 7 download adapters (bam/cram/bed/gff3/gtf/vcf/splitvcf) + `fetchAndMaybeUnzip` use this. (The reporter itself, `downloadStatusReporter`, is module-private — nothing outside `progress.ts` calls it; don't re-export it.) |
 | `createProgressReporter({label,total,statusCallback,stopToken})` | Per-iteration `report()` for long worker CPU loops: throttled cancel-check + throttled object emit. **Bare `report()` auto-increments** an internal counter (the elegant default — `for (…) report()`); pass `report(n)` only when the caller tracks its own running position across batches. Cheap enough to call every iteration: cancel-check and the emit's `Date.now()` are both counter-gated (bitmask), so the common path is an int compare — no clock read. With no `statusCallback`/`total` it's a pure cancel-tick. |
 | `withProgress({label,total,statusCallback,stopToken}, fn)` | Determinate phase wrapper; the counterpart to `updateStatus`. |
 | `updateStatus(label, statusCallback, fn)` | Indeterminate phase: sets `label`, runs `fn`, clears. |
@@ -215,6 +214,24 @@ canceled" + a refresh button in the canceled branch.
   CLI, not the loading overlay; worker CPU sort/layout loops (synteny dedup/sort,
   `collectRenderData`) emit no per-iteration progress. Both have the data to go
   determinate via `createProgressReporter` if a context ever surfaces them.
+
+## Tests
+
+- `packages/core/src/util/progress.test.ts` — the pure helpers: the `RpcStatus`
+  accessors (`statusMessageText` / `statusFraction` incl. the zero-total
+  divide-guard and >100% clamp / `statusProgressLabel`), the phase wrappers
+  (`updateStatus` / `downloadStatus` incl. the no-Content-Length indeterminate
+  branch / `withProgress`'s 0%-kickoff + clear), `createProgressReporter`, and
+  `aggregateStatus` (the Σcurrent/Σtotal no-clobber merge).
+- `packages/core/src/util/stopToken.test.ts` — the SAB atomic path + throttle
+  gates (the XHR/blob-URL fallback needs a real worker, untestable in jest).
+- `plugins/linear-genome-view/src/BaseLinearDisplay/models/FetchMixin.test.ts` —
+  the fetch state machine: `cancelFetch` vs `cancelFetchByUser` (generation-bump
+  vs durable `fetchCanceled`), retry clearing, abort swallowing, staleness, and
+  the `setStatusMessage`/`setRegionStatus` → `statusProgress` aggregation wiring.
+- `packages/core/src/ui/LoadingOverlay.test.tsx` — the overlay UI: anti-flash
+  (250ms) and cancel-enable (5000ms) timer gates, determinate bar fill / clamp /
+  indeterminate spinner, and the cancel/retry click → handler wiring.
 
 ## Don't
 
