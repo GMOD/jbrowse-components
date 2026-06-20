@@ -1,14 +1,50 @@
 ---
 title: Gene tracks
 description:
-  Color by CDS reading frame and peptide lettering on gene/transcript tracks
+  Transcript display modes, collapsing introns, color by CDS reading frame,
+  peptide lettering, and mature peptides on gene/transcript tracks
 guide_category: Track types
 ---
 
 Gene and transcript features (GFF3, GTF, BED12, and similar) render as glyphs
-with their exons, UTRs, and CDS segments. Two display options help you read the
-coding sequence directly off the track: **color by CDS** and **peptide
-lettering**.
+with their exons, UTRs, and CDS segments. The sections below cover the display
+and analysis options available on gene tracks, from reading the coding sequence
+directly off the track to reshaping the view around a gene's exons.
+
+### Choosing which transcripts to show
+
+Genes with many isoforms can stack into tall, hard-to-read blocks. The **Gene
+glyph** option in the track menu controls how a gene's transcripts are drawn:
+
+- **Auto** (default) — stacks every transcript when you are zoomed in, but
+  collapses each gene to its single longest coding transcript when you are
+  zoomed out, so dense regions stay legible.
+- **All transcripts** — always draws every transcript on its own row.
+- **Longest coding transcript** — always draws only the longest coding isoform
+  of each gene.
+
+### Collapsing introns
+
+Genes often span far more intronic than exonic sequence, so the coding parts are
+spread thinly across the view. Right-click a gene and choose **Collapse introns**
+to replace the view's displayed regions with just the gene's exons placed side by
+side, dropping the introns. A window-size setting controls how many base pairs of
+flanking sequence to keep around each splice boundary. By default the union of
+exons across all transcripts is used; you can instead pick a single transcript
+from the dialog. This makes it easy to read a gene's coding sequence — or inspect
+reads spanning it — without scrolling past large introns.
+
+### Display density and labels
+
+Several track-menu toggles tune how gene glyphs are drawn:
+
+- **Display mode** — _Normal_, _Compact_, or _Super-compact_ progressively
+  shrink each feature's height to fit more rows in dense regions.
+- **Show subfeature labels** — draws each transcript's name on its row, not just
+  the gene name.
+- **Show chevrons** — directional chevrons along the intron lines indicating the
+  strand (on by default).
+- **Show only genes** — hides non-gene features in the track.
 
 ### Color by CDS
 
