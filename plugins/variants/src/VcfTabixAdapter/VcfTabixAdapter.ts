@@ -68,8 +68,10 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
 
   public async getRefNames(opts: BaseOptions = {}) {
     const { vcf } = await this.configure(opts)
-    return downloadStatus('Downloading index', opts.statusCallback, onProgress =>
-      vcf.getReferenceSequenceNames({ ...opts, onProgress }),
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => vcf.getReferenceSequenceNames({ ...opts, onProgress }),
     )
   }
 

@@ -54,8 +54,10 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
   }
   public async getRefNames(opts: BaseOptions = {}) {
     const { gff } = await this.configure(opts)
-    return downloadStatus('Downloading index', opts.statusCallback, onProgress =>
-      gff.getReferenceSequenceNames({ ...opts, onProgress }),
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => gff.getReferenceSequenceNames({ ...opts, onProgress }),
     )
   }
 

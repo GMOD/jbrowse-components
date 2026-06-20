@@ -65,8 +65,10 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
 
   public async getRefNames(opts: BaseOptions = {}) {
     const { gtf } = await this.configure(opts)
-    return downloadStatus('Downloading index', opts.statusCallback, onProgress =>
-      gtf.getReferenceSequenceNames({ ...opts, onProgress }),
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => gtf.getReferenceSequenceNames({ ...opts, onProgress }),
     )
   }
 

@@ -71,8 +71,10 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
-    return downloadStatus('Downloading index', opts.statusCallback, onProgress =>
-      this.bed.getReferenceSequenceNames({ ...opts, onProgress }),
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => this.bed.getReferenceSequenceNames({ ...opts, onProgress }),
     )
   }
 
