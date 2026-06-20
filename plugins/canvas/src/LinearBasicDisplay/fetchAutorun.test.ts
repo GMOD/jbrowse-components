@@ -124,6 +124,7 @@ function createTestEnvironment() {
                   },
                 ],
                 getCanonicalRefName: (refName: string) => refName,
+                getGeneticCodeId: () => undefined,
                 configuration: {
                   sequence: undefined,
                 },
@@ -141,6 +142,7 @@ function createTestEnvironment() {
               },
             ],
             getCanonicalRefName: (refName: string) => refName,
+            getGeneticCodeId: () => undefined,
             configuration: {
               sequence: undefined,
             },
