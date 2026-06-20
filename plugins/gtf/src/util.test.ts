@@ -33,6 +33,17 @@ test('keeps a comma inside an attribute value intact', () => {
   expect(exon.note).toBe('a, b')
 })
 
+test('strips CRLF carriage returns so the final attribute is not corrupted', () => {
+  // tabix-read CRLF lines carry a trailing \r; without a trailing ';' it lands
+  // inside transcript_id, which drives both grouping and the feature name
+  const gtf =
+    'ctgA\ttest\texon\t1\t100\t.\t+\t.\tgene_id "g1"; transcript_id "t1"\r'
+  const [transcript] = parseGtf(gtf)
+  expect(transcript!.featureType).toBe('transcript')
+  const exon = featureData(transcript!.child_features![0]![0]!)
+  expect(exon.transcript_id).toBe('t1')
+})
+
 test('synthesizes a transcript spanning its children when no transcript line exists', () => {
   const gtf = [
     'ctgA\ttest\tCDS\t100\t200\t.\t+\t0\tgene_id "g1"; transcript_id "t1";',

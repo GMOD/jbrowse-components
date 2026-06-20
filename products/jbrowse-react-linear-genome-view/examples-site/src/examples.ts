@@ -186,6 +186,14 @@ export const examples: ExampleMeta[] = [
     group: 'Track display & coloring',
   },
   {
+    slug: 'with-gtf-track',
+    name: 'WithGtfTrack',
+    title: 'GTF gene model track',
+    description:
+      'Load gene models from a GTF file, with genes/transcripts built from per-feature lines via aggregateField.',
+    group: 'Track display & coloring',
+  },
+  {
     slug: 'with-init-alignments-display',
     name: 'WithInitAlignmentsDisplay',
     title: 'Initialize an alignments display',

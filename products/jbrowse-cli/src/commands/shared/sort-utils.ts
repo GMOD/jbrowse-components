@@ -32,7 +32,7 @@ export const BED_CONFIG: SortConfig = {
 
 export const GFF_CONFIG: SortConfig = {
   description:
-    'Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep',
+    'Helper utility to sort GFF (and GTF, which shares the same refname/start column layout) files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep',
   examples: [
     '# sort gff and pipe to bgzip',
     '$ jbrowse sort-gff input.gff | bgzip > sorted.gff.gz',
@@ -40,6 +40,10 @@ export const GFF_CONFIG: SortConfig = {
     '',
     '# sort gff from stdin',
     '$ cat input.gff | jbrowse sort-gff | bgzip > sorted.gff.gz',
+    '',
+    '# also works on GTF',
+    '$ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz',
+    '$ tabix -p gff sorted.gtf.gz',
   ],
   sortColumn: 4,
   fileType: 'gff',

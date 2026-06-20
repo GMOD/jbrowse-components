@@ -5,7 +5,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 /**
  * #config GtfAdapter
  * #category adapter
+ * used to load plain-text GTF files (optionally gzipped). Loads the whole file
+ * into memory, so prefer the GtfTabixAdapter for large files.
+ *
+ * #example
+ * The `uri` shorthand works for plain or gzipped GTF:
+ * ```js
+ * {
+ *   type: 'GtfAdapter',
+ *   uri: 'https://example.com/genes.gtf',
+ * }
+ * ```
  */
+function x() {} // eslint-disable-line @typescript-eslint/no-unused-vars
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
   return snap.uri

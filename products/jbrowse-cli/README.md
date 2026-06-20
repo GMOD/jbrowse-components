@@ -507,7 +507,7 @@ $ jbrowse make-pif input.paf --out output.pif.gz # specify output file, creates 
 ## jbrowse sort-gff
 
 ```
-Helper utility to sort GFF files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
+Helper utility to sort GFF (and GTF, which shares the same refname/start column layout) files for tabix. Moves all lines starting with # to the top of the file, and sort by refname and start position using unix utilities sort and grep
 
 Usage: jbrowse sort-gff [file] [options]
 
@@ -520,6 +520,10 @@ $ tabix sorted.gff.gz
 
 # sort gff from stdin
 $ cat input.gff | jbrowse sort-gff | bgzip > sorted.gff.gz
+
+# also works on GTF
+$ jbrowse sort-gff input.gtf | bgzip > sorted.gtf.gz
+$ tabix -p gff sorted.gtf.gz
 ```
 
 ## jbrowse sort-bed

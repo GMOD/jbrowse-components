@@ -17,22 +17,22 @@ locations use a `{ "uri": "..." }` object — see
 shared by all of these.
 
 Most adapters accept a `uri` shorthand that auto-resolves the companion index
-(e.g. `.bai` for BAM, `.tbi` for tabix files). Set the index location
-explicitly with the full slot form only when it is named differently or uses a
-`.csi` index.
+(e.g. `.bai` for BAM, `.tbi` for tabix files). Set the index location explicitly
+with the full slot form only when it is named differently or uses a `.csi`
+index.
 
 ## Sequence / assembly
 
 Sequence adapters go in an [assembly](/docs/config_guides/assemblies)
 definition, not a track.
 
-| Format            | Adapter                                                          |
-| ----------------- | --------------------------------------------------------------- |
-| Indexed FASTA     | [IndexedFastaAdapter](/docs/config/indexedfastaadapter)         |
-| Bgzipped FASTA    | [BgzipFastaAdapter](/docs/config/bgzipfastaadapter)             |
-| Plain FASTA       | [UnindexedFastaAdapter](/docs/config/unindexedfastaadapter)     |
-| 2bit              | [TwoBitAdapter](/docs/config/twobitadapter)                     |
-| chrom.sizes       | [ChromSizesAdapter](/docs/config/chromsizesadapter)             |
+| Format         | Adapter                                                     |
+| -------------- | ----------------------------------------------------------- |
+| Indexed FASTA  | [IndexedFastaAdapter](/docs/config/indexedfastaadapter)     |
+| Bgzipped FASTA | [BgzipFastaAdapter](/docs/config/bgzipfastaadapter)         |
+| Plain FASTA    | [UnindexedFastaAdapter](/docs/config/unindexedfastaadapter) |
+| 2bit           | [TwoBitAdapter](/docs/config/twobitadapter)                 |
+| chrom.sizes    | [ChromSizesAdapter](/docs/config/chromsizesadapter)         |
 
 ```json
 {
@@ -50,7 +50,7 @@ Read alignments are shown with an `AlignmentsTrack`. See
 [Alignments track configuration](/docs/config_guides/alignments_track) for
 coverage/pileup display options.
 
-| Format     | Adapter                                            |
+| Format     | Adapter                                           |
 | ---------- | ------------------------------------------------- |
 | BAM        | [BamAdapter](/docs/config/bamadapter)             |
 | CRAM       | [CramAdapter](/docs/config/cramadapter)           |
@@ -76,16 +76,16 @@ reference; see the [CramAdapter config docs](/docs/config/cramadapter).
 
 Gene models, repeats, and other interval features use a `FeatureTrack`.
 
-| Format         | Adapter                                          |
-| -------------- | ------------------------------------------------ |
-| GFF3 (tabix)   | [Gff3TabixAdapter](/docs/config/gff3tabixadapter) |
-| GFF3 (plain)   | [Gff3Adapter](/docs/config/gff3adapter)          |
-| GTF (tabix)    | [GtfTabixAdapter](/docs/config/gtftabixadapter)  |
-| GTF (plain)    | [GtfAdapter](/docs/config/gtfadapter)            |
-| BED (tabix)    | [BedTabixAdapter](/docs/config/bedtabixadapter)  |
-| BED (plain)    | [BedAdapter](/docs/config/bedadapter)            |
-| BigBed         | [BigBedAdapter](/docs/config/bigbedadapter)      |
-| BEDPE          | [BedpeAdapter](/docs/config/bedpeadapter)        |
+| Format       | Adapter                                           |
+| ------------ | ------------------------------------------------- |
+| GFF3 (tabix) | [Gff3TabixAdapter](/docs/config/gff3tabixadapter) |
+| GFF3 (plain) | [Gff3Adapter](/docs/config/gff3adapter)           |
+| GTF (tabix)  | [GtfTabixAdapter](/docs/config/gtftabixadapter)   |
+| GTF (plain)  | [GtfAdapter](/docs/config/gtfadapter)             |
+| BED (tabix)  | [BedTabixAdapter](/docs/config/bedtabixadapter)   |
+| BED (plain)  | [BedAdapter](/docs/config/bedadapter)             |
+| BigBed       | [BigBedAdapter](/docs/config/bigbedadapter)       |
+| BEDPE        | [BedpeAdapter](/docs/config/bedpeadapter)         |
 
 ```json
 {
@@ -134,13 +134,13 @@ Coverage and other numeric signals use a `QuantitativeTrack`. See
 [Quantitative tracks](/docs/config_guides/quantitative_track) and
 [Multi-quantitative tracks](/docs/config_guides/multiquantitative_track).
 
-| Format            | Adapter                                                |
-| ----------------- | ----------------------------------------------------- |
-| BigWig            | [BigWigAdapter](/docs/config/bigwigadapter)           |
-| BedGraph (tabix)  | [BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter) |
-| BedGraph (plain)  | [BedGraphAdapter](/docs/config/bedgraphadapter)       |
-| Multiple BigWigs  | [MultiWiggleAdapter](/docs/config/multiwiggleadapter) |
-| GC content        | [GCContentAdapter](/docs/config/gccontentadapter)     |
+| Format           | Adapter                                                   |
+| ---------------- | --------------------------------------------------------- |
+| BigWig           | [BigWigAdapter](/docs/config/bigwigadapter)               |
+| BedGraph (tabix) | [BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter) |
+| BedGraph (plain) | [BedGraphAdapter](/docs/config/bedgraphadapter)           |
+| Multiple BigWigs | [MultiWiggleAdapter](/docs/config/multiwiggleadapter)     |
+| GC content       | [GCContentAdapter](/docs/config/gccontentadapter)         |
 
 ```json
 {
@@ -161,11 +161,11 @@ VCF data uses a `VariantTrack`. See
 [Variant track configuration](/docs/config_guides/variant_track) for SVTYPE
 coloring and multi-sample displays.
 
-| Format         | Adapter                                                |
-| -------------- | ----------------------------------------------------- |
-| VCF (tabix)    | [VcfTabixAdapter](/docs/config/vcftabixadapter)       |
-| VCF (plain)    | [VcfAdapter](/docs/config/vcfadapter)                 |
-| Split VCF      | [SplitVcfTabixAdapter](/docs/config/splitvcftabixadapter) |
+| Format      | Adapter                                                   |
+| ----------- | --------------------------------------------------------- |
+| VCF (tabix) | [VcfTabixAdapter](/docs/config/vcftabixadapter)           |
+| VCF (plain) | [VcfAdapter](/docs/config/vcfadapter)                     |
+| Split VCF   | [SplitVcfTabixAdapter](/docs/config/splitvcftabixadapter) |
 
 ```json
 {
@@ -185,17 +185,17 @@ coloring and multi-sample displays.
 Synteny adapters back dotplot and linear synteny views. See
 [Synteny track config](/docs/config_guides/synteny_track).
 
-| Format                    | Adapter                                                          |
-| ------------------------- | --------------------------------------------------------------- |
-| PAF                       | [PAFAdapter](/docs/config/pafadapter)                           |
-| Indexed PAF (PIF)         | [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) |
-| Chain                     | [ChainAdapter](/docs/config/chainadapter)                       |
-| Delta (MUMmer)            | [DeltaAdapter](/docs/config/deltaadapter)                       |
-| MashMap                   | [MashMapAdapter](/docs/config/mashmapadapter)                   |
-| MCScan anchors            | [MCScanAnchorsAdapter](/docs/config/mcscananchorsadapter)       |
-| MCScan simple anchors     | [MCScanSimpleAnchorsAdapter](/docs/config/mcscansimpleanchorsadapter) |
-| BLAST tabular             | [BlastTabularAdapter](/docs/config/blasttabularadapter)         |
-| STAR-Fusion               | [StarFusionAdapter](/docs/config/starfusionadapter)             |
+| Format                | Adapter                                                               |
+| --------------------- | --------------------------------------------------------------------- |
+| PAF                   | [PAFAdapter](/docs/config/pafadapter)                                 |
+| Indexed PAF (PIF)     | [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter)   |
+| Chain                 | [ChainAdapter](/docs/config/chainadapter)                             |
+| Delta (MUMmer)        | [DeltaAdapter](/docs/config/deltaadapter)                             |
+| MashMap               | [MashMapAdapter](/docs/config/mashmapadapter)                         |
+| MCScan anchors        | [MCScanAnchorsAdapter](/docs/config/mcscananchorsadapter)             |
+| MCScan simple anchors | [MCScanSimpleAnchorsAdapter](/docs/config/mcscansimpleanchorsadapter) |
+| BLAST tabular         | [BlastTabularAdapter](/docs/config/blasttabularadapter)               |
+| STAR-Fusion           | [StarFusionAdapter](/docs/config/starfusionadapter)                   |
 
 For large whole-genome alignments, plain PAF is loaded entirely into memory.
 Convert it to **PIF** (Pairwise Indexed Format) first so JBrowse fetches only
@@ -207,18 +207,18 @@ jbrowse make-pif alignment.paf   # writes alignment.pif.gz + .tbi
 ```
 
 Then load `alignment.pif.gz` with the
-[PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) (the `add-track`
-CLI picks this automatically). See the
+[PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) (the
+`add-track` CLI picks this automatically). See the
 [PIF format guide](/docs/developer_guides/pif_format) and the
 [synteny tutorial](/docs/tutorials/synteny_visualization) for details.
 
 ## Multiple alignment (MAF)
 
-| Format       | Adapter                                       |
-| ------------ | --------------------------------------------- |
-| BigMaf       | [BigMafAdapter](/docs/config/bigmafadapter)   |
-| MAF (tabix)  | [MafTabixAdapter](/docs/config/maftabixadapter) |
-| Bgzip Taffy  | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter) |
+| Format      | Adapter                                             |
+| ----------- | --------------------------------------------------- |
+| BigMaf      | [BigMafAdapter](/docs/config/bigmafadapter)         |
+| MAF (tabix) | [MafTabixAdapter](/docs/config/maftabixadapter)     |
+| Bgzip Taffy | [BgzipTaffyAdapter](/docs/config/bgziptaffyadapter) |
 
 ## Hi-C
 
@@ -232,10 +232,10 @@ See [Hi-C track configuration](/docs/config_guides/hic_track).
 
 See [GWAS track configuration](/docs/config_guides/gwas_track).
 
-| Format          | Adapter                                                |
-| --------------- | ----------------------------------------------------- |
-| GWAS            | [GWASAdapter](/docs/config/gwasadapter)               |
-| PLINK LD        | [PlinkLDAdapter](/docs/config/plinkldadapter)         |
+| Format           | Adapter                                                 |
+| ---------------- | ------------------------------------------------------- |
+| GWAS             | [GWASAdapter](/docs/config/gwasadapter)                 |
+| PLINK LD         | [PlinkLDAdapter](/docs/config/plinkldadapter)           |
 | PLINK LD (tabix) | [PlinkLDTabixAdapter](/docs/config/plinkldtabixadapter) |
 
 ## Text searching
@@ -243,10 +243,10 @@ See [GWAS track configuration](/docs/config_guides/gwas_track).
 Text-search adapters power the location search box. See
 [Text searching](/docs/config_guides/text_searching).
 
-| Format               | Adapter                                                          |
-| -------------------- | --------------------------------------------------------------- |
-| Trix index           | [TrixTextSearchAdapter](/docs/config/trixtextsearchadapter)     |
-| JBrowse 1 names      | [JBrowse1TextSearchAdapter](/docs/config/jbrowse1textsearchadapter) |
+| Format          | Adapter                                                             |
+| --------------- | ------------------------------------------------------------------- |
+| Trix index      | [TrixTextSearchAdapter](/docs/config/trixtextsearchadapter)         |
+| JBrowse 1 names | [JBrowse1TextSearchAdapter](/docs/config/jbrowse1textsearchadapter) |
 
 ## Inline data
 

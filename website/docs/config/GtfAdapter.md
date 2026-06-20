@@ -17,7 +17,23 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GtfAdapter.md)
 
+## Example usage
+
+The `uri` shorthand works for plain or gzipped GTF:
+
+```js
+{
+  type: 'GtfAdapter',
+  uri: 'https://example.com/genes.gtf',
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load plain-text GTF files (optionally gzipped). Loads the whole file
+into memory, so prefer the GtfTabixAdapter for large files.
 
 ### GtfAdapter - Pre-processor / simplified config
 

@@ -156,7 +156,11 @@ function synthesizeTranscript(child: FeatureLoc): FeatureLoc {
 export function parseGtf(input: string): FeatureLoc[] {
   const topLevel: FeatureLoc[] = []
   const byTranscript = new Map<string, FeatureLoc>()
-  for (const line of input.split('\n')) {
+  for (const rawLine of input.split('\n')) {
+    // tabix-read lines retain the trailing \r of CRLF files (unlike the
+    // plaintext path, which trims it); left in, it corrupts the final
+    // attribute value, e.g. transcript_id "t1"\r
+    const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
     if (line.length > 0 && !line.startsWith('#')) {
       const feat = parseGtfLine(line)
       const transcriptId = unquote(feat.attributes.transcript_id?.[0])
