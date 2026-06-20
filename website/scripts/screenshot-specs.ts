@@ -5114,7 +5114,12 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             {
               trackId: 'ce11.26way',
-              displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 12 },
+              displaySnapshot: {
+                type: 'LinearMafDisplay',
+                rowHeight: 12,
+                // show each species' percent identity next to its row label
+                showRowIdentity: true,
+              },
             },
           ],
         },
