@@ -195,7 +195,10 @@ export function BaseSessionModel<
        * volatile state; products persist these to localStorage.
        */
       setPreferenceOverride(key: string, value: unknown) {
-        self.preferencesOverrides = { ...self.preferencesOverrides, [key]: value }
+        self.preferencesOverrides = {
+          ...self.preferencesOverrides,
+          [key]: value,
+        }
       },
       /**
        * #action

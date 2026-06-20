@@ -70,7 +70,7 @@
     "@types/express-oauth-server": "^2.0.10",
     "@types/jest": "^30.0.0",
     "@types/jest-image-snapshot": "^6.4.1",
-    "@types/node": "^25.9.3",
+    "@types/node": "^25.9.4",
     "@types/pluralize": "^0.0.33",
     "@types/pngjs": "^6.0.5",
     "@types/range-parser": "^1.2.7",

@@ -23,6 +23,7 @@ const useStyles = makeStyles()({
   },
   resizeHandle: {
     position: 'relative',
+    height: 4,
   },
   trackLabel: {
     zIndex: 2,
@@ -74,7 +75,6 @@ const TrackContainer = observer(function TrackContainer({
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       <ResizeHandle
-        bar
         onDrag={display.resizeHeight}
         className={classes.resizeHandle}
       />

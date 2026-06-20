@@ -33,189 +33,194 @@ export interface PendingMove {
  * Each dockview panel can contain multiple views stacked vertically.
  */
 export function DockviewLayoutMixin() {
-  return types
-    .model({
-      /**
-       * #property
-       * Serialized dockview layout state
-       */
-      dockviewLayout: types.stripDefault(
-        types.maybe(types.frozen<SerializedDockview>()),
-        undefined,
-      ),
-      /**
-       * #property
-       * Maps panel IDs to arrays of view IDs (for stacking views within a panel)
-       */
-      panelViewAssignments: types.stripDefault(
-        types.map(types.array(types.string)),
-        {},
-      ),
-      /**
-       * #property
-       * The currently active panel ID in dockview
-       */
-      activePanelId: types.stripDefault(types.maybe(types.string), undefined),
-    })
-    // Both are transient: set once (init from URL params, pendingMove from a
-    // queued move) and consumed when the dockview container mounts. Volatile so
-    // they are never persisted — no snapshot strip needed.
-    .volatile<{
-      init: DockviewLayoutNode | undefined
-      pendingMove: PendingMove | undefined
-    }>(() => ({
-      init: undefined,
-      pendingMove: undefined,
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Get view IDs for a specific panel
-       */
-      getViewIdsForPanel(panelId: string) {
-        return self.panelViewAssignments.get(panelId) ?? []
-      },
-      /**
-       * #getter
-       * Find the panel containing a view, returning the panel ID, that panel's
-       * view-ID list, and the view's index within it (or undefined if unassigned)
-       */
-      getPanelContainingView(viewId: string) {
-        for (const [panelId, viewIds] of self.panelViewAssignments.entries()) {
-          const idx = viewIds.indexOf(viewId)
-          if (idx !== -1) {
-            return { panelId, viewIds, idx }
+  return (
+    types
+      .model({
+        /**
+         * #property
+         * Serialized dockview layout state
+         */
+        dockviewLayout: types.stripDefault(
+          types.maybe(types.frozen<SerializedDockview>()),
+          undefined,
+        ),
+        /**
+         * #property
+         * Maps panel IDs to arrays of view IDs (for stacking views within a panel)
+         */
+        panelViewAssignments: types.stripDefault(
+          types.map(types.array(types.string)),
+          {},
+        ),
+        /**
+         * #property
+         * The currently active panel ID in dockview
+         */
+        activePanelId: types.stripDefault(types.maybe(types.string), undefined),
+      })
+      // Both are transient: set once (init from URL params, pendingMove from a
+      // queued move) and consumed when the dockview container mounts. Volatile so
+      // they are never persisted — no snapshot strip needed.
+      .volatile<{
+        init: DockviewLayoutNode | undefined
+        pendingMove: PendingMove | undefined
+      }>(() => ({
+        init: undefined,
+        pendingMove: undefined,
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Get view IDs for a specific panel
+         */
+        getViewIdsForPanel(panelId: string) {
+          return self.panelViewAssignments.get(panelId) ?? []
+        },
+        /**
+         * #getter
+         * Find the panel containing a view, returning the panel ID, that panel's
+         * view-ID list, and the view's index within it (or undefined if unassigned)
+         */
+        getPanelContainingView(viewId: string) {
+          for (const [
+            panelId,
+            viewIds,
+          ] of self.panelViewAssignments.entries()) {
+            const idx = viewIds.indexOf(viewId)
+            if (idx !== -1) {
+              return { panelId, viewIds, idx }
+            }
           }
-        }
-        return undefined
-      },
-    }))
-    .actions(self => ({
-      /**
-       * #action
-       * Save the current dockview layout
-       */
-      setDockviewLayout(layout: SerializedDockview | undefined) {
-        self.dockviewLayout = layout
-      },
+          return undefined
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         * Save the current dockview layout
+         */
+        setDockviewLayout(layout: SerializedDockview | undefined) {
+          self.dockviewLayout = layout
+        },
 
-      /**
-       * #action
-       * Set the active panel ID
-       */
-      setActivePanelId(panelId: string | undefined) {
-        self.activePanelId = panelId
-      },
+        /**
+         * #action
+         * Set the active panel ID
+         */
+        setActivePanelId(panelId: string | undefined) {
+          self.activePanelId = panelId
+        },
 
-      /**
-       * #action
-       * Set the initial layout configuration (from URL params)
-       */
-      setInit(init: DockviewLayoutNode | undefined) {
-        self.init = init
-      },
+        /**
+         * #action
+         * Set the initial layout configuration (from URL params)
+         */
+        setInit(init: DockviewLayoutNode | undefined) {
+          self.init = init
+        },
 
-      /**
-       * #action
-       * Queue a view move to be applied when the dockview container mounts
-       */
-      setPendingMove(pendingMove: PendingMove | undefined) {
-        self.pendingMove = pendingMove
-      },
+        /**
+         * #action
+         * Queue a view move to be applied when the dockview container mounts
+         */
+        setPendingMove(pendingMove: PendingMove | undefined) {
+          self.pendingMove = pendingMove
+        },
 
-      /**
-       * #action
-       * Assign a view to a panel (adds to the panel's view stack)
-       */
-      assignViewToPanel(panelId: string, viewId: string) {
-        const existing = self.panelViewAssignments.get(panelId)
-        if (existing) {
-          if (!existing.includes(viewId)) {
-            existing.push(viewId)
+        /**
+         * #action
+         * Assign a view to a panel (adds to the panel's view stack)
+         */
+        assignViewToPanel(panelId: string, viewId: string) {
+          const existing = self.panelViewAssignments.get(panelId)
+          if (existing) {
+            if (!existing.includes(viewId)) {
+              existing.push(viewId)
+            }
+          } else {
+            self.panelViewAssignments.set(panelId, [viewId])
           }
-        } else {
-          self.panelViewAssignments.set(panelId, [viewId])
-        }
-      },
+        },
 
-      /**
-       * #action
-       * Remove a view from its panel
-       */
-      removeViewFromPanel(viewId: string) {
-        const loc = self.getPanelContainingView(viewId)
-        if (loc) {
-          loc.viewIds.splice(loc.idx, 1)
-          if (loc.viewIds.length === 0) {
-            self.panelViewAssignments.delete(loc.panelId)
+        /**
+         * #action
+         * Remove a view from its panel
+         */
+        removeViewFromPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc) {
+            loc.viewIds.splice(loc.idx, 1)
+            if (loc.viewIds.length === 0) {
+              self.panelViewAssignments.delete(loc.panelId)
+            }
           }
-        }
-      },
+        },
 
-      /**
-       * #action
-       * Remove a panel and all its view assignments
-       */
-      removePanel(panelId: string) {
-        self.panelViewAssignments.delete(panelId)
-      },
+        /**
+         * #action
+         * Remove a panel and all its view assignments
+         */
+        removePanel(panelId: string) {
+          self.panelViewAssignments.delete(panelId)
+        },
 
-      /**
-       * #action
-       * Move a view up within its panel's view stack
-       */
-      moveViewUpInPanel(viewId: string) {
-        const loc = self.getPanelContainingView(viewId)
-        if (loc) {
-          self.panelViewAssignments.set(
-            loc.panelId,
-            reorder(loc.viewIds, loc.idx, 'up'),
-          )
-        }
-      },
+        /**
+         * #action
+         * Move a view up within its panel's view stack
+         */
+        moveViewUpInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc) {
+            self.panelViewAssignments.set(
+              loc.panelId,
+              reorder(loc.viewIds, loc.idx, 'up'),
+            )
+          }
+        },
 
-      /**
-       * #action
-       * Move a view down within its panel's view stack
-       */
-      moveViewDownInPanel(viewId: string) {
-        const loc = self.getPanelContainingView(viewId)
-        if (loc) {
-          self.panelViewAssignments.set(
-            loc.panelId,
-            reorder(loc.viewIds, loc.idx, 'down'),
-          )
-        }
-      },
+        /**
+         * #action
+         * Move a view down within its panel's view stack
+         */
+        moveViewDownInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc) {
+            self.panelViewAssignments.set(
+              loc.panelId,
+              reorder(loc.viewIds, loc.idx, 'down'),
+            )
+          }
+        },
 
-      /**
-       * #action
-       * Move a view to the top of its panel's view stack
-       */
-      moveViewToTopInPanel(viewId: string) {
-        const loc = self.getPanelContainingView(viewId)
-        if (loc) {
-          self.panelViewAssignments.set(
-            loc.panelId,
-            reorder(loc.viewIds, loc.idx, 'top'),
-          )
-        }
-      },
+        /**
+         * #action
+         * Move a view to the top of its panel's view stack
+         */
+        moveViewToTopInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc) {
+            self.panelViewAssignments.set(
+              loc.panelId,
+              reorder(loc.viewIds, loc.idx, 'top'),
+            )
+          }
+        },
 
-      /**
-       * #action
-       * Move a view to the bottom of its panel's view stack
-       */
-      moveViewToBottomInPanel(viewId: string) {
-        const loc = self.getPanelContainingView(viewId)
-        if (loc) {
-          self.panelViewAssignments.set(
-            loc.panelId,
-            reorder(loc.viewIds, loc.idx, 'bottom'),
-          )
-        }
-      },
-    }))
+        /**
+         * #action
+         * Move a view to the bottom of its panel's view stack
+         */
+        moveViewToBottomInPanel(viewId: string) {
+          const loc = self.getPanelContainingView(viewId)
+          if (loc) {
+            self.panelViewAssignments.set(
+              loc.panelId,
+              reorder(loc.viewIds, loc.idx, 'bottom'),
+            )
+          }
+        },
+      }))
+  )
 }
 
 export type DockviewLayoutMixinType = ReturnType<typeof DockviewLayoutMixin>

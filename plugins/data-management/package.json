@@ -30,7 +30,7 @@
     "clean": "rimraf esm *.tsbuildinfo"
   },
   "dependencies": {
-    "@gmod/ucsc-hub": "^2.0.10",
+    "@gmod/ucsc-hub": "^2.0.11",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.1",
     "@jbrowse/plugin-config": "workspace:^",
