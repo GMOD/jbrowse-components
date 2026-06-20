@@ -1,3 +1,9 @@
+import {
+  findInsertionPoint,
+  insertInterval,
+  isRangeClear as isRangeClearIntervals,
+} from './intervalUtils.ts'
+
 import type {
   BaseLayout,
   RectTuple,
@@ -13,20 +19,22 @@ import type {
 // minimum excess size of the array at which we garbage collect
 const maxFeaturePitchWidth = 20000
 
-// Optimized row class using flat interval array
-class LayoutRow<T> {
+// Optimized row class using flat interval array. Holds only interval extents
+// and feature ids, so it does not need the layout's data generic.
+class LayoutRow {
   private padding = 1
 
-  public allFilled?: Record<string, T> | string
+  // The id of the feature filling the entire row (set for very wide features)
+  public allFilled?: string
 
   // Flat array: [start1, end1, start2, end2, ...]
   // Kept sorted by start position for binary search
   private intervals: number[] = []
 
-  // Parallel array storing data for each interval
-  private data: (Record<string, T> | string)[] = []
+  // Parallel array storing the feature id for each interval
+  private data: string[] = []
 
-  setAllFilled(data: Record<string, T> | string): void {
+  setAllFilled(data: string): void {
     this.allFilled = data
   }
 
@@ -34,7 +42,7 @@ class LayoutRow<T> {
     return this.intervals
   }
 
-  getItemAt(x: number): Record<string, T> | string | undefined {
+  getItemAt(x: number): string | undefined {
     if (this.allFilled) {
       return this.allFilled
     }
@@ -78,97 +86,23 @@ class LayoutRow<T> {
   }
 
   isRangeClear(left: number, right: number): boolean {
-    if (this.allFilled) {
-      return false
-    }
-
-    const intervals = this.intervals
-    const len = intervals.length
-
-    // Empty row is always clear
-    if (len === 0) {
-      return true
-    }
-
-    // Linear scan for small arrays (better cache locality)
-    if (len < 40) {
-      for (let i = 0; i < len; i += 2) {
-        const start = intervals[i]!
-        const end = intervals[i + 1]!
-        // Intersection check: end > left && start < right
-        if (end > left && start < right) {
-          return false
-        }
-      }
-      return true
-    }
-
-    // Binary search for larger arrays
-    // Find first interval whose end > left (first potential overlap)
-    let low = 0
-    let high = len >> 1
-
-    while (low < high) {
-      const mid = (low + high) >>> 1
-      const midIdx = mid << 1
-      if (intervals[midIdx + 1]! <= left) {
-        low = mid + 1
-      } else {
-        high = mid
-      }
-    }
-
-    // Check if found interval overlaps
-    const idx = low << 1
-    if (idx >= len) {
-      return true
-    }
-
-    // If the first candidate's start is >= right, no overlap possible
-    const start = intervals[idx]!
-    if (start >= right) {
-      return true
-    }
-
-    // This interval overlaps (we know end > left from binary search, and start < right)
-    return false
+    return !this.allFilled && isRangeClearIntervals(this.intervals, left, right)
   }
 
-  addRect(rect: Rectangle<T>, data: Record<string, T> | string): void {
+  addRect(rect: { l: number; r: number }, data: string): void {
     const left = rect.l
     const right = rect.r + this.padding
     const intervals = this.intervals
     const len = intervals.length
 
-    // Hybrid insertion strategy
-    if (len < 40) {
-      // Linear insertion for small arrays
-      let idx = len
-      for (let i = 0; i < len; i += 2) {
-        if (left < intervals[i]!) {
-          idx = i
-          break
-        }
-      }
-      intervals.splice(idx, 0, left, right)
-      this.data.splice(idx >> 1, 0, data)
+    // Fast path: features usually arrive sorted, so append to the end
+    if (len === 0 || left >= intervals[len - 2]!) {
+      intervals.push(left, right)
+      this.data.push(data)
     } else {
-      // Binary search insertion for larger arrays
-      let low = 0
-      let high = len >> 1
-
-      while (low < high) {
-        const mid = (low + high) >>> 1
-        const midIdx = mid << 1
-        if (intervals[midIdx]! < left) {
-          low = mid + 1
-        } else {
-          high = mid
-        }
-      }
-
-      intervals.splice(low << 1, 0, left, right)
-      this.data.splice(low, 0, data)
+      const idx = findInsertionPoint(intervals, left)
+      insertInterval(intervals, idx, left, right)
+      this.data.splice(idx >> 1, 0, data)
     }
   }
 
@@ -181,7 +115,7 @@ class LayoutRow<T> {
     const data = this.data
     const oldLen = intervals.length
     const newIntervals: number[] = []
-    const newData: (Record<string, T> | string)[] = []
+    const newData: string[] = []
 
     for (let i = 0; i < oldLen; i += 2) {
       const start = intervals[i]!
@@ -228,7 +162,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   private hardRowLimit: number
 
-  private bitmap: LayoutRow<T>[]
+  // sparse: stableSeeding can seed a feature onto a higher row, leaving the
+  // rows below it as undefined holes, so every access must guard for undefined
+  private bitmap: (LayoutRow | undefined)[]
 
   private rectangles: Map<string, Rectangle<T>>
 
@@ -248,7 +184,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   /**
    * pitchX - layout grid pitch in the X direction
    * pitchY - layout grid pitch in the Y direction
-   * maxHeight - maximum layout height, default Infinity (no max)
+   * maxHeight - maximum layout height in pixels, default 10000
    * stableSeeding - honor addRect's preferredRow to keep feature Y stable
    */
   constructor({
@@ -443,7 +379,7 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     rectangle.top = top
     this.addRectToBitmap(rectangle)
     this.rectangles.set(id, rectangle)
-    this.pTotalHeight = Math.max(this.pTotalHeight || 0, top + pHeight)
+    this.pTotalHeight = Math.max(this.pTotalHeight, top + pHeight)
     return top * pitchY
   }
 
@@ -536,8 +472,12 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
     const pLeft = Math.trunc(left / this.pitchX)
     const pRight = Math.trunc(right / this.pitchX)
     const { bitmap } = this
+    // bitmap can be sparse: stableSeeding may seed a feature onto a higher
+    // preferredRow, leaving the rows below it uncreated (undefined holes)
     for (const row of bitmap) {
-      row.discardRange(pLeft, pRight)
+      if (row) {
+        row.discardRange(pLeft, pRight)
+      }
     }
   }
 
@@ -557,8 +497,9 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
   getByID(id: string) {
     const r = this.rectangles.get(id)
-    if (r) {
-      const t = r.top! * this.pitchY
+    // top === null means the feature overflowed maxHeight and was never placed
+    if (r && r.top !== null) {
+      const t = r.top * this.pitchY
       return [
         r.l * this.pitchX,
         t,
@@ -577,8 +518,6 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   getSerializableDataByID(id: string) {
     return this.rectangles.get(id)?.serializableData
   }
-
-  cleanup() {}
 
   getTotalHeight() {
     return this.pTotalHeight * this.pitchY

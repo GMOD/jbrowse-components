@@ -96,7 +96,7 @@ export default class PrecomputedLayout<T> implements BaseLayout<T> {
     return undefined
   }
 
-  addRectToBitmap(_rect: Rectangle<T>, _data: Record<string, T>): void {
+  addRectToBitmap(_rect: Rectangle<T>): void {
     throw new Error('Method not implemented.')
   }
 
