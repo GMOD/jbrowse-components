@@ -82,6 +82,9 @@ path to a specific config file. If you're running commands from inside the
 `jbrowse2/` directory, omit `--out` — it defaults to the current directory. Run
 `jbrowse add-track --help` for the full set of options.
 
+For the full list of supported formats and the adapter each maps to, see
+[Supported file types](/docs/config_guides/file_types).
+
 ### Genome assembly (FASTA)
 
 ```bash
@@ -210,6 +213,7 @@ can be typed directly into the location search box. See the
 ## Next steps
 
 - [User guide](/docs/user_guide) — track types, views, and UI features
+- [Supported file types](/docs/config_guides/file_types) — every format and its adapter
 - [Config guide](/docs/config_guide) — advanced track and assembly configuration
 - [CLI reference](/docs/cli) — full reference for all CLI commands
 - [FAQ](/docs/faq) — common questions including text searching
