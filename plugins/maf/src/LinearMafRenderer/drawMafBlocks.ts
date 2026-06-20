@@ -6,6 +6,7 @@ import {
 import { renderBases } from './rendering/bases.ts'
 import { renderDeletions } from './rendering/deletions.ts'
 import { renderInsertions } from './rendering/insertions.ts'
+import { FONT_CONFIG } from './rendering/types.ts'
 
 import type {
   MafGPURenderState,
@@ -31,6 +32,11 @@ export function drawMafBlocks(
   } = state
   const h = rowHeight * rowProportion
   const offset = (rowHeight - h) / 2
+  const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
+  // Count-label text style is constant for the whole draw; set once. It
+  // survives the per-block save()/restore() since it's set before any save().
+  ctx.font = FONT_CONFIG
+  ctx.textAlign = 'center'
 
   for (const renderBlock of renderBlocks) {
     const regionData = regions.get(renderBlock.displayedRegionIndex)
@@ -55,8 +61,7 @@ export function drawMafBlocks(
       rowHeight,
       h,
       palette,
-      showAllLetters,
-      mismatchRendering,
+      cellColorConfig,
       reversed,
       bpToCellLeftPx,
     }

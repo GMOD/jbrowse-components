@@ -1,7 +1,7 @@
 import { drawInsertionMarker, getInsertionType } from '@jbrowse/alignments-core'
 
 import { forEachInsertion } from './forEachInsertion.ts'
-import { CHAR_HEIGHT, CHAR_SIZE_WIDTH, FONT_CONFIG } from './types.ts'
+import { CHAR_HEIGHT, CHAR_SIZE_WIDTH } from './types.ts'
 
 import type { RenderingContext } from './types.ts'
 
@@ -21,8 +21,6 @@ export function renderInsertions(
   rowTop: number,
 ) {
   const { ctx, scale, h, reversed, palette, bpToCellLeftPx } = context
-  ctx.font = FONT_CONFIG
-  ctx.textAlign = 'center'
   forEachInsertion(seq, alignment, startBp, (anchorBp, length) => {
     const cellLeft = bpToCellLeftPx(anchorBp)
     const xCenter = reversed ? cellLeft + scale : cellLeft

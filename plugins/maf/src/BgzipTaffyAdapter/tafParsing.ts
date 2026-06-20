@@ -41,15 +41,15 @@ export function parseBases(
 ): string {
   if (runLengthEncodeBases) {
     const tokens = basesStr.split(' ')
-    let result = ''
+    const parts: string[] = []
     for (let i = 0; i < tokens.length; i += 2) {
       const base = tokens[i]!
       const count = parseInt(tokens[i + 1]!, 10)
       if (!isNaN(count) && base.length === 1) {
-        result += base.repeat(count)
+        parts.push(base.repeat(count))
       }
     }
-    return result
+    return parts.join('')
   }
   return basesStr
 }

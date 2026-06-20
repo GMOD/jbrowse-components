@@ -1,5 +1,6 @@
 import { measureText } from '@jbrowse/core/util'
 
+import type { MafCellColorConfig } from '../resolveCellColor.ts'
 import type { MafColorPalette } from '../util.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
@@ -30,8 +31,8 @@ export interface RenderingContext {
   rowHeight: number
   h: number
   palette: MafColorPalette
-  showAllLetters: boolean
-  mismatchRendering: boolean
+  /** Pre-built once per draw call; consumed by `resolveCellColor` per cell. */
+  cellColorConfig: MafCellColorConfig
   reversed: boolean
   /** bp → screen-px LEFT edge of the cell containing that bp (handles reversed). */
   bpToCellLeftPx: (bp: number) => number

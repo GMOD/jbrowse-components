@@ -1,7 +1,7 @@
 import { measureText } from '@jbrowse/core/util'
 
 import { forEachDeletion } from './forEachDeletion.ts'
-import { CHAR_HEIGHT, FONT_CONFIG } from './types.ts'
+import { CHAR_HEIGHT } from './types.ts'
 
 import type { RenderingContext } from './types.ts'
 
@@ -19,17 +19,18 @@ export function renderDeletions(
   rowTop: number,
 ) {
   const { ctx, scale, h, bpToCellLeftPx } = context
-  ctx.font = FONT_CONFIG
-  ctx.textAlign = 'center'
-  ctx.fillStyle = 'white'
-  forEachDeletion(seq, alignment, startBp, (start, length) => {
-    const xa = bpToCellLeftPx(start)
-    const xb = bpToCellLeftPx(start + length - 1)
-    const xLeft = Math.min(xa, xb)
-    const width = length * scale
-    const text = String(length)
-    if (width >= measureText(text) + 2 && h > CHAR_HEIGHT) {
-      ctx.fillText(text, xLeft + width / 2, rowTop + (h * 7) / 8)
-    }
-  })
+  // Labels never fit below this height, so skip the whole walk (it only draws
+  // count text — gap cells are drawn by renderBases).
+  if (h > CHAR_HEIGHT) {
+    ctx.fillStyle = 'white'
+    forEachDeletion(seq, alignment, startBp, (start, length) => {
+      const text = String(length)
+      const width = length * scale
+      if (width >= measureText(text) + 2) {
+        const xa = bpToCellLeftPx(start)
+        const xb = bpToCellLeftPx(start + length - 1)
+        ctx.fillText(text, Math.min(xa, xb) + width / 2, rowTop + (h * 7) / 8)
+      }
+    })
+  }
 }

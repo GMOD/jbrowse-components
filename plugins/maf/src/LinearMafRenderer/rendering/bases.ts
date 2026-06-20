@@ -11,17 +11,8 @@ export function renderBases(
   startBp: number,
   rowTop: number,
 ) {
-  const {
-    ctx,
-    scale,
-    h,
-    palette,
-    showAllLetters,
-    mismatchRendering,
-    bpToCellLeftPx,
-  } = context
+  const { ctx, scale, h, cellColorConfig, bpToCellLeftPx } = context
   const cellW = scale + GAP_STROKE_OFFSET
-  const cfg = { ...palette, showAllLetters, mismatchRendering }
   // Defensive min() guards against malformed files where worker output ships
   // uneven lengths; without it `seq[i]` past the end is undefined and the
   // bitwise match check in resolveCellColor silently mis-classifies cells.
@@ -33,7 +24,7 @@ export function renderBases(
       // Reference insertion — skipped here, drawn by renderInsertions.
       continue
     }
-    const css = resolveCellColor(refByte, alignment[i]!, cfg)
+    const css = resolveCellColor(refByte, alignment[i]!, cellColorConfig)
     if (css !== undefined) {
       ctx.fillStyle = css
       ctx.fillRect(bpToCellLeftPx(startBp + genomicOffset), rowTop, cellW, h)
