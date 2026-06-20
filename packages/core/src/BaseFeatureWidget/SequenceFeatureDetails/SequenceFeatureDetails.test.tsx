@@ -6,6 +6,7 @@ import SequencePanel from './SequencePanel.tsx'
 import { SequenceFeatureDetailsF } from './model.ts'
 import DLGAP3 from './test_data/DLGAP3.ts'
 import NCDN from './test_data/NCDN.ts'
+import { getSequencePlaintext } from './util.ts'
 
 // Usage reference for the public SequencePanel component (it has external
 // consumers): each test below renders <SequencePanel> with a different mode and
@@ -150,6 +151,14 @@ test('NCDN updownstream', () => {
 
   const element = getByTestId('sequence_panel')
   expect(element.textContent).toMatchSnapshot()
+})
+
+test('plaintext copy strips legend so it does not corrupt FASTA output', () => {
+  const el = document.createElement('div')
+  el.innerHTML =
+    '<div data-no-plaintext>legend note: selenocysteine</div>' +
+    '<pre>&gt;made_up\nACGTACGT</pre>'
+  expect(getSequencePlaintext(el)).toEqual('>made_up\nACGTACGT')
 })
 
 test('single exon cDNA should not have duplicate sequences', () => {

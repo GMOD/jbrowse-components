@@ -8,6 +8,7 @@ import { observer } from 'mobx-react'
 import CascadingMenuButton from '../../../ui/CascadingMenuButton.tsx'
 import { saveAs } from '../../../util/index.ts'
 import { showGenomicCoordsOption } from '../featureTypeUtil.ts'
+import { getSequencePlaintext } from '../util.ts'
 
 import type { MenuItem } from '../../../ui/index.ts'
 import type {
@@ -44,8 +45,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
                 await import('../../../util/copyToClipboard.ts')
               const r = ref.current
               if (r) {
-                // || not ??: textContent is typed as string, ?? triggers no-unnecessary-condition
-                copy(r.textContent || '', { format: 'text/plain' })
+                copy(getSequencePlaintext(r), { format: 'text/plain' })
               }
             },
           },
@@ -66,7 +66,7 @@ const SequenceFeatureMenu = observer(function SequenceFeatureMenu({
               const r = ref.current
               if (r) {
                 saveAs(
-                  new Blob([r.textContent || ''], {
+                  new Blob([getSequencePlaintext(r)], {
                     type: 'text/plain;charset=utf-8',
                   }),
                   'sequence.txt',

@@ -106,3 +106,16 @@ function formatWithCoordinateSpacing(
   }
   return result
 }
+
+/**
+ * Text content of the sequence panel for plaintext/FASTA copy+download, with
+ * `[data-no-plaintext]` elements (e.g. the legend) stripped so they don't
+ * corrupt the sequence output.
+ */
+export function getSequencePlaintext(el: HTMLElement) {
+  const clone = el.cloneNode(true) as HTMLElement
+  for (const node of clone.querySelectorAll('[data-no-plaintext]')) {
+    node.remove()
+  }
+  return clone.textContent || ''
+}
