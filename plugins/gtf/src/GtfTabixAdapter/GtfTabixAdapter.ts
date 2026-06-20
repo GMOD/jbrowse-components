@@ -2,6 +2,7 @@ import { TabixIndexedFile } from '@gmod/tabix'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import { SimpleFeature, downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
+import { calculateRedispatchRange } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import {
@@ -15,7 +16,6 @@ import type { GtfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { Observer } from 'rxjs'
 
 interface GtfLine {
   line: string
@@ -80,84 +80,64 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        await this.configure(opts)
-        await this.getFeaturesHelper(query, opts, observer, true)
+        const { gtf, dontRedispatchSet } = await this.configure(opts)
+        const fetchLines = (region: Region) => readLines(gtf, region, opts)
+
+        let lines = await fetchLines(query)
+
+        // gene/transcript lines span their children, so if a feature extends
+        // past the query, refetch the union of feature bounds once to pull in
+        // child features (exon/CDS) that fall outside it. dontRedispatch types
+        // (chromosome, region, ...) are excluded so one chromosome-spanning
+        // feature can't force a whole-chromosome refetch.
+        const redispatch = lines.length
+          ? calculateRedispatchRange(
+              lines,
+              dontRedispatchSet,
+              query.start,
+              query.end,
+            )
+          : undefined
+        if (redispatch) {
+          lines = await fetchLines({ ...query, ...redispatch })
+        }
+
+        const feats = parseGtf(lines.map(l => l.line).join('\n')).map(
+          (f, i) =>
+            featureData(
+              f,
+              `${this.id}-${query.refName}-${i}`,
+            ) as SimpleFeatureSerialized,
+        )
+        const aggregated = aggregateGtfFeatures({
+          feats,
+          aggregateField: this.getConf('aggregateField'),
+          refName: query.refName,
+          regionStart: query.start,
+          regionEnd: query.end,
+        })
+        for (const feat of aggregated) {
+          observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
+        }
+        observer.complete()
       } catch (e) {
         observer.error(e)
       }
     }, opts.stopToken)
   }
+}
 
-  private async getFeaturesHelper(
-    query: Region,
-    opts: BaseOptions,
-    observer: Observer<Feature>,
-    allowRedispatch: boolean,
-    originalQuery = query,
-  ) {
-    const { gtf, dontRedispatchSet } = await this.configureOnce()
-    const lines: GtfLine[] = []
-
-    await downloadStatus(
-      'Downloading features',
-      opts.statusCallback,
-      onProgress =>
-        gtf.getLines(query.refName, query.start, query.end, {
-          lineCallback: (line, _fo, s, e) => {
-            lines.push({ line, start: s, end: e, type: extractType(line) })
-          },
-          onProgress,
-        }),
-    )
-
-    if (allowRedispatch && lines.length) {
-      let minStart = Number.POSITIVE_INFINITY
-      let maxEnd = Number.NEGATIVE_INFINITY
-      for (const rec of lines) {
-        // gene/transcript lines span their children, so expanding to their
-        // bounds lets the redispatch pull in child features (exon/CDS) that
-        // fall outside the original query
-        if (!dontRedispatchSet.has(rec.type)) {
-          const start = rec.start - 1 // gtf is 1-based
-          if (start < minStart) {
-            minStart = start
-          }
-          if (rec.end > maxEnd) {
-            maxEnd = rec.end
-          }
-        }
-      }
-      if (maxEnd > query.end || minStart < query.start) {
-        await this.getFeaturesHelper(
-          { ...query, start: minStart, end: maxEnd },
-          opts,
-          observer,
-          false,
-          query,
-        )
-        return
-      }
-    }
-
-    const aggregateField = this.getConf('aggregateField')
-    const feats = parseGtf(lines.map(l => l.line).join('\n')).map(
-      (f, i) =>
-        featureData(
-          f,
-          `${this.id}-${query.refName}-${i}`,
-        ) as SimpleFeatureSerialized,
-    )
-
-    const aggregated = aggregateGtfFeatures({
-      feats,
-      aggregateField,
-      refName: query.refName,
-      regionStart: originalQuery.start,
-      regionEnd: originalQuery.end,
-    })
-    for (const feat of aggregated) {
-      observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
-    }
-    observer.complete()
-  }
+function readLines(gtf: TabixIndexedFile, query: Region, opts: BaseOptions) {
+  const lines: GtfLine[] = []
+  return downloadStatus(
+    'Downloading features',
+    opts.statusCallback,
+    onProgress =>
+      gtf.getLines(query.refName, query.start, query.end, {
+        lineCallback: (line, _fo, start, end) => {
+          lines.push({ line, start, end, type: extractType(line) })
+        },
+        onProgress,
+      }),
+  ).then(() => lines)
 }

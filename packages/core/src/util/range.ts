@@ -70,3 +70,36 @@ export function isContainedWithin(
 ) {
   return left2 <= left1 && right2 >= right1
 }
+
+/**
+ * Compute the expanded fetch range a tabix adapter must "redispatch" to when
+ * features found in a query extend past the requested window. Returns the union
+ * of the bounds of every feature whose type is not in `dontRedispatchSet`, or
+ * `undefined` when nothing extends past the query (no redispatch needed).
+ *
+ * Feature starts arrive 1-based from the tabix line callback and are converted
+ * to interbase (0-based) here, matching the query coordinates.
+ */
+export function calculateRedispatchRange(
+  features: { start: number; end: number; type: string }[],
+  dontRedispatchSet: Set<string>,
+  queryStart: number,
+  queryEnd: number,
+): { start: number; end: number } | undefined {
+  let minStart = Number.POSITIVE_INFINITY
+  let maxEnd = Number.NEGATIVE_INFINITY
+  for (const feature of features) {
+    if (!dontRedispatchSet.has(feature.type)) {
+      const start = feature.start - 1 // gff/gtf lines are 1-based
+      if (start < minStart) {
+        minStart = start
+      }
+      if (feature.end > maxEnd) {
+        maxEnd = feature.end
+      }
+    }
+  }
+  return maxEnd > queryEnd || minStart < queryStart
+    ? { start: minStart, end: maxEnd }
+    : undefined
+}
