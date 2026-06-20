@@ -1235,6 +1235,41 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
+  // A single spliced RNA-seq read: zoomed into the SDF4 first-intron boundary on
+  // hg19 so individual reads spanning the intron show the grey exon-aligned ends
+  // joined by a thin skipped-intron bar. Hovering a read in the pileup surfaces
+  // its read-name tooltip. Replaces a hand-curated capture.
+  {
+    mode: 'url',
+    name: 'rnaseq/single_read',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:1,158,453-1,159,425',
+          tracks: [
+            {
+              trackId: 'ncbi_gff_hg19',
+              displaySnapshot: { type: 'LinearBasicDisplay', height: 90 },
+            },
+            'Pairend_StrandSpecific_51mer_Human_hg19',
+          ],
+        },
+      ],
+    }),
+    readyText: 'SDF4',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    viewportHeight: 640,
+    // hover a read in the pileup (left of the intron gap, over an exon-aligned
+    // segment, below the coverage band) so its read-name tooltip shows
+    actions: [
+      { type: 'hover', from: { x: 300, y: 360 } },
+      { type: 'delay', ms: 1500 },
+    ],
+  },
+
   {
     mode: 'url',
     name: 'hic_track',
@@ -1346,6 +1381,85 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 35000,
   },
 
+  // The same modifications CRAM shown twice — top row in modifications mode (each
+  // call drawn at its MM-tag position), bottom row in methylation mode (both
+  // modified and reference-CpG-inferred unmodified positions) — over a UCSC CpG
+  // island on chr20. The config track (human_chr20_mod_call_5mC_5hmC_CG_cram)
+  // supplies the methylation-mode row; a sessionTrack copy with its own trackId
+  // supplies the modifications-mode row (the same trackId can't appear twice in a
+  // view). The island is hypo-methylated, so the methylation row has no marks
+  // inside it. Replaces a hand-curated capture.
+  {
+    mode: 'url',
+    name: 'alignments/modifications2',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
+          name: 'human_chr20_mod_call_5mC_5hmC_CG (CRAM) (modifications)',
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'CramAdapter',
+            cramLocation: {
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram',
+              locationType: 'UriLocation',
+            },
+            craiLocation: {
+              uri: 'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/methylation/human_chr20_mod_call_5mC_5hmC_CG.cram.crai',
+              locationType: 'UriLocation',
+            },
+            sequenceAdapter: {
+              type: 'BgzipFastaAdapter',
+              fastaLocation: {
+                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+                locationType: 'UriLocation',
+              },
+              faiLocation: {
+                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.fai',
+                locationType: 'UriLocation',
+              },
+              gziLocation: {
+                uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz.gzi',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr20:19,749,666-19,770,134',
+          tracks: [
+            {
+              trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram_modifications',
+              displaySnapshot: {
+                colorBy: { type: 'modifications' },
+                // lift the fetch-size gate so the CRAM auto-loads headless
+                // instead of sitting on the force-load prompt (same mechanism
+                // as the arc_display spec)
+                userByteSizeLimit: 500_000_000,
+              },
+            },
+            {
+              trackId: 'human_chr20_mod_call_5mC_5hmC_CG_cram',
+              displaySnapshot: {
+                colorBy: { type: 'methylation' },
+                userByteSizeLimit: 500_000_000,
+              },
+            },
+            'cpgisland_ucsc_hg38',
+          ],
+        },
+      ],
+    }),
+    readyText: 'CpG',
+    readyTimeout: 60000,
+    settleMs: 35000,
+  },
+
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
 
   {
@@ -1363,6 +1477,39 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'CHROM',
     readyTimeout: 60000,
     settleMs: 15000,
+  },
+
+  // Same SKBR3 SV inspector as above, but with the spreadsheet quick-filter
+  // applied. This SKBR3 sniffles set is all translocations, so the filter
+  // subsets by chromosome: typing "X" narrows the table to the calls involving
+  // chrX (matching the CHROM / INFO CHR2 columns — "X" doesn't appear in the
+  // numeric POS/ID columns), and the circular overview redraws to only those
+  // chords. Replaces a stale hand-curated capture of the old labeled "text
+  // filter" UI (the app now uses the MUI DataGrid quick-filter).
+  {
+    mode: 'url',
+    name: 'sv_inspector_importform_filtered',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'SvInspectorView',
+          assembly: 'hg19',
+          uri: 'https://jbrowse.org/genomes/hg19/SKBR3/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.sniffles1kb_auto_l8_s5_noalt.filtered.vcf.gz',
+        },
+      ],
+    }),
+    readyText: 'CHROM',
+    readyTimeout: 60000,
+    settleMs: 15000,
+    actions: [
+      {
+        type: 'type',
+        selector: 'input[placeholder^="Search"]',
+        value: 'X',
+        clear: true,
+      },
+      { type: 'delay', ms: 4000 },
+    ],
   },
 
   // Before/after horizontal flip, stacked into one figure: top frame is the
@@ -2152,6 +2299,46 @@ export const specs: ScreenshotSpec[] = [
     // highlight the "Show all regions in assembly" button (reviewer request)
     annotations: [
       { type: 'box', anchor: { text: 'Show all regions in assembly' } },
+    ],
+  },
+
+  // The SV inspector after searching for SV_85: the spreadsheet quick-filter is
+  // typed with "SV_85" so the table narrows to that one benchmark deletion call,
+  // and a linear genome view below is already navigated to the SV_85 locus
+  // (chr10, in the CUZD1 gene) showing the same VCF track — the end state of
+  // clicking the filtered row. Replaces a hand-curated capture.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/deletion_sv_inspector_search',
+    url: cgiabUrl({
+      views: [
+        {
+          type: 'SvInspectorView',
+          assembly: 'GRCh38_GIABv3',
+          uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz',
+        },
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr10:122,823,828-122,852,611',
+          tracks: ['GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf'],
+        },
+      ],
+    }),
+    // 'chr1' shows in the inspector circular/table; the LGV location is an input
+    // value (not matched as text), so wait on the inspector and let settle cover
+    // the remote LGV navigation/VCF load
+    readyText: 'chr1',
+    readyTimeout: 60000,
+    settleMs: 20000,
+    actions: [
+      {
+        type: 'type',
+        selector: 'input[placeholder^="Search"]',
+        value: 'SV_85',
+        clear: true,
+      },
+      { type: 'delay', ms: 4000 },
     ],
   },
 
@@ -4669,11 +4856,22 @@ export const specs: ScreenshotSpec[] = [
 const JBROWSE_LATEST = 'https://jbrowse.org/code/jb2/latest/'
 
 export function specLiveUrl(spec: ScreenshotSpec): string | undefined {
-  return spec.mode === 'url'
-    ? spec.url.startsWith('http')
-      ? spec.url
-      : `${JBROWSE_LATEST}${spec.url}`
-    : undefined
+  if (spec.mode === 'url') {
+    if (spec.url.startsWith('http')) {
+      // an absolute url is used verbatim — unless it's a localhost capture (a
+      // local dev-plugin build, e.g. protein/connected), which has no public
+      // equivalent and so can't become a reader-facing live link
+      return /^https?:\/\/(localhost|127\.0\.0\.1)\b/.test(spec.url)
+        ? undefined
+        : spec.url
+    } else {
+      // a bare `?config=...` captured against the local build opens identically
+      // on the public latest instance
+      return `${JBROWSE_LATEST}${spec.url}`
+    }
+  } else {
+    return undefined
+  }
 }
 
 // screenshot name -> live-instance URL (all current specs are url-mode)
