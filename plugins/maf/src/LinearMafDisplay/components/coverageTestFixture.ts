@@ -12,6 +12,7 @@ export function emptyMafCoverage(coverageStartPos = 0): MafCoverageRegion {
     coverageDepths: new Float32Array(0),
     coverageStartPos,
     coverageMaxDepth: 0,
+    identityScores: new Float32Array(0),
     mismatchPositions: new Uint32Array(0),
     mismatchBases: new Uint8Array(0),
     insertionPositions: new Uint32Array(0),

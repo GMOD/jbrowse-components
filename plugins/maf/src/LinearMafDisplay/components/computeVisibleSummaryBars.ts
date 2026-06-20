@@ -29,7 +29,8 @@ interface ComputeVisibleSummaryBarsParams {
 /**
  * Positioned per-species presence bars for zoom-out rendering, one per summary
  * block×species in the visible regions. Each bar spans the block's reference
- * extent on its species' row; `score` (0..1 alignment quality) and the
+ * extent on its species' row; `score` (the UCSC bigMafSummary 0..1 normalized
+ * alignment score — not percent identity, see `drawMafSummaryBars`) and the
  * left/right `MafStatus` chars are carried through for score-shading + bridge
  * decoration in `drawMafSummaryBars`. Mirrors `computeVisibleEmptyLines` so the
  * summary overlay composites exactly like the e-line overlay.

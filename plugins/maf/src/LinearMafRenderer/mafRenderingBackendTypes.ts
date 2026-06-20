@@ -75,10 +75,17 @@ export interface MafBlock {
 // `insertionPositions` / `insertionLengths` likewise mirror the InterbaseArrays
 // shape, feeding the insertion summary in the coverage-band tooltip (one entry
 // per insertion, anchored at the reference position following the inserted run).
+//
+// `identityScores[i]` is the percent identity (0..1) at `coverageStartPos + i`:
+// the fraction of aligned non-reference species matching the reference base,
+// `NaN` where unclassifiable (depth 0 or ref `N`). Shipped raw (parallel to
+// `coverageDepths`, shares `coverageStartPos`) — the conservation band draws it
+// directly with per-pixel aggregation, the tooltip reads the exact value.
 export interface MafCoverageRegion {
   coverageDepths: Float32Array
   coverageStartPos: number
   coverageMaxDepth: number
+  identityScores: Float32Array
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array
   insertionPositions: Uint32Array

@@ -81,6 +81,8 @@ const DEFAULTS = {
   showCoverage: true,
   showAlignments: true,
   coverageHeight: 45,
+  showConservation: false,
+  conservationHeight: 40,
 } as const
 
 /**
@@ -191,6 +193,23 @@ export default function stateModelFactory(
         coverageHeight: types.stripDefault(
           types.number,
           DEFAULTS.coverageHeight,
+        ),
+        /**
+         * #property
+         * Show the conservation band (per-bp percent identity to the reference,
+         * computed from the aligned species). Off by default. Independent of
+         * `showCoverage`/`showAlignments`.
+         */
+        showConservation: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showConservation,
+        ),
+        /**
+         * #property
+         */
+        conservationHeight: types.stripDefault(
+          types.number,
+          DEFAULTS.conservationHeight,
         ),
       }),
     )
@@ -322,6 +341,18 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setShowConservation(arg: boolean) {
+        self.showConservation = arg
+      },
+      /**
+       * #action
+       */
+      setConservationHeight(arg: number) {
+        self.conservationHeight = arg
+      },
+      /**
+       * #action
+       */
       showInsertionSequenceDialog(insertionData: {
         sequence: string
         sampleLabel: string
@@ -444,14 +475,33 @@ export default function stateModelFactory(
       get coverageDisplayHeight() {
         return self.showCoverage ? self.coverageHeight : 0
       },
+      /**
+       * #getter
+       * Height of the conservation (percent identity) band (0 when hidden).
+       */
+      get conservationDisplayHeight() {
+        return self.showConservation ? self.conservationHeight : 0
+      },
     }))
     .views(self => ({
       /**
        * #getter
-       * Full display height = rows area + coverage band.
+       * Top offset of the per-sample rows area = the stacked band heights above
+       * it (coverage + conservation). The single source of truth for "where the
+       * rows start" — every rows hit-test / draw / export offset routes through
+       * this so adding a band can't desync them.
+       */
+      get rowsTopOffset() {
+        return self.coverageDisplayHeight + self.conservationDisplayHeight
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Full display height = rows area + stacked bands.
        */
       get totalHeight() {
-        return self.rowsHeight + self.coverageDisplayHeight
+        return self.rowsHeight + self.rowsTopOffset
       },
     }))
     .views(self => ({
@@ -672,7 +722,7 @@ export default function stateModelFactory(
                 0.05,
               )
             : undefined
-        return buildCoverageTooltipBin(
+        const bin = buildCoverageTooltipBin(
           snpPos ?? position,
           {
             coverageDepths: coverage.coverageDepths,
@@ -683,6 +733,16 @@ export default function stateModelFactory(
             mismatchBases: coverage.mismatchBases,
           },
         )
+        if (!bin) {
+          return undefined
+        }
+        // Percent identity at the reported position (NaN where unclassifiable).
+        const idx = bin.position - coverage.coverageStartPos
+        const identity =
+          idx >= 0 && idx < coverage.identityScores.length
+            ? (coverage.identityScores[idx] ?? Number.NaN)
+            : Number.NaN
+        return { ...bin, identity }
       },
       /**
        * #method
@@ -860,7 +920,7 @@ export default function stateModelFactory(
         if (sampleCount) {
           const rowsTarget = Math.max(
             sampleCount,
-            newHeight - self.coverageDisplayHeight,
+            newHeight - self.rowsTopOffset,
           )
           self.rowHeight = Math.max(1, Math.floor(rowsTarget / sampleCount))
         }

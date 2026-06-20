@@ -26,7 +26,8 @@ const MAFTooltip = observer(function ({
   model: LinearMafDisplayModel
   origMouseX?: number
 }) {
-  const { showCoverage, coverageDisplayHeight, rowHeight, scrollTop } = model
+  const { showCoverage, coverageDisplayHeight, rowsTopOffset, rowHeight, scrollTop } =
+    model
   // Controlled point for floating-ui. Without it, `useClientPoint` enters
   // pointer-tracking mode: a window `mousemove` listener that allocates a fresh
   // virtual reference every move. Every other display tooltip passes this.
@@ -41,18 +42,21 @@ const MAFTooltip = observer(function ({
   // insertion hit-testing (insertions are interbase). Orientation-aware.
   const gposFrac = p2.reversed ? p2.end - p2.offset : p2.start + p2.offset
 
-  // mouseY in [0, coverageDisplayHeight) means cursor is over the coverage
-  // band — show depth + SNP breakdown via the shared alignments-core
-  // tooltip bin. `index` from pxToBp is the displayedRegion index and
+  // mouseY in [0, rowsTopOffset) means the cursor is over the band area above
+  // the rows (coverage and/or the conservation band). Both show the depth +
+  // SNP + identity breakdown via the shared alignments-core tooltip bin (which
+  // now carries identity). `index` from pxToBp is the displayedRegion index and
   // matches the rpcDataMap key.
-  if (showCoverage && mouseY < coverageDisplayHeight) {
+  if (mouseY < rowsTopOffset) {
     // Insertions (interbase) get their own tooltip, tested first by pixel
-    // proximity to the thin boundary bar; otherwise the depth/SNP coverage
-    // tooltip for the containing cell. Kept separate so insertion data never
-    // mixes into the depth table, mirroring plugin-alignments.
-    const insertion = p2.oob
-      ? undefined
-      : model.coverageInsertionHit(p2.index, gposFrac, view.bpPerPx)
+    // proximity to the thin boundary bar, but only within the coverage band
+    // (that's where the markers draw); otherwise the depth/SNP/identity tooltip
+    // for the containing cell. Kept separate so insertion data never mixes into
+    // the depth table, mirroring plugin-alignments.
+    const insertion =
+      showCoverage && mouseY < coverageDisplayHeight && !p2.oob
+        ? model.coverageInsertionHit(p2.index, gposFrac, view.bpPerPx)
+        : undefined
     if (insertion) {
       return (
         <BaseTooltip clientPoint={clientPoint}>
@@ -78,7 +82,7 @@ const MAFTooltip = observer(function ({
       ? model.rowHoverInfo(
           p2.index,
           gposFrac,
-          Math.floor((mouseY + scrollTop - coverageDisplayHeight) / rowHeight),
+          Math.floor((mouseY + scrollTop - rowsTopOffset) / rowHeight),
           view.bpPerPx,
         )
       : undefined

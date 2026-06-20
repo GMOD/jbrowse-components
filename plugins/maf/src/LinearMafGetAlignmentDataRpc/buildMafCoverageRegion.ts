@@ -20,13 +20,18 @@ import type {
  * (`LinearMafGetAlignmentData`, over all sample rows) and the main thread (the
  * `coverageRegions` getter, over a subtree-filtered row set) so both produce
  * identical buffers — recomputing for a subtree just passes filtered blocks.
+ *
+ * `refRowIndex` (the reference assembly's display row) is forwarded to the
+ * identity computation so the reference's self-match is excluded; `-1` when no
+ * reference row is in the visible set.
  */
 export function buildMafCoverageRegion(
   blocks: MafBlock[],
   regionStart: number,
   regionEnd: number,
+  refRowIndex = -1,
 ): MafCoverageRegion {
-  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd)
+  const mafCov = computeMafCoverage(blocks, regionStart, regionEnd, refRowIndex)
   const coverageForSnp = {
     depths: mafCov.depths,
     maxDepth: mafCov.maxDepth,
@@ -68,6 +73,7 @@ export function buildMafCoverageRegion(
     coverageDepths: mafCov.depths,
     coverageStartPos: mafCov.startPos,
     coverageMaxDepth: mafCov.maxDepth,
+    identityScores: mafCov.identity,
     mismatchPositions,
     mismatchBases,
     insertionPositions,

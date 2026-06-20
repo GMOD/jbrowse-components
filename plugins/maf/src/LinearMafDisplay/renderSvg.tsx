@@ -12,6 +12,7 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
+import { drawConservation } from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
@@ -64,9 +65,12 @@ export async function renderSvg(
     rowHeight,
     rowsHeight,
     coverageDisplayHeight,
+    rowsTopOffset,
     coverageTicks,
     showCoverage,
     coverageDomain,
+    showConservation,
+    conservationHeight,
   } = model
   const treeShowing = showTree && !!hierarchy
   const labelOffset = treeShowing ? treeAreaWidth : 0
@@ -93,7 +97,18 @@ export async function renderSvg(
             })
           })
         : null}
-      <g transform={`translate(0, ${coverageDisplayHeight})`}>
+      {showConservation ? (
+        <g transform={`translate(0, ${coverageDisplayHeight})`}>
+          {paintLayer(width, conservationHeight, opts, ctx => {
+            drawConservation(ctx, renderBlocks, model.rpcDataMap, {
+              conservationHeight,
+              canvasWidth: width,
+              theme,
+            })
+          })}
+        </g>
+      ) : null}
+      <g transform={`translate(0, ${rowsTopOffset})`}>
         {paintLayer(width, rowsHeight, opts, ctx => {
           drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
           drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
@@ -117,6 +132,22 @@ export async function renderSvg(
       {showCoverage && coverageTicks ? (
         <g transform="translate(45, 0)">
           <YScaleBar ticks={coverageTicks} orientation="left" />
+        </g>
+      ) : null}
+      {showConservation ? (
+        <g transform={`translate(45, ${coverageDisplayHeight})`}>
+          <YScaleBar
+            ticks={{
+              yTop: 0,
+              yBottom: conservationHeight,
+              items: [
+                { value: 100, y: 0, label: '100%' },
+                { value: 50, y: conservationHeight / 2, label: '50%' },
+                { value: 0, y: conservationHeight, label: '0%' },
+              ],
+            }}
+            orientation="left"
+          />
         </g>
       ) : null}
     </SvgClipRect>

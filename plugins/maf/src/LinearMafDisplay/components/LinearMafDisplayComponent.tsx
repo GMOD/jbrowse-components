@@ -11,6 +11,8 @@ import DragSelectionRect from './DragSelectionRect.tsx'
 import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
 import InsertionsOverlay from './InsertionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
+import MafConservationCanvas from './MafConservationCanvas.tsx'
+import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
 import MafCoverageYScale from './MafCoverageYScale.tsx'
@@ -69,7 +71,7 @@ const MafBody = observer(function MafBody({
   const {
     height,
     rowsHeight,
-    coverageDisplayHeight,
+    rowsTopOffset,
     scrollTop,
     rowHeight,
     showTree,
@@ -107,10 +109,12 @@ const MafBody = observer(function MafBody({
       <MafCoverageCanvas model={model} />
       <MafCoverageYScale model={model} />
       <MafCoverageResizeHandle model={model} onActiveChange={setResizeActive} />
+      <MafConservationCanvas model={model} />
+      <MafConservationYScale model={model} />
       <div
         style={{
           position: 'absolute',
-          top: coverageDisplayHeight,
+          top: rowsTopOffset,
           left: 0,
           width,
           height: rowsHeight,
@@ -223,7 +227,7 @@ const MafBody = observer(function MafBody({
         view={view}
         samples={samples}
         rowHeight={rowHeight}
-        rowsTopOffset={coverageDisplayHeight}
+        rowsTopOffset={rowsTopOffset}
         scrollTop={scrollTop}
         contextCoord={contextCoord}
         setContextCoord={setContextCoord}

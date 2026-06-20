@@ -193,7 +193,20 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     // `blocks` already contains exactly the display rows (narrowed by the
     // subtree filter via `rowOrder`), so coverage over them is automatically
     // scoped to the visible subtree — no separate row filtering needed.
-    const coverage = buildMafCoverageRegion(blocks, region.start, region.end)
+    //
+    // The reference assembly is normally listed as a sample (the top row), so
+    // it self-matches at every column. Identify its display row from the
+    // queried `region.assemblyName` (the same signal `selectReferenceSequenceString`
+    // uses as `query.assemblyName`) so the conservation metric can exclude it.
+    // `-1` when the reference isn't among the visible rows — identity then runs
+    // over all rows.
+    const refRowIndex = sampleToRow.get(region.assemblyName) ?? -1
+    const coverage = buildMafCoverageRegion(
+      blocks,
+      region.start,
+      region.end,
+      refRowIndex,
+    )
 
     return { samples, treeNewick, regionData: { blocks, coverage } }
   }

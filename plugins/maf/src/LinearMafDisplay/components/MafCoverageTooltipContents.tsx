@@ -30,36 +30,48 @@ export default function MafCoverageTooltipContents({
   bin,
   refName,
 }: {
-  bin: CoverageTooltipBin
+  // `identity` is the maf-local percent identity (0..1) attached to the bin by
+  // the display's `coverageTooltipBin`; the rest is the shared alignments-core
+  // `CoverageTooltipBin`.
+  bin: CoverageTooltipBin & { identity?: number }
   refName?: string
 }) {
   const { classes } = useStyles()
-  const { position, depth, snps } = bin
+  const { position, depth, snps, identity } = bin
   const pos = toLocale(position + 1)
   const location = refName ? `${refName}:${pos}` : pos
   return (
-    <table className={classes.table}>
-      <caption>Coverage - {location}</caption>
-      <thead>
-        <tr>
-          <th>Base</th>
-          <th>Samples</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Total</td>
-          <td>{depth}</td>
-        </tr>
-        {Object.entries(snps).map(([base, data]) => (
-          <tr key={base}>
-            <td>{base.toUpperCase()}</td>
-            <td className={classes.td}>
-              {data.count}/{depth} ({((data.count / depth) * 100).toFixed(1)}%)
-            </td>
+    <>
+      <table className={classes.table}>
+        <caption>Coverage - {location}</caption>
+        <thead>
+          <tr>
+            <th>Base</th>
+            <th>Samples</th>
           </tr>
-        ))}
-      </tbody>
-    </table>
+        </thead>
+        <tbody>
+          <tr>
+            <td>Total</td>
+            <td>{depth}</td>
+          </tr>
+          {Object.entries(snps).map(([base, data]) => (
+            <tr key={base}>
+              <td>{base.toUpperCase()}</td>
+              <td className={classes.td}>
+                {data.count}/{depth} ({((data.count / depth) * 100).toFixed(1)}%)
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+      {identity !== undefined && Number.isFinite(identity) ? (
+        // Percent identity excludes the reference row; a sample N/IUPAC code
+        // counts as a mismatch (same policy as the SNP coloring).
+        <div className={classes.td}>
+          Identity: {(identity * 100).toFixed(1)}%
+        </div>
+      ) : null}
+    </>
   )
 }
