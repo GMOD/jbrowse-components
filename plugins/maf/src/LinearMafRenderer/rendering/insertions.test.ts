@@ -1,3 +1,5 @@
+import { textWidthForNumber } from '@jbrowse/alignments-core'
+
 import { renderInsertions } from './insertions.ts'
 
 import type { RenderingContext } from './types.ts'
@@ -24,12 +26,12 @@ function makeCtx() {
   return { ctx, fillRectCalls }
 }
 
-function makeContext(ctx: object): RenderingContext {
+function makeContext(ctx: object, h = 12): RenderingContext {
   return {
     ctx: ctx as RenderingContext['ctx'],
     scale: 10,
     rowHeight: 15,
-    h: 12,
+    h,
     palette: {
       colorForBase: { a: '#f00', c: '#0f0', g: '#00f', t: '#ff0', n: '#888' },
       matchColor: '#d3d3d3',
@@ -80,6 +82,25 @@ test('alignment shorter than seq with trailing insertion does not inflate insLen
   // length=5 stays 'small' → a single 1px bar (insertionBarWidth small = 1).
   expect(fillRectCalls).toHaveLength(1)
   expect(fillRectCalls[0]!.w).toBe(1)
+})
+
+test('large insertion box is number-width when tall but shrinks to a bar when the row is too short for the count', () => {
+  // 10-base insertion at scale 10 → 'large' (length>=10, length*scale>=15).
+  const seq = bytes(`A${'-'.repeat(10)}T`)
+  const alignment = bytes(`A${'C'.repeat(10)}T`)
+
+  const tall = makeCtx()
+  renderInsertions(makeContext(tall.ctx, 12), alignment, seq, 100, 0)
+  expect(tall.fillRectCalls).toHaveLength(1)
+  expect(tall.fillRectCalls[0]!.w).toBe(textWidthForNumber(10))
+
+  const short = makeCtx()
+  renderInsertions(makeContext(short.ctx, 3), alignment, seq, 100, 0)
+  expect(short.fillRectCalls).toHaveLength(1)
+  // count won't fit → narrow 'long' bar (min(5, len*scale/3)) instead of an
+  // empty number-width box
+  expect(short.fillRectCalls[0]!.w).toBe(5)
+  expect(short.fillRectCalls[0]!.w).toBeLessThan(tall.fillRectCalls[0]!.w)
 })
 
 test('alignment longer than seq does not draw spurious insertions', () => {
