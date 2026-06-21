@@ -49,15 +49,22 @@ export async function renameRegionsIfNeeded<
   const assemblyData = Object.fromEntries(
     await Promise.all(
       uniqueAssemblyNames.map(async name => {
-        const assembly = assemblyManager.get(name)
+        // resolve the assembly once via waitForAssembly (which awaits both
+        // registration and load) and derive the refName map AND
+        // getSeqAdapterRefName from this single loaded handle. A synchronous
+        // assemblyManager.get() here could miss an assembly still being
+        // registered, leaving getSeqAdapterRefName undefined so originalRefName
+        // (used by CRAM/BAM to fetch reference bases) falls back to the
+        // canonical name instead of the FASTA name.
+        const assembly = name
+          ? await assemblyManager.waitForAssembly(name)
+          : undefined
         return [
           name,
           {
-            refNameMap: await assemblyManager.getRefNameMapForAdapter(
-              adapterConfig,
-              name,
-              args,
-            ),
+            refNameMap: assembly
+              ? await assembly.getRefNameMapForAdapter(adapterConfig, args)
+              : {},
             getSeqAdapterRefName: assembly
               ? (r: string) => assembly.getSeqAdapterRefName(r)
               : undefined,

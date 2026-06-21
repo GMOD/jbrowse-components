@@ -1,0 +1,4 @@
+Sequence name	Sequence role	GenBank seq accession	RefSeq seq accession	UCSC style name
+1	assembled-molecule	CM000663.2	NC_000001.11	chr1
+2	assembled-molecule	CM000664.2	NC_000002.12	chr2
+MT	assembled-molecule	J01415.2	NC_012920.1	chrM

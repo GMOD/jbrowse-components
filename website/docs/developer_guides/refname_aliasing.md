@@ -5,68 +5,55 @@ description:
 guide_category: Advanced topics
 ---
 
-RefName aliasing lets JBrowse map between different naming conventions for the
-same chromosome — e.g. `chr1` vs `1` vs `NC_000001.10`. When an alias adapter is
-configured on an assembly, JBrowse automatically translates refNames so that
-tracks using different conventions all display correctly together.
+RefName aliasing lets JBrowse treat different naming conventions for the same
+chromosome — e.g. `chr1` vs `1` vs `NC_000001.11` — as a single sequence. When
+an alias adapter is configured on an assembly, JBrowse automatically translates
+refNames so that tracks using different conventions all line up and display
+together.
 
-The resolved refName is passed as `refName` in feature adapter queries; the
-original pre-alias name is passed as `originalRefName`.
+### How resolution works
 
-See also:
+It helps to keep three distinct names in mind:
+
+- **canonical name** — the name JBrowse displays and uses for navigation. Every
+  alias of a sequence resolves to its canonical name. By default this is the
+  name in your FASTA / sequence adapter.
+- **sequence-adapter (FASTA) name** — the name your reference sequence file
+  actually uses. Usually the same as the canonical name, but it can differ (see
+  `useNameOverride` below).
+- **track refName** — the name an individual track's data file uses. Each
+  track's regions are translated from the canonical name into that track's own
+  naming scheme before querying it, so a BAM that uses `1` and a VCF that uses
+  `chr1` both work against a `chr1` canonical assembly.
+
+When a track adapter is queried, the resolved track refName is passed as
+`refName`, and the sequence-adapter name is passed as `originalRefName` (used by
+CRAM/BAM to fetch the correct reference bases). See also
 [configuring reference name aliasing](/docs/config_guides/assemblies/#configuring-reference-name-aliasing).
 
-### When to use each adapter
+### Choosing an adapter
 
-- **RefNameAliasAdapter** — use when you have a simple tab-separated alias file,
-  such as a UCSC `chromAlias.txt` download or a hand-crafted file mapping your
-  local chromosome names to standard names. Also useful when only a subset of
-  aliases is needed (e.g. just chr-prefixed ↔ numeric names).
-
-- **NcbiSequenceReportAliasAdapter** — use when working with NCBI assemblies.
-  The `sequence_report.tsv` file is available from NCBI for any RefSeq assembly
-  and provides mappings between GenBank accessions, RefSeq accessions, UCSC
-  names, and sequence names all at once. This is the easiest path when your
-  FASTA uses RefSeq accession names (e.g. `NC_000001.11`) but you want
-  UCSC-style names (`chr1`) shown in the browser.
-
-**Common scenarios:**
-
-| Situation                                                        | Recommended adapter                                                     |
-| ---------------------------------------------------------------- | ----------------------------------------------------------------------- |
-| UCSC genome, FASTA uses `chr1`-style names, tracks use `1`-style | `RefNameAliasAdapter` with UCSC chromAlias file                         |
-| NCBI/RefSeq genome, mix of accession and sequence names          | `NcbiSequenceReportAliasAdapter`                                        |
-| Custom organism with hand-maintained aliases                     | `RefNameAliasAdapter` with a simple TSV you create                      |
-| FASTA uses UCSC names but tracks use RefSeq accessions           | `NcbiSequenceReportAliasAdapter` with `useNameOverride: true` (default) |
-| FASTA uses RefSeq accessions, want accession-based query         | `NcbiSequenceReportAliasAdapter` with `useNameOverride: false`          |
+| Situation                                              | Recommended adapter                                       |
+| ------------------------------------------------------ | --------------------------------------------------------- |
+| UCSC genome, or any hand-maintained tab-separated file | `RefNameAliasAdapter`                                     |
+| NCBI/RefSeq genome with a `sequence_report.tsv`        | `NcbiSequenceReportAliasAdapter`                          |
+| FASTA uses RefSeq accessions but you want `chr1` shown | `NcbiSequenceReportAliasAdapter` (default)                |
+| FASTA uses RefSeq accessions and you want them shown   | `NcbiSequenceReportAliasAdapter`, `useNameOverride:false` |
 
 ### RefNameAliasAdapter
 
-Reads any tab-separated alias file, including the
-[UCSC chromAliases](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/database/chromAlias.txt.gz)
-format.
-
-**Example file:**
+Reads any tab-separated alias file, including the UCSC
+[chromAlias](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
+format. Each row lists every name for one sequence:
 
 ```
-chr1	1	NC_000001.10
-chr2	2	NC_000002.11
+chr1	1	NC_000001.11
+chr2	2	NC_000002.12
 ```
 
-Each row lists a set of names for the same sequence, separated by tabs. One
-column is designated as the "primary" refName that must match the names in your
-FASTA/sequence adapter — all other columns become aliases.
-
-**Config:**
-
-```json
-{
-  "type": "RefNameAliasAdapter",
-  "location": { "uri": "aliases.txt" }
-}
-```
-
-Or the shorthand form:
+One column is the "primary" refName that must match the names in your
+FASTA/sequence adapter; the other columns become aliases. The primary column
+defaults to the first (index `0`).
 
 ```json
 {
@@ -75,20 +62,21 @@ Or the shorthand form:
 }
 ```
 
+(`"uri": "..."` is shorthand for `"location": { "uri": "..." }`.)
+
 **Options:**
 
 - `refNameColumn` (number, default `0`) — zero-based index of the column that
   matches your FASTA. In the example above, `0` means `chr1`/`chr2` must match
   your FASTA.
 - `refNameColumnHeaderName` (string) — alternative to `refNameColumn`. If your
-  file has a `#`-prefixed header line, you can specify the column by name
-  instead of index.
-
-**Header-based example:**
+  file has a `#`-prefixed header line, select the primary column by its header
+  name instead of by index. If the named column is not found, the adapter throws
+  rather than silently producing no aliases.
 
 ```
 #name	alias1	alias2
-chr1	1	NC_000001.10
+chr1	1	NC_000001.11
 ```
 
 ```json
@@ -101,19 +89,10 @@ chr1	1	NC_000001.10
 
 ### NcbiSequenceReportAliasAdapter
 
-Reads NCBI `sequence_report.tsv` files, which contain standardized mappings
-between GenBank, RefSeq, UCSC, and sequence names.
-
-**Config:**
-
-```json
-{
-  "type": "NcbiSequenceReportAliasAdapter",
-  "location": { "uri": "sequence_report.tsv" }
-}
-```
-
-Or shorthand:
+Reads NCBI `sequence_report.tsv` files, which map GenBank accessions, RefSeq
+accessions, UCSC-style names, and sequence names all at once. These are
+available from the [NCBI datasets](https://www.ncbi.nlm.nih.gov/datasets/) page
+for any RefSeq assembly (also downloadable with the `datasets` CLI).
 
 ```json
 {
@@ -122,15 +101,31 @@ Or shorthand:
 }
 ```
 
-The file must include these column headers (by name, not position):
-`GenBank seq accession`, `RefSeq seq accession`, `UCSC style name`,
-`Sequence name`.
-
-The primary refName is taken from `UCSC style name` if present, otherwise
-`Sequence name`. All four columns become aliases for that refName.
+The file must include these column headers (matched by name, not position):
+`GenBank seq accession`, `RefSeq seq accession`, `UCSC style name`, and
+`Sequence name`. The primary refName is taken from `UCSC style name`, falling
+back to `Sequence name`; all four columns become aliases for it.
 
 **Options:**
 
-- `useNameOverride` (boolean, default `true`) — forces UCSC-style names to take
-  precedence over NCBI-style names from the FASTA. Set to `false` if your FASTA
-  uses NCBI/RefSeq accession names.
+- `useNameOverride` (boolean, default `true`) — controls which name is canonical
+  (displayed) when your FASTA does **not** use UCSC names:
+  - **`true`** — show UCSC-style names (`chr1`) even though your FASTA uses
+    RefSeq accessions (`NC_000001.11`). JBrowse displays `chr1` and still
+    fetches reference bases from the FASTA under `NC_000001.11` behind the
+    scenes. This is the common case for NCBI FASTAs.
+  - **`false`** — keep your FASTA's own names canonical. JBrowse displays
+    `NC_000001.11`, and `chr1` resolves to it as a searchable alias.
+
+### Troubleshooting
+
+- **Aliases don't resolve / tracks appear empty.** The primary refName must
+  match your FASTA exactly. For `RefNameAliasAdapter`, confirm `refNameColumn`
+  points at the column whose values equal your FASTA's sequence names.
+- **`Encountered invalid refName` error.** A name in the alias file contains
+  characters outside the
+  [SAM-spec refName](https://samtools.github.io/hts-specs/SAMv1.pdf) set (e.g.
+  stray whitespace or quoting). Clean the offending row.
+- **NCBI adapter throws about the header line.** The first line must contain the
+  required column headers spelled exactly as above; a file missing them (or with
+  renamed columns) will not parse.

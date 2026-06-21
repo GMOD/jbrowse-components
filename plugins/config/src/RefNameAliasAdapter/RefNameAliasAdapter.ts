@@ -1,43 +1,45 @@
 import { BaseAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { openLocation } from '@jbrowse/core/util/io'
+
+import { readAliasRows } from '../aliasUtils.ts'
 
 import type { RefNameAliasAdapterConfig } from './configSchema.ts'
 import type { BaseRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
+
+// header lines start with '#'; the leading marker belongs to the first column
+const isComment = (cols: string[]) => !!cols[0]?.startsWith('#')
+
+// column names from a '#'-prefixed header row, with the marker stripped
+const headerNames = (cols: string[]) =>
+  cols.map((col, i) => (i === 0 ? col.slice(1) : col).trim())
 
 export default class RefNameAliasAdapter
   extends BaseAdapter<RefNameAliasAdapterConfig>
   implements BaseRefNameAliasAdapter
 {
   async getRefNameAliases() {
-    const loc = this.getConf('location')
-    if (loc.uri === '' || loc.uri === '/path/to/my/aliases.txt') {
-      return []
-    }
-    const results = await openLocation(loc, this.pluginManager).readFile('utf8')
+    const rows = await readAliasRows(
+      this.getConf('location'),
+      this.pluginManager,
+    )
     const refColumn = this.getConf('refNameColumn')
     const refColumnHeaderName = this.getConf('refNameColumnHeaderName')
-    const lines = results
-      .trim()
-      .split(/\n|\r\n|\r/)
-      .filter(f => !!f)
-    const header = lines.filter(f => f.startsWith('#'))
+
+    const lastHeader = rows.filter(isComment).at(-1)
     const headerCol =
-      refColumnHeaderName && header.length
-        ? header
-            .at(-1)!
-            .slice(1)
-            .split('\t')
-            .map(t => t.trim())
-            .indexOf(refColumnHeaderName)
+      refColumnHeaderName && lastHeader
+        ? headerNames(lastHeader).indexOf(refColumnHeaderName)
         : refColumn
-    return lines
-      .filter(f => !f.startsWith('#'))
-      .flatMap(row => {
-        const aliases = row.split('\t')
-        const refName = aliases[headerCol]
-        return refName !== undefined
-          ? [{ refName, aliases: aliases.filter(f => !!f.trim()) }]
-          : []
-      })
+    if (headerCol === -1) {
+      throw new Error(
+        `refNameColumnHeaderName "${refColumnHeaderName}" not found in alias file header`,
+      )
+    }
+
+    return rows.filter(cols => !isComment(cols)).flatMap(cols => {
+      const refName = cols[headerCol]
+      return refName !== undefined
+        ? [{ refName, aliases: cols.filter(f => !!f.trim()) }]
+        : []
+    })
   }
 }
