@@ -354,11 +354,15 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
       },
       getFeature(index: number) {
-        if (!self.featureData) {
+        const { featureData, instanceData } = self
+        if (!featureData) {
           return undefined
         }
-        const featureIdx = self.instanceData?.instanceFeatureIdx[index] ?? index
-        return getFeatureAtIndex(self.featureData, featureIdx)
+        const featureIdx = instanceData?.instanceFeatureIdx[index] ?? index
+        if (featureIdx < 0 || featureIdx >= featureData.featureIds.length) {
+          return undefined
+        }
+        return getFeatureAtIndex(featureData, featureIdx)
       },
       /**
        * #getter
@@ -395,20 +399,18 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return { ...instanceData, colors }
       },
       get tooltipText() {
-        const { hoveredFeatureIdx, featureData, instanceData } = self
-        if (hoveredFeatureIdx < 0 || !featureData) {
+        const { hoveredFeatureIdx, instanceData } = self
+        if (hoveredFeatureIdx < 0) {
           return ''
         }
-        const featureIdx =
-          instanceData?.instanceFeatureIdx[hoveredFeatureIdx] ??
-          hoveredFeatureIdx
-        if (featureIdx >= featureData.featureIds.length) {
+        const feat = this.getFeature(hoveredFeatureIdx)
+        if (!feat) {
           return ''
         }
         const cigarOp = instanceData
           ? getCigarOpAtInstance(instanceData, hoveredFeatureIdx)
           : undefined
-        return getTooltip(getFeatureAtIndex(featureData, featureIdx), cigarOp)
+        return getTooltip(feat, cigarOp)
       },
       /**
        * #getter
