@@ -86,3 +86,6 @@ the track menu, with two styles:
 - **X-Y plot** draws a per-species identity wiggle: a bar per pixel whose height
   is that position's identity to the reference, like one conservation band per
   row.
+
+The zoom-driven swap is the default; uncheck **Auto-switch by zoom** in the same
+menu to pin the identity plot on at every zoom level instead.

@@ -89,6 +89,7 @@ const DEFAULTS = {
   showConservation: false,
   conservationHeight: 40,
   rowIdentityMode: 'none',
+  rowIdentityAutoZoom: true,
 } as const
 
 const minDisplayHeight = 20
@@ -236,6 +237,16 @@ export default function stateModelFactory(
         rowIdentityMode: types.stripDefault(
           types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
           DEFAULTS.rowIdentityMode,
+        ),
+        /**
+         * #property
+         * When true (default) the per-row identity plot follows zoom like UCSC
+         * `wigMaf` — bases at base level, the identity plot when zoomed out. When
+         * false the selected `rowIdentityMode` is pinned on at every zoom.
+         */
+        rowIdentityAutoZoom: types.stripDefault(
+          types.boolean,
+          DEFAULTS.rowIdentityAutoZoom,
         ),
       }),
     )
@@ -391,6 +402,12 @@ export default function stateModelFactory(
        */
       setRowIdentityMode(arg: RowIdentityModeWithOff) {
         self.rowIdentityMode = arg
+      },
+      /**
+       * #action
+       */
+      setRowIdentityAutoZoom(arg: boolean) {
+        self.rowIdentityAutoZoom = arg
       },
       /**
        * #action
@@ -998,16 +1015,18 @@ export default function stateModelFactory(
        * #getter
        * Single source of truth for what the per-sample rows area draws right now:
        * `bases` (the GPU SNP/base coloring) or one of the per-row identity styles
-       * (`heatmap` / `xyplot`). Emulates UCSC `wigMaf`: bases at base level, the
-       * per-species identity plot when zoomed out past it — and only when a mode
-       * is selected and the cheap `bigMafSummary` path isn't already owning the
-       * zoom-out view. The GPU canvas, the identity canvas, and SVG export all
-       * branch on this one getter so they can't disagree about what's on screen.
+       * (`heatmap` / `xyplot`). With `rowIdentityAutoZoom` (default) it emulates
+       * UCSC `wigMaf` — bases at base level, the identity plot when zoomed out;
+       * with auto off the selected mode is pinned at every zoom. Either way it's
+       * off when no mode is selected or the cheap `bigMafSummary` path already
+       * owns the zoom-out view. The GPU canvas, the identity canvas, and SVG
+       * export all branch on this one getter so they can't disagree about what's
+       * on screen.
        */
       get activeRowRendering(): 'bases' | RowIdentityMode {
         return self.rowIdentityMode !== 'none' &&
           !self.showSummary &&
-          !self.zoomedToBaseLevel
+          (!self.rowIdentityAutoZoom || !self.zoomedToBaseLevel)
           ? self.rowIdentityMode
           : 'bases'
       },

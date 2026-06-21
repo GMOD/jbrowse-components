@@ -29,6 +29,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showAlignments: boolean
   showConservation: boolean
   rowIdentityMode: RowIdentityModeWithOff
+  rowIdentityAutoZoom: boolean
   rowHeightMode: number
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
@@ -45,6 +46,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
   setRowIdentityMode: (m: RowIdentityModeWithOff) => void
+  setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
@@ -158,6 +160,17 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
             self.setRowIdentityMode(m)
           },
           options: ROW_IDENTITY_MODES,
+          extraItems: [
+            {
+              label: 'Auto-switch by zoom',
+              type: 'checkbox',
+              checked: self.rowIdentityAutoZoom,
+              disabled: self.rowIdentityMode === 'none',
+              onClick: () => {
+                self.setRowIdentityAutoZoom(!self.rowIdentityAutoZoom)
+              },
+            },
+          ],
         }),
       ],
     },
