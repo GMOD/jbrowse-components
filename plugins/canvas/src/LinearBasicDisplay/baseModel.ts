@@ -812,6 +812,17 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // Height that fits the laid-out content: the content height (maxY)
+        // clamped to a 50px floor (so a sparse track doesn't collapse) and the
+        // maxHeight cap. Single source for both the autoHeight autorun and the
+        // manual expand-to-fit button.
+        get fitHeight() {
+          return Math.min(Math.max(this.maxY, 50), self.maxHeight)
+        },
+
+        /**
+         * #getter
+         */
         get featureIdIndex() {
           return indexById(self.laidOutDataMap, d => d.flatbushItems)
         },
@@ -930,7 +941,7 @@ export default function baseStateModelFactory(
          */
         expandToFit() {
           self.heightBeforeExpand = self.height
-          self.setHeight(Math.min(self.maxY, self.maxHeight))
+          self.setHeight(self.fitHeight)
         },
 
         /**
@@ -1158,6 +1169,12 @@ export default function baseStateModelFactory(
          */
         setAutoHeight(value: boolean) {
           self.setOverride('autoHeight', value)
+          if (value) {
+            // The manual expand/restore state is meaningless once auto-fit
+            // drives the height; drop it so a later disable doesn't surface a
+            // stale "restore previous height".
+            self.clearHeightBeforeExpand()
+          }
         },
 
         /**
@@ -1545,14 +1562,9 @@ export default function baseStateModelFactory(
               self,
               autorun(
                 () => {
-                  if (!self.autoHeight) {
-                    return
+                  if (self.autoHeight) {
+                    self.setHeight(self.fitHeight)
                   }
-                  const target = Math.min(
-                    Math.max(self.maxY, 50),
-                    self.maxHeight,
-                  )
-                  self.setHeight(target)
                 },
                 { name: 'CanvasAutoHeight' },
               ),
