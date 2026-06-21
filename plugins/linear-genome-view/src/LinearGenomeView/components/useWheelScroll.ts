@@ -4,6 +4,7 @@ import { useEffect, useRef } from 'react'
 import {
   applyZoomAccum,
   getZoomNormalizer,
+  isActivelyZooming,
   normalizeWheelDelta,
   wheelFrameElapsedMs,
 } from '@jbrowse/core/util'
@@ -17,6 +18,14 @@ interface GenomeViewModel {
 
 const SCROLL_ZOOM_FACTOR_DIVISOR = 500
 
+// accumulate horizontal scroll across a frame, restarting from zero when the
+// gesture reverses direction so a flick the opposite way isn't cancelled out by
+// leftover momentum
+function accumulateScroll(prev: number, deltaX: number) {
+  const reversed = prev !== 0 && Math.sign(deltaX) !== Math.sign(prev)
+  return (reversed ? 0 : prev) + deltaX
+}
+
 interface WheelState {
   scrollDelta: number
   zoomAccum: number
@@ -24,6 +33,7 @@ interface WheelState {
   rectLeft: number
   rafId: number | null
   lastRafTime: number | null
+  lastZoomTime: number | null
 }
 
 export function useWheelScroll(
@@ -37,6 +47,7 @@ export function useWheelScroll(
     rectLeft: 0,
     rafId: null,
     lastRafTime: null,
+    lastZoomTime: null,
   })
 
   useEffect(() => {
@@ -88,6 +99,17 @@ export function useWheelScroll(
           deltaY /
           (isCtrlZoom ? getZoomNormalizer(deltaY) : SCROLL_ZOOM_FACTOR_DIVISOR)
         s.lastClientX = event.clientX
+        s.lastZoomTime = event.timeStamp
+        // drop any side-scroll accumulated earlier this frame — we're zooming,
+        // and a deltaX that arrived just before the zoom is part of the same
+        // noisy gesture
+        s.scrollDelta = 0
+      } else if (isActivelyZooming(event.timeStamp, s.lastZoomTime)) {
+        // ignore stray horizontal deltas that arrive mid-zoom — trackpads emit
+        // an unintentional side-scroll during a pinch/scroll-zoom gesture that
+        // would otherwise pan the view away from where the user is zooming.
+        // preventDefault anyway so the page itself doesn't scroll instead.
+        event.preventDefault()
       } else {
         // when scrollZoom is on, always preventDefault to stop the page
         // from scrolling on diagonal trackpad gestures that fall outside
@@ -98,13 +120,7 @@ export function useWheelScroll(
         if (model.scrollZoom || Math.abs(deltaX) > Math.abs(2 * deltaY)) {
           event.preventDefault()
         }
-        if (
-          s.scrollDelta !== 0 &&
-          Math.sign(deltaX) !== Math.sign(s.scrollDelta)
-        ) {
-          s.scrollDelta = 0
-        }
-        s.scrollDelta += deltaX
+        s.scrollDelta = accumulateScroll(s.scrollDelta, deltaX)
       }
 
       // coalesce all wheel events into one update per frame so that bursts

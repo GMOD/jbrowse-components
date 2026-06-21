@@ -1,6 +1,8 @@
 import {
+  ZOOM_ACTIVE_WINDOW_MS,
   applyZoomAccum,
   getZoomNormalizer,
+  isActivelyZooming,
   normalizeWheelDelta,
   wheelFrameElapsedMs,
 } from './wheelZoom.ts'
@@ -74,6 +76,22 @@ describe('applyZoomAccum', () => {
   test('rate-limits a large accum to MAX_ZOOM_RATE_PER_MS * elapsed', () => {
     // capped at 0.2/16.67 * 16.67 = 0.2 per frame
     expect(applyZoomAccum(10, 5, 16.67)).toBeCloseTo(12)
+  })
+})
+
+describe('isActivelyZooming', () => {
+  test('not zooming before any zoom has occurred', () => {
+    expect(isActivelyZooming(1000, null)).toBe(false)
+  })
+
+  test('still zooming within the window after a zoom event', () => {
+    expect(isActivelyZooming(1000, 1000)).toBe(true)
+    expect(isActivelyZooming(1000 + ZOOM_ACTIVE_WINDOW_MS - 1, 1000)).toBe(true)
+  })
+
+  test('no longer zooming once the window elapses', () => {
+    expect(isActivelyZooming(1000 + ZOOM_ACTIVE_WINDOW_MS, 1000)).toBe(false)
+    expect(isActivelyZooming(5000, 1000)).toBe(false)
   })
 })
 

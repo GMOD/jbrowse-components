@@ -40,6 +40,19 @@ export function wheelFrameElapsedMs(now: number, lastRafTime: number | null) {
   return Math.min(100, lastRafTime !== null ? now - lastRafTime : 16.67)
 }
 
+// A pinch/scroll-zoom gesture fires a continuous stream of wheel events, so we
+// treat the view as "actively zooming" until this many ms pass with no zoom
+// event. While actively zooming, callers ignore horizontal deltas: trackpads
+// emit an unintentional side-scroll mid-gesture that would otherwise pan the
+// view out from under the user.
+export const ZOOM_ACTIVE_WINDOW_MS = 100
+
+// `now` and `lastZoomTime` are both wheel-event timeStamps (same clock).
+// lastZoomTime is null before any zoom has occurred.
+export function isActivelyZooming(now: number, lastZoomTime: number | null) {
+  return lastZoomTime !== null && now - lastZoomTime < ZOOM_ACTIVE_WINDOW_MS
+}
+
 // apply an accumulated zoom amount to bpPerPx, rate-limited so a burst of wheel
 // events can't zoom faster than MAX_ZOOM_RATE_PER_MS over the frame's elapsed
 export function applyZoomAccum(

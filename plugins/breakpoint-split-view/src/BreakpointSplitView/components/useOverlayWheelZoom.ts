@@ -3,6 +3,7 @@ import { useEffect, useRef } from 'react'
 import {
   applyZoomAccum,
   getZoomNormalizer,
+  isActivelyZooming,
   normalizeWheelDelta,
   wheelFrameElapsedMs,
 } from '@jbrowse/core/util'
@@ -15,6 +16,7 @@ interface WheelState {
   lastViewIndex: number
   rafId: number | null
   lastRafTime: number | null
+  lastZoomTime: number | null
 }
 
 function findTrackContainers() {
@@ -47,6 +49,7 @@ export function useOverlayWheelZoom(
     lastViewIndex: 0,
     rafId: null,
     lastRafTime: null,
+    lastZoomTime: null,
   })
 
   useEffect(() => {
@@ -87,9 +90,15 @@ export function useOverlayWheelZoom(
         s.zoomAccum += deltaY / getZoomNormalizer(deltaY)
         s.lastClientX = event.clientX
         s.lastViewIndex = viewIndex
+        s.lastZoomTime = event.timeStamp
       } else {
         event.preventDefault()
-        targetView.horizontalScroll(deltaX)
+        // ignore stray horizontal deltas that arrive mid-zoom — trackpads emit
+        // an unintentional side-scroll during a pinch/scroll-zoom gesture that
+        // would otherwise pan the view away from where the user is zooming
+        if (!isActivelyZooming(event.timeStamp, s.lastZoomTime)) {
+          targetView.horizontalScroll(deltaX)
+        }
       }
 
       s.rafId ??= requestAnimationFrame(now => {

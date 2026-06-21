@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react'
 
+import { isActivelyZooming } from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -36,6 +37,7 @@ export function useWheelScrollZoom(
   const zoomAccumRef = useRef(0)
   const zoomScheduledRef = useRef(false)
   const lastZoomClientXRef = useRef(0)
+  const lastZoomTimeRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!canvas) {
@@ -95,8 +97,15 @@ export function useWheelScrollZoom(
       if (doZoom) {
         zoomAccumRef.current += event.deltaY / 500
         lastZoomClientXRef.current = event.clientX
+        lastZoomTimeRef.current = event.timeStamp
         flushZoom()
-      } else if (Math.abs(event.deltaY) < Math.abs(event.deltaX)) {
+      } else if (
+        Math.abs(event.deltaY) < Math.abs(event.deltaX) &&
+        // ignore stray horizontal deltas that arrive mid-zoom — trackpads emit
+        // an unintentional side-scroll during a pinch/scroll-zoom gesture that
+        // would otherwise pan the view away from where the user is zooming
+        !isActivelyZooming(event.timeStamp, lastZoomTimeRef.current)
+      ) {
         scrollAccumXRef.current += event.deltaX / 2
         flushHorizontalScroll()
       }
