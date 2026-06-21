@@ -25,6 +25,7 @@ function storeWithEvict(key: string, p: Promise<AdapterCacheEntry>) {
     delete adapterCache[key]
   })
   adapterCache[key] = p
+  return p
 }
 
 async function getAdapterPre(
@@ -61,20 +62,33 @@ async function getAdapterPre(
   }
 }
 
+/** look up the cached entry for a config, creating and storing it if absent */
+function getOrCreateEntry(
+  pluginManager: PluginManager,
+  sessionId: string,
+  adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
+) {
+  const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
+  return (
+    adapterCache[cacheKey] ??
+    storeWithEvict(
+      cacheKey,
+      getAdapterPre(pluginManager, sessionId, adapterConfigSnapshot),
+    )
+  )
+}
+
 /** instantiate a data adapter, or return a cached one with the same config */
 export async function getAdapter(
   pluginManager: PluginManager,
   sessionId: string,
   adapterConfigSnapshot: SnapshotIn<AnyConfigurationSchemaType>,
 ): Promise<AdapterCacheEntry> {
-  const cacheKey = adapterConfigCacheKey(adapterConfigSnapshot)
-  if (!adapterCache[cacheKey]) {
-    storeWithEvict(
-      cacheKey,
-      getAdapterPre(pluginManager, sessionId, adapterConfigSnapshot),
-    )
-  }
-  const ret = await adapterCache[cacheKey]!
+  const ret = await getOrCreateEntry(
+    pluginManager,
+    sessionId,
+    adapterConfigSnapshot,
+  )
   ret.sessionIds.add(sessionId)
   return ret
 }
