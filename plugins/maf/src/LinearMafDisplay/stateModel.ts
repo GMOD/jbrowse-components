@@ -1024,11 +1024,16 @@ export default function stateModelFactory(
        * on screen.
        */
       get activeRowRendering(): 'bases' | RowIdentityMode {
-        return self.rowIdentityMode !== 'none' &&
-          !self.showSummary &&
-          (!self.rowIdentityAutoZoom || !self.zoomedToBaseLevel)
-          ? self.rowIdentityMode
-          : 'bases'
+        const { rowIdentityMode } = self
+        // Auto-zoom follows UCSC wigMaf — identity only when zoomed out past
+        // base level; with auto off the chosen mode is pinned on at every zoom.
+        const zoomAllowsIdentity =
+          !self.rowIdentityAutoZoom || !self.zoomedToBaseLevel
+        let result: 'bases' | RowIdentityMode = 'bases'
+        if (rowIdentityMode !== 'none' && !self.showSummary && zoomAllowsIdentity) {
+          result = rowIdentityMode
+        }
+        return result
       },
     }))
     .views(self => ({
