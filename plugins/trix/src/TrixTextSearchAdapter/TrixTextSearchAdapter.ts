@@ -54,10 +54,10 @@ export default class TrixTextSearchAdapter
     const ixxFilePath = readConfObject(config, 'ixxFilePath')
 
     if (!ixFilePath) {
-      throw new Error('must provide out.ix')
+      throw new Error('TrixTextSearchAdapter requires an ixFilePath')
     }
     if (!ixxFilePath) {
-      throw new Error('must provide out.ixx')
+      throw new Error('TrixTextSearchAdapter requires an ixxFilePath')
     }
     this.trixJs = new Trix(
       openLocation(ixxFilePath, pluginManager),
@@ -76,26 +76,24 @@ export default class TrixTextSearchAdapter
     const words = query.split(' ')
     const results = await this.trixJs.search(query)
     const formatted = results
-      .map(([term, data]) => ({
-        term,
-        parts: (JSON.parse(data.replaceAll('|', ',')) as string[]).map(
-          decodeURIComponentNoThrow,
-        ),
-      }))
-      // multi-word search: keep only entries containing every word
-      .filter(({ parts }) => {
-        const lower = parts.join(' ').toLowerCase()
+      .map(([term, data]) => {
+        // record is ["loc"|"trackId"|"attr1"|...] with commas pre-encoded as
+        // pipes; swap them back to parse it as a JSON array, then URI-decode
+        const [loc, trackId, ...attrs] = (
+          JSON.parse(data.replaceAll('|', ',')) as string[]
+        ).map(decodeURIComponentNoThrow)
+        return { term, loc, trackId, attrs }
+      })
+      // multi-word search: keep only entries whose attributes contain every word
+      .filter(({ attrs }) => {
+        const lower = attrs.join(' ').toLowerCase()
         return words.every(w => lower.includes(w))
       })
-      .map(({ term, parts }) => {
-        const [loc, trackId, ...rest] = parts
-        const labelField = rest.find(elt => !!elt) ?? ''
+      .map(({ term, loc, trackId, attrs }) => {
         const termLower = term.toLowerCase()
-        const contextIdx = rest.findIndex(f =>
-          f.toLowerCase().includes(termLower),
-        )
-        const context =
-          contextIdx !== -1 ? shorten(rest[contextIdx]!, term) : undefined
+        const labelField = attrs.find(Boolean) ?? ''
+        const contextField = attrs.find(f => f.toLowerCase().includes(termLower))
+        const context = contextField ? shorten(contextField, term) : undefined
         const label = shorten(labelField, term)
 
         const displayString =
@@ -103,9 +101,12 @@ export default class TrixTextSearchAdapter
             ? label
             : `${label} (${context})`
 
-        // labelField is the full (un-shortened) name, used for exact matching
+        // exact match succeeds when any indexed attribute (name, id,
+        // description, ...) equals the query, so e.g. searching an ID works
+        const exact = attrs.some(a => a.toLowerCase() === query)
+
         return {
-          labelField,
+          exact,
           result: new BaseResult({
             locString: loc,
             label,
@@ -117,9 +118,7 @@ export default class TrixTextSearchAdapter
 
     const matches =
       args.searchType === 'exact'
-        ? formatted.filter(
-            ({ labelField }) => labelField.toLowerCase() === query,
-          )
+        ? formatted.filter(({ exact }) => exact)
         : formatted
     return matches.map(({ result }) => result)
   }
