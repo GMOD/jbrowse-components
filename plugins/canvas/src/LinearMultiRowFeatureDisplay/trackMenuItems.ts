@@ -18,12 +18,15 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   subtreeFilter?: readonly string[]
   editableSources: MultiRowSource[]
   clusterTree?: string
+  rowHeightSetting: number
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MultiRowSource[]) => void
   clearLayout: () => void
   willClearTree: (s: MultiRowSource[]) => boolean
+  setRowHeight: (n: number) => void
+  setFitToHeight: () => void
 }
 
 export function buildMultiRowTrackMenuItems(
@@ -39,6 +42,32 @@ export function buildMultiRowTrackMenuItems(
       },
     },
     treeBranchLengthMenuItem(self),
+    {
+      label: 'Row height',
+      type: 'subMenu',
+      subMenu: [
+        {
+          label: 'Auto-fit to display height',
+          type: 'checkbox',
+          checked: self.rowHeightSetting === 0,
+          onClick: () => {
+            self.setFitToHeight()
+          },
+        },
+        {
+          label: 'Normal',
+          onClick: () => {
+            self.setRowHeight(14)
+          },
+        },
+        {
+          label: 'Compact',
+          onClick: () => {
+            self.setRowHeight(8)
+          },
+        },
+      ],
+    },
     {
       label: 'Edit row arrangement...',
       disabled: !self.editableSources.length,

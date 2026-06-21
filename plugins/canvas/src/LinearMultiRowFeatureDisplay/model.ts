@@ -22,7 +22,11 @@ import { observable } from 'mobx'
 
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
-import { buildEditableSources, buildSources } from './sourcesLogic.ts'
+import {
+  buildEditableSources,
+  buildSources,
+  orderPartitionValues,
+} from './sourcesLogic.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
 import type { LinearMultiRowFeatureDisplayConfig } from './configSchema.ts'
@@ -57,6 +61,8 @@ const DEFAULTS = {
   showTree: true,
   showBranchLength: false,
 } as const
+
+const minDisplayHeight = 20
 
 /**
  * #stateModel LinearMultiRowFeatureDisplay
@@ -136,6 +142,14 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Optional explicit row order from config; values listed here are placed
+       * first, remaining discovered values follow in sorted order.
+       */
+      get rowOrder(): string[] {
+        return readConfObject(self.conf, 'rowOrder')
+      },
+      /**
+       * #getter
        * Raw `color` slot (a CSS color or `jexl:` string), forwarded to the
        * worker which resolves it per feature.
        */
@@ -148,19 +162,13 @@ export default function stateModelFactory(
       get rowProportion(): number {
         return readConfObject(self.conf, 'rowProportion')
       },
-      /**
-       * #getter
-       */
-      get rowHeight(): number {
-        return self.rowHeightOverride ?? readConfObject(self.conf, 'rowHeight')
-      },
     }))
     .views(self => ({
       /**
        * #getter
        * Rows discovered in the loaded data: the distinct partition values across
-       * all loaded regions, sorted. The pre-layout, pre-filter input to the
-       * arrangement dialog and to clustering.
+       * all loaded regions, ordered by the config `rowOrder` then sorted. The
+       * pre-layout, pre-filter input to the arrangement dialog and to clustering.
        */
       get sourcesWithoutLayout(): MultiRowSource[] {
         const values = new Set<string>()
@@ -169,7 +177,9 @@ export default function stateModelFactory(
             values.add(v)
           }
         }
-        return [...values].sort().map(name => ({ name }))
+        return orderPartitionValues(values, self.rowOrder).map(name => ({
+          name,
+        }))
       },
     }))
     .views(self => ({
@@ -202,12 +212,61 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Number of displayed rows (at least 1, so the auto-fit division is safe
+       * and the canvas mounts before data arrives).
+       */
+      get nrow(): number {
+        return Math.max(1, self.sources.length)
+      },
+      /**
+       * #getter
+       * The track height that auto-fit mode divides among rows: the dragged
+       * `heightOverride` (TrackHeightMixin) or the config `height` default.
+       */
+      get fitTargetHeight(): number {
+        return self.heightOverride ?? readConfObject(self.conf, 'height')
+      },
+      /**
+       * #getter
+       * Resolved fixed row-height setting: `0` is auto-fit, any positive value is
+       * a pinned px height. Override-or-config, never undefined.
+       */
+      get rowHeightSetting(): number {
+        return self.rowHeightOverride ?? readConfObject(self.conf, 'rowHeight')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-row height in auto-fit mode: the display height split evenly across
+       * rows, so all rows stay visible as the row count grows.
+       */
+      get autoRowHeight(): number {
+        return Math.max(1, self.fitTargetHeight / self.nrow)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Resolved per-row height. `rowHeightSetting === 0` auto-fits (rows stretch
+       * to fill the display height); any positive value is pinned. Every consumer
+       * reads this, never `rowHeightSetting`.
+       */
+      get rowHeight(): number {
+        return self.rowHeightSetting === 0
+          ? self.autoRowHeight
+          : self.rowHeightSetting
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Override BaseLinearDisplay.height so the track container matches the
-       * rendering canvas (numRows × rowHeight). At least one row tall so the
-       * canvas mounts (and the loading overlay shows) before data arrives.
+       * rendering canvas (numRows × rowHeight). In auto-fit mode this resolves to
+       * `fitTargetHeight`; in fixed mode it grows with the row count.
        */
       get height(): number {
-        return Math.max(1, self.sources.length) * self.rowHeight
+        return self.nrow * self.rowHeight
       },
     }))
     .views(self => ({
@@ -361,13 +420,43 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Distribute a target height across the current rows.
+       * Set the track height. In auto-fit mode the rows restretch to it; in fixed
+       * mode it's distributed across the current rows as a pinned row height.
        */
       setHeight(newHeight: number) {
-        const n = self.sources.length
-        if (n > 0) {
-          self.rowHeightOverride = Math.max(1, Math.floor(newHeight / n))
+        if (self.rowHeightSetting === 0) {
+          self.heightOverride = Math.max(newHeight, minDisplayHeight)
+        } else {
+          self.rowHeightOverride = Math.max(1, newHeight / self.nrow)
         }
+        return self.height
+      },
+      /**
+       * #action
+       * Drag-resize. In auto-fit mode the new height drives `autoRowHeight` (rows
+       * stretch); in fixed mode the pinned row height scales proportionally so
+       * dragging still resizes rows.
+       */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
+        if (self.rowHeightSetting === 0) {
+          self.heightOverride = newHeight
+        } else {
+          self.rowHeightOverride = (self.rowHeight * newHeight) / oldHeight
+        }
+        return self.height - oldHeight
+      },
+      /**
+       * #action
+       * Switch to auto-fit: seed `heightOverride` from the current content height
+       * (so toggling on doesn't jump), then `rowHeightOverride = 0` makes
+       * `rowHeight` derive from it.
+       */
+      setFitToHeight() {
+        self.heightOverride = Math.max(self.height, minDisplayHeight)
+        self.rowHeightOverride = 0
+        self.scrollTop = 0
       },
       /**
        * #action

@@ -8,6 +8,21 @@ export interface MultiRowSource {
 }
 
 /**
+ * Order the discovered partition values: those named in the config `rowOrder`
+ * come first in that order, remaining values are appended in sorted order. Empty
+ * `rowOrder` = fully sorted.
+ */
+export function orderPartitionValues(
+  values: Set<string>,
+  rowOrder: readonly string[],
+): string[] {
+  const listed = rowOrder.filter(v => values.has(v))
+  const seen = new Set(listed)
+  const rest = [...values].filter(v => !seen.has(v)).sort()
+  return [...listed, ...rest]
+}
+
+/**
  * Reconcile the persisted `layout` (user reorder/relabel) against the rows
  * currently discovered in the data: keep layout order, drop rows no longer
  * present, append newly-seen rows in discovered order. Empty layout = discovered

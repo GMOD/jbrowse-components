@@ -55,11 +55,15 @@ export default function configSchemaF(pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * Fixed height in pixels of each row. `0` (the default) auto-fits: all rows
+       * stretch to fill the display height, so adding rows shrinks them instead of
+       * growing the track — a dense, fully-visible painting.
        */
       rowHeight: {
         type: 'number',
-        defaultValue: 14,
-        description: 'height in pixels of each row',
+        defaultValue: 0,
+        description:
+          'fixed row height in px; 0 (default) auto-fits all rows to the display height',
       },
       /**
        * #slot
