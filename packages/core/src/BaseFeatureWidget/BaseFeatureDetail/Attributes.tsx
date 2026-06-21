@@ -2,7 +2,7 @@ import ArrayValue from './ArrayValue.tsx'
 import DataGridDetails from './DataGridDetails.tsx'
 import SimpleField from './SimpleField.tsx'
 import UriAttribute from './UriField.tsx'
-import { accessNested, generateMaxWidth } from './util.ts'
+import { accessNested, applyFeatureFormatting, generateMaxWidth } from './util.ts'
 import { isObject, isUriLocation } from '../../util/index.ts'
 
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
@@ -61,11 +61,9 @@ export default function Attributes(props: {
   } = props
 
   const omits = new Set([...omit, ...globalOmit, ...omitSingleLevel])
-  const { __jbrowsefmt, ...rest } = attributes
-  const filteredFormattedAttributes = Object.entries({
-    ...rest,
-    ...__jbrowsefmt,
-  }).filter(([k, v]) => v != null && !omits.has(k))
+  const filteredFormattedAttributes = Object.entries(
+    applyFeatureFormatting(attributes),
+  ).filter(([k, v]) => v != null && !omits.has(k))
   const maxLabelWidth = generateMaxWidth(filteredFormattedAttributes, prefix)
 
   return (

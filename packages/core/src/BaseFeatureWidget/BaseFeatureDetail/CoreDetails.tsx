@@ -1,12 +1,13 @@
 import Position from './Position.tsx'
 import SimpleField from './SimpleField.tsx'
+import { applyFeatureFormatting } from './util.ts'
 import { toLocale } from '../../util/index.ts'
 
 import type { BaseProps } from '../types.tsx'
 
 export default function CoreDetails(props: BaseProps) {
   const { feature } = props
-  const formattedFeat = { ...feature, ...feature.__jbrowsefmt }
+  const formattedFeat = applyFeatureFormatting(feature)
   const { start, end } = formattedFeat
 
   const displayedDetails: Record<string, unknown> = {
