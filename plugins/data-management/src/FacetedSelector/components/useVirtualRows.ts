@@ -21,14 +21,19 @@ export function useVirtualRows(
     if (!el) {
       return
     }
-    // eslint-disable-next-line @eslint-react/set-state-in-effect -- initializes from DOM after mount
-    setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
-    const onScroll = () => {
+    const sync = () => {
+      // eslint-disable-next-line @eslint-react/set-state-in-effect -- sync() runs once synchronously to initialize from the DOM after mount
       setScrollState({ scrollTop: el.scrollTop, clientHeight: el.clientHeight })
     }
-    el.addEventListener('scroll', onScroll, { passive: true })
+    sync()
+    el.addEventListener('scroll', sync, { passive: true })
+    // resize keeps clientHeight current when the container grows/shrinks
+    // (e.g. window or filter-panel resize) without needing a scroll to refresh
+    const observer = new ResizeObserver(sync)
+    observer.observe(el)
     return () => {
-      el.removeEventListener('scroll', onScroll)
+      el.removeEventListener('scroll', sync)
+      observer.disconnect()
     }
   }, [parentRef])
 

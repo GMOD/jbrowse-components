@@ -39,39 +39,34 @@ export function filterRowsByFacets<T extends Row>(
 }
 
 /**
- * Per-facet category counts for the filter sidebar. Active-filter facets are
- * counted first against the pre-filter row set (so their own counts reflect the
- * full set), then each active filter drills down the row set the later facets
- * are counted against.
+ * Per-facet category counts for the filter sidebar. Each facet is counted over
+ * the rows that pass every *other* active facet, but not its own selection, so
+ * its options keep showing the counts you'd get by switching to them. This is
+ * order-independent: a facet's counts reflect all other active filters
+ * regardless of column order.
  */
 export function computeFacetCategoryCounts<T extends Row>(
   rows: T[],
   facets: string[],
   filters: Map<string, string[]>,
 ): Map<string, Map<string, number>> {
-  const counts = new Map(
-    facets.map(f => [f, new Map<string, number>()] as const),
-  )
-  const orderedFacets = [
-    ...facets.filter(f => filters.get(f)?.length),
-    ...facets.filter(f => !filters.get(f)?.length),
-  ]
-  let currentRows = rows
-  for (const facet of orderedFacets) {
-    const categoryCountMap = counts.get(facet)!
-    for (const row of currentRows) {
-      const key = getRowStr(facet, row)
-      if (key) {
-        categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
+  const activeFilters = facets
+    .map(f => [f, filters.get(f)] as const)
+    .filter(([, vals]) => vals?.length)
+    .map(([f, vals]) => [f, new Set(vals)] as const)
+  return new Map(
+    facets.map(facet => {
+      const categoryCountMap = new Map<string, number>()
+      for (const row of rows) {
+        const passesOthers = activeFilters.every(
+          ([f, set]) => f === facet || set.has(getRowStr(f, row)),
+        )
+        const key = getRowStr(facet, row)
+        if (passesOthers && key) {
+          categoryCountMap.set(key, (categoryCountMap.get(key) ?? 0) + 1)
+        }
       }
-    }
-    const filterValues = filters.get(facet)
-    if (filterValues?.length) {
-      const filterSet = new Set(filterValues)
-      currentRows = currentRows.filter(row =>
-        filterSet.has(getRowStr(facet, row)),
-      )
-    }
-  }
-  return counts
+      return [facet, categoryCountMap] as const
+    }),
+  )
 }

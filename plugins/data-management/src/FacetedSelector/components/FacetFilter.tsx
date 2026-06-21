@@ -87,7 +87,14 @@ const FacetFilter = observer(function FacetFilter({
           className={classes.select}
           value={filters.get(field) ?? []}
           onChange={event => {
-            faceted.setFilter(field, event.target.value as string[])
+            // native <select multiple>: event.target.value is only the first
+            // selected option, so read the full selection off selectedOptions
+            const target: EventTarget = event.target
+            const select = target as HTMLSelectElement
+            faceted.setFilter(
+              field,
+              Array.from(select.selectedOptions, option => option.value),
+            )
           }}
         >
           {vals

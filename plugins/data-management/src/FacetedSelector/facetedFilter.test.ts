@@ -113,7 +113,7 @@ describe('computeFacetCategoryCounts', () => {
       facets,
       new Map([['metadata.assay', ['DNA']]]),
     )
-    // assay counts itself against the full set (drill-down ordering)
+    // assay excludes only its own selection, so it counts over the full set
     expect([...counts.get('metadata.assay')!]).toEqual([
       ['RNA', 1],
       ['DNA', 2],
@@ -127,5 +127,28 @@ describe('computeFacetCategoryCounts', () => {
       ['normal', 1],
       ['tumor', 1],
     ])
+  })
+
+  test('each facet reflects every other active filter, independent of order', () => {
+    const counts = computeFacetCategoryCounts(
+      rows,
+      facets,
+      new Map([
+        ['category', ['Annotation']],
+        ['metadata.assay', ['DNA']],
+      ]),
+    )
+    // category excludes its own filter but still honors assay=DNA (t2, t3)
+    expect([...counts.get('category')!]).toEqual([
+      ['Annotation', 1],
+      ['Quantitative', 1],
+    ])
+    // assay excludes its own filter but still honors category=Annotation (t1, t2)
+    expect([...counts.get('metadata.assay')!]).toEqual([
+      ['RNA', 1],
+      ['DNA', 1],
+    ])
+    // sampleType is inactive, so it honors both filters (t2 only)
+    expect([...counts.get('metadata.sampleType')!]).toEqual([['normal', 1]])
   })
 })
