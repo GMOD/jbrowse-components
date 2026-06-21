@@ -9,7 +9,7 @@ import {
   syntenyTrackTypes,
   trackTypes,
 } from './index.ts'
-import { isViewMode, modeDescriptors, viewModes } from './modes.ts'
+import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   buildHelp,
   comparativeOptionNames,
@@ -50,12 +50,12 @@ async function main() {
   // `jb2export dotplot --fasta a.fa --fasta2 b.fa ...`
   const first = argv[0]
   const isSubcommand = first !== undefined && !first.startsWith('-')
-  const mode = isSubcommand && isViewMode(first) ? first : undefined
+  const mode = isSubcommand ? subcommandMode(first) : undefined
   const args = isSubcommand ? argv.slice(1) : argv
 
   if (isSubcommand && !mode) {
     console.error(
-      `Unknown subcommand "${first}". Known subcommands: ${viewModes.join(', ')}`,
+      `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}`,
     )
     process.exit(1)
   } else if (args.includes('--help') || args.includes('-h')) {

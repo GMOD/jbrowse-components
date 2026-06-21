@@ -198,7 +198,7 @@ function buildSubcommandHelp(
     : optionDefs
   const pad = Math.max(...defs.map(o => o.name.length))
   return [
-    `Usage: ${scriptName} ${mode} [options]`,
+    `Usage: ${scriptName} ${modeDescriptors[mode].subcommand} [options]`,
     '',
     'Options:',
     ...formatOpts(defs, pad),
@@ -224,8 +224,10 @@ export function buildHelp(
     return buildSubcommandHelp(scriptName, mode, syntenyTrackTypes)
   }
   // linear is the implicit default, so the explicit subcommands users invoke are
-  // the non-linear view types.
-  const subcommandNames = viewModes.filter(mode => mode !== 'linear')
+  // the non-linear view types (shown by their CLI token).
+  const subcommandNames = viewModes
+    .filter(mode => mode !== 'linear')
+    .map(mode => modeDescriptors[mode].subcommand)
   const pad = Math.max(...optionDefs.map(o => o.name.length))
   return [
     `Usage: ${scriptName} [options]`,
