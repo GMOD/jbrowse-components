@@ -21,10 +21,12 @@ export function buildMultiRowInstanceBuffer(
   const n = featureStarts.length
   const buffer = new ArrayBuffer(n * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buffer)
+  // resolve each region-local partition value to its global row index once, so
+  // the per-feature lookup is an array index rather than a string-keyed Map.get
+  const rowForLocal = partitionValues.map(v => rowIndexByValue.get(v))
   let count = 0
   for (let i = 0; i < n; i++) {
-    const value = partitionValues[data.featurePartitionIndex[i]!]!
-    const rowIndex = rowIndexByValue.get(value)
+    const rowIndex = rowForLocal[data.featurePartitionIndex[i]!]
     if (rowIndex !== undefined) {
       const base = count * INSTANCE_STRIDE_F32
       u32[base + FIELD_OFFSET_F32.startBp] = featureStarts[i]!

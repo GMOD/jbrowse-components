@@ -94,8 +94,10 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * Per-display override of the config `rowHeight`. The bare `rowHeight`
-         * getter resolves override-or-config so it's never undefined.
+         * Per-display override of the config `rowHeight`: a positive px height
+         * pins fixed rows, `0` selects auto-fit. `rowHeightSetting` resolves
+         * override-or-config; the `rowHeight` getter then resolves `0` to the
+         * fit-to-height value, so it's never undefined.
          */
         rowHeightOverride: types.maybe(types.number),
         /**
@@ -363,9 +365,14 @@ export default function stateModelFactory(
           featurePartitionIndex,
           featureNames,
         } = region
+        // resolve the hovered row to this region's local partition index once,
+        // so the per-feature test is an int compare (and naturally matches
+        // nothing when the row has no features here, i.e. index -1)
+        const targetIndex = partitionValues.indexOf(source.name)
         for (let i = 0; i < featureStarts.length; i++) {
+          const localIndex = featurePartitionIndex[i]!
           if (
-            partitionValues[featurePartitionIndex[i]!] === source.name &&
+            localIndex === targetIndex &&
             featureStarts[i]! <= bp &&
             bp < featureEnds[i]!
           ) {
@@ -433,18 +440,12 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Drag-resize. In auto-fit mode the new height drives `autoRowHeight` (rows
-       * stretch); in fixed mode the pinned row height scales proportionally so
-       * dragging still resizes rows.
+       * Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit
+       * mode and re-pins the row height in fixed mode.
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
-        if (self.rowHeightSetting === 0) {
-          self.heightOverride = newHeight
-        } else {
-          self.rowHeightOverride = (self.rowHeight * newHeight) / oldHeight
-        }
+        self.setHeight(self.height + distance)
         return self.height - oldHeight
       },
       /**

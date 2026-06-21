@@ -43,6 +43,9 @@ export function drawMultiRowBlocks(
           partitionValues,
           featurePartitionIndex,
         } = regionData
+        // resolve each region-local partition value to its global row index once,
+        // so the per-feature lookup is an array index, not a string-keyed Map.get
+        const rowForLocal = partitionValues.map(v => rowIndexByValue.get(v))
 
         ctx.save()
         ctx.beginPath()
@@ -50,8 +53,7 @@ export function drawMultiRowBlocks(
         ctx.clip()
 
         for (let i = 0; i < featureStarts.length; i++) {
-          const value = partitionValues[featurePartitionIndex[i]!]!
-          const rowIndex = rowIndexByValue.get(value)
+          const rowIndex = rowForLocal[featurePartitionIndex[i]!]
           if (rowIndex !== undefined) {
             const xa = bpToPx(featureStarts[i]!)
             const xb = bpToPx(featureEnds[i]!)
