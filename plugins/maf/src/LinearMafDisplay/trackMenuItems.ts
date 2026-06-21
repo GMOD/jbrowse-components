@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
 
+import { DEFAULTS } from './displayDefaults.ts'
 import { ROW_IDENTITY_MODES } from './rowIdentityModes.ts'
 
 import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
@@ -70,8 +71,8 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         {
           label: 'Normal',
           onClick: () => {
-            self.setRowHeight(15)
-            self.setRowProportion(0.8)
+            self.setRowHeight(DEFAULTS.rowHeight)
+            self.setRowProportion(DEFAULTS.rowProportion)
           },
         },
         {

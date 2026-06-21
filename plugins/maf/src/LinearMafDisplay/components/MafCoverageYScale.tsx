@@ -3,6 +3,8 @@ import React from 'react'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import { YSCALE_AXIS_WIDTH, YSCALE_AXIS_X } from './yScaleAxis.ts'
+
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
@@ -24,10 +26,10 @@ const MafCoverageYScale = observer(function MafCoverageYScale({
         left: 0,
         pointerEvents: 'none',
         height: coverageHeight,
-        width: 50,
+        width: YSCALE_AXIS_WIDTH,
       }}
     >
-      <g transform="translate(45, 0)">
+      <g transform={`translate(${YSCALE_AXIS_X}, 0)`}>
         <YScaleBar ticks={coverageTicks} orientation="left" />
       </g>
     </svg>

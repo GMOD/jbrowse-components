@@ -105,7 +105,9 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
           icon: ContentCopy,
           disabled: loading || !formattedSequence,
           onClick: () => {
-            copyToClipboard(
+            // copyToClipboard handles its own errors via onError and never
+            // rejects, so `void` rather than a dead `.catch`.
+            void copyToClipboard(
               formattedSequence,
               () => {
                 session.notify('Sequence copied to clipboard', 'info')
@@ -113,9 +115,7 @@ const MafSequenceWidgetMenu = observer(function MafSequenceWidgetMenu({
               e => {
                 session.notifyError(`${e}`, e)
               },
-            ).catch((e: unknown) => {
-              console.error(e)
-            })
+            )
           },
         },
         {

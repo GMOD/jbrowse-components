@@ -18,6 +18,7 @@ import {
 } from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawRowIdentity } from './components/drawRowIdentity.ts'
+import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
@@ -148,12 +149,12 @@ export async function renderSvg(
         ) : null}
       </g>
       {showCoverage && coverageTicks ? (
-        <g transform="translate(45, 0)">
+        <g transform={`translate(${YSCALE_AXIS_X}, 0)`}>
           <YScaleBar ticks={coverageTicks} orientation="left" />
         </g>
       ) : null}
       {showConservation ? (
-        <g transform={`translate(45, ${coverageDisplayHeight})`}>
+        <g transform={`translate(${YSCALE_AXIS_X}, ${coverageDisplayHeight})`}>
           <YScaleBar
             ticks={conservationTicks(conservationHeight)}
             orientation="left"

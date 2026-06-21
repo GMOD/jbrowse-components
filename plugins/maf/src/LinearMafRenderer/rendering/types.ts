@@ -1,29 +1,12 @@
-import { measureText } from '@jbrowse/core/util'
-
 import type { MafCellColorConfig } from '../resolveCellColor.ts'
 import type { MafColorPalette } from '../util.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 
 export const FONT_CONFIG = 'bold 10px Courier New,monospace'
 export const CHAR_SIZE_WIDTH = 10
-// Approx cap height for centering count labels vertically in a row; the `-2`
-// matches the fudge the overlays/renderers used. Shared so the insertion and
-// deletion count labels stay vertically consistent.
-export const CHAR_HEIGHT = measureText('M') - 2
 // Used to overlap adjacent cells by a sub-pixel so hairlines don't appear at
 // scale ~1px/bp; mirrors the +0.5/+0.4 fudge used in plugin-alignments.
 export const GAP_STROKE_OFFSET = 0.4
-export const INSERTION_LINE_WIDTH = 1
-export const INSERTION_BORDER_WIDTH = 2
-export const INSERTION_PADDING = 2
-// Reuse alignments-core's "long insertion" threshold + minimum-text-row-height
-// so MAF and BAM/CRAM agree on when to switch insertion glyphs / draw label
-// borders. Keep MAF aliases for call-site readability.
-
-// MAF-specific zoom thresholds; named relative to bpPerPx (canvas2d only).
-export const HIGH_ZOOM_THRESHOLD = 0.2
-export const HIGH_BP_PER_PX_THRESHOLD = 10
-export const INSERTION_BORDER_HEIGHT = 5
 
 export interface RenderingContext {
   ctx: Ctx2D
@@ -37,8 +20,3 @@ export interface RenderingContext {
   /** bp → screen-px LEFT edge of the cell containing that bp (handles reversed). */
   bpToCellLeftPx: (bp: number) => number
 }
-
-export {
-  LONG_INSERTION_MIN_LENGTH as LARGE_INSERTION_THRESHOLD,
-  MIN_HEIGHT_FOR_TEXT as MIN_ROW_HEIGHT_FOR_BORDERS,
-} from '@jbrowse/alignments-core'

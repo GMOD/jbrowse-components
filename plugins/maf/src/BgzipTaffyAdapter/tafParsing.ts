@@ -199,6 +199,8 @@ export function blockToFeature(
         chr: parsed.chr,
         start: row.start,
         seq: row.bases,
+        strand: row.strand,
+        srcSize: row.sequenceLength,
       }
     }
   }
