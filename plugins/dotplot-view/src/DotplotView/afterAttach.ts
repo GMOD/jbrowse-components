@@ -1,13 +1,17 @@
-import { getSession, parseLocString } from '@jbrowse/core/util'
+import {
+  getSession,
+  localStorageSetItem,
+  parseLocString,
+} from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
+
+import { LS_CURSOR_MODE } from './types.ts'
 
 import type { DotplotViewModel } from './model.ts'
 import type { DotplotViewInit } from './types.ts'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
-
-const LS_CURSOR_MODE = 'dotplot-cursorMode'
 
 type AssemblyManager = ReturnType<typeof getSession>['assemblyManager']
 
@@ -270,9 +274,7 @@ function setupLocalStorageAutorun(self: DotplotViewModel) {
     self,
     autorun(
       function dotplotLocalStorageAutorun() {
-        if (typeof localStorage !== 'undefined') {
-          localStorage.setItem(LS_CURSOR_MODE, self.cursorMode)
-        }
+        localStorageSetItem(LS_CURSOR_MODE, self.cursorMode)
       },
       { name: 'DotplotLocalStorage' },
     ),

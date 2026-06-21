@@ -2,7 +2,7 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import DotplotHighlightBands from './DotplotHighlightBands.tsx'
-import { getHighlightColor } from './highlightUtils.ts'
+import { getHighlightColor, highlightKey } from './highlightUtils.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 
@@ -15,8 +15,7 @@ const DotplotHighlights = observer(function DotplotHighlights({
   return model.highlightsVisible
     ? model.highlight.map((h, i) => (
         <DotplotHighlightBands
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
-          key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
+          key={highlightKey(h, i)}
           model={model}
           region={h}
           color={getHighlightColor(h, theme).toRgbString()}

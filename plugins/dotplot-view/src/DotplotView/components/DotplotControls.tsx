@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
 import ZoomIn from '@mui/icons-material/ZoomIn'
@@ -20,15 +21,24 @@ const DiagonalizationProgressDialog = lazy(
   () => import('./DiagonalizationProgressDialog.tsx'),
 )
 
+const useStyles = makeStyles()({
+  root: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+  },
+})
+
 const DotplotControls = observer(function DotplotControls({
   model,
 }: {
   model: DotplotViewModel
 }) {
+  const { classes } = useStyles()
   const session = getSession(model)
 
   return (
-    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+    <div className={classes.root}>
       {isSessionModelWithWidgets(session) ? (
         <IconButton
           onClick={() => {

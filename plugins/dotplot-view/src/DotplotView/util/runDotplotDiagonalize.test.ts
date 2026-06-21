@@ -2,24 +2,22 @@ import { dotplotDisplaysReady } from './runDotplotDiagonalize.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 
-function makeModel(tracks: { rpcData?: unknown; error?: unknown }[][]) {
-  return {
-    tracks: tracks.map(displays => ({ displays })),
-  } as unknown as DotplotViewModel
+function makeModel(dotplotDisplays: { rpcData?: unknown; error?: unknown }[]) {
+  return { dotplotDisplays } as unknown as DotplotViewModel
 }
 
 test('dotplotDisplaysReady is true when every display has rpcData', () => {
-  const m = makeModel([[{ rpcData: { points: [] } }]])
+  const m = makeModel([{ rpcData: { points: [] } }])
   expect(dotplotDisplaysReady(m)).toBe(true)
 })
 
 test('dotplotDisplaysReady is true when a display has an error', () => {
-  const m = makeModel([[{ error: new Error('rpc failed') }]])
+  const m = makeModel([{ error: new Error('rpc failed') }])
   expect(dotplotDisplaysReady(m)).toBe(true)
 })
 
 test('dotplotDisplaysReady is false when any display has neither', () => {
-  const m = makeModel([[{ rpcData: {} }, {}]])
+  const m = makeModel([{ rpcData: {} }, {}])
   expect(dotplotDisplaysReady(m)).toBe(false)
 })
 

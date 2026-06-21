@@ -105,6 +105,7 @@
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
+    "./util/chooseGridPitch": "./src/util/chooseGridPitch.ts",
     "./util/color": "./src/util/color/index.ts",
     "./util/colorBits": "./src/util/colorBits.ts",
     "./util/colord": "./src/util/colord.ts",
@@ -532,6 +533,10 @@
         "types": "./esm/util/calculateStaticBlocks.d.ts",
         "import": "./esm/util/calculateStaticBlocks.js"
       },
+      "./util/chooseGridPitch": {
+        "types": "./esm/util/chooseGridPitch.d.ts",
+        "import": "./esm/util/chooseGridPitch.js"
+      },
       "./util/color": {
         "types": "./esm/util/color/index.d.ts",
         "import": "./esm/util/color/index.js"
@@ -933,6 +938,9 @@
         ],
         "util/calculateStaticBlocks": [
           "esm/util/calculateStaticBlocks.d.ts"
+        ],
+        "util/chooseGridPitch": [
+          "esm/util/chooseGridPitch.d.ts"
         ],
         "util/color": [
           "esm/util/color/index.d.ts"

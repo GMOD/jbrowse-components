@@ -1,11 +1,13 @@
 import { Suspense, lazy } from 'react'
 
+import { observer } from 'mobx-react'
+
 import type { DotplotInteraction } from './useDotplotInteraction.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const DotplotCoordTooltip = lazy(() => import('./DotplotCoordTooltip.tsx'))
 
-export default function DotplotTooltips({
+const DotplotTooltips = observer(function DotplotTooltips({
   model,
   interaction,
 }: {
@@ -42,4 +44,6 @@ export default function DotplotTooltips({
       ) : null}
     </Suspense>
   )
-}
+})
+
+export default DotplotTooltips

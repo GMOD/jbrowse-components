@@ -1,4 +1,5 @@
 import { SingleSlider } from '@jbrowse/core/ui'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   MinLengthSlider,
   OpacitySlider,
@@ -10,11 +11,22 @@ import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
 
+const useStyles = makeStyles()({
+  root: {
+    padding: 16,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 8,
+    width: 250,
+  },
+})
+
 const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
   model,
 }: {
   model: DotplotViewModel
 }) {
+  const { classes } = useStyles()
   const { dotplotDisplays, lineWidth } = model
   const firstDisplay = dotplotDisplays[0]
   const alpha = firstDisplay?.alpha ?? 1
@@ -22,15 +34,7 @@ const DotplotSettingsPopover = observer(function DotplotSettingsPopover({
 
   return (
     <SettingsPopover title="Dotplot display settings">
-      <div
-        style={{
-          padding: 16,
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 8,
-          width: 250,
-        }}
-      >
+      <div className={classes.root}>
         <SettingRow label="Opacity:">
           <OpacitySlider
             value={alpha}

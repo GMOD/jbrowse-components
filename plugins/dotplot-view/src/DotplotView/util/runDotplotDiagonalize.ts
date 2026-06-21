@@ -60,13 +60,5 @@ export async function runDotplotDiagonalize(
 // rpcData payload (or has surfaced an error). The init autorun pairs this
 // with a wall-clock race so a stuck display can't deadlock startup.
 export function dotplotDisplaysReady(model: DotplotViewModel): boolean {
-  for (const track of model.tracks) {
-    for (const display of track.displays) {
-      const d = display as { rpcData?: unknown; error?: unknown }
-      if (!d.rpcData && !d.error) {
-        return false
-      }
-    }
-  }
-  return true
+  return model.dotplotDisplays.every(d => !!d.rpcData || !!d.error)
 }

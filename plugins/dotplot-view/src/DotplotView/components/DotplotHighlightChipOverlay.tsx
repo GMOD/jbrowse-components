@@ -5,7 +5,7 @@ import LinkIcon from '@mui/icons-material/Link'
 import { Box, Tooltip, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { getHighlightColor } from './highlightUtils.ts'
+import { getHighlightColor, highlightKey } from './highlightUtils.ts'
 
 import type { DotplotViewModel } from '../model.ts'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
@@ -70,8 +70,7 @@ const DotplotHighlightChipOverlay = observer(
     return model.highlightsVisible
       ? model.highlight.map((h, i) => (
           <HighlightChip
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
-            key={`${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`}
+            key={highlightKey(h, i)}
             model={model}
             highlight={h}
           />

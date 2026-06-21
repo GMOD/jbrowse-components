@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import { statusProgressLabel } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -12,6 +13,15 @@ import type { DotplotViewModel } from '../model.ts'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+const useStyles = makeStyles()({
+  content: {
+    minWidth: 400,
+  },
+  progress: {
+    marginTop: 16,
+  },
+})
+
 const DiagonalizationProgressDialog = observer(
   function DiagonalizationProgressDialog({
     handleClose,
@@ -20,6 +30,7 @@ const DiagonalizationProgressDialog = observer(
     handleClose: () => void
     model: DotplotViewModel
   }) {
+    const { classes } = useStyles()
     const [status, setStatus] = useState<RpcStatus>(
       'Ready to start diagonalization',
     )
@@ -74,10 +85,10 @@ const DiagonalizationProgressDialog = observer(
       <Dialog
         open
         title="Re-order chromosomes"
-        onClose={handleDialogClose}
+        onClose={() => { handleDialogClose() }}
         maxWidth="lg"
       >
-        <DialogContent style={{ minWidth: 400 }}>
+        <DialogContent className={classes.content}>
           <Typography variant="body2" color="text.secondary" gutterBottom>
             Reorders the vertical axis to match the horizontal. Uses all
             alignments across the currently displayed chromosomes.
@@ -85,13 +96,13 @@ const DiagonalizationProgressDialog = observer(
           {message ? <Typography>{message}</Typography> : null}
           {error ? <ErrorBanner error={error} /> : null}
           {isRunning ? (
-            <StatusProgressBar status={status} style={{ marginTop: 16 }} />
+            <StatusProgressBar status={status} className={classes.progress} />
           ) : null}
         </DialogContent>
         <DialogActions>
           {isRunning ? (
             <Button
-              onClick={handleCancel}
+              onClick={() => { handleCancel() }}
               color="secondary"
               variant="contained"
             >
@@ -100,7 +111,7 @@ const DiagonalizationProgressDialog = observer(
           ) : (
             <>
               <Button
-                onClick={handleClose}
+                onClick={() => { handleClose() }}
                 color="secondary"
                 variant="contained"
               >

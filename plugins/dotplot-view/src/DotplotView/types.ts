@@ -2,6 +2,8 @@ import type { SyntenyViewSharedInit } from '@jbrowse/synteny-core'
 
 export type Coord = [number, number] | undefined
 
+export const LS_CURSOR_MODE = 'dotplot-cursorMode'
+
 export type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 export interface DotplotViewInit extends SyntenyViewSharedInit {

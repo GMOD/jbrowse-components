@@ -18,7 +18,12 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  cast,
+  getParent,
+  getSnapshot,
+  types,
+} from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -32,7 +37,9 @@ import {
   makeTicks,
   pxWidthForBlocks,
 } from './components/util.ts'
+import { LS_CURSOR_MODE } from './types.ts'
 
+import type { Dotplot1DViewModel } from './1dview.ts'
 import type { AxisBundle } from './components/util.ts'
 import type { DotplotViewInit, ImportFormSyntenyTrack } from './types.ts'
 import type {
@@ -43,7 +50,7 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance, SnapshotIn  } from '@jbrowse/mobx-state-tree'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
@@ -54,11 +61,32 @@ const ReturnToImportFormDialog = lazy(
 type Coord = [number, number]
 type CursorMode = 'crosshair' | 'move'
 
-const LS_CURSOR_MODE = 'dotplot-cursorMode'
-
 // Hide axis tick labels when more than this many blocks are visible — the
 // labels would overlap at high chromosome counts.
 const MAX_TICK_BLOCKS = 5
+
+function axisTicks(view: Dotplot1DViewModel) {
+  const { dynamicBlocks, staticBlocks, bpPerPx } = view
+  return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
+    ? []
+    : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+}
+
+// Resolve a region's refName to the assembly's canonical name, falling back to
+// the raw name when the assembly isn't loaded or has no alias for it. Takes a
+// plain node (not DotplotViewModel) to avoid a self-referential type cycle when
+// called from the model's own views.
+function canonicalRegion(
+  node: IAnyStateTreeNode,
+  region: { assemblyName?: string; refName: string; start: number; end: number },
+) {
+  const { assemblyManager } = getSession(node)
+  const asm = region.assemblyName
+    ? assemblyManager.get(region.assemblyName)
+    : undefined
+  const refName = asm?.getCanonicalRefName(region.refName) ?? region.refName
+  return { ...region, refName }
+}
 
 // defaults for postProcessSnapshot filtering
 const defaultHeight = 600
@@ -313,21 +341,13 @@ export default function stateModelFactory(pm: PluginManager) {
          * #getter
          */
         get hticks() {
-          const { hview } = self
-          const { dynamicBlocks, staticBlocks, bpPerPx } = hview
-          return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
-            ? []
-            : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+          return axisTicks(self.hview)
         },
         /**
          * #getter
          */
         get vticks() {
-          const { vview } = self
-          const { dynamicBlocks, staticBlocks, bpPerPx } = vview
-          return dynamicBlocks.contentBlocks.length > MAX_TICK_BLOCKS
-            ? []
-            : makeTicks(staticBlocks.contentBlocks, bpPerPx)
+          return axisTicks(self.vview)
         },
         /**
          * #getter
@@ -962,13 +982,10 @@ export default function stateModelFactory(pm: PluginManager) {
           start: number
           end: number
         }) {
-          const { assemblyManager } = getSession(self)
-          const asm = region.assemblyName
-            ? assemblyManager.get(region.assemblyName)
-            : undefined
-          const refName =
-            asm?.getCanonicalRefName(region.refName) ?? region.refName
-          return getLayoutHighlightCoords(self.hview, { ...region, refName })
+          return getLayoutHighlightCoords(
+            self.hview,
+            canonicalRegion(self, region),
+          )
         },
         /**
          * #method
@@ -982,16 +999,10 @@ export default function stateModelFactory(pm: PluginManager) {
           start: number
           end: number
         }) {
-          const { assemblyManager } = getSession(self)
-          const asm = region.assemblyName
-            ? assemblyManager.get(region.assemblyName)
-            : undefined
-          const refName =
-            asm?.getCanonicalRefName(region.refName) ?? region.refName
-          const coords = getLayoutHighlightCoords(self.vview, {
-            ...region,
-            refName,
-          })
+          const coords = getLayoutHighlightCoords(
+            self.vview,
+            canonicalRegion(self, region),
+          )
           return coords
             ? {
                 top: self.viewHeight - (coords.left + coords.width),
