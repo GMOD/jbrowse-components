@@ -3,6 +3,7 @@ export {
   LONG_INSERTION_MIN_LENGTH,
   LONG_INSERTION_TEXT_THRESHOLD_PX,
   MIN_HEIGHT_FOR_TEXT,
+  MIN_PX_PER_BP_FOR_TEXT,
   computeLabelFontSize,
   getInsertionType,
   insertionBarWidth,

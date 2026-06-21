@@ -37,6 +37,7 @@ export function drawMafBlocks(
   // survives the per-block save()/restore() since it's set before any save().
   ctx.font = FONT_CONFIG
   ctx.textAlign = 'center'
+  ctx.textBaseline = 'middle'
 
   for (const renderBlock of renderBlocks) {
     const regionData = regions.get(renderBlock.displayedRegionIndex)

@@ -1,4 +1,9 @@
-import { drawInsertionMarker, getInsertionType } from '@jbrowse/alignments-core'
+import {
+  MIN_HEIGHT_FOR_TEXT,
+  MIN_PX_PER_BP_FOR_TEXT,
+  drawInsertionMarker,
+  getInsertionType,
+} from '@jbrowse/alignments-core'
 
 import { forEachInsertion } from './forEachInsertion.ts'
 import { CHAR_HEIGHT, CHAR_SIZE_WIDTH } from './types.ts'
@@ -26,15 +31,20 @@ export function renderInsertions(
     const xCenter = reversed ? cellLeft + scale : cellLeft
     ctx.fillStyle = palette.insertionColor
     drawInsertionMarker(ctx, xCenter, rowTop, h, length, scale)
-    if (getInsertionType(length, scale) === 'large' && h > CHAR_HEIGHT) {
+    const type = getInsertionType(length, scale)
+    const yMid = Math.round(rowTop + h / 2)
+    if (type === 'large' && h > CHAR_HEIGHT) {
       const text = String(length)
       ctx.fillStyle = 'white'
-      ctx.fillText(
-        text,
-        xCenter,
-        rowTop + (h * 7) / 8,
-        CHAR_SIZE_WIDTH * text.length,
-      )
+      ctx.textAlign = 'center'
+      ctx.fillText(text, xCenter, yMid, CHAR_SIZE_WIDTH * text.length)
+    } else if (
+      type === 'small' &&
+      scale >= MIN_PX_PER_BP_FOR_TEXT &&
+      h >= MIN_HEIGHT_FOR_TEXT
+    ) {
+      ctx.textAlign = 'left'
+      ctx.fillText(`(${length})`, xCenter + 3, yMid)
     }
   })
 }

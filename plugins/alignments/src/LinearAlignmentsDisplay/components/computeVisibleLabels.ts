@@ -7,6 +7,7 @@ import {
 } from '../../shared/types.ts'
 import {
   MIN_HEIGHT_FOR_TEXT,
+  MIN_PX_PER_BP_FOR_TEXT,
   computeLabelFontSize,
   getInsertionType,
   insertionBarWidth,
@@ -82,7 +83,7 @@ export function computeVisibleLabels(
   const { bpPerPx } = view
   const pxPerBp = 1 / bpPerPx
   const tallEnoughForText = featureHeight >= MIN_HEIGHT_FOR_TEXT
-  const canRenderText = pxPerBp >= 6.5 && tallEnoughForText
+  const canRenderText = pxPerBp >= MIN_PX_PER_BP_FOR_TEXT && tallEnoughForText
   const clipPrefix: Record<number, string | undefined> = {
     [INTERBASE_SOFTCLIP]: 'S',
     [INTERBASE_HARDCLIP]: 'H',
