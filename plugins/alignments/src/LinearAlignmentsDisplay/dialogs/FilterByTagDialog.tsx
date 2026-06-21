@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { samFlagLabels } from '@jbrowse/alignments-core'
 import { Dialog } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
@@ -32,21 +33,6 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
-const flagNames = [
-  'read paired',
-  'read mapped in proper pair',
-  'read unmapped',
-  'mate unmapped',
-  'read reverse strand',
-  'mate reverse strand',
-  'first in pair',
-  'second in pair',
-  'not primary alignment',
-  'read fails platform/vendor QC',
-  'read is PCR or optical dupe',
-  'supplementary alignment',
-]
-
 function toggleBit(flag: number, index: number, checked: boolean) {
   return checked ? flag | (1 << index) : flag & ~(1 << index)
 }
@@ -64,7 +50,7 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
           }
         }}
       />
-      {flagNames.map((name, index) => {
+      {samFlagLabels.map((name, index) => {
         const checked = Boolean(flag & (1 << index))
         return (
           <div key={name} style={{ display: 'flex', alignItems: 'center' }}>

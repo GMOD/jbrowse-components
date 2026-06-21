@@ -58,6 +58,7 @@ export {
   SAM_FLAG_SECOND_IN_PAIR,
   SAM_FLAG_SUPPLEMENTARY,
   SAM_FLAG_UNMAPPED,
+  samFlagLabels,
 } from './samFlags.ts'
 export {
   CANVAS2D_COVERAGE,

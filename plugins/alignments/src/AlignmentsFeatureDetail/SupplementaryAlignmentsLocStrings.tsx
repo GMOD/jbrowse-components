@@ -34,7 +34,6 @@ const SupplementaryAlignmentsLocStrings = observer(
               const locString = `${saRef}:${Math.max(1, start - extra)}-${end + extra}`
               const label = `${saRef}:${toLocale(start)}-${toLocale(end)} (${saStrand}) [${saLength}bp]`
               return (
-                /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <li key={locString}>
                   <ActionLink
                     onClick={() => {

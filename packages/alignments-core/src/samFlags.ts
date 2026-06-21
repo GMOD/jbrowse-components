@@ -38,3 +38,23 @@ export const SAM_FLAG_DUPLICATE = 1024
 
 /** Supplementary alignment (chimeric/split read) */
 export const SAM_FLAG_SUPPLEMENTARY = 2048
+
+/**
+ * SAM flag bit labels in canonical order: index `i` is the label for bit
+ * `1 << i`. Shared by the feature-details flag list and the filter-by-tag
+ * dialog so the bit order can't drift between them.
+ */
+export const samFlagLabels = [
+  'read paired',
+  'read mapped in proper pair',
+  'read unmapped',
+  'mate unmapped',
+  'read reverse strand',
+  'mate reverse strand',
+  'first in pair',
+  'second in pair',
+  'not primary alignment',
+  'read fails platform/vendor quality checks',
+  'read is PCR or optical duplicate',
+  'supplementary alignment',
+] as const
