@@ -12,6 +12,20 @@ export interface ManhattanRenderState {
 // findManhattanHit's larger HIT_RADIUS_PX grab tolerance.
 export const POINT_RADIUS_PX = 2
 
+// Map a score to its canvas Y (px from the top). Shared by the Canvas2D/SVG
+// draw path and the hover hit-test so the drawn point and its grab target stay
+// pixel-aligned; out-of-domain scores clamp to the top/bottom edge.
+export function scoreToY(
+  score: number,
+  domainY: [number, number],
+  canvasHeight: number,
+) {
+  const [domainMin, domainMax] = domainY
+  const range = domainMax - domainMin || 1
+  const norm = Math.max(0, Math.min(1, (score - domainMin) / range))
+  return (1 - norm) * canvasHeight
+}
+
 // GWAS data is 1:1 points (raw RPC result), not binned via wiggle's
 // SourceRenderData encoder, so Manhattan specializes the shared per-region
 // backend contract directly on `ManhattanRpcResult`.

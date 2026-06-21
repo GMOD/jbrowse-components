@@ -1,6 +1,6 @@
 import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
-import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
+import { POINT_RADIUS_PX, scoreToY } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -118,8 +118,7 @@ export function findManhattanHit(
         hi - lo > POINT_RADIUS_PX * 2
           ? Math.max(lo, Math.min(mouseX, hi))
           : xStart
-      const norm = Math.max(0, Math.min(1, (score - domainMin) / range))
-      const ptY = (1 - norm) * canvasHeight
+      const ptY = scoreToY(score, domainY, canvasHeight)
       const dx = mouseX - ptX
       const dy = mouseY - ptY
       const distSq = dx * dx + dy * dy

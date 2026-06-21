@@ -5,7 +5,7 @@ import {
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
+import { POINT_RADIUS_PX, scoreToY } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -25,8 +25,6 @@ export function drawManhattanBlocks(
   state: ManhattanRenderState,
 ) {
   const { canvasWidth, canvasHeight, domainY } = state
-  const [domainMin, domainMax] = domainY
-  const range = domainMax - domainMin || 1
 
   for (const block of blocks) {
     const data = regions.get(block.displayedRegionIndex)
@@ -67,8 +65,7 @@ export function drawManhattanBlocks(
         screenEndPx,
         reversed,
       )
-      const norm = (scores[i]! - domainMin) / range
-      const y = (1 - Math.max(0, Math.min(1, norm))) * canvasHeight
+      const y = scoreToY(scores[i]!, domainY, canvasHeight)
       const xEnd = bpToScreenPx(
         ends[i]!,
         start,
