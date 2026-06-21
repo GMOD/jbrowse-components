@@ -17,12 +17,12 @@ import {
 } from './util.tsx'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
-import { shareSessionToDynamo } from '../sessionSharing.ts'
+import { buildShareUrl } from '../components/buildShareUrl.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
-jest.mock('../sessionSharing.ts', () => ({
-  shareSessionToDynamo: jest.fn(),
-  readSessionFromDynamo: jest.fn(),
+jest.mock('../components/buildShareUrl.ts', () => ({
+  ...jest.requireActual('../components/buildShareUrl.ts'),
+  buildShareUrl: jest.fn(),
 }))
 
 setup()
@@ -87,12 +87,10 @@ xtest('nclist track test with long name', async () => {
 }, 20000)
 
 test('test sharing', async () => {
-  jest.mocked(shareSessionToDynamo).mockResolvedValue({
-    encryptedSession: 'A',
-    json: {
-      sessionId: 'abc',
-    },
-    password: '123',
+  jest.mocked(buildShareUrl).mockResolvedValue({
+    url: 'http://localhost/?session=share-abc&password=123',
+    sessionParam: 'share-abc',
+    passwordParam: '123',
   })
   const { findByLabelText, findByText } = await createView()
   fireEvent.click(await findByText('Share'))
