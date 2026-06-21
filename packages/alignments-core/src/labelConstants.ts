@@ -78,6 +78,13 @@ export function getInsertionType(
   return 'small'
 }
 
+// The short bar a 'long' insertion draws. Also the fallback width for a 'large'
+// insertion whose count label can't be drawn (see drawInsertionMarker), so an
+// unlabelled large insertion shrinks to this instead of an empty wide box.
+function longInsertionBarWidth(len: number, pxPerBp: number) {
+  return Math.min(5, (len * pxPerBp) / 3)
+}
+
 // SYNC: mirrors the rectW logic in
 // plugins/alignments LinearAlignmentsDisplay/shaders/slang/insertion.slang
 // (vs_main). Single source of truth for an insertion's box width, shared by the
@@ -90,7 +97,7 @@ export function insertionBarWidth(len: number, pxPerBp: number) {
     return textWidthForNumber(len)
   }
   if (type === 'long') {
-    return Math.min(5, (len * pxPerBp) / 3)
+    return longInsertionBarWidth(len, pxPerBp)
   }
   return 1
 }
@@ -120,8 +127,16 @@ export function drawInsertionMarker(
   height: number,
   length: number,
   pxPerBp: number,
+  // When false, the caller won't draw the count label inside the box (e.g. the
+  // row is too short to fit text), so a 'large' insertion shrinks to the narrow
+  // 'long' bar rather than leaving an empty number-width box. Defaults to true
+  // so labelled callers (plugin-alignments) are unaffected.
+  labelled = true,
 ) {
-  const w = insertionBarWidth(length, pxPerBp)
+  const w =
+    !labelled && getInsertionType(length, pxPerBp) === 'large'
+      ? longInsertionBarWidth(length, pxPerBp)
+      : insertionBarWidth(length, pxPerBp)
   ctx.fillRect(xCenter - w / 2, y, w, height)
   const isLong = length >= LONG_INSERTION_MIN_LENGTH
   if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {

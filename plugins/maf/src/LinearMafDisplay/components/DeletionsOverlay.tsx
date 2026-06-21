@@ -1,11 +1,9 @@
+import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { measureText } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import OverlayCanvas from './OverlayCanvas.tsx'
-import {
-  CHAR_HEIGHT,
-  FONT_CONFIG,
-} from '../../LinearMafRenderer/rendering/types.ts'
+import { FONT_CONFIG } from '../../LinearMafRenderer/rendering/types.ts'
 
 import type { DeletionMarker } from './computeVisibleDeletions.ts'
 
@@ -34,11 +32,12 @@ const DeletionsOverlay = observer(function DeletionsOverlay({
       draw={ctx => {
         ctx.font = FONT_CONFIG
         ctx.textAlign = 'center'
+        ctx.textBaseline = 'middle'
         ctx.fillStyle = 'white'
         for (const m of markers) {
           const text = String(m.length)
-          if (m.width >= measureText(text) + 2 && m.h > CHAR_HEIGHT) {
-            ctx.fillText(text, m.xLeft + m.width / 2, m.rowTop + (m.h * 7) / 8)
+          if (m.width >= measureText(text) + 2 && m.h >= MIN_HEIGHT_FOR_TEXT) {
+            ctx.fillText(text, m.xLeft + m.width / 2, Math.round(m.rowTop + m.h / 2))
           }
         }
       }}
