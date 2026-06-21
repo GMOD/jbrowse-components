@@ -55,9 +55,17 @@ const MafCoverageResizeHandle = observer(function MafCoverageResizeHandle({
       }}
       onDragStart={() => {
         setDragging(true)
+        // In fit mode the coverage band eats into the rows area, so this drag
+        // restretches every row each frame — suppress the dense letter overlay
+        // for its duration (matches the track-height handle). In fixed mode
+        // rowHeight is unchanged, so there's nothing to suppress.
+        if (model.rowHeightMode === 0) {
+          model.setResizing(true)
+        }
       }}
       onDragEnd={() => {
         setDragging(false)
+        model.setResizing(false)
       }}
       onMouseEnter={() => {
         setHovered(true)
