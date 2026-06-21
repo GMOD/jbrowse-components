@@ -4,7 +4,7 @@
   "version": "0.0.0",
   "type": "module",
   "scripts": {
-    "testimg": "node run.mjs"
+    "testimg": "node --import ./register.mjs run.mjs"
   },
   "dependencies": {
     "@jbrowse/img": "file:./packed/jbrowse-img.tgz"
