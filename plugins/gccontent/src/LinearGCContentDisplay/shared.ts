@@ -103,21 +103,6 @@ export default function SharedModelF(
             },
           ]
         },
-        /**
-         * #getter
-         * retrieves the sequence adapter from parent track, and puts it as a
-         * subadapter on a GCContentAdapter
-         */
-        get adapterConfig() {
-          const sequenceAdapter = getConf(self.parentTrack, 'adapter')
-          return {
-            type: 'GCContentAdapter',
-            sequenceAdapter,
-            windowSize: self.windowSize,
-            windowDelta: self.windowDelta,
-            gcMode: self.gcMode,
-          }
-        },
       }
     })
 }

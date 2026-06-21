@@ -1,3 +1,4 @@
+import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import SharedModelF from './shared.ts'
@@ -44,11 +45,27 @@ export default function stateModelF(
   pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,
 ) {
-  return types.compose(
-    'LinearGCContentTrackDisplay',
-    SharedModelF(pluginManager, configSchema),
-    types.model({
-      type: types.literal('LinearGCContentTrackDisplay'),
-    }),
-  )
+  return types
+    .compose(
+      'LinearGCContentTrackDisplay',
+      SharedModelF(pluginManager, configSchema),
+      types.model({
+        type: types.literal('LinearGCContentTrackDisplay'),
+      }),
+    )
+    .views(self => ({
+      /**
+       * #getter
+       * the parent GCContentTrack's adapter is already a GCContentAdapter, so
+       * use it directly and apply the current display parameter overrides
+       */
+      get adapterConfig() {
+        return {
+          ...getConf(self.parentTrack, 'adapter'),
+          windowSize: self.windowSize,
+          windowDelta: self.windowDelta,
+          gcMode: self.gcMode,
+        }
+      },
+    }))
 }

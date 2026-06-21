@@ -5,9 +5,11 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
+  isSessionWithAddTracks,
+  makeTrackId,
 } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { type Instance, types } from '@jbrowse/mobx-state-tree'
+import { getRpcSessionId, getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
+import { type Instance, getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
@@ -266,6 +268,33 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         self.showTranslation = !self.showTranslation
         self.heightOverride = undefined
       },
+      /**
+       * #action
+       * spins up a standalone GCContentTrack session track that wraps this
+       * track's sequence adapter (requires the gccontent plugin)
+       */
+      addGCContentTrack() {
+        const session = getSession(self)
+        const track = getContainingTrack(self)
+        if (isSessionWithAddTracks(session)) {
+          const name = 'GC content'
+          const trackId = makeTrackId({
+            name,
+            adminMode: !!session.adminMode,
+          })
+          session.addTrackConf({
+            trackId,
+            type: 'GCContentTrack',
+            name,
+            assemblyNames: getTrackAssemblyNames(track),
+            adapter: {
+              type: 'GCContentAdapter',
+              sequenceAdapter: getConf(track, 'adapter'),
+            },
+          })
+          ;(getContainingView(self) as LGV).showTrack(trackId)
+        }
+      },
     }))
     .actions(self => ({
       /**
@@ -336,6 +365,9 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * #method
        */
       trackMenuItems() {
+        const hasGCContent = !!getEnv(self).pluginManager.getTrackType(
+          'GCContentTrack',
+        )
         return self.isDna
           ? [
               {
@@ -362,6 +394,16 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                   self.toggleShowTranslation()
                 },
               },
+              ...(hasGCContent
+                ? [
+                    {
+                      label: 'Add GC content track',
+                      onClick: () => {
+                        self.addGCContentTrack()
+                      },
+                    },
+                  ]
+                : []),
             ]
           : []
       },
