@@ -1,24 +1,9 @@
 import { memo } from 'react'
 
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Portal, alpha } from '@mui/material'
 
-const useStyles = makeStyles()(theme => ({
-  tooltip: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    pointerEvents: 'none',
-    backgroundColor: alpha(theme.palette.grey[700], 0.9),
-    borderRadius: theme.shape.borderRadius,
-    color: theme.palette.common.white,
-    fontFamily: theme.typography.fontFamily,
-    padding: '4px 8px',
-    fontSize: theme.typography.fontSize,
-    maxWidth: 400,
-    wordWrap: 'break-word',
-    zIndex: 100000,
-  },
+const useStyles = makeStyles()({
   table: {
     borderCollapse: 'collapse',
   },
@@ -43,9 +28,17 @@ const useStyles = makeStyles()(theme => ({
     paddingBottom: 2,
     textAlign: 'center',
   },
-}))
+})
 
-const EXCLUDE_KEYS = new Set(['color', 'HP', 'name', 'sampleName', 'id'])
+const EXCLUDE_KEYS = new Set([
+  'color',
+  'HP',
+  'name',
+  'sampleName',
+  'id',
+  'baseUri',
+  'labelColor',
+])
 
 const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   source,
@@ -63,36 +56,31 @@ const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   const { classes } = useStyles()
 
   return (
-    <Portal>
-      <div
-        className={classes.tooltip}
-        style={{ transform: `translate(${x + 10}px, ${y + 10}px)` }}
-      >
-        {source.name ? (
-          <div className={classes.header}>
-            {source.color ? (
-              <div
-                className={classes.colorBox}
-                style={{ backgroundColor: source.color }}
-              />
-            ) : null}
-            <b>{source.name}</b>
-          </div>
-        ) : null}
-        <table className={classes.table}>
-          <tbody>
-            {Object.entries(source).map(([key, value]) =>
-              !EXCLUDE_KEYS.has(key) && value !== undefined ? (
-                <tr key={key}>
-                  <td className={classes.keyCell}>{key}</td>
-                  <td className={classes.valueCell}>{String(value)}</td>
-                </tr>
-              ) : null,
-            )}
-          </tbody>
-        </table>
-      </div>
-    </Portal>
+    <BaseTooltip clientPoint={{ x, y }}>
+      {source.name ? (
+        <div className={classes.header}>
+          {source.color ? (
+            <div
+              className={classes.colorBox}
+              style={{ backgroundColor: source.color }}
+            />
+          ) : null}
+          <b>{source.name}</b>
+        </div>
+      ) : null}
+      <table className={classes.table}>
+        <tbody>
+          {Object.entries(source).map(([key, value]) =>
+            !EXCLUDE_KEYS.has(key) && value !== undefined ? (
+              <tr key={key}>
+                <td className={classes.keyCell}>{key}</td>
+                <td className={classes.valueCell}>{String(value)}</td>
+              </tr>
+            ) : null,
+          )}
+        </tbody>
+      </table>
+    </BaseTooltip>
   )
 })
 
