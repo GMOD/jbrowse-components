@@ -8,10 +8,11 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * #category assemblyManagement
  * This corresponds to the assemblies section of the config
  *
- * #example
- * A hand-authored assembly. `sequence` is a `ReferenceSequenceTrack` whose
- * adapter points at an indexed FASTA — the `uri` shorthand auto-resolves the
- * companion `.fai`/`.gzi` index files:
+ * #example minimal
+ * A hand-authored human assembly. `sequence` is a `ReferenceSequenceTrack` whose
+ * adapter points at a bgzipped+indexed FASTA — the `uri` shorthand auto-resolves
+ * the companion `.fai`/`.gzi` index files. `geneticCodes` translates the
+ * mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
  * ```js
  * {
  *   name: 'hg38',
@@ -24,6 +25,50 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *       uri: 'https://example.com/hg38.fa.gz',
  *     },
  *   },
+ *   geneticCodes: { chrM: 2 },
+ * }
+ * ```
+ *
+ * #example with-refname-aliases-and-cytobands
+ * Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
+ * `cytobands` (ideogram banding), each fetched from its own adapter:
+ * ```js
+ * {
+ *   name: 'hg38',
+ *   sequence: {
+ *     type: 'ReferenceSequenceTrack',
+ *     trackId: 'hg38-ref',
+ *     adapter: { type: 'BgzipFastaAdapter', uri: 'https://example.com/hg38.fa.gz' },
+ *   },
+ *   refNameAliases: {
+ *     adapter: {
+ *       type: 'RefNameAliasAdapter',
+ *       location: { uri: 'https://example.com/hg38.aliases.txt' },
+ *     },
+ *   },
+ *   cytobands: {
+ *     adapter: {
+ *       type: 'CytobandAdapter',
+ *       cytobandLocation: { uri: 'https://example.com/hg38.cytoBand.txt' },
+ *     },
+ *   },
+ * }
+ * ```
+ *
+ * #example custom-display-name-and-genetic-codes-sidecar
+ * Sets a `displayName` for the assembly selector and loads the per-refName
+ * genetic codes from a sidecar TSV (`geneticCodesLocation`) instead of inlining
+ * them — handy when a config generator emits the mapping separately:
+ * ```js
+ * {
+ *   name: 'hg38',
+ *   displayName: 'Homo sapiens (hg38)',
+ *   sequence: {
+ *     type: 'ReferenceSequenceTrack',
+ *     trackId: 'hg38-ref',
+ *     adapter: { type: 'BgzipFastaAdapter', uri: 'https://example.com/hg38.fa.gz' },
+ *   },
+ *   geneticCodesLocation: { uri: 'https://example.com/hg38.genetic_codes.tsv' },
  * }
  * ```
  */
@@ -70,6 +115,14 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * translation rows; unlisted refNames use the standard code (1). CDS-level
        * translation reads the GFF `transl_table` attribute directly and ignores
        * this.
+       *
+       * #example
+       * Mitochondrial contig translated with the vertebrate mitochondrial code
+       * (NCBI table 2), a plastid contig with table 11; keys are matched through
+       * refName aliasing:
+       * ```js
+       * { chrM: 2, chrPltd: 11 }
+       * ```
        */
       geneticCodes: {
         type: 'frozen',
@@ -85,6 +138,12 @@ function assemblyConfigSchema(pluginManager: PluginManager) {
        * of inlining it — useful when a config generator emits a sidecar rather
        * than inlining per assembly. Entries in the inline `geneticCodes` slot
        * take precedence over the file.
+       *
+       * #example
+       * The TSV is `refName<TAB>geneticCodeId` with optional `#` comment lines:
+       * ```js
+       * { uri: 'https://example.com/hg38.genetic_codes.tsv' }
+       * ```
        */
       geneticCodesLocation: {
         type: 'fileLocation',

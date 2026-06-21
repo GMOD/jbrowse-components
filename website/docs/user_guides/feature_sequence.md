@@ -10,9 +10,11 @@ For gene or transcript features, the feature detail sidebar stitches the
 sequence together for you. Options:
 
 - **CDS** — the stitched-together coding sequences
-- **Protein** — protein translation of the CDS using the standard genetic code
-  (NCBI table 1). Alternative codon tables (mitochondrial, certain organisms)
-  are not currently supported
+- **Protein** — protein translation of the CDS. The standard genetic code (NCBI
+  table 1) is used by default, but if the CDS has a `transl_table` attribute in
+  the GFF (e.g. `transl_table=2` for vertebrate mitochondria) the matching
+  alternative codon table is applied, including start-codon and `transl_except`
+  handling
 - **cDNA** — the "copy DNA" of the transcript, formed from the exon sequences
 - **Genomic w/ full introns** — the entire gene region including introns, with
   UTR and CDS highlighted

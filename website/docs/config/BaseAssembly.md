@@ -19,9 +19,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A hand-authored assembly. `sequence` is a `ReferenceSequenceTrack` whose adapter
-points at an indexed FASTA — the `uri` shorthand auto-resolves the companion
-`.fai`/`.gzi` index files:
+### Example: minimal
+
+A hand-authored human assembly. `sequence` is a `ReferenceSequenceTrack` whose
+adapter points at a bgzipped+indexed FASTA — the `uri` shorthand auto-resolves
+the companion `.fai`/`.gzi` index files. `geneticCodes` translates the
+mitochondrial contig with the vertebrate mitochondrial code (NCBI table 2):
 
 ```js
 {
@@ -35,6 +38,54 @@ points at an indexed FASTA — the `uri` shorthand auto-resolves the companion
       uri: 'https://example.com/hg38.fa.gz',
     },
   },
+  geneticCodes: { chrM: 2 },
+}
+```
+
+### Example: with-refname-aliases-and-cytobands
+
+Adds `refNameAliases` (so `chr1` and `1` resolve to the same sequence) and
+`cytobands` (ideogram banding), each fetched from its own adapter:
+
+```js
+{
+  name: 'hg38',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'hg38-ref',
+    adapter: { type: 'BgzipFastaAdapter', uri: 'https://example.com/hg38.fa.gz' },
+  },
+  refNameAliases: {
+    adapter: {
+      type: 'RefNameAliasAdapter',
+      location: { uri: 'https://example.com/hg38.aliases.txt' },
+    },
+  },
+  cytobands: {
+    adapter: {
+      type: 'CytobandAdapter',
+      cytobandLocation: { uri: 'https://example.com/hg38.cytoBand.txt' },
+    },
+  },
+}
+```
+
+### Example: custom-display-name-and-genetic-codes-sidecar
+
+Sets a `displayName` for the assembly selector and loads the per-refName genetic
+codes from a sidecar TSV (`geneticCodesLocation`) instead of inlining them —
+handy when a config generator emits the mapping separately:
+
+```js
+{
+  name: 'hg38',
+  displayName: 'Homo sapiens (hg38)',
+  sequence: {
+    type: 'ReferenceSequenceTrack',
+    trackId: 'hg38-ref',
+    adapter: { type: 'BgzipFastaAdapter', uri: 'https://example.com/hg38.fa.gz' },
+  },
+  geneticCodesLocation: { uri: 'https://example.com/hg38.genetic_codes.tsv' },
 }
 ```
 
@@ -106,6 +157,16 @@ and ignores this.
 }
 ```
 
+**Example:**
+
+Mitochondrial contig translated with the vertebrate mitochondrial code (NCBI
+table 2), a plastid contig with table 11; keys are matched through refName
+aliasing:
+
+```js
+{ chrM: 2, chrPltd: 11 }
+```
+
 #### slot: geneticCodesLocation
 
 Optional file (tab-separated `refName<TAB>geneticCodeId`, `#` comments allowed)
@@ -120,6 +181,16 @@ file.
   defaultValue: { uri: '', locationType: 'UriLocation' },
   description:
     'Optional TSV file of refName<TAB>geneticCodeId, an alternative to inlining the geneticCodes map',
+}
+```
+
+**Example:**
+
+The TSV is `refName<TAB>geneticCodeId` with optional `#` comment lines:
+
+```js
+{
+  uri: 'https://example.com/hg38.genetic_codes.tsv'
 }
 ```
 

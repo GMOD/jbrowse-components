@@ -76,8 +76,14 @@ and the resulting peptide in register.
 <Figure caption="Zoomed into a CDS exon with the reference sequence track above. Each codon is labeled with its single-letter amino acid, aligned to the bases that encode it. The translation uses the standard genetic code (NCBI table 1)." src="/img/gene_track_peptides.png" />
 
 The translation follows the transcript's strand and CDS phase, and codons that
-straddle an exon boundary are split across the two exons. Only the standard
-genetic code is used; alternative codon tables are not currently applied here.
+straddle an exon boundary are split across the two exons. When a CDS carries a
+`transl_table` attribute in the GFF (the NCBI convention, e.g. `transl_table=2`
+for the vertebrate mitochondrial code), that alternative genetic code is used
+for the translation — so a mitochondrial gene translates `TGA` as tryptophan
+rather than a stop. The first codon of the CDS is shown as `M` when it is a
+valid start codon for that table (including alternative initiators such as `GTG`
+or `TTG`), and `transl_except` overrides (e.g. selenocysteine `U`) are applied
+and highlighted.
 
 ### Mature peptides (polyproteins)
 
