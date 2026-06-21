@@ -78,7 +78,7 @@ const TrackContainer = observer(function TrackContainer({
       {/* offset 1px since for left track border; over the track content */}
       {track.pinned ? <PaddingBlocks model={model} offset={1} /> : null}
       <ResizeHandle
-        onDrag={display.resizeHeight}
+        onDrag={distance => display.resizeHeight(distance)}
         className={classes.resizeHandle}
       />
     </Paper>

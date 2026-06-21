@@ -141,6 +141,10 @@ const STRAND_COLOR_JEXL =
 // rather than a solid CSS color. Mirrors the baseConfigSchema.ts color default.
 const FEATURE_COLOR_DEFAULT = 'goldenrod'
 
+// Floor for the auto-fit height so a sparse/empty track doesn't collapse to a
+// sliver. Capped by the maxHeight config in fitHeight.
+const MIN_FIT_HEIGHT = 50
+
 /**
  * #stateModel LinearCanvasBaseDisplay
  * #category display
@@ -808,11 +812,11 @@ export default function baseStateModelFactory(
          * #getter
          */
         // Height that fits the laid-out content: the content height (maxY)
-        // clamped to a 50px floor (so a sparse track doesn't collapse) and the
+        // clamped to MIN_FIT_HEIGHT (so a sparse track doesn't collapse) and the
         // maxHeight cap. Single source for both the autoHeight autorun and the
         // manual expand-to-fit button.
         get fitHeight() {
-          return Math.min(Math.max(this.maxY, 50), self.maxHeight)
+          return Math.min(Math.max(this.maxY, MIN_FIT_HEIGHT), self.maxHeight)
         },
 
         /**
@@ -1537,6 +1541,24 @@ export default function baseStateModelFactory(
           self.setFeatureDensityStats(undefined)
         },
       }))
+      .actions(self => {
+        const superResizeHeight = self.resizeHeight
+        return {
+          /**
+           * #action
+           * A manual drag-resize means the user wants a fixed height; turn off
+           * auto-fit first, otherwise the CanvasAutoHeight autorun snaps the
+           * height back on the next layout change and the drag appears to do
+           * nothing.
+           */
+          resizeHeight(distance: number) {
+            if (self.autoHeight) {
+              self.setAutoHeight(false)
+            }
+            return superResizeHeight(distance)
+          },
+        }
+      })
       .actions(self => {
         const superAfterAttach = self.afterAttach
         return {
