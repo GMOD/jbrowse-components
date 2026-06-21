@@ -129,8 +129,7 @@ export function drawRowIdentity(
   const classCount = new Float32Array(nRows * width)
   for (const block of blocks) {
     const region = regions.get(block.displayedRegionIndex)
-    const clip = region ? clipBlockForCanvas(block, canvasWidth) : null
-    if (region && clip) {
+    if (region && clipBlockForCanvas(block, canvasWidth)) {
       const bpToX = makeBpMapper(block)
       for (const mafBlock of region.blocks) {
         for (const row of mafBlock.rows) {
