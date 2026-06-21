@@ -49,6 +49,10 @@ const HierarchicalFab = observer(function HierarchicalFab({
         onClose={() => {
           setAnchorEl(null)
         }}
+        // the FAB sits at the bottom-right of the drawer, so open the menu above
+        // it instead of below (where it covered the FAB and ran off-screen)
+        anchorOrigin={{ vertical: 'top', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'bottom', horizontal: 'right' }}
       >
         {hasConnections ? (
           <MenuItem
