@@ -223,6 +223,9 @@ export function planWebExport(
   const priorSessionTracks = Array.isArray(defaultSession.sessionTracks)
     ? (defaultSession.sessionTracks as unknown[])
     : []
+  const priorSessionAssemblies = Array.isArray(defaultSession.sessionAssemblies)
+    ? (defaultSession.sessionAssemblies as unknown[])
+    : []
 
   const baseAssemblyNames = new Set(
     (baseConfig?.assemblies ?? []).map(a => a.name),
@@ -249,7 +252,7 @@ export function planWebExport(
     strategy: 'selfContained',
     session: {
       ...defaultSession,
-      sessionAssemblies: assemblies,
+      sessionAssemblies: [...priorSessionAssemblies, ...assemblies],
       sessionTracks: [...priorSessionTracks, ...tracks],
     },
     report,

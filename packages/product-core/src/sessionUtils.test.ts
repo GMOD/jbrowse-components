@@ -306,6 +306,20 @@ test('planWebExport falls back to self-contained without a source config', () =>
   expect(plan.session.sessionTracks).toEqual([t1])
 })
 
+test('planWebExport self-contained keeps prior session assemblies alongside config assemblies', () => {
+  const sessionAsm = { name: 'sessionAsm' }
+  const plan = planWebExport({
+    assemblies: [{ name: 'configAsm' }],
+    tracks: [],
+    defaultSession: { name: 'session', sessionAssemblies: [sessionAsm] },
+  })
+  expect(plan.strategy).toBe('selfContained')
+  expect(plan.session.sessionAssemblies).toEqual([
+    sessionAsm,
+    { name: 'configAsm' },
+  ])
+})
+
 test('planWebExport falls back to self-contained when an assembly is not in the base', () => {
   const plan = planWebExport(
     {

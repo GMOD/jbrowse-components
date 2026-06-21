@@ -5,6 +5,7 @@ import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import ShareLinkField from '@jbrowse/core/ui/ShareLinkField'
 import {
   type AbstractSessionModel,
+  type SessionShareMode,
   localStorageGetItem,
   useFetch,
 } from '@jbrowse/core/util'
@@ -24,12 +25,7 @@ import {
 import { observer } from 'mobx-react'
 
 import ShareInfoDialog from './ShareInfoDialog.tsx'
-import {
-  SHARE_URL_LOCALSTORAGE_KEY,
-  buildJsonShareUrl,
-  buildLongShareUrl,
-  buildShortShareUrl,
-} from './buildShareUrl.ts'
+import { SHARE_URL_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
 import { setQueryParams } from '../useQueryParam.ts'
 
 const SHARE_MODES = [
@@ -49,8 +45,10 @@ const ShareDialog = observer(function ShareDialog({
   const [showReadableJson, setShowReadableJson] = useState(false)
 
   const shareURL = session.shareURL
-  const [currentSetting, setCurrentSetting] = useState(
-    () => localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) ?? 'short',
+  const [currentSetting, setCurrentSetting] = useState<SessionShareMode>(
+    () =>
+      (localStorageGetItem(SHARE_URL_LOCALSTORAGE_KEY) ??
+        'short') as SessionShareMode,
   )
   // Capture snapshot once when dialog opens — we don't want to re-upload every
   // time the session mutates while the dialog is open
@@ -61,15 +59,9 @@ const ShareDialog = observer(function ShareDialog({
     error,
     isLoading: loading,
     mutate,
-  } = useFetch(['shareUrl', currentSetting], () => {
-    if (currentSetting === 'short') {
-      return buildShortShareUrl(snap, shareURL)
-    } else if (currentSetting === 'json') {
-      return Promise.resolve(buildJsonShareUrl(snap))
-    } else {
-      return buildLongShareUrl(snap)
-    }
-  })
+  } = useFetch(['shareUrl', currentSetting], () =>
+    buildShareUrl(currentSetting, snap, shareURL),
+  )
 
   const url = data?.url ?? ''
   const plaintext = data?.plaintext

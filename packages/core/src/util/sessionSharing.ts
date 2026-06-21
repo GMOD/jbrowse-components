@@ -105,8 +105,47 @@ export async function shareSessionToDynamo(
   if (!response.ok) {
     throw new Error(getErrorMsg(await response.text()))
   }
-  const json = await response.json()
+  const json = (await response.json()) as { sessionId: string }
   return { json, encryptedSession, password }
+}
+
+export type SessionShareMode = 'short' | 'long' | 'json'
+
+export interface EncodedSessionParam {
+  // the `?session=` query value the web SessionLoader decodes
+  sessionParam: string
+  // present only for a short link
+  password?: string
+  // pretty-printed session, present only for json mode (shown in the dialog)
+  plaintext?: string
+}
+
+// Encodes a session snapshot into the `?session=` value jbrowse-web decodes:
+// `share-<id>` (uploaded + encrypted), `encoded-<b64>` (compressed inline), or
+// `json-<json>` (plaintext inline). Single source of these prefixes, shared by
+// jbrowse-web's ShareDialog and jbrowse-desktop's ExportToWebDialog so the two
+// producers can't drift from the decoder.
+export async function encodeSessionParam(
+  mode: SessionShareMode,
+  session: unknown,
+  options: { shareURL: string; referer: string },
+): Promise<EncodedSessionParam> {
+  if (mode === 'short') {
+    const { json, password } = await shareSessionToDynamo(
+      session,
+      options.shareURL,
+      options.referer,
+    )
+    return { sessionParam: `share-${json.sessionId}`, password }
+  } else if (mode === 'json') {
+    return {
+      sessionParam: `json-${JSON.stringify({ session })}`,
+      plaintext: JSON.stringify({ session }, null, 2),
+    }
+  } else {
+    const encoded = await toUrlSafeB64(JSON.stringify(session))
+    return { sessionParam: `encoded-${encoded}` }
+  }
 }
 
 export async function readSessionFromDynamo(
