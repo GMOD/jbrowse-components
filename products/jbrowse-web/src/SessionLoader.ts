@@ -420,14 +420,6 @@ const SessionLoader = types
     },
     /**
      * #action
-     * Commits a config snapshot that was previously surfaced via triage —
-     * loads its plugins and applies it with a fresh ID.
-     */
-    async applyTriagedConfig(snap: Snap) {
-      await this.loadConfigAndPlugins({ ...snap, id: createElementId() })
-    },
-    /**
-     * #action
      * Restores the session named by the URL's `local-<id>`, tried in
      * sessionStorage (this tab's current) then IndexedDB (shared autosave).
      *
@@ -588,13 +580,33 @@ const SessionLoader = types
     },
     /**
      * #action
+     * Commits a config snapshot that was surfaced via triage: loads its plugins
+     * with a fresh id, clears the (config) triage, then resolves the session.
+     * Session loading is deferred to here — `initialize` skips it while a config
+     * triage is pending — so the session resolves against the committed config
+     * and an untrusted session can't clobber the still-pending config triage
+     * (which would otherwise leave the config uncommitted and `ready` stuck).
+     * loadSessionByType may itself surface a new (session) triage.
+     */
+    async applyTriagedConfig(snap: Snap) {
+      await self.loadConfigAndPlugins({ ...snap, id: createElementId() })
+      self.setSessionTriaged(undefined)
+      await this.loadSessionByType()
+    },
+    /**
+     * #action
      * A config error short-circuits session loading: the try/catch sits at
      * this level so loadSessionByType is skipped on config failure.
      */
     async initialize() {
       try {
         await this.loadConfig()
-        await this.loadSessionByType()
+        // A pending (config) triage defers session loading until the user
+        // accepts via applyTriagedConfig, which resolves the session against
+        // the committed config.
+        if (!self.sessionTriaged) {
+          await this.loadSessionByType()
+        }
       } catch (e) {
         console.error(e)
         self.setConfigError(e)

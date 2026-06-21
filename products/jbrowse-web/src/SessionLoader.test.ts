@@ -550,6 +550,37 @@ describe('SessionLoader', () => {
       expect(loader.sessionSource).toBeUndefined()
     })
 
+    // A triaged cross-origin config must NOT commit until accepted, and session
+    // loading must be deferred: running it would let an untrusted session
+    // overwrite the config triage, leaving the config uncommitted and `ready`
+    // stuck forever. applyTriagedConfig resolves both on accept.
+    it('config triage defers session loading until applyTriagedConfig', async () => {
+      const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
+      const { checkPlugins } = jest.requireMock('./util')
+      openLocation.mockReturnValueOnce({
+        readFile: jest.fn().mockResolvedValue(
+          JSON.stringify({
+            plugins: [{ name: 'Custom', url: 'https://example.com/custom.js' }],
+          }),
+        ),
+      })
+      checkPlugins.mockResolvedValueOnce(false)
+      const loader = createAndInit({
+        configPath: 'http://example.com/config.json',
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.sessionTriaged !== undefined, { timeout: 5000 })
+      expect(loader.sessionTriaged).toMatchObject({ origin: 'config' })
+      // session loading deferred; config not committed yet
+      expect(loader.sessionSource).toBeUndefined()
+      expect(loader.configSnapshot).toBeUndefined()
+
+      await loader.applyTriagedConfig(loader.sessionTriaged!.snap)
+      expect(loader.sessionTriaged).toBeUndefined()
+      expect(loader.configSnapshot).toBeDefined()
+      expect(loader.sessionSource).toEqual({ type: 'default' })
+    })
+
     it('sets configError and skips session loading when config fetch fails', async () => {
       const { openLocation } = jest.requireMock('@jbrowse/core/util/io')
       openLocation.mockReturnValueOnce({

@@ -21,10 +21,12 @@ const SessionTriaged = observer(function SessionTriaged({
       onConfirm={async () => {
         if (origin === 'session') {
           await loader.loadImportedSession(snap, true)
+          loader.setSessionTriaged(undefined)
         } else {
+          // applyTriagedConfig clears the config triage and resolves the
+          // session itself, which may surface a new (session) triage
           await loader.applyTriagedConfig(snap)
         }
-        loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {
         if (origin === 'session') {
