@@ -3,11 +3,10 @@ import path from 'path'
 import { parseArgs } from 'util'
 
 import {
+  downloadRelease,
   extractZip,
-  fetchGithubVersions,
-  fetchReleaseArchive,
   printHelp,
-  resolveReleaseUrl,
+  printVersions,
 } from '../utils.ts'
 
 const description = 'Upgrades JBrowse 2 to latest version'
@@ -75,8 +74,6 @@ export async function run(args: string[]) {
     args,
     allowPositionals: true,
   })
-  const argsPath = positionals[0]
-  const { clean, listVersions, tag, url, branch, nightly } = runFlags
   if (runFlags.help) {
     printHelp({
       options,
@@ -87,12 +84,13 @@ export async function run(args: string[]) {
     return
   }
 
+  const { clean, listVersions, tag, url, branch, nightly } = runFlags
   if (listVersions) {
-    const versions = (await fetchGithubVersions()).map(v => v.tag_name)
-    console.log(`All JBrowse versions:\n${versions.join('\n')}`)
-    process.exit(0)
+    await printVersions()
+    return
   }
 
+  const argsPath = positionals[0]
   if (!argsPath) {
     throw new Error('No directory supplied')
   }
@@ -104,8 +102,12 @@ export async function run(args: string[]) {
     )
   }
 
-  const locationUrl = await resolveReleaseUrl({ url, nightly, branch, tag })
-  const archive = await fetchReleaseArchive(locationUrl, !!url)
+  const { locationUrl, archive } = await downloadRelease({
+    url,
+    nightly,
+    branch,
+    tag,
+  })
 
   if (clean) {
     fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })

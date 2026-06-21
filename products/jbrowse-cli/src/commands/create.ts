@@ -2,11 +2,10 @@ import fs from 'fs'
 import { parseArgs } from 'util'
 
 import {
+  downloadRelease,
   extractZip,
-  fetchGithubVersions,
-  fetchReleaseArchive,
   printHelp,
-  resolveReleaseUrl,
+  printVersions,
 } from '../utils.ts'
 
 const fsPromises = fs.promises
@@ -87,11 +86,8 @@ export async function run(args: string[]) {
 
   const { force, url, listVersions, tag, branch, nightly } = runFlags
   if (listVersions) {
-    const versions = (await fetchGithubVersions()).map(
-      version => version.tag_name,
-    )
-    console.log(`All JBrowse versions:\n${versions.join('\n')}`)
-    process.exit(0)
+    await printVersions()
+    return
   }
 
   const argsPath = positionals[0]
@@ -108,8 +104,12 @@ export async function run(args: string[]) {
     await checkPath(argsPath)
   }
 
-  const locationUrl = await resolveReleaseUrl({ url, nightly, branch, tag })
-  const archive = await fetchReleaseArchive(locationUrl, !!url)
+  const { locationUrl, archive } = await downloadRelease({
+    url,
+    nightly,
+    branch,
+    tag,
+  })
   await extractZip(archive, argsPath)
 
   console.log(`Unpacked ${locationUrl} at ${argsPath}`)

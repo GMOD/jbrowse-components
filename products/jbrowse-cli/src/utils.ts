@@ -139,30 +139,40 @@ async function getTag(tag: string) {
   throw new Error(`Could not find version: ${response.statusText}`)
 }
 
-async function getBranch(branch: string) {
+function getBranch(branch: string) {
   return `https://s3.amazonaws.com/jbrowse.org/code/jb2/${branch}/jbrowse-web-${branch}.zip`
+}
+
+interface ReleaseFlags {
+  url?: string
+  nightly?: boolean
+  branch?: string
+  tag?: string
 }
 
 // resolves the JBrowse release download URL from the create/upgrade flags,
 // preferring an explicit --url, then --nightly, --branch, and finally --tag
 // (or the latest release)
-export async function resolveReleaseUrl({
-  url,
-  nightly,
-  branch,
-  tag,
-}: {
-  url?: string
-  nightly?: boolean
-  branch?: string
-  tag?: string
-}) {
+export async function resolveReleaseUrl({ url, nightly, branch, tag }: ReleaseFlags) {
   return (
     url ||
-    (nightly ? await getBranch('main') : '') ||
-    (branch ? await getBranch(branch) : '') ||
+    (nightly ? getBranch('main') : '') ||
+    (branch ? getBranch(branch) : '') ||
     (tag ? await getTag(tag) : await getLatest())
   )
+}
+
+// shared by create/upgrade: resolve the release URL then download it. Returns
+// both so the caller can log which URL was unpacked.
+export async function downloadRelease(flags: ReleaseFlags) {
+  const locationUrl = await resolveReleaseUrl(flags)
+  const archive = await fetchReleaseArchive(locationUrl, !!flags.url)
+  return { locationUrl, archive }
+}
+
+export async function printVersions() {
+  const versions = (await fetchGithubVersions()).map(v => v.tag_name)
+  console.log(`All JBrowse versions:\n${versions.join('\n')}`)
 }
 
 export async function fetchReleaseArchive(
