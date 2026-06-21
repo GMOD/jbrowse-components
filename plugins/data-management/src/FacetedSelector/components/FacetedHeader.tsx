@@ -8,24 +8,21 @@ import { observer } from 'mobx-react'
 import ShoppingCart from '../../HierarchicalTrackSelectorWidget/components/ShoppingCart.tsx'
 import ClearableSearchField from '../../shared/ClearableSearchField.tsx'
 
+import type { FacetedColumn } from './FacetedDataGrid.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
 import type { FacetedModel } from '../facetedModel.ts'
 
 const FacetedHeader = observer(function FacetedHeader({
   model,
   faceted,
+  columns,
 }: {
   model: HierarchicalTrackSelectorModel
   faceted: FacetedModel
+  columns: FacetedColumn[]
 }) {
-  const {
-    filterText,
-    showFilters,
-    showSparse,
-    useShoppingCart,
-    visible,
-    fields,
-  } = faceted
+  const { filterText, showFilters, showSparse, useShoppingCart, visible } =
+    faceted
   const [anchorEl, setAnchorEl] = useState<HTMLElement | null>(null)
 
   return (
@@ -85,16 +82,16 @@ const FacetedHeader = observer(function FacetedHeader({
           {
             label: 'Manage columns',
             type: 'subMenu',
-            subMenu: fields
-              .filter(f => f !== 'name')
-              .map(field => {
-                const checked = visible[field] !== false
+            subMenu: columns
+              .filter(col => col.id !== 'name')
+              .map(col => {
+                const checked = visible[col.id] !== false
                 return {
-                  label: field,
+                  label: col.header,
                   type: 'checkbox' as const,
                   checked,
                   onClick: () => {
-                    faceted.setColumnVisible(field, !checked)
+                    faceted.setColumnVisible(col.id, !checked)
                   },
                 }
               }),

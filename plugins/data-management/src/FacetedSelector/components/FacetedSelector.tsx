@@ -58,11 +58,14 @@ const FacetedSelector = observer(function FacetedSelector({
 
   return (
     <>
-      <FacetedHeader model={model} faceted={faceted} />
+      <FacetedHeader model={model} faceted={faceted} columns={columns} />
       <div className={classes.container} style={{ height: h, width: w }}>
         <div
           className={classes.dataPane}
-          style={{ height: h, width: w - (showFilters ? panelWidth : 0) }}
+          style={{
+            height: h,
+            width: Math.max(0, w - (showFilters ? panelWidth : 0)),
+          }}
         >
           <FacetedDataGrid
             model={model}
