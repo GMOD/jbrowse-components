@@ -127,11 +127,6 @@ export default function stateModelFactory(
        * #volatile
        */
       availableResolutions: undefined as number[] | undefined,
-      /**
-       * #volatile
-       * Bumped by `reload()` to retrigger the fetch autorun.
-       */
-      reloadCounter: 0,
     }))
 
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
@@ -530,13 +525,6 @@ export default function stateModelFactory(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      reload() {
-        self.setError(undefined)
-        self.reloadCounter += 1
-      },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {

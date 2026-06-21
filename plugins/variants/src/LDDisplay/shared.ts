@@ -99,11 +99,6 @@ export default function sharedModelFactory(
        * #volatile
        */
       rpcData: null as LDDataResult | null,
-      /**
-       * #volatile
-       * Bumped by `reload()` to retrigger the fetch autorun.
-       */
-      reloadCounter: 0,
     }))
     .actions(self => ({
       setRpcData(data: LDDataResult | null) {
@@ -694,13 +689,6 @@ export default function sharedModelFactory(
       },
     }))
     .actions(self => ({
-      /**
-       * #action
-       */
-      reload() {
-        self.setError(undefined)
-        self.reloadCounter += 1
-      },
       afterAttach() {
         // eslint-disable-next-line @typescript-eslint/no-floating-promises
         ;(async () => {

@@ -36,6 +36,16 @@ export default function GlobalDataDisplayMixin() {
       FetchMixin(),
       types.model({}),
     )
+    .volatile(() => ({
+      /**
+       * #volatile
+       * Bumped by `reload()` to retrigger a global display's fetch autorun.
+       * Each display reads `void self.reloadCounter` in its `afterAttach` fetch
+       * autorun so a user-initiated reload re-runs the fetch even when no
+       * viewport/setting changed.
+       */
+      reloadCounter: 0,
+    }))
     .views(self => ({
       /**
        * #getter
@@ -81,6 +91,19 @@ export default function GlobalDataDisplayMixin() {
        */
       get svgReady(): boolean {
         return self.displayPhase !== 'loading'
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Satisfies the `reload` contract `DisplayChrome` requires of every
+       * display (the per-region foundation provides its own). Clears any error
+       * and bumps `reloadCounter` so the display's fetch autorun re-runs. A
+       * subclass whose reload needs extra teardown can override and chain.
+       */
+      reload() {
+        self.setError(undefined)
+        self.reloadCounter += 1
       },
     }))
 }
