@@ -10,7 +10,7 @@ A MAF track shows a multiple alignment of several species against a reference
 genome: one row per aligned species, with a coverage summary on top. JBrowse
 reads three formats, all configured as a `MafTrack` with a `LinearMafDisplay`.
 
-<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes): the coverage band on top, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks. Each row label here also shows that species' percent identity to the reference (the optional per-row identity readout)."/>
+<Figure src="/img/maf_track.png" caption="The UCSC ce11 26-way multiz alignment (C. elegans and related nematodes): the coverage band on top, then one row per species ordered by the guide tree in the left sidebar, with positions where a species differs from the reference drawn as colored marks."/>
 
 ## Adapters
 
@@ -71,12 +71,16 @@ This is a true identity metric and is distinct from the score shaded into the
 zoomed-out summary bars, which comes from the UCSC `bigMafSummary` — a
 normalized alignment score rather than a percent identity.
 
-## Per-row identity
+## Per-row identity overlay
 
-Each species row can also show its **own** percent identity to the reference —
-the fraction of that row's aligned bases matching the reference over the visible
-region — as a `NN%` readout next to its row label (and in the per-base hover
-tooltip). Where the conservation band summarizes all species into one profile,
-this breaks the signal out per species, so you can see _which_ genomes are
-diverging in a region. It's computed from the alignment (no extra files) and is
-toggled from the track menu; the reference row itself is excluded.
+Where the conservation band summarizes all species into one profile, the per-row
+identity overlay breaks the signal out **per species**, drawn over each row so
+you can see _which_ genomes diverge in a region — comparable to the UCSC multiz
+per-species pairwise display. It is computed from the alignment (no extra files)
+and set from the track menu, with two styles:
+
+- **Heatmap** shades each row band by its local identity on a red→grey→blue ramp
+  (red = divergent, blue = conserved).
+- **X-Y plot** draws a per-species identity wiggle: a bar per pixel whose height
+  is that position's identity to the reference, like one conservation band per
+  row.

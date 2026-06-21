@@ -11,10 +11,11 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const N_UPPER = 78 // 'N'
 
-// Overlay opacity for the heatmap: low enough that the base coloring (and any
-// letters drawn on top) stay legible, high enough to read the conservation
-// pattern at a glance. Shared by the on-screen canvas and SVG export.
-export const ROW_IDENTITY_HEATMAP_ALPHA = 0.6
+// Overlay opacity: low enough that the base coloring (and any letters drawn on
+// top) stay legible, high enough to read the conservation pattern at a glance.
+const ROW_IDENTITY_ALPHA = 0.6
+
+export type RowIdentityMode = 'heatmap' | 'xyplot'
 
 interface DrawRowIdentityState {
   rowHeight: number
@@ -22,26 +23,26 @@ interface DrawRowIdentityState {
   /** display row count (sizes the per-row accumulators) */
   nRows: number
   canvasWidth: number
-  /** 0..1 overlay opacity (lets the base coloring show through) */
-  alpha: number
+  /** `heatmap` shades each cell on a ramp; `xyplot` draws an identity wiggle */
+  mode: RowIdentityMode
 }
 
 /**
- * RdYlGn-style identity ramp: divergent (0) → intermediate (0.5) → conserved
- * (1), returned as an `[r,g,b]` triple. Endpoints are the standard RdYlGn
- * diverging colormap, so the heatmap reads the same way as common MSA
- * percent-identity shadings. Pure so it can be unit-tested independent of any
- * canvas.
+ * Diverging red→grey→blue identity ramp: divergent (0) → neutral (0.5) →
+ * conserved (1), returned as an `[r,g,b]` triple. Grey neutral midpoint (rather
+ * than the white of a sequential density ramp) keeps low-identity bases visible
+ * while reserving the saturated blue end for the conserved positions that
+ * matter. Pure so it can be unit-tested independent of any canvas.
  */
 export function identityColor(t: number): [number, number, number] {
   const c = t < 0 ? 0 : t > 1 ? 1 : t
   const lerp = (a: number, b: number, f: number) => Math.round(a + (b - a) * f)
   if (c < 0.5) {
     const f = c / 0.5
-    return [lerp(215, 255, f), lerp(48, 255, f), lerp(39, 191, f)]
+    return [lerp(199, 140, f), lerp(67, 140, f), lerp(56, 140, f)]
   }
   const f = (c - 0.5) / 0.5
-  return [lerp(255, 26, f), lerp(255, 152, f), lerp(191, 80, f)]
+  return [lerp(140, 47, f), lerp(140, 102, f), lerp(140, 176, f)]
 }
 
 /**
@@ -97,25 +98,30 @@ export function accumulateRowIdentity(
 }
 
 /**
- * Draw the per-row identity heatmap: each species row is shaded by its local
- * (per-pixel) percent identity to the reference, on a divergent→conserved
- * ramp. Computed on the main thread from the already-fetched alignment bytes
- * (`MafBlock.rows`) — no extra worker payload — keyed to the row geometry the
- * GPU base canvas uses. Drawn at `alpha` over that canvas so divergent stretches
- * stand out while the underlying bases stay legible. Pixels with no
- * classifiable base (gap / ref `N`) are left untouched. The reference row is
- * not special-cased: it compares equal to itself and reads fully conserved,
- * which is the expected visual anchor (unlike the row-label policy, which
- * suppresses its trivial 100%). Shared by the on-screen canvas and SVG export,
- * like `drawConservation`.
+ * Draw the per-row identity overlay: each species row shows its local
+ * (per-pixel) percent identity to the reference, computed on the main thread
+ * from the already-fetched alignment bytes (`MafBlock.rows`) — no extra worker
+ * payload — keyed to the row geometry the GPU base canvas uses. Two modes:
+ *
+ * - `heatmap` shades the whole row band on a red→grey→blue ramp.
+ * - `xyplot` draws an identity wiggle: a conserved-blue bar per pixel whose
+ *   height is that pixel's identity (taller = more conserved), like the
+ *   conservation band but one track per species — emulates the UCSC multiz
+ *   per-species pairwise "alignment quality" wiggle.
+ *
+ * Both draw at `ROW_IDENTITY_ALPHA` over the base canvas so the underlying
+ * bases stay legible, and leave pixels with no classifiable base (gap / ref
+ * `N`) untouched. The reference row is not special-cased: it compares equal to
+ * itself and reads fully conserved, the expected visual anchor. Shared by the
+ * on-screen canvas and SVG export, like `drawConservation`.
  */
-export function drawRowIdentityHeatmap(
+export function drawRowIdentity(
   ctx: Ctx2D,
   blocks: RenderBlock[],
   regions: ReadonlyMap<number, MafRegionData>,
   state: DrawRowIdentityState,
 ) {
-  const { rowHeight, rowProportion, nRows, canvasWidth, alpha } = state
+  const { rowHeight, rowProportion, nRows, canvasWidth, mode } = state
   const width = Math.ceil(canvasWidth)
   if (width <= 0 || nRows <= 0) {
     return
@@ -149,23 +155,39 @@ export function drawRowIdentityHeatmap(
     }
   }
 
-  // Precompute the 101 ramp colors (0..100%) as alpha-baked rgba strings once
-  // per draw — bounds string allocation regardless of pixel × row count, and
-  // SvgCanvas has no globalAlpha so the alpha must live in the fillStyle.
-  const lut = Array.from({ length: 101 }, (_, i) => {
-    const [r, g, b] = identityColor(i / 100)
-    return `rgba(${r},${g},${b},${alpha})`
-  })
   const bandH = rowHeight * rowProportion
   const bandOffset = (rowHeight - bandH) / 2
-  for (let r = 0; r < nRows; r++) {
-    const rowTop = bandOffset + rowHeight * r
-    const base = r * width
-    for (let x = 0; x < width; x++) {
-      const c = classCount[base + x]!
-      if (c > 0) {
-        ctx.fillStyle = lut[Math.round((matchSum[base + x]! / c) * 100)]!
-        ctx.fillRect(x, rowTop, 1, bandH)
+  if (mode === 'xyplot') {
+    const [r, g, b] = identityColor(1)
+    ctx.fillStyle = `rgba(${r},${g},${b},${ROW_IDENTITY_ALPHA})`
+    for (let row = 0; row < nRows; row++) {
+      const rowBottom = bandOffset + rowHeight * row + bandH
+      const base = row * width
+      for (let x = 0; x < width; x++) {
+        const c = classCount[base + x]!
+        if (c > 0) {
+          const h = (matchSum[base + x]! / c) * bandH
+          ctx.fillRect(x, rowBottom - h, 1, h)
+        }
+      }
+    }
+  } else {
+    // Precompute the 101 ramp colors (0..100%) as alpha-baked rgba strings once
+    // per draw — bounds string allocation regardless of pixel × row count, and
+    // SvgCanvas has no globalAlpha so the alpha must live in the fillStyle.
+    const lut = Array.from({ length: 101 }, (_, i) => {
+      const [r, g, b] = identityColor(i / 100)
+      return `rgba(${r},${g},${b},${ROW_IDENTITY_ALPHA})`
+    })
+    for (let row = 0; row < nRows; row++) {
+      const rowTop = bandOffset + rowHeight * row
+      const base = row * width
+      for (let x = 0; x < width; x++) {
+        const c = classCount[base + x]!
+        if (c > 0) {
+          ctx.fillStyle = lut[Math.round((matchSum[base + x]! / c) * 100)]!
+          ctx.fillRect(x, rowTop, 1, bandH)
+        }
       }
     }
   }

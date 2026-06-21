@@ -94,12 +94,6 @@ function HoverContents({
     return (
       <TableShell caption={`Alignment - ${location}`}>
         <Row label="Sample" value={hover.sampleLabel} />
-        {hover.rowIdentity !== undefined ? (
-          <Row
-            label="Identity"
-            value={`${(hover.rowIdentity * 100).toFixed(1)}%`}
-          />
-        ) : null}
         <Row label="Base" value={hover.base} />
         {loc ? <Row label="Location" value={loc} /> : null}
         {ctx?.leftStatus ? (

@@ -182,7 +182,6 @@ const MafBody = observer(function MafBody({
               labelOffset={sidebarOffset}
               scrollTop={scrollTop}
               availableHeight={rowsHeight}
-              details={model.rowIdentityLabels}
             />
           </svg>
         ) : null}

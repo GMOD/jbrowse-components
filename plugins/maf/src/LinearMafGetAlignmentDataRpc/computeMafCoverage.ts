@@ -20,16 +20,6 @@ export interface MafCoverageResult {
    * the SNP mismatches above).
    */
   identity: Float32Array
-  /**
-   * Per-row identity numerator/denominator, indexed by `rowIndex` (length
-   * `nRows`): matching vs classifiable non-gap bases for each species against
-   * the reference, summed over this region. Shipped as raw counts (not ratios)
-   * so the main thread can sum them across visible regions before dividing. The
-   * reference row's own entry stays 0 (excluded) → its identity reads as
-   * undefined rather than a trivial 100%.
-   */
-  matchesPerRow: Float32Array
-  classifiablePerRow: Float32Array
 }
 
 /**
@@ -46,16 +36,12 @@ export interface MafCoverageResult {
  * `region.assemblyName`), excluded from the identity numerator/denominator so
  * its trivial self-match doesn't inflate conservation. `-1` (no reference row
  * in the visible set) leaves identity over all rows.
- *
- * `nRows` sizes the per-row arrays (the display row count); when omitted it's
- * derived from the max `rowIndex` present (the test path).
  */
 export function computeMafCoverage(
   blocks: MafBlock[],
   regionStart: number,
   regionEnd: number,
   refRowIndex = -1,
-  nRows?: number,
 ): MafCoverageResult {
   const length = Math.max(0, regionEnd - regionStart)
   const depths = new Float32Array(length)
@@ -64,17 +50,6 @@ export function computeMafCoverage(
   // unchanged. identity[i] = matches[i] / classifiable[i], NaN when denom 0.
   const matches = new Float32Array(length)
   const classifiable = new Float32Array(length)
-  let nRowsResolved = nRows ?? 0
-  if (nRows === undefined) {
-    for (const block of blocks) {
-      for (const row of block.rows) {
-        nRowsResolved = Math.max(nRowsResolved, row.rowIndex + 1)
-      }
-    }
-  }
-  // Per-row identity counts, indexed by rowIndex (see MafCoverageResult).
-  const matchesPerRow = new Float32Array(nRowsResolved)
-  const classifiablePerRow = new Float32Array(nRowsResolved)
   const mismatches: MismatchEntry[] = []
   const insertions: InsertionEntry[] = []
   // Per-row pending insertion length at the current refPos. Flushed into
@@ -127,19 +102,11 @@ export function computeMafCoverage(
                   strand: 1,
                 })
               }
-              // Identity counts non-reference species at a known ref column,
-              // both in aggregate (per position) and per row.
+              // Identity counts non-reference species at a known ref column.
               if (refKnown && row.rowIndex !== refRowIndex) {
                 classifiable[depthIdx]! += 1
-                const isMatch = sampleUpper === refUpper
-                if (isMatch) {
+                if (sampleUpper === refUpper) {
                   matches[depthIdx]! += 1
-                }
-                if (row.rowIndex < nRowsResolved) {
-                  classifiablePerRow[row.rowIndex]! += 1
-                  if (isMatch) {
-                    matchesPerRow[row.rowIndex]! += 1
-                  }
                 }
               }
             }
@@ -169,7 +136,5 @@ export function computeMafCoverage(
     mismatches,
     insertions,
     identity,
-    matchesPerRow,
-    classifiablePerRow,
   }
 }

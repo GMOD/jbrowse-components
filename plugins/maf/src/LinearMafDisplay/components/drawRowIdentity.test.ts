@@ -105,13 +105,13 @@ test('zoomed out: several bases average into one pixel', () => {
   expect(match[0]).toBe(3)
 })
 
-test('identityColor ramps from divergent red to conserved green', () => {
-  expect(identityColor(0)).toEqual([215, 48, 39])
-  expect(identityColor(0.5)).toEqual([255, 255, 191])
-  expect(identityColor(1)).toEqual([26, 152, 80])
+test('identityColor ramps from divergent red through grey to conserved blue', () => {
+  expect(identityColor(0)).toEqual([199, 67, 56])
+  expect(identityColor(0.5)).toEqual([140, 140, 140])
+  expect(identityColor(1)).toEqual([47, 102, 176])
 })
 
 test('identityColor clamps out-of-range input', () => {
-  expect(identityColor(-1)).toEqual([215, 48, 39])
-  expect(identityColor(2)).toEqual([26, 152, 80])
+  expect(identityColor(-1)).toEqual([199, 67, 56])
+  expect(identityColor(2)).toEqual([47, 102, 176])
 })

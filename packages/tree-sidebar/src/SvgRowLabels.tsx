@@ -7,16 +7,12 @@ export function SvgRowLabels({
   labelOffset,
   scrollTop = 0,
   availableHeight,
-  details,
 }: {
   sources: { name: string; label?: string; labelColor?: string }[]
   rowHeight: number
   labelOffset: number
   scrollTop?: number
   availableHeight?: number
-  // Optional per-row secondary text (aligned to `sources` by index), rendered
-  // muted + right-aligned in the label box — e.g. a per-row percent identity.
-  details?: (string | undefined)[]
 }) {
   const theme = useTheme()
   if (rowHeight < 6) {
@@ -27,19 +23,11 @@ export function SvgRowLabels({
 
   // `name` is the identity (key + hit-test); `label` is the displayed string if
   // the adapter config supplied one.
-  let labelWidth = 10
+  let boxWidth = 10
   for (const source of sources) {
     const w = measureText(source.label ?? source.name, fontSize) + 10
-    labelWidth = Math.max(labelWidth, w)
+    boxWidth = Math.max(boxWidth, w)
   }
-  // Reserve room for the widest detail string so name + detail never overlap.
-  let detailWidth = 0
-  for (const d of details ?? []) {
-    if (d) {
-      detailWidth = Math.max(detailWidth, measureText(d, fontSize))
-    }
-  }
-  const boxWidth = labelWidth + (detailWidth ? detailWidth + 8 : 0)
 
   const defaultBackground = alpha(theme.palette.background.paper, 0.8)
   return (
@@ -56,7 +44,6 @@ export function SvgRowLabels({
         const fg = lc
           ? theme.palette.getContrastText(lc)
           : theme.palette.text.primary
-        const detail = details?.[idx]
         return (
           <g key={source.name}>
             <rect
@@ -75,19 +62,6 @@ export function SvgRowLabels({
             >
               {source.label ?? source.name}
             </text>
-            {detail ? (
-              <text
-                x={boxWidth - 4}
-                y={y + boxHeight / 2}
-                fontSize={fontSize}
-                textAnchor="end"
-                dominantBaseline="central"
-                fillOpacity={0.65}
-                {...getFillProps(fg)}
-              >
-                {detail}
-              </text>
-            ) : null}
           </g>
         )
       })}

@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 
+import type { RowIdentityMode } from './components/drawRowIdentity.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -24,8 +25,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
-  showRowIdentity: boolean
-  showRowIdentityHeatmap: boolean
+  rowIdentityMode: 'none' | RowIdentityMode
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   clusterTree?: string
@@ -39,8 +39,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
-  setShowRowIdentity: (f: boolean) => void
-  setShowRowIdentityHeatmap: (f: boolean) => void
+  setRowIdentityMode: (m: 'none' | RowIdentityMode) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
@@ -140,20 +139,34 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Per-row identity %',
-          type: 'checkbox',
-          checked: self.showRowIdentity,
-          onClick: () => {
-            self.setShowRowIdentity(!self.showRowIdentity)
-          },
-        },
-        {
-          label: 'Per-row identity heatmap',
-          type: 'checkbox',
-          checked: self.showRowIdentityHeatmap,
-          onClick: () => {
-            self.setShowRowIdentityHeatmap(!self.showRowIdentityHeatmap)
-          },
+          label: 'Per-row identity',
+          type: 'subMenu',
+          subMenu: [
+            {
+              label: 'Off',
+              type: 'radio',
+              checked: self.rowIdentityMode === 'none',
+              onClick: () => {
+                self.setRowIdentityMode('none')
+              },
+            },
+            {
+              label: 'Heatmap',
+              type: 'radio',
+              checked: self.rowIdentityMode === 'heatmap',
+              onClick: () => {
+                self.setRowIdentityMode('heatmap')
+              },
+            },
+            {
+              label: 'X-Y plot',
+              type: 'radio',
+              checked: self.rowIdentityMode === 'xyplot',
+              onClick: () => {
+                self.setRowIdentityMode('xyplot')
+              },
+            },
+          ],
         },
       ],
     },

@@ -5357,8 +5357,6 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearMafDisplay',
                 rowHeight: 12,
-                // show each species' percent identity next to its row label
-                showRowIdentity: true,
               },
             },
           ],

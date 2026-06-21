@@ -86,12 +86,6 @@ export interface MafCoverageRegion {
   coverageStartPos: number
   coverageMaxDepth: number
   identityScores: Float32Array
-  // Per-row identity counts indexed by display rowIndex (matching /
-  // classifiable non-gap bases vs the reference, summed over this region). Raw
-  // counts so the main thread can sum across visible regions then divide; the
-  // reference row's entry is 0 (excluded).
-  matchesPerRow: Float32Array
-  classifiablePerRow: Float32Array
   mismatchPositions: Uint32Array
   mismatchBases: Uint8Array
   insertionPositions: Uint32Array
