@@ -11,6 +11,7 @@ export interface RecentSession {
 
 export interface SessionSnap {
   defaultSession?: { name?: string }
+  assemblies?: unknown[]
   [key: string]: unknown
 }
 

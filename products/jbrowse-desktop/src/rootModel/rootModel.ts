@@ -146,10 +146,14 @@ export default function rootModelFactory({
          * reload from the session path).
          */
         async setPluginsUpdated() {
-          if (self.session) {
-            await self.saveSession(getSaveSession(self))
+          // openNewSessionCallback reloads from sessionPath; with no path there
+          // is nothing to reload from (loadSession('') would throw)
+          if (self.sessionPath) {
+            if (self.session) {
+              await self.saveSession(getSaveSession(self))
+            }
+            await self.openNewSessionCallback(self.sessionPath)
           }
-          await self.openNewSessionCallback(self.sessionPath)
         },
         afterCreate() {
           addDisposer(

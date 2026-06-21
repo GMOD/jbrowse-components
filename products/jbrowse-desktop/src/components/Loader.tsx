@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useState } from 'react'
 
-import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { localStorageGetItem } from '@jbrowse/core/util'
+import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 import { setGpuOverride } from '@jbrowse/render-core/gpuDevice'
 import { CssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -19,7 +20,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 setGpuOverride(new URLSearchParams(window.location.search).get('renderer'))
 
 // Loads a plugin manager from a URL-provided config path. Cancels stale results
-// if config changes while a previous load is still in flight.
+// if config changes while a previous load is still in flight. onLoad/onError
+// are stable (useEventCallback) so the effect re-runs only when `config`
+// changes — a re-render mid-load must not start a second load, which would
+// leak the abandoned PluginManager's RPC workers.
 function useConfigLoad(
   config: string | undefined,
   onLoad: (pm: PluginManager) => void,
@@ -32,7 +36,9 @@ function useConfigLoad(
         try {
           const pm = await loadPluginManager(config)
           // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
-          if (!cancelled) {
+          if (cancelled) {
+            destroyPluginManager(pm)
+          } else {
             onLoad(pm)
           }
         } catch (e) {
@@ -55,7 +61,7 @@ const LoaderContents = observer(function LoaderContents() {
   const [config, setConfig] = useQueryParam('config')
   const notifyError = useNotifyError()
 
-  const handleSetPluginManager = (pm: PluginManager) => {
+  const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
     ;(pm.rootModel as DesktopRootModel | undefined)?.setOpenNewSessionCallback(
       async (path: string) => {
         handleSetPluginManager(await loadPluginManager(path))
@@ -71,22 +77,24 @@ const LoaderContents = observer(function LoaderContents() {
       }
       return pm
     })
-    setConfig('')
-  }
+    setConfig(undefined)
+  })
 
-  const handleConfigError = (e: unknown) => {
+  const handleConfigError = useEventCallback((e: unknown) => {
     notifyError(e)
     // fall back to the start screen so the user can pick another config
-    setConfig('')
-  }
+    setConfig(undefined)
+  })
 
   useConfigLoad(config, handleSetPluginManager, handleConfigError)
 
   return pluginManager?.rootModel?.session ? (
     <JBrowse pluginManager={pluginManager} />
-  ) : !config ? (
+  ) : config ? (
+    <LoadingEllipses variant="h6" message="Loading session" />
+  ) : (
     <StartScreen setPluginManager={handleSetPluginManager} />
-  ) : null
+  )
 })
 
 export default function Loader() {
