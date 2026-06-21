@@ -2,8 +2,9 @@ import React, { useCallback, useEffect, useRef } from 'react'
 
 import { useTheme } from '@mui/material'
 
-import { getBaseColor, getContrastText } from './baseColors.ts'
-import { CHAR_WIDTH, FONT, ROW_HEIGHT } from './constants.ts'
+import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
+import { drawSequenceGrid } from './drawSequenceGrid.ts'
+import { virtualRange } from './virtualRange.ts'
 
 import type { Sample } from '../types.ts'
 
@@ -43,83 +44,48 @@ export default function SequenceCanvas({
 
   const seqLength = sequences[0]?.length ?? 0
 
-  // Vertical virtualization
-  const startRow = Math.max(
-    0,
-    Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN_ROWS,
-  )
-  const visibleRows =
-    Math.ceil(containerHeight / ROW_HEIGHT) + OVERSCAN_ROWS * 2
-  const endRow = Math.min(samples.length, startRow + visibleRows)
-  const renderedRowCount = endRow - startRow
-  const canvasHeight = renderedRowCount * ROW_HEIGHT
-  const offsetY = scrollTop - startRow * ROW_HEIGHT
-
-  // Horizontal virtualization
-  const startCol = Math.max(
-    0,
-    Math.floor(scrollLeft / CHAR_WIDTH) - OVERSCAN_COLS,
-  )
-  const visibleCols = Math.ceil(containerWidth / CHAR_WIDTH) + OVERSCAN_COLS * 2
-  const endCol = Math.min(seqLength, startCol + visibleCols)
-  const renderedColCount = endCol - startCol
-  const canvasWidth = renderedColCount * CHAR_WIDTH
-  const offsetX = scrollLeft - startCol * CHAR_WIDTH
+  const { start: startRow, end: endRow } = virtualRange({
+    scroll: scrollTop,
+    cellSize: ROW_HEIGHT,
+    viewport: containerHeight,
+    overscan: OVERSCAN_ROWS,
+    total: samples.length,
+  })
+  const { start: startCol, end: endCol } = virtualRange({
+    scroll: scrollLeft,
+    cellSize: CHAR_WIDTH,
+    viewport: containerWidth,
+    overscan: OVERSCAN_COLS,
+    total: seqLength,
+  })
+  const canvasHeight = (endRow - startRow) * ROW_HEIGHT
+  const canvasWidth = (endCol - startCol) * CHAR_WIDTH
 
   useEffect(() => {
     const canvas = canvasRef.current
-    if (!canvas || canvasWidth <= 0 || canvasHeight <= 0) {
-      return
-    }
+    const ctx = canvas?.getContext('2d')
+    if (canvas && ctx && canvasWidth > 0 && canvasHeight > 0) {
+      const dpr = window.devicePixelRatio || 1
+      canvas.width = canvasWidth * dpr
+      canvas.height = canvasHeight * dpr
+      canvas.style.width = `${canvasWidth}px`
+      canvas.style.height = `${canvasHeight}px`
+      ctx.scale(dpr, dpr)
 
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
-    const dpr = window.devicePixelRatio || 1
-    canvas.width = canvasWidth * dpr
-    canvas.height = canvasHeight * dpr
-    canvas.style.width = `${canvasWidth}px`
-    canvas.style.height = `${canvasHeight}px`
-    ctx.scale(dpr, dpr)
-
-    ctx.fillStyle = theme.palette.background.paper
-    ctx.fillRect(0, 0, canvasWidth, canvasHeight)
-
-    ctx.font = FONT
-    ctx.textBaseline = 'top'
-
-    for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
-      const seq = sequences[rowIdx] || ''
-      const y = (rowIdx - startRow) * ROW_HEIGHT
-
-      for (let colIdx = startCol; colIdx < endCol; colIdx++) {
-        const char = seq[colIdx]
-        if (!char) {
-          continue
-        }
-        const x = (colIdx - startCol) * CHAR_WIDTH
-
-        if (colorBackground && char !== '-' && char !== '.') {
-          ctx.fillStyle = getBaseColor(char, theme)
-          ctx.fillRect(x, y, CHAR_WIDTH, ROW_HEIGHT)
-        }
-
-        if (char === '-') {
-          ctx.fillStyle = theme.palette.grey[400]
-        } else if (char === '.') {
-          ctx.fillStyle = theme.palette.grey[500]
-        } else if (colorBackground) {
-          ctx.fillStyle = getContrastText(char, theme)
-        } else {
-          ctx.fillStyle = getBaseColor(char, theme)
-        }
-        ctx.fillText(char, x + 2, y + 2)
-      }
+      drawSequenceGrid({
+        ctx,
+        sequences,
+        startRow,
+        endRow,
+        startCol,
+        endCol,
+        width: canvasWidth,
+        height: canvasHeight,
+        colorBackground,
+        theme,
+      })
     }
   }, [
-    samples,
     sequences,
     canvasWidth,
     canvasHeight,
@@ -134,20 +100,17 @@ export default function SequenceCanvas({
   const handleMouseMove = useCallback(
     (e: React.MouseEvent<HTMLCanvasElement>) => {
       const canvas = canvasRef.current
-      if (!canvas) {
-        return
+      if (canvas) {
+        const rect = canvas.getBoundingClientRect()
+        const col = startCol + Math.floor((e.clientX - rect.left) / CHAR_WIDTH)
+        const row = startRow + Math.floor((e.clientY - rect.top) / ROW_HEIGHT)
+        onHover(
+          col >= 0 && col < seqLength ? col : undefined,
+          row >= 0 && row < samples.length ? row : undefined,
+          e.clientX,
+          e.clientY,
+        )
       }
-
-      const rect = canvas.getBoundingClientRect()
-      const x = e.clientX - rect.left
-      const y = e.clientY - rect.top
-      const col = startCol + Math.floor(x / CHAR_WIDTH)
-      const row = startRow + Math.floor(y / ROW_HEIGHT)
-
-      const validCol = col >= 0 && col < seqLength ? col : undefined
-      const validRow = row >= 0 && row < samples.length ? row : undefined
-
-      onHover(validCol, validRow, e.clientX, e.clientY)
     },
     [seqLength, samples.length, startRow, startCol, onHover],
   )
@@ -155,12 +118,16 @@ export default function SequenceCanvas({
   return (
     <canvas
       ref={canvasRef}
+      // Positioned in the same content space as the hover-highlight overlay so
+      // the two scroll natively together. A `sticky` + `transform` pin updates
+      // on every native scroll frame, but the transform only catches up when
+      // React commits the scroll state — that lag made the highlight drift off
+      // to the side of the hovered base during manual horizontal scrolling.
       style={{
         display: 'block',
-        position: 'sticky',
-        top: 0,
-        left: 0,
-        transform: `translate(${-offsetX}px, ${-offsetY}px)`,
+        position: 'absolute',
+        top: startRow * ROW_HEIGHT,
+        left: startCol * CHAR_WIDTH,
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={onLeave}

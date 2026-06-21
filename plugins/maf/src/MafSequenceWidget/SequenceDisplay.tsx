@@ -10,8 +10,16 @@ import LabelsCanvas from './LabelsCanvas.tsx'
 import SequenceCanvas from './SequenceCanvas.tsx'
 import SequenceTooltip from './SequenceTooltip.tsx'
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
+import { colToHighlight, genomePosAt } from './genomePos.ts'
 
 import type { MafSequenceWidgetModel } from './stateModelFactory.ts'
+
+interface HoverState {
+  col?: number
+  row?: number
+  x: number
+  y: number
+}
 
 const DEFAULT_LABEL_WIDTH = 150
 const MIN_LABEL_WIDTH = 50
@@ -79,9 +87,7 @@ const SequenceDisplay = observer(function SequenceDisplay({
   const [scrollTop, setScrollTop] = useState(0)
   const [scrollLeft, setScrollLeft] = useState(0)
   const [labelWidth, setLabelWidth] = useState(DEFAULT_LABEL_WIDTH)
-  const [hoveredCol, setHoveredCol] = useState<number>()
-  const [hoveredRow, setHoveredRow] = useState<number>()
-  const [tooltipPos, setTooltipPos] = useState<{ x: number; y: number }>()
+  const [hover, setHover] = useState<HoverState>()
 
   const seqLength = sequences[0]?.length ?? 0
   const totalSeqWidth = seqLength * CHAR_WIDTH
@@ -94,38 +100,16 @@ const SequenceDisplay = observer(function SequenceDisplay({
       clientX: number,
       clientY: number,
     ) => {
-      if (!regions) {
-        return
-      }
-
-      setHoveredCol(col)
-      setHoveredRow(row)
-      setTooltipPos({ x: clientX, y: clientY })
-
-      if (col !== undefined) {
-        const genomicPos = colToGenomePos[col]
-        const region = regions[0]
-        if (genomicPos !== undefined && genomicPos >= 0 && region) {
-          model.setHoverHighlight({
-            refName: region.refName,
-            start: genomicPos,
-            end: genomicPos + 1,
-            assemblyName: region.assemblyName,
-          })
-        } else {
-          model.setHoverHighlight(undefined)
-        }
-      } else {
-        model.setHoverHighlight(undefined)
+      if (regions) {
+        setHover({ col, row, x: clientX, y: clientY })
+        model.setHoverHighlight(colToHighlight(col, colToGenomePos, regions[0]))
       }
     },
     [colToGenomePos, model, regions],
   )
 
   const handleLeave = useCallback(() => {
-    setHoveredCol(undefined)
-    setHoveredRow(undefined)
-    setTooltipPos(undefined)
+    setHover(undefined)
     model.setHoverHighlight(undefined)
   }, [model])
 
@@ -133,17 +117,14 @@ const SequenceDisplay = observer(function SequenceDisplay({
     return <div>No sequence data</div>
   }
 
-  const hoveredSample =
-    hoveredRow !== undefined ? samples[hoveredRow] : undefined
+  const hoveredSample = hover?.row !== undefined ? samples[hover.row] : undefined
   const hoveredChar =
-    hoveredRow !== undefined && hoveredCol !== undefined
-      ? sequences[hoveredRow]?.[hoveredCol]
+    hover?.row !== undefined && hover.col !== undefined
+      ? sequences[hover.row]?.[hover.col]
       : undefined
-  const rawPos =
-    hoveredCol !== undefined ? colToGenomePos[hoveredCol] : undefined
   // `-1` sentinel (inserted column with no reference base) → undefined, which
   // SequenceTooltip renders as "Insertion (not in reference)".
-  const genomicPos = rawPos !== undefined && rawPos >= 0 ? rawPos : undefined
+  const genomicPos = genomePosAt(colToGenomePos, hover?.col)
 
   return (
     <div className={classes.container}>
@@ -197,18 +178,18 @@ const SequenceDisplay = observer(function SequenceDisplay({
               onLeave={handleLeave}
             />
           ) : null}
-          {hoveredCol !== undefined ? (
+          {hover?.col !== undefined ? (
             <div
               className={classes.hoverColumn}
-              style={{ left: hoveredCol * CHAR_WIDTH, height: totalHeight }}
+              style={{ left: hover.col * CHAR_WIDTH, height: totalHeight }}
             />
           ) : null}
         </div>
       </div>
-      {tooltipPos && hoveredSample && (
+      {hover && hoveredSample && (
         <SequenceTooltip
-          x={tooltipPos.x}
-          y={tooltipPos.y}
+          x={hover.x}
+          y={hover.y}
           sample={hoveredSample}
           base={hoveredChar}
           genomicPos={genomicPos}

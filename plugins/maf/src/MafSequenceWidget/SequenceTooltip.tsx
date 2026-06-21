@@ -1,21 +1,9 @@
-import React from 'react'
-
+import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
 import type { Sample } from '../types.ts'
 
 const useStyles = makeStyles()(theme => ({
-  tooltip: {
-    position: 'fixed',
-    pointerEvents: 'none',
-    zIndex: 1000,
-    backgroundColor: theme.palette.grey[800],
-    color: theme.palette.common.white,
-    padding: '4px 8px',
-    borderRadius: 4,
-    fontSize: 12,
-    whiteSpace: 'nowrap',
-  },
   insertion: {
     color: theme.palette.warning.light,
     fontStyle: 'italic',
@@ -30,6 +18,9 @@ interface SequenceTooltipProps {
   genomicPos?: number
 }
 
+// Controlled `clientPoint` (not pointer-tracking): the widget already
+// re-renders per mouse move, so positioning rides that render with no window
+// listener or per-move allocation. See ADR-028.
 export default function SequenceTooltip({
   x,
   y,
@@ -39,32 +30,26 @@ export default function SequenceTooltip({
 }: SequenceTooltipProps) {
   const { classes } = useStyles()
 
-  // An insertion is when we have a base but no genomic position
-  // (the reference has a gap at this column)
+  // An insertion is when we have a base but no genomic position (the reference
+  // has a gap at this column).
   const isInsertion = base !== undefined && genomicPos === undefined
 
   return (
-    <div
-      className={classes.tooltip}
-      style={{
-        left: x + 12,
-        top: y + 12,
-      }}
-    >
+    <BaseTooltip clientPoint={{ x, y }}>
       <div>
         <strong>{sample.label}</strong>
       </div>
-      {base && (
+      {base ? (
         <div>
           Base: {base}
           {genomicPos !== undefined
             ? ` | Pos: ${(genomicPos + 1).toLocaleString('en-US')}`
             : null}
         </div>
-      )}
-      {isInsertion && (
+      ) : null}
+      {isInsertion ? (
         <div className={classes.insertion}>Insertion (not in reference)</div>
-      )}
-    </div>
+      ) : null}
+    </BaseTooltip>
   )
 }
