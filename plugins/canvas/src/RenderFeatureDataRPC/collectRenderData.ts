@@ -122,6 +122,12 @@ function emitIntronLines(
   }
 }
 
+// transl_except residues (selenocysteine, pyrrolysine, polyA-completed stops)
+// get a distinct background so the readthrough stands out from the alternating
+// codon shading — matches the orange `translExceptColor` swatch the
+// feature-detail protein view uses.
+const TRANSL_EXCEPT_HIGHLIGHT = colorToUint32('#ffc850')
+
 function emitCodonRects(
   aminoAcids: AggregatedAminoAcid[],
   baseColor: string,
@@ -141,7 +147,11 @@ function emitCodonRects(
       end: aa.endBp,
       y,
       height,
-      color: i % 2 === 1 ? color2 : color1,
+      color: aa.isTranslExcept
+        ? TRANSL_EXCEPT_HIGHLIGHT
+        : i % 2 === 1
+          ? color2
+          : color1,
       flatbushIdx,
     })
     overlayItems.push({
@@ -152,6 +162,7 @@ function emitCodonRects(
       topPx: y,
       heightPx: height,
       isStopOrNonTriplet: aa.isStopOrNonTriplet,
+      isTranslExcept: aa.isTranslExcept,
       flatbushIdx,
     })
   }
@@ -219,9 +230,14 @@ function transcriptCDS(feature: Feature, strand: number): CdsSegment[] {
 // the polyprotein overlay so their genomic-to-residue mapping can never drift.
 function aminoAcidsByFeature(feature: Feature, ctx: RenderContext) {
   const strand = feature.get('strand') ?? 0
-  const protein = ctx.peptideDataMap?.get(feature.id())?.protein
-  return protein
-    ? aminoAcidsBySegment(transcriptCDS(feature, strand), protein, strand)
+  const peptide = ctx.peptideDataMap?.get(feature.id())
+  return peptide
+    ? aminoAcidsBySegment(
+        transcriptCDS(feature, strand),
+        peptide.protein,
+        strand,
+        peptide.translExceptIndices,
+      )
     : undefined
 }
 

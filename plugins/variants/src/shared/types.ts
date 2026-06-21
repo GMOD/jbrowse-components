@@ -1,6 +1,10 @@
 export interface Source {
   baseUri?: string
   name: string
+  // Display override for `name` in the sidebar (e.g. a friendly sample label).
+  // `name` stays the stable identity used for hit-testing and genotype lookup.
+  label?: string
+  labelColor?: string
   sampleName?: string
   color?: string
   group?: string

@@ -50,7 +50,7 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "bad",
-    "note": "if possible make it so read cloud is at least 1px wide...the 'short insert size' are hard to see (pairs so close together, barely 1px?)",
+    "note": "PARTIAL (re-review/eyeball): 1.5px min-width clamp already satisfies >=1px and is in the current PNG (the bad status predated the regen). Also bumped flat-line alpha 0.25->0.4 (shader + canvas) so isolated short-insert pairs are less transparent; this dataset has few of them (0.4% pixel diff) so the gain is subtle — finer tuning best done live.",
     "reviewedAt": "2026-06-19T12:11:24.264Z"
   },
   "dotplot": {
@@ -169,9 +169,9 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "good",
+    "status": "bad",
     "note": "the arrow showuld ideally connect from the \"Annotated as 'INVdup'' text box to the feature details",
-    "reviewedAt": "2026-06-20T20:52:44.799Z"
+    "reviewedAt": "2026-06-21T05:25:40.066Z"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -229,9 +229,9 @@
   },
   "add_track_form": {
     "name": "add_track_form",
-    "status": "good",
-    "note": "arrow now extends from the Open track... menu item",
-    "reviewedAt": "2026-06-20T18:30:00.000Z"
+    "status": "bad",
+    "note": "the arrow points randomly into the middle of the 'addtrack' widget. can you make it point more at the 'enter track data' text and stop short of the widget itself",
+    "reviewedAt": "2026-06-21T12:34:44.017Z"
   },
   "alignments_center_line": {
     "name": "alignments_center_line",
@@ -266,8 +266,8 @@
   "alignments/modifications1": {
     "name": "alignments/modifications1",
     "status": "bad",
-    "note": "we might have too many 'submenus'. we might want to try to make 'Color by modification type' and 'Color by methylation' into menus that are promoted one level up into Color by...",
-    "reviewedAt": "2026-06-20T20:44:27.351Z"
+    "note": "make sure color by meth",
+    "reviewedAt": "2026-06-21T13:18:38.986Z"
   },
   "alignments/select_arc_display": {
     "name": "alignments/select_arc_display",
@@ -350,7 +350,7 @@
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
     "status": "bad",
-    "note": "the text placement is not good for 'drag to reorder track', 'track menu', 'add view' (has arrow on top of the add view box), and 'scroll-to-zoom' toggle.  also need to add box for 'open track selector'. if needed, split into a couple screenshots, we already have one that is good for highlighting the 'scroll to zoom' actually, so this might not be needed to highlight in this figure. ",
+    "note": "DONE (re-review): reworked annotations — removed redundant scroll-to-zoom label (it has its own scroll_zoom_toggle figure just above in basic_usage.md), added \"Open track selector\" callout, moved \"Add view\" arrow tail off its own pill, and placed each label above its target so arrows drop without crossing. Verified arrowheads land on the drag handle and track-menu icons. Caption updated.",
     "reviewedAt": "2026-06-20T21:05:39.957Z"
   },
   "linear_align_ctx_menu": {
@@ -391,9 +391,9 @@
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "good",
-    "note": "HierarchicalFab menu now opens above the FAB (anchorOrigin top/transformOrigin bottom) so the popover no longer covers it",
-    "reviewedAt": "2026-06-20T20:00:00.000Z"
+    "status": "bad",
+    "note": "please make the 'fab' red box smaller, and have an arrow pointing at the fab",
+    "reviewedAt": "2026-06-21T12:36:03.597Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -499,15 +499,15 @@
   },
   "rnaseq/compact_stacked": {
     "name": "rnaseq/compact_stacked",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-20T21:03:38.399Z"
+    "status": "bad",
+    "note": "use tracklabels:offset. ",
+    "reviewedAt": "2026-06-21T05:27:41.072Z"
   },
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-14T14:23:07.415Z"
+    "status": "bad",
+    "note": "use tracklabels:offset. ",
+    "reviewedAt": "2026-06-21T05:27:40.025Z"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -602,13 +602,13 @@
   "trio-matrix-phased": {
     "name": "trio-matrix-phased",
     "status": "bad",
-    "note": "the 'lines connecting to genomic position' are weirdly greyish, on main they are black",
+    "note": "DONE (re-review): connector lines now render near-black. Root cause: branch consolidated per-feature <line> elements into one <path>, losing the overlap-compositing that darkened them on main; the uniform alpha(text.primary,0.4) then read as flat grey. Fix: use theme.palette.text.primary directly (0.87 in light / solid white in dark). Applied to matrix + LD displays.",
     "reviewedAt": "2026-06-20T21:15:41.211Z"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "bad",
-    "note": "the 'lines connecting to genomic position' are weirdly greyish, on main they are black",
+    "note": "DONE (re-review): same connector-line fix as trio-matrix-phased (theme.palette.text.primary without 0.4 dilution).",
     "reviewedAt": "2026-06-20T21:16:02.856Z"
   },
   "upstream_downstream_details": {
@@ -716,8 +716,8 @@
   "sv_cgiab/cnv_multi_bigwig": {
     "name": "sv_cgiab/cnv_multi_bigwig",
     "status": "good",
-    "note": "dropped the initial + capped-result rows; now dialog row + overlapping-scatter row",
-    "reviewedAt": "2026-06-20T19:15:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-21T05:29:12.513Z"
   },
   "admin_settings_access": {
     "name": "admin_settings_access",
@@ -734,7 +734,7 @@
   "alignments/arc_selector": {
     "name": "alignments/arc_selector",
     "status": "bad",
-    "note": "BLOCKED on doc-usage decision: arc_selector.png is used in TWO docs — alignments_track.md caption explicitly describes the open Show...->Advanced menu (wants it), while sv_visualization.md uses it as a plain-arcs figure (menu is noise there). Cant satisfy both with one PNG; removing the menu breaks the alignments_track.md figure",
+    "note": "DONE (re-review): split resolved the doc conflict. sv_visualization.md now points at the existing plain-arcs figure (arc_display.png) with a corrected caption (Illumina discordant arcs over the HG002 SV; dropped the inaccurate Nanopore/±3σ claims that werent in this single-track figure). alignments_track.md keeps arc_selector.png with the Show→Advanced menu. No new screenshot needed.",
     "reviewedAt": "2026-06-20T19:45:00.000Z"
   },
   "alignments/modifications3": {
@@ -752,7 +752,7 @@
   "desktop-add-track": {
     "name": "desktop-add-track",
     "status": "bad",
-    "note": "might benefit from adding annotations, e.g. \"File->Open track\" menu visible with red highlight or something. this worked on puppeteer, not sure for desktop",
+    "note": "BLOCKED on desktop capture: this is a hand-captured Electron screenshot (no puppeteer spec; the generate-screenshots.ts pipeline renders the WEB app only). The reviewer wants the File->Open track menu shown OPEN with a red highlight, but that menu is not in the current image and cannot be captured without running the Electron desktop app (not available in this env). Options: recapture on desktop with the File menu open, or I can add a simple ImageMagick red-box highlight on the existing image if a crude annotation is acceptable.",
     "reviewedAt": "2026-06-15T13:14:19.061Z"
   },
   "desktop-available-genomes": {
@@ -842,7 +842,7 @@
   "alignments/haplotype": {
     "name": "alignments/haplotype",
     "status": "bad",
-    "note": "might want to make another screenshot saying how to open the 'group by' with annotation. it could be a separate screenshot. might also zoom in a little bit on the linear genome view between 63,005,000-63,008,000",
+    "note": "DONE (re-review): zoomed the result figure to 1:63,005,000-63,008,000 (reviewer) so the per-haplotype split + phased SNP columns read clearly. Added a companion figure alignments/haplotype_groupby showing the track menu opened at Group by... (the menu path), wired into alignments_track.md with explanatory prose. Both regenerated.",
     "reviewedAt": "2026-06-20T20:43:21.467Z"
   },
   "alignments/modifications2": {
@@ -853,32 +853,32 @@
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "good",
-    "note": "compact RNA-seq pileup + trackLabels:offset",
-    "reviewedAt": "2026-06-20T18:30:00.000Z"
+    "status": "bad",
+    "note": "this seemingly is not a great screenshot the read pattern is confusing somehow. can you view pten instead of brca1",
+    "reviewedAt": "2026-06-21T05:23:54.653Z"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
     "status": "bad",
-    "note": "DEFERRED (ties to gene_track_peptides): adding the reference-sequence track + zooming to base level is easy, but the underlying ask is whether the ref-seq translation should color by the gene CDS. The seq track colors translation rows by its OWN frame (palette.frames in drawSequence.ts), not by gene CDS membership — making it follow CDS is a design/feature question, not a spec tweak",
+    "note": "INVESTIGATED + DEFER recommended: coloring the reference-sequence translation rows by a gene tracks CDS frame is a LARGE architectural change. drawTranslationRow (sequence plugin) colors purely from the seq tracks own theme palette.frames; the sequence display has no access to other tracks features and the render state passes no feature data. Making translation follow CDS membership requires breaking seq/gene track isolation and querying a sister gene track at layout time — a real feature, not a spec tweak. gene_track_peptides remaining item is the same ask.",
     "reviewedAt": "2026-06-20T19:45:00.000Z"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
     "status": "bad",
-    "note": "DEFERRED: showing mature-peptide subfeature labels is a canvas code gap — processMatureProteinLayout never emits floatingLabelsData (only the transcript path does); subfeatureLabels config has no effect for matureProteinRegion glyph",
+    "note": "DONE (re-review): matureProteinRegion glyph now emits floatingLabelsData (collectRenderData.ts processMatureProteinLayout), mirroring the transcript path — so subfeatureLabels now works for mature peptides. Spec sets subfeatureLabels:overlay; each peptide bar is labeled with its GFF product (VP0, VP1, 2A, 2C, 3C, 3D-POL...). Added unit tests in matureProteinRegion.test.ts. Verified in regenerated screenshot.",
     "reviewedAt": "2026-06-20T19:15:00.000Z"
   },
   "gene_track_peptides": {
     "name": "gene_track_peptides",
     "status": "bad",
-    "note": "DONE: trackLabels:offset + longest transcript. REMAINING: reference sequence track does not color its translation frames by CDS (needs investigation whether thats a real feature)",
+    "note": "DONE earlier (trackLabels:offset + longest transcript). REMAINING piece = color ref-seq translation by CDS = same large architectural change documented under gene_track_color_by_cds; recommend defer.",
     "reviewedAt": "2026-06-20T18:30:00.000Z"
   },
   "maf_conservation": {
     "name": "maf_conservation",
     "status": "bad",
-    "note": "i dont really understand the new 'conservation' measurement. should we even have this? we have phastcons tracks generally that have reliable calculations",
+    "note": "DONE (re-review): added on-canvas band titles (MafBandLabels) — \"Coverage\" over the depth band and \"Conservation (% identity)\" over the identity band, shown only when both are visible (the confusable case). Directly addresses the coverage-vs-conservation confusion. Metric itself unchanged (it is percent identity, distinct from phastCons, kept). Verified in regenerated screenshot.",
     "reviewedAt": "2026-06-20T20:56:17.266Z"
   },
   "rnaseq/single_read": {
@@ -890,19 +890,19 @@
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "bad",
-    "note": "I think that it is not filtering the circular view for the particular variant, when searching the particular element. it is supposed to filter the circular view",
+    "note": "DONE (re-review): root-cause bug fixed. SpreadsheetDataGrid read the visible-rows lookup synchronously in onFilterModelChange, but MUI X recomputes it only on the later filteredRowsSet event — so the lookup was the PRIOR filter (\"never updates on the first filter\"). visibleRows never reflected the filter, so the circular view never filtered. Now subscribes to filteredRowsSet. New regression test in SVInspectorFiltering.test.tsx drives the actual quick-filter input (fails on old code, passes now).",
     "reviewedAt": "2026-06-20T21:09:12.166Z"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
-    "status": "good",
-    "note": "super-compact pileup (featureHeight 1)",
-    "reviewedAt": "2026-06-20T19:15:00.000Z"
+    "status": "bad",
+    "note": "the insertions are very wide. we might want to check if this is 'bad'...likely width of insertions should be proportional to zoom level",
+    "reviewedAt": "2026-06-21T05:29:41.633Z"
   },
   "sv_inspector_importform_filtered": {
     "name": "sv_inspector_importform_filtered",
     "status": "bad",
-    "note": "referred to in other note but this is not filtering the circular view. we also previously searched for \"CHR2=17\" to filter those. also, i am not even sure this 'CHR2=17' is a great concept though, as clearl variants 'originating from 17' would not be caught. we might want to make a more expressive search language for this...",
+    "note": "DONE (re-review) for the filtering bug: same fix as deletion_sv_inspector_search — column filters like CHR2=17 and the quick-filter search both flow through the filter pipeline -> filteredRowsSet, so the circular view now filters. SEPARATE open design question (not a bug): you noted CHR2=17 is a limited concept (wont catch variants originating from 17) and a more expressive SV search language could be worthwhile — left for your call.",
     "reviewedAt": "2026-06-20T21:12:20.847Z"
   },
   "trio-crossover-paternal": {
@@ -916,5 +916,17 @@
     "status": "good",
     "note": "Replaced wide chr1:61.5-66.5Mb figure (whose 62.3Mb maternal + 65.3Mb paternal boundaries are hap-ibd artifacts not corroborated by genotype transmission). Now a 400kb zoom on a genotype-verified crossover with crisp painting block-step. Maternal chr1:55,753,613 (Mom hap2->hap1, transmission 4:10 -> 130:3).",
     "reviewedAt": "2026-06-20T22:00:00.000Z"
+  },
+  "maf_track": {
+    "name": "maf_track",
+    "status": "bad",
+    "note": "we dont need the percent idendity value, i think it is too low level of a valuefor people to care about",
+    "reviewedAt": "2026-06-21T05:26:33.709Z"
+  },
+  "alignments/haplotype_groupby": {
+    "name": "alignments/haplotype_groupby",
+    "status": "bad",
+    "note": "might make this a multi-part screenshot, where second panel shows the dialog popped up. also it also should even use 'colorby tag hp' to start with. ",
+    "reviewedAt": "2026-06-21T13:18:26.814Z"
   }
 }

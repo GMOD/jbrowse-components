@@ -1,9 +1,13 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { revcom, revlist } from '@jbrowse/core/util'
-import { convertCodingSequenceToPeptides } from '@jbrowse/core/util/convertCodingSequenceToPeptides'
+import {
+  convertCodingSequenceToPeptides,
+  translExceptProteinPositions,
+} from '@jbrowse/core/util/convertCodingSequenceToPeptides'
 import {
   getGeneticCode,
   parseTranslTable,
+  relativizeTranslExcept,
 } from '@jbrowse/core/util/geneticCodes'
 import { firstValueFrom, toArray } from 'rxjs'
 
@@ -15,6 +19,7 @@ import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region } from '@jbrowse/core/util'
+import type { GeneticCode } from '@jbrowse/core/util/geneticCodes'
 
 export interface PeptideFetchProps {
   sessionId: string
@@ -116,10 +121,27 @@ export function transcriptGeneticCodeId(
   )
 }
 
+// transl_except entries are carried on the CDS (NCBI convention), occasionally
+// the transcript. Relativized to the strand-corrected CDS coordinate system so a
+// selenocysteine reads as U etc., matching the feature-detail protein view.
+function transcriptTranslExcept(transcript: Feature) {
+  const cds = (transcript.get('subfeatures') ?? []).find(f => isCDS(f))
+  const raw = transcript.get('transl_except') ?? cds?.get('transl_except')
+  const start = transcript.get('start')
+  return raw
+    ? relativizeTranslExcept({
+        raw,
+        featureStart: start,
+        featureLength: transcript.get('end') - start,
+        strand: transcript.get('strand'),
+      })
+    : undefined
+}
+
 export function processTranscriptFromSeq(
   seq: string,
   transcript: Feature,
-  codonTable: Record<string, string>,
+  code: GeneticCode,
 ): PeptideData | undefined {
   const strand = transcript.get('strand')
   const rawCds = extractCDSRegions(transcript)
@@ -129,14 +151,22 @@ export function processTranscriptFromSeq(
 
   const processedSeq = strand === -1 ? revcom(seq) : seq
   const cds = strand === -1 ? revlist(rawCds, processedSeq.length) : rawCds
+  const translExcept = transcriptTranslExcept(transcript)
 
   try {
     const protein = convertCodingSequenceToPeptides({
       cds,
       sequence: processedSeq,
-      codonTable,
+      codonTable: code.codonTable,
+      starts: code.starts,
+      translExcept,
     })
-    return { protein }
+    return {
+      protein,
+      translExceptIndices: translExcept?.length
+        ? translExceptProteinPositions({ cds, translExcept })
+        : undefined,
+    }
   } catch (error) {
     console.warn(
       `[processTranscriptFromSeq] Failed to convert sequence to peptides for ${transcript.id()}:`,
@@ -184,10 +214,10 @@ export async function fetchPeptideData(
     const tStart = transcript.get('start')
     const tEnd = transcript.get('end')
     const seq = wholeSeq.slice(tStart - bulkStart, tEnd - bulkStart)
-    const { codonTable } = getGeneticCode(
+    const code = getGeneticCode(
       transcriptGeneticCodeId(transcript, assemblyGeneticCodeId),
     )
-    const peptideData = processTranscriptFromSeq(seq, transcript, codonTable)
+    const peptideData = processTranscriptFromSeq(seq, transcript, code)
     if (peptideData) {
       peptideDataMap.set(transcript.id(), peptideData)
     }

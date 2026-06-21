@@ -7,10 +7,9 @@ import ProteinSequence from './seqtypes/ProteinSequence.tsx'
 import { getSequenceData } from './useSequenceData.ts'
 import {
   getGeneticCode,
-  parseTranslExcept,
   parseTranslTable,
+  relativizeTranslExcept,
 } from '../../util/geneticCodes.ts'
-import { revlist } from '../../util/seqUtils.ts'
 
 import type {
   SequenceDisplayMode,
@@ -25,7 +24,7 @@ import type { Feat, SeqState } from '../util.tsx'
 // than the standard code. When the feature carries no transl_table (e.g. UCSC
 // genePred-derived GFFs), fall back to the assembly-configured code for the
 // contig. Undefined falls back to the standard code.
-function proteinCodonTable(
+function proteinGeneticCode(
   feature: SimpleFeatureSerialized,
   assemblyGeneticCodeId: number | undefined,
 ) {
@@ -34,28 +33,23 @@ function proteinCodonTable(
     parseTranslTable(feature.transl_table) ??
     parseTranslTable(cds?.transl_table) ??
     assemblyGeneticCodeId
-  return getGeneticCode(id).codonTable
+  return getGeneticCode(id)
 }
 
-// Parses transl_except from the feature or its CDS subfeature, converting from
-// absolute genomic coords to the coordinate system used by convertCodingSequenceToPeptides
-// (i.e. relative to the feature's start, then revlisted for minus-strand genes).
+// Parses transl_except from the feature or its CDS subfeature into the coordinate
+// system used by convertCodingSequenceToPeptides (feature-relative, reversed for
+// minus-strand genes).
 function featureTranslExcept(feature: SimpleFeatureSerialized): TranslExcept[] {
   const cds = feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
   const raw = feature.transl_except ?? cds?.transl_except
-  if (!raw) {
-    return []
-  }
-  const exceptions = parseTranslExcept(raw)
-  const featureStart = feature.start
-  const relative = exceptions.map(e => ({
-    ...e,
-    start: e.start - featureStart,
-    end: e.end - featureStart,
-  }))
-  return feature.strand === -1
-    ? revlist(relative, feature.end - featureStart)
-    : relative
+  return raw
+    ? relativizeTranslExcept({
+        raw,
+        featureStart: feature.start,
+        featureLength: feature.end - feature.start,
+        strand: feature.strand,
+      })
+    : []
 }
 
 function RenderedSequenceComponent({
@@ -99,12 +93,14 @@ function RenderedSequenceComponent({
 
     case 'protein': {
       const translExcept = featureTranslExcept(feature)
+      const code = proteinGeneticCode(feature, assemblyGeneticCodeId)
       return (
         <ProteinSequence
           model={model}
           cds={cds}
           sequence={seq}
-          codonTable={proteinCodonTable(feature, assemblyGeneticCodeId)}
+          codonTable={code.codonTable}
+          starts={code.starts}
           translExcept={translExcept.length ? translExcept : undefined}
         />
       )

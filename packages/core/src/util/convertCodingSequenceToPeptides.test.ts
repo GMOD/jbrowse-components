@@ -57,3 +57,54 @@ describe('convertCodingSequenceToPeptides transl_except', () => {
     expect(protein[idx]).toBe('U')
   })
 })
+
+describe('convertCodingSequenceToPeptides start codons', () => {
+  // GTG codes Val normally but is a valid initiator in bacteria (table 11), so a
+  // complete CDS starting with it should translate as M when `starts` is passed
+  const bacterial = getGeneticCode(11)
+  const gtgStart = [{ start: 0, end: 9, phase: 0 }]
+
+  it('leaves an alternative initiator as its literal residue without `starts`', () => {
+    expect(
+      convertCodingSequenceToPeptides({
+        cds: gtgStart,
+        sequence: 'GTGAAATTT',
+        codonTable: bacterial.codonTable,
+      }),
+    ).toBe('VKF')
+  })
+
+  it('translates a leading alternative initiator as M when `starts` is passed', () => {
+    expect(
+      convertCodingSequenceToPeptides({
+        cds: gtgStart,
+        sequence: 'GTGAAATTT',
+        codonTable: bacterial.codonTable,
+        starts: bacterial.starts,
+      }),
+    ).toBe('MKF')
+  })
+
+  it('only the first codon is forced to M, not later initiators', () => {
+    expect(
+      convertCodingSequenceToPeptides({
+        cds: gtgStart,
+        sequence: 'AAAGTGTTT',
+        codonTable: bacterial.codonTable,
+        starts: bacterial.starts,
+      }),
+    ).toBe('KVF')
+  })
+
+  it('does not force M when the first complete codon is phase-shifted', () => {
+    // phase 1 means codon index 0 is a continuation, not a true N-terminus
+    expect(
+      convertCodingSequenceToPeptides({
+        cds: [{ start: 0, end: 10, phase: 1 }],
+        sequence: 'AGTGAAATTT',
+        codonTable: bacterial.codonTable,
+        starts: bacterial.starts,
+      }),
+    ).toBe('&VKF')
+  })
+})

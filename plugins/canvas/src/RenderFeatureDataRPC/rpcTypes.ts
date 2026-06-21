@@ -144,6 +144,8 @@ export interface AminoAcidOverlayItem {
   topPx: number
   heightPx: number
   isStopOrNonTriplet: boolean
+  // residue translated via a transl_except override (Sec/Pyl/polyA stop)
+  isTranslExcept: boolean
   flatbushIdx: number
 }
 

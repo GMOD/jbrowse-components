@@ -108,6 +108,24 @@ describe('collectRenderData peptide overlay', () => {
     )
   })
 
+  it('flags a transl_except residue in the overlay so it can be highlighted', () => {
+    const { layout } = twoExonTranscript()
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+      new Map([['tx1', { protein: 'MFK', translExceptIndices: new Set([2]) }]]),
+    )
+    const overlay = result.aminoAcidOverlay!
+    expect(overlay.find(a => a.proteinIndex === 2)!.isTranslExcept).toBe(true)
+    expect(
+      overlay.filter(a => a.proteinIndex !== 2).every(a => !a.isTranslExcept),
+    ).toBe(true)
+  })
+
   it('emits no amino-acid overlay when the transcript has no peptide data', () => {
     const { layout } = twoExonTranscript()
     const result = collectRenderData([layout], 0, 1000, config, theme, false)

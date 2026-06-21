@@ -138,6 +138,23 @@ describe('aminoAcidsBySegment', () => {
     })
   })
 
+  it('flags residues set by a transl_except override', () => {
+    const result = aminoAcidsBySegment(
+      [{ start: 100, end: 106 }],
+      'MK',
+      1,
+      new Set([1]),
+    )
+    const pieces = result.get('100-106')!
+    expect(pieces[0]).toMatchObject({ proteinIndex: 0, isTranslExcept: false })
+    expect(pieces[1]).toMatchObject({ proteinIndex: 1, isTranslExcept: true })
+  })
+
+  it('defaults isTranslExcept to false with no override set', () => {
+    const result = aminoAcidsBySegment([{ start: 100, end: 106 }], 'MK', 1)
+    expect(result.get('100-106')!.every(a => !a.isTranslExcept)).toBe(true)
+  })
+
   it('phase>0 reserves protein index 0 for the leading partial codon', () => {
     // phase 1: 1 leading base is the tail of an upstream codon → index 0 = '&'
     const result = aminoAcidsBySegment(

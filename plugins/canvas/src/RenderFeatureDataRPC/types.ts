@@ -4,6 +4,9 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 export interface PeptideData {
   protein: string
+  // protein-string indices whose residue came from a transl_except override;
+  // worker-internal (consumed by collectRenderData, never crosses the boundary)
+  translExceptIndices?: Set<number>
 }
 
 export interface FeatureLayout {

@@ -37,12 +37,14 @@ const ProteinSequence = observer(function ProteinSequence({
   sequence,
   model,
   codonTable,
+  starts,
   translExcept,
 }: {
   cds: Feat[]
   sequence: string
   model: SequenceFeatureDetailsModel
   codonTable: Record<string, string>
+  starts?: string[]
   translExcept?: TranslExcept[]
 }) {
   const { charactersPerRow, showCoordinates } = model
@@ -50,6 +52,7 @@ const ProteinSequence = observer(function ProteinSequence({
     cds,
     sequence,
     codonTable,
+    starts,
     translExcept,
   })
   const { segments } = splitString({ str, charactersPerRow, showCoordinates })

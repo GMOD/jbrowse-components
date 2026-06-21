@@ -564,21 +564,21 @@ export default function assemblyFactory(
        * Falls back to the standard code (1) for unlisted refNames.
        */
       getGeneticCodeId(refName: string) {
-        const inline: Record<string, number> =
-          self.getConf('geneticCodes') ?? {}
-        // a map key may be the canonical refName or any alias of it: a config
+        // a map key may be the canonical refName or an alias of it: a config
         // generated from NCBI keys by the GFF's RefSeq accession while the
         // assembly's canonical name can be the UCSC-style one, bridged here via
-        // refNameAliases (loaded from the chromAlias file)
+        // refNameAliases (loaded from the chromAlias file). Direct key first
+        // (the common case), then the alias scan.
         const aliases = self.refNameAliases
-        const matches = (key: string) =>
-          key === refName || aliases?.[key] === refName
-        const hit =
-          Object.entries(inline).find(([k]) => matches(k)) ??
-          Object.entries(self.loadedGeneticCodes ?? {}).find(([k]) =>
-            matches(k),
-          )
-        return hit?.[1] ?? 1
+        const lookup = (map: Record<string, number>) =>
+          map[refName] ??
+          Object.entries(map).find(([k]) => aliases?.[k] === refName)?.[1]
+        // inline geneticCodes config wins over the loaded sidecar file
+        return (
+          lookup(self.getConf('geneticCodes')) ??
+          lookup(self.loadedGeneticCodes ?? {}) ??
+          1
+        )
       },
       /**
        * #method

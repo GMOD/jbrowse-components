@@ -40,7 +40,7 @@ const LegendItemText = function ({
   rowHeight: number
   textFillProps: ReturnType<typeof getFillProps>
 }) {
-  const { color, name } = source
+  const { color, name, label } = source
   const svgFontSize = Math.min(rowHeight, 12)
   return (
     <text
@@ -50,7 +50,7 @@ const LegendItemText = function ({
       dominantBaseline="central"
       {...textFillProps}
     >
-      {name}
+      {label ?? name}
     </text>
   )
 }

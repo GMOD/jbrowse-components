@@ -1,5 +1,25 @@
 # CLAUDE.md — jbrowse-web
 
+## Bundle-size analysis
+
+Measure the metric that matters — **JS bytes over the wire on the initial
+load** — not total bundle size. Webpack `splitChunks: { chunks: 'all' }` cut
+total bytes ~7% but left the initial-load payload unchanged (the savings were
+all in lazy chunks), so it was reverted. The real cost is that the cold start
+screen eagerly loads ~2.2 MB of JS, dominated by a single ~1 MB chunk holding
+*all* plugin code (`corePlugins.ts` is statically imported when the plugin
+manager is built at boot). react-dom is also duplicated main↔worker (separate
+webpack runtimes — `splitChunks` can't merge across that boundary).
+
+Two harnesses (run after a `build`; serve from `build/`):
+
+- `browser-tests/measure-load.ts` — CDP `encodedDataLength` JS bytes for the
+  cold app shell vs opening a track. The test server serves uncompressed, so
+  numbers are ~raw, but before/after deltas are apples-to-apples.
+- `browser-tests/worker-smoke.ts` — opens a track headless and asserts the RPC
+  worker spawns and renders with zero console errors. Guards any change to the
+  main↔worker chunk boundary.
+
 ## Browser (e2e) tests
 
 Always run `pnpm --filter @jbrowse/web build` before invoking any browser-test

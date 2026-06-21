@@ -4,6 +4,9 @@ export interface AggregatedAminoAcid {
   endBp: number
   proteinIndex: number
   isStopOrNonTriplet: boolean
+  // residue whose translation came from a transl_except override (Sec/Pyl/polyA
+  // stop), so the renderer can highlight it like the feature-detail protein view
+  isTranslExcept: boolean
 }
 
 export interface CdsSegment {
@@ -29,6 +32,8 @@ export function aminoAcidsBySegment(
   cds: CdsSegment[],
   protein: string,
   strand: number,
+  // protein-string indices whose residue was set by a transl_except override
+  translExceptIndices?: ReadonlySet<number>,
 ): Map<string, AggregatedAminoAcid[]> {
   const bySegment = new Map<string, AggregatedAminoAcid[]>()
   const firstPhase = cds[0]?.phase ?? 0
@@ -51,6 +56,7 @@ export function aminoAcidsBySegment(
         endBp: strand === -1 ? seg.end - offset : seg.start + offset + chunkLen,
         proteinIndex,
         isStopOrNonTriplet: aminoAcid === '*' || chunkLen !== 3,
+        isTranslExcept: translExceptIndices?.has(proteinIndex) ?? false,
       })
       offset += chunkLen
     }

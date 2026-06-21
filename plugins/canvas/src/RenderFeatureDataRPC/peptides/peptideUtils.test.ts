@@ -8,8 +8,8 @@ import {
 
 import type { Feature } from '@jbrowse/core/util'
 
-const standardCode = getGeneticCode(1).codonTable
-const vertebrateMitoCode = getGeneticCode(2).codonTable
+const standardCode = getGeneticCode(1)
+const vertebrateMitoCode = getGeneticCode(2)
 
 const DEFAULT_TRANSCRIPT_TYPES = [
   'mRNA',
@@ -244,6 +244,7 @@ function createCoordFeature(opts: {
   end: number
   phase?: number
   strand?: number
+  transl_except?: string
   subfeatures?: Feature[]
 }): Feature {
   const data: Record<string, unknown> = { ...opts }
@@ -349,5 +350,31 @@ describe('processTranscriptFromSeq', () => {
       processTranscriptFromSeq(mitoSeq, transcript, vertebrateMitoCode)
         ?.protein,
     ).toBe('MWK')
+  })
+
+  // matches the feature-detail protein view: a transl_except on the CDS rewrites
+  // the readthrough stop, so the in-track overlay shows U rather than *
+  it('applies transl_except from the CDS (selenocysteine readthrough)', () => {
+    // ATG TGA AAA -> M * K under the standard code; transl_except rewrites the
+    // TGA codon (genomic 3..6) as selenocysteine
+    const seleno = 'ATGTGAAAA'
+    const transcript = createCoordFeature({
+      type: 'mRNA',
+      start: 0,
+      end: 9,
+      strand: 1,
+      subfeatures: [
+        createCoordFeature({
+          type: 'CDS',
+          start: 0,
+          end: 9,
+          transl_except: '(pos:4..6,aa:Sec)',
+        }),
+      ],
+    })
+    const result = processTranscriptFromSeq(seleno, transcript, standardCode)
+    expect(result?.protein).toBe('MUK')
+    // codon index 1 (the TGA->U) is reported so the overlay can highlight it
+    expect([...(result?.translExceptIndices ?? [])]).toEqual([1])
   })
 })

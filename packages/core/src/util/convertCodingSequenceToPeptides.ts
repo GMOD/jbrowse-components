@@ -70,11 +70,18 @@ export function convertCodingSequenceToPeptides({
   cds,
   sequence,
   codonTable,
+  starts,
   translExcept = [],
 }: {
   cds: { start: number; end: number; phase?: number }[]
   sequence: string
   codonTable: Record<string, string>
+  // Valid initiator codons for the active genetic code. When provided, a
+  // complete CDS (phase 0) whose first codon is an alternative initiator (e.g.
+  // GTG/TTG under the bacterial code, ATA under the vertebrate-mito code)
+  // translates as M, matching the NCBI convention for a translated CDS. Omit
+  // for a raw frame translation that should report the literal residue.
+  starts?: string[]
   // Optional transl_except overrides in the same coordinate system as `cds`.
   // Each entry replaces the normal codon translation at that position with `aa`.
   translExcept?: TranslExcept[]
@@ -86,7 +93,11 @@ export function convertCodingSequenceToPeptides({
   let protein = phase > 0 ? '&' : ''
   let codonIdx = 0
   for (let i = phase; i < str.length; i += 3, codonIdx++) {
-    protein += overrides.get(codonIdx) ?? codonTable[str.slice(i, i + 3)] ?? '&'
+    const codon = str.slice(i, i + 3)
+    const isStart =
+      codonIdx === 0 && phase === 0 && starts?.includes(codon.toUpperCase())
+    protein +=
+      overrides.get(codonIdx) ?? (isStart ? 'M' : codonTable[codon]) ?? '&'
   }
   return protein
 }

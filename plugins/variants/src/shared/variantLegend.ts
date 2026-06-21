@@ -30,7 +30,7 @@ export function getMaxLabelWidth({
   if (sources) {
     for (const s of sources) {
       const width = canDisplayLabels
-        ? measureText(s.name, fontSize) + LABEL_PADDING_PX
+        ? measureText(s.label ?? s.name, fontSize) + LABEL_PADDING_PX
         : SWATCH_ONLY_WIDTH_PX
       if (width > maxWidth) {
         maxWidth = width
