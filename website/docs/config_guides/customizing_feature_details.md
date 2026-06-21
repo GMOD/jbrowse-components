@@ -251,3 +251,14 @@ callbacks use `feature.get(...)` while detail callbacks use `feature.*`
 directly.
 
 :::
+
+### Going beyond field formatting
+
+`formatDetails` callbacks reshape the fields of an existing feature. To add an
+entirely new section, or to replace the widget wholesale, use a plugin with
+these extension points (see
+[extension points](/docs/developer_guides/extension_points/)):
+
+- `Core-extraFeaturePanel` - append a custom panel (your own React component)
+  below the built-in sections
+- `Core-replaceWidget` - wrap or replace the whole feature-details widget
