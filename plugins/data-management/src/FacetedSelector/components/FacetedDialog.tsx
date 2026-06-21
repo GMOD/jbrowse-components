@@ -17,6 +17,7 @@ function createFacetedModel(model: HierarchicalTrackSelectorModel) {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
   return faceted
 }

@@ -21,6 +21,7 @@ function createFacetedModel(
   faceted.setTrackConfigurations(
     subtracks.map(s => s.conf),
     getSession(model),
+    model.assemblyNames,
   )
   return faceted
 }

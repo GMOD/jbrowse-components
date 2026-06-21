@@ -94,7 +94,7 @@ const FacetedHeader = observer(function FacetedHeader({
                   type: 'checkbox' as const,
                   checked,
                   onClick: () => {
-                    faceted.setVisible({ ...visible, [field]: !checked })
+                    faceted.setColumnVisible(field, !checked)
                   },
                 }
               }),

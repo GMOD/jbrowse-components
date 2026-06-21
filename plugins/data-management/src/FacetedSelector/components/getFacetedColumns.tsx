@@ -1,14 +1,16 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 
+import { getRowStr } from './util.ts'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
 import type { HierarchicalTrackSelectorModel } from '../../HierarchicalTrackSelectorWidget/model.ts'
-import type { FacetedModel, FacetedRow } from '../facetedModel.ts'
+import type { FacetedModel } from '../facetedModel.ts'
 
 // Builds the column list: a name column (with the per-track menu), the
 // non-metadata facet columns, then the metadata columns (disambiguated when a
-// metadata key collides with a non-metadata column name).
+// metadata key collides with a non-metadata column name). All non-name cells
+// share getRowStr for value extraction.
 export function getFacetedColumns({
   faceted,
   model,
@@ -36,8 +38,7 @@ export function getFacetedColumns({
         ({
           id: e,
           header: e,
-          cell: (row: FacetedRow) =>
-            row[e as 'category' | 'adapter' | 'description'],
+          cell: row => getRowStr(e, row),
         }) satisfies FacetedColumn,
     ),
     ...filteredMetadataKeys.map(
@@ -45,10 +46,7 @@ export function getFacetedColumns({
         ({
           id: `metadata.${e}`,
           header: nonMetadataFieldSet.has(e) ? `${e} (from metadata)` : e,
-          cell: (row: FacetedRow) => {
-            const val = row.metadata[e]
-            return val == null ? null : `${val}`
-          },
+          cell: row => getRowStr(`metadata.${e}`, row),
         }) satisfies FacetedColumn,
     ),
   ]

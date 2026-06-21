@@ -10,12 +10,18 @@ export default function FacetedTableHead({
   someSelected,
   onSelectAll,
   onResizeStart,
+  sortField,
+  sortAscending,
+  onSort,
 }: {
   columns: FacetedColumn[]
   allSelected: boolean
   someSelected: boolean
   onSelectAll: () => void
   onResizeStart: (colId: string, e: React.MouseEvent) => void
+  sortField: string
+  sortAscending: boolean
+  onSort: (colId: string) => void
 }) {
   const { classes } = useFacetedTableStyles()
   const lastColId = columns.at(-1)?.id
@@ -36,7 +42,15 @@ export default function FacetedTableHead({
         </th>
         {columns.map(col => (
           <th key={col.id} scope="col" className={classes.headerCell}>
-            {col.header}
+            <span
+              className={classes.sortLabel}
+              onClick={() => {
+                onSort(col.id)
+              }}
+            >
+              {col.header}
+              {sortField === col.id ? (sortAscending ? ' ▲' : ' ▼') : null}
+            </span>
             {col.id !== lastColId ? (
               <div
                 className={classes.resizeHandle}

@@ -1,3 +1,4 @@
+import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import FacetFilter from './FacetFilter.tsx'
@@ -9,8 +10,18 @@ const FacetFilters = observer(function FacetFilters({
 }: {
   faceted: FacetedModel
 }) {
+  const hasActiveFilters = [...faceted.filters.values()].some(v => v.length > 0)
   return (
     <div>
+      <Button
+        size="small"
+        disabled={!hasActiveFilters}
+        onClick={() => {
+          faceted.clearFilters()
+        }}
+      >
+        Clear all filters
+      </Button>
       {[...faceted.facetCategoryCounts].map(([field, categoryCountMap]) => (
         <FacetFilter
           key={field}

@@ -752,6 +752,7 @@ test('faceted model filter text', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // initially empty filter
@@ -784,6 +785,7 @@ test('faceted model column filters', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // initially no filters
@@ -824,6 +826,7 @@ test('faceted model toggle options', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // test showSparse toggle
@@ -857,6 +860,7 @@ test('faceted model destroy is safe', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // exercise the afterAttach autorun so there's a disposer to clean up
@@ -934,6 +938,7 @@ test('faceted model panel width', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // set panel width
@@ -962,6 +967,7 @@ test('faceted model rows contain expected data', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // rows should have expected structure
@@ -992,6 +998,7 @@ test('faceted model fields includes expected columns', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // fields should always include 'name'
@@ -1021,6 +1028,7 @@ test('faceted model multiple column filters', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   const initialCount = faceted.filteredRows.length
@@ -1061,6 +1069,7 @@ test('faceted model filter with multiple values', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // filter with multiple allowed values (OR logic within column)
@@ -1090,17 +1099,21 @@ test('faceted model column visibility', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
-  // setVisible sets column visibility
-  faceted.setVisible({ name: true, adapter: false })
-  expect(faceted.visible.name).toBe(true)
-  expect(faceted.visible.adapter).toBe(false)
+  // surface the sparse non-metadata columns so they appear as fields
+  faceted.setShowSparse(true)
 
-  // update visibility
-  faceted.setVisible({ name: true, adapter: true, category: true })
+  // columns default to visible
+  expect(faceted.visible.name).toBe(true)
   expect(faceted.visible.adapter).toBe(true)
-  expect(faceted.visible.category).toBe(true)
+
+  // setColumnVisible hides/shows a single column
+  faceted.setColumnVisible('adapter', false)
+  expect(faceted.visible.adapter).toBe(false)
+  faceted.setColumnVisible('adapter', true)
+  expect(faceted.visible.adapter).toBe(true)
 })
 
 test('faceted and hierarchical filter text are independent', () => {
@@ -1121,6 +1134,7 @@ test('faceted and hierarchical filter text are independent', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // set hierarchical filter
@@ -1157,6 +1171,7 @@ test('faceted filter drilling down behavior', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // get initial state
@@ -1212,6 +1227,7 @@ test('faceted filter tracks unique values per column', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // get unique categories from rows
@@ -1314,6 +1330,7 @@ test('faceted model exposes metadata keys from tracks', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   expect(faceted.metadataKeys).toContain('tissue')
@@ -1338,6 +1355,7 @@ test('faceted model search matches non-string metadata', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   // search for numeric metadata value
@@ -1368,6 +1386,7 @@ test('faceted model filters on metadata columns', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   const initialCount = faceted.filteredRows.length
@@ -1398,6 +1417,7 @@ test('faceted model fields include metadata columns with prefix', () => {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
 
   faceted.setShowSparse(true)

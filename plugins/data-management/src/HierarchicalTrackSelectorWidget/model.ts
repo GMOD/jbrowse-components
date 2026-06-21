@@ -17,6 +17,7 @@ import {
   findTopLevelCategories,
   getAllTrackNodes,
 } from './util.ts'
+import { keyConfigPostFix } from '../shared/configScopedKey.ts'
 
 import type { TreeNode } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -29,18 +30,6 @@ const overscan = 20
 const MAX_RECENTLY_USED = 10
 const sortTrackNamesK = 'sortTrackNames'
 const sortCategoriesK = 'sortCategories'
-
-// for settings that are config dependent
-function keyConfigPostFix() {
-  return typeof window !== 'undefined'
-    ? [
-        window.location.pathname,
-        new URLSearchParams(window.location.search).get('config'),
-      ]
-        .filter(Boolean)
-        .join('-')
-    : 'empty'
-}
 
 export function getItemHeight(item: TreeNode, folderCategories: Set<string>) {
   if (item.type === 'category') {

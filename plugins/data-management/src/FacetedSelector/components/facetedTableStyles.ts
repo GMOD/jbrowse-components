@@ -93,6 +93,10 @@ export const useFacetedTableStyles = makeStyles()(theme => {
       lineHeight: `${ROW_HEIGHT - 1}px`,
       boxSizing: 'border-box',
     },
+    sortLabel: {
+      cursor: 'pointer',
+      userSelect: 'none',
+    },
     resizeHandle: {
       position: 'absolute',
       right: 0,

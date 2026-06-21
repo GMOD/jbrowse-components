@@ -49,8 +49,15 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
   selection: AnyConfigurationModel[]
 }) {
   const { classes } = useFacetedTableStyles()
-  const { useShoppingCart, filteredRows, visible, filterText, initialWidths } =
-    faceted
+  const {
+    useShoppingCart,
+    sortedRows,
+    sortField,
+    sortAscending,
+    visible,
+    filterText,
+    initialWidths,
+  } = faceted
 
   const visibleColumns = columns.filter(col => visible[col.id] !== false)
   const { colWidths, onResizeStart } = useColumnResize(initialWidths)
@@ -60,14 +67,14 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
       useShoppingCart,
       shownTrackIds,
       selection,
-      filteredRows,
+      filteredRows: sortedRows,
     })
 
   const parentRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
   const { items, totalSize } = useVirtualRows(
     parentRef,
-    filteredRows.length,
+    sortedRows.length,
     ROW_HEIGHT,
   )
 
@@ -95,11 +102,16 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
           someSelected={someSelected}
           onSelectAll={toggleAll}
           onResizeStart={onResizeStart}
+          sortField={sortField}
+          sortAscending={sortAscending}
+          onSort={field => {
+            faceted.setSort(field, sortField === field ? !sortAscending : true)
+          }}
         />
         <tbody>
           <SpacerRow height={leadingGap} />
           {items.map(virtualRow => {
-            const row = filteredRows[virtualRow.index]!
+            const row = sortedRows[virtualRow.index]!
             return (
               <FacetedTableRow
                 key={row.id}
@@ -111,7 +123,7 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
             )
           })}
           <SpacerRow height={trailingGap} />
-          {filteredRows.length === 0 ? (
+          {sortedRows.length === 0 ? (
             <tr>
               <td
                 colSpan={visibleColumns.length + 2}

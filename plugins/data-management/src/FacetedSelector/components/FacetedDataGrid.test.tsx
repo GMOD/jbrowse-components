@@ -59,6 +59,7 @@ function setup() {
   faceted.setTrackConfigurations(
     model.allTrackConfigurations,
     getSession(model),
+    model.assemblyNames,
   )
   return { view, model, faceted }
 }
@@ -132,7 +133,7 @@ test('a column hidden via visible is not rendered', () => {
   const { model, faceted } = setup()
   faceted.setShowSparse(true)
   // surface the adapter column, then hide it
-  faceted.setVisible({ ...faceted.visible, adapter: false })
+  faceted.setColumnVisible('adapter', false)
   const { queryByText } = renderGrid(model, faceted)
   // the adapter header should be gone, but tracks still render
   expect(queryByText('adapter')).toBeNull()
