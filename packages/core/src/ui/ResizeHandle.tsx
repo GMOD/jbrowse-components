@@ -16,8 +16,8 @@ const useStyles = makeStyles()(theme => ({
   },
   // `bar` opt-in: the standard always-visible resize divider used at the bottom
   // (or side) of views and tracks. Other call sites stay invisible until hover.
-  horizontalBar: { height: 4, background: theme.palette.divider },
-  verticalBar: { width: 4, background: theme.palette.divider },
+  horizontalBar: { height: 4, background: theme.palette.action.disabled },
+  verticalBar: { width: 4, background: theme.palette.action.disabled },
 }))
 
 function ResizeHandle({

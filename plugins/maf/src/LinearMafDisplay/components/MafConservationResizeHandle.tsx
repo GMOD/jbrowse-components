@@ -14,10 +14,6 @@ const useStyles = makeStyles()({
     height: 5,
     cursor: 'row-resize',
     zIndex: 10,
-    background: 'transparent',
-    '&:hover': {
-      background: 'rgba(0,0,0,0.1)',
-    },
   },
 })
 
