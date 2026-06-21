@@ -123,7 +123,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get colorState() {
         const { theme } = getSession(self)
-        const palette = buildColorPalette(theme)
+        const view = getContainingView(self) as LGV
+        const palette = buildColorPalette(theme, view.colorByCDS)
         return { palette, textColors: buildTextColors(palette, theme) }
       },
     }))

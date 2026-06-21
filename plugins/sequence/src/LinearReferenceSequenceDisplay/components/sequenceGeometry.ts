@@ -37,7 +37,10 @@ export interface ColorPalette {
   fallback: ColorEntry
 }
 
-export function buildColorPalette(theme: Theme): ColorPalette {
+export function buildColorPalette(
+  theme: Theme,
+  colorByCDS: boolean,
+): ColorPalette {
   const themeBases = theme.palette.bases as Record<string, { main: string }>
   const bases = new Map<string, ColorEntry>()
   for (const base of ['A', 'C', 'G', 'T']) {
@@ -47,8 +50,13 @@ export function buildColorPalette(theme: Theme): ColorPalette {
   // Frames array layout: [null, f1, f2, f3, f-3, f-2, f-1]
   // null at index 0 lets positive frames use 1-based .at(1/2/3);
   // negative frames use JS .at() negative-index semantics.
+  // colorByCDS matches the bright per-frame CDS palette used by gene tracks so
+  // the translation rows line up visually with colored CDS features.
+  const framePalette = colorByCDS
+    ? theme.palette.framesCDS
+    : theme.palette.frames
   for (const frame of [1, 2, 3, -1, -2, -3] as Frame[]) {
-    frames.set(frame, entry(theme.palette.frames.at(frame)!.main))
+    frames.set(frame, entry(framePalette.at(frame)!.main))
   }
   return {
     bases,

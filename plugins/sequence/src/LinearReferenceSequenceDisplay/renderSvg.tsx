@@ -61,7 +61,7 @@ export async function renderSvg(
   // The export theme can differ from the session theme, so rebuild the
   // palette/text colors here and reuse the rest of the live renderState.
   const theme = createJBrowseTheme(opts?.theme)
-  const palette = buildColorPalette(theme)
+  const palette = buildColorPalette(theme, view.colorByCDS)
   const textColors = buildTextColors(palette, theme)
   const totalWidth = view.trackWidthPx
   const height = model.height
