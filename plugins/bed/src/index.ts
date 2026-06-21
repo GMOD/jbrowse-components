@@ -11,6 +11,9 @@ import StarFusionAdapterF from './StarFusionAdapter/index.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+export { default as BedTabixAdapter } from './BedTabixAdapter/BedTabixAdapter.ts'
+export { default as bedTabixConfigSchema } from './BedTabixAdapter/configSchema.ts'
+
 export default class BedPlugin extends Plugin {
   name = 'BedPlugin'
 

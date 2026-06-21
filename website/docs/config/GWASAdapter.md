@@ -13,7 +13,7 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/index.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/gwas/src/GWASAdapter/configSchema.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/GWASAdapter.md)
 
@@ -36,10 +36,119 @@ the box
 }
 ```
 
+#### slot: scoreTransform
+
+transform applied to `scoreColumn` to produce the Manhattan -log10(p) value:
+`none` (column is already -log10, e.g. Pan-UKBB neglog10*pval*\*), `negLog10`
+(column is a raw p-value), or `negLog10FromLn` (column is a natural-log p-value,
+e.g. Pan-UKBB Hail `ln P`)
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('GwasScoreTransform', [
+    'none',
+    'negLog10',
+    'negLog10FromLn',
+  ]),
+  description: 'transform applied to the score column',
+  defaultValue: 'none',
+}
+```
+
+</details>
+
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
+
+<details open>
+<summary>Inherited from BedTabixAdapter</summary>
+
+[BedTabixAdapter config →](../bedtabixadapter)
+
+#### slot: bedGzLocation
+
+```js
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz',
+    locationType: 'UriLocation',
+  },
+}
+```
+
+#### slot: index.indexType
+
+```js
+{
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
+  defaultValue: 'TBI',
+}
+```
+
+#### slot: index.location
+
+```js
+{
+  type: 'fileLocation',
+  defaultValue: {
+    uri: '/path/to/my.bed.gz.tbi',
+    locationType: 'UriLocation',
+  },
+}
+```
+
+#### slot: columnNames
+
+```js
+{
+  type: 'stringArray',
+  description: 'List of column names',
+  defaultValue: [],
+}
+```
+
+#### slot: scoreColumn
+
+```js
+{
+  type: 'string',
+  description: 'The column to use as a "score" attribute',
+  defaultValue: '',
+}
+```
+
+#### slot: autoSql
+
+```js
+{
+  type: 'string',
+  description: 'The autoSql definition for the data fields in the file',
+  defaultValue: '',
+}
+```
+
+#### slot: disableGeneHeuristic
+
+```js
+{
+  type: 'boolean',
+  description:
+    'Disable the heuristic that auto-detects BED12 features as gene/transcript structures. Useful for files that have BED12-like structure but are not genes (e.g. tandem duplications)',
+  defaultValue: false,
+}
+```
+
 </details>
 
 ### GWASAdapter - Derives from
 
+- [BedTabixAdapter](../bedtabixadapter)
+
 ```js
-baseConfiguration: res.configSchema
+baseConfiguration: bedTabixConfigSchema
 ```
