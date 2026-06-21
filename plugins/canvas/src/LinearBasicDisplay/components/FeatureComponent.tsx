@@ -11,9 +11,10 @@ import { observer } from 'mobx-react'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
+import PeptideCanvas from './PeptideCanvas.tsx'
 import { performMultiRegionHitDetection } from './hitTesting.ts'
+import { peptideTooltipText } from './peptidePositioning.ts'
 import {
-  useAminoAcidOverlay,
   useFloatingLabels,
   useHighlightOverlays,
 } from './useOverlayElements.tsx'
@@ -314,12 +315,16 @@ const FeatureBody = observer(function FeatureBody({
     setClientXY([e.clientX, e.clientY])
     const result = hitTestAtEvent(e)
     if (result.feature) {
-      // Hovering a subfeature shows its own name (e.g. a mature-peptide
-      // product); otherwise the top-level feature's resolved `mouseover` slot.
+      // A hovered amino-acid letter names its residue; else a subfeature shows
+      // its own name (e.g. a mature-peptide product); else the top-level
+      // feature's resolved `mouseover` slot.
+      const tooltip = result.peptide
+        ? peptideTooltipText(result.peptide)
+        : (result.subfeature?.displayLabel ?? result.feature.tooltip)
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
-        result.subfeature?.displayLabel ?? result.feature.tooltip,
+        tooltip,
       )
     } else {
       model.clearHover()
@@ -387,14 +392,6 @@ const FeatureBody = observer(function FeatureBody({
     onLabelMouseOver,
   )
 
-  const aminoAcidOverlayElements = useAminoAcidOverlay(
-    laidOutDataMap,
-    visibleRegions,
-    view.initialized,
-    width,
-    bpPerPx,
-  )
-
   const highlightOverlays = useHighlightOverlays(
     model.featureItemMap,
     visibleRegions,
@@ -435,7 +432,14 @@ const FeatureBody = observer(function FeatureBody({
 
           <OverlayLayer>{highlightOverlays}</OverlayLayer>
           <OverlayLayer>{floatingLabelElements}</OverlayLayer>
-          <OverlayLayer>{aminoAcidOverlayElements}</OverlayLayer>
+          <PeptideCanvas
+            laidOutDataMap={laidOutDataMap}
+            visibleRegions={visibleRegions}
+            viewInitialized={view.initialized}
+            width={width}
+            height={model.hasOverflow ? model.maxY : height}
+            bpPerPx={bpPerPx}
+          />
         </div>
       </div>
 

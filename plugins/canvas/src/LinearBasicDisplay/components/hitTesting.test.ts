@@ -11,6 +11,7 @@ import type {
   VisibleRegion,
 } from './hitTesting.ts'
 import type {
+  AminoAcidOverlayItem,
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
@@ -59,10 +60,12 @@ function makeSub(
 function makeData(
   flatbushItems: FlatbushItem[],
   subfeatureInfos: SubfeatureInfo[] = [],
+  aminoAcidOverlay?: AminoAcidOverlayItem[],
 ): FeatureDataResult {
   return {
     flatbushItems,
     subfeatureInfos,
+    aminoAcidOverlay,
     floatingLabelsData: {},
     rectPositions: new Uint32Array(0),
     rectYs: new Float32Array(0),
@@ -322,6 +325,51 @@ test('multi-region continues to next region when first has no hit', () => {
     expect(h.feature.featureId).toBe('geneA')
     expect(h.displayedRegionIndex).toBe(0)
   }
+})
+
+function makeAa(
+  aminoAcid: string,
+  startBp: number,
+  endBp: number,
+  proteinIndex: number,
+  topPx = 0,
+  heightPx = 20,
+): AminoAcidOverlayItem {
+  return {
+    aminoAcid,
+    startBp,
+    endBp,
+    proteinIndex,
+    topPx,
+    heightPx,
+    isStopOrNonTriplet: aminoAcid === '*',
+    isTranslExcept: false,
+    flatbushIdx: 0,
+  }
+}
+
+test('returns the amino-acid codon under the cursor', () => {
+  const data = makeData(
+    [makeItem('gene1', 1000, 5000, 0, 20)],
+    [],
+    [makeAa('M', 1000, 1003, 0), makeAa('K', 1003, 1006, 1)],
+  )
+  // 0.10025 frac of 10000bp ≈ 1002.5bp → inside the first codon (1000-1003)
+  const result = hit(new Map([[0, data]]), [makeRegion(0, 0, 10000, 0, 800)], 80, 10)
+  expect(result.feature!.featureId).toBe('gene1')
+  expect(result.peptide?.aminoAcid).toBe('M')
+})
+
+test('null peptide when feature hit but no codon under cursor', () => {
+  const data = makeData(
+    [makeItem('gene1', 1000, 5000, 0, 20)],
+    [],
+    [makeAa('M', 1000, 1003, 0)],
+  )
+  // 4000bp is inside the feature but past the only codon
+  const result = hit(new Map([[0, data]]), [makeRegion(0, 0, 10000, 0, 800)], 320, 10)
+  expect(result.feature!.featureId).toBe('gene1')
+  expect(result.peptide).toBeNull()
 })
 
 test('handles reversed region (encoded via end < start, no flag)', () => {

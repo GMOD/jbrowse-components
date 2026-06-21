@@ -7,6 +7,7 @@ import { computeLabelExtraWidth } from './highlightUtils.ts'
 export const HIT_PAD_PX = 4
 
 import type {
+  AminoAcidOverlayItem,
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
@@ -49,6 +50,8 @@ export interface FlatbushRegionIndexes {
 export interface HitFeatureResult {
   feature: FlatbushItem
   subfeature: SubfeatureInfo | null
+  // amino-acid codon under the cursor, when hovering peptide-level CDS
+  peptide: AminoAcidOverlayItem | null
   displayedRegionIndex: number
 }
 
@@ -112,6 +115,27 @@ export function buildSubfeatureFlatbushIndex(
   return index
 }
 
+// Codons aren't in a Flatbush index (they only exist when zoomed into
+// peptide-level CDS, so the array is bounded by what's on screen); a linear
+// scan mirrors the per-render scan in forEachRenderedPeptide. Returns the codon
+// whose genomic span contains bpPos at the row under yPos.
+function findPeptideAt(data: FeatureDataResult, bpPos: number, yPos: number) {
+  const overlay = data.aminoAcidOverlay
+  if (overlay) {
+    for (const item of overlay) {
+      if (
+        bpPos >= item.startBp &&
+        bpPos < item.endBp &&
+        yPos >= item.topPx &&
+        yPos < item.topPx + item.heightPx
+      ) {
+        return item
+      }
+    }
+  }
+  return null
+}
+
 export function performMultiRegionHitDetection(
   laidOutDataMap: ReadonlyMap<number, FeatureDataResult>,
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>,
@@ -149,6 +173,7 @@ export function performMultiRegionHitDetection(
             return {
               feature: data.flatbushItems[idx]!,
               subfeature,
+              peptide: findPeptideAt(data, bpPos, yPos),
               displayedRegionIndex: vr.displayedRegionIndex,
             }
           }

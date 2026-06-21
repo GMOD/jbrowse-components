@@ -9,7 +9,7 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { forEachRenderedLabel } from './components/labelPositioning.ts'
-import { forEachRenderedPeptide } from './components/peptidePositioning.ts'
+import { drawPeptides } from './components/peptidePositioning.ts'
 import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
@@ -74,24 +74,6 @@ function renderLabels(
   )
 }
 
-function renderPeptides(
-  ctx: Ctx2D,
-  data: FeatureDataResult,
-  vr: SvgRegionBounds,
-) {
-  ctx.textAlign = 'center'
-  forEachRenderedPeptide(data, vr, (item, { centerPx, fontSize, text }) => {
-    const y = item.topPx + item.heightPx / 2 + fontSize / 3
-    ctx.font = `${fontSize}px monospace`
-    ctx.strokeStyle = 'white'
-    ctx.lineWidth = 1
-    ctx.strokeText(text, centerPx, y)
-    ctx.fillStyle = item.isStopOrNonTriplet ? 'red' : 'black'
-    ctx.fillText(text, centerPx, y)
-  })
-  ctx.textAlign = 'start'
-}
-
 export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
@@ -143,7 +125,7 @@ export async function renderSvg(
       }
       renderLabels(ctx, data, vr, visibility, decimateLabels)
       if (renderPeptidesFlag) {
-        renderPeptides(ctx, data, vr)
+        drawPeptides(ctx, data, vr)
       }
     }
   })

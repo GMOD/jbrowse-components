@@ -5,13 +5,11 @@ import { useTheme } from '@mui/material'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachRenderedLabel } from './labelPositioning.ts'
-import { forEachRenderedPeptide } from './peptidePositioning.ts'
 import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
 } from './sharedRendererConstants.ts'
 import { decimatesLabels } from '../../RenderFeatureDataRPC/renderConfig.ts'
-import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -67,16 +65,6 @@ const useStyles = makeStyles()(theme => ({
   floatingLabelOverlay: {
     background: LABEL_OVERLAY_BACKGROUND,
     color: theme.palette.common.black,
-  },
-  aminoAcid: {
-    position: 'absolute',
-    transform: 'translateX(-50%)',
-    fontFamily: 'monospace',
-    textShadow: '0 0 2px white',
-    pointerEvents: 'none',
-    userSelect: 'none',
-    whiteSpace: 'nowrap',
-    WebkitFontSmoothing: 'antialiased',
   },
 }))
 
@@ -191,62 +179,6 @@ export function useFloatingLabels(
       },
       decimateLabels,
     )
-  }
-
-  return elements.length > 0 ? elements : null
-}
-
-export function useAminoAcidOverlay(
-  laidOutDataMap: Map<number, FeatureDataResult>,
-  visibleRegions: VisibleRegion[],
-  viewInitialized: boolean,
-  width: number | undefined,
-  bpPerPx: number,
-) {
-  const { classes } = useStyles()
-  const theme = useTheme()
-
-  if (
-    !viewInitialized ||
-    !width ||
-    !bpPerPx ||
-    !shouldRenderPeptideText(bpPerPx) ||
-    visibleRegions.length === 0
-  ) {
-    return null
-  }
-
-  const elements: React.ReactElement[] = []
-
-  for (const vr of visibleRegions) {
-    const data = laidOutDataMap.get(vr.displayedRegionIndex)
-    if (!data) {
-      continue
-    }
-    forEachRenderedPeptide(data, vr, (item, cell, i) => {
-      elements.push(
-        <div
-          key={`${vr.displayedRegionIndex}-${i}`}
-          className={classes.aminoAcid}
-          style={{
-            left: cell.centerPx,
-            top: item.topPx,
-            height: item.heightPx,
-            fontSize: cell.fontSize,
-            lineHeight: `${item.heightPx}px`,
-            // Codon cells are always a lightened feature color (see
-            // emitCodonRects), so black reads regardless of the page theme —
-            // text.primary would be white-on-light in dark mode. Matches the
-            // SVG export (renderPeptides).
-            color: item.isStopOrNonTriplet
-              ? theme.palette.error.main
-              : theme.palette.common.black,
-          }}
-        >
-          {cell.text}
-        </div>,
-      )
-    })
   }
 
   return elements.length > 0 ? elements : null
