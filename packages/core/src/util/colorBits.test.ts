@@ -97,6 +97,15 @@ describe('colorBits helpers', () => {
       expect(getRed(parseCssColor(null))).toBe(255)
       expect(getRed(parseCssColor(''))).toBe(255)
     })
+
+    test('malformed-but-nonempty strings return magenta sentinel without throwing', () => {
+      // a bare BED itemRgb triple is not valid CSS; an empty itemRgb yields
+      // "rgb()". Both must degrade to magenta, not throw and crash the render.
+      for (const bad of ['255,0,0', 'rgb()', 'not-a-color', 'rgb(1,2)']) {
+        const c = parseCssColor(bad)
+        expect([getRed(c), getGreen(c), getBlue(c)]).toEqual([255, 0, 255])
+      }
+    })
   })
 
   describe('cssColorToNormalizedRgb', () => {

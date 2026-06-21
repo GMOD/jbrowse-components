@@ -41,6 +41,23 @@ test('resolves a jexl color expression per feature (the demo rgb() form)', () =>
   ])
 })
 
+test('a feature with empty itemRgb (-> "rgb()") degrades to magenta, not a crash', () => {
+  const jexl = createJexlInstance()
+  const r = packMultiRowFeatures(
+    [
+      feat({ start: 0, end: 5, sample: 'mom', itemRgb: '227,26,28' }),
+      feat({ start: 5, end: 9, sample: 'mom', itemRgb: '' }),
+    ],
+    'sample',
+    `jexl:'rgb('+get(feature,'itemRgb')+')'`,
+    jexl,
+  )
+  expect([...r.featureColors]).toEqual([
+    cssColorToABGR('rgb(227,26,28)'),
+    cssColorToABGR('magenta'),
+  ])
+})
+
 test('plain (non-jexl) color applies to every feature', () => {
   const r = packMultiRowFeatures(features, 'sample', 'red')
   const red = cssColorToABGR('red')

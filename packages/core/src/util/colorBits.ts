@@ -43,11 +43,15 @@ export function parseCssColor(color: string | undefined | null) {
   if (str === 'transparent') {
     return newColor(0, 0, 0, 0)
   }
-  const hex = namedColorToHex(str)
-  if (hex) {
-    return parse(hex)
+  // `parse` throws on malformed-but-nonempty input (e.g. a bare BED `itemRgb`
+  // "255,0,0", or an empty "rgb()"); honor the magenta-sentinel contract above
+  // so one bad per-feature color can't crash a whole render/RPC.
+  try {
+    const hex = namedColorToHex(str)
+    return parse(hex ? hex : str)
+  } catch {
+    return INVALID_COLOR
   }
-  return parse(str)
 }
 
 export function cssColorToNormalizedRgb(
