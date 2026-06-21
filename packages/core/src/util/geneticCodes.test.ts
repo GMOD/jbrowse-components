@@ -2,6 +2,7 @@ import {
   getGeneticCode,
   ncbiGeneticCodes,
   parseTranslTable,
+  relativizeTranslExcept,
 } from './geneticCodes.ts'
 import { codonTable } from './seqUtils.ts'
 
@@ -72,5 +73,92 @@ describe('parseTranslTable', () => {
     expect(parseTranslTable('')).toBeUndefined()
     expect(parseTranslTable('abc')).toBeUndefined()
     expect(parseTranslTable('0')).toBeUndefined()
+  })
+})
+
+describe('relativizeTranslExcept', () => {
+  it('shifts forward-strand positions to feature-relative coords', () => {
+    // absolute 1-based pos 107..109 -> 0-based half-open 106..109 -> minus the
+    // feature start (100) -> 6..9
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:107..109,aa:Sec)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 9, aa: 'U' }])
+  })
+
+  it('reverses minus-strand positions against the feature length', () => {
+    // relative 6..9 reversed over length 30 -> 21..24
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:107..109,aa:TERM)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: -1,
+      }),
+    ).toEqual([{ start: 21, end: 24, aa: '*' }])
+  })
+
+  it('strips NCBI complement() wrapper around minus-strand positions', () => {
+    // genomic 1-based 107..109 inside complement() -> 0-based 106..109 -> minus
+    // feature start (100) -> 6..9 -> reversed over length 30 -> 21..24
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:complement(107..109),aa:Sec)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: -1,
+      }),
+    ).toEqual([{ start: 21, end: 24, aa: 'U' }])
+  })
+
+  it('strips an NCBI contig-accession prefix', () => {
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:NC_000003.11:107..109,aa:Sec)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 9, aa: 'U' }])
+  })
+
+  it('strips both complement() wrapper and accession prefix together', () => {
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:complement(NC_000003.11:107..109),aa:Sec)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: -1,
+      }),
+    ).toEqual([{ start: 21, end: 24, aa: 'U' }])
+  })
+
+  it('takes the first range of a join() split codon', () => {
+    // a codon split across an intron: only the first base/range is needed since
+    // every base of a codon maps to the same codon index after stitching
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:join(107..108,140),aa:Sec)',
+        featureStart: 100,
+        featureLength: 60,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 8, aa: 'U' }])
+  })
+
+  it('does not mistake accession digits for coordinates', () => {
+    // NC_000003.11 contains the digits 000003/11 which must not be read as a pos
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:NC_000003.11:107..109,aa:Sec)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 9, aa: 'U' }])
   })
 })

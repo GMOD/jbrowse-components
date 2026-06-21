@@ -1,4 +1,4 @@
-import { generateCodonTable } from './seqUtils.ts'
+import { generateCodonTable, revlist } from './seqUtils.ts'
 
 // NCBI translation tables (genetic codes), parsed from NCBI's authoritative
 // gc.prt (ftp.ncbi.nlm.nih.gov/entrez/misc/data/gc.prt). Each table is kept in
@@ -242,11 +242,31 @@ export interface TranslExcept {
   aa: string
 }
 
+// NCBI's readthrough names mapped to 1-letter codes; any other value passes
+// through unchanged. TERM is a stop, Sec/Pyl are selenocysteine/pyrrolysine, and
+// OTHER marks a codon translated as an unspecified residue (X), used e.g. when a
+// genomic stop is thought to be erroneous in a model RefSeq.
+const translExceptAa: Record<string, string> = {
+  TERM: '*',
+  Sec: 'U',
+  Pyl: 'O',
+  OTHER: 'X',
+}
+
 // Parses a GFF/GenBank `transl_except` attribute. The attribute value is one or
-// more parenthesised entries of the form `(pos:N,aa:X)` or `(pos:N..M,aa:X)`,
-// where positions are 1-based closed GFF coordinates. The GFF3 URL-encoding is
-// decoded by the parser before we see it (commas arrive as plain commas, not
-// %2C). Returns positions converted to 0-based half-open intervals.
+// more parenthesised entries of the form `(pos:<loc>,aa:X)`, where `<loc>` is a
+// 1-based closed coordinate range. Besides the bare `N` / `N..M` form, NCBI's
+// genomic GFF3 wraps the location in INSDC descriptors —`complement(...)` for
+// minus-strand genes, `join(...)` for a codon split across an intron — and may
+// prefix coordinates with a contig accession, e.g.
+// `(pos:complement(NC_000003.11:49395565..49395567),aa:Sec)`. We take the first
+// coordinate range and ignore the descriptors: strand is resolved elsewhere,
+// contig identity comes from the feature, and every base of a codon stitches to
+// the same codon index, so the first base of a split codon suffices. The
+// accession is stripped before reading digits so its own digits (e.g. the
+// `000003` in `NC_000003.11`) aren't mistaken for a coordinate. GFF3 URL-encoding
+// is already decoded upstream (commas arrive plain, not %2C). Returns positions
+// as 0-based half-open intervals.
 export function parseTranslExcept(value: unknown): TranslExcept[] {
   const vals = Array.isArray(value)
     ? value.map(String)
@@ -254,21 +274,45 @@ export function parseTranslExcept(value: unknown): TranslExcept[] {
       ? [value]
       : []
   return vals.flatMap(v =>
-    [...v.matchAll(/\(pos:(\d+)(?:\.\.(\d+))?,aa:(\w+)\)/g)].map(m => {
-      const start1 = Number(m[1])
-      const end1 = m[2] !== undefined ? Number(m[2]) : start1
-      const rawAa = m[3]!
-      const aa =
-        rawAa === 'TERM'
-          ? '*'
-          : rawAa === 'Sec'
-            ? 'U'
-            : rawAa === 'Pyl'
-              ? 'O'
-              : rawAa
-      return { start: start1 - 1, end: end1, aa }
+    [...v.matchAll(/\(pos:(.*?),aa:(\w+)\)/g)].flatMap(m => {
+      const loc = m[1]!.replace(/[A-Za-z_][\w.]*:/g, '')
+      const range = /(\d+)(?:\.\.(\d+))?/.exec(loc)
+      const rawAa = m[2]!
+      return range
+        ? [
+            {
+              start: Number(range[1]) - 1,
+              end: range[2] === undefined ? Number(range[1]) : Number(range[2]),
+              aa: translExceptAa[rawAa] ?? rawAa,
+            },
+          ]
+        : []
     }),
   )
+}
+
+// Converts a raw GFF `transl_except` attribute into the coordinate system
+// `convertCodingSequenceToPeptides` expects: feature-relative, and reversed for
+// minus-strand features so positions line up with the revcom'd CDS sequence.
+// Shared by the protein detail view and the in-track peptide overlay so their
+// coordinate handling can't drift.
+export function relativizeTranslExcept({
+  raw,
+  featureStart,
+  featureLength,
+  strand,
+}: {
+  raw: unknown
+  featureStart: number
+  featureLength: number
+  strand?: number
+}): TranslExcept[] {
+  const relative = parseTranslExcept(raw).map(e => ({
+    ...e,
+    start: e.start - featureStart,
+    end: e.end - featureStart,
+  }))
+  return strand === -1 ? revlist(relative, featureLength) : relative
 }
 
 // codon i = BASE1[i] + BASE2[i] + BASE3[i]

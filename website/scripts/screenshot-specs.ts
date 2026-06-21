@@ -807,6 +807,44 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 500,
   },
 
+  // Selenoprotein transl_except highlight: GPX1 (hg19 NCBI RefSeq, chr3, minus
+  // strand) has one in-frame UGA recoded as selenocysteine via a downstream
+  // SECIS element, written as
+  // `transl_except=(pos:complement(49395565..49395567),aa:Sec)`. Zoomed to that
+  // codon with peptide lettering on, the overridden residue is drawn as `U` on an
+  // orange codon background (translExceptColor) instead of the stop it would
+  // otherwise be. Exercises parseTranslExcept's handling of NCBI's
+  // complement()/accession-prefixed pos syntax on real data.
+  {
+    mode: 'url',
+    name: 'gene_track_selenocysteine',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: 'chr3:49,395,505-49,395,625',
+          colorByCDS: true,
+          trackLabels: 'offset',
+          tracks: [
+            'Pd8Wh30ei9R',
+            {
+              trackId: 'ncbi_gff_hg19',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'RefSeq',
+    readyTimeout: 60000,
+    settleMs: 6000,
+    viewportHeight: 500,
+  },
+
   // Viral polyprotein: the enterovirus D ORF1 CDS is cleaved into mature
   // peptides (mature_protein_region_of_CDS). They render as stacked rows, each
   // colored from a distinct palette and individually hoverable; the labels.name
