@@ -1,3 +1,4 @@
+import { coverageLayout } from '@jbrowse/alignments-core'
 import {
   clipBlockForCanvas,
   makeBpMapper,
@@ -6,12 +7,33 @@ import {
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
+import type { YScaleTicks } from '@jbrowse/wiggle-core'
 import type { Theme } from '@mui/material'
 
 interface DrawConservationState {
   conservationHeight: number
   canvasWidth: number
   theme: Theme
+}
+
+/**
+ * Fixed 0–100% identity Y-axis ticks for the conservation band, inset by the
+ * same `coverageLayout` margin the band drawing uses so the top/bottom labels
+ * align with the band edges instead of being clipped at the SVG boundary.
+ * Shared by the on-screen axis (`MafConservationYScale`) and SVG export.
+ */
+export function conservationTicks(conservationHeight: number): YScaleTicks {
+  const { effectiveH, bottom } = coverageLayout(conservationHeight)
+  const yTop = bottom - effectiveH
+  return {
+    yTop,
+    yBottom: bottom,
+    items: [
+      { value: 100, y: yTop, label: '100%' },
+      { value: 50, y: (yTop + bottom) / 2, label: '50%' },
+      { value: 0, y: bottom, label: '0%' },
+    ],
+  }
 }
 
 /**
@@ -94,12 +116,16 @@ export function drawConservation(
   // The coverage palette color (grey[700]) — a readable, theme-driven
   // quantitative-profile fill; the 0-100% Y-axis distinguishes it from the
   // depth coverage band above.
+  // Inset the band by YSCALEBAR_LABEL_OFFSET (via coverageLayout, matching the
+  // depth coverage band) so the 0%/100% ticks align with the band edges instead
+  // of being clipped at the SVG boundary.
+  const { effectiveH, bottom } = coverageLayout(conservationHeight)
   ctx.fillStyle = theme.palette.coverage
   for (let x = 0; x < width; x++) {
     const c = count[x]!
     if (c > 0) {
-      const h = (sum[x]! / c) * conservationHeight
-      ctx.fillRect(x, conservationHeight - h, 1, h)
+      const h = (sum[x]! / c) * effectiveH
+      ctx.fillRect(x, bottom - h, 1, h)
     }
   }
 }

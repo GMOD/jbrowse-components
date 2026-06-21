@@ -12,7 +12,10 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { SvgRowLabels, SvgTreePath } from '@jbrowse/tree-sidebar'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 
-import { drawConservation } from './components/drawConservation.ts'
+import {
+  conservationTicks,
+  drawConservation,
+} from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawRowIdentity } from './components/drawRowIdentity.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
@@ -152,15 +155,7 @@ export async function renderSvg(
       {showConservation ? (
         <g transform={`translate(45, ${coverageDisplayHeight})`}>
           <YScaleBar
-            ticks={{
-              yTop: 0,
-              yBottom: conservationHeight,
-              items: [
-                { value: 100, y: 0, label: '100%' },
-                { value: 50, y: conservationHeight / 2, label: '50%' },
-                { value: 0, y: conservationHeight, label: '0%' },
-              ],
-            }}
+            ticks={conservationTicks(conservationHeight)}
             orientation="left"
           />
         </g>

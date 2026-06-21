@@ -3,6 +3,8 @@ import React from 'react'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
 
+import { conservationTicks } from './drawConservation.ts'
+
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
 /**
@@ -30,15 +32,7 @@ const MafConservationYScale = observer(function MafConservationYScale({
     >
       <g transform="translate(45, 0)">
         <YScaleBar
-          ticks={{
-            yTop: 0,
-            yBottom: conservationHeight,
-            items: [
-              { value: 100, y: 0, label: '100%' },
-              { value: 50, y: conservationHeight / 2, label: '50%' },
-              { value: 0, y: conservationHeight, label: '0%' },
-            ],
-          }}
+          ticks={conservationTicks(conservationHeight)}
           orientation="left"
         />
       </g>
