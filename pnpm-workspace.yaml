@@ -4,6 +4,8 @@ packages:
   - 'products/*/examples-site'
   - 'plugins/*'
   - 'website'
+overrides:
+  '@babel/core': '^8.0.1'
 blockExoticSubdeps: true
 allowBuilds:
   canvas: true
