@@ -1,7 +1,7 @@
 import BED from '@gmod/bed'
 
 import { isBedMethylFeature } from './generateBedMethylFeature.ts'
-import { featureData, parseNamesFromHeader } from './util.ts'
+import { arrayify, featureData, parseNamesFromHeader } from './util.ts'
 
 // a BED12 line that looks like a gene (has thickStart, blockCount, strand)
 function makeTranscriptLikeInput() {
@@ -166,6 +166,55 @@ describe('featureData', () => {
     expect(result.geneName2).toBe('EDEN')
   })
 
+  it('arrayifies exonFrames on the column-name path so CDS phases are correct', () => {
+    // two full-CDS blocks; exonFrames "0,2" → UCSC frames [0,2] → GFF phases [0,1].
+    // before exonFrames was arrayified here it stayed the string "0,2", and
+    // generateUcscTranscript indexed characters ('0' then ',') yielding [0,0]
+    const result = featureData({
+      splitLine: [
+        'chr1',
+        '1000',
+        '2000',
+        'g1',
+        '0',
+        '+',
+        '1000',
+        '2000',
+        '0',
+        '2',
+        '500,500,',
+        '0,500,',
+        '0,2,',
+      ],
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      parser: new BED(),
+      uniqueId: 'test-ef',
+      scoreColumn: '',
+      names: [
+        'chrom',
+        'chromStart',
+        'chromEnd',
+        'name',
+        'score',
+        'strand',
+        'thickStart',
+        'thickEnd',
+        'reserved',
+        'blockCount',
+        'blockSizes',
+        'chromStarts',
+        'exonFrames',
+      ],
+    })
+    expect(result.type).toBe('mRNA')
+    const phases = result.subfeatures
+      ?.filter(f => f.type === 'CDS')
+      .map(f => f.phase)
+    expect(phases).toEqual([0, 1])
+  })
+
   it('preserves extra fields when strand is 0 (unstranded, not treated as gene)', () => {
     const result = featureData({
       splitLine: [
@@ -194,6 +243,20 @@ describe('featureData', () => {
     // strand=0 means isUcscTranscript returns false
     expect(result.type).toBeUndefined()
     expect(result.geneName2).toBe('MYGENE')
+  })
+})
+
+describe('arrayify', () => {
+  it('returns undefined for undefined', () => {
+    expect(arrayify(undefined)).toBeUndefined()
+  })
+
+  it('drops a trailing comma rather than emitting a trailing NaN', () => {
+    expect(arrayify('200,300,200,')).toEqual([200, 300, 200])
+  })
+
+  it('parses a list without a trailing comma', () => {
+    expect(arrayify('0,400,800')).toEqual([0, 400, 800])
   })
 })
 

@@ -73,6 +73,19 @@ The feature is a `SimpleFeature` — use `feature.get('start')`,
 See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 a full walkthrough.
 
+:::note BED column names in callbacks
+
+Named BED columns such as `itemRgb` or `thickStart` (e.g.
+`jexl:get(feature,'itemRgb')`) are only guaranteed for **BED12**, **bigBed**, or
+any track configured with an `autoSql` or `columnNames`. For plaintext BED files
+with fewer columns (BED7–BED11), JBrowse can't safely assume what each extra
+column means, so columns past `name`/`score`/`strand` are exposed generically as
+`field6`, `field7`, `field8`, … — `get(feature,'itemRgb')` returns `undefined`
+there. To reference columns by stable name, add `columnNames` (or a full
+`autoSql`) to the adapter config.
+
+:::
+
 :::note
 
 `myplugin.js` doesn't need the jbrowse-plugin-template if it's self-contained

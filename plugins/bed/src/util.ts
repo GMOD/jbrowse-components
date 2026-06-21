@@ -87,6 +87,8 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
       thickEnd,
       thickStart,
       blockSizes,
+      exonFrames,
+      _exonFrames,
       ...rest
     } = obj
     return {
@@ -94,6 +96,10 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
       blockStarts: arrayify(blockStarts),
       chromStarts: arrayify(chromStarts),
       blockSizes: arrayify(blockSizes),
+      // exonFrames is int[blockCount] like the block lists; generateUcscTranscript
+      // reads it (or its _exonFrames alias) as number[] to derive CDS phases
+      exonFrames: arrayify(exonFrames),
+      _exonFrames: arrayify(_exonFrames),
       thickStart: thickStart ? +thickStart : undefined,
       thickEnd: thickEnd ? +thickEnd : undefined,
       blockCount: blockCount ? +blockCount : undefined,
@@ -159,7 +165,9 @@ export function parseStrand(strand: string | number | undefined): number {
 }
 
 export function arrayify(f: string | undefined): number[] | undefined {
-  return f === undefined ? undefined : f.split(',').map(Number)
+  // BED block columns are conventionally comma-terminated ("200,300,200,");
+  // drop the trailing empty so we don't emit a trailing NaN
+  return f === undefined ? undefined : f.replace(/,$/, '').split(',').map(Number)
 }
 
 export function featureData({
@@ -222,7 +230,6 @@ export function featureData({
       blockCount,
       thickStart,
       thickEnd,
-      subfeatures,
       ...rest2
     } = rest
     return {

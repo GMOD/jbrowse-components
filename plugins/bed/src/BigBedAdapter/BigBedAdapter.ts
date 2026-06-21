@@ -161,12 +161,10 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
       let maxAggEnd = -Infinity
 
       for (const feat of feats) {
-        const splitLine = [
-          query.refName,
-          `${feat.start}`,
-          `${feat.end}`,
-          ...(feat.rest?.split('\t') ?? []),
-        ]
+        // empty chrom/start/end placeholders keep `rest` columns aligned to the
+        // autoSql schema (which begins at chrom); featureData reads back the
+        // numeric start/end/refName passed below, so positions 0-2 are unused
+        const splitLine = ['', '', '', ...(feat.rest?.split('\t') ?? [])]
         const f = featureData({
           scoreColumn,
           splitLine,
