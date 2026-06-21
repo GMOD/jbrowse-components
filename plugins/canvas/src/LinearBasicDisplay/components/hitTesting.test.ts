@@ -355,9 +355,17 @@ test('returns the amino-acid codon under the cursor', () => {
     [makeAa('M', 1000, 1003, 0), makeAa('K', 1003, 1006, 1)],
   )
   // 0.10025 frac of 10000bp ≈ 1002.5bp → inside the first codon (1000-1003)
-  const result = hit(new Map([[0, data]]), [makeRegion(0, 0, 10000, 0, 800)], 80, 10)
-  expect(result.feature!.featureId).toBe('gene1')
-  expect(result.peptide?.aminoAcid).toBe('M')
+  const result = hit(
+    new Map([[0, data]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    80,
+    10,
+  )
+  expect(isHitFeature(result)).toBe(true)
+  if (isHitFeature(result)) {
+    expect(result.feature.featureId).toBe('gene1')
+    expect(result.peptide?.aminoAcid).toBe('M')
+  }
 })
 
 test('null peptide when feature hit but no codon under cursor', () => {
@@ -367,9 +375,17 @@ test('null peptide when feature hit but no codon under cursor', () => {
     [makeAa('M', 1000, 1003, 0)],
   )
   // 4000bp is inside the feature but past the only codon
-  const result = hit(new Map([[0, data]]), [makeRegion(0, 0, 10000, 0, 800)], 320, 10)
-  expect(result.feature!.featureId).toBe('gene1')
-  expect(result.peptide).toBeNull()
+  const result = hit(
+    new Map([[0, data]]),
+    [makeRegion(0, 0, 10000, 0, 800)],
+    320,
+    10,
+  )
+  expect(isHitFeature(result)).toBe(true)
+  if (isHitFeature(result)) {
+    expect(result.feature.featureId).toBe('gene1')
+    expect(result.peptide).toBeNull()
+  }
 })
 
 test('handles reversed region (encoded via end < start, no flag)', () => {

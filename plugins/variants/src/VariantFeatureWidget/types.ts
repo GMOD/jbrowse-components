@@ -9,7 +9,6 @@ export interface VCFFeatureSerialized extends SimpleFeatureSerialized {
     ANN?: string[]
     CSQ?: string[]
   } & Record<string, (string | number | undefined)[] | boolean | undefined>
-  mate?: { refName: string; start: number; end?: number }
   samples?: Record<string, Record<string, unknown[]>>
   genotypes?: Record<string, string>
   clickedSample?: string

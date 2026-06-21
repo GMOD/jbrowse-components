@@ -2,6 +2,8 @@ import { readConfObject } from '@jbrowse/core/configuration'
 
 import { createTestSession } from '../rootModel/index.ts'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+
 jest.mock('../makeWorkerInstance', () => () => {})
 
 // The "Add GC content track" menu action (on both the
@@ -77,7 +79,8 @@ test('LinearReferenceSequenceDisplay adds a standalone GCContentTrack', () => {
   // and it is shown in the view
   expect(
     session.views[0].tracks.some(
-      t => readConfObject(t.configuration, 'type') === 'GCContentTrack',
+      (t: { configuration: AnyConfigurationModel }) =>
+        readConfObject(t.configuration, 'type') === 'GCContentTrack',
     ),
   ).toBe(true)
 })
@@ -111,11 +114,12 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
     .sequence
   const items = session.getTrackListMenuItems(refseqConf, session.views[0])
   const addGc = items.find(
-    (i: { label?: string }) => i.label === 'Add GC content track',
-  ) as { onClick: () => void }
+    item => 'label' in item && item.label === 'Add GC content track',
+  )
   expect(addGc).toBeTruthy()
-
-  addGc.onClick()
+  if (addGc && 'onClick' in addGc) {
+    addGc.onClick()
+  }
   const added = findGCTrack(session)
   expect(readConfObject(added, 'assemblyNames')).toEqual(['volvox'])
   expect(readConfObject(added, ['adapter', 'sequenceAdapter', 'type'])).toBe(
@@ -131,7 +135,8 @@ test('standalone GCContentTrack display does not double-wrap its adapter', () =>
   session.views[0].tracks[0].displays[0].addGCContentTrack()
 
   const shown = session.views[0].tracks.find(
-    t => readConfObject(t.configuration, 'type') === 'GCContentTrack',
+    (t: { configuration: AnyConfigurationModel }) =>
+      readConfObject(t.configuration, 'type') === 'GCContentTrack',
   )!
   // the LinearGCContentTrackDisplay's adapterConfig must apply display params
   // to the track's existing GCContentAdapter, not wrap it in another one
