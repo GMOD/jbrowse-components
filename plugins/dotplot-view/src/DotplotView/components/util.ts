@@ -85,39 +85,49 @@ export function pxWidthForBlocks({ blocks, bpPerPx, hide }: AxisBundle) {
   return max(widths)
 }
 
+// Approximate px footprint of a block label along its axis. Two labels closer
+// than this collide.
+const LABEL_PX = 12
+
+interface Interval {
+  start: number
+  end: number
+}
+
+function intervalsOverlap(a: Interval, b: Interval) {
+  return Math.max(a.start, b.start) < Math.min(a.end, b.end)
+}
+
+// Greedily decide which block labels to drop so the kept ones don't overlap.
+// Largest blocks win their slot first; each kept label reserves the LABEL_PX
+// interval ending at its on-axis position, and any later label whose interval
+// intersects a reserved one is hidden.
 export function getBlockLabelKeysToHide(
   blocks: ContentBlock[],
   length: number,
   viewOffsetPx: number,
 ) {
-  const blockLabelKeysToHide = new Set<string>()
-  const sortedBlocks = [...blocks].sort((a, b) => {
-    const alen = a.end - a.start
-    const blen = b.end - b.start
-    return blen - alen
-  })
-  const occupiedPositions = new Set<number>()
-  for (const { key, offsetPx } of sortedBlocks) {
-    const y = Math.round(length - offsetPx + viewOffsetPx)
-    const labelStart = Math.max(y - 12, 0)
-    let hasOverlap = y === 0
-    if (!hasOverlap) {
-      for (let i = labelStart; i < y; i++) {
-        if (occupiedPositions.has(i)) {
-          hasOverlap = true
-          break
-        }
-      }
-    }
-    if (hasOverlap) {
-      blockLabelKeysToHide.add(key)
+  const hide = new Set<string>()
+  const reserved: Interval[] = []
+  const byLengthDesc = [...blocks].sort(
+    (a, b) => b.end - b.start - (a.end - a.start),
+  )
+  for (const { key, offsetPx } of byLengthDesc) {
+    const end = Math.round(length - offsetPx + viewOffsetPx)
+    const label = { start: Math.max(end - LABEL_PX, 0), end }
+    if (end === 0 || reserved.some(r => intervalsOverlap(label, r))) {
+      hide.add(key)
     } else {
-      for (let i = labelStart; i < y; i++) {
-        occupiedPositions.add(i)
-      }
+      reserved.push(label)
     }
   }
-  return blockLabelKeysToHide
+  return hide
+}
+
+// makeTicks stores `base` as (true base − 1); re-add the 1 here so the single
+// off-by-one round-trip lives in one place shared by both axes.
+export function tickLabel(tick: Tick, bpPerPx: number) {
+  return getTickDisplayStr(tick.base + 1, bpPerPx)
 }
 
 export function makeTicks(

@@ -1,11 +1,9 @@
-import {
-  getFillProps,
-  getStrokeProps,
-  getTickDisplayStr,
-} from '@jbrowse/core/util'
+import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { tickLabel } from './util.ts'
 
 import type { PositionedTick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
@@ -106,7 +104,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             textAnchor="end"
             {...fill}
           >
-            {getTickDisplayStr(tick.base + 1, bpPerPx)}
+            {tickLabel(tick, bpPerPx)}
           </text>
         ) : null,
       )}
@@ -202,7 +200,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
             fontSize={11}
             {...fill}
           >
-            {getTickDisplayStr(tick.base + 1, bpPerPx)}
+            {tickLabel(tick, bpPerPx)}
           </text>
         ) : null,
       )}
