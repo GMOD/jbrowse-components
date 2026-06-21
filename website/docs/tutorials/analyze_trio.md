@@ -250,13 +250,31 @@ rows — the two haplotypes of each trio member — and the painting is just a
 summary of which parental haplotype the child's haplotype matches at each
 position.
 
-<Figure caption="The hap-ibd painting (top) above the trio VCF in the phased multi-sample variant display (bottom), over a window containing two crossovers. The maternal block steps from Mother hap1 to Mother hap2 around 62.3 Mb, and the paternal block steps from Father hap2 to Father hap1 around 65.3 Mb; the genotype rows below are drawn at the same genomic scale, so those boundaries line up." src="/img/trio-hapibd-matrix.png"/>
+A crossover spans only a single base, so the whole-chromosome view is far too
+zoomed-out to read it off the genotypes — at that scale the matrix is a solid
+wall of color. Zoom instead to a few hundred kb around one boundary, where the
+painting's block-step is unmistakable and the genotype columns resolve into
+individual variants. The clearest crossover to start with is the **paternal**
+one near chr1:29.7 Mb:
 
-Follow the child's paternal haplotype (HG02024 HP0) across the bottom track:
-left of ~65.3 Mb it tracks one of the father's haplotypes, and to the right it
-tracks the other — which is exactly the step you see in the blue rows of the
-painting above. The maternal haplotype (HG02024 HP1) does the same thing against
-the mother's haplotypes around 62.3 Mb.
+<Figure caption="Paternal crossover near chr1:29.7 Mb, ~400 kb wide. In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue); the mother's row stays solid red across the window because no maternal crossover happens here. Below, the phased genotypes are drawn at the same genomic scale: compare the child's paternal haplotype (HG02024 HP0) against father HG02026's two rows — left of the boundary it tracks one of them, right of it the other." src="/img/trio-crossover-paternal.png"/>
+
+The **maternal** chromosome does the same thing at its own boundaries. Near
+chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
+copies:
+
+<Figure caption="Maternal crossover near chr1:55.8 Mb, ~400 kb wide. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red), while the father's row stays solid across the window. Compare the child's maternal haplotype (HG02024 HP1) against mother HG02025's two rows." src="/img/trio-crossover-maternal.png"/>
+
+The painting is the clean, readable summary; the genotype rows are the raw,
+statistically-phased evidence it is built from, and that evidence is noisy. If
+you read the inherited copy site-by-site straight off the genotypes it flickers
+between the two parental copies every few kb — those flickers are phasing switch
+errors, not crossovers. hap-ibd's length threshold filters most of them out,
+which is exactly why we trust its block-step over the raw genotypes. It does not
+filter all of them, though: many of the painting's smaller boundaries do not
+survive a check against the genotype transmission, so treat the two crossovers
+above as the well-supported ones and the rest as approximate. The next section
+is about why.
 
 ## Is hap-ibd the right tool?
 

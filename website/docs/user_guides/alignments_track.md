@@ -96,12 +96,23 @@ alignments track can color reads by modification. Two modes are available:
 
 - **Modifications** — draws each modification at the positions reported in the
   MM tag
-- **Methylation** — draws both unmodified and modified CpGs. Unmodified
-  positions are not in the MM tag; this mode infers them from the reference CpG
-  context
+- **Modifications** — draws each modification at the positions reported in the
+  MM tag, and _only_ those positions. A read with no modified bases in view
+  draws nothing, so an unmethylated region looks empty in this mode.
+- **Methylation** — draws both unmodified and modified CpGs: methylated CpGs are
+  red and **unmethylated CpGs are blue**. The unmodified (blue) positions are
+  not in the MM tag — this mode infers them from the reference CpG context,
+  which is why they appear in methylation mode but not in modifications mode.
+
+This difference is the key to reading the two panels below. In modifications
+mode, a hypo-methylated CpG island has almost nothing to draw (few/no 5mC
+calls), so it looks blank. In methylation mode the same island fills with blue,
+because methylation mode marks every CpG and the unmethylated ones are blue —
+the blue is positive evidence that the CpGs are present but unmethylated, not
+missing data.
 
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a UCSC CpG island on chr20. Enable this from the track menu's Color by → Base modifications → All modification types." src="/img/alignments/modifications1.png" />
-<Figure caption="Screenshot showing the same track in both modifications mode and methylation mode. This is a hypo-methylated CpG island (there are no methylation marks in a CpG island)" src="/img/alignments/modifications2.png" />
+<Figure caption="The same track in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode is nearly empty because there are few 5mC calls here; methylation mode fills with blue because it marks every reference CpG and colors the unmethylated ones blue." src="/img/alignments/modifications2.png" />
 
 ### Color by strand
 

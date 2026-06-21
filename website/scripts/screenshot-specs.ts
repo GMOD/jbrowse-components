@@ -441,6 +441,11 @@ export const specs: ScreenshotSpec[] = [
           ...menuCascade(['Show...', 'Show all regions in assembly']),
         ],
         annotations: [
+          // ring the view (hamburger) menu icon that opens this menu (reviewer)
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="view_menu_icon"]' },
+          },
           { type: 'box', anchor: { text: 'Show all regions in assembly' } },
         ],
       },
@@ -507,8 +512,9 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // narrower window keeps the soft-clip breakpoint in focus (reviewer request)
-    viewportWidth: 700,
+    // wider window per reviewer, shorter height to trim empty space below pileup
+    viewportWidth: 900,
+    viewportHeight: 450,
     settleMs: 4000,
   },
 
@@ -778,7 +784,20 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'hg19',
           loc: 'chr17:41,244,000-41,244,120',
           colorByCDS: true,
-          tracks: ['Pd8Wh30ei9R', 'ncbi_gff_hg19'],
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
+          tracks: [
+            'Pd8Wh30ei9R',
+            {
+              trackId: 'ncbi_gff_hg19',
+              // one transcript per gene keeps the peptide row uncluttered
+              // (reviewer: only show longest transcript)
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+          ],
         },
       ],
     }),
@@ -830,6 +849,8 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg38',
           loc: 'chr17:43,044,295-43,125,483',
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
@@ -839,7 +860,16 @@ export const specs: ScreenshotSpec[] = [
                 geneGlyphMode: 'longestCoding',
               },
             },
-            'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
+            {
+              // compact pileup so the RNA-seq reads pack tightly (reviewer)
+              trackId:
+                'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                featureHeight: 3,
+                featureSpacing: 0,
+              },
+            },
           ],
         },
       ],
@@ -954,10 +984,10 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'ctgA',
-    // narrower + shorter window keeps the breakpoint in focus and trims the
-    // empty space below the short result-frame pileup (reviewer request)
-    viewportWidth: 900,
-    viewportHeight: 480,
+    // wider + taller per reviewer request so the menu cascade and result-frame
+    // pileup both have room
+    viewportWidth: 1100,
+    viewportHeight: 620,
     settleMs: 4000,
     stages: [
       {
@@ -1040,19 +1070,20 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'HG00096' },
       { type: 'delay', ms: 1500 },
     ],
-    // label the SAMPLES genotype table directly: pill sits just above the
-    // SAMPLES header (anchored, so it tracks the card instead of floating far
-    // away in the top-left), with a short arrow into it (reviewer)
+    // label the SAMPLES genotype table: pill sits to the left of the SAMPLES
+    // header (over the empty area beside the drawer) with an arrow into it
+    // (reviewer: text should be to the left of the SAMPLES text)
     annotations: [
       { type: 'box', anchor: { text: 'SAMPLES' } },
       {
         type: 'text',
         anchor: { text: 'SAMPLES' },
-        dy: -52,
-        dx: -40,
-        maxWidth: 220,
+        dy: 0,
+        dx: -230,
+        maxWidth: 200,
         text: 'Per-sample genotypes',
       },
+      { type: 'arrow', from: { x: 720, y: 486 }, anchor: { text: 'SAMPLES' } },
     ],
   },
 
@@ -1123,7 +1154,7 @@ export const specs: ScreenshotSpec[] = [
           // (reviewer: increase height, add opacity, diagonalize; then opacity
           // bumped a little more). levelHeights (not a `levels` snapshot) is the
           // key the launch init consumes.
-          alpha: 0.65,
+          alpha: 0.8,
           levelHeights: [360],
           autoDiagonalize: true,
           views: [{ assembly: 'peach' }, { assembly: 'grape' }],
@@ -1262,6 +1293,15 @@ export const specs: ScreenshotSpec[] = [
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Sort by base at position' } },
+          // call out that the right-click happens on the variant column itself
+          // (reviewer)
+          {
+            type: 'text',
+            x: 40,
+            y: 55,
+            maxWidth: 330,
+            text: 'Right-click a variant (mismatch) column in the pileup to sort reads by the base there',
+          },
         ],
       },
       {
@@ -1296,6 +1336,8 @@ export const specs: ScreenshotSpec[] = [
           // with a single isoform and just 3 introns, so the RNA-seq sashimi arcs
           // are few and clean (GAPDH's many short exons gave "tons of small arcs").
           loc: 'chr15:45,003,000-45,012,000',
+          // offset track labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'ncbi_gff_hg19',
@@ -1311,41 +1353,6 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'B2M',
     readyTimeout: 60000,
     settleMs: 15000,
-  },
-
-  // A single spliced RNA-seq read: zoomed into the SDF4 first-intron boundary on
-  // hg19 so individual reads spanning the intron show the grey exon-aligned ends
-  // joined by a thin skipped-intron bar. Hovering a read in the pileup surfaces
-  // its read-name tooltip. Replaces a hand-curated capture.
-  {
-    mode: 'url',
-    name: 'rnaseq/single_read',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '1:1,158,453-1,159,425',
-          tracks: [
-            {
-              trackId: 'ncbi_gff_hg19',
-              displaySnapshot: { type: 'LinearBasicDisplay', height: 90 },
-            },
-            'Pairend_StrandSpecific_51mer_Human_hg19',
-          ],
-        },
-      ],
-    }),
-    readyText: 'SDF4',
-    readyTimeout: 60000,
-    settleMs: 15000,
-    viewportHeight: 640,
-    // hover a read in the pileup (left of the intron gap, over an exon-aligned
-    // segment, below the coverage band) so its read-name tooltip shows
-    actions: [
-      { type: 'hover', from: { x: 300, y: 360 } },
-      { type: 'delay', ms: 1500 },
-    ],
   },
 
   {
@@ -2145,7 +2152,17 @@ export const specs: ScreenshotSpec[] = [
                   trackId: 'ngmlr_splitters_cram',
                   displaySnapshot: { height: 140 },
                 },
-                'breast_cancer_sniffles_hg19',
+                {
+                  trackId: 'breast_cancer_sniffles_hg19',
+                  // drop the megabase-scale inversion calls that span the whole
+                  // window so only the junction breakends show (reviewer)
+                  displaySnapshot: {
+                    type: 'LinearVariantDisplay',
+                    jexlFiltersSetting: [
+                      "jexl:get(feature,'end')-get(feature,'start') < 100000",
+                    ],
+                  },
+                },
               ],
             },
             {
@@ -2154,7 +2171,15 @@ export const specs: ScreenshotSpec[] = [
               // bottom panel mirrors the top: variants above reads (so the two
               // pileups sit adjacent across the junction) — reviewer
               tracks: [
-                'breast_cancer_sniffles_hg19',
+                {
+                  trackId: 'breast_cancer_sniffles_hg19',
+                  displaySnapshot: {
+                    type: 'LinearVariantDisplay',
+                    jexlFiltersSetting: [
+                      "jexl:get(feature,'end')-get(feature,'start') < 100000",
+                    ],
+                  },
+                },
                 {
                   trackId: 'ngmlr_splitters_cram',
                   displaySnapshot: { height: 140 },
@@ -2432,7 +2457,8 @@ export const specs: ScreenshotSpec[] = [
   // points at — benchmark call SV_20 joins chr3:139,976,414 to chr13:114,353,244.
   // Built declaratively as a BreakpointSplitView (init.views resolves to the two
   // child LGVs after attach), each panel showing the 116x tumor PacBio HiFi reads
-  // in Compact mode (featureHeight 3 / spacing 0). showIntraviewLinks draws the
+  // in Super-compact mode (featureHeight 1 / spacing 0, reviewer).
+  // showIntraviewLinks draws the
   // black splines between reads that map partially to each side of the junction.
   // The PacBio BAM is the full 118 GB NCBI ftp-trace file (no rehosted slice
   // exists for this locus), so the ~26 MB BAI index downloads on every fresh-tab
@@ -2459,7 +2485,7 @@ export const specs: ScreenshotSpec[] = [
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
                   displaySnapshot: {
-                    featureHeight: 3,
+                    featureHeight: 1,
                     featureSpacing: 0,
                     height: 400,
                     userByteSizeLimit: 500_000_000,
@@ -2475,7 +2501,7 @@ export const specs: ScreenshotSpec[] = [
                   trackId:
                     'HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3',
                   displaySnapshot: {
-                    featureHeight: 3,
+                    featureHeight: 1,
                     featureSpacing: 0,
                     height: 400,
                     userByteSizeLimit: 500_000_000,
@@ -2511,12 +2537,24 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'Show all regions in assembly' },
       { type: 'delay', ms: 2000 },
     ],
-    // the import form is short; crop off the empty viewport below it, but
-    // keep enough height to show the form's helper text in full
-    crop: { x: 0, y: 0, width: 1500, height: 230 },
-    // highlight the "Show all regions in assembly" button (reviewer request)
-    annotations: [
-      { type: 'box', anchor: { text: 'Show all regions in assembly' } },
+    // crop off the empty viewport below; tall enough for the import form (stage
+    // 1) and the resulting whole-genome ruler (stage 2)
+    crop: { x: 0, y: 0, width: 1500, height: 250 },
+    // two-stage (reviewer): stage 1 boxes the "Show all regions in assembly"
+    // button on the import form; stage 2 clicks it so the result — every
+    // chromosome laid out across the view — shows next
+    stages: [
+      {
+        annotations: [
+          { type: 'box', anchor: { text: 'Show all regions in assembly' } },
+        ],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Show all regions in assembly' },
+          { type: 'delay', ms: 8000 },
+        ],
+      },
     ],
   },
 
@@ -2784,16 +2822,13 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight: 520,
     settleMs: 25000,
-    // Four-stage figure (reviewer, absorbs the former cnv_score_limit spec and
-    // makes the workflow legible): stage 1 is the autoscaled whole-genome
-    // multi-bigwig; stage 2 shows the "Set min/max score" dialog open with the
-    // cap entered (so the reader sees the action between before/after — reviewer:
-    // it was unclear what happened); stage 3 is the capped result; stage 4
-    // switches to overlapping scatter so normal vs tumor coverage share one band
-    // (reviewer). The normalized indexcov domain runs ~0-2, so capping at 0-2.5
-    // keeps a few centromere/repeat spikes from compressing the copy-number band.
+    // Two-stage figure (reviewer dropped the former initial + capped-result rows
+    // as low-value): stage 1 shows the "Set min/max score" dialog open with the
+    // cap entered; stage 2 submits the cap then switches to overlapping scatter
+    // so normal vs tumor coverage share one band. The normalized indexcov domain
+    // runs ~0-2, so capping at 0-2.5 keeps a few centromere/repeat spikes from
+    // compressing the copy-number band.
     stages: [
-      {},
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
@@ -2825,13 +2860,9 @@ export const specs: ScreenshotSpec[] = [
       },
       {
         actions: [
+          // apply the cap (was its own row), then switch rendering type
           { type: 'click', text: 'Submit' },
           { type: 'delay', ms: 12000 },
-        ],
-      },
-      {
-        closeMenusFirst: true,
-        actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           ...menuCascade(['Rendering type', 'Overlapping scatter'], 300),
           { type: 'click', text: 'Overlapping scatter' },
@@ -3267,18 +3298,19 @@ export const specs: ScreenshotSpec[] = [
       // box just the add-track workflow form (not the whole full-height drawer,
       // whose box ran off the bottom of the capture)
       { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
-      // arrow from the menu item across to the panel it opens
+      // arrow extending from the "Open track..." menu item across to the panel
+      // it opens (reviewer: tail was previously near "Duplicate session")
       {
         type: 'arrow',
-        from: { x: 235, y: 150 },
+        from: { x: 222, y: 262 },
         anchor: { selector: '[data-testid="addTrackWorkflow"]' },
       },
     ],
   },
 
-  // Track selector open, with callout badges pointing at (1) the track-selector
-  // icon in the LGV header and (2) the add-track FAB. The FAB is left unclicked
-  // so its popup menu doesn't cover it.
+  // Track selector open with the add-track FAB clicked; its menu now opens above
+  // the FAB (HierarchicalFab anchorOrigin) so the FAB stays visible (reviewer:
+  // the popover used to cover the FAB).
   {
     mode: 'url',
     name: 'add_track_tracklist',
@@ -3418,9 +3450,11 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Track settings: the track menu's "Track actions" submenu with "Settings"
-  // boxed — any track's settings can now be edited directly (a non-admin's
-  // edits are saved as a session override), no Copy-track-first step needed.
+  // Track settings: two-stage figure — top frame opens the track menu's "Track
+  // actions" → "Settings" path (boxed); bottom frame clicks it so the Settings
+  // sidebar (ConfigurationEditor) is open (reviewer). Uses volvox-bam instead of
+  // the gff3 track (reviewer). Any track's settings can now be edited directly
+  // (a non-admin's edits are saved as a session override).
   {
     mode: 'url',
     name: 'edit_track_settings',
@@ -3430,20 +3464,30 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:1-20000',
-          // static feature track keeps the MUI cascade open through capture
-          tracks: ['gff3tabix_genes'],
+          tracks: ['volvox_bam'],
         },
       ],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
-    actions: [
-      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Track actions', 'Settings']),
+    stages: [
+      {
+        actions: [
+          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          ...menuCascade(['Track actions', 'Settings']),
+        ],
+        // box the "Track actions" parent submenu and the "Settings" item
+        annotations: cascadeBoxes(['Track actions', 'Settings']),
+      },
+      {
+        // click Settings so the ConfigurationEditor sidebar opens
+        actions: [
+          { type: 'click', text: 'Settings' },
+          { type: 'waitForText', text: 'Filter options' },
+          { type: 'delay', ms: 1000 },
+        ],
+      },
     ],
-    // box the "Track actions" parent submenu and the "Settings" item it opens
-    // (reviewer asked to also highlight "Track actions")
-    annotations: cascadeBoxes(['Track actions', 'Settings']),
   },
 
   // Drawer widget position, two-stage figure. Top frame opens the drawer's
@@ -3560,7 +3604,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
-    viewportHeight: 560,
+    // shorter viewport so both stacked panels stay tight (reviewer)
+    viewportHeight: 440,
     settleMs: 10000,
     actions: [
       { type: 'drag', from: { x: 300, y: 150 }, to: { x: 600, y: 150 } },
@@ -3621,15 +3666,18 @@ export const specs: ScreenshotSpec[] = [
     // old anchor fell back to the top-left corner). The callout text is
     // left-aligned, so it's pulled well left of the right-side widget header and
     // width-clamped to keep it from running off the right edge (reviewer)
+    // moved down + right and given an arrow pointing up at the "my region"
+    // label input (reviewer)
     annotations: [
       {
         type: 'text',
         text: 'Single-click the label to edit it',
         anchor: { text: 'Bookmark link' },
-        dx: -260,
-        dy: 60,
+        dx: -190,
+        dy: 170,
         maxWidth: 230,
       },
+      { type: 'arrow', from: { x: 1230, y: 275 }, to: { x: 1385, y: 168 } },
     ],
   },
 
@@ -3813,11 +3861,9 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 3000,
     actions: [
-      // open the track selector
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Open track selector' },
+      // open the track selector directly via the header button so the LGV view
+      // menu never opens (reviewer: the view menu was left open in the capture)
+      { type: 'click', selector: 'button[title="Open track selector"]' },
       {
         type: 'waitForSelector',
         selector: '[data-testid="hierarchical_track_selector"]',
@@ -3898,15 +3944,11 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 500 },
     ],
     annotations: [
-      // ring the recently-used trigger icon and box its open popover together
+      // ring just the recently-used trigger icon; the popover box was removed
+      // (reviewer)
       {
         type: 'circle',
         anchor: { selector: '[data-testid="recently-used-tracks-button"]' },
-      },
-      {
-        type: 'box',
-        anchor: { selector: '.MuiPopover-paper' },
-        strokeWidth: 5,
       },
     ],
   },
@@ -4055,21 +4097,16 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Add to selection' },
           { type: 'delay', ms: 400 },
         ],
+        // box the menu item and put the caption over the empty LGV area to its
+        // left; no arrow (reviewer: arrows covered up the menu-item text)
         annotations: [
           { type: 'box', anchor: { text: 'Add to selection' } },
-          // label sits at the arrow's tail and the arrow points from it to the
-          // menu item (reviewer: text should be at the end of the arrow)
           {
             type: 'text',
-            x: 330,
-            y: 150,
+            x: 60,
+            y: 330,
             maxWidth: 300,
             text: 'Open a track category menu and click Add to selection',
-          },
-          {
-            type: 'arrow',
-            from: { x: 520, y: 185 },
-            anchor: { text: 'Add to selection' },
           },
         ],
       },
@@ -4086,15 +4123,10 @@ export const specs: ScreenshotSpec[] = [
           { type: 'box', anchor: { text: 'Create multi-wiggle track' } },
           {
             type: 'text',
-            x: 330,
-            y: 180,
+            x: 60,
+            y: 330,
             maxWidth: 300,
             text: 'Open the selection cart and click Create multi-wiggle track',
-          },
-          {
-            type: 'arrow',
-            from: { x: 540, y: 215 },
-            anchor: { text: 'Create multi-wiggle track' },
           },
         ],
       },
@@ -4295,7 +4327,9 @@ export const specs: ScreenshotSpec[] = [
     // the opened Plugin store widget itself (anchored to its "Installed plugins"
     // heading) — reviewer asked to also highlight Tools + the widget
     annotations: [
-      { type: 'circle', anchor: { text: 'Tools' } },
+      // tight round ring nudged down so it isn't clipped at the top edge into an
+      // oval (reviewer: make the Tools ring more square/round)
+      { type: 'circle', anchor: { text: 'Tools' }, radius: 24, dy: 8 },
       { type: 'box', anchor: { text: 'Plugin store' } },
       { type: 'box', anchor: { text: 'Installed plugins' } },
     ],
@@ -4317,7 +4351,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'Select a view to launch',
     viewportWidth: 900,
     settleMs: 2000,
-    crop: { x: 0, y: 0, width: 900, height: 540 },
+    // slightly shorter crop for both frames (reviewer)
+    crop: { x: 0, y: 0, width: 900, height: 460 },
     stages: [
       {
         actions: [
@@ -4325,7 +4360,11 @@ export const specs: ScreenshotSpec[] = [
           { type: 'waitForText', text: 'Dotplot view' },
           { type: 'delay', ms: 500 },
         ],
-        annotations: [{ type: 'box', anchor: { text: 'Dotplot view' } }],
+        // box the Add menu button as well as the Dotplot view item (reviewer)
+        annotations: [
+          { type: 'box', anchor: { text: 'Add' } },
+          { type: 'box', anchor: { text: 'Dotplot view' } },
+        ],
       },
       {
         actions: [
@@ -4622,17 +4661,40 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // The hap-ibd painting stacked above the same trio VCF in the phased
-  // multi-sample variant display (genotypes drawn at their genomic position, so
-  // the painting's crossover boundaries line up with the genotype rows below).
-  {
-    mode: 'url',
-    name: 'trio-hapibd-matrix',
+  // multi-sample variant display, zoomed to a single ~400 kb window around one
+  // genotype-corroborated crossover so the painting block-step is crisp and the
+  // genotype columns below resolve into individual variants. We feature two real
+  // crossovers — one paternal, one maternal — verified against the raw genotype
+  // transmission (most painting boundaries are hap-ibd smoothing artifacts that
+  // the genotypes don't actually switch across; these two do).
+  //
+  // Paternal crossover at chr1:29,697,418 — the child's paternal chromosome
+  // steps from Father hap2 (light blue) to Father hap1 (dark blue); the mother's
+  // row is solid red across the window (no maternal event here). Compare child
+  // HG02024 HP0 against father HG02026's two rows.
+  ...(
+    [
+      {
+        name: 'trio-crossover-paternal',
+        loc: 'chr1:29,497,418-29,897,418',
+      },
+      // Maternal crossover at chr1:55,753,613 — the child's maternal chromosome
+      // steps from Mother hap2 (pink) to Mother hap1 (red); the father's row is
+      // solid across. Compare child HG02024 HP1 against mother HG02025's two rows.
+      {
+        name: 'trio-crossover-maternal',
+        loc: 'chr1:55,553,613-55,953,613',
+      },
+    ] as const
+  ).map(({ name, loc }) => ({
+    mode: 'url' as const,
+    name,
     url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr1:61,500,000-66,500,000',
+          loc,
           tracks: [
             {
               trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
@@ -4656,7 +4718,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 28000,
-  },
+  })),
 
   // ────────────────────────────────────────────────────────────────────────
   // Previously hand-captured UI-guide figures, now autogenerated
@@ -4896,7 +4958,7 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 3000,
     // smaller capture (reviewer) — the import form is compact and centered
     viewportWidth: 1150,
-    viewportHeight: 620,
+    viewportHeight: 380,
     actions: [
       { type: 'click', text: 'VCF' },
       {
@@ -4907,20 +4969,7 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 1500 },
     ],
-    // ring the "Open from track" radio and label it; anchored so the callout
-    // tracks the centered form at the reduced viewport width (reviewer). Not
-    // made multi-stage: this fresh SvInspectorView has no in-session VCF track,
-    // so the "Open from track" dropdown would render empty.
-    annotations: [
-      { type: 'circle', anchor: { text: 'Open from track' } },
-      {
-        type: 'text',
-        anchor: { text: 'Open from track' },
-        dy: -58,
-        maxWidth: 320,
-        text: 'You can also load SV calls from a VCF track already in the session',
-      },
-    ],
+    // annotations removed (reviewer): just the import form with the URL pasted
   },
 
   // Default UI theme (theme.md) — a small volvox config with the track selector

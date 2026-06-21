@@ -100,15 +100,12 @@ called the Watson and Crick strands).
 ## Looking at a specific read
 
 With the compact view turned off, you can mouse over a specific read to inspect
-it:
-
-<Figure caption="Mousing over a single spliced read. Part of the read aligns to the left exon (grey) and part to the right exon (grey); the black bar in the middle is the skipped intronic region." src="/img/rnaseq/single_read.png" />
+it. A single spliced read has its exon-aligned ends drawn as grey boxes, joined
+by a thin **teal** line across the skipped intron — the same teal used for the
+sashimi junctions above. Part of the read aligns to the left exon and part to
+the right exon, and the teal line marks the intronic region the read skips over.
 
 [Live demo — single spliced read at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5568200-5569200","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
-
-The tooltip shows a single read where, as described above, part aligns to the
-left exon (grey) and part aligns to the right exon (grey). The black bar in the
-middle is the part that is skipped.
 
 ## How scientists use RNA-seq
 

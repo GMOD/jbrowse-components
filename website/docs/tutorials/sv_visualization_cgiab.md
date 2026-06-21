@@ -298,7 +298,12 @@ Click and drag over the rearranged region and choose **Open linear synteny
 view** to see a base-level alignment of the two genomes; entering `chr3 chr13`
 in the GRCh38 search box focuses the view on just those chromosomes.
 
-<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot — base-level alignment makes the breakpoints easy to read." src="/img/sv_cgiab/synteny_view.png" />
+<Figure caption="A synteny view launched by selecting the chr3/chr13 region in the dotplot — base-level alignment makes the breakpoints easy to read. The minimum alignment length was raised (to ~50kb) to drop short, noisy anchors so the large syntenic blocks read clearly." src="/img/sv_cgiab/synteny_view.png" />
+
+The view above raises the **minimum alignment length** (available in the synteny
+view's menu) to filter out short, noisy anchors — without it, many small
+overlapping alignments stack up into dense dark fans that obscure the
+large-scale syntenic blocks.
 
 For more on these views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
