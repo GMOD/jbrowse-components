@@ -37,6 +37,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
+import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
 import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
@@ -74,23 +75,6 @@ export interface MafSource {
   label?: string
   color?: string
 }
-
-const DEFAULTS = {
-  rowHeight: 15,
-  rowProportion: 0.8,
-  showAllLetters: false,
-  mismatchRendering: true,
-  showAsUpperCase: true,
-  showTree: true,
-  showBranchLength: false,
-  showCoverage: true,
-  showAlignments: true,
-  coverageHeight: 45,
-  showConservation: false,
-  conservationHeight: 40,
-  rowIdentityMode: 'none',
-  rowIdentityAutoZoom: true,
-} as const
 
 const minDisplayHeight = 20
 
@@ -1025,12 +1009,16 @@ export default function stateModelFactory(
        */
       get activeRowRendering(): 'bases' | RowIdentityMode {
         const { rowIdentityMode } = self
-        // Auto-zoom follows UCSC wigMaf — identity only when zoomed out past
-        // base level; with auto off the chosen mode is pinned on at every zoom.
-        const zoomAllowsIdentity =
-          !self.rowIdentityAutoZoom || !self.zoomedToBaseLevel
+        // With auto on (default) the identity plot yields to the bases once
+        // zoomed in to base level — UCSC wigMaf. Auto off pins it on everywhere.
+        const autoHidesAtBaseLevel =
+          self.rowIdentityAutoZoom && self.zoomedToBaseLevel
         let result: 'bases' | RowIdentityMode = 'bases'
-        if (rowIdentityMode !== 'none' && !self.showSummary && zoomAllowsIdentity) {
+        if (
+          rowIdentityMode !== 'none' &&
+          !self.showSummary &&
+          !autoHidesAtBaseLevel
+        ) {
           result = rowIdentityMode
         }
         return result
