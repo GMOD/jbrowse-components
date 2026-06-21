@@ -174,7 +174,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
       ) {
         if (assemblyName) {
           const asm = await this.waitForAssembly(assemblyName)
-          return asm?.getRefNameMapForAdapter(adapterConf, opts)
+          return asm?.getRefNameMapForAdapter(adapterConf, opts) ?? {}
         }
         return {}
       },

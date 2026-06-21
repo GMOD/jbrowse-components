@@ -570,13 +570,14 @@ export default function assemblyFactory(
         // refNameAliases (loaded from the chromAlias file). Direct key first
         // (the common case), then the alias scan.
         const aliases = self.refNameAliases
-        const lookup = (map: Record<string, number>) =>
-          map[refName] ??
-          Object.entries(map).find(([k]) => aliases?.[k] === refName)?.[1]
+        const lookup = (map: Record<string, number> | undefined) =>
+          map?.[refName] ??
+          (map &&
+            Object.entries(map).find(([k]) => aliases?.[k] === refName)?.[1])
         // inline geneticCodes config wins over the loaded sidecar file
         return (
           lookup(self.getConf('geneticCodes')) ??
-          lookup(self.loadedGeneticCodes ?? {}) ??
+          lookup(self.loadedGeneticCodes) ??
           1
         )
       },
