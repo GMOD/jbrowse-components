@@ -5498,3 +5498,28 @@ export const screenshotLiveUrls: Record<string, string> = Object.fromEntries(
     return url ? [[spec.name, url] as const] : []
   }),
 )
+
+// Split a `--filter a,b,c` value into trimmed, non-empty tokens. Shared by the
+// generate and review scripts so `--filter`/`--exact` mean the same thing in
+// both.
+export function parseFilterTokens(filter: string | undefined) {
+  return filter
+    ? filter
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean)
+    : []
+}
+
+// True when `name` matches any filter token (exact name or substring). An empty
+// token list matches everything, so an absent --filter selects all specs.
+export function matchesFilterTokens(
+  name: string,
+  tokens: string[],
+  exact: boolean,
+) {
+  return (
+    tokens.length === 0 ||
+    tokens.some(t => (exact ? name === t : name.includes(t)))
+  )
+}

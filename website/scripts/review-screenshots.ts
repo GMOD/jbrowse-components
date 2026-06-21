@@ -1,6 +1,7 @@
 import { spawn } from 'child_process'
 import path from 'path'
 import readline from 'readline'
+import { parseArgs } from 'util'
 
 import {
   collectScreenshots,
@@ -10,14 +11,48 @@ import {
   saveReport,
   websiteRoot,
 } from './screenshot-review-lib.ts'
-import { specs } from './screenshot-specs.ts'
+import {
+  matchesFilterTokens,
+  parseFilterTokens,
+  specs,
+} from './screenshot-specs.ts'
 
-const cliArgs = process.argv.slice(2)
-const filterArg = cliArgs.find(a => a.startsWith('--filter='))
-const filter = filterArg?.split('=')[1]
-const exact = cliArgs.includes('--exact')
-const reviewAll = cliArgs.includes('--all') // re-review names that already have a verdict
-const noOpen = cliArgs.includes('--no-open') // don't launch the image viewer
+const { values } = parseArgs({
+  args: process.argv.slice(2),
+  allowPositionals: false,
+  options: {
+    help: { type: 'boolean', short: 'h', default: false },
+    filter: { type: 'string', short: 'f' },
+    exact: { type: 'boolean', default: false },
+    // re-review names that already have a recorded verdict
+    all: { type: 'boolean', default: false },
+    // don't auto-launch the image viewer for each shot
+    'no-open': { type: 'boolean', default: false },
+  },
+})
+
+const HELP = `Interactively review committed screenshots and record verdicts.
+
+Usage: pnpm review-screenshots [options]
+
+Options:
+  -h, --help            Show this help and exit
+  -f, --filter <a,b,c>  Only review screenshots whose name matches any token
+                        (substring match; see --exact)
+      --exact           Make --filter tokens match names exactly
+      --all             Re-review names that already have a recorded verdict
+      --no-open         Don't auto-launch the image viewer for each shot
+
+Verdicts are written to ${path.relative(websiteRoot, reportPath)}.
+`
+
+if (values.help) {
+  console.log(HELP)
+  process.exit(0)
+}
+
+const { filter, exact, all: reviewAll } = values
+const noOpen = values['no-open']
 
 function openImage(file: string) {
   const opener =
@@ -76,9 +111,10 @@ function createPrompter() {
 
 async function main() {
   const all = collectScreenshots(specs)
-  const selected = filter
-    ? all.filter(s => (exact ? s.name === filter : s.name.includes(filter)))
-    : all
+  const filterTokens = parseFilterTokens(filter)
+  const selected = all.filter(s =>
+    matchesFilterTokens(s.name, filterTokens, exact),
+  )
 
   if (selected.length === 0) {
     console.error(`No screenshots match filter: ${filter}`)

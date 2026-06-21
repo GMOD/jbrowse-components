@@ -34,7 +34,11 @@ import {
   optimizePng,
   pngDiffFraction,
 } from './image-pipeline.ts'
-import { specs } from './screenshot-specs.ts'
+import {
+  matchesFilterTokens,
+  parseFilterTokens,
+  specs,
+} from './screenshot-specs.ts'
 
 import type {
   Annotation,
@@ -52,8 +56,9 @@ const { values } = parseArgs({
   args: process.argv.slice(2),
   allowPositionals: false,
   options: {
+    help: { type: 'boolean', short: 'h', default: false },
     headed: { type: 'boolean', default: false },
-    filter: { type: 'string' },
+    filter: { type: 'string', short: 'f' },
     exact: { type: 'boolean', default: false },
     // point the proxy at an already-running app server instead of build/
     port: { type: 'string' },
@@ -69,10 +74,10 @@ const { values } = parseArgs({
   },
 })
 
-// Parse a numeric CLI option, falling back when absent or non-finite.
-function numOpt(raw: string | undefined, fallback: number) {
+// Parse a numeric CLI option, returning undefined when absent or non-finite.
+function optNum(raw: string | undefined) {
   const n = raw ? Number(raw) : Number.NaN
-  return Number.isFinite(n) ? n : fallback
+  return Number.isFinite(n) ? n : undefined
 }
 
 const { headed, filter, exact, force, check } = values
@@ -83,13 +88,44 @@ const { headed, filter, exact, force, check } = values
 // letting a genuine edit — a new legend, a moved element — through. Raise it
 // further for timing/remote-data specs.
 const DEFAULT_DIFF_THRESHOLD = 0.005
-const diffThreshold = numOpt(values['diff-threshold'], DEFAULT_DIFF_THRESHOLD)
-const externalPortVal = numOpt(values.port, Number.NaN)
-const externalPort = Number.isFinite(externalPortVal)
-  ? externalPortVal
-  : undefined
-const DEFAULT_PORT = numOpt(values.localport, 3334)
-const CONCURRENCY = numOpt(values.concurrency, headed ? 1 : 4)
+const DEFAULT_LOCAL_PORT = 3334
+const diffThreshold = optNum(values['diff-threshold']) ?? DEFAULT_DIFF_THRESHOLD
+const externalPort = optNum(values.port)
+const DEFAULT_PORT = optNum(values.localport) ?? DEFAULT_LOCAL_PORT
+const CONCURRENCY = optNum(values.concurrency) ?? (headed ? 1 : 4)
+
+const HELP = `Render website screenshots from scripts/screenshot-specs.ts.
+
+Usage: pnpm generate-screenshots [options]
+
+Options:
+  -h, --help              Show this help and exit
+  -f, --filter <a,b,c>    Only render specs whose name matches any token
+                          (substring match; see --exact)
+      --exact             Make --filter tokens match spec names exactly
+      --force             Overwrite every PNG, bypassing the content-stable
+                          diff gate
+      --check             Render each spec twice and report specs that drift
+                          past the threshold; commits nothing
+      --headed            Run a visible browser (defaults --concurrency to 1)
+      --concurrency <n>   Browsers to run at once (default: 4, or 1 if headed)
+      --diff-threshold <f>  Pixel-diff fraction below which a re-render keeps
+                          the committed PNG (default: ${DEFAULT_DIFF_THRESHOLD})
+      --port <n>          Proxy to an app server already running on this port
+                          instead of serving products/jbrowse-web/build
+      --localport <n>     Port to serve/proxy on (default: ${DEFAULT_LOCAL_PORT})
+
+Examples:
+  pnpm generate-screenshots
+  pnpm generate-screenshots --filter lgv_pileup,dotplot
+  pnpm generate-screenshots --check --filter dotplot
+  pnpm generate-screenshots --force
+`
+
+if (values.help) {
+  console.log(HELP)
+  process.exit(0)
+}
 
 const repoRoot = path.resolve(__dirname, '..', '..')
 const buildPath = path.resolve(repoRoot, 'products', 'jbrowse-web', 'build')
@@ -336,21 +372,25 @@ async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
   })
 }
 
+// Print a titled, ===-barred block of lines to stderr (failure/flaky summaries).
+function printReport(title: string, lines: string[]) {
+  const bar = '='.repeat(60)
+  console.error(`\n${bar}`)
+  console.error(title)
+  console.error(bar)
+  for (const line of lines) {
+    console.error(line)
+  }
+  console.error(`\n${bar}`)
+}
+
 async function main() {
   // `--filter a,b,c` matches a spec when any comma-separated token matches, so
   // "re-render these few" is one invocation instead of a shell loop.
-  const filterTokens = filter
-    ? filter
-        .split(',')
-        .map(t => t.trim())
-        .filter(Boolean)
-    : []
-  const filteredSpecs =
-    filterTokens.length > 0
-      ? specs.filter(s =>
-          filterTokens.some(t => (exact ? s.name === t : s.name.includes(t))),
-        )
-      : specs
+  const filterTokens = parseFilterTokens(filter)
+  const filteredSpecs = specs.filter(s =>
+    matchesFilterTokens(s.name, filterTokens, exact),
+  )
 
   if (filteredSpecs.length === 0) {
     console.error(`No specs match filter: ${filter}`)
@@ -500,26 +540,22 @@ async function main() {
     }`,
   )
   if (flaky.length > 0) {
-    console.error(`\n${'='.repeat(60)}`)
-    console.error(`FLAKY SPECS (${flaky.length}) — nondeterministic renders`)
-    console.error('='.repeat(60))
-    for (const { name, frac } of flaky) {
-      console.error(
-        `• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`,
-      )
-    }
-    console.error(`\n${'='.repeat(60)}`)
+    printReport(
+      `FLAKY SPECS (${flaky.length}) — nondeterministic renders`,
+      flaky.map(
+        ({ name, frac }) =>
+          `• ${name}: ${(frac * 100).toFixed(3)}% drift between renders`,
+      ),
+    )
     process.exit(1)
   }
   if (failures.length > 0) {
-    console.error(`\n${'='.repeat(60)}`)
-    console.error(`FAILURE SUMMARY (${failures.length})`)
-    console.error('='.repeat(60))
-    for (const { name, error } of failures) {
-      console.error(`\n• ${name}`)
-      console.error(`  ${error.replace(/\n/g, '\n  ')}`)
-    }
-    console.error(`\n${'='.repeat(60)}`)
+    printReport(
+      `FAILURE SUMMARY (${failures.length})`,
+      failures.map(
+        ({ name, error }) => `\n• ${name}\n  ${error.replace(/\n/g, '\n  ')}`,
+      ),
+    )
     process.exit(1)
   }
 }
