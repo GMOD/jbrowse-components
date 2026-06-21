@@ -26,11 +26,20 @@ const LoaderContents = observer(function LoaderContents() {
   const notifyError = useNotifyError()
 
   const handleSetPluginManager = useEventCallback((pm: PluginManager) => {
-    ;(pm.rootModel as DesktopRootModel | undefined)?.setOpenNewSessionCallback(
-      async (path: string) => {
-        handleSetPluginManager(await loadPluginManager(path))
-      },
-    )
+    const rootModel = pm.rootModel as DesktopRootModel | undefined
+    rootModel?.setOpenNewSessionCallback(async (path: string) => {
+      handleSetPluginManager(await loadPluginManager(path))
+    })
+    rootModel?.setReturnToStartScreenCallback(() => {
+      // "Return to start screen": tear down the manager and clear it so its
+      // RPC workers + autosave loop don't leak behind the start screen
+      setPluginManager(prev => {
+        if (prev) {
+          destroyPluginManager(prev)
+        }
+        return undefined
+      })
+    })
 
     setPluginManager(prev => {
       // a new session/plugin-reload replaces the manager: tear down the old

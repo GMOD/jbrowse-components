@@ -39,7 +39,6 @@ import type { AppRootModel } from '@jbrowse/app-core'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager/assemblyConfigSchema'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { IAnyType, Instance } from '@jbrowse/mobx-state-tree'
 import type { BaseRootModel, BaseSession } from '@jbrowse/product-core'
 
@@ -119,6 +118,9 @@ export default function rootModelFactory({
         openNewSessionCallback: async (_path: string) => {
           console.error('openNewSessionCallback unimplemented')
         },
+        returnToStartScreenCallback: () => {
+          console.error('returnToStartScreenCallback unimplemented')
+        },
       }))
       .actions(self => ({
         /**
@@ -126,6 +128,14 @@ export default function rootModelFactory({
          */
         setOpenNewSessionCallback(cb: (arg: string) => Promise<void>) {
           self.openNewSessionCallback = cb
+        },
+        /**
+         * #action
+         * Wired by the Loader to tear down this plugin manager and show the
+         * start screen (the Loader owns plugin-manager lifecycle).
+         */
+        setReturnToStartScreenCallback(cb: () => void) {
+          self.returnToStartScreenCallback = cb
         },
         /**
          * #action
@@ -282,8 +292,21 @@ export default function rootModelFactory({
                   {
                     label: 'Return to start screen',
                     icon: AppsIcon,
-                    onClick: () => {
-                      self.setSession(undefined)
+                    onClick: async () => {
+                      // flush a final save so edits still inside the autosave
+                      // debounce window aren't lost, then let the Loader tear
+                      // down this plugin manager (workers + autosave) rather
+                      // than leaving it orphaned behind the start screen
+                      const session = self.session as BaseSession | undefined
+                      if (session) {
+                        try {
+                          await self.saveSession(getSaveSession(self))
+                        } catch (e) {
+                          console.error(e)
+                          session.notifyError(`${e}`, e)
+                        }
+                      }
+                      self.returnToStartScreenCallback()
                     },
                   },
                   {
@@ -311,7 +334,7 @@ export default function rootModelFactory({
                     label: 'Open assembly manager',
                     icon: DNA,
                     onClick: () => {
-                      ;(self.session as AbstractSessionModel).queueDialog(
+                      ;(self.session as BaseSession).queueDialog(
                         handleClose => [
                           AssemblyManager,
                           {
