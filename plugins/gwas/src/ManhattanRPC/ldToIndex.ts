@@ -17,8 +17,19 @@ export function posKey(refName: string, start: number) {
   return `${refName}:${start + 1}`
 }
 
+// True when a feature's SNP id or its chr:bp position key equals the index SNP.
+// Single source of truth for "is this the index" across the color/r² evaluators
+// and the LD-record scan, so they can't drift apart.
+export function matchesIndexSnp(
+  name: string | undefined,
+  key: string,
+  indexSnp: string,
+) {
+  return name === indexSnp || key === indexSnp
+}
+
 function sideMatchesIndex(snp: string, chr: string, bp: number, index: string) {
-  return snp === index || `${chr}:${bp}` === index
+  return matchesIndexSnp(snp, `${chr}:${bp}`, index)
 }
 
 export interface LdToIndex {

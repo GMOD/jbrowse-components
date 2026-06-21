@@ -1,4 +1,4 @@
-import { lookupR2, posKey } from './ldToIndex.ts'
+import { lookupR2, matchesIndexSnp, posKey } from './ldToIndex.ts'
 
 import type { LdToIndex } from './ldToIndex.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,9 +14,6 @@ export function makeLdR2Evaluator(
   return feature => {
     const name = feature.get('name')
     const key = posKey(refName, feature.get('start'))
-    if (name === indexSnp || key === indexSnp) {
-      return 1
-    }
-    return lookupR2(ld, name, key) ?? NaN
+    return matchesIndexSnp(name, key, indexSnp) ? 1 : (lookupR2(ld, name, key) ?? NaN)
   }
 }
