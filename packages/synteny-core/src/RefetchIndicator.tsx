@@ -1,7 +1,16 @@
 import { LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
+
+// anti-flash: hold the chip hidden for the first moments so a fast cached
+// refetch (which unmounts the chip before the delay elapses) never flashes. The
+// chip remounts per refetch, so the delay restarts each time. 0s duration =
+// no fade, it just appears after the delay.
+const appear = keyframes`
+  from { opacity: 0; }
+  to { opacity: 0.8; }
+`
 
 const useStyles = makeStyles()(theme => ({
   root: {
@@ -14,6 +23,7 @@ const useStyles = makeStyles()(theme => ({
     borderRadius: 4,
     background: theme.palette.background.paper,
     opacity: 0.8,
+    animation: `${appear} 0s linear 0.25s both`,
     display: 'flex',
     flexDirection: 'column',
     alignItems: 'center',

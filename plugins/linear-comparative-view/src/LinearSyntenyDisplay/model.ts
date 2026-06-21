@@ -408,16 +408,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         const cigarOp = instanceData
           ? getCigarOpAtInstance(instanceData, hoveredFeatureIdx)
           : undefined
-        // eslint-disable-next-line no-console
-        console.log(
-          'synteny tooltipText',
-          JSON.stringify({
-            hoveredFeatureIdx,
-            featureIdx,
-            kind: instanceData?.kinds[hoveredFeatureIdx],
-            cigarOp,
-          }),
-        )
         return getTooltip(getFeatureAtIndex(featureData, featureIdx), cigarOp)
       },
       /**
