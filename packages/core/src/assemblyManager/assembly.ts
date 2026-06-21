@@ -157,20 +157,26 @@ export interface RefNameMaps {
 
 // Build the alias/name lookups used throughout the model from the sequence
 // adapter's regions plus the optional refNameAliasAdapter collection.
-function buildRefNameMaps(
+export function buildRefNameMaps(
   regions: { refName: string }[],
   refNameAliasCollection: Alias[],
 ): RefNameMaps {
+  const fastaRefNames = new Set(regions.map(r => r.refName))
   const refNameAliases: RefNameAliases = {}
   for (const { refName, aliases, override } of refNameAliasCollection) {
+    // override:true (the default), or unset as with chromAlias files whose
+    // refName column already matches the FASTA, makes the adapter's refName the
+    // canonical name. override:false instead keeps the sequence adapter's own
+    // name canonical, resolving it from whichever alias matches a FASTA contig.
+    const canonical =
+      override === false
+        ? (aliases.find(a => fastaRefNames.has(a)) ?? refName)
+        : refName
     for (const alias of aliases) {
       checkRefName(alias)
-      refNameAliases[alias] = refName
+      refNameAliases[alias] = canonical
     }
-    // override makes the adapter's refName the primary name for this assembly
-    if (override) {
-      refNameAliases[refName] = refName
-    }
+    refNameAliases[canonical] = canonical
   }
 
   // identity-map each region's refName (??= so an override alias wins) and
@@ -570,14 +576,13 @@ export default function assemblyFactory(
         // refNameAliases (loaded from the chromAlias file). Direct key first
         // (the common case), then the alias scan.
         const aliases = self.refNameAliases
-        const lookup = (map: Record<string, number> | undefined) =>
-          map?.[refName] ??
-          (map &&
-            Object.entries(map).find(([k]) => aliases?.[k] === refName)?.[1])
+        const lookup = (map: Record<string, number>) =>
+          map[refName] ??
+          Object.entries(map).find(([k]) => aliases?.[k] === refName)?.[1]
         // inline geneticCodes config wins over the loaded sidecar file
         return (
-          lookup(self.getConf('geneticCodes')) ??
-          lookup(self.loadedGeneticCodes) ??
+          lookup(self.getConf('geneticCodes') ?? {}) ??
+          lookup(self.loadedGeneticCodes ?? {}) ??
           1
         )
       },
