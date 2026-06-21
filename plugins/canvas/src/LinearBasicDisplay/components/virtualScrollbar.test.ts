@@ -61,4 +61,49 @@ describe('per-track scroll', () => {
       expect(heightBeforeExpand).toBe(200)
     })
   })
+
+  describe('resizeHeight under auto-fit', () => {
+    // Models the interplay between the resizeHeight override and the
+    // CanvasAutoHeight autorun: a drag must turn auto-fit off, otherwise the
+    // autorun snaps the height back to fitHeight on the next layout change.
+    function makeModel() {
+      const maxHeight = 1200
+      const minDisplayHeight = 4
+      return {
+        autoHeight: true,
+        height: 100,
+        maxY: 600,
+        get fitHeight() {
+          return Math.min(Math.max(this.maxY, 50), maxHeight)
+        },
+        resizeHeight(distance: number) {
+          if (this.autoHeight) {
+            this.autoHeight = false
+          }
+          this.height = Math.max(this.height + distance, minDisplayHeight)
+        },
+        runAutoHeightAutorun() {
+          if (this.autoHeight) {
+            this.height = this.fitHeight
+          }
+        },
+      }
+    }
+
+    it('a manual drag turns auto-fit off and the height sticks', () => {
+      const model = makeModel()
+      model.runAutoHeightAutorun()
+      expect(model.height).toBe(600)
+
+      model.resizeHeight(50)
+      expect(model.autoHeight).toBe(false)
+      expect(model.height).toBe(650)
+
+      // a later layout change re-runs the autorun; with auto-fit off the
+      // dragged height is no longer overwritten
+      model.maxY = 900
+      model.runAutoHeightAutorun()
+      expect(model.height).toBe(650)
+    })
+  })
 })
