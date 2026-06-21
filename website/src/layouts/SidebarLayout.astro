@@ -84,6 +84,7 @@ const { title, description, toggleLabel, navLabel } = Astro.props
     color: var(--color-sidebar-text);
     text-decoration: none;
     font-size: 0.9rem;
+    font-weight: 500;
     border-radius: 3px;
     transition: background 0.15s;
   }
@@ -94,7 +95,7 @@ const { title, description, toggleLabel, navLabel } = Astro.props
   .sidebar :global(a.active) {
     background: var(--color-sidebar-active-bg);
     color: var(--color-sidebar-active-text);
-    font-weight: 600;
+    font-weight: 500;
     border-left: 3px solid var(--color-accent);
     padding-left: calc(12px - 3px);
   }
@@ -103,7 +104,7 @@ const { title, description, toggleLabel, navLabel } = Astro.props
     cursor: pointer;
     padding: var(--sidebar-link-padding);
     font-size: 0.9rem;
-    font-weight: 600;
+    font-weight: 500;
     color: var(--color-sidebar-text);
     list-style: none;
     user-select: none;
