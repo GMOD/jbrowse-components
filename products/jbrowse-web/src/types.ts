@@ -72,7 +72,7 @@ export interface LayoutNode {
 
 export interface SessionTriagedInfo {
   snap: Record<string, unknown>
-  origin: string
+  origin: 'session' | 'config'
   reason: PluginDefinition[]
 }
 

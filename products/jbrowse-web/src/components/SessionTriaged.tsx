@@ -13,31 +13,28 @@ const SessionTriaged = observer(function SessionTriaged({
   loader: SessionLoaderModel
   sessionTriaged: SessionTriagedInfo
 }) {
-  return sessionTriaged.origin === 'session' ? (
+  const { origin, snap, reason } = sessionTriaged
+  return (
     <PluginWarningDialog
-      kind="session"
+      kind={origin}
+      reason={reason}
       onConfirm={async () => {
-        await loader.loadImportedSession(sessionTriaged.snap, true)
+        if (origin === 'session') {
+          await loader.loadImportedSession(snap, true)
+        } else {
+          await loader.applyTriagedConfig(snap)
+        }
         loader.setSessionTriaged(undefined)
       }}
       onCancel={() => {
-        loader.setSessionSource({ type: 'default' })
-        loader.setSessionTriaged(undefined)
+        if (origin === 'session') {
+          loader.setSessionSource({ type: 'default' })
+          loader.setSessionTriaged(undefined)
+        } else {
+          // factoryReset() navigates the page away, so there's nothing to clear
+          factoryReset()
+        }
       }}
-      reason={sessionTriaged.reason}
-    />
-  ) : (
-    <PluginWarningDialog
-      kind="config"
-      onConfirm={async () => {
-        await loader.applyTriagedConfig(sessionTriaged.snap)
-        loader.setSessionTriaged(undefined)
-      }}
-      onCancel={() => {
-        factoryReset()
-        loader.setSessionTriaged(undefined)
-      }}
-      reason={sessionTriaged.reason}
     />
   )
 })
