@@ -71,13 +71,15 @@ This is a true identity metric and is distinct from the score shaded into the
 zoomed-out summary bars, which comes from the UCSC `bigMafSummary` — a
 normalized alignment score rather than a percent identity.
 
-## Per-row identity overlay
+## Per-row identity
 
 Where the conservation band summarizes all species into one profile, the per-row
-identity overlay breaks the signal out **per species**, drawn over each row so
-you can see _which_ genomes diverge in a region — comparable to the UCSC multiz
-per-species pairwise display. It is computed from the alignment (no extra files)
-and set from the track menu, with two styles:
+identity rendering breaks the signal out **per species** so you can see _which_
+genomes diverge in a region. Like the UCSC multiz per-species pairwise display,
+it replaces the per-base coloring **once you zoom out past base level** — where
+individual bases are no longer legible anyway — and the actual bases come back
+when you zoom in. It is computed from the alignment (no extra files) and set from
+the track menu, with two styles:
 
 - **Heatmap** shades each row band by its local identity on a red→grey→blue ramp
   (red = divergent, blue = conserved).

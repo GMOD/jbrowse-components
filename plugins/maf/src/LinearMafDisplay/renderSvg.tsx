@@ -72,7 +72,7 @@ export async function renderSvg(
     coverageDomain,
     showConservation,
     conservationHeight,
-    rowIdentityMode,
+    activeRowRendering,
     rowProportion,
   } = model
   const treeShowing = showTree && !!hierarchy
@@ -113,15 +113,18 @@ export async function renderSvg(
       ) : null}
       <g transform={`translate(0, ${rowsTopOffset})`}>
         {paintLayer(width, rowsHeight, opts, ctx => {
-          drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
-          if (rowIdentityMode !== 'none' && sources?.length) {
+          // Either/or, like UCSC wigMaf: the per-row identity plot replaces the
+          // base SNP rendering when zoomed out past base level.
+          if (activeRowRendering !== 'bases' && sources?.length) {
             drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
               rowHeight,
               rowProportion,
               nRows: sources.length,
               canvasWidth: width,
-              mode: rowIdentityMode,
+              mode: activeRowRendering,
             })
+          } else {
+            drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
           }
           drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
           drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)

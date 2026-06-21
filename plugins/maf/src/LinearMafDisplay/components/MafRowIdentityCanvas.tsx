@@ -11,11 +11,12 @@ import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * Per-row identity overlay, positioned over the GPU base canvas in the rows
- * area (its parent div is already offset to `rowsTopOffset`). Mirrors
- * `MafConservationCanvas`: an `autorun` inside the effect tracks the observable
- * `rpcDataMap`/`renderBlocks` so map mutations redraw without `useEffect` deps.
- * Drawn before the label/insertion/deletion overlays so those stay on top.
+ * Per-row identity rendering, positioned over the (cleared) GPU base canvas in
+ * the rows area — when `activeRowRendering` is an identity style the base canvas
+ * paints nothing, so this replaces it rather than overlaying SNP marks. Its
+ * parent div is already offset to `rowsTopOffset`. Mirrors `MafConservationCanvas`:
+ * an `autorun` inside the effect tracks the observable `rpcDataMap`/`renderBlocks`
+ * so map mutations redraw without `useEffect` deps.
  */
 const MafRowIdentityCanvas = observer(function MafRowIdentityCanvas({
   model,
@@ -25,25 +26,26 @@ const MafRowIdentityCanvas = observer(function MafRowIdentityCanvas({
   const view = getContainingView(model) as LinearGenomeViewModel
   const canvasRef = useRef<HTMLCanvasElement | null>(null)
   const { width } = view
-  const { rowIdentityMode, rowsHeight, rowHeight, rowProportion } = model
+  const { activeRowRendering, rowsHeight, rowHeight, rowProportion } = model
 
   useEffect(() => {
     return autorun(() => {
       const ctx = getPreparedCanvas2D(canvasRef.current, width, rowsHeight)
+      const mode = model.activeRowRendering
       const nRows = model.sources?.length ?? 0
-      if (ctx && rowIdentityMode !== 'none' && nRows > 0) {
+      if (ctx && mode !== 'bases' && nRows > 0) {
         drawRowIdentity(ctx, model.renderBlocks, model.rpcDataMap, {
           rowHeight,
           rowProportion,
           nRows,
           canvasWidth: width,
-          mode: rowIdentityMode,
+          mode,
         })
       }
     })
-  }, [model, width, rowsHeight, rowHeight, rowProportion, rowIdentityMode])
+  }, [model, width, rowsHeight, rowHeight, rowProportion, activeRowRendering])
 
-  return rowIdentityMode !== 'none' ? (
+  return activeRowRendering !== 'bases' ? (
     <canvas
       ref={canvasRef}
       style={{

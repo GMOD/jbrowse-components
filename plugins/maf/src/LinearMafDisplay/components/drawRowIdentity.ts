@@ -12,10 +12,6 @@ import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 const N_UPPER = 78 // 'N'
 
-// Overlay opacity: low enough that the base coloring (and any letters drawn on
-// top) stay legible, high enough to read the conservation pattern at a glance.
-const ROW_IDENTITY_ALPHA = 0.6
-
 interface DrawRowIdentityState {
   rowHeight: number
   rowProportion: number
@@ -108,11 +104,12 @@ export function accumulateRowIdentity(
  *   conservation band but one track per species — emulates the UCSC multiz
  *   per-species pairwise "alignment quality" wiggle.
  *
- * Both draw at `ROW_IDENTITY_ALPHA` over the base canvas so the underlying
- * bases stay legible, and leave pixels with no classifiable base (gap / ref
- * `N`) untouched. The reference row is not special-cased: it compares equal to
- * itself and reads fully conserved, the expected visual anchor. Shared by the
- * on-screen canvas and SVG export, like `drawConservation`.
+ * This replaces the base SNP rendering when active (zoomed out past base
+ * level — see `activeRowRendering`), so it draws solid; pixels with no
+ * classifiable base (gap / ref `N`) are left untouched. The reference row is
+ * not special-cased: it compares equal to itself and reads fully conserved, the
+ * expected visual anchor. Shared by the on-screen canvas and SVG export, like
+ * `drawConservation`.
  */
 export function drawRowIdentity(
   ctx: Ctx2D,
@@ -158,7 +155,7 @@ export function drawRowIdentity(
   const bandOffset = (rowHeight - bandH) / 2
   if (mode === 'xyplot') {
     const [r, g, b] = identityColor(1)
-    ctx.fillStyle = `rgba(${r},${g},${b},${ROW_IDENTITY_ALPHA})`
+    ctx.fillStyle = `rgb(${r},${g},${b})`
     for (let row = 0; row < nRows; row++) {
       const rowBottom = bandOffset + rowHeight * row + bandH
       const base = row * width
@@ -171,12 +168,11 @@ export function drawRowIdentity(
       }
     }
   } else {
-    // Precompute the 101 ramp colors (0..100%) as alpha-baked rgba strings once
-    // per draw — bounds string allocation regardless of pixel × row count, and
-    // SvgCanvas has no globalAlpha so the alpha must live in the fillStyle.
+    // Precompute the 101 ramp colors (0..100%) as rgb strings once per draw —
+    // bounds string allocation regardless of pixel × row count.
     const lut = Array.from({ length: 101 }, (_, i) => {
       const [r, g, b] = identityColor(i / 100)
-      return `rgba(${r},${g},${b},${ROW_IDENTITY_ALPHA})`
+      return `rgb(${r},${g},${b})`
     })
     for (let row = 0; row < nRows; row++) {
       const rowTop = bandOffset + rowHeight * row
