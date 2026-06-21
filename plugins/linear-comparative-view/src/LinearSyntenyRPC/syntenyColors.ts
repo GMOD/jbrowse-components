@@ -29,7 +29,10 @@ export const KIND_CIGAR_N = 6
 const STRAND_POS = cssColorToABGR(colorSchemes.strand.posColor)
 const STRAND_NEG = cssColorToABGR(colorSchemes.strand.negColor)
 const DEFAULT_COLOR = cssColorToABGR(colorSchemes.default.cigarColors.M)
-const BLACK = packAbgr(0, 0, 0, 255)
+// Location-marker tick: semi-transparent black, matching the legacy
+// rgba(0,0,0,0.25) context lines. Renderers draw KIND_MARKER instances as 1px
+// lines using this packed alpha directly (no colorBy/global-alpha scaling).
+const MARKER_COLOR = packAbgr(0, 0, 0, 64)
 
 const category10Packed = category10.map(hex => cssColorToABGR(hex))
 
@@ -175,7 +178,7 @@ export function computeSyntenyColors({
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!
     if (kind === KIND_MARKER) {
-      out[i] = BLACK
+      out[i] = MARKER_COLOR
     } else if (kind === KIND_CIGAR_I) {
       out[i] = colorI
     } else if (kind === KIND_CIGAR_D) {

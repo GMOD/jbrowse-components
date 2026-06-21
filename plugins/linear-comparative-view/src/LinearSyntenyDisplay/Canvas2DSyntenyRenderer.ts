@@ -14,7 +14,10 @@ import {
   projectCorners,
   strokeFeatureSideEdges,
 } from './syntenyPickEngine.ts'
-import { KIND_CIGAR_MATCH } from '../LinearSyntenyRPC/syntenyColors.ts'
+import {
+  KIND_CIGAR_MATCH,
+  KIND_MARKER,
+} from '../LinearSyntenyRPC/syntenyColors.ts'
 
 import type { CanvasLike, ComputedTransform } from './syntenyPickEngine.ts'
 import type {
@@ -91,10 +94,33 @@ function drawInstances(
       continue
     }
 
+    // Location markers: zero-width context ticks. Drawn as a fixed 1px line at
+    // the packed color's own alpha (~0.25), bypassing hover/global-alpha and
+    // the sub-pixel width fade that would zero a zero-width quad.
+    // SYNC: mirrors the isMarker path in syntenyTypes.slang's fillCoverage/
+    // shadeFill.
+    const kind = data.kinds[i]!
+    if (kind === KIND_MARKER) {
+      const xt = (c.sx1 + c.sx2) * 0.5
+      const xb = (c.sx3 + c.sx4) * 0.5
+      ctx.strokeStyle = `rgba(${abgrRed(packed)},${abgrGreen(packed)},${abgrBlue(packed)},${abgrAlpha(packed) / 255})`
+      ctx.lineWidth = 1
+      ctx.beginPath()
+      ctx.moveTo(xt, yTop)
+      if (drawCurves) {
+        const halfH = height * 0.5
+        ctx.bezierCurveTo(xt, yTop + halfH, xb, yTop + halfH, xb, yTop + height)
+      } else {
+        ctx.lineTo(xb, yTop + height)
+      }
+      ctx.stroke()
+      continue
+    }
+
     const featureId = data.instanceFeatureIdx[i]! + 1
     const isHovered = featureId === hoveredFeatureId
     const isClicked = featureId === clickedFeatureId
-    const isCigar = data.kinds[i]! >= KIND_CIGAR_MATCH
+    const isCigar = kind >= KIND_CIGAR_MATCH
 
     // Hover recolors per-instance; everything else shares a color per packed
     // value (e.g. the many tiles of a CIGAR fill), so cache the resolved rgba.

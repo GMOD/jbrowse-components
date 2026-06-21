@@ -34,6 +34,9 @@ struct VsOut {
   // double-fades the seam and bleeds bg through); 0.0 for whole-feature BASE
   // instances whose perpendicular edges are silhouette and need full AA.
   nointerpolation float isCigar : COLOR4;
+  // 1.0 for a KIND_MARKER tick (zero-width context line). Skips the sub-pixel
+  // width fade and global-alpha shading so it stays a crisp fixed-alpha line.
+  nointerpolation float isMarker : COLOR5;
 };
 
 [shader("vertex")]
@@ -44,6 +47,7 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.corners = float4(0.0);
   o.localPos = float2(0.0);
   o.isCigar = isCigarKind(inst.kind) ? 1.0 : 0.0;
+  o.isMarker = isMarkerKind(inst.kind) ? 1.0 : 0.0;
 
   Corners c = computeCorners(inst, u);
   if (isCulled(c, inst.alignmentLength, u)) {
@@ -102,7 +106,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float perpFactor = sqrt(1.0 + slope * slope);
 
   float coverage = fillCoverage(fragIn.localPos, xL, xR, perpFactor,
-                                fragIn.isCigar, h);
+                                fragIn.isCigar, fragIn.isMarker, h);
   if (coverage <= 0.0) { discard; }
-  return shadeFill(fragIn.color, fragIn.featureId, coverage, fragIn.isCigar, u);
+  return shadeFill(fragIn.color, fragIn.featureId, coverage, fragIn.isCigar,
+                   fragIn.isMarker, u);
 }

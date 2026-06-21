@@ -10,7 +10,7 @@ import { applyAlpha, colorSchemes, getQueryColor } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
-import { getTooltip } from './components/util.ts'
+import { getCigarOpAtInstance, getTooltip } from './components/util.ts'
 
 import type { ClickCoord } from './components/util.ts'
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
@@ -153,6 +153,10 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       hoveredFeatureIdx: -1,
       clickedFeatureIdx: -1,
       contextMenuAnchor: undefined as ClickCoord | undefined,
+      // True while an RPC fetch is in-flight. Distinguishes a first load (no
+      // data yet) from a refetch (stale data still on screen) so the two get
+      // different overlays — see `loading`/`refetching`.
+      fetching: false,
       statusMessage: undefined as string | undefined,
       /**
        * #volatile
@@ -180,6 +184,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       setStatusMessage(status?: RpcStatus) {
         self.statusMessage = statusMessageText(status)
         self.statusProgress = statusFraction(status)
+      },
+      setFetching(arg: boolean) {
+        self.fetching = arg
       },
       setAssembliesSwapped(arg: boolean) {
         self.assembliesSwapped = arg
@@ -273,11 +280,22 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
-       * Fetch in-flight. Excludes error so error UI and loading UI never
-       * show simultaneously.
+       * First load: a fetch is running and no data has arrived yet. Excludes
+       * error so error UI and loading UI never show simultaneously. Drives the
+       * full striped LoadingOverlay.
        */
       get loading() {
         return !this.ready && !self.error
+      },
+      /**
+       * #getter
+       * Refetch in-flight: a new fetch is running but stale ribbons are still
+       * on screen (e.g. zoom-out across a log2 bucket, region change). Drives a
+       * subtle corner indicator instead of the full overlay so the visible
+       * ribbons aren't masked on every viewport change.
+       */
+      get refetching() {
+        return self.fetching && this.ready && !self.error
       },
       /**
        * #getter
@@ -377,17 +395,30 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         return { ...instanceData, colors }
       },
       get tooltipText() {
-        const { hoveredFeatureIdx, featureData } = self
+        const { hoveredFeatureIdx, featureData, instanceData } = self
         if (hoveredFeatureIdx < 0 || !featureData) {
           return ''
         }
         const featureIdx =
-          self.instanceData?.instanceFeatureIdx[hoveredFeatureIdx] ??
+          instanceData?.instanceFeatureIdx[hoveredFeatureIdx] ??
           hoveredFeatureIdx
         if (featureIdx >= featureData.featureIds.length) {
           return ''
         }
-        return getTooltip(getFeatureAtIndex(featureData, featureIdx))
+        const cigarOp = instanceData
+          ? getCigarOpAtInstance(instanceData, hoveredFeatureIdx)
+          : undefined
+        // eslint-disable-next-line no-console
+        console.log(
+          'synteny tooltipText',
+          JSON.stringify({
+            hoveredFeatureIdx,
+            featureIdx,
+            kind: instanceData?.kinds[hoveredFeatureIdx],
+            cigarOp,
+          }),
+        )
+        return getTooltip(getFeatureAtIndex(featureData, featureIdx), cigarOp)
       },
       /**
        * #getter

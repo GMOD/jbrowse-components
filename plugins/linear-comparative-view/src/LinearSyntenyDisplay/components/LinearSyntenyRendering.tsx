@@ -1,4 +1,5 @@
 import { LoadingOverlay } from '@jbrowse/core/ui'
+import { RefetchIndicator } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import SyntenyContextMenu from './SyntenyContextMenu.tsx'
@@ -18,16 +19,26 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
     statusMessage,
     statusProgress,
     loading,
+    refetching,
     contextMenuAnchor,
   } = model
 
   return (
     <>
+      {/* First load: full striped overlay with the determinate progress bar. */}
       <LoadingOverlay
         statusMessage={statusMessage}
         progress={statusProgress}
         isVisible={loading}
       />
+      {/* Refetch: stale ribbons stay on screen, so a small shared corner chip
+          carries the same statusCallback message + determinate fraction. */}
+      {refetching ? (
+        <RefetchIndicator
+          statusMessage={statusMessage}
+          statusProgress={statusProgress}
+        />
+      ) : null}
       {tooltipText ? <SyntenyTooltip title={tooltipText} /> : null}
       {contextMenuAnchor ? (
         <SyntenyContextMenu

@@ -44,6 +44,13 @@ public static const float KIND_CIGAR_MIN = 3.0;
 // whole-feature BASE instances get full silhouette AA.
 public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 
+// KIND_MARKER (=2 in syntenyColors.ts): a periodic "location marker" tick — a
+// zero-width vertical line emitted across large matches for visual context.
+// Rendered as a fixed 1px line at its own packed alpha, not subject to the
+// sub-pixel width fade (which would zero a zero-width quad) or global alpha.
+public static const float KIND_MARKER = 2.0;
+public bool isMarkerKind(float kind) { return abs(kind - KIND_MARKER) < 0.5; }
+
 // Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +
 // `bpPerPxInv`. The view origin reconstructs LGV-aligned screen positions
 // directly (math derivation in hpCornerScreenX). `hpZero` is the sentinel
@@ -116,7 +123,8 @@ public float4 screenToClip(float2 screen, float2 resolution) {
 // hard cut so adjacent tiles meet cleanly under alpha blend; everything else
 // gets smoothstep AA over the perpendicular distance.
 public float fillCoverage(float2 localPos, float xL, float xR,
-                          float perpFactor, float isCigar, float h) {
+                          float perpFactor, float isCigar, float isMarker,
+                          float h) {
   float xC = (xL + xR) * 0.5;
   float perpDist = (localPos.x - xC) / perpFactor;
   // Both CIGAR tiles and whole-feature (base) ribbons keep a 0.5px half-width
@@ -145,7 +153,11 @@ public float fillCoverage(float2 localPos, float xL, float xR,
     // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch (entered only for
     // near-vertical ribbons, where perpFactor≈1) scales its centerline stroke
     // alpha by the equivalent clamp(width, 0, 1).
-    float widthFade = clamp((xR - xL) / perpFactor, 0.0, 1.0);
+    // Markers are intentionally zero-width, so the density-honest fade is
+    // skipped (widthFade=1) — they stay a crisp 1px tick at the 0.5px floor.
+    float widthFade = isMarker > 0.5
+      ? 1.0
+      : clamp((xR - xL) / perpFactor, 0.0, 1.0);
     float aaPerp = max(fwidth(perpDist), 1e-4);
     cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
                            halfPerpW + aaPerp * 0.5,
@@ -166,8 +178,13 @@ public float fillCoverage(float2 localPos, float xL, float xR,
 // they visually fade like they're over a white background while still fully
 // covering the base block (avoids double-fade against the base block color).
 public float4 shadeFill(float4 color, float featureId, float coverage,
-                        float isCigar, Uniforms u) {
+                        float isCigar, float isMarker, Uniforms u) {
   float3 rgb = color.rgb;
+  // Markers carry their own fixed alpha (0.25) and ignore colorBy, global
+  // display alpha, and hover — matching the legacy fixed context lines.
+  if (isMarker > 0.5) {
+    return float4(rgb, color.a * coverage);
+  }
   bool isHovered = u.hoveredFeatureId > 0.0
     && abs(featureId - u.hoveredFeatureId) < 0.5;
   if (isCigar > 0.5) {

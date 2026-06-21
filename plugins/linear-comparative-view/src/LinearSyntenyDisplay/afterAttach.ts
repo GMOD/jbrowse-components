@@ -80,6 +80,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Clear any prior error as the new fetch begins, so a stale banner
         // never lingers over freshly-loaded data (mirrors dotplot setLoading).
         self.setError(undefined)
+        self.setFetching(true)
 
         try {
           const sessionId = getRpcSessionId(self)
@@ -110,8 +111,11 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
             self.setError(e)
           }
         } finally {
+          // Only the current fetch clears these — a superseded fetch resolving
+          // late must not unset the flags the newer fetch just set.
           if (isCurrent()) {
             self.setStatusMessage(undefined)
+            self.setFetching(false)
           }
         }
       },
