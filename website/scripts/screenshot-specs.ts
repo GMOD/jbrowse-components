@@ -760,6 +760,8 @@ export const specs: ScreenshotSpec[] = [
           assembly: 'hg19',
           loc: 'chr17:41,222,000-41,235,000',
           colorByCDS: true,
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: ['ncbi_gff_hg19'],
         },
       ],
@@ -861,6 +863,8 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GCF_000861205.1',
           loc: 'NC_001430.1:727-7,311',
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'ncbi_genes_enterovirus_d',
@@ -881,7 +885,7 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 360,
   },
 
-  // Collapse introns + RNA-seq sashimi: BRCA1 (hg38) with the MANE transcript
+  // Collapse introns + RNA-seq sashimi: PTEN (hg38) with the MANE transcript
   // and a direct-RNA nanopore track. Right-clicking the gene and choosing
   // "Collapse introns" reshapes the view to the exons placed side by side; the
   // sashimi arcs from the RNA-seq splice junctions then connect adjacent exons.
@@ -893,13 +897,13 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg38',
-          loc: 'chr17:43,044,295-43,125,483',
+          loc: 'chr10:87,863,113-87,971,930',
           // offset labels so they overlay the tracks (reviewer)
           trackLabels: 'offset',
           tracks: [
             {
               trackId: 'ncbi_refseq_109_hg38_latest',
-              // one clean transcript per gene so the BRCA1 glyph + label is tidy
+              // one clean transcript per gene so the PTEN glyph + label is tidy
               displaySnapshot: {
                 type: 'LinearBasicDisplay',
                 geneGlyphMode: 'longestCoding',
@@ -930,7 +934,7 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       // right-click the gene's floating-label DOM element (not a raw pixel) —
       // robust and exercises the label's real context-menu affordance
-      { type: 'rightclick', text: 'BRCA1' },
+      { type: 'rightclick', text: 'PTEN' },
       { type: 'waitForText', text: 'Collapse introns' },
       { type: 'delay', ms: 600 },
       { type: 'click', text: 'Collapse introns' },
@@ -969,6 +973,9 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
     settleMs: 8000,
+    // smaller capture window in both dimensions (reviewer)
+    viewportWidth: 1150,
+    viewportHeight: 560,
     actions: [
       {
         type: 'type',
@@ -1128,7 +1135,14 @@ export const specs: ScreenshotSpec[] = [
         maxWidth: 200,
         text: 'Per-sample genotypes',
       },
-      { type: 'arrow', from: { x: 720, y: 486 }, anchor: { text: 'SAMPLES' } },
+      // head nudged left of the SAMPLES header so the arrow points at it
+      // without covering the word (reviewer)
+      {
+        type: 'arrow',
+        from: { x: 720, y: 486 },
+        anchor: { text: 'SAMPLES' },
+        dx: -60,
+      },
     ],
   },
 
@@ -1338,13 +1352,15 @@ export const specs: ScreenshotSpec[] = [
         ],
         annotations: [
           { type: 'box', anchor: { text: 'Sort by base at position' } },
-          // call out that the right-click happens on the variant column itself
-          // (reviewer)
+          // call out that the right-click happens on the variant column itself.
+          // Anchored just left of the menu's top item so the label sits next to
+          // the context menu instead of off in the corner (reviewer)
           {
             type: 'text',
-            x: 40,
-            y: 55,
-            maxWidth: 330,
+            anchor: { text: 'SNP/Mismatch' },
+            dx: -320,
+            dy: -30,
+            maxWidth: 290,
             text: 'Right-click a variant (mismatch) column in the pileup to sort reads by the base there',
           },
         ],
@@ -1409,6 +1425,8 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr8:50,366,343-61,321,733',
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: [
             {
               trackId: 'ncbi_gff_hg19',
@@ -3399,12 +3417,14 @@ export const specs: ScreenshotSpec[] = [
       // box just the add-track workflow form (not the whole full-height drawer,
       // whose box ran off the bottom of the capture)
       { type: 'box', anchor: { selector: '[data-testid="addTrackWorkflow"]' } },
-      // arrow extending from the "Open track..." menu item across to the panel
-      // it opens (reviewer: tail was previously near "Duplicate session")
+      // arrow from the "Open track..." menu item to the "Enter track data"
+      // heading of the panel it opens; head nudged left so it stops short of
+      // the field instead of pointing into the middle of the widget (reviewer)
       {
         type: 'arrow',
         from: { x: 222, y: 262 },
-        anchor: { selector: '[data-testid="addTrackWorkflow"]' },
+        anchor: { text: 'Enter track data' },
+        dx: -30,
       },
     ],
   },
@@ -3472,7 +3492,8 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     viewportWidth: 1000,
-    viewportHeight: 600,
+    // shorter browser in both stages (reviewer)
+    viewportHeight: 500,
     readyText: 'ctgA',
     settleMs: 4000,
     actions: [
@@ -3571,6 +3592,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
+    // shorter browser in each stage (reviewer)
+    viewportHeight: 640,
     stages: [
       {
         actions: [
@@ -3640,11 +3663,13 @@ export const specs: ScreenshotSpec[] = [
           },
           { type: 'box', anchor: { text: 'left' } },
           // arrow drawing the eye from the ringed position button down to the
-          // boxed "left" option (reviewer: add an arrow to the annotation)
+          // boxed "left" option. Head is nudged left of the word so it points at
+          // the item without covering the "left" label text (reviewer).
           {
             type: 'arrow',
             from: { x: 560, y: 230 },
             anchor: { text: 'left' },
+            dx: -55,
           },
         ],
       },
@@ -3652,6 +3677,14 @@ export const specs: ScreenshotSpec[] = [
         actions: [
           { type: 'click', text: 'left' },
           { type: 'delay', ms: 1500 },
+        ],
+        // ring the track selector now docked on the left so the reader sees
+        // where the drawer moved to (reviewer)
+        annotations: [
+          {
+            type: 'box',
+            anchor: { selector: '[data-testid="drawer-widget"]' },
+          },
         ],
       },
     ],
@@ -4544,6 +4577,8 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr7:5,566,500-5,570,500',
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: [
             'ncbi_gff_hg19',
             {
@@ -4585,6 +4620,8 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'hg19',
           loc: 'chr7:5,566,000-5,571,000',
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
           tracks: [
             'ncbi_gff_hg19',
             {
@@ -4969,7 +5006,9 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 4000,
-    viewportHeight: 900,
+    // shorter browser (reviewer); the details panel scrolls so this only trims
+    // empty space below the ringed hyperlink
+    viewportHeight: 680,
     actions: [
       // canvas-drawn gene glyph: at this zoom the label is baked into the canvas
       // (no DOM text / overlay div to target), so a coordinate click is required
@@ -5146,6 +5185,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
+    // shorter browser (reviewer): the palette + track selector fit comfortably
+    viewportHeight: 520,
     actions: [
       { type: 'click', text: 'Open track selector' },
       {
@@ -5168,6 +5209,8 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
+    // shorter browser (reviewer): the palette + track selector fit comfortably
+    viewportHeight: 520,
     actions: [
       { type: 'click', text: 'Open track selector' },
       {
@@ -5387,8 +5430,11 @@ export const specs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
+          // zoomed out further (reviewer): wider window so the per-species
+          // mismatch columns read as a conservation pattern, not just a handful
+          // of bases
           assembly: 'ce11',
-          loc: 'chrI:3,000,948-3,001,068',
+          loc: 'chrI:3,000,648-3,001,368',
           tracks: [
             {
               trackId: 'ce11.26way',
@@ -5447,13 +5493,13 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Show...', 'Conservation']),
+          ...menuCascade(['Show...', 'Show conservation (% identity)']),
         ],
-        annotations: cascadeBoxes(['Show...', 'Conservation']),
+        annotations: cascadeBoxes(['Show...', 'Show conservation (% identity)']),
       },
       {
         actions: [
-          { type: 'click', text: 'Conservation' },
+          { type: 'click', text: 'Show conservation (% identity)' },
           // wait for the menu to close — keyed on a menu-only label, since the
           // conservation band now carries an on-canvas "Conservation" title that
           // would otherwise keep that text visible forever
@@ -5463,6 +5509,98 @@ export const specs: ScreenshotSpec[] = [
         ],
       },
     ],
+  },
+
+  // ────────────────────────────────────────────────────────────────────────
+  // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
+  // purely by the &adminKey= URL param (adminMode = !!adminKey, client-side), so
+  // these reproduce the admin-server's UI without a running admin-server backend
+  // — the dialogs render the same; only persisting writes needs the real server.
+  // ────────────────────────────────────────────────────────────────────────
+
+  // Empty assembly manager: a fresh install (empty.json has no assemblies) in
+  // admin mode, Tools -> Assembly manager opened to its empty table. sessionSpec
+  // gives a static sessionName so the title bar carries no live timestamp.
+  {
+    mode: 'url',
+    name: 'assembly_manager',
+    url: `${sessionSpec('test_data/empty.json', {
+      views: [{ type: 'LinearGenomeView' }],
+    })}&adminKey=admin1234`,
+    readyText: 'Tools',
+    viewportWidth: 1000,
+    viewportHeight: 540,
+    settleMs: 2000,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', text: 'Tools' },
+      { type: 'waitForText', text: 'Assembly manager' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Assembly manager' },
+      { type: 'waitForText', text: 'Add new assembly' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Assembly manager with one assembly present: a config carrying only hg38 in
+  // admin mode, so the manager table lists the hg38 row (the state after adding
+  // an assembly in the tutorial).
+  {
+    mode: 'url',
+    name: 'hg38_assembly_table',
+    url: `${sessionSpec('test_data/hg38_only.json', {
+      views: [{ type: 'LinearGenomeView' }],
+    })}&adminKey=admin1234`,
+    readyText: 'Tools',
+    viewportWidth: 1000,
+    viewportHeight: 540,
+    settleMs: 2000,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', text: 'Tools' },
+      { type: 'waitForText', text: 'Assembly manager' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Assembly manager' },
+      { type: 'waitForText', text: 'Add new assembly' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Set-default-session dialog: admin mode, Admin -> Set default session. The
+  // dialog is a simple confirm ("Set current session as default" / "Clear
+  // default session"); persisting the choice needs the real admin-server.
+  {
+    mode: 'url',
+    name: 'default_session_form',
+    url: `${sessionSpec('test_data/empty.json', {
+      views: [{ type: 'LinearGenomeView' }],
+    })}&adminKey=admin1234`,
+    readyText: 'Tools',
+    viewportWidth: 1000,
+    viewportHeight: 480,
+    settleMs: 2000,
+    hideTooltip: true,
+    actions: [
+      { type: 'click', text: 'Admin' },
+      { type: 'waitForText', text: 'Set default session' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Set default session' },
+      { type: 'waitForText', text: 'Clear default session' },
+      { type: 'delay', ms: 500 },
+    ],
+  },
+
+  // Fresh-install landing: with no config and the default config.json missing,
+  // jbrowse-web shows the "It worked! JBrowse 2 is installed" banner plus a list
+  // of sample configs — what a user sees right after `jbrowse create` + serve.
+  {
+    mode: 'url',
+    name: 'config_not_found',
+    url: '',
+    readyText: 'It worked!',
+    viewportWidth: 1200,
+    viewportHeight: 720,
+    settleMs: 1500,
   },
 ]
 

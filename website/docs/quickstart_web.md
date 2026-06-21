@@ -70,7 +70,7 @@ install works.
 For production, place the folder in your web server's static directory (e.g.
 `/var/www/html/jbrowse2/`) and visit `http://yourserver/jbrowse2`.
 
-<Figure caption="JBrowse 2 screen showing no configuration found" src="/img/config_not_found.png"/>
+<Figure caption="The JBrowse 2 fresh-install screen, shown when no config.json is present yet — an 'It worked!' banner plus a list of sample configs and demo sessions to try" src="/img/config_not_found.png"/>
 
 <Figure caption="JBrowse 2 screen with a sample configuration" src="/img/sample_config.png"/>
 

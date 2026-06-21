@@ -98,7 +98,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       type: 'subMenu',
       subMenu: [
         {
-          label: 'Letters at all positions',
+          label: 'Show letters at all positions',
           type: 'checkbox',
           checked: self.showAllLetters,
           onClick: () => {
@@ -106,7 +106,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Mismatches colored by base',
+          label: 'Show mismatches colored by base',
           type: 'checkbox',
           checked: self.mismatchRendering,
           onClick: () => {
@@ -114,7 +114,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Letters as uppercase',
+          label: 'Show letters as uppercase',
           type: 'checkbox',
           checked: self.showAsUpperCase,
           onClick: () => {
@@ -122,7 +122,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Sidebar with tree and labels',
+          label: 'Show sidebar with tree and labels',
           type: 'checkbox',
           checked: self.showTree,
           onClick: () => {
@@ -131,7 +131,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         },
         treeBranchLengthMenuItem(self),
         {
-          label: 'Coverage',
+          label: 'Show coverage',
           type: 'checkbox',
           checked: self.showCoverage,
           onClick: () => {
@@ -139,7 +139,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Alignments',
+          label: 'Show alignments',
           type: 'checkbox',
           checked: self.showAlignments,
           onClick: () => {
@@ -147,7 +147,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           },
         },
         {
-          label: 'Conservation (% identity)',
+          label: 'Show conservation (% identity)',
           type: 'checkbox',
           checked: self.showConservation,
           onClick: () => {

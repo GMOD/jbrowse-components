@@ -43,17 +43,23 @@ render img/1.png \
   --loc 1:19,197,000-19,233,000 --width 1200
 
 # Whole-genome dotplot: every YJM1447 contig (x) vs every R64 contig (y).
+# --autoDiagonalize reorders the R64 contigs so the main alignment forms a clean
+# diagonal instead of a staircase.
 render img/yeast_dotplot.png dotplot \
   --fasta "$YEAST/yjm1447.fa" \
   --fasta2 "$YEAST/r64.fa" \
   --paf "$YEAST/r64_vs_yjm1447.paf" \
+  --autoDiagonalize \
   --width 1100
 
 # Single-chromosome synteny ribbon: YJM1447 chr I vs R64 chr I (NC_001133.9).
+# --drawCurves renders the ribbon as a smooth bezier instead of straight
+# trapezoids.
 render img/yeast_synteny.png synteny \
   --fasta "$YEAST/yjm1447.fa" --loc I \
   --fasta2 "$YEAST/r64.fa" --loc2 NC_001133.9 \
   --paf "$YEAST/r64_vs_yjm1447.paf" \
+  --drawCurves \
   --width 1400
 
 # Whole-genome multi-chromosome synteny via a session-spec (autoDiagonalize
