@@ -101,6 +101,28 @@ test('LinearGCContentDisplay carries its current params onto the new track', () 
   expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')
 })
 
+test('hierarchical track selector menu offers "Add GC content track" on refseq', () => {
+  const session = makeSession([
+    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
+  ])
+  // the track selector sources the refseq config from the assembly, not from
+  // session.tracks
+  const refseqConf = session.assemblyManager.get('volvox')!.configuration
+    .sequence
+  const items = session.getTrackListMenuItems(refseqConf, session.views[0])
+  const addGc = items.find(
+    (i: { label?: string }) => i.label === 'Add GC content track',
+  ) as { onClick: () => void }
+  expect(addGc).toBeTruthy()
+
+  addGc.onClick()
+  const added = findGCTrack(session)
+  expect(readConfObject(added, 'assemblyNames')).toEqual(['volvox'])
+  expect(readConfObject(added, ['adapter', 'sequenceAdapter', 'type'])).toBe(
+    'FromConfigSequenceAdapter',
+  )
+})
+
 test('standalone GCContentTrack display does not double-wrap its adapter', () => {
   const session = makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },

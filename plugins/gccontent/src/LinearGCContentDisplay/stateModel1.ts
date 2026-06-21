@@ -3,12 +3,12 @@ import {
   getContainingView,
   getSession,
   isSessionWithAddTracks,
-  makeTrackId,
 } from '@jbrowse/core/util'
 import { getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 
 import SharedModelF from './shared.ts'
+import { makeGCContentTrackConf } from '../makeGCContentTrackConf.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -67,30 +67,18 @@ export default function stateModelF(
       addGCContentTrack() {
         const session = getSession(self)
         if (isSessionWithAddTracks(session)) {
-          const name = self.gcMode === 'skew' ? 'GC skew' : 'GC content'
-          const trackId = makeTrackId({
-            name,
+          const conf = makeGCContentTrackConf({
+            assemblyNames: getTrackAssemblyNames(self.parentTrack),
+            sequenceAdapter: getConf(self.parentTrack, 'adapter'),
+            gcMode: self.gcMode,
+            windowSize: self.windowSize,
+            windowDelta: self.windowDelta,
             adminMode: !!session.adminMode,
           })
-          session.addTrackConf({
-            trackId,
-            type: 'GCContentTrack',
-            name,
-            assemblyNames: getTrackAssemblyNames(self.parentTrack),
-            adapter: {
-              type: 'GCContentAdapter',
-              sequenceAdapter: getConf(self.parentTrack, 'adapter'),
-            },
-            displays: [
-              {
-                type: 'LinearGCContentTrackDisplay',
-                windowSize: self.windowSize,
-                windowDelta: self.windowDelta,
-                gcMode: self.gcMode,
-              },
-            ],
-          })
-          ;(getContainingView(self) as LinearGenomeViewModel).showTrack(trackId)
+          session.addTrackConf(conf)
+          ;(getContainingView(self) as LinearGenomeViewModel).showTrack(
+            conf.trackId,
+          )
         }
       },
     }))

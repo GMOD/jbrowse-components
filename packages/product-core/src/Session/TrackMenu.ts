@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { InfoIcon } from '@jbrowse/core/ui/Icons'
+import { buildExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
 import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 import DeleteIcon from '@mui/icons-material/Delete'
 import CopyIcon from '@mui/icons-material/FileCopy'
@@ -8,13 +9,17 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
+
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { DialogComponentType } from '@jbrowse/core/util'
-import type { TrackActionView } from '@jbrowse/core/util/types'
+import type {
+  AbstractSessionModel,
+  TrackActionView,
+} from '@jbrowse/core/util/types'
 
 const AboutDialog = lazy(() => import('../ui/AboutDialog.tsx'))
 
@@ -215,7 +220,7 @@ interface SessionWithGetTrackActions extends SessionWithDialog {
  * full web and desktop sessions. Both are pure functions of `getTrackActions`,
  * which each session supplies (web gates on edit rights; desktop adds indexing).
  */
-export function TrackMenuItemsSessionMixin(_pluginManager: PluginManager) {
+export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
   return types.model('TrackMenuItemsSessionMixin', {}).views(s => {
     const self = s as typeof s & SessionWithGetTrackActions
     return {
@@ -227,7 +232,14 @@ export function TrackMenuItemsSessionMixin(_pluginManager: PluginManager) {
         config: BaseTrackConfig,
         view?: TrackActionView,
       ): MenuItem[] {
-        return trackListMenuItems(self, config, self.getTrackActions(config, view))
+        return [
+          ...trackListMenuItems(self, config, self.getTrackActions(config, view)),
+          ...buildExtraTrackMenuItems(pluginManager, {
+            session: self as unknown as AbstractSessionModel,
+            config,
+            view,
+          }),
+        ]
       },
       /**
        * #method
