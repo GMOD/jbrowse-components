@@ -41,7 +41,11 @@ export function drawMafInsertionMarker(
     ctx.fillStyle = 'white'
     ctx.textAlign = 'center'
     ctx.fillText(text, xCenter, yMid, CHAR_SIZE_WIDTH * text.length)
-  } else if (type === 'small' && labelFits && pxPerBp >= MIN_PX_PER_BP_FOR_TEXT) {
+  } else if (
+    type === 'small' &&
+    labelFits &&
+    pxPerBp >= MIN_PX_PER_BP_FOR_TEXT
+  ) {
     ctx.fillStyle = insertionColor
     ctx.textAlign = 'left'
     ctx.fillText(`(${length})`, xCenter + 3, yMid)

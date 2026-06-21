@@ -161,9 +161,11 @@ const HG002_NANOPORE_ADAPTER = {
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
-// Local config that loads the Protein3d plugin from the jbrowse.org plugin-store
-// rehosting's version-agnostic `latest/` path (not unpkg, no version to bump).
-// See products/jbrowse-web/test_data/.
+// hg38 + NCBI RefSeq + ClinVar, loading the Protein3d plugin pinned to a
+// specific published version on jsDelivr (not the drifting jbrowse.org `latest/`
+// path, which the protein-feature data-testid clicks below depend on). Rendered
+// against the *local* build (bare ?config=), which has the workspaces split API
+// (setPendingMove) the side-by-side launch needs.
 const PROTEIN3D_CONFIG = 'test_data/protein3d_config.json'
 // Load the remote demo configs against the *local* build (a bare ?config= url
 // that the generator prefixes with localhost), so unreleased display settings
@@ -5221,14 +5223,16 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Standalone ProteinView for BRAF (UniProt P15056). The structure streams from
-  // AlphaFold DB and renders on the mol* WebGL canvas (software WebGL via
-  // --enable-unsafe-swiftshader is sufficient headless).
-  //
-  // Loads protein3d from the jbrowse.org plugin-store rehosting's version-
-  // agnostic `latest/` UMD (PROTEIN3D_CONFIG) — NOT unpkg, and nothing to bump
-  // on a plugin release. `latest/` is served no-cache, so a regen after a
-  // `pnpm dep` picks up the newest plugin without the unpkg CDN's stale window.
+  // Connected genome + protein demo for BRAF (UniProt P15056 / NM_004333.6).
+  // Reviewer: this figure should show the linear-genome-view ↔ protein
+  // connection, not a bare structure. A single ProteinView spec entry creates
+  // and connects its own LinearGenomeView (hg38 NCBI RefSeq) via the plugin's
+  // `connectedView` launch param; `sideBySide: true` lays them out as a
+  // left/right split (genome left, AlphaFold structure right). The BRAF MANE
+  // transcript's CDS is translated and aligned to the structure so hovering the
+  // genome highlights the corresponding residue. Loads protein3d pinned to a
+  // published jsDelivr version (PROTEIN3D_CONFIG) against the local build, whose
+  // session has the setPendingMove split API the side-by-side launch needs.
   {
     mode: 'url',
     name: 'protein/structure',
@@ -5237,19 +5241,49 @@ export const specs: ScreenshotSpec[] = [
         views: [
           {
             type: 'ProteinView',
-            url: 'https://alphafold.ebi.ac.uk/files/AF-P15056-F1-model_v6.cif',
+            uniprotId: 'P15056',
+            transcriptId: 'NM_004333.6',
+            height: 540,
+            sideBySide: true,
+            // keep the connected genome at the gene-wide view when a domain is
+            // clicked (centerAt, not navToLocString) so the domain shows as a
+            // highlighted sub-region rather than filling the whole view
+            zoomToBaseLevel: false,
+            connectedView: {
+              assembly: 'hg38',
+              loc: 'chr7:140,713,328-140,924,929',
+              tracks: ['hg38-ncbiRefSeq'],
+            },
           },
         ],
       })}`,
     )}`,
-    // ProteinView flips this test-id once the structure is loaded and no
-    // pairwise alignment is pending (standalone structures have none), so the
-    // load wait is deterministic instead of a fixed delay. settleMs is no longer
-    // covering load — it's just a paint beat for molstar's software-WebGL raster
-    // at deviceScaleFactor 2, which can lag a frame behind the model state.
+    // ProteinView flips this test-id once the structure is loaded and the
+    // genome↔structure pairwise alignment has settled (this connected view
+    // computes one). settleMs is the molstar software-WebGL raster paint beat at
+    // deviceScaleFactor 2, which can lag a frame behind the model state.
     readySelector: '[data-testid="protein-view-ready"]',
-    readyTimeout: 60000,
+    readyTimeout: 90000,
     settleMs: 6000,
+    // Click the BRAF protein-kinase domain (UniProt Domain 457-717) on the
+    // protein feature track. The click selects the domain residues in the 3D
+    // structure (molstar), borders the feature bar, and maps the domain back to
+    // the genome — drawing a highlight band over the connected LGV. Demonstrates
+    // the genome↔structure cross-highlight. The feature bars expose
+    // data-testid/data-feature-start (protein3d ≥ v0.4.14).
+    actions: [
+      {
+        type: 'waitForSelector',
+        selector:
+          '[data-testid="protein-feature-Domain"][data-feature-start="457"]',
+      },
+      {
+        type: 'click',
+        selector:
+          '[data-testid="protein-feature-Domain"][data-feature-start="457"]',
+      },
+      { type: 'delay', ms: 6000 },
+    ],
   },
 
   // Connected genome + protein demo (TP53 / UniProt P04637). A single ProteinView
@@ -5259,15 +5293,13 @@ export const specs: ScreenshotSpec[] = [
   // from just `uniprotId` + `transcriptId` the plugin derives the AlphaFold
   // structure URL, resolves the transcript feature from the hg38-ncbiRefSeq track
   // at `loc`, and translates its CDS to the protein sequence it aligns to the
-  // structure. Requires a local jbrowse-plugin-protein3d build that supports the
-  // uniprotId/transcriptId short form (`pnpm start`, PORT=9000). curated, so a
-  // normal regen keeps the committed PNG; drop `curated` (with that local build)
-  // to re-shoot it.
+  // structure. Loads protein3d pinned to a published jsDelivr version
+  // (PROTEIN3D_CONFIG) against the local build, whose session has the
+  // setPendingMove split API the side-by-side launch needs.
   {
     mode: 'url',
-    curated: true,
     name: 'protein/connected',
-    url: `http://localhost:9000/.test-jbrowse-nightly/?config=/config.json&session=${encodeURIComponent(
+    url: `?config=${PROTEIN3D_CONFIG}&session=${encodeURIComponent(
       `spec-${JSON.stringify({
         views: [
           {
@@ -5275,6 +5307,12 @@ export const specs: ScreenshotSpec[] = [
             uniprotId: 'P04637',
             transcriptId: 'NM_000546.6',
             height: 540,
+            // place the protein view to the right of its connected genome view
+            // (left genome | right protein) via the workspaces split layout
+            sideBySide: true,
+            // keep the connected genome at the gene-wide view when a domain is
+            // clicked so the domain shows as a highlighted sub-region
+            zoomToBaseLevel: false,
             connectedView: {
               assembly: 'hg38',
               loc: 'chr17:7,668,421-7,687,550',
@@ -5291,6 +5329,22 @@ export const specs: ScreenshotSpec[] = [
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
     settleMs: 6000,
+    // Click the TP53 DNA-binding domain (UniProt "DNA binding" 102-292) on the
+    // protein feature track to drive the genome↔structure cross-highlight: the
+    // domain residues select in the 3D structure (molstar) and a highlight band
+    // is drawn over the connected LGV (NCBI RefSeq + ClinVar) at the mapped
+    // genome region. Feature bars expose data-testid (protein3d ≥ v0.4.14).
+    actions: [
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="protein-feature-DNA binding"]',
+      },
+      {
+        type: 'click',
+        selector: '[data-testid="protein-feature-DNA binding"]',
+      },
+      { type: 'delay', ms: 6000 },
+    ],
   },
 
   // ────────────────────────────────────────────────────────────────────────
@@ -5495,7 +5549,10 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           ...menuCascade(['Show...', 'Show conservation (% identity)']),
         ],
-        annotations: cascadeBoxes(['Show...', 'Show conservation (% identity)']),
+        annotations: cascadeBoxes([
+          'Show...',
+          'Show conservation (% identity)',
+        ]),
       },
       {
         actions: [

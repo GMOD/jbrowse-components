@@ -176,7 +176,10 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
         </div>
       ) : null}
       {availableNormalizations && availableNormalizations.length > 1 ? (
-        <div className={classes.normLabel} title="Normalization (change in track menu)">
+        <div
+          className={classes.normLabel}
+          title="Normalization (change in track menu)"
+        >
           norm: {activeNormalization}
         </div>
       ) : null}

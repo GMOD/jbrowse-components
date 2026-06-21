@@ -82,3 +82,19 @@ The honest caveats — where "makes sense for the user" deserves scrutiny:
 My actual recommendation on the abstraction: the core, clearly-valuable change is the synteny refetch-progress fix (your original ask). The cross-plugin RefetchIndicator is polish I did because you pointed at dotplot — it buys consistency + a latent dotplot determinate-bar fix, at the cost of coupling two plugins through a ~30-line component and restyling dotplot. That part is a genuine taste call, not a correctness one.
 
 So before I claim "done," two things would meaningfully raise confidence:
+
+## bigwig generate-screenshots whole genome
+
+second screenshot blank
+
+✗ gene_track_collapse_introns: waitForSelector: still visible "[data-testid="loading-overlay"]"
+
+## text boldness in sidebar...
+
+## sashimi arcs are not updating on zoom
+
+## pnpm dep in jbrowse-plugin-list reuploading everything every time to latest (???)
+
+## resizebar a little too 'transparent', make a little more visible
+
+## linesconnectingtogenomeposition no alpha, or maybe make a little thinner? look at v4.3.0 maybe

@@ -13,9 +13,9 @@
   },
   "variant_with_pileup": {
     "name": "variant_with_pileup",
-    "status": "good",
-    "note": "fixed: region ctgA:14439-14515, G->A variant now over the SNP column",
-    "reviewedAt": "2026-06-11T12:00:00.000Z"
+    "status": "bad",
+    "note": "make variant track less tall",
+    "reviewedAt": "2026-06-21T20:54:11.915Z"
   },
   "bigwig_xyplot": {
     "name": "bigwig_xyplot",
@@ -38,8 +38,8 @@
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
     "status": "good",
-    "note": "widened to 900, reduced height 450",
-    "reviewedAt": "2026-06-20T18:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-21T20:32:47.947Z"
   },
   "alignments/arc_display": {
     "name": "alignments/arc_display",
@@ -104,8 +104,8 @@
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
     "status": "bad",
-    "note": "the first screenshot height of screenshot too small now, menu is cut off, should also highlight with red textbox the 'Show...' parent menu",
-    "reviewedAt": "2026-06-21T15:40:12.039Z"
+    "note": "the first screenshot height of screenshot too small now, menu is cut off, should also highlight with red textbox the 'Show...' parent menu. also, the second screenshot is blank, needs better ability to wait for completion. if we dont have a reliable way to do this, we should make it",
+    "reviewedAt": "2026-06-21T20:34:50.920Z"
   },
   "modifications": {
     "name": "modifications",
@@ -229,15 +229,15 @@
   },
   "add_track_form": {
     "name": "add_track_form",
-    "status": "bad",
-    "note": "the arrow points randomly into the middle of the 'addtrack' widget. can you make it point more at the 'enter track data' text and stop short of the widget itself",
-    "reviewedAt": "2026-06-21T12:34:44.017Z"
+    "status": "good",
+    "note": "fixed: arrow now anchors to the \"Enter track data\" heading and stops short (dx:-30) instead of pointing into the middle of the widget; regenerated (forced)",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "alignments_center_line": {
     "name": "alignments_center_line",
     "status": "good",
-    "note": "View menu Show... submenu open with Show center line boxed and the center line visible; regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-21T20:32:51.061Z"
   },
   "alignments_center_line_menu": {
     "name": "alignments_center_line_menu",
@@ -248,20 +248,20 @@
   "alignments_soft_clipped_menu": {
     "name": "alignments_soft_clipped_menu",
     "status": "good",
-    "note": "increased viewport to 1100x620",
-    "reviewedAt": "2026-06-20T18:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-21T20:32:56.898Z"
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "bad",
-    "note": "annotation should be a bit closer to the context menu",
-    "reviewedAt": "2026-06-21T15:35:31.802Z"
+    "note": "explanatory text overlaps the snp context menu, move more to left",
+    "reviewedAt": "2026-06-21T20:33:29.350Z"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-04T17:57:48.042Z"
+    "status": "bad",
+    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description",
+    "reviewedAt": "2026-06-21T20:33:53.641Z"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
@@ -392,8 +392,8 @@
   "add_track_tracklist": {
     "name": "add_track_tracklist",
     "status": "bad",
-    "note": "please make the 'fab' red box smaller, and have an arrow pointing at the fab",
-    "reviewedAt": "2026-06-21T12:36:03.597Z"
+    "note": "please make the 'fab' red box smaller, and have an arrow pointing at the fab. also circle the 'open track selector', since fab only opens when track selector is open",
+    "reviewedAt": "2026-06-21T20:32:45.364Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -415,15 +415,15 @@
   },
   "customized_feature_details": {
     "name": "customized_feature_details",
-    "status": "bad",
-    "note": "reduce height of browser",
-    "reviewedAt": "2026-06-21T15:40:49.244Z"
+    "status": "good",
+    "note": "fixed: viewportHeight 900->680 (details panel scrolls; ringed google link stays at top); regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "customized_theme": {
     "name": "customized_theme",
-    "status": "bad",
-    "note": "reduce height of browser",
-    "reviewedAt": "2026-06-21T15:40:52.778Z"
+    "status": "good",
+    "note": "fixed: added viewportHeight 520; regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "cytobands": {
     "name": "cytobands",
@@ -433,9 +433,9 @@
   },
   "default_theme": {
     "name": "default_theme",
-    "status": "bad",
-    "note": "reduce height of browser",
-    "reviewedAt": "2026-06-21T15:41:02.165Z"
+    "status": "good",
+    "note": "fixed: added viewportHeight 520; regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "dotplot_add": {
     "name": "dotplot_add",
@@ -451,33 +451,33 @@
   },
   "drawer_widget_toggle": {
     "name": "drawer_widget_toggle",
-    "status": "bad",
-    "note": "the arrow is covering the 'left' menu item text. circle the track selector on the left hand side in second screenshot also",
-    "reviewedAt": "2026-06-21T15:42:45.306Z"
+    "status": "good",
+    "note": "fixed: arrow head nudged left of \"left\" label so it no longer covers the text; stage 2 now boxes the track selector docked on the left; regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "edit_track_settings": {
     "name": "edit_track_settings",
-    "status": "bad",
-    "note": "reduce height of browser a bit in each screenshot",
-    "reviewedAt": "2026-06-21T15:43:06.813Z"
+    "status": "good",
+    "note": "fixed: added viewportHeight 640 (shorter in both stages); regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "favorite_tracks": {
     "name": "favorite_tracks",
-    "status": "bad",
-    "note": "ideally add circle red on the 'more horizontal' icon in first screenshot",
-    "reviewedAt": "2026-06-21T15:43:35.394Z"
+    "status": "good",
+    "note": "fixed: spec already rings the more-horiz menu icon in stage 1, committed PNG was stale; regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "good",
-    "note": "fixed: caption now describes the color coding — upstream/downstream (red), UTR (blue), CDS (yellow), intronic (white)",
-    "reviewedAt": "2026-06-11T14:06:37.359Z"
+    "status": "bad",
+    "note": "this screenshot may want to use human gene. maybe FAF1. can also show it on the gene page in user guide. also need to show the translation exceptions functionality",
+    "reviewedAt": "2026-06-21T20:38:19.708Z"
   },
   "hic_track": {
     "name": "hic_track",
-    "status": "bad",
-    "note": "use tracklabels:offset",
-    "reviewedAt": "2026-06-21T15:46:32.836Z"
+    "status": "good",
+    "note": "fixed: added trackLabels:offset so the Hi-C display fills full width; regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "hierarchical/collapse_subcategories-fs8": {
     "name": "hierarchical/collapse_subcategories-fs8",
@@ -487,9 +487,9 @@
   },
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
-    "status": "bad",
-    "note": "the read name is very long in the headers, if possible, should use ellipses to shorten it",
-    "reviewedAt": "2026-06-21T15:55:28.990Z"
+    "status": "good",
+    "note": "fixed (source): long read names in the view-container header now ellipsize. Added maxWidth:300 + textOverflow:ellipsis to the shared EditableTypography input in packages/app-core ViewContainerTitle.tsx (full name kept in the hover tooltip). Verified the read-vs-ref outer title truncates with \"…\"; breakpoint_split_view/link_to_split_view unaffected (titles <300px). Rebuilt jbrowse-web + regenerated.",
+    "reviewedAt": "2026-06-21T18:30:50.000Z"
   },
   "recent_tracks": {
     "name": "recent_tracks",
@@ -499,15 +499,15 @@
   },
   "rnaseq/compact_stacked": {
     "name": "rnaseq/compact_stacked",
-    "status": "bad",
-    "note": "use tracklabels:offset. ",
-    "reviewedAt": "2026-06-21T05:27:41.072Z"
+    "status": "good",
+    "note": "fixed: added trackLabels:offset; regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
     "status": "bad",
-    "note": "use tracklabels:offset. ",
-    "reviewedAt": "2026-06-21T05:27:40.025Z"
+    "note": "consider using set feature height compact display mode",
+    "reviewedAt": "2026-06-21T20:50:25.774Z"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -541,9 +541,9 @@
   },
   "searching_lgv": {
     "name": "searching_lgv",
-    "status": "bad",
-    "note": "reduce width and height of browser a bit",
-    "reviewedAt": "2026-06-21T15:56:06.973Z"
+    "status": "good",
+    "note": "fixed: viewport 1150x560 (narrower+shorter); regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "share_button": {
     "name": "share_button",
@@ -577,9 +577,9 @@
   },
   "track_menu": {
     "name": "track_menu",
-    "status": "bad",
-    "note": "reduce height of both screenshots a bit",
-    "reviewedAt": "2026-06-21T16:00:22.927Z"
+    "status": "good",
+    "note": "fixed: viewportHeight 600->500 (shorter in both stages); regenerated",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "tracklabels": {
     "name": "tracklabels",
@@ -620,8 +620,8 @@
   "variant_panel": {
     "name": "variant_panel",
     "status": "bad",
-    "note": "the arrow is covering up the term 'samples'",
-    "reviewedAt": "2026-06-21T16:04:25.525Z"
+    "note": "this is good, but try to make more documentation about the 'dosage' mode",
+    "reviewedAt": "2026-06-21T20:53:55.069Z"
   },
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
@@ -631,15 +631,15 @@
   },
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T15:46:17.551Z"
+    "status": "bad",
+    "note": "link to the example-site pan-ukbb examples too",
+    "reviewedAt": "2026-06-21T20:39:28.910Z"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T15:46:21.039Z"
+    "status": "bad",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?",
+    "reviewedAt": "2026-06-21T20:39:41.125Z"
   },
   "link_to_split_view": {
     "name": "link_to_split_view",
@@ -692,8 +692,8 @@
   "protein/structure": {
     "name": "protein/structure",
     "status": "bad",
-    "note": "if possible, this should be a figure showing the linear genome view connection to the braf protein",
-    "reviewedAt": "2026-06-21T15:54:37.991Z"
+    "note": "basically a duplicate of protein/connected, might delete",
+    "reviewedAt": "2026-06-21T20:49:51.243Z"
   },
   "no_build_final": {
     "name": "no_build_final",
@@ -835,9 +835,9 @@
   },
   "scroll_zoom_toggle": {
     "name": "scroll_zoom_toggle",
-    "status": "good",
-    "note": "already single-frame (2nd frame removed); regenerated (already correct)",
-    "reviewedAt": "2026-06-19T15:30:00.000Z"
+    "status": "bad",
+    "note": "tell users how they can ctrl+scroll alternatively can sort of pinch to zoom too (macbook trackpad in particular)",
+    "reviewedAt": "2026-06-21T20:51:54.400Z"
   },
   "alignments/haplotype": {
     "name": "alignments/haplotype",
@@ -854,32 +854,32 @@
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "bad",
-    "note": "this seemingly is not a great screenshot the read pattern is confusing somehow. can you view pten instead of brca1",
-    "reviewedAt": "2026-06-21T05:23:54.653Z"
+    "note": "if you think it is useful, we can try to engineer the sashimi style where it renders some loops below the coverage",
+    "reviewedAt": "2026-06-21T20:39:01.823Z"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
-    "status": "bad",
-    "note": "add tracklabels:offset",
-    "reviewedAt": "2026-06-21T15:45:17.257Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-21T20:39:11.014Z"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
-    "status": "bad",
-    "note": "add tracklabels:offset",
-    "reviewedAt": "2026-06-21T15:45:23.552Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-21T20:39:13.250Z"
   },
   "gene_track_peptides": {
     "name": "gene_track_peptides",
-    "status": "bad",
-    "note": "add tracklabels:offset",
-    "reviewedAt": "2026-06-21T15:45:32.968Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-21T20:39:19.251Z"
   },
   "maf_conservation": {
     "name": "maf_conservation",
-    "status": "bad",
-    "note": "in the 'show' submenu, try to phrase all the items as 'Show coverage...' and 'Show conversation'. even though it restates the word show repeatedly, it enforces the idea of the fact these are all binary toggles",
-    "reviewedAt": "2026-06-21T15:51:25.825Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-21T20:43:01.151Z"
   },
   "rnaseq/single_read": {
     "name": "rnaseq/single_read",
@@ -919,9 +919,9 @@
   },
   "maf_track": {
     "name": "maf_track",
-    "status": "bad",
-    "note": "zoom out more",
-    "reviewedAt": "2026-06-21T15:51:36.848Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-21T20:42:45.099Z"
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
@@ -950,20 +950,20 @@
   "config_not_found": {
     "name": "config_not_found",
     "status": "bad",
-    "note": "please actually run 'jbrowse create newfolder' and then screenshot the example of what a user sees when starting server in newfolder",
-    "reviewedAt": "2026-06-21T16:06:08.645Z"
+    "note": "this looks like it is showing dev mode noconfigmessage, might want to ensure this is the production build of jbrowse. if it is production build, it should only say 'no config.json found' with link to volvox examples, but not other examples, as we cant strict guarantee we wont move files around",
+    "reviewedAt": "2026-06-21T20:35:49.783Z"
   },
   "default_session_form": {
     "name": "default_session_form",
     "status": "bad",
-    "note": "you can start the admin-server and try to snapshot this",
-    "reviewedAt": "2026-06-21T16:06:25.563Z"
+    "note": "might want it to be a two-part screenshot, showing what to click to open this",
+    "reviewedAt": "2026-06-21T20:36:47.619Z"
   },
   "assembly_manager": {
     "name": "assembly_manager",
-    "status": "bad",
-    "note": "you can start the admin-server and try to snapshot this",
-    "reviewedAt": "2026-06-21T16:06:28.486Z"
+    "status": "good",
+    "note": "fixed: now autogenerated. New spec drives jbrowse-web in admin mode (&adminKey=, client-side) on empty.json + Tools->Assembly manager. Captures the current empty manager dialog (data-grid, No rows) over the dimmed app. sessionName=Screenshot keeps the title-bar timestamp out so the PNG is stable.",
+    "reviewedAt": "2026-06-21T18:23:11.000Z"
   },
   "embed_linear_genome_view/final": {
     "name": "embed_linear_genome_view/final",
@@ -973,110 +973,116 @@
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:08:39.519Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:08:37.069Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/dark_theme": {
     "name": "jbrowse-img/dark_theme",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual. the description for the genes is unfortunately dark blue. might need to check. we might need to delete entire autogenerated set of figures including this one and regenerate",
-    "reviewedAt": "2026-06-21T16:09:13.661Z"
+    "status": "good",
+    "note": "fixed (source): worker-side feature label/description colors are baked at feature-fetch time from session.themeOptions, but jb2export only applied --themeName at rasterization (after fetch), so descriptions used the light-theme dark blue (illegible on dark). renderRegion.tsx now calls session.setThemeName(themeName) up front before any fetch. Gene descriptions now render in the dark-tuned light blue (blue[300]). Regenerated + synced.",
+    "reviewedAt": "2026-06-21T18:58:58.000Z"
   },
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
-    "status": "bad",
-    "note": "should try to auto-diagonalize and turn off the 'show cigar indels'. also likely mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:04.082Z"
+    "status": "good",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered — autoDiagonalize now applies; the hs1<->mm39 lower level reorders from a crossing hairball into legible diagonal blocks (top hg38<->hs1 level stays near-vertical). cigar indels not visible at whole-genome scale.",
+    "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
-    "status": "bad",
-    "note": "likely mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:13.529Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
-    "status": "bad",
-    "note": "should try to auto-diagonalize and turn off the 'show cigar indels'. also likely mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:14.324Z"
+    "status": "good",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered — autoDiagonalize now applies in jb2export SSR (committed PNG predated it), so mm39 chromosomes reorder and the ribbons read cleanly. cigar indels are not drawn at whole-genome scale, so the cigar-off ask is moot here.",
+    "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
     "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual. should decrease opacity",
-    "reviewedAt": "2026-06-21T16:10:16.847Z"
+    "note": "TAGGING FIXED (autogenerated by @jbrowse/img, not manual). OPACITY: investigated — re-rendering with the current jb2export turns the dense thin-anchor PAF into faint pastel ribbons (the old vivid filled-trapezoid look came from an older synteny renderer; drawCurves/alpha/autoDiagonalize all tested, all fainter). Kept the original committed PNG rather than regress it; a proper opacity tweak needs the renderer to fill trapezoids at moderate alpha for this dataset.",
+    "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:18.388Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:29.186Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:30.481Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
-    "status": "bad",
-    "note": " is this really manual?  might be mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:10:31.654Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "hg38_assembly_table": {
     "name": "hg38_assembly_table",
-    "status": "bad",
-    "note": "you can start the admin-server and try to snapshot this",
-    "reviewedAt": "2026-06-21T16:10:50.325Z"
+    "status": "good",
+    "note": "fixed: now autogenerated. New hg38_only.json config + admin mode -> Assembly manager shows the hg38 row (GRCh38 alias, edit/delete actions). Current UI, stable title.",
+    "reviewedAt": "2026-06-21T18:23:11.000Z"
   },
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
-    "status": "bad",
-    "note": "might try to use show curves. likely mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:11:41.950Z"
+    "status": "good",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --drawCurves CLI flag and re-rendered with it — the ribbon is now a smooth bezier instead of straight trapezoids. render-comparative-examples.sh + README updated.",
+    "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
-    "status": "bad",
-    "note": "likely mis-tagged as manual. try to auto-diagonalize too. can show a before and after auto-diagonalize if it helps",
-    "reviewedAt": "2026-06-21T16:11:36.951Z"
+    "status": "good",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --autoDiagonalize CLI flag (options.ts/main.ts/renderRegion.tsx) and re-rendered with it — the R64 contigs reorder so the alignment forms a clean continuous diagonal instead of the old staircase. render-comparative-examples.sh + README updated.",
+    "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/variants": {
     "name": "jbrowse-img/variants",
-    "status": "bad",
-    "note": "likely mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:11:42.033Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/skbr3_cov": {
     "name": "jbrowse-img/skbr3_cov",
-    "status": "bad",
-    "note": "likely mis-tagged as manual. also, when the chromosomes are quite narrow (e.g. <150px), might not need to draw the 'tick marks' for scalebar ticks",
-    "reviewedAt": "2026-06-21T16:12:40.956Z"
+    "status": "good",
+    "note": "fixed (source): SVGRuler.tsx now skips the per-region tick marks when a block is <150px wide. At whole-genome scale the small chromosomes (16-22, X, Y) crowded minor ticks under their refName labels; they now show a clean label only, while wider chromosomes keep their ticks. Regenerated + synced.",
+    "reviewedAt": "2026-06-21T18:58:58.000Z"
   },
   "jbrowse-img/sequence": {
     "name": "jbrowse-img/sequence",
-    "status": "bad",
-    "note": "likely mis-tagged as manual",
-    "reviewedAt": "2026-06-21T16:11:45.626Z"
+    "status": "good",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "protein/connected": {
     "name": "protein/connected",
     "status": "bad",
-    "note": "might be autogenerated? also might want to launch it as split view on left-right using useWorkspaces:true",
-    "reviewedAt": "2026-06-21T16:13:59.228Z"
+    "note": "the domain that is highlighted is slightly off to the right of the proteinfeaturetrack and tooltip is offscreen. if possible add red arrows to indicate the highlights on the screen",
+    "reviewedAt": "2026-06-21T20:43:48.086Z"
+  },
+  "sv_cgiab/translocation_open_from_track": {
+    "name": "sv_cgiab/translocation_open_from_track",
+    "status": "bad",
+    "note": "make screenshot slightly taller. please make the screenshot titles a bit better than just 'screenshot' if it makes sense to",
+    "reviewedAt": "2026-06-21T20:52:23.506Z"
   }
 }

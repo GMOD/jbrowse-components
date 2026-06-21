@@ -1,7 +1,11 @@
 import { useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, reducePrecision, toLocale } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  reducePrecision,
+  toLocale,
+} from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 

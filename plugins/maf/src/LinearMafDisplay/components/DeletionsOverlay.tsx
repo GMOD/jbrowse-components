@@ -37,7 +37,11 @@ const DeletionsOverlay = observer(function DeletionsOverlay({
         for (const m of markers) {
           const text = String(m.length)
           if (m.width >= measureText(text) + 2 && m.h >= MIN_HEIGHT_FOR_TEXT) {
-            ctx.fillText(text, m.xLeft + m.width / 2, Math.round(m.rowTop + m.h / 2))
+            ctx.fillText(
+              text,
+              m.xLeft + m.width / 2,
+              Math.round(m.rowTop + m.h / 2),
+            )
           }
         }
       }}

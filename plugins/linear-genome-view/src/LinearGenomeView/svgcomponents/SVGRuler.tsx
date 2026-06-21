@@ -94,16 +94,20 @@ export default function SVGRuler({
               <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
                 {refName}
               </text>
-              <g transform="translate(0 20)">
-                <Ruler
-                  hideText={!renderRuler}
-                  start={start}
-                  end={end}
-                  bpPerPx={bpPerPx}
-                  reversed={reversed}
-                  widthPx={widthPx}
-                />
-              </g>
+              {/* very narrow regions (e.g. whole-genome view of small
+              chromosomes) crowd ticks under the refName label, so skip them */}
+              {widthPx >= 150 ? (
+                <g transform="translate(0 20)">
+                  <Ruler
+                    hideText={!renderRuler}
+                    start={start}
+                    end={end}
+                    bpPerPx={bpPerPx}
+                    reversed={reversed}
+                    widthPx={widthPx}
+                  />
+                </g>
+              ) : null}
             </SvgClipRect>
           </g>
         )

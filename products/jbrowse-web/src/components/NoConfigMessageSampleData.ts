@@ -132,11 +132,13 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
-    label: 'ChromHMM chromatin-state painting (9 ENCODE cell types, β-globin locus)',
+    label:
+      'ChromHMM chromatin-state painting (9 ENCODE cell types, β-globin locus)',
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["roadmap_chromhmm_multirow_hg19"]}]}',
-    label: 'ChromHMM chromatin-state painting (Roadmap, 127 epigenomes, auto-fit)',
+    label:
+      'ChromHMM chromatin-state painting (Roadmap, 127 epigenomes, auto-fit)',
   },
 ]
 

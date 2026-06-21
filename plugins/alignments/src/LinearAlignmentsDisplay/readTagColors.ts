@@ -1,4 +1,8 @@
-import { colorFwdStrand, colorNostrand, colorRevStrand } from '@jbrowse/core/ui/theme'
+import {
+  colorFwdStrand,
+  colorNostrand,
+  colorRevStrand,
+} from '@jbrowse/core/ui/theme'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'

@@ -153,7 +153,12 @@ interface ReleaseFlags {
 // resolves the JBrowse release download URL from the create/upgrade flags,
 // preferring an explicit --url, then --nightly, --branch, and finally --tag
 // (or the latest release)
-export async function resolveReleaseUrl({ url, nightly, branch, tag }: ReleaseFlags) {
+export async function resolveReleaseUrl({
+  url,
+  nightly,
+  branch,
+  tag,
+}: ReleaseFlags) {
   return (
     url ||
     (nightly ? getBranch('main') : '') ||

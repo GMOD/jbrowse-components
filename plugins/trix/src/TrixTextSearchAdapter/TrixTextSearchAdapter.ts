@@ -92,7 +92,9 @@ export default class TrixTextSearchAdapter
       .map(({ term, loc, trackId, attrs }) => {
         const termLower = term.toLowerCase()
         const labelField = attrs.find(Boolean) ?? ''
-        const contextField = attrs.find(f => f.toLowerCase().includes(termLower))
+        const contextField = attrs.find(f =>
+          f.toLowerCase().includes(termLower),
+        )
         const context = contextField ? shorten(contextField, term) : undefined
         const label = shorten(labelField, term)
 

@@ -14,6 +14,8 @@ export function makeLdR2Evaluator(
   return feature => {
     const name = feature.get('name')
     const key = posKey(refName, feature.get('start'))
-    return matchesIndexSnp(name, key, indexSnp) ? 1 : (lookupR2(ld, name, key) ?? NaN)
+    return matchesIndexSnp(name, key, indexSnp)
+      ? 1
+      : (lookupR2(ld, name, key) ?? NaN)
   }
 }

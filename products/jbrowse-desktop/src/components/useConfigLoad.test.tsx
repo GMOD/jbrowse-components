@@ -24,13 +24,17 @@ beforeEach(() => {
 })
 
 test('does not load without a config', () => {
-  renderHook(() => { useConfigLoad(undefined, onLoad, onError) })
+  renderHook(() => {
+    useConfigLoad(undefined, onLoad, onError)
+  })
   expect(mockLoad).not.toHaveBeenCalled()
 })
 
 test('reports the loaded plugin manager and does not destroy it', async () => {
   mockLoad.mockResolvedValue(fakePluginManager)
-  renderHook(() => { useConfigLoad('config-a', onLoad, onError) })
+  renderHook(() => {
+    useConfigLoad('config-a', onLoad, onError)
+  })
   await waitFor(() => {
     expect(onLoad).toHaveBeenCalledWith(fakePluginManager)
   })
@@ -41,7 +45,9 @@ test('reports the loaded plugin manager and does not destroy it', async () => {
 test('reports load errors', async () => {
   const error = new Error('boom')
   mockLoad.mockRejectedValue(error)
-  renderHook(() => { useConfigLoad('config-a', onLoad, onError) })
+  renderHook(() => {
+    useConfigLoad('config-a', onLoad, onError)
+  })
   await waitFor(() => {
     expect(onError).toHaveBeenCalledWith(error)
   })

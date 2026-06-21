@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Protein3d",
-      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/latest/dist/jbrowse-plugin-protein3d.umd.production.min.js"
+      "url": "https://cdn.jsdelivr.net/npm/jbrowse-plugin-protein3d@0.4.14/dist/jbrowse-plugin-protein3d.umd.production.min.js"
     }
   ],
   "assemblies": [
@@ -54,6 +54,50 @@
         }
       },
       "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38-ncbiRefSeq",
+      "name": "NCBI RefSeq - RefSeq All",
+      "assemblyNames": ["hg38"],
+      "category": ["Genes and Gene Predictions"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz"
+        },
+        "index": {
+          "indexType": "CSI",
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi"
+          }
+        }
+      }
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "clinvar_ncbi_hg38",
+      "name": "ClinVar variants (NCBI)",
+      "assemblyNames": ["hg38"],
+      "category": ["Annotation", "ClinVar"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp.ncbi.nlm.nih.gov/pub/clinvar/vcf_GRCh38/clinvar.vcf.gz.tbi"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearVariantDisplay",
+          "displayId": "clinvar_ncbi_hg38-LinearVariantDisplay",
+          "color": "jexl:({'Benign':'blue','Likely_benign':'deepskyblue','Uncertain_significance':'gray','Pathogenic':'red','Likely_pathogenic':'orange','Conflicting_interpretations_of_pathogenicity':'brown'})[feature.INFO.CLNSIG] || 'purple'"
+        }
+      ]
     }
   ]
 }

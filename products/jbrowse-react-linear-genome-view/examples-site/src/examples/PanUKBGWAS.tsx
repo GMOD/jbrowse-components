@@ -206,8 +206,7 @@ export default function PanUKBGWAS() {
   const activeCol = options.some(o => o.col === scoreColumn)
     ? scoreColumn
     : (options[0]?.col ?? 'neglog10_pval_meta')
-  const activeLabel =
-    options.find(o => o.col === activeCol)?.label ?? activeCol
+  const activeLabel = options.find(o => o.col === activeCol)?.label ?? activeCol
 
   return (
     <div>

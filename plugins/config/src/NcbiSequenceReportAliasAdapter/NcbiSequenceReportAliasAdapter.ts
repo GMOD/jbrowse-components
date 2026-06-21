@@ -10,7 +10,9 @@ import type { BaseRefNameAliasAdapter } from '@jbrowse/core/data_adapters/BaseAd
 function requireColumn(header: string[], name: string) {
   const idx = header.indexOf(name)
   if (idx === -1) {
-    throw new Error(`sequence_report.tsv header is missing required column "${name}"`)
+    throw new Error(
+      `sequence_report.tsv header is missing required column "${name}"`,
+    )
   }
   return idx
 }

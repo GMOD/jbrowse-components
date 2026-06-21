@@ -8,7 +8,9 @@ export const ROW_IDENTITY_MODES = [
   ['xyplot', 'X-Y plot'],
 ] as const
 
-export const ROW_IDENTITY_MODE_VALUES = ROW_IDENTITY_MODES.map(([value]) => value)
+export const ROW_IDENTITY_MODE_VALUES = ROW_IDENTITY_MODES.map(
+  ([value]) => value,
+)
 
 /** Any per-row identity menu choice, including the `none` (off) state. */
 export type RowIdentityModeWithOff = (typeof ROW_IDENTITY_MODES)[number][0]

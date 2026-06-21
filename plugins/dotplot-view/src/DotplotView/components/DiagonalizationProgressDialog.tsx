@@ -85,7 +85,9 @@ const DiagonalizationProgressDialog = observer(
       <Dialog
         open
         title="Re-order chromosomes"
-        onClose={() => { handleDialogClose() }}
+        onClose={() => {
+          handleDialogClose()
+        }}
         maxWidth="lg"
       >
         <DialogContent className={classes.content}>
@@ -102,7 +104,9 @@ const DiagonalizationProgressDialog = observer(
         <DialogActions>
           {isRunning ? (
             <Button
-              onClick={() => { handleCancel() }}
+              onClick={() => {
+                handleCancel()
+              }}
               color="secondary"
               variant="contained"
             >
@@ -111,7 +115,9 @@ const DiagonalizationProgressDialog = observer(
           ) : (
             <>
               <Button
-                onClick={() => { handleClose() }}
+                onClick={() => {
+                  handleClose()
+                }}
                 color="secondary"
                 variant="contained"
               >

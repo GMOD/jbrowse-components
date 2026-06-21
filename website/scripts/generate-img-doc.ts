@@ -67,7 +67,8 @@ function rewriteImages(md: string) {
 // Fill the README's INJECT_HELP marker block with the live `jb2export --help`
 // output (top-level + every subcommand), so the published help reference can't
 // drift from the CLI. Mirrors the COLOR_TABLE marker pattern used in the guides.
-const helpStartRe = /(<!-- INJECT_HELP START[^>]*-->)[\s\S]*?(<!-- INJECT_HELP END -->)/
+const helpStartRe =
+  /(<!-- INJECT_HELP START[^>]*-->)[\s\S]*?(<!-- INJECT_HELP END -->)/
 
 function injectHelp(md: string) {
   if (!helpStartRe.test(md)) {

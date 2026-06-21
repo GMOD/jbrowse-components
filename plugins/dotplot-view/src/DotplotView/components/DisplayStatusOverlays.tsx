@@ -1,5 +1,6 @@
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { RefetchIndicator } from '@jbrowse/synteny-core'
 import { LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -14,12 +15,6 @@ const useStyles = makeStyles()({
     alignItems: 'center',
     justifyContent: 'center',
     gap: 4,
-  },
-  refetchOverlay: {
-    position: 'absolute',
-    bottom: 4,
-    right: 4,
-    opacity: 0.7,
   },
   bar: {
     width: 160,
@@ -51,9 +46,11 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
             )}
           </div>
         ) : display.isRefetching ? (
-          <div key={display.id} className={classes.refetchOverlay}>
-            <LoadingEllipses message={display.statusMessage} />
-          </div>
+          <RefetchIndicator
+            key={display.id}
+            statusMessage={display.statusMessage}
+            statusProgress={display.statusProgress}
+          />
         ) : null,
       )}
     </>

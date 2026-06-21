@@ -35,11 +35,13 @@ export default class RefNameAliasAdapter
       )
     }
 
-    return rows.filter(cols => !isComment(cols)).flatMap(cols => {
-      const refName = cols[headerCol]
-      return refName !== undefined
-        ? [{ refName, aliases: cols.filter(f => !!f.trim()) }]
-        : []
-    })
+    return rows
+      .filter(cols => !isComment(cols))
+      .flatMap(cols => {
+        const refName = cols[headerCol]
+        return refName !== undefined
+          ? [{ refName, aliases: cols.filter(f => !!f.trim()) }]
+          : []
+      })
   }
 }

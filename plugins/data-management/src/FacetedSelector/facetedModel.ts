@@ -37,7 +37,9 @@ function hiddenColumnsKey(assemblyNames: string[]) {
 function readHiddenColumns(key: string): string[] {
   try {
     const parsed: unknown = JSON.parse(localStorageGetItem(key) ?? '[]')
-    return Array.isArray(parsed) ? parsed.filter(x => typeof x === 'string') : []
+    return Array.isArray(parsed)
+      ? parsed.filter(x => typeof x === 'string')
+      : []
   } catch (e) {
     console.error(e)
     return []
@@ -124,7 +126,9 @@ export function facetedStateTreeF() {
         self.trackConfigurations = tracks
         self.session = session
         self.assemblyNames = assemblyNames
-        self.hiddenColumns.replace(readHiddenColumns(hiddenColumnsKey(assemblyNames)))
+        self.hiddenColumns.replace(
+          readHiddenColumns(hiddenColumnsKey(assemblyNames)),
+        )
       },
       /**
        * #action

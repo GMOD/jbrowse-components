@@ -8,7 +8,10 @@ import {
   isSessionWithAddTracks,
   makeTrackId,
 } from '@jbrowse/core/util'
-import { getRpcSessionId, getTrackAssemblyNames } from '@jbrowse/core/util/tracks'
+import {
+  getRpcSessionId,
+  getTrackAssemblyNames,
+} from '@jbrowse/core/util/tracks'
 import { type Instance, getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
@@ -365,9 +368,8 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * #method
        */
       trackMenuItems() {
-        const hasGCContent = !!getEnv(self).pluginManager.getTrackType(
-          'GCContentTrack',
-        )
+        const hasGCContent =
+          !!getEnv(self).pluginManager.getTrackType('GCContentTrack')
         return self.isDna
           ? [
               {

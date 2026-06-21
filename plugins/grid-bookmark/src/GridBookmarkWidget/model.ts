@@ -356,7 +356,10 @@ export default function f(_pluginManager: PluginManager) {
       ) as SnapshotIn<typeof LabeledRegionModel>[]
       const shared = sharedBookmarks as SnapshotIn<typeof LabeledRegionModel>[]
       const seen = new Set(local.map(bookmarkKey))
-      const merged = [...local, ...shared.filter(b => !seen.has(bookmarkKey(b)))]
+      const merged = [
+        ...local,
+        ...shared.filter(b => !seen.has(bookmarkKey(b))),
+      ]
       return { ...rest, bookmarks: merged } as unknown as typeof snap
     })
     .postProcessSnapshot(snap => {

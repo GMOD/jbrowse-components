@@ -20,8 +20,7 @@ const out = join(
   'panukbPhenotypes.json',
 )
 
-const splitPops = v =>
-  v === 'NA' ? [] : v.split(',').filter(Boolean)
+const splitPops = v => (v === 'NA' ? [] : v.split(',').filter(Boolean))
 
 const res = await fetch(MANIFEST_URL)
 if (!res.ok) {

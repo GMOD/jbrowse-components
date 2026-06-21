@@ -55,7 +55,9 @@ function makeSession(displays: { id: string; type: string }[]) {
 }
 
 function findGCTrack(session: ReturnType<typeof makeSession>) {
-  const added = session.tracks.find(t => readConfObject(t, 'type') === 'GCContentTrack')
+  const added = session.tracks.find(
+    t => readConfObject(t, 'type') === 'GCContentTrack',
+  )
   if (!added) {
     throw new Error('no GCContentTrack was added')
   }
@@ -98,7 +100,9 @@ test('LinearGCContentDisplay carries its current params onto the new track', () 
   const added = findGCTrack(session)
   expect(readConfObject(added, 'name')).toBe('GC skew')
   const trackDisplay = added.displays[0]
-  expect(readConfObject(trackDisplay, 'type')).toBe('LinearGCContentTrackDisplay')
+  expect(readConfObject(trackDisplay, 'type')).toBe(
+    'LinearGCContentTrackDisplay',
+  )
   expect(readConfObject(trackDisplay, 'windowSize')).toBe(50)
   expect(readConfObject(trackDisplay, 'windowDelta')).toBe(10)
   expect(readConfObject(trackDisplay, 'gcMode')).toBe('skew')
@@ -110,8 +114,8 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   ])
   // the track selector sources the refseq config from the assembly, not from
   // session.tracks
-  const refseqConf = session.assemblyManager.get('volvox')!.configuration
-    .sequence
+  const refseqConf =
+    session.assemblyManager.get('volvox')!.configuration.sequence
   const items = session.getTrackListMenuItems(refseqConf, session.views[0])
   const addGc = items.find(
     item => 'label' in item && item.label === 'Add GC content track',

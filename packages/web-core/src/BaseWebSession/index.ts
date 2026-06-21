@@ -74,7 +74,10 @@ export function BaseWebSessionModel({
       AppSessionMixin(pluginManager),
       WebSessionConnectionsMixin(pluginManager),
       // nested to stay within types.compose's 10-argument limit
-      types.compose(DockviewLayoutMixin(), TrackMenuItemsSessionMixin(pluginManager)),
+      types.compose(
+        DockviewLayoutMixin(),
+        TrackMenuItemsSessionMixin(pluginManager),
+      ),
     )
     .props({
       /**

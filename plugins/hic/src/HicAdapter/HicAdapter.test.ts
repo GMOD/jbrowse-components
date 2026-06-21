@@ -24,7 +24,9 @@ function makeMockParser() {
       ref2: { chr: string },
     ) => {
       if (ref.chr !== ref2.chr) {
-        throw new Error(`No data available for resolution: map ${ref.chr}-${ref2.chr}`)
+        throw new Error(
+          `No data available for resolution: map ${ref.chr}-${ref2.chr}`,
+        )
       }
       return Promise.resolve([{ bin1: 0, bin2: 0, counts: 5 }])
     },

@@ -167,7 +167,9 @@ export function parseStrand(strand: string | number | undefined): number {
 export function arrayify(f: string | undefined): number[] | undefined {
   // BED block columns are conventionally comma-terminated ("200,300,200,");
   // drop the trailing empty so we don't emit a trailing NaN
-  return f === undefined ? undefined : f.replace(/,$/, '').split(',').map(Number)
+  return f === undefined
+    ? undefined
+    : f.replace(/,$/, '').split(',').map(Number)
 }
 
 export function featureData({

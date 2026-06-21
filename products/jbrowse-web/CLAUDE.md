@@ -2,14 +2,14 @@
 
 ## Bundle-size analysis
 
-Measure the metric that matters — **JS bytes over the wire on the initial
-load** — not total bundle size. Webpack `splitChunks: { chunks: 'all' }` cut
-total bytes ~7% but left the initial-load payload unchanged (the savings were
-all in lazy chunks), so it was reverted. The real cost is that the cold start
-screen eagerly loads ~2.2 MB of JS, dominated by a single ~1 MB chunk holding
-*all* plugin code (`corePlugins.ts` is statically imported when the plugin
-manager is built at boot). react-dom is also duplicated main↔worker (separate
-webpack runtimes — `splitChunks` can't merge across that boundary).
+Measure the metric that matters — **JS bytes over the wire on the initial load**
+— not total bundle size. Webpack `splitChunks: { chunks: 'all' }` cut total
+bytes ~7% but left the initial-load payload unchanged (the savings were all in
+lazy chunks), so it was reverted. The real cost is that the cold start screen
+eagerly loads ~2.2 MB of JS, dominated by a single ~1 MB chunk holding _all_
+plugin code (`corePlugins.ts` is statically imported when the plugin manager is
+built at boot). react-dom is also duplicated main↔worker (separate webpack
+runtimes — `splitChunks` can't merge across that boundary).
 
 Two harnesses (run after a `build`; serve from `build/`):
 

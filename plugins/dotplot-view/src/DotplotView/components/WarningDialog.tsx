@@ -64,7 +64,9 @@ const WarningDialog = observer(function WarningDialog({
   return (
     <Dialog
       open
-      onClose={() => { handleClose() }}
+      onClose={() => {
+        handleClose()
+      }}
       maxWidth="xl"
       title="Dotplot rendered with warnings"
     >

@@ -117,7 +117,8 @@ const SequenceDisplay = observer(function SequenceDisplay({
     return <div>No sequence data</div>
   }
 
-  const hoveredSample = hover?.row !== undefined ? samples[hover.row] : undefined
+  const hoveredSample =
+    hover?.row !== undefined ? samples[hover.row] : undefined
   const hoveredChar =
     hover?.row !== undefined && hover.col !== undefined
       ? sequences[hover.row]?.[hover.col]

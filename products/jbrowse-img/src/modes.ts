@@ -21,7 +21,11 @@ export interface ModeDescriptor {
 
 export const modeDescriptors: Record<ViewMode, ModeDescriptor> = {
   linear: { subcommand: 'lgv', comparative: false },
-  dotplot: { subcommand: 'dotplot', viewType: 'DotplotView', comparative: true },
+  dotplot: {
+    subcommand: 'dotplot',
+    viewType: 'DotplotView',
+    comparative: true,
+  },
   synteny: {
     subcommand: 'synteny',
     viewType: 'LinearSyntenyView',

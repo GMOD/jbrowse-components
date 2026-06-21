@@ -58,7 +58,8 @@ export async function* indexFiles({
       const progress = makeProgress?.(trackId)
       const common = {
         config: track,
-        attributesToIndex: textSearching?.indexingAttributes ?? attributesToIndex,
+        attributesToIndex:
+          textSearching?.indexingAttributes ?? attributesToIndex,
         inLocation,
         outDir,
         onStart: progress?.onStart ?? noop,

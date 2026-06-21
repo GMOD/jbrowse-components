@@ -79,7 +79,12 @@ function isTSVHeader(header: string) {
 
 function parseCoord(value: string | undefined, field: string, line: string) {
   const n = Number(value)
-  if (value === undefined || value.trim() === '' || !Number.isInteger(n) || n < 0) {
+  if (
+    value === undefined ||
+    value.trim() === '' ||
+    !Number.isInteger(n) ||
+    n < 0
+  ) {
     throw new Error(`Invalid ${field} "${value ?? ''}" in line: ${line}`)
   }
   return n
@@ -101,7 +106,7 @@ export function parseBookmarks(data: string, bedAssembly: string) {
       throw new Error(`Missing refName in line: ${line}`)
     }
     return {
-      assemblyName: tsv ? (assemblyName || bedAssembly) : bedAssembly,
+      assemblyName: tsv ? assemblyName || bedAssembly : bedAssembly,
       refName,
       // TSV starts are 1-based on export, so convert back to the 0-based
       // internal coordinate; BED starts are already 0-based

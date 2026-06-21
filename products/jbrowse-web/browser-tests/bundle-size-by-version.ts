@@ -29,7 +29,10 @@ const JBROWSE_WEB_ROOT = join(HERE, '..')
 const LOCAL_BUILD = join(JBROWSE_WEB_ROOT, 'build')
 
 const CORS = [
-  { source: '**/*', headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }] },
+  {
+    source: '**/*',
+    headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
+  },
 ]
 
 // gzip the text assets a real static host would, so the CDP encodedDataLength
@@ -293,10 +296,11 @@ function asciiChart(samples: Sample[]) {
     .join('\n')
 }
 
-const log1 = (s: Sample) =>
-  { console.log(
+const log1 = (s: Sample) => {
+  console.log(
     `    JS ${Math.round(s.jsBytes / 1024)} KB in ${s.jsCount} reqs | all ${Math.round(s.allBytes / 1024)} KB | rendered=${s.rendered}`,
-  ) }
+  )
+}
 
 async function main() {
   const args = parseArgs(process.argv.slice(2))
@@ -324,7 +328,9 @@ async function main() {
       versions = args.all ? floored : decimate(floored)
     }
     versions = [...versions].sort(cmpVersion)
-    console.log(`Measuring ${versions.length} releases:\n  ${versions.join(', ')}\n`)
+    console.log(
+      `Measuring ${versions.length} releases:\n  ${versions.join(', ')}\n`,
+    )
     for (const v of versions) {
       console.log(`==> ${v}`)
       try {
@@ -345,7 +351,9 @@ async function main() {
       byVersion.set(label, s)
       log1(s)
     } else {
-      console.error(`    no build found — run: pnpm --filter @jbrowse/web build`)
+      console.error(
+        `    no build found — run: pnpm --filter @jbrowse/web build`,
+      )
     }
   }
 

@@ -18,12 +18,7 @@ import {
   toggleTrackGeneric,
 } from '@jbrowse/core/util/tracks'
 import { ElementId } from '@jbrowse/core/util/types/mst'
-import {
-  cast,
-  getParent,
-  getSnapshot,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { cast, getParent, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import { RenderLifecycleMixin } from '@jbrowse/render-core/RenderLifecycleMixin'
 import FolderOpenIcon from '@mui/icons-material/FolderOpen'
 import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
@@ -50,7 +45,11 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
-import type { IAnyStateTreeNode, Instance, SnapshotIn  } from '@jbrowse/mobx-state-tree'
+import type {
+  IAnyStateTreeNode,
+  Instance,
+  SnapshotIn,
+} from '@jbrowse/mobx-state-tree'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
@@ -78,7 +77,12 @@ function axisTicks(view: Dotplot1DViewModel) {
 // called from the model's own views.
 function canonicalRegion(
   node: IAnyStateTreeNode,
-  region: { assemblyName?: string; refName: string; start: number; end: number },
+  region: {
+    assemblyName?: string
+    refName: string
+    start: number
+    end: number
+  },
 ) {
   const { assemblyManager } = getSession(node)
   const asm = region.assemblyName

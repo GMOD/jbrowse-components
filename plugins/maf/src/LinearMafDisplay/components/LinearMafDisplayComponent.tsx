@@ -39,9 +39,9 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
-  const drag = useDragSelection(ref, (x, y) =>
-    { openInsertionWidgetOnClick(model, x, y) },
-  )
+  const drag = useDragSelection(ref, (x, y) => {
+    openInsertionWidgetOnClick(model, x, y)
+  })
   return (
     <DisplayChrome
       model={model}

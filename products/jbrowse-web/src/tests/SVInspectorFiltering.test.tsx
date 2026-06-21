@@ -87,8 +87,13 @@ test('opens SVInspector and tests data grid filtering functionality', async () =
 // the circular view never filtered.
 test('SVInspector quick-filter input propagates to visibleRows/features', async () => {
   await mockConsoleWarn(async () => {
-    const { session, findByTestId, getByTestId, findByText, findByPlaceholderText } =
-      await createView()
+    const {
+      session,
+      findByTestId,
+      getByTestId,
+      findByText,
+      findByPlaceholderText,
+    } = await createView()
 
     fireEvent.click(await findByText('File'))
     fireEvent.click(await findByText('Add'))
@@ -130,10 +135,12 @@ test('SVInspector quick-filter input propagates to visibleRows/features', async 
     await waitFor(() => {
       expect(spreadsheet.visibleRows!.length).toBeLessThan(initialRowCount)
     }, delay)
-    expect(svInspectorView.features.length).toBe(spreadsheet.visibleRows!.length)
-    expect(svInspectorView.featuresCircularTrackConfiguration.adapter.features).toBe(
-      svInspectorView.features,
+    expect(svInspectorView.features.length).toBe(
+      spreadsheet.visibleRows!.length,
     )
+    expect(
+      svInspectorView.featuresCircularTrackConfiguration.adapter.features,
+    ).toBe(svInspectorView.features)
   })
 }, 60000)
 

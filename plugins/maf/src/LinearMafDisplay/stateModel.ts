@@ -558,7 +558,10 @@ export default function stateModelFactory(
        * the fixed bands) split evenly across rows.
        */
       get autoRowHeight() {
-        return Math.max(1, (self.fitTargetHeight - self.rowsTopOffset) / self.nrow)
+        return Math.max(
+          1,
+          (self.fitTargetHeight - self.rowsTopOffset) / self.nrow,
+        )
       },
     }))
     .views(self => ({
@@ -569,7 +572,9 @@ export default function stateModelFactory(
        * height. Every consumer reads this getter, never `rowHeightMode`.
        */
       get rowHeight() {
-        return self.rowHeightMode === 0 ? self.autoRowHeight : self.rowHeightMode
+        return self.rowHeightMode === 0
+          ? self.autoRowHeight
+          : self.rowHeightMode
       },
     }))
     .views(self => ({
@@ -1201,7 +1206,11 @@ export default function stateModelFactory(
     .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
       // Pre-fit-mode sessions stored a bare `rowHeight` property; migrate it to
       // `rowHeightMode` (a px value = fixed mode).
-      if (snap && snap.rowHeightMode === undefined && snap.rowHeight !== undefined) {
+      if (
+        snap &&
+        snap.rowHeightMode === undefined &&
+        snap.rowHeight !== undefined
+      ) {
         const { rowHeight, ...rest } = snap
         return { ...rest, rowHeightMode: rowHeight }
       }

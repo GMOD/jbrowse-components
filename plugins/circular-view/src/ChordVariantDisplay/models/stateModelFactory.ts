@@ -213,11 +213,7 @@ const stateModelFactory = (configSchema: AnyConfigurationSchemaType) => {
                     assemblyNames[0],
                     { stopToken, sessionId },
                   )
-                if (
-                  isAlive(self) &&
-                  refNameStopToken === stopToken &&
-                  refNameMap
-                ) {
+                if (isAlive(self) && refNameStopToken === stopToken) {
                   self.setRefNameMap(refNameMap)
                 }
               } catch (e) {
