@@ -1,4 +1,4 @@
-import { Suspense } from 'react'
+import { Fragment, Suspense } from 'react'
 
 import { Divider, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -15,6 +15,21 @@ import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Descriptors, FeatureFormatter } from '../types.tsx'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+
+function SectionHeader({ title }: { title: string }) {
+  return <Typography variant="overline">{title}</Typography>
+}
+
+// interleave a <Divider/> between each node, e.g. [a,b,c] -> a | b | c
+function joinByDivider(nodes: React.ReactNode[]) {
+  return nodes.map((node, i) => (
+    // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed section order
+    <Fragment key={i}>
+      {i > 0 ? <Divider /> : null}
+      {node}
+    </Fragment>
+  ))
+}
 
 // coreDetails are omitted in some circumstances
 const coreDetails = [
@@ -55,33 +70,44 @@ const FeatureDetails = observer(function FeatureDetails(
     formatter,
   } = props
   const maxDepth: number = model.maxDepth ?? Infinity
-  const { mate, name = '', id = '', type = '', subfeatures, uniqueId } = feature
+  const {
+    mate: m,
+    name = '',
+    id = '',
+    type = '',
+    subfeatures,
+    uniqueId,
+  } = feature
   const pm = getEnv(model).pluginManager
-  const m = mate as { start: number; end: number; refName: string } | undefined
   return (
     <BaseCard title={generateTitle(name, id, type)}>
-      <Typography>Core details</Typography>
-      <CoreDetails {...props} />
-      {m ? (
-        <>
-          <Divider />
-          <Typography>Mate details</Typography>
-          <CoreDetails
-            {...props}
-            feature={{ ...m, uniqueId: `${uniqueId}-mate` }}
-          />
-        </>
-      ) : null}
-
-      <Divider />
-      <Typography>Attributes</Typography>
-      <Attributes
-        attributes={feature}
-        omit={omit}
-        omitSingleLevel={coreDetails}
-        descriptions={descriptions}
-        formatter={formatter}
-      />
+      {joinByDivider(
+        [
+          <Fragment key="core">
+            <SectionHeader title="Core details" />
+            <CoreDetails {...props} />
+          </Fragment>,
+          m ? (
+            <Fragment key="mate">
+              <SectionHeader title="Mate details" />
+              <CoreDetails
+                {...props}
+                feature={{ ...m, uniqueId: `${uniqueId}-mate` }}
+              />
+            </Fragment>
+          ) : null,
+          <Fragment key="attributes">
+            <SectionHeader title="Attributes" />
+            <Attributes
+              attributes={feature}
+              omit={omit}
+              omitSingleLevel={coreDetails}
+              descriptions={descriptions}
+              formatter={formatter}
+            />
+          </Fragment>,
+        ].filter(Boolean),
+      )}
 
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <SequenceFeatureDetails {...props} />

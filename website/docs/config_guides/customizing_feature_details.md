@@ -52,6 +52,22 @@ In the example above we return an object with:
 - `type` - we make this undefined, which removes it from the feature details
 - `newfield` - this generates a new field in the feature details
 
+### How the returned object is applied
+
+The object you return is shallow-merged onto the feature (any keys you don't
+mention are left untouched), and the result drives what the panel shows:
+
+- a **new key** adds a field
+- an **existing key** overrides that field's value (the raw value is replaced,
+  not shown alongside)
+- a key set to **`undefined` or `null`** hides the field — the panel filters out
+  null-ish values, so either works. `null` is the more robust choice if you
+  build the object in JavaScript, since a serialization round-trip (e.g. saving
+  a session) turns hidden fields into `null` anyway.
+
+This applies to core fields too: returning `{type: undefined}` removes the Type
+row, `{name: ...}` rewrites the Name row, and so on.
+
 ### Making sophisticated customizations to feature detail panels
 
 If your feature detail panel customization is complex, you can create a custom

@@ -1,5 +1,4 @@
 import type { SerializedFeat } from './types.tsx'
-import type { SimpleFeatureSerialized } from '../util/index.ts'
 
 export interface Feat {
   start: number
@@ -110,9 +109,12 @@ export function getStrandStr(strand: number | undefined) {
   return strand === -1 ? '(-)' : strand === 1 ? '(+)' : ''
 }
 
-export function replaceUndefinedWithNull(obj: SimpleFeatureSerialized) {
-  return JSON.parse(JSON.stringify(obj, (_, v) => (v === undefined ? null : v)))
-}
+// JSON only serializes null, not undefined; feature fields are hidden by a
+// formatDetails callback returning undefined (jexl can't produce null), so when
+// persisting we round-trip undefined to null to keep the field hidden after
+// reload (detail components filter with `!= null`). see config guide.
+export const nullReplacer = (_: string, v: unknown) =>
+  v === undefined ? null : v
 
 export function formatSubfeatures(
   obj: SerializedFeat,

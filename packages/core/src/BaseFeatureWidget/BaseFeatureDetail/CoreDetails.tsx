@@ -14,19 +14,21 @@ export default function CoreDetails(props: BaseProps) {
     length: toLocale(end - start),
   }
 
-  const coreRenderedDetails = {
-    description: 'Description',
-    name: 'Name',
-    length: 'Length',
-    type: 'Type',
-  }
+  // array (not object) so the display order is explicit, not reliant on JS key
+  // insertion order
+  const coreRenderedDetails: [string, string][] = [
+    ['name', 'Name'],
+    ['description', 'Description'],
+    ['length', 'Length'],
+    ['type', 'Type'],
+  ]
   return (
     <>
       <SimpleField
         name="Position"
         value={<Position {...props} feature={formattedFeat} />}
       />
-      {Object.entries(coreRenderedDetails)
+      {coreRenderedDetails
         .filter(([key]) => displayedDetails[key] != null)
         .map(([key, name]) => {
           const value = displayedDetails[key]

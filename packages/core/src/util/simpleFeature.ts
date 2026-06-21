@@ -95,6 +95,7 @@ export interface SimpleFeatureSerializedNoId {
   name?: string
   id?: string | number
   __jbrowsefmt?: Record<string, unknown>
+  mate?: { refName: string; start: number; end: number; [key: string]: unknown }
   subfeatures?: SimpleFeatureSerializedNoId[]
 }
 

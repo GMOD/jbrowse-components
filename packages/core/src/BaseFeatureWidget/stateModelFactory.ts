@@ -4,7 +4,7 @@ import { autorun } from 'mobx'
 import { getConf } from '../configuration/index.ts'
 import { getSession } from '../util/index.ts'
 import { SequenceFeatureDetailsF } from './SequenceFeatureDetails/model.ts'
-import { formatSubfeatures } from './util.tsx'
+import { formatSubfeatures, nullReplacer } from './util.tsx'
 import { ElementId } from '../util/types/mst.ts'
 
 import type PluginManager from '../PluginManager.ts'
@@ -39,11 +39,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         types.frozen<MaybeSerializedFeat>(),
         undefined,
       ),
-
-      /**
-       * #property
-       */
-      formattedFields: types.optional(types.frozen(), undefined),
 
       /**
        * #property
@@ -204,20 +199,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
     .postProcessSnapshot(snap => {
       const { unformattedFeatureData, featureData, ...rest } = snap
 
-      const s2 = JSON.stringify(featureData, (_, v) =>
-        v === undefined ? null : v,
-      )
-
       // JSON.stringify can return empty if too large
-
+      const s2 = JSON.stringify(featureData, nullReplacer)
       const featureTooLargeToBeSerialized = !s2 || s2.length > 2_000_000
 
-      // The concept of using `finalizedFeatureData` is to avoid running
-      // formatter twice if loading from snapshot
+      // `finalizedFeatureData` is persisted (rather than `featureData`) so
+      // loading from snapshot doesn't re-run the formatter callbacks
       return {
-        // We replace undefined with null to help with allowing fields to be
-        // hidden, setting null is not allowed by jexl so we set it to
-        // undefined to hide, but JSON only allows serializing null
         finalizedFeatureData: featureTooLargeToBeSerialized
           ? undefined
           : JSON.parse(s2),
