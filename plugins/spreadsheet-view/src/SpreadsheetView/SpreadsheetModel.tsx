@@ -143,8 +143,12 @@ export default function stateModelFactory() {
                       [...rows.map(r => r[f.name]), f.name],
                       { minWidth: 20 },
                     ),
+                    // infer the column type from the first populated cell, not
+                    // rows[0]: a leading empty/string cell would otherwise drop
+                    // numeric sorting for the whole column
                     type:
-                      typeof rows[0]?.[f.name] === 'number'
+                      typeof rows.find(r => r[f.name] != null)?.[f.name] ===
+                      'number'
                         ? 'number'
                         : undefined,
                   }) satisfies GridColDef,

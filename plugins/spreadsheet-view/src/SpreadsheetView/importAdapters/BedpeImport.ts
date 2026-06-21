@@ -1,46 +1,36 @@
 import { isNumber } from './isNumber.ts'
 import {
   bufferToLines,
-  filterBedHeaderLines,
-  parseExtraColNames,
+  computeBedColumns,
   parseExtraCols,
   parseStrand,
 } from './util.ts'
 
+const coreColumns = [
+  'refName',
+  'start',
+  'end',
+  'mateRefName',
+  'mateStart',
+  'mateEnd',
+  'name',
+  'score',
+  'strand',
+  'mateStrand',
+]
+
 export function parseBedPEBuffer(buffer: Uint8Array) {
-  const lines = bufferToLines(buffer)
-  const rest = filterBedHeaderLines(lines)
-  const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
-
-  const coreColumns = [
-    'refName',
-    'start',
-    'end',
-    'mateRefName',
-    'mateStart',
-    'mateEnd',
-    'name',
-    'score',
-    'strand',
-    'mateStrand',
-  ]
-  const numExtraColumns = Math.max(
-    0,
-    (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
+  const { rest, extraNames, columns } = computeBedColumns(
+    bufferToLines(buffer),
+    coreColumns,
   )
-  const extraNames = parseExtraColNames(
-    lastHeaderLine,
-    coreColumns.length,
-    numExtraColumns,
-  )
-  const colNames = [...coreColumns, ...extraNames]
-
   return {
-    columns: colNames.map(c => ({ name: c })),
+    columns,
     rowSet: {
       rows: rest.map((line, idx) => {
         const cols = line.split('\t')
         const extra = parseExtraCols(cols, extraNames, coreColumns.length)
+        const score = isNumber(cols[7]) ? +cols[7] : cols[7]
         return {
           cellData: {
             refName: cols[0],
@@ -50,7 +40,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
             mateStart: +cols[4]!,
             mateEnd: +cols[5]!,
             name: cols[6],
-            score: isNumber(cols[7]) ? +cols[7] : cols[7],
+            score,
             strand: cols[8],
             mateStrand: cols[9],
             ...extra,
@@ -68,7 +58,7 @@ export function parseBedPEBuffer(buffer: Uint8Array) {
               strand: parseStrand(cols[9]),
             },
             name: cols[6],
-            score: cols[7],
+            score,
             ...extra,
           },
         }

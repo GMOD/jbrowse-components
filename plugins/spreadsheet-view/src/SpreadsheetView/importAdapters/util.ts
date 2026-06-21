@@ -47,3 +47,25 @@ export function filterBedHeaderLines(lines: string[]) {
       !line.startsWith('track'),
   )
 }
+
+// shared scaffolding for BED-like formats: strips header lines, derives the
+// extra-column names (from the last `#` header line, or field_N as a fallback),
+// and returns the data lines plus the resolved column list
+export function computeBedColumns(lines: string[], coreColumns: string[]) {
+  const rest = filterBedHeaderLines(lines)
+  const lastHeaderLine = lines.findLast(line => line.startsWith('#'))
+  const numExtraColumns = Math.max(
+    0,
+    (rest[0]?.split('\t').length ?? 0) - coreColumns.length,
+  )
+  const extraNames = parseExtraColNames(
+    lastHeaderLine,
+    coreColumns.length,
+    numExtraColumns,
+  )
+  return {
+    rest,
+    extraNames,
+    columns: [...coreColumns, ...extraNames].map(name => ({ name })),
+  }
+}

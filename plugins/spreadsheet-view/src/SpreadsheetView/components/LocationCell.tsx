@@ -1,5 +1,5 @@
 import { ActionLink } from '@jbrowse/core/ui'
-import { assembleLocString, getSession } from '@jbrowse/core/util'
+import { assembleLocStringFast, getSession } from '@jbrowse/core/util'
 import { getParent } from '@jbrowse/mobx-state-tree'
 
 import { locationLinkClick } from '../util.ts'
@@ -17,7 +17,7 @@ export default function LocationCell({
   const session = getSession(model)
   const spreadsheetViewId = getParent<{ id: string }>(model).id
   const { assemblyName } = model
-  const locString = assembleLocString(feature)
+  const locString = assembleLocStringFast(feature)
   return assemblyName ? (
     <>
       <FeatureMenu

@@ -1,5 +1,5 @@
 import { readConfObject } from '@jbrowse/core/configuration'
-import { getEnv, getSession } from '@jbrowse/core/util'
+import { fetchAndMaybeUnzip, getEnv, getSession } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
@@ -250,8 +250,6 @@ export default function stateModelFactory() {
         if (self.fileSource) {
           self.selectedAssemblyName = assemblyName
           const typeParser = await fileTypeParsers[self.fileType]()
-
-          const { fetchAndMaybeUnzip } = await import('@jbrowse/core/util')
           const { pluginManager } = getEnv(self)
           const filehandle = openLocation(self.fileSource, pluginManager)
           self.setLoading(true)
