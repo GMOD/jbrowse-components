@@ -3,20 +3,23 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { detectDisplayAssembliesSwapped } from '@jbrowse/synteny-core'
+import {
+  createStopTokenRotation,
+  detectDisplayAssembliesSwapped,
+} from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from './model.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
-// SYNC: stop-token autorun fetch skeleton mirrors afterAttach.ts in dotplot-view
+// The stop-token rotation + staleness guard come from
+// `createStopTokenRotation` (shared with dotplot-view's fetch); only the
+// synteny-specific guards, tracked deps, RPC args, and result handling live
+// here.
 export function doAfterAttach(self: LinearSyntenyDisplayModel) {
-  let currentStopToken: StopToken | undefined
+  const fetch = createStopTokenRotation(self)
 
   addDisposer(
     self,
@@ -73,11 +76,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           })),
         )
 
-        if (currentStopToken) {
-          stopStopToken(currentStopToken)
-        }
-        const thisStopToken = createStopToken()
-        currentStopToken = thisStopToken
+        const { stopToken, isCurrent, statusCallback } = fetch.begin()
         // Clear any prior error as the new fetch begins, so a stale banner
         // never lingers over freshly-loaded data (mirrors dotplot setLoading).
         self.setError(undefined)
@@ -92,34 +91,26 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               viewSnaps,
               level,
               sessionId,
-              stopToken: thisStopToken,
+              stopToken,
               drawCIGAR,
               drawCIGARMatchesOnly,
               drawLocationMarkers,
               lodMode,
-              statusCallback: (msg: RpcStatus) => {
-                if (thisStopToken === currentStopToken && isAlive(self)) {
-                  self.setStatusMessage(msg)
-                }
-              },
+              statusCallback,
             },
           )
-          if (thisStopToken !== currentStopToken || !isAlive(self)) {
+          if (!isCurrent()) {
             return
           }
           const { instanceData, ...featureData } = result
           self.setRpcData(featureData, instanceData)
         } catch (e) {
-          if (
-            thisStopToken === currentStopToken &&
-            !isAbortException(e) &&
-            isAlive(self)
-          ) {
+          if (isCurrent() && !isAbortException(e)) {
             console.error(e)
             self.setError(e)
           }
         } finally {
-          if (isAlive(self) && thisStopToken === currentStopToken) {
+          if (isCurrent()) {
             self.setStatusMessage(undefined)
           }
         }
@@ -154,8 +145,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
   )
 
   addDisposer(self, () => {
-    if (currentStopToken) {
-      stopStopToken(currentStopToken)
-    }
+    fetch.dispose()
   })
 }

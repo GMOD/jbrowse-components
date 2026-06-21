@@ -104,7 +104,6 @@ import type {
   AbstractSessionModel,
   Feature,
   Region,
-  RpcStatus,
 } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -2379,11 +2378,7 @@ export default function stateModelFactory(
               regions: [region],
               ...self.rpcProps(),
               stopToken,
-              statusCallback: (msg: RpcStatus) => {
-                if (isAlive(self)) {
-                  self.setStatusMessage(msg)
-                }
-              },
+              statusCallback: self.makeStatusCallback(),
             },
           )
 

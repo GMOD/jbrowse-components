@@ -229,6 +229,37 @@ export default function FetchMixin() {
         }
       }),
     }))
+    .views(self => ({
+      /**
+       * #method
+       * An RPC `statusCallback` bound to this display: forwards progress to the
+       * shared `statusMessage`, guarded by `isAlive` so a callback that fires
+       * after the node is torn down (RPCs resolve their status stream
+       * asynchronously) is a safe no-op. Pass directly as the `statusCallback`
+       * RPC arg instead of re-inlining the guard at every call site.
+       */
+      makeStatusCallback() {
+        return (status: RpcStatus) => {
+          if (isAlive(self)) {
+            self.setStatusMessage(status)
+          }
+        }
+      },
+      /**
+       * #method
+       * Per-region variant of `makeStatusCallback`: routes progress through
+       * `setRegionStatus(key, …)` so N concurrent per-region fetches aggregate
+       * into one status bar instead of clobbering each other. Same `isAlive`
+       * guard.
+       */
+      makeRegionStatusCallback(key: number) {
+        return (status: RpcStatus) => {
+          if (isAlive(self)) {
+            self.setRegionStatus(key, status)
+          }
+        }
+      },
+    }))
 }
 
 export type FetchMixinType = ReturnType<typeof FetchMixin>

@@ -92,6 +92,7 @@ export {
   baseLinearDisplayConfigSchema,
   computeRenderTransform,
   drawCanvasImageData,
+  fetchEachRegion,
   getDisplayStr,
   migrateOldSettingSnapshots,
   onDisplayedRegionsChange,

@@ -462,6 +462,54 @@ export function autorunOnReadyView(
   )
 }
 
+interface FetchEachRegionModel {
+  fetchRegions: (
+    needed: { region: Region; displayedRegionIndex: number }[],
+    work: (ctx: FetchContext) => Promise<void>,
+  ) => Promise<void>
+}
+
+/**
+ * Run one RPC `call` per needed region, in parallel, under a single
+ * stale-guarded `fetchRegions` wrapper. Centralizes the fan-out plus the two
+ * `ctx.isStale()` guards every per-region display repeated by hand: skip a
+ * region's commit, and skip the post-fetch step, once the user has moved on.
+ * Forgetting either guard is a stale-data write, so this is a correctness
+ * primitive as much as a dedup.
+ *
+ * `call` keeps the literal RPC method name at the call site, so its typed args
+ * (`RpcCallArgs<M>`) and return (`RpcCallReturn<M>`) survive — `R` is inferred
+ * from `call` and flows into `onResult` with no cast. The helper owns the
+ * control flow; the display still owns its typed payload (and the structural
+ * args + `statusCallback: self.makeStatusCallback()` it injects there). A
+ * display whose fetch genuinely diverges — canvas (prune + fold a too-large
+ * result), MAF (summary vs detail), alignments (chain payload) — keeps its own
+ * `fetchNeeded` and calls `fetchRegions` directly instead.
+ */
+export async function fetchEachRegion<R>(
+  self: FetchEachRegionModel,
+  needed: { region: Region; displayedRegionIndex: number }[],
+  opts: {
+    call: (region: Region, ctx: FetchContext) => Promise<R>
+    onResult: (displayedRegionIndex: number, result: R) => void
+    onComplete?: () => void
+  },
+) {
+  await self.fetchRegions(needed, async ctx => {
+    await Promise.all(
+      needed.map(async ({ region, displayedRegionIndex }) => {
+        const result = await opts.call(region, ctx)
+        if (!ctx.isStale()) {
+          opts.onResult(displayedRegionIndex, result)
+        }
+      }),
+    )
+    if (!ctx.isStale()) {
+      opts.onComplete?.()
+    }
+  })
+}
+
 // Run `clear` whenever the containing view's `displayedRegions` reference
 // changes (chromosome navigation, region reorder, etc). Use for state keyed
 // by `displayedRegionIndex` that intentionally survives `clearAllRpcData` —

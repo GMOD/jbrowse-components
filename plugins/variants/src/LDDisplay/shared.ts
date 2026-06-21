@@ -7,7 +7,7 @@ import {
   getRpcSessionId,
   getSession,
 } from '@jbrowse/core/util'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
@@ -29,7 +29,6 @@ import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
@@ -683,11 +682,7 @@ export default function sharedModelFactory(
               stopToken: ctx.stopToken,
             },
             {
-              statusCallback: (msg: RpcStatus) => {
-                if (isAlive(self)) {
-                  self.setStatusMessage(msg)
-                }
-              },
+              statusCallback: self.makeStatusCallback(),
             },
           )
           if (ctx.isStale()) {

@@ -82,7 +82,6 @@ import type {
   AnimationMode,
   Feature,
   Region,
-  RpcStatus,
 } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -1422,11 +1421,7 @@ export default function baseStateModelFactory(
               // keyed by region so concurrent per-region fetches aggregate
               // into one bar (FetchMixin.setRegionStatus) instead of each
               // overwriting the shared statusMessage/statusProgress
-              statusCallback: (msg: RpcStatus) => {
-                if (isAlive(self)) {
-                  self.setRegionStatus(displayedRegionIndex, msg)
-                }
-              },
+              statusCallback: self.makeRegionStatusCallback(displayedRegionIndex),
             },
           )
           if ('regionTooLarge' in result) {

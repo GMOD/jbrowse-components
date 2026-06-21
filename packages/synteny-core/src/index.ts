@@ -6,6 +6,8 @@ export {
   detectDisplayAssembliesSwapped,
 } from './detectSwappedAssemblies.ts'
 export { visitCigarRenderedSegments } from './cigarBpVisitor.ts'
+export { createStopTokenRotation } from './createStopTokenRotation.ts'
+export type { ActiveFetch } from './createStopTokenRotation.ts'
 export {
   applyAlpha,
   colorSchemes,

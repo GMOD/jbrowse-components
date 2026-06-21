@@ -3,10 +3,12 @@ import {
   getSession,
   isAbortException,
 } from '@jbrowse/core/util'
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
-import { detectDisplayAssembliesSwapped } from '@jbrowse/synteny-core'
+import {
+  createStopTokenRotation,
+  detectDisplayAssembliesSwapped,
+} from '@jbrowse/synteny-core'
 import { autorun } from 'mobx'
 
 import { createDotplotColorFunction } from './dotplotColors.ts'
@@ -16,8 +18,6 @@ import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAnd
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
-import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { BpIndexViewSnap, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const RPC_DEBOUNCE_MS = 1000
@@ -30,11 +30,14 @@ function makeViewSnap(view: Dotplot1DViewModel): BpIndexViewSnap {
   }
 }
 
-// SYNC: stop-token autorun fetch skeleton mirrors afterAttach.ts in linear-comparative-view
+// The stop-token rotation + staleness guard come from
+// `createStopTokenRotation` (shared with linear-comparative-view's synteny
+// fetch); only the dotplot-specific guards, RPC args, and result handling live
+// here.
 export function doAfterAttach(
   self: Omit<DotplotDisplayModel, 'afterAttach' | 'beforeDestroy'>,
 ) {
-  let currentStopToken: StopToken | undefined
+  const fetch = createStopTokenRotation(self)
 
   addDisposer(
     self,
@@ -50,12 +53,8 @@ export function doAfterAttach(
         const hViewSnap = makeViewSnap(view.hview)
         const vViewSnap = makeViewSnap(view.vview)
 
-        if (currentStopToken) {
-          stopStopToken(currentStopToken)
-        }
-        const thisStopToken = createStopToken()
-        currentStopToken = thisStopToken
-        self.setLoading(thisStopToken)
+        const { stopToken, isCurrent, statusCallback } = fetch.begin()
+        self.setLoading(stopToken)
 
         try {
           const sessionId = getRpcSessionId(self)
@@ -68,16 +67,12 @@ export function doAfterAttach(
               regions,
               hViewSnap,
               vViewSnap,
-              stopToken: thisStopToken,
+              stopToken,
               lodMode,
-              statusCallback: (msg: RpcStatus) => {
-                if (thisStopToken === currentStopToken && isAlive(self)) {
-                  self.setStatusMessage(msg)
-                }
-              },
+              statusCallback,
             } satisfies DotplotGetFeaturesAndPositionsArgs,
           )
-          if (thisStopToken !== currentStopToken || !isAlive(self)) {
+          if (!isCurrent()) {
             return
           }
           self.setRpcData(result)
@@ -93,11 +88,7 @@ export function doAfterAttach(
               : [],
           )
         } catch (e) {
-          if (
-            thisStopToken === currentStopToken &&
-            !isAbortException(e) &&
-            isAlive(self)
-          ) {
+          if (isCurrent() && !isAbortException(e)) {
             self.setError(e)
           }
         }
@@ -157,8 +148,6 @@ export function doAfterAttach(
   )
 
   addDisposer(self, () => {
-    if (currentStopToken) {
-      stopStopToken(currentStopToken)
-    }
+    fetch.dispose()
   })
 }

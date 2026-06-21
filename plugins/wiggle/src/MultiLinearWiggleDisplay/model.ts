@@ -12,6 +12,7 @@ import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
@@ -52,11 +53,10 @@ import type {
   WiggleFeatureUnderMouse,
 } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Region, RpcStatus } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
@@ -311,47 +311,32 @@ export default function stateModelFactory(
       const superAfterAttach = self.afterAttach
 
       return {
-        async fetchNeeded(
+        fetchNeeded(
           needed: { region: Region; displayedRegionIndex: number }[],
         ) {
           const view = getContainingView(self) as LGV
           const { adapterConfig, sources } = self
-          if (!adapterConfig) {
-            return
-          }
-          const { bpPerPx } = view
-          const sessionId = getRpcSessionId(self)
-          const { rpcManager } = getSession(self)
-          await self.fetchRegions(needed, async (ctx: FetchContext) => {
-            await Promise.all(
-              needed.map(async r => {
-                const result = await rpcManager.call(
+          if (adapterConfig) {
+            const { bpPerPx } = view
+            const sessionId = getRpcSessionId(self)
+            const { rpcManager } = getSession(self)
+            return fetchEachRegion(self, needed, {
+              call: (region, ctx) =>
+                rpcManager.call(sessionId, 'RenderMultiWiggleData', {
                   sessionId,
-                  'RenderMultiWiggleData',
-                  {
-                    sessionId,
-                    adapterConfig,
-                    region: r.region,
-                    sources,
-                    ...self.rpcProps(),
-                    stopToken: ctx.stopToken,
-                    bpPerPx,
-                    statusCallback: (msg: RpcStatus) => {
-                      if (isAlive(self)) {
-                        self.setStatusMessage(msg)
-                      }
-                    },
-                  },
-                )
-                if (!ctx.isStale()) {
-                  self.setRpcData(r.displayedRegionIndex, result)
-                }
-              }),
-            )
-            if (!ctx.isStale()) {
-              self.setLoadedBpPerPx(bpPerPx)
-            }
-          })
+                  adapterConfig,
+                  region,
+                  sources,
+                  ...self.rpcProps(),
+                  stopToken: ctx.stopToken,
+                  bpPerPx,
+                  statusCallback: self.makeStatusCallback(),
+                }),
+              onResult: (idx, result) => { self.setRpcData(idx, result) },
+              onComplete: () => { self.setLoadedBpPerPx(bpPerPx) },
+            })
+          }
+          return undefined
         },
 
         async afterAttach() {

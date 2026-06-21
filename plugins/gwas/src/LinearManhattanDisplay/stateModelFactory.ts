@@ -12,10 +12,11 @@ import {
 } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
 import { WiggleScoreConfigMixin } from '@jbrowse/plugin-wiggle'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
@@ -40,11 +41,10 @@ import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { Region, RpcStatus } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -436,40 +436,25 @@ export function stateModelFactory(
        * — the inherited isCacheValid short-circuits to true whenever
        * loadedBpPerPx is undefined, which is exactly the behavior we want here.
        */
-      async fetchNeeded(
-        needed: { region: Region; displayedRegionIndex: number }[],
-      ) {
+      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         const { adapterConfig } = self
-        if (!adapterConfig) {
-          return
-        }
-        const sessionId = getRpcSessionId(self)
-        const { rpcManager } = getSession(self)
-        await self.fetchRegions(needed, async (ctx: FetchContext) => {
-          await Promise.all(
-            needed.map(async r => {
-              const result = await rpcManager.call(
+        if (adapterConfig) {
+          const sessionId = getRpcSessionId(self)
+          const { rpcManager } = getSession(self)
+          return fetchEachRegion(self, needed, {
+            call: (region, ctx) =>
+              rpcManager.call(sessionId, 'GetManhattanData', {
                 sessionId,
-                'GetManhattanData',
-                {
-                  sessionId,
-                  adapterConfig,
-                  region: r.region,
-                  ...self.rpcProps(),
-                  stopToken: ctx.stopToken,
-                  statusCallback: (msg: RpcStatus) => {
-                    if (isAlive(self)) {
-                      self.setStatusMessage(msg)
-                    }
-                  },
-                },
-              )
-              if (!ctx.isStale()) {
-                self.setRpcData(r.displayedRegionIndex, result)
-              }
-            }),
-          )
-        })
+                adapterConfig,
+                region,
+                ...self.rpcProps(),
+                stopToken: ctx.stopToken,
+                statusCallback: self.makeStatusCallback(),
+              }),
+            onResult: (idx, result) => { self.setRpcData(idx, result) },
+          })
+        }
+        return undefined
       },
       /**
        * #action

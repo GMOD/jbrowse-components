@@ -8,10 +8,11 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { isAlive, types } from '@jbrowse/mobx-state-tree'
+import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
@@ -42,11 +43,10 @@ import {
 import type { WiggleDataResult, WiggleFeatureUnderMouse } from '../util.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Region, RpcStatus } from '@jbrowse/core/util'
+import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ExportSvgDisplayOptions,
-  FetchContext,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
@@ -265,46 +265,29 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      async fetchNeeded(
-        needed: { region: Region; displayedRegionIndex: number }[],
-      ) {
+      fetchNeeded(needed: { region: Region; displayedRegionIndex: number }[]) {
         const view = getContainingView(self) as LGV
         const { adapterConfig } = self
-        if (!adapterConfig) {
-          return
-        }
-        const { bpPerPx } = view
-        const sessionId = getRpcSessionId(self)
-        const { rpcManager } = getSession(self)
-        await self.fetchRegions(needed, async (ctx: FetchContext) => {
-          await Promise.all(
-            needed.map(async r => {
-              const result = await rpcManager.call(
+        if (adapterConfig) {
+          const { bpPerPx } = view
+          const sessionId = getRpcSessionId(self)
+          const { rpcManager } = getSession(self)
+          return fetchEachRegion(self, needed, {
+            call: (region, ctx) =>
+              rpcManager.call(sessionId, 'RenderWiggleData', {
                 sessionId,
-                'RenderWiggleData',
-                {
-                  sessionId,
-                  adapterConfig,
-                  region: r.region,
-                  ...self.rpcProps(),
-                  stopToken: ctx.stopToken,
-                  bpPerPx,
-                  statusCallback: (msg: RpcStatus) => {
-                    if (isAlive(self)) {
-                      self.setStatusMessage(msg)
-                    }
-                  },
-                },
-              )
-              if (!ctx.isStale()) {
-                self.setRpcData(r.displayedRegionIndex, result)
-              }
-            }),
-          )
-          if (!ctx.isStale()) {
-            self.setLoadedBpPerPx(bpPerPx)
-          }
-        })
+                adapterConfig,
+                region,
+                ...self.rpcProps(),
+                stopToken: ctx.stopToken,
+                bpPerPx,
+                statusCallback: self.makeStatusCallback(),
+              }),
+            onResult: (idx, result) => { self.setRpcData(idx, result) },
+            onComplete: () => { self.setLoadedBpPerPx(bpPerPx) },
+          })
+        }
+        return undefined
       },
     }))
     .views(self => ({
