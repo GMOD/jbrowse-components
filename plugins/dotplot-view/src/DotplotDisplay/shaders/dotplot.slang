@@ -10,7 +10,7 @@ public static const uint VERTS_PER_INSTANCE = 6u;
 // so short alignments render as dots that grow isotropically with lineWidth.
 //
 // Colors are pre-packed ABGR u32 on the CPU side
-// (dotplotWebGLColors.ts#packColor). Blend uses premultiplied alpha
+// (dotplotColors.ts#packColor). Blend uses premultiplied alpha
 // (one / one-minus-src-alpha).
 //! targets: wgsl, glsl
 
