@@ -8,7 +8,7 @@ import {
   getStrokeProps,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useTheme } from '@mui/material'
+import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import VariantLabels from './VariantLabels.tsx'
@@ -144,7 +144,7 @@ const AllLines = observer(function AllLines({
       />
       <path
         d={pathD}
-        {...getStrokeProps(theme.palette.text.primary)}
+        {...getStrokeProps(alpha(theme.palette.text.primary, 0.4))}
         strokeWidth={1}
         fill="none"
         style={{ pointerEvents: 'none' }}
