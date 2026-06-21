@@ -11,6 +11,7 @@ import DragSelectionRect from './DragSelectionRect.tsx'
 import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
 import InsertionsOverlay from './InsertionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
+import MafBandLabels from './MafBandLabels.tsx'
 import MafConservationCanvas from './MafConservationCanvas.tsx'
 import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
@@ -112,6 +113,7 @@ const MafBody = observer(function MafBody({
       <MafCoverageResizeHandle model={model} onActiveChange={setResizeActive} />
       <MafConservationCanvas model={model} />
       <MafConservationYScale model={model} />
+      <MafBandLabels model={model} />
       <div
         style={{
           position: 'absolute',

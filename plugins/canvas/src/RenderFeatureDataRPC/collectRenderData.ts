@@ -615,6 +615,12 @@ function processMatureProteinLayout(
         MATURE_PROTEIN_COLORS[colorIdx],
       )
     }
+    // config-driven name so a `labels.name` override can surface e.g. the GFF
+    // `product` attribute (mature peptides carry no `name`); falls back to the
+    // plain name/id
+    const displayLabel =
+      readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
+      getFeatureName(childFeature)
     collector.subfeatureInfos.push({
       kind: 'subfeature',
       featureId: childFeature.id(),
@@ -624,13 +630,35 @@ function processMatureProteinLayout(
       endBp: childFeature.get('end'),
       topPx,
       bottomPx: topPx + childLayout.height,
-      // config-driven name so a `labels.name` override can surface e.g. the
-      // GFF `product` attribute (mature peptides carry no `name`); falls back to
-      // the plain name/id
-      displayLabel:
-        readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
-        getFeatureName(childFeature),
+      displayLabel,
     })
+
+    // mirror the transcript path so `subfeatureLabels` actually labels mature
+    // peptides (matureProteinRegion glyph) — without this the config slot had no
+    // effect for this glyph
+    const { config } = ctx
+    if (
+      config.subfeatureLabels !== 'none' &&
+      displayLabel &&
+      hasVisibleText(displayLabel)
+    ) {
+      const result = createTranscriptFloatingLabel({
+        displayLabel,
+        featureHeight: childLayout.height,
+        subfeatureLabels: config.subfeatureLabels,
+        parentFeatureId: rootFeature.id(),
+        theme: ctx.theme,
+      })
+      collector.floatingLabelsData[childFeature.id()] = {
+        featureId: childFeature.id(),
+        minX: cStart,
+        maxX: cEnd,
+        topY: topPx,
+        featureHeight: childLayout.height,
+        parentFeatureId: result.parentFeatureId,
+        subfeatureLabel: result.subfeatureLabel,
+      }
+    }
   }
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }

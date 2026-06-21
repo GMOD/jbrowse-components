@@ -811,6 +811,9 @@ export const specs: ScreenshotSpec[] = [
   // peptides (mature_protein_region_of_CDS). They render as stacked rows, each
   // colored from a distinct palette and individually hoverable; the labels.name
   // config in the track surfaces each region's GFF `product` (VP1, 2A, 3C, …).
+  // subfeatureLabels:'overlay' draws each product name on its peptide bar (the
+  // matureProteinRegion glyph now emits floating labels like the transcript
+  // glyph does).
   {
     mode: 'url',
     name: 'gene_track_mature_peptides',
@@ -824,7 +827,11 @@ export const specs: ScreenshotSpec[] = [
             {
               trackId: 'ncbi_genes_enterovirus_d',
               // tall enough for the gene row + all 12 stacked mature peptides
-              displaySnapshot: { type: 'LinearBasicDisplay', height: 220 },
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                height: 220,
+                subfeatureLabels: 'overlay',
+              },
             },
           ],
         },
@@ -1824,7 +1831,9 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'hg19',
-          loc: '1:63,002,000-63,009,000',
+          // tighter window (reviewer) so the per-haplotype split and the phased
+          // variant columns read clearly
+          loc: '1:63,005,000-63,008,000',
           tracks: [
             {
               trackId: 'hg002_nanopore_hp',
@@ -1844,6 +1853,63 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportHeight: 700,
     settleMs: 15000,
+  },
+
+  // Companion to alignments/haplotype: shows HOW to reach grouping — the track
+  // menu opened at "Group by..." with its submenu expanded (reviewer wanted a
+  // separate figure for the menu path). Choosing "Group by..." opens a dialog
+  // where the tag (e.g. HP) is entered. Same HG002 ONT track; reads load via
+  // userByteSizeLimit, then the menu is driven open and the entry boxed.
+  {
+    mode: 'url',
+    name: 'alignments/haplotype_groupby',
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'hg002_nanopore_hp',
+          name: 'HG002 ONT',
+          assemblyNames: ['hg19'],
+          adapter: HG002_NANOPORE_ADAPTER,
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg19',
+          loc: '1:63,005,000-63,008,000',
+          tracks: [
+            {
+              trackId: 'hg002_nanopore_hp',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                height: 500,
+                userByteSizeLimit: 200_000_000,
+                colorBy: { type: 'tag', tag: 'HP' },
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readySelector: '[data-testid="pileup-display-done"]',
+    readyTimeout: 90000,
+    viewportHeight: 700,
+    settleMs: 15000,
+    hideTooltip: true,
+    actions: [
+      {
+        type: 'click',
+        selector:
+          '[data-testid="track_menu_icon"][data-trackid="hg002_nanopore_hp"]',
+      },
+      { type: 'waitForText', text: 'Group by...' },
+      { type: 'hover', text: 'Group by...' },
+      // submenu opened once its items render
+      { type: 'waitForText', text: 'Ungroup (this track)' },
+      { type: 'delay', ms: 800 },
+    ],
+    annotations: [{ type: 'box', anchor: { text: 'Group by...' } }],
   },
 
   // The nssv15767046 insertion at ~1:55,705,920 (hg19) shown across HG002
@@ -3149,40 +3215,51 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ctgA',
     settleMs: 5000,
     // Each label is a callout pill placed in clear space (the dark app bar or the
-    // sparse overview-ruler band) with an arrow pointing at the control it names,
-    // so the text no longer overlaps the icons or stacks on top of the other
-    // labels in the cramped track-header row (reviewer). Targets are anchored, so
-    // each arrow head tracks the real element; only the pill/tail use absolute
-    // viewport CSS px (default 1500x800 capture).
+    // sparse overview-ruler band) with an arrow pointing at the control it names.
+    // Labels sit roughly above their target so each arrow drops near-vertically
+    // and the arrows don't cross. Scroll-to-zoom is omitted here — it has its own
+    // dedicated figure (scroll_zoom_toggle) right above this one in the docs
+    // (reviewer). Targets are anchored, so each arrow head tracks the real
+    // element; only the pill/tail use absolute viewport CSS px (default 1500x800
+    // capture).
     annotations: [
-      // app-bar band: the two track-header controls, with long arrows down
+      // app-bar band: "Add view" labels the Add menu. The arrow tail starts to
+      // the right of the pill so it never overlaps the pill itself (reviewer).
+      { type: 'text', text: 'Add view', x: 150, y: 16, fontSize: 14 },
+      {
+        type: 'arrow',
+        from: { x: 150, y: 30 },
+        anchor: { text: 'Add' },
+      },
+      // track-header controls: pills in the clear right half of the app bar, each
+      // sitting above its target so the arrow drops straight down to the
+      // (lower) track-header row without crossing the navigation arrows
       {
         type: 'text',
         text: 'Drag to reorder track',
-        x: 250,
-        y: 18,
+        x: 360,
+        y: 16,
         fontSize: 14,
       },
       {
         type: 'arrow',
-        from: { x: 300, y: 38 },
+        from: { x: 380, y: 32 },
         anchor: { selector: '[data-testid^="dragHandle-"]' },
       },
-      { type: 'text', text: 'Track menu', x: 500, y: 18, fontSize: 14 },
+      { type: 'text', text: 'Track menu', x: 700, y: 16, fontSize: 14 },
       {
         type: 'arrow',
-        from: { x: 540, y: 38 },
+        from: { x: 740, y: 32 },
         anchor: { selector: '[data-testid="track_menu_icon"]' },
       },
-      // "Add view" sits just under the Add menu it labels
-      { type: 'text', text: 'Add view', x: 70, y: 50, fontSize: 14 },
+      // overview-ruler band: the track selector plus the navigation controls,
+      // arrows pointing down into the controls row
+      { type: 'text', text: 'Open track selector', x: 30, y: 70, fontSize: 14 },
       {
         type: 'arrow',
-        from: { x: 95, y: 48 },
-        anchor: { text: 'Add' },
+        from: { x: 45, y: 88 },
+        anchor: { selector: 'button[title="Open track selector"]' },
       },
-      // overview-ruler band: the four navigation controls, arrows pointing down
-      // into the controls row
       { type: 'text', text: 'Pan', x: 520, y: 70, fontSize: 14 },
       {
         type: 'arrow',
@@ -3200,20 +3277,6 @@ export const specs: ScreenshotSpec[] = [
         type: 'arrow',
         from: { x: 935, y: 88 },
         anchor: { selector: '[data-testid="zoom_in"]' },
-      },
-      {
-        type: 'text',
-        text: 'Scroll-to-zoom toggle',
-        x: 1030,
-        y: 70,
-        fontSize: 14,
-      },
-      {
-        type: 'arrow',
-        from: { x: 1110, y: 88 },
-        anchor: {
-          selector: 'button[title="Toggle scroll zoom on WebGL tracks"]',
-        },
       },
     ],
   },
@@ -3807,12 +3870,14 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 35000,
     // colorBy:modifications is set declaratively so the mod data is already
     // loaded and painted by the time the menu opens. Then drive the live Color
-    // by → Base modifications → Color by modification type → All modification
-    // types path so the figure shows the menu route, not just the result
-    // (reviewer asked to actually open the menu). The selector is scoped by
-    // data-trackid to the COLO829 alignments
-    // track — the bare track_menu_icon matched the CpG-island feature track
-    // first, whose Color by menu has no modifications options.
+    // by → Color by modification type → All modification types path so the
+    // figure shows the menu route, not just the result (reviewer asked to
+    // actually open the menu). "Color by modification type" / "Color by
+    // methylation" are now promoted directly under "Color by..." rather than
+    // nested under a "Base modifications (MM tag)" parent. The selector is
+    // scoped by data-trackid to the COLO829 alignments track — the bare
+    // track_menu_icon matched the CpG-island feature track first, whose Color by
+    // menu has no modifications options.
     actions: [
       {
         type: 'click',
@@ -3820,18 +3885,12 @@ export const specs: ScreenshotSpec[] = [
           '[data-testid="track_menu_icon"][data-trackid="COLO829_tumor.ht"]',
       },
       ...menuCascade(
-        [
-          'Color by...',
-          'Base modifications (MM tag)',
-          'Color by modification type',
-          'All modification types',
-        ],
+        ['Color by...', 'Color by modification type', 'All modification types'],
         800,
       ),
     ],
     annotations: cascadeBoxes([
       'Color by...',
-      'Base modifications (MM tag)',
       'Color by modification type',
       'All modification types',
     ]),
@@ -4672,11 +4731,27 @@ export const specs: ScreenshotSpec[] = [
   // steps from Father hap2 (light blue) to Father hap1 (dark blue); the mother's
   // row is solid red across the window (no maternal event here). Compare child
   // HG02024 HP0 against father HG02026's two rows.
+  //
+  // Both crossovers sit at the horizontal center of their 400 kb window
+  // (crossover x ≈ 750 CSS px). The multi-sample VCF rows are relabeled via the
+  // display `layout` (a friendly `label` per haplotype row, leaving the stable
+  // `name`/`sampleName` identity intact) so the sidebar reads child/mom/dad
+  // h1/h2 instead of the raw HG020xx HP0/HP1 sample IDs. Red callouts box the
+  // crossover step in the hap-ibd painting, the transmitting parent's two
+  // hap-ibd rows, and that parent's two haplotype rows in the VCF below.
   ...(
     [
       {
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
+        annotations: [
+          // crossover step (Father hap2 → hap1) in the hap-ibd painting
+          { type: 'box', x: 722, y: 193, width: 56, height: 41 },
+          // father's two hap-ibd rows (Father hap1 + Father hap2)
+          { type: 'box', x: 3, y: 193, width: 1492, height: 41 },
+          // dad h1 / dad h2 rows in the VCF display
+          { type: 'box', x: 3, y: 460, width: 1492, height: 89 },
+        ],
       },
       // Maternal crossover at chr1:55,753,613 — the child's maternal chromosome
       // steps from Mother hap2 (pink) to Mother hap1 (red); the father's row is
@@ -4684,9 +4759,17 @@ export const specs: ScreenshotSpec[] = [
       {
         name: 'trio-crossover-maternal',
         loc: 'chr1:55,553,613-55,953,613',
+        annotations: [
+          // crossover step (Mother hap2 → hap1) in the hap-ibd painting
+          { type: 'box', x: 722, y: 210, width: 56, height: 44 },
+          // mother's two hap-ibd rows (Mother hap1 + Mother hap2)
+          { type: 'box', x: 3, y: 210, width: 1492, height: 44 },
+          // mom h1 / mom h2 rows in the VCF display
+          { type: 'box', x: 3, y: 373, width: 1492, height: 90 },
+        ],
       },
-    ] as const
-  ).map(({ name, loc }) => ({
+    ] satisfies { name: string; loc: string; annotations: Annotation[] }[]
+  ).map(({ name, loc, annotations }) => ({
     mode: 'url' as const,
     name,
     url: sessionSpec(DEMO_CONFIG, {
@@ -4709,12 +4792,53 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearMultiSampleVariantDisplay',
                 renderingMode: 'phased',
                 height: 260,
+                // relabel sidebar rows child/mom/dad h1/h2 (keeps the canonical
+                // HG020xx HP0/HP1 identity in `name`/`sampleName`)
+                layout: [
+                  {
+                    name: 'HG02024 HP0',
+                    sampleName: 'HG02024',
+                    HP: 0,
+                    label: 'child h1',
+                  },
+                  {
+                    name: 'HG02024 HP1',
+                    sampleName: 'HG02024',
+                    HP: 1,
+                    label: 'child h2',
+                  },
+                  {
+                    name: 'HG02025 HP0',
+                    sampleName: 'HG02025',
+                    HP: 0,
+                    label: 'mom h1',
+                  },
+                  {
+                    name: 'HG02025 HP1',
+                    sampleName: 'HG02025',
+                    HP: 1,
+                    label: 'mom h2',
+                  },
+                  {
+                    name: 'HG02026 HP0',
+                    sampleName: 'HG02026',
+                    HP: 0,
+                    label: 'dad h1',
+                  },
+                  {
+                    name: 'HG02026 HP1',
+                    sampleName: 'HG02026',
+                    HP: 1,
+                    label: 'dad h2',
+                  },
+                ],
               },
             },
           ],
         },
       ],
     }),
+    annotations,
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 28000,
@@ -5294,7 +5418,10 @@ export const specs: ScreenshotSpec[] = [
       {
         actions: [
           { type: 'click', text: 'Conservation' },
-          { type: 'waitForText', text: 'Conservation', hidden: true },
+          // wait for the menu to close — keyed on a menu-only label, since the
+          // conservation band now carries an on-canvas "Conservation" title that
+          // would otherwise keep that text visible forever
+          { type: 'waitForText', text: 'Show...', hidden: true },
           { type: 'hover', from: { x: 250, y: 100 } },
           { type: 'delay', ms: 2500 },
         ],

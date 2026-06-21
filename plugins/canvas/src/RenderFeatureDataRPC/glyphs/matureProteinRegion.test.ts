@@ -256,6 +256,81 @@ describe('collectRenderData for mature protein regions', () => {
     ])
   })
 
+  it('emits a floating label per mature region when subfeatureLabels is on', () => {
+    const matures = [
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 100,
+        end: 200,
+        product: 'protein VP0',
+      }),
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 200,
+        end: 300,
+        product: 'capsid protein VP1',
+      }),
+    ]
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 300,
+      subfeatures: matures,
+    })
+    const config = mockDisplayConfig({
+      subfeatureLabels: 'below',
+      labels: {
+        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        description: '',
+      },
+    })
+    const layout = findGlyph(feature, config)({ feature, config })
+
+    const result = collectRenderData([layout], 0, 10000, config, theme, false)
+    // the top-level CDS emits its own (name) label; keep only the per-mature
+    // subfeature labels, which is what was previously missing entirely
+    const labels = Object.values(result.floatingLabelsData).filter(
+      l => 'subfeatureLabel' in l,
+    )
+    expect(labels).toHaveLength(2)
+    expect(labels.map(l => l.subfeatureLabel.text)).toEqual([
+      'protein VP0',
+      'capsid protein VP1',
+    ])
+    expect(labels.every(l => l.parentFeatureId === feature.id())).toBe(true)
+  })
+
+  it('omits mature-region floating labels when subfeatureLabels is none', () => {
+    const matures = [
+      mockFeature({
+        type: 'mature_protein_region_of_CDS',
+        start: 100,
+        end: 200,
+        product: 'protein VP0',
+      }),
+    ]
+    const feature = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 300,
+      subfeatures: matures,
+    })
+    const config = mockDisplayConfig({
+      subfeatureLabels: 'none',
+      labels: {
+        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        description: '',
+      },
+    })
+    const layout = findGlyph(feature, config)({ feature, config })
+
+    const result = collectRenderData([layout], 0, 10000, config, theme, false)
+    const subfeatureLabels = Object.values(result.floatingLabelsData).filter(
+      l => 'subfeatureLabel' in l,
+    )
+    expect(subfeatureLabels).toHaveLength(0)
+  })
+
   it('omits the strand arrow when the CDS is not top-level', () => {
     const parent = mockFeature({ type: 'gene', start: 100, end: 400 })
     const matures = [

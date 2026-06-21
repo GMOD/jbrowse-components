@@ -79,6 +79,64 @@ test('opens SVInspector and tests data grid filtering functionality', async () =
   })
 }, 60000)
 
+// Regression test for the circular-view-not-filtering bug: driving the actual
+// DataGrid quick-filter input (rather than calling setVisibleRows directly, as
+// the tests above do) must propagate through visibleRows -> features. Before the
+// fix, onFilterModelChange read the visible-rows lookup synchronously — before
+// the filter pipeline recomputed it — so visibleRows stayed at the full set and
+// the circular view never filtered.
+test('SVInspector quick-filter input propagates to visibleRows/features', async () => {
+  await mockConsoleWarn(async () => {
+    const { session, findByTestId, getByTestId, findByText, findByPlaceholderText } =
+      await createView()
+
+    fireEvent.click(await findByText('File'))
+    fireEvent.click(await findByText('Add'))
+    fireEvent.click(await findByText('SV inspector'))
+
+    fireEvent.change(await findByTestId('urlInput', {}, delay), {
+      target: { value: 'volvox.dup.renamed.vcf.gz' },
+    })
+    await waitFor(() => {
+      expect(
+        getByTestId('open_spreadsheet').closest('button'),
+      ).not.toBeDisabled()
+    })
+    fireEvent.click(await findByTestId('open_spreadsheet'))
+
+    await waitFor(() => {
+      expect(session.views.length).toBeGreaterThan(1)
+      const view = session.views.find(
+        (v: any) => v.type === 'SvInspectorView',
+      ) as SvInspectorViewModel
+      expect(view).toBeDefined()
+      expect(view.spreadsheetView.spreadsheet?.rows?.length).toBeGreaterThan(0)
+    }, delay)
+
+    const svInspectorView = session.views.find(
+      (v: any) => v.type === 'SvInspectorView',
+    ) as SvInspectorViewModel
+    const spreadsheet = svInspectorView.spreadsheetView.spreadsheet!
+    const initialRowCount = spreadsheet.rows!.length
+    expect(svInspectorView.features.length).toBe(initialRowCount)
+
+    // bnd_W is a unique ID present in no other row's data, so the quick filter
+    // matches exactly one row
+    const quickFilterInput = await findByPlaceholderText('Search…', {}, delay)
+    fireEvent.change(quickFilterInput, { target: { value: 'bnd_W' } })
+
+    // the filter must reach visibleRows (and therefore the circular view's
+    // feature set), not just the table's own rendering
+    await waitFor(() => {
+      expect(spreadsheet.visibleRows!.length).toBeLessThan(initialRowCount)
+    }, delay)
+    expect(svInspectorView.features.length).toBe(spreadsheet.visibleRows!.length)
+    expect(svInspectorView.featuresCircularTrackConfiguration.adapter.features).toBe(
+      svInspectorView.features,
+    )
+  })
+}, 60000)
+
 test('SVInspector filtering updates circular view accordingly', async () => {
   await mockConsoleWarn(async () => {
     const { session, findByTestId, getByTestId, findByText } =

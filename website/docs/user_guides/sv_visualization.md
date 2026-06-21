@@ -178,7 +178,7 @@ connections (drawn as vertical lines at the view edge) flag translocations. Set
 the color scheme to insert size, orientation, or combined coloring from the
 track menu.
 
-<Figure caption="Paired arcs showing a deletion in HG002. Illumina paired-end reads (short arcs, top) and Nanopore ultra-long reads (long sweeping arcs, bottom) both span the same deleted region. The unusually long arcs relative to neighboring read pairs indicate the deletion. Color scheme is set to Insert size ± 3σ: red arcs have inserts larger than expected, confirming the deletion." src="/img/alignments/arc_selector.png" />
+<Figure caption="Paired arcs over an HG002 structural variant. Illumina paired-end mates that span the deleted region are drawn as long arcs standing out from the short concordant arcs, and the discordant pairs are colored red for a larger-than-expected insert size — confirming the deletion. The GIAB consensus SV call (top) lines up with the arc signature." src="/img/alignments/arc_display.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 — HG002 deletion with Nanopore and Illumina reads in arc mode

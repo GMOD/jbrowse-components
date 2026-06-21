@@ -66,6 +66,12 @@ coloring and sorting by the HP (haplotype) tag to see phased reads.
 
 <Figure caption="HG002 ONT reads grouped and colored by the HP (haplotype) tag — the pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
 
+To set this up, open the track menu and choose **Group by…**; the dialog then
+lets you pick a dimension (e.g. a tag such as `HP`) and optionally color reads by
+the same tag.
+
+<Figure caption="Grouping lives in the track menu under Group by…; selecting it opens a dialog where you enter the tag (HP for haplotype) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
+
 ### Filtering reads
 
 The **Filter by** dialog hides reads based on their SAM flags. The common use is

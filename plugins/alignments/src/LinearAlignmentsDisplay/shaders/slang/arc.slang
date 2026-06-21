@@ -150,8 +150,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipY = 1.0 - ((off.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   o.dist = side * hw;
-  // Samplot flat shapes (1, 2): alpha 0.25 matches samplot.py's alpha=0.25.
-  float arcAlpha = (inst.shapeType > 0.5) ? 0.25 : 1.0;
+  // Samplot flat shapes (1, 2): translucent so dense overlapping pairs read as a
+  // band (cf. samplot.py's alpha). Kept above samplot.py's 0.25 because an
+  // isolated short-insert pair is a single thin line — at 0.25 it vanishes into
+  // the background; 0.4 keeps it legible while overlaps still stack darker.
+  float arcAlpha = (inst.shapeType > 0.5) ? 0.4 : 1.0;
   o.color = float4(arcColor(inst.colorType, u), arcAlpha);
   // Split-read flat shape (2) renders dashed.
   o.dashed = (inst.shapeType > 1.5) ? 1.0 : 0.0;
