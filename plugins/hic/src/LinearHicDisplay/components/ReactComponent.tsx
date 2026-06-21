@@ -1,14 +1,17 @@
 import { useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, reducePrecision } from '@jbrowse/core/util'
+import { getContainingView, reducePrecision, toLocale } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import HicOverlayPanel from './HicOverlayPanel.tsx'
 import { HicRenderer } from './HicRenderer.ts'
 
-import type { HicContactItem } from '../../RenderHicDataRPC/types.ts'
+import type {
+  HicContactItem,
+  HicDataResult,
+} from '../../RenderHicDataRPC/types.ts'
 import type { LinearHicDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -22,17 +25,28 @@ interface Hover {
   localY: number
 }
 
+function formatLocus(data: HicDataResult, regionIdx: number, bin: number) {
+  const refName = data.regionRefNames[regionIdx]
+  const start = bin * data.resolution
+  const end = start + data.resolution
+  return `${refName}:${toLocale(start + 1)}-${toLocale(end)}`
+}
+
 function HicTooltip({
   item,
+  data,
   x,
   y,
 }: {
   item: HicContactItem
+  data: HicDataResult
   x: number
   y: number
 }) {
   return (
     <BaseTooltip clientPoint={{ x: x + 15, y }}>
+      <div>{formatLocus(data, item.region1Idx, item.bin1)}</div>
+      <div>{formatLocus(data, item.region2Idx, item.bin2)}</div>
       <div>Score: {reducePrecision(item.counts)}</div>
     </BaseTooltip>
   )
@@ -132,7 +146,14 @@ const HicCanvas = observer(function HicCanvas({
             width={width}
             height={height}
           />
-          <HicTooltip item={hover.item} x={hover.clientX} y={hover.clientY} />
+          {model.rpcData ? (
+            <HicTooltip
+              item={hover.item}
+              data={model.rpcData}
+              x={hover.clientX}
+              y={hover.clientY}
+            />
+          ) : null}
         </>
       ) : null}
     </div>

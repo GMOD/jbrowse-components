@@ -83,6 +83,8 @@ export async function executeRenderHicData({
     maxScore,
     percentile95,
     binWidth: w,
+    resolution: res,
+    regionRefNames: regions.map(r => r.refName),
     lookup,
     regionDataXStarts,
     regionCombinedOffsets,

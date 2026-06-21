@@ -27,6 +27,18 @@ export interface HicDataResult {
   percentile95: number
   binWidth: number
   /**
+   * The binsize this matrix was actually fetched at. `bin1`/`bin2` are
+   * chromosome-absolute bin indices, so a contact's genomic start is
+   * `bin * resolution`. Carried in the result (not read from the model's live
+   * `effectiveResolution`) so hover loci stay correct during a pending refetch.
+   */
+  resolution: number
+  /**
+   * refName per region index, parallel to the `regions` passed to the RPC.
+   * Hover uses `regionRefNames[region1Idx]` to label a contact's locus.
+   */
+  regionRefNames: string[]
+  /**
    * Hover hit-test index. Key = `${r1}|${r2}|${bin1}|${bin2}`, value = index
    * into `counts` (and `positions`). Every drawn rect is the same size and on
    * a deterministic grid, so a Map lookup replaces the previous Flatbush

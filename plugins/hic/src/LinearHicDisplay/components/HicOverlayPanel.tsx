@@ -1,11 +1,10 @@
-import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { getNiceScale } from '@jbrowse/wiggle-core'
 import CloseIcon from '@mui/icons-material/Close'
 import IconButton from '@mui/material/IconButton'
 import { observer } from 'mobx-react'
 
 import { getLegendCssGradient } from './colorRamp.ts'
+import { getHicScaleLabels } from './scaleLabels.ts'
 
 import type { LinearHicDisplayModel } from '../model.ts'
 
@@ -64,6 +63,11 @@ const useStyles = makeStyles()({
     textDecoration: 'underline',
     textDecorationStyle: 'dotted',
   },
+  normLabel: {
+    fontSize: 10,
+    textAlign: 'center',
+    color: '#555',
+  },
   legendHeader: {
     display: 'flex',
     justifyContent: 'flex-end',
@@ -84,6 +88,8 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     resolutionBias,
     availableResolutions,
     effectiveResolution,
+    availableNormalizations,
+    activeNormalization,
   } = model
 
   const showLegendArea = showLegend && colorMaxScore > 0
@@ -169,6 +175,11 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
           </button>
         </div>
       ) : null}
+      {availableNormalizations && availableNormalizations.length > 1 ? (
+        <div className={classes.normLabel} title="Normalization (change in track menu)">
+          norm: {activeNormalization}
+        </div>
+      ) : null}
     </div>
   )
 })
@@ -181,14 +192,11 @@ const Labels = observer(function Labels({
   useLogScale: boolean
 }) {
   const { classes } = useStyles()
-  const { min, max } = getNiceScale(score, useLogScale)
+  const { minLabel, maxLabel } = getHicScaleLabels(score, useLogScale)
   return (
     <div className={classes.labels}>
-      <span>{min !== undefined ? toLocale(min) : ''}</span>
-      <span>
-        {max !== undefined ? toLocale(max) : ''}
-        {useLogScale ? ' (log)' : ''}
-      </span>
+      <span>{minLabel}</span>
+      <span>{maxLabel}</span>
     </div>
   )
 })

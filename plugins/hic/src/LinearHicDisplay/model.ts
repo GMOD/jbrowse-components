@@ -409,9 +409,20 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * Reconcile `activeNormalization` against what the file actually offers.
+       * The model seeds `activeNormalization='KR'` before `CoreGetInfo`
+       * resolves, but not every `.hic` carries KR — when it doesn't, fall back
+       * to the next-best available scheme so the UI selection matches what's
+       * rendered (hic-straw silently uses NONE for an absent norm otherwise).
        */
       setAvailableNormalizations(f: string[]) {
         self.availableNormalizations = f
+        if (!f.includes(self.activeNormalization)) {
+          self.activeNormalization =
+            ['KR', 'SCALE', 'VC_SQRT', 'VC'].find(n => f.includes(n)) ??
+            f[0] ??
+            'NONE'
+        }
       },
       /**
        * #action

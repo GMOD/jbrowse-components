@@ -1,11 +1,9 @@
-import { toLocale } from '@jbrowse/core/util'
-import { getNiceScale } from '@jbrowse/wiggle-core'
-
 import {
   DEFAULT_HIC_COLOR_SCHEME,
   type HicColorScheme,
   getLegendSvgStops,
 } from './colorRamp.ts'
+import { getHicScaleLabels } from './scaleLabels.ts'
 
 export default function HicSVGColorLegend({
   maxScore,
@@ -23,9 +21,7 @@ export default function HicSVGColorLegend({
   const resolvedScheme = colorScheme ?? DEFAULT_HIC_COLOR_SCHEME
   const gradientId = `hic-gradient-${resolvedScheme}`
   const stops = getLegendSvgStops(resolvedScheme)
-  const { min, max } = getNiceScale(maxScore, useLogScale)
-  const minLabel = min !== undefined ? toLocale(min) : ''
-  const maxLabel = `${max !== undefined ? toLocale(max) : ''}${useLogScale ? ' (log)' : ''}`
+  const { minLabel, maxLabel } = getHicScaleLabels(maxScore, useLogScale)
 
   const legendWidth = 120
   const legendHeight = 40
