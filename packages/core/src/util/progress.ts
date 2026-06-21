@@ -212,16 +212,19 @@ export function createProgressReporter({
   const checker = stopTokenCheck ?? createStopTokenChecker(stopToken)
   let lastReport = 0
   let count = 0
+  let calls = 0
   return (current = count) => {
     count = current + 1
     checkStopToken2(checker)
     // Only consult the clock every (EMIT_CHECK_MASK + 1) calls; the bitmask
     // keeps the common path a single integer compare so this is safe to call
-    // per-iteration in a hot loop without a Date.now() each time.
+    // per-iteration in a hot loop without a Date.now() each time. Gate on the
+    // call counter, not `current`, so an explicit `report(n)` with a sparse
+    // running offset (e.g. byte positions) still ticks the clock.
     if (
       statusCallback !== undefined &&
       total !== undefined &&
-      (current & EMIT_CHECK_MASK) === 0
+      (calls++ & EMIT_CHECK_MASK) === 0
     ) {
       const now = Date.now()
       if (now - lastReport >= throttleMs) {

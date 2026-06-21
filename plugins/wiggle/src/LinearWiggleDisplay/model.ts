@@ -273,7 +273,7 @@ export default function stateModelFactory(
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
           return fetchEachRegion(self, needed, {
-            call: (region, ctx) =>
+            call: (region, ctx, displayedRegionIndex) =>
               rpcManager.call(sessionId, 'RenderWiggleData', {
                 sessionId,
                 adapterConfig,
@@ -281,10 +281,15 @@ export default function stateModelFactory(
                 ...self.rpcProps(),
                 stopToken: ctx.stopToken,
                 bpPerPx,
-                statusCallback: self.makeStatusCallback(),
+                statusCallback:
+                  self.makeRegionStatusCallback(displayedRegionIndex),
               }),
-            onResult: (idx, result) => { self.setRpcData(idx, result) },
-            onComplete: () => { self.setLoadedBpPerPx(bpPerPx) },
+            onResult: (idx, result) => {
+              self.setRpcData(idx, result)
+            },
+            onComplete: () => {
+              self.setLoadedBpPerPx(bpPerPx)
+            },
           })
         }
         return undefined

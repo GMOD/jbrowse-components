@@ -481,8 +481,10 @@ interface FetchEachRegionModel {
  * (`RpcCallArgs<M>`) and return (`RpcCallReturn<M>`) survive — `R` is inferred
  * from `call` and flows into `onResult` with no cast. The helper owns the
  * control flow; the display still owns its typed payload (and the structural
- * args + `statusCallback: self.makeStatusCallback()` it injects there). A
- * display whose fetch genuinely diverges — canvas (prune + fold a too-large
+ * args + `statusCallback: self.makeRegionStatusCallback(displayedRegionIndex)`
+ * it injects there — the index is the third `call` argument, so the parallel
+ * per-region fetches aggregate into one bar instead of clobbering each other).
+ * A display whose fetch genuinely diverges — canvas (prune + fold a too-large
  * result), MAF (summary vs detail), alignments (chain payload) — keeps its own
  * `fetchNeeded` and calls `fetchRegions` directly instead.
  */
@@ -490,7 +492,11 @@ export async function fetchEachRegion<R>(
   self: FetchEachRegionModel,
   needed: { region: Region; displayedRegionIndex: number }[],
   opts: {
-    call: (region: Region, ctx: FetchContext) => Promise<R>
+    call: (
+      region: Region,
+      ctx: FetchContext,
+      displayedRegionIndex: number,
+    ) => Promise<R>
     onResult: (displayedRegionIndex: number, result: R) => void
     onComplete?: () => void
   },
@@ -498,7 +504,7 @@ export async function fetchEachRegion<R>(
   await self.fetchRegions(needed, async ctx => {
     await Promise.all(
       needed.map(async ({ region, displayedRegionIndex }) => {
-        const result = await opts.call(region, ctx)
+        const result = await opts.call(region, ctx, displayedRegionIndex)
         if (!ctx.isStale()) {
           opts.onResult(displayedRegionIndex, result)
         }

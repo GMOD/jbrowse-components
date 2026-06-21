@@ -48,6 +48,23 @@ describe('createProgressReporter', () => {
     expect(seen).toEqual([0])
   })
 
+  it('emits for a sparse explicit current (gates on call count, not value)', () => {
+    const seen: number[] = []
+    const report = createProgressReporter({
+      label: 'x',
+      total: 100,
+      statusCallback: s => {
+        if (typeof s === 'object') {
+          seen.push(s.current)
+        }
+      },
+      throttleMs: 0,
+    })
+    // 37 is not a 1024-multiple; a value-based gate would never fire
+    report(37)
+    expect(seen).toEqual([37])
+  })
+
   it('is a pure cancel-tick with no statusCallback', () => {
     const report = createProgressReporter({ total: 10 })
     expect(() => {
