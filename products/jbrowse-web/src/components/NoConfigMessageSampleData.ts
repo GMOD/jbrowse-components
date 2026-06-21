@@ -130,6 +130,14 @@ export const recentConfigs: readonly SampleLink[] = [
     href: '?config=https://jbrowse.org/demos/ce/config.json&session=spec-{"views":[{"assembly":"ce11","loc":"chrI:2998500-3001800","type":"LinearGenomeView","tracks":[{"trackId":"ce11.26way","displaySnapshot":{"type":"LinearMafDisplay","showConservation":true,"rowHeight":8}}]}]}',
     label: 'C. elegans MAF (26-way, conservation band)',
   },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
+    label: 'ChromHMM chromatin-state painting (9 ENCODE cell types, β-globin locus)',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["roadmap_chromhmm_multirow_hg19"]}]}',
+    label: 'ChromHMM chromatin-state painting (Roadmap, 127 epigenomes, auto-fit)',
+  },
 ]
 
 const hs1Mm39DotplotSpec = encodeURIComponent(
