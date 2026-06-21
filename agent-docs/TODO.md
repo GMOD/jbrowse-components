@@ -57,3 +57,11 @@ should also color by cds
 ## add strand arrows on sides of screen when zoomed in
 
 ## bundle size...not compressed on main
+
+re-review the shader generation so its lazily loaded also
+
+## add --help for generate-screenshots command
+
+## if actively zooming in, try to avoid listening to 'side scroll'
+
+often a unintentional touchpad sidescroll during zoom in
