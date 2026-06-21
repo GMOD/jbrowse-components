@@ -9,11 +9,11 @@ import { join } from 'path'
 
 import { format, resolveConfig } from 'prettier'
 
-import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
 import {
   syntenyTrackTypes,
   trackTypes,
-} from '../../products/jbrowse-img/src/readData.ts'
+} from '../../products/jbrowse-img/src/makeConfigs.ts'
+import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
 
 // Mirrors products/jbrowse-img/README.md into website/docs/jbrowse-img.md so the
 // @jbrowse/img static-export docs live alongside the CLI docs (cli.md). The

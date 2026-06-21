@@ -1,5 +1,3 @@
-import fs from 'fs'
-
 import { destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
@@ -10,11 +8,12 @@ import { createCanvas } from 'canvas'
 import { when } from 'mobx'
 
 import { applyTrackOpts } from './applyTrackOpts.ts'
-import { modeDescriptors, viewModes } from './modes.ts'
 import { readData } from './readData.ts'
+import { initFromSpec, parseSpec, specMode } from './spec.ts'
 
 import type { ViewMode } from './modes.ts'
-import type { Config, Opts } from './readData.ts'
+import type { ViewSpec } from './spec.ts'
+import type { Config, Opts } from './types.ts'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
@@ -35,62 +34,6 @@ function createModel(data: Config) {
 }
 
 type Model = ReturnType<typeof createModel>
-
-// A parsed --spec view object: the same shape as a web session-spec view (see
-// urlparams.md). `type` selects the render mode; the remaining fields ARE the
-// view's `init` snapshot (sub-views + level-indexed tracks for comparative
-// views), so they pass straight to addInitView.
-interface ViewSpec {
-  type: string
-  [key: string]: unknown
-}
-
-// Accepts the documented `{ views: [viewObject] }` wrapper (so JSON copied from
-// a `&session=spec-` URL works) or a bare view object. Reads from a file when
-// `spec` is a path, else parses it as inline JSON.
-function parseSpec(spec: string): ViewSpec {
-  const raw = fs.existsSync(spec) ? fs.readFileSync(spec, 'utf8') : spec
-  const obj = JSON.parse(raw) as Record<string, unknown>
-  const view =
-    typeof obj.type === 'string'
-      ? obj
-      : Array.isArray(obj.views)
-        ? (obj.views[0] as Record<string, unknown> | undefined)
-        : undefined
-  if (!view || typeof view.type !== 'string') {
-    throw new Error(
-      '--spec JSON must be a view object (or a { views: [...] } wrapper) with a "type" field',
-    )
-  }
-  return view as ViewSpec
-}
-
-// Inverse of modeDescriptors[mode].viewType: maps a --spec view `type` to the
-// render mode. Built from the single mode table so a new view type is wired in
-// one place.
-const specTypeToMode: Record<string, ViewMode> = {}
-for (const mode of viewModes) {
-  const { viewType } = modeDescriptors[mode]
-  if (viewType) {
-    specTypeToMode[viewType] = mode
-  }
-}
-
-function specMode(spec: ViewSpec): ViewMode {
-  const mode = specTypeToMode[spec.type]
-  if (!mode) {
-    throw new Error(
-      `unsupported view type in --spec: ${spec.type} (supported: ${Object.keys(specTypeToMode).join(', ')})`,
-    )
-  }
-  return mode
-}
-
-// The view-init snapshot a comparative renderer feeds to addInitView: the spec
-// minus its `type` discriminator.
-function initFromSpec({ type, ...init }: ViewSpec) {
-  return init
-}
 
 // Per-mode render context. `width` is resolved once so each renderer doesn't
 // repeat the default. `spec` is the parsed --spec view object when supplied;
@@ -301,6 +244,14 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
 export async function renderRegion(opts: Opts) {
   const data = readData(opts)
   const model = createModel(data)
+  // Set the theme on the session up front: worker-side label/feature colors
+  // (e.g. gene-description blue) are baked at feature-fetch time from
+  // session.themeOptions, which happens before renderToSvg applies themeName at
+  // rasterization. Without this, a dark theme renders feature descriptions in
+  // the light-theme dark blue, illegible on the dark track background.
+  if (opts.themeName) {
+    model.session.setThemeName(opts.themeName)
+  }
   const spec = opts.spec ? parseSpec(opts.spec) : undefined
   // an explicit subcommand wins; otherwise a --spec selects its mode from the
   // view type, falling back to the default linear view

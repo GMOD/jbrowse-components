@@ -2,8 +2,9 @@ import fs from 'fs'
 import os from 'os'
 import path from 'path'
 
+import { makeLocation, makeTrackConfig } from './makeConfigs.ts'
 import { standardizeArgv } from './parseArgv.ts'
-import { makeLocation, makeTrackConfig, readData } from './readData.ts'
+import { readData } from './readData.ts'
 import { booleanize } from './util.ts'
 
 const dataDir = path.join(__dirname, '..', 'data')

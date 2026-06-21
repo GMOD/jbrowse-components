@@ -1,3 +1,4 @@
+import { syntenyTrackTypes, trackTypes } from './makeConfigs.ts'
 import {
   buildHelp,
   getBoolean,
@@ -7,7 +8,6 @@ import {
   knownOptions,
 } from './options.ts'
 import { parseArgv, standardizeArgv } from './parseArgv.ts'
-import { syntenyTrackTypes, trackTypes } from './readData.ts'
 
 function parse(args: string) {
   const { trackList, ...rest } = standardizeArgv(
