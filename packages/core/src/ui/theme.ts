@@ -40,6 +40,7 @@ declare module '@mui/material/styles' {
     modificationFwd: string
     modificationRev: string
     mutedSnpBase: string
+    missingData: string
     gridlineMinor: string
     gridlineMajor: string
     featureHover: string
@@ -76,6 +77,7 @@ declare module '@mui/material/styles' {
     modificationFwd?: string
     modificationRev?: string
     mutedSnpBase?: string
+    missingData?: string
     gridlineMinor?: string
     gridlineMajor?: string
     featureHover?: string
@@ -155,6 +157,8 @@ const skip = '#009a8a'
 const modificationFwd = '#c8c8c8'
 const modificationRev = '#c8dcc8'
 const mutedSnpBase = '#888'
+// MAF bridged-row fill where the species has no alignment (à la UCSC)
+const missingData = '#ffffcc'
 
 // vertical gridlines behind the genome. white-on-dark reads far stronger than
 // dark-on-white at the same alpha, so dark mode uses a gentler stroke
@@ -252,6 +256,7 @@ const stringColorDefaults = {
   modificationFwd,
   modificationRev,
   mutedSnpBase,
+  missingData,
   gridlineMinor,
   gridlineMajor,
   featureHover,

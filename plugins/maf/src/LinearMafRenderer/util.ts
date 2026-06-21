@@ -39,7 +39,7 @@ export function getMafColorPalette(theme: Theme): MafColorPalette {
     unknownBaseColor: theme.palette.text.primary,
     insertionColor: theme.palette.insertion,
     bridgeLineColor: theme.palette.text.secondary,
-    missingDataColor: '#ffffcc',
+    missingDataColor: theme.palette.missingData,
   }
 }
 
