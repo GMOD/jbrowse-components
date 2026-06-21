@@ -1,6 +1,5 @@
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
-import PaletteIcon from '@mui/icons-material/Palette'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
 
@@ -54,32 +53,26 @@ export default function stateModelFactory(
       /**
        * #method
        */
-      // Variants have no UTRs and no strand, so skip the gene-oriented solid+UTR
-      // "Color" picker and surface a single "Color by..." entry. Each radio opens
-      // its own dialog (solid -> color picker, attribute -> jexl builder).
-      colorMenuItems() {
+      // Variants have no UTRs and no strand, so drop the base's "Strand" radio
+      // and open the solid-color dialog without the gene-oriented UTR row. The
+      // inherited colorMenuItems() wraps these in the same "Color by..." entry.
+      colorBySubMenuItems() {
         return [
           {
-            label: 'Color by...',
-            icon: PaletteIcon,
-            subMenu: [
-              {
-                label: 'Solid color...',
-                type: 'radio' as const,
-                checked: self.colorByMode === 'solid',
-                onClick: () => {
-                  self.openSetColorDialog(false)
-                },
-              },
-              {
-                label: 'Attribute...',
-                type: 'radio' as const,
-                checked: self.colorByMode === 'attribute',
-                onClick: () => {
-                  self.openColorByAttributeDialog()
-                },
-              },
-            ],
+            label: 'Solid color...',
+            type: 'radio' as const,
+            checked: self.colorByMode === 'solid',
+            onClick: () => {
+              self.openSetColorDialog(false)
+            },
+          },
+          {
+            label: 'Attribute...',
+            type: 'radio' as const,
+            checked: self.colorByMode === 'attribute',
+            onClick: () => {
+              self.openColorByAttributeDialog()
+            },
           },
         ]
       },
