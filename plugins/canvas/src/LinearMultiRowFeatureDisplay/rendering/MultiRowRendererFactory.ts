@@ -2,7 +2,7 @@ import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBack
 
 import { Canvas2DMultiRowRenderer } from './Canvas2DMultiRowRenderer.ts'
 import { GpuMultiRowRenderer, MULTI_ROW_PASSES } from './GpuMultiRowRenderer.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/multiRow.generated.ts'
+import { UNIFORMS_SIZE_BYTES } from './shaders/multiRow.iface.generated.ts'
 
 import type { MultiRowRenderingBackend } from './multiRowRenderingBackendTypes.ts'
 

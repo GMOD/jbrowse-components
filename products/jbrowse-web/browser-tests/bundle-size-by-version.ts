@@ -12,10 +12,11 @@
 //   node browser-tests/bundle-size-by-version.ts --all           # every version
 //   node browser-tests/bundle-size-by-version.ts --versions v4.3.0,v3.0.0
 //   node browser-tests/bundle-size-by-version.ts --min v2.0.0    # floor
-import { createServer } from 'http'
 import { execFileSync } from 'child_process'
-import { existsSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { existsSync, readFileSync, statSync, writeFileSync } from 'fs'
+import { createServer } from 'http'
+import { extname, join, normalize } from 'path'
+import { gzipSync } from 'zlib'
 
 import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
@@ -24,21 +25,67 @@ import handler from 'serve-handler'
 const CACHE_DIR = process.env.JB_BENCH_CACHE || '/tmp/jb-bench-versions'
 const PORT = 3346
 const HERE = new URL('.', import.meta.url).pathname
+const JBROWSE_WEB_ROOT = join(HERE, '..')
+const LOCAL_BUILD = join(JBROWSE_WEB_ROOT, 'build')
 
-// Serve the whole jbrowse-create folder (index.html, static/, test_data/) from
-// one root. serve-handler does Range (206) requests, which the .2bit/.bai
-// adapters require, plus correct content-types.
-function startServer(root: string, port: number) {
+const CORS = [
+  { source: '**/*', headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }] },
+]
+
+// gzip the text assets a real static host would, so the CDP encodedDataLength
+// puppeteer reports is the realistic over-the-wire transfer size (not raw).
+const COMPRESSIBLE: Record<string, string> = {
+  '.js': 'application/javascript',
+  '.mjs': 'application/javascript',
+  '.css': 'text/css',
+  '.html': 'text/html',
+  '.json': 'application/json',
+  '.svg': 'image/svg+xml',
+  '.map': 'application/json',
+  '.txt': 'text/plain',
+}
+const gzipCache = new Map<string, Buffer>()
+
+function resolveFile(
+  reqUrl: string,
+  root: string,
+  testDataRoot: string | undefined,
+) {
+  const pathname = decodeURIComponent(new URL(reqUrl, 'http://x').pathname)
+  const base =
+    testDataRoot !== undefined && pathname.startsWith('/test_data/')
+      ? testDataRoot
+      : root
+  const fp = normalize(join(base, pathname === '/' ? '/index.html' : pathname))
+  return { fp, base, inside: fp.startsWith(base) }
+}
+
+// Range (206) requests — required by the .2bit/.bai adapters — and binary
+// assets fall through to serve-handler. Full-file text requests get gzipped
+// here so the measured JS bytes match a production deploy.
+function startServer(root: string, port: number, testDataRoot?: string) {
   const server = createServer((req, res) => {
-    void handler(req, res, {
-      public: root,
-      headers: [
-        {
-          source: '**/*',
-          headers: [{ key: 'Access-Control-Allow-Origin', value: '*' }],
-        },
-      ],
-    })
+    const { fp, base, inside } = resolveFile(req.url ?? '/', root, testDataRoot)
+    const type = COMPRESSIBLE[extname(fp)]
+    const acceptsGzip = /\bgzip\b/.test(req.headers['accept-encoding'] ?? '')
+    const isFile = inside && existsSync(fp) && statSync(fp).isFile()
+    if (type && acceptsGzip && !req.headers.range && isFile) {
+      let buf = gzipCache.get(fp)
+      if (!buf) {
+        buf = gzipSync(readFileSync(fp))
+        gzipCache.set(fp, buf)
+      }
+      res.writeHead(200, {
+        'content-type': type,
+        'content-encoding': 'gzip',
+        'content-length': buf.length,
+        vary: 'Accept-Encoding',
+        'access-control-allow-origin': '*',
+      })
+      res.end(buf)
+    } else {
+      void handler(req, res, { public: base, headers: CORS })
+    }
   })
   return new Promise<typeof server>(resolve => {
     server.listen(port, () => {
@@ -70,8 +117,15 @@ interface Sample {
 }
 
 async function measureVersion(version: string): Promise<Sample> {
-  const dir = ensureCreated(version)
-  const server = await startServer(dir, PORT)
+  return measureDir(version, ensureCreated(version))
+}
+
+async function measureDir(
+  version: string,
+  dir: string,
+  testDataRoot?: string,
+): Promise<Sample> {
+  const server = await startServer(dir, PORT, testDataRoot)
   const browser = await launch({ headless: true, args: BASE_CHROME_ARGS })
   try {
     const page = await browser.newPage()
@@ -147,14 +201,28 @@ function parseArgs(argv: string[]) {
     const i = argv.indexOf(flag)
     return i >= 0 ? argv[i + 1] : undefined
   }
+  const localIdx = argv.indexOf('--local')
+  const afterLocal = localIdx >= 0 ? argv[localIdx + 1] : undefined
   return {
     all: argv.includes('--all'),
     explicit: get('--versions')?.split(','),
     min: get('--min'),
+    // --local [label]: also measure products/jbrowse-web/build, label it, and
+    // merge into the existing JSON. Defaults the label to the git branch.
+    local: localIdx >= 0,
+    localLabel:
+      afterLocal && !afterLocal.startsWith('--') ? afterLocal : undefined,
   }
 }
 
+const isSemver = (v: string) => /^v\d+\.\d+\.\d+$/.test(v)
+
+// Released versions sort by semver; non-semver labels (the local build) sort
+// last so they land at the right edge of the chart.
 function cmpVersion(a: string, b: string) {
+  if (isSemver(a) !== isSemver(b)) {
+    return isSemver(a) ? -1 : 1
+  }
   const pa = a.replace(/^v/, '').split('.').map(Number)
   const pb = b.replace(/^v/, '').split('.').map(Number)
   for (let i = 0; i < 3; i++) {
@@ -163,6 +231,13 @@ function cmpVersion(a: string, b: string) {
     }
   }
   return 0
+}
+
+function gitBranch() {
+  return execFileSync('git', ['rev-parse', '--abbrev-ref', 'HEAD'], {
+    cwd: JBROWSE_WEB_ROOT,
+    encoding: 'utf8',
+  }).trim()
 }
 
 function listVersions() {
@@ -200,7 +275,7 @@ function renderSvg(samples: Sample[]) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" font-family="sans-serif">
 <rect width="${W}" height="${H}" fill="white"/>
 <text x="${padL}" y="30" font-size="20" font-weight="bold">JS bytes over the wire: boot LGV + open gene track (volvox)</text>
-<text x="${padL}" y="48" font-size="12" fill="#555">green = track rendered, red = render not detected. Raw (uncompressed) JS encodedDataLength.</text>
+<text x="${padL}" y="48" font-size="12" fill="#555">green = track rendered, red = render not detected. gzipped JS encodedDataLength (real over-the-wire transfer).</text>
 ${rows}
 </svg>`
 }
@@ -218,36 +293,65 @@ function asciiChart(samples: Sample[]) {
     .join('\n')
 }
 
+const log1 = (s: Sample) =>
+  { console.log(
+    `    JS ${Math.round(s.jsBytes / 1024)} KB in ${s.jsCount} reqs | all ${Math.round(s.allBytes / 1024)} KB | rendered=${s.rendered}`,
+  ) }
+
 async function main() {
   const args = parseArgs(process.argv.slice(2))
-  const available = listVersions()
-  let versions: string[]
-  if (args.explicit) {
-    versions = args.explicit
-  } else {
-    const min = args.min || 'v2.0.0'
-    const floored = available.filter(v => cmpVersion(v, min) >= 0)
-    versions = args.all ? floored : decimate(floored)
-  }
-  versions = [...versions].sort(cmpVersion)
+  const jsonPath = join(HERE, 'bundle-size-by-version.json')
+  const svgPath = join(HERE, 'bundle-size-by-version.svg')
 
-  console.log(`Measuring ${versions.length} versions:\n  ${versions.join(', ')}\n`)
-  const samples: Sample[] = []
-  for (const v of versions) {
-    console.log(`==> ${v}`)
-    try {
-      const s = await measureVersion(v)
-      samples.push(s)
-      console.log(
-        `    JS ${Math.round(s.jsBytes / 1024)} KB in ${s.jsCount} reqs | all ${Math.round(s.allBytes / 1024)} KB | rendered=${s.rendered}`,
-      )
-    } catch (e) {
-      console.error(`    FAILED ${v}:`, (e as Error).message)
+  // Pre-existing results merged into, so `--local` can append without
+  // re-measuring every release.
+  const byVersion = new Map<string, Sample>()
+  if (existsSync(jsonPath)) {
+    for (const s of JSON.parse(readFileSync(jsonPath, 'utf8')) as Sample[]) {
+      byVersion.set(s.version, s)
     }
   }
 
-  const jsonPath = join(HERE, 'bundle-size-by-version.json')
-  const svgPath = join(HERE, 'bundle-size-by-version.svg')
+  const wantReleases = args.all || !!args.explicit || !!args.min || !args.local
+  if (wantReleases) {
+    const available = listVersions()
+    let versions: string[]
+    if (args.explicit) {
+      versions = args.explicit
+    } else {
+      const min = args.min || 'v2.0.0'
+      const floored = available.filter(v => cmpVersion(v, min) >= 0)
+      versions = args.all ? floored : decimate(floored)
+    }
+    versions = [...versions].sort(cmpVersion)
+    console.log(`Measuring ${versions.length} releases:\n  ${versions.join(', ')}\n`)
+    for (const v of versions) {
+      console.log(`==> ${v}`)
+      try {
+        const s = await measureVersion(v)
+        byVersion.set(v, s)
+        log1(s)
+      } catch (e) {
+        console.error(`    FAILED ${v}:`, (e as Error).message)
+      }
+    }
+  }
+
+  if (args.local) {
+    const label = args.localLabel || `${gitBranch()} (local)`
+    console.log(`==> ${label} (build dir ${LOCAL_BUILD})`)
+    if (existsSync(join(LOCAL_BUILD, 'index.html'))) {
+      const s = await measureDir(label, LOCAL_BUILD, JBROWSE_WEB_ROOT)
+      byVersion.set(label, s)
+      log1(s)
+    } else {
+      console.error(`    no build found — run: pnpm --filter @jbrowse/web build`)
+    }
+  }
+
+  const samples = [...byVersion.values()].sort((a, b) =>
+    cmpVersion(a.version, b.version),
+  )
   writeFileSync(jsonPath, JSON.stringify(samples, null, 2))
   writeFileSync(svgPath, renderSvg(samples))
   console.log(`\n${asciiChart(samples)}\n`)

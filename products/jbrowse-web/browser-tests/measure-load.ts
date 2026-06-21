@@ -1,5 +1,8 @@
 /* eslint-disable no-console */
-import { BASE_CHROME_ARGS, encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import {
+  BASE_CHROME_ARGS,
+  encodeSessionSpec,
+} from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
 import { startServer } from './server.ts'
@@ -15,7 +18,7 @@ async function measure(
 ) {
   const browser = await launch({ headless: true, args: BASE_CHROME_ARGS })
   const page = await browser.newPage()
-  const client = await page.target().createCDPSession()
+  const client = await page.createCDPSession()
   await client.send('Network.enable')
 
   const urlByReq = new Map<string, string>()
@@ -47,7 +50,7 @@ async function measure(
 
 async function main() {
   const server = await startServer(PORT)
-  const k = (n: number) => (n / 1024).toFixed(0) + ' KB'
+  const k = (n: number) => `${(n / 1024).toFixed(0)} KB`
 
   const shell = await measure(
     'cold app shell',

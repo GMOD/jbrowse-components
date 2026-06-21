@@ -2,7 +2,7 @@ import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_F32,
-} from './shaders/variantMatrix.generated.ts'
+} from './shaders/variantMatrix.iface.generated.ts'
 
 import type { VariantMatrixUploadData } from './variantMatrixRenderingBackendTypes.ts'
 

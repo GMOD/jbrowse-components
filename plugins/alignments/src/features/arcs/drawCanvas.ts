@@ -13,7 +13,7 @@ import {
 import {
   ARC_FAR_SCREEN_WIDTHS,
   ARC_FLAT_MIN_PX,
-} from '../../LinearAlignmentsDisplay/shaders/slang/arc.generated.ts'
+} from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'

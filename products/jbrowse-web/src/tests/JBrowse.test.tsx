@@ -15,9 +15,9 @@ import {
   hts,
   setup,
 } from './util.tsx'
+import { buildShareUrl } from '../components/buildShareUrl.ts'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
-import { buildShareUrl } from '../components/buildShareUrl.ts'
 
 jest.mock('../makeWorkerInstance', () => () => {})
 jest.mock('../components/buildShareUrl.ts', () => ({

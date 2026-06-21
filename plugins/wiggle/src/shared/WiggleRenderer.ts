@@ -2,7 +2,7 @@ import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBack
 
 import { Canvas2DWiggleRenderer } from './Canvas2DWiggleRenderer.ts'
 import { GpuWiggleRenderer, WIGGLE_PASSES } from './GpuWiggleRenderer.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/wiggle.generated.ts'
+import { UNIFORMS_SIZE_BYTES } from './shaders/wiggle.iface.generated.ts'
 
 import type { WiggleRenderingBackend } from '@jbrowse/wiggle-core'
 

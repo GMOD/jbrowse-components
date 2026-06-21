@@ -293,7 +293,7 @@ describe('collectRenderData for mature protein regions', () => {
       l => 'subfeatureLabel' in l,
     )
     expect(labels).toHaveLength(2)
-    expect(labels.map(l => l.subfeatureLabel.text)).toEqual([
+    expect(labels.map(l => l.subfeatureLabel?.text)).toEqual([
       'protein VP0',
       'capsid protein VP1',
     ])

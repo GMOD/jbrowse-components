@@ -8,7 +8,7 @@ import {
   CHEVRON_DIRLESS_MIN_WIDTH_PX,
   CHEVRON_PX,
   PAIR_MIN_SPAN_PX,
-} from '../../LinearAlignmentsDisplay/shaders/slang/read.generated.ts'
+} from '../../LinearAlignmentsDisplay/shaders/slang/read.iface.generated.ts'
 
 import type {
   DrawBlock,

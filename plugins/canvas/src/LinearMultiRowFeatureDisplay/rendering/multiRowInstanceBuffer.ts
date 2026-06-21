@@ -2,7 +2,7 @@ import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_F32,
-} from './shaders/multiRow.generated.ts'
+} from './shaders/multiRow.iface.generated.ts'
 
 import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
 

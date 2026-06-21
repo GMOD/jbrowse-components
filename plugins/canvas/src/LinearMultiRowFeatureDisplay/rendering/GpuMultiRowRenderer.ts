@@ -6,7 +6,7 @@ import * as multiRowShader from './shaders/multiRow.generated.ts'
 import {
   UNIFORMS_SIZE_BYTES,
   UNIFORM_OFFSET_F32,
-} from './shaders/multiRow.generated.ts'
+} from './shaders/multiRow.iface.generated.ts'
 
 import type {
   MultiRowRegionData,

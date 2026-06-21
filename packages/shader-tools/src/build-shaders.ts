@@ -31,7 +31,11 @@ import {
 import { tmpdir } from 'node:os'
 import path from 'node:path'
 
-import { emit as emitLayout, emitLayoutOnly } from './shader-codegen/codegen.ts'
+import {
+  emitInterface,
+  emitLayoutOnly,
+  emitShaderStrings,
+} from './shader-codegen/codegen.ts'
 import { vulkanGlslToWebgl2 } from './shader-codegen/vulkanGlslToWebgl2.ts'
 
 // This file lives at packages/shader-tools/src/build-shaders.ts, so the repo
@@ -457,8 +461,7 @@ function compileOne(slangPath: string) {
       execFileSync(GLSLANG, ['-S', 'frag', processedFragOut], { stdio: 'pipe' })
     }
 
-    const generatedPath = path.join(dir, `${base}.generated.ts`)
-    const generated = emitLayout({
+    const codegenInputs = {
       baseName: base,
       reflection,
       wgsl,
@@ -467,9 +470,13 @@ function compileOne(slangPath: string) {
       textures: findCombinedSamplers(reflection),
       vertsPerInstance: parseVertsPerInstance(source),
       exportedConsts: parseExportedConsts(source),
-    })
-    writeFileSync(generatedPath, generated)
+    }
+    const generatedPath = path.join(dir, `${base}.generated.ts`)
+    writeFileSync(generatedPath, emitShaderStrings(codegenInputs))
+    const ifacePath = path.join(dir, `${base}.iface.generated.ts`)
+    writeFileSync(ifacePath, emitInterface(codegenInputs))
     console.log(`  ok: ${generatedPath.replace(`${REPO_ROOT}/`, '')}`)
+    console.log(`  ok: ${ifacePath.replace(`${REPO_ROOT}/`, '')}`)
 
     const layoutOut = parseLayoutOut(source)
     if (layoutOut) {

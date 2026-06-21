@@ -16,12 +16,12 @@ Swap order in colo829
 
 ## Fused abortsignal+stoptoken?
 
-## protein trans exceptions
+## mouseover
 
- it looks good in our ui but it might want to be 'above' the fasta or something... might not want
-  to have that outputted in the 'fasta' format in case anyone is relying on it being true fasta
+mouseover the individual peptide letters in gene glyph tooltip
 
-  ## matrix
+
+## matrix
 
 
 1. Side-by-side figure (painting + genotypes)
@@ -49,3 +49,11 @@ Verified state
 - My changed files: test_data/config_demo.json, website/docs/tutorials/analyze_trio.md, website/scripts/screenshot-specs.ts, website/scripts/figure-manifest.json, and the two new PNGs. (The data BED on jbrowse.org/demos/kgp-trio/ is the 4-row version, CDN-invalidated.)
 
 One thing I did not do: add the direct-script output as a second demo track. The hap-ibd consensus painting is the cleaner showcase, and the script is presented as the "in principle more correct, but noisier here" alternative. Say the word if you'd like a second track (or a side-by-side of hap-ibd vs direct) added too.
+
+## color by cds reference sequence track
+
+should also color by cds
+
+## add strand arrows on sides of screen when zoomed in
+
+## bundle size...not compressed on main

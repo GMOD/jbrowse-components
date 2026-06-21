@@ -2,7 +2,7 @@ import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBack
 
 import { Canvas2DMafRenderer } from './Canvas2DMafRenderer.ts'
 import { GpuMafRenderer, MAF_PASSES } from './GpuMafRenderer.ts'
-import { UNIFORMS_SIZE_BYTES } from './shaders/maf.generated.ts'
+import { UNIFORMS_SIZE_BYTES } from './shaders/maf.iface.generated.ts'
 
 import type { MafRenderingBackend } from './mafRenderingBackendTypes.ts'
 

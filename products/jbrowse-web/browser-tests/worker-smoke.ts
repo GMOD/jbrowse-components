@@ -1,5 +1,8 @@
 /* eslint-disable no-console */
-import { BASE_CHROME_ARGS, encodeSessionSpec } from '@jbrowse/browser-test-utils'
+import {
+  BASE_CHROME_ARGS,
+  encodeSessionSpec,
+} from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'
 
 import { startServer } from './server.ts'
@@ -13,9 +16,11 @@ async function main() {
 
   const errors: string[] = []
   const workers: string[] = []
-  page.on('pageerror', e => errors.push('pageerror: ' + e.message))
+  page.on('pageerror', e => errors.push(`pageerror: ${e}`))
   page.on('console', m => {
-    if (m.type() === 'error') errors.push('console.error: ' + m.text())
+    if (m.type() === 'error') {
+      errors.push(`console.error: ${m.text()}`)
+    }
   })
   page.on('workercreated', w => workers.push(w.url()))
 
@@ -45,14 +50,20 @@ async function main() {
   console.log('--- WORKER SMOKE RESULT ---')
   console.log('track display reached *-done:', rendered)
   console.log('workers created:', workers.length)
-  for (const w of workers) console.log('  worker url:', w)
+  for (const w of workers) {
+    console.log('  worker url:', w)
+  }
   console.log('errors:', errors.length)
-  for (const e of errors.slice(0, 15)) console.log('  ', e)
+  for (const e of errors.slice(0, 15)) {
+    console.log('  ', e)
+  }
 
   await browser.close()
   server.close()
   const ok = rendered && workers.length > 0 && errors.length === 0
-  console.log(ok ? '\nPASS: worker booted + track rendered, no errors' : '\nFAIL')
+  console.log(
+    ok ? '\nPASS: worker booted + track rendered, no errors' : '\nFAIL',
+  )
   process.exit(ok ? 0 : 1)
 }
 

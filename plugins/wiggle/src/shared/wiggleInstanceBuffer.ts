@@ -4,7 +4,7 @@ import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_F32,
-} from './shaders/wiggle.generated.ts'
+} from './shaders/wiggle.iface.generated.ts'
 
 import type { SourceRenderData } from '@jbrowse/wiggle-core'
 

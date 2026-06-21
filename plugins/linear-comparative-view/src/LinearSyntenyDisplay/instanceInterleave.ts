@@ -2,7 +2,7 @@ import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_F32,
-} from './shaders/syntenyFillStraight.generated.ts'
+} from './shaders/syntenyFillStraight.iface.generated.ts'
 
 import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 

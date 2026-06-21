@@ -18,6 +18,7 @@ function makeItem(
     topPx: 5,
     heightPx: 10,
     isStopOrNonTriplet: false,
+    isTranslExcept: false,
     flatbushIdx: 0,
     ...overrides,
   }

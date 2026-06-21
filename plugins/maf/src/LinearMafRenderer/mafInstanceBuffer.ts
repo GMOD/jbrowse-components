@@ -7,7 +7,7 @@ import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
   INSTANCE_STRIDE_F32,
-} from './shaders/maf.generated.ts'
+} from './shaders/maf.iface.generated.ts'
 
 import type { MafBlock } from './mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from './util.ts'

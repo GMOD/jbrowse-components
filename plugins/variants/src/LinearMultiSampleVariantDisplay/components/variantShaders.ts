@@ -1,4 +1,4 @@
-import { packInstances } from './shaders/variant.generated.ts'
+import { packInstances } from './shaders/variant.iface.generated.ts'
 
 import type { VariantUploadData } from './variantRenderingBackendTypes.ts'
 

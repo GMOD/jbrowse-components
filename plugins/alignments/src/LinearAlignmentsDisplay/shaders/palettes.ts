@@ -15,7 +15,7 @@ import type { RGBColor } from './colors.ts'
 // Pixels of padding above the arc apex. Re-exported from arc.generated.ts
 // (arc.slang is the source of truth) so the shader and the Canvas2D / SVG arc
 // renderers share one value.
-export { ARC_HEIGHT_MARGIN } from './slang/arc.generated.ts'
+export { ARC_HEIGHT_MARGIN } from './slang/arc.iface.generated.ts'
 
 // Palette indices match the Slang arc shaders (u.arcColor0..7). Canvas2D / SVG
 // arc renderers reuse these same arrays, and the interchromosomal connector

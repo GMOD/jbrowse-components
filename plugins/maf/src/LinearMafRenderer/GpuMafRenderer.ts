@@ -6,7 +6,7 @@ import * as mafShader from './shaders/maf.generated.ts'
 import {
   UNIFORMS_SIZE_BYTES,
   UNIFORM_OFFSET_F32,
-} from './shaders/maf.generated.ts'
+} from './shaders/maf.iface.generated.ts'
 
 import type {
   MafGPURenderState,

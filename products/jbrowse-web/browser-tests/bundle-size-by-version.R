@@ -14,20 +14,30 @@ if (length(here) == 0) here <- "."
 d <- fromJSON(file.path(here, "bundle-size-by-version.json"))
 d$jsMB <- d$jsBytes / 1024 / 1024
 
-# Chronological order on x; major release as a colour band.
-ord <- order(
-  as.integer(sub("v(\\d+)\\..*", "\\1", d$version)),
-  as.integer(sub("v\\d+\\.(\\d+)\\..*", "\\1", d$version)),
-  as.integer(sub("v\\d+\\.\\d+\\.(\\d+)", "\\1", d$version))
-)
-d <- d[ord, ]
+# Released versions (vX.Y.Z) sort by semver; any non-semver label (the local
+# build) is pinned to the right edge. Major release drives the colour band.
+semver <- grepl("^v\\d+\\.\\d+\\.\\d+$", d$version)
+key <- ifelse(semver,
+  sprintf("%03d%03d%03d",
+    as.integer(sub("v(\\d+)\\..*", "\\1", d$version)),
+    as.integer(sub("v\\d+\\.(\\d+)\\..*", "\\1", d$version)),
+    as.integer(sub("v\\d+\\.\\d+\\.(\\d+)", "\\1", d$version))),
+  "zzz")
+d <- d[order(key), ]
 d$version <- factor(d$version, levels = d$version)
-d$major <- factor(sub("v(\\d+)\\..*", "v\\1.x", as.character(d$version)))
+d$major <- ifelse(grepl("^v\\d", as.character(d$version)),
+  sub("v(\\d+)\\..*", "v\\1.x", as.character(d$version)),
+  "local build")
+d$major <- factor(d$major, levels = c(sort(unique(grep("^v", d$major, value = TRUE))), "local build"))
+d$isLocal <- d$major == "local build"
 
 p <- ggplot(d, aes(version, jsMB, group = 1)) +
   geom_line(color = "grey60", linewidth = 0.6) +
-  geom_point(aes(color = major), size = 2.6) +
-  geom_smooth(aes(group = 1), method = "loess", formula = y ~ x,
+  geom_point(aes(color = major, size = isLocal, shape = isLocal)) +
+  scale_size_manual(values = c(`FALSE` = 2.6, `TRUE` = 5), guide = "none") +
+  scale_shape_manual(values = c(`FALSE` = 16, `TRUE` = 18), guide = "none") +
+  geom_smooth(data = subset(d, !isLocal), aes(group = 1),
+              method = "loess", formula = y ~ x,
               se = FALSE, color = "black", linetype = "dashed", linewidth = 0.5) +
   scale_y_continuous(limits = c(0, NA),
                      breaks = scales::pretty_breaks(6),

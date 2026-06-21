@@ -1,7 +1,7 @@
+import { samFlagLabels } from '@jbrowse/alignments-core'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import SimpleField from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/SimpleField'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { samFlagLabels } from '@jbrowse/alignments-core'
 import { Checkbox, FormControlLabel, FormGroup } from '@mui/material'
 
 const useStyles = makeStyles()({

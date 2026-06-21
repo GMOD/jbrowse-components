@@ -6,7 +6,7 @@ import {
   FADE_HI_PX,
   FADE_LO_PX,
   OVERLAP_ALPHA,
-} from '../../LinearAlignmentsDisplay/shaders/slang/overlap.generated.ts'
+} from '../../LinearAlignmentsDisplay/shaders/slang/overlap.iface.generated.ts'
 
 import type { OverlapsUploadData } from './types.ts'
 import type {
