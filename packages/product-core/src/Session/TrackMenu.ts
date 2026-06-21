@@ -9,7 +9,6 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
-
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -233,7 +232,11 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
         view?: TrackActionView,
       ): MenuItem[] {
         return [
-          ...trackListMenuItems(self, config, self.getTrackActions(config, view)),
+          ...trackListMenuItems(
+            self,
+            config,
+            self.getTrackActions(config, view),
+          ),
           ...buildExtraTrackMenuItems(pluginManager, {
             session: self as unknown as AbstractSessionModel,
             config,
