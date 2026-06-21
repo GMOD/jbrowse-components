@@ -1,5 +1,6 @@
 import BED from '@gmod/bed'
 import { TabixIndexedFile } from '@gmod/tabix'
+import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import {
   SimpleFeature,
@@ -57,9 +58,9 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
     pluginManager?: PluginManager,
   ) {
     super(config, getSubAdapter, pluginManager)
-    this.bedGzLoc = this.getConf('bedGzLocation') as FileLocation
-    const type = this.getConf(['index', 'indexType'])
-    const loc = this.getConf(['index', 'location'])
+    this.bedGzLoc = readConfObject(this.config, 'bedGzLocation') as FileLocation
+    const type = readConfObject(this.config, ['index', 'indexType'])
+    const loc = readConfObject(this.config, ['index', 'location'])
     const pm = this.pluginManager
 
     this.bed = new TabixIndexedFile({
@@ -67,7 +68,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       ...openTabixIndexFilehandle(loc, type, pm),
       chunkCacheSize: 50 * 2 ** 20,
     })
-    this.parser = new BED({ autoSql: this.getConf('autoSql') })
+    this.parser = new BED({ autoSql: readConfObject(this.config, 'autoSql') })
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -107,7 +108,7 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
   }
 
   async getNames() {
-    const columnNames: string[] = this.getConf('columnNames')
+    const columnNames: string[] = readConfObject(this.config, 'columnNames')
     if (columnNames.length) {
       return columnNames
     }
@@ -142,8 +143,11 @@ export default class BedTabixAdapter extends BaseFeatureDataAdapter<BedTabixAdap
       const { colRef, colStart, colEnd, hasEndColumn, oneBased } =
         resolveBedColumns(await this.getMetadata())
       const names = await this.getNames()
-      const scoreColumn = this.getConf('scoreColumn')
-      const disableGeneHeuristic = this.getConf('disableGeneHeuristic')
+      const scoreColumn = readConfObject(this.config, 'scoreColumn')
+      const disableGeneHeuristic = readConfObject(
+        this.config,
+        'disableGeneHeuristic',
+      )
       const stopTokenCheck = createStopTokenChecker(stopToken)
       checkStopToken(stopToken)
       await downloadStatus('Downloading features', statusCallback, onProgress =>

@@ -15,8 +15,8 @@ import type { Region } from '@jbrowse/core/util'
 // Pan-UKBB flat-file case where columns are already -log10) the parent stream
 // is returned untouched, so the genome-wide hot path is unchanged.
 export default class GWASAdapter extends BedTabixAdapter {
-  // narrow the inherited BedTabixAdapter config to include the GWAS slots, so
-  // readConfObject('scoreTransform') resolves against the right schema
+  // type-only refinement of the inherited config so readConfObject resolves the
+  // GWAS-only slots (e.g. scoreTransform) against the right schema
   declare config: GWASAdapterConfig
 
   getFeatures(region: Region, opts?: BaseOptions) {
