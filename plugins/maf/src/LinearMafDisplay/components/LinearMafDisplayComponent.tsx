@@ -146,13 +146,15 @@ const MafBody = observer(function MafBody({
           height={rowsHeight}
           palette={colorPalette}
         />
-        <InsertionsOverlay
-          markers={model.visibleInsertions}
-          width={width}
-          height={rowsHeight}
-          palette={colorPalette}
-          pxPerBp={1 / view.bpPerPx}
-        />
+        {model.activeRowRendering === 'bases' ? (
+          <InsertionsOverlay
+            markers={model.visibleInsertions}
+            width={width}
+            height={rowsHeight}
+            palette={colorPalette}
+            pxPerBp={1 / view.bpPerPx}
+          />
+        ) : null}
         <DeletionsOverlay
           markers={model.visibleDeletions}
           width={width}
