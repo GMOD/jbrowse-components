@@ -253,14 +253,13 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
   }
 }
 
-// MM/ML coloring: the methylation summary (when present) plus the per-call view.
-function buildModificationsItem(model: ModificationsModel): MenuItem {
-  return {
-    label: 'Base modifications (MM tag)',
-    subMenu: model.modificationsReady
-      ? [...buildMethylationItem(model), buildByTypeItem(model)]
-      : [{ label: 'Loading modifications...', disabled: true, onClick() {} }],
-  }
+// MM/ML coloring promoted to the top of "Color by...": the methylation summary
+// (when present) plus the per-call view, no longer nested under a "Base
+// modifications (MM tag)" parent — both already carry self-describing labels.
+function buildModificationsItems(model: ModificationsModel): MenuItem[] {
+  return model.modificationsReady
+    ? [...buildMethylationItem(model), buildByTypeItem(model)]
+    : [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
 }
 
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
@@ -341,7 +340,7 @@ export function getColorByMenuItem(
 
   const modItems: MenuItem[] = hasModifications(model)
     ? [
-        ...(showMods ? [buildModificationsItem(model)] : []),
+        ...(showMods ? buildModificationsItems(model) : []),
         buildAdvancedItem(model),
       ]
     : []
