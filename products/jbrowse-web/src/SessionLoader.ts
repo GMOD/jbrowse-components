@@ -279,18 +279,6 @@ const SessionLoader = types
     },
     /**
      * #action
-     */
-    setPluginManager(pm: PluginManager | undefined) {
-      self.pluginManager = pm
-    },
-    /**
-     * #action
-     */
-    setPluginManagerError(error: unknown) {
-      self.pluginManagerError = error
-    },
-    /**
-     * #action
      * Builds the pluginManager (and rootModel) from the loaded config/session.
      * Idempotent: a second call while one already exists is a no-op.
      */
