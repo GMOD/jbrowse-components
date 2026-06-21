@@ -44,7 +44,10 @@ import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
-import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
+import type {
+  RowIdentityMode,
+  RowIdentityModeWithOff,
+} from './rowIdentityModes.ts'
 import type {
   MafGPURenderState,
   MafGpuProps,
@@ -88,12 +91,15 @@ const DEFAULTS = {
   rowIdentityMode: 'none',
 } as const
 
+const minDisplayHeight = 20
+
 /**
  * #stateModel LinearMafDisplay
  *
  * #example
  * A complete `MafTrack` config to paste into `tracks`. `samples` lists the
- * aligned species in track order; `rowHeight` sets the per-sample band height:
+ * aligned species in track order; `rowHeightMode` sets the per-sample band
+ * height in px (or `0` to stretch rows to fill the track height):
  * ```js
  * {
  *   type: 'MafTrack',
@@ -109,7 +115,7 @@ const DEFAULTS = {
  *     {
  *       type: 'LinearMafDisplay',
  *       displayId: 'multiz-LinearMafDisplay',
- *       rowHeight: 16,
+ *       rowHeightMode: 16,
  *       showCoverage: true,
  *     },
  *   ],
@@ -137,8 +143,12 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
+         * Per-row height in px, or `0` for "fit to display height" mode, where
+         * rows stretch to fill the dragged track height. Mirrors the variants
+         * MultiSampleVariantDisplay `rowHeightMode`. The `rowHeight` getter
+         * resolves this to a concrete px value.
          */
-        rowHeight: types.stripDefault(types.number, DEFAULTS.rowHeight),
+        rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeight),
         /**
          * #property
          */
@@ -216,11 +226,12 @@ export default function stateModelFactory(
         ),
         /**
          * #property
-         * Per-row identity overlay drawn over the base coloring: each species
-         * row shows its local (per-pixel) percent identity to the reference.
+         * Per-row identity rendering shown in place of the base SNP coloring once
+         * zoomed out past base level (see `activeRowRendering`): each species row
+         * shows its local (per-pixel) percent identity to the reference.
          * `heatmap` shades the row band on a red→grey→blue ramp; `xyplot` draws
          * a per-species identity wiggle (bar height = identity). `none` (the
-         * default) hides it.
+         * default) keeps the base coloring at every zoom.
          */
         rowIdentityMode: types.stripDefault(
           types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
@@ -261,13 +272,29 @@ export default function stateModelFactory(
        * rather than re-fetching it.
        */
       treeNewickVolatile: undefined as string | undefined,
+      /**
+       * #volatile
+       * True during an active height drag. Gates the dense per-base letter
+       * overlay (a Canvas2D pass that re-scans every visible cell and redraws
+       * thousands of glyphs each frame) so the drag only restretches the cheap
+       * GPU cell canvas; letters snap back when the drag settles.
+       */
+      resizing: false,
+      // Debounce handle that clears `resizing` after the drag stops.
+      resizeSettleTimer: undefined as ReturnType<typeof setTimeout> | undefined,
     }))
     .actions(self => ({
       /**
        * #action
        */
       setRowHeight(n: number) {
-        self.rowHeight = n
+        self.rowHeightMode = n
+      },
+      /**
+       * #action
+       */
+      setResizing(arg: boolean) {
+        self.resizing = arg
       },
       /**
        * #action
@@ -480,17 +507,6 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Height of the per-sample rows area (excludes the coverage band). Zero
-       * when alignments are hidden, collapsing the display to the coverage band.
-       */
-      get rowsHeight() {
-        if (!self.showAlignments) {
-          return 0
-        }
-        return self.sources ? self.sources.length * self.rowHeight : 1
-      },
-      /**
-       * #getter
        * Height of the coverage band above the rows (0 when hidden).
        */
       get coverageDisplayHeight() {
@@ -514,6 +530,58 @@ export default function stateModelFactory(
        */
       get rowsTopOffset() {
         return self.coverageDisplayHeight + self.conservationDisplayHeight
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Number of displayed rows (at least 1, so the fit-mode division is safe).
+       */
+      get nrow() {
+        return Math.max(1, self.sources?.length ?? 0)
+      },
+      /**
+       * #getter
+       * The track height that fit-to-height mode divides among rows: the
+       * user-dragged `heightOverride` (TrackHeightMixin) or the config `height`
+       * default before any drag.
+       */
+      get fitTargetHeight(): number {
+        return self.heightOverride ?? readConfObject(self.conf, 'height')
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Per-row height in fit-to-height mode: the rows area (track height minus
+       * the fixed bands) split evenly across rows.
+       */
+      get autoRowHeight() {
+        return Math.max(1, (self.fitTargetHeight - self.rowsTopOffset) / self.nrow)
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Resolved per-row height. `rowHeightMode === 0` is fit-to-height (rows
+       * stretch to the dragged track height); any positive value is a pinned px
+       * height. Every consumer reads this getter, never `rowHeightMode`.
+       */
+      get rowHeight() {
+        return self.rowHeightMode === 0 ? self.autoRowHeight : self.rowHeightMode
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Height of the per-sample rows area (excludes the coverage band). Zero
+       * when alignments are hidden, collapsing the display to the coverage band.
+       */
+      get rowsHeight() {
+        if (!self.showAlignments) {
+          return 0
+        }
+        return self.sources ? self.sources.length * self.rowHeight : 1
       },
     }))
     .views(self => ({
@@ -551,6 +619,47 @@ export default function stateModelFactory(
           self.treeAreaWidth,
           self.showBranchLength,
         )
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       * Switch to fit-to-height mode: rows stretch to fill the track height.
+       * Seeds `heightOverride` from the current content height so toggling on
+       * doesn't jump, then `rowHeightMode = 0` makes `rowHeight` derive from it.
+       */
+      setFitToHeight() {
+        // Seed from the current content height so toggling on never jumps,
+        // even if a prior fixed-mode drag left a stale heightOverride.
+        self.heightOverride = Math.max(self.height, minDisplayHeight)
+        self.rowHeightMode = 0
+        self.scrollTop = 0
+      },
+      /**
+       * #action
+       * Drag-resize. In fit mode the new height drives `autoRowHeight` (rows
+       * stretch). In fixed mode the pinned `rowHeightMode` scales proportionally
+       * so dragging still resizes rows. Mirrors the variants display.
+       *
+       * Flips `resizing` for the duration of the drag (cleared a beat after the
+       * last tick) so the dense letter overlay sits out the frame-by-frame
+       * restretch — see the `resizing` volatile.
+       */
+      resizeHeight(distance: number) {
+        const oldHeight = self.height
+        const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
+        self.heightOverride = newHeight
+        if (self.rowHeightMode > 0) {
+          self.rowHeightMode = (self.rowHeightMode * newHeight) / oldHeight
+        }
+        self.resizing = true
+        clearTimeout(self.resizeSettleTimer)
+        self.resizeSettleTimer = setTimeout(() => {
+          if (isAlive(self)) {
+            self.setResizing(false)
+          }
+        }, 150)
+        return newHeight - oldHeight
       },
     }))
     .views(self => ({
@@ -792,7 +901,7 @@ export default function stateModelFactory(
        */
       get visibleLabels() {
         const view = getContainingView(self) as LinearGenomeViewModel
-        if (!view.initialized || !self.sources) {
+        if (!view.initialized || !self.sources || self.resizing) {
           return []
         }
         return computeVisibleLabels({
@@ -874,6 +983,38 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * At base level each reference base spans at least a pixel, so individual
+       * bases / SNP marks are legible (UCSC's `zoomedToBaseLevel`). Read off the
+       * debounced `coarseBpPerPx` so the rendering swap it gates doesn't thrash
+       * mid-zoom. False until the view is initialized.
+       */
+      get zoomedToBaseLevel() {
+        const view = getContainingView(self) as LinearGenomeViewModel
+        return view.initialized && view.coarseBpPerPx <= 1
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Single source of truth for what the per-sample rows area draws right now:
+       * `bases` (the GPU SNP/base coloring) or one of the per-row identity styles
+       * (`heatmap` / `xyplot`). Emulates UCSC `wigMaf`: bases at base level, the
+       * per-species identity plot when zoomed out past it — and only when a mode
+       * is selected and the cheap `bigMafSummary` path isn't already owning the
+       * zoom-out view. The GPU canvas, the identity canvas, and SVG export all
+       * branch on this one getter so they can't disagree about what's on screen.
+       */
+      get activeRowRendering(): 'bases' | RowIdentityMode {
+        return self.rowIdentityMode !== 'none' &&
+          !self.showSummary &&
+          !self.zoomedToBaseLevel
+          ? self.rowIdentityMode
+          : 'bases'
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Positioned per-species presence bars for the zoom-out summary overlay.
        * Empty unless `showSummary` is active. Unmatched `src` rows drop via the
        * `sources` index, keeping the render robust to summary files that list
@@ -936,19 +1077,6 @@ export default function stateModelFactory(
       },
       // reload() not overridden — MultiRegionDisplayMixin's base default
       // (clearAllRpcData) is exactly maf's behavior; no extra teardown.
-      // Override base setHeight: subtract the coverage band, then distribute
-      // the remaining rows area across samples. Resize handle and programmatic
-      // setHeight both work.
-      setHeight(newHeight: number) {
-        const sampleCount = self.sources?.length
-        if (sampleCount) {
-          const rowsTarget = Math.max(
-            sampleCount,
-            newHeight - self.rowsTopOffset,
-          )
-          self.rowHeight = Math.max(1, Math.floor(rowsTarget / sampleCount))
-        }
-      },
       startRenderingBackend(backend: MafRenderingBackend) {
         // Per-region streamed upload. The encode callback builds the GPU
         // instance buffer on the main thread from raw region data + gpuProps,
@@ -970,7 +1098,14 @@ export default function stateModelFactory(
             if (!state) {
               return false
             }
-            b.renderBlocks(self.renderBlocks, self.rpcDataMap, state)
+            // When the identity plot is the active rows rendering (zoomed out),
+            // render no blocks so the GPU canvas clears to transparent and the
+            // identity canvas drawn over it is the only thing visible.
+            b.renderBlocks(
+              self.activeRowRendering === 'bases' ? self.renderBlocks : [],
+              self.rpcDataMap,
+              state,
+            )
             return true
           },
         )
@@ -1050,6 +1185,15 @@ export default function stateModelFactory(
       // arrangement; stripDefault omits it when empty (the common case).
       const { clusterTree: _clusterTree, ...rest } = snap
       return rest
+    })
+    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
+      // Pre-fit-mode sessions stored a bare `rowHeight` property; migrate it to
+      // `rowHeightMode` (a px value = fixed mode).
+      if (snap && snap.rowHeightMode === undefined && snap.rowHeight !== undefined) {
+        const { rowHeight, ...rest } = snap
+        return { ...rest, rowHeightMode: rowHeight }
+      }
+      return snap
     })
 }
 

@@ -29,10 +29,12 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showAlignments: boolean
   showConservation: boolean
   rowIdentityMode: RowIdentityModeWithOff
+  rowHeightMode: number
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   clusterTree?: string
   setRowHeight: (n: number) => void
+  setFitToHeight: () => void
   setRowProportion: (n: number) => void
   setShowAllLetters: (f: boolean) => void
   setMismatchRendering: (f: boolean) => void
@@ -55,6 +57,14 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
       label: 'Set feature height',
       type: 'subMenu',
       subMenu: [
+        {
+          label: 'Fit to display height',
+          type: 'checkbox',
+          checked: self.rowHeightMode === 0,
+          onClick: () => {
+            self.setFitToHeight()
+          },
+        },
         {
           label: 'Normal',
           onClick: () => {
