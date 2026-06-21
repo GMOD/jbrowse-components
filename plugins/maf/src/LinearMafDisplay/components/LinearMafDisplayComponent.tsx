@@ -13,6 +13,7 @@ import InsertionsOverlay from './InsertionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
 import MafConservationCanvas from './MafConservationCanvas.tsx'
+import MafConservationResizeHandle from './MafConservationResizeHandle.tsx'
 import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
@@ -22,8 +23,10 @@ import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
+import { resolveMafRowHover } from './resolveRowHover.ts'
 import { useDragSelection } from './useDragSelection.ts'
 import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.ts'
+import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -36,7 +39,9 @@ const LinearMafDisplay = observer(function LinearMafDisplay(props: {
 }) {
   const { model } = props
   const ref = useRef<HTMLDivElement>(null)
-  const drag = useDragSelection(ref)
+  const drag = useDragSelection(ref, (x, y) =>
+    { openInsertionWidgetOnClick(model, x, y) },
+  )
   return (
     <DisplayChrome
       model={model}
@@ -82,7 +87,10 @@ const MafBody = observer(function MafBody({
     sources,
     samples,
   } = model
-  const [resizeActive, setResizeActive] = useState(false)
+  const [coverageResizeActive, setCoverageResizeActive] = useState(false)
+  const [conservationResizeActive, setConservationResizeActive] =
+    useState(false)
+  const resizeActive = coverageResizeActive || conservationResizeActive
   const session = getSession(model)
   const view = getContainingView(model) as LinearGenomeViewModel
   const { width } = view
@@ -106,13 +114,32 @@ const MafBody = observer(function MafBody({
   const treeShowing = showTree && !!hierarchy
   const sidebarOffset = treeShowing ? treeAreaWidth : 0
 
+  // Pointer cursor when an insertion marker is clickable under the cursor, via
+  // the same `resolveMafRowHover` the tooltip uses so the two always agree (see
+  // resolveRowHover.ts). Matches the click gate in openInsertionWidgetOnClick:
+  // bases mode only, and never mid drag-selection.
+  const overInsertion =
+    !isDragging &&
+    mouseX !== undefined &&
+    mouseY !== undefined &&
+    mouseX > sidebarOffset &&
+    model.activeRowRendering === 'bases' &&
+    resolveMafRowHover(model, view, mouseX, mouseY)?.kind === 'insertion'
+
   return (
     <>
       <MafCoverageCanvas model={model} />
       <MafCoverageYScale model={model} />
-      <MafCoverageResizeHandle model={model} onActiveChange={setResizeActive} />
+      <MafCoverageResizeHandle
+        model={model}
+        onActiveChange={setCoverageResizeActive}
+      />
       <MafConservationCanvas model={model} />
       <MafConservationYScale model={model} />
+      <MafConservationResizeHandle
+        model={model}
+        onActiveChange={setConservationResizeActive}
+      />
       <MafBandLabels model={model} />
       <div
         style={{
@@ -121,6 +148,7 @@ const MafBody = observer(function MafBody({
           left: 0,
           width,
           height: rowsHeight,
+          cursor: overInsertion ? 'pointer' : undefined,
         }}
       >
         <canvas

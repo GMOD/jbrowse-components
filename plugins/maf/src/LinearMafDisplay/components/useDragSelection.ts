@@ -28,7 +28,10 @@ function relativeXY(
   return { x: e.clientX - (rect?.left ?? 0), y: e.clientY - (rect?.top ?? 0) }
 }
 
-export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
+export function useDragSelection(
+  ref: React.RefObject<HTMLDivElement | null>,
+  onClick?: (x: number, y: number) => void,
+) {
   const [state, setState] = useState<DragState>({
     isDragging: false,
     showSelectionBox: false,
@@ -85,6 +88,8 @@ export function useDragSelection(ref: React.RefObject<HTMLDivElement | null>) {
       })
       setState(s => ({ ...s, isDragging: false, showSelectionBox: true }))
     } else {
+      const { x, y } = relativeXY(ref, e)
+      onClick?.(x, y)
       setState(s => ({
         ...s,
         isDragging: false,
