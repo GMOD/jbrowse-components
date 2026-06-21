@@ -30,6 +30,12 @@ are configurable from the gear icon.
 
 <Figure caption="Sequence panel for a selected feature, color-coded by region: upstream/downstream (red), UTR (blue), CDS (yellow), and intronic (white)." src="/img/feature_detail_sequence.png" />
 
+The sequence type is chosen from the dropdown at the top of the panel; picking
+"Genomic w/ full introns +/- 100bp up+down stream" adds the flanking sequence
+(light red) on either side of the gene.
+
+<Figure caption="Choosing the sequence type for a volvox gene: the dropdown is set to 'Genomic w/ full introns +/- 100bp up+down stream', so the panel shows the upstream flank (light red), the exons and introns, and the downstream flank." src="/img/upstream_downstream_details.png" />
+
 ### Other feature types
 
 For non-gene features, the "Feature sequence" button shows the literal sequence

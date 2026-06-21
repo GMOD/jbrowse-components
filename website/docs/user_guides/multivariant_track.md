@@ -33,6 +33,33 @@ homozygosity, and population structure become visible at a glance.
 
 <Figure caption="A phased trio as a matrix display: one column per variant, one row per haplotype (two per sample), each cell shaded reference vs alt allele. Inherited haplotype blocks read as contiguous vertical bands shared across parent and child rows." src="/img/trio-matrix-phased-clean.png" />
 
+## Genotype coloring — allele dosage vs phased
+
+Both the regular and matrix displays color each genotype cell, and how they
+color it is set by the `renderingMode` display option.
+
+In the default **allele-dosage** mode (`renderingMode: 'alleleCount'`), one cell
+is drawn per sample and shaded by how many alternate alleles the call carries:
+
+- homozygous reference (`0/0`) → light grey
+- heterozygous (`0/1`) → a medium shade
+- homozygous alternate (`1/1`) → the darkest shade
+
+so the cell color reads directly as allele dosage (0, 1, or 2 alt alleles) and
+runs of homozygous-alt samples stand out as the darkest blocks. Genotypes mixing
+two _different_ non-reference alleles (e.g. `1/2`) get a distinct color so they
+aren't confused with a simple homozygous-alt call, and uncalled genotypes
+(`./.`) are left blank.
+
+In **phased** mode (`renderingMode: 'phased'`), each sample is split into one
+row per haplotype and every haplotype cell is colored reference vs alt on its
+own, rather than collapsed to a dosage. This is what makes inherited haplotype
+blocks line up as the contiguous vertical bands in the trio matrix above. Phased
+mode requires phased genotypes (`|`-separated) in the VCF.
+
+You can switch modes from the track menu, or set `renderingMode` in the display
+configuration.
+
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata — population, phenotype, sex, or

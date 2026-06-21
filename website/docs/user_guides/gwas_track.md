@@ -14,6 +14,12 @@ coloring to show linkage to an index SNP.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_gwas.json)
 
+For a real-world, genome-wide example, the embedded
+[Pan-UKB GWAS example](https://jbrowse.org/storybook/lgv/pan-ukb-gwas) browses
+the full Pan-UK Biobank catalog of ~7,200 phenotypes, loading each trait's
+summary statistics straight from the Pan-UKBB public S3 bucket and rendering the
+whole genome as a Manhattan plot.
+
 ## Example files
 
 The JBrowse demo data includes ready-to-load files. Paste these URLs directly
@@ -53,6 +59,10 @@ lead signal. JBrowse auto-picks the highest-scoring loaded SNP as the index;
 right-click any point to re-anchor the coloring to that SNP.
 
 <Figure caption="LocusZoom-style LD coloring at the STAT4 locus: the lead SNP (purple) tops the plot, and surrounding points shade from red (high r²) down through green to blue (low r²) by their linkage to it — so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
+
+The embedded
+[LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld)
+shows this r² coloring running live in a React app.
 
 LD data must be in PLINK `--r2` output format. Generate it from:
 

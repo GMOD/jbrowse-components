@@ -75,7 +75,7 @@ Plugin authors can submit their plugin via PR to
 
 You can verify the plugin is installed properly by checking the Plugin Store:
 
-<Figure src="/img/plugin-store.png" caption="Example screenshot showing how installed plugins are represented in the plugin store interface. Plugins installed via the config are shown with a lock icon, indicating they cannot be removed via the GUI."/>
+<Figure src="/img/plugin_store.png" caption="Opening the plugin store from the Tools menu. Plugins installed via the config (here UMDUrlPlugin) show a lock icon in the Installed plugins section, indicating they cannot be removed through the GUI; the Available plugins list below offers one-click installs."/>
 
 See our [developer guide](/docs/developer_guide/) for more information on
 developing plugins, or our [plugins page](/plugin_store) to browse currently

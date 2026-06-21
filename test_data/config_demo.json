@@ -199,7 +199,7 @@
     {
       "type": "FeatureTrack",
       "trackId": "ncbi_gff_hg19",
-      "name": "NCBI RefSeq w/ subfeature details",
+      "name": "NCBI RefSeq genes (hg19)",
       "formatDetails": {
         "subfeatures": "jexl:{name:'<a href=https://google.com/?q='+feature.name+'>'+feature.name+'</a>'}"
       },

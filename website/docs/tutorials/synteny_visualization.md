@@ -181,7 +181,10 @@ See the [PIF format guide](/docs/developer_guides/pif_format) for details.
 
 For more on working with synteny views, see the
 [dotplot view guide](/docs/user_guides/dotplot_view) and the
-[linear synteny view guide](/docs/user_guides/linear_synteny_view).
+[linear synteny view guide](/docs/user_guides/linear_synteny_view). The
+[gallery](/gallery) has a grape-vs-peach linear synteny example (genes plus
+synteny blocks, rendered both as ribbons and as a feature track) alongside a
+whole-genome human-vs-mouse comparison.
 
 ## References
 

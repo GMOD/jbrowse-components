@@ -317,7 +317,15 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'volvox',
           loc: 'ctgA:14439-14515',
-          tracks: ['volvox_filtered_vcf', 'volvox_cram_alignments'],
+          tracks: [
+            {
+              trackId: 'volvox_filtered_vcf',
+              // the variant track is a single row of features, so shrink its
+              // band so it doesn't dominate the figure over the pileup (reviewer)
+              displaySnapshot: { height: 60 },
+            },
+            'volvox_cram_alignments',
+          ],
         },
       ],
     }),
@@ -582,76 +590,6 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'HG002 Illumina',
     settleMs: 15000,
-  },
-
-  // Same HG002 discordant-arc display as arc_display, but with the arc track's
-  // menu opened to Show... → Advanced — the two toggles that control the
-  // off-screen / inter-chromosomal "vertical line" arcs. Replaces the hand-made
-  // arc_selector.png whose menu predated the rename (the old "Draw inter-region
-  // vertical lines" / "Draw inter-region connections" items are now "Show
-  // off-screen mate connections" / "Show inter-chromosomal pairs" under
-  // Advanced). The track-menu icon is targeted by data-trackid so the menu opens
-  // on the arc track, not the variant track above it.
-  {
-    mode: 'url',
-    name: 'alignments/arc_selector',
-    url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'hg002_illumina_chr1_arc_slice',
-          name: 'HG002 Illumina hs37d5.2x250 (chr1 arc slice)',
-          assemblyNames: ['hg19'],
-          adapter: {
-            type: 'BamAdapter',
-            uri: 'https://jbrowse.org/demos/hg002/HG002.hs37d5.2x250.chr1_72.6-73.1Mb.bam',
-          },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:72,650,000-73,060,000',
-          tracks: [
-            'variants_hg002',
-            {
-              trackId: 'hg002_illumina_chr1_arc_slice',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                readConnections: 'arc',
-                readConnectionsDown: true,
-                showPileup: false,
-                readConnectionsHeight: 220,
-                height: 290,
-                featureHeight: 3,
-                featureSpacing: 0,
-                userByteSizeLimit: 500_000_000,
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG002 Illumina',
-    settleMs: 15000,
-    hideTooltip: true,
-    actions: [
-      {
-        type: 'click',
-        selector:
-          '[data-testid="track_menu_icon"][data-trackid="hg002_illumina_chr1_arc_slice"]',
-      },
-      ...menuCascade([
-        'Show...',
-        'Advanced',
-        'Show off-screen mate connections',
-      ]),
-    ],
-    annotations: [
-      { type: 'box', anchor: { text: 'Show off-screen mate connections' } },
-      { type: 'box', anchor: { text: 'Show inter-chromosomal pairs' } },
-    ],
   },
 
   // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
@@ -1360,9 +1298,12 @@ export const specs: ScreenshotSpec[] = [
           {
             type: 'text',
             anchor: { text: 'SNP/Mismatch' },
-            dx: -320,
+            // text-anchor is "start", so x is the box's left edge and the label
+            // grows rightward — push it well left so its right edge clears the
+            // context menu's left edge instead of overlapping it (reviewer)
+            dx: -440,
             dy: -30,
-            maxWidth: 290,
+            maxWidth: 270,
             text: 'Right-click a variant (mismatch) column in the pileup to sort reads by the base there',
           },
         ],
@@ -1478,6 +1419,21 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     // deep remote nanopore CRAM + methylation processing is slow over the network
     settleMs: 35000,
+    // label the rendering mode (reviewer): methylation mode also marks the
+    // UNmodified CpGs (blue), so the hypomethylated island reads blue
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          selector:
+            '[data-testid^="trackRenderingContainer-"][data-testid$="-COLO829_tumor.ht"]',
+        },
+        dx: -340,
+        dy: -20,
+        maxWidth: 380,
+        text: "Color by methylation: each CpG on the read is colored from its MM tag — red where called methylated (5mC), blue where unmethylated. The CpG island here is hypomethylated, so it reads mostly blue.",
+      },
+    ],
   },
 
   // CRAM modifications + bedmethyl together over a CpG island (chr20 18.49-18.51Mb,
@@ -1608,6 +1564,33 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'CpG',
     readyTimeout: 60000,
     settleMs: 35000,
+    // label the two rows (reviewer): top is modifications mode (only called
+    // mods, at MM-tag positions); bottom is methylation mode (every CpG on the
+    // read inspected, methylated red vs unmethylated blue)
+    annotations: [
+      {
+        type: 'text',
+        anchor: {
+          selector:
+            '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram_modifications"]',
+        },
+        dx: -360,
+        dy: -10,
+        maxWidth: 360,
+        text: 'Color by modifications: only methylated (5mC) calls are colored, drawn at their MM-tag positions on the read.',
+      },
+      {
+        type: 'text',
+        anchor: {
+          selector:
+            '[data-testid^="trackRenderingContainer-"][data-testid$="-human_chr20_mod_call_5mC_5hmC_CG_cram"]',
+        },
+        dx: -360,
+        dy: -10,
+        maxWidth: 360,
+        text: 'Color by methylation: every CpG on the read sequence is inspected — red where the MM tag calls it methylated, blue where unmethylated. The CpG island reads as unmethylated (blue).',
+      },
+    ],
   },
 
   // Gallery page + sv_visualization.md screenshots (live sessions from jbrowse.org)
@@ -2545,7 +2528,9 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 3000,
     viewportWidth: 1150,
-    viewportHeight: 360,
+    // taller so the form + opened Tracks dropdown clear the viewport edge with
+    // margin below instead of sitting flush against it (reviewer)
+    viewportHeight: 440,
     actions: [
       { type: 'click', text: 'Open from track' },
       { type: 'waitForText', text: 'Tracks' },
@@ -3449,30 +3434,56 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 3000,
-    actions: [
-      // open the track selector
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      { type: 'waitForText', text: 'Open track selector' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Open track selector' },
+    // two-stage: the FAB only exists once the track selector is open, so the top
+    // frame circles "Open track selector" in the view menu (the prerequisite),
+    // and the bottom frame arrows the FAB it reveals + boxes the menu it opens
+    // (reviewer: smaller FAB callout + arrow, and show you must open the track
+    // selector first)
+    stages: [
       {
-        type: 'waitForSelector',
-        selector: '[data-testid="hierarchical_track_selector"]',
+        actions: [
+          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+          { type: 'waitForText', text: 'Open track selector' },
+          { type: 'delay', ms: 300 },
+        ],
+        annotations: [
+          { type: 'circle', anchor: { text: 'Open track selector' } },
+        ],
       },
-      { type: 'delay', ms: 500 },
-      // click the add-track FAB so its popup menu opens (reviewer: show the add
-      // track menu the FAB launches, not just a ring around the button)
-      { type: 'click', selector: '[data-testid="hierarchical-add-track-fab"]' },
-      { type: 'waitForText', text: 'Add track' },
-      { type: 'delay', ms: 600 },
-    ],
-    annotations: [
-      // ring the FAB and box the "Add track" item in the menu it opened
       {
-        type: 'box',
-        anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+        actions: [
+          { type: 'click', text: 'Open track selector' },
+          {
+            type: 'waitForSelector',
+            selector: '[data-testid="hierarchical_track_selector"]',
+          },
+          { type: 'delay', ms: 500 },
+          // open the add-track FAB menu (reviewer: show the menu the FAB
+          // launches, not just a ring around the button)
+          {
+            type: 'click',
+            selector: '[data-testid="hierarchical-add-track-fab"]',
+          },
+          { type: 'waitForText', text: 'Add track' },
+          { type: 'delay', ms: 600 },
+        ],
+        annotations: [
+          // a snug ring on the FAB + an arrow pointing at it (reviewer: the box
+          // was too large; a ring wraps the round FAB tightly)
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+          },
+          {
+            type: 'arrow',
+            anchor: { selector: '[data-testid="hierarchical-add-track-fab"]' },
+            // start just up-left of the FAB so the arrow is short (reviewer
+            // dislikes long arrows) and clearly lands on the button
+            from: { x: 1120, y: 560 },
+          },
+          { type: 'box', anchor: { text: 'Add track' } },
+        ],
       },
-      { type: 'box', anchor: { text: 'Add track' } },
     ],
   },
 
@@ -5223,69 +5234,6 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
-  // Connected genome + protein demo for BRAF (UniProt P15056 / NM_004333.6).
-  // Reviewer: this figure should show the linear-genome-view ↔ protein
-  // connection, not a bare structure. A single ProteinView spec entry creates
-  // and connects its own LinearGenomeView (hg38 NCBI RefSeq) via the plugin's
-  // `connectedView` launch param; `sideBySide: true` lays them out as a
-  // left/right split (genome left, AlphaFold structure right). The BRAF MANE
-  // transcript's CDS is translated and aligned to the structure so hovering the
-  // genome highlights the corresponding residue. Loads protein3d pinned to a
-  // published jsDelivr version (PROTEIN3D_CONFIG) against the local build, whose
-  // session has the setPendingMove split API the side-by-side launch needs.
-  {
-    mode: 'url',
-    name: 'protein/structure',
-    url: `?config=${PROTEIN3D_CONFIG}&session=${encodeURIComponent(
-      `spec-${JSON.stringify({
-        views: [
-          {
-            type: 'ProteinView',
-            uniprotId: 'P15056',
-            transcriptId: 'NM_004333.6',
-            height: 540,
-            sideBySide: true,
-            // keep the connected genome at the gene-wide view when a domain is
-            // clicked (centerAt, not navToLocString) so the domain shows as a
-            // highlighted sub-region rather than filling the whole view
-            zoomToBaseLevel: false,
-            connectedView: {
-              assembly: 'hg38',
-              loc: 'chr7:140,713,328-140,924,929',
-              tracks: ['hg38-ncbiRefSeq'],
-            },
-          },
-        ],
-      })}`,
-    )}`,
-    // ProteinView flips this test-id once the structure is loaded and the
-    // genome↔structure pairwise alignment has settled (this connected view
-    // computes one). settleMs is the molstar software-WebGL raster paint beat at
-    // deviceScaleFactor 2, which can lag a frame behind the model state.
-    readySelector: '[data-testid="protein-view-ready"]',
-    readyTimeout: 90000,
-    settleMs: 6000,
-    // Click the BRAF protein-kinase domain (UniProt Domain 457-717) on the
-    // protein feature track. The click selects the domain residues in the 3D
-    // structure (molstar), borders the feature bar, and maps the domain back to
-    // the genome — drawing a highlight band over the connected LGV. Demonstrates
-    // the genome↔structure cross-highlight. The feature bars expose
-    // data-testid/data-feature-start (protein3d ≥ v0.4.14).
-    actions: [
-      {
-        type: 'waitForSelector',
-        selector:
-          '[data-testid="protein-feature-Domain"][data-feature-start="457"]',
-      },
-      {
-        type: 'click',
-        selector:
-          '[data-testid="protein-feature-Domain"][data-feature-start="457"]',
-      },
-      { type: 'delay', ms: 6000 },
-    ],
-  },
-
   // Connected genome + protein demo (TP53 / UniProt P04637). A single ProteinView
   // spec entry creates and connects its own LinearGenomeView via the plugin's
   // `connectedView` launch param, so the genome (NCBI RefSeq + ClinVar) and the
@@ -5325,7 +5273,7 @@ export const specs: ScreenshotSpec[] = [
     // Waits for both the structure load and the genome↔structure pairwise
     // alignment to settle (this view has a connected transcript, so the test-id
     // only flips once the alignment is computed). settleMs is the molstar raster
-    // paint beat, as in protein/structure.
+    // paint beat at deviceScaleFactor 2, which can lag the model state a frame.
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
     settleMs: 6000,

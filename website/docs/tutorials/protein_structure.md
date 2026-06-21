@@ -51,8 +51,6 @@ with Mol\*. Mouse over a position in the genome view to highlight the matching
 residue on the structure, which lets you see where a variant or feature lands in
 3D.
 
-<Figure caption="The Mol* protein structure view showing the AlphaFold model of human BRAF (UniProt P15056). When launched from a gene, hovering a residue here highlights the matching genomic position, and hovering the genome highlights the residue." src="/img/protein/structure.png" />
-
 ## Linking variants to a 3D structure
 
 The structure view is most useful when it stays connected to a genome view.

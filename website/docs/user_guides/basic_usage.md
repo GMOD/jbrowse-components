@@ -34,6 +34,11 @@ The scroll-to-zoom toggle button in the LGV header lets the mouse wheel zoom the
 view directly, without holding `Ctrl`/`Cmd`. Hold `Shift` while scrolling to
 scroll normally instead.
 
+Even with the toggle off, you can zoom at any time by holding `Ctrl`/`Cmd` while
+scrolling the mouse wheel. On a trackpad (a MacBook trackpad in particular), a
+two-finger pinch zooms the view the same way — the browser reports the pinch
+gesture as a `Ctrl`+scroll, so it zooms in and out under the cursor.
+
 <Figure caption="Click the scroll-to-zoom toggle button in the LGV header (top) to enable it; once enabled, the mouse wheel zooms the view (bottom)." src="/img/scroll_zoom_toggle.png" />
 
 #### Re-ordering tracks

@@ -54,7 +54,7 @@ export const samFlagLabels = [
   'first in pair',
   'second in pair',
   'not primary alignment',
-  'read fails platform/vendor quality checks',
+  'read fails quality checks',
   'read is PCR or optical duplicate',
   'supplementary alignment',
 ] as const

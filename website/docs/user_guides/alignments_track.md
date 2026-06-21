@@ -223,8 +223,6 @@ partners). The track menu has toggles to hide these if they're distracting.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 
-<Figure caption="Discordant paired-end arcs over an HG002 structural variant (Illumina 2x250 reads with the GIAB SV call above), with the track menu open at Show... → Advanced where the off-screen and inter-chromosomal arc toggles live." src="/img/alignments/arc_selector.png" />
-
 ### Linked reads
 
 The linked reads mode also connects paired or split reads, but lays them out on
