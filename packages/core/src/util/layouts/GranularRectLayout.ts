@@ -16,7 +16,8 @@ import type {
  * alternative algorithms and benchmark information
  */
 
-// minimum excess size of the array at which we garbage collect
+// a feature wider than this many pitch units is treated as filling its whole
+// row(s), so layout doesn't track per-pixel intervals for it (see addRectToBitmap)
 const maxFeaturePitchWidth = 20000
 
 // Optimized row class using flat interval array. Holds only interval extents
@@ -225,8 +226,8 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
    * @returns top position for the rect, or Null if laying
    *  out the rect would exceed maxHeight
    * @param preferredRow - Optional row (in pixels) from a previous layout. The
-   *  feature keeps this row when it is still collision-free and within
-   *  `stabilitySlackPx` of the compact first-fit row, so its Y stays steady
+   *  feature keeps this row when it is still collision-free and sits no more
+   *  than its own height below the compact first-fit row, so its Y stays steady
    *  across small layout changes (e.g. labels shrinking on zoom). Otherwise the
    *  normal compact first-fit row is used.
    */
@@ -404,17 +405,28 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
   }
 
   collides(rect: Rectangle<T>, top: number) {
-    const { bitmap } = this
-
     const maxY = top + rect.h
     for (let y = top; y < maxY; y += 1) {
-      const row = bitmap[y]
+      const row = this.bitmap[y]
       if (row !== undefined && !row.isRangeClear(rect.l, rect.r)) {
         return true
       }
     }
-
     return false
+  }
+
+  private getOrCreateRow(y: number): LayoutRow {
+    let row = this.bitmap[y]
+    if (!row) {
+      if (y > this.hardRowLimit) {
+        throw new Error(
+          `layout hard limit (${this.hardRowLimit * this.pitchY}px) exceeded, aborting layout`,
+        )
+      }
+      row = new LayoutRow()
+      this.bitmap[y] = row
+    }
+    return row
   }
 
   addRectToBitmap(rect: Rectangle<T>) {
@@ -424,41 +436,18 @@ export default class GranularRectLayout<T> implements BaseLayout<T> {
 
     const data = rect.id
     const yEnd = rect.top + rect.h
-    const bitmap = this.bitmap
-    const hardRowLimit = this.hardRowLimit
-    const pitchY = this.pitchY
 
-    if (rect.r - rect.l > maxFeaturePitchWidth) {
-      // the rect is very big in relation to the view size, just pretend, for
-      // the purposes of layout, that it extends infinitely.  this will cause
-      // weird layout if a user scrolls manually for a very, very long time
-      // along the genome at the same zoom level.  but most users will not do
-      // that.  hopefully.
-      for (let y = rect.top; y < yEnd; y += 1) {
-        let row = bitmap[y]
-        if (!row) {
-          if (y > hardRowLimit) {
-            throw new Error(
-              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
-            )
-          }
-          row = new LayoutRow()
-          bitmap[y] = row
-        }
+    // A rect very big in relation to the view size just pretends, for the
+    // purposes of layout, that it extends infinitely. This causes weird layout
+    // if a user scrolls manually for a very, very long time along the genome at
+    // the same zoom level, but most users will not do that. hopefully.
+    const fillsRow = rect.r - rect.l > maxFeaturePitchWidth
+
+    for (let y = rect.top; y < yEnd; y += 1) {
+      const row = this.getOrCreateRow(y)
+      if (fillsRow) {
         row.setAllFilled(data)
-      }
-    } else {
-      for (let y = rect.top; y < yEnd; y += 1) {
-        let row = bitmap[y]
-        if (!row) {
-          if (y > hardRowLimit) {
-            throw new Error(
-              `layout hard limit (${hardRowLimit * pitchY}px) exceeded, aborting layout`,
-            )
-          }
-          row = new LayoutRow()
-          bitmap[y] = row
-        }
+      } else {
         row.addRect(rect, data)
       }
     }
