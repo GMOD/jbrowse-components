@@ -7,6 +7,8 @@ import { ElementId, Region as RegionModel } from '@jbrowse/core/util/types/mst'
 import { addDisposer, cast, types } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
+import { bookmarkKey } from './utils.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Region } from '@jbrowse/core/util/types'
 import type { IMSTArray, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
@@ -38,6 +40,8 @@ const LabeledRegionModel = types
 
 interface HighlightToggleView {
   id: string
+  bookmarkHighlightsVisible?: boolean
+  labelsVisible?: boolean
   setBookmarkHighlightsVisible?: (arg: boolean) => void
   setLabelsVisible?: (arg: boolean) => void
   views?: HighlightToggleView[]
@@ -55,6 +59,17 @@ function forEachView(
       forEachView(view.views, fn)
     }
   }
+}
+
+// like forEachView but short-circuits; used by the "all open views" getters so
+// they observe the same view/subview tree the setters mutate
+function everyView(
+  views: HighlightToggleView[],
+  fn: (view: HighlightToggleView) => boolean,
+): boolean {
+  return views.every(
+    view => fn(view) && (view.views ? everyView(view.views, fn) : true),
+  )
 }
 
 export interface IExtendedLGV extends LinearGenomeViewModel {
@@ -153,17 +168,19 @@ export default function f(_pluginManager: PluginManager) {
        * #getter
        */
       get areBookmarksHighlightedOnAllOpenViews() {
-        const { views } = getSession(self)
-        return views.every(v =>
-          'bookmarkHighlightsVisible' in v ? v.bookmarkHighlightsVisible : true,
+        return everyView(getSession(self).views, v =>
+          'bookmarkHighlightsVisible' in v
+            ? !!v.bookmarkHighlightsVisible
+            : true,
         )
       },
       /**
        * #getter
        */
       get areBookmarksHighlightLabelsOnAllOpenViews() {
-        const { views } = getSession(self)
-        return views.every(v => ('labelsVisible' in v ? v.labelsVisible : true))
+        return everyView(getSession(self).views, v =>
+          'labelsVisible' in v ? !!v.labelsVisible : true,
+        )
       },
     }))
     .views(self => ({
@@ -293,6 +310,9 @@ export default function f(_pluginManager: PluginManager) {
         self.selectedBookmarks = []
       },
 
+      /**
+       * #action
+       */
       removeBookmarkObject(arg: Instance<typeof LabeledRegionModel>) {
         self.bookmarks.remove(arg)
       },
@@ -335,15 +355,8 @@ export default function f(_pluginManager: PluginManager) {
         localStorageGetItem(localStorageKeyF()) || '[]',
       ) as SnapshotIn<typeof LabeledRegionModel>[]
       const shared = sharedBookmarks as SnapshotIn<typeof LabeledRegionModel>[]
-      const seen = new Set(
-        local.map(b => `${b.assemblyName}_${b.refName}_${b.start}_${b.end}`),
-      )
-      const merged = [
-        ...local,
-        ...shared.filter(
-          b => !seen.has(`${b.assemblyName}_${b.refName}_${b.start}_${b.end}`),
-        ),
-      ]
+      const seen = new Set(local.map(bookmarkKey))
+      const merged = [...local, ...shared.filter(b => !seen.has(bookmarkKey(b)))]
       return { ...rest, bookmarks: merged } as unknown as typeof snap
     })
     .postProcessSnapshot(snap => {

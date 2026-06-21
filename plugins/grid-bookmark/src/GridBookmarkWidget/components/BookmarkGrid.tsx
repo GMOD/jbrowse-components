@@ -11,6 +11,7 @@ import EmptyState from './EmptyState.tsx'
 import SelectionActions from './SelectionActions.tsx'
 import {
   COMPACT_ROW_HEIGHT,
+  DEFAULT_PAGE_SIZE,
   assemblyColumn,
   colorColumn,
   labelColumn,
@@ -28,10 +29,6 @@ import type {
 interface BookmarkRow extends IExtendedLabeledRegionModel {
   locString: string
 }
-
-// MUI DataGrid default page size for pagination; hide the footer pager when
-// the row count fits in a single page
-const DEFAULT_PAGE_SIZE = 100
 
 function NoBookmarksOverlay() {
   return (

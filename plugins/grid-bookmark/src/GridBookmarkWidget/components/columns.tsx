@@ -17,6 +17,10 @@ import type {
 // clears the 24px color swatch
 export const COMPACT_ROW_HEIGHT = 32
 
+// MUI DataGrid default page size; both grids hide the footer pager when the row
+// count fits in a single page
+export const DEFAULT_PAGE_SIZE = 100
+
 // shared by both the bookmark and highlight grids, which differ only in how
 // their location links navigate and where their color lives. The `cell` class
 // is consumed cross-file (the lint rule only checks same-file usage)

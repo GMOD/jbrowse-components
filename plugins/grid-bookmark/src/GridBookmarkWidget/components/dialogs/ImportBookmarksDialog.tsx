@@ -11,45 +11,10 @@ import { openLocation } from '@jbrowse/core/util/io'
 import ImportIcon from '@mui/icons-material/Publish'
 import { observer } from 'mobx-react'
 
+import { parseBookmarks } from '../../utils.ts'
+
 import type { GridBookmarkModel } from '../../model.ts'
 import type { FileLocation } from '@jbrowse/core/util/types'
-
-function guessFileType(header: string) {
-  return header.startsWith('chrom') && header.includes('assembly_name')
-    ? 'TSV'
-    : 'BED'
-}
-
-function getBookmarksFromTSVFile(lines: string[]) {
-  const dataLines = lines[0]!.startsWith('chrom') ? lines.slice(1) : lines
-  return dataLines
-    .filter(f => !f.startsWith('#'))
-    .map(line => {
-      const [refName, start, end, label, assemblyName] = line.split('\t')
-      return {
-        assemblyName: assemblyName!,
-        refName: refName!,
-        start: +start!,
-        end: +end!,
-        label: label === '.' ? undefined : label,
-      }
-    })
-}
-
-function getBookmarksFromBEDFile(lines: string[], selectedAsm: string) {
-  return lines
-    .filter(f => !f.startsWith('#'))
-    .map(line => {
-      const [refName, start, end, label] = line.split('\t')
-      return {
-        assemblyName: selectedAsm,
-        refName: refName!,
-        start: +start!,
-        end: +end!,
-        label: label === '.' ? undefined : label,
-      }
-    })
-}
 
 const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
   onClose,
@@ -77,15 +42,7 @@ const ImportBookmarksDialog = observer(function ImportBookmarksDialog({
         try {
           if (location) {
             const data = await openLocation(location).readFile('utf8')
-            const lines = data.split(/\n|\r\n|\r/).filter(f => !!f.trim())
-            if (lines.length) {
-              const fileType = guessFileType(lines[0]!)
-              model.importBookmarks(
-                fileType === 'BED'
-                  ? getBookmarksFromBEDFile(lines, selectedAsm)
-                  : getBookmarksFromTSVFile(lines),
-              )
-            }
+            model.importBookmarks(parseBookmarks(data, selectedAsm))
           }
           onClose()
         } catch (e) {

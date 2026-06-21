@@ -1,30 +1,21 @@
-import { getSession, notEmpty } from '@jbrowse/core/util'
+import { notEmpty } from '@jbrowse/core/util'
 import { OverviewHighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
+import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
+import { bookmarkKey } from '../../utils.ts'
 
-type LGV = IExtendedLGV
+import type { IExtendedLGV } from '../../model.ts'
 
 const OverviewHighlight = observer(function OverviewHighlight({
   model,
 }: {
-  model: LGV
+  model: IExtendedLGV
 }) {
-  const session = getSession(model) as SessionWithWidgets
-  const { bookmarkHighlightsVisible, labelsVisible } = model
-  const bookmarkWidget = session.widgets.get('GridBookmark') as
-    | GridBookmarkModel
-    | undefined
+  const { labelsVisible } = model
+  const { bookmarks } = getBookmarkHighlights(model)
 
-  if (!bookmarkHighlightsVisible || !bookmarkWidget?.bookmarks) {
-    return null
-  }
-
-  const assemblyNames = new Set(model.assemblyNames)
-  return bookmarkWidget.bookmarks
-    .filter(r => assemblyNames.has(r.assemblyName))
+  return bookmarks
     .map(r => {
       const coords = model.getOverviewHighlightCoords(r)
       return coords ? { coords, bookmark: r } : undefined
@@ -35,7 +26,7 @@ const OverviewHighlight = observer(function OverviewHighlight({
         // region fields keep the key stable across pan/zoom (unlike pixel
         // coords); idx disambiguates duplicate bookmarks on the same region
         // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
-        key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
+        key={`${bookmarkKey(r)}_${idx}`}
         coords={coords}
         background={r.highlight}
         borderColor={r.highlight}

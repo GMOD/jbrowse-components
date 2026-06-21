@@ -14,6 +14,7 @@ import EmptyState from './EmptyState.tsx'
 import SelectionActions from './SelectionActions.tsx'
 import {
   COMPACT_ROW_HEIGHT,
+  DEFAULT_PAGE_SIZE,
   assemblyColumn,
   colorColumn,
   labelColumn,
@@ -103,7 +104,7 @@ const HighlightGrid = observer(function HighlightGrid({
         disableRowSelectionOnClick
         hideFooterSelectedRowCount
         onCellClick={startLabelEditOnClick(apiRef)}
-        hideFooterPagination={rows.length <= 100}
+        hideFooterPagination={rows.length <= DEFAULT_PAGE_SIZE}
         slots={{ noRowsOverlay: NoHighlightsOverlay }}
         rows={rows}
         columns={[

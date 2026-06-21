@@ -1,4 +1,3 @@
-import { getSession } from '@jbrowse/core/util'
 import { colord } from '@jbrowse/core/util/colord'
 import {
   HighlightBand,
@@ -7,65 +6,61 @@ import {
 import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { observer } from 'mobx-react'
 
-import type { GridBookmarkModel, IExtendedLGV } from '../../model.ts'
-import type { SessionWithWidgets } from '@jbrowse/core/util'
+import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
+import { bookmarkKey } from '../../utils.ts'
 
-type LGV = IExtendedLGV
+import type { IExtendedLGV } from '../../model.ts'
 
-const Highlight = observer(function Highlight({ model }: { model: LGV }) {
-  const session = getSession(model) as SessionWithWidgets
-  const { bookmarkHighlightsVisible, labelsVisible } = model
+const Highlight = observer(function Highlight({
+  model,
+}: {
+  model: IExtendedLGV
+}) {
+  const { labelsVisible } = model
+  const { session, bookmarkWidget, bookmarks } = getBookmarkHighlights(model)
 
-  const bookmarkWidget = session.widgets.get('GridBookmark') as
-    | GridBookmarkModel
-    | undefined
-
-  const viewAssemblies = new Set(model.assemblyNames)
-
-  return bookmarkHighlightsVisible && bookmarkWidget?.bookmarks
-    ? bookmarkWidget.bookmarks
-        .filter(r => viewAssemblies.has(r.assemblyName))
-        .map((r, idx) => {
-          const coords = model.getHighlightCoords(r)
-          return coords ? (
-            <HighlightBand
-              // region fields keep the key stable across pan/zoom (unlike pixel
-              // coords); idx disambiguates duplicate bookmarks on the same region
-              // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
-              key={`${r.assemblyName}_${r.refName}_${r.start}_${r.end}_${idx}`}
-              coords={coords}
-              background={r.highlight}
-            >
-              <HighlightChip
-                icon={BookmarkIcon}
-                color={colord(r.highlight)}
-                label={r.label}
-                labelsVisible={labelsVisible}
-                tooltip={r.label}
-                menuItems={[
-                  {
-                    label: 'Open bookmark widget',
-                    onClick: () => {
-                      session.showWidget(bookmarkWidget)
-                    },
+  return bookmarkWidget
+    ? bookmarks.map((r, idx) => {
+        const coords = model.getHighlightCoords(r)
+        return coords ? (
+          <HighlightBand
+            // region fields keep the key stable across pan/zoom (unlike pixel
+            // coords); idx disambiguates duplicate bookmarks on the same region
+            // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
+            key={`${bookmarkKey(r)}_${idx}`}
+            coords={coords}
+            background={r.highlight}
+          >
+            <HighlightChip
+              icon={BookmarkIcon}
+              color={colord(r.highlight)}
+              label={r.label}
+              labelsVisible={labelsVisible}
+              tooltip={r.label}
+              menuItems={[
+                {
+                  label: 'Open bookmark widget',
+                  onClick: () => {
+                    session.showWidget(bookmarkWidget)
                   },
-                  {
-                    label: 'Turn off bookmark highlights',
-                    onClick: () => {
-                      bookmarkWidget.setBookmarkHighlightsVisible(false)
-                    },
+                },
+                {
+                  label: 'Turn off bookmark highlights',
+                  onClick: () => {
+                    bookmarkWidget.setBookmarkHighlightsVisible(false)
                   },
-                  {
-                    label: 'Remove bookmark',
-                    onClick: () => {
-                      bookmarkWidget.removeBookmarkObject(r)
-                    },
+                },
+                {
+                  label: 'Remove bookmark',
+                  onClick: () => {
+                    bookmarkWidget.removeBookmarkObject(r)
                   },
-                ]}
-              />
-            </HighlightBand>
-          ) : null
-        })
+                },
+              ]}
+            />
+          </HighlightBand>
+        ) : null
+      })
     : null
 })
 

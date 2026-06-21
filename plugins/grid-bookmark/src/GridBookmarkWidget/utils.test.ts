@@ -1,4 +1,4 @@
-import { downloadBookmarkFile } from './utils.ts'
+import { downloadBookmarkFile, parseBookmarks } from './utils.ts'
 
 import type { GridBookmarkModel } from './model.ts'
 
@@ -100,4 +100,43 @@ test('only selected bookmarks are exported when selection is non-empty', async (
   expect(text).toContain('ctgA\t101\t200\tfirst')
   expect(text).toContain('ctgB\t51\t60\tother-asm')
   expect(text).not.toContain('300\t400')
+})
+
+test('BED import is 0-based and adopts the chosen assembly, . means no label', () => {
+  expect(parseBookmarks('ctgA\t100\t200\tfirst\nctgA\t300\t400\t.\n', 'volvox')).toEqual(
+    [
+      { assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 200, label: 'first' },
+      { assemblyName: 'volvox', refName: 'ctgA', start: 300, end: 400, label: undefined },
+    ],
+  )
+})
+
+test('TSV import converts 1-based starts back to 0-based and uses its own assembly', () => {
+  const tsv =
+    'chrom\tstart\tend\tlabel\tassembly_name\tcoord_range\n' +
+    'ctgA\t101\t200\tfirst\tvolvox\t{volvox}ctgA:101..200\n' +
+    'ctgB\t51\t60\tother-asm\thg38\t{hg38}ctgB:51..60\n'
+  expect(parseBookmarks(tsv, 'ignored')).toEqual([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 100, end: 200, label: 'first' },
+    { assemblyName: 'hg38', refName: 'ctgB', start: 50, end: 60, label: 'other-asm' },
+  ])
+})
+
+test('TSV export then import round-trips coordinates', async () => {
+  await downloadBookmarkFile('TSV', makeModel())
+  const exported = await readBlob(mockSaveAs.mock.calls[0]![0])
+  const parsed = parseBookmarks(exported, 'ignored')
+  expect(parsed.map(b => ({ start: b.start, end: b.end }))).toEqual(
+    sampleBookmarks.map(b => ({ start: b.start, end: b.end })),
+  )
+})
+
+test('import skips comment lines and throws on malformed coordinates', () => {
+  expect(parseBookmarks('# a comment\nctgA\t10\t20\tok\n', 'volvox')).toEqual([
+    { assemblyName: 'volvox', refName: 'ctgA', start: 10, end: 20, label: 'ok' },
+  ])
+  expect(() => parseBookmarks('ctgA\tnotanumber\t20\n', 'volvox')).toThrow(
+    /Invalid start/,
+  )
+  expect(() => parseBookmarks('ctgA\t\t20\n', 'volvox')).toThrow(/Invalid start/)
 })
