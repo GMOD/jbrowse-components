@@ -444,6 +444,52 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "bedGzLocation": {
           "locationType": "UriLocation",
+          "uri": "volvox_mouse_inheritance.bed.gz",
+        },
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+        ],
+        "disableGeneHeuristic": true,
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+          },
+        },
+        "type": "BedTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "color": "jexl:'rgb('+get(feature,'itemRgb')+')'",
+          "displayId": "volvox_mouse_inheritance_painting-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "rowHeight": 18,
+          "type": "LinearMultiRowFeatureDisplay",
+        },
+      ],
+      "name": "Mouse inheritance (chromosome painting)",
+      "trackId": "volvox_mouse_inheritance_painting",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
           "uri": "volvox.gwas.tsv.gz",
         },
         "index": {
@@ -1676,7 +1722,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": "jexl:get(feature,'type')=='CDS'?'#d62728':get(feature,'type')=='exon'?'#2ca02c':'#1f77b4'",
+          "color": "jexl:feature.type=='CDS'?'#d62728':feature.type=='exon'?'#2ca02c':'#1f77b4'",
           "displayId": "gff3tabix_genes_jexl_color_linear",
           "type": "LinearBasicDisplay",
         },
@@ -1710,10 +1756,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
-          "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+          "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
           "displayId": "gff3tabix_genes_jexl_color_and_label_linear",
           "labels": {
-            "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'",
+            "name": "jexl:feature.name+' ['+feature.type+']'",
           },
           "type": "LinearBasicDisplay",
         },
@@ -1776,9 +1822,9 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         "Shorthand examples",
       ],
       "displays": {
-        "color": "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
+        "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
         "labels": {
-          "name": "jexl:get(feature,'name')+' ['+get(feature,'type')+']'",
+          "name": "jexl:feature.name+' ['+feature.type+']'",
         },
       },
       "metadata": {
@@ -2360,7 +2406,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "volvox_filtered_vcf_color-LinearVariantDisplay",
           "maxFeatureScreenDensity": 0.0006,
           "renderer": {
-            "color1": "jexl:get(feature,'type')=='SNV'?'green':'purple'",
+            "color1": "jexl:feature.type=='SNV'?'green':'purple'",
             "type": "CanvasFeatureRenderer",
           },
           "type": "LinearVariantDisplay",
@@ -2677,7 +2723,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "arc_track_custom_height_linear",
           "renderer": {
-            "height": "jexl:log10(get(feature,'end')-get(feature,'start'))*20",
+            "height": "jexl:log10(feature.end-feature.start)*20",
             "type": "ArcRenderer",
           },
           "type": "LinearArcDisplay",
@@ -3338,14 +3384,14 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "gff3_custom_tooltips_linear",
           "renderer": {
             "labels": {
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
+              "description": "jexl:feature.note || feature.description || ''",
+              "name": "jexl:feature.name || feature.id",
             },
-            "mouseover": "jexl:\`\${get(feature,'name')} [\${get(feature,'type')}] at \${get(feature,'start')} - \${get(feature,'end')} (strand: \${(get(feature,'strand') == 1 ? '+' : get(feature,'strand') == -1 ? '-' : 'none'})\`",
+            "mouseover": "jexl:\`\${feature.name} [\${feature.type}] at \${feature.start} - \${feature.end} (strand: \${(feature.strand == 1 ? '+' : feature.strand == -1 ? '-' : 'none'})\`",
             "showDescriptions": true,
             "showLabels": true,
             "subfeatureLabels": "below",
-            "subfeatureMouseover": "jexl:get(feature,'name') + ' (' + get(feature,'type') + ') - parent: ' + get(parent(feature),'name')",
+            "subfeatureMouseover": "jexl:feature.name + ' (' + feature.type + ') - parent: ' + feature.parent.name",
             "type": "CanvasFeatureRenderer",
           },
           "type": "LinearBasicDisplay",
@@ -3377,8 +3423,8 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "displayId": "gff3_mouseover_attr_linear",
           "renderer": {
             "labels": {
-              "description": "jexl:get(feature,'note') || get(feature,'description') || ''",
-              "name": "jexl:get(feature,'name') || get(feature,'id')",
+              "description": "jexl:feature.note || feature.description || ''",
+              "name": "jexl:feature.name || feature.id",
             },
             "showDescriptions": false,
             "showLabels": true,
@@ -3455,10 +3501,10 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
         {
           "displayId": "volvox_test_vcf_jexl-LinearVariantDisplay",
           "jexlFilters": [
-            "get(feature,'start')<8000",
+            "feature.start<8000",
           ],
           "renderer": {
-            "color1": "jexl:get(feature,'start')>5000?'darkgreen':'red'",
+            "color1": "jexl:feature.start>5000?'darkgreen':'red'",
             "type": "CanvasFeatureRenderer",
           },
           "type": "LinearVariantDisplay",

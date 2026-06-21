@@ -148,12 +148,12 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               </svg>
             </div>
             <div
-              class="css-5auwim"
+              class="css-1tmkrny"
             >
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
-                title="zoom out"
+                title="Zoom out"
                 type="button"
               >
                 <svg
@@ -171,7 +171,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
-                title="zoom in"
+                title="Zoom in"
                 type="button"
               >
                 <svg
@@ -192,7 +192,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
-                title="rotate counter-clockwise"
+                title="Rotate counter-clockwise"
                 type="button"
               >
                 <svg
@@ -210,7 +210,7 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
               <button
                 class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
                 tabindex="0"
-                title="rotate clockwise"
+                title="Rotate clockwise"
                 type="button"
               >
                 <svg
@@ -222,6 +222,24 @@ exports[`<JBrowseCircularGenomeView /> 1`] = `
                 >
                   <path
                     d="M15.55 5.55 11 1v3.07C7.06 4.56 4 7.92 4 12s3.05 7.44 7 7.93v-2.02c-2.84-.48-5-2.94-5-5.91s2.16-5.43 5-5.91V10zM19.93 11c-.17-1.39-.72-2.73-1.62-3.89l-1.42 1.42c.54.75.88 1.6 1.02 2.47zM13 17.9v2.02c1.39-.17 2.74-.71 3.9-1.61l-1.44-1.44c-.75.54-1.59.89-2.46 1.03m3.89-2.42 1.42 1.41c.9-1.16 1.45-2.5 1.62-3.89h-2.02c-.14.87-.48 1.72-1.02 2.48"
+                  />
+                </svg>
+              </button>
+              <button
+                class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                tabindex="0"
+                title="Reset view"
+                type="button"
+              >
+                <svg
+                  aria-hidden="true"
+                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                  data-testid="CenterFocusStrongIcon"
+                  focusable="false"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    d="M12 8c-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4-1.79-4-4-4m-7 7H3v4c0 1.1.9 2 2 2h4v-2H5zM5 5h4V3H5c-1.1 0-2 .9-2 2v4h2zm14-2h-4v2h4v4h2V5c0-1.1-.9-2-2-2m0 16h-4v2h4c1.1 0 2-.9 2-2v-4h-2z"
                   />
                 </svg>
               </button>

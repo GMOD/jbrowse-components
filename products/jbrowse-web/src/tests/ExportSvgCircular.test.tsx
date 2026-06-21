@@ -76,7 +76,7 @@ test('export svg of circular renders error when track fails to load', async () =
   }, delay)
   // @ts-expect-error
   const svg = saveAs.mock.calls[0][0].content[0] as string
-  expect(svg).toContain('#ffb4b4')
+  expect(svg).toContain('#ef5350')
   expect(svg).not.toContain('structuralVariantChordRenderer')
   jest.restoreAllMocks()
 }, 45000)

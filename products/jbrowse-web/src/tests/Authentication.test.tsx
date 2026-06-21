@@ -44,7 +44,7 @@ test('open a bigwig track that needs oauth authentication and has existing token
   const token = '1234'
   sessionStorage.setItem('dropboxOAuth-token', token)
   await waitFor(() => {
-    expect(rootModel.internetAccounts.length).toBe(4)
+    expect(rootModel.internetAccounts.length).toBe(6)
   })
   rootModel.internetAccounts[0]!.validateToken = jest
     .fn()
