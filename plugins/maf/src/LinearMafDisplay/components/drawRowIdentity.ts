@@ -6,6 +6,7 @@ import {
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
+import type { RowIdentityMode } from '../rowIdentityModes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
@@ -14,8 +15,6 @@ const N_UPPER = 78 // 'N'
 // Overlay opacity: low enough that the base coloring (and any letters drawn on
 // top) stay legible, high enough to read the conservation pattern at a glance.
 const ROW_IDENTITY_ALPHA = 0.6
-
-export type RowIdentityMode = 'heatmap' | 'xyplot'
 
 interface DrawRowIdentityState {
   rowHeight: number

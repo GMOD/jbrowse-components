@@ -38,18 +38,19 @@ import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBar
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
+import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
+import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
 import type {
   MafGPURenderState,
   MafGpuProps,
   MafRegionData,
   MafRenderingBackend,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { RowIdentityMode } from './components/drawRowIdentity.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
 import type { MafSummaryRecord, Sample } from '../types.ts'
 import type { LinearMafDisplayConfig } from './configSchema.ts'
@@ -222,7 +223,7 @@ export default function stateModelFactory(
          * default) hides it.
          */
         rowIdentityMode: types.stripDefault(
-          types.enumeration('RowIdentityMode', ['none', 'heatmap', 'xyplot']),
+          types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
           DEFAULTS.rowIdentityMode,
         ),
       }),
@@ -361,7 +362,7 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setRowIdentityMode(arg: 'none' | RowIdentityMode) {
+      setRowIdentityMode(arg: RowIdentityModeWithOff) {
         self.rowIdentityMode = arg
       },
       /**

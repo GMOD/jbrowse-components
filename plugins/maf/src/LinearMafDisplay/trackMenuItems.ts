@@ -2,8 +2,11 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
+import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
 
-import type { RowIdentityMode } from './components/drawRowIdentity.ts'
+import { ROW_IDENTITY_MODES } from './rowIdentityModes.ts'
+
+import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -25,7 +28,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
-  rowIdentityMode: 'none' | RowIdentityMode
+  rowIdentityMode: RowIdentityModeWithOff
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   clusterTree?: string
@@ -39,7 +42,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
-  setRowIdentityMode: (m: 'none' | RowIdentityMode) => void
+  setRowIdentityMode: (m: RowIdentityModeWithOff) => void
   setSubtreeFilter: (names?: string[]) => void
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
@@ -138,36 +141,14 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
             self.setShowConservation(!self.showConservation)
           },
         },
-        {
+        makeRadioSubMenu({
           label: 'Per-row identity',
-          type: 'subMenu',
-          subMenu: [
-            {
-              label: 'Off',
-              type: 'radio',
-              checked: self.rowIdentityMode === 'none',
-              onClick: () => {
-                self.setRowIdentityMode('none')
-              },
-            },
-            {
-              label: 'Heatmap',
-              type: 'radio',
-              checked: self.rowIdentityMode === 'heatmap',
-              onClick: () => {
-                self.setRowIdentityMode('heatmap')
-              },
-            },
-            {
-              label: 'X-Y plot',
-              type: 'radio',
-              checked: self.rowIdentityMode === 'xyplot',
-              onClick: () => {
-                self.setRowIdentityMode('xyplot')
-              },
-            },
-          ],
-        },
+          value: self.rowIdentityMode,
+          onChange: m => {
+            self.setRowIdentityMode(m)
+          },
+          options: ROW_IDENTITY_MODES,
+        }),
       ],
     },
     {

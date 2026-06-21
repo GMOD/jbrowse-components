@@ -1,20 +1,19 @@
+import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
+
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export function makeRenderingTypeSubMenu(
   self: { renderingType: string; setRenderingType: (t: string) => void },
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
-  return {
+  return makeRadioSubMenu({
     label: 'Rendering type',
-    subMenu: renderings.map(([value, label]) => ({
-      label,
-      type: 'radio' as const,
-      checked: self.renderingType === value,
-      onClick: () => {
-        self.setRenderingType(value)
-      },
-    })),
-  }
+    value: self.renderingType,
+    onChange: t => {
+      self.setRenderingType(t)
+    },
+    options: renderings,
+  })
 }
 
 interface WithResolution {
