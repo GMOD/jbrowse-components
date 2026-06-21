@@ -203,6 +203,58 @@ export function trackActionMenuItems(
   ]
 }
 
+interface SessionWithGetTrackActions extends SessionWithDialog {
+  getTrackActions(config: BaseTrackConfig, view?: TrackActionView): MenuItem[]
+}
+
+/**
+ * #stateModel TrackMenuItemsSessionMixin
+ *
+ * The two track-menu wrappers (`getTrackListMenuItems` for the hierarchical
+ * selector, `getTrackActionMenuItems` for the in-view label menu) shared by the
+ * full web and desktop sessions. Both are pure functions of `getTrackActions`,
+ * which each session supplies (web gates on edit rights; desktop adds indexing).
+ */
+export function TrackMenuItemsSessionMixin(_pluginManager: PluginManager) {
+  return types.model('TrackMenuItemsSessionMixin', {}).views(s => {
+    const self = s as typeof s & SessionWithGetTrackActions
+    return {
+      /**
+       * #method
+       * flattened menu items for use in hierarchical track selector
+       */
+      getTrackListMenuItems(
+        config: BaseTrackConfig,
+        view?: TrackActionView,
+      ): MenuItem[] {
+        return trackListMenuItems(self, config, self.getTrackActions(config, view))
+      },
+      /**
+       * #method
+       * track menu with About + "Track actions" submenu for the in-view label
+       */
+      getTrackActionMenuItems({
+        config,
+        effectiveConfig,
+        extraTrackActions,
+        view,
+      }: {
+        config: BaseTrackConfig
+        effectiveConfig: Record<string, unknown>
+        extraTrackActions?: MenuItem[]
+        view?: TrackActionView
+      }): MenuItem[] {
+        return trackActionMenuItems(
+          self,
+          effectiveConfig,
+          self.getTrackActions(config, view),
+          extraTrackActions,
+        )
+      },
+    }
+  })
+}
+
 /**
  * #stateModel TrackMenuSessionMixin
  */

@@ -7,10 +7,9 @@ import {
   types,
 } from '@jbrowse/mobx-state-tree'
 import {
+  TrackMenuItemsSessionMixin,
   copyTrackSnapshot,
   trackActionItems,
-  trackActionMenuItems,
-  trackListMenuItems,
 } from '@jbrowse/product-core'
 import {
   defaultAttributesToIndex,
@@ -33,10 +32,10 @@ type SessionBase = BaseSession & SessionWithTracks & SessionWithDrawerWidgets
 /**
  * #stateModel DesktopSessionTrackMenuMixin
  */
-export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
-  return types
-    .model({})
-    .views(self => ({
+export function DesktopSessionTrackMenuMixin(pluginManager: PluginManager) {
+  return types.compose(
+    'DesktopSessionTrackMenuMixin',
+    types.model({}).views(self => ({
       /**
        * #method
        * raw track actions (Settings, Copy, Delete, Index) without submenu wrapper
@@ -92,43 +91,7 @@ export function DesktopSessionTrackMenuMixin(_pluginManager: PluginManager) {
             : []),
         ]
       },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * flattened menu items for use in hierarchical track selector
-       */
-      getTrackListMenuItems(
-        trackConfig: BaseTrackConfig,
-        view?: TrackActionView,
-      ): MenuItem[] {
-        return trackListMenuItems(
-          self as unknown as SessionBase,
-          trackConfig,
-          self.getTrackActions(trackConfig, view),
-        )
-      },
-
-      /**
-       * #method
-       */
-      getTrackActionMenuItems({
-        config,
-        effectiveConfig,
-        extraTrackActions,
-        view,
-      }: {
-        config: BaseTrackConfig
-        effectiveConfig: Record<string, unknown>
-        extraTrackActions?: MenuItem[]
-        view?: TrackActionView
-      }): MenuItem[] {
-        return trackActionMenuItems(
-          self as unknown as SessionBase,
-          effectiveConfig,
-          self.getTrackActions(config, view),
-          extraTrackActions,
-        )
-      },
-    }))
+    })),
+    TrackMenuItemsSessionMixin(pluginManager),
+  )
 }

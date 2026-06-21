@@ -24,10 +24,9 @@ import {
   ReferenceManagementSessionMixin,
   SessionTracksManagerSessionMixin,
   ThemeManagerSessionMixin,
+  TrackMenuItemsSessionMixin,
   copyTrackSnapshot,
   trackActionItems,
-  trackActionMenuItems,
-  trackListMenuItems,
 } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
 
@@ -74,7 +73,8 @@ export function BaseWebSessionModel({
       AssembliesMixin(pluginManager, assemblyConfigSchema),
       AppSessionMixin(pluginManager),
       WebSessionConnectionsMixin(pluginManager),
-      DockviewLayoutMixin(),
+      // nested to stay within types.compose's 10-argument limit
+      types.compose(DockviewLayoutMixin(), TrackMenuItemsSessionMixin(pluginManager)),
     )
     .props({
       /**
@@ -230,46 +230,6 @@ export function BaseWebSessionModel({
               clearCategory: !self.adminMode,
             }),
         })
-      },
-    }))
-    .views(self => ({
-      /**
-       * #method
-       * flattened menu items for use in hierarchical track selector
-       */
-      getTrackListMenuItems(
-        config: BaseTrackConfig,
-        view?: TrackActionView,
-      ): MenuItem[] {
-        return trackListMenuItems(
-          self,
-          config,
-          self.getTrackActions(config, view),
-        )
-      },
-
-      /**
-       * #method
-       * @param config - track configuration
-       * @param extraTrackActions - additional items to merge into "Track actions" submenu
-       */
-      getTrackActionMenuItems({
-        config,
-        effectiveConfig,
-        extraTrackActions,
-        view,
-      }: {
-        config: BaseTrackConfig
-        effectiveConfig: Record<string, unknown>
-        extraTrackActions?: MenuItem[]
-        view?: TrackActionView
-      }): MenuItem[] {
-        return trackActionMenuItems(
-          self,
-          effectiveConfig,
-          self.getTrackActions(config, view),
-          extraTrackActions,
-        )
       },
     }))
     .actions(self => ({
