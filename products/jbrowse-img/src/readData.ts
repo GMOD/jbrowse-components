@@ -1,12 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
+import type { ViewMode } from './modes.ts'
 import type { Entry } from './parseArgv.ts'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
-
-// Every render mode jbrowse-img supports. `linear` is the default (no
-// subcommand); the rest map from subcommands (see options.ts).
-export type ViewMode = 'linear' | 'dotplot' | 'synteny' | 'circular'
 
 export interface Opts {
   noRasterize?: boolean
@@ -32,6 +29,10 @@ export interface Opts {
   aliases2?: string
   assembly2?: string
   loc2?: string
+  // Comparative view-level settings exposed as CLI flags so the simple
+  // dotplot/synteny subcommands can opt in without a full --spec JSON.
+  autoDiagonalize?: boolean
+  drawCurves?: boolean
   // N-way comparative views: a session-spec JSON (inline or path to .json,
   // the same shape as the web's `&session=spec-`) that supplies the view's
   // sub-views and level-indexed tracks directly. Assemblies and synteny-track

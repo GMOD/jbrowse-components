@@ -10,9 +10,11 @@ import { createCanvas } from 'canvas'
 import { when } from 'mobx'
 
 import { applyTrackOpts } from './applyTrackOpts.ts'
+import { modeDescriptors, viewModes } from './modes.ts'
 import { readData } from './readData.ts'
 
-import type { Config, Opts, ViewMode } from './readData.ts'
+import type { ViewMode } from './modes.ts'
+import type { Config, Opts } from './readData.ts'
 import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
@@ -63,10 +65,15 @@ function parseSpec(spec: string): ViewSpec {
   return view as ViewSpec
 }
 
-const specTypeToMode: Record<string, ViewMode> = {
-  LinearSyntenyView: 'synteny',
-  DotplotView: 'dotplot',
-  CircularView: 'circular',
+// Inverse of modeDescriptors[mode].viewType: maps a --spec view `type` to the
+// render mode. Built from the single mode table so a new view type is wired in
+// one place.
+const specTypeToMode: Record<string, ViewMode> = {}
+for (const mode of viewModes) {
+  const { viewType } = modeDescriptors[mode]
+  if (viewType) {
+    specTypeToMode[viewType] = mode
+  }
 }
 
 function specMode(spec: ViewSpec): ViewMode {
@@ -234,7 +241,11 @@ const renderDotplot: ModeRenderer = async ctx => {
     .map(track => track.trackId)
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
-    : { views: comparativeViews(ctx).slice(0, 2), tracks }
+    : {
+        views: comparativeViews(ctx).slice(0, 2),
+        tracks,
+        ...(ctx.opts.autoDiagonalize ? { autoDiagonalize: true } : {}),
+      }
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
   return renderDotplotToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
@@ -245,7 +256,12 @@ const renderDotplot: ModeRenderer = async ctx => {
 const renderSynteny: ModeRenderer = async ctx => {
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
-    : { views: comparativeViews(ctx), tracks: syntenyTrackLevels(ctx.data) }
+    : {
+        views: comparativeViews(ctx),
+        tracks: syntenyTrackLevels(ctx.data),
+        ...(ctx.opts.autoDiagonalize ? { autoDiagonalize: true } : {}),
+        ...(ctx.opts.drawCurves ? { drawCurves: true } : {}),
+      }
   const view = await addInitView<LinearSyntenyViewModel>(
     ctx,
     'LinearSyntenyView',

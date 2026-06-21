@@ -420,33 +420,38 @@ the first assembly and the target side is the second.
 The examples below use the public yeast comparison (S. cerevisiae R64 vs the
 YJM1447 strain) and reproduce as-is with network access.
 
-A whole-genome dotplot — every query contig on x, every target contig on y:
+A whole-genome dotplot — every query contig on x, every target contig on y.
+`--autoDiagonalize` reorders the target contigs so the main alignment forms a
+clean diagonal instead of a staircase:
 
 ```bash
 jb2export dotplot \
   --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa \
   --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --out dotplot.png
+  --autoDiagonalize --out dotplot.png
 ```
 
 ![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_dotplot.png)
 
 A linear synteny ribbon between one chromosome in each assembly (here YJM1447
-chr `I` vs R64 chr `I`, accession `NC_001133.9`):
+chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the
+ribbon as a smooth bezier instead of straight trapezoids:
 
 ```bash
 jb2export synteny \
   --fasta https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/yjm1447.fa --loc I \
   --fasta2 https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64.fa --loc2 NC_001133.9 \
   --paf https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447/r64_vs_yjm1447.paf \
-  --out synteny.png
+  --drawCurves --out synteny.png
 ```
 
 ![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_synteny.png)
 
 Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
-ignores `--loc` and always shows the whole genome). Run
+ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and
+`--drawCurves` are the CLI shortcuts for the busiest-comparison knobs; the full
+set is available via `--spec` (see the table below). Run
 `jb2export dotplot --help` for the full list of comparative options.
 
 ### Multi-way synteny (three or more assemblies)
@@ -652,7 +657,154 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
 ## Use --help
 
-Run `jb2export --help` for the full option list.
+Run `jb2export --help` for the full option list, or
+`jb2export <subcommand> --help` (e.g. `jb2export dotplot --help`) for a
+subcommand's options. The complete output:
+
+<!-- INJECT_HELP START: auto-filled from buildFullHelp() by website/scripts/generate-img-doc.ts; run `pnpm gen-img-doc` to refresh -->
+
+```
+Usage: jb2export [options]
+       jb2export <dotplot|synteny|circular> [options]
+
+Options:
+  --fasta           Path to indexed FASTA file
+  --aliases         Path to reference name aliases file
+  --assembly        Path to assembly JSON or name in config
+  --config          Path to JBrowse config.json
+  --session         Path to session JSON
+  --loc             Location to render (e.g., chr1:1-1000 or "all")
+  --out             Output file path (SVG or PNG)
+  --width           Width of output in pixels [default: 1500]
+  --noRasterize     Disable rasterization of pileup/coverage [default: false]
+  --defaultSession  Use default session from config [default: false]
+  --tracks          Path to JSON file with an array of track configs
+  --cytobands       Path to cytoband file for the assembly
+  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels     Track label position: offset, overlay, left, or none
+  --refseq          Show the reference sequence track [default: false]
+  --spec            Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --help            Show help
+  --version         Print version
+
+Examples:
+  jb2export --fasta ref.fa --bam reads.bam --loc chr1:1-10000 --out out.svg
+      Render BAM alignments to SVG
+  jb2export --fasta ref.fa --vcfgz variants.vcf.gz --loc chr1:1-50000 --out out.png
+      Render VCF variants to PNG
+  jb2export --fasta ref.fa --bam reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg
+      Custom track height and strand coloring
+  jb2export --config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg
+      Render from config with a JSON tracks file
+  jb2export --fasta ref.fa.gz --cytobands cytobands.bed --bigwig signal.bw --loc chr1 --out out.svg
+      Render BigWig with cytobands
+
+Track options: --bam, --cram, --bigwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
+
+Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular
+
+Usage: jb2export dotplot [options]
+
+Options:
+  --fasta            Path to indexed FASTA file
+  --aliases          Path to reference name aliases file
+  --assembly         Path to assembly JSON or name in config
+  --config           Path to JBrowse config.json
+  --session          Path to session JSON
+  --loc              Location to render (e.g., chr1:1-1000 or "all")
+  --out              Output file path (SVG or PNG)
+  --width            Width of output in pixels [default: 1500]
+  --noRasterize      Disable rasterization of pileup/coverage [default: false]
+  --defaultSession   Use default session from config [default: false]
+  --tracks           Path to JSON file with an array of track configs
+  --cytobands        Path to cytoband file for the assembly
+  --themeName        Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --showGridlines    Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels      Track label position: offset, overlay, left, or none
+  --refseq           Show the reference sequence track [default: false]
+  --spec             Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --fasta2           Second assembly indexed FASTA
+  --aliases2         Reference name aliases for fasta2
+  --assembly2        Second assembly name in config
+  --loc2             Location on the second assembly
+  --autoDiagonalize  Reorder the second assembly's chromosomes for least overlap (a clean diagonal) [default: false]
+  --drawCurves       Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
+
+Examples:
+  jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
+      Whole-genome dotplot of two assemblies via a PAF
+  jb2export synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg
+      Linear synteny view of a region in each assembly
+  jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
+      N-way synteny from a config + session-spec JSON (see urlparams.md)
+
+Comparison track options: --paf, --delta, --chain, --blasttab
+
+Usage: jb2export synteny [options]
+
+Options:
+  --fasta            Path to indexed FASTA file
+  --aliases          Path to reference name aliases file
+  --assembly         Path to assembly JSON or name in config
+  --config           Path to JBrowse config.json
+  --session          Path to session JSON
+  --loc              Location to render (e.g., chr1:1-1000 or "all")
+  --out              Output file path (SVG or PNG)
+  --width            Width of output in pixels [default: 1500]
+  --noRasterize      Disable rasterization of pileup/coverage [default: false]
+  --defaultSession   Use default session from config [default: false]
+  --tracks           Path to JSON file with an array of track configs
+  --cytobands        Path to cytoband file for the assembly
+  --themeName        Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --showGridlines    Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels      Track label position: offset, overlay, left, or none
+  --refseq           Show the reference sequence track [default: false]
+  --spec             Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --fasta2           Second assembly indexed FASTA
+  --aliases2         Reference name aliases for fasta2
+  --assembly2        Second assembly name in config
+  --loc2             Location on the second assembly
+  --autoDiagonalize  Reorder the second assembly's chromosomes for least overlap (a clean diagonal) [default: false]
+  --drawCurves       Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
+
+Examples:
+  jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
+      Whole-genome dotplot of two assemblies via a PAF
+  jb2export synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg
+      Linear synteny view of a region in each assembly
+  jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
+      N-way synteny from a config + session-spec JSON (see urlparams.md)
+
+Comparison track options: --paf, --delta, --chain, --blasttab
+
+Usage: jb2export circular [options]
+
+Options:
+  --fasta           Path to indexed FASTA file
+  --aliases         Path to reference name aliases file
+  --assembly        Path to assembly JSON or name in config
+  --config          Path to JBrowse config.json
+  --session         Path to session JSON
+  --loc             Location to render (e.g., chr1:1-1000 or "all")
+  --out             Output file path (SVG or PNG)
+  --width           Width of output in pixels [default: 1500]
+  --noRasterize     Disable rasterization of pileup/coverage [default: false]
+  --defaultSession  Use default session from config [default: false]
+  --tracks          Path to JSON file with an array of track configs
+  --cytobands       Path to cytoband file for the assembly
+  --themeName       Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --showGridlines   Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels     Track label position: offset, overlay, left, or none
+  --refseq          Show the reference sequence track [default: false]
+  --spec            Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+
+Examples:
+  jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out out.svg
+      Circular (chord) view of structural variants
+```
+
+<!-- INJECT_HELP END -->
 
 ## Convert to PNG
 

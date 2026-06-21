@@ -9,6 +9,12 @@ import { join } from 'path'
 
 import { format, resolveConfig } from 'prettier'
 
+import { buildFullHelp } from '../../products/jbrowse-img/src/options.ts'
+import {
+  syntenyTrackTypes,
+  trackTypes,
+} from '../../products/jbrowse-img/src/readData.ts'
+
 // Mirrors products/jbrowse-img/README.md into website/docs/jbrowse-img.md so the
 // @jbrowse/img static-export docs live alongside the CLI docs (cli.md). The
 // README is the source of truth — edit it there, then run `pnpm autogen` (or
@@ -58,6 +64,19 @@ function rewriteImages(md: string) {
   return { out, names }
 }
 
+// Fill the README's INJECT_HELP marker block with the live `jb2export --help`
+// output (top-level + every subcommand), so the published help reference can't
+// drift from the CLI. Mirrors the COLOR_TABLE marker pattern used in the guides.
+const helpStartRe = /(<!-- INJECT_HELP START[^>]*-->)[\s\S]*?(<!-- INJECT_HELP END -->)/
+
+function injectHelp(md: string) {
+  if (!helpStartRe.test(md)) {
+    throw new Error('README is missing the INJECT_HELP marker block')
+  }
+  const help = buildFullHelp('jb2export', trackTypes, syntenyTrackTypes)
+  return md.replace(helpStartRe, `$1\n\n\`\`\`\n${help}\n\`\`\`\n\n$2`)
+}
+
 // The site renders captioned figures via the <Figure> component (handled by
 // remark-figure), so convert the README's plain markdown images into <Figure>s
 // — the image alt text becomes the figcaption.
@@ -73,7 +92,15 @@ function imagesToFigures(md: string) {
 // `pnpm format` (postautogen) produces — otherwise the committed file and the
 // --check comparison would disagree on line wrapping.
 async function generate() {
-  const readme = readFileSync(readmePath, 'utf8')
+  // The README is the source of truth, but its help block is auto-filled from
+  // the CLI. Refresh it and run it through prettier so the injected README is
+  // byte-identical to what `pnpm format` produces — then both the README and
+  // the doc generated from it stay current and idempotent under --check.
+  const readmeConfig = await resolveConfig(readmePath)
+  const readme = await format(injectHelp(readFileSync(readmePath, 'utf8')), {
+    ...readmeConfig,
+    filepath: readmePath,
+  })
   // Drop the leading "# @jbrowse/img" H1 — the frontmatter title supplies the
   // page heading. Keep everything after it.
   const body = readme.replace(/^# @jbrowse\/img\n+/, '')
@@ -92,7 +119,7 @@ async function generate() {
   ].join('\n')
   const prettierConfig = await resolveConfig(outPath)
   const md = await format(raw, { ...prettierConfig, filepath: outPath })
-  return { md, names }
+  return { md, names, readme }
 }
 
 // Copy each referenced example image into the website's static dir (or, in check
@@ -121,12 +148,16 @@ function syncImages(names: Set<string>) {
   return stale
 }
 
-const { md, names } = await generate()
+const { md, names, readme } = await generate()
 const staleImages = syncImages(names)
 
 if (check) {
   const docStale = readFileSync(outPath, 'utf8') !== md
-  if (docStale || staleImages.length > 0) {
+  const readmeStale = readFileSync(readmePath, 'utf8') !== readme
+  if (docStale || readmeStale || staleImages.length > 0) {
+    if (readmeStale) {
+      console.error(`${readmePath} help block is out of date.`)
+    }
     if (docStale) {
       console.error(`${outPath} is out of date.`)
     }
@@ -140,6 +171,7 @@ if (check) {
   }
   console.log('jbrowse-img.md is up to date')
 } else {
+  writeFileSync(readmePath, readme)
   writeFileSync(outPath, md)
   console.log(`wrote ${outPath}`)
   if (staleImages.length > 0) {

@@ -9,14 +9,15 @@ import {
   syntenyTrackTypes,
   trackTypes,
 } from './index.ts'
+import { isViewMode, modeDescriptors, viewModes } from './modes.ts'
 import {
   buildHelp,
+  comparativeOptionNames,
   getBoolean,
   getNumber,
   getString,
   getTrackLabels,
   knownOptions,
-  subcommands,
 } from './options.ts'
 
 const scriptName = 'jb2export'
@@ -45,16 +46,16 @@ function writeOutput(
 
 async function main() {
   const argv = process.argv.slice(2)
-  // A leading positional token (not a --flag) selects a comparative
-  // subcommand, e.g. `jb2export dotplot --fasta a.fa --fasta2 b.fa ...`
+  // A leading positional token (not a --flag) selects a subcommand, e.g.
+  // `jb2export dotplot --fasta a.fa --fasta2 b.fa ...`
   const first = argv[0]
   const isSubcommand = first !== undefined && !first.startsWith('-')
-  const mode = isSubcommand ? subcommands[first] : undefined
+  const mode = isSubcommand && isViewMode(first) ? first : undefined
   const args = isSubcommand ? argv.slice(1) : argv
 
   if (isSubcommand && !mode) {
     console.error(
-      `Unknown subcommand "${first}". Known subcommands: ${Object.keys(subcommands).join(', ')}`,
+      `Unknown subcommand "${first}". Known subcommands: ${viewModes.join(', ')}`,
     )
     process.exit(1)
   } else if (args.includes('--help') || args.includes('-h')) {
@@ -79,6 +80,20 @@ async function main() {
       }
     }
 
+    // The comparative flags (--fasta2/--loc2/...) only take effect under a
+    // comparative subcommand or a comparative --spec; warn rather than silently
+    // ignore them in a plain linear render.
+    const comparativeMode = mode ? modeDescriptors[mode].comparative : false
+    if (
+      !comparativeMode &&
+      !getString(rest, 'spec') &&
+      comparativeOptionNames.some(name => name in rest)
+    ) {
+      console.warn(
+        'Warning: comparative options (e.g. --fasta2, --loc2) have no effect without the dotplot or synteny subcommand',
+      )
+    }
+
     const width = getNumber(rest, 'width', 1500)
     const result = await renderRegion({
       fasta: getString(rest, 'fasta'),
@@ -101,6 +116,8 @@ async function main() {
       aliases2: getString(rest, 'aliases2'),
       assembly2: getString(rest, 'assembly2'),
       loc2: getString(rest, 'loc2'),
+      autoDiagonalize: getBoolean(rest, 'autoDiagonalize'),
+      drawCurves: getBoolean(rest, 'drawCurves'),
       spec: getString(rest, 'spec'),
       trackList,
     })

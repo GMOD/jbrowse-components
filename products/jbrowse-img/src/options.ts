@@ -1,4 +1,6 @@
-import type { ViewMode } from './readData.ts'
+import { modeDescriptors, viewModes } from './modes.ts'
+
+import type { ViewMode } from './modes.ts'
 import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
 
 export interface OptionDef {
@@ -67,14 +69,22 @@ const comparativeOptionDefs: OptionDef[] = [
   { name: 'aliases2', description: 'Reference name aliases for fasta2' },
   { name: 'assembly2', description: 'Second assembly name in config' },
   { name: 'loc2', description: 'Location on the second assembly' },
+  {
+    name: 'autoDiagonalize',
+    description:
+      "Reorder the second assembly's chromosomes for least overlap (a clean diagonal)",
+    default: false,
+  },
+  {
+    name: 'drawCurves',
+    description: 'Draw synteny ribbons as bezier curves instead of trapezoids',
+    default: false,
+  },
 ]
 
-// Map of subcommand name -> view mode it renders.
-export const subcommands: Record<string, ViewMode> = {
-  dotplot: 'dotplot',
-  synteny: 'synteny',
-  circular: 'circular',
-}
+// Comparative options accepted only by the dotplot/synteny subcommands; exposed
+// so the CLI can warn when they're passed without a comparative subcommand.
+export const comparativeOptionNames = comparativeOptionDefs.map(o => o.name)
 
 const examples: [string, string][] = [
   [
@@ -166,14 +176,23 @@ function formatExamples(scriptName: string, list: [string, string][]) {
   return list.map(([cmd, desc]) => `  ${scriptName} ${cmd}\n      ${desc}`)
 }
 
+// Examples shown in a subcommand's --help. Dotplot and synteny share the same
+// comparative examples; circular and linear have their own.
+function examplesForMode(mode: ViewMode) {
+  if (modeDescriptors[mode].comparative) {
+    return comparativeExamples
+  }
+  return mode === 'circular' ? circularExamples : examples
+}
+
 // Help for a subcommand. Dotplot/synteny compare two assemblies (second-assembly
-// options + comparison file types); circular is single-assembly.
+// options + comparison file types); circular/linear are single-assembly.
 function buildSubcommandHelp(
   scriptName: string,
   mode: ViewMode,
   syntenyTrackTypes: string[],
 ) {
-  const comparative = mode === 'dotplot' || mode === 'synteny'
+  const { comparative } = modeDescriptors[mode]
   const defs = comparative
     ? [...optionDefs, ...comparativeOptionDefs]
     : optionDefs
@@ -185,10 +204,7 @@ function buildSubcommandHelp(
     ...formatOpts(defs, pad),
     '',
     'Examples:',
-    ...formatExamples(
-      scriptName,
-      comparative ? comparativeExamples : circularExamples,
-    ),
+    ...formatExamples(scriptName, examplesForMode(mode)),
     ...(comparative
       ? [
           '',
@@ -207,10 +223,13 @@ export function buildHelp(
   if (mode) {
     return buildSubcommandHelp(scriptName, mode, syntenyTrackTypes)
   }
+  // linear is the implicit default, so the explicit subcommands users invoke are
+  // the non-linear view types.
+  const subcommandNames = viewModes.filter(mode => mode !== 'linear')
   const pad = Math.max(...optionDefs.map(o => o.name.length))
   return [
     `Usage: ${scriptName} [options]`,
-    `       ${scriptName} <${Object.keys(subcommands).join('|')}> [options]`,
+    `       ${scriptName} <${subcommandNames.join('|')}> [options]`,
     '',
     'Options:',
     ...formatOpts(optionDefs, pad),
@@ -222,8 +241,22 @@ export function buildHelp(
     '',
     `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
     '',
-    `Comparative subcommands (run "${scriptName} dotplot --help"): ${Object.keys(
-      subcommands,
-    ).join(', ')}`,
+    `Comparative subcommands (run "${scriptName} dotplot --help"): ${subcommandNames.join(', ')}`,
   ].join('\n')
+}
+
+// The complete help reference: the top-level help followed by each subcommand's
+// help. The docs embed this so the published help can't drift from the code.
+export function buildFullHelp(
+  scriptName: string,
+  trackTypes: string[],
+  syntenyTrackTypes: string[],
+) {
+  const subcommandHelp = viewModes
+    .filter(mode => mode !== 'linear')
+    .map(mode => buildHelp(scriptName, trackTypes, syntenyTrackTypes, mode))
+  return [
+    buildHelp(scriptName, trackTypes, syntenyTrackTypes),
+    ...subcommandHelp,
+  ].join('\n\n')
 }
