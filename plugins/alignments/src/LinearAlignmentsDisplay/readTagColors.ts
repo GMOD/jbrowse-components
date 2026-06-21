@@ -1,3 +1,4 @@
+import { colorFwdStrand, colorNostrand, colorRevStrand } from '@jbrowse/core/ui/theme'
 import { cssColorToRgb, packAbgr } from '@jbrowse/core/util/colorBits'
 
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
@@ -5,9 +6,11 @@ import type { ColorBy } from '../shared/types.ts'
 
 type ColorRgbTuple = [number, number, number]
 
-const fwdStrandRgb: ColorRgbTuple = [236, 139, 139]
-const revStrandRgb: ColorRgbTuple = [143, 143, 216]
-const nostrandRgb: ColorRgbTuple = [200, 200, 200]
+// Strand-tag (XS/TS/ts) coloring reuses the shared strand colors from theme.ts
+// (its single source of truth) so it can't drift from "Color by strand".
+const fwdStrandRgb = cssColorToRgb(colorFwdStrand)
+const revStrandRgb = cssColorToRgb(colorRevStrand)
+const nostrandRgb = cssColorToRgb(colorNostrand)
 
 // Bake one ABGR u32 per read from the worker-reported per-read tag values
 // (`readTagValues`) and the main-thread `colorTagMap`. Runs on the main thread

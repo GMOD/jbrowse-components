@@ -80,6 +80,18 @@ function insertSizeCategory(
       : 'normalInsert'
 }
 
+// Schemes whose color depends on pair orientation/insert size, so an unmapped
+// mate (tlen=0) or inter-chromosomal mate needs its own bucket rather than a
+// misleading "short insert"/orientation hue. Module-level so the per-read
+// classification in readColorCategory (a render + legend hot loop) does not
+// reallocate this each call.
+const orientationSchemes = new Set([
+  ColorScheme.insertSize,
+  ColorScheme.pairOrientation,
+  ColorScheme.insertSizeAndOrientation,
+  ColorScheme.insertSizeGradient,
+])
+
 // Classify read `i` under the active color scheme. Precedence:
 // chain-supplementary → unmapped mate → inter-chromosomal → per-scheme bucket.
 //
@@ -118,14 +130,7 @@ export function readColorCategory(
   // unmapped mate (flag 8) — its own color for orientation-aware schemes (tlen=0
   // would miscolor as "short insert"), or normal scheme in linked-read mode.
   const mateUnmapped = (flags & 8) !== 0
-  const isOrientationScheme = (
-    [
-      ColorScheme.insertSize,
-      ColorScheme.pairOrientation,
-      ColorScheme.insertSizeAndOrientation,
-      ColorScheme.insertSizeGradient,
-    ] as number[]
-  ).includes(colorScheme)
+  const isOrientationScheme = orientationSchemes.has(colorScheme)
   if (
     mateUnmapped &&
     (isOrientationScheme || (colorScheme === ColorScheme.normal && isChain))
