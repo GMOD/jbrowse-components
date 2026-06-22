@@ -508,7 +508,7 @@ database.
 
 This produces a URL of the form:
 
-&session=share-&lt;DYNAMODBID&gt;&password=&lt;DECODEKEY&gt;
+`&session=share-<DYNAMODBID>&password=<DECODEKEY>`
 
 The DECODEKEY is never transmitted to the server. The recipient downloads the
 DynamoDB entry and decodes it using the key embedded in the URL.
@@ -526,11 +526,66 @@ or [contact us](/contact). To report a bug, open an issue on
 
 ### Why do I get a CORS error when loading remote files?
 
-The remote server must return `Access-Control-Allow-Origin: *` (or your origin)
-and allow the `Range` header (`Access-Control-Allow-Headers: Range`). JBrowse
-cannot work around CORS restrictions — the fix must be on the data server. For
-local development only, launching Chrome with `--disable-web-security` is a
+This happens when JBrowse is served from a different domain than your data (e.g.
+JBrowse on one host, data on a separate S3 / MinIO bucket). JBrowse cannot work
+around CORS restrictions — the fix must be on the data server.
+
+At minimum the data server must:
+
+- return `Access-Control-Allow-Origin` matching your JBrowse origin (or `*`),
+- allow the `Range` request header
+  (`Access-Control-Allow-Headers: Range`), and
+- honor byte-range requests — respond `206 Partial Content` with the requested
+  bytes (not `200` with the whole file).
+
+You do **not** need to expose `Content-Range`. JBrowse detects end-of-file from
+short/`416` range responses rather than needing a `stat()`/file-size call, so
+range reads work even when `Content-Range` is hidden by CORS. Exposing it is
+optional polish (it lets JBrowse report the true file size in a few places like
+the spreadsheet importer). `Content-Length` is a CORS-safelisted response header
+and is always readable, so download progress works regardless.
+
+For local development only, launching Chrome with `--disable-web-security` is a
 temporary workaround.
+
+#### S3 / MinIO CORS configuration
+
+Apply this CORS policy to the bucket (S3 console → bucket → Permissions →
+Cross-origin resource sharing, or the CLI below). Replace the origin with your
+JBrowse host, or use `["*"]` for public data:
+
+```json
+[
+  {
+    "AllowedOrigins": ["https://your-jbrowse-host.example.com"],
+    "AllowedMethods": ["GET", "HEAD"],
+    "AllowedHeaders": ["Range"],
+    "ExposeHeaders": ["Content-Range", "Content-Length", "Accept-Ranges"]
+  }
+]
+```
+
+One-liner to apply it with the AWS CLI:
+
+```bash
+aws s3api put-bucket-cors --bucket YOUR_BUCKET --cors-configuration \
+  '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["Range"],"ExposeHeaders":["Content-Range","Content-Length","Accept-Ranges"]}]}'
+```
+
+`ExposeHeaders` is included above for completeness but isn't required for
+range reads (see above). To verify, open dev tools' Network tab and confirm the
+file request returns `206 Partial Content` with an
+`Access-Control-Allow-Origin` header.
+
+For **MinIO**, per-bucket CORS (`mc cors set` / the `put-bucket-cors` S3 API)
+is only available in MinIO AIStor (the commercial edition). The community server
+instead controls CORS globally with the `MINIO_API_CORS_ALLOW_ORIGIN`
+environment variable, a comma-separated origin list that defaults to `*` (all
+origins). Set it to your JBrowse origin and restart the server:
+
+```bash
+export MINIO_API_CORS_ALLOW_ORIGIN="https://your-jbrowse-host.example.com"
+```
 
 ### Why does my saved session fail to load?
 
