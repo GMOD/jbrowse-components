@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { getContainingView } from '@jbrowse/core/util'
@@ -43,7 +43,6 @@ const SashimiSubBand = observer(function SashimiSubBand({
   }
   return (
     <svg
-      data-sashimi-band
       style={{
         position: 'absolute',
         top: screenTop,
@@ -124,26 +123,6 @@ const SashimiBand = observer(function SashimiBand({
   onSelect: (key: string | null) => void
 }) {
   const arcs = computeSashimiArcsFromModel(model, view, rpcDataMap)
-  // eslint-disable-next-line no-console
-  console.log('[sashimi] SashimiBand render', {
-    offsetPx: view.offsetPx,
-    bpPerPx: view.bpPerPx,
-    viewWidth: view.width,
-    rpcRegionIndices: [...rpcDataMap.keys()],
-    arcCount: arcs.length,
-    screenXRange: arcs.length
-      ? [
-          Math.min(...arcs.map(a => Math.min(a.labelX, a.labelX))),
-          Math.max(...arcs.map(a => a.labelX)),
-        ]
-      : null,
-    pathXExtent: arcs.length
-      ? [
-          Math.min(...arcs.map(a => Number(a.d.split(' ')[1]))),
-          Math.max(...arcs.map(a => Number(a.d.split(' ')[1]))),
-        ]
-      : null,
-  })
   return (
     <>
       <SashimiSubBand
@@ -177,34 +156,9 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 }) {
   const [selectedArcKey, setSelectedArcKey] = useState<string | null>(null)
   const view = getContainingView(model) as LinearGenomeViewModel
-
-  // DEBUG: after every commit, count the live <path> nodes in the DOM vs the
-  // arc count React intends to render. If DOM count grows unbounded across
-  // zoom while the per-band arcCount logs stay small => React is NOT removing
-  // old nodes (stale-DOM accumulation). If they match but arcs sit over
-  // no-read areas => the computed arc set itself is the problem.
-  useEffect(() => {
-    const domPaths = document.querySelectorAll(
-      '[data-sashimi-band] path',
-    ).length
-    // eslint-disable-next-line no-console
-    console.log('[sashimi] DOM commit', {
-      domSashimiBands: document.querySelectorAll('[data-sashimi-band]').length,
-      domSashimiPaths: domPaths,
-      offsetPx: view.offsetPx,
-      bpPerPx: view.bpPerPx,
-    })
-  })
   if (!model.showSashimiArcs || !model.showCoverage || !view.initialized) {
     return null
   }
-  // eslint-disable-next-line no-console
-  console.log('[sashimi] SashimiArcsOverlay render', {
-    sectionCount: model.sashimiSections.length,
-    sectionKeys: model.sashimiSections.map(s => s.groupKey),
-    offsetPx: view.offsetPx,
-    bpPerPx: view.bpPerPx,
-  })
 
   // Ungrouped coverage is sticky (only the pileup scrolls), so its bands keep
   // their content-space tops; grouped sections scroll as a unit.

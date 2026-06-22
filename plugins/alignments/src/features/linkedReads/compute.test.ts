@@ -310,6 +310,66 @@ describe('readGroupConnections', () => {
     expect(cs[0]!.e2.readIdx).toBe(1)
   })
 
+  it('dedupes one read appearing in two regions (collapsed introns), no self-junction', () => {
+    // A single unpaired alignment overlapping two collapsed-intron exon regions
+    // is returned by BOTH region fetches, so it appears as two same-name entries
+    // sharing a readId (f.id() = adapter.id + fileOffset is stable across
+    // fetches). Without dedup, the two copies look like a 2-segment split read
+    // and chainSubRead fabricates a junction between the read and itself.
+    const regionA = makeData({
+      names: ['r1'],
+      flags: [0],
+      strands: [1],
+      positions: [[100, 5000]],
+      orientations: [0],
+      ys: [0],
+    })
+    const regionB = makeData({
+      names: ['r1'],
+      flags: [0],
+      strands: [1],
+      positions: [[100, 5000]],
+      orientations: [0],
+      ys: [0],
+    })
+    // both copies carry readId 'id0' (same fileOffset → same stable f.id())
+    const cs = readGroupConnections([
+      makeEntry(regionA, 0, 0),
+      makeEntry(regionB, 0, 1),
+    ])
+    expect(cs).toHaveLength(0)
+  })
+
+  it('keeps a genuine split read whose segments are separate records (distinct ids)', () => {
+    // Contrast with the dedup case: a real split read's primary + supplementary
+    // are distinct records (distinct fileOffsets → distinct readIds), so they
+    // must NOT be deduped even when they land in different regions.
+    const regionA = makeData({
+      names: ['r1'],
+      flags: [0],
+      strands: [1],
+      positions: [[100, 200]],
+      orientations: [0],
+      ys: [0],
+    })
+    const regionB = makeData({
+      names: ['r1'],
+      flags: [SAM_FLAG_SUPPLEMENTARY],
+      strands: [1],
+      positions: [[300, 400]],
+      orientations: [0],
+      ys: [0],
+    })
+    regionA.readIds[0] = 'primary'
+    regionB.readIds[0] = 'supplementary'
+    const cs = readGroupConnections([
+      makeEntry(regionA, 0, 0),
+      makeEntry(regionB, 0, 1),
+    ])
+    expect(cs).toHaveLength(1)
+    expect(cs[0]!.isSplit).toBe(true)
+  })
+
   it('unpaired: chains 3 split segments in read order (clip-at-start), not genomic order', () => {
     // Genomic order idx0<idx1<idx2 but read order is idx1→idx2→idx0 by clip.
     const data = makeData({

@@ -36,6 +36,10 @@ function clipAt(e: MinEntry) {
   return e.data.readClipAtStart?.[e.readIdx] ?? 0
 }
 
+function readIdOf(e: MinEntry) {
+  return e.data.readIds[e.readIdx]!
+}
+
 function flagsOf(e: MinEntry) {
   return e.data.readFlags[e.readIdx]!
 }
@@ -108,7 +112,21 @@ function primaryOf<E extends MinEntry>(segs: E[]) {
 export function readGroupConnections<E extends MinEntry>(
   entries: E[],
 ): ReadConnection<E>[] {
-  const filtered = entries.filter(e => {
+  // The same physical read overlapping two displayedRegions (e.g. a read
+  // spanning collapsed-intron exons) is returned by each region's fetch, so it
+  // arrives as duplicate entries sharing a readId (f.id() = adapter.id +
+  // fileOffset, stable across fetches). Collapse them first, else the copies
+  // look like a 2-segment split read and chainSubRead fabricates a self-
+  // junction. Genuine split segments and mates are distinct records with
+  // distinct ids, so they survive.
+  const byId = new Map<string, E>()
+  for (const e of entries) {
+    const id = readIdOf(e)
+    if (!byId.has(id)) {
+      byId.set(id, e)
+    }
+  }
+  const filtered = [...byId.values()].filter(e => {
     const f = flagsOf(e)
     const paired = !!(f & SAM_FLAG_PAIRED)
     return !(f & SAM_FLAG_SECONDARY) && !(paired && f & SAM_FLAG_MATE_UNMAPPED)

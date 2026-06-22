@@ -101,6 +101,45 @@ test('auto splits crossing junctions onto opposite sides', () => {
   expect(byStart.get(100)).not.toBe(byStart.get(200))
 })
 
+test('dedupes a junction shared across same-refName regions (collapsed introns)', () => {
+  // Collapsed introns split one refName into many displayedRegions (exons). A
+  // junction spanning exon A -> exon B is a skip-gap in reads that overlap BOTH
+  // regions, so both per-region fetches return them and the worker emits the
+  // same absolute junction in each region's rpcData. Real counts are identical
+  // (the fetch is uncapped); the 5-vs-8 here is synthetic to prove the merge
+  // collapses to one arc and keeps the higher count, rather than rendering two
+  // arcs that share an identical refName:start:end:strand React key.
+  const region0 = {
+    sashimiX1: new Uint32Array([100]),
+    sashimiX2: new Uint32Array([1100]),
+    sashimiCounts: new Uint32Array([5]),
+    sashimiColorTypes: new Uint8Array([0]),
+  } as unknown as PileupDataResult
+  const region1 = {
+    sashimiX1: new Uint32Array([100]),
+    sashimiX2: new Uint32Array([1100]),
+    sashimiCounts: new Uint32Array([8]),
+    sashimiColorTypes: new Uint8Array([0]),
+  } as unknown as PileupDataResult
+  const arcs = computeSashimiArcs({
+    rpcDataMap: new Map([
+      [0, region0],
+      [1, region1],
+    ]),
+    visibleRegions: [
+      { refName: 'chr1', displayedRegionIndex: 0 },
+      { refName: 'chr1', displayedRegionIndex: 1 },
+    ],
+    bpToScreenX: (_refName: string, bp: number) => bp,
+    coverageHeight: 100,
+    sashimiArcsHeight: 40,
+    mode: 'up',
+    minSashimiScore: 0,
+  })
+  expect(arcs).toHaveLength(1)
+  expect(arcs[0]!.score).toBe(8)
+})
+
 test('auto puts the heavier of two crossing junctions on the upper band', () => {
   // 100-300 (light) and 200-400 (heavy) cross; the heavier claims 'up'.
   const data = {

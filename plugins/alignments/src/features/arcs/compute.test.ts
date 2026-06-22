@@ -389,6 +389,12 @@ describe('computeArcsFromPileupData', () => {
       readNames: ['readA'],
     })
 
+    // Mates are distinct records: distinct fileOffsets => distinct f.id(). (The
+    // helper's per-array id${i} would collide both on 'id0', which can't happen
+    // in real data and would trip the same-read cross-region dedup.)
+    data0.readIds[0] = 'readA-mate1'
+    data1.readIds[0] = 'readA-mate2'
+
     const rpcDataMap = new Map([
       [0, data0],
       [1, data1],
