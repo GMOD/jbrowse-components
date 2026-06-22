@@ -73,14 +73,15 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
       }),
     })),
   )
-  const trackLabelMaxLen =
-    max(
-      visibleTracks.map(t =>
-        measureText(getTrackName(t.configuration, session), fontSize),
-      ),
-      0,
-    ) + 40
-  const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
+  const trackLabelOffset =
+    trackLabels === 'left'
+      ? max(
+          visibleTracks.map(t =>
+            measureText(getTrackName(t.configuration, session), fontSize),
+          ),
+          0,
+        ) + 40
+      : 0
   const w = width + trackLabelOffset + legendWidth
 
   const { pluginManager } = getEnv(model)

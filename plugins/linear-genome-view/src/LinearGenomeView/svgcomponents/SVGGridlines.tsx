@@ -1,7 +1,7 @@
 import { getStrokeProps } from '@jbrowse/core/util'
-import { SvgClipRect } from '@jbrowse/core/util/SvgExport'
 import { useTheme } from '@mui/material'
 
+import BlockClipGroup from './BlockClipGroup.tsx'
 import { makeBlockTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -28,32 +28,27 @@ export default function SVGGridlines({
 
   return (
     <>
-      {contentBlocks.map(block => {
-        const { key, offsetPx, widthPx } = block
-        const offset = offsetPx - viewOffsetPx
-        const ticks = makeBlockTicks(block, bpPerPx)
-        return (
-          <g key={key} transform={`translate(${offset} 0)`}>
-            <SvgClipRect
-              id={`gridline-clip-${key}`}
-              width={widthPx}
-              height={height}
-            >
-              {ticks.map(({ base, type, x }) => (
-                <line
-                  key={`gridline-${base}`}
-                  x1={x}
-                  x2={x}
-                  y1={0}
-                  y2={height}
-                  strokeWidth={1}
-                  {...(type === 'major' ? major : minor)}
-                />
-              ))}
-            </SvgClipRect>
-          </g>
-        )
-      })}
+      {contentBlocks.map(block => (
+        <BlockClipGroup
+          key={block.key}
+          block={block}
+          viewOffsetPx={viewOffsetPx}
+          height={height}
+          idPrefix="gridline-clip"
+        >
+          {makeBlockTicks(block, bpPerPx).map(({ base, type, x }) => (
+            <line
+              key={`gridline-${base}`}
+              x1={x}
+              x2={x}
+              y1={0}
+              y2={height}
+              strokeWidth={1}
+              {...(type === 'major' ? major : minor)}
+            />
+          ))}
+        </BlockClipGroup>
+      ))}
     </>
   )
 }

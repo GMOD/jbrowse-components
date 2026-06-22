@@ -1,8 +1,8 @@
 import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
-import { SvgClipRect } from '@jbrowse/core/util/SvgExport'
 import { useTheme } from '@mui/material'
 
 import { labelFitsInBlock, makeBlockTicks, showRefNameLabels } from '../util.ts'
+import BlockClipGroup from './BlockClipGroup.tsx'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -87,32 +87,35 @@ export default function SVGRuler({
     <>
       <SVGRegionSeparators model={model} height={30} />
       {contentBlocks.map((block, i) => {
-        const { start, end, key, reversed, offsetPx, refName, widthPx } = block
-        const offset = offsetPx - viewOffsetPx
+        const { start, end, key, reversed, refName, widthPx } = block
         return (
-          <g key={key} transform={`translate(${offset} 0)`}>
-            <SvgClipRect id={`clip-${key}`} width={widthPx} height={100}>
-              {showRefName[i] ? (
-                <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
-                  {refName}
-                </text>
-              ) : null}
-              {/* very narrow regions (e.g. whole-genome view of small
-              chromosomes) crowd ticks under the refName label, so skip them */}
-              {widthPx >= 150 ? (
-                <g transform="translate(0 20)">
-                  <Ruler
-                    hideText={!renderRuler}
-                    start={start}
-                    end={end}
-                    bpPerPx={bpPerPx}
-                    reversed={reversed}
-                    widthPx={widthPx}
-                  />
-                </g>
-              ) : null}
-            </SvgClipRect>
-          </g>
+          <BlockClipGroup
+            key={key}
+            block={block}
+            viewOffsetPx={viewOffsetPx}
+            height={100}
+            idPrefix="clip"
+          >
+            {showRefName[i] ? (
+              <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
+                {refName}
+              </text>
+            ) : null}
+            {/* very narrow regions (e.g. whole-genome view of small
+            chromosomes) crowd ticks under the refName label, so skip them */}
+            {widthPx >= 150 ? (
+              <g transform="translate(0 20)">
+                <Ruler
+                  hideText={!renderRuler}
+                  start={start}
+                  end={end}
+                  bpPerPx={bpPerPx}
+                  reversed={reversed}
+                  widthPx={widthPx}
+                />
+              </g>
+            ) : null}
+          </BlockClipGroup>
         )
       })}
     </>

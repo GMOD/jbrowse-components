@@ -14,6 +14,53 @@ import { getCytobands } from '../components/util.ts'
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
+import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
+
+// "you are here" cytoband overview rendered above the ruler. Self-contained so
+// the overview-layout work only runs when cytobands are actually shown.
+function CytobandOverview({
+  model,
+  assembly,
+  rulerHeight,
+}: {
+  model: LinearGenomeViewModel
+  assembly: Assembly | undefined
+  rulerHeight: number
+}) {
+  const { width, displayedRegions, minimumBlockWidth } = model
+  const overview = createOverviewLayout({
+    displayedRegions,
+    width,
+    minimumBlockWidth,
+  })
+  const block = calculateDynamicBlocks(overview).contentBlocks[0]
+  const span = getContentBlocksPxSpan(overview, model.dynamicBlocks.contentBlocks)
+  return block && span ? (
+    <g transform={`translate(0 ${rulerHeight})`}>
+      <Cytobands
+        overview={overview}
+        cytobands={getCytobands(assembly, block.refName)}
+        block={block}
+      />
+      <rect
+        stroke="red"
+        fill="rgb(255,0,0)"
+        fillOpacity={0.1}
+        width={Math.max(span.rightPx - span.leftPx, 0.5)}
+        height={HEADER_OVERVIEW_HEIGHT - 1}
+        x={span.leftPx}
+        y={0.5}
+      />
+      <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
+        <OverviewScalebarPolygon
+          overview={overview}
+          model={model}
+          useOffset={false}
+        />
+      </g>
+    </g>
+  ) : null
+}
 
 export default function SVGHeader({
   model,
@@ -26,13 +73,7 @@ export default function SVGHeader({
   fontSize: number
   cytobandHeight: number
 }) {
-  const {
-    width,
-    assemblyNames,
-    showCytobands,
-    displayedRegions,
-    minimumBlockWidth,
-  } = model
+  const { assemblyNames, showCytobands } = model
   const { assemblyManager } = getSession(model)
   const assemblyName = assemblyNames.length === 1 ? assemblyNames[0] : undefined
   const assembly = assemblyName ? assemblyManager.get(assemblyName) : undefined
@@ -43,13 +84,6 @@ export default function SVGHeader({
     return null
   }
 
-  const overview = createOverviewLayout({
-    displayedRegions,
-    width,
-    minimumBlockWidth,
-  })
-  const block = calculateDynamicBlocks(overview).contentBlocks[0]!
-  const span = getContentBlocksPxSpan(overview, visibleRegions)
   const y = +showCytobands * cytobandHeight
   return (
     <g id="header">
@@ -65,30 +99,12 @@ export default function SVGHeader({
         </text>
       ) : null}
 
-      {showCytobands && span ? (
-        <g transform={`translate(0 ${rulerHeight})`}>
-          <Cytobands
-            overview={overview}
-            cytobands={getCytobands(assembly, block.refName)}
-            block={block}
-          />
-          <rect
-            stroke="red"
-            fill="rgb(255,0,0)"
-            fillOpacity={0.1}
-            width={Math.max(span.rightPx - span.leftPx, 0.5)}
-            height={HEADER_OVERVIEW_HEIGHT - 1}
-            x={span.leftPx}
-            y={0.5}
-          />
-          <g transform={`translate(0,${HEADER_OVERVIEW_HEIGHT})`}>
-            <OverviewScalebarPolygon
-              overview={overview}
-              model={model}
-              useOffset={false}
-            />
-          </g>
-        </g>
+      {showCytobands ? (
+        <CytobandOverview
+          model={model}
+          assembly={assembly}
+          rulerHeight={rulerHeight}
+        />
       ) : null}
 
       <g transform={`translate(0 ${fontSize + y})`}>
