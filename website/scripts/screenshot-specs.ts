@@ -622,6 +622,12 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'samplot',
                 readConnectionsDown: true,
+                // color the cloud purely by insert size so the short-insert
+                // (insertion-supporting) pairs paint pink and stand out from the
+                // teal normal-insert background — the default
+                // insertSizeAndOrientation only pinks short pairs that also keep
+                // normal orientation (reviewer: short-insert was hard to see)
+                arcColorByType: 'insertSize',
                 coverageHeight: 100,
                 readConnectionsHeight: 100,
                 height: 600,
@@ -1031,6 +1037,21 @@ export const specs: ScreenshotSpec[] = [
       { type: 'rightclick', from: { x: 400, y: 250 } },
       { type: 'waitForText', text: 'Linear read vs ref' },
       { type: 'delay', ms: 800 },
+    ],
+    // clarify the action (reviewer: it's unclear this menu comes from
+    // right-clicking a read). Caption sits over the pileup just left of the menu
+    // with a short arrow at the right-clicked read row (y=250 = the click point);
+    // JBrowse intentionally clears the hover shading when the context menu opens,
+    // so the arrow stands in for the missing highlight.
+    annotations: [
+      {
+        type: 'text',
+        x: 165,
+        y: 285,
+        maxWidth: 180,
+        text: 'Right-click any read to open this menu',
+      },
+      { type: 'arrow', from: { x: 270, y: 270 }, to: { x: 392, y: 250 } },
     ],
   },
 
@@ -1938,19 +1959,60 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 700,
     settleMs: 15000,
     hideTooltip: true,
-    actions: [
+    // Two-stage figure (reviewer): stage 1 is the menu path (track menu ->
+    // Group by... submenu, the inner item boxed); stage 2 is the dialog that item
+    // opens, with the Tag dimension chosen and HP entered so the haplotype example
+    // is concrete. Reads start colored by HP (colorBy tag HP) in both frames.
+    stages: [
       {
-        type: 'click',
-        selector:
-          '[data-testid="track_menu_icon"][data-trackid="hg002_nanopore_hp"]',
+        actions: [
+          {
+            type: 'click',
+            selector:
+              '[data-testid="track_menu_icon"][data-trackid="hg002_nanopore_hp"]',
+          },
+          { type: 'waitForText', text: 'Group by...' },
+          { type: 'hover', text: 'Group by...' },
+          // submenu opened once its items render
+          { type: 'waitForText', text: 'Ungroup (this track)' },
+          { type: 'delay', ms: 800 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Group by...' } }],
       },
-      { type: 'waitForText', text: 'Group by...' },
-      { type: 'hover', text: 'Group by...' },
-      // submenu opened once its items render
-      { type: 'waitForText', text: 'Ungroup (this track)' },
-      { type: 'delay', ms: 800 },
+      {
+        actions: [
+          // both menu items read "Group by..."; the inner (dialog-opening) one
+          // renders later in the DOM, so target the last match by XPath
+          {
+            type: 'click',
+            selector:
+              '::-p-xpath((//li[@role="menuitem"][normalize-space(.)="Group by..."])[last()])',
+          },
+          {
+            type: 'waitForText',
+            text: 'Renders the reads as stacked sections',
+          },
+          { type: 'delay', ms: 500 },
+          // open the dimension dropdown and pick the Tag option (label has parens
+          // /commas that break the text pseudo-selector, so match by XPath)
+          { type: 'click', selector: '[role="dialog"] [role="combobox"]' },
+          { type: 'delay', ms: 400 },
+          {
+            type: 'click',
+            selector:
+              '::-p-xpath(//li[@role="option"][starts-with(normalize-space(.),"Tag")])',
+          },
+          { type: 'delay', ms: 400 },
+          {
+            type: 'type',
+            selector: '[data-testid="group-tag-name-input"]',
+            value: 'HP',
+          },
+          // let the optional "Found values" tag preview resolve
+          { type: 'delay', ms: 1500 },
+        ],
+      },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Group by...' } }],
   },
 
   // The nssv15767046 insertion at ~1:55,705,920 (hg19) shown across HG002
@@ -2166,17 +2228,20 @@ export const specs: ScreenshotSpec[] = [
           loc: '1:40,481,472-40,524,349',
           tracks: [
             '1KGP_3202.Illumina_ensemble_callset.freeze_V1.vcf',
+            // read-connection arcs on each trio member (reviewer): discordant /
+            // split pairs arc across the SV breakpoints, so the SV signal that is
+            // present (or absent) in child vs parents reads at a glance
             {
               trackId: 'HG02030_trio_slice',
-              displaySnapshot: { height: 180 },
+              displaySnapshot: { height: 180, readConnections: 'arc' },
             },
             {
               trackId: 'HG02031_trio_slice',
-              displaySnapshot: { height: 180 },
+              displaySnapshot: { height: 180, readConnections: 'arc' },
             },
             {
               trackId: 'HG02032_trio_slice',
-              displaySnapshot: { height: 180 },
+              displaySnapshot: { height: 180, readConnections: 'arc' },
             },
           ],
         },
@@ -2416,22 +2481,26 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
-    // label the CPX_TYPE INFO field and explain the read evidence (the small
-    // circle ring was hard to see — reviewer)
+    // explain the read evidence, plus a single connector from the "INVdup" callout
+    // directly to the CPX_TYPE INFO field in the feature-details sidebar so the
+    // annotation and the data it describes are visibly linked (reviewer)
     annotations: [
       {
-        type: 'arrow',
-        from: { x: 980, y: 360 },
-        anchor: { text: 'CPX_TYPE' },
-      },
-      {
-        // drop into the empty white pileup band so it doesn't cover the arcs
-        // at the top of the pileup, which are the key INVdup evidence (reviewer)
+        // sits in the empty white pileup band (so it doesn't cover the arcs at the
+        // top of the pileup — the key INVdup evidence) and at the same height as
+        // the CPX_TYPE field, so the connector to it is short
         type: 'text',
-        x: 700,
+        x: 640,
         y: 760,
         text: 'Annotated as "INVdup" (inverted duplication)',
         fontSize: 26,
+        maxWidth: 360,
+      },
+      {
+        // tail at the callout's right edge, head anchored on the CPX_TYPE field
+        type: 'arrow',
+        from: { x: 1015, y: 770 },
+        anchor: { text: 'CPX_TYPE' },
       },
       {
         type: 'text',
@@ -2511,7 +2580,12 @@ export const specs: ScreenshotSpec[] = [
       { type: 'waitForText', text: 'SV inspector' },
       { type: 'delay', ms: 500 },
     ],
-    annotations: [{ type: 'box', anchor: { text: 'SV inspector' } }],
+    // box the "Add" menu button (the path's first click) plus the "SV inspector"
+    // item it opens (reviewer: circle Add too)
+    annotations: [
+      { type: 'box', anchor: { text: 'Add' } },
+      { type: 'box', anchor: { text: 'SV inspector' } },
+    ],
   },
 
   // The SV-inspector import form with "Open from track" selected. The
@@ -2957,13 +3031,15 @@ export const specs: ScreenshotSpec[] = [
           },
           { type: 'delay', ms: 400 },
         ],
+        // place the caption in the clear track area to the LEFT of the centered
+        // dialog (reviewer: it was overlapping the dialog's editable fields)
         annotations: [
           {
             type: 'text',
-            anchor: { selector: '[role="dialog"]' },
-            dy: -16,
+            x: 250,
+            y: 235,
             text: 'Cap the score range from the track menu (Score → Set min/max score)',
-            maxWidth: 360,
+            maxWidth: 320,
           },
         ],
       },
@@ -3257,69 +3333,73 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     settleMs: 5000,
-    // Each label is a callout pill placed in clear space (the dark app bar or the
-    // sparse overview-ruler band) with an arrow pointing at the control it names.
-    // Labels sit roughly above their target so each arrow drops near-vertically
-    // and the arrows don't cross. Scroll-to-zoom is omitted here — it has its own
-    // dedicated figure (scroll_zoom_toggle) right above this one in the docs
-    // (reviewer). Targets are anchored, so each arrow head tracks the real
-    // element; only the pill/tail use absolute viewport CSS px (default 1500x800
-    // capture).
+    // Each label sits in the clear band immediately next to the control it names,
+    // with a SHORT arrow into it (reviewer: minimize arrow length, place text next
+    // to its target, don't pile every pill at the top). Three tiers track the
+    // three real control rows: the dark app bar (Add), the clear strip just above
+    // the navigation toolbar (track selector / pan / search / zoom, controls at
+    // y~122), and the ruler strip just above the track header (drag handle + track
+    // menu, controls at y~178). Arrow heads are anchored so they track the real
+    // element; pill/tail coords are absolute viewport CSS px (1500x800 capture)
+    // tuned to the live control positions. Scroll-to-zoom has its own figure
+    // (scroll_zoom_toggle) just above this in the docs, so it's omitted here.
     annotations: [
-      // app-bar band: "Add view" labels the Add menu. The arrow tail starts to
-      // the right of the pill so it never overlaps the pill itself (reviewer).
-      { type: 'text', text: 'Add view', x: 150, y: 16, fontSize: 14 },
+      // app-bar tier: Add menu (control at ~108,24)
+      { type: 'text', text: 'Add view', x: 160, y: 28, fontSize: 16 },
+      { type: 'arrow', from: { x: 156, y: 24 }, anchor: { text: 'Add' } },
+
+      // toolbar tier: labels in the clear strip at y~62, short arrows down into
+      // the navigation controls at y~122
+      {
+        type: 'text',
+        text: 'Open track selector',
+        x: 22,
+        y: 62,
+        fontSize: 16,
+      },
       {
         type: 'arrow',
-        from: { x: 150, y: 30 },
-        anchor: { text: 'Add' },
+        from: { x: 40, y: 70 },
+        anchor: { selector: 'button[title="Open track selector"]' },
       },
-      // track-header controls: pills in the clear right half of the app bar, each
-      // sitting above its target so the arrow drops straight down to the
-      // (lower) track-header row without crossing the navigation arrows
+      { type: 'text', text: 'Pan', x: 545, y: 62, fontSize: 16 },
+      {
+        type: 'arrow',
+        from: { x: 560, y: 70 },
+        anchor: { selector: 'button[aria-label="Pan left"]' },
+      },
+      { type: 'text', text: 'Search box', x: 690, y: 62, fontSize: 16 },
+      {
+        type: 'arrow',
+        from: { x: 730, y: 70 },
+        anchor: { selector: 'input[placeholder="Search for location"]' },
+      },
+      { type: 'text', text: 'Zoom', x: 968, y: 62, fontSize: 16 },
+      {
+        type: 'arrow',
+        from: { x: 990, y: 70 },
+        anchor: { selector: '[data-testid="zoom_in"]' },
+      },
+
+      // ruler tier: labels in the strip at y~152, short arrows down into the
+      // track-header controls at y~178
       {
         type: 'text',
         text: 'Drag to reorder track',
-        x: 360,
-        y: 16,
-        fontSize: 14,
+        x: 40,
+        y: 152,
+        fontSize: 16,
       },
       {
         type: 'arrow',
-        from: { x: 380, y: 32 },
+        from: { x: 44, y: 160 },
         anchor: { selector: '[data-testid^="dragHandle-"]' },
       },
-      { type: 'text', text: 'Track menu', x: 700, y: 16, fontSize: 14 },
+      { type: 'text', text: 'Track menu', x: 360, y: 152, fontSize: 16 },
       {
         type: 'arrow',
-        from: { x: 740, y: 32 },
+        from: { x: 360, y: 160 },
         anchor: { selector: '[data-testid="track_menu_icon"]' },
-      },
-      // overview-ruler band: the track selector plus the navigation controls,
-      // arrows pointing down into the controls row
-      { type: 'text', text: 'Open track selector', x: 30, y: 70, fontSize: 14 },
-      {
-        type: 'arrow',
-        from: { x: 45, y: 88 },
-        anchor: { selector: 'button[title="Open track selector"]' },
-      },
-      { type: 'text', text: 'Pan', x: 520, y: 70, fontSize: 14 },
-      {
-        type: 'arrow',
-        from: { x: 540, y: 88 },
-        anchor: { selector: 'button[aria-label="Pan left"]' },
-      },
-      { type: 'text', text: 'Search box', x: 680, y: 70, fontSize: 14 },
-      {
-        type: 'arrow',
-        from: { x: 750, y: 88 },
-        anchor: { selector: 'input[placeholder="Search for location"]' },
-      },
-      { type: 'text', text: 'Zoom', x: 900, y: 70, fontSize: 14 },
-      {
-        type: 'arrow',
-        from: { x: 935, y: 88 },
-        anchor: { selector: '[data-testid="zoom_in"]' },
       },
     ],
   },
@@ -3899,13 +3979,9 @@ export const specs: ScreenshotSpec[] = [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
           ...menuCascade(['Read connections', 'Show read arcs'], 600),
         ],
-        // box the "Read connections" parent submenu plus the two options it
-        // opens (reviewer asked to also highlight "Read connections")
-        annotations: [
-          { type: 'box', anchor: { text: 'Read connections' } },
-          { type: 'box', anchor: { text: 'Show read arcs' } },
-          { type: 'box', anchor: { text: 'Show read cloud' } },
-        ],
+        // box only the "Show read arcs" checkbox (reviewer: this figure is
+        // specifically about enabling read arcs)
+        annotations: [{ type: 'box', anchor: { text: 'Show read arcs' } }],
       },
       {
         // tick the "Show read arcs" checkbox so the result frame shows arcs
@@ -4640,10 +4716,15 @@ export const specs: ScreenshotSpec[] = [
             {
               trackId: 'hg_isoforms.fasta_bam',
               // taller SNPCoverage band (reviewer): coverageHeight is the
-              // LinearAlignmentsDisplay coverage-track height (default 45)
+              // LinearAlignmentsDisplay coverage-track height (default 45). Small
+              // featureHeight ("compact") + a taller display so every isoform read
+              // stacks in view instead of hitting "Max layout height reached"
+              // (reviewer).
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 coverageHeight: 120,
+                height: 620,
+                featureHeight: 4,
               },
             },
           ],
@@ -4653,6 +4734,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'ACTB',
     readyTimeout: 60000,
     settleMs: 15000,
+    // tall enough for the 620px compact pileup + the coverage band + chrome
+    viewportHeight: 900,
   },
 
   // ────────────────────────────────────────────────────────────────────────
@@ -5574,6 +5657,9 @@ export const specs: ScreenshotSpec[] = [
   // Set-default-session dialog: admin mode, Admin -> Set default session. The
   // dialog is a simple confirm ("Set current session as default" / "Clear
   // default session"); persisting the choice needs the real admin-server.
+  // Two-stage figure (reviewer: show what to click to open it): stage 1 rings the
+  // "Set default session" item in the open Admin menu (the menu only appears in
+  // admin mode); stage 2 is the resulting dialog.
   {
     mode: 'url',
     name: 'default_session_form',
@@ -5585,13 +5671,22 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 480,
     settleMs: 2000,
     hideTooltip: true,
-    actions: [
-      { type: 'click', text: 'Admin' },
-      { type: 'waitForText', text: 'Set default session' },
-      { type: 'delay', ms: 300 },
-      { type: 'click', text: 'Set default session' },
-      { type: 'waitForText', text: 'Clear default session' },
-      { type: 'delay', ms: 500 },
+    stages: [
+      {
+        actions: [
+          { type: 'click', text: 'Admin' },
+          { type: 'waitForText', text: 'Set default session' },
+          { type: 'delay', ms: 300 },
+        ],
+        annotations: [{ type: 'box', anchor: { text: 'Set default session' } }],
+      },
+      {
+        actions: [
+          { type: 'click', text: 'Set default session' },
+          { type: 'waitForText', text: 'Clear default session' },
+          { type: 'delay', ms: 500 },
+        ],
+      },
     ],
   },
 
