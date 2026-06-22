@@ -15,6 +15,7 @@ import {
   RectPass,
   makeChevronPass,
   packArrows,
+  packContinuations,
   packLines,
   packRects,
   rectShader,
@@ -37,7 +38,7 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   // bufferPassId=line), so its attribute layout must match line's.
   makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
   ArrowPass,
-  // Reads rect's instance buffer (drawPass below passes bufferPassId=rect).
+  // Has its own buffer (rect geometry + strand) uploaded alongside rects.
   ContinuationPass,
 ]
 
@@ -64,6 +65,23 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
         numRects,
       )
       this.hal.uploadBuffer(displayedRegionIndex, PASS_RECT, buf, numRects)
+
+      const contBuf = packContinuations(
+        {
+          startEnd: data.rectPositions,
+          y: data.rectYs,
+          height: data.rectHeights,
+          color: data.rectColors,
+          strand: data.rectStrands,
+        },
+        numRects,
+      )
+      this.hal.uploadBuffer(
+        displayedRegionIndex,
+        PASS_CONTINUATION,
+        contBuf,
+        numRects,
+      )
     }
 
     const numLines = data.lineYs.length
@@ -127,7 +145,7 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
     this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
     this.hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
     // Drawn last so the "feature keeps going" markers sit on top of the glyph
-    // they annotate; reads rect's instance buffer.
-    this.hal.drawPass(PASS_CONTINUATION, block.displayedRegionIndex, PASS_RECT)
+    // they annotate.
+    this.hal.drawPass(PASS_CONTINUATION, block.displayedRegionIndex)
   }
 }

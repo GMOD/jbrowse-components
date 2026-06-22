@@ -27,6 +27,7 @@ function region(features: { featureId: string; top: number }[]) {
     rectYs: new Float32Array(features.map(f => f.top)),
     rectHeights: new Float32Array(features.map(() => 10)),
     rectColors: new Uint32Array(features.length),
+    rectStrands: new Float32Array(features.length),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),

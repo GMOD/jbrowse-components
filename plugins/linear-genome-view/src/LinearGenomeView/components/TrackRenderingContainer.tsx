@@ -11,11 +11,11 @@ import type { BaseTrackModel } from '@jbrowse/core/pluggableElementTypes/models'
 
 const useStyles = makeStyles()({
   // aligns with block boundaries. check for example the breakpoint split view
-  // demo to see if features align if wanting to change things
+  // demo to see if features align if wanting to change things. the -1 left
+  // offset (cancels the Paper's 1px border) is applied inline since it's
+  // conditional on showTrackOutlines, the same condition the border is gated on
   renderingComponentContainer: {
     position: 'absolute',
-    // -1 offset because of the 1px border of the Paper
-    left: -1,
     height: '100%',
     width: '100%',
   },
@@ -42,7 +42,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
   const { classes } = useStyles()
   const display = track.displays[0]
   const { height, RenderingComponent, DisplayBlurb } = display
-  const { trackRefs } = model
+  const { trackRefs, showTrackOutlines } = model
   const trackId = track.trackId
   const minimized = track.minimized
 
@@ -74,7 +74,11 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
     >
       {!minimized ? (
         <>
-          <div ref={setRef} className={classes.renderingComponentContainer}>
+          <div
+            ref={setRef}
+            className={classes.renderingComponentContainer}
+            style={{ left: showTrackOutlines ? -1 : 0 }}
+          >
             <Suspense fallback={<LoadingEllipses />}>
               <RenderingComponent
                 model={display}

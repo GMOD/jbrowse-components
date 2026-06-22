@@ -71,6 +71,7 @@ function makeData(
     rectYs: new Float32Array(0),
     rectHeights: new Float32Array(0),
     rectColors: new Uint32Array(0),
+    rectStrands: new Float32Array(0),
     rectFeatureIndices: new Uint32Array(0),
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),

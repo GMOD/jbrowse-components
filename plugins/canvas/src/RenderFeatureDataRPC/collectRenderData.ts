@@ -133,6 +133,7 @@ function emitCodonRects(
   baseColor: string,
   y: number,
   height: number,
+  strand: number,
   flatbushIdx: number,
   rects: RectData[],
   overlayItems: AminoAcidOverlayItem[],
@@ -152,6 +153,7 @@ function emitCodonRects(
         : i % 2 === 1
           ? color2
           : color1,
+      strand,
       flatbushIdx,
     })
     overlayItems.push({
@@ -275,6 +277,7 @@ function pushBoxRect(
       colorOverride === undefined
         ? colorToUint32(boxColor(feature, ctx))
         : colorOverride,
+    strand: feature.get('strand') ?? 0,
     flatbushIdx,
   })
 }
@@ -347,6 +350,7 @@ function emitExonRects(
         boxColor(childFeature, ctx),
         transcriptTopPx,
         transcript.height,
+        transcriptFeature.get('strand') ?? 0,
         flatbushIdx,
         collector.rects,
         collector.aminoAcidOverlay,
@@ -648,6 +652,7 @@ function processMatureProteinLayout(
         MATURE_PROTEIN_COLOR_HEX[colorIdx]!,
         topPx,
         childLayout.height,
+        rootFeature.get('strand') ?? 0,
         flatbushIdx,
         collector.rects,
         collector.aminoAcidOverlay,

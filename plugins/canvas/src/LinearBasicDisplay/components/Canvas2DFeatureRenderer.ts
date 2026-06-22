@@ -149,7 +149,7 @@ function drawArrows(
 }
 
 // One filled triangle pointing toward `dir` (+1 right, -1 left), apex at apexX.
-function fillTriangle(
+function strokeTriangle(
   ctx: Ctx2D,
   apexX: number,
   dir: number,
@@ -162,7 +162,7 @@ function fillTriangle(
   ctx.lineTo(baseX, cy - halfH)
   ctx.lineTo(baseX, cy + halfH)
   ctx.closePath()
-  ctx.fill()
+  ctx.stroke()
 }
 
 // "Feature keeps going" double-arrow (»/«) pinned at a screen edge for any rect
@@ -192,32 +192,32 @@ function drawContinuation(
       const c = region.rectColors[i]!
       const lum =
         0.299 * (c & 255) + 0.587 * ((c >> 8) & 255) + 0.114 * ((c >> 16) & 255)
-      ctx.fillStyle = lum > 127.5 ? '#000' : '#fff'
+      ctx.strokeStyle =
+        lum > 127.5 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'
+      ctx.lineWidth = 1
       const cy =
         Math.floor(
           region.rectYs[i]! + region.rectHeights[i]! * 0.5 - scrollY + 0.5,
         ) + 0.5
       const halfH = Math.min(CONT_TRI_HALF_H_PX, region.rectHeights[i]! * 0.4)
+      const strand = region.rectStrands[i] ?? 0
       if (offRight) {
+        const effectiveStrand = strand === 0 ? 1 : strand
+        const strandMatchesEdge = Math.max(0, effectiveStrand) // edgeSide=1
         for (let p = 0; p < 2; p++) {
-          fillTriangle(
-            ctx,
-            scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p,
-            1,
-            cy,
-            halfH,
-          )
+          const anchorX = scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p
+          const apexX = anchorX - CONT_TRI_W_PX * (1 - strandMatchesEdge)
+          strokeTriangle(ctx, apexX, effectiveStrand, cy, halfH)
         }
       }
       if (offLeft) {
+        const effectiveStrand = strand === 0 ? -1 : strand
+        const strandMatchesEdge = Math.max(0, effectiveStrand * -1) // edgeSide=-1
         for (let p = 0; p < 2; p++) {
-          fillTriangle(
-            ctx,
-            scissorLeft + CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p,
-            -1,
-            cy,
-            halfH,
-          )
+          const anchorX =
+            scissorLeft + CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p
+          const apexX = anchorX + CONT_TRI_W_PX * (1 - strandMatchesEdge)
+          strokeTriangle(ctx, apexX, effectiveStrand, cy, halfH)
         }
       }
     }

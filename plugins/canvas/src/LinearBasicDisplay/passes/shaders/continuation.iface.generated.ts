@@ -9,7 +9,7 @@ export const CONT_TRI_W_PX = 5
 
 export const CONT_TRI_HALF_H_PX = 4
 
-export const CONT_EDGE_MARGIN_PX = 3
+export const CONT_EDGE_MARGIN_PX = 1
 
 export const CONT_TRI_GAP_PX = 4
 
@@ -60,14 +60,15 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[11] = uniforms.rightIsCanvasEdge
 }
 
-export const INSTANCE_STRIDE_BYTES = 20
-export const INSTANCE_STRIDE_F32 = 5
+export const INSTANCE_STRIDE_BYTES = 24
+export const INSTANCE_STRIDE_F32 = 6
 
 export const FIELD_OFFSET_F32 = {
   startEnd: 0,
   y: 2,
   height: 3,
   color: 4,
+  strand: 5,
 } as const
 
 export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
@@ -75,6 +76,7 @@ export const GL_ATTRIBUTES: readonly GlAttributeLayout[] = [
   { name: 'a_y', components: 1, type: 'float', offsetBytes: 8, integer: false },
   { name: 'a_height', components: 1, type: 'float', offsetBytes: 12, integer: false },
   { name: 'a_color', components: 1, type: 'uint', offsetBytes: 16, integer: true },
+  { name: 'a_strand', components: 1, type: 'float', offsetBytes: 20, integer: false },
 ]
 
 export interface InstanceArrays {
@@ -82,6 +84,7 @@ export interface InstanceArrays {
   y: ArrayLike<number>
   height: ArrayLike<number>
   color: ArrayLike<number>
+  strand: ArrayLike<number>
 }
 
 export function packInstances(
@@ -91,7 +94,7 @@ export function packInstances(
 ) {
   const f32 = new Float32Array(buf)
   const u32 = new Uint32Array(buf)
-  const { startEnd, y, height, color } = arrays
+  const { startEnd, y, height, color, strand } = arrays
   for (let i = 0; i < numInstances; i++) {
     const o = i * INSTANCE_STRIDE_F32
     u32[o + 0] = startEnd[i * 2 + 0]!
@@ -99,6 +102,7 @@ export function packInstances(
     f32[o + 2] = y[i]!
     f32[o + 3] = height[i]!
     u32[o + 4] = color[i]!
+    f32[o + 5] = strand[i]!
   }
   return buf
 }

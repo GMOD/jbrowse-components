@@ -77,6 +77,7 @@ export interface FeatureDataResult {
   // into the instance buffer by the rect shader's packInstances — the shader
   // unpacks with bit shifts.
   rectColors: Uint32Array
+  rectStrands: Float32Array // strand direction per rect: -1, 0, or +1
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
@@ -118,6 +119,7 @@ export type RegionRenderData = Pick<
   | 'rectYs'
   | 'rectHeights'
   | 'rectColors'
+  | 'rectStrands'
   | 'outlineColor'
   | 'linePositions'
   | 'lineYs'

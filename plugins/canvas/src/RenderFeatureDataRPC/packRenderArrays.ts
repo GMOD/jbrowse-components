@@ -4,6 +4,7 @@ export interface RectData {
   y: number
   height: number
   color: number
+  strand: number
   flatbushIdx: number
 }
 
@@ -49,6 +50,7 @@ export function packRenderArrays(
   const rectYs = new Float32Array(visibleRects.length)
   const rectHeights = new Float32Array(visibleRects.length)
   const rectColors = new Uint32Array(visibleRects.length)
+  const rectStrands = new Float32Array(visibleRects.length)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
 
   for (const [i, rect] of visibleRects.entries()) {
@@ -57,6 +59,7 @@ export function packRenderArrays(
     rectYs[i] = rect.y
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
+    rectStrands[i] = rect.strand
     rectFeatureIndices[i] = rect.flatbushIdx
   }
 
@@ -94,6 +97,7 @@ export function packRenderArrays(
     rectYs,
     rectHeights,
     rectColors,
+    rectStrands,
     rectFeatureIndices,
     linePositions,
     lineYs,

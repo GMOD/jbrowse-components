@@ -36,6 +36,7 @@ function makeFeatureData(opts: {
     rectYs: new Float32Array(features.length),
     rectHeights: new Float32Array(features.map(f => f.height)),
     rectColors: new Uint32Array(features.length),
+    rectStrands: new Float32Array(features.length),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),

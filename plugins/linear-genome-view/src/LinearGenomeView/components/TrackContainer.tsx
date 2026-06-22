@@ -62,8 +62,10 @@ const TrackContainer = observer(function TrackContainer({
         model.onTrackDragOver(track.id, event.clientY)
       }}
     >
-      {/* offset 1px since for left track border */}
-      {track.pinned ? <Gridlines model={model} offset={1} /> : null}
+      {/* offset cancels the Paper's 1px left border (present iff outlines on) */}
+      {track.pinned ? (
+        <Gridlines model={model} offset={showTrackOutlines ? 1 : 0} />
+      ) : null}
       {model.trackLabels !== 'hidden' ? (
         <TrackLabel
           track={track}
@@ -73,8 +75,10 @@ const TrackContainer = observer(function TrackContainer({
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
-      {/* offset 1px since for left track border; over the track content */}
-      <PaddingBlocks model={model} offset={track.pinned ? 1 : 0} />
+      {/* mirrors the rendering container's left offset (both sit inside the
+          Paper's 1px border, present iff outlines on), so the separator masks
+          the track content at the same x the data is drawn */}
+      <PaddingBlocks model={model} offset={showTrackOutlines ? 1 : 0} />
       <ResizeHandle
         onDrag={distance => display.resizeHeight(distance)}
         className={classes.resizeHandle}

@@ -64,13 +64,11 @@ export function makeChevronPass(maxChevronsPerLine: number): PassDescriptor {
   })
 }
 
-// Continuation reuses rect's vertex buffer (drawn with bufferPassId=rect), one
-// "feature keeps going" double-arrow per rect that runs off a screen edge.
+// Continuation has its own buffer (uploaded alongside rects) carrying rect
+// geometry + strand so the arrows point in the feature's genomic direction.
 export const ContinuationPass: PassDescriptor = slangPass({
   id: CONTINUATION_PASS,
   mod: continuationShader,
-  bufferStride: rectShader.INSTANCE_STRIDE_BYTES,
-  bufferAttributes: rectShader.GL_ATTRIBUTES,
 })
 
 // Generated struct-of-arrays packers (the u32/f32 destination view per field
@@ -78,6 +76,7 @@ export const ContinuationPass: PassDescriptor = slangPass({
 export const packRects = rectShader.packInstances
 export const packLines = lineShader.packInstances
 export const packArrows = arrowShader.packInstances
+export const packContinuations = continuationShader.packInstances
 
 // All passes bind the same UBO, so any pass's size is the uniform-buffer size.
 export const FEATURE_GLYPH_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES

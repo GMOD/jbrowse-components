@@ -1,10 +1,10 @@
 // Off-screen continuation marker: a fast-forward double-arrow (»/«) pinned at
 // the screen edge when a feature glyph runs past the visible viewport, hinting
-// "this feature keeps going". Reuses the rect instance buffer
-// (drawPass(continuation, region, bufferPassId=rect)) so it carries no data of
-// its own — comparing each rect's absolute bp span against the viewport
-// (u.bpRangeX) is all the vertex shader needs, recomputed on the GPU every
-// pan/zoom with no worker round-trip.
+// "this feature keeps going". Uses its own instance buffer (uploaded by
+// GpuCanvasFeatureRenderer alongside rects) that carries startEnd/y/height/color
+// from the rect data plus a strand field so the arrows point in the feature's
+// genomic direction — letting users read strand even when both feature ends are
+// off-screen.
 //
 // The block's viewport is set to its on-screen (scissored) span, so clip x = ±1
 // is the visible left/right edge: a rect whose start maps left of -1 (or end
@@ -14,9 +14,10 @@
 // (set per block by the renderer) — a feature spilling past a sub-region
 // boundary never draws a mid-screen marker.
 //
-// 12 vertices per instance = 4 solid triangles (a 2-triangle "»" per edge, two
+// 12 vertices per instance = 4 hollow triangles (a 2-triangle "»" per edge, two
 // edges). Each edge's pair is culled to OFFSCREEN unless the rect actually
-// straddles that screen edge.
+// straddles that screen edge. Barycentric coordinates carry edge distance to the
+// fragment shader so only the outline renders (filled interior is discarded).
 //! targets: wgsl, glsl
 //! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX
 
@@ -28,16 +29,15 @@ import featureGlyphUniforms;
 public static const uint VERTS_PER_INSTANCE = 12u;
 static const float CONT_TRI_W_PX       = 5.0;
 static const float CONT_TRI_HALF_H_PX  = 4.0;
-static const float CONT_EDGE_MARGIN_PX = 3.0;
+static const float CONT_EDGE_MARGIN_PX = 1.0;
 static const float CONT_TRI_GAP_PX     = 4.0;
 
-// Identical attribute layout to rect.slang's RectInstance so this pass can read
-// rect's instance buffer directly.
 struct ContinuationInstance {
   uint2 startEnd : ATTR0;
   float y        : ATTR1;
   float height   : ATTR2;
   uint  color    : ATTR3;
+  float strand   : ATTR4; // -1, 0, or +1; 0 falls back to outward arrows
 };
 
 [[vk::binding(1, 0)]] ConstantBuffer<FeatureGlyphUniforms> u;
@@ -45,6 +45,7 @@ struct ContinuationInstance {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
+  float3 bary     : TEXCOORD0;
 };
 
 // Off-clip vertex; the GPU culls any triangle that contains it.
@@ -58,10 +59,13 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   float leftClip  = min(sx1, sx2);
   float rightClip = max(sx1, sx2);
 
-  // Contrast color from luminance so the marker stays legible atop the fill.
+  // Match the visual weight of strand arrows (text.secondary ~0.6 opacity):
+  // choose dark/light based on fill luminance but render at reduced opacity so
+  // the hollow outline blends rather than jarring.
   float4 base = unpackRGBA(inst.color);
   float lum = dot(base.rgb, float3(0.299, 0.587, 0.114));
   float3 mark = lum > 0.5 ? float3(0.0, 0.0, 0.0) : float3(1.0, 1.0, 1.0);
+  float markAlpha = 0.55;
 
   uint chev = vid / 3u;   // 0,1 = right edge marker; 2,3 = left edge marker
   uint tv   = vid % 3u;   // vertex within the triangle
@@ -78,7 +82,8 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   bool visible = isRight ? offRight : offLeft;
 
   VsOut o;
-  o.color = float4(mark, base.a);
+  o.color = float4(mark, markAlpha);
+  o.bary = float3(0.0, 0.0, 0.0);
   if (!visible) {
     o.position = OFFSCREEN;
     return o;
@@ -92,24 +97,33 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
 
   float cy = snapPixelCenterY(inst.y + inst.height * 0.5, u.scrollY, u.canvasHeight);
 
-  float dir = isRight ? 1.0 : -1.0;
-  float edgeX = isRight ? 1.0 : -1.0;
+  float edgeSide = isRight ? 1.0 : -1.0;
+  float edgeX    = edgeSide;
   // 0 = outer triangle (nearest the edge), 1 = inner.
   float pairIndex = float(isRight ? chev : chev - 2u);
-  float apexX = edgeX - dir * (marginClip + gapClip * pairIndex);
-  float baseX = apexX - dir * triWClip;
+  // anchor: the back (flat edge) of the triangle, always margin+gap*pair px inside
+  float anchorX = edgeX - edgeSide * (marginClip + gapClip * pairIndex);
+  // For strand=0 fall back to outward so strand-less features still show markers.
+  float effectiveStrand = inst.strand == 0.0 ? edgeSide : inst.strand;
+  // 1 when strand points toward this edge, 0 when it points away
+  float strandMatchesEdge = max(0.0, effectiveStrand * edgeSide);
+  float apexX = anchorX - edgeSide * triWClip * (1.0 - strandMatchesEdge);
+  float baseX = anchorX - edgeSide * triWClip * strandMatchesEdge;
 
   float sx;
   float sy;
   if (tv == 0u) {
     sx = apexX;
     sy = cy;
+    o.bary = float3(1.0, 0.0, 0.0);
   } else if (tv == 1u) {
     sx = baseX;
     sy = cy + halfHClip;
+    o.bary = float3(0.0, 1.0, 0.0);
   } else {
     sx = baseX;
     sy = cy - halfHClip;
+    o.bary = float3(0.0, 0.0, 1.0);
   }
 
   o.position = float4(sx, sy, 0.0, 1.0);
@@ -118,5 +132,10 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  return fragIn.color;
+  // Hollow outline via barycentric edge distance.  fwidth converts the
+  // barycentric gradient to pixel units so the line width is screen-stable.
+  float minBary = min(fragIn.bary.x, min(fragIn.bary.y, fragIn.bary.z));
+  float edgePx = minBary / fwidth(minBary);
+  float edgeAlpha = 1.0 - smoothstep(0.5, 1.5, edgePx);
+  return float4(fragIn.color.rgb, fragIn.color.a * edgeAlpha);
 }

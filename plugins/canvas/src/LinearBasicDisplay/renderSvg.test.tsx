@@ -62,6 +62,7 @@ function makeData(
     rectYs: new Float32Array(n),
     rectHeights: new Float32Array(n).fill(10),
     rectColors: new Uint32Array(n).fill(0xff_80_40_ff),
+    rectStrands: new Float32Array(n),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
     outlineColor: 0,
     linePositions: new Uint32Array(0),
