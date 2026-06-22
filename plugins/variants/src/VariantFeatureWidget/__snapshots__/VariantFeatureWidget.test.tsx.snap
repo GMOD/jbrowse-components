@@ -64,11 +64,11 @@ exports[`renders with just the required model elements 1`] = `
               <div
                 class="MuiAccordionDetails-root css-1mmb7mj-MuiAccordionDetails-root"
               >
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                <span
+                  class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
                 >
                   Core details
-                </p>
+                </span>
                 <div
                   class="css-2imjyh"
                 >
@@ -118,11 +118,11 @@ exports[`renders with just the required model elements 1`] = `
                 <hr
                   class="MuiDivider-root MuiDivider-fullWidth css-1jpc804-MuiDivider-root"
                 />
-                <p
-                  class="MuiTypography-root MuiTypography-body1 css-1xfjy4j-MuiTypography-root"
+                <span
+                  class="MuiTypography-root MuiTypography-overline css-lk1v0t-MuiTypography-root"
                 >
                   Attributes
-                </p>
+                </span>
                 <div
                   class="css-2imjyh"
                 >
