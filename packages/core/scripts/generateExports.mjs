@@ -21,6 +21,11 @@ const preservedExports = [
   '@jbrowse/core/util/layouts',
   // jest.mock target for stable adapter ids in tests
   '@jbrowse/core/data_adapters/BaseAdapter/getAdapterId',
+  // util/index.ts <-> offscreenCanvasPonyfill.ts re-export each other; only
+  // imported by relative path in-package, but bundlers resolving that cycle
+  // through the canvas-sequencer-ts CJS interop boundary re-resolve it as a
+  // package subpath, so it needs its own exports entry
+  '@jbrowse/core/util/offscreenCanvasPonyfill',
 ]
 
 // Scan the codebase for all @jbrowse/core imports

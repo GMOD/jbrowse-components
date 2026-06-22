@@ -129,6 +129,7 @@
     "./util/layouts/placeRect": "./src/util/layouts/placeRect.ts",
     "./util/librpc": "./src/util/librpc.ts",
     "./util/nanoid": "./src/util/nanoid.ts",
+    "./util/offscreenCanvasPonyfill": "./src/util/offscreenCanvasPonyfill.ts",
     "./util/paintLayer": "./src/util/paintLayer.tsx",
     "./util/parseLineByLine": "./src/util/parseLineByLine.ts",
     "./util/range": "./src/util/range.ts",
@@ -631,6 +632,10 @@
         "types": "./esm/util/nanoid.d.ts",
         "import": "./esm/util/nanoid.js"
       },
+      "./util/offscreenCanvasPonyfill": {
+        "types": "./esm/util/offscreenCanvasPonyfill.d.ts",
+        "import": "./esm/util/offscreenCanvasPonyfill.js"
+      },
       "./util/paintLayer": {
         "types": "./esm/util/paintLayer.d.ts",
         "import": "./esm/util/paintLayer.js"
@@ -1020,6 +1025,9 @@
         ],
         "util/nanoid": [
           "esm/util/nanoid.d.ts"
+        ],
+        "util/offscreenCanvasPonyfill": [
+          "esm/util/offscreenCanvasPonyfill.d.ts"
         ],
         "util/paintLayer": [
           "esm/util/paintLayer.d.ts"
