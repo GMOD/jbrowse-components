@@ -161,4 +161,56 @@ describe('relativizeTranslExcept', () => {
       }),
     ).toEqual([{ start: 6, end: 9, aa: 'U' }])
   })
+
+  it('maps a standard 3-letter residue name to its 1-letter code', () => {
+    // NCBI spells a substituted residue with its 3-letter name, e.g. the CUG
+    // initiator of PTEN-L (NM_001304717) is `aa:Leu`. A 3-letter code must
+    // collapse to a single character or it lengthens the protein string and
+    // frame-shifts every downstream residue index.
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:107..109,aa:Leu)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 9, aa: 'L' }])
+  })
+
+  it('passes an already-1-letter code through unchanged', () => {
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:107..109,aa:W)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 9, aa: 'W' }])
+  })
+
+  it('maps the IUPAC ambiguity codes to single letters', () => {
+    // Asx/Glx/Xle/Xaa are multi-character names that must collapse to B/Z/J/X
+    const at = (aa: string) =>
+      relativizeTranslExcept({
+        raw: `(pos:107..109,aa:${aa})`,
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      })[0]!.aa
+    expect(at('Asx')).toBe('B')
+    expect(at('Glx')).toBe('Z')
+    expect(at('Xle')).toBe('J')
+    expect(at('Xaa')).toBe('X')
+  })
+
+  it('degrades an unknown multi-character code to X (never frame-shifts)', () => {
+    expect(
+      relativizeTranslExcept({
+        raw: '(pos:107..109,aa:Zzz)',
+        featureStart: 100,
+        featureLength: 30,
+        strand: 1,
+      }),
+    ).toEqual([{ start: 6, end: 9, aa: 'X' }])
+  })
 })

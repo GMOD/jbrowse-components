@@ -242,15 +242,45 @@ export interface TranslExcept {
   aa: string
 }
 
-// NCBI's readthrough names mapped to 1-letter codes; any other value passes
-// through unchanged. TERM is a stop, Sec/Pyl are selenocysteine/pyrrolysine, and
-// OTHER marks a codon translated as an unspecified residue (X), used e.g. when a
-// genomic stop is thought to be erroneous in a model RefSeq.
+// The INSDC `transl_except`/`anticodon` `aa:` vocabulary mapped to 1-letter
+// codes (https://www.ddbj.nig.ac.jp/ddbj/code-e.html); any unrecognized value
+// passes through unchanged (so a code already given as a 1-letter IUPAC symbol
+// survives). NCBI spells the substituted residue with its 3-letter name — e.g.
+// `aa:Leu` for a CUG initiator (PTEN-L) or `aa:Sec` for selenocysteine — and
+// EVERY entry below must collapse to a single character: a multi-character value
+// landing in the protein string lengthens it and frame-shifts every downstream
+// residue index. TERM is a stop; OTHER is an unspecified residue (X, used when a
+// genomic stop is thought erroneous in a model RefSeq); Asx/Glx/Xle/Xaa are the
+// IUPAC ambiguity codes; the rest are the 20 standard residues plus Sec/Pyl.
 const translExceptAa: Record<string, string> = {
   TERM: '*',
+  OTHER: 'X',
+  Ala: 'A',
+  Arg: 'R',
+  Asn: 'N',
+  Asp: 'D',
+  Cys: 'C',
+  Gln: 'Q',
+  Glu: 'E',
+  Gly: 'G',
+  His: 'H',
+  Ile: 'I',
+  Leu: 'L',
+  Lys: 'K',
+  Met: 'M',
+  Phe: 'F',
+  Pro: 'P',
+  Ser: 'S',
+  Thr: 'T',
+  Trp: 'W',
+  Tyr: 'Y',
+  Val: 'V',
   Sec: 'U',
   Pyl: 'O',
-  OTHER: 'X',
+  Asx: 'B',
+  Glx: 'Z',
+  Xle: 'J',
+  Xaa: 'X',
 }
 
 // Parses a GFF/GenBank `transl_except` attribute. The attribute value is one or
@@ -278,12 +308,19 @@ export function parseTranslExcept(value: unknown): TranslExcept[] {
       const loc = m[1]!.replace(/[A-Za-z_][\w.]*:/g, '')
       const range = /(\d+)(?:\.\.(\d+))?/.exec(loc)
       const rawAa = m[2]!
+      // The override is spliced into the protein string as-is, so it must be
+      // exactly one character: a known name maps via translExceptAa, a value
+      // already given as a 1-letter code passes through, and anything else
+      // (an unknown multi-char token) degrades to X rather than frame-shifting
+      // every downstream residue index.
+      const mappedAa =
+        translExceptAa[rawAa] ?? (rawAa.length === 1 ? rawAa : 'X')
       return range
         ? [
             {
               start: Number(range[1]) - 1,
               end: range[2] === undefined ? Number(range[1]) : Number(range[2]),
-              aa: translExceptAa[rawAa] ?? rawAa,
+              aa: mappedAa,
             },
           ]
         : []
