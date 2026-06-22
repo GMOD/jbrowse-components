@@ -3,8 +3,11 @@ import path from 'path'
 import readline from 'readline'
 import { parseArgs } from 'util'
 
+import { isVerdictStale } from '@jbrowse/browser-test-utils'
+
 import {
   collectScreenshots,
+  imageHash,
   imgDir,
   loadReport,
   reportPath,
@@ -122,11 +125,18 @@ async function main() {
   }
 
   const report = loadReport()
-  const toReview = selected.filter(s => reviewAll || !report[s.name])
+  // re-review the unreviewed, plus any whose image changed since its verdict
+  // (the recorded hash no longer matches) — an unchanged verdict is skipped
+  const toReview = selected.filter(
+    s =>
+      reviewAll ||
+      !report[s.name] ||
+      isVerdictStale(report[s.name], imageHash(s.name)),
+  )
 
   console.log(
     `${selected.length} screenshot(s) selected, ${toReview.length} to review` +
-      `${reviewAll ? ' (re-reviewing all)' : ' (already-reviewed skipped; use --all to redo)'}\n`,
+      `${reviewAll ? ' (re-reviewing all)' : ' (unchanged verdicts skipped; use --all to redo)'}\n`,
   )
 
   const rl = createPrompter()
@@ -202,6 +212,7 @@ async function main() {
       status,
       note,
       reviewedAt: new Date().toISOString(),
+      hash: imageHash(name),
     }
     saveReport(report)
     reviewed++

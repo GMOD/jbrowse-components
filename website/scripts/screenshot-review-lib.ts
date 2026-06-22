@@ -3,6 +3,16 @@ import fs from 'fs'
 import path from 'path'
 import { fileURLToPath } from 'url'
 
+import {
+  hashFile,
+  loadReport as loadReportFile,
+  saveReport as saveReportFile,
+} from '@jbrowse/browser-test-utils'
+
+import type { Verdict } from '@jbrowse/browser-test-utils'
+
+export type { Verdict } from '@jbrowse/browser-test-utils'
+
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
 export const websiteRoot = path.resolve(__dirname, '..')
@@ -19,13 +29,6 @@ export interface DocUsage {
   line: number
   caption: string // Figure caption / markdown alt text
   context: string // surrounding descriptive text
-}
-
-export interface Verdict {
-  name: string
-  status: 'good' | 'bad'
-  note: string
-  reviewedAt: string
 }
 
 // One reviewable screenshot. `hasSpec` means generate-screenshots.ts can
@@ -165,6 +168,12 @@ function pngExists(name: string) {
   return fs.existsSync(path.join(imgDir, `${name}.png`))
 }
 
+// sha1 of a screenshot's committed PNG, used to keep a verdict valid only while
+// the reviewed image is unchanged (see isVerdictStale).
+export function imageHash(name: string): string | undefined {
+  return hashFile(path.join(imgDir, `${name}.png`))
+}
+
 const repoRoot = path.resolve(websiteRoot, '..')
 
 // Cache of which names exist on origin/main (populated once at startup).
@@ -296,15 +305,9 @@ export function collectScreenshots(
 }
 
 export function loadReport(): Record<string, Verdict> {
-  if (fs.existsSync(reportPath)) {
-    return JSON.parse(fs.readFileSync(reportPath, 'utf8')) as Record<
-      string,
-      Verdict
-    >
-  }
-  return {}
+  return loadReportFile(reportPath)
 }
 
 export function saveReport(report: Record<string, Verdict>) {
-  fs.writeFileSync(reportPath, `${JSON.stringify(report, null, 2)}\n`)
+  saveReportFile(reportPath, report)
 }

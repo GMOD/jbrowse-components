@@ -17,7 +17,14 @@ export {
   findChromeExecutable,
   isBrowserConsoleNoise,
 } from './browser.ts'
+export {
+  hashFile,
+  isVerdictStale,
+  loadReport,
+  saveReport,
+} from './reviewVerdicts.ts'
 
 export type { TestServerOptions } from './server.ts'
 export type { SmokeOptions } from './examplesSmoke.ts'
 export type { BrokenLink, DocPage, DocSuggestion } from './docLinks.ts'
+export type { Verdict } from './reviewVerdicts.ts'

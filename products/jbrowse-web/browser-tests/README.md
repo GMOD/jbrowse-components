@@ -71,6 +71,39 @@ against the stored snapshot.
 Use `--update-snapshots` or `-u` to update snapshots when intentional visual
 changes are made.
 
+## Reviewing Snapshots
+
+After a run, review the committed snapshots in a browser UI (mirrors the
+website's `review-screenshots-web`):
+
+```bash
+pnpm review-snapshots-web      # http://localhost:3336
+```
+
+Two views:
+
+- **Basic pass** — every snapshot one card; approve/deny whether the rendering
+  is correct. Verdicts persist to `snapshot-review.json` (gitignored, local
+  coordination only). Filter by name, review status, or kind
+  (targeted/full-page/svg).
+
+  Approvals are **sticky**: each verdict stores a hash of the image it was made
+  against, so an approved snapshot only resurfaces (as "changed since review")
+  when its pixels actually change — and re-validates automatically if an image
+  is changed and then reverted to the approved bytes. The default "Needs review"
+  filter hides approved-and-unchanged snapshots so you never re-litigate them.
+- **Backends** — the same snapshot rendered by `canvas2d`, `webgl`, and
+  `webgpu` side by side, with the pairwise drift % and a visual diff per pair.
+  The "Drifting" filter surfaces snapshots whose backends disagree by ≥5% (the
+  same similar/different split `compare-backends.ts` uses).
+
+`compare-backends.ts` is the headless equivalent — it prints per-pair drift and
+writes diff PNGs to `__snapshots__/backend-diffs/`:
+
+```bash
+pnpm test:browser:compare
+```
+
 ## Adding Tests
 
 Each file in `suites/` exports a `TestSuite` (or an array of them); the runner

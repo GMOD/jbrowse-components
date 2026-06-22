@@ -2,8 +2,11 @@ import fs from 'fs'
 import http from 'http'
 import path from 'path'
 
+import { isVerdictStale } from '@jbrowse/browser-test-utils'
+
 import {
   collectScreenshots,
+  imageHash,
   imgDir,
   loadReport,
   readMainPng,
@@ -22,10 +25,12 @@ const port = Number.isFinite(portVal) ? portVal : 3335
 
 function buildSpecPayload() {
   const report = loadReport()
-  return collectScreenshots(specs).map(shot => ({
-    ...shot,
-    verdict: report[shot.name],
-  }))
+  return collectScreenshots(specs).map(shot => {
+    const verdict = report[shot.name]
+    // an approval/denial only resurfaces once the reviewed image changes
+    const stale = isVerdictStale(verdict, imageHash(shot.name))
+    return { ...shot, verdict, stale }
+  })
 }
 
 function readBody(req: http.IncomingMessage): Promise<string> {
@@ -123,7 +128,11 @@ async function handleVerdict(
   const parsed = parseVerdictBody(await readBody(req))
   if (parsed) {
     const report = loadReport()
-    const verdict: Verdict = { ...parsed, reviewedAt: new Date().toISOString() }
+    const verdict: Verdict = {
+      ...parsed,
+      reviewedAt: new Date().toISOString(),
+      hash: imageHash(parsed.name),
+    }
     report[parsed.name] = verdict
     saveReport(report)
     sendJson(res, 200, verdict)
@@ -223,12 +232,14 @@ const PAGE = /* html */ `<!doctype html>
   .pill.manual { background: #f3e8ff; color: #6b21a8; }
   .pill.new { background: #cffafe; color: #155e63; }
   .pill.changed { background: #fde68a; color: #854d0e; }
+  .pill.stale { background: #fde68a; color: #854d0e; }
   main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; margin: 0 auto; }
   .card {
     background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;
   }
   .card.good { border-left: 5px solid #22c55e; }
   .card.bad { border-left: 5px solid #ef4444; }
+  .card.stale { border-left: 5px solid #f59e0b; }
   .card-images {
     display: flex; gap: 0;
   }
@@ -269,8 +280,9 @@ const PAGE = /* html */ `<!doctype html>
   </div>
   <input id="search" type="search" placeholder="filter by name…" />
   <div class="tabs">
+    <button class="tab" data-status="needs">Needs review<span class="tabcount" data-count="needs"></span></button>
     <button class="tab" data-status="all">All</button>
-    <button class="tab" data-status="unreviewed">Unreviewed</button>
+    <button class="tab" data-status="good">Approved</button>
     <button class="tab" data-status="bad">Denied</button>
   </div>
   <div class="tabs" title="compare against origin/main">
@@ -284,7 +296,7 @@ const PAGE = /* html */ `<!doctype html>
 <main id="main"></main>
 <script>
 let data = []
-const filters = { page: 'automated', status: 'all', diff: 'all' }
+const filters = { page: 'automated', status: 'needs', diff: 'all' }
 // Names acted on since the current filter view was entered. They stay visible
 // even once their new verdict no longer matches the filter, so you can still
 // type a reason after clicking Deny in the unreviewed/denied queue.
@@ -300,6 +312,9 @@ const pill = (cls, text) => '<span class="pill ' + cls + '">' + text + '</span>'
 // working-tree pixels differ (an update). \`s.changed\` is computed server-side.
 const isNew = s => s.exists && !s.existsOnMain
 const isChanged = s => s.changed
+// needs review when unreviewed, or its verdict went stale because the reviewed
+// image changed since (server-computed stale flag)
+const needsReview = s => !s.verdict || s.stale
 
 function changeFilter(key, value) {
   filters[key] = value
@@ -342,19 +357,21 @@ function imgCol(label, inner) {
 function card(spec) {
   const v = spec.verdict
   const status = v ? v.status : 'none'
+  const cls = spec.stale ? 'stale' : status
   const currentImg = spec.exists
     ? '<img src="/img/' + spec.name + '.png" onclick="window.open(this.src)" />'
     : '<div class="missing">⚠ image file missing — regenerate it</div>'
   const mainImg = spec.existsOnMain
     ? '<img src="/img-main/' + spec.name + '.png" onclick="window.open(this.src)" />'
     : '<div class="missing" style="color:#aaa">not on origin/main</div>'
-  return '<div class="card ' + status + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
+  return '<div class="card ' + cls + '" data-name="' + esc(spec.name) + '" data-status="' + status + '">' +
     '<div class="card-images">' +
       imgCol('current branch', currentImg) +
       imgCol('origin/main', mainImg) +
     '</div>' +
     '<div class="meta">' +
       '<h2>' + esc(spec.name) + ' ' + kindPill(spec) +
+        (spec.stale ? ' ' + pill('stale', 'image changed since ' + status) : '') +
         (isNew(spec) ? ' ' + pill('new', 'new') : '') +
         (isChanged(spec) ? ' ' + pill('changed', 'changed') : '') + '</h2>' +
       renderUsages(spec.usages) +
@@ -386,7 +403,9 @@ async function setVerdict(btn, status) {
   await postVerdict(name, status, note)
   const spec = data.find(s => s.name === name)
   if (spec) {
+    // verdict was just recorded against the current image, so it's no longer stale
     spec.verdict = { name, status, note, reviewedAt: new Date().toISOString() }
+    spec.stale = false
   }
   justActed.add(name)
   updateCard(name)
@@ -414,6 +433,7 @@ async function clearVerdict(btn) {
   const spec = data.find(s => s.name === name)
   if (spec) {
     spec.verdict = undefined
+    spec.stale = false
   }
   updateCard(name)
 }
@@ -435,9 +455,11 @@ function renderCounts() {
   $('[data-count="page-manual"]').textContent = data.filter(s => !s.autogenerated).length
   $('[data-count="diff-new"]').textContent = inPage.filter(isNew).length
   $('[data-count="diff-changed"]').textContent = inPage.filter(isChanged).length
+  $('[data-count="needs"]').textContent = data.filter(needsReview).length
 
-  const good = inPage.filter(s => s.verdict?.status === 'good').length
-  const bad = inPage.filter(s => s.verdict?.status === 'bad').length
+  const good = inPage.filter(s => s.verdict?.status === 'good' && !s.stale).length
+  const bad = inPage.filter(s => s.verdict?.status === 'bad' && !s.stale).length
+  const stale = inPage.filter(s => s.stale).length
   const kindCounts = filters.page === 'automated'
     ? pill('auto', inPage.length + ' autogenerated')
     : pill('curated', inPage.filter(s => s.hasSpec && !s.autogenerated).length + ' curated') +
@@ -445,7 +467,8 @@ function renderCounts() {
   $('#counts').innerHTML =
     pill('good', good + ' approved') +
     pill('bad', bad + ' denied') +
-    pill('none', (inPage.length - good - bad) + ' unreviewed') +
+    (stale ? pill('stale', stale + ' changed since review') : '') +
+    pill('none', inPage.filter(s => !s.verdict).length + ' unreviewed') +
     kindCounts
 }
 
@@ -453,8 +476,9 @@ function matchesFilters(s, q) {
   const matchesQuery = !q || s.name.toLowerCase().includes(q)
   const matchesStatus =
     filters.status === 'all' ||
-    (filters.status === 'unreviewed' && !s.verdict) ||
-    (filters.status === 'bad' && s.verdict?.status === 'bad')
+    (filters.status === 'needs' && needsReview(s)) ||
+    (filters.status === 'good' && s.verdict?.status === 'good' && !s.stale) ||
+    (filters.status === 'bad' && s.verdict?.status === 'bad' && !s.stale)
   const matchesDiff =
     filters.diff === 'all' ||
     (filters.diff === 'new' && isNew(s)) ||
