@@ -783,6 +783,32 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
     },
     {
       "adapter": {
+        "type": "BamAdapter",
+        "uri": "volvox-sorted.bam",
+      },
+      "assemblyNames": [
+        "volvox",
+        "volvox2",
+      ],
+      "category": [
+        "Integration test",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_alignments_grouped_by_strand_display",
+          "groupBy": {
+            "type": "strand",
+          },
+          "height": 600,
+          "type": "LinearAlignmentsDisplay",
+        },
+      ],
+      "name": "volvox-sorted.bam (pre-grouped by strand)",
+      "trackId": "volvox_alignments_grouped_by_strand",
+      "type": "AlignmentsTrack",
+    },
+    {
+      "adapter": {
         "bamLocation": {
           "locationType": "UriLocation",
           "uri": "volvox-sorted-altname.bam",
