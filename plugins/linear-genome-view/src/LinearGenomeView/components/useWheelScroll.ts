@@ -77,13 +77,6 @@ export function useWheelScroll(
     // the handler only accumulates deltas — all heavy work (model.zoomTo,
     // model.horizontalScroll) is deferred to a single requestAnimationFrame
     function onWheel(event: WheelEvent) {
-      // An inner vertical scroller (e.g. a tall/grouped alignments pileup)
-      // consumes the wheel by calling preventDefault; don't also zoom/pan the
-      // view for the same event. Once that scroller reaches its edge it stops
-      // preventing default, so the gesture chains here and zooms as before.
-      if (event.defaultPrevented) {
-        return
-      }
       if (event.shiftKey && model.scrollZoom) {
         return
       }
