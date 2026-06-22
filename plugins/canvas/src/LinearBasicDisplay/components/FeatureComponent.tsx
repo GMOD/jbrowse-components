@@ -186,8 +186,74 @@ const ContextMenu = observer(function ContextMenu({
   )
 })
 
+// Labels, highlights, and the peptide canvas derive purely from model/view
+// observables — never from the cursor position. Isolating them in this memoized
+// observer keeps FeatureBody's per-mousemove clientXY state (which only feeds
+// the tooltip) from rebuilding every label and overlay div on each mouse move.
+const Overlays = observer(function Overlays({
+  model,
+  view,
+  openContextMenu,
+  onLabelMouseOver,
+}: {
+  model: LinearBasicDisplayModel
+  view: LGV
+  openContextMenu: (
+    feature: FlatbushItem,
+    displayedRegionIndex: number,
+    clientX: number,
+    clientY: number,
+  ) => void
+  onLabelMouseOver: (item: FlatbushItem, e: React.MouseEvent) => void
+}) {
+  // Overlays follow the animated rows (renderDataMap) so they move with the
+  // glyphs during a layout transition; FeatureBody's hit-testing reads the
+  // destination layout (laidOutDataMap) so hover targets the final positions.
+  const laidOutDataMap = model.renderDataMap
+  const width = view.initialized ? view.trackWidthPx : undefined
+  const bpPerPx = view.bpPerPx
+  const visibleRegions = view.visibleRegions
+
+  const floatingLabelElements = useFloatingLabels(
+    laidOutDataMap,
+    model.featureItemMap,
+    visibleRegions,
+    view.initialized,
+    width,
+    bpPerPx,
+    model,
+    openContextMenu,
+    onLabelMouseOver,
+  )
+
+  const highlightOverlays = useHighlightOverlays(
+    model.featureItemMap,
+    visibleRegions,
+    view.initialized,
+    width,
+    bpPerPx,
+    model,
+  )
+
+  return (
+    <>
+      <OverlayLayer>{highlightOverlays}</OverlayLayer>
+      <OverlayLayer>{floatingLabelElements}</OverlayLayer>
+      <PeptideCanvas
+        laidOutDataMap={laidOutDataMap}
+        visibleRegions={visibleRegions}
+        viewInitialized={view.initialized}
+        width={width}
+        height={model.hasOverflow ? model.maxY : model.height}
+        bpPerPx={bpPerPx}
+      />
+    </>
+  )
+})
+
 // Thin outer owns the DisplayChrome; FeatureBody owns the scroll container,
-// hit-testing, overlay hooks, and the canvas itself.
+// hit-testing, and the canvas itself; Overlays (memoized) owns the label /
+// highlight / peptide layers.
 const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
   const { classes } = useStyles()
   return (
@@ -216,11 +282,6 @@ const FeatureBody = observer(function FeatureBody({
   const { classes } = useStyles()
 
   const view = getContainingView(model) as LGV
-
-  // Overlays (labels, peptides) follow the animated rows so they move with the
-  // glyphs during a layout transition. Hit-testing below still reads
-  // model.laidOutDataMap (the destination), so hover targets the final layout.
-  const laidOutDataMap = model.renderDataMap
 
   const width = view.initialized ? view.trackWidthPx : undefined
   const height = model.height
@@ -365,36 +426,12 @@ const FeatureBody = observer(function FeatureBody({
     }
   }
 
-  const bpPerPx = view.bpPerPx
-  const visibleRegions = view.visibleRegions
-
   const onLabelMouseOver = useCallback(
     (item: FlatbushItem, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
       model.setHover(item.featureId, null, item.tooltip)
     },
     [model],
-  )
-
-  const floatingLabelElements = useFloatingLabels(
-    laidOutDataMap,
-    model.featureItemMap,
-    visibleRegions,
-    view.initialized,
-    width,
-    bpPerPx,
-    model,
-    openContextMenu,
-    onLabelMouseOver,
-  )
-
-  const highlightOverlays = useHighlightOverlays(
-    model.featureItemMap,
-    visibleRegions,
-    view.initialized,
-    width,
-    bpPerPx,
-    model,
   )
 
   return (
@@ -426,15 +463,11 @@ const FeatureBody = observer(function FeatureBody({
             }}
           />
 
-          <OverlayLayer>{highlightOverlays}</OverlayLayer>
-          <OverlayLayer>{floatingLabelElements}</OverlayLayer>
-          <PeptideCanvas
-            laidOutDataMap={laidOutDataMap}
-            visibleRegions={visibleRegions}
-            viewInitialized={view.initialized}
-            width={width}
-            height={model.hasOverflow ? model.maxY : height}
-            bpPerPx={bpPerPx}
+          <Overlays
+            model={model}
+            view={view}
+            openContextMenu={openContextMenu}
+            onLabelMouseOver={onLabelMouseOver}
           />
         </div>
       </div>

@@ -44,6 +44,7 @@ declare module '@mui/material/styles' {
     gridlineMinor: string
     gridlineMajor: string
     featureHover: string
+    featureSelected: string
     featureDescription: string
     bases: {
       A: PaletteColor
@@ -81,6 +82,7 @@ declare module '@mui/material/styles' {
     gridlineMinor?: string
     gridlineMajor?: string
     featureHover?: string
+    featureSelected?: string
     featureDescription?: string
     bases?: {
       A?: PaletteColorOptions
@@ -172,6 +174,11 @@ const gridlineMajorDark = 'rgba(255,255,255,0.15)'
 const featureHover = 'rgba(0,0,0,0.15)'
 const featureHoverDark = 'rgba(255,255,255,0.25)'
 
+// Border accent around the click-selected feature. The saturated blue reads on
+// a light track; on a dark track it's lightened to keep the outline distinct.
+const featureSelected = 'rgba(0,100,255,0.8)'
+const featureSelectedDark = 'rgba(120,180,255,0.9)'
+
 // Blue accent for feature description labels (e.g. gene descriptions). The
 // plain CSS 'blue' reads as near-black against a dark track background, so
 // dark mode uses a lighter blue instead.
@@ -260,6 +267,7 @@ const stringColorDefaults = {
   gridlineMinor,
   gridlineMajor,
   featureHover,
+  featureSelected,
   featureDescription,
 }
 
@@ -285,6 +293,7 @@ const darkStringColorDefaults = {
   gridlineMinor: gridlineMinorDark,
   gridlineMajor: gridlineMajorDark,
   featureHover: featureHoverDark,
+  featureSelected: featureSelectedDark,
   featureDescription: featureDescriptionDark,
   // the deletion rect replaces the read on the dark track background, where the
   // mid-grey #808080 reads as a muddy block; lighten it so the gap stands out

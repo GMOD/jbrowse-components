@@ -39,6 +39,17 @@ interface HighlightModel {
   hoveredSubfeature: SubfeatureInfo | null
 }
 
+// Shared gate for both overlay builders: nothing to position until the view is
+// sized and at least one region is on screen.
+function overlaysReady(
+  viewInitialized: boolean,
+  width: number | undefined,
+  bpPerPx: number,
+  visibleRegions: VisibleRegion[],
+) {
+  return viewInitialized && !!width && !!bpPerPx && visibleRegions.length > 0
+}
+
 const useStyles = makeStyles()(theme => ({
   // Labels re-derive their color from the theme here (rather than reusing the
   // worker's label.color, which the SVG export consumes) so a theme switch
@@ -93,7 +104,7 @@ export function useFloatingLabels(
   } = model
   const decimateLabels = decimatesLabels(displayMode)
 
-  if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
+  if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
   }
 
@@ -192,7 +203,7 @@ export function useHighlightOverlays(
   // theme-aware (lightens on dark tracks, darkens on light) — see theme.ts
   const hoverColor = theme.palette.featureHover
 
-  if (!viewInitialized || !width || !bpPerPx || visibleRegions.length === 0) {
+  if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
   }
 
@@ -283,15 +294,18 @@ export function useHighlightOverlays(
   if (hoverItem) {
     const entry = featureItemMap.get(hoverItem.featureId)
     if (entry) {
-      const extraWidth =
-        hoveredFeature && !hoveredSubfeature ? computeExtraWidth(entry) : 0
+      // A feature's hit box is padded by HIT_PAD_PX and reserves label width
+      // (buildFeatureFlatbushIndex); a subfeature's is neither
+      // (buildSubfeatureFlatbushIndex), so its shading must mirror that exact,
+      // unpadded box rather than overhang it.
+      const subfeatureHover = !!hoveredSubfeature
       addOverlay(
         hoverItem,
         entry.vr.refName,
         { backgroundColor: hoverColor },
         'hover',
-        extraWidth,
-        HIT_PAD_PX,
+        subfeatureHover ? 0 : computeExtraWidth(entry),
+        subfeatureHover ? 0 : HIT_PAD_PX,
         0,
       )
     }
@@ -304,7 +318,7 @@ export function useHighlightOverlays(
         entry.item,
         entry.vr.refName,
         {
-          border: '2px solid rgba(0, 100, 255, 0.8)',
+          border: `2px solid ${theme.palette.featureSelected}`,
           borderRadius: 3,
         },
         'selected',
