@@ -128,12 +128,19 @@ export function forEachRenderedLabel(
   visibility: LabelVisibility,
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
   decimateLabels = false,
+  skip?: Set<string>,
 ) {
   const { showLabels, showDescriptions } = visibility
   let toScreen: ((bp: number) => number) | undefined
   const collected: { featureId: string; labels: ResolvedLabel[] }[] = []
 
   for (const featureId in data.floatingLabelsData) {
+    // Features already emitted by an earlier region (collapsed introns) are
+    // dropped before decimation accounting, so they don't consume a slot in a
+    // later region and crowd out a neighbor that should show.
+    if (skip?.has(featureId)) {
+      continue
+    }
     const labelData = data.floatingLabelsData[featureId]!
     if (labelData.maxX < vr.start || labelData.minX > vr.end) {
       continue
@@ -174,5 +181,44 @@ export function forEachRenderedLabel(
     for (const { featureId, labels } of collected) {
       emit(featureId, labels)
     }
+  }
+}
+
+export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
+
+// Walks every visible region and emits each feature's resolved labels exactly
+// once, even when a feature spans back-to-back regions (collapsed introns) and
+// thus appears in several regions' laidOutData. Owning the cross-region dedup
+// here (rather than in each caller) keeps the DOM overlay (useFloatingLabels)
+// and the SVG export (renderSvg) from drifting — the divergence that let the
+// export double-paint a spanning feature's label.
+export function forEachDisplayLabel(
+  regions: RegionWithData[],
+  laidOutDataMap: Map<number, FeatureDataResult>,
+  visibility: LabelVisibility,
+  emit: (
+    featureId: string,
+    labels: ResolvedLabel[],
+    region: RegionWithData,
+  ) => void,
+  decimateLabels = false,
+) {
+  const rendered = new Set<string>()
+  for (const region of regions) {
+    const data = laidOutDataMap.get(region.displayedRegionIndex)
+    if (!data?.floatingLabelsData) {
+      continue
+    }
+    forEachRenderedLabel(
+      data,
+      region,
+      visibility,
+      (featureId, labels) => {
+        rendered.add(featureId)
+        emit(featureId, labels, region)
+      },
+      decimateLabels,
+      rendered,
+    )
   }
 }

@@ -1,6 +1,10 @@
-import { forEachRenderedLabel } from './labelPositioning.ts'
+import { forEachDisplayLabel, forEachRenderedLabel } from './labelPositioning.ts'
 
-import type { LabelVisibility, ResolvedLabel } from './labelPositioning.ts'
+import type {
+  LabelVisibility,
+  RegionWithData,
+  ResolvedLabel,
+} from './labelPositioning.ts'
 import type {
   FeatureDataResult,
   FeatureLabelData,
@@ -166,5 +170,48 @@ describe('forEachRenderedLabel', () => {
       { showLabels: true, showDescriptions: true },
     )
     expect(emitted!.labels[0]!.labelX).toBeGreaterThanOrEqual(50)
+  })
+})
+
+describe('forEachDisplayLabel', () => {
+  function regionWithData(displayedRegionIndex: number): RegionWithData {
+    return { ...FULL_REGION, displayedRegionIndex }
+  }
+
+  test('emits a feature label once when it spans back-to-back regions', () => {
+    // A collapsed-intron feature is laid out into both regions' data; its
+    // label must be emitted a single time (the SVG-export duplication bug).
+    const spanning = { f1: makeLabelData('f1', { nameLabel: makeLabel() }) }
+    const laidOutDataMap = new Map([
+      [0, makeData(spanning)],
+      [1, makeData(spanning)],
+    ])
+    const emitted: string[] = []
+    forEachDisplayLabel(
+      [regionWithData(0), regionWithData(1)],
+      laidOutDataMap,
+      { showLabels: true, showDescriptions: true },
+      featureId => {
+        emitted.push(featureId)
+      },
+    )
+    expect(emitted).toEqual(['f1'])
+  })
+
+  test('still emits distinct features from different regions', () => {
+    const laidOutDataMap = new Map([
+      [0, makeData({ f1: makeLabelData('f1', { nameLabel: makeLabel() }) })],
+      [1, makeData({ f2: makeLabelData('f2', { nameLabel: makeLabel() }) })],
+    ])
+    const emitted: string[] = []
+    forEachDisplayLabel(
+      [regionWithData(0), regionWithData(1)],
+      laidOutDataMap,
+      { showLabels: true, showDescriptions: true },
+      featureId => {
+        emitted.push(featureId)
+      },
+    )
+    expect(emitted.sort()).toEqual(['f1', 'f2'])
   })
 })

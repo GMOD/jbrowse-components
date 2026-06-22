@@ -8,7 +8,7 @@ import {
 import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
-import { forEachRenderedLabel } from './components/labelPositioning.ts'
+import { forEachDisplayLabel } from './components/labelPositioning.ts'
 import { drawPeptides } from './components/peptidePositioning.ts'
 import {
   LABEL_FONT_SIZE,
@@ -17,6 +17,7 @@ import {
 import { decimatesLabels } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
+import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { SvgExportable } from '@jbrowse/core/util/svgReady'
@@ -24,10 +25,8 @@ import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
-import type { BpRegionBounds } from '@jbrowse/render-core/renderBlock'
 
 type LGV = LinearGenomeViewModel
-type SvgRegionBounds = BpRegionBounds
 
 export interface RenderSvgModel extends SvgExportable {
   id: string
@@ -43,35 +42,15 @@ export interface RenderSvgModel extends SvgExportable {
 // on-screen, so the on-screen renderer doesn't draw them. SVG export must
 // bake them into the output, so they live here as a vector-only post-pass
 // that runs after drawFeatureBlocks paints the geometry.
-function renderLabels(
-  ctx: Ctx2D,
-  data: FeatureDataResult,
-  vr: SvgRegionBounds,
-  visibility: { showLabels: boolean; showDescriptions: boolean },
-  decimateLabels: boolean,
-) {
-  ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
-  forEachRenderedLabel(
-    data,
-    vr,
-    visibility,
-    (_, labels) => {
-      for (const { label, labelX, labelY } of labels) {
-        if (label.isOverlay) {
-          ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
-          ctx.fillRect(
-            labelX - 1,
-            labelY,
-            label.textWidth + 2,
-            LABEL_FONT_SIZE + 1,
-          )
-        }
-        ctx.fillStyle = label.color
-        ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
-      }
-    },
-    decimateLabels,
-  )
+function paintLabel(ctx: Ctx2D, labels: ResolvedLabel[]) {
+  for (const { label, labelX, labelY } of labels) {
+    if (label.isOverlay) {
+      ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
+      ctx.fillRect(labelX - 1, labelY, label.textWidth + 2, LABEL_FONT_SIZE + 1)
+    }
+    ctx.fillStyle = label.color
+    ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
+  }
 }
 
 export async function renderSvg(
@@ -118,14 +97,27 @@ export async function renderSvg(
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
   const textNode = paintLayer(totalWidth, height, undefined, ctx => {
-    for (const vr of visibleRegions) {
-      const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
-      if (!data) {
-        continue
-      }
-      renderLabels(ctx, data, vr, visibility, decimateLabels)
-      if (renderPeptidesFlag) {
-        drawPeptides(ctx, data, vr)
+    ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
+    forEachDisplayLabel(
+      visibleRegions,
+      model.laidOutDataMap,
+      visibility,
+      (_, labels) => {
+        paintLabel(ctx, labels)
+      },
+      decimateLabels,
+    )
+    // Peptides need no cross-region dedup (unlike labels above): a codon
+    // straddling a region boundary is drawn by both regions, but makeBpMapper
+    // is continuous across back-to-back regions so both land at the same
+    // absolute px — an identical overstrike, not a visible double. Labels
+    // differ only because computeLabelPosition clamps X per region.
+    if (renderPeptidesFlag) {
+      for (const vr of visibleRegions) {
+        const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
+        if (data) {
+          drawPeptides(ctx, data, vr)
+        }
       }
     }
   })

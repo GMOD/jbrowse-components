@@ -4,7 +4,7 @@ import { useTheme } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
-import { forEachRenderedLabel } from './labelPositioning.ts'
+import { forEachDisplayLabel } from './labelPositioning.ts'
 import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
@@ -98,88 +98,75 @@ export function useFloatingLabels(
   }
 
   const elements: React.ReactElement[] = []
-  const renderedLabels = new Set<string>()
   const visibility = {
     showLabels,
     showDescriptions: effectiveShowDescriptions,
   }
 
-  for (const vr of visibleRegions) {
-    const data = laidOutDataMap.get(vr.displayedRegionIndex)
-    if (!data?.floatingLabelsData) {
-      continue
-    }
-
-    const displayedRegionIndex = vr.displayedRegionIndex
-    forEachRenderedLabel(
-      data,
-      vr,
-      visibility,
-      (featureId, labels) => {
-        if (renderedLabels.has(featureId)) {
-          return
-        }
-        renderedLabels.add(featureId)
-
-        const entry = featureItemMap.get(featureId)
-        const item = entry?.kind === 'feature' ? entry.item : undefined
-        // Allocate handler closures once per feature (not per-label); skip
-        // entirely when there's no clickable item.
-        const handleLabelClick = item
-          ? () => {
-              selectFeatureById(item, undefined, displayedRegionIndex)
-            }
-          : undefined
-        const handleLabelContextMenu = item
+  forEachDisplayLabel(
+    visibleRegions,
+    laidOutDataMap,
+    visibility,
+    (featureId, labels, vr) => {
+      const displayedRegionIndex = vr.displayedRegionIndex
+      const entry = featureItemMap.get(featureId)
+      const item = entry?.kind === 'feature' ? entry.item : undefined
+      // Allocate handler closures once per feature (not per-label); skip
+      // entirely when there's no clickable item.
+      const handleLabelClick = item
+        ? () => {
+            selectFeatureById(item, undefined, displayedRegionIndex)
+          }
+        : undefined
+      const handleLabelContextMenu = item
+        ? (e: React.MouseEvent) => {
+            e.preventDefault()
+            openContextMenu(item, displayedRegionIndex, e.clientX, e.clientY)
+          }
+        : undefined
+      const handleLabelMouseMove =
+        item && onLabelMouseOver
           ? (e: React.MouseEvent) => {
-              e.preventDefault()
-              openContextMenu(item, displayedRegionIndex, e.clientX, e.clientY)
+              onLabelMouseOver(item, e)
             }
           : undefined
-        const handleLabelMouseMove =
-          item && onLabelMouseOver
-            ? (e: React.MouseEvent) => {
-                onLabelMouseOver(item, e)
-              }
-            : undefined
 
-        for (const { label, labelX, labelY, kind } of labels) {
-          // A label is clickable iff it resolves to a top-level feature we can
-          // open. Description labels are included: for variants with no ID the
-          // description ("C -> T") is the only visible label, and a user
-          // clicking it expects the feature details. Keying off the handler
-          // (not the kind) also avoids rendering an inert pointer-cursor label
-          // whose onClick is undefined.
-          const clickable = !!handleLabelClick
-          elements.push(
-            <div
-              key={`${displayedRegionIndex}-${featureId}-${kind}`}
-              data-testid={
-                clickable ? `feature-${kind}-${label.text}` : undefined
-              }
-              className={cx(
-                classes.floatingLabel,
-                clickable
-                  ? classes.floatingLabelClickable
-                  : classes.floatingLabelStatic,
-                label.isOverlay && classes.floatingLabelOverlay,
-                kind === 'desc' && classes.floatingLabelDescription,
-              )}
-              onClick={clickable ? handleLabelClick : undefined}
-              onContextMenu={clickable ? handleLabelContextMenu : undefined}
-              onMouseMove={clickable ? handleLabelMouseMove : undefined}
-              style={{
-                transform: `translate(${labelX}px, ${labelY}px)`,
-              }}
-            >
-              {label.text}
-            </div>,
-          )
-        }
-      },
-      decimateLabels,
-    )
-  }
+      for (const { label, labelX, labelY, kind } of labels) {
+        // A label is clickable iff it resolves to a top-level feature we can
+        // open. Description labels are included: for variants with no ID the
+        // description ("C -> T") is the only visible label, and a user
+        // clicking it expects the feature details. Keying off the handler
+        // (not the kind) also avoids rendering an inert pointer-cursor label
+        // whose onClick is undefined.
+        const clickable = !!handleLabelClick
+        elements.push(
+          <div
+            key={`${displayedRegionIndex}-${featureId}-${kind}`}
+            data-testid={
+              clickable ? `feature-${kind}-${label.text}` : undefined
+            }
+            className={cx(
+              classes.floatingLabel,
+              clickable
+                ? classes.floatingLabelClickable
+                : classes.floatingLabelStatic,
+              label.isOverlay && classes.floatingLabelOverlay,
+              kind === 'desc' && classes.floatingLabelDescription,
+            )}
+            onClick={clickable ? handleLabelClick : undefined}
+            onContextMenu={clickable ? handleLabelContextMenu : undefined}
+            onMouseMove={clickable ? handleLabelMouseMove : undefined}
+            style={{
+              transform: `translate(${labelX}px, ${labelY}px)`,
+            }}
+          >
+            {label.text}
+          </div>,
+        )
+      }
+    },
+    decimateLabels,
+  )
 
   return elements.length > 0 ? elements : null
 }
