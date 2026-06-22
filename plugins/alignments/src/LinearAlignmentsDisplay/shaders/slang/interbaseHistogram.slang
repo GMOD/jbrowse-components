@@ -1,4 +1,4 @@
-// Interbase histogram: slim 1-bp-wide bars indicating insertion /
+// Interbase histogram: slim 1px-wide bars indicating insertion /
 // softclip / hardclip density across the coverage strip.
 //! targets: wgsl, glsl
 //! layout-out: packages/alignments-core/src/interbaseHistogramLayout.generated.ts
@@ -8,6 +8,8 @@ import hpmath;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
+// SYNC(@jbrowse/alignments-core labelConstants.ts) — must match indicator.slang
+static const float TRIANGLE_H = 4.5;
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
 struct Instance {
@@ -25,8 +27,9 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float cx = bpToClipX(inst.position, u);
   float barW = 2.0 / u.canvasW;
 
-  // Sits just above the bottom coverage-area edge, below the indicator row.
-  float indOff = 9.0 / u.canvasH;
+  // Hang from the coverage-area top, starting just below the indicator
+  // triangle row (same clip offset as indicator.slang's triangle height).
+  float indOff = TRIANGLE_H * 2.0 / u.canvasH;
   float sTop = covAreaTop(u) - indOff - (inst.yOffset * u.interbaseHeight / u.canvasH) * 2.0;
   float sBot = sTop - (inst.segHeight * u.interbaseHeight / u.canvasH) * 2.0;
 
