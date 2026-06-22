@@ -5,6 +5,7 @@ import {
   layoutMatureProteinRegion,
 } from './matureProteinRegion.ts'
 import { layoutProcessedTranscript } from './processed.ts'
+import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
 import { isCDS } from '../util.ts'
@@ -21,8 +22,10 @@ import type { Feature } from '@jbrowse/core/util'
 //   Leaf (Box)         — single rect, strand arrows if top-level
 //   Container          — parent rect + sorted children with intron lines
 //     ProcessedTranscript — filtered subParts with implied UTRs
-//     Segments            — raw subfeatures (also used for repeat_region)
+//     Segments            — raw subfeatures on one row
 //   MatureProteinRegion — multi-row stacked protein regions
+//   RepeatRegion        — transposon LTR/TSD/internal parts on one row, no
+//                         parent box, internal body shortened under the LTRs
 //   Subfeatures         — gene-level: stacks child transcripts vertically
 export function findGlyph(
   feature: Feature,
@@ -41,6 +44,16 @@ export function findGlyph(
   }
   if (hasSubfeatures) {
     const { transcriptTypes, containerTypes } = config
+
+    // Intact transposons (repeat_region → overlapping LTR/TSD/internal parts)
+    // render their subparts on one row joined by a connecting line, with no box
+    // for the parent, so the structure stays visible instead of collapsing to a
+    // flat Segments box. Checked before the shapes below since a repeat_region
+    // matches none of the transcript/container heuristics and would otherwise
+    // fall through to Segments.
+    if (isTopLevel && isRepeatRegion(feature)) {
+      return layoutRepeatRegion
+    }
 
     // Three container shapes, in precedence order:
     //   Subfeatures         — stack each child on its own row (gene → mRNAs)

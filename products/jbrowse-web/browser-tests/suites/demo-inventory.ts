@@ -70,6 +70,7 @@ const loadChecks: [string, string, string?][] = [
   ['Honeybee', 'test_data/honeybee/config.json'],
   ['Grape-peach synteny', 'test_data/config_synteny_grape_peach.json'],
   ['CFAM2 (dog genome)', 'test_data/cfam2/config.json'],
+  ['Maize EDTA transposable elements', 'test_data/maize_te/config.json', 'chr1'],
 ]
 
 const localDemos: TestSuite = {
@@ -151,6 +152,17 @@ const localDemos: TestSuite = {
       assembly: 'Wuhan-Hu-1',
       loc: 'NC_045512.2:1-29903',
       tracks: ['sequence'],
+    }),
+    // Guards the repeat_region glyph: the intact LTR retrotransposon must render
+    // its overlapping subparts (LTRs/TSDs/internal element) rather than collapse
+    // to a flat box. This glyph silently regressed once in the canvas refactor.
+    lgvSnapshotTest({
+      name: 'Maize EDTA transposon subparts screenshot',
+      snapshot: 'demo-maize-edta-te',
+      config: 'test_data/maize_te/config.json',
+      assembly: 'Zm-B73-NAM5',
+      loc: 'chr1:59,500-71,000',
+      tracks: ['maize_b73_edta_te'],
     }),
     {
       name: 'Dotplot demo screenshot',

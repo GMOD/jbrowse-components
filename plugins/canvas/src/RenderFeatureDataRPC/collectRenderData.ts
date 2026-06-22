@@ -538,6 +538,9 @@ function processFeatureRecord(
         collector,
       )
       break
+    case 'RepeatRegion':
+      processRepeatRegionLayout(layout, feature, flatbushIdx, ctx, collector)
+      break
     case 'Box':
       processDefaultLayout(layout, flatbushIdx, ctx, collector)
       break
@@ -702,6 +705,122 @@ function processMatureProteinLayout(
       collector,
     )
   }
+  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
+}
+
+// Per-subpart fills for intact transposons, keyed by SO type, ported verbatim
+// from the legacy CanvasFeatureRenderer repeatRegion glyph. Stable colors (not
+// a by-row palette) so the two LTRs share a color and the TSDs share another.
+const REPEAT_COLOR_MAP: Record<string, string> = {
+  CACTA_TIR_transposon: '#e6194b',
+  centromeric_repeat: '#3cb44b',
+  Copia_LTR_retrotransposon: '#118119',
+  Gypsy_LTR_retrotransposon: '#4363d8',
+  hAT_TIR_transposon: '#f58231',
+  helitron: '#911eb4',
+  knob: '#46f0f0',
+  L1_LINE_retrotransposon: '#f032e6',
+  LINE_element: '#bcf60c',
+  long_terminal_repeat: '#fb0',
+  low_complexity: '#008080',
+  LTR_retrotransposon: '#e6beff',
+  Mutator_TIR_transposon: '#9a6324',
+  PIF_Harbinger_TIR_transposon: '#fffac8',
+  rDNA_intergenic_spacer_element: '#800000',
+  repeat_region: '#aaffc3',
+  RTE_LINE_retrotransposon: '#808000',
+  subtelomere: '#ffd8b1',
+  target_site_duplication: '#000075',
+  Tc1_Mariner_TIR_transposon: '#808080',
+}
+
+// Fraction of full height for the internal retrotransposon body so the
+// full-height LTRs/TSDs drawn on top of it remain visible as flanking caps.
+const REPEAT_BODY_HEIGHT_FRACTION = 0.65
+
+// Intact transposon (repeat_region): subparts on a single row, joined by one
+// connecting line, with no box for the parent itself — like a transcript whose
+// exons happen to overlap. The internal *_retrotransposon body is drawn first
+// (underneath) and shortened so the full-height LTRs and TSDs that overlap it
+// stay visible on top. Each subpart keeps its own type color and is registered
+// as an individually hoverable subfeature. See GMOD/jbrowse-components#3080.
+function processRepeatRegionLayout(
+  layout: FeatureLayout,
+  feature: Feature,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const strokeUint = colorToUint32(strokeColor(feature, ctx))
+  collector.lines.push({
+    start: feature.get('start'),
+    end: feature.get('end'),
+    y: layout.height / 2,
+    color: strokeUint,
+    direction: 0,
+    flatbushIdx,
+  })
+
+  // retrotransposon body underneath; LTRs/TSDs painted over it
+  const sortedChildren = [...layout.children].sort((a, b) => {
+    const aBody = (a.feature.get('type') ?? '').endsWith('_retrotransposon')
+    const bBody = (b.feature.get('type') ?? '').endsWith('_retrotransposon')
+    return aBody === bBody ? 0 : aBody ? -1 : 1
+  })
+
+  for (const childLayout of sortedChildren) {
+    const childFeature = childLayout.feature
+    const childType = childFeature.get('type') ?? ''
+    const isBody = childType.endsWith('_retrotransposon')
+    const topPx = isBody
+      ? childLayout.y +
+        ((1 - REPEAT_BODY_HEIGHT_FRACTION) / 2) * childLayout.height
+      : childLayout.y
+    const heightPx = isBody
+      ? childLayout.height * REPEAT_BODY_HEIGHT_FRACTION
+      : childLayout.height
+    const color = REPEAT_COLOR_MAP[childType]
+
+    pushBoxRect(
+      childFeature,
+      topPx,
+      heightPx,
+      flatbushIdx,
+      ctx,
+      collector.rects,
+      color === undefined ? undefined : colorToUint32(color),
+    )
+
+    const displayLabel =
+      readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
+      getFeatureName(childFeature)
+    collector.subfeatureInfos.push({
+      kind: 'subfeature',
+      featureId: childFeature.id(),
+      parentFeatureId: feature.id(),
+      type: childType,
+      startBp: childFeature.get('start'),
+      endBp: childFeature.get('end'),
+      topPx,
+      bottomPx: topPx + heightPx,
+      displayLabel,
+    })
+
+    emitSubfeatureLabel(
+      {
+        featureId: childFeature.id(),
+        displayLabel,
+        featureHeight: heightPx,
+        minX: childFeature.get('start'),
+        maxX: childFeature.get('end'),
+        topY: topPx,
+        parentFeatureId: feature.id(),
+      },
+      ctx,
+      collector,
+    )
+  }
+
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }
 

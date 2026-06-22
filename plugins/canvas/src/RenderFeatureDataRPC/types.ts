@@ -43,3 +43,4 @@ export type GlyphType =
   | 'Segments'
   | 'Subfeatures'
   | 'MatureProteinRegion'
+  | 'RepeatRegion'
