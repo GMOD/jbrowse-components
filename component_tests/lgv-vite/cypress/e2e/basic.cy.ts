@@ -2,9 +2,6 @@ describe('JBrowse embedded view', () => {
   it('track loads', () => {
     cy.visit('/')
 
-    cy.findByTestId('Blockset-pileup', { timeout: 30000 }).findByTestId(
-      'prerendered_canvas_{volvox}ctgA:1..81-0_done',
-      { timeout: 30000 },
-    )
+    cy.findByTestId('pileup-display-done', { timeout: 30000 })
   })
 })
