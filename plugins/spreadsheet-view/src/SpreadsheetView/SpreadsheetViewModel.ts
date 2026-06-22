@@ -161,10 +161,17 @@ export default function stateModelFactory() {
            */
           async applyInit(init: SpreadsheetViewInit) {
             self.importWizard.setSelectedAssemblyName(init.assembly)
-            self.importWizard.setFileSource({
+            const fileLocation = {
               uri: init.uri,
-              locationType: 'UriLocation',
-            })
+              locationType: 'UriLocation' as const,
+            }
+            self.importWizard.setFileSource(fileLocation)
+            // persist the location synchronously (fileSource is volatile) so a
+            // snapshot taken before the async load finishes can still reload the
+            // file instead of dropping to the import form. init is cleared
+            // synchronously by the reaction, so the cache is the only
+            // reconstruction source.
+            self.importWizard.setCachedFileHandle(fileLocation)
             if (init.fileType) {
               self.importWizard.setFileType(init.fileType)
             }

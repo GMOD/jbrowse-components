@@ -2196,6 +2196,13 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
       return {
         ...rest,
+        // keep init until displayedRegions exist, so a snapshot taken before the
+        // launch autorun navigates (e.g. autosave firing mid-load) can still
+        // rebuild the view instead of dropping to the import form.
+        // displayedRegions is stripDefault, so it's absent (not []) when empty —
+        // the optional chain is runtime-necessary despite the non-nullish type.
+        // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+        ...(init && !snap.displayedRegions?.length ? { init } : {}),
         ...(showCenterLine ? { showCenterLine } : {}),
         ...(!showCytobandsSetting ? { showCytobandsSetting } : {}),
         ...(trackLabelsOverride ? { trackLabelsOverride } : {}),

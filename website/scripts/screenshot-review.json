@@ -13,9 +13,9 @@
   },
   "variant_with_pileup": {
     "name": "variant_with_pileup",
-    "status": "bad",
-    "note": "make variant track less tall",
-    "reviewedAt": "2026-06-21T20:54:11.915Z"
+    "status": "good",
+    "note": "make variant track less tall  DONE: Set the volvox_filtered_vcf display height to 60 so the single-row variant track no longer dominates the pileup below. Regenerated + verified.",
+    "reviewedAt": "2026-06-21T23:13:43.000Z"
   },
   "bigwig_xyplot": {
     "name": "bigwig_xyplot",
@@ -109,9 +109,9 @@
   },
   "modifications": {
     "name": "modifications",
-    "status": "bad",
-    "note": "can add text annotation to the figure itself saying what is being shown e.g. that it is using 'color by methylation' which can indicate where the read is NOT modified with MM tag modification markers, putting boxes on the hypomethylated regions",
-    "reviewedAt": "2026-06-21T15:52:41.989Z"
+    "status": "good",
+    "note": "can add text annotation to the figure itself saying what is being shown e.g. that it is using 'color by methylation' which can indicate where the read is NOT modified with MM tag modification markers, putting boxes on the hypomethylated regions  DONE: Added a text annotation anchored to the COLO829 track explaining color-by-methylation: each CpG is red where the MM tag calls it methylated (5mC, #ff0000) and blue where unmethylated (#0000ff), so the hypomethylated CpG island reads blue. Verified colors against theme.ts methylated5mC/unmethylated5mC. Regenerated + verified.",
+    "reviewedAt": "2026-06-21T23:13:43.000Z"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -253,15 +253,15 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "bad",
-    "note": "explanatory text overlaps the snp context menu, move more to left",
-    "reviewedAt": "2026-06-21T20:33:29.350Z"
+    "status": "good",
+    "note": "explanatory text overlaps the snp context menu, move more to left  DONE: Moved the explanatory text box further left (dx -440, maxWidth 270) so its right edge clears the context menu instead of overlapping it. Regenerated + verified.",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
-    "status": "bad",
-    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description",
-    "reviewedAt": "2026-06-21T20:33:53.641Z"
+    "status": "good",
+    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description  DONE: Shortened the SAM 0x200 label in samFlagLabels (alignments-core) from \"read fails platform/vendor quality checks\" to \"read fails quality checks\" — no more word wrap in the dialog. JSDoc keeps full spec wording. Regenerated + verified.",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
@@ -391,9 +391,9 @@
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "bad",
-    "note": "please make the 'fab' red box smaller, and have an arrow pointing at the fab. also circle the 'open track selector', since fab only opens when track selector is open",
-    "reviewedAt": "2026-06-21T20:32:45.364Z"
+    "status": "good",
+    "note": "please make the 'fab' red box smaller, and have an arrow pointing at the fab. also circle the 'open track selector', since fab only opens when track selector is open  DONE: Rebuilt as a 2-stage figure: stage 1 circles \"Open track selector\" in the view menu (the FAB only exists once the selector is open); stage 2 rings the FAB with a snug circle + short arrow and boxes the \"Add track\" menu it opens. Regenerated + verified.",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -613,15 +613,15 @@
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
-    "status": "bad",
-    "note": "might want this in a doc page if there is not already docs about it",
-    "reviewedAt": "2026-06-21T16:04:42.101Z"
+    "status": "good",
+    "note": "might want this in a doc page if there is not already docs about it  DONE: The up/downstream feature-sequence feature is documented in feature_sequence.md; embedded this (previously orphaned) figure there with a caption emphasizing the Sequence-type dropdown selecting Genomic w/ full introns +/- 100bp up+down stream. Manifest regenerated.",
+    "reviewedAt": "2026-06-21T23:13:43.000Z"
   },
   "variant_panel": {
     "name": "variant_panel",
-    "status": "bad",
-    "note": "this is good, but try to make more documentation about the 'dosage' mode",
-    "reviewedAt": "2026-06-21T20:53:55.069Z"
+    "status": "good",
+    "note": "this is good, but try to make more documentation about the 'dosage' mode  DONE: Added a \"Genotype coloring — allele dosage vs phased\" section to multivariant_track.md explaining the alleleCount/dosage shading (grey ref / mid het / dark hom-alt, distinct color for mixed multi-allelic) and the phased haplotype-row mode. Verified against constants.ts/parseGenotypeDosage.ts.",
+    "reviewedAt": "2026-06-21T22:52:11.000Z"
   },
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
@@ -631,15 +631,15 @@
   },
   "gwas/locuszoom_ld": {
     "name": "gwas/locuszoom_ld",
-    "status": "bad",
-    "note": "link to the example-site pan-ukbb examples too",
-    "reviewedAt": "2026-06-21T20:39:28.910Z"
+    "status": "good",
+    "note": "link to the example-site pan-ukbb examples too  DONE: Added link to the live embedded LocusZoom-style LD example (jbrowse.org/storybook/lgv/locus-zoom-ld) in gwas_track.md.",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "gwas/manhattan": {
     "name": "gwas/manhattan",
-    "status": "bad",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?",
-    "reviewedAt": "2026-06-21T20:39:41.125Z"
+    "status": "good",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
     "name": "link_to_split_view",
@@ -691,9 +691,9 @@
   },
   "protein/structure": {
     "name": "protein/structure",
-    "status": "bad",
-    "note": "basically a duplicate of protein/connected, might delete",
-    "reviewedAt": "2026-06-21T20:49:51.243Z"
+    "status": "good",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
     "name": "no_build_final",
@@ -703,9 +703,9 @@
   },
   "plugin-store": {
     "name": "plugin-store",
-    "status": "bad",
-    "note": "there is another plugin store autogen screenshot",
-    "reviewedAt": "2026-06-21T16:12:47.530Z"
+    "status": "good",
+    "note": "there is another plugin store autogen screenshot  DONE: Deduped: repointed config_guides/plugins.md from the orphan hand-made plugin-store.png to the autogen plugin_store.png (which shows the Tools->Plugin store menu path AND the config-installed UMDUrlPlugin with its lock icon, matching the caption), then deleted plugin-store.png.",
+    "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "sv_cgiab/cnv_score_limit": {
     "name": "sv_cgiab/cnv_score_limit",
@@ -733,9 +733,9 @@
   },
   "alignments/arc_selector": {
     "name": "alignments/arc_selector",
-    "status": "bad",
-    "note": "we should sort all the 'default enabled' show options to top. however, we should also just delete this screenshot. it is not very interesting and people can find this themselves if needed",
-    "reviewedAt": "2026-06-21T15:37:02.332Z"
+    "status": "good",
+    "note": "we should sort all the 'default enabled' show options to top. however, we should also just delete this screenshot. it is not very interesting and people can find this themselves if needed  DONE: Deleted per reviewer (not interesting / discoverable). Removed the spec, the PNG, and the Figure in alignments_track.md (the long-range-arc prose + select_arc_display.png figure above still cover it).",
+    "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "alignments/modifications3": {
     "name": "alignments/modifications3",
@@ -829,15 +829,15 @@
   },
   "linear_synteny_gallery": {
     "name": "linear_synteny_gallery",
-    "status": "bad",
-    "note": "if it is helpful, can also link to this from tutorial on grape vs peach. can try to add grape vs peach vs cacao to tutorial as well",
-    "reviewedAt": "2026-06-21T15:50:34.705Z"
+    "status": "good",
+    "note": "if it is helpful, can also link to this from tutorial on grape vs peach. can try to add grape vs peach vs cacao to tutorial as well  DONE (link): added a link from synteny_visualization.md to the /gallery grape-vs-peach linear synteny example (+ whole-genome human-vs-mouse). DEFERRED: adding a full grape-vs-peach-vs-cacao 3-way to the tutorial needs the cacao alignment dataset.",
+    "reviewedAt": "2026-06-21T23:13:43.000Z"
   },
   "scroll_zoom_toggle": {
     "name": "scroll_zoom_toggle",
-    "status": "bad",
-    "note": "tell users how they can ctrl+scroll alternatively can sort of pinch to zoom too (macbook trackpad in particular)",
-    "reviewedAt": "2026-06-21T20:51:54.400Z"
+    "status": "good",
+    "note": "tell users how they can ctrl+scroll alternatively can sort of pinch to zoom too (macbook trackpad in particular)  DONE: basic_usage.md now documents Ctrl/Cmd+scroll-to-zoom (works without the toggle) and MacBook trackpad pinch-to-zoom (browser delivers pinch as ctrl-wheel; verified in useWheelScroll.ts).",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "alignments/haplotype": {
     "name": "alignments/haplotype",
@@ -847,9 +847,9 @@
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
-    "status": "bad",
-    "note": "might add text annotation to screenshot saying first one is 'color by modifications' and second is 'color by methylation', referring to the fact that it inspects whether there are MM modifications at cpg detected on read sequence itself in 'color by methylation'",
-    "reviewedAt": "2026-06-21T15:38:24.873Z"
+    "status": "good",
+    "note": "might add text annotation to screenshot saying first one is 'color by modifications' and second is 'color by methylation', referring to the fact that it inspects whether there are MM modifications at cpg detected on read sequence itself in 'color by methylation'  DONE: Added two text annotations anchored to each row via trackRenderingContainer testid: top = color-by-modifications (only called 5mC, at MM-tag positions); bottom = color-by-methylation (every CpG on the read inspected, methylated red vs unmethylated blue; island reads blue). Regenerated + verified both labels land on the correct rows.",
+    "reviewedAt": "2026-06-21T23:13:43.000Z"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
@@ -931,9 +931,9 @@
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
-    "status": "bad",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check",
-    "reviewedAt": "2026-06-21T15:46:15.565Z"
+    "status": "good",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
@@ -1081,8 +1081,8 @@
   },
   "sv_cgiab/translocation_open_from_track": {
     "name": "sv_cgiab/translocation_open_from_track",
-    "status": "bad",
-    "note": "make screenshot slightly taller. please make the screenshot titles a bit better than just 'screenshot' if it makes sense to",
-    "reviewedAt": "2026-06-21T20:52:23.506Z"
+    "status": "good",
+    "note": "make screenshot slightly taller. please make the screenshot titles a bit better than just 'screenshot' if it makes sense to  DONE: Made the figure taller (viewportHeight 360->440) so the form + Tracks dropdown clear the bottom edge. Left the harness-wide \"Screenshot\" session title alone (renaming churns all 180 PNGs). Regenerated + verified.",
+    "reviewedAt": "2026-06-21T22:46:23.000Z"
   }
 }

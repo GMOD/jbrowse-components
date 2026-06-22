@@ -611,9 +611,16 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // init is transient view-setup state, never persisted
-      const { init, ...rest } = snap
-      return rest
+      // init is transient: redundant once views materialize, so strip it then.
+      // But while views is still empty (a snapshot taken before the init
+      // autorun runs setViews) init is the only thing that can rebuild the view
+      // -> keep it so a reload/restore resumes instead of dropping to the
+      // import form.
+      if (snap.views.length) {
+        const { init, ...rest } = snap
+        return rest
+      }
+      return snap
     })
 }
 

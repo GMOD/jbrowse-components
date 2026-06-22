@@ -1431,7 +1431,7 @@ export const specs: ScreenshotSpec[] = [
         dx: -340,
         dy: -20,
         maxWidth: 380,
-        text: "Color by methylation: each CpG on the read is colored from its MM tag — red where called methylated (5mC), blue where unmethylated. The CpG island here is hypomethylated, so it reads mostly blue.",
+        text: 'Color by methylation: each CpG on the read is colored from its MM tag — red where called methylated (5mC), blue where unmethylated. The CpG island here is hypomethylated, so it reads mostly blue.',
       },
     ],
   },

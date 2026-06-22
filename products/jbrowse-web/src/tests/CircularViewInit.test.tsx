@@ -1,3 +1,4 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import {
@@ -150,4 +151,31 @@ test('CircularView init with 404 TwoBitAdapter shows error', async () => {
   )
 
   expect(`${view.error}`).toMatch(/404|not found|failed/i)
+}, 40000)
+
+// Regression: a snapshot taken before the view materializes (e.g. autosave
+// firing while the init autorun hasn't set displayedRegions yet) must keep
+// init, so a reload/restore rebuilds instead of stranding on the import form.
+// Once displayedRegions exist, init is redundant and stripped.
+test('snapshot keeps init while not materialized, strips it once regions load', async () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('CircularView', {
+    init: { assembly: 'volvox' },
+  })
+
+  // no width yet -> init autorun hasn't set displayedRegions
+  expect(view.displayedRegions.length).toBe(0)
+  expect(getSnapshot(view).init).toBeDefined()
+
+  view.setWidth(800)
+  await waitFor(
+    () => {
+      expect(view.displayedRegions.length).toBeGreaterThan(0)
+    },
+    { timeout: 30000 },
+  )
+
+  expect(getSnapshot(view).init).toBeUndefined()
 }, 40000)

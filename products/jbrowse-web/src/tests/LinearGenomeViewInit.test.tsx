@@ -1,3 +1,4 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import {
@@ -214,4 +215,32 @@ test('LinearGenomeView init with 404 TwoBitAdapter shows error', async () => {
   )
 
   expect(`${view.error}`).toMatch(/404|not found|failed/i)
+}, 40000)
+
+// Regression: a snapshot taken before the view materializes (e.g. autosave
+// firing while the launch autorun hasn't navigated yet) must keep init, so a
+// reload/restore rebuilds instead of stranding on the import form. Once
+// displayedRegions exist, init is redundant and stripped.
+test('snapshot keeps init while not materialized, strips it once regions load', async () => {
+  const { rootModel } = getPluginManager()
+  rootModel.setDefaultSession()
+  const session = rootModel.session!
+  const view = session.addView('LinearGenomeView', {
+    init: { loc: 'ctgA:1..1000', assembly: 'volvox' },
+  })
+
+  // no width yet -> launch autorun hasn't navigated
+  expect(view.displayedRegions.length).toBe(0)
+  expect(getSnapshot(view).init).toBeDefined()
+
+  view.setWidth(800)
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  expect(view.displayedRegions.length).toBeGreaterThan(0)
+  expect(getSnapshot(view).init).toBeUndefined()
 }, 40000)

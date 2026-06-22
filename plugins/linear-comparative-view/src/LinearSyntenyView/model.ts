@@ -681,7 +681,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               } catch (e) {
                 console.error(e)
                 session.notifyError(`${e}`, e)
-                self.setInit(undefined)
+                // Keep init on failure: a transient error (assembly not yet
+                // registered, a network blip) must stay recoverable. Clearing
+                // it here, while views is still empty, permanently strands the
+                // view on the import form with no retry. Leaving init set lets
+                // a reload re-run this autorun (init is persisted while views
+                // is empty, see postProcessSnapshot).
               } finally {
                 running = false
               }
@@ -692,13 +697,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // init is transient view-setup state, never persisted
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const { init, ...rest } = snap
-      return rest as typeof snap
+      // init is transient: once views have materialized it's redundant, so we
+      // strip it. But while views is still empty (a snapshot taken mid-load,
+      // or an init that errored before building views) init is the ONLY thing
+      // that can rebuild the view -> keep it so a reload/restore resumes
+      // instead of falling back to the import form.
+      if (snap.views.length) {
+        const { init, ...rest } = snap
+        return rest as typeof snap
+      }
+      return snap
     })
 }
 export type LinearSyntenyViewStateModel = ReturnType<typeof stateModelFactory>

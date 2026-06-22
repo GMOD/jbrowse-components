@@ -694,13 +694,22 @@ function stateModelFactory(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // init is transient view-setup state, never persisted
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
       }
-      const { init, ...rest } = snap
-      return rest as typeof snap
+      // init is transient: redundant once displayedRegions exist, so strip it
+      // then. While displayedRegions is still empty, init is the only thing that
+      // can rebuild the view -> keep it so a reload/restore resumes instead of
+      // dropping to the import form. displayedRegions is stripDefault, so it's
+      // absent (not []) when empty — the optional chain is runtime-necessary
+      // despite the non-nullish type.
+      // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+      if (snap.displayedRegions?.length) {
+        const { init, ...rest } = snap
+        return rest as typeof snap
+      }
+      return snap
     })
 }
 

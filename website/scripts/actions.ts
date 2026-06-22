@@ -18,6 +18,42 @@ const SCROLL_STEP_MS = 100
 // to reach HTML floating labels / menu items that carry no testid.
 export const textSelector = (text: string) => `::-p-text(${text})`
 
+// Poll, from Node, until a plain-CSS element is gone or styled-hidden. Used for
+// the loading-overlay-disappears wait: puppeteer's in-page waits (waitForSelector
+// rAF-poll, waitForFunction timer-poll) both run their polling loop *inside* the
+// page, and once a view settles the headless tab is non-visible — Chrome starves
+// rAF and throttles in-page timers — so the loop stops firing and the wait times
+// out even though the element was already removed. A Node-side timer is never
+// throttled by page visibility, so this observes the removal reliably.
+async function waitHiddenByNodePolling(
+  page: Page,
+  selector: string,
+  timeout: number,
+) {
+  const deadline = Date.now() + timeout
+  let gone = false
+  while (!gone && Date.now() < deadline) {
+    gone = await page.evaluate((sel: string) => {
+      const el = document.querySelector(sel)
+      const s = el ? getComputedStyle(el) : undefined
+      const r = el?.getBoundingClientRect()
+      return (
+        !el ||
+        s?.display === 'none' ||
+        s?.visibility === 'hidden' ||
+        Number(s?.opacity) === 0 ||
+        (r?.width === 0 && r.height === 0)
+      )
+    }, selector)
+    if (!gone) {
+      await delay(200)
+    }
+  }
+  if (!gone) {
+    throw new Error(`timed out waiting for ${selector} to be hidden`)
+  }
+}
+
 export function waitForVisible(
   page: Page,
   selector: string,
@@ -26,10 +62,17 @@ export function waitForVisible(
     timeout = FIND_TIMEOUT,
   }: { hidden?: boolean; timeout?: number } = {},
 ) {
-  return page.waitForSelector(selector, {
-    [hidden ? 'hidden' : 'visible']: true,
-    timeout,
-  })
+  // Plain-CSS hidden waits poll from Node (see waitHiddenByNodePolling). Text
+  // disappearances use puppeteer's `::-p-text(…)` pseudo-selector, which
+  // document.querySelector can't parse, and follow a click that keeps the page
+  // compositing — so they keep the native wait. The appear case likewise stays
+  // native (appearances follow clicks/paints that keep rAF alive).
+  return hidden && !selector.startsWith('::-p-')
+    ? waitHiddenByNodePolling(page, selector, timeout)
+    : page.waitForSelector(selector, {
+        [hidden ? 'hidden' : 'visible']: true,
+        timeout,
+      })
 }
 
 // Resolve an action's target element from either a CSS selector or visible text.

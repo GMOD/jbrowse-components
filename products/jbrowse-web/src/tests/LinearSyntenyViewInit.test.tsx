@@ -1,3 +1,4 @@
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { waitFor } from '@testing-library/react'
 
 import {
@@ -111,6 +112,35 @@ test('LinearSyntenyView showImportForm is false when init is set', async () => {
     },
     { timeout: 30000 },
   )
+}, 40000)
+
+// Regression: a snapshot taken before views materialize must keep init, so a
+// reload/restore (e.g. autosave firing mid-load) can rebuild the view instead
+// of stranding on the import form. Once views exist, init is redundant and
+// stripped.
+test('snapshot keeps init while views empty, strips it once materialized', async () => {
+  const { view } = await createSyntenyViewWithInit({
+    views: [
+      { loc: 'Pp01:1..1000', assembly: 'peach' },
+      { loc: 'chr1:1..1000', assembly: 'grape' },
+    ],
+    tracks: [['subset']],
+  })
+
+  // mid-load: views not built yet, snapshot must still carry init
+  expect(view.views.length).toBe(0)
+  expect(getSnapshot(view).init).toBeDefined()
+
+  await waitFor(
+    () => {
+      expect(view.initialized).toBe(true)
+    },
+    { timeout: 30000 },
+  )
+
+  // materialized: views present, init dropped from the snapshot
+  expect(view.views.length).toBe(2)
+  expect(getSnapshot(view).init).toBeUndefined()
 }, 40000)
 
 test('LinearSyntenyView showImportForm is true when no init and no views', () => {
