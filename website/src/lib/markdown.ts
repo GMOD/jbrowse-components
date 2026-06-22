@@ -13,11 +13,13 @@ import rehypeHeadingLinks from './rehype-heading-links.ts'
 import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
 import remarkFigure from './remark-figure.ts'
+import remarkSpecExample from './remark-spec-example.ts'
 
 const processor = unified()
   .use(remarkParse)
   .use(remarkGfm)
   .use(remarkFigure, { base: baseUrl })
+  .use(remarkSpecExample)
   .use(remarkRehype, { allowDangerousHtml: true })
   .use(rehypeRaw)
   .use(rehypeShiki)

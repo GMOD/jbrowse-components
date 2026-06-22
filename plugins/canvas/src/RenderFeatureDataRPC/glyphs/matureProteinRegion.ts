@@ -3,8 +3,13 @@ import { layoutChild, sortByPosition } from './glyphUtils.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
+// The complete `*_region_of_CDS` family NCBI emits as children of a CDS; all
+// render as stacked sub-regions along the CDS. `mature_protein_region` (no
+// `_of_CDS`) is the bare SO term, kept for non-NCBI sources.
 const MATURE_PROTEIN_TYPES = new Set([
   'mature_protein_region_of_CDS',
+  'signal_peptide_region_of_CDS',
+  'propeptide_region_of_CDS',
   'mature_protein_region',
 ])
 

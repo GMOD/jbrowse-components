@@ -5,12 +5,11 @@ description:
 guide_category: Callbacks and customization
 ---
 
-There are two useful adapter types that can be used for more advanced use cases,
-such as generating configuration for data returned by an API. These are the
-`FromConfigAdapter` and `FromConfigSequenceAdapter`. They can be used as the
-`adapter` value for any track type.
+`FromConfigAdapter` and `FromConfigSequenceAdapter` embed feature data directly
+in the config rather than reading a file — useful for small datasets or features
+returned by an API. Either can be the `adapter` value for any track type.
 
-#### FromConfigAdapter
+## FromConfigAdapter
 
 This adapter can be used to generate features directly from values stored in the
 configuration.
@@ -35,10 +34,10 @@ Example `FromConfigAdapter`:
 }
 ```
 
-#### FromConfigSequenceAdapter
+## FromConfigSequenceAdapter
 
-Similar behavior to `FromConfigAdapter`, with a specific emphasis on performance
-when the features are sequences.
+Like `FromConfigAdapter`, but optimized for sequence features (used by reference
+sequence tracks).
 
 Example `FromConfigSequenceAdapter`:
 

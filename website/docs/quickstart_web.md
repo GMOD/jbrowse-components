@@ -1,5 +1,5 @@
 ---
-title: JBrowse web setup using the CLI
+title: JBrowse web quick start
 ---
 
 ## TLDR
@@ -76,10 +76,10 @@ For production, place the folder in your web server's static directory (e.g.
 
 ## Adding tracks
 
-The examples below write to a production path (`--out /var/www/html/jbrowse2`).
-`--out` accepts either a directory (it updates the `config.json` inside) or a
-path to a specific config file. If you're running commands from inside the
-`jbrowse2/` directory, omit `--out` — it defaults to the current directory. Run
+The examples below run from inside the `jbrowse2/` directory, so they omit
+`--out` — it defaults to the current directory. To write to a production path
+instead, add `--out /var/www/html/jbrowse2` (it accepts either a directory,
+updating the `config.json` inside, or a path to a specific config file). Run
 `jbrowse add-track --help` for the full set of options.
 
 For the full list of supported formats and the adapter each maps to, see
@@ -89,7 +89,7 @@ For the full list of supported formats and the adapter each maps to, see
 
 ```bash
 samtools faidx genome.fa
-jbrowse add-assembly genome.fa --load copy --out /var/www/html/jbrowse2
+jbrowse add-assembly genome.fa --load copy
 ```
 
 This writes an assembly entry to `config.json` and copies `genome.fa` and
@@ -107,7 +107,7 @@ JBrowse 2 also supports bgzip-compressed indexed FASTA and 2bit files.
 
 ```bash
 samtools index file.bam   # or file.cram
-jbrowse add-track file.bam --load copy --out /var/www/html/jbrowse2
+jbrowse add-track file.bam --load copy
 ```
 
 <Figure caption="JBrowse 2 linear genome view with alignments track" src="/img/volvox_alignments.png"/>
@@ -119,7 +119,7 @@ VCFs must be bgzip-compressed and tabix-indexed:
 ```bash
 bgzip file.vcf
 tabix file.vcf.gz
-jbrowse add-track file.vcf.gz --load copy --out /var/www/html/jbrowse2
+jbrowse add-track file.vcf.gz --load copy
 ```
 
 :::note
@@ -150,7 +150,7 @@ See https://www.htslib.org/ for more on `bgzip`, `tabix`, and `bcftools`.
 No external index needed:
 
 ```bash
-jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse2
+jbrowse add-track file.bw --load copy
 ```
 
 ### GFF3
@@ -158,7 +158,7 @@ jbrowse add-track file.bw --load copy --out /var/www/html/jbrowse2
 ```bash
 jbrowse sort-gff yourfile.gff | bgzip > yourfile.sorted.gff.gz
 tabix yourfile.sorted.gff.gz
-jbrowse add-track yourfile.sorted.gff.gz --load copy --out /var/www/html/jbrowse2
+jbrowse add-track yourfile.sorted.gff.gz --load copy
 ```
 
 ### Synteny (PAF)
@@ -169,8 +169,8 @@ the result as a synteny track:
 ```bash
 minimap2 -cx asm20 grape.fa peach.fa > peach_vs_grape.paf
 
-jbrowse add-assembly grape.fa --load copy -n grape --out /var/www/html/jbrowse2
-jbrowse add-assembly peach.fa --load copy -n peach --out /var/www/html/jbrowse2
+jbrowse add-assembly grape.fa --load copy -n grape
+jbrowse add-assembly peach.fa --load copy -n peach
 ```
 
 Note: `--assemblyNames` order is `query,target` — the **reverse** of the
@@ -179,7 +179,7 @@ Note: `--assemblyNames` order is `query,target` — the **reverse** of the
 `--assemblyNames peach,grape`:
 
 ```bash
-jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy --out /var/www/html/jbrowse2
+jbrowse add-track peach_vs_grape.paf --assemblyNames peach,grape --load copy
 ```
 
 To sidestep the ordering question, you can instead set the named `queryAssembly`
@@ -202,7 +202,7 @@ the [synteny tutorial](/docs/tutorials/synteny_visualization)).
 Optionally, build a text index so users can search by gene name or feature ID:
 
 ```bash
-jbrowse text-index --out /var/www/html/jbrowse2
+jbrowse text-index
 ```
 
 This indexes GFF3 and VCF tracks (tabix-indexed or plain). Once complete, names

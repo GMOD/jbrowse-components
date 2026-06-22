@@ -3,7 +3,7 @@ import { packRenderArrays } from './packRenderArrays.ts'
 import type { ArrowData, LineData, RectData } from './packRenderArrays.ts'
 
 function rect(start: number, end: number): RectData {
-  return { start, end, y: 0, height: 10, color: 0, flatbushIdx: 0 }
+  return { start, end, y: 0, height: 10, color: 0, flatbushIdx: 0, strand: 0 }
 }
 function line(start: number, end: number): LineData {
   return { start, end, y: 0, color: 0, direction: 0, flatbushIdx: 0 }

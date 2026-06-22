@@ -36,13 +36,6 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 /**
- * `triangular`: standard triangular Hi-C view, height-independent square
- * bins. `adjust`: stretch the triangle vertically to fit the user-chosen
- * display height (squashes bins).
- */
-export type HicRenderMode = 'triangular' | 'adjust'
-
-/**
  * #stateModel LinearHicDisplay
  * #category display
  * Hi-C display that renders contact matrix using WebGL
@@ -84,7 +77,13 @@ export default function stateModelFactory(
         'showLegend',
       ]),
       types.model({
+        /**
+         * #property
+         */
         type: types.literal('LinearHicDisplay'),
+        /**
+         * #property
+         */
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
@@ -96,6 +95,10 @@ export default function stateModelFactory(
          * at a different scale.
          */
         resolutionBias: types.stripDefault(types.number, 0),
+        /**
+         * #property
+         * Map contact counts to color on a log2 scale instead of linear.
+         */
         useLogScale: types.stripDefault(types.boolean, false),
         /**
          * #property
@@ -104,14 +107,25 @@ export default function stateModelFactory(
          * lower saturation point so off-diagonal contacts read more strongly.
          */
         useColorPercentile: types.stripDefault(types.boolean, false),
+        /**
+         * #property
+         * Whether the on-canvas resolution stepper overlay is shown. Toggled
+         * from the track menu's `Show...` submenu; the stepper itself lives
+         * only on the canvas to keep the menu uncluttered.
+         */
+        showResolutionControls: types.stripDefault(types.boolean, true),
+        /**
+         * #property
+         * Active matrix normalization scheme (e.g. KR, SCALE, VC, NONE),
+         * reconciled against what the `.hic` file actually provides.
+         */
         activeNormalization: types.stripDefault(types.string, 'KR'),
-        mode: types.stripDefault(
-          types.enumeration<HicRenderMode>('HicRenderMode', [
-            'triangular',
-            'adjust',
-          ]),
-          'triangular',
-        ),
+        /**
+         * #property
+         * Squash the triangle vertically to fit the chosen display height
+         * instead of drawing square bins at natural proportions.
+         */
+        fitToHeight: types.stripDefault(types.boolean, false),
       }),
     )
     .volatile(() => ({
@@ -137,8 +151,11 @@ export default function stateModelFactory(
       // multiplier (< 1000) or an absolute binsize (>= 1000); neither maps
       // cleanly to the new `resolutionBias` field, so just reset to auto
       // (bias = 0) and let zoom drive the choice.
-      const { resolution: _drop, ...rest } = snap
-      return rest
+      //
+      // The legacy `mode` enum became the `fitToHeight` boolean; only its
+      // non-default 'adjust' value was ever serialized (stripDefault).
+      const { resolution: _drop, mode, ...rest } = snap
+      return mode === 'adjust' ? { ...rest, fitToHeight: true } : rest
     })
     .views(self => ({
       get colorScheme(): HicColorScheme | undefined {
@@ -186,9 +203,7 @@ export default function stateModelFactory(
         const view = getContainingView(self) as LinearGenomeViewModel
         const defaultHeight = view.totalWidthPx / 2
         const height = self.height
-        return self.mode === 'adjust'
-          ? height / Math.max(height, defaultHeight)
-          : 1
+        return self.fitToHeight ? height / Math.max(height, defaultHeight) : 1
       },
     }))
     .views(self => ({
@@ -398,6 +413,12 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setShowResolutionControls(f: boolean) {
+        self.showResolutionControls = f
+      },
+      /**
+       * #action
+       */
       setColorScheme(f?: HicColorScheme) {
         self.setOverride('colorScheme', f)
       },
@@ -427,8 +448,8 @@ export default function stateModelFactory(
       /**
        * #action
        */
-      setMode(arg: HicRenderMode) {
-        self.mode = arg
+      setFitToHeight(arg: boolean) {
+        self.fitToHeight = arg
       },
       /**
        * #action

@@ -18,9 +18,9 @@ platform, or grab the latest release directly from
 Download the latest Windows installer executable (`.exe`) and double-click it to
 install and open JBrowse.
 
-### Installing on MacOS
+### Installing on macOS
 
-Download the latest MacOS release artifact (`.dmg`), open it, then drag JBrowse
+Download the latest macOS release artifact (`.dmg`), open it, then drag JBrowse
 to Applications.
 
 ### Installing on Linux
@@ -126,9 +126,8 @@ and use its **Add track** button. Either opens the "Add a track" form:
 
 The new track appears in the track selector — turn it on to display it.
 
-JBrowse desktop supports the same file formats as JBrowse web, including BAM,
-CRAM, VCF (bgzip + tabix), BigWig, BigBed, GFF3 (bgzip + tabix), and synteny
-formats (PAF, `.delta`, `.chain`, `.anchors`, `.out`). For the indexing and
+JBrowse desktop supports the same file formats as JBrowse web — see
+[Supported file types](/docs/config_guides/file_types). For the indexing and
 preparation commands behind these formats, see the
 [web quick start](/docs/quickstart_web).
 

@@ -11,9 +11,12 @@ rearrangements appear as off-diagonal blocks.
 
 ### Opening a dotplot view
 
-1. Launch a new Dotplot view, then select the two assemblies to compare
-2. Optionally, add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors or
-   .anchors.simple (MCScan) file
+Launch a new Dotplot view from the Add menu, select the two assemblies to
+compare, and optionally supply a synteny file. The import form and the supported
+file types (`.paf`, `.out`, `.delta`, `.chain`, `.anchors`/`.anchors.simple`)
+are shared with the linear synteny view — see
+[Opening a linear synteny view](/docs/user_guides/linear_synteny_view#opening-a-linear-synteny-view)
+for the full file-format details.
 
 <Figure caption="Launching a dotplot view from the Add menu (top), then the import form where you select two assemblies and optionally supply a synteny file (bottom). The same form is shared with the linear synteny view." src="/img/dotplot_add.png" />
 
@@ -46,4 +49,5 @@ linear synteny view with both genomes shown as tracks.
 
 For a step-by-step walkthrough of loading assemblies, generating a PAF with
 minimap2, and using the dotplot and linear synteny views together, see the
-[Synteny visualization](/docs/tutorials/synteny_visualization) tutorial.
+[Synteny visualization](/docs/tutorials/synteny_visualization) tutorial and the
+[linear synteny view guide](/docs/user_guides/linear_synteny_view).

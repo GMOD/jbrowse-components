@@ -117,15 +117,6 @@ jexl: parseInt('2')
 jexl: parseFloat('2.054')
 ```
 
-**Lookup tables**
-
-Index an object literal by a feature attribute to map values to outputs. Types
-not in the map return undefined, so pair it with `||` for a default:
-
-```js
-jexl: { mRNA: 'green', pseudogene: 'purple' }[feature.type] || 'gray'
-```
-
 **Console logging**
 
 ```js
@@ -135,7 +126,7 @@ jexl: log(feature) // console.logs output and returns value
 **Binary operators**
 
 ```js
-jexl: get(feature, 'flags') & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
+jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```
 
 **Template strings**
@@ -146,98 +137,19 @@ is handy for building colors — for example, an HSL color derived from a featur
 value:
 
 ```json
-"color": "jexl:`hsl(${get(feature,'start')/100000},50%,50%)`"
+"color": "jexl:`hsl(${feature.start/100000},50%,50%)`"
 ```
 
 The equivalent with concatenation:
 
 ```json
-"color": "jexl:'hsl('+get(feature,'start')/100000+',50%,50%)'"
+"color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
 ```
 
 ### Making sophisticated color callbacks
 
-For complex color callbacks, write a plugin that adds a function to the jexl
-language and call it from your callback.
-
-For example, create a file named "myplugin.js":
-
-:::note
-
-The example below uses the IIFE/`umdLoc` format. If you are using `esmLoc`, use
-`export default class MyPlugin` instead (see
-[customizing feature colors](/docs/config_guides/customizing_feature_colors) for
-that pattern). `myplugin.js` doesn't need jbrowse-plugin-template as long as
-it's self-contained and doesn't import other modules.
-
-:::
-
-```js
-// myplugin.js
-;(function () {
-  class MyPlugin {
-    install() {}
-    configure(pluginManager) {
-      pluginManager.jexl.addFunction('colorFeature', feature => {
-        let type = feature.get('type')
-        if (type === 'CDS') {
-          return 'red'
-        } else if (type === 'exon') {
-          return 'green'
-        } else {
-          return 'purple'
-        }
-      })
-    }
-  }
-
-  // the plugin will be included in both the main thread and web worker, so
-  // install plugin to either window or self (webworker global scope)
-  ;(typeof self !== 'undefined' ? self : window).JBrowsePluginMyPlugin = {
-    default: MyPlugin,
-  }
-})()
-```
-
-Then put `myplugin.js` in the same folder as your config file, and then you can
-use the custom `jexl` function in your config callbacks as follows:
-
-```json
-{
-  "plugins": [
-    {
-      "name": "MyPlugin",
-      "umdLoc": { "uri": "myplugin.js" }
-    }
-  ],
-  "tracks": [
-    {
-      "type": "FeatureTrack",
-      "trackId": "my_track",
-      "name": "my track",
-      "assemblyNames": ["hg19"],
-      "adapter": {
-        "type": "Gff3Adapter",
-        "gffLocation": {
-          "uri": "volvox.filtered.gff"
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearBasicDisplay",
-          "displayId": "mytrack-LinearBasicDisplay",
-          "color": "jexl:colorFeature(feature)"
-        }
-      ]
-    }
-  ]
-}
-```
-
-The feature in the callback is a "SimpleFeature" type object; read any attribute
-as a property — `feature.start`, `feature.end`, `feature.refName`, or
-`feature.other_attribute` for e.g. a field in a GFF3 column 9 (the equivalent
-`feature.get('start')` method form also works).
-
-See the [no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
-a full walkthrough of setting up a plugin like this.
+When a color callback has too much logic to express inline, write a small plugin
+that adds a function to the jexl language (e.g. `colorFeature`) and call it from
+your callback as `"color": "jexl:colorFeature(feature)"`. See
+[customizing feature colors with callbacks and plugins](/docs/config_guides/customizing_feature_colors)
+for the full walkthrough.

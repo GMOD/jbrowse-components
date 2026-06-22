@@ -262,15 +262,7 @@ serialized form of a view's declarative `init` field; the embedded
 `@jbrowse/react-linear-genome-view2` component accepts the same shape directly
 via `defaultSession.view.init` (it does not parse URLs itself).
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"LinearGenomeView","tracks":["gff3tabix_genes","volvox_filtered_vcf","volvox_microarray","volvox_cram"]}]})
-
-Expanded JSON of the contents of the URL
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -381,15 +373,7 @@ This is useful for:
 any of the display's own settings. This opens an alignments track colored by
 pair orientation, with soft-clipped bases shown and an enlarged height:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBy":{"type":"pairOrientation"}}}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":250,"showSoftClipping":true,"colorBy":{"type":"pairOrientation"}}}]}]})
-
-Expanded JSON:
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -419,15 +403,7 @@ stands out over the pileup. Each curve is the same horizontal-tangent shape a
 breakpoint split view draws. Coloring by pair orientation makes the abnormal
 orientations easy to pick out:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":300,"showBezierConnections":true,"colorBy":{"type":"pairOrientation"}}}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-10000","type":"LinearGenomeView","tracks":[{"trackId":"volvox_sv_cram","displaySnapshot":{"height":300,"showBezierConnections":true,"colorBy":{"type":"pairOrientation"}}}]}]})
-
-Expanded JSON:
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -456,15 +432,7 @@ a feature track (genes, BED, GFF), put `color` in the `displaySnapshot` — it
 accepts a plain CSS color, or a `jexl:` expression to color per-feature. This
 opens the genes track colored green:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"gff3tabix_genes","displaySnapshot":{"color":"green"}}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":[{"trackId":"gff3tabix_genes","displaySnapshot":{"color":"green"}}]}]})
-
-Expanded JSON:
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -489,15 +457,7 @@ To color by a feature attribute, use a jexl expression, e.g.
 
 ### Circular view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type": "CircularView","tracks":["volvox_sv_test"]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-5100","type":"CircularView","tracks":["volvox_sv_test"]}]})
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -514,15 +474,7 @@ Expanded
 
 Example (self-vs-self alignment):
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"volvox"%7D,%7B"assembly":"volvox"%7D%5D,"tracks":%5B"volvox_fake_synteny"%5D%7D%5D%7D)
-
-Expanded example, see that it is a self-self alignment
-
-```json
+```json live config=test_data/volvox/config_main_thread.json
 {
   "views": [
     {
@@ -595,13 +547,7 @@ is drawn as a translucent **vertical** band when its assembly matches the
 horizontal axis and as a **horizontal** band when it matches the vertical axis —
 so on a self-vs-self plot it appears on both axes:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config_main_thread.json&session=spec-{"views":[{"type":"DotplotView","views":[{"assembly":"volvox","loc":"ctgA:1-50000"},{"assembly":"volvox","loc":"ctgA:1-50000"}],"tracks":["volvox_fake_synteny"],"highlight":["ctgA:5000-15000"]}]}
-```
-
-Expanded JSON:
-
-```json
+```json live config=test_data/volvox/config_main_thread.json
 {
   "views": [
     {
@@ -623,15 +569,7 @@ resolves by refName against whichever axis contains it.
 
 ### Spreadsheet view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SpreadsheetView%22,%20%22uri%22:%22test_data/volvox/volvox.filtered.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D)
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -645,15 +583,7 @@ Expanded
 
 ### SV inspector
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B"views":%5B%7B"type":"SvInspectorView","uri":"test_data/volvox/volvox.dup.vcf.gz","assembly":"volvox"%7D%5D%7D
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-%7B%22views%22:%5B%7B%22type%22:%22SvInspectorView%22,%20%22uri%22:%22test_data/volvox/volvox.dup.vcf.gz%22,%22assembly%22:%22volvox%22%7D%5D%7D)
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -667,15 +597,9 @@ Expanded
 
 ### Linear synteny view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
-```
+A self-self alignment is allowed:
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
-
-Expanded, again showing a self-self alignment is allowed
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -702,15 +626,7 @@ The synteny view spec accepts extra top-level fields that set the view's initial
 display state on load. This opens the same view colored by strand, with curved
 ribbons and stronger opacity:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"colorBy":"strand","drawCurves":true,"alpha":0.8,"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":["volvox_fake_synteny"],"colorBy":"strand","drawCurves":true,"alpha":0.8,"views":[{"loc":"ctgA:1-30000","assembly":"volvox"},{"loc":"ctgA:1000-31000","assembly":"volvox"}]}]})
-
-Expanded JSON:
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -749,15 +665,7 @@ Supported init fields:
 
 ### Breakpoint split view
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"BreakpointSplitView","views":[{"loc":"ctgA:1-5000","assembly":"volvox","tracks":["volvox_cram"]},{"loc":"ctgB:1-5000","assembly":"volvox","tracks":["volvox_cram"]}]}]})
-
-Expanded
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -785,16 +693,10 @@ tracks.
 
 ### Linear synteny view (multi-way)
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]}
-```
+The `tracks` field is a multidimensional array — each sub-array corresponds to
+the synteny tracks at one level of the multi-way view:
 
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data%2Fvolvox%2Fconfig.json&session=spec-{"views":[{"type":"LinearSyntenyView","tracks":[["volvox_ins.paf"],["volvox_del.paf"]],"views":[{"loc":"ctgA:1-50000","assembly":"volvox_ins"},{"loc":"ctgA:1000-50000","assembly":"volvox"},{"loc":"ctgA:1000-44000","assembly":"volvox_del"}]}]})
-
-Expanded (the `tracks` field is a multidimensional array — each sub-array
-corresponds to the synteny tracks at one level of the multi-way view)
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
@@ -822,22 +724,27 @@ where each node is either:
 
 #### Horizontal split example
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"views":[2]}]}}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"views":[2]}]}})
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgA:5000-10000"
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
     },
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:5000-10000",
+      "tracks": ["gff3tabix_genes"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    }
   ],
   "layout": {
     "direction": "horizontal",
@@ -856,17 +763,21 @@ This creates a left-right split:
 You can specify the `size` property to control the proportional width/height of
 panels:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0],"size":70},{"views":[1],"size":30}]}}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0],"size":70},{"views":[1],"size":30}]}})
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgA:1-5000" },
-    { "type": "LinearGenomeView", "assembly": "volvox", "loc": "ctgB:1-5000" }
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    },
+    {
+      "type": "LinearGenomeView",
+      "assembly": "volvox",
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
+    }
   ],
   "layout": {
     "direction": "horizontal",
@@ -890,34 +801,32 @@ This creates a 70/30 split with the left panel taking 70% of the width.
 
 You can create more complex layouts by nesting containers:
 
-```
-https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:5000-10000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"direction":"vertical","children":[{"views":[2]},{"views":[3]}]}]}}
-```
-
-[Live link](https://jbrowse.org/code/jb2/main/?config=test_data/volvox/config.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgA:5000-10000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:1-5000","tracks":["gff3tabix_genes"]},{"type":"LinearGenomeView","assembly":"volvox","loc":"ctgB:5000-10000","tracks":["gff3tabix_genes"]}],"layout":{"direction":"horizontal","children":[{"views":[0,1]},{"direction":"vertical","children":[{"views":[2]},{"views":[3]}]}]}})
-
-```json
+```json live config=test_data/volvox/config.json
 {
   "views": [
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgA:1-5000"
+      "loc": "ctgA:1-5000",
+      "tracks": ["gff3tabix_genes"]
     },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgA:5000-10000"
+      "loc": "ctgA:5000-10000",
+      "tracks": ["gff3tabix_genes"]
     },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgB:1-5000"
+      "loc": "ctgB:1-5000",
+      "tracks": ["gff3tabix_genes"]
     },
     {
       "type": "LinearGenomeView",
       "assembly": "volvox",
-      "loc": "ctgB:5000-10000"
+      "loc": "ctgB:5000-10000",
+      "tracks": ["gff3tabix_genes"]
     }
   ],
   "layout": {

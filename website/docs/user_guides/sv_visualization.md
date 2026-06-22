@@ -87,8 +87,7 @@ shades reads continuously by the magnitude of the deviation. Reads with a mate
 on a different chromosome are handled separately (see the table below).
 
 **With paired arcs or linked reads enabled** (via Read connections in the track
-menu), set the color scheme from the track menu. The Insert size ± 3σ option
-uses threshold-based coloring:
+menu), the Insert size ± 3σ option uses threshold-based coloring:
 
 | Pattern                                    | Color  | Notes                                  |
 | ------------------------------------------ | ------ | -------------------------------------- |
@@ -102,8 +101,8 @@ informative setting for a general SV scan.
 ## SV-type signatures
 
 The patterns below describe what each SV type typically looks like in the
-alignments track. They are clues, not proof — final interpretation still
-requires judgment. The
+alignments track; combine several signals (clipping, orientation, coverage,
+arcs) before calling an SV rather than relying on any one. The
 [DRAGEN SV IGV tutorial](https://help.dragen.illumina.com/product-guides/dragen-v4.5/dragen-dna-pipeline/sv-calling/sv-igv-tutorial)
 is a useful companion reference.
 
@@ -127,9 +126,10 @@ is a useful companion reference.
   **pink** (smaller insert on reference) suggest an insertion between them
 - For insertions larger than the sequenced fragment size, mates may become
   unmapped; long reads are needed to fully span the event
-- A purple insertion indicator triangle suggests an insertion when a
-  depth-dependent fraction of reads (roughly 30% at high coverage) carry one at
-  that position
+- A purple insertion indicator triangle suggests an insertion when enough reads
+  carry one at that position (see
+  [SV signals in the alignments track](#sv-signals-in-the-alignments-track) for
+  the depth-dependent threshold)
 
 <Figure caption="An insertion (nssv15767046 INS, labeled in the variant track at top) visible as a dense column of purple insertion rectangles at ~position 55,705,920 in nanopore (top track), PacBio (middle track), and Illumina (bottom track) reads. Long reads show tall purple bars spanning the inserted bases; Illumina reads show only soft-clip artifacts at the same site because the insert exceeds the fragment size." src="/img/insertion.png" />
 
@@ -143,10 +143,8 @@ is a useful companion reference.
 - Soft-clipped reads appear at both breakpoints, sometimes with short homology
   sequences visible in the clipped bases
 
-The inverted duplication figure in the
-[pair orientation section](#pair-orientation-color-scheme) above shows this
-signal: green LL reads (→→) and dark blue RR reads (←←) at the boundary are the
-inversion signature.
+The green LL / dark blue RR signature appears in the inverted-duplication figure
+in the [pair orientation section](#pair-orientation-color-scheme) above.
 
 ### Tandem duplication
 
@@ -156,10 +154,8 @@ inversion signature.
 - With paired arcs enabled, arcs pointing backward (upstream) across a junction
   point to a tandem duplication
 
-The inverted duplication figure in the
-[pair orientation section](#pair-orientation-color-scheme) above also shows this
-signal: the teal RL reads (← →) flanking the boundary are the tandem duplication
-signature.
+The teal RL signature also appears in the inverted-duplication figure in the
+[pair orientation section](#pair-orientation-color-scheme) above.
 
 ### Translocation / inter-chromosomal fusion
 

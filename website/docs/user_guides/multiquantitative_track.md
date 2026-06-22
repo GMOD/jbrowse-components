@@ -1,5 +1,5 @@
 ---
-title: Multi-quantitative tracks
+title: Multi-quantitative track
 description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
@@ -33,13 +33,13 @@ Three ways to create one:
 - **Add-track panel** — paste a list of BigWig URLs, or open multiple BigWig
   files from your machine
 - **Track selector** — multi-select existing tracks and combine them into a
-  multi-wiggle track from your selection
+  multi-quantitative track from your selection
 - **Hand-edit the config** — see the
   [multi-quantitative track configuration](/docs/config_guides/multiquantitative_track/)
   guide
 
-<Figure caption="The add-track widget's workflow selector (red callout) lets you reach the multi-wiggle workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
-<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the add-track widget then turns the selection into a multi-wiggle track." src="/img/multiwig/trackselector.png" />
+<Figure caption="The add-track widget's workflow selector (red callout) lets you reach the multi-quantitative workflow, where you can paste a list of BigWig URLs or open multiple BigWig files from disk." src="/img/multiwig/addtrack.png" />
+<Figure caption="In the track selector, the '...' menu adds individual tracks or whole categories to your selection. The cart icon in the add-track widget then turns the selection into a multi-quantitative track." src="/img/multiwig/trackselector.png" />
 
 ## Loading bedMethyl as a multi-quantitative track
 
@@ -113,7 +113,7 @@ modes:
 After clustering, the rows are reordered by similarity so that individuals with
 similar copy-number patterns sit together.
 
-<Figure caption="Clustering a multi-wiggle track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
+<Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
 
 The "Show tree" toggle in the track menu displays a dendrogram sidebar alongside
 the reordered rows. With the tree shown, click any internal node to collapse the

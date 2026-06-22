@@ -65,6 +65,13 @@ A per-track config looks like this:
 }
 ```
 
+The `textSearching` slots control what gets indexed when you run
+`jbrowse text-index` against this track:
+
+- `indexingAttributes` - feature attributes to index (default `["Name", "ID"]`)
+- `indexingFeatureTypesToExclude` - feature types to skip (e.g. `CDS`, `exon`),
+  so the index holds only the genes/transcripts users search for
+
 See [jbrowse text-index](/docs/cli#jbrowse-text-index) for generating indexes
 via the CLI. See the
 [Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter) for adapter
@@ -74,30 +81,13 @@ options including CSI index support and `dontRedispatch`.
 
 The trix format is based on the
 [UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html). Use
-[jbrowse text-index](/docs/cli#jbrowse-text-index) to generate indexes and
-config automatically. Config slots:
+[jbrowse text-index](/docs/cli#jbrowse-text-index) to generate the index files
+and config automatically. The adapter (shown in the examples above) points at
+three files:
 
-```json
-{
-  "textSearchAdapter": {
-    "type": "TrixTextSearchAdapter",
-    "textSearchAdapterId": "gff3tabix_genes-index",
-    "ixFilePath": {
-      "uri": "trix/gff3tabix_genes.ix"
-    },
-    "ixxFilePath": {
-      "uri": "trix/gff3tabix_genes.ixx"
-    },
-    "metaFilePath": {
-      "uri": "trix/gff3tabix_genes_meta.json"
-    }
-  }
-}
-```
-
-- `ixFilePath` - the location of the trix ix file
-- `ixxFilePath` - the location of the trix ixx file
-- `metaFilePath` - the location of the metadata json file for the trix index
+- `ixFilePath` - the trix `.ix` file
+- `ixxFilePath` - the trix `.ixx` file
+- `metaFilePath` - the metadata JSON file for the index
 
 See the [TrixTextSearchAdapter config docs](/docs/config/trixtextsearchadapter)
 for all options.
@@ -121,12 +111,10 @@ run. Fix with `--force` to overwrite them:
 jbrowse text-index --force
 ```
 
-If `/tmp` is low on disk space, indexing can fail silently. Use `TMPDIR` to
-point elsewhere:
-
-```bash
-TMPDIR=~/alt_tmp_dir jbrowse text-index
-```
+If indexing fails because `/tmp` is low on disk space, override the temp
+directory — see
+[Why am I running out of disk space while trix is running](/docs/faq#why-am-i-running-out-of-disk-space-while-trix-is-running)
+in the FAQ.
 
 ### Only some genes are searchable
 

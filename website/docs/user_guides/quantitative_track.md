@@ -1,5 +1,5 @@
 ---
-title: Quantitative tracks
+title: Quantitative track
 description: BigWig/BedGraph signal tracks
 guide_category: Track types
 ---

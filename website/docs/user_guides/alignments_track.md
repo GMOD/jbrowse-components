@@ -37,40 +37,28 @@ clusters of soft-clipped bases often mark a breakpoint.
 
 ### Sort by options
 
-The pileup can be re-ordered so that reads crossing **the center line** of the
-view are grouped by their value at that position for a specific attribute — base
-pair, read strand, mapping quality, or BAM tag. Showing the center line (next
-section) makes the sort reference point visible.
-
-### Showing the center line
-
-Toggle "Show center line" from the linear genome view menu. The center line is a
-1bp-wide indicator at the middle of the view that the "Sort by" function uses as
-its reference point.
+Sorting uses the **center line** as its reference point: a 1bp-wide indicator at
+the middle of the view, toggled on with "Show center line" from the linear
+genome view menu. **Sort by** then re-orders the pileup so reads are grouped by
+their value at the center-line position for a chosen attribute — base pair, read
+strand, mapping quality, or BAM tag.
 
 <Figure caption="Toggling 'Show center line' from the LGV view menu (top), and the resulting 1bp-wide center line indicator over the pileup (bottom)." src="/img/alignments_center_line.png" />
 
-### Sorting by base pair
-
-With **Sort by base pair** selected in the track menu, the pileup is re-arranged
-so that reads carrying the same base at the center-line position are grouped
-together. Combined with the center line indicator, this lets you quickly see
-haplotype-correlated SNPs.
+With **Sort by base pair**, reads carrying the same base at the center-line
+position are grouped together, which makes haplotype-correlated SNPs easy to
+spot.
 
 <Figure caption="Sort by Base pair groups reads by which nucleotide they carry at the center-line position." src="/img/alignments_sort_by_base.png" />
 
 ### Sort, color, and filter by tag
 
 You can sort, color, or filter reads by any BAM tag. A common workflow is
-coloring and sorting by the HP (haplotype) tag to see phased reads.
+coloring and sorting by the HP (haplotype) tag to see phased reads. To split the
+pileup into per-tag sections instead, see [Grouping reads](#grouping-reads)
+below.
 
 <Figure caption="HG002 ONT reads grouped and colored by the HP (haplotype) tag — the pileup splits into one tinted section per haplotype, so phased reads and their haplotype-correlated SNPs read at a glance." src="/img/alignments/haplotype.png" />
-
-To set this up, open the track menu and choose **Group by…**; the dialog then
-lets you pick a dimension (e.g. a tag such as `HP`) and optionally color reads
-by the same tag.
-
-<Figure caption="Grouping lives in the track menu under Group by…; selecting it opens a dialog where you enter the tag (HP for haplotype) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
 ### Filtering reads
 
@@ -84,14 +72,14 @@ any read carrying the tag.
 
 ### Grouping reads
 
-**Group by** splits the pileup into stacked sections inside the track, one per
-group, sharing a single coverage scale. Grouping by the HP tag turns a phased
-BAM into one pileup per haplotype, which is easier to read than coloring alone.
-Strand, read group (RG), or any other tag work the same way.
+The track menu's **Group by…** opens a dialog where you pick a dimension —
+strand, read group (RG), or any tag such as `HP` (haplotype) — and can
+optionally color reads by the same tag. Each group becomes its own
+coverage+pileup section with a divider label, sharing a single coverage scale,
+so the groups read separately. Grouping by HP turns a phased BAM into one pileup
+per haplotype, which is easier to read than coloring alone.
 
-The track menu's **Group by...** opens a dialog where you pick strand or a tag
-(e.g. `HP` for haplotype). Each group becomes its own coverage+pileup section
-with a divider label, so the haplotypes read separately.
+<Figure caption="Grouping lives in the track menu under Group by…; selecting it opens a dialog where you enter the tag (HP for haplotype) and can color by the same tag." src="/img/alignments/haplotype_groupby.png" />
 
 <Figure caption="A 27 bp heterozygous deletion in HG002 ONT reads, with the pileup separated by HP tag into haplotype 1 (pink) and haplotype 2 (blue). The deletion-supporting reads concentrate in a single haplotype." src="/img/smalldel.png" />
 
@@ -100,15 +88,16 @@ with a divider label, so the haplotypes read separately.
 If a BAM or CRAM file has MM-tag annotations for DNA/RNA modifications, the
 alignments track can color reads by modification. Two modes are available:
 
-- **Modifications** — draws each modification at the positions reported in the
-  MM tag
-- **Modifications** — draws each modification at the positions reported in the
-  MM tag, and _only_ those positions. A read with no modified bases in view
-  draws nothing, so an unmethylated region looks empty in this mode.
-- **Methylation** — draws both unmodified and modified CpGs: methylated CpGs are
-  red and **unmethylated CpGs are blue**. The unmodified (blue) positions are
-  not in the MM tag — this mode infers them from the reference CpG context,
-  which is why they appear in methylation mode but not in modifications mode.
+- **Color by modification type** — draws each modification at the positions
+  reported in the MM tag, and _only_ those positions. A read with no modified
+  bases in view draws nothing, so an unmethylated region looks empty in this
+  mode. "All modification types" colors every type at once; you can also filter
+  to a single type (e.g. 5mC).
+- **Color by methylation** — draws both unmodified and modified CpGs: methylated
+  CpGs are red and **unmethylated CpGs are blue**. The unmodified (blue)
+  positions are not in the MM tag — this mode infers them from the reference CpG
+  context, which is why they appear in methylation mode but not in
+  modification-type mode.
 
 This difference is the key to reading the two panels below. In modifications
 mode, a hypo-methylated CpG island has almost nothing to draw (few/no 5mC

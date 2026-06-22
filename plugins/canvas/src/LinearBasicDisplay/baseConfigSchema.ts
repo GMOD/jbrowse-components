@@ -177,7 +177,18 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       transcriptTypes: {
         type: 'stringArray',
-        defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+        // V/C/D/J_gene_segment are NCBI's coding immunoglobulin/TCR loci: they
+        // carry CDS+exon children like an mRNA, so they get the processed
+        // transcript glyph rather than falling through to plain segments.
+        defaultValue: [
+          'mRNA',
+          'transcript',
+          'primary_transcript',
+          'V_gene_segment',
+          'C_gene_segment',
+          'D_gene_segment',
+          'J_gene_segment',
+        ],
       },
       /**
        * #slot

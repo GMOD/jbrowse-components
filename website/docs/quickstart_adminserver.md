@@ -1,5 +1,5 @@
 ---
-title: Admin server GUI (experimental)
+title: JBrowse admin server quick start (experimental)
 ---
 
 :::caution
@@ -46,7 +46,6 @@ only works while the `admin-server` is running.
 To start the `admin-server`, navigate into your JBrowse 2 directory and run:
 
 ```bash
-## Start the admin-server
 jbrowse admin-server
 ```
 
@@ -114,29 +113,10 @@ selector to access the "Add track" form:
 <Figure caption="The 'Add track' form can be launched from the circular '+' button in the bottom righthand corner" src="/img/add_track_tracklist.png"/>
 
 In the "Add track" form, you can provide a URL or select a local file to load.
-
-The following file formats are supported in core JBrowse 2:
-
-- CRAM
-- BAM
-- VCF (Tabix-indexed)
-- GFF3 (Tabix-indexed)
-- BED (Tabix-indexed)
-- BigBed
-- BigWig
-- JBrowse 1 nested containment lists (NCLists)
-- plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
-- PAF (synteny/dotplot)
-- Indexed FASTA/BGZip indexed FASTA
-- 2bit
-- .hic (Hi-C contact matrix visualization)
-
-Additional data formats can be supported via plugins; check out the
+For the formats JBrowse supports and their accepted index types, see
+[Supported file types](/docs/config_guides/file_types). Additional data formats
+can be supported via plugins; check out the
 [plugin store](/docs/user_guides/plugin_store).
-
-For tabix files, TBI or CSI indexes are allowed. CSI or BAI is allowed for BAM.
-Only CRAI is allowed for CRAM. The index will be inferred for BAI or TBI files
-(e.g. `filename.bai`); specify it explicitly if yours differs.
 
 ### Editing a track
 
@@ -161,5 +141,4 @@ session, or any of your previously saved sessions.
 
 ## Additional resources
 
-There are a number of additional features for configuring JBrowse 2. Make sure
-to refer to the [config guide](/docs/config_guide) for more topics.
+For more configuration topics, see the [config guide](/docs/config_guide).

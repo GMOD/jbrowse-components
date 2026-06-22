@@ -90,10 +90,12 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
     effectiveResolution,
     availableNormalizations,
     activeNormalization,
+    showResolutionControls,
   } = model
 
   const showLegendArea = showLegend && colorMaxScore > 0
-  const showButtons = availableResolutions !== undefined
+  const showButtons =
+    availableResolutions !== undefined && showResolutionControls
   if (!showLegendArea && !showButtons) {
     return null
   }
@@ -173,6 +175,15 @@ const HicOverlayPanel = observer(function HicOverlayPanel({
           >
             −
           </button>
+          <IconButton
+            size="small"
+            title="Hide resolution controls (still in track menu)"
+            onClick={() => {
+              model.setShowResolutionControls(false)
+            }}
+          >
+            <CloseIcon fontSize="inherit" />
+          </IconButton>
         </div>
       ) : null}
       {availableNormalizations && availableNormalizations.length > 1 ? (

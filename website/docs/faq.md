@@ -260,7 +260,7 @@ For per-feature coloring, set `color` to a
 For example, color by strand:
 
 ```json
-    "color": "jexl:get(feature,'strand')==-1?'red':'blue'"
+    "color": "jexl:feature.strand==-1?'red':'blue'"
 ```
 
 The in-app **Color** menu picks a single solid color; to enter a jexl
@@ -533,8 +533,7 @@ around CORS restrictions — the fix must be on the data server.
 At minimum the data server must:
 
 - return `Access-Control-Allow-Origin` matching your JBrowse origin (or `*`),
-- allow the `Range` request header
-  (`Access-Control-Allow-Headers: Range`), and
+- allow the `Range` request header (`Access-Control-Allow-Headers: Range`), and
 - honor byte-range requests — respond `206 Partial Content` with the requested
   bytes (not `200` with the whole file).
 
@@ -572,13 +571,13 @@ aws s3api put-bucket-cors --bucket YOUR_BUCKET --cors-configuration \
   '{"CORSRules":[{"AllowedOrigins":["*"],"AllowedMethods":["GET","HEAD"],"AllowedHeaders":["Range"],"ExposeHeaders":["Content-Range","Content-Length","Accept-Ranges"]}]}'
 ```
 
-`ExposeHeaders` is included above for completeness but isn't required for
-range reads (see above). To verify, open dev tools' Network tab and confirm the
-file request returns `206 Partial Content` with an
-`Access-Control-Allow-Origin` header.
+`ExposeHeaders` is included above for completeness but isn't required for range
+reads (see above). To verify, open dev tools' Network tab and confirm the file
+request returns `206 Partial Content` with an `Access-Control-Allow-Origin`
+header.
 
-For **MinIO**, per-bucket CORS (`mc cors set` / the `put-bucket-cors` S3 API)
-is only available in MinIO AIStor (the commercial edition). The community server
+For **MinIO**, per-bucket CORS (`mc cors set` / the `put-bucket-cors` S3 API) is
+only available in MinIO AIStor (the commercial edition). The community server
 instead controls CORS globally with the `MINIO_API_CORS_ALLOW_ORIGIN`
 environment variable, a comma-separated origin list that defaults to `*` (all
 origins). Set it to your JBrowse origin and restart the server:

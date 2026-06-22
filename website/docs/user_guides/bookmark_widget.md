@@ -48,20 +48,15 @@ directly in the Highlight field, or change multiple bookmarks in bulk via the
 Highlights and labels can be toggled app-wide (via the "Edit colors" dialog) or
 per-view (via a view's "Bookmarks" menu).
 
-### Exporting bookmarks
+### Importing and exporting
 
-You can export bookmarks into a list of regions as a BED or TSV file.
-
-### Importing bookmarks
-
-You can import bookmarks from a list of regions in a BED or TSV file.
-
-Imported bookmarks are appended to your existing bookmarks.
+Export bookmarks to a list of regions as a BED or TSV file, or import them from
+the same formats. Imported bookmarks are appended to your existing bookmarks.
 
 ### Deleting bookmarks
 
-Select bookmarks with the left checkboxes and press "Delete" in the widget menu
-to remove them.
+Select bookmarks (see [Selecting bookmarks](#selecting-bookmarks)) and press
+"Delete" in the widget menu to remove them.
 
 ### Bookmark persistence
 

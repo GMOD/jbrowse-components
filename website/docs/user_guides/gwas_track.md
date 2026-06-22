@@ -53,18 +53,19 @@ pipeline.
 
 ## LD data
 
-With an LD file loaded, points are colored by r² to an index SNP — the
-LocusZoom-style view that reveals which nearby variants are in linkage with the
-lead signal. JBrowse auto-picks the highest-scoring loaded SNP as the index;
-right-click any point to re-anchor the coloring to that SNP.
+With an LD file loaded, points are colored by r² to an index SNP, revealing
+which nearby variants are in linkage with the lead signal (see
+[Add GWAS track workflow](#add-gwas-track-workflow) for how the index is chosen
+and re-anchored).
 
-<Figure caption="LocusZoom-style LD coloring at the STAT4 locus: the lead SNP (purple) tops the plot, and surrounding points shade from red (high r²) down through green to blue (low r²) by their linkage to it — so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
+<Figure caption="LD coloring at the STAT4 locus: the lead SNP (purple) tops the plot, and surrounding points shade from red (high r²) down through green to blue (low r²) by their linkage to it — so the association signal and its linked variants stand out from the background." src="/img/gwas/locuszoom_ld.png" />
 
 The embedded
 [LocusZoom-style LD example](https://jbrowse.org/storybook/lgv/locus-zoom-ld)
 shows this r² coloring running live in a React app.
 
-LD data must be in PLINK `--r2` output format. Generate it from:
+LD data must be in PLINK `--r2` output format (a `.ld` or `.ld.gz` file).
+Generate it from:
 
 - **Your own cohort** — `plink --r2 --ld-window-kb 1000 --ld-window-r2 0`
 - **Reference panel** — 1000 Genomes phase 3 VCFs at

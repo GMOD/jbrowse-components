@@ -155,32 +155,12 @@ for the slot reference.
 
 ### Adding an assembly with the CLI
 
-Generally we add a new assembly with the CLI using something like:
-
-```bash
-# use samtools to make a fasta index for your reference genome
-samtools faidx myfile.fa
-
-# install the jbrowse CLI
-npm install -g @jbrowse/cli
-
-# add the assembly using the jbrowse CLI, this will automatically copy
-# myfile.fa and myfile.fa.fai to your data folder at /var/www/html/jbrowse2
-jbrowse add-assembly myfile.fa --load copy --out /var/www/html/jbrowse2
-```
-
-See our [configure JBrowse using the cli](/docs/quickstart_web/) tutorial for
-more in-depth instructions, or more information on the `add-assembly` command
-through our [CLI tools guide](/docs/cli/#jbrowse-add-assembly).
-
-:::note
-
-Assemblies can also be added graphically using the assembly manager when you are
-using the `admin-server`. See how to
-[configure JBrowse using the admin server GUI](/docs/quickstart_adminserver/)
-for more details.
-
-:::
+Rather than writing this config by hand, the `jbrowse add-assembly` command
+generates it for you (and copies the files into place). See the
+[web quick start](/docs/quickstart_web/) for the full walkthrough, the
+[CLI guide](/docs/cli/#jbrowse-add-assembly) for the `add-assembly` options, or
+the [admin server quick start](/docs/quickstart_adminserver/) to add assemblies
+graphically through the assembly manager.
 
 ### BgzipFastaAdapter
 
@@ -200,8 +180,9 @@ The adapter config uses `fastaLocation`, `faiLocation`, and `gziLocation` as
 shown in the complete config example above.
 
 A reduced form is also accepted: when only `uri` is given, the adapter assumes
-the index files are at `yourfile.fa.gz.fai` and `yourfile.fa.gz.gzi` (the data
-URI with `.fai` and `.gzi` appended). See the
+the index files sit next to the data file with the standard suffixes appended
+(here `yourfile.fa.gz.fai` and `yourfile.fa.gz.gzi`). The other sequence
+adapters below accept the same `uri` shorthand. See the
 [BgzipFastaAdapter config docs](/docs/config/bgzipfastaadapter) for all options.
 
 ```json
@@ -213,8 +194,7 @@ URI with `.fai` and `.gzi` appended). See the
 
 ### IndexedFastaAdapter
 
-An indexed FASTA file is similar to the above, but the sequence is not
-compressed
+An indexed FASTA uses an uncompressed `.fa` plus a `.fai` index.
 
 ```bash
 samtools faidx sequence.fa
@@ -240,8 +220,8 @@ These are loaded into an IndexedFastaAdapter as follows
 }
 ```
 
-A reduced form is also accepted: when only `uri` is given, the adapter assumes
-the index is at `yourfile.fa.fai` (the data URI with `.fai` appended). See the
+The same `uri` shorthand applies (here the index is assumed at
+`yourfile.fa.fai`); see the
 [IndexedFastaAdapter config docs](/docs/config/indexedfastaadapter) for all
 options.
 
@@ -252,7 +232,7 @@ options.
 }
 ```
 
-#### FASTA Header Location
+#### FASTA metadata
 
 Meta-information on the assembly can be specified by adding the following
 section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
@@ -301,7 +281,7 @@ Optionally you can specify a .chrom.sizes file which will speed up loading the
 }
 ```
 
-A reduced form is also accepted, with an optional `chromSizes` shorthand (see
+The `uri` shorthand applies here too, with an optional `chromSizes` field (see
 the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options):
 
 ```json

@@ -34,21 +34,16 @@ The scroll-to-zoom toggle button in the LGV header lets the mouse wheel zoom the
 view directly, without holding `Ctrl`/`Cmd`. Hold `Shift` while scrolling to
 scroll normally instead.
 
-Even with the toggle off, you can zoom at any time by holding `Ctrl`/`Cmd` while
-scrolling the mouse wheel. On a trackpad (a MacBook trackpad in particular), a
-two-finger pinch zooms the view the same way — the browser reports the pinch
-gesture as a `Ctrl`+scroll, so it zooms in and out under the cursor.
-
 <Figure caption="Click the scroll-to-zoom toggle button in the LGV header (top) to enable it; once enabled, the mouse wheel zooms the view (bottom)." src="/img/scroll_zoom_toggle.png" />
 
-#### Re-ordering tracks
+#### Reordering tracks
 
 Click and drag up or down on the drag handle on the track labels (indicated by
 six vertical dots) to reorder tracks.
 
 <Figure caption="The main linear genome view controls, labeled in place: the Add menu opens new views, the track selector button opens the track list, the pan buttons scroll left/right, the zoom buttons and slider zoom the view, the search box accepts regions or feature names, and each track can be reordered by its drag handle or configured from its track menu." src="/img/lgv_usage_guide.png" />
 
-#### Re-ordering views
+#### Reordering views
 
 Unlike tracks, views cannot be reordered by drag-and-drop. Instead, use the view
 menu (hamburger icon) and select "Move up"/"Move down".
@@ -166,7 +161,7 @@ Sharing sessions is not available for JBrowse Desktop.
 
 :::
 
-<Figure caption="The session share dialog, which gives you a short URL to share your session with other users. It is important to use the URLs generated here, rather than copying and pasting your browser's URL to other users." src="/img/share_button.png" />
+<Figure caption="The session share dialog, which gives you a short URL to share your session with other users." src="/img/share_button.png" />
 
 The session URL will contain the following:
 

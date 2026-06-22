@@ -1,71 +1,68 @@
 import type { HicColorScheme } from './components/colorRamp.ts'
-import type { HicRenderMode } from './model.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 interface HicMenuSelf {
   useLogScale: boolean
   useColorPercentile: boolean
   showLegend: boolean | undefined
-  mode: HicRenderMode
+  fitToHeight: boolean
   colorScheme: HicColorScheme | undefined
-  resolutionBias: number
+  showResolutionControls: boolean
   availableNormalizations: string[] | undefined
   activeNormalization: string
   setUseLogScale: (f: boolean) => void
   setUseColorPercentile: (f: boolean) => void
+  setShowResolutionControls: (f: boolean) => void
   setShowLegend: (f: boolean) => void
-  setMode: (m: HicRenderMode) => void
+  setFitToHeight: (f: boolean) => void
   setColorScheme: (s?: HicColorScheme) => void
-  nextResolution: (dir: -1 | 1) => number | undefined
-  stepResolution: (dir: -1 | 1) => void
-  resetResolutionBias: () => void
   setActiveNormalization: (s: string) => void
 }
 
 export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     {
-      label: 'Use log scale',
-      type: 'checkbox',
-      checked: self.useLogScale,
-      onClick: () => {
-        self.setUseLogScale(!self.useLogScale)
-      },
-    },
-    {
-      label: 'Use 95th percentile color scale',
-      type: 'checkbox',
-      checked: self.useColorPercentile,
-      onClick: () => {
-        self.setUseColorPercentile(!self.useColorPercentile)
-      },
-    },
-    {
-      label: 'Show legend',
-      type: 'checkbox',
-      checked: !!self.showLegend,
-      onClick: () => {
-        self.setShowLegend(!self.showLegend)
-      },
-    },
-    {
-      label: 'Rendering mode',
+      label: 'Show...',
       type: 'subMenu',
       subMenu: [
         {
-          label: 'Triangular',
-          type: 'radio',
-          checked: self.mode === 'triangular',
+          label: 'Show legend',
+          type: 'checkbox',
+          checked: !!self.showLegend,
           onClick: () => {
-            self.setMode('triangular')
+            self.setShowLegend(!self.showLegend)
           },
         },
         {
-          label: 'Adjust to height of display',
-          type: 'radio',
-          checked: self.mode === 'adjust',
+          label: 'Show resolution controls',
+          type: 'checkbox',
+          checked: self.showResolutionControls,
           onClick: () => {
-            self.setMode('adjust')
+            self.setShowResolutionControls(!self.showResolutionControls)
+          },
+        },
+        {
+          label: 'Fit to display height',
+          type: 'checkbox',
+          checked: self.fitToHeight,
+          onClick: () => {
+            self.setFitToHeight(!self.fitToHeight)
+          },
+        },
+        {
+          label: 'Log scale',
+          type: 'checkbox',
+          checked: self.useLogScale,
+          onClick: () => {
+            self.setUseLogScale(!self.useLogScale)
+          },
+        },
+        {
+          label: 'Show faint contacts (95th percentile)',
+          type: 'checkbox',
+          checked: self.useColorPercentile,
+          onClick: () => {
+            self.setUseColorPercentile(!self.useColorPercentile)
           },
         },
       ],
@@ -74,6 +71,17 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
       label: 'Color scheme',
       type: 'subMenu',
       subMenu: [
+        {
+          label: 'Juicebox (default)',
+          type: 'radio',
+          // undefined resolves to the juicebox default in generateColorRamp, so
+          // treat both as "Juicebox" rather than offering a redundant 'Default'
+          checked:
+            self.colorScheme === undefined || self.colorScheme === 'juicebox',
+          onClick: () => {
+            self.setColorScheme(undefined)
+          },
+        },
         {
           label: 'Fall',
           type: 'radio',
@@ -90,56 +98,12 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
             self.setColorScheme('viridis')
           },
         },
-        {
-          label: 'Juicebox',
-          type: 'radio',
-          checked: self.colorScheme === 'juicebox',
-          onClick: () => {
-            self.setColorScheme('juicebox')
-          },
-        },
-        {
-          label: 'Default',
-          type: 'radio',
-          checked: self.colorScheme === undefined,
-          onClick: () => {
-            self.setColorScheme(undefined)
-          },
-        },
-      ],
-    },
-    {
-      label: 'Resolution',
-      type: 'subMenu',
-      subMenu: [
-        {
-          label: 'Finer resolution',
-          disabled: self.nextResolution(-1) === undefined,
-          onClick: () => {
-            self.stepResolution(-1)
-          },
-        },
-        {
-          label: 'Coarser resolution',
-          disabled: self.nextResolution(1) === undefined,
-          onClick: () => {
-            self.stepResolution(1)
-          },
-        },
-        {
-          label: 'Auto (no bias)',
-          type: 'checkbox',
-          checked: self.resolutionBias === 0,
-          onClick: () => {
-            self.resetResolutionBias()
-          },
-        },
       ],
     },
     ...(self.availableNormalizations
       ? [
           {
-            label: 'Normalization scheme',
+            label: 'Normalization',
             type: 'subMenu' as const,
             subMenu: self.availableNormalizations.map(
               (norm): MenuItem => ({

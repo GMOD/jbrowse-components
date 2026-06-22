@@ -29,6 +29,10 @@ describe('LinearBasicDisplay configSchema', () => {
       'mRNA',
       'transcript',
       'primary_transcript',
+      'V_gene_segment',
+      'C_gene_segment',
+      'D_gene_segment',
+      'J_gene_segment',
     ])
   })
 
@@ -123,6 +127,10 @@ describe('LinearBasicDisplay configSchema', () => {
       'mRNA',
       'transcript',
       'primary_transcript',
+      'V_gene_segment',
+      'C_gene_segment',
+      'D_gene_segment',
+      'J_gene_segment',
     ])
   })
 

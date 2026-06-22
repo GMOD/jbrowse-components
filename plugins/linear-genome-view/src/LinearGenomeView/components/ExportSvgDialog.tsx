@@ -53,7 +53,7 @@ export default function ExportSvgDialog({
         select
         label="Track label positioning"
         variant="outlined"
-        style={{ width: 150 }}
+        style={{ minWidth: 200 }}
         value={trackLabels}
         onChange={event => {
           setTrackLabels(event.target.value as TrackLabelMode)

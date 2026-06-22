@@ -123,7 +123,7 @@ export default function BaseExportSvgDialog({
             select
             label="Theme"
             variant="outlined"
-            style={{ width: 150 }}
+            style={{ minWidth: 200 }}
             value={themeName}
             onChange={event => {
               setThemeName(event.target.value)

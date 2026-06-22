@@ -1,5 +1,5 @@
 ---
-title: Multi-sample variant displays
+title: Multi-sample variant display
 description: Population-level variant views
 guide_category: Track types
 ---

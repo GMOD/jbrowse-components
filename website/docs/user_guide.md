@@ -11,14 +11,14 @@ title: User guide
 
 - [Alignments track](/docs/user_guides/alignments_track) - Learn how to show BAM and CRAM files
 - [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence extraction for selected features
-- [Gene tracks](/docs/user_guides/gene_track) - Transcript display modes, collapsing introns, color by CDS reading frame, peptide lettering, and mature peptides on gene/transcript tracks
+- [Gene track](/docs/user_guides/gene_track) - Transcript display modes, collapsing introns, color by CDS reading frame, peptide lettering, and mature peptides on gene/transcript tracks
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) - Visualize genome-wide association study results as an interactive Manhattan plot
 - [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
-- [Multi-quantitative tracks](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
-- [Multi-sample variant displays](/docs/user_guides/multivariant_track) - Population-level variant views
-- [Quantitative tracks](/docs/user_guides/quantitative_track) - BigWig/BedGraph signal tracks
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
+- [Multi-sample variant display](/docs/user_guides/multivariant_track) - Population-level variant views
+- [Quantitative track](/docs/user_guides/quantitative_track) - BigWig/BedGraph signal tracks
 - [Sequence track](/docs/user_guides/sequence_track) - Reference sequence display
-- [Variant tracks](/docs/user_guides/variant_track) - VCF variant display
+- [Variant track](/docs/user_guides/variant_track) - VCF variant display
 
 ## Views
 

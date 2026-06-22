@@ -59,45 +59,14 @@ In `config.json`:
   "defaultSession": {
     "id": "eXr4hv4VX",
     "name": "Session",
-    "views": [
-      {
-        "id": "eXr4hv4VX-view",
-        "type": "LinearGenomeView",
-        "offsetPx": 14500,
-        "bpPerPx": 1.7,
-        "displayedRegions": [
-          {
-            "refName": "ctgA",
-            "start": 0,
-            "end": 50001,
-            "reversed": false,
-            "assemblyName": "volvox"
-          }
-        ]
-      }
-    ]
+    "views": [ ... same as the exported session above ... ]
   },
-  "tracks": [
-    {
-      "type": "VariantTrack",
-      "trackId": "variants",
-      "name": "variants",
-      "assemblyNames": ["volvox"],
-      "adapter": {
-        "type": "VcfTabixAdapter",
-        "vcfGzLocation": {
-          "uri": "volvox.dup.vcf.gz"
-        },
-        "index": {
-          "location": {
-            "uri": "volvox.dup.vcf.gz.tbi"
-          }
-        }
-      }
-    }
-  ]
+  "tracks": [ ... ]
 }
 ```
+
+The `defaultSession` value is exactly the `session` object you exported — copy
+it in verbatim.
 
 :::info
 

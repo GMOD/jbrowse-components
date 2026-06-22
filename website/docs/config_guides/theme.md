@@ -6,8 +6,8 @@ guide_category: Other features
 
 ### Color
 
-The color scheme as well as some sizing options can be configured via the theme.
-This is done via a top-level configuration in the config file. For example:
+The color scheme and some sizing options are configured via a top-level `theme`
+in the config file. For example:
 
 ```json
 {
@@ -38,6 +38,10 @@ The customized theme screenshot uses the below configuration:
 | Secondary  | #0097a7    | Cyan        |
 | Tertiary   | #f57c00    | Orange      |
 | Quaternary | #d50000    | Red         |
+
+`tertiary` and `quaternary` are JBrowse extensions to the standard MUI palette
+(which has only `primary`/`secondary`); the rest of the palette behaves as MUI
+documents.
 
 ```json
 {
@@ -142,8 +146,7 @@ most options that you can pass to Material-UI's
 [`createTheme`](https://mui.com/material-ui/customization/theming/#createtheme-options-args-theme)
 should work in the theme configuration.
 
-Some aspects of the theme, like style overrides, can accept callback functions
-which are not available via the config, but could be added via a plugin. See
-[this example plugin](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js)
-for an example of adding a theme via a plugin. This example also contains
-examples of overriding the 'default' theme from a plugin.
+Some aspects of the theme, like style overrides, accept callback functions that
+can't be expressed in the config but can be added via a plugin. See
+[this example plugin](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js),
+which adds a theme and overrides the 'default' theme from a plugin.

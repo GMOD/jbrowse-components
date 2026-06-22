@@ -1,5 +1,5 @@
 ---
-title: Gene tracks
+title: Gene track
 description:
   Transcript display modes, collapsing introns, color by CDS reading frame,
   peptide lettering, and mature peptides on gene/transcript tracks
