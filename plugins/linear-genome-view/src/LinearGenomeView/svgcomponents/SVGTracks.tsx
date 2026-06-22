@@ -76,8 +76,8 @@ export default function SVGTracks({
             </defs>
             <g clipPath={`url(#${clipId})`}>
               <g transform={`translate(${trackLabelOffset} ${textOffset})`}>
-                <SVGRegionSeparators model={model} height={display.height} />
                 {result}
+                <SVGRegionSeparators model={model} height={display.height} />
               </g>
             </g>
             <SVGTrackLabel
