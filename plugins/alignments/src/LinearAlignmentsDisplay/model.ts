@@ -2538,9 +2538,7 @@ export default function stateModelFactory(
             getReadsMenuItem(self),
             getFeatureHeightMenuItem(self),
             getCoverageMenuItem(self),
-            getReadConnectionsMenuItem(self, {
-              showPairFilters: self.isChainMode,
-            }),
+            getReadConnectionsMenuItem(self),
             getSashimiMenuItem(self),
           ] satisfies MenuItem[]
         },

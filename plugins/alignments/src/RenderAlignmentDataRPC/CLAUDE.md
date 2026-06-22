@@ -4,10 +4,11 @@
 
 `RenderAlignmentData` (`executeRenderAlignmentData.ts`) serves both displays,
 branching on `args.linkedReads` (`'off'` → pileup, else chain). Shared spine
-(fetch → arrays → coverage → assembly); only pre-processing differs — chain:
-dedupe + singleton/proper-pair filter + chain metadata; pileup: ref-sequence
-fetch + sort-tag values. Chain-only result fields are optional on
-`PileupDataResult`.
+(fetch → arrays → coverage → assembly); only pre-processing differs — both run
+the dedupe + singleton/proper-pair filter (grouped by read name, so it applies
+in pileup too); chain additionally builds chain metadata, pileup additionally
+does ref-sequence fetch + sort-tag values. Chain-only result fields are optional
+on `PileupDataResult`.
 
 ## Group-by partition: pileup per-read, chain per-chain
 

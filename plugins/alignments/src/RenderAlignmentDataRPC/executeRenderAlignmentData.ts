@@ -376,20 +376,20 @@ export async function executeRenderAlignmentData({
     stopToken,
   })
 
-  // Chain mode dedupes + filters reads into chains up front; only bisulfite
-  // needs the reference sequence (its methylation is read-vs-reference C->T).
-  // modBAM modifications/methylation derive everything from the reads, including
-  // the mod-coverage denominator (computeReadBaseCounts), so they fetch nothing.
-  let inputFeatures = featuresArray
+  // The singleton/proper-pair filter groups reads by name, so it applies in
+  // both pileup and chain mode (it short-circuits to a plain dedupe when both
+  // are kept, the default). Only bisulfite needs the reference sequence (its
+  // methylation is read-vs-reference C->T). modBAM modifications/methylation
+  // derive everything from the reads, including the mod-coverage denominator
+  // (computeReadBaseCounts), so they fetch nothing.
   let regionSequence: string | undefined
   let regionSequenceStart = region.start
-  if (isChain) {
-    inputFeatures = filterChainFeatures(
-      featuresArray,
-      drawSingletons,
-      drawProperPairs,
-    )
-  } else if (colorBy?.type === 'bisulfite' && sequenceAdapter) {
+  const inputFeatures = filterChainFeatures(
+    featuresArray,
+    drawSingletons,
+    drawProperPairs,
+  )
+  if (!isChain && colorBy?.type === 'bisulfite' && sequenceAdapter) {
     const result = await fetchReferenceSequence({
       pluginManager,
       sessionId,

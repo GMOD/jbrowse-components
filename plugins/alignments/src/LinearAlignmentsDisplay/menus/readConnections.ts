@@ -34,14 +34,11 @@ interface ReadConnectionsModel {
 }
 
 // Everything about pairing/connecting reads lives here, so the concept is in one
-// place rather than split across "Show...". Sub-options are revealed only when
-// the mode they tune is active (never shown disabled): pair filters appear with
-// linked reads, the arc/cloud band options appear with an overlay.
-export function getReadConnectionsMenuItem(
-  model: ReadConnectionsModel,
-  opts: { showPairFilters?: boolean } = {},
-) {
-  const showPairFilters = opts.showPairFilters ?? false
+// place rather than split across "Show...". The singleton/proper-pair filters
+// apply in plain pileup too (they're per-name/per-read, not pairing-specific),
+// so they're always shown; the arc/cloud band options are revealed only when an
+// overlay is active (never shown disabled).
+export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
   const linked = model.linkedReads !== 'off'
   const overlayActive = model.readConnections !== 'off'
   return {
@@ -56,24 +53,12 @@ export function getReadConnectionsMenuItem(
           model.setLinkedReads(model.linkedReads === 'off' ? 'normal' : 'off')
         },
       ),
-      ...(linked && showPairFilters
-        ? [
-            checkboxItem(
-              'Show singletons',
-              model.drawSingletons ?? false,
-              () => {
-                model.setDrawSingletons?.(!model.drawSingletons)
-              },
-            ),
-            checkboxItem(
-              'Show proper pairs',
-              model.drawProperPairs ?? false,
-              () => {
-                model.setDrawProperPairs?.(!model.drawProperPairs)
-              },
-            ),
-          ]
-        : []),
+      checkboxItem('Show singletons', model.drawSingletons ?? false, () => {
+        model.setDrawSingletons?.(!model.drawSingletons)
+      }),
+      checkboxItem('Show proper pairs', model.drawProperPairs ?? false, () => {
+        model.setDrawProperPairs?.(!model.drawProperPairs)
+      }),
       // Arcs and read cloud share one band and the read cloud repurposes the
       // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two
       // overlays are mutually exclusive — enabling one disables the other.
