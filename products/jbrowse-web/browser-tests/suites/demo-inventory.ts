@@ -70,7 +70,11 @@ const loadChecks: [string, string, string?][] = [
   ['Honeybee', 'test_data/honeybee/config.json'],
   ['Grape-peach synteny', 'test_data/config_synteny_grape_peach.json'],
   ['CFAM2 (dog genome)', 'test_data/cfam2/config.json'],
-  ['Maize EDTA transposable elements', 'test_data/maize_te/config.json', 'chr1'],
+  [
+    'Maize EDTA transposable elements',
+    'test_data/maize_te/config.json',
+    'chr1',
+  ],
 ]
 
 const localDemos: TestSuite = {

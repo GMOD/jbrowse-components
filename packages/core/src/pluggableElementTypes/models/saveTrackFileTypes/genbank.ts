@@ -134,7 +134,10 @@ export function formatFeatWithSubfeatures({
   const segments = exons.length > 0 ? exons : [feature]
   const location = joinLoc(segments, strand, minPos)
 
-  const primary = [featureLine(type, location), ...formatTags({ feature, gene })]
+  const primary = [
+    featureLine(type, location),
+    ...formatTags({ feature, gene }),
+  ]
 
   const cds = subfeatures.filter(f => f.get('type') === 'CDS')
   const sansCDS = subfeatures.filter(

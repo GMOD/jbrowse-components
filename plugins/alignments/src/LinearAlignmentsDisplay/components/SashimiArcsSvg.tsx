@@ -22,7 +22,12 @@ function SashimiSide({
     <g transform={`translate(0,${top})`}>
       {arcs.map(arc => (
         <g key={sashimiArcKey(arc)}>
-          <path d={arc.d} stroke={arc.stroke} strokeWidth={arc.strokeWidth} fill="none" />
+          <path
+            d={arc.d}
+            stroke={arc.stroke}
+            strokeWidth={arc.strokeWidth}
+            fill="none"
+          />
           {arc.showLabel && showLabels ? (
             <SashimiArcLabel x={arc.labelX} y={arc.labelY} score={arc.score} />
           ) : null}
@@ -45,7 +50,11 @@ const SashimiArcsSvg = observer(function SashimiArcsSvg({
   return (
     <>
       {model.sashimiSections.map(section => {
-        const arcs = computeSashimiArcsFromModel(model, view, section.rpcDataMap)
+        const arcs = computeSashimiArcsFromModel(
+          model,
+          view,
+          section.rpcDataMap,
+        )
         return arcs.length ? (
           <g key={section.groupKey}>
             <SashimiSide

@@ -6,7 +6,6 @@ import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-
 import Ruler from '../components/Ruler.tsx'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'

@@ -94,7 +94,11 @@ const SashimiSubBand = observer(function SashimiSubBand({
               }}
             />
             {arc.showLabel && model.showSashimiLabels ? (
-              <SashimiArcLabel x={arc.labelX} y={arc.labelY} score={arc.score} />
+              <SashimiArcLabel
+                x={arc.labelX}
+                y={arc.labelY}
+                score={arc.score}
+              />
             ) : null}
           </g>
         )

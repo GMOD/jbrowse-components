@@ -9,7 +9,9 @@ function bytesToBinaryString(bytes: Uint8Array) {
 // unlike crypto.subtle which requires HTTPS.
 function generateUID(length: number) {
   return window
-    .btoa(bytesToBinaryString(crypto.getRandomValues(new Uint8Array(length * 2))))
+    .btoa(
+      bytesToBinaryString(crypto.getRandomValues(new Uint8Array(length * 2))),
+    )
     .replaceAll(/[+/]/g, '')
     .slice(0, length)
 }

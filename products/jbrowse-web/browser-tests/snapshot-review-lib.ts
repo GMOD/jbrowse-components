@@ -36,7 +36,9 @@ function readDirFiles(dir: string) {
     ? new Set(
         fs
           .readdirSync(dir)
-          .filter(f => /\.(png|svg)$/.test(f) && !/\.diff(-visual)?\.png$/.test(f)),
+          .filter(
+            f => /\.(png|svg)$/.test(f) && !/\.diff(-visual)?\.png$/.test(f),
+          ),
       )
     : new Set<string>()
 }

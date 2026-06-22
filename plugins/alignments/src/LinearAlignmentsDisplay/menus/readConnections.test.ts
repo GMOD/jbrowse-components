@@ -92,7 +92,9 @@ describe('read-connection band options appear only with an active overlay', () =
   test('hidden when no overlay is active', () => {
     const model = makeModel()
     expect(findByLabel(model, 'Draw below coverage band')).toBeUndefined()
-    expect(findByLabel(model, 'Show off-screen mate connections')).toBeUndefined()
+    expect(
+      findByLabel(model, 'Show off-screen mate connections'),
+    ).toBeUndefined()
   })
 
   test('revealed and functional when arcs are on', () => {

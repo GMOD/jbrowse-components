@@ -84,7 +84,10 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           {displayResults.map(({ view, data }, idx) => {
             const yOffset = fontSize + sum(heights.slice(0, idx))
             return (
-              <g key={view.id} transform={`translate(${exportMargin} ${yOffset})`}>
+              <g
+                key={view.id}
+                transform={`translate(${exportMargin} ${yOffset})`}
+              >
                 <g transform={`translate(${trackLabelOffset})`}>
                   <text
                     x={0}

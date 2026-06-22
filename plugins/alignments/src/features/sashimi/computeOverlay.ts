@@ -229,7 +229,8 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       1,
       Math.max(0, (Math.log(genomicSpan) - logRefMin) / logRefRange),
     )
-    const arcHeight = band * (MIN_ARC_FRAC + (MAX_ARC_FRAC - MIN_ARC_FRAC) * norm)
+    const arcHeight =
+      band * (MIN_ARC_FRAC + (MAX_ARC_FRAC - MIN_ARC_FRAC) * norm)
     const ctrl = baseline + dir * arcHeight
     arcs.push({
       d: `M ${a.left} ${baseline} C ${a.left} ${ctrl}, ${a.right} ${ctrl}, ${a.right} ${baseline}`,

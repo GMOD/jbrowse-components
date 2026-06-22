@@ -6,7 +6,10 @@ import {
   computeStackedSections,
 } from './sectionLayout.ts'
 
-import type { BelowCoverageBandsInput, SectionsLayout } from './sectionLayout.ts'
+import type {
+  BelowCoverageBandsInput,
+  SectionsLayout,
+} from './sectionLayout.ts'
 
 const baseBands: BelowCoverageBandsInput = {
   showCoverage: true,

@@ -206,7 +206,9 @@ const PileupBody = observer(function PileupBody({
 
       <VerticalScrollbar
         scrollTop={model.scrollTop}
-        setScrollTop={n => { model.setScrollTop(n) }}
+        setScrollTop={n => {
+          model.setScrollTop(n)
+        }}
         viewportHeight={model.pileupViewportHeight}
         contentHeight={model.pileupContentHeight}
         top={topOffset}

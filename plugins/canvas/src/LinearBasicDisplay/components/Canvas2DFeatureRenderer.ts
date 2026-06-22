@@ -213,7 +213,8 @@ function drawContinuation(
         const effectiveStrand = strand === 0 ? 1 : strand
         const strandMatchesEdge = Math.max(0, effectiveStrand) // edgeSide=1
         for (let p = 0; p < 2; p++) {
-          const anchorX = scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p
+          const anchorX =
+            scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p
           const apexX = anchorX - CONT_TRI_W_PX * (1 - strandMatchesEdge)
           strokeTriangle(ctx, apexX, effectiveStrand, cy, halfH)
         }

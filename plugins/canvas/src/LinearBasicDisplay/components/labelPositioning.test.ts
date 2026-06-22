@@ -1,4 +1,7 @@
-import { forEachDisplayLabel, forEachRenderedLabel } from './labelPositioning.ts'
+import {
+  forEachDisplayLabel,
+  forEachRenderedLabel,
+} from './labelPositioning.ts'
 
 import type {
   LabelVisibility,

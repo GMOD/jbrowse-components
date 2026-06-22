@@ -50,92 +50,92 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         self.views = cast(reorder(self.views, idx, direction))
       }
       return {
-      /**
-       * #action
-       */
-      moveViewDown(id: string) {
-        move(id, 'down')
-      },
-      /**
-       * #action
-       */
-      moveViewUp(id: string) {
-        move(id, 'up')
-      },
-      /**
-       * #action
-       */
-      moveViewToTop(id: string) {
-        move(id, 'top')
-      },
+        /**
+         * #action
+         */
+        moveViewDown(id: string) {
+          move(id, 'down')
+        },
+        /**
+         * #action
+         */
+        moveViewUp(id: string) {
+          move(id, 'up')
+        },
+        /**
+         * #action
+         */
+        moveViewToTop(id: string) {
+          move(id, 'top')
+        },
 
-      /**
-       * #action
-       */
-      moveViewToBottom(id: string) {
-        move(id, 'bottom')
-      },
+        /**
+         * #action
+         */
+        moveViewToBottom(id: string) {
+          move(id, 'bottom')
+        },
 
-      /**
-       * #action
-       */
-      addView(typeName: string, initialState = {}) {
-        const length = self.views.push({
-          ...initialState,
-          type: typeName,
-        })
-        return self.views[length - 1]
-      },
+        /**
+         * #action
+         */
+        addView(typeName: string, initialState = {}) {
+          const length = self.views.push({
+            ...initialState,
+            type: typeName,
+          })
+          return self.views[length - 1]
+        },
 
-      /**
-       * #action
-       */
-      removeView(view: IBaseViewModel) {
-        for (const [, widget] of self.activeWidgets) {
-          if (widget.view?.id === view.id) {
-            self.hideWidget(widget)
+        /**
+         * #action
+         */
+        removeView(view: IBaseViewModel) {
+          for (const [, widget] of self.activeWidgets) {
+            if (widget.view?.id === view.id) {
+              self.hideWidget(widget)
+            }
           }
-        }
-        self.views.remove(view)
-      },
+          self.views.remove(view)
+        },
 
-      /**
-       * #action
-       */
-      setStickyViewHeaders(sticky: boolean) {
-        self.stickyViewHeaders = sticky
-      },
+        /**
+         * #action
+         */
+        setStickyViewHeaders(sticky: boolean) {
+          self.stickyViewHeaders = sticky
+        },
 
-      /**
-       * #action
-       */
-      setUseWorkspaces(useWorkspaces: boolean) {
-        self.useWorkspaces = useWorkspaces
-      },
+        /**
+         * #action
+         */
+        setUseWorkspaces(useWorkspaces: boolean) {
+          self.useWorkspaces = useWorkspaces
+        },
 
-      afterAttach() {
-        addDisposer(
-          self,
-          autorun(
-            function stickyViewHeadersAutorun() {
-              localStorageSetBoolean(
-                'stickyViewHeaders',
-                self.stickyViewHeaders,
-              )
-            },
-            { name: 'StickyViewHeaders' },
-          ),
-        )
-        addDisposer(
-          self,
-          autorun(
-            function workspacesAutorun() {
-              localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
-            },
-            { name: 'UseWorkspaces' },
-          ),
-        )
-      },
+        afterAttach() {
+          addDisposer(
+            self,
+            autorun(
+              function stickyViewHeadersAutorun() {
+                localStorageSetBoolean(
+                  'stickyViewHeaders',
+                  self.stickyViewHeaders,
+                )
+              },
+              { name: 'StickyViewHeaders' },
+            ),
+          )
+          addDisposer(
+            self,
+            autorun(
+              function workspacesAutorun() {
+                localStorageSetBoolean('useWorkspaces', self.useWorkspaces)
+              },
+              { name: 'UseWorkspaces' },
+            ),
+          )
+        },
       }
     })
     .postProcessSnapshot(snap => {

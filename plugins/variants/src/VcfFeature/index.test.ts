@@ -168,8 +168,7 @@ test('null ALT', () => {
 
 test('getSOTermAndDescription returns correct SO term for symbolic alleles', () => {
   const parser = createParser()
-  const soTerm = (alt: string) =>
-    getSOTermAndDescription('N', [alt], parser)[0]
+  const soTerm = (alt: string) => getSOTermAndDescription('N', [alt], parser)[0]
 
   expect(soTerm('<DEL>')).toBe('deletion')
   expect(soTerm('<INS>')).toBe('insertion')

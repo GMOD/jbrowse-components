@@ -7,9 +7,11 @@ import {
 } from './hitTesting.ts'
 
 import type {
-  FlatbushRegionIndexes, HitFeatureResult,
+  FlatbushRegionIndexes,
+  HitFeatureResult,
   LabelVisibility,
-  VisibleRegion } from './hitTesting.ts'
+  VisibleRegion,
+} from './hitTesting.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
@@ -497,9 +499,11 @@ test('hoverTooltip falls back to the feature mouseover slot', () => {
 
 test('hoverTooltip prefers the subfeature label over the feature mouseover', () => {
   const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
-  expect(hoverTooltip(makeHit({ subfeature: { ...sub, displayLabel: 'BRCA1-201' } }))).toBe(
-    'BRCA1-201',
-  )
+  expect(
+    hoverTooltip(
+      makeHit({ subfeature: { ...sub, displayLabel: 'BRCA1-201' } }),
+    ),
+  ).toBe('BRCA1-201')
 })
 
 test('hoverTooltip prefixes the residue with the isoform when over a codon', () => {
@@ -515,7 +519,9 @@ test('hoverTooltip prefixes the residue with the isoform when over a codon', () 
 })
 
 test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
-  expect(hoverTooltip(makeHit({ peptide: makeAa('K', 0, 3, 123) }))).toBe('K124')
+  expect(hoverTooltip(makeHit({ peptide: makeAa('K', 0, 3, 123) }))).toBe(
+    'K124',
+  )
 })
 
 test('subfeature label hit area is reserved only when showSubfeatureLabels is true', () => {

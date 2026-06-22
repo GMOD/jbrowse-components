@@ -86,9 +86,15 @@ export default function VerticalScrollbar({
       },
       { signal: ac.signal },
     )
-    document.addEventListener('mouseup', () => { ac.abort() }, {
-      signal: ac.signal,
-    })
+    document.addEventListener(
+      'mouseup',
+      () => {
+        ac.abort()
+      },
+      {
+        signal: ac.signal,
+      },
+    )
   }
 
   return (

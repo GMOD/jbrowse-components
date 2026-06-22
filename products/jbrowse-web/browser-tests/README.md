@@ -92,10 +92,11 @@ Two views:
   when its pixels actually change — and re-validates automatically if an image
   is changed and then reverted to the approved bytes. The default "Needs review"
   filter hides approved-and-unchanged snapshots so you never re-litigate them.
-- **Backends** — the same snapshot rendered by `canvas2d`, `webgl`, and
-  `webgpu` side by side, with the pairwise drift % and a visual diff per pair.
-  The "Drifting" filter surfaces snapshots whose backends disagree by ≥5% (the
-  same similar/different split `compare-backends.ts` uses).
+
+- **Backends** — the same snapshot rendered by `canvas2d`, `webgl`, and `webgpu`
+  side by side, with the pairwise drift % and a visual diff per pair. The
+  "Drifting" filter surfaces snapshots whose backends disagree by ≥5% (the same
+  similar/different split `compare-backends.ts` uses).
 
 `compare-backends.ts` is the headless equivalent — it prints per-pair drift and
 writes diff PNGs to `__snapshots__/backend-diffs/`:

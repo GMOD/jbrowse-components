@@ -34,7 +34,10 @@ function CytobandOverview({
     minimumBlockWidth,
   })
   const block = calculateDynamicBlocks(overview).contentBlocks[0]
-  const span = getContentBlocksPxSpan(overview, model.dynamicBlocks.contentBlocks)
+  const span = getContentBlocksPxSpan(
+    overview,
+    model.dynamicBlocks.contentBlocks,
+  )
   return block && span ? (
     <g transform={`translate(0 ${rulerHeight})`}>
       <Cytobands

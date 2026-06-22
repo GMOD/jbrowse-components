@@ -86,7 +86,9 @@ describe('findGlyph routing for repeat_region', () => {
 
   it('routes a childless repeat_region to Box', () => {
     const feature = mockFeature({ type: 'repeat_region', start: 1, end: 9 })
-    expect(findGlyph(feature, config)({ feature, config }).glyphType).toBe('Box')
+    expect(findGlyph(feature, config)({ feature, config }).glyphType).toBe(
+      'Box',
+    )
   })
 })
 

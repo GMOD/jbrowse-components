@@ -28,7 +28,13 @@ import * as rectShader from './shaders/rect.generated.ts'
 
 import type { PassDescriptor } from '@jbrowse/render-core/hal'
 
-export { arrowShader, chevronShader, continuationShader, lineShader, rectShader }
+export {
+  arrowShader,
+  chevronShader,
+  continuationShader,
+  lineShader,
+  rectShader,
+}
 
 // Pass IDs — the join key passed to `uploadBuffer` / `drawPass`.
 export const RECT_PASS = 'rect'

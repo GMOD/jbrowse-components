@@ -254,7 +254,9 @@ server.listen(port, () => {
   console.log(
     `Snapshots: ${path.relative(process.cwd(), snapshotsDir)} (${BACKENDS.join(', ')})`,
   )
-  console.log(`Writing verdicts to: ${path.relative(process.cwd(), reportPath)}`)
+  console.log(
+    `Writing verdicts to: ${path.relative(process.cwd(), reportPath)}`,
+  )
   console.log('Computing cross-backend drift in the background…')
   buildCompareCacheInBackground().catch((err: unknown) => {
     console.error(`drift computation failed: ${err}`)

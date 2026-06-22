@@ -61,8 +61,8 @@ plink --vcf study.vcf.gz --r2 dprime with-freqs \
   --out study
 ```
 
-This writes `study.ld` with columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2`
-(plus `DP` for D' and `MAF_A`/`MAF_B` from the `dprime`/`with-freqs` flags).
+This writes `study.ld` with columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2` (plus
+`DP` for D' and `MAF_A`/`MAF_B` from the `dprime`/`with-freqs` flags).
 `--ld-window-r2 0` keeps every pair (PLINK otherwise drops pairs below r²=0.2),
 and the `--ld-window*` flags raise the default limits on how far apart paired
 SNPs may be — tune them to the span you want rendered.

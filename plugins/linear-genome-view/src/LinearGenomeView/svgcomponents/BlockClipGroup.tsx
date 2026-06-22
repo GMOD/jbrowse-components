@@ -20,7 +20,11 @@ export default function BlockClipGroup({
 }) {
   return (
     <g transform={`translate(${block.offsetPx - viewOffsetPx} 0)`}>
-      <SvgClipRect id={`${idPrefix}-${block.key}`} width={block.widthPx} height={height}>
+      <SvgClipRect
+        id={`${idPrefix}-${block.key}`}
+        width={block.widthPx}
+        height={height}
+      >
         {children}
       </SvgClipRect>
     </g>

@@ -112,7 +112,8 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     config: 'test_data/maize_te/config.json',
-    label: 'Maize EDTA transposable elements (intact LTR retrotransposon subparts)',
+    label:
+      'Maize EDTA transposable elements (intact LTR retrotransposon subparts)',
   },
   {
     config: 'test_data/human_mito/config.json',

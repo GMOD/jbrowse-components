@@ -129,7 +129,9 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
       />
       <VerticalScrollbar
         scrollTop={model.scrollTop}
-        setScrollTop={n => { model.setScrollTop(n) }}
+        setScrollTop={n => {
+          model.setScrollTop(n)
+        }}
         viewportHeight={model.availableHeight}
         contentHeight={model.totalHeight}
       />
