@@ -28,7 +28,7 @@ const useStyles = makeStyles()(theme => ({
       left: '50%',
       width: 3,
       transform: 'translateX(-50%)',
-      background: theme.palette.primary.main,
+      background: theme.palette.grey[500],
       opacity: 0,
       boxShadow: `0 0 0 1px ${alpha('#fff', 0.6)}`,
       transition: 'opacity 100ms',

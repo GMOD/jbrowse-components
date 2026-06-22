@@ -20,7 +20,7 @@ const useStyles = makeStyles()({
     position: 'absolute',
     top: 0,
     width: 1,
-    background: 'black',
+    background: '#777',
     pointerEvents: 'none',
   },
   row: {
