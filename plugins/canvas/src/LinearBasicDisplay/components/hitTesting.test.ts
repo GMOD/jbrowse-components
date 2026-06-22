@@ -1,15 +1,15 @@
 import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
+  hoverTooltip,
   isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
 
 import type {
-  FlatbushRegionIndexes,
+  FlatbushRegionIndexes, HitFeatureResult,
   LabelVisibility,
-  VisibleRegion,
-} from './hitTesting.ts'
+  VisibleRegion } from './hitTesting.ts'
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
@@ -479,6 +479,43 @@ test('label hit area collapses when showLabels is false', () => {
     { showLabels: false, showDescriptions: false, showSubfeatureLabels: true },
   )
   expect(result.feature).toBeNull()
+})
+
+function makeHit(over: Partial<HitFeatureResult>): HitFeatureResult {
+  return {
+    feature: { ...makeItem('gene1', 0, 100, 0, 20), tooltip: 'gene mouseover' },
+    subfeature: null,
+    peptide: null,
+    displayedRegionIndex: 0,
+    ...over,
+  }
+}
+
+test('hoverTooltip falls back to the feature mouseover slot', () => {
+  expect(hoverTooltip(makeHit({}))).toBe('gene mouseover')
+})
+
+test('hoverTooltip prefers the subfeature label over the feature mouseover', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(hoverTooltip(makeHit({ subfeature: { ...sub, displayLabel: 'BRCA1-201' } }))).toBe(
+    'BRCA1-201',
+  )
+})
+
+test('hoverTooltip prefixes the residue with the isoform when over a codon', () => {
+  const sub = makeSub('mRNA1', 'gene1', 0, 100, 0, 20)
+  expect(
+    hoverTooltip(
+      makeHit({
+        subfeature: { ...sub, displayLabel: 'BRCA1-201' },
+        peptide: makeAa('K', 0, 3, 123),
+      }),
+    ),
+  ).toBe('BRCA1-201 K124')
+})
+
+test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
+  expect(hoverTooltip(makeHit({ peptide: makeAa('K', 0, 3, 123) }))).toBe('K124')
 })
 
 test('subfeature label hit area is reserved only when showSubfeatureLabels is true', () => {

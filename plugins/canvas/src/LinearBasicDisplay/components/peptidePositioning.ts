@@ -18,51 +18,6 @@ export interface PeptideCell {
   text: string
 }
 
-// One-letter code → three-letter abbreviation + full name, for hover tooltips.
-// U/O are selenocysteine/pyrrolysine (transl_except residues); * is a stop and
-// X is an unknown/ambiguous residue.
-const aminoAcidNames: Record<string, [string, string]> = {
-  A: ['Ala', 'Alanine'],
-  R: ['Arg', 'Arginine'],
-  N: ['Asn', 'Asparagine'],
-  D: ['Asp', 'Aspartate'],
-  C: ['Cys', 'Cysteine'],
-  E: ['Glu', 'Glutamate'],
-  Q: ['Gln', 'Glutamine'],
-  G: ['Gly', 'Glycine'],
-  H: ['His', 'Histidine'],
-  I: ['Ile', 'Isoleucine'],
-  L: ['Leu', 'Leucine'],
-  K: ['Lys', 'Lysine'],
-  M: ['Met', 'Methionine'],
-  F: ['Phe', 'Phenylalanine'],
-  P: ['Pro', 'Proline'],
-  S: ['Ser', 'Serine'],
-  T: ['Thr', 'Threonine'],
-  W: ['Trp', 'Tryptophan'],
-  Y: ['Tyr', 'Tyrosine'],
-  V: ['Val', 'Valine'],
-  U: ['Sec', 'Selenocysteine'],
-  O: ['Pyl', 'Pyrrolysine'],
-}
-
-// Tooltip text for a single hovered amino-acid codon, e.g.
-// "Lys (K) · residue 124". Stop codons and partial codons (split across an exon
-// boundary) get a trailing note.
-export function peptideTooltipText(item: AminoAcidOverlayItem) {
-  const { aminoAcid, proteinIndex, isStopOrNonTriplet } = item
-  const residue = `residue ${proteinIndex + 1}`
-  if (aminoAcid === '*') {
-    return `Stop (*) · ${residue}`
-  }
-  const named = aminoAcidNames[aminoAcid]
-  const label = named ? `${named[1]} (${aminoAcid})` : aminoAcid
-  // non-'*' codons are only flagged when split across an exon boundary
-  return isStopOrNonTriplet
-    ? `${label} · ${residue} · partial codon`
-    : `${label} · ${residue}`
-}
-
 // Shared amino-acid cell layout for the DOM overlay (useAminoAcidOverlay) and
 // the SVG export (renderPeptides), so the font-size cap, residue-number
 // threshold, and horizontal centering can't drift between the two paths.

@@ -12,8 +12,7 @@ import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
-import { performMultiRegionHitDetection } from './hitTesting.ts'
-import { peptideTooltipText } from './peptidePositioning.ts'
+import { hoverTooltip, performMultiRegionHitDetection } from './hitTesting.ts'
 import {
   useFloatingLabels,
   useHighlightOverlays,
@@ -126,6 +125,9 @@ const useStyles = makeStyles()({
   root: {
     position: 'relative',
     width: '100%',
+    // no text cursor / drag-selection over the canvas and its label overlays —
+    // selectable text there shows an I-beam and a drag hijacks the mouseover
+    userSelect: 'none',
   },
   scrollContainer: {
     position: 'absolute',
@@ -315,16 +317,10 @@ const FeatureBody = observer(function FeatureBody({
     setClientXY([e.clientX, e.clientY])
     const result = hitTestAtEvent(e)
     if (result.feature) {
-      // A hovered amino-acid letter names its residue; else a subfeature shows
-      // its own name (e.g. a mature-peptide product); else the top-level
-      // feature's resolved `mouseover` slot.
-      const tooltip = result.peptide
-        ? peptideTooltipText(result.peptide)
-        : (result.subfeature?.displayLabel ?? result.feature.tooltip)
       model.setHover(
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
-        tooltip,
+        hoverTooltip(result),
       )
     } else {
       model.clearHover()

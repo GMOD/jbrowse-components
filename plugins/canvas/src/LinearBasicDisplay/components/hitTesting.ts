@@ -61,6 +61,20 @@ export function isHitFeature(r: HitResult): r is HitFeatureResult {
   return r.feature !== null
 }
 
+// Tooltip text for a hit: the subfeature under the cursor names its containing
+// feature (a transcript/isoform, or a mature-peptide product), else the
+// top-level feature's resolved `mouseover` slot. A hovered amino-acid letter
+// adds its residue (e.g. `K124`) on top of that, so the isoform stays visible.
+export function hoverTooltip(result: HitFeatureResult) {
+  const isoform = result.subfeature?.displayLabel
+  const { peptide } = result
+  return peptide
+    ? [isoform, `${peptide.aminoAcid}${peptide.proteinIndex + 1}`]
+        .filter(Boolean)
+        .join(' ')
+    : (isoform ?? result.feature.tooltip)
+}
+
 export function buildFeatureFlatbushIndex(
   items: FlatbushItem[],
   floatingLabelsData: FeatureDataResult['floatingLabelsData'],
