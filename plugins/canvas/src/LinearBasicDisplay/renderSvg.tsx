@@ -19,8 +19,8 @@ import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.
 
 import type { ResolvedLabel } from './components/labelPositioning.ts'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
-import type { SvgExportable } from '@jbrowse/core/util/svgReady'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

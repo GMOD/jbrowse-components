@@ -1,5 +1,5 @@
+import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { getContainingView, when } from '@jbrowse/core/util'
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/util/SvgExport'
 
 import Arcs from './components/Arcs.tsx'
 

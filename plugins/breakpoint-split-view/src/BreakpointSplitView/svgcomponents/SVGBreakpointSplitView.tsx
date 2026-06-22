@@ -1,3 +1,5 @@
+import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
+import { exportMargin } from '@jbrowse/core/svg/constants'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   getFillProps,
@@ -14,7 +16,6 @@ import {
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import { getTrackNameMaxLen, getTrackOffsets } from './util.ts'
 import Overlay from '../components/Overlay.tsx'
 
@@ -40,7 +41,6 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, views } = model
-  const shift = 50
   const offset = headerHeight + rulerHeight
   const tracksHeights = views.map(v =>
     totalHeight(v.tracks, textHeight, trackLabels),
@@ -80,18 +80,11 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
   return renderToStaticMarkup(
     <ThemeProvider theme={t}>
       <Wrapper>
-        <svg
-          width={w + shift * 2}
-          height={totalHeightSvg}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w + shift * 2, totalHeightSvg].toString()}
-        >
-          <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
+        <SVGExportRoot width={w} height={totalHeightSvg}>
           {displayResults.map(({ view, data }, idx) => {
             const yOffset = fontSize + sum(heights.slice(0, idx))
             return (
-              <g key={view.id} transform={`translate(${shift} ${yOffset})`}>
+              <g key={view.id} transform={`translate(${exportMargin} ${yOffset})`}>
                 <g transform={`translate(${trackLabelOffset})`}>
                   <text
                     x={0}
@@ -124,7 +117,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           <defs>
             <clipPath id="clip-bsv">
               <rect
-                x={trackLabelOffset + shift}
+                x={trackLabelOffset + exportMargin}
                 y={0}
                 width={width}
                 height={totalHeightSvg}
@@ -132,7 +125,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
             </clipPath>
           </defs>
           <g
-            transform={`translate(${trackLabelOffset + shift})`}
+            transform={`translate(${trackLabelOffset + exportMargin})`}
             clipPath="url(#clip-bsv)"
           >
             {model.matchedTracks.map(track => {
@@ -147,7 +140,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
               )
             })}
           </g>
-        </svg>
+        </SVGExportRoot>
       </Wrapper>
     </ThemeProvider>,
   )

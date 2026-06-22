@@ -1,11 +1,12 @@
 import { Fragment } from 'react'
 
+import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getSession, radToDeg, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
+
 import Ruler from '../components/Ruler.tsx'
 
 import type { CircularViewModel, ExportSvgOptions } from '../model.ts'
@@ -35,14 +36,7 @@ export async function renderToSvg(
   return renderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
-        <svg
-          width={figureSize}
-          height={figureSize}
-          viewBox={`0 0 ${figureSize} ${figureSize}`}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-        >
-          <SVGBackground width={figureSize} height={figureSize} />
+        <SVGExportRoot width={figureSize} height={figureSize} margin={0}>
           <g transform={`translate(${centerXY}) rotate(${deg})`}>
             {staticSlices.map(slice => (
               <Ruler key={slice.key} model={model} slice={slice} />
@@ -51,7 +45,7 @@ export async function renderToSvg(
               <Fragment key={track.id}>{result}</Fragment>
             ))}
           </g>
-        </svg>
+        </SVGExportRoot>
       </Wrapper>
     </ThemeProvider>,
   )

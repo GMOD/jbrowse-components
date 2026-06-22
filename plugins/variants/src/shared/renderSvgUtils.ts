@@ -1,4 +1,4 @@
-import type { SvgExportable } from '@jbrowse/core/util/svgReady'
+import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type { ClusterHierarchyNode } from '@jbrowse/tree-sidebar'
 
 export interface RenderSvgBaseModel extends SvgExportable {

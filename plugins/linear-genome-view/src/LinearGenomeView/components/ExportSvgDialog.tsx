@@ -1,13 +1,23 @@
 import { BaseExportSvgDialog, useExportSvgPreference } from '@jbrowse/core/ui'
 import { Checkbox, FormControlLabel, MenuItem, TextField } from '@mui/material'
 
-import type { ExportSvgOptions, TrackLabelMode } from '../types.ts'
+import type { TrackLabelMode } from '../types.ts'
+import type { BaseExportSvgOptions } from '@jbrowse/core/ui'
 
+// Shared track-label + gridlines export dialog. Used by LGV, linear-synteny and
+// breakpoint-split views (their lazyDialogs re-export this).
 export default function ExportSvgDialog({
   model,
   handleClose,
 }: {
-  model: { exportSvg(opts: ExportSvgOptions): Promise<void> }
+  model: {
+    exportSvg(
+      opts: BaseExportSvgOptions & {
+        trackLabels: TrackLabelMode
+        showGridlines: boolean
+      },
+    ): Promise<void>
+  }
   handleClose: () => void
 }) {
   const [trackLabels, setTrackLabels] = useExportSvgPreference<TrackLabelMode>(

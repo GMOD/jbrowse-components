@@ -1,5 +1,6 @@
 import React from 'react'
 
+import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   getSession,
@@ -13,7 +14,6 @@ import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
 import SVGSyntenyLevel from './SVGSyntenyLevel.tsx'
 import { renderSvg as renderSyntenyDisplaySvg } from '../../LinearSyntenyDisplay/renderSvg.tsx'
@@ -44,7 +44,6 @@ export async function renderToSvg(
   const session = getSession(model)
   const themeVar = session.allThemes?.()[themeName]
   const { width, views, levels } = model
-  const shift = 50
   const offset = rulerHeight
 
   const tracksHeights = views.map(v =>
@@ -101,7 +100,6 @@ export async function renderToSvg(
     <SVGLinearGenomeView
       rulerHeight={rulerHeight}
       trackLabelOffset={trackLabelOffset}
-      shift={shift}
       textHeight={textHeight}
       trackLabels={trackLabels}
       displayResults={displayResults[0]!}
@@ -122,7 +120,6 @@ export async function renderToSvg(
         yOffset={currOffset}
         width={width}
         levelHeight={levelHeight}
-        shift={shift}
         trackLabelOffset={trackLabelOffset}
         fontSize={fontSize}
         rendering={renderings[i - 1] ?? []}
@@ -141,16 +138,9 @@ export async function renderToSvg(
   return renderToStaticMarkup(
     <ThemeProvider theme={theme}>
       <Wrapper>
-        <svg
-          width={w + shift * 2}
-          height={totalHeightSvg}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w + shift * 2, totalHeightSvg].toString()}
-        >
-          <SVGBackground width={w} height={totalHeightSvg} shift={shift} />
+        <SVGExportRoot width={w} height={totalHeightSvg}>
           {RenderList}
-        </svg>
+        </SVGExportRoot>
       </Wrapper>
     </ThemeProvider>,
   )

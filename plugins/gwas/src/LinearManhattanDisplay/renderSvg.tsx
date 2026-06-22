@@ -15,7 +15,7 @@ import { LD_LEGEND } from './ldBins.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
-import type { SvgExportable } from '@jbrowse/core/util/svgReady'
+import type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 import type {
   ExportSvgDisplayOptions,
   LinearGenomeViewModel,

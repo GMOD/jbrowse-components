@@ -1,5 +1,6 @@
 import { max, measureText } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { trackBoxHeight } from '@jbrowse/plugin-linear-genome-view'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -27,7 +28,10 @@ export function getTrackOffsets(
   let curr = textOffset
   for (const track of view.tracks) {
     offsets[track.configuration.trackId] = curr + baseY
-    curr += track.displays[0].height + textOffset
+    // trackBoxHeight (height + textOffset + trackSpacing) must match
+    // SVGTracks.getOffsets, or overlay connections drift from the rendered
+    // track positions by trackSpacing per track
+    curr += trackBoxHeight(track, textOffset)
   }
   return offsets
 }

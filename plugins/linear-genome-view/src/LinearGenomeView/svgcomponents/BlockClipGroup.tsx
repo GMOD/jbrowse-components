@@ -1,4 +1,4 @@
-import { SvgClipRect } from '@jbrowse/core/util/SvgExport'
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 

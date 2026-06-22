@@ -63,6 +63,9 @@
     "./pluggableElementTypes/renderers/util/serializableFilterChain": "./src/pluggableElementTypes/renderers/util/serializableFilterChain.ts",
     "./rpc/RpcManager": "./src/rpc/RpcManager.ts",
     "./rpc/RpcRegistry": "./src/rpc/RpcRegistry.ts",
+    "./svg/SvgExport": "./src/svg/SvgExport.tsx",
+    "./svg/constants": "./src/svg/constants.ts",
+    "./svg/svgReady": "./src/svg/svgReady.ts",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
@@ -99,7 +102,6 @@
     "./util/FileSaver": "./src/util/FileSaver/index.ts",
     "./util/QuickLRU": "./src/util/QuickLRU/index.ts",
     "./util/SvgCanvas": "./src/util/SvgCanvas.ts",
-    "./util/SvgExport": "./src/util/SvgExport.tsx",
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/aborting": "./src/util/aborting.ts",
     "./util/analytics": "./src/util/analytics.ts",
@@ -134,7 +136,6 @@
     "./util/simpleFeature": "./src/util/simpleFeature.ts",
     "./util/stats": "./src/util/stats.ts",
     "./util/stopToken": "./src/util/stopToken.ts",
-    "./util/svgReady": "./src/util/svgReady.ts",
     "./util/tracks": "./src/util/tracks.ts",
     "./util/tss-react": "./src/util/tss-react/index.ts",
     "./util/tss-react/types": "./src/util/tss-react/types.ts",
@@ -366,6 +367,18 @@
         "types": "./esm/rpc/RpcRegistry.d.ts",
         "import": "./esm/rpc/RpcRegistry.js"
       },
+      "./svg/SvgExport": {
+        "types": "./esm/svg/SvgExport.d.ts",
+        "import": "./esm/svg/SvgExport.js"
+      },
+      "./svg/constants": {
+        "types": "./esm/svg/constants.d.ts",
+        "import": "./esm/svg/constants.js"
+      },
+      "./svg/svgReady": {
+        "types": "./esm/svg/svgReady.d.ts",
+        "import": "./esm/svg/svgReady.js"
+      },
       "./ui": {
         "types": "./esm/ui/index.d.ts",
         "import": "./esm/ui/index.js"
@@ -510,10 +523,6 @@
         "types": "./esm/util/SvgCanvas.d.ts",
         "import": "./esm/util/SvgCanvas.js"
       },
-      "./util/SvgExport": {
-        "types": "./esm/util/SvgExport.d.ts",
-        "import": "./esm/util/SvgExport.js"
-      },
       "./util/TimeTraveller": {
         "types": "./esm/util/TimeTraveller.d.ts",
         "import": "./esm/util/TimeTraveller.js"
@@ -649,10 +658,6 @@
       "./util/stopToken": {
         "types": "./esm/util/stopToken.d.ts",
         "import": "./esm/util/stopToken.js"
-      },
-      "./util/svgReady": {
-        "types": "./esm/util/svgReady.d.ts",
-        "import": "./esm/util/svgReady.js"
       },
       "./util/tracks": {
         "types": "./esm/util/tracks.d.ts",
@@ -818,6 +823,15 @@
         "rpc/RpcRegistry": [
           "esm/rpc/RpcRegistry.d.ts"
         ],
+        "svg/SvgExport": [
+          "esm/svg/SvgExport.d.ts"
+        ],
+        "svg/constants": [
+          "esm/svg/constants.d.ts"
+        ],
+        "svg/svgReady": [
+          "esm/svg/svgReady.d.ts"
+        ],
         "ui": [
           "esm/ui/index.d.ts"
         ],
@@ -926,9 +940,6 @@
         "util/SvgCanvas": [
           "esm/util/SvgCanvas.d.ts"
         ],
-        "util/SvgExport": [
-          "esm/util/SvgExport.d.ts"
-        ],
         "util/TimeTraveller": [
           "esm/util/TimeTraveller.d.ts"
         ],
@@ -1030,9 +1041,6 @@
         ],
         "util/stopToken": [
           "esm/util/stopToken.d.ts"
-        ],
-        "util/svgReady": [
-          "esm/util/svgReady.d.ts"
         ],
         "util/tracks": [
           "esm/util/tracks.d.ts"

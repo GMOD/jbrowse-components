@@ -1,4 +1,4 @@
-import { saveAs } from './FileSaver/index.ts'
+import { saveAs } from '../util/FileSaver/index.ts'
 
 export interface SaveSvgAsImageOptions {
   format?: string

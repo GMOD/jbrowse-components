@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { exportMargin } from '@jbrowse/core/svg/constants'
 import { getEnv, getFillProps } from '@jbrowse/core/util'
 import {
   SVGGridlines,
@@ -33,7 +34,6 @@ export default function SVGLinearGenomeView({
   trackLabels,
   displayResults,
   rulerHeight,
-  shift,
   showGridlines = false,
   tracksHeight,
 }: {
@@ -43,7 +43,6 @@ export default function SVGLinearGenomeView({
   fontSize: number
   displayResults: ViewDisplayResults
   rulerHeight: number
-  shift: number
   showGridlines?: boolean
   tracksHeight: number
 }) {
@@ -57,7 +56,7 @@ export default function SVGLinearGenomeView({
     { model: view, height: tracksHeight },
   )
   return (
-    <g transform={`translate(${shift} ${fontSize})`}>
+    <g transform={`translate(${exportMargin} ${fontSize})`}>
       <g transform={`translate(${trackLabelOffset})`}>
         <text
           x={0}

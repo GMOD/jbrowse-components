@@ -373,7 +373,7 @@ export {
   type SaveSvgAsImageOptions,
   saveSvgAsImage,
   svgHtmlToPngBlob,
-} from './saveSvgAsImage.ts'
+} from '../svg/saveSvgAsImage.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'

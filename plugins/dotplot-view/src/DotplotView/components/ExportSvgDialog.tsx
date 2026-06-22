@@ -1,8 +1,9 @@
 import { BaseExportSvgDialog } from '@jbrowse/core/ui'
+import { observer } from 'mobx-react'
 
 import type { ExportSvgOptions } from '../model.ts'
 
-export default function ExportSvgDialog({
+const ExportSvgDialog = observer(function ExportSvgDialog({
   model,
   handleClose,
 }: {
@@ -16,4 +17,6 @@ export default function ExportSvgDialog({
       exportSvg={opts => model.exportSvg(opts)}
     />
   )
-}
+})
+
+export default ExportSvgDialog

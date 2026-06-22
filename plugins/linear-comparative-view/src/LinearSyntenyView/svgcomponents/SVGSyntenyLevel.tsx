@@ -1,6 +1,8 @@
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 
+import { exportMargin } from '@jbrowse/core/svg/constants'
+
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
 
 import type { ViewDisplayResults } from './SVGLinearGenomeView.tsx'
@@ -11,7 +13,6 @@ export default function SVGSyntenyLevel({
   yOffset,
   width,
   levelHeight,
-  shift,
   trackLabelOffset,
   fontSize,
   rendering,
@@ -26,7 +27,6 @@ export default function SVGSyntenyLevel({
   yOffset: number
   width: number
   levelHeight: number
-  shift: number
   trackLabelOffset: number
   fontSize: number
   rendering: ReactNode[]
@@ -45,7 +45,7 @@ export default function SVGSyntenyLevel({
         </clipPath>
       </defs>
       <g
-        transform={`translate(${shift + trackLabelOffset} ${fontSize})`}
+        transform={`translate(${exportMargin + trackLabelOffset} ${fontSize})`}
         clipPath={`url(#${clipId})`}
       >
         {rendering.map((r, j) => (
@@ -56,7 +56,6 @@ export default function SVGSyntenyLevel({
       <g transform={`translate(0 ${levelHeight})`}>
         <SVGLinearGenomeView
           rulerHeight={rulerHeight}
-          shift={shift}
           trackLabelOffset={trackLabelOffset}
           textHeight={textHeight}
           trackLabels={trackLabels}

@@ -2,6 +2,8 @@
 
 import type { ReactNode } from 'react'
 
+import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
+import { exportMargin } from '@jbrowse/core/svg/constants'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
   getEnv,
@@ -14,7 +16,6 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
 import SVGGridlines from './SVGGridlines.tsx'
 import SVGHeader from './SVGHeader.tsx'
 import SVGHighlights from './SVGHighlights.tsx'
@@ -48,7 +49,6 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
     t => !t.minimized,
   )
-  const shift = 50
   const cytobandOffset = +showCytobands * cytobandHeight
   const offset = headerHeight + rulerHeight + cytobandOffset + 10
   const tracksHeight = totalHeight(visibleTracks, textHeight, trackLabels)
@@ -95,15 +95,8 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   return renderToStaticMarkup(
     <ThemeProvider theme={jbrowseTheme}>
       <Wrapper>
-        <svg
-          width={w + shift * 2}
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={`0 0 ${w + shift * 2} ${height}`}
-        >
-          <SVGBackground width={w} height={height} shift={shift} />
-          <g transform={`translate(${shift} 0)`}>
+        <SVGExportRoot width={w} height={height}>
+          <g transform={`translate(${exportMargin} 0)`}>
             <g transform={`translate(${trackLabelOffset})`}>
               <SVGHeader
                 model={model}
@@ -125,7 +118,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
                 displayResults={displayResults}
                 trackLabels={trackLabels}
                 trackLabelOffset={trackLabelOffset}
-                leftBuffer={shift}
+                leftBuffer={exportMargin}
                 legendWidth={legendWidth}
               />
             </g>
@@ -141,7 +134,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
               </g>
             </g>
           </g>
-        </svg>
+        </SVGExportRoot>
       </Wrapper>
     </ThemeProvider>,
   )

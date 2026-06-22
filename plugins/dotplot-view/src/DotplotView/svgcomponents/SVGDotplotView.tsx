@@ -1,9 +1,10 @@
+import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv, getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
-import SVGBackground from './SVGBackground.tsx'
+
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
 import DotplotGrid from '../components/DotplotGrid.tsx'
 
@@ -20,14 +21,12 @@ export async function renderToSvg(
   const session = getSession(model)
   const theme = session.allThemes?.()[themeName]
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
-  const shift = 50
   const displayResults = await Promise.all(
     tracks.map(async track => {
       const display = track.displays[0]
       return { track, result: await display.renderSvg({ ...opts, theme }) }
     }),
   )
-  const w = width + shift * 2
 
   const { pluginManager } = getEnv(model)
   const additional = pluginManager.evaluateExtensionPoint(
@@ -40,14 +39,7 @@ export async function renderToSvg(
   return renderToStaticMarkup(
     <ThemeProvider theme={createJBrowseTheme(theme)}>
       <Wrapper>
-        <svg
-          width={w}
-          height={height}
-          xmlns="http://www.w3.org/2000/svg"
-          xmlnsXlink="http://www.w3.org/1999/xlink"
-          viewBox={[0, 0, w, height].toString()}
-        >
-          <SVGBackground width={w} height={height} />
+        <SVGExportRoot width={width} height={height}>
           <VerticalAxisRaw model={model} />
           <g transform={`translate(${borderX} 0)`}>
             <DotplotGrid model={model} />
@@ -67,7 +59,7 @@ export async function renderToSvg(
           <g transform={`translate(${borderX} ${viewHeight})`}>
             <HorizontalAxisRaw model={model} />
           </g>
-        </svg>
+        </SVGExportRoot>
       </Wrapper>
     </ThemeProvider>,
   )
