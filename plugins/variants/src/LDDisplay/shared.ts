@@ -514,6 +514,23 @@ export default function sharedModelFactory(
                     self.setLDMetric('dprime')
                   },
                 },
+                // Signed LD modifies the chosen metric (R instead of R²,
+                // signed D'), so it belongs with the metric choice rather than
+                // the visibility toggles. VCF-computed LD only.
+                ...(self.isPrecomputedLD
+                  ? []
+                  : [
+                      {
+                        label: 'Show signed LD values (-1 to 1)',
+                        helpText:
+                          "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
+                        type: 'checkbox',
+                        checked: self.signedLD,
+                        onClick: () => {
+                          self.setSignedLD(!self.signedLD)
+                        },
+                      },
+                    ]),
               ],
             },
             {
@@ -547,23 +564,7 @@ export default function sharedModelFactory(
                   },
                 },
                 {
-                  label: 'LD triangle adjusted to display height',
-                  type: 'checkbox',
-                  checked: self.fitToHeight,
-                  onClick: () => {
-                    self.setFitToHeight(!self.fitToHeight)
-                  },
-                },
-                {
-                  label: 'Vertical guides on hover',
-                  type: 'checkbox',
-                  checked: self.showVerticalGuides,
-                  onClick: () => {
-                    self.setShowVerticalGuides(!self.showVerticalGuides)
-                  },
-                },
-                {
-                  label: 'Variant labels',
+                  label: 'Show variant labels',
                   type: 'checkbox',
                   checked: self.showLabels,
                   onClick: () => {
@@ -571,28 +572,39 @@ export default function sharedModelFactory(
                   },
                 },
                 {
-                  label: 'Use genomic positions for cell sizes',
+                  label: 'Show vertical guides on hover',
+                  type: 'checkbox',
+                  checked: self.showVerticalGuides,
+                  onClick: () => {
+                    self.setShowVerticalGuides(!self.showVerticalGuides)
+                  },
+                },
+              ],
+            },
+            {
+              label: 'Layout',
+              type: 'subMenu',
+              subMenu: [
+                {
+                  label: 'Fit LD triangle to display height',
+                  helpText:
+                    'Vertically squash the triangle to fill the display height instead of drawing it at its natural half-width height.',
+                  type: 'checkbox',
+                  checked: self.fitToHeight,
+                  onClick: () => {
+                    self.setFitToHeight(!self.fitToHeight)
+                  },
+                },
+                {
+                  label: 'Size cells by genomic position',
+                  helpText:
+                    'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
                   type: 'checkbox',
                   checked: self.useGenomicPositions,
                   onClick: () => {
                     self.setUseGenomicPositions(!self.useGenomicPositions)
                   },
                 },
-                // Signed LD only available for VCF-computed LD, not pre-computed
-                ...(self.isPrecomputedLD
-                  ? []
-                  : [
-                      {
-                        label: 'Show signed LD values (-1 to 1)',
-                        helpText:
-                          "When enabled, shows R (correlation) instead of R², and preserves the sign of D'. Positive values indicate alleles tend to co-occur (coupling), negative values indicate alleles tend to be on different haplotypes (repulsion).",
-                        type: 'checkbox',
-                        checked: self.signedLD,
-                        onClick: () => {
-                          self.setSignedLD(!self.signedLD)
-                        },
-                      },
-                    ]),
               ],
             },
             // Filter menu only available for VCF-computed LD, not pre-computed

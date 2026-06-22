@@ -46,9 +46,31 @@ chr1    110162459   110162460 rs4971059 7.891
 
 ## Preparing the LD file
 
-LD data must be in PLINK `--r2` output format. For regional analyses a plain
-`.ld` file works fine. For chromosome-scale or genome-wide LD, bgzip and tabix
-the file so only pairs in the visible region are fetched:
+LD data must be in PLINK `--r2` output format. Generate it from a PLINK binary
+fileset (`.bed`/`.bim`/`.fam`) or a VCF:
+
+```bash
+# From a PLINK binary fileset; the "dprime" flag adds the D' column (DP)
+plink --bfile study --r2 dprime with-freqs \
+  --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
+  --out study
+
+# Or starting from a VCF
+plink --vcf study.vcf.gz --r2 dprime with-freqs \
+  --ld-window 99999 --ld-window-kb 1000 --ld-window-r2 0 \
+  --out study
+```
+
+This writes `study.ld` with columns `CHR_A BP_A SNP_A CHR_B BP_B SNP_B R2`
+(plus `DP` for D' and `MAF_A`/`MAF_B` from the `dprime`/`with-freqs` flags).
+`--ld-window-r2 0` keeps every pair (PLINK otherwise drops pairs below r²=0.2),
+and the `--ld-window*` flags raise the default limits on how far apart paired
+SNPs may be — tune them to the span you want rendered.
+
+For regional analyses the plain `study.ld` file works as-is with
+[`PlinkLDAdapter`](/docs/config/plinkldadapter). For chromosome-scale or
+genome-wide LD, bgzip and tabix the file so only pairs in the visible region are
+fetched, then use [`PlinkLDTabixAdapter`](/docs/config/plinkldtabixadapter):
 
 ```bash
 # Preserve the header, sort remaining lines by CHR_A then BP_A
