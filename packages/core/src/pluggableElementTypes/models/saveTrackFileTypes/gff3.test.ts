@@ -226,6 +226,49 @@ describe('GFF3 export', () => {
     expect(result).not.toContain('undefined_attr')
   })
 
+  it('manufactures an ID for a parent lacking one so children can reference it', () => {
+    // mimics non-GFF3 sources like BigBed aggregated genes: the parent has a
+    // uniqueId but no `id` attribute in its data
+    const f = new SimpleFeature({
+      id: 'synth-parent',
+      data: {
+        refName: 'chr1',
+        start: 100,
+        end: 900,
+        type: 'gene',
+        name: 'gene1',
+        subfeatures: [
+          {
+            id: 'exon1',
+            start: 100,
+            end: 200,
+            type: 'exon',
+          },
+        ],
+      },
+    })
+    const result = stringifyGFF3({ features: [f] })
+    // parent gets ID from its uniqueId, child references the same value
+    expect(result).toContain('ID=synth-parent')
+    expect(result).toContain('Parent=synth-parent')
+  })
+
+  it('does not manufacture an ID for a childless feature lacking one', () => {
+    const f = new SimpleFeature({
+      id: 'leaf-unique',
+      data: {
+        refName: 'chr1',
+        start: 100,
+        end: 200,
+        type: 'gene',
+        name: 'gene1',
+      },
+    })
+    const result = stringifyGFF3({ features: [f] })
+    expect(result).not.toContain('ID=')
+    expect(result).toContain('Name=gene1')
+  })
+
   it('handles deeply nested subfeatures', () => {
     const f = createFeature({
       id: 'gene1',

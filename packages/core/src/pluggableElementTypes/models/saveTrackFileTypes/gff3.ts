@@ -17,7 +17,7 @@ const coreFields = new Set([
   '_lineHash',
 ])
 
-const retitle = {
+const retitle: Record<string, string> = {
   name: 'Name',
   alias: 'Alias',
   target: 'Target',
@@ -28,18 +28,21 @@ const retitle = {
   dbxref: 'Dbxref',
   ontology_term: 'Ontology_term',
   is_circular: 'Is_circular',
-} as Record<string, string>
+}
+
+const gff3Escapes: Record<string, string> = {
+  '%': '%25',
+  ';': '%3B',
+  '=': '%3D',
+  '&': '%26',
+  ',': '%2C',
+  '\t': '%09',
+  '\n': '%0A',
+  '\r': '%0D',
+}
 
 function encodeGFF3Value(str: string): string {
-  return str
-    .replace(/%/g, '%25')
-    .replace(/;/g, '%3B')
-    .replace(/=/g, '%3D')
-    .replace(/&/g, '%26')
-    .replace(/,/g, '%2C')
-    .replace(/\t/g, '%09')
-    .replace(/\n/g, '%0A')
-    .replace(/\r/g, '%0D')
+  return str.replace(/[%;=&,\t\n\r]/g, c => gff3Escapes[c]!)
 }
 
 function fmt(obj: unknown): string | undefined {
@@ -56,29 +59,30 @@ function fmt(obj: unknown): string | undefined {
   return encodeGFF3Value(String(obj))
 }
 
-function formatAttributes(f: Feature, parentId?: string) {
+function formatAttributes(
+  f: Feature,
+  { id, parentId }: { id?: string; parentId?: string },
+) {
   const attributes: string[] = []
 
-  const id = f.get('id')
   if (id) {
-    attributes.push(`ID=${encodeGFF3Value(String(id))}`)
+    attributes.push(`ID=${encodeGFF3Value(id)}`)
   }
   if (parentId) {
-    attributes.push(`Parent=${encodeGFF3Value(String(parentId))}`)
+    attributes.push(`Parent=${encodeGFF3Value(parentId)}`)
   }
 
   const tags = Object.keys(f.toJSON()).filter(tag => !coreFields.has(tag))
   const hasDescription = tags.includes('description')
-  const hasNote = tags.includes('note')
 
   for (const tag of tags) {
     const val = f.get(tag)
     const formattedVal = fmt(val)
     if (formattedVal) {
-      let key = retitle[tag] || tag
-      if (tag === 'note' && hasDescription && hasNote) {
-        key = 'note2'
-      }
+      // both note and description map to Note; keep note as note2 so the
+      // description-derived Note isn't clobbered
+      const key =
+        tag === 'note' && hasDescription ? 'note2' : retitle[tag] || tag
       attributes.push(`${key}=${formattedVal}`)
     }
   }
@@ -87,18 +91,20 @@ function formatAttributes(f: Feature, parentId?: string) {
 
 function formatFeat({
   feature,
+  id,
   parentId,
-  parentRef,
+  refName,
 }: {
   feature: Feature
+  id?: string
   parentId?: string
-  parentRef?: string
+  refName?: string
 }) {
   const strand = feature.get('strand')
   const score = feature.get('score')
   const phase = feature.get('phase')
   return [
-    feature.get('refName') || parentRef,
+    refName,
     feature.get('source') || '.',
     feature.get('type') || '.',
     feature.get('start') + 1,
@@ -106,7 +112,7 @@ function formatFeat({
     score ?? '.',
     strand === 1 ? '+' : strand === -1 ? '-' : '.',
     phase ?? '.',
-    formatAttributes(feature, parentId),
+    formatAttributes(feature, { id, parentId }),
   ].join('\t')
 }
 
@@ -119,17 +125,21 @@ export function formatMultiLevelFeat({
   parentId?: string
   parentRef?: string
 }): string {
-  const featureRefName = parentRef || feature.get('refName')
-  const featureId = feature.get('id')
-  const primary = formatFeat({ feature, parentId, parentRef: featureRefName })
+  const refName = parentRef ?? feature.get('refName')
+  const subfeatures = feature.get('subfeatures')
+
+  // non-GFF3 sources (e.g. BigBed aggregated genes) synthesize parents with no
+  // id attribute; manufacture one from the uniqueId so children can Parent= it
+  const id =
+    feature.get('id') ?? (subfeatures?.length ? feature.id() : undefined)
 
   return [
-    primary,
-    ...(feature.get('subfeatures')?.map(sub =>
+    formatFeat({ feature, id, parentId, refName }),
+    ...(subfeatures?.map(sub =>
       formatMultiLevelFeat({
         feature: sub,
-        parentId: featureId,
-        parentRef: featureRefName,
+        parentId: id,
+        parentRef: refName,
       }),
     ) ?? []),
   ].join('\n')
