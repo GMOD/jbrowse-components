@@ -67,11 +67,18 @@ function getArcColor(strand: number) {
 // Screen-px span below which the count label can't fit and is suppressed.
 const MIN_LABEL_SPAN_PX = 22
 
-// Fraction of the band a span-scaled arc may occupy: the narrowest junction
-// rises to MIN_ARC_FRAC, the widest to MAX_ARC_FRAC. Scaling arc height by span
-// lets nested junctions nest visually instead of all flat-topping on one line.
+// Fraction of the band a span-scaled arc may occupy. Arc height scales with the
+// junction's *genomic* span on a fixed log scale: a junction at/below
+// SPAN_REF_MIN_BP rises to MIN_ARC_FRAC, at/above SPAN_REF_MAX_BP to
+// MAX_ARC_FRAC. Genomic span is zoom-invariant and per-junction, so an arc's
+// height stays put while zooming and doesn't depend on which other arcs are on
+// screen. (A visible-set-relative min/max normalization made arcs jump taller
+// and shorter as junctions scrolled in and out of view during a zoom.) Nested
+// junctions still nest: a smaller span draws a shorter arc.
 const MIN_ARC_FRAC = 0.3
 const MAX_ARC_FRAC = 0.95
+const SPAN_REF_MIN_BP = 50
+const SPAN_REF_MAX_BP = 100_000
 
 // A junction resolved to screen space, before side-assignment / height-scaling.
 interface RawArc {
@@ -136,9 +143,24 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     mode,
     minSashimiScore,
   } = opts
-  const effectiveHeight = coverageHeight - YSCALEBAR_LABEL_OFFSET
+  // Up arcs anchor to the coverage histogram's own zero-coverage baseline. The
+  // histogram reserves YSCALEBAR_LABEL_OFFSET at BOTH its top and bottom (see
+  // coverageDownsampling yTop/yBottom), and the overlay already shifts the band
+  // SVG down to the histogram top, so the drawable height down to that baseline
+  // is coverageHeight - 2*offset. (Subtracting the offset only once anchored the
+  // feet at the coverage *band* bottom, one offset below the histogram baseline.)
+  const effectiveHeight = coverageHeight - 2 * YSCALEBAR_LABEL_OFFSET
 
-  const raw: RawArc[] = []
+  // Collapsed introns split one refName into many displayedRegions, and the
+  // per-region worker (rpcDataMap keyed by displayedRegionIndex) re-emits a
+  // junction spanning two of them in each region's data: a read with the skip
+  // gap overlaps both exons, so both regions' fetches return it. The fetch is
+  // uncapped (the pileup maxRows cap is a separate main-thread layout concern
+  // that never touches the worker's gap/coverage scan), so the two copies carry
+  // identical counts. Bucket by junction identity so a shared junction renders
+  // once instead of as arcs with a colliding refName:start:end:strand React key;
+  // max is a deterministic tiebreak.
+  const rawByJunction = new Map<string, RawArc>()
   for (const region of visibleRegions) {
     const rpcData = rpcDataMap.get(region.displayedRegionIndex)
     if (!rpcData || rpcData.sashimiX1.length === 0) {
@@ -161,31 +183,34 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       ) {
         continue
       }
-      raw.push({
-        left,
-        right,
-        spanPx: Math.abs(right - left),
-        count,
-        strand: colorTypeToStrand(sashimiColorTypes[i]!),
-        start: startBp,
-        end: endBp,
-        refName,
-      })
+      const strand = colorTypeToStrand(sashimiColorTypes[i]!)
+      const junctionKey = `${refName}:${startBp}:${endBp}:${strand}`
+      const existing = rawByJunction.get(junctionKey)
+      if (existing) {
+        existing.count = Math.max(existing.count, count)
+      } else {
+        rawByJunction.set(junctionKey, {
+          left,
+          right,
+          spanPx: Math.abs(right - left),
+          count,
+          strand,
+          start: startBp,
+          end: endBp,
+          refName,
+        })
+      }
     }
   }
+  const raw = [...rawByJunction.values()]
 
   const sides: SashimiSide[] =
     mode === 'auto'
       ? assignSides(raw)
       : raw.map(() => (mode === 'down' ? 'down' : 'up'))
 
-  // Normalize arc height across all visible junctions on a log scale so the
-  // widest gets MAX_ARC_FRAC and the narrowest MIN_ARC_FRAC. Log keeps a single
-  // huge intron from flattening every other arc to the floor.
-  const logSpans = raw.map(a => Math.log(a.spanPx + 1))
-  const minLog = Math.min(...logSpans)
-  const maxLog = Math.max(...logSpans)
-  const logRange = maxLog - minLog
+  const logRefMin = Math.log(SPAN_REF_MIN_BP)
+  const logRefRange = Math.log(SPAN_REF_MAX_BP) - logRefMin
 
   const arcs: SashimiArc[] = []
   for (let i = 0; i < raw.length; i++) {
@@ -193,12 +218,17 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     const side = sides[i]!
     const isDown = side === 'down'
     // Each side draws in its own band-local coordinates: up arcs hang off the
-    // coverage-overlay band bottom and rise; down arcs hang off the strip top
-    // and drop. The overlay/export place each in the matching SVG.
+    // coverage histogram baseline and rise; down arcs hang off the strip top and
+    // drop. The overlay/export place each in the matching SVG. MAX_ARC_FRAC
+    // leaves the top margin so the tallest arc clears the y-scalebar label.
     const band = isDown ? sashimiArcsHeight : effectiveHeight
-    const baseline = isDown ? 0 : effectiveHeight * 0.95
+    const baseline = isDown ? 0 : effectiveHeight
     const dir = isDown ? 1 : -1
-    const norm = logRange > 0 ? (logSpans[i]! - minLog) / logRange : 1
+    const genomicSpan = Math.max(1, Math.abs(a.end - a.start))
+    const norm = Math.min(
+      1,
+      Math.max(0, (Math.log(genomicSpan) - logRefMin) / logRefRange),
+    )
     const arcHeight = band * (MIN_ARC_FRAC + (MAX_ARC_FRAC - MIN_ARC_FRAC) * norm)
     const ctrl = baseline + dir * arcHeight
     arcs.push({
