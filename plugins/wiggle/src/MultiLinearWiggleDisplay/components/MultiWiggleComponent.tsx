@@ -201,6 +201,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         height={height}
         clientMouseCoord={clientMouseCoord}
         offsetMouseCoord={offsetMouseCoord}
+        cursorLineMinLeft={labelOffset}
       />
     </>
   )

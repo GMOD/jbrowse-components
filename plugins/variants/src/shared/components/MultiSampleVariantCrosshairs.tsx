@@ -16,19 +16,23 @@ const MultiSampleVariantCrosshairs = observer(
     mouseState: MouseState
     model: MultiSampleVariantBaseModel
   }) {
-    const { hoveredTooltipSource, height } = model
+    const { hoveredTooltipSource, height, showTree, hierarchy, treeAreaWidth } =
+      model
     const { width } = getContainingView(model) as LinearGenomeViewModel
     const { x, y, clientX, clientY } = mouseState
+    const sidebarOffset = showTree && hierarchy ? treeAreaWidth : 0
 
     return (
       <>
-        <Crosshairs
-          mouseX={x}
-          mouseY={y}
-          width={width}
-          height={height}
-          zIndex={800}
-        />
+        {x > sidebarOffset ? (
+          <Crosshairs
+            mouseX={x}
+            mouseY={y}
+            width={width}
+            height={height}
+            zIndex={800}
+          />
+        ) : null}
         {hoveredTooltipSource ? (
           <MultiSampleVariantTooltip
             source={hoveredTooltipSource}

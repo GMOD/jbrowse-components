@@ -95,11 +95,15 @@ const WiggleTooltip = observer(function WiggleTooltip({
   clientMouseCoord,
   offsetMouseCoord,
   height,
+  // Cursor x positions left of this (e.g. over the tree sidebar) suppress the
+  // vertical guide so it doesn't clutter the sidebar resize handle.
+  cursorLineMinLeft = 0,
 }: {
   model: { featureUnderMouse?: WiggleFeatureUnderMouse }
   clientMouseCoord: Coord
   offsetMouseCoord: Coord
   height: number
+  cursorLineMinLeft?: number
 }) {
   const { featureUnderMouse } = model
   return featureUnderMouse ? (
@@ -109,7 +113,9 @@ const WiggleTooltip = observer(function WiggleTooltip({
       >
         <TooltipContents feature={featureUnderMouse} />
       </BaseTooltip>
-      <CursorLine height={height} left={offsetMouseCoord[0]} />
+      {offsetMouseCoord[0] >= cursorLineMinLeft ? (
+        <CursorLine height={height} left={offsetMouseCoord[0]} />
+      ) : null}
     </>
   ) : null
 })

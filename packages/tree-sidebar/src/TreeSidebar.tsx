@@ -17,9 +17,7 @@ interface MenuAnchor {
   names: string[]
 }
 
-// Permanent centered line plus a contrasting halo on each side, so the handle
-// stays visible against colored sample/genotype boxes instead of relying on
-// hover-only highlighting.
+// Centered line with a contrasting halo, hidden until the handle is hovered.
 const useStyles = makeStyles()(theme => ({
   resizeHandle: {
     '&::after': {
@@ -28,14 +26,15 @@ const useStyles = makeStyles()(theme => ({
       top: 0,
       bottom: 0,
       left: '50%',
-      width: 1,
+      width: 3,
       transform: 'translateX(-50%)',
-      background: theme.palette.text.primary,
-      opacity: 0.4,
+      background: theme.palette.primary.main,
+      opacity: 0,
       boxShadow: `0 0 0 1px ${alpha('#fff', 0.6)}`,
+      transition: 'opacity 100ms',
     },
     '&:hover::after': {
-      opacity: 0.9,
+      opacity: 1,
     },
   },
 }))
