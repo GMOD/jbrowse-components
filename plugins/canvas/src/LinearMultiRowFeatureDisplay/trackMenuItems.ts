@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 
+import { radioSubMenu } from '../LinearBasicDisplay/baseModelHelpers.ts'
+
 import type { MultiRowSource } from './sourcesLogic.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -17,7 +19,6 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
   treeHasBranchLengths: boolean
   subtreeFilter?: readonly string[]
   editableSources: MultiRowSource[]
-  clusterTree?: string
   rowHeightSetting: number
   setShowTree: (f: boolean) => void
   setShowBranchLength: (f: boolean) => void
@@ -32,6 +33,14 @@ interface MultiRowMenuSelf extends IAnyStateTreeNode {
 export function buildMultiRowTrackMenuItems(
   self: MultiRowMenuSelf,
 ): MenuItem[] {
+  const rowHeightChoice =
+    self.rowHeightSetting === 0
+      ? 'fit'
+      : self.rowHeightSetting === 14
+        ? 'normal'
+        : self.rowHeightSetting === 8
+          ? 'compact'
+          : 'custom'
   return [
     {
       label: 'Sidebar with tree and labels',
@@ -42,32 +51,22 @@ export function buildMultiRowTrackMenuItems(
       },
     },
     treeBranchLengthMenuItem(self),
-    {
-      label: 'Row height',
-      type: 'subMenu',
-      subMenu: [
-        {
-          label: 'Auto-fit to display height',
-          type: 'checkbox',
-          checked: self.rowHeightSetting === 0,
-          onClick: () => {
-            self.setFitToHeight()
-          },
-        },
-        {
-          label: 'Normal',
-          onClick: () => {
-            self.setRowHeight(14)
-          },
-        },
-        {
-          label: 'Compact',
-          onClick: () => {
-            self.setRowHeight(8)
-          },
-        },
+    radioSubMenu(
+      'Row height',
+      rowHeightChoice,
+      [
+        { value: 'fit', label: 'Auto-fit to display height' },
+        { value: 'normal', label: 'Normal' },
+        { value: 'compact', label: 'Compact' },
       ],
-    },
+      value => {
+        if (value === 'fit') {
+          self.setFitToHeight()
+        } else {
+          self.setRowHeight(value === 'compact' ? 8 : 14)
+        }
+      },
+    ),
     {
       label: 'Edit row arrangement...',
       disabled: !self.editableSources.length,
