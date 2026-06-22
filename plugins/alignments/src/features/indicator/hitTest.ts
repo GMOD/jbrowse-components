@@ -4,7 +4,7 @@ import type { IndicatorHitResult, InterbaseType } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 function getInterbaseTypeName(colorType: number): InterbaseType {
-  return INTERBASE_TYPES[(colorType - 1) % 3] ?? 'insertion'
+  return INTERBASE_TYPES[colorType - 1] ?? 'insertion'
 }
 
 export function hitTestIndicator(

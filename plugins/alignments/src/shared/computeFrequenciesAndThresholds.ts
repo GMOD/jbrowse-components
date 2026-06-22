@@ -1,5 +1,15 @@
 import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 
+function getDepthAt(
+  coverageDepths: Float32Array,
+  depthIdx: number,
+  fallback: number,
+) {
+  return depthIdx >= 0 && depthIdx < coverageDepths.length
+    ? coverageDepths[depthIdx]!
+    : fallback
+}
+
 // Per-mismatch base count / total depth at that position. Drives the shader
 // fade for low-frequency SNPs at large bpPerPx.
 export function computeMismatchFrequencies(
@@ -17,27 +27,13 @@ export function computeMismatchFrequencies(
   }
   for (let i = 0; i < n; i++) {
     const pos = mismatchPositions[i]!
-    const depthIdx = pos - coverageStartPos
-    const depth =
-      depthIdx >= 0 && depthIdx < coverageDepths.length
-        ? coverageDepths[depthIdx]!
-        : 1
+    const depth = getDepthAt(coverageDepths, pos - coverageStartPos, 1)
     const key = pos * 256 + mismatchBases[i]!
     const count = posBaseCounts.get(key) ?? 1
     const freq = depth > 0 ? count / depth : 0
     frequencies[i] = Math.min(255, Math.round(freq * 255))
   }
   return frequencies
-}
-
-function getDepthAt(
-  coverageDepths: Float32Array,
-  depthIdx: number,
-  fallback: number,
-) {
-  return depthIdx >= 0 && depthIdx < coverageDepths.length
-    ? coverageDepths[depthIdx]!
-    : fallback
 }
 
 // Interbase features (insertions/softclips/hardclips) sit between two bases;
