@@ -1,11 +1,10 @@
 import { getConf } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { MIN_DISPLAY_HEIGHT } from './const.ts'
 import { migrateTrackHeightSnapshot } from './migration.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-
-export const MIN_DISPLAY_HEIGHT = 20
 
 /**
  * #stateModel TrackHeightMixin
@@ -67,7 +66,10 @@ export default function TrackHeightMixin<
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        self.heightOverride = Math.max(self.height + distance, MIN_DISPLAY_HEIGHT)
+        self.heightOverride = Math.max(
+          self.height + distance,
+          MIN_DISPLAY_HEIGHT,
+        )
         return self.height - oldHeight
       },
     }))

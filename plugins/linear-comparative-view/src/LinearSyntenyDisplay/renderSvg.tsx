@@ -1,5 +1,5 @@
-import { getContainingView } from '@jbrowse/core/util'
 import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import { when } from 'mobx'
 
