@@ -26,13 +26,6 @@ export async function executeRenderHicData({
     normalization,
   } = args
 
-  // The display's afterAttach autorun gates fetches on
-  // `effectiveResolution !== undefined`, so this only fires on programming
-  // errors (e.g. a third-party caller invoking the RPC directly).
-  if (resolution === undefined) {
-    throw new Error('RenderHicData: resolution is required')
-  }
-
   const { dataAdapter } = await getAdapter(
     pluginManager,
     sessionId,
@@ -73,7 +66,7 @@ export async function executeRenderHicData({
     sorted.sort()
     maxScore = sorted[numContacts - 1]!
     percentile95 =
-      sorted[Math.min(Math.floor(0.95 * numContacts), numContacts - 1)]!
+      sorted[Math.min(Math.floor(0.95 * (numContacts - 1)), numContacts - 1)]!
   }
 
   return {

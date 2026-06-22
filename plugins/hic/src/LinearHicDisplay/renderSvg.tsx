@@ -8,7 +8,10 @@ import {
 
 import { drawHicBlocks } from './components/Canvas2DHicRenderer.ts'
 import HicSVGColorLegend from './components/HicSVGColorLegend.tsx'
-import { generateColorRamp } from './components/colorRamp.ts'
+import {
+  generateColorRamp,
+  makeHicFillStyleLut,
+} from './components/colorRamp.ts'
 
 import type { LinearHicDisplayModel } from './model.ts'
 import type {
@@ -45,13 +48,13 @@ export async function renderSvg(
 
   const { positions, counts, numContacts, binWidth } = rpcData
   const visibleWidth = view.width
-  const ramp = generateColorRamp(colorScheme)
+  const fillStyleLut = makeHicFillStyleLut(generateColorRamp(colorScheme))
 
   // Reuse the model's renderTransform so SVG export aligns identically to
   // the on-screen render (handles scrolled-left-of-genome and stale zoom).
   const { scale: viewScale, viewOffsetX } = self.renderTransform
   const matrixEl = paintLayer(visibleWidth, height, opts, ctx => {
-    drawHicBlocks(ctx, { positions, counts, numContacts }, ramp, {
+    drawHicBlocks(ctx, { positions, counts, numContacts }, fillStyleLut, {
       binWidth,
       yScalar,
       canvasWidth: visibleWidth,

@@ -1,10 +1,7 @@
-import {
-  makeRampFillStyleLut,
-  prepareCanvas,
-} from '@jbrowse/render-core/canvas2dUtils'
+import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
-import { lookupColorRamp, mapHicCount } from './colorRamp.ts'
+import { makeHicFillStyleLut, mapHicCount } from './colorRamp.ts'
 
 import type {
   HicRenderState,
@@ -23,7 +20,7 @@ import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 export function drawHicBlocks(
   ctx: Ctx2D,
   data: HicUploadData,
-  colorRamp: Uint8Array,
+  fillStyleLut: (t: number) => string | undefined,
   state: HicRenderState,
 ) {
   const {
@@ -39,8 +36,6 @@ export function drawHicBlocks(
     return
   }
 
-  const fillStyleLut = makeRampFillStyleLut(colorRamp)
-
   ctx.save()
   ctx.translate(viewOffsetX, 0)
   ctx.scale(viewScale, viewScale * yScalar)
@@ -52,12 +47,12 @@ export function drawHicBlocks(
     const count = counts[i]!
 
     const t = mapHicCount(count, colorMaxScore, useLogScale)
-    const { a } = lookupColorRamp(colorRamp, t)
-    if (a < 0.01) {
+    const fill = fillStyleLut(t)
+    if (fill === undefined) {
       continue
     }
 
-    ctx.fillStyle = fillStyleLut(t)
+    ctx.fillStyle = fill
     ctx.fillRect(px, py, binWidth, binWidth)
   }
 
@@ -68,17 +63,17 @@ export class Canvas2DHicRenderer
   extends Canvas2DGlobalRenderingBackend<HicUploadData, HicRenderState>
   implements HicRenderingBackend
 {
-  private colorRamp: Uint8Array | null = null
+  private fillStyleLut: ((t: number) => string | undefined) | null = null
 
   uploadColorRamp(colors: Uint8Array) {
-    this.colorRamp = colors
+    this.fillStyleLut = makeHicFillStyleLut(colors)
   }
 
   render(data: HicUploadData | null, state: HicRenderState) {
     prepareCanvas(this.canvas, this.ctx, state.canvasWidth, state.canvasHeight)
-    if (!data || !this.colorRamp) {
+    if (!data || !this.fillStyleLut) {
       return
     }
-    drawHicBlocks(this.ctx, data, this.colorRamp, state)
+    drawHicBlocks(this.ctx, data, this.fillStyleLut, state)
   }
 }

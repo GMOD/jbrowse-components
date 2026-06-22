@@ -6,7 +6,7 @@ export interface RenderHicDataArgs {
   adapterConfig: Record<string, unknown>
   regions: Region[]
   bpPerPx: number
-  resolution?: number
+  resolution: number
   normalization: string
   stopToken?: StopToken
 }

@@ -145,7 +145,24 @@ export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
   }))
 }
 
-export { lookupColorRamp } from '@jbrowse/render-core/canvas2dUtils'
+import {
+  lookupColorRamp,
+  makeRampFillStyleLut,
+} from '@jbrowse/render-core/canvas2dUtils'
+
+export { lookupColorRamp }
+
+// Per-cell fillStyle LUT for the Canvas2D + SVG hic draw: returns the cached
+// `rgba(...)` string for a normalized value `t`, or undefined where the ramp is
+// effectively transparent (the juicebox scheme fades alpha→0 at low counts) so
+// the caller skips painting that bin. Keeping the alpha cutoff here — rather
+// than in the shared render-core LUT — keeps this hic-specific threshold out of
+// the cross-plugin primitive.
+export function makeHicFillStyleLut(ramp: Uint8Array) {
+  const fill = makeRampFillStyleLut(ramp)
+  return (t: number) =>
+    lookupColorRamp(ramp, t).a < 0.01 ? undefined : fill(t)
+}
 
 // Map a contact count into [0, 1] for color-ramp sampling. Mirrors the logic
 // in hic.slang's fragment shader so Canvas2D + SVG rendering stay consistent

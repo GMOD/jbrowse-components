@@ -223,15 +223,15 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
-      // Literal RPC payload for RenderHicData. Adding a field here flows
-      // into both the RPC call (via the fetch autorun in afterAttach) and
-      // into mobx's dependency tracking — the fetch autorun calls
-      // `self.rpcProps()` once, so any change refires it.
-      rpcProps() {
-        return {
-          resolution: self.effectiveResolution,
-          normalization: self.activeNormalization,
-        }
+      // User-controlled settings that drive a refetch: spread into the RPC
+      // payload via `...self.rpcProps()` and read once by the afterAttach
+      // autorun for dependency tracking, so any field added here flows into
+      // both. `resolution` is deliberately NOT here — it's zoom-derived (a
+      // function of bpPerPx + resolutionBias), so it's an explicit per-call
+      // arg alongside bpPerPx, not a user setting. See ARCHITECTURE.md
+      // "rpcProps()/gpuProps() pattern".
+      rpcProps(): { normalization: string } {
+        return { normalization: self.activeNormalization }
       },
 
       /**
@@ -507,6 +507,10 @@ export default function stateModelFactory(
         if (!regions.length) {
           return
         }
+        const resolution = self.effectiveResolution
+        if (resolution === undefined) {
+          return
+        }
         const { bpPerPx } = view
         const { adapterConfig } = self
         await self.runFetch(async ctx => {
@@ -519,6 +523,7 @@ export default function stateModelFactory(
               adapterConfig,
               regions: [...regions],
               bpPerPx,
+              resolution,
               ...self.rpcProps(),
               stopToken: ctx.stopToken,
             },
@@ -579,14 +584,13 @@ export default function stateModelFactory(
                 return
               }
               // effectiveResolution is undefined until availableResolutions
-              // arrives from CoreGetInfo — skip until then.
+              // arrives from CoreGetInfo; reading it gates the fetch and tracks
+              // resolution (bpPerPx + resolutionBias) so a zoom or step refires.
               if (self.effectiveResolution === undefined) {
                 return
               }
-
-              // rpcProps IS the full RPC payload; any field change refires
-              // the autorun. The viewport read above already retriggers on
-              // pan/zoom. reloadCounter retriggers on user-initiated reload.
+              // Track user settings (normalization + any future rpcProps field)
+              // so a settings change refires the fetch.
               void self.rpcProps()
               void self.reloadCounter
               void self.performHicFetch()

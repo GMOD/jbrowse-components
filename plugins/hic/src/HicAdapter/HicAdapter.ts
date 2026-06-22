@@ -216,10 +216,10 @@ export default class HicAdapter extends BaseFeatureDataAdapter {
         region2Idx,
       }))
     } catch (e) {
-      console.warn(
-        `HicAdapter: no contacts for ${region1.refName}:${region1.start}-${region1.end} × ${region2.refName}:${region2.start}-${region2.end} at binsize ${resolution} (${e})`,
-      )
-      return []
+      if (`${e}`.includes('No data available for resolution')) {
+        return []
+      }
+      throw e
     }
   }
 
