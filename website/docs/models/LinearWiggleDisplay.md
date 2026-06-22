@@ -169,6 +169,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -401,7 +404,7 @@ type selectFeature = (feat: WiggleFeatureUnderMouse) => void
 ```ts
 type fetchNeeded = (
   needed: { region: Region; displayedRegionIndex: number }[],
-) => Promise<void>
+) => Promise<void> | undefined
 ```
 
 #### action: renderSvg

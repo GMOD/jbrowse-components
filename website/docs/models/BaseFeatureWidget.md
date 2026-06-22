@@ -59,15 +59,6 @@ type featureData = IOptionalIType<
 featureData: types.optional(types.frozen<MaybeSerializedFeat>(), undefined)
 ```
 
-#### property: formattedFields
-
-```ts
-// type signature
-type formattedFields = IOptionalIType<IType<any, any, any>, [undefined]>
-// code
-formattedFields: types.optional(types.frozen(), undefined)
-```
-
 #### property: unformattedFeatureData
 
 ```ts

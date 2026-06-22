@@ -1,6 +1,6 @@
 import type { AbstractSessionModel, Feature } from '@jbrowse/core/util'
 
-function qualToPhred(qual: string): string {
+function qualToPhred(qual: string | undefined): string {
   if (!qual) {
     return '*'
   }
@@ -36,7 +36,7 @@ export function stringifySAM({
     // TODO: optional tags not yet output
     lines.push(
       [
-        feature.get('name') || feature.get('id') || '*',
+        feature.get('name') || '*',
         (feature.get('flag') as number | undefined) ?? 0,
         feature.get('refName') || '*',
         String(start + 1),
@@ -46,7 +46,7 @@ export function stringifySAM({
         typeof nextPos === 'number' ? String(nextPos + 1) : '0',
         (feature.get('template_len') as number | undefined) ?? 0,
         (feature.get('seq') as string | undefined) || '*',
-        qualToPhred((feature.get('qual') as string | undefined) ?? ''),
+        qualToPhred(feature.get('qual') as string | undefined),
       ].join('\t'),
     )
   }

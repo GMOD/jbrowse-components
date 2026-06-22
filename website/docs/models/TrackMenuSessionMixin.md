@@ -24,6 +24,22 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>TrackMenuSessionMixin - Methods</summary>
 
+#### method: getTrackListMenuItems
+
+flattened menu items for use in hierarchical track selector
+
+```ts
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```
+
+#### method: getTrackActionMenuItems
+
+track menu with About + "Track actions" submenu for the in-view label
+
+```ts
+type getTrackActionMenuItems = ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
+```
+
 #### method: getTrackActionMenuItems
 
 ```ts

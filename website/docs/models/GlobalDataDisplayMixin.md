@@ -91,6 +91,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -98,6 +101,24 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
+
+<details open>
+<summary>GlobalDataDisplayMixin - Volatiles</summary>
+
+#### volatile: reloadCounter
+
+Bumped by `reload()` to retrigger a global display's fetch autorun. Each display
+reads `void self.reloadCounter` in its `afterAttach` fetch autorun so a
+user-initiated reload re-runs the fetch even when no viewport/setting changed.
+
+```ts
+// type signature
+type reloadCounter = number
+// code
+reloadCounter: 0
+```
+
+</details>
 
 <details open>
 <summary>GlobalDataDisplayMixin - Getters</summary>
@@ -139,6 +160,22 @@ condition.
 
 ```ts
 type svgReady = boolean
+```
+
+</details>
+
+<details open>
+<summary>GlobalDataDisplayMixin - Actions</summary>
+
+#### action: reload
+
+Satisfies the `reload` contract `DisplayChrome` requires of every display (the
+per-region foundation provides its own). Clears any error and bumps
+`reloadCounter` so the display's fetch autorun re-runs. A subclass whose reload
+needs extra teardown can override and chain.
+
+```ts
+type reload = () => void
 ```
 
 </details>

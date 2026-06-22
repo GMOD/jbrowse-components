@@ -171,6 +171,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -376,12 +379,15 @@ type renderSvg = (
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => {
-  label: string
-  type: string
-  checked: boolean
-  onClick: () => void
-}[]
+type trackMenuItems = () => (
+  | { label: string; type: string; checked: boolean; onClick: () => void }
+  | {
+      label: string
+      onClick: () => void
+      type?: undefined
+      checked?: undefined
+    }
+)[]
 ```
 
 </details>
@@ -417,6 +423,15 @@ type toggleShowReverse = () => void
 
 ```ts
 type toggleShowTranslation = () => void
+```
+
+#### action: addGCContentTrack
+
+spins up a standalone GCContentTrack session track that wraps this track's
+sequence adapter (requires the gccontent plugin)
+
+```ts
+type addGCContentTrack = () => void
 ```
 
 #### action: startRenderingBackend

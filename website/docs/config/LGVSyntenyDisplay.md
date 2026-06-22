@@ -88,6 +88,16 @@ this page is self-contained.
 }
 ```
 
+#### slot: showSashimiLabels
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw the supporting-read count on each sashimi arc',
+}
+```
+
 #### slot: maxHeight
 
 ```js
@@ -122,14 +132,26 @@ this page is self-contained.
 
 #### slot: filterBy
 
+default filter flags is exclude 1540 read unmapped (0x4) read fails
+platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
+
 ```js
 {
   type: 'frozen',
-  defaultValue: {
-    flagInclude: 0,
-    flagExclude: 1540,
-  },
+  defaultValue: defaultFilterFlags,
   description: 'Filter settings for reads',
+  advanced: true,
+}
+```
+
+#### slot: groupBy
+
+```js
+{
+  type: 'frozen',
+  defaultValue: null,
+  description:
+    'In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)',
   advanced: true,
 }
 ```

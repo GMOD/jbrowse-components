@@ -72,9 +72,13 @@ and docs.
 
 ### Available via [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
+**Volatiles:** [reloadCounter](../globaldatadisplaymixin#volatile-reloadcounter)
+
 **Getters:** [displayPhase](../globaldatadisplaymixin#getter-displayphase),
 [loadingOverlayVisible](../globaldatadisplaymixin#getter-loadingoverlayvisible),
 [svgReady](../globaldatadisplaymixin#getter-svgready)
+
+**Actions:** [reload](../globaldatadisplaymixin#action-reload)
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
@@ -125,6 +129,9 @@ and docs.
 [regionStatuses](../fetchmixin#volatile-regionstatuses)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
+
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
@@ -178,17 +185,6 @@ configuration: ConfigurationReference(configSchema)
 type rpcData = LDDataResult | null
 // code
 rpcData: null as LDDataResult | null
-```
-
-#### volatile: reloadCounter
-
-Bumped by `reload()` to retrigger the fetch autorun.
-
-```ts
-// type signature
-type reloadCounter = number
-// code
-reloadCounter: 0
 ```
 
 </details>
@@ -588,12 +584,6 @@ Re-fetches LD matrix for the current viewport. Both the autorun (in
 
 ```ts
 type performLDFetch = () => Promise<void>
-```
-
-#### action: reload
-
-```ts
-type reload = () => void
 ```
 
 </details>

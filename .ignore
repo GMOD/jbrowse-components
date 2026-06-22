@@ -1,4 +1,8 @@
+products/jbrowse-web/browser-tests/suites/demo-inventory.ts
+packages/core/src/util/geneticCodes.ts
 *.ix
+*.gff3.gz
+test_data/maize_te
 test_data/many_contigs/large.chrom.sizes
 packages/core/src/ui/react-colorful.ts
 plugins/legacy-jbrowse/test_data

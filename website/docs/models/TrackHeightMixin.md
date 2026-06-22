@@ -36,7 +36,7 @@ the bare `height` name belongs to the resolving getter.
 type heightOverride = IMaybe<ISimpleType<number>>
 // code
 heightOverride: types.maybe(
-  types.refinement('displayHeight', types.number, n => n >= minDisplayHeight),
+  types.refinement('displayHeight', types.number, n => n >= MIN_DISPLAY_HEIGHT),
 )
 ```
 

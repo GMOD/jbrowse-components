@@ -114,6 +114,7 @@ and docs.
 [renderDataMap](../linearcanvasbasedisplay#getter-renderdatamap),
 [maxY](../linearcanvasbasedisplay#getter-maxy),
 [hasOverflow](../linearcanvasbasedisplay#getter-hasoverflow),
+[fitHeight](../linearcanvasbasedisplay#getter-fitheight),
 [featureIdIndex](../linearcanvasbasedisplay#getter-featureidindex),
 [subfeatureIdIndex](../linearcanvasbasedisplay#getter-subfeatureidindex),
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
@@ -172,6 +173,7 @@ and docs.
 [fetchNeeded](../linearcanvasbasedisplay#action-fetchneeded),
 [setFeatureDensityStats](../linearcanvasbasedisplay#action-setfeaturedensitystats),
 [clearStaleDensityState](../linearcanvasbasedisplay#action-clearstaledensitystate),
+[resizeHeight](../linearcanvasbasedisplay#action-resizeheight),
 [afterAttach](../linearcanvasbasedisplay#action-afterattach)
 
 ### Available via [BaseDisplay](../basedisplay)
@@ -290,6 +292,9 @@ and docs.
 [regionStatuses](../fetchmixin#volatile-regionstatuses)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
+
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),

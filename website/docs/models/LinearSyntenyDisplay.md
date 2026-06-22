@@ -163,6 +163,15 @@ type contextMenuAnchor = ClickCoord | undefined
 contextMenuAnchor: undefined as ClickCoord | undefined
 ```
 
+#### volatile: fetching
+
+```ts
+// type signature
+type fetching = false
+// code
+fetching: false
+```
+
 #### volatile: statusMessage
 
 ```ts
@@ -264,11 +273,23 @@ type ready = boolean
 
 #### getter: loading
 
-Fetch in-flight. Excludes error so error UI and loading UI never show
-simultaneously.
+First load: a fetch is running and no data has arrived yet. Excludes error so
+error UI and loading UI never show simultaneously. Drives the full striped
+LoadingOverlay.
 
 ```ts
 type loading = boolean
+```
+
+#### getter: refetching
+
+Refetch in-flight: a new fetch is running but stale ribbons are still on screen
+(e.g. zoom-out across a log2 bucket, region change). Drives a subtle corner
+indicator instead of the full overlay so the visible ribbons aren't masked on
+every viewport change.
+
+```ts
+type refetching = boolean
 ```
 
 #### getter: view
@@ -405,6 +426,12 @@ type setRpcData = (
 
 ```ts
 type setStatusMessage = (status?: RpcStatus | undefined) => void
+```
+
+#### action: setFetching
+
+```ts
+type setFetching = (arg: boolean) => void
 ```
 
 #### action: setAssembliesSwapped

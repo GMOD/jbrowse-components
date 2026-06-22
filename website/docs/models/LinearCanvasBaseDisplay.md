@@ -150,6 +150,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -573,6 +576,12 @@ type maxY = number
 
 ```ts
 type hasOverflow = boolean
+```
+
+#### getter: fitHeight
+
+```ts
+type fitHeight = number
 ```
 
 #### getter: featureIdIndex
@@ -1003,6 +1012,16 @@ type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 
 ```ts
 type clearStaleDensityState = () => void
+```
+
+#### action: resizeHeight
+
+A manual drag-resize means the user wants a fixed height; turn off auto-fit
+first, otherwise the CanvasAutoHeight autorun snaps the height back on the next
+layout change and the drag appears to do nothing.
+
+```ts
+type resizeHeight = (distance: number) => number
 ```
 
 #### action: afterAttach

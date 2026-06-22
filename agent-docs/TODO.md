@@ -34,48 +34,6 @@ Verified state
 
 One thing I did not do: add the direct-script output as a second demo track. The hap-ibd consensus painting is the cleaner showcase, and the script is presented as the "in principle more correct, but noisier here" alternative. Say the word if you'd like a second track (or a side-by-side of hap-ibd vs direct) added too.
 
-## add strand arrows on sides of screen when zoomed in
 
 
-
-## proressive reveal menu items weird
-
-also, once 'view pairs' is enabled, does more menu items appear? might want a better system for this progressive reveal
-
-Let me verify exactly what reveals and when, since the pair-filter reveal is gated on a second condition.
-
-  Searched for 2 patterns, read 1 file, ran 1 shell command
-
-Yes. Confirmed by reading the code — and there are actually two independent reveal groups in that one menu:
-
-- Enabling "View as pairs" reveals Show singletons + Show proper pairs.
-- Enabling either overlay (Show read arcs or Show read cloud) reveals Draw below coverage band, Show off-screen mate connections, Show inter-chromosomal pairs.
-- Show read links as bezier curves is always last.
-
-One thing worth fixing regardless: the pair-filter gate is redundant. The menu passes showPairFilters: self.isChainMode, and isChainMode is linkedReads === 'normal' — which is the exact same condition as linked (linkedReads !== 'off', and the type is only 'off' | 'normal'). So linked && showPairFilters is just linked twice. The showPairFilters param is vestigial (probably from when there were more linked modes). Could drop it.
-
-On "a better system"
-
-The team's stated rule (per the code comments) is reveal, never show-disabled — so greying-out is off the table. Within that, the real cognitive cost isn't the reveal itself, it's that revealed items appear inline in a flat list with no cue about which toggle they belong to, and the menu reflows under your cursor.
-
-Two levels of fix:
-
-Cheap, high-value (UX): bracket each revealed group with a divider and give the children a subLabel tying them to the parent, so when they pop in they read as a clear cluster instead of "where did these three rows come from." No new abstraction.
-
-Structural (code): a tiny declarative helper so the pattern stops being ad-hoc ...(cond ? [a,b] : []) spreads repeated across readConnections, sashimi, and colorBy:
-
-// each entry is always present in source; `children` reveal when `expanded`
-group(checkboxItem('View as pairs', linked, toggle), {
-  expanded: linked,
-  children: [singletons, properPairs],
-})
-
-The helper flattens to the same MenuItem[] the renderer wants, but the dependency is expressed structurally in code (parent owns its children) instead of as a separate boolean condition repeated next to a separate array — which is also what would've prevented the redundant-gate confusion above.
-
-My recommendation: do the redundant-gate cleanup now (it's a clear bug-adjacent simplification), and if you want the reveal to feel less jarring, the divider+subLabel touch — it's the lighter lift and directly serves the low-overhead goal. The declarative helper is nice but only pays off if you're willing to migrate all three menus to it.
-
-Want me to apply the gate cleanup, and/or prototype the helper on readConnections so you can see it before committing to the pattern?
-
-✻ Baked for 1m 12s
-
-❯ for example, the 'show proper pairs' thing...that could be in the show submenu all the time
+website/docs/developer_guides/renderer_architecture.md

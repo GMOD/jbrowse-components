@@ -76,6 +76,7 @@ and docs.
 [readConnections](../linearalignmentsdisplay#property-readconnections),
 [readConnectionsDown](../linearalignmentsdisplay#property-readconnectionsdown),
 [showSashimiArcs](../linearalignmentsdisplay#property-showsashimiarcs),
+[sashimiArcsMode](../linearalignmentsdisplay#property-sashimiarcsmode),
 [minSashimiScore](../linearalignmentsdisplay#property-minsashimiscore),
 [sashimiArcsHeight](../linearalignmentsdisplay#property-sashimiarcsheight),
 [readConnectionsHeight](../linearalignmentsdisplay#property-readconnectionsheight),
@@ -119,6 +120,7 @@ and docs.
 [featureHeight](../linearalignmentsdisplay#getter-featureheight),
 [featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
 [maxHeight](../linearalignmentsdisplay#getter-maxheight),
+[showSashimiLabels](../linearalignmentsdisplay#getter-showsashimilabels),
 [chainIdMap](../linearalignmentsdisplay#getter-chainidmap),
 [mismatchAlpha](../linearalignmentsdisplay#getter-mismatchalpha),
 [showLowFreqMismatches](../linearalignmentsdisplay#getter-showlowfreqmismatches),
@@ -132,6 +134,7 @@ and docs.
 [coverageTicks](../linearalignmentsdisplay#getter-coverageticks),
 [colorLegendCategories](../linearalignmentsdisplay#getter-colorlegendcategories),
 [colorPalette](../linearalignmentsdisplay#getter-colorpalette),
+[belowCoverageBandsInput](../linearalignmentsdisplay#getter-belowcoveragebandsinput),
 [laidOutByGroup](../linearalignmentsdisplay#getter-laidoutbygroup),
 [groupOrder](../linearalignmentsdisplay#getter-grouporder),
 [laidOutPileupMap](../linearalignmentsdisplay#getter-laidoutpileupmap),
@@ -148,7 +151,6 @@ and docs.
 [totalPileupHeight](../linearalignmentsdisplay#getter-totalpileupheight),
 [readIdIndexMap](../linearalignmentsdisplay#getter-readidindexmap),
 [readConnectionsLineWidth](../linearalignmentsdisplay#getter-readconnectionslinewidth),
-[hasSashimiArcs](../linearalignmentsdisplay#getter-hassashimiarcs),
 [belowCoverageBands](../linearalignmentsdisplay#getter-belowcoveragebands),
 [coverageDisplayHeight](../linearalignmentsdisplay#getter-coveragedisplayheight),
 [sections](../linearalignmentsdisplay#getter-sections),
@@ -171,8 +173,10 @@ and docs.
 
 **Methods:**
 [isGroupCollapsed](../linearalignmentsdisplay#method-isgroupcollapsed),
+[hasGroupHeightOverride](../linearalignmentsdisplay#method-hasgroupheightoverride),
 [legendItems](../linearalignmentsdisplay#method-legenditems),
 [groupLaidOutMap](../linearalignmentsdisplay#method-grouplaidoutmap),
+[isGroupTruncated](../linearalignmentsdisplay#method-isgrouptruncated),
 [findFeatureInRpcData](../linearalignmentsdisplay#method-findfeatureinrpcdata),
 [searchFeatureByID](../linearalignmentsdisplay#method-searchfeaturebyid),
 [getFeatureInfoById](../linearalignmentsdisplay#method-getfeatureinfobyid),
@@ -204,6 +208,7 @@ and docs.
 [clearSortedBy](../linearalignmentsdisplay#action-clearsortedby),
 [setGroupBy](../linearalignmentsdisplay#action-setgroupby),
 [toggleGroupCollapsed](../linearalignmentsdisplay#action-togglegroupcollapsed),
+[toggleGroupExpanded](../linearalignmentsdisplay#action-togglegroupexpanded),
 [resizeGroupHeight](../linearalignmentsdisplay#action-resizegroupheight),
 [setScaleType](../linearalignmentsdisplay#action-setscaletype),
 [setAutoscale](../linearalignmentsdisplay#action-setautoscale),
@@ -222,6 +227,8 @@ and docs.
 [setReadConnectionsHeight](../linearalignmentsdisplay#action-setreadconnectionsheight),
 [setSashimiArcsHeight](../linearalignmentsdisplay#action-setsashimiarcsheight),
 [setMinSashimiScore](../linearalignmentsdisplay#action-setminsashimiscore),
+[setSashimiArcsMode](../linearalignmentsdisplay#action-setsashimiarcsmode),
+[setShowSashimiLabels](../linearalignmentsdisplay#action-setshowsashimilabels),
 [setReadConnectionsLineWidth](../linearalignmentsdisplay#action-setreadconnectionslinewidth),
 [setDrawInter](../linearalignmentsdisplay#action-setdrawinter),
 [setDrawLongRange](../linearalignmentsdisplay#action-setdrawlongrange),
@@ -370,6 +377,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -444,7 +454,7 @@ type contextMenuItems = () => (
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; })[]
+type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
 ```
 
 </details>

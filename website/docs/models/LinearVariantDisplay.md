@@ -108,6 +108,7 @@ and docs.
 [renderDataMap](../linearcanvasbasedisplay#getter-renderdatamap),
 [maxY](../linearcanvasbasedisplay#getter-maxy),
 [hasOverflow](../linearcanvasbasedisplay#getter-hasoverflow),
+[fitHeight](../linearcanvasbasedisplay#getter-fitheight),
 [featureIdIndex](../linearcanvasbasedisplay#getter-featureidindex),
 [subfeatureIdIndex](../linearcanvasbasedisplay#getter-subfeatureidindex),
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
@@ -166,6 +167,7 @@ and docs.
 [fetchNeeded](../linearcanvasbasedisplay#action-fetchneeded),
 [setFeatureDensityStats](../linearcanvasbasedisplay#action-setfeaturedensitystats),
 [clearStaleDensityState](../linearcanvasbasedisplay#action-clearstaledensitystate),
+[resizeHeight](../linearcanvasbasedisplay#action-resizeheight),
 [afterAttach](../linearcanvasbasedisplay#action-afterattach)
 
 ### Available via [BaseDisplay](../basedisplay)
@@ -285,6 +287,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -332,18 +337,14 @@ type featureWidgetType = { type: string; id: string }
 <details open>
 <summary>LinearVariantDisplay - Methods</summary>
 
-#### method: colorMenuItems
+#### method: colorBySubMenuItems
 
 ```ts
-type colorMenuItems = () => {
+type colorBySubMenuItems = () => {
   label: string
-  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
-  subMenu: {
-    label: string
-    type: 'radio'
-    checked: boolean
-    onClick: () => void
-  }[]
+  type: 'radio'
+  checked: boolean
+  onClick: () => void
 }[]
 ```
 

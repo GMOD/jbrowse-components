@@ -126,6 +126,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       },
       /**
        * #slot
+       * default filter flags is exclude 1540
+       * read unmapped (0x4)
+       * read fails platform/vendor quality checks (0x200)
+       * read is PCR or optical duplicate (0x400)
        */
       filterBy: {
         type: 'frozen',

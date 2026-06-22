@@ -95,9 +95,13 @@ and docs.
 
 ### Available via [GlobalDataDisplayMixin](../globaldatadisplaymixin)
 
+**Volatiles:** [reloadCounter](../globaldatadisplaymixin#volatile-reloadcounter)
+
 **Getters:** [displayPhase](../globaldatadisplaymixin#getter-displayphase),
 [loadingOverlayVisible](../globaldatadisplaymixin#getter-loadingoverlayvisible),
 [svgReady](../globaldatadisplaymixin#getter-svgready)
+
+**Actions:** [reload](../globaldatadisplaymixin#action-reload)
 
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
@@ -148,6 +152,9 @@ and docs.
 [regionStatuses](../fetchmixin#volatile-regionstatuses)
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
+
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
 
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
@@ -215,6 +222,8 @@ resolutionBias: types.stripDefault(types.number, 0)
 
 #### property: useLogScale
 
+Map contact counts to color on a log2 scale instead of linear.
+
 ```ts
 // type signature
 type useLogScale = IOptionalIType<ISimpleType<boolean>, [undefined]>
@@ -235,7 +244,23 @@ type useColorPercentile = IOptionalIType<ISimpleType<boolean>, [undefined]>
 useColorPercentile: types.stripDefault(types.boolean, false)
 ```
 
+#### property: showResolutionControls
+
+Whether the on-canvas resolution stepper overlay is shown. Toggled from the
+track menu's `Show...` submenu; the stepper itself lives only on the canvas to
+keep the menu uncluttered.
+
+```ts
+// type signature
+type showResolutionControls = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showResolutionControls: types.stripDefault(types.boolean, true)
+```
+
 #### property: activeNormalization
+
+Active matrix normalization scheme (e.g. KR, SCALE, VC, NONE), reconciled
+against what the `.hic` file actually provides.
 
 ```ts
 // type signature
@@ -244,16 +269,16 @@ type activeNormalization = IOptionalIType<ISimpleType<string>, [undefined]>
 activeNormalization: types.stripDefault(types.string, 'KR')
 ```
 
-#### property: mode
+#### property: fitToHeight
+
+Squash the triangle vertically to fit the chosen display height instead of
+drawing square bins at natural proportions.
 
 ```ts
 // type signature
-type mode = IOptionalIType<ISimpleType<HicRenderMode>, [undefined]>
+type fitToHeight = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-mode: types.stripDefault(
-  types.enumeration<HicRenderMode>('HicRenderMode', ['triangular', 'adjust']),
-  'triangular',
-)
+fitToHeight: types.stripDefault(types.boolean, false)
 ```
 
 </details>
@@ -286,17 +311,6 @@ availableNormalizations: undefined as string[] | undefined
 type availableResolutions = number[] | undefined
 // code
 availableResolutions: undefined as number[] | undefined
-```
-
-#### volatile: reloadCounter
-
-Bumped by `reload()` to retrigger the fetch autorun.
-
-```ts
-// type signature
-type reloadCounter = number
-// code
-reloadCounter: 0
 ```
 
 </details>
@@ -375,7 +389,7 @@ type renderTransform = RenderTransform
 #### method: rpcProps
 
 ```ts
-type rpcProps = () => { resolution: number | undefined; normalization: string }
+type rpcProps = () => { normalization: string }
 ```
 
 #### method: nextResolution
@@ -473,6 +487,12 @@ type setUseLogScale = (f: boolean) => void
 type setUseColorPercentile = (f: boolean) => void
 ```
 
+#### action: setShowResolutionControls
+
+```ts
+type setShowResolutionControls = (f: boolean) => void
+```
+
 #### action: setColorScheme
 
 ```ts
@@ -487,14 +507,20 @@ type setActiveNormalization = (f: string) => void
 
 #### action: setAvailableNormalizations
 
+Reconcile `activeNormalization` against what the file actually offers. The model
+seeds `activeNormalization='KR'` before `CoreGetInfo` resolves, but not every
+`.hic` carries KR — when it doesn't, fall back to the next-best available scheme
+so the UI selection matches what's rendered (hic-straw silently uses NONE for an
+absent norm otherwise).
+
 ```ts
 type setAvailableNormalizations = (f: string[]) => void
 ```
 
-#### action: setMode
+#### action: setFitToHeight
 
 ```ts
-type setMode = (arg: HicRenderMode) => void
+type setFitToHeight = (arg: boolean) => void
 ```
 
 #### action: setShowLegend
@@ -535,12 +561,6 @@ Re-fetches contact matrix for the current viewport. Both the autorun (in
 
 ```ts
 type performHicFetch = () => Promise<void>
-```
-
-#### action: reload
-
-```ts
-type reload = () => void
 ```
 
 </details>

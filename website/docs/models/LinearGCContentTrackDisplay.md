@@ -68,8 +68,7 @@ and docs.
 
 **Getters:** [windowSize](../sharedgccontentmodel#getter-windowsize),
 [windowDelta](../sharedgccontentmodel#getter-windowdelta),
-[gcMode](../sharedgccontentmodel#getter-gcmode),
-[adapterConfig](../sharedgccontentmodel#getter-adapterconfig)
+[gcMode](../sharedgccontentmodel#getter-gcmode)
 
 **Methods:** [trackMenuItems](../sharedgccontentmodel#method-trackmenuitems)
 
@@ -224,6 +223,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -300,6 +302,20 @@ and docs.
 type type = ISimpleType<'LinearGCContentTrackDisplay'>
 // code
 type: types.literal('LinearGCContentTrackDisplay')
+```
+
+</details>
+
+<details open>
+<summary>LinearGCContentTrackDisplay - Getters</summary>
+
+#### getter: adapterConfig
+
+the parent GCContentTrack's adapter is already a GCContentAdapter, so use it
+directly and apply the current display parameter overrides
+
+```ts
+type adapterConfig = any
 ```
 
 </details>

@@ -107,7 +107,7 @@ type getRefNameMapForAdapter = (
   adapterConf: AdapterConf,
   assemblyName: string | undefined,
   opts: AssemblyBaseOpts,
-) => Promise<RefNameAliases | undefined>
+) => Promise<RefNameAliases>
 ```
 
 #### method: isValidRefName

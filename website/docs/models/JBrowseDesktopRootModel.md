@@ -134,6 +134,17 @@ openNewSessionCallback: async (_path: string) => {
 }
 ```
 
+#### volatile: returnToStartScreenCallback
+
+```ts
+// type signature
+type returnToStartScreenCallback = () => void
+// code
+returnToStartScreenCallback: () => {
+  console.error('returnToStartScreenCallback unimplemented')
+}
+```
+
 </details>
 
 <details open>
@@ -154,6 +165,15 @@ type menus = () => Menu[]
 
 ```ts
 type setOpenNewSessionCallback = (cb: (arg: string) => Promise<void>) => void
+```
+
+#### action: setReturnToStartScreenCallback
+
+Wired by the Loader to tear down this plugin manager and show the start screen
+(the Loader owns plugin-manager lifecycle).
+
+```ts
+type setReturnToStartScreenCallback = (cb: () => void) => void
 ```
 
 #### action: saveSession

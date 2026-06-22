@@ -210,6 +210,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -421,6 +424,22 @@ readConnectionsDown: types.stripDefault(types.boolean, false)
 type showSashimiArcs = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showSashimiArcs: types.stripDefault(types.boolean, true)
+```
+
+#### property: sashimiArcsMode
+
+sashimi junction-arc placement, decoupled from the paired-end arc direction:
+'up' over coverage, 'down' in a reserved strip below it, 'auto' splits arcs both
+ways to minimize overlap
+
+```ts
+// type signature
+type sashimiArcsMode = IOptionalIType<ISimpleType<SashimiArcsMode>, [undefined]>
+// code
+sashimiArcsMode: types.stripDefault(
+  types.enumeration<SashimiArcsMode>('SashimiArcsMode', ['up', 'down', 'auto']),
+  'auto',
+)
 ```
 
 #### property: minSashimiScore
@@ -784,6 +803,15 @@ type featureSpacing = number
 type maxHeight = number
 ```
 
+#### getter: showSashimiLabels
+
+Whether to draw the supporting-read count on each sashimi arc (config slot
+`showSashimiLabels`, overridable from the track menu).
+
+```ts
+type showSashimiLabels = boolean
+```
+
 #### getter: chainIdMap
 
 ```ts
@@ -816,8 +844,9 @@ type sortedBy = SortedBy | undefined
 
 #### getter: groupBy
 
-In-track stacked grouping dimension (undefined = ungrouped). Sent to the worker
-via rpcProps; the worker partitions one fetch into N sections.
+In-track stacked grouping dimension (undefined = ungrouped). Falls back to the
+`groupBy` config slot, so a track can be pre-grouped declaratively. Sent to the
+worker via rpcProps; the worker partitions one fetch into N sections.
 
 ```ts
 type groupBy = GroupBy | undefined
@@ -874,12 +903,35 @@ type colorLegendCategories = Set<ReadColorCategory>
 type colorPalette = ColorPalette
 ```
 
+#### getter: belowCoverageBandsInput
+
+Inputs to `belowCoverageBandsGeometry` — the below-coverage band settings plus
+whether any sashimi junction is present. Defined here (an earlier .views block
+than `belowCoverageBands`) so the fit-budget `laidOutByGroup` and the
+`belowCoverageBands` getter share one source.
+
+```ts
+type belowCoverageBandsInput = {
+  showCoverage: boolean
+  coverageHeight: number
+  readConnections: ReadConnectionsMode
+  readConnectionsDown: boolean
+  readConnectionsHeight: number
+  showSashimiArcs: boolean
+  sashimiArcsMode: SashimiArcsMode
+  sashimiArcsHeight: number
+  hasSashimiArcs: boolean
+}
+```
+
 #### getter: laidOutByGroup
 
 Per-group laid-out data: group key → (region index → laid-out data). Each group
 lays out independently (own `maxRows` cap) so a dense group can't starve the
-rest. Tag colors are baked here (not in the worker) so colorTagMap stays a
-main-thread tier-2 setting — see readTagColors.
+rest. When grouped, the default cap fits all sections into the viewport
+(`fitGroupMaxRows`) so the stack doesn't tower and need scrolling; a per-group
+height drag / expand still overrides it. Tag colors are baked here (not in the
+worker) so colorTagMap stays a main-thread tier-2 setting — see readTagColors.
 
 ```ts
 type laidOutByGroup = LaidOutByGroup
@@ -934,10 +986,11 @@ type maxY = number
 
 #### getter: pileupTruncated
 
-True when any group hit `maxHeight` and overflow reads were collapsed — drives
-the "max height reached" / "show all" banner. Groups the user explicitly shrank
-(a per-group height drag) are skipped: their truncation is intentional, not the
-global cap the banner offers to lift.
+True when the ungrouped pileup hit `maxHeight` and overflow reads were collapsed
+— drives the "max height reached" / "show all" banner. Only the ungrouped
+(single-group) case: grouped sections surface their own truncation per-label
+(`isGroupTruncated`), where raising `maxHeight` wouldn't lift the
+fit-to-viewport cap anyway — expanding the group does.
 
 ```ts
 type pileupTruncated = boolean
@@ -1018,16 +1071,6 @@ type readIdIndexMap = Map<
 type readConnectionsLineWidth = number
 ```
 
-#### getter: hasSashimiArcs
-
-True when any loaded region has a junction passing minSashimiScore. Drives
-whether the below-coverage band reserves space, so a threshold that hides every
-arc also reclaims the empty band.
-
-```ts
-type hasSashimiArcs = boolean
-```
-
 #### getter: belowCoverageBands
 
 Geometry of the bands stacked below coverage in arcs-down mode, top to bottom:
@@ -1090,18 +1133,20 @@ type renderSections = {
 #### getter: sashimiSections
 
 Per-section sashimi band placement, in stacking order. Each entry pairs a
-group's raw data (sashimi counts live per-group) with the content-space top of
-its sashimi band: down mode uses the reserved sashimi band, up mode overlays the
-section's own coverage. The overlay and SVG export both map over this so their
-geometry can't drift; ungrouped is the single-section case (sticky band below
-sticky coverage, raw map == the only group). Empty when sashimi is off.
+group's raw data (sashimi counts live per-group) with the content-space tops of
+_both_ sub-bands: `coverageOverlayTop` for arcs drawn over the coverage
+histogram and `sashimiBandTop` for arcs in the reserved strip below it. In
+'auto' both are used at once; 'up'/'down' use one. The overlay and SVG export
+both map over this so their geometry can't drift; ungrouped is the
+single-section case (sticky band below sticky coverage, raw map == the only
+group). Empty when sashimi is off.
 
 ```ts
 type sashimiSections = {
   groupKey: string
   rpcDataMap: Map<number, PileupDataResult>
-  top: number
-  down: boolean
+  coverageOverlayTop: number
+  sashimiBandTop: number
 }[]
 ```
 
@@ -1222,6 +1267,16 @@ Whether a stacked group's pileup is collapsed to just its coverage.
 type isGroupCollapsed = (key: string) => boolean
 ```
 
+#### method: hasGroupHeightOverride
+
+Whether a stacked group carries a custom pileup-height override — set by
+expanding it (show all reads) or dragging its resize handle (taller or shorter).
+Drives the group label's restore-to-fit affordance.
+
+```ts
+type hasGroupHeightOverride = (key: string) => boolean
+```
+
 #### method: legendItems
 
 ```ts
@@ -1236,6 +1291,17 @@ have to branch on a missing group.
 
 ```ts
 type groupLaidOutMap = (key: string) => Map<number, PileupDataResult>
+```
+
+#### method: isGroupTruncated
+
+True when the row cap clipped reads from a group's pileup and the user hasn't
+explicitly sized that group (a height drag/expand makes any truncation
+intentional, so it isn't flagged). Drives the per-group "show all" affordance on
+the section label.
+
+```ts
+type isGroupTruncated = (key: string) => boolean
 ```
 
 #### method: findFeatureInRpcData
@@ -1297,7 +1363,7 @@ type rpcProps = () => {
 Track menu items
 
 ```ts
-type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuItem | { label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: contextMenuItems
@@ -1446,9 +1512,11 @@ type clearSortedBy = () => void
 
 #### action: setGroupBy
 
-Set (or clear, when undefined) the in-track stacked grouping dimension. A tier-1
-refetch setting (in `rpcProps`) — the worker re-partitions the fetch into N
-sections. Resets the Y scroll since the stacked content height changes.
+Set (or remove, when undefined) the in-track stacked grouping dimension. A
+tier-1 refetch setting (in `rpcProps`) — the worker re-partitions the fetch into
+N sections. Resets the Y scroll since the stacked content height changes.
+Ungrouping stores an explicit `null` override (not a cleared override) so it
+beats a configured `groupBy` default rather than falling back to it.
 
 ```ts
 type setGroupBy = (groupBy?: GroupBy | undefined) => void
@@ -1460,6 +1528,18 @@ Collapse/expand a stacked group's pileup (coverage stays visible).
 
 ```ts
 type toggleGroupCollapsed = (key: string) => void
+```
+
+#### action: toggleGroupExpanded
+
+Expand a fit-to-viewport group back to the full `maxHeight` cap (show all its
+reads), or, if it already carries a height override (from expand or a drag),
+drop the override to return it to the fit budget. Expanding makes the stack
+overflow the viewport, which engages the pileup scroll. Pairs with
+`hasGroupHeightOverride`.
+
+```ts
+type toggleGroupExpanded = (key: string) => void
 ```
 
 #### action: resizeGroupHeight
@@ -1580,6 +1660,18 @@ type setSashimiArcsHeight = (height: number) => void
 
 ```ts
 type setMinSashimiScore = (score: number) => void
+```
+
+#### action: setSashimiArcsMode
+
+```ts
+type setSashimiArcsMode = (mode: SashimiArcsMode) => void
+```
+
+#### action: setShowSashimiLabels
+
+```ts
+type setShowSashimiLabels = (show: boolean) => void
 ```
 
 #### action: setReadConnectionsLineWidth

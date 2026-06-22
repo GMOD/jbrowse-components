@@ -5430,6 +5430,9 @@ export const specs: ScreenshotSpec[] = [
         // top frame: the Cluster by score dialog open, before clustering
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+          // "Cluster rows by score..." now lives under a "Clustering" submenu
+          { type: 'waitForText', text: 'Clustering' },
+          { type: 'hover', text: 'Clustering' },
           { type: 'waitForText', text: 'Cluster rows by score...' },
           { type: 'delay', ms: 300 },
           { type: 'click', text: 'Cluster rows by score...' },

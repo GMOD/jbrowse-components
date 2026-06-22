@@ -150,6 +150,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -181,8 +184,10 @@ configuration: ConfigurationReference(configSchema)
 
 #### property: rowHeightOverride
 
-Per-display override of the config `rowHeight`. The bare `rowHeight` getter
-resolves override-or-config so it's never undefined.
+Per-display override of the config `rowHeight`: a positive px height pins fixed
+rows, `0` selects auto-fit. `rowHeightSetting` resolves override-or-config; the
+`rowHeight` getter then resolves `0` to the fit-to-height value, so it's never
+undefined.
 
 ```ts
 // type signature
@@ -267,6 +272,15 @@ type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotNam
 type partitionField = string
 ```
 
+#### getter: rowOrder
+
+Optional explicit row order from config; values listed here are placed first,
+remaining discovered values follow in sorted order.
+
+```ts
+type rowOrder = string[]
+```
+
 #### getter: colorConfig
 
 Raw `color` slot (a CSS color or `jexl:` string), forwarded to the worker which
@@ -282,17 +296,11 @@ type colorConfig = string
 type rowProportion = number
 ```
 
-#### getter: rowHeight
-
-```ts
-type rowHeight = number
-```
-
 #### getter: sourcesWithoutLayout
 
 Rows discovered in the loaded data: the distinct partition values across all
-loaded regions, sorted. The pre-layout, pre-filter input to the arrangement
-dialog and to clustering.
+loaded regions, ordered by the config `rowOrder` then sorted. The pre-layout,
+pre-filter input to the arrangement dialog and to clustering.
 
 ```ts
 type sourcesWithoutLayout = MultiRowSource[]
@@ -323,11 +331,57 @@ type sources = MultiRowSource[]
 type rowIndexByValue = Map<string, number>
 ```
 
+#### getter: nrow
+
+Number of displayed rows (at least 1, so the auto-fit division is safe and the
+canvas mounts before data arrives).
+
+```ts
+type nrow = number
+```
+
+#### getter: fitTargetHeight
+
+The track height that auto-fit mode divides among rows: the dragged
+`heightOverride` (TrackHeightMixin) or the config `height` default.
+
+```ts
+type fitTargetHeight = number
+```
+
+#### getter: rowHeightSetting
+
+Resolved fixed row-height setting: `0` is auto-fit, any positive value is a
+pinned px height. Override-or-config, never undefined.
+
+```ts
+type rowHeightSetting = number
+```
+
+#### getter: autoRowHeight
+
+Per-row height in auto-fit mode: the display height split evenly across rows, so
+all rows stay visible as the row count grows.
+
+```ts
+type autoRowHeight = number
+```
+
+#### getter: rowHeight
+
+Resolved per-row height. `rowHeightSetting === 0` auto-fits (rows stretch to
+fill the display height); any positive value is pinned. Every consumer reads
+this, never `rowHeightSetting`.
+
+```ts
+type rowHeight = number
+```
+
 #### getter: height
 
 Override BaseLinearDisplay.height so the track container matches the rendering
-canvas (numRows × rowHeight). At least one row tall so the canvas mounts (and
-the loading overlay shows) before data arrives.
+canvas (numRows × rowHeight). In auto-fit mode this resolves to
+`fitTargetHeight`; in fixed mode it grows with the row count.
 
 ```ts
 type height = number
@@ -440,10 +494,30 @@ type clearDisplaySpecificData = () => void
 
 #### action: setHeight
 
-Distribute a target height across the current rows.
+Set the track height. In auto-fit mode the rows restretch to it; in fixed mode
+it's distributed across the current rows as a pinned row height.
 
 ```ts
-type setHeight = (newHeight: number) => void
+type setHeight = (newHeight: number) => number
+```
+
+#### action: resizeHeight
+
+Drag-resize. Defers to `setHeight`, which restretches rows in auto-fit mode and
+re-pins the row height in fixed mode.
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+#### action: setFitToHeight
+
+Switch to auto-fit: seed `heightOverride` from the current content height (so
+toggling on doesn't jump), then `rowHeightOverride = 0` makes `rowHeight` derive
+from it.
+
+```ts
+type setFitToHeight = () => void
 ```
 
 #### action: startRenderingBackend

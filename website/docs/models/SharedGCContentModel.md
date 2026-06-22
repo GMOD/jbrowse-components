@@ -173,6 +173,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -297,21 +300,6 @@ type windowDelta = any
 
 ```ts
 type gcMode = any
-```
-
-#### getter: adapterConfig
-
-retrieves the sequence adapter from parent track, and puts it as a subadapter on
-a GCContentAdapter
-
-```ts
-type adapterConfig = {
-  type: string
-  sequenceAdapter: any
-  windowSize: any
-  windowDelta: any
-  gcMode: any
-}
 ```
 
 </details>

@@ -66,18 +66,33 @@ panelWidth: types.optional(types.number, () =>
 )
 ```
 
+#### property: hiddenColumns
+
+Column names the user has hidden. Loaded from a config+assembly scoped
+localStorage entry in setTrackConfigurations (once assemblies are known).
+
+```ts
+// type signature
+type hiddenColumns = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+hiddenColumns: types.optional(types.array(types.string), [])
+```
+
 </details>
 
 <details open>
 <summary>FacetedModel - Volatiles</summary>
 
-#### volatile: visible
+#### volatile: assemblyNames
 
 ```ts
 // type signature
-type visible = Record<string, boolean>
+type assemblyNames = string[]
 // code
-visible: {} as Record<string, boolean>
+assemblyNames: [] as string[]
 ```
 
 #### volatile: useShoppingCart
@@ -96,6 +111,26 @@ useShoppingCart: false
 type filters = ObservableMap<string, string[]>
 // code
 filters: observable.map<string, string[]>()
+```
+
+#### volatile: sortField
+
+Field id the grid is sorted by; empty string keeps natural order.
+
+```ts
+// type signature
+type sortField = string
+// code
+sortField: ''
+```
+
+#### volatile: sortAscending
+
+```ts
+// type signature
+type sortAscending = true
+// code
+sortAscending: true
 ```
 
 #### volatile: trackConfigurations
@@ -173,6 +208,15 @@ the header can show "x (from metadata)").
 type nonMetadataFieldSet = Set<string>
 ```
 
+#### getter: visible
+
+Per-field visibility derived from the persisted hiddenColumns list. A field
+absent from the list (e.g. newly introduced) defaults to visible.
+
+```ts
+type visible = Record<string, boolean>
+```
+
 #### getter: filteredRows
 
 ```ts
@@ -197,6 +241,15 @@ stable and don't recompute on every filterText keystroke.
 type initialWidths = Record<string, number>
 ```
 
+#### getter: sortedRows
+
+Faceted rows in display order: filteredRows sorted by the active sort field
+(natural order when no field is selected).
+
+```ts
+type sortedRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+```
+
 </details>
 
 <details open>
@@ -205,7 +258,7 @@ type initialWidths = Record<string, number>
 #### action: setTrackConfigurations
 
 ```ts
-type setTrackConfigurations = (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel) => void
+type setTrackConfigurations = (tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel, assemblyNames: string[]) => void
 ```
 
 #### action: setFilter
@@ -214,10 +267,22 @@ type setTrackConfigurations = (tracks: (ModelInstanceTypeProps<Record<string, an
 type setFilter = (key: string, value: string[]) => void
 ```
 
+#### action: clearFilters
+
+```ts
+type clearFilters = () => void
+```
+
+#### action: setSort
+
+```ts
+type setSort = (field: string, ascending: boolean) => void
+```
+
 #### action: setPanelWidth
 
 ```ts
-type setPanelWidth = (width: number) => number
+type setPanelWidth = (width: number) => void
 ```
 
 #### action: setUseShoppingCart
@@ -244,10 +309,10 @@ type setShowSparse = (f: boolean) => void
 type setShowFilters = (f: boolean) => void
 ```
 
-#### action: setVisible
+#### action: setColumnVisible
 
 ```ts
-type setVisible = (args: Record<string, boolean>) => void
+type setColumnVisible = (field: string, visible: boolean) => void
 ```
 
 </details>

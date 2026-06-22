@@ -132,6 +132,33 @@ type isLoading = boolean
 </details>
 
 <details open>
+<summary>FetchMixin - Methods</summary>
+
+#### method: makeStatusCallback
+
+An RPC `statusCallback` bound to this display: forwards progress to the shared
+`statusMessage`, guarded by `isAlive` so a callback that fires after the node is
+torn down (RPCs resolve their status stream asynchronously) is a safe no-op.
+Pass directly as the `statusCallback` RPC arg instead of re-inlining the guard
+at every call site.
+
+```ts
+type makeStatusCallback = () => (status: RpcStatus) => void
+```
+
+#### method: makeRegionStatusCallback
+
+Per-region variant of `makeStatusCallback`: routes progress through
+`setRegionStatus(key, …)` so N concurrent per-region fetches aggregate into one
+status bar instead of clobbering each other. Same `isAlive` guard.
+
+```ts
+type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
+```
+
+</details>
+
+<details open>
 <summary>FetchMixin - Actions</summary>
 
 #### action: setError

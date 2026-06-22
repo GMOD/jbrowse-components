@@ -65,8 +65,7 @@ and docs.
 
 **Getters:** [windowSize](../sharedgccontentmodel#getter-windowsize),
 [windowDelta](../sharedgccontentmodel#getter-windowdelta),
-[gcMode](../sharedgccontentmodel#getter-gcmode),
-[adapterConfig](../sharedgccontentmodel#getter-adapterconfig)
+[gcMode](../sharedgccontentmodel#getter-gcmode)
 
 **Methods:** [trackMenuItems](../sharedgccontentmodel#method-trackmenuitems)
 
@@ -221,6 +220,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -297,6 +299,51 @@ and docs.
 type type = ISimpleType<'LinearGCContentDisplay'>
 // code
 type: types.literal('LinearGCContentDisplay')
+```
+
+</details>
+
+<details open>
+<summary>LinearGCContentDisplay - Getters</summary>
+
+#### getter: adapterConfig
+
+wraps the parent ReferenceSequenceTrack's sequence adapter in a GCContentAdapter
+
+```ts
+type adapterConfig = {
+  type: string
+  sequenceAdapter: any
+  windowSize: any
+  windowDelta: any
+  gcMode: any
+}
+```
+
+</details>
+
+<details open>
+<summary>LinearGCContentDisplay - Methods</summary>
+
+#### method: trackMenuItems
+
+```ts
+type trackMenuItems = () => MenuItem[]
+```
+
+</details>
+
+<details open>
+<summary>LinearGCContentDisplay - Actions</summary>
+
+#### action: addGCContentTrack
+
+spins up a standalone GCContentTrack session track that wraps the parent
+ReferenceSequenceTrack's sequence adapter, carrying the current display
+parameters
+
+```ts
+type addGCContentTrack = () => void
 ```
 
 </details>

@@ -173,6 +173,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -559,6 +562,8 @@ type hoveredTooltipSource =
       genotype: string
       name: string
       baseUri?: string | undefined
+      label?: string | undefined
+      labelColor?: string | undefined
       sampleName?: string | undefined
       color?: string | undefined
       group?: string | undefined

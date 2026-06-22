@@ -22,7 +22,8 @@ reference the markdown files in our repo of the checked out git tag
 ## Example usage
 
 A complete `MafTrack` config to paste into `tracks`. `samples` lists the aligned
-species in track order; `rowHeight` sets the per-sample band height:
+species in track order; `rowHeightMode` sets the per-sample band height in px
+(or `0` to stretch rows to fill the track height):
 
 ```js
 {
@@ -39,7 +40,7 @@ species in track order; `rowHeight` sets the per-sample band height:
     {
       type: 'LinearMafDisplay',
       displayId: 'multiz-LinearMafDisplay',
-      rowHeight: 16,
+      rowHeightMode: 16,
       showCoverage: true,
     },
   ],
@@ -170,6 +171,9 @@ and docs.
 
 **Getters:** [isLoading](../fetchmixin#getter-isloading)
 
+**Methods:** [makeStatusCallback](../fetchmixin#method-makestatuscallback),
+[makeRegionStatusCallback](../fetchmixin#method-makeregionstatuscallback)
+
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
@@ -199,13 +203,18 @@ type configuration = ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: rowHeight
+#### property: rowHeightMode
+
+Per-row height in px, or `0` for "fit to display height" mode, where rows
+stretch to fill the dragged track height. Mirrors the variants
+MultiSampleVariantDisplay `rowHeightMode`. The `rowHeight` getter resolves this
+to a concrete px value.
 
 ```ts
 // type signature
-type rowHeight = IOptionalIType<ISimpleType<number>, [undefined]>
+type rowHeightMode = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeight: types.stripDefault(types.number, DEFAULTS.rowHeight)
+rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeight)
 ```
 
 #### property: rowProportion
@@ -320,31 +329,40 @@ conservationHeight: types.stripDefault(
 )
 ```
 
-#### property: showRowIdentity
+#### property: rowIdentityMode
 
-Show each species' percent identity to the reference (over the visible region)
-next to its row label. Off by default.
+Per-row identity rendering shown in place of the base SNP coloring once zoomed
+out past base level (see `activeRowRendering`): each species row shows its local
+(per-pixel) percent identity to the reference. `heatmap` shades the row band on
+a red→grey→blue ramp; `xyplot` draws a per-species identity wiggle (bar height =
+identity). `none` (the default) keeps the base coloring at every zoom.
 
 ```ts
 // type signature
-type showRowIdentity = IOptionalIType<ISimpleType<boolean>, [undefined]>
+type rowIdentityMode = IOptionalIType<
+  ISimpleType<'none' | 'xyplot' | 'heatmap'>,
+  [undefined]
+>
 // code
-showRowIdentity: types.stripDefault(types.boolean, DEFAULTS.showRowIdentity)
+rowIdentityMode: types.stripDefault(
+  types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
+  DEFAULTS.rowIdentityMode,
+)
 ```
 
-#### property: showRowIdentityHeatmap
+#### property: rowIdentityAutoZoom
 
-Shade each species row by its local (per-pixel) percent identity to the
-reference, on a divergent→conserved ramp drawn over the base coloring. Off by
-default. Independent of `showRowIdentity` (the per-label percentage).
+When true (default) the per-row identity plot follows zoom like UCSC `wigMaf` —
+bases at base level, the identity plot when zoomed out. When false the selected
+`rowIdentityMode` is pinned on at every zoom.
 
 ```ts
 // type signature
-type showRowIdentityHeatmap = IOptionalIType<ISimpleType<boolean>, [undefined]>
+type rowIdentityAutoZoom = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
-showRowIdentityHeatmap: types.stripDefault(
+rowIdentityAutoZoom: types.stripDefault(
   types.boolean,
-  DEFAULTS.showRowIdentityHeatmap,
+  DEFAULTS.rowIdentityAutoZoom,
 )
 ```
 
@@ -412,6 +430,29 @@ type treeNewickVolatile = string | undefined
 treeNewickVolatile: undefined as string | undefined
 ```
 
+#### volatile: resizing
+
+True during an active height drag. Gates the dense per-base letter overlay (a
+Canvas2D pass that re-scans every visible cell and redraws thousands of glyphs
+each frame) so the drag only restretches the cheap GPU cell canvas; letters snap
+back when the drag settles.
+
+```ts
+// type signature
+type resizing = false
+// code
+resizing: false
+```
+
+#### volatile: resizeSettleTimer
+
+```ts
+// type signature
+type resizeSettleTimer = Timeout | undefined
+// code
+resizeSettleTimer: undefined as ReturnType<typeof setTimeout> | undefined
+```
+
 </details>
 
 <details open>
@@ -457,15 +498,6 @@ legend, etc.
 type samples = Sample[] | undefined
 ```
 
-#### getter: rowsHeight
-
-Height of the per-sample rows area (excludes the coverage band). Zero when
-alignments are hidden, collapsing the display to the coverage band.
-
-```ts
-type rowsHeight = number
-```
-
 #### getter: coverageDisplayHeight
 
 Height of the coverage band above the rows (0 when hidden).
@@ -491,6 +523,52 @@ band can't desync them.
 
 ```ts
 type rowsTopOffset = number
+```
+
+#### getter: nrow
+
+Number of displayed rows (at least 1, so the fit-mode division is safe).
+
+```ts
+type nrow = number
+```
+
+#### getter: fitTargetHeight
+
+The track height that fit-to-height mode divides among rows: the user-dragged
+`heightOverride` (TrackHeightMixin) or the config `height` default before any
+drag.
+
+```ts
+type fitTargetHeight = number
+```
+
+#### getter: autoRowHeight
+
+Per-row height in fit-to-height mode: the rows area (track height minus the
+fixed bands) split evenly across rows.
+
+```ts
+type autoRowHeight = number
+```
+
+#### getter: rowHeight
+
+Resolved per-row height. `rowHeightMode === 0` is fit-to-height (rows stretch to
+the dragged track height); any positive value is a pinned px height. Every
+consumer reads this getter, never `rowHeightMode`.
+
+```ts
+type rowHeight = number
+```
+
+#### getter: rowsHeight
+
+Height of the per-sample rows area (excludes the coverage band). Zero when
+alignments are hidden, collapsing the display to the coverage band.
+
+```ts
+type rowsHeight = number
 ```
 
 #### getter: totalHeight
@@ -577,29 +655,6 @@ Y-axis tick marks for the coverage band.
 type coverageTicks = YScaleTicks | undefined
 ```
 
-#### getter: rowIdentities
-
-Per-row percent identity to the reference (0..1), indexed to align with
-`sources`: each row's matching vs classifiable bases summed across the visible
-regions, then divided. `undefined` where the row has no classifiable base in
-view (or it's the reference row, which is excluded upstream). Derived from
-fetched data only — deliberately kept out of `rpcProps`/`sources` so it can't
-drive a refetch loop.
-
-```ts
-type rowIdentities = (number | undefined)[]
-```
-
-#### getter: rowIdentityLabels
-
-Per-row identity formatted as `"NN%"` for the row labels (aligned to `sources`),
-or undefined when the row-identity display is off. Rows with no classifiable
-base get undefined → no text.
-
-```ts
-type rowIdentityLabels = (string | undefined)[] | undefined
-```
-
 #### getter: visibleLabels
 
 ```ts
@@ -640,6 +695,32 @@ never enter this path.
 
 ```ts
 type showSummary = boolean
+```
+
+#### getter: zoomedToBaseLevel
+
+At base level each reference base spans at least a pixel, so individual bases /
+SNP marks are legible (UCSC's `zoomedToBaseLevel`). Read off the debounced
+`coarseBpPerPx` so the rendering swap it gates doesn't thrash mid-zoom. False
+until the view is initialized.
+
+```ts
+type zoomedToBaseLevel = boolean
+```
+
+#### getter: activeRowRendering
+
+Single source of truth for what the per-sample rows area draws right now:
+`bases` (the GPU SNP/base coloring) or one of the per-row identity styles
+(`heatmap` / `xyplot`). With `rowIdentityAutoZoom` (default) it emulates UCSC
+`wigMaf` — bases at base level, the identity plot when zoomed out; with auto off
+the selected mode is pinned at every zoom. Either way it's off when no mode is
+selected or the cheap `bigMafSummary` path already owns the zoom-out view. The
+GPU canvas, the identity canvas, and SVG export all branch on this one getter so
+they can't disagree about what's on screen.
+
+```ts
+type activeRowRendering = 'bases' | RowIdentityMode
 ```
 
 #### getter: visibleSummaryBars
@@ -698,7 +779,7 @@ worker-output convention): an aligned base (`cell`) or a bridged/empty region
 block covers the bp, the row is out of range, or the cell is a gap.
 
 ```ts
-type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => { sampleLabel: string; rowIdentity: number | undefined; kind: "cell"; base: string; chr?: string | undefined; pos?: number | undefined; strand?: number | undefined; context?: AlignmentContext | undefined; } | { ...; } | { ...; } |...
+type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => { sampleLabel: string; kind: "cell"; base: string; chr?: string | undefined; pos?: number | undefined; strand?: number | undefined; context?: AlignmentContext | undefined; } | { ...; } | { ...; } | { ...; } | undefined
 ```
 
 #### method: coverageTooltipBin
@@ -744,6 +825,12 @@ type trackMenuItems = () => MenuItem[]
 
 ```ts
 type setRowHeight = (n: number) => void
+```
+
+#### action: setResizing
+
+```ts
+type setResizing = (arg: boolean) => void
 ```
 
 #### action: setRowProportion
@@ -826,16 +913,16 @@ type setCoverageHeight = (arg: number) => void
 type setShowConservation = (arg: boolean) => void
 ```
 
-#### action: setShowRowIdentity
+#### action: setRowIdentityMode
 
 ```ts
-type setShowRowIdentity = (arg: boolean) => void
+type setRowIdentityMode = (arg: 'none' | 'xyplot' | 'heatmap') => void
 ```
 
-#### action: setShowRowIdentityHeatmap
+#### action: setRowIdentityAutoZoom
 
 ```ts
-type setShowRowIdentityHeatmap = (arg: boolean) => void
+type setRowIdentityAutoZoom = (arg: boolean) => void
 ```
 
 #### action: setConservationHeight
@@ -864,6 +951,30 @@ Drop the custom arrangement and restore the worker's guide tree (the base
 type clearLayout = () => void
 ```
 
+#### action: setFitToHeight
+
+Switch to fit-to-height mode: rows stretch to fill the track height. Seeds
+`heightOverride` from the current content height so toggling on doesn't jump,
+then `rowHeightMode = 0` makes `rowHeight` derive from it.
+
+```ts
+type setFitToHeight = () => void
+```
+
+#### action: resizeHeight
+
+Drag-resize. In fit mode the new height drives `autoRowHeight` (rows stretch).
+In fixed mode the pinned `rowHeightMode` scales proportionally so dragging still
+resizes rows. Mirrors the variants display.
+
+Flips `resizing` for the duration of the drag (cleared a beat after the last
+tick) so the dense letter overlay sits out the frame-by-frame restretch — see
+the `resizing` volatile.
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
 #### action: setRpcData
 
 ```ts
@@ -886,12 +997,6 @@ type clearAlignmentData = () => void
 
 ```ts
 type clearDisplaySpecificData = () => void
-```
-
-#### action: setHeight
-
-```ts
-type setHeight = (newHeight: number) => void
 ```
 
 #### action: startRenderingBackend

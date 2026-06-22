@@ -253,7 +253,18 @@ this page is self-contained.
 ```js
 {
   type: 'stringArray',
-  defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+
+
+
+  defaultValue: [
+    'mRNA',
+    'transcript',
+    'primary_transcript',
+    'V_gene_segment',
+    'C_gene_segment',
+    'D_gene_segment',
+    'J_gene_segment',
+  ],
 }
 ```
 

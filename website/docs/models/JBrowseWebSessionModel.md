@@ -44,9 +44,7 @@ and docs.
 
 **Methods:** [canEditTrack](../basewebsessionmodel#method-canedittrack),
 [isTrackOverride](../basewebsessionmodel#method-istrackoverride),
-[getTrackActions](../basewebsessionmodel#method-gettrackactions),
-[getTrackListMenuItems](../basewebsessionmodel#method-gettracklistmenuitems),
-[getTrackActionMenuItems](../basewebsessionmodel#method-gettrackactionmenuitems)
+[getTrackActions](../basewebsessionmodel#method-gettrackactions)
 
 **Actions:** [addAssemblyConf](../basewebsessionmodel#action-addassemblyconf),
 [addSessionPlugin](../basewebsessionmodel#action-addsessionplugin),
