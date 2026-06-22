@@ -95,8 +95,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             transcripts={transcripts}
             view={view}
             assembly={assembly}
-            padding={windowSize ?? 0}
-            validPadding={validWindowSize}
+            windowSize={windowSize}
             canLaunchView={canLaunchView}
             handleClose={handleClose}
           />
@@ -108,20 +107,22 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           variant="contained"
           color="primary"
           disabled={!validWindowSize}
-          onClick={() =>
-            runIntronAction(
-              view,
-              () => {
-                replaceIntrons({
-                  view,
-                  transcripts,
-                  assembly,
-                  padding: windowSize ?? 0,
-                })
-              },
-              handleClose,
-            )
-          }
+          onClick={() => {
+            if (windowSize !== undefined) {
+              void runIntronAction(
+                view,
+                () => {
+                  replaceIntrons({
+                    view,
+                    transcripts,
+                    assembly,
+                    padding: windowSize,
+                  })
+                },
+                handleClose,
+              )
+            }
+          }}
         >
           Replace current view
         </Button>
@@ -131,19 +132,21 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             variant="contained"
             color="primary"
             disabled={!validWindowSize}
-            onClick={() =>
-              runIntronAction(
-                view,
-                () =>
-                  collapseIntrons({
-                    view,
-                    transcripts,
-                    assembly,
-                    padding: windowSize ?? 0,
-                  }),
-                handleClose,
-              )
-            }
+            onClick={() => {
+              if (windowSize !== undefined) {
+                void runIntronAction(
+                  view,
+                  () =>
+                    collapseIntrons({
+                      view,
+                      transcripts,
+                      assembly,
+                      padding: windowSize,
+                    }),
+                  handleClose,
+                )
+              }
+            }}
           >
             Open in new view
           </Button>

@@ -65,16 +65,14 @@ const TranscriptTable = observer(function TranscriptTable({
   transcripts,
   view,
   assembly,
-  padding,
-  validPadding,
+  windowSize,
   canLaunchView,
   handleClose,
 }: {
   transcripts: Feature[]
   view: LinearGenomeViewModel
   assembly: Assembly
-  padding: number
-  validPadding: boolean
+  windowSize: number | undefined
   canLaunchView: boolean
   handleClose: () => void
 }) {
@@ -107,21 +105,23 @@ const TranscriptTable = observer(function TranscriptTable({
                   size="small"
                   variant="contained"
                   color="primary"
-                  disabled={!validPadding}
-                  onClick={() =>
-                    runIntronAction(
-                      view,
-                      () => {
-                        replaceIntrons({
-                          view,
-                          transcripts: [row.transcript],
-                          assembly,
-                          padding,
-                        })
-                      },
-                      handleClose,
-                    )
-                  }
+                  disabled={windowSize === undefined}
+                  onClick={() => {
+                    if (windowSize !== undefined) {
+                      void runIntronAction(
+                        view,
+                        () => {
+                          replaceIntrons({
+                            view,
+                            transcripts: [row.transcript],
+                            assembly,
+                            padding: windowSize,
+                          })
+                        },
+                        handleClose,
+                      )
+                    }
+                  }}
                 >
                   Replace
                 </Button>
@@ -130,20 +130,22 @@ const TranscriptTable = observer(function TranscriptTable({
                     size="small"
                     variant="contained"
                     color="primary"
-                    disabled={!validPadding}
-                    onClick={() =>
-                      runIntronAction(
-                        view,
-                        () =>
-                          collapseIntrons({
-                            view,
-                            transcripts: [row.transcript],
-                            assembly,
-                            padding,
-                          }),
-                        handleClose,
-                      )
-                    }
+                    disabled={windowSize === undefined}
+                    onClick={() => {
+                      if (windowSize !== undefined) {
+                        void runIntronAction(
+                          view,
+                          () =>
+                            collapseIntrons({
+                              view,
+                              transcripts: [row.transcript],
+                              assembly,
+                              padding: windowSize,
+                            }),
+                          handleClose,
+                        )
+                      }
+                    }}
                   >
                     Open in new view
                   </Button>
