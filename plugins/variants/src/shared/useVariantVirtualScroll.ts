@@ -25,7 +25,6 @@ export function useVariantVirtualScroll({
   setRowHeight: (n: number) => void
 }) {
   const scrollableHeight = Math.max(0, totalHeight - viewportHeight)
-  const hasOverflow = scrollableHeight > 0
   const latch = useMemo(() => createScrollLatch(), [])
 
   const handleWheel = useEventCallback((e: WheelEvent) => {
@@ -66,41 +65,4 @@ export function useVariantVirtualScroll({
       canvas.removeEventListener('wheel', handleWheel)
     }
   }, [canvas, handleWheel])
-
-  const thumbHeight = hasOverflow
-    ? Math.max(20, (viewportHeight * viewportHeight) / totalHeight)
-    : 0
-  const thumbTop = hasOverflow
-    ? (scrollTop / scrollableHeight) * (viewportHeight - thumbHeight)
-    : 0
-
-  function handleScrollbarMouseDown(e: React.MouseEvent) {
-    // stopPropagation keeps the drag from also panning the view. No
-    // preventDefault on mousedown so its native focus shift can close any open
-    // popup (e.g. location search); selection is suppressed per-move below.
-    e.stopPropagation()
-    const startY = e.clientY
-    const startScroll = scrollTop
-    const usableTrack = viewportHeight - thumbHeight
-
-    const onMouseMove = (me: MouseEvent) => {
-      me.preventDefault()
-      const dy = me.clientY - startY
-      const scrollDelta =
-        usableTrack > 0 ? (dy / usableTrack) * scrollableHeight : 0
-      const next = Math.max(
-        0,
-        Math.min(scrollableHeight, startScroll + scrollDelta),
-      )
-      setScrollTop(next)
-    }
-    const onMouseUp = () => {
-      document.removeEventListener('mousemove', onMouseMove)
-      document.removeEventListener('mouseup', onMouseUp)
-    }
-    document.addEventListener('mousemove', onMouseMove)
-    document.addEventListener('mouseup', onMouseUp)
-  }
-
-  return { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown }
 }

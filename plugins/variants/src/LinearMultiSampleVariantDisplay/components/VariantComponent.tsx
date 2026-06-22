@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
@@ -10,7 +10,6 @@ import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
-import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
@@ -19,8 +18,6 @@ import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-const useStyles = makeStyles()(scrollbarStyles)
 
 interface HoveredCell {
   rowIndex: number
@@ -199,24 +196,22 @@ const VariantBody = observer(function VariantBody({
   canvas: HTMLCanvasElement | null
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
-  const { classes } = useStyles()
 
   const view = getContainingView(model) as LGV
   const width = view.trackWidthPx
   const height = model.availableHeight
 
-  const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
-    useVariantVirtualScroll({
-      canvas,
-      scrollTop: model.scrollTop,
-      setScrollTop: model.setScrollTop,
-      totalHeight: model.totalHeight,
-      viewportHeight: model.availableHeight,
-      scrollZoom: view.scrollZoom,
-      rowHeight: model.rowHeight,
-      nrow: model.nrow,
-      setRowHeight: model.setRowHeight,
-    })
+  useVariantVirtualScroll({
+    canvas,
+    scrollTop: model.scrollTop,
+    setScrollTop: model.setScrollTop,
+    totalHeight: model.totalHeight,
+    viewportHeight: model.availableHeight,
+    scrollZoom: view.scrollZoom,
+    rowHeight: model.rowHeight,
+    nrow: model.nrow,
+    setRowHeight: model.setRowHeight,
+  })
 
   const { canvasHandlers, contextMenuNode } =
     useVariantCanvasInteraction<VariantHit>({
@@ -258,18 +253,12 @@ const VariantBody = observer(function VariantBody({
       {hoveredCell ? (
         <HoveredCellHighlight cell={hoveredCell} model={model} />
       ) : null}
-      {hasOverflow ? (
-        <div
-          className={classes.scrollbarTrack}
-          style={{ top: 0, height }}
-          onMouseDown={handleScrollbarMouseDown}
-        >
-          <div
-            className={classes.scrollbarThumb}
-            style={{ top: thumbTop, height: thumbHeight }}
-          />
-        </div>
-      ) : null}
+      <VerticalScrollbar
+        scrollTop={model.scrollTop}
+        setScrollTop={n => { model.setScrollTop(n) }}
+        viewportHeight={model.availableHeight}
+        contentHeight={model.totalHeight}
+      />
       {contextMenuNode}
     </>
   )

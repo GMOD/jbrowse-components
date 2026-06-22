@@ -2,9 +2,8 @@ import { useEffect, useMemo } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
-import { ResizeHandle } from '@jbrowse/core/ui'
+import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
 import {
-  clamp,
   createScrollLatch,
   getContainingView,
   normalizeWheelDeltaY,
@@ -21,10 +20,6 @@ import PileupBezierOverlay from './PileupBezierOverlay.tsx'
 import SashimiArcsOverlay from './SashimiArcsOverlay.tsx'
 import TlenAxisLabel from './TlenAxisLabel.tsx'
 import VisibleLabelsOverlay from './VisibleLabelsOverlay.tsx'
-import {
-  startDocumentDrag,
-  useAbortableRef,
-} from './alignmentComponentUtils.ts'
 import { bandOnScreen, bandScreenTop, contentScreenY } from './sectionScreen.ts'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
@@ -41,24 +36,6 @@ const COMPACT_AXIS_HEIGHT = 30
 const AXIS_SVG_WIDTH = 50
 
 const useStyles = makeStyles()(theme => ({
-  scrollbarTrack: {
-    position: 'absolute' as const,
-    right: 0,
-    width: SCROLLBAR_WIDTH,
-    cursor: 'default',
-    zIndex: 10,
-    '&:hover > *': {
-      background: 'rgba(0,0,0,0.55)',
-    },
-  },
-  scrollbarThumb: {
-    position: 'absolute' as const,
-    right: 2,
-    width: 6,
-    borderRadius: 3,
-    background: 'rgba(0,0,0,0.3)',
-    pointerEvents: 'none' as const,
-  },
   resizeHandle: {
     position: 'absolute' as const,
     left: 0,
@@ -227,7 +204,13 @@ const PileupBody = observer(function PileupBody({
 
       <GroupResizeHandles model={model} />
 
-      <PileupScrollbar model={model} topOffset={topOffset} />
+      <VerticalScrollbar
+        scrollTop={model.scrollTop}
+        setScrollTop={n => { model.setScrollTop(n) }}
+        viewportHeight={model.pileupViewportHeight}
+        contentHeight={model.pileupContentHeight}
+        top={topOffset}
+      />
     </div>
   )
 })
@@ -592,53 +575,6 @@ const LegendHost = observer(function LegendHost({
         model.setShowLegend(false)
       }}
     />
-  )
-})
-
-const PileupScrollbar = observer(function PileupScrollbar({
-  model,
-  topOffset,
-}: {
-  model: LinearAlignmentsDisplayModel
-  topOffset: number
-}) {
-  const { classes } = useStyles()
-  const {
-    scrollableHeight,
-    pileupViewportHeight: trackHeight,
-    pileupContentHeight,
-  } = model
-  const dragAcRef = useAbortableRef()
-  if (scrollableHeight <= 0) {
-    return null
-  }
-  const thumbHeight = Math.max(
-    20,
-    trackHeight * (trackHeight / pileupContentHeight),
-  )
-  const thumbTop =
-    (model.scrollTop / scrollableHeight) * (trackHeight - thumbHeight)
-  return (
-    <div
-      className={classes.scrollbarTrack}
-      style={{ top: topOffset, height: trackHeight }}
-      onMouseDown={e => {
-        const startScroll = model.scrollTop
-        const scrollRange = scrollableHeight
-        const usableTrack = trackHeight - thumbHeight
-        startDocumentDrag(e, dragAcRef, (_dx, dy) => {
-          const scrollDelta =
-            usableTrack > 0 ? (dy / usableTrack) * scrollRange : 0
-          const next = clamp(startScroll + scrollDelta, 0, scrollRange)
-          model.setScrollTop(next)
-        })
-      }}
-    >
-      <div
-        className={classes.scrollbarThumb}
-        style={{ top: thumbTop, height: thumbHeight }}
-      />
-    </div>
   )
 })
 

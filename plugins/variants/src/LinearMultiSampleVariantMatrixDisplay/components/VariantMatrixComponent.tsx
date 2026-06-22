@@ -1,5 +1,5 @@
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
@@ -7,7 +7,6 @@ import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
-import { scrollbarStyles } from '../../shared/scrollbarStyles.ts'
 import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
@@ -16,8 +15,6 @@ import type { LinearMultiSampleVariantMatrixDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-const useStyles = makeStyles()(scrollbarStyles)
 
 interface MatrixHit extends VariantTooltipFields {
   featureData: VariantFeatureInfo & { featureId: string }
@@ -35,23 +32,21 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   canvasRef: (node: HTMLCanvasElement | null) => void
   canvas: HTMLCanvasElement | null
 }) {
-  const { classes } = useStyles()
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPxWithoutBorders
   const height = model.availableHeight
 
-  const { hasOverflow, thumbHeight, thumbTop, handleScrollbarMouseDown } =
-    useVariantVirtualScroll({
-      canvas,
-      scrollTop: model.scrollTop,
-      setScrollTop: model.setScrollTop,
-      totalHeight: model.totalHeight,
-      viewportHeight: model.availableHeight,
-      scrollZoom: view.scrollZoom,
-      rowHeight: model.rowHeight,
-      nrow: model.nrow,
-      setRowHeight: model.setRowHeight,
-    })
+  useVariantVirtualScroll({
+    canvas,
+    scrollTop: model.scrollTop,
+    setScrollTop: model.setScrollTop,
+    totalHeight: model.totalHeight,
+    viewportHeight: model.availableHeight,
+    scrollZoom: view.scrollZoom,
+    rowHeight: model.rowHeight,
+    nrow: model.nrow,
+    setRowHeight: model.setRowHeight,
+  })
 
   const getHit = (
     rect: DOMRect,
@@ -132,18 +127,12 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
         }}
         {...canvasHandlers}
       />
-      {hasOverflow ? (
-        <div
-          className={classes.scrollbarTrack}
-          style={{ top: 0, height }}
-          onMouseDown={handleScrollbarMouseDown}
-        >
-          <div
-            className={classes.scrollbarThumb}
-            style={{ top: thumbTop, height: thumbHeight }}
-          />
-        </div>
-      ) : null}
+      <VerticalScrollbar
+        scrollTop={model.scrollTop}
+        setScrollTop={n => { model.setScrollTop(n) }}
+        viewportHeight={model.availableHeight}
+        contentHeight={model.totalHeight}
+      />
       {contextMenuNode}
     </>
   )
