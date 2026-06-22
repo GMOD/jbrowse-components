@@ -104,3 +104,18 @@ test('auto splits crossing junctions onto opposite sides', () => {
   const byStart = new Map(arcs.map(a => [a.start, a.side]))
   expect(byStart.get(100)).not.toBe(byStart.get(200))
 })
+
+test('auto puts the heavier of two crossing junctions on the upper band', () => {
+  // 100-300 (light) and 200-400 (heavy) cross; the heavier claims 'up'.
+  const data = {
+    sashimiX1: new Uint32Array([100, 200]),
+    sashimiX2: new Uint32Array([300, 400]),
+    sashimiCounts: new Uint32Array([5, 50]),
+    sashimiColorTypes: new Uint8Array([0, 0]),
+    sashimiScores: new Float32Array([2, 4]),
+  } as unknown as PileupDataResult
+  const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
+  const byStart = new Map(arcs.map(a => [a.start, a.side]))
+  expect(byStart.get(200)).toBe('up')
+  expect(byStart.get(100)).toBe('down')
+})

@@ -94,17 +94,19 @@ function crosses(a: RawArc, b: RawArc) {
   return y.left < x.right && x.right < y.right
 }
 
-// Greedy 2-coloring for 'auto': walk junctions left-to-right and place each on
-// the side it crosses least, so interleaving junctions separate above/below the
-// coverage. O(n²) is fine — sashimi arc counts are low by design.
+// Greedy 2-coloring for 'auto': place each junction on the side it crosses
+// least, so interleaving junctions separate above/below the coverage. Processed
+// heaviest-first (ties broken left-to-right) so when a crossing forces a split
+// the higher-count junction claims the upper band and the lighter one drops.
+// O(n²) is fine — sashimi arc counts are low by design.
 function assignSides(raw: RawArc[]): SashimiSide[] {
   const sides = new Array<SashimiSide>(raw.length)
   const up: RawArc[] = []
   const down: RawArc[] = []
-  const leftToRight = raw
+  const heaviestFirst = raw
     .map((a, i) => ({ a, i }))
-    .sort((p, q) => p.a.left - q.a.left)
-  for (const { a, i } of leftToRight) {
+    .sort((p, q) => q.a.count - p.a.count || p.a.left - q.a.left)
+  for (const { a, i } of heaviestFirst) {
     const upCross = up.filter(o => crosses(a, o)).length
     const downCross = down.filter(o => crosses(a, o)).length
     if (upCross <= downCross) {
