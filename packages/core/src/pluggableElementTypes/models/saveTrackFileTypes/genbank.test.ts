@@ -273,8 +273,8 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    // Type should be truncated to 16 chars
-    expect(result).toContain('very_long_featur')
+    // Type should be truncated to the 15-char GenBank feature-key width
+    expect(result).toContain('very_long_featu')
     expect(result).not.toContain('very_long_feature_type_name')
   })
 
@@ -332,9 +332,9 @@ describe('GenBank export', () => {
       session: mockSession,
     })
     expect(result).toMatchSnapshot()
-    // Should have gene and mRNA but no CDS line
+    // Gene spans the whole locus; the mRNA is a spliced join of its exons
     expect(result).toContain('gene            1..500')
-    expect(result).toContain('mRNA            1..500')
+    expect(result).toContain('mRNA            join(1..100,401..500)')
     expect(result).not.toContain('CDS')
   })
 
@@ -376,7 +376,7 @@ describe('formatFeatWithSubfeatures', () => {
     })
     const result = formatFeatWithSubfeatures({ feature: f, minPos: 100 })
     expect(result).toContain('gene            1..100')
-    expect(result).toContain('/name="test_feat"')
+    expect(result).toContain('/label="test_feat"')
   })
 
   it('formats negative strand feature with complement', () => {
