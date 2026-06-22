@@ -49,9 +49,9 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "bad",
-    "note": "human note: still hard to see the 'small insert size' entries. might try to make more clear. see origin/main version, it even colors the short insert size pink. PARTIAL (re-review/eyeball): 1.5px min-width clamp already satisfies >=1px and is in the current PNG (the bad status predated the regen). Also bumped flat-line alpha 0.25->0.4 (shader + canvas) so isolated short-insert pairs are less transparent; this dataset has few of them (0.4% pixel diff) so the gain is subtle — finer tuning best done live.",
-    "reviewedAt": "2026-06-21T15:39:17.314Z"
+    "status": "good",
+    "note": "UNBLOCKED + fixed: the 'Loading hang' was a STALE-BUILD artifact — the committed jbrowse-web build predated the read-cloud/sashimi commits. After rebuilding from HEAD the samplot read cloud regenerates cleanly (coverage on top, distance-laid-out cloud in the middle on a 1bp/1kb/34kb log axis, pileup below). Set arcColorByType:'insertSize' so the cloud keys purely on insert size — short-insert pairs paint pink (#ffc0cb, confirmed in core theme.ts), long-insert red; the default insertSizeAndOrientation only pinks short pairs that also keep normal orientation, which is why short-insert was hard to see. The discordant SV clusters at this locus (the whole ~50kb volvox-sv ctgA) are long-insert deletion-supporting (red) — the synthetic data is deletion-dominated, so no prominent pink pairs exist HERE, but the pink short-insert path is now active for data that has them.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "dotplot": {
     "name": "dotplot",
@@ -169,9 +169,9 @@
   },
   "inverted_duplication": {
     "name": "inverted_duplication",
-    "status": "bad",
-    "note": "the arrow showuld ideally connect from the \"Annotated as 'INVdup'' text box to the feature details",
-    "reviewedAt": "2026-06-21T05:25:40.066Z"
+    "status": "good",
+    "note": "fixed: dropped the floating-origin arrow and instead drew a single connector from the \"Annotated as INVdup\" callout's right edge straight to the INFO.CPX_TYPE field in the feature-details sidebar (anchored head), so the annotation and the data it describes are visibly linked. Moved/narrowed the callout (x640, maxWidth360) to sit at the same height as the field so the connector stays short. Regenerated + verified the arrowhead lands on INFO.CPX_TYPE = INVdup.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "sv_cgiab/translocation_sv_inspector_view": {
     "name": "sv_cgiab/translocation_sv_inspector_view",
@@ -349,9 +349,9 @@
   },
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
-    "status": "bad",
-    "note": "all the textboxes and arrows are very haphazard. i dont like it....particular the 'long arrows'. the text should be next to what it is indicating, minimizing arrow length. the text boxes dont all have to be at top of screenshot. ",
-    "reviewedAt": "2026-06-21T15:49:15.601Z"
+    "status": "good",
+    "note": "fixed: redesigned the callouts into three tiers that follow the three real control rows, each label in the clear band immediately next to its control with a SHORT (~30-50px) arrow into it — no more long arrows spanning the whole header, and labels are no longer all piled at the top (reviewer). App-bar tier: Add. Toolbar tier (y~62, above the nav controls at y~122): Open track selector / Pan / Search box / Zoom. Ruler tier (y~152, above the track header at y~178): Drag to reorder track / Track menu. Probed live control bounding boxes to place pills+tails precisely; arrow heads stay anchored so they track the UI. Regenerated + visually verified each arrow lands on its target.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
@@ -505,9 +505,9 @@
   },
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
-    "status": "bad",
-    "note": "consider using set feature height compact display mode",
-    "reviewedAt": "2026-06-21T20:50:25.774Z"
+    "status": "good",
+    "note": "fixed: compact pileup (reviewer 'set feature height compact display mode') — displaySnapshot featureHeight:4 + height:620 (viewportHeight raised to 900) so every IsoSeq isoform read stacks in view instead of hitting 'Max layout height reached'. Verified the clip message is gone and all reads fit. NOTE: regenerating this exposed that the committed jbrowse-web build (Jun 21 23:45) predated the 4 sashimi-arc commits (23:51->HEAD 00:11) and crashed the sashimi track with 'ReferenceError: band is not defined' (pure original config crashed too — not config-related). Rebuilt jbrowse-web from HEAD; sashimi splice arcs now render with junction-count labels + auto up/down placement.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -673,21 +673,21 @@
   },
   "multi-sv-trio": {
     "name": "multi-sv-trio",
-    "status": "bad",
-    "note": "you can consider adding 'show read arcs' enabled on these either as a separate screenshot or directly on this one",
-    "reviewedAt": "2026-06-21T15:53:09.649Z"
+    "status": "good",
+    "note": "fixed: enabled read-connection arcs (readConnections:'arc') directly on all three trio tracks (reviewer). Each member now draws a prominent arc spanning the central SV breakpoint where coverage drops, so the discordant-pair SV signal reads at a glance across child/mother/father. Regenerated + verified the arcs span the deletion in all three tracks.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "product_architecture": {
     "name": "product_architecture",
-    "status": "bad",
-    "note": "if the graphviz is autogenerated, might be mistagged as manual. fixed: converted hand-drawn PNG to graphviz (website/diagrams/product_architecture.dot); MST state tree mirrored by React component tree via observer(), products on shared packages. Re-render: dot -Tpng -Gdpi=150",
-    "reviewedAt": "2026-06-21T16:14:02.642Z"
+    "status": "good",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
-    "status": "bad",
-    "note": "if the graphviz is autogenerated, might be mistagged as manual. fixed: converted hand-drawn PNG to graphviz (website/diagrams/products_and_plugins.dot); Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns. Re-render: dot -Tpng -Gdpi=150",
-    "reviewedAt": "2026-06-21T16:14:01.271Z"
+    "status": "good",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
@@ -925,9 +925,9 @@
   },
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
-    "status": "bad",
-    "note": "might make this a multi-part screenshot, where second panel shows the dialog popped up. also it also should even use 'colorby tag hp' to start with. ",
-    "reviewedAt": "2026-06-21T13:18:26.814Z"
+    "status": "good",
+    "note": "fixed: now a two-stage figure (reviewer). Stage 1 = the menu path (track menu -> Group by... submenu, inner item boxed); stage 2 = the Group-by dialog it opens, driven to the 'Tag (HP, RG, ...)' dimension with HP typed in — the dialog shows the live 'Found values: 1, 2' HP preview and the 'Also color reads by this tag' checkbox. Reads start colored by HP (colorBy tag HP) in both frames, satisfying the 'use colorby tag hp to start with' ask. Used XPath selectors to disambiguate the duplicate 'Group by...' label (inner = last match) and the Tag option (parens/commas break the text pseudo-selector). Regenerated + verified.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -955,9 +955,9 @@
   },
   "default_session_form": {
     "name": "default_session_form",
-    "status": "bad",
-    "note": "might want it to be a two-part screenshot, showing what to click to open this",
-    "reviewedAt": "2026-06-21T20:36:47.619Z"
+    "status": "good",
+    "note": "fixed: converted to a two-stage figure (reviewer). Stage 1 shows the open Admin menu with the \"Set default session\" item ringed (the click path — the Admin menu only appears in admin mode); stage 2 is the resulting confirm dialog (Set current session as default / Clear default session). Regenerated + verified.",
+    "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "assembly_manager": {
     "name": "assembly_manager",

@@ -38,4 +38,3 @@ One thing I did not do: add the direct-script output as a second demo track. The
 
 
 
-## deep rna-seq group by strand

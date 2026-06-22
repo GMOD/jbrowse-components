@@ -22,7 +22,7 @@ export default function LoaderErrorBanner({ error }: { error: unknown }) {
         to continue or browse the sample data{' '}
         <a href="?config=test_data/volvox/config.json">here</a>.
       </p>
-      <NoConfigMessage />
+      {process.env.NODE_ENV === 'development' ? <NoConfigMessage /> : null}
     </div>
   ) : (
     <div>

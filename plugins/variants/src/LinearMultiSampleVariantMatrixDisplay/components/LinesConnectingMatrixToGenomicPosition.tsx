@@ -169,7 +169,7 @@ const AllLines = observer(function AllLines({
       <path
         d={pathD}
         {...getStrokeProps(alpha(theme.palette.text.primary, 0.4))}
-        strokeWidth={1}
+        strokeWidth={0.5}
         fill="none"
         style={{ pointerEvents: 'none' }}
       />
