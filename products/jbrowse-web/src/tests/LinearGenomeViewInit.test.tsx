@@ -231,7 +231,8 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
 
   // no width yet -> launch autorun hasn't navigated
   expect(view.displayedRegions.length).toBe(0)
-  expect(getSnapshot(view).init).toBeDefined()
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
 
   view.setWidth(800)
   await waitFor(
@@ -242,5 +243,6 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
   )
 
   expect(view.displayedRegions.length).toBeGreaterThan(0)
-  expect(getSnapshot(view).init).toBeUndefined()
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)

@@ -109,6 +109,10 @@ test('snapshot persists cached file location synchronously', () => {
     },
   })
 
-  expect(getSnapshot(view).init).toBeUndefined()
-  expect(getSnapshot(view).importWizard.cachedFileLocation).toBeDefined()
+  const snap: {
+    init?: unknown
+    importWizard: { cachedFileLocation?: unknown }
+  } = getSnapshot(view)
+  expect(snap.init).toBeUndefined()
+  expect(snap.importWizard.cachedFileLocation).toBeDefined()
 }, 40000)

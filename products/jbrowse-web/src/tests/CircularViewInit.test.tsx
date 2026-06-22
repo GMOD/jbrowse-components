@@ -167,7 +167,8 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
 
   // no width yet -> init autorun hasn't set displayedRegions
   expect(view.displayedRegions.length).toBe(0)
-  expect(getSnapshot(view).init).toBeDefined()
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
 
   view.setWidth(800)
   await waitFor(
@@ -177,5 +178,6 @@ test('snapshot keeps init while not materialized, strips it once regions load', 
     { timeout: 30000 },
   )
 
-  expect(getSnapshot(view).init).toBeUndefined()
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)

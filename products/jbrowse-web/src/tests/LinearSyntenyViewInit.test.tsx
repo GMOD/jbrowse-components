@@ -129,7 +129,8 @@ test('snapshot keeps init while views empty, strips it once materialized', async
 
   // mid-load: views not built yet, snapshot must still carry init
   expect(view.views.length).toBe(0)
-  expect(getSnapshot(view).init).toBeDefined()
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
 
   await waitFor(
     () => {
@@ -140,7 +141,8 @@ test('snapshot keeps init while views empty, strips it once materialized', async
 
   // materialized: views present, init dropped from the snapshot
   expect(view.views.length).toBe(2)
-  expect(getSnapshot(view).init).toBeUndefined()
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)
 
 test('LinearSyntenyView showImportForm is true when no init and no views', () => {

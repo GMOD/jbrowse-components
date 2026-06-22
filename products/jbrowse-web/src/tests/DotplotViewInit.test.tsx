@@ -142,7 +142,8 @@ test('snapshot keeps init until assemblyNames set, strips it after', async () =>
 
   // no width yet -> init autorun hasn't run
   expect(view.assemblyNames.length).toBe(0)
-  expect(getSnapshot(view).init).toBeDefined()
+  const before: { init?: unknown } = getSnapshot(view)
+  expect(before.init).toBeDefined()
 
   view.setWidth(800)
   await waitFor(
@@ -153,5 +154,6 @@ test('snapshot keeps init until assemblyNames set, strips it after', async () =>
   )
 
   expect(view.assemblyNames.length).toBe(2)
-  expect(getSnapshot(view).init).toBeUndefined()
+  const after: { init?: unknown } = getSnapshot(view)
+  expect(after.init).toBeUndefined()
 }, 40000)
