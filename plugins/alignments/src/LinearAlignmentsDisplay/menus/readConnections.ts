@@ -1,6 +1,6 @@
 import PolylineIcon from '@mui/icons-material/Polyline'
 
-import { checkboxItem } from './menuHelpers.ts'
+import { checkboxItem, radioModeMenuItem } from './menuHelpers.ts'
 
 import type {
   LinkedReadsMode,
@@ -90,17 +90,14 @@ interface SashimiDirectionModel {
 
 export function getSashimiDirectionMenuItem(model: SashimiDirectionModel) {
   return {
-    label: 'Sashimi arc placement',
-    type: 'subMenu' as const,
-    subMenu: SASHIMI_MODE_OPTIONS.map(o =>
-      checkboxItem(
-        o.label,
-        model.sashimiArcsMode === o.value,
-        () => {
-          model.setSashimiArcsMode(o.value)
-        },
-        { disabled: !model.showSashimiArcs },
-      ),
-    ) satisfies MenuItem[],
+    ...radioModeMenuItem(
+      'Sashimi arc placement',
+      SASHIMI_MODE_OPTIONS,
+      model.sashimiArcsMode,
+      mode => {
+        model.setSashimiArcsMode(mode)
+      },
+    ),
+    disabled: !model.showSashimiArcs,
   }
 }

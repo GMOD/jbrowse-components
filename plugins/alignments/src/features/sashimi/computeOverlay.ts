@@ -2,8 +2,12 @@ import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 
 import { colorTypeToStrand } from './compute.ts'
 
-import type { SashimiArcsMode } from '../../LinearAlignmentsDisplay/constants.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
+
+// Sashimi placement, owned by the compute layer (the display imports it via
+// constants.ts): 'up' draws every arc over the coverage band, 'down' in the
+// reserved strip below it, 'auto' splits each junction to minimize crossings.
+export type SashimiArcsMode = 'up' | 'down' | 'auto'
 
 // Which sub-band an arc is drawn in: 'up' overlays the coverage histogram,
 // 'down' sits in the reserved strip below it. Each side's geometry is in its own
@@ -97,9 +101,10 @@ function assignSides(raw: RawArc[]): SashimiSide[] {
   const sides = new Array<SashimiSide>(raw.length)
   const up: RawArc[] = []
   const down: RawArc[] = []
-  for (const { a, i } of raw
+  const leftToRight = raw
     .map((a, i) => ({ a, i }))
-    .sort((p, q) => p.a.left - q.a.left)) {
+    .sort((p, q) => p.a.left - q.a.left)
+  for (const { a, i } of leftToRight) {
     const upCross = up.filter(o => crosses(a, o)).length
     const downCross = down.filter(o => crosses(a, o)).length
     if (upCross <= downCross) {
@@ -192,7 +197,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     const band = isDown ? sashimiArcsHeight : effectiveHeight
     const baseline = isDown ? 0 : effectiveHeight * 0.95
     const dir = isDown ? 1 : -1
-    const norm = logRange > 0 ? (Math.log(a.spanPx + 1) - minLog) / logRange : 1
+    const norm = logRange > 0 ? (logSpans[i]! - minLog) / logRange : 1
     const arcHeight = band * (MIN_ARC_FRAC + (MAX_ARC_FRAC - MIN_ARC_FRAC) * norm)
     const ctrl = baseline + dir * arcHeight
     arcs.push({

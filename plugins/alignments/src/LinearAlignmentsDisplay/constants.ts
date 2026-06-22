@@ -59,10 +59,10 @@ export type LinkedReadsMode = 'off' | 'normal'
 export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
 
 // Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
-// paired-end `readConnectionsDown`): 'up' draws every arc over the coverage
-// band, 'down' in a reserved strip below it, 'auto' distributes each junction up
-// or down to minimize crossings. 'auto' is the default.
-export type SashimiArcsMode = 'up' | 'down' | 'auto'
+// paired-end `readConnectionsDown`). Defined in the compute layer (it drives the
+// arc-assignment algorithm) and re-exported here for the display-layer model and
+// menus. 'auto' is the default.
+export type { SashimiArcsMode } from '../features/sashimi/computeOverlay.ts'
 
 // Minimum frequency (0-255 scale) for a mismatch/small-insertion to intercept
 // a click/hover when bpPerPx > 1. At individual-base zoom (bpPerPx <= 1) clicks

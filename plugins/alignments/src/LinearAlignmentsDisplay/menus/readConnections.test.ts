@@ -141,9 +141,9 @@ describe('sashimi arc placement submenu', () => {
     expect(itemByLabel(model, 'Below coverage').checked).toBe(true)
   })
 
-  test('every option is disabled when sashimi arcs are hidden', () => {
+  test('the whole submenu is disabled when sashimi arcs are hidden', () => {
     const model = makeSashimiModel()
     model.showSashimiArcs = false
-    expect(itemByLabel(model, 'Above coverage').disabled).toBe(true)
+    expect(getSashimiDirectionMenuItem(model).disabled).toBe(true)
   })
 })
