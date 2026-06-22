@@ -367,15 +367,22 @@ export default function stateModelFactory(
             label: 'Show',
             icon: VisibilityIcon,
             subMenu: [
-              {
-                label: 'Show row separators',
-                type: 'checkbox',
-                checked: self.showRowSeparators,
-                onClick: () => {
-                  self.setShowRowSeparators(!self.showRowSeparators)
-                },
-              },
-              makeCrossHatchItem(self),
+              // row separators only render in multi-row modes, not overlays
+              ...(self.isOverlay
+                ? []
+                : [
+                    {
+                      label: 'Show row separators',
+                      type: 'checkbox' as const,
+                      checked: self.showRowSeparators,
+                      onClick: () => {
+                        self.setShowRowSeparators(!self.showRowSeparators)
+                      },
+                    },
+                  ]),
+              // density maps score to color, so score-axis cross hatches are
+              // meaningless there
+              ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
             ],
           },
           makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
