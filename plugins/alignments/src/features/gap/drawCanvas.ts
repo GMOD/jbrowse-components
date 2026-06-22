@@ -2,6 +2,7 @@ import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   frequencyAlpha,
+  intronAlpha,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -49,7 +50,7 @@ export function drawGaps(
         alpha >= 1 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
       ctx.fillRect(x1, y, w, fH)
     } else if (gapType === GAP_SKIP) {
-      ctx.fillStyle = rgb255(state.colors.colorSkip)
+      ctx.fillStyle = rgba255(state.colors.colorSkip, intronAlpha(fH))
       ctx.clearRect(x1, y, w, fH)
       const midY = y + fH / 2
       ctx.fillRect(x1, midY - 0.5, w, 1)

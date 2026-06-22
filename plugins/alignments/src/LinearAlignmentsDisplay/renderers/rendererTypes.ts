@@ -208,6 +208,27 @@ export function frequencyAlpha(base: number, frequency: number) {
   return base + frequency * (1 - base)
 }
 
+// Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
+// per-row centerlines pack together into a solid smear. Fade them toward
+// `INTRON_MIN_ALPHA` as `featureHeight` shrinks so dense splice pileups stay
+// legible. Full opacity at the default height (7px); only the compact end
+// fades. Mirrored in gap.slang — keep the smoothstep bounds and floor in sync.
+const INTRON_FADE_MIN_PX = 1
+const INTRON_FADE_MAX_PX = 4
+const INTRON_MIN_ALPHA = 0.25
+export function intronAlpha(featureHeight: number) {
+  const t = Math.min(
+    1,
+    Math.max(
+      0,
+      (featureHeight - INTRON_FADE_MIN_PX) /
+        (INTRON_FADE_MAX_PX - INTRON_FADE_MIN_PX),
+    ),
+  )
+  const smooth = t * t * (3 - 2 * t)
+  return INTRON_MIN_ALPHA + (1 - INTRON_MIN_ALPHA) * smooth
+}
+
 // Canvas Y for a pileup row index, mirroring shader-side `pileupY()` in
 // alignmentsUniforms.slang. Single source of truth for the row → canvas-Y
 // formula used by every Canvas2D draw method.

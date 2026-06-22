@@ -32,15 +32,19 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float yTop = yy.x;
   float yBot = yy.y;
 
+  float alpha = 1.0;
+
   if (inst.gapType == GAP_SKIP) {
     // Collapse to a 1px centerline for introns / skipped regions.
     float mid = (yTop + yBot) * 0.5;
     float onePx = 2.0 / u.canvasH;
     yTop = mid;
     yBot = mid - onePx;
+    // Fade introns toward 0.25 as reads get compact so dense splice pileups
+    // stay legible. Mirrors intronAlpha() in renderers/rendererTypes.ts — keep
+    // the smoothstep bounds (1..4 px) and floor (0.25) in sync.
+    alpha = 0.25 + 0.75 * smoothstep(1.0, 4.0, u.featHeight);
   }
-
-  float alpha = 1.0;
   if (inst.gapType == GAP_DELETION && u.filterMismatchesByFrequency != 0) {
     float widthPx = float(inst.endOff - inst.startOff) * u.pxPerBp;
     if (widthPx < 1.0) {
