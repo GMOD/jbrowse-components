@@ -581,31 +581,28 @@ export default function sharedModelFactory(
                 },
               ],
             },
+            // Matches the Hi-C triangular display's top-level "Fit to display
+            // height" label/placement (plugins/hic trackMenuItems.ts) so the
+            // two contact-map displays stay consistent.
             {
-              label: 'Layout',
-              type: 'subMenu',
-              subMenu: [
-                {
-                  label: 'Fit LD triangle to display height',
-                  helpText:
-                    'Vertically squash the triangle to fill the display height instead of drawing it at its natural half-width height.',
-                  type: 'checkbox',
-                  checked: self.fitToHeight,
-                  onClick: () => {
-                    self.setFitToHeight(!self.fitToHeight)
-                  },
-                },
-                {
-                  label: 'Size cells by genomic position',
-                  helpText:
-                    'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
-                  type: 'checkbox',
-                  checked: self.useGenomicPositions,
-                  onClick: () => {
-                    self.setUseGenomicPositions(!self.useGenomicPositions)
-                  },
-                },
-              ],
+              label: 'Fit to display height',
+              helpText:
+                'Vertically squash the triangle to fill the display height instead of drawing it at its natural half-width height.',
+              type: 'checkbox',
+              checked: self.fitToHeight,
+              onClick: () => {
+                self.setFitToHeight(!self.fitToHeight)
+              },
+            },
+            {
+              label: 'Size cells by genomic position',
+              helpText:
+                'By default each cell is equal width (one column per variant). Enable to size cells proportional to the genomic distance between variants.',
+              type: 'checkbox',
+              checked: self.useGenomicPositions,
+              onClick: () => {
+                self.setUseGenomicPositions(!self.useGenomicPositions)
+              },
             },
             // Filter menu only available for VCF-computed LD, not pre-computed
             ...(self.isPrecomputedLD
