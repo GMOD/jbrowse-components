@@ -30,9 +30,11 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 // Inter-region padding, elided, and boundary blocks plus region separators.
-// These mask the inter-region gaps where displays paint a full-width canvas, so
-// they render OVER the track content (rendered after the track at call sites)
-// rather than as a background like the gridline ticks.
+// In TracksContainer: renders before children (masks gridlines in inter-track
+// margins at inter-region positions; TrackContainers paint on top).
+// In TrackContainer: renders after TrackRenderingContainer within the Paper
+// stacking context, masking the track canvas at inter-region positions while
+// TrackLabel (zIndex:200) remains above it.
 const PaddingBlocks = observer(function PaddingBlocks({
   model,
   offset = 0,

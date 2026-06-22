@@ -99,6 +99,7 @@ const TracksContainer = observer(function TracksContainer({
       onMouseUp={mouseUp}
     >
       {showGridlines ? <Gridlines model={model} /> : null}
+      {showGridlines ? <PaddingBlocks model={model} /> : null}
       <Suspense fallback={null}>
         {showCenterLine ? <CenterLine model={model} /> : null}
       </Suspense>
@@ -123,7 +124,6 @@ const TracksContainer = observer(function TracksContainer({
       <HighlightGroup model={model} />
       {additional}
       {children}
-      {showGridlines ? <PaddingBlocks model={model} /> : null}
     </div>
   )
 })

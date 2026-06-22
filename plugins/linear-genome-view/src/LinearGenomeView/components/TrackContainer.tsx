@@ -26,9 +26,7 @@ const useStyles = makeStyles()({
     position: 'relative',
     height: 4,
   },
-  trackLabel: {
-    zIndex: 2,
-  },
+  trackLabel: {},
   trackLabelOffset: {
     position: 'relative',
     display: 'inline-block',
@@ -76,7 +74,7 @@ const TrackContainer = observer(function TrackContainer({
         <TrackRenderingContainer model={model} track={track} />
       </ErrorBoundary>
       {/* offset 1px since for left track border; over the track content */}
-      {track.pinned ? <PaddingBlocks model={model} offset={1} /> : null}
+      <PaddingBlocks model={model} offset={track.pinned ? 1 : 0} />
       <ResizeHandle
         onDrag={distance => display.resizeHeight(distance)}
         className={classes.resizeHandle}
