@@ -209,13 +209,13 @@ const Overlays = observer(function Overlays({
   // Overlays follow the animated rows (renderDataMap) so they move with the
   // glyphs during a layout transition; FeatureBody's hit-testing reads the
   // destination layout (laidOutDataMap) so hover targets the final positions.
-  const laidOutDataMap = model.renderDataMap
+  const renderDataMap = model.renderDataMap
   const width = view.initialized ? view.trackWidthPx : undefined
   const bpPerPx = view.bpPerPx
   const visibleRegions = view.visibleRegions
 
   const floatingLabelElements = useFloatingLabels(
-    laidOutDataMap,
+    renderDataMap,
     model.featureItemMap,
     visibleRegions,
     view.initialized,
@@ -240,7 +240,7 @@ const Overlays = observer(function Overlays({
       <OverlayLayer>{highlightOverlays}</OverlayLayer>
       <OverlayLayer>{floatingLabelElements}</OverlayLayer>
       <PeptideCanvas
-        laidOutDataMap={laidOutDataMap}
+        renderDataMap={renderDataMap}
         visibleRegions={visibleRegions}
         viewInitialized={view.initialized}
         width={width}

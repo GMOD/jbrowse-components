@@ -194,7 +194,7 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 // export double-paint a spanning feature's label.
 export function forEachDisplayLabel(
   regions: RegionWithData[],
-  laidOutDataMap: Map<number, FeatureDataResult>,
+  dataMap: Map<number, FeatureDataResult>,
   visibility: LabelVisibility,
   emit: (
     featureId: string,
@@ -205,7 +205,7 @@ export function forEachDisplayLabel(
 ) {
   const rendered = new Set<string>()
   for (const region of regions) {
-    const data = laidOutDataMap.get(region.displayedRegionIndex)
+    const data = dataMap.get(region.displayedRegionIndex)
     if (!data?.floatingLabelsData) {
       continue
     }

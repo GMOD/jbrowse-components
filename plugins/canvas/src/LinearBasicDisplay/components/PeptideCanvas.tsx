@@ -19,14 +19,14 @@ import type { FeatureDataResult } from '../../RenderFeatureDataRPC/rpcTypes.ts'
 // painted in absolute track coordinates, so it scrolls natively with the
 // glyphs exactly like the old overlay divs did — no per-scroll redraw.
 const PeptideCanvas = observer(function PeptideCanvas({
-  laidOutDataMap,
+  renderDataMap,
   visibleRegions,
   viewInitialized,
   width,
   height,
   bpPerPx,
 }: {
-  laidOutDataMap: Map<number, FeatureDataResult>
+  renderDataMap: Map<number, FeatureDataResult>
   visibleRegions: VisibleRegion[]
   viewInitialized: boolean
   width: number | undefined
@@ -45,13 +45,13 @@ const PeptideCanvas = observer(function PeptideCanvas({
     const ctx = getPreparedCanvas2D(canvasRef.current, width ?? 0, height)
     if (ctx && show) {
       for (const vr of visibleRegions) {
-        const data = laidOutDataMap.get(vr.displayedRegionIndex)
+        const data = renderDataMap.get(vr.displayedRegionIndex)
         if (data) {
           drawPeptides(ctx, data, vr)
         }
       }
     }
-  }, [laidOutDataMap, visibleRegions, width, height, bpPerPx, show])
+  }, [renderDataMap, visibleRegions, width, height, bpPerPx, show])
 
   return show ? (
     <canvas

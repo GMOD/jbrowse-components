@@ -80,7 +80,7 @@ const useStyles = makeStyles()(theme => ({
 }))
 
 export function useFloatingLabels(
-  laidOutDataMap: Map<number, FeatureDataResult>,
+  renderDataMap: Map<number, FeatureDataResult>,
   featureItemMap: Map<string, FeatureItemEntry>,
   visibleRegions: VisibleRegion[],
   viewInitialized: boolean,
@@ -116,7 +116,7 @@ export function useFloatingLabels(
 
   forEachDisplayLabel(
     visibleRegions,
-    laidOutDataMap,
+    renderDataMap,
     visibility,
     (featureId, labels, vr) => {
       const displayedRegionIndex = vr.displayedRegionIndex
