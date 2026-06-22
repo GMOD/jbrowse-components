@@ -1,9 +1,9 @@
-import { getTickDisplayStr } from '@jbrowse/core/util'
+import { getTickDisplayStr, measureText } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { elidedBlockStyles } from './util.ts'
-import { makeBlockTicks } from '../util.ts'
+import { labelFitsInBlock, makeBlockTicks } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -64,17 +64,22 @@ const ContentBlockTicks = observer(function ContentBlockTicks({
     <div className={classes.wrapper} style={{ width: widthPx }}>
       {/* key by base, not index: getTickDisplayStr text depends only on base,
       so reusing nodes by base keeps their text stable (no repaint) during zoom */}
-      {ticks.map(({ base, x }) => (
-        <div
-          key={base}
-          className={classes.tick}
-          style={{ transform: `translateX(${x}px)` }}
-        >
-          <div className={classes.tickLabel}>
-            {getTickDisplayStr(base + 1, bpPerPx)}
+      {ticks.map(({ base, x }) => {
+        const label = getTickDisplayStr(base + 1, bpPerPx)
+        // label is centered on the tick (+4 for the tickLabel padding); skip it
+        // when it would be partially clipped by the block edge (common with
+        // small collapsed-intron regions)
+        const labelWidth = measureText(label, 11) + 4
+        return labelFitsInBlock(x - labelWidth / 2, labelWidth, widthPx) ? (
+          <div
+            key={base}
+            className={classes.tick}
+            style={{ transform: `translateX(${x}px)` }}
+          >
+            <div className={classes.tickLabel}>{label}</div>
           </div>
-        </div>
-      ))}
+        ) : null
+      })}
     </div>
   )
 })

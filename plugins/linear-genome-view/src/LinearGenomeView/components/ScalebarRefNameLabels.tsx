@@ -4,6 +4,8 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
+import { getBlockRefName, showRefNameLabels } from '../util.ts'
+
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
@@ -70,13 +72,15 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   // "hg38:chr5"); the standalone prefix below is then skipped to show it once.
   let stickyHasPrefix = false
 
+  const showRefName = showRefNameLabels(blocks, getBlockRefName)
+
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]!
     if (block.type !== 'ContentBlock') {
       continue
     }
     const sticky = i === stickyBlockIdx
-    if (!block.isLeftEndOfDisplayedRegion && !sticky) {
+    if ((!block.isLeftEndOfDisplayedRegion || !showRefName[i]) && !sticky) {
       continue
     }
     const layout = getLabelLayout(block, offsetPx, regionEndPx, sticky)

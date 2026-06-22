@@ -2,7 +2,7 @@ import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
 import { SvgClipRect } from '@jbrowse/core/util/SvgExport'
 import { useTheme } from '@mui/material'
 
-import { makeBlockTicks } from '../util.ts'
+import { labelFitsInBlock, makeBlockTicks, showRefNameLabels } from '../util.ts'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
 import type { LinearGenomeViewModel } from '../index.ts'
@@ -50,7 +50,7 @@ function Ruler({
             .map(({ base, x }) => {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const labelWidth = measureText(label, 11) + 4
-              return x - 3 >= 0 && x - 3 + labelWidth <= widthPx ? (
+              return labelFitsInBlock(x - 3, labelWidth, widthPx) ? (
                 <text
                   key={`label-${base}`}
                   x={x - 3}
@@ -82,18 +82,21 @@ export default function SVGRuler({
   const renderRuler = contentBlocks.length < 5
   const theme = useTheme()
   const c = stripAlpha(theme.palette.text.primary)
+  const showRefName = showRefNameLabels(contentBlocks, block => block.refName)
   return (
     <>
       <SVGRegionSeparators model={model} height={30} />
-      {contentBlocks.map(block => {
+      {contentBlocks.map((block, i) => {
         const { start, end, key, reversed, offsetPx, refName, widthPx } = block
         const offset = offsetPx - viewOffsetPx
         return (
           <g key={key} transform={`translate(${offset} 0)`}>
             <SvgClipRect id={`clip-${key}`} width={widthPx} height={100}>
-              <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
-                {refName}
-              </text>
+              {showRefName[i] ? (
+                <text x={4} y={fontSize} fontSize={fontSize} fill={c}>
+                  {refName}
+                </text>
+              ) : null}
               {/* very narrow regions (e.g. whole-genome view of small
               chromosomes) crowd ticks under the refName label, so skip them */}
               {widthPx >= 150 ? (

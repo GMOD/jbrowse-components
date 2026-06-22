@@ -6,7 +6,7 @@ import {
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
 
 import type { AssemblyManager, ParsedLocString } from '@jbrowse/core/util'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 /**
  * Expand a region by a grow factor, adding padding on each side.
@@ -101,6 +101,46 @@ export function makeTicks(
     }
   }
   return ticks
+}
+
+/**
+ * For blocks in display order, returns whether each block's refName should be
+ * labeled: true only for the first block of each run of same-refName regions,
+ * so a refName is shown once instead of repeated at every region boundary (e.g.
+ * collapsed introns produce many adjacent same-refName regions). Blocks whose
+ * getRefName is undefined (non-content) map to false without breaking a run.
+ */
+/** A block's refName, or undefined for non-content (elided/padding) blocks. */
+export function getBlockRefName(block: BaseBlock) {
+  return block.type === 'ContentBlock' ? block.refName : undefined
+}
+
+export function showRefNameLabels<T>(
+  blocks: T[],
+  getRefName: (block: T) => string | undefined,
+) {
+  let prev: string | undefined
+  return blocks.map(block => {
+    const refName = getRefName(block)
+    const show = refName !== undefined && refName !== prev
+    if (refName !== undefined) {
+      prev = refName
+    }
+    return show
+  })
+}
+
+/**
+ * Whether a label occupying [leftPx, leftPx + labelWidth] fits within a block
+ * of the given pixel width, used to skip tick labels that would be clipped at a
+ * region edge (common with small collapsed-intron regions).
+ */
+export function labelFitsInBlock(
+  leftPx: number,
+  labelWidth: number,
+  widthPx: number,
+) {
+  return leftPx >= 0 && leftPx + labelWidth <= widthPx
 }
 
 /**

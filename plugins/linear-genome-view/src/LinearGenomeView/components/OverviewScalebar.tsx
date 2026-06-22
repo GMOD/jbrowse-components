@@ -12,6 +12,7 @@ import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
 import { elidedBlockStyles, getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
+import { getBlockRefName, showRefNameLabels } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -93,9 +94,11 @@ type LGV = LinearGenomeViewModel
 const OverviewBox = observer(function OverviewBox({
   model,
   block,
+  showRefName,
 }: {
   model: LGV
   block: ContentBlock
+  showRefName: boolean
 }) {
   const { classes } = useStyles()
   const theme = useTheme()
@@ -111,15 +114,17 @@ const OverviewBox = observer(function OverviewBox({
   if (canDisplayCytobands) {
     return (
       <>
-        <Typography
-          style={{
-            color: theme.palette.text.primary,
-            transform: `translateX(${block.offsetPx + 3}px)`,
-          }}
-          className={classes.scalebarRefName}
-        >
-          {refName}
-        </Typography>
+        {showRefName ? (
+          <Typography
+            style={{
+              color: theme.palette.text.primary,
+              transform: `translateX(${block.offsetPx + 3}px)`,
+            }}
+            className={classes.scalebarRefName}
+          >
+            {refName}
+          </Typography>
+        ) : null}
         <div
           className={classes.scalebarContig}
           style={{
@@ -154,12 +159,14 @@ const OverviewBox = observer(function OverviewBox({
         borderColor: refNameColor,
       }}
     >
-      <Typography
-        style={{ color: refNameColor, left: 3 }}
-        className={classes.scalebarRefName}
-      >
-        {refName}
-      </Typography>
+      {showRefName ? (
+        <Typography
+          style={{ color: refNameColor, left: 3 }}
+          className={classes.scalebarRefName}
+        >
+          {refName}
+        </Typography>
+      ) : null}
       <OverviewScalebarTickLabels
         model={model}
         block={block}
@@ -218,13 +225,15 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
     { model, overview },
   )
 
+  const showRefName = showRefNameLabels(overviewBlocks, getBlockRefName)
+
   return (
     <div className={classes.scalebar}>
       <VisibleRegionBox
         model={model}
         className={classes.scalebarVisibleRegion}
       />
-      {overviewBlocks.map(block =>
+      {overviewBlocks.map((block, i) =>
         block.type !== 'ContentBlock' ? (
           <div
             key={block.offsetPx}
@@ -238,6 +247,7 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
           <OverviewBox
             block={block}
             model={model}
+            showRefName={showRefName[i]!}
             key={`${block.refName}-${block.offsetPx}`}
           />
         ),
