@@ -1,5 +1,6 @@
 import { Crosshairs } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
+import { treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import MultiSampleVariantTooltip from './MultiSampleVariantTooltip.tsx'
@@ -16,11 +17,10 @@ const MultiSampleVariantCrosshairs = observer(
     mouseState: MouseState
     model: MultiSampleVariantBaseModel
   }) {
-    const { hoveredTooltipSource, height, showTree, hierarchy, treeAreaWidth } =
-      model
+    const { hoveredTooltipSource, height } = model
     const { width } = getContainingView(model) as LinearGenomeViewModel
     const { x, y, clientX, clientY } = mouseState
-    const sidebarOffset = showTree && hierarchy ? treeAreaWidth : 0
+    const sidebarOffset = treeSidebarRightEdge(model)
 
     return (
       <>

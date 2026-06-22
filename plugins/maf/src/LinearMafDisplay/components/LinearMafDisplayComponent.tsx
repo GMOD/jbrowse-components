@@ -2,7 +2,11 @@ import { useRef, useState } from 'react'
 
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { SvgRowLabels, TreeSidebar } from '@jbrowse/tree-sidebar'
+import {
+  SvgRowLabels,
+  TreeSidebar,
+  treeSidebarRightEdge,
+} from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
@@ -111,8 +115,9 @@ const MafBody = observer(function MafBody({
     setContextCoord,
   } = drag
 
-  const treeShowing = showTree && !!hierarchy
-  const sidebarOffset = treeShowing ? treeAreaWidth : 0
+  const sidebarOffset = showTree && hierarchy ? treeAreaWidth : 0
+  // Mouse guides/tooltips hide left of the sidebar's resize-handle edge.
+  const dataLeft = treeSidebarRightEdge(model)
 
   // Pointer cursor when an insertion marker is clickable under the cursor, via
   // the same `resolveMafRowHover` the tooltip uses so the two always agree (see
@@ -122,7 +127,7 @@ const MafBody = observer(function MafBody({
     !isDragging &&
     mouseX !== undefined &&
     mouseY !== undefined &&
-    mouseX > sidebarOffset &&
+    mouseX > dataLeft &&
     model.activeRowRendering === 'bases' &&
     resolveMafRowHover(model, view, mouseX, mouseY)?.kind === 'insertion'
 
@@ -220,7 +225,7 @@ const MafBody = observer(function MafBody({
       <MsaHighlightOverlay model={model} view={view} height={height} />
       {mouseY !== undefined &&
       mouseX !== undefined &&
-      mouseX > sidebarOffset &&
+      mouseX > dataLeft &&
       samples &&
       !contextCoord &&
       !resizeActive ? (

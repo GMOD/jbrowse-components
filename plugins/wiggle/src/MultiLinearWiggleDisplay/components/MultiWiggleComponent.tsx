@@ -2,7 +2,7 @@ import { useCallback } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
-import { TreeSidebar } from '@jbrowse/tree-sidebar'
+import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { findOverlayHit, findRowHit } from './findHit.ts'
@@ -201,7 +201,7 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
         height={height}
         clientMouseCoord={clientMouseCoord}
         offsetMouseCoord={offsetMouseCoord}
-        minLeft={labelOffset}
+        minLeft={treeSidebarRightEdge(model)}
       />
     </>
   )

@@ -7,6 +7,7 @@ import { Menu, MenuItem, alpha } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getLeafNames } from './clusterUtils.ts'
+import { TREE_RESIZE_HANDLE_WIDTH } from './treeSidebarGeometry.ts'
 
 import type { TreeSidebarModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -177,7 +178,7 @@ const TreeSidebar = observer(function TreeSidebar({
             position: 'absolute',
             top: lineZoneHeight,
             height: contentHeight,
-            width: 4,
+            width: TREE_RESIZE_HANDLE_WIDTH,
             zIndex: 101,
             left: treeAreaWidth,
           }}
