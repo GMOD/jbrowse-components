@@ -9,13 +9,21 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // One side's arcs translated to its sub-band's content-space top. Arc geometry
 // is already band-local, so a single translate places the whole side.
-function SashimiSide({ arcs, top }: { arcs: SashimiArc[]; top: number }) {
+function SashimiSide({
+  arcs,
+  top,
+  showLabels,
+}: {
+  arcs: SashimiArc[]
+  top: number
+  showLabels: boolean
+}) {
   return arcs.length ? (
     <g transform={`translate(0,${top})`}>
       {arcs.map(arc => (
         <g key={sashimiArcKey(arc)}>
           <path d={arc.d} stroke={arc.stroke} strokeWidth={arc.strokeWidth} fill="none" />
-          {arc.showLabel ? (
+          {arc.showLabel && showLabels ? (
             <SashimiArcLabel x={arc.labelX} y={arc.labelY} score={arc.score} />
           ) : null}
         </g>
@@ -43,10 +51,12 @@ const SashimiArcsSvg = observer(function SashimiArcsSvg({
             <SashimiSide
               arcs={arcs.filter(a => a.side === 'up')}
               top={section.coverageOverlayTop}
+              showLabels={model.showSashimiLabels}
             />
             <SashimiSide
               arcs={arcs.filter(a => a.side === 'down')}
               top={section.sashimiBandTop}
+              showLabels={model.showSashimiLabels}
             />
           </g>
         ) : null

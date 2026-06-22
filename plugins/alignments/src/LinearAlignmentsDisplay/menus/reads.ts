@@ -31,6 +31,8 @@ interface ReadsModel {
   setFlipStrandLongReadChains: (flag: boolean) => void
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
+  showSashimiLabels: boolean
+  setShowSashimiLabels: (show: boolean) => void
   sashimiArcsMode: SashimiArcsMode
   setSashimiArcsMode: (mode: SashimiArcsMode) => void
   showBezierConnections: boolean
@@ -76,6 +78,14 @@ export function getReadsMenuItem(
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.setShowSashimiArcs(!model.showSashimiArcs)
       }),
+      checkboxItem(
+        'Show sashimi labels',
+        model.showSashimiLabels,
+        () => {
+          model.setShowSashimiLabels(!model.showSashimiLabels)
+        },
+        { disabled: !model.showSashimiArcs },
+      ),
       getSashimiDirectionMenuItem(model),
       ...(showPairFilters
         ? [

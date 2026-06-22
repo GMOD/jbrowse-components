@@ -91,6 +91,14 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      showSashimiLabels: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw the supporting-read count on each sashimi arc',
+      },
+      /**
+       * #slot
+       */
       maxHeight: {
         type: 'number',
         defaultValue: 6000,

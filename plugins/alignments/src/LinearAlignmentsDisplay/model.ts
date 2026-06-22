@@ -330,6 +330,7 @@ export default function stateModelFactory(
           'sortedBy',
           'groupBy',
           'readConnectionsLineWidth',
+          'showSashimiLabels',
           'showOutline',
         ]),
         // Settings split two ways (see CLAUDE.md §"Settings: storage +
@@ -718,6 +719,15 @@ export default function stateModelFactory(
          */
         get maxHeight() {
           return self.getConfWithOverride('maxHeight')
+        },
+
+        /**
+         * #getter
+         * Whether to draw the supporting-read count on each sashimi arc
+         * (config slot `showSashimiLabels`, overridable from the track menu).
+         */
+        get showSashimiLabels() {
+          return self.getConfWithOverride('showSashimiLabels')
         },
 
         /**
@@ -2146,6 +2156,13 @@ export default function stateModelFactory(
            */
           setSashimiArcsMode(mode: SashimiArcsMode) {
             self.sashimiArcsMode = mode
+          },
+
+          /**
+           * #action
+           */
+          setShowSashimiLabels(show: boolean) {
+            self.setOverride('showSashimiLabels', show)
           },
 
           /**
