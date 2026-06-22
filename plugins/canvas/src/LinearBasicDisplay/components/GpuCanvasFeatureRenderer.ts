@@ -6,6 +6,8 @@ import {
   ARROW_PASS as PASS_ARROW,
   ArrowPass,
   CHEVRON_PASS as PASS_CHEVRON,
+  CONTINUATION_PASS as PASS_CONTINUATION,
+  ContinuationPass,
   FEATURE_GLYPH_UNIFORM_BYTE_SIZE,
   LINE_PASS as PASS_LINE,
   LinePass,
@@ -35,6 +37,8 @@ export const CANVAS_FEATURE_PASSES: PassDescriptor[] = [
   // bufferPassId=line), so its attribute layout must match line's.
   makeChevronPass(MAX_VISIBLE_CHEVRONS_PER_LINE),
   ArrowPass,
+  // Reads rect's instance buffer (drawPass below passes bufferPassId=rect).
+  ContinuationPass,
 ]
 
 export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
@@ -106,6 +110,11 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
       zero: 0,
       reversed: block.reversed ? 1 : 0,
       outlineColor: region.outlineColor,
+      // Continuation markers only fire where the block edge is the real canvas
+      // edge, not a seam between two on-screen displayedRegions.
+      leftIsCanvasEdge: clip.scissorX <= 0.5 ? 1 : 0,
+      rightIsCanvasEdge:
+        clip.scissorX + clip.scissorW >= state.canvasWidth - 0.5 ? 1 : 0,
     })
 
     this.hal.writeUniforms(this.uniformData)
@@ -117,5 +126,8 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
     this.hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)
     this.hal.drawPass(PASS_RECT, block.displayedRegionIndex)
     this.hal.drawPass(PASS_ARROW, block.displayedRegionIndex)
+    // Drawn last so the "feature keeps going" markers sit on top of the glyph
+    // they annotate; reads rect's instance buffer.
+    this.hal.drawPass(PASS_CONTINUATION, block.displayedRegionIndex, PASS_RECT)
   }
 }

@@ -10,6 +10,10 @@ import {
   CHEVRON_SPACING_PX,
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
+  CONT_EDGE_MARGIN_PX,
+  CONT_TRI_GAP_PX,
+  CONT_TRI_HALF_H_PX,
+  CONT_TRI_W_PX,
   HEAD_HALF_H_PX,
   MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
@@ -144,6 +148,82 @@ function drawArrows(
   }
 }
 
+// One filled triangle pointing toward `dir` (+1 right, -1 left), apex at apexX.
+function fillTriangle(
+  ctx: Ctx2D,
+  apexX: number,
+  dir: number,
+  cy: number,
+  halfH: number,
+) {
+  const baseX = apexX - dir * CONT_TRI_W_PX
+  ctx.beginPath()
+  ctx.moveTo(apexX, cy)
+  ctx.lineTo(baseX, cy - halfH)
+  ctx.lineTo(baseX, cy + halfH)
+  ctx.closePath()
+  ctx.fill()
+}
+
+// "Feature keeps going" double-arrow (»/«) pinned at a screen edge for any rect
+// that runs past the visible block region. Mirrors continuation.slang.
+function drawContinuation(
+  ctx: Ctx2D,
+  region: RegionRenderData,
+  toX: BpToScreen,
+  scrollY: number,
+  scissorLeft: number,
+  scissorRight: number,
+  canvasWidth: number,
+) {
+  // Only the true canvas edges get markers, never an internal seam between two
+  // on-screen displayedRegions (mirrors continuation.slang's edge gates).
+  const leftIsCanvasEdge = scissorLeft <= 0.5
+  const rightIsCanvasEdge = scissorRight >= canvasWidth - 0.5
+  for (let i = 0; i < region.rectYs.length; i++) {
+    const x1 = toX(region.rectPositions[i * 2]!)
+    const x2 = toX(region.rectPositions[i * 2 + 1]!)
+    const left = Math.min(x1, x2)
+    const right = Math.max(x1, x2)
+    const offLeft = leftIsCanvasEdge && left < scissorLeft && right > scissorLeft
+    const offRight =
+      rightIsCanvasEdge && right > scissorRight && left < scissorRight
+    if (offLeft || offRight) {
+      const c = region.rectColors[i]!
+      const lum =
+        0.299 * (c & 255) + 0.587 * ((c >> 8) & 255) + 0.114 * ((c >> 16) & 255)
+      ctx.fillStyle = lum > 127.5 ? '#000' : '#fff'
+      const cy =
+        Math.floor(
+          region.rectYs[i]! + region.rectHeights[i]! * 0.5 - scrollY + 0.5,
+        ) + 0.5
+      const halfH = Math.min(CONT_TRI_HALF_H_PX, region.rectHeights[i]! * 0.4)
+      if (offRight) {
+        for (let p = 0; p < 2; p++) {
+          fillTriangle(
+            ctx,
+            scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p,
+            1,
+            cy,
+            halfH,
+          )
+        }
+      }
+      if (offLeft) {
+        for (let p = 0; p < 2; p++) {
+          fillTriangle(
+            ctx,
+            scissorLeft + CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p,
+            -1,
+            cy,
+            halfH,
+          )
+        }
+      }
+    }
+  }
+}
+
 /**
  * Pure draw entry point. Paints lines, rects, and arrows for the laid-out
  * feature data into any 2D-canvas-like context. Per-block scissor clips so
@@ -182,6 +262,16 @@ export function drawFeatureBlocks(
     drawLines(ctx, region, block, toX, scrollY)
     drawRects(ctx, region, toX, scrollY)
     drawArrows(ctx, region, block, toX, scrollY)
+    // Drawn last so the markers sit on top of the glyphs they annotate.
+    drawContinuation(
+      ctx,
+      region,
+      toX,
+      scrollY,
+      clip.scissorX,
+      clip.scissorX + clip.scissorW,
+      canvasWidth,
+    )
 
     ctx.restore()
   }

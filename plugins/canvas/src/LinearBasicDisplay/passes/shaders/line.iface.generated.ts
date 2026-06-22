@@ -17,6 +17,8 @@ export const UNIFORM_OFFSET_F32 = {
   zero: 7,
   reversed: 8,
   outlineColor: 9,
+  leftIsCanvasEdge: 10,
+  rightIsCanvasEdge: 11,
 } as const
 
 
@@ -29,6 +31,8 @@ export interface Uniforms {
   zero: number
   reversed: number
   outlineColor: number
+  leftIsCanvasEdge: number
+  rightIsCanvasEdge: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -44,6 +48,8 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[7] = uniforms.zero
   f32[8] = uniforms.reversed
   u32[9] = uniforms.outlineColor
+  f32[10] = uniforms.leftIsCanvasEdge
+  f32[11] = uniforms.rightIsCanvasEdge
 }
 
 export const INSTANCE_STRIDE_BYTES = 20

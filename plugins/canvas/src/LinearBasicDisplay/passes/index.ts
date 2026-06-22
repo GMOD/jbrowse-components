@@ -22,18 +22,20 @@ import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import * as arrowShader from './shaders/arrow.generated.ts'
 import * as chevronShader from './shaders/chevron.generated.ts'
+import * as continuationShader from './shaders/continuation.generated.ts'
 import * as lineShader from './shaders/line.generated.ts'
 import * as rectShader from './shaders/rect.generated.ts'
 
 import type { PassDescriptor } from '@jbrowse/render-core/hal'
 
-export { arrowShader, chevronShader, lineShader, rectShader }
+export { arrowShader, chevronShader, continuationShader, lineShader, rectShader }
 
 // Pass IDs — the join key passed to `uploadBuffer` / `drawPass`.
 export const RECT_PASS = 'rect'
 export const LINE_PASS = 'line'
 export const ARROW_PASS = 'arrow'
 export const CHEVRON_PASS = 'chevron'
+export const CONTINUATION_PASS = 'continuation'
 
 // Ready PassDescriptors for the three self-contained passes.
 export const RectPass: PassDescriptor = slangPass({
@@ -62,6 +64,15 @@ export function makeChevronPass(maxChevronsPerLine: number): PassDescriptor {
   })
 }
 
+// Continuation reuses rect's vertex buffer (drawn with bufferPassId=rect), one
+// "feature keeps going" double-arrow per rect that runs off a screen edge.
+export const ContinuationPass: PassDescriptor = slangPass({
+  id: CONTINUATION_PASS,
+  mod: continuationShader,
+  bufferStride: rectShader.INSTANCE_STRIDE_BYTES,
+  bufferAttributes: rectShader.GL_ATTRIBUTES,
+})
+
 // Generated struct-of-arrays packers (the u32/f32 destination view per field
 // is derived from the shader struct — no hand-maintained packing to drift).
 export const packRects = rectShader.packInstances
@@ -84,3 +95,9 @@ export const {
   CHEVRON_W_PX,
 } = chevronShader
 export const { HEAD_HALF_H_PX, STEM_HALF_H_PX, STEM_LENGTH_PX } = arrowShader
+export const {
+  CONT_TRI_W_PX,
+  CONT_TRI_HALF_H_PX,
+  CONT_EDGE_MARGIN_PX,
+  CONT_TRI_GAP_PX,
+} = continuationShader

@@ -20,6 +20,12 @@ public struct FeatureGlyphUniforms {
   // 0=forward, 1=reversed (float so `lerp(x, -x, reversed)` is branchless).
   public float  reversed;
   public uint   outlineColor;
+  // 1.0 when this block's left/right visible edge is the true canvas edge (vs.
+  // an internal seam between two displayedRegions). Only the continuation pass
+  // reads these — they gate the "feature keeps going" marker so it can't appear
+  // at a mid-screen region boundary.
+  public float  leftIsCanvasEdge;
+  public float  rightIsCanvasEdge;
 };
 
 // Type-safe bp→clip/linear converters. Mirrors the same wrappers in
