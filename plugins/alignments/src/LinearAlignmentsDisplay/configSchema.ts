@@ -136,6 +136,16 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
       /**
        * #slot
        */
+      groupBy: {
+        type: 'frozen',
+        defaultValue: null,
+        description:
+          'In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by strand (null = ungrouped)',
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
       autoscale: {
         type: 'stringEnum',
         model: types.enumeration('Coverage autoscale type', [

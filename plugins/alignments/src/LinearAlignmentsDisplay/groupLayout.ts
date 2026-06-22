@@ -49,13 +49,14 @@ export function buildLaidOutByGroup({
   const byGroup: LaidOutByGroup = new Map()
   for (const { key } of order) {
     const dataMap = rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+    const cap = maxRowsOverrides?.get(key) ?? maxRows
     const base = isChainMode
-      ? buildLaidOutChainMap(dataMap, maxRowsOverrides?.get(key) ?? maxRows)
+      ? buildLaidOutChainMap(dataMap, cap)
       : buildLaidOutPileupMap({
           dataMap,
           sortedBy,
           showSoftClipping,
-          maxRows: maxRowsOverrides?.get(key) ?? maxRows,
+          maxRows: cap,
         })
     const withLines = showLinkedReadLines ? attachLinkedReadLines(base) : base
     byGroup.set(key, overlayReadTagColors(withLines, colorBy, colorTagMap))
@@ -98,4 +99,16 @@ export function groupMaxY(map: Map<number, PileupDataResult>) {
     }
   }
   return max
+}
+
+// True when the row cap clipped any region of a group's laid-out map, i.e.
+// reads were collapsed to the overflow sentinel. Drives the per-group "show
+// all" affordance and the ungrouped truncation banner.
+export function anyRegionTruncated(map: Map<number, PileupDataResult>) {
+  for (const data of map.values()) {
+    if (data.truncated) {
+      return true
+    }
+  }
+  return false
 }

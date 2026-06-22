@@ -1,4 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import ChevronRightIcon from '@mui/icons-material/ChevronRight'
+import ExpandMoreIcon from '@mui/icons-material/ExpandMore'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
@@ -71,7 +73,8 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
           return null
         }
         const collapsed = model.isGroupCollapsed(section.groupKey)
-        const expanded = model.isGroupExpanded(section.groupKey)
+        const hasOverride = model.hasGroupHeightOverride(section.groupKey)
+        const truncated = model.isGroupTruncated(section.groupKey)
         return (
           <div key={section.groupKey === '' ? 'ungrouped' : section.groupKey}>
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
@@ -87,9 +90,17 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                 }}
                 title={collapsed ? 'Expand group' : 'Collapse group'}
               >
-                {`${collapsed ? '▸' : '▾'} ${section.label || 'ungrouped'}`}
+                {collapsed ? (
+                  <ChevronRightIcon className={classes.icon} />
+                ) : (
+                  <ExpandMoreIcon className={classes.icon} />
+                )}
+                {section.label || 'ungrouped'}
               </button>
-              {collapsed ? null : (
+              {/* Restore a manually-sized group to the fit budget; otherwise a
+                  "show all" affordance only when reads were actually clipped, so
+                  the button's presence signals hidden reads. */}
+              {collapsed || (!hasOverride && !truncated) ? null : (
                 <button
                   type="button"
                   className={classes.button}
@@ -97,15 +108,18 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
                     model.toggleGroupExpanded(section.groupKey)
                   }}
                   title={
-                    expanded
+                    hasOverride
                       ? 'Fit group to view'
-                      : 'Expand group (show all reads)'
+                      : 'Show all reads in this group'
                   }
                 >
-                  {expanded ? (
+                  {hasOverride ? (
                     <UnfoldLessIcon className={classes.icon} />
                   ) : (
-                    <UnfoldMoreIcon className={classes.icon} />
+                    <>
+                      <UnfoldMoreIcon className={classes.icon} />
+                      Show all
+                    </>
                   )}
                 </button>
               )}

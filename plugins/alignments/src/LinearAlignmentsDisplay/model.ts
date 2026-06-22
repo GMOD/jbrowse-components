@@ -40,6 +40,7 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 import { ColorScheme } from './constants.ts'
 import {
+  anyRegionTruncated,
   buildLaidOutByGroup,
   fitGroupMaxRows,
   groupMaxY,
@@ -311,7 +312,6 @@ export default function stateModelFactory(
           | 'showLowFreqMismatches'
           | 'showLegend'
           | 'sortedBy'
-          | 'groupBy'
           | 'showOutline'
         >([
           'scaleType',
@@ -771,12 +771,13 @@ export default function stateModelFactory(
 
         /**
          * #getter
-         * In-track stacked grouping dimension (undefined = ungrouped). Sent to
-         * the worker via rpcProps; the worker partitions one fetch into N
-         * sections.
+         * In-track stacked grouping dimension (undefined = ungrouped). Falls
+         * back to the `groupBy` config slot, so a track can be pre-grouped
+         * declaratively. Sent to the worker via rpcProps; the worker partitions
+         * one fetch into N sections.
          */
-        get groupBy() {
-          return self.getOverride<GroupBy>('groupBy')
+        get groupBy(): GroupBy | undefined {
+          return self.getConfWithOverride('groupBy') ?? undefined
         },
 
         /**
@@ -798,11 +799,11 @@ export default function stateModelFactory(
 
         /**
          * #method
-         * Whether a stacked group carries a pileup-height override — i.e. it's
-         * been expanded past (or dragged off) the fit-to-viewport budget. Drives
-         * the group label's expand/restore affordance.
+         * Whether a stacked group carries a custom pileup-height override — set
+         * by expanding it (show all reads) or dragging its resize handle (taller
+         * or shorter). Drives the group label's restore-to-fit affordance.
          */
-        isGroupExpanded(key: string) {
+        hasGroupHeightOverride(key: string) {
           return self.groupMaxHeightOverrides.has(key)
         },
 
@@ -1057,30 +1058,32 @@ export default function stateModelFactory(
         },
 
         /**
+         * #method
+         * True when the row cap clipped reads from a group's pileup and the user
+         * hasn't explicitly sized that group (a height drag/expand makes any
+         * truncation intentional, so it isn't flagged). Drives the per-group
+         * "show all" affordance on the section label.
+         */
+        isGroupTruncated(key: string) {
+          return (
+            !self.groupMaxHeightOverrides.has(key) &&
+            anyRegionTruncated(this.groupLaidOutMap(key))
+          )
+        },
+
+        /**
          * #getter
-         * True when any group hit `maxHeight` and overflow reads were collapsed —
-         * drives the "max height reached" / "show all" banner. Skipped when
-         * grouped: there the default cap is the fit-to-viewport budget, not the
-         * global `maxHeight`, so raising `maxHeight` wouldn't lift the truncation
-         * — expanding the group does. Ungrouped (one group) still offers it.
-         * Groups the user explicitly shrank (a per-group height drag) are also
-         * skipped: that truncation is intentional.
+         * True when the ungrouped pileup hit `maxHeight` and overflow reads were
+         * collapsed — drives the "max height reached" / "show all" banner. Only
+         * the ungrouped (single-group) case: grouped sections surface their own
+         * truncation per-label (`isGroupTruncated`), where raising `maxHeight`
+         * wouldn't lift the fit-to-viewport cap anyway — expanding the group does.
          */
         get pileupTruncated() {
-          if (this.groupOrder.length > 1) {
-            return false
-          }
-          for (const [key, map] of this.laidOutByGroup) {
-            if (self.groupMaxHeightOverrides.has(key)) {
-              continue
-            }
-            for (const data of map.values()) {
-              if (data.truncated) {
-                return true
-              }
-            }
-          }
-          return false
+          return (
+            this.groupOrder.length <= 1 &&
+            this.isGroupTruncated(this.groupOrder[0]?.key ?? '')
+          )
         },
 
         /**
@@ -1700,6 +1703,11 @@ export default function stateModelFactory(
             self.showCoverage = true
           }
         }
+        // Clamp the Y scroll back inside the (possibly shrunken) content after a
+        // group collapse/expand/resize changes the stacked height.
+        function clampScrollTop() {
+          self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
+        }
         return {
           /**
            * #action
@@ -1941,17 +1949,15 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Set (or clear, when undefined) the in-track stacked grouping
+           * Set (or remove, when undefined) the in-track stacked grouping
            * dimension. A tier-1 refetch setting (in `rpcProps`) — the worker
            * re-partitions the fetch into N sections. Resets the Y scroll since
-           * the stacked content height changes.
+           * the stacked content height changes. Ungrouping stores an explicit
+           * `null` override (not a cleared override) so it beats a configured
+           * `groupBy` default rather than falling back to it.
            */
           setGroupBy(groupBy?: GroupBy) {
-            if (groupBy) {
-              self.setOverride('groupBy', groupBy)
-            } else {
-              self.clearOverride('groupBy')
-            }
+            self.setOverride('groupBy', groupBy ?? null)
             self.collapsedGroups.clear()
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
@@ -1967,8 +1973,7 @@ export default function stateModelFactory(
             } else {
               self.collapsedGroups.add(key)
             }
-            // keep scroll within the shrunken bounds
-            self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
+            clampScrollTop()
           },
 
           /**
@@ -1977,7 +1982,7 @@ export default function stateModelFactory(
            * all its reads), or, if it already carries a height override (from
            * expand or a drag), drop the override to return it to the fit budget.
            * Expanding makes the stack overflow the viewport, which engages the
-           * pileup scroll. Pairs with `isGroupExpanded`.
+           * pileup scroll. Pairs with `hasGroupHeightOverride`.
            */
           toggleGroupExpanded(key: string) {
             if (self.groupMaxHeightOverrides.has(key)) {
@@ -1985,8 +1990,7 @@ export default function stateModelFactory(
             } else {
               self.groupMaxHeightOverrides.set(key, self.maxHeight)
             }
-            // keep scroll within the shrunken bounds
-            self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
+            clampScrollTop()
           },
 
           /**
@@ -2018,8 +2022,7 @@ export default function stateModelFactory(
               key,
               Math.max(rowHeight, base + dy),
             )
-            // keep scroll within the shrunken bounds
-            self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
+            clampScrollTop()
           },
 
           /**

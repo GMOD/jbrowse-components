@@ -568,6 +568,27 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "volvox_alignments_grouped_by_strand",
+      "name": "volvox-sorted.bam (pre-grouped by strand)",
+      "category": ["Integration test"],
+      "assemblyNames": ["volvox", "volvox2"],
+      "adapter": {
+        "type": "BamAdapter",
+        "uri": "volvox-sorted.bam"
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "height": 600,
+          "displayId": "volvox_alignments_grouped_by_strand_display",
+          "groupBy": {
+            "type": "strand"
+          }
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "volvox_bam_snpcoverage",
       "name": "volvox-sorted.bam (contigA LinearSNPCoverageDisplay)",
       "category": ["Integration test"],
