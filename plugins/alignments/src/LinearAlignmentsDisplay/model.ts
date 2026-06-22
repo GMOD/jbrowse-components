@@ -39,14 +39,18 @@ import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { openCigarWidget } from './components/openFeatureWidget.ts'
 import { ColorScheme } from './constants.ts'
-import { buildLaidOutByGroup, groupMaxY } from './groupLayout.ts'
 import {
+  buildLaidOutByGroup,
+  fitGroupMaxRows,
+  groupMaxY,
+} from './groupLayout.ts'
+import {
+  anyGroupHasSashimi,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
   eachGroupData,
   orderedGroups,
-  someGroupData,
 } from './groupedDataMaps.ts'
 import { computeInsertSizeTicks } from './insertSizeTicks.ts'
 import {
@@ -62,8 +66,8 @@ import {
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
 import {
+  belowCoverageBandsGeometry,
   buildSectionRenders,
-  computeBandStack,
   computeStackedSections,
 } from './sectionLayout.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
@@ -783,6 +787,16 @@ export default function stateModelFactory(
         },
 
         /**
+         * #method
+         * Whether a stacked group carries a pileup-height override — i.e. it's
+         * been expanded past (or dragged off) the fit-to-viewport budget. Drives
+         * the group label's expand/restore affordance.
+         */
+        isGroupExpanded(key: string) {
+          return self.groupMaxHeightOverrides.has(key)
+        },
+
+        /**
          * #getter
          */
         get coverageIsLog() {
@@ -904,29 +918,65 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Inputs to `belowCoverageBandsGeometry` — the below-coverage band
+         * settings plus whether any sashimi junction is present. Defined here
+         * (an earlier .views block than `belowCoverageBands`) so the fit-budget
+         * `laidOutByGroup` and the `belowCoverageBands` getter share one source.
+         */
+        get belowCoverageBandsInput() {
+          return {
+            showCoverage: self.showCoverage,
+            coverageHeight: self.coverageHeight,
+            readConnections: self.readConnections,
+            readConnectionsDown: self.readConnectionsDown,
+            readConnectionsHeight: self.readConnectionsHeight,
+            showSashimiArcs: self.showSashimiArcs,
+            sashimiArcsMode: self.sashimiArcsMode,
+            sashimiArcsHeight: self.sashimiArcsHeight,
+            hasSashimiArcs: anyGroupHasSashimi(
+              self.rpcDataMap,
+              self.minSashimiScore,
+            ),
+          }
+        },
+
+        /**
+         * #getter
          * Per-group laid-out data: group key → (region index → laid-out data).
          * Each group lays out independently (own `maxRows` cap) so a dense group
-         * can't starve the rest. Tag colors are baked here (not in the worker)
-         * so colorTagMap stays a main-thread tier-2 setting — see readTagColors.
+         * can't starve the rest. When grouped, the default cap fits all sections
+         * into the viewport (`fitGroupMaxRows`) so the stack doesn't tower and
+         * need scrolling; a per-group height drag / expand still overrides it.
+         * Tag colors are baked here (not in the worker) so colorTagMap stays a
+         * main-thread tier-2 setting — see readTagColors.
          */
         get laidOutByGroup() {
-          const rowHeight =
-            self.getConfWithOverride('featureHeight') +
-            self.getConfWithOverride('featureSpacing')
+          const rowHeight = this.featureHeight + this.featureSpacing
+          const order = this.groupOrder
+          const maxHeightRows = maxRowsFor(this.maxHeight, rowHeight)
+          const defaultMaxRows =
+            order.length > 1
+              ? fitGroupMaxRows({
+                  height: self.height,
+                  groupCount: order.length,
+                  rowHeight,
+                  overhead: belowCoverageBandsGeometry(
+                    this.belowCoverageBandsInput,
+                  ).bottom,
+                  maxRows: maxHeightRows,
+                })
+              : maxHeightRows
           const maxRowsOverrides = new Map<string, number>()
           for (const [key, px] of self.groupMaxHeightOverrides) {
             maxRowsOverrides.set(key, maxRowsFor(px, rowHeight))
           }
           return buildLaidOutByGroup({
-            order: this.groupOrder,
+            order,
             rawByGroup: this.rawDataByGroup,
             isChainMode: self.isChainMode,
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
-            maxRows: maxRowsFor(
-              self.getConfWithOverride('maxHeight'),
-              rowHeight,
-            ),
+            maxRows: defaultMaxRows,
             maxRowsOverrides,
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,
@@ -999,11 +1049,17 @@ export default function stateModelFactory(
         /**
          * #getter
          * True when any group hit `maxHeight` and overflow reads were collapsed —
-         * drives the "max height reached" / "show all" banner. Groups the user
-         * explicitly shrank (a per-group height drag) are skipped: their
-         * truncation is intentional, not the global cap the banner offers to lift.
+         * drives the "max height reached" / "show all" banner. Skipped when
+         * grouped: there the default cap is the fit-to-viewport budget, not the
+         * global `maxHeight`, so raising `maxHeight` wouldn't lift the truncation
+         * — expanding the group does. Ungrouped (one group) still offers it.
+         * Groups the user explicitly shrank (a per-group height drag) are also
+         * skipped: that truncation is intentional.
          */
         get pileupTruncated() {
+          if (this.groupOrder.length > 1) {
+            return false
+          }
           for (const [key, map] of this.laidOutByGroup) {
             if (self.groupMaxHeightOverrides.has(key)) {
               continue
@@ -1156,16 +1212,6 @@ export default function stateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * True when any loaded region has a junction passing minSashimiScore.
-         * Drives whether the below-coverage band reserves space, so a threshold
-         * that hides every arc also reclaims the empty band.
-         */
-        get hasSashimiArcs() {
-          return anyGroupHasSashimi(self.rpcDataMap, self.minSashimiScore)
-        },
-
-        /**
-         * #getter
          * Geometry of the bands stacked below coverage in arcs-down mode, top to
          * bottom: coverage → paired-end arcs → sashimi. Single source of truth so
          * the layout height, the renderers, and the three resize handles can't
@@ -1173,17 +1219,7 @@ export default function stateModelFactory(
          * `bottom` is where the pileup begins (== coverageDisplayHeight).
          */
         get belowCoverageBands() {
-          return belowCoverageBandsGeometry({
-            showCoverage: self.showCoverage,
-            coverageHeight: self.coverageHeight,
-            readConnections: self.readConnections,
-            readConnectionsDown: self.readConnectionsDown,
-            readConnectionsHeight: self.readConnectionsHeight,
-            showSashimiArcs: self.showSashimiArcs,
-            sashimiArcsMode: self.sashimiArcsMode,
-            sashimiArcsHeight: self.sashimiArcsHeight,
-            hasSashimiArcs: this.hasSashimiArcs,
-          })
+          return belowCoverageBandsGeometry(self.belowCoverageBandsInput)
         },
 
         /**
@@ -1923,7 +1959,25 @@ export default function stateModelFactory(
             } else {
               self.collapsedGroups.add(key)
             }
-            // Collapsing shrinks the stack; keep scroll within the new bounds.
+            // keep scroll within the shrunken bounds
+            self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
+          },
+
+          /**
+           * #action
+           * Expand a fit-to-viewport group back to the full `maxHeight` cap (show
+           * all its reads), or, if it already carries a height override (from
+           * expand or a drag), drop the override to return it to the fit budget.
+           * Expanding makes the stack overflow the viewport, which engages the
+           * pileup scroll. Pairs with `isGroupExpanded`.
+           */
+          toggleGroupExpanded(key: string) {
+            if (self.groupMaxHeightOverrides.has(key)) {
+              self.groupMaxHeightOverrides.delete(key)
+            } else {
+              self.groupMaxHeightOverrides.set(key, self.maxHeight)
+            }
+            // keep scroll within the shrunken bounds
             self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
           },
 
@@ -1956,6 +2010,7 @@ export default function stateModelFactory(
               key,
               Math.max(rowHeight, base + dy),
             )
+            // keep scroll within the shrunken bounds
             self.scrollTop = Math.min(self.scrollTop, self.scrollableHeight)
           },
 

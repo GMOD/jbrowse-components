@@ -54,6 +54,19 @@ export function someGroupData(
   return false
 }
 
+// True when any loaded region/group has a sashimi junction passing
+// `minSashimiScore`. Shared by the `hasSashimiArcs` getter and the
+// fit-to-viewport band-overhead calc, which runs in an earlier `.views` block
+// than that getter and so can't read it.
+export function anyGroupHasSashimi(
+  rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
+  minSashimiScore: number,
+) {
+  return someGroupData(rpcDataMap, d =>
+    d.sashimiCounts.some(c => c >= minSashimiScore),
+  )
+}
+
 // A group's stable identity: its sort key and human-readable label.
 export interface GroupId {
   key: string

@@ -1,11 +1,72 @@
 import { sectionRegionKey } from './renderers/rendererTypes.ts'
 import {
+  belowCoverageBandsGeometry,
   buildSectionRenders,
   computeBandStack,
   computeStackedSections,
 } from './sectionLayout.ts'
 
-import type { SectionsLayout } from './sectionLayout.ts'
+import type { BelowCoverageBandsInput, SectionsLayout } from './sectionLayout.ts'
+
+const baseBands: BelowCoverageBandsInput = {
+  showCoverage: true,
+  coverageHeight: 45,
+  readConnections: 'off',
+  readConnectionsDown: false,
+  readConnectionsHeight: 40,
+  showSashimiArcs: false,
+  sashimiArcsMode: 'auto',
+  sashimiArcsHeight: 40,
+  hasSashimiArcs: false,
+}
+
+test('belowCoverageBandsGeometry: coverage only => pileup right below coverage', () => {
+  expect(belowCoverageBandsGeometry(baseBands)).toEqual({
+    hasArcsBand: false,
+    hasSashimiBand: false,
+    arcsBandTop: 45,
+    sashimiBandTop: 45,
+    bottom: 45,
+  })
+})
+
+test('belowCoverageBandsGeometry: down-mode arcs reserve their own band', () => {
+  const r = belowCoverageBandsGeometry({
+    ...baseBands,
+    readConnections: 'arc',
+    readConnectionsDown: true,
+  })
+  expect(r.hasArcsBand).toBe(true)
+  expect(r.bottom).toBe(45 + 40)
+})
+
+test('belowCoverageBandsGeometry: up-mode arcs overlay coverage (no reserved band)', () => {
+  const r = belowCoverageBandsGeometry({
+    ...baseBands,
+    readConnections: 'arc',
+    readConnectionsDown: false,
+  })
+  expect(r.hasArcsBand).toBe(false)
+  expect(r.bottom).toBe(45)
+})
+
+test('belowCoverageBandsGeometry: sashimi band needs coverage + non-up + arcs present', () => {
+  const on = belowCoverageBandsGeometry({
+    ...baseBands,
+    showSashimiArcs: true,
+    hasSashimiArcs: true,
+  })
+  expect(on.hasSashimiBand).toBe(true)
+  expect(on.bottom).toBe(45 + 40)
+  // no junctions present => no reserved sashimi band even when enabled
+  const off = belowCoverageBandsGeometry({
+    ...baseBands,
+    showSashimiArcs: true,
+    hasSashimiArcs: false,
+  })
+  expect(off.hasSashimiBand).toBe(false)
+  expect(off.bottom).toBe(45)
+})
 
 test('sectionRegionKey: section 0 keys equal the raw region index', () => {
   // The ungrouped (section 0) path must produce byte-identical HAL keys to

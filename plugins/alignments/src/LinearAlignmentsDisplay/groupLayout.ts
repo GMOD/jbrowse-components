@@ -63,6 +63,32 @@ export function buildLaidOutByGroup({
   return byGroup
 }
 
+// Equal-split row budget per group when grouping fits to the viewport: divide
+// the height left after each section's band overhead (coverage/arcs/sashimi)
+// evenly across the N groups, so the stacked groups fit without scrolling and
+// the wheel stays unambiguously zoom. Floored to a few rows so a tiny viewport
+// or many groups still shows pileup (the overflow then scrolls), and never
+// exceeds the display-wide `maxRows` cap. A group with fewer reads than its
+// slice simply lays out all of them — the cap only truncates deeper groups.
+export const MIN_FIT_ROWS = 3
+export function fitGroupMaxRows({
+  height,
+  groupCount,
+  rowHeight,
+  overhead,
+  maxRows,
+}: {
+  height: number
+  groupCount: number
+  rowHeight: number
+  overhead: number
+  maxRows: number
+}) {
+  const slice = (height - groupCount * overhead) / groupCount
+  const rows = Math.max(MIN_FIT_ROWS, Math.floor(slice / rowHeight))
+  return Math.min(maxRows, rows)
+}
+
 // Max row count for a group's laid-out region map (sections stack by this).
 export function groupMaxY(map: Map<number, PileupDataResult>) {
   let max = 0

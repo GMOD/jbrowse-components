@@ -6,7 +6,6 @@ import { ResizeHandle } from '@jbrowse/core/ui'
 import {
   clamp,
   createScrollLatch,
-  getContainingView,
   normalizeWheelDeltaY,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -101,16 +100,17 @@ const PileupBody = observer(function PileupBody({
     processClick,
   } = useAlignmentsBase(model, canvas)
 
-  const view = getContainingView(model) as { scrollZoom?: boolean }
-  const { scrollZoom } = view
   const latch = useMemo(() => createScrollLatch(), [])
 
+  // When the pileup overflows its viewport, the wheel scrolls it (via the
+  // latch) and only chains to the view's zoom/pan once it hits the top/bottom
+  // edge — the latch's 200ms window suppresses accidental zoom mid-scroll, and
+  // a consumed event's preventDefault makes the LGV wheel handler skip it.
+  // ctrl/cmd stays the explicit always-zoom escape. With nothing to scroll
+  // (the fitted/grouped common case), the event falls straight through to zoom.
   const handleWheel = useEventCallback((e: WheelEvent) => {
-    if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
-      return
-    }
     const { scrollableHeight, pileupViewportHeight, scrollTop } = model
-    if (scrollableHeight <= 0) {
+    if (e.ctrlKey || e.metaKey || scrollableHeight <= 0) {
       return
     }
     const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, pileupViewportHeight)

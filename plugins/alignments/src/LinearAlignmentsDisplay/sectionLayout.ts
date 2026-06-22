@@ -59,6 +59,51 @@ export function computeBandStack(s: BandStackInput) {
   return { arcsBandTop, sashimiBandTop, pileupTop }
 }
 
+// Resolve which of the below-coverage bands are present and their stacked tops,
+// from the raw display settings. Single source of truth shared by the
+// `belowCoverageBands` getter (sticky-coverage geometry, resize handles) and the
+// fit-to-viewport row budget (which needs each section's reserved overhead but
+// runs in an earlier `.views` block than that getter). `bottom` is where the
+// pileup begins (== `coverageDisplayHeight`).
+export interface BelowCoverageBandsInput {
+  showCoverage: boolean
+  coverageHeight: number
+  readConnections: ReadConnectionsMode
+  readConnectionsDown: boolean
+  readConnectionsHeight: number
+  showSashimiArcs: boolean
+  sashimiArcsMode: string
+  sashimiArcsHeight: number
+  hasSashimiArcs: boolean
+}
+
+export function belowCoverageBandsGeometry(s: BelowCoverageBandsInput) {
+  const arcsOn = s.readConnections !== 'off'
+  const coverageBand = s.showCoverage ? s.coverageHeight : 0
+  // Arcs reserve their own band whenever they aren't overlaying the coverage
+  // histogram: down mode always, and up mode when coverage is hidden.
+  const hasArcsBand = arcsOn && (s.readConnectionsDown || !s.showCoverage)
+  const hasSashimiBand =
+    s.showSashimiArcs &&
+    s.sashimiArcsMode !== 'up' &&
+    s.showCoverage &&
+    s.hasSashimiArcs
+  const stack = computeBandStack({
+    coverageHeight: coverageBand,
+    hasArcsBand,
+    arcsHeight: s.readConnectionsHeight,
+    hasSashimiBand,
+    sashimiHeight: s.sashimiArcsHeight,
+  })
+  return {
+    hasArcsBand,
+    hasSashimiBand,
+    arcsBandTop: stack.arcsBandTop,
+    sashimiBandTop: stack.sashimiBandTop,
+    bottom: stack.pileupTop,
+  }
+}
+
 // Band settings shared by every section (heights are display-global in v1).
 // Defaults make the read-connection bands absent, so callers that only stack
 // coverage + pileup can omit them.

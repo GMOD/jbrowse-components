@@ -1,4 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
+import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
 import { observer } from 'mobx-react'
 
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
@@ -15,9 +17,17 @@ const useStyles = makeStyles()(theme => ({
     pointerEvents: 'none',
     zIndex: 6,
   },
-  label: {
+  controls: {
     position: 'absolute',
     left: 4,
+    display: 'flex',
+    alignItems: 'center',
+    gap: 2,
+    zIndex: 6,
+  },
+  button: {
+    display: 'flex',
+    alignItems: 'center',
     padding: '0 4px',
     fontSize: 11,
     lineHeight: '14px',
@@ -26,13 +36,15 @@ const useStyles = makeStyles()(theme => ({
     opacity: 0.85,
     borderRadius: 3,
     whiteSpace: 'nowrap',
-    zIndex: 6,
     cursor: 'pointer',
     border: 'none',
     userSelect: 'none',
     '&:hover': {
       opacity: 1,
     },
+  },
+  icon: {
+    fontSize: 14,
   },
 }))
 
@@ -59,20 +71,45 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
           return null
         }
         const collapsed = model.isGroupCollapsed(section.groupKey)
+        const expanded = model.isGroupExpanded(section.groupKey)
         return (
           <div key={section.groupKey === '' ? 'ungrouped' : section.groupKey}>
             {i > 0 ? <div className={classes.divider} style={{ top }} /> : null}
-            <button
-              type="button"
-              className={classes.label}
+            <div
+              className={classes.controls}
               style={{ top: Math.max(0, top) + 1 }}
-              onClick={() => {
-                model.toggleGroupCollapsed(section.groupKey)
-              }}
-              title={collapsed ? 'Expand group' : 'Collapse group'}
             >
-              {`${collapsed ? '▸' : '▾'} ${section.label || 'ungrouped'}`}
-            </button>
+              <button
+                type="button"
+                className={classes.button}
+                onClick={() => {
+                  model.toggleGroupCollapsed(section.groupKey)
+                }}
+                title={collapsed ? 'Expand group' : 'Collapse group'}
+              >
+                {`${collapsed ? '▸' : '▾'} ${section.label || 'ungrouped'}`}
+              </button>
+              {collapsed ? null : (
+                <button
+                  type="button"
+                  className={classes.button}
+                  onClick={() => {
+                    model.toggleGroupExpanded(section.groupKey)
+                  }}
+                  title={
+                    expanded
+                      ? 'Fit group to view'
+                      : 'Expand group (show all reads)'
+                  }
+                >
+                  {expanded ? (
+                    <UnfoldLessIcon className={classes.icon} />
+                  ) : (
+                    <UnfoldMoreIcon className={classes.icon} />
+                  )}
+                </button>
+              )}
+            </div>
           </div>
         )
       })}

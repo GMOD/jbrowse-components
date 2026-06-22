@@ -1,4 +1,5 @@
 import {
+  anyGroupHasSashimi,
   buildChainIdMap,
   buildRawDataByGroup,
   buildReadIdIndexMap,
@@ -159,4 +160,27 @@ test('buildChainIdMap keyed by name never collides across groups', () => {
   )
   expect(m.get('hp1chain')).toEqual(['a', 'b'])
   expect(m.get('hp2chain')).toEqual(['c', 'd'])
+})
+
+function sashimiData(sashimiCounts: number[]): PileupDataResult {
+  return { sashimiCounts } as unknown as PileupDataResult
+}
+
+test('anyGroupHasSashimi: true when any group has a junction at/above threshold', () => {
+  const m = new Map([
+    [
+      0,
+      grouped([
+        { key: '+', data: sashimiData([1, 2]) },
+        { key: '-', data: sashimiData([0, 5]) },
+      ]),
+    ],
+  ])
+  expect(anyGroupHasSashimi(m, 5)).toBe(true)
+  expect(anyGroupHasSashimi(m, 6)).toBe(false)
+})
+
+test('anyGroupHasSashimi: false when no group has any junction', () => {
+  const m = new Map([[0, grouped([{ key: '', data: sashimiData([]) }])]])
+  expect(anyGroupHasSashimi(m, 0)).toBe(false)
 })
