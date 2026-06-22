@@ -73,14 +73,3 @@ export function groupMaxY(map: Map<number, PileupDataResult>) {
   }
   return max
 }
-
-// Total laid-out read count for a group across its regions (shown in the
-// section label so each group's depth is legible). Sibling of `groupMaxY` —
-// both reduce a group's region map.
-export function groupReadCount(map: Map<number, PileupDataResult>) {
-  let n = 0
-  for (const data of map.values()) {
-    n += data.readIds.length
-  }
-  return n
-}

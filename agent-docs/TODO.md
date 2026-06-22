@@ -37,3 +37,5 @@ One thing I did not do: add the direct-script output as a second demo track. The
 ## add strand arrows on sides of screen when zoomed in
 
 
+
+## deep rna-seq group by strand

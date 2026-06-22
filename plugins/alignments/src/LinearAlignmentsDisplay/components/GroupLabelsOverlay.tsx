@@ -2,7 +2,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { bandOnScreen, bandScreenTop } from './sectionScreen.ts'
-import { groupReadCount } from '../groupLayout.ts'
 
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 
@@ -59,7 +58,6 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
         if (!bandOnScreen(top, section.coverageHeight, scroll)) {
           return null
         }
-        const count = groupReadCount(section.laidOutPileupMap)
         const collapsed = model.isGroupCollapsed(section.groupKey)
         return (
           <div key={section.groupKey === '' ? 'ungrouped' : section.groupKey}>
@@ -73,7 +71,7 @@ const GroupLabelsOverlay = observer(function GroupLabelsOverlay({
               }}
               title={collapsed ? 'Expand group' : 'Collapse group'}
             >
-              {`${collapsed ? '▸' : '▾'} ${section.label || 'ungrouped'} (${count})`}
+              {`${collapsed ? '▸' : '▾'} ${section.label || 'ungrouped'}`}
             </button>
           </div>
         )
