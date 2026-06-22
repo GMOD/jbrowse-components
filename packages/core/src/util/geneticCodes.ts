@@ -304,7 +304,12 @@ export function parseTranslExcept(value: unknown): TranslExcept[] {
       ? [value]
       : []
   return vals.flatMap(v =>
-    [...v.matchAll(/\(pos:(.*?),aa:(\w+)\)/g)].flatMap(m => {
+    // The location descriptor is bounded to a generous max length (real
+    // descriptors like `complement(NC_000003.11:49395565..49395567)` are
+    // well under this) so a missing `,aa:` can't make the lazy `.*?` scan
+    // to the end of an attacker-controlled string from every `(pos:` it
+    // finds, which would otherwise be quadratic in input length.
+    [...v.matchAll(/\(pos:(.{0,500}?),aa:(\w+)\)/g)].flatMap(m => {
       const loc = m[1]!.replace(/[A-Za-z_][\w.]*:/g, '')
       const range = /(\d+)(?:\.\.(\d+))?/.exec(loc)
       const rawAa = m[2]!
