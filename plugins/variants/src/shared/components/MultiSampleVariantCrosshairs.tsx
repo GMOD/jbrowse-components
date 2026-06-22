@@ -24,15 +24,14 @@ const MultiSampleVariantCrosshairs = observer(
 
     return (
       <>
-        {x > sidebarOffset ? (
-          <Crosshairs
-            mouseX={x}
-            mouseY={y}
-            width={width}
-            height={height}
-            zIndex={800}
-          />
-        ) : null}
+        <Crosshairs
+          mouseX={x}
+          mouseY={y}
+          width={width}
+          height={height}
+          zIndex={800}
+          minLeft={sidebarOffset}
+        />
         {hoveredTooltipSource ? (
           <MultiSampleVariantTooltip
             source={hoveredTooltipSource}
