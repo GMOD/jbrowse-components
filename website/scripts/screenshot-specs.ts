@@ -1127,8 +1127,6 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
       { type: 'delay', ms: 500 },
-      { type: 'click', text: 'Filter...' },
-      { type: 'delay', ms: 500 },
       { type: 'click', text: 'Edit filters...' },
       { type: 'delay', ms: 1000 },
     ],
@@ -4142,7 +4140,7 @@ export const specs: ScreenshotSpec[] = [
       // it through the UI (by name) so it lands in "recently used"
       { type: 'type', text: 'Filter tracks', value: 'NCBI RefSeq' },
       { type: 'delay', ms: 800 },
-      { type: 'click', text: 'NCBI RefSeq w/ subfeature details' },
+      { type: 'click', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'delay', ms: 1500 },
       // clear the filter (target the actual input, not the floating label, so
       // select-all + Backspace empties it) so the tracklist behind the dropdown
@@ -4159,7 +4157,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'click',
         selector: '[data-testid="recently-used-tracks-button"]',
       },
-      { type: 'waitForText', text: 'NCBI RefSeq w/ subfeature details' },
+      { type: 'waitForText', text: 'NCBI RefSeq w/ top-level feature details' },
       { type: 'delay', ms: 500 },
     ],
     annotations: [
@@ -5432,9 +5430,9 @@ export const specs: ScreenshotSpec[] = [
         // top frame: the Cluster by score dialog open, before clustering
         actions: [
           { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          { type: 'waitForText', text: 'Cluster rows by score' },
+          { type: 'waitForText', text: 'Cluster rows by score...' },
           { type: 'delay', ms: 300 },
-          { type: 'click', text: 'Cluster rows by score' },
+          { type: 'click', text: 'Cluster rows by score...' },
           { type: 'waitForText', text: 'Run clustering' },
           { type: 'delay', ms: 500 },
         ],

@@ -8,14 +8,13 @@ import {
   hts,
   setup,
 } from './util.tsx'
+import './svgExportMocks.ts'
 
 setup()
 
 beforeEach(() => {
   doBeforeEach()
 })
-// @ts-expect-error
-global.Blob = (content, options) => ({ content, options })
 
 jest.mock('@jbrowse/core/util/FileSaver', () => ({ saveAs: jest.fn() }))
 

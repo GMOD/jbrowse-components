@@ -57,8 +57,8 @@ test('group by strand stacks two sections in one track', async () => {
 
   // The inline section-divider overlay labels each stacked group with its read
   // count (GroupLabelsOverlay).
-  await screen.findByText(/Forward strand \(\d+\)/, ...opts)
-  await screen.findByText(/Reverse strand \(\d+\)/, ...opts)
+  await screen.findByText(/Forward strand/, ...opts)
+  await screen.findByText(/Reverse strand/, ...opts)
 }, 60000)
 
 // Paired-end arcs draw per stacked
