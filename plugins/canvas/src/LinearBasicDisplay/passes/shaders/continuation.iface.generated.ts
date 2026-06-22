@@ -13,6 +13,8 @@ export const CONT_EDGE_MARGIN_PX = 1
 
 export const CONT_TRI_GAP_PX = 4
 
+export const CONT_MIN_OVERHANG_PX = 20
+
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.

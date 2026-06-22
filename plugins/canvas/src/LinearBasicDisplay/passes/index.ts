@@ -99,4 +99,5 @@ export const {
   CONT_TRI_HALF_H_PX,
   CONT_EDGE_MARGIN_PX,
   CONT_TRI_GAP_PX,
+  CONT_MIN_OVERHANG_PX,
 } = continuationShader

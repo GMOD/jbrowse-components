@@ -11,6 +11,7 @@ import {
   CHEVRON_THICKNESS_PX,
   CHEVRON_W_PX,
   CONT_EDGE_MARGIN_PX,
+  CONT_MIN_OVERHANG_PX,
   CONT_TRI_GAP_PX,
   CONT_TRI_HALF_H_PX,
   CONT_TRI_W_PX,
@@ -185,9 +186,16 @@ function drawContinuation(
     const x2 = toX(region.rectPositions[i * 2 + 1]!)
     const left = Math.min(x1, x2)
     const right = Math.max(x1, x2)
-    const offLeft = leftIsCanvasEdge && left < scissorLeft && right > scissorLeft
+    // Only mark once a meaningful amount of the feature is hidden (overhang past
+    // the edge > threshold); a few px clipped off a short repeat stays unmarked.
+    const offLeft =
+      leftIsCanvasEdge &&
+      scissorLeft - left > CONT_MIN_OVERHANG_PX &&
+      right > scissorLeft
     const offRight =
-      rightIsCanvasEdge && right > scissorRight && left < scissorRight
+      rightIsCanvasEdge &&
+      right - scissorRight > CONT_MIN_OVERHANG_PX &&
+      left < scissorRight
     if (offLeft || offRight) {
       const c = region.rectColors[i]!
       const lum =

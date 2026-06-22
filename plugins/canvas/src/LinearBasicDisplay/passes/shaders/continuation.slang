@@ -18,8 +18,14 @@
 // edges). Each edge's pair is culled to OFFSCREEN unless the rect actually
 // straddles that screen edge. Barycentric coordinates carry edge distance to the
 // fragment shader so only the outline renders (filled interior is discarded).
+// To suppress noise, the marker only draws once a meaningful amount of the
+// feature is hidden: the off-screen overhang past the edge must exceed
+// CONT_MIN_OVERHANG_PX. A small feature clipped by a couple px at the edge
+// (common when zoomed out over a field of short repeats) stays unmarked; only
+// features running well past the viewport — the zoomed-in case the marker is
+// meant for — qualify.
 //! targets: wgsl, glsl
-//! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX
+//! export-consts: CONT_TRI_W_PX, CONT_TRI_HALF_H_PX, CONT_EDGE_MARGIN_PX, CONT_TRI_GAP_PX, CONT_MIN_OVERHANG_PX
 
 import hpmath;
 import colorPack;
@@ -31,6 +37,7 @@ static const float CONT_TRI_W_PX       = 5.0;
 static const float CONT_TRI_HALF_H_PX  = 4.0;
 static const float CONT_EDGE_MARGIN_PX = 1.0;
 static const float CONT_TRI_GAP_PX     = 4.0;
+static const float CONT_MIN_OVERHANG_PX = 20.0;
 
 struct ContinuationInstance {
   uint2 startEnd : ATTR0;
@@ -71,14 +78,18 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
   uint tv   = vid % 3u;   // vertex within the triangle
 
   bool isRight = chev < 2u;
-  // The rect runs off this screen edge while still reaching into view — and the
-  // edge is the real canvas edge, not an internal seam between displayedRegions
-  // (a feature spilling past a sub-region boundary mustn't draw a mid-screen
-  // marker).
+  // Clip ±1 spans the block's visible region (abs(bpRangeX.z) bp wide); convert
+  // the px overhang threshold into that clip space so the gate is zoom-aware.
+  float blockWidthPx   = abs(u.bpRangeX.z) / u.bpPerPx;
+  float minOverhangClip = CONT_MIN_OVERHANG_PX / blockWidthPx * 2.0;
+  // The rect runs far enough off this screen edge (overhang > threshold) while
+  // still reaching into view — and the edge is the real canvas edge, not an
+  // internal seam between displayedRegions (a feature spilling past a sub-region
+  // boundary mustn't draw a mid-screen marker).
   bool offRight =
-    rightClip > 1.0 && leftClip < 1.0 && u.rightIsCanvasEdge > 0.5;
+    rightClip - 1.0 > minOverhangClip && leftClip < 1.0 && u.rightIsCanvasEdge > 0.5;
   bool offLeft =
-    leftClip < -1.0 && rightClip > -1.0 && u.leftIsCanvasEdge > 0.5;
+    -1.0 - leftClip > minOverhangClip && rightClip > -1.0 && u.leftIsCanvasEdge > 0.5;
   bool visible = isRight ? offRight : offLeft;
 
   VsOut o;
