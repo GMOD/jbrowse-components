@@ -169,7 +169,6 @@ async function callMultiSampleVariantCellData(args: {
       displayedRegionIndices: regions.map(r => r.displayedRegionIndex),
       ...rpcProps,
       mode,
-      sessionId,
       adapterConfig,
       stopToken: ctx.stopToken,
       statusCallback: (status: RpcStatus) => {

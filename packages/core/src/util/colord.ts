@@ -14,6 +14,7 @@ import {
   toHSLA,
   toRGBA,
 } from './color-bits/index.ts'
+import { clamp } from './numericUtils.ts'
 
 import type { Color } from './color-bits/index.ts'
 
@@ -42,10 +43,6 @@ export interface Colord {
   mix(color: Colord | string, ratio?: number): Colord
   darken(amount?: number): Colord
   lighten(amount?: number): Colord
-}
-
-function clamp(value: number, min: number, max: number) {
-  return Math.max(min, Math.min(max, value))
 }
 
 function round(value: number, precision = 0) {

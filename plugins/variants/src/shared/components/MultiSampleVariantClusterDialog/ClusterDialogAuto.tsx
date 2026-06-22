@@ -95,7 +95,6 @@ const ClusterDialogAuto = observer(function ClusterDialogAuto({
                     sources: sourcesVolatile,
                     minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
                     filters,
-                    sessionId,
                     adapterConfig,
                     stopToken,
                     renderingMode,

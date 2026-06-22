@@ -1,11 +1,7 @@
 import { aesDecrypt, aesEncrypt } from './crypto.ts'
 
 function bytesToBinaryString(bytes: Uint8Array) {
-  let str = ''
-  for (const b of bytes) {
-    str += String.fromCharCode(b)
-  }
-  return str
+  return Array.from(bytes, b => String.fromCharCode(b)).join('')
 }
 
 // from https://stackoverflow.com/questions/1349404/
@@ -13,11 +9,7 @@ function bytesToBinaryString(bytes: Uint8Array) {
 // unlike crypto.subtle which requires HTTPS.
 function generateUID(length: number) {
   return window
-    .btoa(
-      [...crypto.getRandomValues(new Uint8Array(length * 2))]
-        .map(b => String.fromCharCode(b))
-        .join(''),
-    )
+    .btoa(bytesToBinaryString(crypto.getRandomValues(new Uint8Array(length * 2))))
     .replaceAll(/[+/]/g, '')
     .slice(0, length)
 }
@@ -74,9 +66,8 @@ export async function toUrlSafeB64(str: string) {
   const deflated = deflate(bytes, undefined)
   const encoded = btoa(bytesToBinaryString(deflated))
   const pos = encoded.indexOf('=')
-  return pos > 0
-    ? encoded.slice(0, pos).replaceAll('+', '-').replaceAll('/', '_')
-    : encoded.replaceAll('+', '-').replaceAll('/', '_')
+  const unpadded = pos > 0 ? encoded.slice(0, pos) : encoded
+  return unpadded.replaceAll('+', '-').replaceAll('/', '_')
 }
 
 /**

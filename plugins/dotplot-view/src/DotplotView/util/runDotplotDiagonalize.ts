@@ -2,7 +2,6 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
 
-import type { DiagonalizeDotplotArgs } from '../../DiagonalizeDotplotRpc.ts'
 import type { DotplotViewModel } from '../model.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
@@ -40,12 +39,11 @@ export async function runDotplotDiagonalize(
     sessionId,
     'DiagonalizeDotplot',
     {
-      sessionId,
       view: { hview: model.hview, vview: model.vview },
       adapterConfig: display.adapterConfig,
       stopToken: opts.stopToken,
       statusCallback: opts.statusCallback,
-    } satisfies DiagonalizeDotplotArgs,
+    },
   )
   transaction(() => {
     model.vview.setDisplayedRegions(result.newRegions)

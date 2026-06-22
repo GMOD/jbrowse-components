@@ -7,6 +7,7 @@ import { renderBases } from './rendering/bases.ts'
 import { renderDeletions } from './rendering/deletions.ts'
 import { renderInsertions } from './rendering/insertions.ts'
 import { FONT_CONFIG } from './rendering/types.ts'
+import { rowBandGeometry } from '../LinearMafDisplay/components/visibleRegionGeometry.ts'
 
 import type {
   MafGPURenderState,
@@ -30,8 +31,7 @@ export function drawMafBlocks(
     mismatchRendering,
     palette,
   } = state
-  const h = rowHeight * rowProportion
-  const offset = (rowHeight - h) / 2
+  const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
   const cellColorConfig = { ...palette, showAllLetters, mismatchRendering }
   // Count-label text style is constant for the whole draw; set once. It
   // survives the per-block save()/restore() since it's set before any save().

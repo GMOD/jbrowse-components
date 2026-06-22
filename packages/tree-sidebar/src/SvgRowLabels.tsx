@@ -1,4 +1,4 @@
-import { getFillProps, measureText } from '@jbrowse/core/util'
+import { getFillProps, max, measureText } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 
 export function SvgRowLabels({
@@ -23,11 +23,10 @@ export function SvgRowLabels({
 
   // `name` is the identity (key + hit-test); `label` is the displayed string if
   // the adapter config supplied one.
-  let boxWidth = 10
-  for (const source of sources) {
-    const w = measureText(source.label ?? source.name, fontSize) + 10
-    boxWidth = Math.max(boxWidth, w)
-  }
+  const boxWidth = max(
+    sources.map(s => measureText(s.label ?? s.name, fontSize) + 10),
+    10,
+  )
 
   const defaultBackground = alpha(theme.palette.background.paper, 0.8)
   return (

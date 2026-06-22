@@ -669,7 +669,6 @@ export default function sharedModelFactory(
             sessionId,
             'RenderLDData',
             {
-              sessionId,
               adapterConfig,
               regions: [...regions],
               bpPerPx,

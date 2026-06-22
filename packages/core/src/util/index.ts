@@ -221,11 +221,11 @@ export function measureGridWidth(
     stripHTML = false,
   } = args ?? {}
   return max(
-    elements
-      .map(element => getStr(element))
-      .map(str => (stripHTML ? coarseStripHTML(str) : str))
-      .map(str => measureText(str, fontSize))
-      .map(n => Math.min(Math.max(n + padding, minWidth), maxWidth)),
+    elements.map(element => {
+      const str = getStr(element)
+      const n = measureText(stripHTML ? coarseStripHTML(str) : str, fontSize)
+      return Math.min(Math.max(n + padding, minWidth), maxWidth)
+    }),
   )
 }
 
@@ -282,28 +282,24 @@ export function stripAlpha(str: string) {
   return colord(str).alpha(1).toHex()
 }
 
-export function getStrokeProps(str: string) {
+function svgColorProps(str: string, colorKey: string, opacityKey: string) {
   if (str) {
     const c = colord(str)
     return {
-      strokeOpacity: c.alpha(),
-      stroke: c.alpha(1).toHex(),
+      [opacityKey]: c.alpha(),
+      [colorKey]: c.alpha(1).toHex(),
     }
   } else {
     return {}
   }
 }
 
+export function getStrokeProps(str: string) {
+  return svgColorProps(str, 'stroke', 'strokeOpacity')
+}
+
 export function getFillProps(str: string) {
-  if (str) {
-    const c = colord(str)
-    return {
-      fillOpacity: c.alpha(),
-      fill: c.alpha(1).toHex(),
-    }
-  } else {
-    return {}
-  }
+  return svgColorProps(str, 'fill', 'fillOpacity')
 }
 
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code

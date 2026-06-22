@@ -63,7 +63,6 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
       return rpcManager.call(sessionId, 'MultiWiggleGetScoreMatrix', {
         regions: dynamicBlocks.contentBlocks,
         sources: sourcesWithoutLayout,
-        sessionId,
         adapterConfig,
         bpPerPx: bpPerPx / parseSamplesPerPixel(samplesPerPixel),
       })

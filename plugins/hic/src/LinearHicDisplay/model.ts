@@ -516,7 +516,6 @@ export default function stateModelFactory(
             sessionId,
             'RenderHicData',
             {
-              sessionId,
               adapterConfig,
               regions: [...regions],
               bpPerPx,

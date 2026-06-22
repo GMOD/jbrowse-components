@@ -14,7 +14,6 @@ import { autorun } from 'mobx'
 import { createDotplotColorFunction } from './dotplotColors.ts'
 import { buildLineSegments } from './dotplotGeometry.ts'
 
-import type { DotplotGetFeaturesAndPositionsArgs } from './DotplotGetFeaturesAndPositions.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
@@ -62,7 +61,6 @@ export function doAfterAttach(
             sessionId,
             'DotplotGetFeaturesAndPositions',
             {
-              sessionId,
               adapterConfig,
               regions,
               hViewSnap,
@@ -70,7 +68,7 @@ export function doAfterAttach(
               stopToken,
               lodMode,
               statusCallback,
-            } satisfies DotplotGetFeaturesAndPositionsArgs,
+            },
           )
           if (!isCurrent()) {
             return

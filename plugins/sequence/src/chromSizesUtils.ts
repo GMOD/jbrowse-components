@@ -23,6 +23,16 @@ export function refSizesToRegions(refSizes: Record<string, number>) {
   }))
 }
 
+// derives the fasta + fai locations from a `uri` shorthand, shared by the
+// IndexedFasta and BgzipFasta config preprocessors (the latter adds gzi)
+export function deriveFastaLocations(snap: Record<string, unknown>) {
+  const { uri, baseUri } = snap
+  return {
+    fastaLocation: { uri, baseUri },
+    faiLocation: { uri: `${uri}.fai`, baseUri },
+  }
+}
+
 export function isPlaceholderLocation(loc: FileLocation, defaultUri: string) {
   return isUriLocation(loc) && (loc.uri === '' || loc.uri === defaultUri)
 }

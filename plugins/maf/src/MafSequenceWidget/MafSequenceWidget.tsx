@@ -56,7 +56,6 @@ const MafSequenceWidget = observer(function MafSequenceWidget({
     // ternary above has already narrowed away `undefined` for these inputs.
     ([, adapterConfig, samples, regions, showAllLetters, includeInsertions]) =>
       session.rpcManager.call('MafSequenceWidget', 'MafGetSequences', {
-        sessionId: 'MafSequenceWidget',
         adapterConfig,
         samples,
         showAllLetters,

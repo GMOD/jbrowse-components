@@ -37,7 +37,7 @@ export async function fetchCanvasFeatureDetails(
     const result = await session.rpcManager.call(
       sessionId,
       'GetCanvasFeatureDetails',
-      { sessionId, adapterConfig, featureId, region },
+      { adapterConfig, featureId, region },
     )
     return result.feature ? new SimpleFeature(result.feature) : undefined
   } catch (e) {

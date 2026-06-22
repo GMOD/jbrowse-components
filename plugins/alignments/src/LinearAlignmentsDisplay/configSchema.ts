@@ -2,6 +2,8 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
+import { defaultFilterFlags } from '../shared/util.ts'
+
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -127,10 +129,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       filterBy: {
         type: 'frozen',
-        defaultValue: {
-          flagInclude: 0,
-          flagExclude: 1540,
-        },
+        defaultValue: defaultFilterFlags,
         description: 'Filter settings for reads',
         advanced: true,
       },

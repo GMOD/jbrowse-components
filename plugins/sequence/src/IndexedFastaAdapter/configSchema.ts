@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import { deriveFastaLocations } from '../chromSizesUtils.ts'
+
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -16,19 +18,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {
-  return snap.uri
-    ? {
-        ...snap,
-        fastaLocation: {
-          uri: snap.uri,
-          baseUri: snap.baseUri,
-        },
-        faiLocation: {
-          uri: `${snap.uri}.fai`,
-          baseUri: snap.baseUri,
-        },
-      }
-    : snap
+  return snap.uri ? { ...snap, ...deriveFastaLocations(snap) } : snap
 }
 
 const IndexedFastaAdapter = ConfigurationSchema(

@@ -1,3 +1,6 @@
+// stroke for tree branch lines, shared by the canvas and SVG draw paths
+export const TREE_STROKE = '#0008'
+
 export interface HierarchyNode<T> {
   data: T
   children: HierarchyNode<T>[] | null

@@ -3,6 +3,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { rowBandGeometry } from './visibleRegionGeometry.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
@@ -150,8 +151,10 @@ export function drawRowIdentity(
     }
   }
 
-  const bandH = rowHeight * rowProportion
-  const bandOffset = (rowHeight - bandH) / 2
+  const { h: bandH, offset: bandOffset } = rowBandGeometry(
+    rowHeight,
+    rowProportion,
+  )
   if (mode === 'xyplot') {
     const [r, g, b] = identityColor(1)
     ctx.fillStyle = `rgb(${r},${g},${b})`

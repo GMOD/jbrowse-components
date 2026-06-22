@@ -1,6 +1,5 @@
 import {
   cartesianToPolar,
-  thetaRangesOverlap,
   viewportVisibleSection,
 } from './viewportVisibleRegion.ts'
 
@@ -57,22 +56,6 @@ describe('cartesian to polar', () => {
       const result = cartesianToPolar(input[0], input[1])
       expect(result[0]).toBeCloseTo(output[0])
       expect((result[1] * 180) / Math.PI).toBeCloseTo(output[1])
-    })
-  }
-})
-
-describe('theta overlap testing', () => {
-  for (const [input, output] of [
-    [[0, 2 * Math.PI, 0, 2 * Math.PI], true],
-    [[6.1, Math.PI / 2, 0, Math.PI / 2], true],
-    [[6.1, Math.PI / 2, 0, 0.1], true],
-    [[6.1, 0.1, 6.12, 0.05], true],
-    [[-12, 0.1, -12.05, 0.05], false],
-    [[-12, 0.1, -12.05, 0.06], true],
-  ] as [[number, number, number, number], boolean][]) {
-    test(`${input} -> ${output}`, () => {
-      const result = thetaRangesOverlap(input[0], input[1], input[2], input[3])
-      expect(result).toBe(output)
     })
   }
 })

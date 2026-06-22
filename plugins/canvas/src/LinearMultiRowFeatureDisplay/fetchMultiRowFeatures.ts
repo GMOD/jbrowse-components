@@ -30,7 +30,6 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   return fetchEachRegion(self, needed, {
     call: (region, ctx) =>
       rpcManager.call(sessionId, 'MultiRowGetFeatures', {
-        sessionId,
         adapterConfig: self.adapterConfig,
         region,
         partitionField: self.partitionField,

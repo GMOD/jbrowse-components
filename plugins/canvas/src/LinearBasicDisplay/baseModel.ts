@@ -1413,7 +1413,6 @@ export default function baseStateModelFactory(
             sessionId,
             'RenderFeatureData',
             {
-              sessionId,
               adapterConfig: self.adapterConfig,
               sequenceAdapter: self.sequenceAdapter,
               geneticCodeId: assembly?.getGeneticCodeId(region.refName),

@@ -44,7 +44,6 @@ export function getMultiSampleVariantSourcesAutorun(self: {
             sessionId,
             'MultiSampleVariantGetSources',
             {
-              sessionId,
               adapterConfig,
               stopToken,
               statusCallback: (status: RpcStatus) => {

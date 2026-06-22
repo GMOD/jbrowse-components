@@ -11,6 +11,7 @@ import { DrawerWidgetSessionMixin } from './DrawerWidgets.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { IBaseViewModel } from '@jbrowse/core/pluggableElementTypes'
+import type { ReorderDirection } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -43,43 +44,36 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
         ),
       }),
     )
-    .actions(self => ({
+    .actions(self => {
+      const move = (id: string, direction: ReorderDirection) => {
+        const idx = self.views.findIndex(v => v.id === id)
+        self.views = cast(reorder(self.views, idx, direction))
+      }
+      return {
       /**
        * #action
        */
       moveViewDown(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-        if (idx !== -1) {
-          self.views = cast(reorder(self.views, idx, 'down'))
-        }
+        move(id, 'down')
       },
       /**
        * #action
        */
       moveViewUp(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-        if (idx !== -1) {
-          self.views = cast(reorder(self.views, idx, 'up'))
-        }
+        move(id, 'up')
       },
       /**
        * #action
        */
       moveViewToTop(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-        if (idx !== -1) {
-          self.views = cast(reorder(self.views, idx, 'top'))
-        }
+        move(id, 'top')
       },
 
       /**
        * #action
        */
       moveViewToBottom(id: string) {
-        const idx = self.views.findIndex(v => v.id === id)
-        if (idx !== -1) {
-          self.views = cast(reorder(self.views, idx, 'bottom'))
-        }
+        move(id, 'bottom')
       },
 
       /**
@@ -142,7 +136,8 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
           ),
         )
       },
-    }))
+      }
+    })
     .postProcessSnapshot(snap => {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {

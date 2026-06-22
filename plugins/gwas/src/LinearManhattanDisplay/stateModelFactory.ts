@@ -444,7 +444,6 @@ export function stateModelFactory(
           return fetchEachRegion(self, needed, {
             call: (region, ctx, displayedRegionIndex) =>
               rpcManager.call(sessionId, 'GetManhattanData', {
-                sessionId,
                 adapterConfig,
                 region,
                 ...self.rpcProps(),

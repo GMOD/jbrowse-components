@@ -1,4 +1,4 @@
-import { renderTreeSVG } from './hierarchy.ts'
+import { TREE_STROKE, renderTreeSVG } from './hierarchy.ts'
 
 import type { ClusterHierarchyNode } from './types.ts'
 
@@ -14,7 +14,7 @@ export function SvgTreePath({
       <path
         d={renderTreeSVG(hierarchy)}
         fill="none"
-        stroke="#0008"
+        stroke={TREE_STROKE}
         strokeWidth={1}
       />
     </g>

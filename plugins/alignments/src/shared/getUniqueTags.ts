@@ -27,12 +27,11 @@ export async function getUniqueTags({
   const { adapterConfig, effectiveRpcDriverName } = self
   const sessionId = getRpcSessionId(self)
   const values = await rpcManager.call(
-    getRpcSessionId(self),
+    sessionId,
     'PileupGetGlobalValueForTag',
     {
       adapterConfig,
       tag,
-      sessionId,
       rpcDriverName: effectiveRpcDriverName,
       regions: blocks.contentBlocks,
       ...opts,

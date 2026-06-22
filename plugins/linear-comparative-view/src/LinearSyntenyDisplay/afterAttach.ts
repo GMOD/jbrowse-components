@@ -91,7 +91,6 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
               adapterConfig,
               viewSnaps,
               level,
-              sessionId,
               stopToken,
               drawCIGAR,
               drawCIGARMatchesOnly,

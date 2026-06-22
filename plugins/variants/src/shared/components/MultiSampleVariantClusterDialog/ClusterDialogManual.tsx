@@ -73,7 +73,6 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
         sources: sourcesWithoutLayout ?? [],
         minorAlleleFrequencyFilter: minorAlleleFrequencyFilter ?? 0,
         filters,
-        sessionId,
         adapterConfig,
       })
     },

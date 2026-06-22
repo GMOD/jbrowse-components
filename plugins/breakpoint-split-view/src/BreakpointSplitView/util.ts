@@ -87,7 +87,6 @@ export async function getBlockFeatures(
     views.map(async view =>
       rpcManager.call(sessionId, 'BreakpointGetFeatures', {
         adapterConfig: getConf(track, ['adapter']),
-        sessionId,
         regions: view.staticBlocks.contentBlocks,
       }),
     ),

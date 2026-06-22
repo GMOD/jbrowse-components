@@ -2,7 +2,6 @@ import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { transaction } from 'mobx'
 
-import type { DiagonalizeSyntenyArgs } from '../../DiagonalizeSyntenyRpc.ts'
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
 import type { LinearSyntenyViewModel } from '../model.ts'
 import type { StatusCallback } from '@jbrowse/core/util'
@@ -68,7 +67,6 @@ export async function runDiagonalize(
         sessionId,
         'DiagonalizeSynteny',
         {
-          sessionId,
           adapterConfigs: displays.map(
             (d: LinearSyntenyDisplayModel) => d.adapterConfig,
           ),
@@ -77,7 +75,7 @@ export async function runDiagonalize(
           bpPerPx: model.views[i]!.bpPerPx,
           stopToken: opts.stopToken,
           statusCallback: opts.statusCallback,
-        } satisfies DiagonalizeSyntenyArgs,
+        },
       )
     }),
   )

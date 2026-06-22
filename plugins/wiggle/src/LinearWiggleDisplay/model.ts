@@ -275,7 +275,6 @@ export default function stateModelFactory(
           return fetchEachRegion(self, needed, {
             call: (region, ctx, displayedRegionIndex) =>
               rpcManager.call(sessionId, 'RenderWiggleData', {
-                sessionId,
                 adapterConfig,
                 region,
                 ...self.rpcProps(),

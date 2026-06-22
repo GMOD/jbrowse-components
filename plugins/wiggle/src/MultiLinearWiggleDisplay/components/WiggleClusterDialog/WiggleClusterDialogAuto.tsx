@@ -122,7 +122,6 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                   {
                     regions: view.dynamicBlocks.contentBlocks,
                     sources: sourcesWithoutLayout,
-                    sessionId,
                     adapterConfig,
                     stopToken,
                     bpPerPx:

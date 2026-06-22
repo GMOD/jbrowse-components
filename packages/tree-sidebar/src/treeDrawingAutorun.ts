@@ -2,10 +2,29 @@ import { getContainingView } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
 
-import { links } from './hierarchy.ts'
+import { TREE_STROKE, links } from './hierarchy.ts'
 
 import type { TreeDrawingModel } from './types.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+
+// Own the backing-store size here rather than letting React set the canvas
+// width/height attributes: a React-driven resize clears the canvas, and since
+// the draw autoruns fire synchronously on the state change (before React
+// commits), a resize landing afterward would wipe the freshly drawn content
+// with no follow-up redraw. Sizing and drawing in the same reaction keeps them
+// atomic. Returns the 2d context (already sized), or null if unavailable.
+function resizeCanvas(canvas: HTMLCanvasElement, w: number, h: number) {
+  const ctx = canvas.getContext('2d')
+  if (ctx) {
+    if (canvas.width !== w) {
+      canvas.width = w
+    }
+    if (canvas.height !== h) {
+      canvas.height = h
+    }
+  }
+  return ctx
+}
 
 export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
   addDisposer(
@@ -30,25 +49,14 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
 
-        const ctx = treeCanvas.getContext('2d')
+        const contentHeight = height - lineZoneHeight
+        const ctx = resizeCanvas(
+          treeCanvas,
+          treeAreaWidth * 2,
+          contentHeight * 2,
+        )
         if (!ctx) {
           return
-        }
-
-        // Own the backing-store size here rather than letting React set the
-        // canvas width/height attributes: a React-driven resize clears the
-        // canvas, and since this autorun fires synchronously on the state
-        // change (before React commits), a resize landing afterward would wipe
-        // the freshly drawn tree with no follow-up redraw. Sizing and drawing
-        // in the same reaction keeps them atomic.
-        const contentHeight = height - lineZoneHeight
-        const w = treeAreaWidth * 2
-        const h = contentHeight * 2
-        if (treeCanvas.width !== w) {
-          treeCanvas.width = w
-        }
-        if (treeCanvas.height !== h) {
-          treeCanvas.height = h
         }
 
         ctx.resetTransform()
@@ -56,7 +64,7 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         ctx.clearRect(0, 0, treeAreaWidth, contentHeight)
 
         ctx.translate(0, -scrollTop)
-        ctx.strokeStyle = '#0008'
+        ctx.strokeStyle = TREE_STROKE
         ctx.lineWidth = 1
 
         ctx.beginPath()
@@ -102,25 +110,15 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
           return
         }
 
-        const ctx = mouseoverCanvas.getContext('2d')
-        if (!ctx) {
-          return
-        }
-
         const view = getContainingView(self) as LinearGenomeViewModel
         if (!view.initialized) {
           return
         }
         const viewWidth = view.width
-
-        // Own the backing-store size here (see treeDrawAutorun) so a
-        // React-driven resize can't clear the highlight out from under us.
         const contentHeight = height - lineZoneHeight
-        if (mouseoverCanvas.width !== viewWidth) {
-          mouseoverCanvas.width = viewWidth
-        }
-        if (mouseoverCanvas.height !== contentHeight) {
-          mouseoverCanvas.height = contentHeight
+        const ctx = resizeCanvas(mouseoverCanvas, viewWidth, contentHeight)
+        if (!ctx) {
+          return
         }
 
         ctx.clearRect(0, 0, viewWidth, contentHeight)
