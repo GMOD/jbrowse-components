@@ -9,6 +9,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
+  MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -61,8 +62,6 @@ const DEFAULTS = {
   showTree: true,
   showBranchLength: false,
 } as const
-
-const minDisplayHeight = 20
 
 /**
  * #stateModel LinearMultiRowFeatureDisplay
@@ -432,7 +431,7 @@ export default function stateModelFactory(
        */
       setHeight(newHeight: number) {
         if (self.rowHeightSetting === 0) {
-          self.heightOverride = Math.max(newHeight, minDisplayHeight)
+          self.heightOverride = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
         } else {
           self.rowHeightOverride = Math.max(1, newHeight / self.nrow)
         }
@@ -455,7 +454,7 @@ export default function stateModelFactory(
        * `rowHeight` derive from it.
        */
       setFitToHeight() {
-        self.heightOverride = Math.max(self.height, minDisplayHeight)
+        self.heightOverride = Math.max(self.height, MIN_DISPLAY_HEIGHT)
         self.rowHeightOverride = 0
         self.scrollTop = 0
       },

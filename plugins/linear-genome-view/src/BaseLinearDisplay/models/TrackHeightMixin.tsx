@@ -5,7 +5,7 @@ import { migrateTrackHeightSnapshot } from './migration.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-const minDisplayHeight = 20
+export const MIN_DISPLAY_HEIGHT = 20
 
 /**
  * #stateModel TrackHeightMixin
@@ -30,7 +30,7 @@ export default function TrackHeightMixin<
         types.refinement(
           'displayHeight',
           types.number,
-          n => n >= minDisplayHeight,
+          n => n >= MIN_DISPLAY_HEIGHT,
         ),
       ),
     })
@@ -59,7 +59,7 @@ export default function TrackHeightMixin<
        * #action
        */
       setHeight(displayHeight: number) {
-        self.heightOverride = Math.max(displayHeight, minDisplayHeight)
+        self.heightOverride = Math.max(displayHeight, MIN_DISPLAY_HEIGHT)
         return self.height
       },
       /**
@@ -67,7 +67,7 @@ export default function TrackHeightMixin<
        */
       resizeHeight(distance: number) {
         const oldHeight = self.height
-        self.heightOverride = Math.max(self.height + distance, minDisplayHeight)
+        self.heightOverride = Math.max(self.height + distance, MIN_DISPLAY_HEIGHT)
         return self.height - oldHeight
       },
     }))

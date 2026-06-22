@@ -84,6 +84,7 @@ export {
   FeatureDensityMixin,
   FloatingLegend,
   GlobalDataDisplayMixin,
+  MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
   StaleViewportRescaleMixin,
   TooLargeMessage,

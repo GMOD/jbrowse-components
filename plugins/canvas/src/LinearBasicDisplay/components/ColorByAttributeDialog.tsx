@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, ErrorMessage } from '@jbrowse/core/ui'
+import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import {
   Button,
   DialogActions,
@@ -9,6 +10,18 @@ import {
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
+
+// jexl compile error for the generated expression, or undefined when it parses.
+// An attribute name containing a quote or backslash produces a malformed
+// expression, so this gates Apply rather than committing a broken jexl string.
+function jexlError(expression: string) {
+  try {
+    stringToJexlExpression(expression)
+    return undefined
+  } catch (e) {
+    return e
+  }
+}
 
 const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   model,
@@ -26,6 +39,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
   const expression = trimmed
     ? `jexl:randomColor(get(feature,'${trimmed}'))`
     : ''
+  const error = expression ? jexlError(expression) : undefined
 
   return (
     <Dialog
@@ -50,12 +64,13 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
           fullWidth
           helperText={expression ? `Expression: ${expression}` : undefined}
         />
+        {error ? <ErrorMessage error={error} /> : null}
       </DialogContent>
       <DialogActions>
         <Button
           variant="contained"
           color="primary"
-          disabled={!trimmed}
+          disabled={!trimmed || !!error}
           onClick={() => {
             model.setFeatureColor(expression)
             handleClose()

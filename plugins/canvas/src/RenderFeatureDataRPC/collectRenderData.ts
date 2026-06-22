@@ -364,6 +364,48 @@ function emitExonRects(
   }
 }
 
+// Emit a floating subfeature label (transcript or mature-protein region) when
+// `subfeatureLabels` is enabled and the label has visible text. Shared by the
+// transcript and mature-protein layout paths so the two can't drift.
+function emitSubfeatureLabel(
+  args: {
+    featureId: string
+    displayLabel: string | undefined
+    featureHeight: number
+    minX: number
+    maxX: number
+    topY: number
+    parentFeatureId: string
+  },
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { config } = ctx
+  const { featureId, displayLabel, featureHeight, minX, maxX, topY } = args
+  if (
+    config.subfeatureLabels !== 'none' &&
+    displayLabel &&
+    hasVisibleText(displayLabel)
+  ) {
+    const result = createTranscriptFloatingLabel({
+      displayLabel,
+      featureHeight,
+      subfeatureLabels: config.subfeatureLabels,
+      parentFeatureId: args.parentFeatureId,
+      theme: ctx.theme,
+    })
+    collector.floatingLabelsData[featureId] = {
+      featureId,
+      minX,
+      maxX,
+      topY,
+      featureHeight,
+      parentFeatureId: result.parentFeatureId,
+      subfeatureLabel: result.subfeatureLabel,
+    }
+  }
+}
+
 function processTranscriptLayout(
   transcript: FeatureLayout,
   transcriptTopPx: number,
@@ -404,29 +446,19 @@ function processTranscriptLayout(
     displayLabel: transcriptName,
   })
 
-  const { config } = ctx
-  if (
-    config.subfeatureLabels !== 'none' &&
-    transcriptName &&
-    hasVisibleText(transcriptName)
-  ) {
-    const result = createTranscriptFloatingLabel({
+  emitSubfeatureLabel(
+    {
+      featureId: transcriptFeature.id(),
       displayLabel: transcriptName,
       featureHeight: transcript.height,
-      subfeatureLabels: config.subfeatureLabels,
-      parentFeatureId: parentFeature.id(),
-      theme: ctx.theme,
-    })
-    collector.floatingLabelsData[transcriptFeature.id()] = {
-      featureId: transcriptFeature.id(),
       minX: transcriptStart,
       maxX: transcriptEnd,
       topY: transcriptTopPx,
-      featureHeight: transcript.height,
-      parentFeatureId: result.parentFeatureId,
-      subfeatureLabel: result.subfeatureLabel,
-    }
-  }
+      parentFeatureId: parentFeature.id(),
+    },
+    ctx,
+    collector,
+  )
 
   emitStrandArrow(
     transcriptFeature,
@@ -650,31 +682,20 @@ function processMatureProteinLayout(
     })
 
     // mirror the transcript path so `subfeatureLabels` actually labels mature
-    // peptides (matureProteinRegion glyph) — without this the config slot had no
-    // effect for this glyph
-    const { config } = ctx
-    if (
-      config.subfeatureLabels !== 'none' &&
-      displayLabel &&
-      hasVisibleText(displayLabel)
-    ) {
-      const result = createTranscriptFloatingLabel({
+    // peptides (matureProteinRegion glyph)
+    emitSubfeatureLabel(
+      {
+        featureId: childFeature.id(),
         displayLabel,
         featureHeight: childLayout.height,
-        subfeatureLabels: config.subfeatureLabels,
-        parentFeatureId: rootFeature.id(),
-        theme: ctx.theme,
-      })
-      collector.floatingLabelsData[childFeature.id()] = {
-        featureId: childFeature.id(),
         minX: cStart,
         maxX: cEnd,
         topY: topPx,
-        featureHeight: childLayout.height,
-        parentFeatureId: result.parentFeatureId,
-        subfeatureLabel: result.subfeatureLabel,
-      }
-    }
+        parentFeatureId: rootFeature.id(),
+      },
+      ctx,
+      collector,
+    )
   }
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }

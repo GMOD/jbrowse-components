@@ -1,5 +1,6 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import { fetchEachRegion } from '@jbrowse/plugin-linear-genome-view'
 
 import type { MultiRowRegionData } from './rendering/multiRowRenderingBackendTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -20,28 +21,24 @@ interface FetchSelf extends IAnyStateTreeNode {
   setRpcData: (regionIndex: number, data: MultiRowRegionData) => void
 }
 
+// Delegates to the shared fetchEachRegion primitive (per-region stale guards +
+// fan-out); the only display-specific bits are the typed MultiRowGetFeatures
+// call closure and setRpcData commit.
 export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
   const { rpcManager } = getSession(self)
   const sessionId = getRpcSessionId(self)
-  return self.fetchRegions(needed, async (ctx: FetchContext) => {
-    const results = await Promise.all(
-      needed.map(async ({ region, displayedRegionIndex }) => ({
-        displayedRegionIndex,
-        result: await rpcManager.call(sessionId, 'MultiRowGetFeatures', {
-          sessionId,
-          adapterConfig: self.adapterConfig,
-          region,
-          partitionField: self.partitionField,
-          colorConfig: self.colorConfig,
-          stopToken: ctx.stopToken,
-        }),
-      })),
-    )
-    if (ctx.isStale()) {
-      return
-    }
-    for (const { displayedRegionIndex, result } of results) {
-      self.setRpcData(displayedRegionIndex, result)
-    }
+  return fetchEachRegion(self, needed, {
+    call: (region, ctx) =>
+      rpcManager.call(sessionId, 'MultiRowGetFeatures', {
+        sessionId,
+        adapterConfig: self.adapterConfig,
+        region,
+        partitionField: self.partitionField,
+        colorConfig: self.colorConfig,
+        stopToken: ctx.stopToken,
+      }),
+    onResult: (idx, result) => {
+      self.setRpcData(idx, result)
+    },
   })
 }

@@ -424,9 +424,12 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Solid color for the picker swatch. Falls back to the schema default
-        // when no override is set or when the override is a jexl expression
-        // (per-feature coloring) — jexl strings aren't valid CSS colors.
+        // Solid color for the picker swatch. Reflects the runtime override
+        // only, falling back to the default color constant when there's no
+        // override or the override is a jexl expression (per-feature coloring —
+        // jexl strings aren't valid CSS colors). The config `color` slot is
+        // intentionally not read here: it may itself be a jexl callback, and
+        // evaluating it without a feature would throw.
         get featureColor() {
           const override = self.getOverride<string>('color')
           return override !== undefined && !override.startsWith('jexl:')

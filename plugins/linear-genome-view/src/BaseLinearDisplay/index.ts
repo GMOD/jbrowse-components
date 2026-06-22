@@ -15,7 +15,10 @@ export {
   default as ConfigOverrideMixin,
   migrateOldSettingSnapshots,
 } from './models/ConfigOverrideMixin.ts'
-export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
+export {
+  default as TrackHeightMixin,
+  MIN_DISPLAY_HEIGHT,
+} from './models/TrackHeightMixin.tsx'
 export { default as FeatureDensityMixin } from '../shared/FeatureDensityMixin.tsx'
 export {
   type ByteEstimateConfig,
