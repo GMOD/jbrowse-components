@@ -159,7 +159,6 @@ function makePileupData(opts: {
     modCovPackedBuffer: new ArrayBuffer(0),
     sashimiX1: new Uint32Array(0),
     sashimiX2: new Uint32Array(0),
-    sashimiScores: new Float32Array(0),
     sashimiColorTypes: new Uint8Array(0),
     sashimiCounts: new Uint32Array(0),
     numInsertions: 0,

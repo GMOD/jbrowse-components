@@ -205,7 +205,6 @@ export interface PileupDataResult {
   // Sashimi arc data (splice junctions from skip gaps)
   sashimiX1: Uint32Array // absolute genomic bp (junction start)
   sashimiX2: Uint32Array // absolute genomic bp (junction end)
-  sashimiScores: Float32Array // per-arc line width = Math.log(count + 1)
   sashimiColorTypes: Uint8Array // 0=forward, 1=reverse
   sashimiCounts: Uint32Array // actual read counts per junction
 

@@ -17,7 +17,6 @@ function makeData(counts: number[]): PileupDataResult {
     sashimiX2,
     sashimiCounts: new Uint32Array(counts),
     sashimiColorTypes: new Uint8Array(n),
-    sashimiScores: new Float32Array(counts.map(c => Math.log(c + 1))),
   } as unknown as PileupDataResult
 }
 
@@ -61,7 +60,6 @@ test('wider junctions get taller arcs (span-scaled nesting)', () => {
     sashimiX2: new Uint32Array([150, 300, 1100]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
     sashimiColorTypes: new Uint8Array([0, 0, 0]),
-    sashimiScores: new Float32Array([2, 2, 2]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   // up-mode: a taller arc rises further, so its apex labelY is smaller.
@@ -75,7 +73,6 @@ test('suppresses the count label on sub-pixel-narrow junctions', () => {
     sashimiX2: new Uint32Array([105, 400]),
     sashimiCounts: new Uint32Array([5, 5]),
     sashimiColorTypes: new Uint8Array([0, 0]),
-    sashimiScores: new Float32Array([2, 2]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs(baseOpts(data, 0))
   expect(arcs[0]!.showLabel).toBe(false)
@@ -98,7 +95,6 @@ test('auto splits crossing junctions onto opposite sides', () => {
     sashimiX2: new Uint32Array([300, 400, 600]),
     sashimiCounts: new Uint32Array([5, 5, 5]),
     sashimiColorTypes: new Uint8Array([0, 0, 0]),
-    sashimiScores: new Float32Array([2, 2, 2]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
   const byStart = new Map(arcs.map(a => [a.start, a.side]))
@@ -112,7 +108,6 @@ test('auto puts the heavier of two crossing junctions on the upper band', () => 
     sashimiX2: new Uint32Array([300, 400]),
     sashimiCounts: new Uint32Array([5, 50]),
     sashimiColorTypes: new Uint8Array([0, 0]),
-    sashimiScores: new Float32Array([2, 4]),
   } as unknown as PileupDataResult
   const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
   const byStart = new Map(arcs.map(a => [a.start, a.side]))

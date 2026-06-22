@@ -1317,13 +1317,11 @@ export default function stateModelFactory(
           if (!self.showSashimiArcs || !self.showCoverage) {
             return []
           }
-          const mode = self.sashimiArcsMode
           const byGroup = self.rawDataByGroup
           const empty = new Map<number, PileupDataResult>()
           return this.sections.sections.map(sec => ({
             groupKey: sec.groupKey,
             rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
-            mode,
             // Content-space band tops; the overlay scrolls them for grouped, the
             // export reads them as-is (scrollTop 0).
             coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,

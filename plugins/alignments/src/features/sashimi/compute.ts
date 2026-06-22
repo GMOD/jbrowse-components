@@ -74,7 +74,6 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
   const n = arcs.length
   const sashimiX1 = new Uint32Array(n)
   const sashimiX2 = new Uint32Array(n)
-  const sashimiScores = new Float32Array(n)
   const sashimiColorTypes = new Uint8Array(n)
   const sashimiCounts = new Uint32Array(n)
 
@@ -82,7 +81,6 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
     const arc = arcs[i]!
     sashimiX1[i] = arc.start
     sashimiX2[i] = arc.end
-    sashimiScores[i] = Math.log(arc.count + 1)
     sashimiColorTypes[i] = arc.colorType
     sashimiCounts[i] = arc.count
   }
@@ -90,7 +88,6 @@ export function computeSashimiJunctions(gaps: CoverageGap[]) {
   return {
     sashimiX1,
     sashimiX2,
-    sashimiScores,
     sashimiColorTypes,
     sashimiCounts,
   }

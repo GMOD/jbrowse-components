@@ -79,11 +79,17 @@ interface RawArc {
   right: number
   spanPx: number
   count: number
-  score: number
   strand: number
   start: number
   end: number
   refName: string
+}
+
+// Stroke width scales with the log of supporting-read count (so a junction with
+// 10x the reads isn't drawn 10x as thick). Floored at 1px because a sub-pixel
+// stroke is both invisible and impossible to hover/click for its tooltip.
+function strokeWidthForCount(count: number) {
+  return Math.max(1, Math.log(count + 1))
 }
 
 // Two arcs "cross" when their spans interleave (a < c < b < d) — not nested and
@@ -139,13 +145,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
       continue
     }
     const { refName } = region
-    const {
-      sashimiX1,
-      sashimiX2,
-      sashimiCounts,
-      sashimiColorTypes,
-      sashimiScores,
-    } = rpcData
+    const { sashimiX1, sashimiX2, sashimiCounts, sashimiColorTypes } = rpcData
     const numSashimiArcs = sashimiX1.length
 
     for (let i = 0; i < numSashimiArcs; i++) {
@@ -166,7 +166,6 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
         right,
         spanPx: Math.abs(right - left),
         count,
-        score: sashimiScores[i]!,
         strand: colorTypeToStrand(sashimiColorTypes[i]!),
         start: startBp,
         end: endBp,
@@ -205,7 +204,7 @@ export function computeSashimiArcs(opts: ComputeSashimiArcsOpts) {
     arcs.push({
       d: `M ${a.left} ${baseline} C ${a.left} ${ctrl}, ${a.right} ${ctrl}, ${a.right} ${baseline}`,
       stroke: getArcColor(a.strand),
-      strokeWidth: a.score,
+      strokeWidth: strokeWidthForCount(a.count),
       start: a.start,
       end: a.end,
       refName: a.refName,
