@@ -4,12 +4,12 @@ import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
 import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
+import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   buildReadIdToIndex,
   ensureRegion,
   sectionRegionKey,
   sectionRenderState,
-  shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import {
   ARC_LINE_PASS,
@@ -99,6 +99,7 @@ import {
 import * as flatQuadShader from '../shaders/slang/flatQuad.generated.ts'
 import * as readShader from '../shaders/slang/read.generated.ts'
 
+import type { PileupLayerId } from './pileupLayers.ts'
 import type {
   AlignmentsRenderingBackend,
   AlignmentsSources,
@@ -415,26 +416,23 @@ function computeBlockGeom(
   }
 }
 
-// Pileup draw passes in z-order (back to front). Each pass draws only when its
-// flag is set; the order here IS the on-screen layering, so it's the one place
-// to look when a layer paints over another. READ and CLIP are unconditional.
-function pileupPassPlan(
-  state: RenderState,
-): [pass: string, enabled: boolean][] {
-  return [
-    [PASS_CONN_LINE, state.linkedReads === 'normal'],
-    [PASS_LINKED_READ_LINE, state.showLinkedReadLines],
-    [PASS_READ, true],
-    [PASS_OVERLAP, shouldDrawOverlaps(state)],
-    [PASS_MOD, state.showModifications],
-    [PASS_PER_BASE_QUAL, state.showPerBaseQuality],
-    [PASS_GAP, state.showMismatches],
-    [PASS_MISMATCH, state.showMismatches],
-    [PASS_INSERTION, state.showMismatches],
-    [PASS_CLIP, true],
-    [PASS_SOFTCLIP_BASES, state.showSoftClipping],
-    [PASS_PER_BASE_LETTER, state.showPerBaseLetter],
-  ]
+// Each pileup layer's shader pass id. The z-order and visibility gating live in
+// the shared `PILEUP_LAYERS` list (also driving the Canvas2D renderer); this map
+// just resolves each layer to its GPU pass. Typed `Record<PileupLayerId, …>` so
+// a new layer can't be added without wiring its pass here.
+export const GPU_PILEUP_PASS: Record<PileupLayerId, string> = {
+  connLine: PASS_CONN_LINE,
+  linkedReadLine: PASS_LINKED_READ_LINE,
+  read: PASS_READ,
+  overlap: PASS_OVERLAP,
+  mod: PASS_MOD,
+  perBaseQual: PASS_PER_BASE_QUAL,
+  gap: PASS_GAP,
+  mismatch: PASS_MISMATCH,
+  insertion: PASS_INSERTION,
+  clip: PASS_CLIP,
+  softclipBases: PASS_SOFTCLIP_BASES,
+  perBaseLetter: PASS_PER_BASE_LETTER,
 }
 
 // Coverage-band passes in z-order; the band itself is gated by `showCoverage`
@@ -443,7 +441,7 @@ function pileupPassPlan(
 // 500ms-debounced and `coverageMaxDepth` is undefined until then) — matching the
 // Canvas2D `domainMax !== undefined` gate. The fixed-size indicator triangles
 // are depth-independent but gated on the user's `showInterbaseIndicators`.
-function coveragePassPlan(
+export function coveragePassPlan(
   state: RenderState,
 ): [pass: string, enabled: boolean][] {
   const hasDomain = state.coverageMaxDepth !== undefined
@@ -756,9 +754,9 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     const drewPileup = pileup.height > 0
     if (drewPileup) {
       this.hal.setScissor(geom.vpX, pileup.top, geom.vpW, pileup.height)
-      for (const [pass, enabled] of pileupPassPlan(state)) {
-        if (enabled) {
-          this.hal.drawPass(pass, regionKey)
+      for (const layer of PILEUP_LAYERS) {
+        if (layer.enabled(state)) {
+          this.hal.drawPass(GPU_PILEUP_PASS[layer.id], regionKey)
         }
       }
       this.renderFeatureOverlays(block, sectionState, frame, geom, pileup, bufH)

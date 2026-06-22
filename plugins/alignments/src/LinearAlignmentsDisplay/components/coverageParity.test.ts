@@ -10,7 +10,9 @@ import { MockHal } from '@jbrowse/render-core/hal'
 import { Canvas2DAlignmentsRenderer } from '../renderers/Canvas2DAlignmentsRenderer.ts'
 import {
   ALIGNMENTS_PASSES,
+  GPU_PILEUP_PASS,
   GpuAlignmentsRenderer,
+  coveragePassPlan,
 } from '../renderers/GpuAlignmentsRenderer.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -205,6 +207,31 @@ function recordingCtx() {
     } as unknown as CanvasRenderingContext2D,
   }
 }
+
+// `GPU_PILEUP_PASS` and `coveragePassPlan` resolve layer ids to `PASS_*` strings
+// that `drawPass` looks up in the HAL, which is seeded from `ALIGNMENTS_PASSES`.
+// Nothing in the type system links the two, so a pass referenced but not
+// registered fails at runtime (blank/crashing pass), not compile. Lock the link.
+describe('every drawn pass is registered in ALIGNMENTS_PASSES', () => {
+  const registered = new Set(ALIGNMENTS_PASSES.map(p => p.id))
+
+  it('all pileup-layer passes are registered', () => {
+    for (const pass of Object.values(GPU_PILEUP_PASS)) {
+      expect(registered.has(pass)).toBe(true)
+    }
+  })
+
+  it('all coverage-band passes are registered', () => {
+    // A state that enables every coverage pass so the plan emits all of them.
+    const state = {
+      coverageMaxDepth: 50,
+      showInterbaseIndicators: true,
+    } as unknown as RenderState
+    for (const [pass] of coveragePassPlan(state)) {
+      expect(registered.has(pass)).toBe(true)
+    }
+  })
+})
 
 describe('coverage packing parity between GPU and Canvas2D', () => {
   it('both backends normalize coverage depth identically', () => {

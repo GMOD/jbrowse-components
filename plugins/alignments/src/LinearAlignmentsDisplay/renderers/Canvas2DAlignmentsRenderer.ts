@@ -3,6 +3,7 @@ import {
   prepareCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { PILEUP_LAYERS } from './pileupLayers.ts'
 import {
   type AlignmentsRenderingBackend,
   type AlignmentsSources,
@@ -15,7 +16,6 @@ import {
   pileupRowY,
   sectionRegionKey,
   sectionRenderState,
-  shouldDrawOverlaps,
 } from './rendererTypes.ts'
 import { drawArcs } from '../../features/arcs/drawCanvas.ts'
 import { emptyArcsUploadData } from '../../features/arcs/types.ts'
@@ -49,6 +49,7 @@ import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
 import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
 import { getChainBounds } from '../components/chainOverlayUtils.ts'
 
+import type { PileupLayerId } from './pileupLayers.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { ArcsUploadData } from '../../features/arcs/types.ts'
 import type { ConnectingLinesUploadData } from '../../features/connectingLines/types.ts'
@@ -282,6 +283,38 @@ export class Canvas2DAlignmentsRenderer implements AlignmentsRenderingBackend {
   }
 }
 
+type PileupDrawFn = (
+  ctx: Ctx2D,
+  region: Canvas2DRegionData,
+  block: DrawBlock,
+  bpLength: number,
+  fullBlockWidth: number,
+  state: RenderState,
+) => void
+
+// Each pileup layer's Canvas2D draw function. The z-order and gating live in the
+// shared `PILEUP_LAYERS` list (also driving the GPU renderer); this map resolves
+// each layer to its draw call. Typed `Record<PileupLayerId, …>` so a layer can't
+// be added to the shared list without wiring its draw here. The GPU `clip` pass
+// covers both soft- and hard-clip bars, so the canvas `clip` entry draws both.
+const CANVAS_PILEUP_DRAW: Record<PileupLayerId, PileupDrawFn> = {
+  connLine: drawConnectingLines,
+  linkedReadLine: drawLinkedReadLines,
+  read: drawReads,
+  overlap: drawOverlaps,
+  mod: drawModifications,
+  perBaseQual: drawPerBaseQuality,
+  gap: drawGaps,
+  mismatch: drawMismatches,
+  insertion: drawInsertions,
+  clip: (ctx, region, block, bpLength, fullBlockWidth, state) => {
+    drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, state)
+    drawHardclips(ctx, region, block, bpLength, fullBlockWidth, state)
+  },
+  softclipBases: drawSoftclipBases,
+  perBaseLetter: drawPerBaseLetter,
+}
+
 /**
  * Pure draw entry point. Takes any 2D-canvas-like context (real
  * CanvasRenderingContext2D or SvgCanvas) plus a prepared regions map and
@@ -345,56 +378,20 @@ export function drawAlignmentBlocks(
       ctx.rect(scissorX, sec.pileupClipTop, scissorW, sec.pileupClipHeight)
       ctx.clip()
 
-      if (state.linkedReads === 'normal') {
-        drawConnectingLines(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
-      }
-      if (state.showLinkedReadLines) {
-        drawLinkedReadLines(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
-      }
-
-      drawReads(ctx, region, block, bpLength, fullBlockWidth, sectionState)
-
-      if (shouldDrawOverlaps(state)) {
-        drawOverlaps(ctx, region, block, bpLength, fullBlockWidth, sectionState)
-      }
-
-      if (state.showModifications) {
-        drawModifications(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
-      }
-
-      if (state.showPerBaseQuality) {
-        drawPerBaseQuality(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
-      }
-
-      if (state.showMismatches) {
-        drawGaps(ctx, region, block, bpLength, fullBlockWidth, sectionState)
-        drawMismatches(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          sectionState,
-        )
-        drawInsertions(
-          ctx,
-          region,
-          block,
-          bpLength,
-          fullBlockWidth,
-          sectionState,
-        )
-      }
-
-      drawSoftclips(ctx, region, block, bpLength, fullBlockWidth, sectionState)
-      drawHardclips(ctx, region, block, bpLength, fullBlockWidth, sectionState)
-
-      if (state.showSoftClipping) {
-        drawSoftclipBases(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
-      }
-
-      if (state.showPerBaseLetter) {
-        drawPerBaseLetter(ctx, region, block, bpLength, fullBlockWidth, sectionState) // prettier-ignore
+      // Pileup layers in z-order, gated and ordered by the shared PILEUP_LAYERS
+      // list (the GPU renderer iterates the same list). Gating reads the
+      // display-wide `state`; the draw fns take the per-section `sectionState`.
+      for (const layer of PILEUP_LAYERS) {
+        if (layer.enabled(state)) {
+          CANVAS_PILEUP_DRAW[layer.id](
+            ctx,
+            region,
+            block,
+            bpLength,
+            fullBlockWidth,
+            sectionState,
+          )
+        }
       }
 
       drawSelectionOverlays(ctx, region, block, sectionState)
