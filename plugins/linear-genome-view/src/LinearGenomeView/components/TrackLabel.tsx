@@ -5,7 +5,7 @@ import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
 import ArrowRightIcon from '@mui/icons-material/ArrowRight'
 import CloseIcon from '@mui/icons-material/Close'
-import { IconButton, Paper, Typography, alpha } from '@mui/material'
+import { IconButton, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackLabelDragHandle from './TrackLabelDragHandle.tsx'
@@ -18,10 +18,7 @@ const useStyles = makeStyles()(theme => ({
   root: {
     // above breakpoint split view
     zIndex: 200,
-    background: alpha(theme.palette.background.paper, 0.8),
-    '&:hover': {
-      background: theme.palette.background.paper,
-    },
+    background: theme.palette.background.paper,
   },
   trackName: {
     margin: '0 auto',
