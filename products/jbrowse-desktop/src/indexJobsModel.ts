@@ -264,7 +264,6 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
             indexType,
             outLocation,
             stopToken,
-            sessionId: 'indexTracksSessionId',
             statusCallback: (message: string) => {
               this.reportStatus(message)
             },
