@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
-import { radioItems } from './menuHelpers.ts'
+import { radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
@@ -347,14 +347,12 @@ export function getColorByMenuItem(
 
   const arcColorItem: MenuItem[] = arcColor
     ? [
-        {
-          label: 'Arc color',
-          subMenu: radioItems(
-            arcColorOptions,
-            arcColor.current,
-            arcColor.setColor,
-          ),
-        },
+        radioModeMenuItem(
+          'Arc color',
+          arcColorOptions,
+          arcColor.current,
+          arcColor.setColor,
+        ),
       ]
     : []
 

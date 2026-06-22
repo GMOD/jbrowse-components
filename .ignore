@@ -34,3 +34,5 @@ packages/core/src/pluggableElementTypes/models/saveTrackFileTypes/genbank.test.t
 website/static/pagefind/
 packages/core/src/util/geneticCodes.mito.test.ts
 *.nh
+products/jbrowse-react-linear-genome-view/examples-site/public/panukbPhenotypes.json
+peptidePositioning.ts

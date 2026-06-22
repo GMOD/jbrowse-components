@@ -1,10 +1,4 @@
-import {
-  getArcDirectionMenuItem,
-  getReadConnectionsMenuItem,
-  getSashimiDirectionMenuItem,
-} from './readConnections.ts'
-
-import type { SashimiArcsMode } from '../constants.ts'
+import { getReadConnectionsMenuItem } from './readConnections.ts'
 
 function makeModel() {
   return {
@@ -16,38 +10,48 @@ function makeModel() {
     setReadConnections(mode: 'off' | 'arc' | 'samplot') {
       this.readConnections = mode
     },
+    readConnectionsDown: false,
+    setReadConnectionsDown(v: boolean) {
+      this.readConnectionsDown = v
+    },
+    drawLongRange: true,
+    setDrawLongRange(v: boolean) {
+      this.drawLongRange = v
+    },
+    drawInter: true,
+    setDrawInter(v: boolean) {
+      this.drawInter = v
+    },
+    showBezierConnections: false,
+    setShowBezierConnections(v: boolean) {
+      this.showBezierConnections = v
+    },
   }
+}
+
+function findByLabel(model: ReturnType<typeof makeModel>, label: string) {
+  return getReadConnectionsMenuItem(model).subMenu.find(
+    i => 'label' in i && i.label === label,
+  )
+}
+
+function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
+  const item = findByLabel(model, label)
+  if (!item || !('onClick' in item)) {
+    throw new Error(`no ${label} checkbox`)
+  }
+  return item
 }
 
 describe('read connections menu', () => {
   test('"View as pairs / link supplementary alignments" toggles linkedReads on/off', () => {
     const model = makeModel()
-    const linkItem = () => {
-      const item = getReadConnectionsMenuItem(model).subMenu.find(
-        i =>
-          'label' in i &&
-          i.label === 'View as pairs / link supplementary alignments',
-      )
-      if (!item || !('onClick' in item)) {
-        throw new Error('no link supplementary alignments item')
-      }
-      return item
-    }
-    linkItem().onClick()
+    const label = 'View as pairs / link supplementary alignments'
+    checkboxByLabel(model, label).onClick()
     expect(model.linkedReads).toBe('normal')
-    linkItem().onClick()
+    checkboxByLabel(model, label).onClick()
     expect(model.linkedReads).toBe('off')
   })
-
-  function checkboxByLabel(model: ReturnType<typeof makeModel>, label: string) {
-    const item = getReadConnectionsMenuItem(model).subMenu.find(
-      i => 'label' in i && i.label === label,
-    )
-    if (!item || !('onClick' in item)) {
-      throw new Error(`no ${label} checkbox`)
-    }
-    return item
-  }
 
   test('"Show read arcs" toggles arc mode on/off', () => {
     const model = makeModel()
@@ -84,66 +88,17 @@ describe('read connections menu', () => {
   })
 })
 
-describe('read-connection arc direction toggle', () => {
-  function makeDirectionModel() {
-    return {
-      readConnections: 'arc' as 'off' | 'arc' | 'samplot',
-      readConnectionsDown: false,
-      setReadConnectionsDown(v: boolean) {
-        this.readConnectionsDown = v
-      },
-    }
-  }
+describe('read-connection band options appear only with an active overlay', () => {
+  test('hidden when no overlay is active', () => {
+    const model = makeModel()
+    expect(findByLabel(model, 'Draw below coverage band')).toBeUndefined()
+    expect(findByLabel(model, 'Show off-screen mate connections')).toBeUndefined()
+  })
 
-  test('delegates to setReadConnectionsDown with the flipped value', () => {
-    const model = makeDirectionModel()
-    getArcDirectionMenuItem(model).onClick()
+  test('revealed and functional when arcs are on', () => {
+    const model = makeModel()
+    model.readConnections = 'arc'
+    checkboxByLabel(model, 'Draw below coverage band').onClick()
     expect(model.readConnectionsDown).toBe(true)
-  })
-
-  test('disabled when read connections are off (independent of sashimi)', () => {
-    const model = makeDirectionModel()
-    model.readConnections = 'off'
-    expect(getArcDirectionMenuItem(model).disabled).toBe(true)
-  })
-})
-
-describe('sashimi arc placement submenu', () => {
-  function makeSashimiModel() {
-    return {
-      showSashimiArcs: true,
-      sashimiArcsMode: 'auto' as SashimiArcsMode,
-      setSashimiArcsMode(mode: SashimiArcsMode) {
-        this.sashimiArcsMode = mode
-      },
-    }
-  }
-
-  function itemByLabel(
-    model: ReturnType<typeof makeSashimiModel>,
-    label: string,
-  ) {
-    const item = getSashimiDirectionMenuItem(model).subMenu.find(
-      i => 'label' in i && i.label === label,
-    )
-    if (!item || !('onClick' in item)) {
-      throw new Error(`no ${label} item`)
-    }
-    return item
-  }
-
-  test('checks the active mode and switches on click', () => {
-    const model = makeSashimiModel()
-    expect(itemByLabel(model, 'Auto (minimize overlap)').checked).toBe(true)
-    expect(itemByLabel(model, 'Below coverage').checked).toBe(false)
-    itemByLabel(model, 'Below coverage').onClick()
-    expect(model.sashimiArcsMode).toBe('down')
-    expect(itemByLabel(model, 'Below coverage').checked).toBe(true)
-  })
-
-  test('the whole submenu is disabled when sashimi arcs are hidden', () => {
-    const model = makeSashimiModel()
-    model.showSashimiArcs = false
-    expect(getSashimiDirectionMenuItem(model).disabled).toBe(true)
   })
 })

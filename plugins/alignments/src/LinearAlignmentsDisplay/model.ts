@@ -62,6 +62,7 @@ import {
   getGroupByMenuItem,
   getReadConnectionsMenuItem,
   getReadsMenuItem,
+  getSashimiMenuItem,
   getSortByMenuItem,
 } from './menus/index.ts'
 import { migrateAlignmentsSnapshot } from './migrateAlignmentsSnapshot.ts'
@@ -185,7 +186,6 @@ async function fetchFeatureDetails(
     sessionId,
     'GetPileupFeatureDetails',
     {
-      sessionId,
       adapterConfig: self.adapterConfig,
       sequenceAdapter,
       regions: [region],
@@ -2443,7 +2443,6 @@ export default function stateModelFactory(
             sessionId,
             'RenderAlignmentData',
             {
-              sessionId,
               adapterConfig,
               sequenceAdapter,
               regions: [region],
@@ -2536,10 +2535,13 @@ export default function stateModelFactory(
             getSortByMenuItem(self),
             getFiltersMenuItem(self),
             getGroupByMenuItem(self),
-            getReadsMenuItem(self, { showPairFilters: self.isChainMode }),
+            getReadsMenuItem(self),
             getFeatureHeightMenuItem(self),
             getCoverageMenuItem(self),
-            getReadConnectionsMenuItem(self),
+            getReadConnectionsMenuItem(self, {
+              showPairFilters: self.isChainMode,
+            }),
+            getSashimiMenuItem(self),
           ] satisfies MenuItem[]
         },
 
