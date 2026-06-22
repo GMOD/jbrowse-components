@@ -3,7 +3,7 @@ import VcfParser from '@gmod/vcf'
 import VcfFeature from './index.ts'
 import {
   getMinimalDesc,
-  getSOAndDescFromAltDefs,
+  getSOTermAndDescription,
   makeSimpleAltString,
 } from './util.ts'
 
@@ -166,49 +166,21 @@ test('null ALT', () => {
   expect(f.toJSON()).toMatchSnapshot()
 })
 
-test('getSOAndDescFromAltDefs returns correct SO term for symbolic alleles', () => {
+test('getSOTermAndDescription returns correct SO term for symbolic alleles', () => {
   const parser = createParser()
+  const soTerm = (alt: string) =>
+    getSOTermAndDescription('N', [alt], parser)[0]
 
-  expect(getSOAndDescFromAltDefs('<DEL>', parser)).toEqual([
-    'deletion',
-    '<DEL>',
-  ])
-  expect(getSOAndDescFromAltDefs('<INS>', parser)).toEqual([
-    'insertion',
-    '<INS>',
-  ])
-  expect(getSOAndDescFromAltDefs('<DUP>', parser)).toEqual([
-    'duplication',
-    '<DUP>',
-  ])
-  expect(getSOAndDescFromAltDefs('<INV>', parser)).toEqual([
-    'inversion',
-    '<INV>',
-  ])
-  expect(getSOAndDescFromAltDefs('<CNV>', parser)).toEqual([
-    'copy_number_variation',
-    '<CNV>',
-  ])
-  expect(getSOAndDescFromAltDefs('<TRA>', parser)).toEqual([
-    'translocation',
-    '<TRA>',
-  ])
-  expect(getSOAndDescFromAltDefs('<DUP:TANDEM>', parser)).toEqual([
-    'tandem_duplication',
-    '<DUP:TANDEM>',
-  ])
-  expect(getSOAndDescFromAltDefs('<INS:ME>', parser)).toEqual([
-    'insertion',
-    '<INS:ME>',
-  ])
-  expect(getSOAndDescFromAltDefs('<UNKNOWN>', parser)).toEqual([
-    'variant',
-    '<UNKNOWN>',
-  ])
-  expect(getSOAndDescFromAltDefs('<UNKNOWN:FOO>', parser)).toEqual([
-    'variant',
-    '<UNKNOWN:FOO>',
-  ])
+  expect(soTerm('<DEL>')).toBe('deletion')
+  expect(soTerm('<INS>')).toBe('insertion')
+  expect(soTerm('<DUP>')).toBe('duplication')
+  expect(soTerm('<INV>')).toBe('inversion')
+  expect(soTerm('<CNV>')).toBe('copy_number_variation')
+  expect(soTerm('<TRA>')).toBe('translocation')
+  expect(soTerm('<DUP:TANDEM>')).toBe('tandem_duplication')
+  expect(soTerm('<INS:ME>')).toBe('insertion')
+  expect(soTerm('<UNKNOWN>')).toBe('variant')
+  expect(soTerm('<UNKNOWN:FOO>')).toBe('variant')
 })
 
 test('getMinimalDesc - SNV returns just alt', () => {

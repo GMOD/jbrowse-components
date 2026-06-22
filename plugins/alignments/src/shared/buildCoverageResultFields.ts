@@ -16,7 +16,7 @@ export function buildCoverageResultFields(
     modTooltipData,
   } = pipeline
 
-  // Empty TypedArrays must be allocated per-call: collectResultTransferables
+  // Empty TypedArrays must be allocated per-call: collectGroupedTransferables
   // adds their underlying ArrayBuffer to the worker's transfer list, which
   // detaches it. Sharing a module-level singleton causes DataCloneError on
   // the second RPC reply.

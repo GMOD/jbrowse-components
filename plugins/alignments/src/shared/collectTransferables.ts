@@ -1,18 +1,10 @@
-/**
- * Walks the worker result object and collects every ArrayBuffer plus the
- * underlying buffer of every TypedArray field. The Set dedupes in case any
- * fields share an underlying buffer (e.g. via subarray()).
- *
- * Making transferables derived rather than maintained closes the entire class
- * of "added a TypedArray field, forgot to transfer it" bugs that the
- * pileup/chain executors are otherwise prone to.
- */
-export function collectResultTransferables(result: object) {
-  const buffers = new Set<ArrayBuffer>()
-  addTransferables(buffers, result)
-  return [...buffers]
-}
-
+// Adds every ArrayBuffer plus the underlying buffer of every TypedArray field
+// of `result` to `buffers`. The Set dedupes in case any fields share an
+// underlying buffer (e.g. via subarray()).
+//
+// Making transferables derived rather than maintained closes the entire class
+// of "added a TypedArray field, forgot to transfer it" bugs that the
+// pileup/chain executors are otherwise prone to.
 function addTransferables(buffers: Set<ArrayBuffer>, result: object) {
   for (const value of Object.values(result)) {
     if (value instanceof ArrayBuffer) {

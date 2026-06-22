@@ -111,18 +111,6 @@ function findSOTerm(alt: string, parser: VCF): string | undefined {
     : undefined
 }
 
-export function getSOAndDescFromAltDefs(
-  alt: string,
-  parser: VCF,
-): [] | [string, string] {
-  if (!alt.startsWith('<')) {
-    return []
-  }
-
-  const soTerm = findSOTerm(alt, parser)
-  return [soTerm ?? 'variant', alt]
-}
-
 export function getMinimalDesc(ref: string, alt: string) {
   if (isSymbolic(alt) || (ref.length === 1 && alt.length === 1)) {
     return alt
