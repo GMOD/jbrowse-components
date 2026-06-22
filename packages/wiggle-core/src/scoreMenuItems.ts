@@ -78,7 +78,7 @@ export function makeAutoscaleTypeSubMenu(
 
 export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
   return {
-    label: 'Set min/max score',
+    label: 'Set min/max score...',
     onClick: () => {
       getSession(self).queueDialog(handleClose => [
         SetMinMaxDialog,
@@ -93,7 +93,7 @@ export function makeCrossHatchItem(self: {
   toggleCrossHatches: () => void
 }): MenuItem {
   return {
-    label: 'Draw cross hatches',
+    label: 'Show cross hatches',
     type: 'checkbox' as const,
     checked: self.displayCrossHatches,
     onClick: () => {

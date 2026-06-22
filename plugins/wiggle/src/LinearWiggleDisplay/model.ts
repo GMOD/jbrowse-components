@@ -308,9 +308,8 @@ export default function stateModelFactory(
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
-          makeCrossHatchItem(self),
           {
-            label: 'Color',
+            label: 'Edit color...',
             icon: PaletteIcon,
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
@@ -322,6 +321,7 @@ export default function stateModelFactory(
               ])
             },
           },
+          makeCrossHatchItem(self),
         ]
       },
     }))

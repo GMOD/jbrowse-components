@@ -27,6 +27,7 @@ import {
   makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
+import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
@@ -363,20 +364,9 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           {
-            label: 'Show...',
+            label: 'Show',
             icon: VisibilityIcon,
             subMenu: [
-              {
-                label: `Show tree${!self.clusterTree ? ' (run clustering first)' : ''}`,
-                type: 'checkbox',
-                checked: self.showTree,
-                disabled: !self.clusterTree,
-                disabledHelpText: 'Run clustering first',
-                onClick: () => {
-                  self.setShowTree(!self.showTree)
-                },
-              },
-              treeBranchLengthMenuItem(self),
               {
                 label: 'Show row separators',
                 type: 'checkbox',
@@ -385,6 +375,43 @@ export default function stateModelFactory(
                   self.setShowRowSeparators(!self.showRowSeparators)
                 },
               },
+              makeCrossHatchItem(self),
+            ],
+          },
+          makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
+          {
+            label: 'Clustering',
+            icon: AccountTreeIcon,
+            subMenu: [
+              {
+                label: 'Cluster rows by score...',
+                disabled: !self.renderingType.startsWith('multirow'),
+                disabledHelpText: 'Only available for multi-row rendering types',
+                onClick: () => {
+                  getSession(self).queueDialog(handleClose => [
+                    WiggleClusterDialog,
+                    {
+                      model: self,
+                      handleClose,
+                    },
+                  ])
+                },
+              },
+              {
+                label: 'Show tree',
+                type: 'checkbox',
+                checked: self.showTree,
+                disabled: !self.clusterTree,
+                disabledHelpText: 'Run clustering first',
+                onClick: () => {
+                  self.setShowTree(!self.showTree)
+                },
+              },
+              // Only meaningful with a visible tree that carries merge heights;
+              // hidden otherwise rather than shown disabled.
+              ...(self.showTree && self.treeHasBranchLengths
+                ? [treeBranchLengthMenuItem(self)]
+                : []),
               ...(self.subtreeFilter?.length
                 ? [
                     {
@@ -401,21 +428,6 @@ export default function stateModelFactory(
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
-          makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
-          {
-            label: 'Cluster rows by score',
-            disabled: !self.renderingType.startsWith('multirow'),
-            disabledHelpText: 'Only available for multi-row rendering types',
-            onClick: () => {
-              getSession(self).queueDialog(handleClose => [
-                WiggleClusterDialog,
-                {
-                  model: self,
-                  handleClose,
-                },
-              ])
-            },
-          },
           {
             label: self.sourcesVolatile.length
               ? 'Edit colors/arrangement...'
@@ -432,7 +444,6 @@ export default function stateModelFactory(
               ])
             },
           },
-          makeCrossHatchItem(self),
         ]
       },
     }))

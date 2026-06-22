@@ -53,7 +53,7 @@ export default function CreateMultiWiggleExtensionF(pm: PluginManager) {
         ...(isSessionWithAddTracks(session)
           ? [
               {
-                label: 'Create multi-wiggle track',
+                label: 'Create multi-wiggle track...',
                 onClick: (model: HierarchicalTrackSelectorModel) => {
                   getSession(model).queueDialog(handleClose => [
                     ConfirmDialog,
