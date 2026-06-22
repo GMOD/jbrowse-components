@@ -24,6 +24,7 @@
     "@jbrowse/plugin-arc": "file:./packed/jbrowse-plugin-arc.tgz",
     "@jbrowse/plugin-authentication": "file:./packed/jbrowse-plugin-authentication.tgz",
     "@jbrowse/plugin-bed": "file:./packed/jbrowse-plugin-bed.tgz",
+    "@jbrowse/plugin-canvas": "file:./packed/jbrowse-plugin-canvas.tgz",
     "@jbrowse/plugin-circular-view": "file:./packed/jbrowse-plugin-circular-view.tgz",
     "@jbrowse/plugin-config": "file:./packed/jbrowse-plugin-config.tgz",
     "@jbrowse/plugin-data-management": "file:./packed/jbrowse-plugin-data-management.tgz",
