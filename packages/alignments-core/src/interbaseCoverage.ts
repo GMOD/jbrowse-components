@@ -124,11 +124,12 @@ export function computeInterbaseCoverage(
       depthIdx >= 0 && depthIdx < coverageDepths.length
         ? (coverageDepths[depthIdx] ?? 0)
         : 0
+    // localDepth <= maxDepth always (it's drawn from coverageDepths, maxDepth
+    // is their max), so a separate maxDepth >= MIN check would be redundant.
     const localDepth = Math.max(leftDepth, rightDepth)
     if (
-      maxDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
-      total > localDepth * INDICATOR_THRESHOLD &&
-      localDepth >= MINIMUM_INDICATOR_READ_DEPTH
+      localDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
+      total > localDepth * INDICATOR_THRESHOLD
     ) {
       let dominantType = 1
       let dominantCount = entry.insertion
