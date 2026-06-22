@@ -1,7 +1,10 @@
 import {
   getArcDirectionMenuItem,
   getReadConnectionsMenuItem,
+  getSashimiDirectionMenuItem,
 } from './readConnections.ts'
+
+import type { SashimiArcsMode } from '../constants.ts'
 
 function makeModel() {
   return {
@@ -81,7 +84,7 @@ describe('read connections menu', () => {
   })
 })
 
-describe('shared arc direction toggle', () => {
+describe('read-connection arc direction toggle', () => {
   function makeDirectionModel() {
     return {
       readConnections: 'arc' as 'off' | 'arc' | 'samplot',
@@ -89,7 +92,6 @@ describe('shared arc direction toggle', () => {
       setReadConnectionsDown(v: boolean) {
         this.readConnectionsDown = v
       },
-      showSashimiArcs: true,
     }
   }
 
@@ -99,10 +101,49 @@ describe('shared arc direction toggle', () => {
     expect(model.readConnectionsDown).toBe(true)
   })
 
-  test('disabled when no arcs are on', () => {
+  test('disabled when read connections are off (independent of sashimi)', () => {
     const model = makeDirectionModel()
     model.readConnections = 'off'
-    model.showSashimiArcs = false
     expect(getArcDirectionMenuItem(model).disabled).toBe(true)
+  })
+})
+
+describe('sashimi arc placement submenu', () => {
+  function makeSashimiModel() {
+    return {
+      showSashimiArcs: true,
+      sashimiArcsMode: 'auto' as SashimiArcsMode,
+      setSashimiArcsMode(mode: SashimiArcsMode) {
+        this.sashimiArcsMode = mode
+      },
+    }
+  }
+
+  function itemByLabel(
+    model: ReturnType<typeof makeSashimiModel>,
+    label: string,
+  ) {
+    const item = getSashimiDirectionMenuItem(model).subMenu.find(
+      i => 'label' in i && i.label === label,
+    )
+    if (!item || !('onClick' in item)) {
+      throw new Error(`no ${label} item`)
+    }
+    return item
+  }
+
+  test('checks the active mode and switches on click', () => {
+    const model = makeSashimiModel()
+    expect(itemByLabel(model, 'Auto (minimize overlap)').checked).toBe(true)
+    expect(itemByLabel(model, 'Below coverage').checked).toBe(false)
+    itemByLabel(model, 'Below coverage').onClick()
+    expect(model.sashimiArcsMode).toBe('down')
+    expect(itemByLabel(model, 'Below coverage').checked).toBe(true)
+  })
+
+  test('every option is disabled when sashimi arcs are hidden', () => {
+    const model = makeSashimiModel()
+    model.showSashimiArcs = false
+    expect(itemByLabel(model, 'Above coverage').disabled).toBe(true)
   })
 })

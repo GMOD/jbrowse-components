@@ -14,7 +14,8 @@
  *   - linkedReads 'bezier' → linkedReads 'off' + showBezierConnections overlay
  *   - showArcs + pairedArcsDown booleans → pairedArcs enum
  *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
- *   - sashimiArcsDown dropped (direction is the shared readConnectionsDown)
+ *   - legacy sashimiArcsDown boolean dropped (sashimi placement is now its own
+ *     `sashimiArcsMode` enum, default 'auto'; old sessions adopt that default)
  *   - arcsHeight → readConnectionsHeight
  *   - Individual override properties → flat config keys
  *   - lineWidth / lineWidthSetting → readConnectionsLineWidth
@@ -188,8 +189,8 @@ function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
     showLinkedReadsAsBeziers,
     showArcs,
     pairedArcsDown,
-    // Direction is now the single shared `readConnectionsDown` band
-    // orientation, so the old per-feature sashimi direction is dropped.
+    // Sashimi placement is now its own `sashimiArcsMode` enum (default 'auto'),
+    // so the legacy boolean is dropped and old sessions adopt the default.
     // `showSashimiArcs` is already the current field name and flows through.
     sashimiArcsDown: _sashimiArcsDown,
     ...rest

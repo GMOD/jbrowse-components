@@ -2,7 +2,11 @@ import PolylineIcon from '@mui/icons-material/Polyline'
 
 import { checkboxItem } from './menuHelpers.ts'
 
-import type { LinkedReadsMode, ReadConnectionsMode } from '../constants.ts'
+import type {
+  LinkedReadsMode,
+  ReadConnectionsMode,
+  SashimiArcsMode,
+} from '../constants.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
 export const PAIR_OVERLAY_OPTIONS: {
@@ -59,17 +63,44 @@ interface ArcDirectionModel {
   readConnections: ReadConnectionsMode
   readConnectionsDown: boolean
   setReadConnectionsDown: (down: boolean) => void
-  showSashimiArcs: boolean
 }
 
 export function getArcDirectionMenuItem(model: ArcDirectionModel) {
-  const anyArcsOn = model.readConnections !== 'off' || model.showSashimiArcs
   return checkboxItem(
-    'Draw arcs below coverage band',
+    'Draw read-connection arcs below coverage band',
     model.readConnectionsDown,
     () => {
       model.setReadConnectionsDown(!model.readConnectionsDown)
     },
-    { disabled: !anyArcsOn },
+    { disabled: model.readConnections === 'off' },
   )
+}
+
+const SASHIMI_MODE_OPTIONS: { value: SashimiArcsMode; label: string }[] = [
+  { value: 'auto', label: 'Auto (minimize overlap)' },
+  { value: 'up', label: 'Above coverage' },
+  { value: 'down', label: 'Below coverage' },
+]
+
+interface SashimiDirectionModel {
+  showSashimiArcs: boolean
+  sashimiArcsMode: SashimiArcsMode
+  setSashimiArcsMode: (mode: SashimiArcsMode) => void
+}
+
+export function getSashimiDirectionMenuItem(model: SashimiDirectionModel) {
+  return {
+    label: 'Sashimi arc placement',
+    type: 'subMenu' as const,
+    subMenu: SASHIMI_MODE_OPTIONS.map(o =>
+      checkboxItem(
+        o.label,
+        model.sashimiArcsMode === o.value,
+        () => {
+          model.setSashimiArcsMode(o.value)
+        },
+        { disabled: !model.showSashimiArcs },
+      ),
+    ) satisfies MenuItem[],
+  }
 }

@@ -75,7 +75,11 @@ import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadColorCategory } from './colorUtils.ts'
 import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
-import type { LinkedReadsMode, ReadConnectionsMode } from './constants.ts'
+import type {
+  LinkedReadsMode,
+  ReadConnectionsMode,
+  SashimiArcsMode,
+} from './constants.ts'
 import type { CompactnessLevel } from './menus/featureSize.ts'
 import type { ColorPalette } from './renderers/AlignmentsRenderer.ts'
 import type { SectionsLayout } from './sectionLayout.ts'
@@ -427,10 +431,21 @@ export default function stateModelFactory(
           /**
            * #property
            */
-          // Direction is the shared below-coverage band orientation
-          // (`readConnectionsDown`), so sashimi stores only its own
-          // visibility — one source of truth for direction, nothing to sync.
           showSashimiArcs: types.stripDefault(types.boolean, true),
+          /**
+           * #property
+           * sashimi junction-arc placement, decoupled from the paired-end arc
+           * direction: 'up' over coverage, 'down' in a reserved strip below it,
+           * 'auto' splits arcs both ways to minimize overlap
+           */
+          sashimiArcsMode: types.stripDefault(
+            types.enumeration<SashimiArcsMode>('SashimiArcsMode', [
+              'up',
+              'down',
+              'auto',
+            ]),
+            'auto',
+          ),
           /**
            * #property
            * hide sashimi junction arcs with fewer than this many supporting
@@ -1146,10 +1161,7 @@ export default function stateModelFactory(
          * that hides every arc also reclaims the empty band.
          */
         get hasSashimiArcs() {
-          const { minSashimiScore } = self
-          return someGroupData(self.rpcDataMap, d =>
-            d.sashimiCounts.some(c => c >= minSashimiScore),
-          )
+          return anyGroupHasSashimi(self.rpcDataMap, self.minSashimiScore)
         },
 
         /**
@@ -1161,32 +1173,17 @@ export default function stateModelFactory(
          * `bottom` is where the pileup begins (== coverageDisplayHeight).
          */
         get belowCoverageBands() {
-          const arcsOn = self.readConnections !== 'off'
-          const coverageBand = self.showCoverage ? self.coverageHeight : 0
-          // Arcs reserve their own band whenever they aren't overlaying the
-          // coverage histogram: down mode always, and up mode when coverage is
-          // hidden (nothing to overlay). The pileup then starts below them.
-          const hasArcsBand =
-            arcsOn && (self.readConnectionsDown || !self.showCoverage)
-          const hasSashimiBand =
-            self.showSashimiArcs &&
-            self.readConnectionsDown &&
-            self.showCoverage &&
-            this.hasSashimiArcs
-          const stack = computeBandStack({
-            coverageHeight: coverageBand,
-            hasArcsBand,
-            arcsHeight: self.readConnectionsHeight,
-            hasSashimiBand,
-            sashimiHeight: self.sashimiArcsHeight,
+          return belowCoverageBandsGeometry({
+            showCoverage: self.showCoverage,
+            coverageHeight: self.coverageHeight,
+            readConnections: self.readConnections,
+            readConnectionsDown: self.readConnectionsDown,
+            readConnectionsHeight: self.readConnectionsHeight,
+            showSashimiArcs: self.showSashimiArcs,
+            sashimiArcsMode: self.sashimiArcsMode,
+            sashimiArcsHeight: self.sashimiArcsHeight,
+            hasSashimiArcs: this.hasSashimiArcs,
           })
-          return {
-            hasArcsBand,
-            hasSashimiBand,
-            arcsBandTop: stack.arcsBandTop,
-            sashimiBandTop: stack.sashimiBandTop,
-            bottom: stack.pileupTop,
-          }
         },
 
         /**
@@ -1262,28 +1259,29 @@ export default function stateModelFactory(
          * #getter
          * Per-section sashimi band placement, in stacking order. Each entry pairs
          * a group's raw data (sashimi counts live per-group) with the
-         * content-space top of its sashimi band: down mode uses the reserved
-         * sashimi band, up mode overlays the section's own coverage. The overlay
-         * and SVG export both map over this so their geometry can't drift;
-         * ungrouped is the single-section case (sticky band below sticky
-         * coverage, raw map == the only group). Empty when sashimi is off.
+         * content-space tops of *both* sub-bands: `coverageOverlayTop` for arcs
+         * drawn over the coverage histogram and `sashimiBandTop` for arcs in the
+         * reserved strip below it. In 'auto' both are used at once; 'up'/'down'
+         * use one. The overlay and SVG export both map over this so their
+         * geometry can't drift; ungrouped is the single-section case (sticky band
+         * below sticky coverage, raw map == the only group). Empty when sashimi
+         * is off.
          */
         get sashimiSections() {
           if (!self.showSashimiArcs || !self.showCoverage) {
             return []
           }
-          const down = self.readConnectionsDown
+          const mode = self.sashimiArcsMode
           const byGroup = self.rawDataByGroup
           const empty = new Map<number, PileupDataResult>()
           return this.sections.sections.map(sec => ({
             groupKey: sec.groupKey,
             rpcDataMap: byGroup.get(sec.groupKey) ?? empty,
-            // Content-space band top; the overlay scrolls it for grouped, the
-            // export reads it as-is (scrollTop 0).
-            top: down
-              ? sec.sashimiBandTop
-              : sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
-            down,
+            mode,
+            // Content-space band tops; the overlay scrolls them for grouped, the
+            // export reads them as-is (scrollTop 0).
+            coverageOverlayTop: sec.coverageTop + YSCALEBAR_LABEL_OFFSET,
+            sashimiBandTop: sec.sashimiBandTop,
           }))
         },
 
@@ -2086,6 +2084,13 @@ export default function stateModelFactory(
            */
           setMinSashimiScore(score: number) {
             self.minSashimiScore = score
+          },
+
+          /**
+           * #action
+           */
+          setSashimiArcsMode(mode: SashimiArcsMode) {
+            self.sashimiArcsMode = mode
           },
 
           /**

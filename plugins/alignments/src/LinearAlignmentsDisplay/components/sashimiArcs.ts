@@ -25,7 +25,7 @@ export function computeSashimiArcsFromModel(
     bpToScreenX: makeBpToScreenX(view),
     coverageHeight: model.coverageHeight,
     sashimiArcsHeight: model.sashimiArcsHeight,
-    sashimiArcsDown: model.readConnectionsDown,
+    mode: model.sashimiArcsMode,
     minSashimiScore: model.minSashimiScore,
   })
   // Sort by score so high-count arcs paint on top of low-count ones.

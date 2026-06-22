@@ -58,6 +58,12 @@ export type LinkedReadsMode = 'off' | 'normal'
 // Both color by arcColorByType (red/green/teal/navy by insert size + orientation).
 export type ReadConnectionsMode = 'off' | 'arc' | 'samplot'
 
+// Sashimi junction-arc placement, owned by sashimi alone (decoupled from the
+// paired-end `readConnectionsDown`): 'up' draws every arc over the coverage
+// band, 'down' in a reserved strip below it, 'auto' distributes each junction up
+// or down to minimize crossings. 'auto' is the default.
+export type SashimiArcsMode = 'up' | 'down' | 'auto'
+
 // Minimum frequency (0-255 scale) for a mismatch/small-insertion to intercept
 // a click/hover when bpPerPx > 1. At individual-base zoom (bpPerPx <= 1) clicks
 // are precise enough that all features are clickable regardless of frequency.

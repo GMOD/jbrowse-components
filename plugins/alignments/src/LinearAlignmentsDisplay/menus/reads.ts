@@ -1,9 +1,12 @@
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { checkboxItem } from './menuHelpers.ts'
-import { getArcDirectionMenuItem } from './readConnections.ts'
+import {
+  getArcDirectionMenuItem,
+  getSashimiDirectionMenuItem,
+} from './readConnections.ts'
 
-import type { ReadConnectionsMode } from '../constants.ts'
+import type { ReadConnectionsMode, SashimiArcsMode } from '../constants.ts'
 
 interface ReadsModel {
   showLegend: boolean
@@ -28,6 +31,8 @@ interface ReadsModel {
   setFlipStrandLongReadChains: (flag: boolean) => void
   showSashimiArcs: boolean
   setShowSashimiArcs: (show: boolean) => void
+  sashimiArcsMode: SashimiArcsMode
+  setSashimiArcsMode: (mode: SashimiArcsMode) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
   readConnections: ReadConnectionsMode
@@ -71,6 +76,7 @@ export function getReadsMenuItem(
       checkboxItem('Show sashimi arcs', model.showSashimiArcs, () => {
         model.setShowSashimiArcs(!model.showSashimiArcs)
       }),
+      getSashimiDirectionMenuItem(model),
       ...(showPairFilters
         ? [
             checkboxItem(

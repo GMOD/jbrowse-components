@@ -12,6 +12,10 @@ function makeArc(arc: Partial<SashimiArc>): SashimiArc {
     d: 'M...',
     stroke: 'red',
     strokeWidth: 2,
+    side: 'up',
+    labelX: 1500,
+    labelY: 10,
+    showLabel: true,
     ...arc,
   }
 }
