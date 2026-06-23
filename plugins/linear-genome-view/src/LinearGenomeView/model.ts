@@ -2190,6 +2190,10 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabelsOverride,
         colorByCDS,
         showTrackOutlines,
+        // scrollZoom is an input-handling preference personal to each user's
+        // machine, not a view appearance shared via sessions — destructure it
+        // out so it never lands in the snapshot. It stays localStorage-backed,
+        // so each browser keeps its own value.
         scrollZoom,
         ...rest
       } = snap
@@ -2208,7 +2212,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         ...(trackLabelsOverride ? { trackLabelsOverride } : {}),
         ...(colorByCDS ? { colorByCDS } : {}),
         ...(!showTrackOutlines ? { showTrackOutlines } : {}),
-        ...(scrollZoom ? { scrollZoom } : {}),
       }
     })
 }
