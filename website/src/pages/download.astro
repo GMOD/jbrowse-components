@@ -1,13 +1,15 @@
 ---
-import { baseUrl } from '../lib/base-url'
-import BaseLayout from '../layouts/BaseLayout.astro'
 import { Icon } from 'astro-icon/components'
+
+import { currentVersion } from '../config.ts'
+import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
 import btn from '../styles/button.module.css'
 import page from '../styles/page.module.css'
-import { currentVersion } from '../config.ts'
 const ghRelease = `https://github.com/GMOD/jbrowse-components/releases/tag/${currentVersion}`
 const desktopBase = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}`
 const webZip = `https://github.com/GMOD/jbrowse-components/releases/download/${currentVersion}/jbrowse-web-${currentVersion}.zip`
+const appExamples = 'https://jbrowse.org/storybook/app/'
 const lgvExamples = 'https://jbrowse.org/storybook/lgv/'
 const cgvExamples = 'https://jbrowse.org/storybook/cgv/'
 
@@ -16,76 +18,12 @@ const desktopDownloads = [
   { os: 'Windows', suffix: 'win.exe', icon: 'mdi:microsoft-windows' },
   { os: 'Linux', suffix: 'linux.AppImage', icon: 'mdi:linux' },
 ]
-
-const resourceCards = [
-  {
-    title: 'Static image generator',
-    icon: 'mdi:image-multiple',
-    description: 'Generate images of JBrowse 2 statically on the command line.',
-    links: [
-      {
-        label: '@jbrowse/img',
-        href: 'https://www.npmjs.com/package/@jbrowse/img',
-      },
-    ],
-  },
-  {
-    title: 'React Linear Genome View',
-    icon: 'mdi:react',
-    description: 'Linear genome browser React component, available on NPM.',
-    links: [
-      {
-        label: 'NPM',
-        href: 'https://www.npmjs.com/package/@jbrowse/react-linear-genome-view',
-      },
-      { label: 'Live examples', href: lgvExamples },
-    ],
-  },
-  {
-    title: 'React Circular Genome View',
-    icon: 'mdi:react',
-    description: 'Circular genome browser React component, available on NPM.',
-    links: [
-      {
-        label: 'NPM',
-        href: 'https://www.npmjs.com/package/@jbrowse/react-circular-genome-view',
-      },
-      { label: 'Live examples', href: cgvExamples },
-    ],
-  },
-  {
-    title: 'Jupyter Notebooks',
-    icon: 'mdi:notebook-outline',
-    description: 'An extension for using JBrowse inside Jupyter notebooks.',
-    links: [
-      {
-        label: 'Documentation',
-        href: 'https://gmod.github.io/jbrowse-jupyter/docs/html/index.html',
-      },
-      { label: 'Source code', href: 'https://github.com/GMOD/jbrowse-jupyter' },
-    ],
-  },
-  {
-    title: 'Dash — Python',
-    icon: 'mdi:language-python',
-    description: 'Use JBrowse as a Dash component in Python apps.',
-    links: [
-      {
-        label: 'GMOD/dash_jbrowse',
-        href: 'https://github.com/GMOD/dash_jbrowse',
-      },
-    ],
-  },
-  {
-    title: 'R/Shiny widget',
-    icon: 'mdi:language-r',
-    description: 'JBrowseR, an R package on CRAN.',
-    links: [{ label: 'JBrowseR', href: 'https://gmod.github.io/JBrowseR/' }],
-  },
-]
 ---
 
-<BaseLayout title="Download JBrowse 2">
+<BaseLayout
+  title="Download JBrowse 2"
+  description="Download JBrowse Desktop or JBrowse Web, install the JBrowse CLI tools, or embed JBrowse as a React component, Jupyter widget, Dash app, or R/Shiny widget."
+>
   <div class={page.content}>
     <h1>Download JBrowse 2</h1>
     <p>
@@ -152,36 +90,68 @@ const resourceCards = [
       <a href={`${baseUrl}/docs/quickstart_web/`}>quick-start guide</a>.
     </p>
 
-    <h2>More ways to use JBrowse</h2>
+    <h2>Static image generator</h2>
     <p>
-      Embed JBrowse in your own application, script, or notebook with one of
-      these integrations.
+      <a href={`${baseUrl}/docs/jbrowse-img/`}>@jbrowse/img</a> generates images of
+      JBrowse 2 statically on the command line. See the{' '}
+      <a href={`${baseUrl}/docs/jbrowse-img/`}>documentation</a> or the{' '}
+      <a href="https://www.npmjs.com/package/@jbrowse/img">NPM package</a>.
     </p>
-    <div class="resource-cards">
-      {
-        resourceCards.map(({ title, icon, description, links }) => (
-          <div class="resource-card">
-            <div class="resource-icon">
-              <Icon name={icon} width="28" height="28" />
-            </div>
-            <h3>{title}</h3>
-            <p>{description}</p>
-            <div class="resource-links">
-              {links.map(({ label, href }) => (
-                <a href={href}>{label}</a>
-              ))}
-            </div>
-          </div>
-        ))
-      }
-    </div>
-    <p class="caption">
+
+    <h2>Embedded components</h2>
+    <ul>
+      <li>
+        <a href="https://www.npmjs.com/package/@jbrowse/react-app2">
+          @jbrowse/react-app2
+        </a>{' '}
+        — full JBrowse 2 app React component on NPM (<a href={appExamples}
+          >live examples</a
+        >)
+      </li>
+      <li>
+        <a
+          href="https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2"
+        >
+          @jbrowse/react-linear-genome-view2
+        </a>{' '}
+        — linear genome browser React component on NPM (<a href={lgvExamples}
+          >live examples</a
+        >)
+      </li>
+      <li>
+        <a
+          href="https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2"
+        >
+          @jbrowse/react-circular-genome-view2
+        </a>{' '}
+        — circular genome browser React component on NPM (<a href={cgvExamples}
+          >live examples</a
+        >)
+      </li>
+    </ul>
+    <p>
       More info in the <a href={`${baseUrl}/docs/embedded_components/`}
         >embedded docs</a
-      >{' '}
-      for the React components, including examples with create-react-app, vite, next.js,
-      and vanillajs.
+      >, including examples with create-react-app, vite, next.js, and vanillajs.
     </p>
+
+    <h2>Other language bindings</h2>
+    <ul>
+      <li>
+        Python (Dash):{' '}
+        <a href="https://github.com/GMOD/dash_jbrowse">GMOD/dash_jbrowse</a>
+      </li>
+      <li>
+        Python (Jupyter):{' '}
+        <a href="https://gmod.github.io/jbrowse-jupyter/docs/html/index.html"
+          >Documentation</a
+        >, <a href="https://github.com/GMOD/jbrowse-jupyter">source code</a>
+      </li>
+      <li>
+        R/Shiny: <a href="https://gmod.github.io/JBrowseR/">JBrowseR</a>{' '}
+        — R package on CRAN
+      </li>
+    </ul>
   </div>
 </BaseLayout>
 
@@ -216,54 +186,6 @@ const resourceCards = [
   .caption {
     font-size: 0.85rem;
     color: var(--color-text-muted);
-  }
-  .resource-cards {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1.25rem;
-    margin: 1rem 0 1.5rem;
-  }
-  .resource-card {
-    flex: 1 1 220px;
-    min-width: 220px;
-    border: 1px solid var(--color-border);
-    border-radius: 8px;
-    padding: 1.25rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.5rem;
-    transition: box-shadow 0.15s;
-  }
-  .resource-card:hover {
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-  .resource-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 44px;
-    height: 44px;
-    border-radius: 8px;
-    background: color-mix(in srgb, var(--color-accent) 15%, white);
-    color: var(--color-accent-dark);
-  }
-  .resource-card h3 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-  }
-  .resource-card p {
-    margin: 0;
-    font-size: 0.88rem;
-    color: var(--color-text-muted);
-    flex: 1;
-  }
-  .resource-links {
-    display: flex;
-    gap: 0.75rem;
-    flex-wrap: wrap;
-    font-size: 0.85rem;
-    font-weight: 500;
   }
   pre {
     background: var(--color-surface);
