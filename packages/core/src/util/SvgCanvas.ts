@@ -39,6 +39,7 @@ function fontAttrs(font: string) {
   }
   return ` font-size="${Number.parseFloat(font) || 10}"`
 }
+let clipIdCounter = 0
 
 export class SvgCanvas {
   private parts: string[] = []
@@ -61,7 +62,6 @@ export class SvgCanvas {
   private sx = 1
   private sy = 1
   private rotation = 0
-  private clipIdCounter = 0
 
   private transformPoint(x: number, y: number): [number, number] {
     const sx = x * this.sx
@@ -386,7 +386,7 @@ export class SvgCanvas {
     if (!this.pathData) {
       return
     }
-    const id = `svgcanvas-clip-${this.clipIdCounter++}`
+    const id = `svgcanvas-clip-${clipIdCounter++}`
     this.parts.push(
       `<clipPath id="${id}"><path d="${this.pathData}"/></clipPath><g clip-path="url(#${id})">`,
     )

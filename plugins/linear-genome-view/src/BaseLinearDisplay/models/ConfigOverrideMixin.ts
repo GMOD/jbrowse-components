@@ -133,8 +133,21 @@ export default function ConfigOverrideMixin<
         // 'configuration'. Access it via plain-object cast to avoid propagating
         // MST internal symbol types ($stateTreeNodeType) into declaration files.
         const conf = (
-          self as unknown as { configuration: AnyConfigurationModel }
+          self as unknown as { configuration: AnyConfigurationModel | undefined }
         ).configuration
+        // Hiding a track tears down the display's `configuration` while sibling
+        // `observer` components are still mounted; MobX flushes their reactions
+        // synchronously inside the click handler, so config-backed getters
+        // (featureHeight, maxHeight, …) re-evaluate against the now-undefined
+        // config before React unmounts them. Returning undefined here is the
+        // single chokepoint that keeps every such getter from throwing during
+        // teardown — the value is discarded the same tick the component unmounts.
+        if (!conf) {
+          return undefined as ConfigurationSlotValue<
+            ConfigurationSchemaForModel<CONF>,
+            SLOT
+          >
+        }
         // Read the live config value rather than going through
         // readConfObject (which clones object/array values into a fresh
         // reference on every call). Object/array-typed slots (e.g.
