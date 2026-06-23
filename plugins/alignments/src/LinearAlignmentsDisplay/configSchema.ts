@@ -95,7 +95,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        */
       showSashimiLabels: {
         type: 'boolean',
-        defaultValue: true,
+        defaultValue: false,
         description: 'Draw the supporting-read count on each sashimi arc',
       },
       /**

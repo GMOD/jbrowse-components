@@ -449,7 +449,7 @@ export default function stateModelFactory(
               'down',
               'auto',
             ]),
-            'auto',
+            'up',
           ),
           /**
            * #property
