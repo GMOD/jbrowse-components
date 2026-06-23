@@ -20,9 +20,10 @@ Add the VCF to JBrowse via the CLI or the GUI. Once loaded:
 
 ## Enabling the matrix view
 
-Switch the track to the **Multi-sample variant display (matrix)** display. Each
-sample becomes a row, each variant a column, with black lines connecting columns
-back to their genomic positions.
+Switch the track to the
+[Multi-sample variant display (matrix)](/docs/user_guides/multivariant_track)
+display. Each sample becomes a row, each variant a column, with black lines
+connecting columns back to their genomic positions.
 
 <Figure caption="Multi-sample variant display (matrix). Each sample is a row and each variant is a column; black lines connect columns to their genome positions." src="/img/trio-matrix.png"/>
 

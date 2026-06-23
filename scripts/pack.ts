@@ -129,10 +129,12 @@ for (const dir of subDirs) {
     pkgJson.resolutions = {
       ...preserved,
       ...Object.fromEntries(
-        [...closure].sort().map(name => [
-          name,
-          `file:./packed/${packedTarballsByPackageName[name]}`,
-        ]),
+        [...closure]
+          .sort()
+          .map(name => [
+            name,
+            `file:./packed/${packedTarballsByPackageName[name]}`,
+          ]),
       ),
     }
     fs.writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`)

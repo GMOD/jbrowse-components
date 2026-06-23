@@ -5,7 +5,10 @@ title: JBrowse desktop quick start
 In this guide, we'll install JBrowse desktop, open a genome, add a track, and
 save a session — all from the GUI, with no command line or web server required.
 Unlike JBrowse web, desktop opens files straight off your local filesystem, so
-there's no `--load copy`, no hosting, and no CORS to worry about.
+there's no `--load copy`, no hosting, and no CORS to worry about. Want a hosted
+browser instead? See the [web quick start](/docs/quickstart_web). Embedding a
+genome view in your own web app? See
+[embedded components](/docs/embedded_components).
 
 ## Installing JBrowse desktop
 

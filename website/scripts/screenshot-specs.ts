@@ -526,6 +526,11 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 900,
     viewportHeight: 450,
     settleMs: 4000,
+    // soft-clip overhang renders dense per-base sequence letters, far more
+    // glyphs per pixel than a typical track-label spec, so sub-pixel
+    // glyph-positioning jitter (see DEFAULT_DIFF_THRESHOLD comment) adds up to
+    // ~1.5% here instead of ~0.2%
+    diffThreshold: 0.02,
   },
 
   // Realistic arc display on HG002 (reviewer asked for HG002 Illumina reads +
@@ -987,6 +992,9 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1100,
     viewportHeight: 620,
     settleMs: 4000,
+    // result frame renders dense per-base sequence letters in the soft-clip
+    // overhang (see alignments_soft_clipped's diffThreshold comment)
+    diffThreshold: 0.02,
     stages: [
       {
         actions: [

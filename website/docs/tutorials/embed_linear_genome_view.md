@@ -8,15 +8,12 @@ This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag — no build step or React project required. For the full JBrowse
 app, see the [web quickstart](/docs/quickstart_web) instead.
 
-:::tip Usage examples and API reference
+Note: The [LGV storybook](https://jbrowse.org/storybook/lgv/) is the most
+complete source of live, runnable usage examples for this component
 
-The [LGV examples site](https://jbrowse.org/storybook/lgv/) is the most complete
-source of live, runnable usage examples for this component — props, theming,
-programmatic control, plugins, and more. For an overview of all the embedded
-packages (app, linear, circular) and bundler setups, see the
+Note 2: If you want to embed other types of views (synteny, dotplot, circular,
+etc) or use other bundler setups, see the
 [Embedded components](/docs/embedded_components) page.
-
-:::
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
@@ -47,107 +44,6 @@ world!".
 The `-S` flag tells `serve` to resolve symlinks rather than return a 404, so
 data files you symlink into the folder will load.
 
-## Add JBrowse
-
-Replace `index.html` with the following — a complete working linear genome view:
-
-```html title="index.html"
-<!doctype html>
-<html>
-  <head>
-    <meta charset="UTF-8" />
-    <title>JBrowse Linear Genome View</title>
-
-    <script
-      src="https://unpkg.com/@jbrowse/react-linear-genome-view2@latest/dist/react-linear-genome-view.umd.production.min.js"
-      crossorigin
-    ></script>
-  </head>
-
-  <body>
-    <div id="jbrowse_linear_genome_view"></div>
-
-    <script>
-      const { React, createRoot, createViewState, JBrowseLinearGenomeView } =
-        JBrowseReactLinearGenomeView
-
-      const state = createViewState({
-        assembly: {
-          name: 'hg38',
-          sequence: {
-            type: 'ReferenceSequenceTrack',
-            trackId: 'GRCh38-ReferenceSequenceTrack',
-            adapter: {
-              type: 'BgzipFastaAdapter',
-              uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
-            },
-          },
-          refNameAliases: {
-            adapter: {
-              type: 'RefNameAliasAdapter',
-              uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
-            },
-          },
-          cytobands: {
-            adapter: {
-              type: 'CytobandAdapter',
-              uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
-            },
-          },
-        },
-        tracks: [
-          {
-            type: 'FeatureTrack',
-            trackId: 'ncbi_genes',
-            name: 'NCBI RefSeq Genes',
-            assemblyNames: ['hg38'],
-            adapter: {
-              type: 'Gff3TabixAdapter',
-              uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
-            },
-          },
-        ],
-        defaultSession: {
-          name: 'My session',
-          view: {
-            id: 'linearGenomeView',
-            type: 'LinearGenomeView',
-            init: {
-              assembly: 'hg38',
-              loc: '10:29,838,565..29,838,850',
-              tracks: ['ncbi_genes'],
-            },
-          },
-        },
-      })
-
-      const root = createRoot(
-        document.getElementById('jbrowse_linear_genome_view'),
-      )
-      root.render(
-        React.createElement(JBrowseLinearGenomeView, {
-          viewState: state,
-        }),
-      )
-    </script>
-  </body>
-</html>
-```
-
-You can see a couple of notable things in the above script:
-
-- We import the JBrowse script in the `<head>` of the page. This creates a
-  global variable `JBrowseReactLinearGenomeView` that we use in our script
-- We point directly at a CDN (the unpkg URL) using `@latest`, but you can also
-  download this file for later use. To avoid any potential breaking changes, you
-  can pin a specific version instead (e.g.
-  `@jbrowse/react-linear-genome-view2@4.3.0`)
-- We provide an assembly, the hg38 genome assembly, as a bgzip indexed FASTA
-  file
-- We provide a gene track, which is a tabix indexed GFF3 file
-- We provide a 'default session' to navigate to a specific genomic location on
-  startup
-
 ## Preparing a bgzip FASTA file
 
 This is generally done with samtools
@@ -177,7 +73,7 @@ tabix myfile.sorted.gff.gz
 You can use the @jbrowse/cli tool to create a text search index with a command
 like this:
 
-```
+```bash
 jbrowse text-index --file file1.gff.gz --fileId ncbi_genes
 ```
 
@@ -187,16 +83,7 @@ used by the text-search adapter).
 You can add these to a "per-track text search adapter", as shown in the more
 elaborate example below.
 
-## A more elaborate example
-
-Here is an example of the createViewState that you could replace in the above
-code snippet that includes some more track types, including
-
-- VCF
-- BigWig
-- BigBed
-- BAM
-- CRAM
+## Setup
 
 ```typescript
 const state = createViewState({

@@ -213,7 +213,7 @@ You can also use remote URLs:
 
 You can also manually edit your config file or use the GUI.
 
-### How do I change the color of a track?
+### How do I change the color of a track
 
 This is one of the most common questions, and there are a few ways depending on
 how much control you want.
@@ -253,7 +253,7 @@ jbrowse add-track genes.gff.gz --load copy --config '{"displays":[{"type":"Linea
 **In a URL:** set `color` in a track's `displaySnapshot` in the session spec —
 see [URL parameters](/docs/urlparams/#live-example-feature-track-color).
 
-### How do I color features by an attribute (color callback)?
+### How do I color features by an attribute (color callback)
 
 For per-feature coloring, set `color` to a
 [Jexl](https://github.com/TomFrost/Jexl) expression instead of a plain color.
@@ -269,14 +269,14 @@ editor), or set it in the config/URL as above. See our
 [configuration callbacks guide](/docs/config_guides/jexl) for the full jexl
 reference.
 
-### My jexl is too complicated, how can I simplify it?
+### My jexl is too complicated, how can I simplify it
 
 You can create a small plugin that adds a new function to the jexl language.
 
 See [here](/docs/config_guides/customizing_feature_colors/) for an example of
 making a color callback.
 
-### How do I get (more) categories to filter on in the faceted track selector?
+### How do I get (more) categories to filter on in the faceted track selector
 
 The faceted track selector displays all the different adapters, categories, and
 all the metadata. Categories are also used to group tracks in the track
@@ -297,7 +297,7 @@ faceted track selector:
 }
 ```
 
-### How do I reduce config.json download size?
+### How do I reduce config.json download size
 
 You can set up your server to serve zipped files. Most cloud-based services,
 like AWS Amplify and AWS CloudFront, already do this automatically. However, for
@@ -517,14 +517,14 @@ The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
 ## Troubleshooting
 
-### Where can I get help or report a bug?
+### Where can I get help or report a bug
 
 Post questions on the
 [GitHub discussions board](https://github.com/GMOD/jbrowse-components/discussions)
 or [contact us](/contact). To report a bug, open an issue on
 [GitHub](https://github.com/GMOD/jbrowse-components/issues).
 
-### Why do I get a CORS error when loading remote files?
+### Why do I get a CORS error when loading remote files
 
 This happens when JBrowse is served from a different domain than your data (e.g.
 JBrowse on one host, data on a separate S3 / MinIO bucket). JBrowse cannot work
@@ -586,13 +586,13 @@ origins). Set it to your JBrowse origin and restart the server:
 export MINIO_API_CORS_ALLOW_ORIGIN="https://your-jbrowse-host.example.com"
 ```
 
-### Why does my saved session fail to load?
+### Why does my saved session fail to load
 
 Changing track IDs or deleting tracks can cause saved sessions to fail to load,
 since any inconsistency causes the entire session to fail. Make these changes
 carefully.
 
-### What should I do if the Share system isn't working?
+### What should I do if the Share system isn't working
 
 If sharing isn't working (e.g. you're behind a firewall), click the "Gear" icon
 in the Share dialog to switch to "Long URL" mode, which doesn't require the

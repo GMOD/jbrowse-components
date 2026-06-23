@@ -37,3 +37,5 @@ One thing I did not do: add the direct-script output as a second demo track. The
 
 
 website/docs/developer_guides/renderer_architecture.md
+
+## autotest embedded_guide.md
