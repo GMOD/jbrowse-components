@@ -300,19 +300,6 @@ showTrackOutlines: types.optional(types.boolean, () =>
 )
 ```
 
-#### property: scrollZoom
-
-enable scroll-to-zoom on WebGL tracks
-
-```ts
-// type signature
-type scrollZoom = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-scrollZoom: types.optional(types.boolean, () =>
-  localStorageGetBoolean('lgv-scrollZoom', false),
-)
-```
-
 #### property: scalebarOnly
 
 when true, only the header and coordinate scalebar are rendered
@@ -488,6 +475,15 @@ volatileGuides: [] as VolatileGuide[]
 
 <details open>
 <summary>LinearGenomeView - Getters</summary>
+
+#### getter: scrollZoom
+
+scroll-to-zoom is a global, personal preference resolved from the session;
+toggling it in any view applies everywhere
+
+```ts
+type scrollZoom = boolean
+```
 
 #### getter: pinnedTracks
 

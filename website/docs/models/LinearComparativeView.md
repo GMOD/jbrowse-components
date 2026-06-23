@@ -102,15 +102,6 @@ type interactiveOverlay = IOptionalIType<ISimpleType<boolean>, [undefined]>
 interactiveOverlay: types.stripDefault(types.boolean, false)
 ```
 
-#### property: scrollZoom
-
-```ts
-// type signature
-type scrollZoom = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-scrollZoom: types.stripDefault(types.boolean, false)
-```
-
 #### property: levels
 
 ```ts
@@ -167,6 +158,15 @@ width: undefined as number | undefined
 
 <details open>
 <summary>LinearComparativeView - Getters</summary>
+
+#### getter: scrollZoom
+
+scroll-to-zoom is a global, personal preference resolved from the session;
+toggling it in any view applies everywhere
+
+```ts
+type scrollZoom = boolean
+```
 
 #### getter: initialized
 

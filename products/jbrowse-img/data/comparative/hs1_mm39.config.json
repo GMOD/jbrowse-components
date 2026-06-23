@@ -30,8 +30,8 @@
       "name": "hs1 vs mm39 (liftOver)",
       "assemblyNames": ["mm39", "hs1"],
       "adapter": {
-        "type": "PairwiseIndexedPAFAdapter",
-        "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/hs1_vs_mm39/hs1ToMm39.over.chain.pif.gz",
+        "type": "ChainAdapter",
+        "uri": "https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz",
         "assemblyNames": ["mm39", "hs1"]
       }
     }

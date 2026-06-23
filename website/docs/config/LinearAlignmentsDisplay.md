@@ -113,7 +113,7 @@ configuration schema for the LinearAlignmentsDisplay
 ```js
 {
   type: 'boolean',
-  defaultValue: true,
+  defaultValue: false,
   description: 'Draw the supporting-read count on each sashimi arc',
 }
 ```

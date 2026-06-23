@@ -45,4 +45,16 @@ animates
 }
 ```
 
+#### slot: configuration.preferences.scrollZoom
+
+when true, scrolling the mouse wheel over a track zooms in and out without
+holding Ctrl. Applies globally to all wheel-zoom views.
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+}
+```
+
 </details>

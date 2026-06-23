@@ -50,14 +50,14 @@ and docs.
 [showIntraviewLinks](../linearcomparativeview#property-showintraviewlinks),
 [linkViews](../linearcomparativeview#property-linkviews),
 [interactiveOverlay](../linearcomparativeview#property-interactiveoverlay),
-[scrollZoom](../linearcomparativeview#property-scrollzoom),
 [levels](../linearcomparativeview#property-levels),
 [views](../linearcomparativeview#property-views),
 [viewTrackConfigs](../linearcomparativeview#property-viewtrackconfigs)
 
 **Volatiles:** [width](../linearcomparativeview#volatile-width)
 
-**Getters:** [initialized](../linearcomparativeview#getter-initialized),
+**Getters:** [scrollZoom](../linearcomparativeview#getter-scrollzoom),
+[initialized](../linearcomparativeview#getter-initialized),
 [refNames](../linearcomparativeview#getter-refnames),
 [assemblyNames](../linearcomparativeview#getter-assemblynames)
 
@@ -215,6 +215,22 @@ consuming the color channel.
 type opacityByIdentity = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 opacityByIdentity: types.stripDefault(types.boolean, false)
+```
+
+#### property: fadeThinAlignments
+
+Fade a sub-pixel-thin ribbon's opacity by its on-screen width (see
+WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered whole-genome view
+doesn't read as a hard full-opacity hairball. Off restores full per-ribbon alpha
+regardless of width — needed for genuinely sparse comparisons (e.g.
+distant-species synteny) where every real alignment is sub-pixel at whole-genome
+zoom and the fade would wash the view out instead of decluttering it.
+
+```ts
+// type signature
+type fadeThinAlignments = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+fadeThinAlignments: types.stripDefault(types.boolean, true)
 ```
 
 #### property: init
@@ -445,6 +461,12 @@ type setColorBy = (arg: SyntenyColorBy) => void
 
 ```ts
 type setOpacityByIdentity = (arg: boolean) => void
+```
+
+#### action: setFadeThinAlignments
+
+```ts
+type setFadeThinAlignments = (arg: boolean) => void
 ```
 
 #### action: showAllRegions

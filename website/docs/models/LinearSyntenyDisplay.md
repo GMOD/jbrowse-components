@@ -382,6 +382,7 @@ type renderParams =
       yTop: number
       height: number
       alpha: number
+      fadeThinAlignments: boolean
       minAlignmentLength: number
       hoveredFeatureId: number
       clickedFeatureId: number

@@ -438,7 +438,7 @@ type sashimiArcsMode = IOptionalIType<ISimpleType<SashimiArcsMode>, [undefined]>
 // code
 sashimiArcsMode: types.stripDefault(
   types.enumeration<SashimiArcsMode>('SashimiArcsMode', ['up', 'down', 'auto']),
-  'auto',
+  'up',
 )
 ```
 

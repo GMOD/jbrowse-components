@@ -202,6 +202,15 @@ resolved feature-layout animation mode (never undefined)
 type animationMode = AnimationMode
 ```
 
+#### getter: scrollZoom
+
+resolved scroll-to-zoom preference. Global and personal (never shared in a
+session snapshot); every wheel-zoom view reads this single value.
+
+```ts
+type scrollZoom = boolean
+```
+
 </details>
 
 <details open>
@@ -252,6 +261,14 @@ state; products persist these to localStorage.
 
 ```ts
 type setPreferenceOverride = (key: string, value: unknown) => void
+```
+
+#### action: setScrollZoom
+
+set the global scroll-to-zoom preference (see the `scrollZoom` getter)
+
+```ts
+type setScrollZoom = (flag: boolean) => void
 ```
 
 #### action: setName

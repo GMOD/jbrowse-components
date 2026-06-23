@@ -52,7 +52,8 @@ and docs.
 [assemblies](../basesessionmodel#getter-assemblies),
 [DialogComponent](../basesessionmodel#getter-dialogcomponent),
 [DialogProps](../basesessionmodel#getter-dialogprops),
-[animationMode](../basesessionmodel#getter-animationmode)
+[animationMode](../basesessionmodel#getter-animationmode),
+[scrollZoom](../basesessionmodel#getter-scrollzoom)
 
 **Methods:** [getPreference](../basesessionmodel#method-getpreference)
 
@@ -60,6 +61,7 @@ and docs.
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
 [setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
+[setScrollZoom](../basesessionmodel#action-setscrollzoom),
 [setName](../basesessionmodel#action-setname),
 [setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
 [removeActiveDialog](../basesessionmodel#action-removeactivedialog),
