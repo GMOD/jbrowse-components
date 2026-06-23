@@ -5,7 +5,7 @@ import type { GlAttributeLayout } from '@jbrowse/render-core/hal'
 
 export const VERTS_PER_INSTANCE = 48
 
-export const UNIFORMS_SIZE_BYTES = 64
+export const UNIFORMS_SIZE_BYTES = 80
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.
 export const UNIFORM_OFFSET_F32 = {
@@ -24,6 +24,7 @@ export const UNIFORM_OFFSET_F32 = {
   hoveredFeatureId: 13,
   clickedFeatureId: 14,
   yTop: 15,
+  fadeThinAlignments: 16,
 } as const
 
 
@@ -50,6 +51,7 @@ export interface Uniforms {
   hoveredFeatureId: number
   clickedFeatureId: number
   yTop: number
+  fadeThinAlignments: number
 }
 
 export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
@@ -70,6 +72,7 @@ export function writeUniforms(buf: ArrayBuffer, uniforms: Uniforms) {
   f32[13] = uniforms.hoveredFeatureId
   f32[14] = uniforms.clickedFeatureId
   f32[15] = uniforms.yTop
+  f32[16] = uniforms.fadeThinAlignments
 }
 
 export const INSTANCE_STRIDE_BYTES = 48

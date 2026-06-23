@@ -285,7 +285,8 @@ function hpyloriSyntenyWithGenes() {
 
 // S3-hosted yeast comparison (S. cerevisiae R64 vs the YJM1447 strain), used by
 // the dotplot/synteny CliSpecs below.
-const YEAST = 'https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447'
+const YEAST =
+  'https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447'
 
 function cliSpec(name: string, args: string[]): CliSpec {
   return { mode: 'cli', name: `jbrowse-img/${name}`, args }

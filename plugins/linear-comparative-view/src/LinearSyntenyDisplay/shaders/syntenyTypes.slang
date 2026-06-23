@@ -51,6 +51,14 @@ public bool isCigarKind(float kind) { return kind >= KIND_CIGAR_MIN; }
 public static const float KIND_MARKER = 2.0;
 public bool isMarkerKind(float kind) { return abs(kind - KIND_MARKER) < 0.5; }
 
+// Floor for the density-honest sub-pixel fade below (widthFade). Without a
+// floor, a whole-genome view with no minAlignmentLength filter (e.g. a raw
+// minimap2 PAF) is almost entirely sub-pixel-thin, so every ribbon fades
+// toward zero and overlap accumulation never catches up — the view goes
+// nearly blank instead of merely de-emphasized. Keeps a single thin ribbon
+// faintly locatable; dense overlaps still read brighter via alpha blend.
+public static const float WIDTH_FADE_FLOOR = 0.15;
+
 // Per-view hp-math origin (`viewBp = offsetPx * bpPerPx`, hi/lo split) +
 // `bpPerPxInv`. The view origin reconstructs LGV-aligned screen positions
 // directly (math derivation in hpCornerScreenX). `hpZero` is the sentinel
@@ -71,6 +79,7 @@ public struct Uniforms {
   public float  hoveredFeatureId;
   public float  clickedFeatureId;
   public float  yTop;
+  public float  fadeThinAlignments;
 };
 
 public struct Corners {
@@ -124,7 +133,7 @@ public float4 screenToClip(float2 screen, float2 resolution) {
 // gets smoothstep AA over the perpendicular distance.
 public float fillCoverage(float2 localPos, float xL, float xR,
                           float perpFactor, float isCigar, float isMarker,
-                          float h) {
+                          float h, float fadeThinAlignments) {
   float xC = (xL + xR) * 0.5;
   float perpDist = (localPos.x - xC) / perpFactor;
   // Both CIGAR tiles and whole-feature (base) ribbons keep a 0.5px half-width
@@ -152,12 +161,18 @@ public float fillCoverage(float2 localPos, float xL, float xR,
     // Ribbons ≥1px wide saturate widthFade at 1 and are unaffected.
     // SYNC: Canvas2DSyntenyRenderer's sub-pixel branch (entered only for
     // near-vertical ribbons, where perpFactor≈1) scales its centerline stroke
-    // alpha by the equivalent clamp(width, 0, 1).
+    // alpha by the equivalent max(width, WIDTH_FADE_FLOOR).
     // Markers are intentionally zero-width, so the density-honest fade is
     // skipped (widthFade=1) — they stay a crisp 1px tick at the 0.5px floor.
-    float widthFade = isMarker > 0.5
+    // WIDTH_FADE_FLOOR keeps a lone sub-pixel ribbon locatable instead of
+    // fading all the way to invisible (see its definition above). The fade
+    // itself is opt-out (fadeThinAlignments) because a genuinely sparse
+    // whole-genome comparison (e.g. distant-species synteny) can have every
+    // real alignment sub-pixel, and the fade would wash the view out rather
+    // than declutter it, with no UI way to recover full opacity otherwise.
+    float widthFade = (isMarker > 0.5 || fadeThinAlignments < 0.5)
       ? 1.0
-      : clamp((xR - xL) / perpFactor, 0.0, 1.0);
+      : clamp((xR - xL) / perpFactor, WIDTH_FADE_FLOOR, 1.0);
     float aaPerp = max(fwidth(perpDist), 1e-4);
     cx = (1.0 - smoothstep(halfPerpW - aaPerp * 0.5,
                            halfPerpW + aaPerp * 0.5,

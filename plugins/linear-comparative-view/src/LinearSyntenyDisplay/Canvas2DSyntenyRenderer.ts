@@ -31,6 +31,11 @@ export type { CanvasLike } from './syntenyPickEngine.ts'
 
 type Rgba = readonly [number, number, number, number]
 
+// SYNC: mirrors WIDTH_FADE_FLOOR in syntenyTypes.slang — keeps a lone
+// sub-pixel ribbon faintly locatable instead of fading all the way to
+// invisible on a whole-genome view with no minAlignmentLength filter.
+const WIDTH_FADE_FLOOR = 0.15
+
 // Shade an instance's packed color into the final displayed fill — applying
 // hover darkening and the CIGAR white pre-blend — as 0..255 rgb + 0..1 alpha.
 // SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with white
@@ -79,6 +84,7 @@ function drawInstances(
   rightLimit: number,
   shadeCache: Map<number, Rgba>,
   yTop: number,
+  fadeThinAlignments: boolean,
 ) {
   for (let i = 0; i < data.instanceCount; i++) {
     if (data.alignmentLengths[i]! < minAlignmentLength) {
@@ -139,9 +145,10 @@ function drawInstances(
     // antialiases poorly (ragged diagonals in SVG export). Below 1px thick we
     // instead stroke the centerline at 1px, which canvas renders cleanly at any
     // slope; above it we fill the silhouette.
-    // SYNC: perpFactor and the BASE alpha fade (×perpW, clamped ≤1) mirror
-    // fillCoverage's perpFactor/widthFade — a lone thin ribbon stays a faint
-    // locatable line while a whole-genome tangle fades instead of stacking hard
+    // SYNC: perpFactor and the BASE alpha fade (×widthFade, floored at
+    // WIDTH_FADE_FLOOR, gated by fadeThinAlignments) mirror fillCoverage's
+    // perpFactor/widthFade — a lone thin ribbon stays a faint locatable line
+    // while a whole-genome tangle fades instead of stacking hard
     // full-opacity lines. CIGAR keeps full alpha (hard-cut in the shader).
     const xt = (c.sx1 + c.sx2) * 0.5
     const xb = (c.sx3 + c.sx4) * 0.5
@@ -150,7 +157,10 @@ function drawInstances(
     const perpW =
       Math.max(Math.abs(c.sx2 - c.sx1), Math.abs(c.sx4 - c.sx3)) / perpFactor
     if (perpW < 1) {
-      ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * perpW})`
+      const widthFade = fadeThinAlignments
+        ? Math.max(perpW, WIDTH_FADE_FLOOR)
+        : 1
+      ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * widthFade})`
       ctx.lineWidth = 1
       ctx.beginPath()
       ctx.moveTo(xt, yTop)
@@ -193,6 +203,7 @@ export function drawSyntenyTrack(
     hoveredFeatureId,
     clickedFeatureId,
     drawCurves,
+    fadeThinAlignments,
   } = params
 
   const transform = computeTransform(params)
@@ -216,6 +227,7 @@ export function drawSyntenyTrack(
     rightLimit,
     shadeCache,
     yTop,
+    fadeThinAlignments,
   )
 }
 

@@ -443,6 +443,7 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           yTop: 0,
           height: this.height,
           alpha: view.alpha,
+          fadeThinAlignments: view.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
           hoveredFeatureId:
             hoveredFeatureIdx >= 0 && self.instanceData

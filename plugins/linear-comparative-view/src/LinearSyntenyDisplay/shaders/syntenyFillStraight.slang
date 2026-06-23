@@ -106,7 +106,8 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   float perpFactor = sqrt(1.0 + slope * slope);
 
   float coverage = fillCoverage(fragIn.localPos, xL, xR, perpFactor,
-                                fragIn.isCigar, fragIn.isMarker, h);
+                                fragIn.isCigar, fragIn.isMarker, h,
+                                u.fadeThinAlignments);
   if (coverage <= 0.0) { discard; }
   return shadeFill(fragIn.color, fragIn.featureId, coverage, fragIn.isCigar,
                    fragIn.isMarker, u);

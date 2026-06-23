@@ -112,6 +112,17 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         opacityByIdentity: types.stripDefault(types.boolean, false),
         /**
          * #property
+         * Fade a sub-pixel-thin ribbon's opacity by its on-screen width (see
+         * WIDTH_FADE_FLOOR in syntenyTypes.slang), so an unfiltered
+         * whole-genome view doesn't read as a hard full-opacity hairball. Off
+         * restores full per-ribbon alpha regardless of width — needed for
+         * genuinely sparse comparisons (e.g. distant-species synteny) where
+         * every real alignment is sub-pixel at whole-genome zoom and the fade
+         * would wash the view out instead of decluttering it.
+         */
+        fadeThinAlignments: types.stripDefault(types.boolean, true),
+        /**
+         * #property
          * used for initializing the view from a session snapshot. tracks is
          * 2D — outer index is the level (the gap between views[i] and
          * views[i+1]), so a 3-way view has two entries.
@@ -292,6 +303,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setOpacityByIdentity(arg: boolean) {
         self.opacityByIdentity = arg
+      },
+      /**
+       * #action
+       */
+      setFadeThinAlignments(arg: boolean) {
+        self.fadeThinAlignments = arg
       },
       /**
        * #action

@@ -17,7 +17,13 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { alpha, minAlignmentLength, opacityByIdentity, overdrawPx } = model
+  const {
+    alpha,
+    fadeThinAlignments,
+    minAlignmentLength,
+    opacityByIdentity,
+    overdrawPx,
+  } = model
   return (
     <SettingsPopover title="Synteny display settings">
       <div
@@ -81,6 +87,28 @@ const SyntenySettingsPopover = observer(function SyntenySettingsPopover({
               <Typography variant="body2">Fade by identity</Typography>
               <Tooltip
                 title="Modulates ribbon opacity by per-feature sequence identity, independent of the color mode. Low-identity blocks fade out so identity-dropoff zones become visible without consuming the color channel."
+                arrow
+              >
+                <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />
+              </Tooltip>
+            </span>
+          }
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={fadeThinAlignments}
+              onChange={() => {
+                model.setFadeThinAlignments(!fadeThinAlignments)
+              }}
+              size="small"
+            />
+          }
+          label={
+            <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <Typography variant="body2">Fade thin alignments</Typography>
+              <Tooltip
+                title="Fades sub-pixel-thin ribbons by their on-screen width, so an unfiltered whole-genome view doesn't read as a hard full-opacity hairball. Turn off for a genuinely sparse comparison (e.g. distant species) where every real alignment is sub-pixel and the fade would wash the view out instead of decluttering it."
                 arrow
               >
                 <HelpIcon sx={{ fontSize: '0.875rem', ml: 0.5 }} />

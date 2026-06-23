@@ -6,6 +6,8 @@ export interface SyntenyTrackRenderParams {
   /** drawable height (CSS px) of this track */
   height: number
   alpha: number
+  /** Fade sub-pixel-thin ribbons by on-screen width; off keeps full alpha. */
+  fadeThinAlignments: boolean
   minAlignmentLength: number
   hoveredFeatureId: number
   clickedFeatureId: number

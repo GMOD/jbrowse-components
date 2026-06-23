@@ -34,6 +34,9 @@ export function applyInitSettings(
   if (init.alpha !== undefined) {
     self.setAlpha(init.alpha)
   }
+  if (init.fadeThinAlignments !== undefined) {
+    self.setFadeThinAlignments(init.fadeThinAlignments)
+  }
   if (init.levelHeights) {
     for (const [i, h] of init.levelHeights.entries()) {
       self.levels[i]?.setHeight(h)

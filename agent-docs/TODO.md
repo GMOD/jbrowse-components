@@ -6,9 +6,11 @@
 ## Fused abortsignal+stoptoken?
 
 
-## autotest embedded_guide.md
 
-## Not working
 
 
 ## Large region very slow with regular gene track
+
+## autodiagonalize
+
+choose query and target order?

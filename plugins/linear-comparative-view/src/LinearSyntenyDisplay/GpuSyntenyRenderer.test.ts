@@ -39,6 +39,7 @@ function makeParams(
     yTop: 0,
     height: 100,
     alpha: 1,
+    fadeThinAlignments: true,
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,

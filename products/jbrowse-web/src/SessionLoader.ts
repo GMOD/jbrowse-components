@@ -341,7 +341,6 @@ const SessionLoader = types
       snap: { sessionPlugins?: PluginDefinition[]; id: string },
       userAcceptedConfirmation?: boolean,
     ) {
-      console.log(snap)
       try {
         const sessionPlugins = dropVendoredPlugins(snap.sessionPlugins ?? [])
         if ((await checkPlugins(sessionPlugins)) || userAcceptedConfirmation) {

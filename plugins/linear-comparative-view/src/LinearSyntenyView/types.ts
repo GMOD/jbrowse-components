@@ -30,6 +30,11 @@ export interface LinearSyntenyViewInit extends SyntenyViewSharedInit {
   // unfiltered hairballs; whole-genome views with minAlignmentLength set
   // can use a higher value (~0.4) for stronger color.
   alpha?: number
+  // Fade sub-pixel-thin ribbons by their on-screen width (default true).
+  // Turn off for a genuinely sparse whole-genome comparison (e.g. distant
+  // species) where every real alignment is sub-pixel and the fade would
+  // wash the view out instead of decluttering it.
+  fadeThinAlignments?: boolean
 }
 
 export interface ExportSvgOptions {

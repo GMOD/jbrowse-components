@@ -87,6 +87,7 @@ function makeParams(
     yTop: 0,
     height: 100,
     alpha: 1,
+    fadeThinAlignments: true,
     minAlignmentLength: 0,
     hoveredFeatureId: 0,
     clickedFeatureId: 0,
@@ -312,6 +313,44 @@ describe('Canvas2DSyntenyRenderer', () => {
     // base alpha 0x80/255, scaled by the 0.5px perpendicular width
     expect(strokeAlphas).toHaveLength(1)
     expect(strokeAlphas[0]!).toBeCloseTo((0x80 / 255) * 0.5, 3)
+  })
+
+  test('fadeThinAlignments=false keeps full alpha regardless of width', () => {
+    const { canvas, ctx } = createMockCanvas()
+    const strokeAlphas: number[] = []
+    ctx.stroke = jest.fn(() => {
+      const m = /rgba\(\d+,\d+,\d+,([\d.]+)\)/.exec(ctx.strokeStyle)
+      if (m) {
+        strokeAlphas.push(+m[1]!)
+      }
+    })
+    canvas.width = 800
+    canvas.height = 100
+    const renderer = new Canvas2DSyntenyRenderer(canvas)
+    renderer.resize(800, 100)
+    // same 0.5px-wide vertical ribbon as the floor test above
+    const c1 = bpHiLo([10])
+    const c2 = bpHiLo([10.5])
+    const c3 = bpHiLo([10.5])
+    const c4 = bpHiLo([10])
+    renderer.uploadGeometry(
+      0,
+      makeInstanceData(1, {
+        bp1Hi: c1.hi,
+        bp1Lo: c1.lo,
+        bp2Hi: c2.hi,
+        bp2Lo: c2.lo,
+        bp3Hi: c3.hi,
+        bp3Lo: c3.lo,
+        bp4Hi: c4.hi,
+        bp4Lo: c4.lo,
+        colors: new Uint32Array([0x80808080]),
+      }),
+    )
+    renderer.render(makeState([[0, makeParams({ fadeThinAlignments: false })]]))
+
+    expect(strokeAlphas).toHaveLength(1)
+    expect(strokeAlphas[0]!).toBeCloseTo(0x80 / 255, 3)
   })
 
   test('steep thin diagonal strokes its centerline rather than filling a sliver', () => {

@@ -133,7 +133,9 @@ export default function ConfigOverrideMixin<
         // 'configuration'. Access it via plain-object cast to avoid propagating
         // MST internal symbol types ($stateTreeNodeType) into declaration files.
         const conf = (
-          self as unknown as { configuration: AnyConfigurationModel | undefined }
+          self as unknown as {
+            configuration: AnyConfigurationModel | undefined
+          }
         ).configuration
         // Hiding a track tears down the display's `configuration` while sibling
         // `observer` components are still mounted; MobX flushes their reactions

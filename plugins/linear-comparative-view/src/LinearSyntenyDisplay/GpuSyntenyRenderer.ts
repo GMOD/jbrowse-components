@@ -200,6 +200,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     u[U.hoveredFeatureId] = p.hoveredFeatureId
     u[U.clickedFeatureId] = p.clickedFeatureId
     u[U.yTop] = p.yTop
+    u[U.fadeThinAlignments] = p.fadeThinAlignments ? 1 : 0
     this.hal.writeUniforms(this.uniformData)
   }
 }

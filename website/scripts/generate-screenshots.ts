@@ -528,12 +528,18 @@ async function main() {
 
   // Shared by checkSpec/checkCliSpec: diff two captures of the same spec and
   // either flag it flaky or report it stable. Doesn't touch committed files.
-  function reportDiffOrFlaky(name: string, a: string, b: string, limit: number) {
+  function reportDiffOrFlaky(
+    name: string,
+    a: string,
+    b: string,
+    limit: number,
+  ) {
     const frac = pngDiffFraction(a, b)
     fs.rmSync(a, { force: true })
     fs.rmSync(b, { force: true })
     if (frac === null || frac >= limit) {
-      const pct = frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
+      const pct =
+        frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
       console.log(`  ✗ ${name} FLAKY (${pct} between two renders)`)
       flaky.push({ name, frac: frac ?? 1 })
     } else {
