@@ -35,23 +35,6 @@ export interface DotplotFeaturesAndPositionsResult {
   skippedFeatureCount: number
 }
 
-function makeAssemblyLookup(pluginManager: PluginManager) {
-  const assemblyManager = pluginManager.rootModel?.session?.assemblyManager
-  const cache = new Map<
-    string,
-    { getCanonicalRefName(n: string): string | undefined } | undefined
-  >()
-  return (name: string | undefined) => {
-    if (!name || !assemblyManager) {
-      return undefined
-    }
-    if (!cache.has(name)) {
-      cache.set(name, assemblyManager.get(name))
-    }
-    return cache.get(name)
-  }
-}
-
 interface FeatureMate {
   start: number
   end: number
@@ -94,8 +77,10 @@ export async function executeDotplotFeaturesAndPositions({
   )
   const features = dedupe(rawFeatures, f => f.id())
 
-  const getAssembly = makeAssemblyLookup(pluginManager)
-
+  // RefName aliases are resolved on the main thread before the RPC (the worker
+  // has no assemblyManager), so hViewSnap/vViewSnap and the feature refNames are
+  // already in the adapter's namespace and line up directly. See
+  // DotplotDisplay/afterAttach.ts.
   const hIndex = buildBpRegionIndex(hViewSnap)
   const vIndex = buildBpRegionIndex(vViewSnap)
 
@@ -124,11 +109,8 @@ export async function executeDotplotFeaturesAndPositions({
   for (const f of features) {
     const mate = f.get('mate') as FeatureMate
     const strand = f.get('strand') ?? 1
-    const rawRefName = f.get('refName')
-    const a1 = getAssembly(f.get('assemblyName') as string | undefined)
-    const a2 = getAssembly(mate.assemblyName)
-    const refName = a1?.getCanonicalRefName(rawRefName) ?? rawRefName
-    const mateRefName = a2?.getCanonicalRefName(mate.refName) ?? mate.refName
+    const refName = f.get('refName')
+    const mateRefName = mate.refName
 
     if (!hIndex.entries.has(refName) || !vIndex.entries.has(mateRefName)) {
       skippedFeatureCount++
@@ -168,8 +150,8 @@ export async function executeDotplotFeaturesAndPositions({
       meanScore: (f.get('meanScore') as number | undefined) ?? -1,
       meanIdentity: (f.get('meanIdentity') as number | undefined) ?? -1,
       mappingQual: (f.get('mappingQual') as number | undefined) ?? -1,
-      refName: rawRefName,
-      mateRefName: mate.refName,
+      refName,
+      mateRefName,
       cigar: parseCigar2((f.get('CIGAR') as string | undefined) ?? ''),
     })
   }

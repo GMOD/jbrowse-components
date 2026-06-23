@@ -10,3 +10,5 @@
 
 ## Not working
 
+
+## Large region very slow with regular gene track

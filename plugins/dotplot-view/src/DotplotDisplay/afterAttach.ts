@@ -8,6 +8,7 @@ import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   createStopTokenRotation,
   detectDisplayAssembliesSwapped,
+  renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 import { autorun } from 'mobx'
 
@@ -17,6 +18,7 @@ import { buildLineSegments } from './dotplotGeometry.ts'
 import type { DotplotDisplayModel } from './stateModelFactory.tsx'
 import type { Dotplot1DViewModel } from '../DotplotView/1dview.ts'
 import type { DotplotViewModel } from '../DotplotView/model.ts'
+import type { Region } from '@jbrowse/core/util'
 import type { BpIndexViewSnap, SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const RPC_DEBOUNCE_MS = 1000
@@ -57,14 +59,36 @@ export function doAfterAttach(
 
         try {
           const sessionId = getRpcSessionId(self)
+          // RefName reconciliation (canonical <-> adapter aliases) happens here
+          // on the main thread because the RPC worker has no assemblyManager to
+          // resolve aliases. Rewrite every region the worker sees into the
+          // adapter's namespace so its getFeatures query and cumBp index line up
+          // with the feature refNames it reads back. Both the query regions and
+          // the h-axis index snap use the h-axis assembly; the v-axis index snap
+          // uses the v-axis assembly. renameRegionsForAdapter keys per-region by
+          // assemblyName, so one shared call shape covers all three.
+          const { assemblyManager } = getSession(self)
+          const rename = (rs: Region[]) =>
+            renameRegionsForAdapter({
+              assemblyManager,
+              sessionId,
+              adapterConfig,
+              regions: rs,
+            })
           const result = await getSession(self).rpcManager.call(
             sessionId,
             'DotplotGetFeaturesAndPositions',
             {
               adapterConfig,
-              regions,
-              hViewSnap,
-              vViewSnap,
+              regions: await rename(regions),
+              hViewSnap: {
+                ...hViewSnap,
+                displayedRegions: await rename(hViewSnap.displayedRegions),
+              },
+              vViewSnap: {
+                ...vViewSnap,
+                displayedRegions: await rename(vViewSnap.displayedRegions),
+              },
               stopToken,
               lodMode,
               statusCallback,

@@ -1,9 +1,9 @@
-import { execFileSync } from 'child_process'
+import { execFile, execFileSync } from 'child_process'
 import fs from 'fs'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
-import { parseArgs } from 'util'
+import { parseArgs, promisify } from 'util'
 
 import {
   BASE_CHROME_ARGS,
@@ -42,6 +42,8 @@ import {
 
 import type {
   Annotation,
+  BrowserScreenshotSpec,
+  CliSpec,
   ScreenshotAction,
   ScreenshotSpec,
 } from './screenshot-specs.ts'
@@ -49,6 +51,7 @@ import type { Server } from 'http'
 import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
+const execFileAsync = promisify(execFile)
 
 // Strict parsing rejects unknown flags (a typo'd `--fliter` fails loudly
 // instead of silently screenshotting every spec) and accepts `--x=y` or `--x y`.
@@ -131,6 +134,15 @@ const repoRoot = path.resolve(__dirname, '..', '..')
 const buildPath = path.resolve(repoRoot, 'products', 'jbrowse-web', 'build')
 const testDataRoot = path.resolve(repoRoot, 'products', 'jbrowse-web')
 const outDir = path.resolve(__dirname, '..', 'static', 'img')
+// jb2export (the @jbrowse/img CLI) renders the products/jbrowse-img/README
+// example images straight to PNG via React SSR — no browser involved, so
+// CliSpecs bypass the puppeteer pipeline entirely and land here instead of
+// outDir. Run from source via tsx (not the npm-installed `jb2export` binary)
+// so a local edit to products/jbrowse-img/src is reflected immediately.
+const jbrowseImgDir = path.resolve(repoRoot, 'products', 'jbrowse-img')
+const jbrowseImgOutDir = path.join(jbrowseImgDir, 'img')
+const jb2exportBin = path.join(jbrowseImgDir, 'src', 'bin.ts')
+const repoTsconfig = path.join(repoRoot, 'tsconfig.json')
 const VOLVOX_CONFIG = 'test_data/volvox/config.json'
 // Maximum time to wait for canvas displays to signal paint-complete via their
 // *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
@@ -248,7 +260,7 @@ async function captureUrl(
 // flush pending WebGL frames) then screenshot straight to `file`.
 async function shoot(
   page: Page,
-  spec: ScreenshotSpec,
+  spec: BrowserScreenshotSpec,
   annotations: Annotation[] | undefined,
   file: string,
 ) {
@@ -312,7 +324,7 @@ async function runActions(
 // two captures of a --check run from colliding on the same temp path.
 async function renderSpecToTemp(
   page: Page,
-  spec: ScreenshotSpec,
+  spec: BrowserScreenshotSpec,
   port: number,
   suffix = '',
 ) {
@@ -361,11 +373,53 @@ async function renderSpecToTemp(
   return renderPath
 }
 
-async function captureSpec(page: Page, spec: ScreenshotSpec, port: number) {
+async function captureSpec(
+  page: Page,
+  spec: BrowserScreenshotSpec,
+  port: number,
+) {
   console.log(`  → ${spec.name}`)
   const renderPath = await renderSpecToTemp(page, spec, port)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
+  commitScreenshot(renderPath, outputPath, spec.name, {
+    force,
+    diffThreshold: spec.diffThreshold ?? diffThreshold,
+  })
+}
+
+// jb2export renders the products/jbrowse-img/README example images straight
+// to PNG via React SSR (see CliSpec in screenshot-specs.ts) — no browser
+// involved, so this bypasses the puppeteer pipeline entirely. `suffix` keeps
+// the two captures of a --check run from colliding on the same temp path.
+async function renderCliSpecToTemp(spec: CliSpec, suffix = '') {
+  const safeSpecName = spec.name.replace(/\//g, '_')
+  const renderPath = path.join(
+    os.tmpdir(),
+    `jb-img-${process.pid}-${safeSpecName}${suffix}.png`,
+  )
+  await execFileAsync(
+    'npx',
+    [
+      'tsx',
+      '--tsconfig',
+      repoTsconfig,
+      jb2exportBin,
+      ...spec.args,
+      '--out',
+      renderPath,
+    ],
+    { cwd: jbrowseImgDir, maxBuffer: 1024 * 1024 * 64 },
+  )
+  optimizePng(renderPath)
+  return renderPath
+}
+
+async function captureCliSpec(spec: CliSpec) {
+  console.log(`  → ${spec.name}`)
+  const renderPath = await renderCliSpecToTemp(spec)
+  const baseName = spec.name.replace(/^jbrowse-img\//, '')
+  const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
   commitScreenshot(renderPath, outputPath, spec.name, {
     force,
     diffThreshold: spec.diffThreshold ?? diffThreshold,
@@ -402,7 +456,7 @@ async function main() {
   )
 
   const needsLocalServer = filteredSpecs.some(
-    s => s.mode !== 'url' || !s.url.startsWith('http'),
+    s => s.mode !== 'cli' && (s.mode !== 'url' || !s.url.startsWith('http')),
   )
 
   let server: Server | undefined
@@ -447,7 +501,7 @@ async function main() {
   // Fresh browser per call (avoids service-worker caching between navigations),
   // viewport set per spec, then run the body with the prepared page.
   async function withFreshPage<T>(
-    spec: ScreenshotSpec,
+    spec: BrowserScreenshotSpec,
     body: (page: Page) => Promise<T>,
   ) {
     const browser = await launch(launchOptions)
@@ -472,11 +526,26 @@ async function main() {
     }
   }
 
+  // Shared by checkSpec/checkCliSpec: diff two captures of the same spec and
+  // either flag it flaky or report it stable. Doesn't touch committed files.
+  function reportDiffOrFlaky(name: string, a: string, b: string, limit: number) {
+    const frac = pngDiffFraction(a, b)
+    fs.rmSync(a, { force: true })
+    fs.rmSync(b, { force: true })
+    if (frac === null || frac >= limit) {
+      const pct = frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
+      console.log(`  ✗ ${name} FLAKY (${pct} between two renders)`)
+      flaky.push({ name, frac: frac ?? 1 })
+    } else {
+      console.log(`  ✓ ${name} stable (${(frac * 100).toFixed(3)}%)`)
+    }
+  }
+
   // --check: render the spec twice (fresh browser each) and compare the two
   // captures to each other. A drift past threshold means the spec is
   // nondeterministic — it would churn its committed PNG on every regen. Doesn't
   // touch committed files.
-  async function checkSpec(spec: ScreenshotSpec) {
+  async function checkSpec(spec: BrowserScreenshotSpec) {
     console.log(`  → ${spec.name}`)
     const a = await withFreshPage(spec, p =>
       renderSpecToTemp(p, spec, port, '-a'),
@@ -484,18 +553,16 @@ async function main() {
     const b = await withFreshPage(spec, p =>
       renderSpecToTemp(p, spec, port, '-b'),
     )
-    const frac = pngDiffFraction(a, b)
-    fs.rmSync(a, { force: true })
-    fs.rmSync(b, { force: true })
-    const limit = spec.diffThreshold ?? diffThreshold
-    if (frac === null || frac >= limit) {
-      const pct =
-        frac === null ? 'size-mismatch' : `${(frac * 100).toFixed(3)}%`
-      console.log(`  ✗ ${spec.name} FLAKY (${pct} between two renders)`)
-      flaky.push({ name: spec.name, frac: frac ?? 1 })
-    } else {
-      console.log(`  ✓ ${spec.name} stable (${(frac * 100).toFixed(3)}%)`)
-    }
+    reportDiffOrFlaky(spec.name, a, b, spec.diffThreshold ?? diffThreshold)
+  }
+
+  // --check for cli specs: render jb2export twice and diff, same contract as
+  // checkSpec but without a browser.
+  async function checkCliSpec(spec: CliSpec) {
+    console.log(`  → ${spec.name}`)
+    const a = await renderCliSpecToTemp(spec, '-a')
+    const b = await renderCliSpecToTemp(spec, '-b')
+    reportDiffOrFlaky(spec.name, a, b, spec.diffThreshold ?? diffThreshold)
   }
 
   async function runSpec(spec: ScreenshotSpec) {
@@ -504,7 +571,9 @@ async function main() {
       return
     }
     try {
-      if (check) {
+      if (spec.mode === 'cli') {
+        await (check ? checkCliSpec(spec) : captureCliSpec(spec))
+      } else if (check) {
         await checkSpec(spec)
       } else {
         await withFreshPage(spec, page => captureSpec(page, spec, port))

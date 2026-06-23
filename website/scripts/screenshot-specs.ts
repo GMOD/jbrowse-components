@@ -126,7 +126,21 @@ interface SessionUrlSpec extends CommonSpecFields {
   actions?: ScreenshotAction[]
 }
 
-export type ScreenshotSpec = LGVSpec | SessionUrlSpec
+// Mode 3: invoke the @jbrowse/img CLI (jb2export) directly. These produce the
+// products/jbrowse-img/README example images — React SSR renders straight to
+// SVG/PNG with no browser involved, so they regenerate from plain jb2export
+// args instead of the LGV/URL puppeteer machinery, and land in
+// products/jbrowse-img/img/ rather than website/static/img/.
+export interface CliSpec {
+  mode: 'cli'
+  name: string // 'jbrowse-img/<basename>'; basename matches the .png in products/jbrowse-img/img/
+  args: string[] // jb2export args; the generator appends `--out <tmpfile>`
+  curated?: boolean
+  diffThreshold?: number
+}
+
+export type BrowserScreenshotSpec = LGVSpec | SessionUrlSpec
+export type ScreenshotSpec = BrowserScreenshotSpec | CliSpec
 
 const VOLVOX = 'test_data/volvox/config.json'
 // volvox_sv_cram's adapter, reused to build the two strand-split session tracks
@@ -268,6 +282,254 @@ function hpyloriSyntenyWithGenes() {
     ],
   })
 }
+
+// S3-hosted yeast comparison (S. cerevisiae R64 vs the YJM1447 strain), used by
+// the dotplot/synteny CliSpecs below.
+const YEAST = 'https://s3.amazonaws.com/jbrowse.org/genomes/yeast/r64_vs_yjm1447'
+
+function cliSpec(name: string, args: string[]): CliSpec {
+  return { mode: 'cli', name: `jbrowse-img/${name}`, args }
+}
+
+const jbrowseImgSpecs: CliSpec[] = [
+  // Headline (README "## Screenshot"): a multi-track human view from public
+  // files — NCBI RefSeq genes, ClinGen gene-disease, phyloP conservation,
+  // SKBR3 nanopore. --aliases reconciles the 1 / chr1 / NC_000001.10 refname
+  // styles across files.
+  cliSpec('1', [
+    '--fasta',
+    'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+    '--aliases',
+    'https://jbrowse.org/genomes/hg19/hg19_aliases.txt',
+    '--gffgz',
+    'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/ncbi_refseq/GRCh37_latest_genomic.sort.gff.gz',
+    '--bigbed',
+    'https://hgdownload.soe.ucsc.edu/gbdb/hg19/bbi/clinGen/clinGenGeneDisease.bb',
+    '--bigwig',
+    'https://hgdownload.cse.ucsc.edu/goldenpath/hg19/phyloP100way/hg19.100way.phyloP100way.bw',
+    '--cram',
+    'https://s3.amazonaws.com/jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.cram',
+    '--loc',
+    '1:19,197,000-19,233,000',
+    '--width',
+    '1200',
+  ]),
+
+  // Whole-genome dotplot: every YJM1447 contig (x) vs every R64 contig (y).
+  // --autoDiagonalize reorders the R64 contigs so the main alignment forms a
+  // clean diagonal instead of a staircase.
+  cliSpec('yeast_dotplot', [
+    'dotplot',
+    '--fasta',
+    `${YEAST}/yjm1447.fa`,
+    '--fasta2',
+    `${YEAST}/r64.fa`,
+    '--paf',
+    `${YEAST}/r64_vs_yjm1447.paf`,
+    '--autoDiagonalize',
+    '--width',
+    '1100',
+  ]),
+
+  // Single-chromosome synteny ribbon: YJM1447 chr I vs R64 chr I
+  // (NC_001133.9). --drawCurves renders the ribbon as a smooth bezier instead
+  // of straight trapezoids.
+  cliSpec('yeast_synteny', [
+    'synteny',
+    '--fasta',
+    `${YEAST}/yjm1447.fa`,
+    '--loc',
+    'I',
+    '--fasta2',
+    `${YEAST}/r64.fa`,
+    '--loc2',
+    'NC_001133.9',
+    '--paf',
+    `${YEAST}/r64_vs_yjm1447.paf`,
+    '--drawCurves',
+    '--width',
+    '1400',
+  ]),
+
+  // Whole-genome multi-chromosome synteny via a session-spec
+  // (autoDiagonalize reorders grape chromosomes for least overlap; colorBy:
+  // query tints ribbons by peach chromosome).
+  cliSpec('grape_peach_synteny', [
+    '--config',
+    'data/comparative/grape_peach.config.json',
+    '--spec',
+    'data/comparative/grape_peach.spec.json',
+    '--width',
+    '1400',
+  ]),
+
+  // Mammalian-scale: human (hs1) vs mouse (mm39). minAlignmentLength:500000
+  // (in the spec) drops short alignments so the large syntenic blocks stay
+  // legible.
+  cliSpec('hs1_mm39_synteny', [
+    '--config',
+    'data/comparative/hs1_mm39.config.json',
+    '--spec',
+    'data/comparative/hs1_mm39.spec.json',
+    '--width',
+    '1400',
+  ]),
+
+  // Three-level stack: hg38 / hs1 / mm39 (one ribbon per adjacent pair — a
+  // UCSC liftOver chain for hg38<->hs1, the .pif for hs1<->mm39).
+  cliSpec('hg38_hs1_mm39_synteny', [
+    '--config',
+    'data/comparative/hg38_hs1_mm39.config.json',
+    '--spec',
+    'data/comparative/hg38_hs1_mm39.spec.json',
+    '--width',
+    '1400',
+  ]),
+
+  // Circular structural-variant chord plot (bundled volvox SV VCF).
+  cliSpec('circular_chords', [
+    'circular',
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--vcfgz',
+    'data/volvox/volvox.dup.vcf.gz',
+    '--width',
+    '800',
+  ]),
+
+  // Gene/feature track (bundled volvox annotations).
+  cliSpec('gene_track', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--gffgz',
+    'data/volvox/volvox.sort.gff3.gz',
+    '--loc',
+    'ctgA:1-50000',
+    '--width',
+    '1200',
+  ]),
+
+  // Dark theme (bundled volvox coverage + annotations).
+  cliSpec('dark_theme', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--bigwig',
+    'data/volvox/volvox-sorted.bam.coverage.bw',
+    '--gffgz',
+    'data/volvox/volvox.sort.gff3.gz',
+    '--loc',
+    'ctgA:1-20000',
+    '--themeName',
+    'darkStock',
+    '--width',
+    '1200',
+  ]),
+
+  // Reference-sequence track zoomed to base level: --refseq shows the DNA
+  // bases and the six-frame translation (green start codons, red stops).
+  cliSpec('sequence', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--loc',
+    'ctgA:108-208',
+    '--refseq',
+    '--width',
+    '1500',
+  ]),
+
+  // Plain alignments pileup (bundled volvox BAM).
+  cliSpec('alignments_pileup', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--bam',
+    'data/volvox/volvox-sorted.bam',
+    '--loc',
+    'ctgA:1-20000',
+    '--width',
+    '1200',
+  ]),
+
+  // Reads colored and sorted by their read-group (RG) tag.
+  cliSpec('alignments_readgroup', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--bam',
+    'data/volvox/volvox-rg.bam',
+    'color:tag:RG',
+    'sort:tag:RG',
+    'height:300',
+    '--loc',
+    'ctgA:1000-2000',
+    '--width',
+    '1200',
+  ]),
+
+  // group:tag:HP splits the pileup into one sub-track per haplotype. HG002
+  // ultralong ONT (hg19) streamed from the GIAB FTP; the het deletion sits in
+  // one haplotype only.
+  cliSpec('alignments_haplotype', [
+    '--fasta',
+    'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+    '--bam',
+    'https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam',
+    'group:tag:HP',
+    'color:tag:HP',
+    'height:400',
+    '--loc',
+    '1:63,005,675-63,007,432',
+    '--width',
+    '1200',
+  ]),
+
+  // color:methylation paints per-base CpG calls from a modified-base CRAM.
+  // COLO829 nanopore (hg38) over a CpG island; --aliases reconciles the
+  // chr20/20 refname styles.
+  cliSpec('methylation', [
+    '--fasta',
+    'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+    '--aliases',
+    'https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+    '--cram',
+    'https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram',
+    'color:methylation',
+    'height:350',
+    '--loc',
+    '20:18,500,750-18,503,250',
+    '--width',
+    '1200',
+  ]),
+
+  // Variant track (bundled volvox VCF).
+  cliSpec('variants', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--vcfgz',
+    'data/volvox/volvox.filtered.vcf.gz',
+    '--loc',
+    'ctgA:1-20000',
+    '--width',
+    '1200',
+  ]),
+
+  // SKBR3 cell-line whole-genome coverage (hg19, --loc all), log scale — the
+  // cancer karyotype's amplifications/deletions stand out.
+  cliSpec('skbr3_cov', [
+    '--loc',
+    'all',
+    '--fasta',
+    'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+    '--bigwig',
+    'https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw',
+    'scaletype:log',
+    'fill:false',
+    'resolution:superfine',
+    'height:400',
+    'color:purple',
+    'minmax:1:1024',
+    '--width',
+    '1400',
+  ]),
+]
 
 export const specs: ScreenshotSpec[] = [
   {
@@ -5671,6 +5933,12 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 720,
     settleMs: 1500,
   },
+
+  // products/jbrowse-img/README.md example images, rendered by the jb2export
+  // CLI (see CliSpec above). Ported 1:1 from the old
+  // render-comparative-examples.sh so the args stay in sync with the README's
+  // own copy-pastable commands.
+  ...jbrowseImgSpecs,
 ]
 
 // jbrowse.org hosts the same test_data/ configs (and the cgiab/hpylori demos)

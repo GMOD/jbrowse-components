@@ -425,17 +425,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         if (!view.initialized) {
           return undefined
         }
+        // A level draws between two adjacent views; depend only on those two
+        // (matching the fetch autorun), not the whole stack.
+        const level = this.level
+        const v0 = view.views[level]
+        const v1 = view.views[level + 1]
         if (
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+          !v0?.initialized ||
+          !v1?.initialized ||
+          v0.displayedRegions.length === 0 ||
+          v1.displayedRegions.length === 0
         ) {
           return undefined
         }
-        const level = this.level
-        if (level + 1 >= view.views.length) {
-          return undefined
-        }
-        const v0 = view.views[level]!
-        const v1 = view.views[level + 1]!
         const { hoveredFeatureIdx, clickedFeatureIdx } = self
         return {
           yTop: 0,

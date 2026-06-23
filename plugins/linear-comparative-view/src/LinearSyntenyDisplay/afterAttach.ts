@@ -2,13 +2,13 @@ import {
   getContainingView,
   getSession,
   isAbortException,
-  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import {
   createStopTokenRotation,
   detectDisplayAssembliesSwapped,
+  renameRegionsForAdapter,
 } from '@jbrowse/synteny-core'
 import { autorun, untracked } from 'mobx'
 
@@ -99,13 +99,12 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           const { assemblyManager } = getSession(self)
           const renameSnap = async (snap: (typeof rawSnaps)[number]) => ({
             ...snap,
-            displayedRegions: (
-              await renameRegionsIfNeeded(assemblyManager, {
-                sessionId,
-                adapterConfig,
-                regions: snap.displayedRegions,
-              })
-            ).regions,
+            displayedRegions: await renameRegionsForAdapter({
+              assemblyManager,
+              sessionId,
+              adapterConfig,
+              regions: snap.displayedRegions,
+            }),
           })
           const result = await getSession(self).rpcManager.call(
             sessionId,

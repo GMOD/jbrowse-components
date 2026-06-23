@@ -8,6 +8,7 @@ export {
 export { visitCigarRenderedSegments } from './cigarBpVisitor.ts'
 export { createStopTokenRotation } from './createStopTokenRotation.ts'
 export type { ActiveFetch } from './createStopTokenRotation.ts'
+export { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 export {
   applyAlpha,
   colorSchemes,
