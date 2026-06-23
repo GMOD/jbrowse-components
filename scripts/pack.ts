@@ -12,6 +12,7 @@ const subDirs = [
 ]
 const root = path.resolve(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'products', 'plugins']
+const packedTarballsByPackageName: Record<string, string> = {}
 
 for (const dir of subDirs) {
   fs.mkdirSync(path.join(root, 'component_tests', dir, 'packed'), {
@@ -68,6 +69,7 @@ for (const dir of workspaceDirs) {
         }
         if (tarball) {
           const newName = tarball.replace(/-\d+\.\d+\.\d+/, '')
+          packedTarballsByPackageName[pkgJson.name] = newName
           for (const sub of subDirs) {
             fs.copyFileSync(
               path.join(location, tarball),
@@ -78,5 +80,34 @@ for (const dir of workspaceDirs) {
         }
       }
     }
+  }
+}
+
+// Every packed tarball gets copied into every component_tests/<dir>/packed/
+// folder above, so a hand-curated subset of "resolutions" pointing at them
+// can silently drift (e.g. a new plugin added but never pinned, falling
+// through to whatever version is on the npm registry). Pin all of them
+// unconditionally instead - yarn only applies an entry if the package is
+// actually somewhere in that app's dependency tree, so harmless extras are
+// fine.
+for (const dir of subDirs) {
+  const pkgJsonPath = path.join(root, 'component_tests', dir, 'package.json')
+  const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
+  if (pkgJson.resolutions) {
+    const preserved = Object.fromEntries(
+      Object.entries(pkgJson.resolutions as Record<string, string>).filter(
+        ([name]) => !(name in packedTarballsByPackageName),
+      ),
+    )
+    pkgJson.resolutions = {
+      ...preserved,
+      ...Object.fromEntries(
+        Object.entries(packedTarballsByPackageName).map(([name, tarball]) => [
+          name,
+          `file:./packed/${tarball}`,
+        ]),
+      ),
+    }
+    fs.writeFileSync(pkgJsonPath, `${JSON.stringify(pkgJson, null, 2)}\n`)
   }
 }
