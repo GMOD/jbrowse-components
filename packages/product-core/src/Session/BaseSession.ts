@@ -165,6 +165,14 @@ export function BaseSessionModel<
         const mode = self.getPreference('animationMode')
         return isAnimationMode(mode) ? mode : 'system'
       },
+      /**
+       * #getter
+       * resolved scroll-to-zoom preference. Global and personal (never shared in
+       * a session snapshot); every wheel-zoom view reads this single value.
+       */
+      get scrollZoom(): boolean {
+        return self.getPreference('scrollZoom') === true
+      },
     }))
     .actions(self => ({
       /**
@@ -198,6 +206,16 @@ export function BaseSessionModel<
         self.preferencesOverrides = {
           ...self.preferencesOverrides,
           [key]: value,
+        }
+      },
+      /**
+       * #action
+       * set the global scroll-to-zoom preference (see the `scrollZoom` getter)
+       */
+      setScrollZoom(flag: boolean) {
+        self.preferencesOverrides = {
+          ...self.preferencesOverrides,
+          scrollZoom: flag,
         }
       },
       /**

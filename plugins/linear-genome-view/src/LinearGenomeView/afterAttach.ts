@@ -285,7 +285,6 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
           colorByCDS,
           showTrackOutlines,
           trackLabels,
-          scrollZoom,
         } = self
         localStorageSetItem('lgv-showCytobands', s(showCytobandsSetting))
         localStorageSetItem('lgv-showCenterLine', s(showCenterLine))
@@ -296,7 +295,6 @@ function setupLocalStorageAutorun(self: LinearGenomeViewModel) {
         if (trackLabels) {
           localStorageSetItem('lgv-trackLabels', trackLabels)
         }
-        localStorageSetItem('lgv-scrollZoom', s(scrollZoom))
       },
       {
         name: 'LGVLocalStorage',

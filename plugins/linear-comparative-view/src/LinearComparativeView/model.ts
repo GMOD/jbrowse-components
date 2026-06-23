@@ -69,10 +69,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        scrollZoom: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         */
         levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
@@ -102,6 +98,14 @@ function stateModelFactory(pluginManager: PluginManager) {
       width: undefined as number | undefined,
     }))
     .views(self => ({
+      /**
+       * #getter
+       * scroll-to-zoom is a global, personal preference resolved from the
+       * session; toggling it in any view applies everywhere
+       */
+      get scrollZoom() {
+        return getSession(self).scrollZoom
+      },
       /**
        * #getter
        */
@@ -243,10 +247,7 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setScrollZoom(arg: boolean) {
-        self.scrollZoom = arg
-        for (const v of self.views) {
-          v.setScrollZoom(arg)
-        }
+        getSession(self).setScrollZoom?.(arg)
       },
       /**
        * #action

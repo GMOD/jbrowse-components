@@ -129,8 +129,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   theme: Theme
   themeOptions?: SerializableThemeArgs
   animationMode: AnimationMode
+  scrollZoom: boolean
   getPreference: (key: string) => unknown
   setPreferenceOverride?: (key: string, value: unknown) => void
+  setScrollZoom?: (flag: boolean) => void
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void

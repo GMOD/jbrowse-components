@@ -366,13 +366,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
 
         /**
          * #property
-         * enable scroll-to-zoom on WebGL tracks
-         */
-        scrollZoom: types.optional(types.boolean, () =>
-          localStorageGetBoolean('lgv-scrollZoom', false),
-        ),
-        /**
-         * #property
          * when true, only the header and coordinate scalebar are rendered
          */
         scalebarOnly: types.stripDefault(types.boolean, false),
@@ -462,6 +455,14 @@ export function stateModelFactory(pluginManager: PluginManager) {
       }
     })
     .views(self => ({
+      /**
+       * #getter
+       * scroll-to-zoom is a global, personal preference resolved from the
+       * session; toggling it in any view applies everywhere
+       */
+      get scrollZoom() {
+        return getSession(self).scrollZoom
+      },
       /**
        * #getter
        */
@@ -897,7 +898,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       setScrollZoom(flag: boolean) {
-        self.scrollZoom = flag
+        getSession(self).setScrollZoom?.(flag)
       },
       /**
        * #action
@@ -2190,11 +2191,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
         trackLabelsOverride,
         colorByCDS,
         showTrackOutlines,
-        // scrollZoom is an input-handling preference personal to each user's
-        // machine, not a view appearance shared via sessions — destructure it
-        // out so it never lands in the snapshot. It stays localStorage-backed,
-        // so each browser keeps its own value.
-        scrollZoom,
         ...rest
       } = snap
 

@@ -26,5 +26,14 @@ export function PreferencesConfigSchemaFactory() {
       type: 'stringEnum',
       defaultValue: 'system',
     },
+    /**
+     * #slot configuration.preferences.scrollZoom
+     * when true, scrolling the mouse wheel over a track zooms in and out
+     * without holding Ctrl. Applies globally to all wheel-zoom views.
+     */
+    scrollZoom: {
+      type: 'boolean',
+      defaultValue: false,
+    },
   })
 }
