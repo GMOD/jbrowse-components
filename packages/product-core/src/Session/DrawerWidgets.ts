@@ -212,8 +212,9 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       },
     }))
     .postProcessSnapshot(snap => {
-      // drawerPosition default is localStorage-derived; strip only against the
-      // universal default 'right' so a localStorage-set value stays portable
+      // drawerPosition is a personal per-browser layout preference, not shared
+      // view state: destructure it out so it never lands in the snapshot. It
+      // stays localStorage-backed, so each browser keeps its own value.
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
       if (!snap) {
         return snap
@@ -221,7 +222,6 @@ export function DrawerWidgetSessionMixin(pluginManager: PluginManager) {
       const { drawerPosition, ...rest } = snap
       return {
         ...rest,
-        ...(drawerPosition !== 'right' ? { drawerPosition } : {}),
       } as typeof snap
     })
 }

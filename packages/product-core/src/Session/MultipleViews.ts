@@ -143,10 +143,14 @@ export function MultipleViewsSessionMixin(pluginManager: PluginManager) {
       if (!snap) {
         return snap
       }
+      // stickyViewHeaders is a personal per-browser UI preference, not shared
+      // view state: destructure it out so it never lands in the snapshot. It
+      // stays localStorage-backed, so each browser keeps its own value.
+      // useWorkspaces is kept in the snapshot because it changes layout intent,
+      // which is meaningful to carry across a shared session.
       const { stickyViewHeaders, useWorkspaces, ...rest } = snap
       return {
         ...rest,
-        ...(!stickyViewHeaders ? { stickyViewHeaders } : {}),
         ...(useWorkspaces ? { useWorkspaces } : {}),
       } as typeof snap
     })
