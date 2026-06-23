@@ -1,8 +1,9 @@
 ---
 import { getCollection } from 'astro:content'
+
 import DocsLayout from '../../layouts/DocsLayout.astro'
-import { renderMarkdown } from '../../lib/markdown.ts'
 import { entrySlug } from '../../lib/docs-sidebar.ts'
+import { renderMarkdown } from '../../lib/markdown.ts'
 
 export async function getStaticPaths() {
   const docs = await getCollection('docs')

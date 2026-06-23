@@ -1,7 +1,8 @@
 ---
-import type { SidebarEntry } from '../lib/docs-sidebar'
-import { containsSlug } from '../lib/docs-sidebar'
 import SidebarItem from './SidebarItem.astro'
+import { containsSlug } from '../lib/docs-sidebar.ts'
+
+import type { SidebarEntry } from '../lib/docs-sidebar.ts'
 
 interface Props {
   item: SidebarEntry

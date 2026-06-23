@@ -61,6 +61,12 @@
   margin: 0;
 }
 
+.fallback {
+  color: var(--color-text-muted);
+  font-size: 0.875rem;
+  margin: 0;
+}
+
 .error {
   width: 100%;
   text-align: center;

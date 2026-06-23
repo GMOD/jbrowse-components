@@ -1,6 +1,7 @@
 import eslint from '@eslint/js'
 import { defineConfig } from 'eslint/config'
 import { importX } from 'eslint-plugin-import-x'
+import eslintPluginAstro from 'eslint-plugin-astro'
 import eslintReact from '@eslint-react/eslint-plugin'
 import reactCompiler from 'eslint-plugin-react-compiler'
 import eslintPluginReactRefresh from 'eslint-plugin-react-refresh'
@@ -130,6 +131,7 @@ export default defineConfig(
   importX.flatConfigs.recommended,
   importX.flatConfigs.typescript,
   eslintReact.configs['recommended-typescript'],
+  ...eslintPluginAstro.configs.recommended,
   {
     files: ['**/*.{js,ts,jsx,tsx}'],
     plugins: {
@@ -160,6 +162,10 @@ export default defineConfig(
         },
       ],
       'tss-unused-classes/unused-classes': 'warn',
+      // Vite resource queries (`?raw`, `?url`, etc.) make an import resolve to
+      // different content than the bare path; without this, no-duplicates
+      // treats e.g. `from './x.tsx'` + `from './x.tsx?raw'` as duplicates.
+      'import-x/no-duplicates': ['error', { considerQueryString: true }],
       // Pluggable components (ReactComponent/HeadingComponent/etc.) are
       // resolved via pluginManager registry lookups (getViewType,
       // getWidgetType, evaluateExtensionPoint) and rendered as JSX. This rule
@@ -422,6 +428,25 @@ export default defineConfig(
           ],
         },
       ],
+    },
+  },
+  // The frontmatter of .astro files isn't part of any tsconfig `include`, so
+  // type-aware linting (which needs `parserOptions.project`) can't work
+  // there. Must come last so it wins over the blanket rule blocks above that
+  // re-enable type-checked rules with no `files` restriction.
+  {
+    files: ['**/*.astro', '**/*.astro/*.js', '**/*.astro/*.ts'],
+    languageOptions: {
+      parserOptions: {
+        project: null,
+      },
+    },
+    rules: {
+      ...tseslint.configs.disableTypeChecked.rules,
+      // `{list.map(x => <div>)}` in an .astro template compiles to static
+      // HTML, not a React reconciliation tree, so there's no virtual-DOM key
+      // to provide — this rule only makes sense for actual React JSX.
+      '@eslint-react/no-missing-key': 'off',
     },
   },
 )

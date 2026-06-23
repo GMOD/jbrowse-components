@@ -1,11 +1,14 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
-import { baseUrl } from '../lib/base-url'
-import page from '../styles/page.module.css'
+import { baseUrl } from '../lib/base-url.ts'
 import btn from '../styles/button.module.css'
+import page from '../styles/page.module.css'
 ---
 
-<BaseLayout title="JBrowse 2 Cancer Resources">
+<BaseLayout
+  title="JBrowse 2 Cancer Resources"
+  description="A hub of tutorials, plugins, and information for visualizing cancer genomics data — somatic structural variants, cancer cell line demos, and more — in JBrowse 2."
+>
   <div class={page.content}>
     <div class="hero">
       <h1>JBrowse 2 Cancer Resources</h1>

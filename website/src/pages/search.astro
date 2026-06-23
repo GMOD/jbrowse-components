@@ -1,8 +1,8 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro'
+import { baseUrl } from '../lib/base-url.ts'
 import page from '../styles/page.module.css'
 import styles from '../styles/search.module.css'
-import { baseUrl } from '../lib/base-url'
 
 const q = Astro.url.searchParams.get('q') ?? ''
 ---
@@ -64,7 +64,9 @@ const q = Astro.url.searchParams.get('q') ?? ''
   function getCategory(url) {
     const path = new URL(url, location.href).pathname
     const match = path.match(/\/docs\/(.*)/)
-    if (!match) return 'other'
+    if (!match) {
+      return 'other'
+    }
     const slug = match[1].replace(/\/$/, '')
 
     if (
@@ -100,10 +102,18 @@ const q = Astro.url.searchParams.get('q') ?? ''
 
   function renderResults() {
     const enabled = new Set()
-    if (filterUser.checked) enabled.add('user')
-    if (filterConfig.checked) enabled.add('config')
-    if (filterDeveloper.checked) enabled.add('developer')
-    if (filterAutogen.checked) enabled.add('autogen')
+    if (filterUser.checked) {
+      enabled.add('user')
+    }
+    if (filterConfig.checked) {
+      enabled.add('config')
+    }
+    if (filterDeveloper.checked) {
+      enabled.add('developer')
+    }
+    if (filterAutogen.checked) {
+      enabled.add('autogen')
+    }
     enabled.add('other')
 
     const visible = lastResults.filter(item => enabled.has(item.category))

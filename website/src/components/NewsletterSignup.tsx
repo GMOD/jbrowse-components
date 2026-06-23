@@ -2,6 +2,7 @@ import { useState } from 'react'
 import type { SyntheticEvent } from 'react'
 
 import styles from './NewsletterSignup.module.css'
+import { baseUrl } from '../lib/base-url.ts'
 
 const API_URL = import.meta.env.PUBLIC_NEWSLETTER_API_URL as string | undefined
 
@@ -36,7 +37,13 @@ export default function NewsletterSignup() {
   }
 
   if (!API_URL) {
-    return null
+    return (
+      <p className={styles.fallback}>
+        Newsletter signup is unavailable here — see{' '}
+        <a href={`${baseUrl}/contact/`}>contact</a> for other ways to follow
+        JBrowse releases.
+      </p>
+    )
   }
 
   return (

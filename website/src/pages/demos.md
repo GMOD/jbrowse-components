@@ -1,6 +1,9 @@
 ---
 layout: '../layouts/MarkdownLayout.astro'
 title: JBrowse 2 Demos
+description:
+  Live, in-browser JBrowse 2 demos covering structural variants, synteny,
+  methylation, multi-sample variants, and more.
 ---
 
 # JBrowse 2 demos

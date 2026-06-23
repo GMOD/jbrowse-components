@@ -1,11 +1,12 @@
 ---
 import { getCollection } from 'astro:content'
-import { baseUrl } from '../../lib/base-url'
-import { blogPath } from '../../lib/blog-path'
+
+import NewsletterSignup from '../../components/NewsletterSignup.tsx'
 import BlogLayout from '../../layouts/BlogLayout.astro'
+import { baseUrl } from '../../lib/base-url.ts'
+import { blogPath } from '../../lib/blog-path.ts'
 import { renderMarkdown } from '../../lib/markdown.ts'
 import blog from '../../styles/blog.module.css'
-import NewsletterSignup from '../../components/NewsletterSignup'
 
 export async function getStaticPaths() {
   const posts = (await getCollection('blog')).sort(
@@ -32,7 +33,11 @@ const { slug } = Astro.params
 const { html } = await renderMarkdown(post.body ?? '')
 ---
 
-<BlogLayout title={post.data.title} currentSlug={slug}>
+<BlogLayout
+  title={post.data.title}
+  currentSlug={slug}
+  description={post.data.description}
+>
   <article class="post">
     <header>
       <h1>{post.data.title}</h1>

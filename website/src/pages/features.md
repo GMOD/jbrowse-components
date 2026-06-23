@@ -1,6 +1,10 @@
 ---
 layout: '../layouts/MarkdownLayout.astro'
 title: JBrowse 2 Feature Overview
+description:
+  Multiple linked view types, structural variant and synteny visualization, deep
+  alignments inspection, Hi-C, and an extensible plugin system — all running on
+  the web, on desktop, or embedded in your own app.
 ---
 
 # JBrowse 2 feature overview

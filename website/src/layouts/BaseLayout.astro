@@ -1,13 +1,15 @@
 ---
-import { baseUrl } from '../lib/base-url'
-import { navLinks } from '../lib/nav'
 import styles from './BaseLayout.module.css'
+import { baseUrl } from '../lib/base-url.ts'
+import { navLinks } from '../lib/nav.ts'
 
 interface Props {
   title?: string
   description?: string
 }
-const { title = 'JBrowse', description } = Astro.props
+const DEFAULT_DESCRIPTION =
+  'JBrowse is a pluggable, open-source platform for genome visualization — linear, circular, dotplot, and synteny views, structural variant inspection, and alignments, running on the web, on desktop, or embedded in your own app.'
+const { title = 'JBrowse', description = DEFAULT_DESCRIPTION } = Astro.props
 const pathname = Astro.url.pathname
 const ogImage = new URL(`${baseUrl}/img/jbrowse-og.png`, Astro.site).href
 
@@ -26,9 +28,9 @@ const navActive = styles.navActive!
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
-    {description && <meta name="description" content={description} />}
+    <meta name="description" content={description} />
     <meta property="og:title" content={title} />
-    {description && <meta property="og:description" content={description} />}
+    <meta property="og:description" content={description} />
     <meta property="og:type" content="website" />
     <meta property="og:url" content={Astro.url.href} />
     <meta property="og:image" content={ogImage} />
@@ -36,7 +38,7 @@ const navActive = styles.navActive!
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="twitter:title" content={title} />
-    {description && <meta name="twitter:description" content={description} />}
+    <meta name="twitter:description" content={description} />
     <meta name="twitter:image" content={ogImage} />
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />

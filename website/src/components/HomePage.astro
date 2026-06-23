@@ -1,8 +1,9 @@
 ---
 import { Icon } from 'astro-icon/components'
-import { baseUrl } from '../lib/base-url'
+
+import NewsletterSignup from './NewsletterSignup.tsx'
+import { baseUrl } from '../lib/base-url.ts'
 import btn from '../styles/button.module.css'
-import NewsletterSignup from './NewsletterSignup'
 ---
 
 <div class="outer-box">
@@ -57,7 +58,7 @@ import NewsletterSignup from './NewsletterSignup'
       <div>
         <ul>
           <li>
-            Visualize
+            Visualize{' '}
             <a href={`${baseUrl}/docs/user_guides/sv_visualization/`}
               >structural variants</a
             > and <a href={`${baseUrl}/docs/tutorials/synteny_visualization/`}
@@ -70,7 +71,9 @@ import NewsletterSignup from './NewsletterSignup'
             >, linked to genomic variants
           </li>
           <li>
-            <a href={`${baseUrl}/docs/user_guide/`}>Load common data types</a>
+            <a href={`${baseUrl}/docs/user_guide/`}>Load common data types</a>{
+              ' '
+            }
             including BAM, CRAM, tabix-indexed VCF, GFF, BED, BigBed, BigWig, and
             more
           </li>
@@ -80,7 +83,7 @@ import NewsletterSignup from './NewsletterSignup'
           </li>
         </ul>
 
-        See <a href={`${baseUrl}/demos/`}>demos</a>
+        See <a href={`${baseUrl}/demos/`}>demos</a>{' '}
         and <a href={`${baseUrl}/gallery/`}>gallery</a> pages for examples
       </div>
       <div class="features-image">
@@ -178,7 +181,7 @@ import NewsletterSignup from './NewsletterSignup'
       JBrowse development has received support from the US National Institutes
       of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
       Institute for Cancer Research (OICR), and the University of California,
-      Berkeley. JBrowse is released under the
+      Berkeley. JBrowse is released under the{' '}
       <a href="https://www.apache.org/licenses/LICENSE-2.0"
         >Apache License, Version 2.0</a
       >.

@@ -1,13 +1,14 @@
 ---
 import BaseLayout from './BaseLayout.astro'
 import page from '../styles/page.module.css'
+
 import type { MarkdownLayoutProps } from 'astro'
 
-type Props = MarkdownLayoutProps<{ title?: string }>
+type Props = MarkdownLayoutProps<{ title?: string; description?: string }>
 const { frontmatter } = Astro.props
 ---
 
-<BaseLayout title={frontmatter.title}>
+<BaseLayout title={frontmatter.title} description={frontmatter.description}>
   <div class:list={[page.content, 'md']}>
     <slot />
   </div>

@@ -1,9 +1,10 @@
 ---
 import { getCollection } from 'astro:content'
-import { baseUrl } from '../lib/base-url'
+
 import SidebarLayout from './SidebarLayout.astro'
 import SidebarItem from '../components/SidebarItem.astro'
-import { buildSidebar } from '../lib/docs-sidebar'
+import { baseUrl } from '../lib/base-url.ts'
+import { buildSidebar } from '../lib/docs-sidebar.ts'
 
 interface Props {
   title: string

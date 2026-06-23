@@ -180,11 +180,12 @@
     border-bottom: 1px solid rgba(255, 255, 255, 0.07);
     font-size: 1rem;
   }
-  .navRight {
+  /* Keep search reachable on mobile; the social icons stay in the footer. */
+  .socialIcon {
     display: none;
   }
   .navToggle {
     display: block;
-    margin-left: auto;
+    margin-left: 0.5rem;
   }
 }

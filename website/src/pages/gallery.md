@@ -1,6 +1,9 @@
 ---
 layout: '../layouts/MarkdownLayout.astro'
 title: JBrowse 2 Visualizations Gallery
+description:
+  A gallery of genome visualizations built with JBrowse 2, including synteny,
+  structural variants, alignments, and Hi-C contact matrices.
 ---
 
 # JBrowse 2 visualizations gallery
