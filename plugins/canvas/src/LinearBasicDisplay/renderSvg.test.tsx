@@ -121,7 +121,11 @@ describe('renderSvg', () => {
       }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
+    const html = renderToString(
+      <svg width={800} height={100} viewBox="0 0 800 100">
+        {result as React.ReactElement}
+      </svg>,
+    )
     extractAndWriteSvg(html, 'error.svg')
     expect(html).toMatchSnapshot()
   })
@@ -135,7 +139,11 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
+    const html = renderToString(
+      <svg width={800} height={100} viewBox="0 0 800 100">
+        {result as React.ReactElement}
+      </svg>,
+    )
     extractAndWriteSvg(html, 'with-features.svg')
     expect(html).toMatchSnapshot()
   })
@@ -145,7 +153,11 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[99, makeData()]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
+    const html = renderToString(
+      <svg width={800} height={100} viewBox="0 0 800 100">
+        {result as React.ReactElement}
+      </svg>,
+    )
     extractAndWriteSvg(html, 'empty.svg')
     expect(html).toMatchSnapshot()
   })
@@ -176,7 +188,11 @@ describe('renderSvg', () => {
       makeModel({ laidOutDataMap: new Map([[0, data]]) }),
     )
     expect(result).not.toBeNull()
-    const html = renderToString(<svg>{result as React.ReactElement}</svg>)
+    const html = renderToString(
+      <svg width={800} height={100} viewBox="0 0 800 100">
+        {result as React.ReactElement}
+      </svg>,
+    )
     extractAndWriteSvg(html, 'reversed.svg')
     expect(html).toMatchSnapshot()
   })
