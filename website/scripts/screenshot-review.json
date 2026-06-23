@@ -254,9 +254,9 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "good",
-    "note": "FIXED: annotation reworded to \"Right-click a mismatch in the pileup to sort reads by the base there\".",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "status": "bad",
+    "note": "increase height a little bit, particularly top screenshot, because menu is cut off",
+    "reviewedAt": "2026-06-24T03:31:32.303Z",
     "hash": "0dec30eca3b33a9f1493fddbf734e34ce2b9db41"
   },
   "alignments/filter_dialog": {

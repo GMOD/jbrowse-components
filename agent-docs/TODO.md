@@ -14,3 +14,5 @@
 ## autodiagonalize
 
 choose query and target order?
+
+## reduce wordiness on alignments docs
