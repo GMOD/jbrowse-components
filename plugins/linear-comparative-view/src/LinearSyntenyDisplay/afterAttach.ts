@@ -2,6 +2,7 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  renameRegionsIfNeeded,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
@@ -28,17 +29,22 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         if (self.isMinimized) {
           return
         }
+        // A synteny level draws between two adjacent genome views; this display
+        // only depends on those two, not the whole stack.
         const view = getContainingView(self) as LinearSyntenyViewModel
+        const level = self.level
+        const queryView = view.views[level]
+        const targetView = view.views[level + 1]
         if (
           !view.initialized ||
-          !view.views.every(a => a.displayedRegions.length > 0 && a.initialized)
+          !queryView?.initialized ||
+          !targetView?.initialized ||
+          queryView.displayedRegions.length === 0 ||
+          targetView.displayedRegions.length === 0
         ) {
           return
         }
-        const level = self.level
-        if (level + 1 >= view.views.length) {
-          return
-        }
+        const connectedViews = [queryView, targetView]
 
         // Tracked deps that SHOULD trigger refetch when changed:
         //   - displayedRegions (per view) — region set drives cumBp output
@@ -51,7 +57,7 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Not tracked: raw `bpPerPx`, `offsetPx`, `width`,
         // `minimumBlockWidth`. Scroll moves are
         // absorbed by the worker's 50% px buffer.
-        for (const v of view.views) {
+        for (const v of connectedViews) {
           void v.displayedRegions
           void Math.floor(Math.log2(Math.max(v.bpPerPx, 1)))
         }
@@ -66,8 +72,8 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // `untracked` prevents them from registering as autorun deps, so
         // scroll/zoom changes don't refire the fetch. The worker still
         // sees the *current* offsetPx/bpPerPx for the cull at fetch time.
-        const viewSnaps = untracked(() =>
-          view.views.map(v => ({
+        const rawSnaps = untracked(() =>
+          connectedViews.map(v => ({
             bpPerPx: v.bpPerPx,
             offsetPx: v.offsetPx,
             displayedRegions: v.displayedRegions,
@@ -84,13 +90,30 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
 
         try {
           const sessionId = getRpcSessionId(self)
+          // RefName reconciliation (canonical <-> adapter aliases, e.g.
+          // "1" <-> "NC_012119.1") happens here on the main thread because the
+          // RPC worker has no assemblyManager to resolve aliases.
+          // renameRegionsIfNeeded rewrites each region's refName into the
+          // synteny adapter's namespace, so the worker's getFeatures query, its
+          // cumBp index, and the feature refNames it reads back all line up.
+          const { assemblyManager } = getSession(self)
+          const renameSnap = async (snap: (typeof rawSnaps)[number]) => ({
+            ...snap,
+            displayedRegions: (
+              await renameRegionsIfNeeded(assemblyManager, {
+                sessionId,
+                adapterConfig,
+                regions: snap.displayedRegions,
+              })
+            ).regions,
+          })
           const result = await getSession(self).rpcManager.call(
             sessionId,
             'SyntenyGetFeaturesAndPositions',
             {
               adapterConfig,
-              viewSnaps,
-              level,
+              queryView: await renameSnap(rawSnaps[0]!),
+              targetView: await renameSnap(rawSnaps[1]!),
               stopToken,
               drawCIGAR,
               drawCIGARMatchesOnly,

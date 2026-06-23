@@ -10,8 +10,10 @@ import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 export interface SyntenyGetFeaturesAndPositionsArgs {
   adapterConfig: Record<string, unknown>
-  viewSnaps: SyntenyViewSnap[]
-  level: number
+  // The two adjacent genome views this synteny level connects, with refNames
+  // already renamed into the adapter's namespace on the main thread.
+  queryView: SyntenyViewSnap
+  targetView: SyntenyViewSnap
   sessionId: string
   stopToken?: StopToken
   colorBy?: string

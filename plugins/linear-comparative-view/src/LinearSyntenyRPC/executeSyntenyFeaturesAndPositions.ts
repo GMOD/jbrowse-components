@@ -41,8 +41,8 @@ export async function executeSyntenyFeaturesAndPositions({
   pluginManager,
   sessionId,
   adapterConfig,
-  viewSnaps,
-  level,
+  queryView,
+  targetView,
   stopToken,
   drawCIGAR = true,
   drawCIGARMatchesOnly = false,
@@ -53,8 +53,12 @@ export async function executeSyntenyFeaturesAndPositions({
   pluginManager: PluginManager
   sessionId: string
   adapterConfig: Record<string, unknown>
-  viewSnaps: SyntenyViewSnap[]
-  level: number
+  // The two adjacent genome views this synteny level connects. RefNames are
+  // already in the adapter's namespace — refName aliasing is resolved on the
+  // main thread (the RPC worker has no assemblyManager), so the cumBp index and
+  // the feature refNames line up directly. See LinearSyntenyDisplay/afterAttach.
+  queryView: SyntenyViewSnap
+  targetView: SyntenyViewSnap
   stopToken?: StopToken
   drawCIGAR?: boolean
   drawCIGARMatchesOnly?: boolean
@@ -66,11 +70,14 @@ export async function executeSyntenyFeaturesAndPositions({
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
 
-  const bpPerPx = viewSnaps[level]!.bpPerPx
+  const v1 = queryView
+  const v2 = targetView
+
+  const bpPerPx = v1.bpPerPx
   // forward statusCallback so the adapter's determinate download + parse phases
   // drive the bar; the loading overlay shows a plain "Loading" label otherwise
   const allFeatures = await dataAdapter.getFeaturesInMultipleRegionsArray(
-    viewSnaps[level]!.displayedRegions,
+    v1.displayedRegions,
     {
       stopToken,
       bpPerPx,
@@ -121,9 +128,6 @@ export async function executeSyntenyFeaturesAndPositions({
   )
   const features = decorated.map(d => d.f)
 
-  const v1 = viewSnaps[level]!
-  const v2 = viewSnaps[level + 1]!
-
   const v1Index = buildBpRegionIndex(v1)
   const v2Index = buildBpRegionIndex(v2)
 
@@ -170,17 +174,18 @@ export async function executeSyntenyFeaturesAndPositions({
   let validCount = 0
   for (const f of features) {
     checkStopToken2(stopTokenChecker)
-    const refName = f.get('refName')
     const mate = f.get('mate') as {
       start: number
       end: number
       refName: string
       assemblyName: string
     }
+    const refName = f.get('refName')
+    const mateRefName = mate.refName
     // Whole-genome PAF at low zoom: most features are on refNames not in the
     // displayed regions of one or both views. Skip before any bpToCumBp
     // arithmetic.
-    if (!v1RefNames.has(refName) || !v2RefNames.has(mate.refName)) {
+    if (!v1RefNames.has(refName) || !v2RefNames.has(mateRefName)) {
       continue
     }
 
@@ -192,8 +197,8 @@ export async function executeSyntenyFeaturesAndPositions({
 
     const p11 = bpToCumBp(v1Index, refName, f1s)
     const p12 = bpToCumBp(v1Index, refName, f1e)
-    const p21 = bpToCumBp(v2Index, mate.refName, mate.start)
-    const p22 = bpToCumBp(v2Index, mate.refName, mate.end)
+    const p21 = bpToCumBp(v2Index, mateRefName, mate.start)
+    const p22 = bpToCumBp(v2Index, mateRefName, mate.end)
 
     if (
       p11 === undefined ||
@@ -244,7 +249,7 @@ export async function executeSyntenyFeaturesAndPositions({
     names.push(f.get('name') ?? '')
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')
-    mateRefNames.push(mate.refName)
+    mateRefNames.push(mateRefName)
     mateAssemblyNames.push(mate.assemblyName)
     // Only parse the CIGAR when it will actually be visited. Chromosome-scale
     // alignments can carry multi-megabyte CIGAR strings (~4 bytes/op in the
