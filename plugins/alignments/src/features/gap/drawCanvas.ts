@@ -50,8 +50,11 @@ export function drawGaps(
         alpha >= 1 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
       ctx.fillRect(x1, y, w, fH)
     } else if (gapType === GAP_SKIP) {
+      // No clearRect needed: drawReads splits spliced reads into per-exon
+      // segments, so the intron span is already unpainted. Just draw the 1px
+      // centerline. (clearRect is a no-op on SvgCanvas — relying on it left
+      // the read body solid under the line in vector SVG export.)
       ctx.fillStyle = rgba255(state.colors.colorSkip, intronAlpha(fH))
-      ctx.clearRect(x1, y, w, fH)
       const midY = y + fH / 2
       ctx.fillRect(x1, midY - 0.5, w, 1)
     }

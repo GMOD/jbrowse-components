@@ -23,9 +23,7 @@ Turn on modification or methylation coloring from the track menu. Each
 modification type renders in its own color, with intensity reflecting the
 modification probability (ML tag value).
 
-<Figure caption="A methylated and unmethylated CpG island shown using the MM tag with nanopore reads on the COLO829 (melanoma) cancer cell line, alongside a UCSC CpG island annotation track." src="/img/modifications.png" />
-
-[Live demo — COLO829 CpG island methylation](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-LffYr8SI5E&password=VmZVl)
+<Figure caption="The same nanopore track shown in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode only draws the positive 5mC calls listed in the MM tag, so a hypomethylated region looks nearly empty. The MM tag does not necessarily mark unmodified bases, so methylation mode instead scans the read sequence itself for CpG dinucleotides and paints any that the MM tag did not call methylated blue — that manual lookup is what lets it fill a hypomethylated region with solid blue where modifications mode shows nothing." src="/img/alignments/modifications2.png" />
 
 ## Aggregate methylation with modkit bedMethyl
 

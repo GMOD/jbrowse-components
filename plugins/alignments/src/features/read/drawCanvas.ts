@@ -28,6 +28,11 @@ interface DrawReadsRegion {
   readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
+  // Per-exon segments: reads split at CIGAR N/skip. Each segment carries its
+  // parent read index so per-read color/strand/flags resolve via readIndex.
+  segmentPositions: Uint32Array
+  segmentReadIndices: Uint32Array
+  segmentEdgeFlags: Uint8Array
 }
 
 // Chevron geometry + gating. CHEVRON_PX / CHEVRON_DIRLESS_MIN_WIDTH_PX /
@@ -138,15 +143,21 @@ export function drawReads(
   ctx.strokeStyle = OUTLINE_STYLE
   ctx.lineWidth = OUTLINE_WIDTH
 
-  for (let i = 0; i < region.readFlags.length; i++) {
+  // Walk per-exon segments, not whole reads: a spliced read contributes one
+  // body rect per exon, so the intron span between them is never filled — the
+  // skip pass (drawGaps) draws only its 1px centerline there, with no
+  // clearRect. Mirrors the GPU read pass (read.slang / packReadSegments).
+  const numSegments = region.segmentReadIndices.length
+  for (let s = 0; s < numSegments; s++) {
+    const i = region.segmentReadIndices[s]!
     const xStart = bpToScreenX(
-      region.readPositions[i * 2]!,
+      region.segmentPositions[s * 2]!,
       block,
       bpLength,
       fullBlockWidth,
     )
     const xEnd = bpToScreenX(
-      region.readPositions[i * 2 + 1]!,
+      region.segmentPositions[s * 2 + 1]!,
       block,
       bpLength,
       fullBlockWidth,
@@ -165,9 +176,18 @@ export function drawReads(
       colorOpts,
     )
 
+    // Chevron rides only the read's leading exon: forward → last segment,
+    // reverse → first segment (edgeFlags bit 1 = isLast, bit 0 = isFirst).
+    // Matches read.slang's edge-flag gate so the arrow sits at the true read
+    // end, never at an internal intron boundary.
+    const edgeFlags = region.segmentEdgeFlags[s]!
     const strand = region.readStrands[i]!
+    const leadingExon =
+      (strand > 0 && (edgeFlags & 0b10) !== 0) ||
+      (strand < 0 && (edgeFlags & 0b01) !== 0)
     const hasChev =
       strand !== 0 &&
+      leadingExon &&
       showChevron(
         chevronFrame,
         region.readFlags[i]!,

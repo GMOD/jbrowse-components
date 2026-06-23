@@ -59,6 +59,10 @@ function makeRegion(reads: ReadSpec[]) {
   const readFlags = new Uint16Array(n)
   const readInterchrom = new Uint8Array(n)
   const readInsertSizes = new Float32Array(n)
+  // One unspliced segment per read: spans the whole read, flagged first+last.
+  const segmentPositions = new Uint32Array(n * 2)
+  const segmentReadIndices = new Uint32Array(n)
+  const segmentEdgeFlags = new Uint8Array(n)
   for (const [i, r] of reads.entries()) {
     readPositions[i * 2] = r.start
     readPositions[i * 2 + 1] = r.end
@@ -66,6 +70,10 @@ function makeRegion(reads: ReadSpec[]) {
     readFlags[i] = r.flags ?? 0
     readInterchrom[i] = r.interchrom ?? 0
     readInsertSizes[i] = r.insertSize ?? 0
+    segmentPositions[i * 2] = r.start
+    segmentPositions[i * 2 + 1] = r.end
+    segmentReadIndices[i] = i
+    segmentEdgeFlags[i] = 0b11
   }
   return {
     readPositions,
@@ -78,6 +86,9 @@ function makeRegion(reads: ReadSpec[]) {
     readInsertSizes,
     readChainHasSupp: undefined,
     readInterchrom,
+    segmentPositions,
+    segmentReadIndices,
+    segmentEdgeFlags,
   }
 }
 

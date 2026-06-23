@@ -107,7 +107,7 @@ the blue is positive evidence that the CpGs are present but unmethylated, not
 missing data.
 
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a UCSC CpG island on chr20. Enable this from the track menu's Color by → Base modifications → All modification types." src="/img/alignments/modifications1.png" />
-<Figure caption="The same track in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode is nearly empty because there are few 5mC calls here; methylation mode fills with blue because it marks every reference CpG and colors the unmethylated ones blue." src="/img/alignments/modifications2.png" />
+<Figure caption="The same track in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode only draws the positive 5mC calls listed in the MM tag, so a hypomethylated region looks nearly empty. The MM tag can be configured to mark unmodified bases too (listing them with a low, e.g. 0, probability) but does not always do so, so methylation mode instead scans the read sequence itself for CpG dinucleotides and paints any that the MM tag did not call methylated blue — that manual lookup is what lets it fill a hypomethylated region with solid blue where modifications mode shows nothing." src="/img/alignments/modifications2.png" />
 
 ### Color by strand
 

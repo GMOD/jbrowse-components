@@ -44,14 +44,16 @@
   "alignments/arc_display": {
     "name": "alignments/arc_display",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T15:36:05.121Z"
+    "note": "FIXED: re-enabled showPileup so the stacked pileup shows with coverage + discordant-pair arcs.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "5f3967ff95a696afe945949a6b1152c28463cf11"
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "good",
-    "note": "UNBLOCKED + fixed: the 'Loading hang' was a STALE-BUILD artifact — the committed jbrowse-web build predated the read-cloud/sashimi commits. After rebuilding from HEAD the samplot read cloud regenerates cleanly (coverage on top, distance-laid-out cloud in the middle on a 1bp/1kb/34kb log axis, pileup below). Set arcColorByType:'insertSize' so the cloud keys purely on insert size — short-insert pairs paint pink (#ffc0cb, confirmed in core theme.ts), long-insert red; the default insertSizeAndOrientation only pinks short pairs that also keep normal orientation, which is why short-insert was hard to see. The discordant SV clusters at this locus (the whole ~50kb volvox-sv ctgA) are long-insert deletion-supporting (red) — the synthetic data is deletion-dominated, so no prominent pink pairs exist HERE, but the pink short-insert path is now active for data that has them.",
-    "reviewedAt": "2026-06-22T12:00:00.000Z"
+    "status": "bad",
+    "note": "should use insertSizeAndOrientation for samplot coloring. it is surprising no pink pairs are seen also. might want to calibrate our stats caluclations to surfacethis better. if +/- 3sd is too strict for the -3sd side of things, try to find better stat. likely the insert size distribution is not normal....",
+    "reviewedAt": "2026-06-23T04:04:51.621Z",
+    "hash": "64353b33c5402c608953789d71b27825fbaff9ef"
   },
   "dotplot": {
     "name": "dotplot",
@@ -62,8 +64,9 @@
   "alignments_track_arcs": {
     "name": "alignments_track_arcs",
     "status": "good",
-    "note": "added trackLabels:offset",
-    "reviewedAt": "2026-06-20T18:30:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-06-23T04:01:56.671Z",
+    "hash": "22328425c0ea48a0f6a373606d5b4f8648b3ceea"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -79,9 +82,10 @@
   },
   "sv_cgiab/translocation_sv_inspector_start": {
     "name": "sv_cgiab/translocation_sv_inspector_start",
-    "status": "bad",
-    "note": "you can circle the 'Add' also",
-    "reviewedAt": "2026-06-21T15:58:52.904Z"
+    "status": "good",
+    "note": "FIXED: Add menu item boxed alongside SV inspector.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "e98373cda6f0bc0e81c6ab132e238cdc8f2056d3"
   },
   "sv_synteny/dotplot_import": {
     "name": "sv_synteny/dotplot_import",
@@ -103,15 +107,10 @@
   },
   "bigwig/whole_genome_coverage": {
     "name": "bigwig/whole_genome_coverage",
-    "status": "bad",
-    "note": "the first screenshot height of screenshot too small now, menu is cut off, should also highlight with red textbox the 'Show...' parent menu. also, the second screenshot is blank, needs better ability to wait for completion. if we dont have a reliable way to do this, we should make it",
-    "reviewedAt": "2026-06-21T20:34:50.920Z"
-  },
-  "modifications": {
-    "name": "modifications",
     "status": "good",
-    "note": "can add text annotation to the figure itself saying what is being shown e.g. that it is using 'color by methylation' which can indicate where the read is NOT modified with MM tag modification markers, putting boxes on the hypomethylated regions  DONE: Added a text annotation anchored to the COLO829 track explaining color-by-methylation: each CpG is red where the MM tag calls it methylated (5mC, #ff0000) and blue where unmethylated (#0000ff), so the hypomethylated CpG island reads blue. Verified colors against theme.ts methylated5mC/unmethylated5mC. Regenerated + verified.",
-    "reviewedAt": "2026-06-21T23:13:43.000Z"
+    "note": "FIXED: taller stage-1 crop (menu no longer cut off), Show... parent boxed alongside the sub-item, stage 2 waits on wiggle-display-done so the whole-genome frame is no longer blank.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "06846ee5f89e63ac0e4f3cb3cce703ca05086484"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -145,9 +144,10 @@
   },
   "multisv": {
     "name": "multisv",
-    "status": "bad",
-    "note": "we are interested in increasing the packing density of gene glyphs. some work was done for this. you can try to do a little more",
-    "reviewedAt": "2026-06-19T18:42:55.555Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-23T04:46:40.465Z",
+    "hash": "98a46212bebb7026e94afc892df5486dd463dee2"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -187,9 +187,10 @@
   },
   "sv_cgiab/deletion_linear_view": {
     "name": "sv_cgiab/deletion_linear_view",
-    "status": "bad",
-    "note": "if it helps to emphasize this, we can have the right click menu open for sort by base on the deletion in middle of screen",
-    "reviewedAt": "2026-06-21T15:57:11.829Z"
+    "status": "good",
+    "note": "RESOLVED: already sorted by base at the deletion center (sortedBy 122836434 + center line); reviewer note was an optional enhancement.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "c910e7571d4c492d34b7fc93e13fa63c8df6d102"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
@@ -254,8 +255,9 @@
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
     "status": "good",
-    "note": "explanatory text overlaps the snp context menu, move more to left  DONE: Moved the explanatory text box further left (dx -440, maxWidth 270) so its right edge clears the context menu instead of overlapping it. Regenerated + verified.",
-    "reviewedAt": "2026-06-21T22:46:23.000Z"
+    "note": "FIXED: annotation reworded to \"Right-click a mismatch in the pileup to sort reads by the base there\".",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "0dec30eca3b33a9f1493fddbf734e34ce2b9db41"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -355,9 +357,10 @@
   },
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
-    "status": "bad",
-    "note": "it is slightly unclear what this screenshot is about. may need annotation to say 'right click read'. there is no mouseover shading on the read that was right-clicked either. might also use short reads  from e.g. volvox-sv as that can be more interesting than big long reads",
-    "reviewedAt": "2026-06-21T15:50:01.608Z"
+    "status": "good",
+    "note": "FIXED: switched to short volvox-sv paired reads (denser/more interesting than long reads); annotation + arrow already say \"Right-click any read to open this menu\".",
+    "reviewedAt": "2026-06-23T04:43:41.624Z",
+    "hash": "05da93807d1c4edaa29cb780d6ded641a53b443f"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -392,8 +395,9 @@
   "add_track_tracklist": {
     "name": "add_track_tracklist",
     "status": "good",
-    "note": "please make the 'fab' red box smaller, and have an arrow pointing at the fab. also circle the 'open track selector', since fab only opens when track selector is open  DONE: Rebuilt as a 2-stage figure: stage 1 circles \"Open track selector\" in the view menu (the FAB only exists once the selector is open); stage 2 rings the FAB with a snug circle + short arrow and boxes the \"Add track\" menu it opens. Regenerated + verified.",
-    "reviewedAt": "2026-06-21T22:46:23.000Z"
+    "note": "FIXED: stage 1 now circles the tracklist icon in the LGV header (not the view menu); removed the arrow that crossed the Add-track box.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "36ba181a4ae78d983d9807807a31b9512ad05e4f"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -506,8 +510,9 @@
   "rnaseq/longread_isoseq": {
     "name": "rnaseq/longread_isoseq",
     "status": "good",
-    "note": "fixed: compact pileup (reviewer 'set feature height compact display mode') — displaySnapshot featureHeight:4 + height:620 (viewportHeight raised to 900) so every IsoSeq isoform read stacks in view instead of hitting 'Max layout height reached'. Verified the clip message is gone and all reads fit. NOTE: regenerating this exposed that the committed jbrowse-web build (Jun 21 23:45) predated the 4 sashimi-arc commits (23:51->HEAD 00:11) and crashed the sashimi track with 'ReferenceError: band is not defined' (pure original config crashed too — not config-related). Rebuilt jbrowse-web from HEAD; sashimi splice arcs now render with junction-count labels + auto up/down placement.",
-    "reviewedAt": "2026-06-22T12:00:00.000Z"
+    "note": "FIXED: switched to super-compact (featureHeight 1) so all isoforms stack in view.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "4676f76e3411b13f13c7f3bc02852f550541d704"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -601,15 +606,17 @@
   },
   "trio-matrix-phased": {
     "name": "trio-matrix-phased",
-    "status": "bad",
-    "note": "make the lines slightly thinner in linesconnectingtogenomicposition maybe? can cross reference origin/main, origin/main styling of the lines is good",
-    "reviewedAt": "2026-06-21T16:04:11.160Z"
+    "status": "good",
+    "note": "RESOLVED: connecting lines already thinner than main (strokeWidth 0.5 vs main 1.0); image refreshed.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "2298e8ed37151dc0a0534a26d81ad93ee53f560e"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
-    "status": "bad",
-    "note": "similar to above, make the lines slightly thinner in linesconnectingtogenomicposition maybe? can cross reference origin/main, origin/main styling of the lines is good",
-    "reviewedAt": "2026-06-21T16:04:18.291Z"
+    "status": "good",
+    "note": "RESOLVED: connecting lines already thinner than main (strokeWidth 0.5 vs main 1.0); image refreshed.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "9c7c4606fe160ecfbad55d48db7ece2fdec5b4b5"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -715,9 +722,10 @@
   },
   "sv_cgiab/cnv_multi_bigwig": {
     "name": "sv_cgiab/cnv_multi_bigwig",
-    "status": "bad",
-    "note": "the annotation text is overlapping the things we want to tell users to edit",
-    "reviewedAt": "2026-06-21T15:56:37.145Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-23T04:46:46.965Z",
+    "hash": "9c960db4be938ce913ceb108c719644d71e6bd35"
   },
   "admin_settings_access": {
     "name": "admin_settings_access",
@@ -841,21 +849,24 @@
   },
   "alignments/haplotype": {
     "name": "alignments/haplotype",
-    "status": "bad",
-    "note": "DONE (re-review): zoomed the result figure to 1:63,005,000-63,008,000 (reviewer) so the per-haplotype split + phased SNP columns read clearly. Added a companion figure alignments/haplotype_groupby showing the track menu opened at Group by... (the menu path), wired into alignments_track.md with explanatory prose. Both regenerated.",
-    "reviewedAt": "2026-06-20T20:43:21.467Z"
+    "status": "good",
+    "note": "DONE in prior session: zoomed to 1:63,005,000-63,008,000 with groupBy/colorBy HP, plus companion alignments/haplotype_groupby figure; verdict was stale.",
+    "reviewedAt": "2026-06-23T04:43:41.624Z",
+    "hash": "6a5d8f5a05c0062d414fd0253dea8db73a4f2300"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "good",
-    "note": "might add text annotation to screenshot saying first one is 'color by modifications' and second is 'color by methylation', referring to the fact that it inspects whether there are MM modifications at cpg detected on read sequence itself in 'color by methylation'  DONE: Added two text annotations anchored to each row via trackRenderingContainer testid: top = color-by-modifications (only called 5mC, at MM-tag positions); bottom = color-by-methylation (every CpG on the read inspected, methylated red vs unmethylated blue; island reads blue). Regenerated + verified both labels land on the correct rows.",
-    "reviewedAt": "2026-06-21T23:13:43.000Z"
+    "note": "FIXED: trimmed annotation wordiness, corrected the methylation-mode explanation (scans read CpGs, MM tag may not mark unmodified), and moved the CpG island track to the top so callout text no longer covers it.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "6eedabc06c158a8ce8622a1a74ac8c648fff3281"
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "bad",
-    "note": "if you think it is useful, we can try to engineer the sashimi style where it renders some loops below the coverage",
-    "reviewedAt": "2026-06-21T20:39:01.823Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-23T04:04:54.091Z",
+    "hash": "6006b294345624a317cfab2fd4794844eacd773b"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -890,8 +901,9 @@
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
     "status": "bad",
-    "note": "the \"sv_85\" that was chosen is not a translocation, which is maybe what i wanted to show",
-    "reviewedAt": "2026-06-21T15:57:59.038Z"
+    "note": "the \"sv_85\" that was chosen is not a translocation, which is maybe what i wanted to show, specifically the chr3 to chr13 translocation",
+    "reviewedAt": "2026-06-23T04:47:16.440Z",
+    "hash": "d1fec15b2b2df1e24ad22d316e8fc0dab5d173e1"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -937,9 +949,10 @@
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
-    "status": "bad",
-    "note": "we should add to the doc page, and also should probably use 'view as pairs' with the bezier. this is tricky because it puts the reads on same row, but might help to show the pattern more clearly. we may also want to make yet another screenshot that turns off 'show proper pairs' to focus on sv-supporting pairs",
-    "reviewedAt": "2026-06-21T15:48:22.077Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-23T04:05:31.993Z",
+    "hash": "6f5b4501fc4395e73adddb3093bbbeb70edb8347"
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
@@ -949,9 +962,10 @@
   },
   "config_not_found": {
     "name": "config_not_found",
-    "status": "bad",
-    "note": "this looks like it is showing dev mode noconfigmessage, might want to ensure this is the production build of jbrowse. if it is production build, it should only say 'no config.json found' with link to volvox examples, but not other examples, as we cant strict guarantee we wont move files around",
-    "reviewedAt": "2026-06-21T20:35:49.783Z"
+    "status": "good",
+    "note": "RESOLVED: committed image already the production-minimal banner (only the volvox link); the full sample list is dev-only in LoaderErrorBanner.",
+    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "hash": "b562ad3bd23820441af5672648e69144fd9eaf2c"
   },
   "default_session_form": {
     "name": "default_session_form",
@@ -1084,5 +1098,12 @@
     "status": "good",
     "note": "make screenshot slightly taller. please make the screenshot titles a bit better than just 'screenshot' if it makes sense to  DONE: Made the figure taller (viewportHeight 360->440) so the form + Tracks dropdown clear the bottom edge. Left the harness-wide \"Screenshot\" session title alone (renaming churns all 180 PNGs). Regenerated + verified.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
+  },
+  "sv_cgiab/dotplot_import_form": {
+    "name": "sv_cgiab/dotplot_import_form",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-23T03:58:59.434Z",
+    "hash": "88034947379893151f6bd75ab0fa2415f69b4df6"
   }
 }

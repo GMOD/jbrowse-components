@@ -20,6 +20,12 @@ export interface ReadRegionFields {
   readChainHasSupp: Uint8Array | undefined
   readInterchrom: Uint8Array
   insertSizeStats?: { upper: number; lower: number }
+  // Per-exon segments (reads split at CIGAR N/skip). The Canvas2D/SVG read
+  // draw walks these — not whole reads — so intron spans are never filled and
+  // the skip pass needs no clearRect, matching the GPU's per-segment quads.
+  segmentPositions: Uint32Array
+  segmentReadIndices: Uint32Array
+  segmentEdgeFlags: Uint8Array
 }
 
 export function buildReadFields(data: PileupDataResult): ReadRegionFields {
@@ -36,6 +42,9 @@ export function buildReadFields(data: PileupDataResult): ReadRegionFields {
     readChainHasSupp: data.readChainHasSupp,
     readInterchrom: data.readInterchrom,
     insertSizeStats: data.insertSizeStats,
+    segmentPositions: data.segmentPositions,
+    segmentReadIndices: data.segmentReadIndices,
+    segmentEdgeFlags: data.segmentEdgeFlags,
   }
 }
 
@@ -56,5 +65,8 @@ export function emptyReadFields(): ReadRegionFields {
     readChainHasSupp: undefined,
     readInterchrom: new Uint8Array(0),
     insertSizeStats: undefined,
+    segmentPositions: new Uint32Array(0),
+    segmentReadIndices: new Uint32Array(0),
+    segmentEdgeFlags: new Uint8Array(0),
   }
 }
