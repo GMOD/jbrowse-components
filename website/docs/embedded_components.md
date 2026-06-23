@@ -2,57 +2,60 @@
 title: Embedded components
 ---
 
-JBrowse's embedded components let you add genome browsing to any webpage.
+Add a JBrowse view to your app as an npm package, or drop a single `<script>`
+tag into any page — no build step required.
 
-See the [embedding tutorial](/docs/tutorials/embed_linear_genome_view) and the
-[FAQ entry on embedded vs. full JBrowse](/docs/faq#embedded-views-versus-full-jbrowse-app)
-for background. The [initializing and launching views](/docs/initializing_views)
-page documents the `init` fields these components accept (assembly, location,
-tracks, etc.).
+## Choosing a package
 
-## Choosing the right package
+| Goal                                                      | Package                                                                                                                                                       |
+| --------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Full JBrowse UI (multiple views, synteny, import dialogs) | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [examples](https://jbrowse.org/storybook/app/)                                   |
+| One linear genome view                                    | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [examples](https://jbrowse.org/storybook/lgv/)     |
+| One circular genome view (e.g. SV chord diagrams)         | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2) — [examples](https://jbrowse.org/storybook/cgv/) |
+| No npm install, just a `<script>` tag                     | [Embedding tutorial](/docs/tutorials/embed_linear_genome_view)                                                                                                |
 
-| Goal                                                           | Package                                                                                                                                                       |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Full JBrowse UI (multiple views, synteny, file import dialogs) | [`@jbrowse/react-app2`](https://www.npmjs.com/package/@jbrowse/react-app2) — [Examples](https://jbrowse.org/storybook/app/)                                   |
-| Single linear genome view, API-controlled data                 | [`@jbrowse/react-linear-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-linear-genome-view2) — [Examples](https://jbrowse.org/storybook/lgv/)     |
-| Single circular genome view (e.g. for SV chord diagrams)       | [`@jbrowse/react-circular-genome-view2`](https://www.npmjs.com/package/@jbrowse/react-circular-genome-view2) — [Examples](https://jbrowse.org/storybook/cgv/) |
-| Static deployment with no build step (script tag)              | [jbrowse-web UMD bundle](/docs/tutorials/embed_linear_genome_view)                                                                                            |
+Not sure if you want an embedded view or the full app? See the
+[FAQ entry](/docs/faq#embedded-views-versus-full-jbrowse-app).
 
-## @jbrowse/react-app2
+## Quick start
 
-This package bundles the entire jbrowse-web application as an npm-installable
-React component.
+```
+npm install @jbrowse/react-linear-genome-view2 --legacy-peer-deps
+```
 
-Bundler examples for `@jbrowse/react-app2`:
+```tsx
+import {
+  createViewState,
+  JBrowseLinearGenomeView,
+} from '@jbrowse/react-linear-genome-view2'
 
-| Bundler   | Demo                                            | Source code                                                             | Note                                                                                         |
-| --------- | ----------------------------------------------- | ----------------------------------------------------------------------- | -------------------------------------------------------------------------------------------- |
-| next.js   | [demo](https://jbrowse.org/demos/app-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-app-nextjs-demo)    | Hardcoded to use /demos/app-nextjs/ as sub-uri, update next.config.js to customize as needed |
-| vite      | [demo](https://jbrowse.org/demos/app-vite)      | [source code](https://github.com/GMOD/jbrowse-react-app-vite-demo)      | Includes webworker support                                                                   |
-| rsbuild   | [demo](https://jbrowse.org/demos/app-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-app-rsbuild-demo)   | See https://rsbuild.dev/                                                                     |
-| vanillajs | [demo](https://jbrowse.org/demos/app-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-app-vanillajs-demo) |                                                                                              |
+const state = createViewState({ assembly, tracks })
 
-## @jbrowse/react-linear-genome-view2
+export default function View() {
+  return <JBrowseLinearGenomeView viewState={state} />
+}
+```
 
-A single linear genome view as an npm-installable React component.
+`@jbrowse/react-app2` and `@jbrowse/react-circular-genome-view2` work the same
+way — swap in `JBrowseApp` or `JBrowseCircularGenomeView`. See
+[initializing views](/docs/initializing_views) for the `assembly`, `tracks`, and
+`location` options `createViewState` accepts.
 
-Bundler examples for `@jbrowse/react-linear-genome-view2`:
+## Bundler examples
 
-| Bundler    | Demo                                            | Source code                                                                            | Note                                                                                                                                                  |
-| ---------- | ----------------------------------------------- | -------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| vite       | [demo](https://jbrowse.org/demos/lgv-vite)      | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo)      | Includes webworker support                                                                                                                            |
-| rsbuild    | [demo](https://jbrowse.org/demos/lgv-rsbuild)   | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo)   | See https://rsbuild.dev/                                                                                                                              |
-| next.js    | [demo](https://jbrowse.org/demos/lgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo)    | Hardcoded to use /demos/lgv-nextjs/ as sub-uri, update next.config.js to customize as needed. Includes webworker support                              |
-| vanilla js | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, no transpilation or bundling needed. See also the [dev tutorial](/docs/tutorials/embed_linear_genome_view) |
+| Package    | Bundler   | Demo                                            | Source                                                                              | Notes                |
+| ---------- | --------- | ----------------------------------------------- | ----------------------------------------------------------------------------------- | -------------------- |
+| react-app2 | next.js   | [demo](https://jbrowse.org/demos/app-nextjs)    | [source](https://github.com/GMOD/jbrowse-react-app-nextjs-demo)                     |                      |
+| react-app2 | vite      | [demo](https://jbrowse.org/demos/app-vite)      | [source](https://github.com/GMOD/jbrowse-react-app-vite-demo)                       | webworker support    |
+| react-app2 | rsbuild   | [demo](https://jbrowse.org/demos/app-rsbuild)   | [source](https://github.com/GMOD/jbrowse-react-app-rsbuild-demo)                    |                      |
+| react-app2 | vanillajs | [demo](https://jbrowse.org/demos/app-vanillajs) | [source](https://github.com/GMOD/jbrowse-react-app-vanillajs-demo)                  |                      |
+| lgv2       | vite      | [demo](https://jbrowse.org/demos/lgv-vite)      | [source](https://github.com/GMOD/jbrowse-react-linear-genome-view-vite-demo)        | webworker support    |
+| lgv2       | rsbuild   | [demo](https://jbrowse.org/demos/lgv-rsbuild)   | [source](https://github.com/GMOD/jbrowse-react-linear-genome-view-rsbuild-demo)     |                      |
+| lgv2       | next.js   | [demo](https://jbrowse.org/demos/lgv-nextjs)    | [source](https://github.com/GMOD/jbrowse-react-linear-genome-view-nextjs-demo)      | webworker support    |
+| lgv2       | vanillajs | [demo](https://jbrowse.org/demos/lgv-vanillajs) | [source](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo)   | script tag, no build |
+| cgv2       | vanillajs | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) | script tag, no build |
+| cgv2       | next.js   | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    |                      |
 
-## @jbrowse/react-circular-genome-view2
-
-A single JBrowse 2 circular view as an npm-installable React component.
-
-Bundler examples for `@jbrowse/react-circular-genome-view2`:
-
-| Bundler    | Demo                                            | Source code                                                                              | Note                                                                           |
-| ---------- | ----------------------------------------------- | ---------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| vanilla js | [demo](https://jbrowse.org/demos/cgv-vanillajs) | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-vanillajs-demo) | Uses a script tag to include a UMD bundle, no transpilation or bundling needed |
-| nextjs     | [demo](https://jbrowse.org/demos/cgv-nextjs)    | [source code](https://github.com/GMOD/jbrowse-react-circular-genome-view-nextjs-demo)    |                                                                                |
+`react-app2` = `@jbrowse/react-app2`, `lgv2` =
+`@jbrowse/react-linear-genome-view2`, `cgv2` =
+`@jbrowse/react-circular-genome-view2`.
