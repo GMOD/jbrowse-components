@@ -1,3 +1,5 @@
+import { sync as spawnSync } from 'cross-spawn'
+
 import { extractWithComment, getAllFiles } from './util.ts'
 import {
   accumulateApi,
@@ -55,6 +57,21 @@ async function main() {
   await writeApiDocs(api)
   await writeApiReadmes(api)
   writeColorDocs()
+
+  // writeFormatted's programmatic prettier.format() call on embedded markdown
+  // code fences isn't always a fixed point of the prettier CLI (e.g. arrow
+  // function param lists can break differently). Run the CLI once over the
+  // whole output so it matches what `pnpm prettier --check` expects.
+  spawnSync(
+    'prettier',
+    [
+      '--write',
+      'website/docs/config',
+      'website/docs/models',
+      'website/docs/api',
+    ],
+    { stdio: 'inherit' },
+  )
 }
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
