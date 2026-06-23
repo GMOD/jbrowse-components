@@ -4,6 +4,7 @@ import { getConf } from '@jbrowse/core/configuration'
 import { LoadingOverlay, Menu } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { isAlive } from '@jbrowse/mobx-state-tree'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { Link } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -54,6 +55,13 @@ const AlignmentsDisplayComponent = observer(
       offset: [number, number]
       client: [number, number]
     }>({ offset: [0, 0], client: [0, 0] })
+    // Hiding a track detaches this display from the MST tree, which fires MobX
+    // reactions synchronously inside the click handler — this still-mounted
+    // observer re-renders once (reading config-backed getters like
+    // `pileupTruncated`) before React unmounts it. Bail out while detached.
+    if (!isAlive(model)) {
+      return null
+    }
     const view = getContainingView(model) as LinearGenomeViewModel
 
     if (!view.initialized) {
