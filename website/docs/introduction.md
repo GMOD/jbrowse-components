@@ -12,9 +12,14 @@ and [tracks](/docs/config_guides/tracks) layered on top of them.
 
 ## Quick start
 
+Not ready to install anything? Browse [live demos](/demos/), the
+[visualization gallery](/gallery/), or the [feature list](/features/) first.
+
 - [JBrowse web](/docs/quickstart_web) — run JBrowse 2 in a browser
 - [JBrowse desktop](/docs/quickstart_desktop) — run the desktop app on your
   machine
+- [Embedded components](/docs/embedded_components) — add a genome view to your
+  own React app
 
 ## Using JBrowse
 
@@ -39,6 +44,10 @@ and [tracks](/docs/config_guides/tracks) layered on top of them.
   splice arcs
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) —
   population-level SVs, trio inspection, and chromosomal inversions
+- [Protein structures and MSAs](/docs/tutorials/protein_structure) — 3D
+  structures and multiple sequence alignments linked to genomic variants
+- [Applying display settings](/docs/tutorials/display_settings) — set track
+  display settings via config.json, URL, or embedded session
 
 ## Developers
 
@@ -54,8 +63,6 @@ and [tracks](/docs/config_guides/tracks) layered on top of them.
 - [@jbrowse/cli](/docs/cli) — CLI tools for loading tracks, assemblies, text
   indexing, and more
 - [@jbrowse/img](/docs/jbrowse-img) — command-line image generator
-- [Embedded components](/docs/embedded_components) — reusable React components
-  on NPM
 - [JBrowseR](https://gmod.github.io/JBrowseR/) — R htmlwidget usable in Shiny
   apps
 - [JBrowse Jupyter](https://gmod.github.io/jbrowse-jupyter/docs/html/index.html)
