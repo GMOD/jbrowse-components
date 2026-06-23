@@ -13,6 +13,7 @@ const subDirs = [
 const root = path.resolve(import.meta.dirname, '..')
 const workspaceDirs = ['packages', 'products', 'plugins']
 const packedTarballsByPackageName: Record<string, string> = {}
+const dependenciesByPackageName: Record<string, Record<string, string>> = {}
 
 for (const dir of subDirs) {
   fs.mkdirSync(path.join(root, 'component_tests', dir, 'packed'), {
@@ -70,6 +71,7 @@ for (const dir of workspaceDirs) {
         if (tarball) {
           const newName = tarball.replace(/-\d+\.\d+\.\d+/, '')
           packedTarballsByPackageName[pkgJson.name] = newName
+          dependenciesByPackageName[pkgJson.name] = pkgJson.dependencies ?? {}
           for (const sub of subDirs) {
             fs.copyFileSync(
               path.join(location, tarball),
@@ -83,17 +85,42 @@ for (const dir of workspaceDirs) {
   }
 }
 
-// Every packed tarball gets copied into every component_tests/<dir>/packed/
-// folder above, so a hand-curated subset of "resolutions" pointing at them
-// can silently drift (e.g. a new plugin added but never pinned, falling
-// through to whatever version is on the npm registry). Pin all of them
-// unconditionally instead - yarn only applies an entry if the package is
-// actually somewhere in that app's dependency tree, so harmless extras are
-// fine.
+// A hand-curated "resolutions" list pinning packed tarballs can silently
+// drift (e.g. a new plugin dependency added but never pinned, falling
+// through to whatever version is on the npm registry - this broke cgv-vite's
+// build when @jbrowse/plugin-canvas was added without a pin). Walk each
+// app's @jbrowse/* dependency closure and pin exactly that set instead of
+// hand-maintaining it. Pinning every packed package unconditionally (not
+// just the closure) was tried and rejected: yarn still resolves the full
+// dependency tree of every "resolutions" entry even if nothing in the app
+// depends on it, so an unrelated package's transitive dependency with a
+// stricter "engines.node" (e.g. puppeteer, pulled in only by
+// @jbrowse/browser-test-utils) can fail an install on an older Node even
+// though it's never actually used.
+function closureOf(startDeps: Record<string, string>) {
+  const closure = new Set<string>()
+  const queue = Object.keys(startDeps).filter(
+    name => name in packedTarballsByPackageName,
+  )
+  while (queue.length > 0) {
+    const name = queue.pop()!
+    if (!closure.has(name)) {
+      closure.add(name)
+      queue.push(
+        ...Object.keys(dependenciesByPackageName[name] ?? {}).filter(
+          depName => depName in packedTarballsByPackageName,
+        ),
+      )
+    }
+  }
+  return closure
+}
+
 for (const dir of subDirs) {
   const pkgJsonPath = path.join(root, 'component_tests', dir, 'package.json')
   const pkgJson = JSON.parse(fs.readFileSync(pkgJsonPath, 'utf8'))
   if (pkgJson.resolutions) {
+    const closure = closureOf(pkgJson.dependencies ?? {})
     const preserved = Object.fromEntries(
       Object.entries(pkgJson.resolutions as Record<string, string>).filter(
         ([name]) => !(name in packedTarballsByPackageName),
@@ -102,9 +129,9 @@ for (const dir of subDirs) {
     pkgJson.resolutions = {
       ...preserved,
       ...Object.fromEntries(
-        Object.entries(packedTarballsByPackageName).map(([name, tarball]) => [
+        [...closure].sort().map(name => [
           name,
-          `file:./packed/${tarball}`,
+          `file:./packed/${packedTarballsByPackageName[name]}`,
         ]),
       ),
     }
