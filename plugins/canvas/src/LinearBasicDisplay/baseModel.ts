@@ -75,6 +75,7 @@ import type { ShowLabelsMode } from './showLabelsMode.ts'
 import type {
   FeatureDataResult,
   FlatbushItem,
+  RenderFeatureDataResult,
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
@@ -82,7 +83,6 @@ import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
-  ByteEstimateConfig,
   ExportSvgDisplayOptions,
   FetchContext,
   LinearGenomeViewModel,
@@ -1352,17 +1352,19 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        getByteEstimateConfig(): ByteEstimateConfig | null {
+        // Compressed-byte budget passed into the feature-fetch RPC, which
+        // short-circuits an over-budget region before downloading features
+        // (canvas gates inside the fetch RPC rather than via the shared
+        // pre-flight estimate RPC, so there's no second round-trip to race).
+        // Only gated in the force-load zone (visibleBp >= AUTO_FORCE_LOAD_BP);
+        // below it small regions always load. `userByteSizeLimit` (set by
+        // force-load) raises the budget so a forced fetch isn't re-blocked.
+        byteSizeLimit(): number | undefined {
           const view = getView(self)
-          if (view.visibleBp < AUTO_FORCE_LOAD_BP) {
-            return null
-          }
-          return {
-            adapterConfig: self.adapterConfig,
-            fetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
-            userByteSizeLimit: self.userByteSizeLimit,
-            visibleBp: view.visibleBp,
-          }
+          return view.visibleBp < AUTO_FORCE_LOAD_BP
+            ? undefined
+            : (self.userByteSizeLimit ??
+                readConfObject(self.conf, 'fetchSizeLimit'))
         },
       }))
       .actions(self => ({
@@ -1382,27 +1384,24 @@ export default function baseStateModelFactory(
         },
       }))
       .actions(self => {
-        interface FetchResult {
-          kind: 'ok'
+        // One fetched region: the raw RPC response paired with the context
+        // needed to commit it. `result` is too-large (density or byte
+        // short-circuit) or the full feature payload — both optionally carry an
+        // index `bytes` estimate.
+        interface RegionFetch {
           displayedRegionIndex: number
-          data: FeatureDataResult
           region: Region
           bpPerPx: number
-        }
-
-        interface TooLargeResult {
-          kind: 'tooLarge'
-          displayedRegionIndex: number
-          region: Region
-          featureCount: number
+          result: RenderFeatureDataResult
         }
 
         async function fetchFeaturesForRegion(
           region: Region,
           displayedRegionIndex: number,
           bpPerPx: number,
+          byteSizeLimit: number | undefined,
           stopToken: StopToken,
-        ): Promise<FetchResult | TooLargeResult> {
+        ): Promise<RegionFetch> {
           const sessionId = getRpcSessionId(self)
           const session = getSession(self)
           // Per-region translation table from the assembly's geneticCodes
@@ -1419,6 +1418,7 @@ export default function baseStateModelFactory(
               ...self.rpcProps(),
               region,
               bpPerPx,
+              byteSizeLimit,
               stopToken,
               // keyed by region so concurrent per-region fetches aggregate
               // into one bar (FetchMixin.setRegionStatus) instead of each
@@ -1427,44 +1427,34 @@ export default function baseStateModelFactory(
                 self.makeRegionStatusCallback(displayedRegionIndex),
             },
           )
-          if ('regionTooLarge' in result) {
-            return {
-              kind: 'tooLarge',
-              displayedRegionIndex,
-              region,
-              featureCount: result.featureCount,
-            }
-          }
-          return {
-            kind: 'ok',
-            displayedRegionIndex,
-            data: result,
-            region,
-            bpPerPx,
-          }
+          return { displayedRegionIndex, region, bpPerPx, result }
         }
 
-        function applyFetchResults(results: (FetchResult | TooLargeResult)[]) {
-          for (const r of results) {
-            const regionWidthBp = r.region.end - r.region.start
-            if (r.kind === 'ok') {
-              self.setRpcData(
-                r.displayedRegionIndex,
-                r.data,
-                r.bpPerPx,
-                r.region,
-              )
-              self.setDensityStats(r.displayedRegionIndex, {
-                featureCount: r.data.featureCount,
-                regionWidthBp,
-              })
-            } else {
-              self.setDensityStats(r.displayedRegionIndex, {
-                featureCount: r.featureCount,
-                regionWidthBp,
+        function applyFetchResults(fetches: RegionFetch[]) {
+          let totalBytes = 0
+          for (const {
+            displayedRegionIndex,
+            region,
+            bpPerPx,
+            result,
+          } of fetches) {
+            totalBytes += result.bytes ?? 0
+            // featureCount drives the density gate; absent only on a byte
+            // short-circuit (no features were counted), which the byte gate
+            // covers via totalBytes instead.
+            if (result.featureCount !== undefined) {
+              self.setDensityStats(displayedRegionIndex, {
+                featureCount: result.featureCount,
+                regionWidthBp: region.end - region.start,
               })
             }
+            if (!('regionTooLarge' in result)) {
+              self.setRpcData(displayedRegionIndex, result, bpPerPx, region)
+            }
           }
+          // Feed the derived byte gate (bytesEstimateTooLarge) the way the
+          // pre-flight RPC used to — now sourced from the fetch itself.
+          self.setFeatureDensityStats({ bytes: totalBytes })
         }
 
         return {
@@ -1488,6 +1478,7 @@ export default function baseStateModelFactory(
           ) {
             const view = getView(self)
             const bpPerPx = view.bpPerPx
+            const byteSizeLimit = self.byteSizeLimit()
             // Drop cached entries (rpcDataMap + density stats) for regions no
             // longer visible. Keeps on-screen data so labels stay up during
             // the refetch window without letting either map grow unboundedly
@@ -1503,6 +1494,7 @@ export default function baseStateModelFactory(
                   region,
                   displayedRegionIndex,
                   bpPerPx,
+                  byteSizeLimit,
                   ctx.stopToken,
                 ),
               )

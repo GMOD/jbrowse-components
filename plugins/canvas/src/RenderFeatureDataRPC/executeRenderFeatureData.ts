@@ -41,6 +41,7 @@ export async function executeRenderFeatureData({
     sequenceAdapter,
     showOnlyGenes,
     maxFeatureDensity,
+    byteSizeLimit,
     theme: themeOptions,
     stopToken,
     statusCallback = () => {},
@@ -57,6 +58,22 @@ export async function executeRenderFeatureData({
   const dataAdapter = (
     await getAdapter(pluginManager, sessionId, adapterConfig)
   ).dataAdapter as BaseFeatureDataAdapter
+
+  // Stage 1 (cheap): index-only byte estimate, before any feature download. An
+  // over-budget region short-circuits here, so a whole-genome fan-out never
+  // pulls every chromosome's features just to reject them after. Adapters with
+  // no index estimate return undefined and fall through to the density gate.
+  let bytes: number | undefined
+  if (byteSizeLimit !== undefined) {
+    bytes = await dataAdapter.getRegionByteSize([region], {
+      stopToken,
+      statusCallback,
+    })
+    checkStopToken2(stopTokenCheck)
+    if (bytes !== undefined && bytes > byteSizeLimit) {
+      return { regionTooLarge: true, bytes }
+    }
+  }
 
   // pass statusCallback + stopToken so the adapter's own determinate download/
   // processing progress reaches the display (overriding the "Fetching features"
@@ -98,6 +115,7 @@ export async function executeRenderFeatureData({
       return {
         regionTooLarge: true,
         featureCount: features.size,
+        bytes,
       }
     }
   }
@@ -173,7 +191,11 @@ export async function executeRenderFeatureData({
 
   checkStopToken2(stopTokenCheck)
 
-  const result: FeatureDataResult = { ...packed, featureCount: features.size }
+  const result: FeatureDataResult = {
+    ...packed,
+    featureCount: features.size,
+    bytes,
+  }
 
   // Derive transferables from the result so new TypedArray fields don't
   // silently get cloned across the worker boundary just because someone

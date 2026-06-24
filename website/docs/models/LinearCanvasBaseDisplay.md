@@ -970,10 +970,10 @@ type selectFeatureById = (
 type isCacheValid = (displayedRegionIndex: number) => boolean
 ```
 
-#### action: getByteEstimateConfig
+#### action: byteSizeLimit
 
 ```ts
-type getByteEstimateConfig = () => ByteEstimateConfig | null
+type byteSizeLimit = () => number | undefined
 ```
 
 #### action: selectFullFeature

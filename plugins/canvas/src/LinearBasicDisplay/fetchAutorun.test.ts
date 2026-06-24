@@ -46,6 +46,25 @@ function makeEmptyFeatureData(): FeatureDataResult {
   }
 }
 
+// RenderFeatureData responder that mimics executeRenderFeatureData's byte gate:
+// the index estimate scales with the queried span, and a region over
+// `byteSizeLimit` short-circuits before any features are "downloaded". Canvas
+// makes no other RPC call, so this is the whole mock.
+function makeByteGatedRender(bytesPerBp: number) {
+  return (
+    _sessionId: string,
+    _method: string,
+    args: { region: { start: number; end: number }; byteSizeLimit?: number },
+  ) => {
+    const bytes = Math.round((args.region.end - args.region.start) * bytesPerBp)
+    return Promise.resolve(
+      args.byteSizeLimit !== undefined && bytes > args.byteSizeLimit
+        ? { regionTooLarge: true as const, bytes }
+        : { ...makeEmptyFeatureData(), bytes },
+    )
+  }
+}
+
 function createTestEnvironment() {
   console.warn = jest.fn()
   console.error = jest.fn()
@@ -631,15 +650,11 @@ describe('byte estimate pre-check', () => {
     return { display, view, mockRpcCall: env.mockRpcCall }
   }
 
-  it('sets regionTooLarge without calling RenderFeatureData when bytes exceed limit', async () => {
+  // bytesPerBp=100 over the 50kb region → ~5MB estimate, past the 1MB limit.
+  it('sets regionTooLarge from the byte short-circuit (no features loaded)', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({ bytes: 5_000_000, fetchSizeLimit: 1_000_000 })
-      }
-      return Promise.resolve(makeEmptyFeatureData())
-    })
+    mockRpcCall.mockImplementation(makeByteGatedRender(100))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -648,21 +663,16 @@ describe('byte estimate pre-check', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    const renderCalls = mockRpcCall.mock.calls.filter(
-      (c: unknown[]) => c[1] === 'RenderFeatureData',
-    )
-    expect(renderCalls).toHaveLength(0)
+    // The short-circuit rendered no features (laidOutDataMap is gated empty
+    // while the banner is up), so nothing reaches the GPU.
+    expect(display.laidOutDataMap.size).toBe(0)
   })
 
   it('proceeds to fetch when bytes are within limit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({ bytes: 500_000, fetchSizeLimit: 1_000_000 })
-      }
-      return Promise.resolve(makeEmptyFeatureData())
-    })
+    // bytesPerBp=1 over the 50kb region → ~50kB, under the 1MB limit.
+    mockRpcCall.mockImplementation(makeByteGatedRender(1))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -681,16 +691,7 @@ describe('byte estimate pre-check', () => {
   it('allows fetch after force load raises the byte size limit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    const overLimitBytes = 5_000_000
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({
-          bytes: overLimitBytes,
-          fetchSizeLimit: 1_000_000,
-        })
-      }
-      return Promise.resolve(makeEmptyFeatureData())
-    })
+    mockRpcCall.mockImplementation(makeByteGatedRender(100))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -699,9 +700,9 @@ describe('byte estimate pre-check', () => {
       expect(display.regionTooLarge).toBe(true)
     })
 
-    // Simulate "Force load": setFeatureDensityStatsLimit sets userByteSizeLimit
-    // to 1.5× the estimated bytes so the next byte-estimate check passes.
-    display.setFeatureDensityStatsLimit({ bytes: overLimitBytes })
+    // Force load raises userByteSizeLimit past the estimate, so the next fetch
+    // passes a higher budget and the region is no longer short-circuited.
+    display.forceLoad()
     display.reload()
 
     jest.advanceTimersByTime(800)
@@ -716,12 +717,7 @@ describe('byte estimate pre-check', () => {
   it('does not loop after byte-estimate regionTooLarge is set', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({ bytes: 5_000_000, fetchSizeLimit: 1_000_000 })
-      }
-      return Promise.resolve(makeEmptyFeatureData())
-    })
+    mockRpcCall.mockImplementation(makeByteGatedRender(100))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -792,10 +788,7 @@ describe('derived regionTooLarge', () => {
     const { display, view, mockRpcCall } = createLargeDisplay()
 
     let renderCalls = 0
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({ bytes: 100, fetchSizeLimit: 1_000_000 })
-      }
+    mockRpcCall.mockImplementation(() => {
       renderCalls += 1
       return renderCalls === 1
         ? Promise.resolve({ regionTooLarge: true, featureCount: 5000 })
@@ -882,22 +875,8 @@ describe('derived regionTooLarge', () => {
       { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
     ])
 
-    mockRpcCall.mockImplementation(
-      (
-        _sid: string,
-        method: string,
-        args: { regions?: { start: number; end: number }[] },
-      ) => {
-        if (method === 'CoreGetFeatureDensityStats') {
-          const bytes = (args.regions ?? []).reduce(
-            (sum, r) => sum + (r.end - r.start),
-            0,
-          )
-          return Promise.resolve({ bytes, fetchSizeLimit: 1_000_000 })
-        }
-        return Promise.resolve(makeEmptyFeatureData())
-      },
-    )
+    // bytesPerBp=1 over the 5MB region → ~5MB estimate, past the 1MB limit.
+    mockRpcCall.mockImplementation(makeByteGatedRender(1))
 
     view.zoomTo(view.maxBpPerPx)
     jest.advanceTimersByTime(800)
@@ -925,10 +904,7 @@ describe('derived regionTooLarge', () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
     let renderCalls = 0
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({ bytes: 100, fetchSizeLimit: 1_000_000 })
-      }
+    mockRpcCall.mockImplementation(() => {
       renderCalls += 1
       return renderCalls === 1
         ? Promise.resolve({ regionTooLarge: true, featureCount: 1500 })
@@ -1005,12 +981,7 @@ describe('derived regionTooLarge', () => {
   it('byte-estimate banner stays stable across viewport change (no flicker)', async () => {
     const { display, view, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation((_sid: string, method: string) => {
-      if (method === 'CoreGetFeatureDensityStats') {
-        return Promise.resolve({ bytes: 5_000_000, fetchSizeLimit: 1_000_000 })
-      }
-      return Promise.resolve(makeEmptyFeatureData())
-    })
+    mockRpcCall.mockImplementation(makeByteGatedRender(100))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -1046,24 +1017,9 @@ describe('derived regionTooLarge', () => {
       { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
     ])
 
-    // Byte estimate scales with the queried span: ~5MB zoomed out, ~50kB
-    // zoomed in. Limit is 1MB.
-    mockRpcCall.mockImplementation(
-      (
-        _sid: string,
-        method: string,
-        args: { regions?: { start: number; end: number }[] },
-      ) => {
-        if (method === 'CoreGetFeatureDensityStats') {
-          const bytes = (args.regions ?? []).reduce(
-            (sum, r) => sum + (r.end - r.start),
-            0,
-          )
-          return Promise.resolve({ bytes, fetchSizeLimit: 1_000_000 })
-        }
-        return Promise.resolve(makeEmptyFeatureData())
-      },
-    )
+    // Byte estimate scales with the queried span (bytesPerBp=1): ~5MB zoomed
+    // out, ~50kB zoomed in. Limit is 1MB.
+    mockRpcCall.mockImplementation(makeByteGatedRender(1))
 
     // Zoom all the way out: the full 5MB span estimates ~5MB > 1MB.
     view.zoomTo(view.maxBpPerPx)

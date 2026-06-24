@@ -68,6 +68,14 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
     return header
   }
 
+  // Index-only compressed-byte estimate (no feature download), used by the
+  // feature-fetch RPC to short-circuit an over-budget region before pulling
+  // every line — see executeRenderFeatureData.
+  public async getRegionByteSize(regions: Region[], opts: BaseOptions = {}) {
+    const { gff } = await this.configure(opts)
+    return gff.bytesForRegions(regions, opts)
+  }
+
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {

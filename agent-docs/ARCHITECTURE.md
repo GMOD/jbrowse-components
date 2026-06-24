@@ -72,12 +72,29 @@ variants) via four autoruns:
 
 Subclasses override `fetchNeeded` to call `self.fetchRegions(needed, work)`,
 where `fetchRegions` runs an optional pre-flight byte estimate
-(via `getByteEstimateConfig`) before invoking the work callback. Oversize
+(via `getByteEstimateConfig` → `checkByteEstimate` → the
+`CoreGetFeatureDensityStats` RPC) before invoking the work callback. Oversize
 regions surface a banner: `DisplayChrome` renders `TooLargeMessage` from the
 model's `regionTooLargeReason`. `error`/`regionTooLarge`
 reads in `ClearBlockingStateOnViewportChange` are `untracked` for correctness —
 tracking either would let `set...` re-fire the autorun and wipe the flag
 before any viewport change.
+
+**Canvas opts out of the pre-flight** (`getByteEstimateConfig` returns `null`):
+a second estimate RPC racing the per-region feature fetch is the kind of
+two-call coordination we avoid. Instead canvas folds the byte check into the
+feature-fetch RPC itself — `executeRenderFeatureData` calls the adapter's
+`getRegionByteSize` (an index-only estimate, no feature download; default
+`undefined` on `BaseFeatureDataAdapter`, overridden by tabix adapters) and
+short-circuits an over-budget region *before* `getFeaturesArray`, returning
+`{ regionTooLarge, bytes }`. This makes the byte gate symmetric with the density
+gate (which already short-circuits in-RPC, returning `{ regionTooLarge,
+featureCount }`), so a whole-genome fan-out costs one cheap index read per
+chromosome instead of downloading every chromosome's features.
+`applyFetchResults` sums the per-region `bytes` into `featureDensityStats`,
+feeding the same derived `bytesEstimateTooLarge` the pre-flight used to. The
+budget itself comes from the display's `byteSizeLimit()`
+(`userByteSizeLimit ?? fetchSizeLimit`, only in the force-load zone).
 
 ### regionTooLarge: imperative vs. derived
 
@@ -93,8 +110,9 @@ expressed through the `regionTooLarge` getter so consumers
 - **Derived** (canvas's `LinearCanvasBaseDisplay`): a pure function of cached
   stats × current `bpPerPx` + visible regions, mirroring `FeatureDensityMixin`.
   - `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
-    `userByteSizeLimit ?? adapter limit ?? config`. The byte-estimate RPC sets
-    `featureDensityStats.bytes` for the span visible *at fetch time*, recorded
+    `userByteSizeLimit ?? adapter limit ?? config`. `applyFetchResults` sets
+    `featureDensityStats.bytes` (summed from the per-region fetch results) for
+    the span visible *at fetch time*, recorded
     as `byteEstimateVisibleBp`; `estimatedVisibleBytes` rescales it to the
     current span (`bytes × view.visibleBp / byteEstimateVisibleBp`). The
     rescale is what makes the byte gate a pure function of the view (like

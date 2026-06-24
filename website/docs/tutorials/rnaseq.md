@@ -171,8 +171,7 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
   "assemblyNames": ["hg38"],
   "adapter": {
     "type": "BamAdapter",
-    "bamLocation": { "uri": "https://yourhost/rnaseq.bam" },
-    "index": { "location": { "uri": "https://yourhost/rnaseq.bam.bai" } }
+    "uri": "https://yourhost/rnaseq.bam"
   }
 }
 ```

@@ -214,6 +214,20 @@ export abstract class BaseFeatureDataAdapter<
       : { featureDensity: 0 }
   }
 
+  /**
+   * Cheap upper bound on the compressed bytes a fetch of `regions` would pull,
+   * derived from an index without downloading or parsing any features. The
+   * default returns `undefined` ("no cheap estimate"); indexed adapters (tabix)
+   * override it. Lets a fetch short-circuit an over-budget region before
+   * touching feature data — see `executeRenderFeatureData`.
+   */
+  async getRegionByteSize(
+    _regions: Region[],
+    _opts?: BaseOptions,
+  ): Promise<number | undefined> {
+    return undefined
+  }
+
   async getSources(
     regions: Region[],
   ): Promise<{ name: string; color?: string; [key: string]: unknown }[]> {

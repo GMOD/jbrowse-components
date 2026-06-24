@@ -68,9 +68,7 @@ export default function SVGLinearGenomeView({
         <SVGRuler model={view} fontSize={fontSize} />
       </g>
       {showGridlines ? (
-        <g
-          transform={`translate(${trackLabelOffset} ${rulerHeight})`}
-        >
+        <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
           <SVGGridlines model={view} height={tracksHeight} />
         </g>
       ) : null}

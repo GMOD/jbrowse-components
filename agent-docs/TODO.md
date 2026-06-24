@@ -9,10 +9,10 @@
 
 
 
-## Large region very slow with regular gene track
 
-## autodiagonalize
+## autodiagonalize - choose query and target order?
 
-choose query and target order?
 
-## reduce wordiness on alignments docs
+## help text when isoforms are collapsed
+
+## svg export collapsed introns make global var clipping id

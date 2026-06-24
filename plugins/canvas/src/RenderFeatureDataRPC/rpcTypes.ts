@@ -38,6 +38,11 @@ export interface RenderFeatureDataArgs {
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
   maxFeatureDensity?: number
+  // Compressed-byte budget for this region. When set and the adapter offers a
+  // cheap index estimate (getRegionByteSize), the fetch short-circuits before
+  // downloading features if the estimate exceeds it. Undefined disables the
+  // byte gate (e.g. zoomed in past AUTO_FORCE_LOAD_BP, or after force-load).
+  byteSizeLimit?: number
   theme?: SerializableThemeArgs
   stopToken?: StopToken
   statusCallback?: StatusCallback
@@ -109,6 +114,11 @@ export interface FeatureDataResult {
   // Number of top-level features in this region (used for density calculations)
   featureCount: number
 
+  // Index-estimated compressed bytes for this region (when the adapter offers a
+  // cheap estimate), so the display's byte gate reflects what was actually
+  // fetched. Undefined for adapters with no index estimate.
+  bytes?: number
+
   // Packed RGBA outline color for all rects (0 = no outline)
   outlineColor: number
 }
@@ -133,7 +143,11 @@ export type RegionRenderData = Pick<
 
 export interface RegionTooLargeResult {
   regionTooLarge: true
-  featureCount: number
+  // density short-circuit reports the feature count it counted; the byte
+  // short-circuit reports the index byte estimate. Exactly one is set,
+  // depending on which gate tripped.
+  featureCount?: number
+  bytes?: number
 }
 
 export type RenderFeatureDataResult = FeatureDataResult | RegionTooLargeResult

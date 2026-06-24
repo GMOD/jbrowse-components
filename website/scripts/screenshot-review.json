@@ -37,9 +37,10 @@
   },
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T20:32:47.947Z"
+    "status": "bad",
+    "note": "might delete and just replace with alignments_soft_clipped_menu",
+    "reviewedAt": "2026-06-24T12:59:43.340Z",
+    "hash": "2978ac0765ffcb3acd35f9d5de22b49ad8d26128"
   },
   "alignments/arc_display": {
     "name": "alignments/arc_display",
@@ -65,8 +66,8 @@
     "name": "alignments_track_arcs",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-23T04:01:56.671Z",
-    "hash": "22328425c0ea48a0f6a373606d5b4f8648b3ceea"
+    "reviewedAt": "2026-06-24T12:41:14.642Z",
+    "hash": "f15f47386dd21104ce8326692f53e27fdbe656a0"
   },
   "sv_inspector_importform_loaded": {
     "name": "sv_inspector_importform_loaded",
@@ -236,9 +237,10 @@
   },
   "alignments_center_line": {
     "name": "alignments_center_line",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-21T20:32:51.061Z"
+    "status": "bad",
+    "note": "if this figure is not used, we can just delete it",
+    "reviewedAt": "2026-06-24T12:58:21.526Z",
+    "hash": "03da570eb13c816616ca0e26ef6695d1626279c4"
   },
   "alignments_center_line_menu": {
     "name": "alignments_center_line_menu",
@@ -254,10 +256,10 @@
   },
   "alignments_sort_by_base": {
     "name": "alignments_sort_by_base",
-    "status": "bad",
-    "note": "increase height a little bit, particularly top screenshot, because menu is cut off",
-    "reviewedAt": "2026-06-24T03:31:32.303Z",
-    "hash": "0dec30eca3b33a9f1493fddbf734e34ce2b9db41"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-24T11:47:29.014Z",
+    "hash": "b7f1743916ca0f91a386172eee6e770f1ae04c84"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -857,8 +859,8 @@
   "alignments/modifications2": {
     "name": "alignments/modifications2",
     "status": "good",
-    "note": "FIXED: trimmed annotation wordiness, corrected the methylation-mode explanation (scans read CpGs, MM tag may not mark unmodified), and moved the CpG island track to the top so callout text no longer covers it.",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "note": "The phrasing \"only called 5mC, at mm-tag positions\" is awkward sentence fragment. the comma placement is especially bad. please also remove em-dashes from annotation text and documentation prose.",
+    "reviewedAt": "2026-06-24T13:00:29.059Z",
     "hash": "6eedabc06c158a8ce8622a1a74ac8c648fff3281"
   },
   "gene_track_collapse_introns": {
@@ -1024,10 +1026,10 @@
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
-    "status": "bad",
-    "note": "there is a weird gap between the 'scalebar' and when the synteny ribbons start. also, some have 'tick marks' and some dont which is odd. please render the tickmarks for all",
-    "reviewedAt": "2026-06-23T18:10:21.133Z",
-    "hash": "d0d8eec3d1ae52b52ffd7e6d34bcb31e7620804b"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-06-24T12:27:25.893Z",
+    "hash": "757159a9d74dd6ea45a0afd2e8a96d599c6ef924"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",

@@ -167,7 +167,7 @@ and docs.
 [fetchFullFeature](../linearcanvasbasedisplay#action-fetchfullfeature),
 [selectFeatureById](../linearcanvasbasedisplay#action-selectfeaturebyid),
 [isCacheValid](../linearcanvasbasedisplay#action-iscachevalid),
-[getByteEstimateConfig](../linearcanvasbasedisplay#action-getbyteestimateconfig),
+[byteSizeLimit](../linearcanvasbasedisplay#action-bytesizelimit),
 [selectFullFeature](../linearcanvasbasedisplay#action-selectfullfeature),
 [reload](../linearcanvasbasedisplay#action-reload),
 [fetchNeeded](../linearcanvasbasedisplay#action-fetchneeded),
