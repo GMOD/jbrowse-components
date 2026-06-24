@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { getEnv, getFillProps } from '@jbrowse/core/util'
 import {
@@ -83,15 +84,10 @@ export default function SVGLinearGenomeView({
         />
       </g>
       <g transform={`translate(${trackLabelOffset} ${rulerHeight})`}>
-        <defs>
-          <clipPath id={clipId}>
-            <rect x={0} y={0} width={view.width} height={tracksHeight} />
-          </clipPath>
-        </defs>
-        <g clipPath={`url(#${clipId})`}>
+        <SvgClipRect id={clipId} width={view.width} height={tracksHeight}>
           <SVGHighlights model={view} height={tracksHeight} />
           {bookmarkHighlights}
-        </g>
+        </SvgClipRect>
       </g>
     </g>
   )

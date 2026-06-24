@@ -1,4 +1,4 @@
-import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
+import { SVGExportRoot, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv, getSession, renderToStaticMarkup } from '@jbrowse/core/util'
 import { ThemeProvider } from '@mui/material'
@@ -43,17 +43,16 @@ export async function renderToSvg(
           <g transform={`translate(${borderX} 0)`}>
             <DotplotGrid model={model} />
             {additional}
-            <defs>
-              <clipPath id={`clip-ruler-${model.id}`}>
-                <rect x={0} y={0} width={viewWidth} height={viewHeight} />
-              </clipPath>
-            </defs>
-            <g clipPath={`url(#clip-ruler-${model.id})`}>
+            <SvgClipRect
+              id={`clip-ruler-${model.id}`}
+              width={viewWidth}
+              height={viewHeight}
+            >
               {displayResults.map(({ track, result }) => (
                 /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <g key={track.configuration.trackId}>{result}</g>
               ))}
-            </g>
+            </SvgClipRect>
           </g>
           <g transform={`translate(${borderX} ${viewHeight})`}>
             <HorizontalAxisRaw model={model} />

@@ -1,6 +1,7 @@
 import { Fragment } from 'react'
 import type { ReactNode } from 'react'
 
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 
 // The synteny ribbons for one level, drawn in [0,width] x [0,levelHeight]. The
@@ -22,17 +23,12 @@ export default function SVGSyntenyLevel({
 }) {
   return (
     <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
-      <defs>
-        <clipPath id={clipId}>
-          <rect x={0} y={0} width={width} height={levelHeight} />
-        </clipPath>
-      </defs>
-      <g clipPath={`url(#${clipId})`}>
+      <SvgClipRect id={clipId} width={width} height={levelHeight}>
         {rendering.map((r, j) => (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed-order rendering list, never reordered
           <Fragment key={j}>{r}</Fragment>
         ))}
-      </g>
+      </SvgClipRect>
     </g>
   )
 }

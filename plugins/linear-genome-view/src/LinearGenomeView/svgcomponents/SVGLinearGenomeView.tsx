@@ -2,7 +2,7 @@
 
 import type { ReactNode } from 'react'
 
-import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
+import { SVGExportRoot, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import {
@@ -123,15 +123,14 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
               />
             </g>
             <g transform={`translate(${trackLabelOffset} ${offset})`}>
-              <defs>
-                <clipPath id={`highlight-clip-${model.id}`}>
-                  <rect x={0} y={0} width={width} height={tracksHeight} />
-                </clipPath>
-              </defs>
-              <g clipPath={`url(#highlight-clip-${model.id})`}>
+              <SvgClipRect
+                id={`highlight-clip-${model.id}`}
+                width={width}
+                height={tracksHeight}
+              >
                 <SVGHighlights model={model} height={tracksHeight} />
                 {bookmarkHighlights}
-              </g>
+              </SvgClipRect>
             </g>
           </g>
         </SVGExportRoot>
