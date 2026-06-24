@@ -180,6 +180,31 @@ export async function runAction(page: Page, action: ScreenshotAction) {
     await page.mouse.down()
     await page.mouse.move(action.to.x, action.to.y, { steps: 20 })
     await page.mouse.up()
+  } else if (action.type === 'scroll') {
+    const el = await resolveTarget(page, action)
+    await el?.evaluate(node => {
+      let ancestor: HTMLElement | null = node.parentElement
+      while (ancestor) {
+        const style = getComputedStyle(ancestor)
+        if (
+          (style.overflowX === 'auto' || style.overflowX === 'scroll') &&
+          ancestor.scrollWidth > ancestor.clientWidth
+        ) {
+          break
+        }
+        ancestor = ancestor.parentElement
+      }
+      if (ancestor) {
+        const targetRect = node.getBoundingClientRect()
+        const containerRect = ancestor.getBoundingClientRect()
+        const targetCenter =
+          targetRect.left -
+          containerRect.left +
+          ancestor.scrollLeft +
+          targetRect.width / 2
+        ancestor.scrollLeft = targetCenter - ancestor.clientWidth / 2
+      }
+    })
   } else if (action.type === 'waitForSelector' && action.selector) {
     // rethrow puppeteer's parsed-selector blob ([[[{name,value}]]]) as the
     // readable selector so a timeout names what was missing

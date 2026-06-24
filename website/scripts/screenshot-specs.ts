@@ -7,6 +7,7 @@ export interface ScreenshotAction {
     | 'hover'
     | 'type'
     | 'drag'
+    | 'scroll'
     | 'waitForText'
     | 'waitForSelector'
     | 'delay'
@@ -22,6 +23,10 @@ export interface ScreenshotAction {
   // for 'drag': start/end points in viewport CSS px (used for rubberband drags)
   from?: { x: number; y: number }
   to?: { x: number; y: number }
+  // for 'scroll': center the target (selector/text) in its nearest
+  // horizontally-scrollable ancestor — e.g. a wide feature bar in a
+  // horizontally scrollable alignment track that's otherwise off the right
+  // edge
 }
 
 // A callout drawn over the captured page (SVG overlay) before the screenshot,
@@ -1448,36 +1453,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Center line over the pileup with the View menu's Show... → Show center line
-  // item boxed in the same frame (reviewer: show the menu path and the result
-  // together). showCenterLine starts true so the line is already visible behind
-  // the open menu.
-  {
-    mode: 'url',
-    name: 'alignments_center_line',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1000-1100',
-          showCenterLine: true,
-          tracks: ['volvox_bam'],
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    // smaller window keeps focus on the center line over the pileup
-    viewportWidth: 1100,
-    viewportHeight: 650,
-    settleMs: 4000,
-    actions: [
-      { type: 'click', selector: '[data-testid="view_menu_icon"]' },
-      ...menuCascade(['Show...', 'Show center line']),
-    ],
-    annotations: [{ type: 'box', anchor: { text: 'Show center line' } }],
-  },
-
   // Sort by base at a SNP, showing the right-click workflow (reviewer wanted the
   // menu over the SNP captured, not just the declarative result). The view is
   // centered on the ctgA:14481 SNP (a green-A mismatch column) with the reads
@@ -2810,6 +2785,30 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 60000,
     settleMs: 10000,
+    // The SV_20 row (chr3:139,976,414 -> chr13:114,353,244, the same
+    // CHROMOPLEXY junction translocation_breakpoint_split drills into below)
+    // is mounted in the DataGrid's virtualization buffer but scrolled below
+    // the grid's own internal viewport, so its DOM rect is real but not
+    // visible until scrolled into view — hover (which Puppeteer auto-scrolls
+    // to) brings it on-screen before the anchor box is measured. The matching
+    // chord in the circular plot (data-testid `chord-vcf-19`, confirmed by
+    // walking the React fiber tree from the chord path to its `feature`
+    // prop) is a 1px stroke among ~160 others with no reliable on-screen
+    // anchor (hover can't land on it, and its rendered curve geometry doesn't
+    // map cleanly through the circular view's screen transform), so the grid
+    // row — which carries the same identity in readable text — is the
+    // dependable anchor instead.
+    actions: [{ type: 'hover', text: 'SV_20' }],
+    annotations: [
+      { type: 'box', anchor: { text: 'SV_20' } },
+      {
+        type: 'text',
+        x: 60,
+        y: 90,
+        text: 'SV_20: the chr3↔chr13 CHROMOPLEXY translocation shown drilled into below.',
+        maxWidth: 420,
+      },
+    ],
   },
 
   // The chr3<->chr13 CHROMOPLEXY translocation that the chord in the SV inspector
@@ -5087,6 +5086,22 @@ export const specs: ScreenshotSpec[] = [
           { type: 'box', x: 722, y: 193, width: 56, height: 41 },
           // father's two hap-ibd rows (Father hap1 + Father hap2)
           { type: 'box', x: 3, y: 193, width: 1492, height: 41 },
+          // same breakpoint column in child h1 (the paternally-inherited
+          // haplotype), connected back to the painting step above so the
+          // reader can trace the crossover from painting block down to the
+          // child's own genotypes
+          {
+            type: 'arrow',
+            from: { x: 750, y: 234 },
+            to: { x: 750, y: 284 },
+          },
+          { type: 'box', x: 722, y: 284, width: 56, height: 44 },
+          {
+            type: 'text',
+            x: 800,
+            y: 300,
+            text: "Child h1 is paternally-inherited — it switches from matching dad's hap2 to dad's hap1 right here.",
+          },
           // dad h1 / dad h2 rows in the VCF display
           { type: 'box', x: 3, y: 460, width: 1492, height: 89 },
         ],
@@ -5102,6 +5117,22 @@ export const specs: ScreenshotSpec[] = [
           { type: 'box', x: 722, y: 210, width: 56, height: 44 },
           // mother's two hap-ibd rows (Mother hap1 + Mother hap2)
           { type: 'box', x: 3, y: 210, width: 1492, height: 44 },
+          // same breakpoint column in child h2 (the maternally-inherited
+          // haplotype), connected back to the painting step above so the
+          // reader can trace the crossover from painting block down to the
+          // child's own genotypes
+          {
+            type: 'arrow',
+            from: { x: 750, y: 254 },
+            to: { x: 750, y: 328 },
+          },
+          { type: 'box', x: 722, y: 328, width: 56, height: 45 },
+          {
+            type: 'text',
+            x: 800,
+            y: 345,
+            text: "Child h2 is maternally-inherited — it switches from matching mom's hap2 to mom's hap1 right here.",
+          },
           // mom h1 / mom h2 rows in the VCF display
           { type: 'box', x: 3, y: 373, width: 1492, height: 90 },
         ],
@@ -5527,19 +5558,35 @@ export const specs: ScreenshotSpec[] = [
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
     settleMs: 6000,
-    // Click the TP53 DNA-binding domain (UniProt "DNA binding" 102-292) on the
-    // protein feature track to drive the genome↔structure cross-highlight: the
-    // domain residues select in the 3D structure (molstar) and a highlight band
-    // is drawn over the connected LGV (NCBI RefSeq + ClinVar) at the mapped
-    // genome region. Feature bars expose data-testid (protein3d ≥ v0.4.14).
+    // Click the TP53 tetramerization/oligomerization region (UniProt
+    // "Region" 325-356) on the protein feature track to drive the
+    // genome↔structure cross-highlight: the domain residues select in the 3D
+    // structure (molstar) and a highlight band is drawn over the connected
+    // LGV (NCBI RefSeq + ClinVar) at the mapped genome region. Feature bars
+    // expose data-testid (protein3d ≥ v0.4.14), but "Region" is shared by ~20
+    // UniProt regions, so data-feature-start disambiguates this one. Picked
+    // for being compact (192px) — the alignment track's own
+    // horizontally-scrollable viewport is only 649px, and the previous choice
+    // here ("DNA binding", 1146px/residues 102-292) was wider than that, so
+    // even centered it stayed clipped on both edges. `scroll` centers the
+    // target in its scrollable ancestor before the click (both this and the
+    // wider domain start past residue ~115, off the default-scrolled
+    // viewport, so it's needed regardless of width).
     actions: [
       {
         type: 'waitForSelector',
-        selector: '[data-testid="protein-feature-DNA binding"]',
+        selector:
+          '[data-testid="protein-feature-Region"][data-feature-start="325"]',
+      },
+      {
+        type: 'scroll',
+        selector:
+          '[data-testid="protein-feature-Region"][data-feature-start="325"]',
       },
       {
         type: 'click',
-        selector: '[data-testid="protein-feature-DNA binding"]',
+        selector:
+          '[data-testid="protein-feature-Region"][data-feature-start="325"]',
       },
       { type: 'delay', ms: 6000 },
     ],
