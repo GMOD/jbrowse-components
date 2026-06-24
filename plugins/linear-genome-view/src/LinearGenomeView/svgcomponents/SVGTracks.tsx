@@ -58,7 +58,7 @@ export default function SVGTracks({
         const conf = track.configuration
         const trackName = getTrackName(conf, session)
         const display = track.displays[0]!
-        const clipId = `track-clip-${conf.trackId}`
+        const clipId = `track-clip-${model.id}-${conf.trackId}`
         const currentOffset = offsets[i]!
         return (
           <g key={conf.trackId} transform={`translate(0 ${currentOffset})`}>

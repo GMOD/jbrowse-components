@@ -123,7 +123,7 @@ export async function renderToSvg(
       RenderList.push(
         <g key={`level-${i}`} transform={`translate(0 ${y})`}>
           <SVGSyntenyLevel
-            clipId={`synclip-${i}`}
+            clipId={`synclip-${model.id}-${i}`}
             width={width}
             levelHeight={levelHeight}
             trackLabelOffset={trackLabelOffset}

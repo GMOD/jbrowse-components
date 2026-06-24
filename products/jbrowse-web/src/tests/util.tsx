@@ -217,6 +217,24 @@ export function mockFile404(
   })
 }
 
+// SVG ids must be unique within a document — a duplicate id makes
+// <clipPath>/<use> references resolve to the first match only, silently
+// breaking clipping for every later element sharing that id.
+function assertNoDuplicateSvgIds(svg: string) {
+  const ids = [...svg.matchAll(/\bid="([^"]+)"/g)]
+    .map(m => m[1])
+    .filter((id): id is string => id !== undefined)
+  const seen = new Set<string>()
+  const duplicates = new Set<string>()
+  for (const id of ids) {
+    if (seen.has(id)) {
+      duplicates.add(id)
+    }
+    seen.add(id)
+  }
+  expect([...duplicates]).toEqual([])
+}
+
 export async function exportAndVerifySvg({
   findByTestId,
   findByText,
@@ -253,6 +271,7 @@ export async function exportAndVerifySvg({
   const svg = saveAs.mock.calls[0][0].content[0]
   const dir = path.dirname(module.filename)
   fs.writeFileSync(`${dir}/__image_snapshots__/${filename}_snapshot.svg`, svg)
+  assertNoDuplicateSvgIds(svg)
   expect(svg).toMatchSnapshot()
   return svg
 }

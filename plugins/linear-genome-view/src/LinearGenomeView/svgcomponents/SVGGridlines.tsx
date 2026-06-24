@@ -34,7 +34,7 @@ export default function SVGGridlines({
           block={block}
           viewOffsetPx={viewOffsetPx}
           height={height}
-          idPrefix="gridline-clip"
+          idPrefix={`gridline-clip-${model.id}`}
         >
           {makeBlockTicks(block, bpPerPx).map(({ base, type, x }) => (
             <line

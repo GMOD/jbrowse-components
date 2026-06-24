@@ -94,7 +94,7 @@ export default function SVGRuler({
             block={block}
             viewOffsetPx={viewOffsetPx}
             height={100}
-            idPrefix="clip"
+            idPrefix={`clip-${model.id}`}
           >
             {showRefName[i] ? (
               <text x={4} y={fontSize} fontSize={fontSize} fill={c}>

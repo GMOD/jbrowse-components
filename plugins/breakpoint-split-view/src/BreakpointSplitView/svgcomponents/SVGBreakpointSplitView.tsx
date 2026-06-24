@@ -118,7 +118,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           })}
 
           <defs>
-            <clipPath id="clip-bsv">
+            <clipPath id={`clip-bsv-${model.id}`}>
               <rect
                 x={trackLabelOffset + exportMargin}
                 y={0}
@@ -129,7 +129,7 @@ export async function renderToSvg(model: BSV, opts: ExportSvgOptions) {
           </defs>
           <g
             transform={`translate(${trackLabelOffset + exportMargin})`}
-            clipPath="url(#clip-bsv)"
+            clipPath={`url(#clip-bsv-${model.id})`}
           >
             {model.matchedTracks.map(track => {
               const id = track.configuration.trackId

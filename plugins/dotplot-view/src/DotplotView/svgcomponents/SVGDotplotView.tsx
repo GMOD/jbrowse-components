@@ -44,11 +44,11 @@ export async function renderToSvg(
             <DotplotGrid model={model} />
             {additional}
             <defs>
-              <clipPath id="clip-ruler">
+              <clipPath id={`clip-ruler-${model.id}`}>
                 <rect x={0} y={0} width={viewWidth} height={viewHeight} />
               </clipPath>
             </defs>
-            <g clipPath="url(#clip-ruler)">
+            <g clipPath={`url(#clip-ruler-${model.id})`}>
               {displayResults.map(({ track, result }) => (
                 /* biome-ignore lint/suspicious/noArrayIndexKey: */
                 <g key={track.configuration.trackId}>{result}</g>

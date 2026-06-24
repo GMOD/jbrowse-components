@@ -124,11 +124,11 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
             </g>
             <g transform={`translate(${trackLabelOffset} ${offset})`}>
               <defs>
-                <clipPath id="highlight-clip">
+                <clipPath id={`highlight-clip-${model.id}`}>
                   <rect x={0} y={0} width={width} height={tracksHeight} />
                 </clipPath>
               </defs>
-              <g clipPath="url(#highlight-clip)">
+              <g clipPath={`url(#highlight-clip-${model.id})`}>
                 <SVGHighlights model={model} height={tracksHeight} />
                 {bookmarkHighlights}
               </g>
