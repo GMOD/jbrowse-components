@@ -167,22 +167,22 @@ The teal RL signature also appears in the inverted-duplication figure in the
 
 ## Paired arcs
 
-[Paired arcs](/docs/user_guides/alignments_track#paired-arcs) draw bezier curves
+[Read arcs](/docs/user_guides/alignments_track#read-arcs) draw bezier curves
 between the ends of paired or split reads. For SVs, unusually long arcs relative
 to their neighbors point to a deletion spanning the pair, and inter-chromosomal
 connections (drawn as vertical lines at the view edge) flag translocations. Set
 the color scheme to insert size, orientation, or combined coloring from the
 track menu.
 
-<Figure caption="Paired arcs over an HG002 structural variant. Illumina paired-end mates that span the deleted region are drawn as long arcs standing out from the short concordant arcs, and the discordant pairs are colored red for a larger-than-expected insert size — confirming the deletion. The GIAB consensus SV call (top) lines up with the arc signature." src="/img/alignments/arc_display.png" />
+<Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio (child, mother, father; Illumina reads), with the 1KGP ensemble SV call on top. The red arcs are pairs spanning the deleted region — drawn red for a larger-than-expected insert size — and they line up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 — HG002 deletion with Nanopore and Illumina reads in arc mode
 
 ## Linked reads
 
-[Linked reads](/docs/user_guides/alignments_track#linked-reads) stratify reads
-by the log-scaled distance between mates, making it easy to count how many reads
+[Read cloud](/docs/user_guides/alignments_track#read-cloud) stratify reads by
+the log-scaled distance between mates, making it easy to count how many reads
 span a breakpoint and read their orientation at a glance. Chains with
 supplementary alignments are connected by an orange line.
 

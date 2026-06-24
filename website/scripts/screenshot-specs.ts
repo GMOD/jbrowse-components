@@ -807,75 +807,11 @@ export const specs: ScreenshotSpec[] = [
     diffThreshold: 0.02,
   },
 
-  // Realistic arc display on HG002 (reviewer asked for HG002 Illumina reads +
-  // HG002 SV calls instead of SKBR3). HG002 is the GIAB Ashkenazi son
-  // (NA24385) reference sample — real sequencing data, not a synthetic dataset.
-  // The reviewer-requested chr1:72,548,824-73,163,654 window (~615 kb) spans an
-  // HG002 structural variant: Illumina 2x250 pairs flanking the SV get a
-  // larger-than-expected insert size, so readConnections:'arc' draws them as
-  // long red discordant arcs while concordant pairs stay small grey arcs. The
-  // HG002 GIAB consensus SV VCF sits on top so the call lines up with the arc
-  // signature. At ~615 kb the window is far above AUTO_FORCE_LOAD_BP (20 kb), so
-  // the BAM would normally show a force-load prompt; userByteSizeLimit lifts the
-  // fetch-size gate (same mechanism the smalldel/multisv specs use) so the reads
-  // auto-load headless instead of sitting on the prompt. Uses a region-slice of
-  // the Illumina BAM (1:72.6-73.1Mb, ~111k reads, 19MB) rehosted on
-  // jbrowse.org/demos/hg002 — the full remote NCBI ftp-trace BAM intermittently
-  // timed out here (60s nav). Arcs only need each read's stored mate position
-  // (RNEXT/PNEXT), so a region slice renders the same discordant signature.
-  {
-    mode: 'url',
-    name: 'alignments/arc_display',
-    url: sessionSpec(DEMO_CONFIG, {
-      sessionTracks: [
-        {
-          type: 'AlignmentsTrack',
-          trackId: 'hg002_illumina_chr1_arc_slice',
-          name: 'HG002 Illumina hs37d5.2x250 (chr1 arc slice)',
-          assemblyNames: ['hg19'],
-          adapter: {
-            type: 'BamAdapter',
-            uri: 'https://jbrowse.org/demos/hg002/HG002.hs37d5.2x250.chr1_72.6-73.1Mb.bam',
-          },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:72,650,000-73,060,000',
-          tracks: [
-            'variants_hg002',
-            {
-              trackId: 'hg002_illumina_chr1_arc_slice',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                readConnections: 'arc',
-                readConnectionsDown: true,
-                // show the stacked pileup alongside the coverage histogram and
-                // the discordant-pair arc band (reviewer: re-enable pileup —
-                // earlier we hid it, but the pileup reads should stay visible)
-                showPileup: true,
-                readConnectionsHeight: 180,
-                height: 500,
-                featureHeight: 3,
-                featureSpacing: 0,
-                userByteSizeLimit: 500_000_000,
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'HG002 Illumina',
-    settleMs: 15000,
-  },
-
   // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
   // (drawn pink) separate from background. Drawn below the coverage band
   // (readConnectionsDown) so the cloud doesn't overlap the coverage histogram.
-  // Paired arcs have their own spec above (arc_display).
+  // Read arcs in an SV context are shown by the multi-sv-trio spec.
   {
     mode: 'url',
     name: 'alignments/read_cloud',
@@ -1580,8 +1516,10 @@ export const specs: ScreenshotSpec[] = [
     // for this width — the SNP at ctgA:14481 sits at ~0.51 of the 107bp region
     viewportWidth: 1100,
     // crop each stage to the populated header+pileup so the stacked two-frame
-    // figure isn't padded by the empty viewport below (reviewer: shorter window)
-    crop: { x: 0, y: 0, width: 1100, height: 430 },
+    // figure isn't padded by the empty viewport below (reviewer: shorter window).
+    // height 500 gives the right-click context menu breathing room below its last
+    // item instead of clipping it at the frame edge (reviewer: menu cut off)
+    crop: { x: 0, y: 0, width: 1100, height: 500 },
     settleMs: 5000,
     hideTooltip: true,
     // two-stage: top frame is the right-click "SNP/Mismatch → Sort by base at
@@ -1805,7 +1743,7 @@ export const specs: ScreenshotSpec[] = [
                 colorBy: { type: 'modifications' },
                 // lift the fetch-size gate so the CRAM auto-loads headless
                 // instead of sitting on the force-load prompt (same mechanism
-                // as the arc_display spec)
+                // as the smalldel/multisv specs)
                 userByteSizeLimit: 500_000_000,
               },
             },
