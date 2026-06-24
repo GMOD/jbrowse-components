@@ -256,6 +256,58 @@ describe('collectRenderData for mature protein regions', () => {
     ])
   })
 
+  it('disambiguates a mature region shared by two parent polyproteins (ORF1a/ORF1ab)', () => {
+    const config = mockDisplayConfig({
+      labels: {
+        name: "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')",
+        description: '',
+      },
+    })
+    const pp1a = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 300,
+      product: 'ORF1a polyprotein',
+      subfeatures: [
+        mockFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 100,
+          end: 200,
+          product: 'nsp1',
+        }),
+      ],
+    })
+    const pp1ab = mockFeature({
+      type: 'CDS',
+      start: 100,
+      end: 400,
+      product: 'ORF1ab polyprotein',
+      subfeatures: [
+        mockFeature({
+          type: 'mature_protein_region_of_CDS',
+          start: 100,
+          end: 200,
+          product: 'nsp1',
+        }),
+      ],
+    })
+    const layoutA = findGlyph(pp1a, config)({ feature: pp1a, config })
+    const layoutB = findGlyph(pp1ab, config)({ feature: pp1ab, config })
+
+    const result = collectRenderData(
+      [layoutA, layoutB],
+      0,
+      10000,
+      config,
+      theme,
+      false,
+    )
+    expect(result.subfeatureInfos.map(s => s.displayLabel)).toEqual([
+      'nsp1 (ORF1a polyprotein)',
+      'nsp1 (ORF1ab polyprotein)',
+    ])
+  })
+
   it('emits a floating label per mature region when subfeatureLabels is on', () => {
     const matures = [
       mockFeature({

@@ -568,7 +568,9 @@ function processSubfeaturesLayout(
       // A polyprotein CDS nested under a container (gene → CDS → mature
       // regions); emit its stacked cleavage-product rows at the child's offset
       // rather than collapsing it to a single flat box. The container feature is
-      // the top-level (root) feature for subfeature hit resolution.
+      // the top-level (root) feature for subfeature hit resolution, but the CDS
+      // itself (childLayout.feature) is passed separately so its own product
+      // name and reading frame are used, not the enclosing gene's.
       processMatureProteinLayout(
         childLayout,
         feature,
@@ -576,6 +578,7 @@ function processSubfeaturesLayout(
         flatbushIdx,
         ctx,
         collector,
+        childLayout.feature,
       )
     } else {
       pushBoxRect(
@@ -617,8 +620,13 @@ const MATURE_PROTEIN_COLORS = MATURE_PROTEIN_COLOR_HEX.map(c =>
 // it shows direction like every other glyph. baseTopPx shifts the rows when the
 // CDS is nested inside a container glyph (gene → CDS → mature regions).
 // rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
-// by id); each region is registered as a subfeature off it so it is individually
-// hoverable and selectable.
+// by id, and the key into peptideDataMap — for a gene with multiple polyprotein
+// CDS children, e.g. SARS-CoV-2 ORF1a/ORF1ab, translation is keyed at the gene
+// level); each region is registered as a subfeature off it so it is individually
+// hoverable and selectable. cdsFeature is the polyprotein CDS that directly owns
+// the mature-region children — same object as rootFeature for a standalone CDS,
+// but the immediate child layout's feature (not the enclosing gene) when nested,
+// used only to resolve the right per-CDS product name for the label.
 //
 // When zoomed in far enough that peptide data is present, each region shows the
 // amino-acid letters of its slice of the polyprotein. The protein is translated
@@ -633,6 +641,7 @@ function processMatureProteinLayout(
   flatbushIdx: number,
   ctx: RenderContext,
   collector: Collector,
+  cdsFeature: Feature = rootFeature,
 ) {
   // one flat residue list for the whole ORF; the polyprotein CDS is a single
   // reading frame, so mature regions are sub-slices of it rather than the
@@ -674,9 +683,21 @@ function processMatureProteinLayout(
     // config-driven name so a `labels.name` override can surface e.g. the GFF
     // `product` attribute (mature peptides carry no `name`); falls back to the
     // plain name/id
-    const displayLabel =
+    const childLabel =
       readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
       getFeatureName(childFeature)
+    // viral polyproteins (e.g. SARS-CoV-2 ORF1a/ORF1ab) share cleavage products:
+    // the same mature peptide (nsp1-nsp10) is a child of both polyprotein CDS
+    // records at identical coordinates, so the box and its label legitimately
+    // appear twice. When the owning CDS resolves a real name/product (not just
+    // its bare id), append it so the two rows read as distinct ("nsp1 (ORF1a
+    // polyprotein)" vs "nsp1 (ORF1ab polyprotein)") instead of looking like a
+    // duplicate/bug.
+    const cdsLabel = readFeatureLabels(ctx.config, cdsFeature, ctx.jexl).name
+    const displayLabel =
+      cdsLabel && cdsLabel !== childLabel && cdsLabel !== cdsFeature.id()
+        ? `${childLabel} (${cdsLabel})`
+        : childLabel
     collector.subfeatureInfos.push({
       kind: 'subfeature',
       featureId: childFeature.id(),
