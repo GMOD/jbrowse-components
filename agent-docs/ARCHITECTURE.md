@@ -828,6 +828,18 @@ for the direct shape see
 - `svgExport` — `SVGErrorBox` (red error banner) and `SvgClipRect` (clipPath wrapper) for every renderSvg.tsx.
 - `Ctx2D = CanvasRenderingContext2D | SvgCanvas` — shared type alias used by every `drawXxxBlocks` signature.
 
+**Every `id` on a `<clipPath>`/`<use>` must be scoped by the owning view or
+display model's unique `.id`** (never a bare literal like `"clip-ruler"`, and
+never derived only from `trackId`/block key/array index). SVG ids are
+document-global — a second `<clipPath id="x">` silently wins nothing; browsers
+just resolve every `url(#x)` reference to the *first* match, so the second
+clipped group renders unclipped. This is invisible in isolation (single-view
+exports look fine) and only surfaces once two view panels land in the same
+document — synteny rows, breakpoint-split panels. `exportAndVerifySvg` in
+`products/jbrowse-web/src/tests/util.tsx` asserts no duplicate ids as a
+regression guard; prefer `SvgClipRect` (zero-offset rects) over hand-rolled
+`<defs><clipPath>` for new clip ids.
+
 ---
 
 ## `rpcProps()` / `gpuProps()` pattern
