@@ -8,8 +8,10 @@ import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
+import BottomRightIndicators from './BottomRightIndicators.tsx'
 import { CanvasFeatureRenderer } from './CanvasFeatureRenderer.ts'
 import FeatureTooltip from './FeatureTooltip.tsx'
+import IsoformCollapseNotice from './IsoformCollapseNotice.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
 import { hoverTooltip, performMultiRegionHitDetection } from './hitTesting.ts'
@@ -67,6 +69,8 @@ export interface LinearBasicDisplayModel {
   displayMode: string
   regionTooLarge: boolean
   regionTooLargeReason: string
+  showIsoformCollapseNotice: boolean
+  dismissIsoformCollapseNotice: () => void
   featureDensityStats?: { bytes?: number }
   statusMessage: string | undefined
   setScrollTop: (n: number) => void
@@ -472,9 +476,15 @@ const FeatureBody = observer(function FeatureBody({
         </div>
       </div>
 
-      {!model.autoHeight &&
-      (model.hasOverflow || model.heightBeforeExpand !== undefined) ? (
+      <BottomRightIndicators hasOverflow={model.hasOverflow}>
+        <IsoformCollapseNotice
+          visible={model.showIsoformCollapseNotice}
+          onDismiss={() => {
+            model.dismissIsoformCollapseNotice()
+          }}
+        />
         <OverflowIndicator
+          autoHeight={model.autoHeight}
           expanded={model.heightBeforeExpand !== undefined}
           hasOverflow={model.hasOverflow}
           scrollZoom={view.scrollZoom}
@@ -485,7 +495,7 @@ const FeatureBody = observer(function FeatureBody({
             model.collapseFromExpand()
           }}
         />
-      ) : null}
+      </BottomRightIndicators>
 
       <FeatureTooltip
         info={model.mouseoverExtraInformation}

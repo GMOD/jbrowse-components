@@ -194,6 +194,7 @@ export async function executeRenderFeatureData({
   const result: FeatureDataResult = {
     ...packed,
     featureCount: features.size,
+    isoformsCollapsed: layouts.some(layout => layout.isoformsCollapsed),
     bytes,
   }
 

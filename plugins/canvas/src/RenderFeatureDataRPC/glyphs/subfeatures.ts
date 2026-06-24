@@ -41,6 +41,11 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   const heightPx = config.featureHeight
 
   let subfeatures = [...(feature.get('subfeatures') ?? [])]
+  // longestCodingTranscript always reduces a multi-element input to one, so
+  // the pre-call length is the only thing that tells us whether it collapsed
+  // an actual choice among isoforms (vs. a gene that only ever had one).
+  const isoformsCollapsed =
+    geneGlyphMode === 'longestCoding' && subfeatures.length > 1
   if (geneGlyphMode === 'longestCoding') {
     subfeatures = longestCodingTranscript(subfeatures, transcriptTypes)
   } else {
@@ -105,5 +110,6 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     height: totalHeightPx,
     totalLayoutHeight: totalHeightPx,
     children,
+    isoformsCollapsed,
   }
 }

@@ -61,6 +61,12 @@ export default function stateModelFactory(
       type: types.literal('LinearBasicDisplay'),
       showOnlyGenes: types.stripDefault(types.boolean, false),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      isoformCollapseNoticeDismissed: false,
+    }))
     .views(self => ({
       get subfeatureLabels() {
         return self.getConfWithOverride('subfeatureLabels')
@@ -82,6 +88,13 @@ export default function stateModelFactory(
           return getView(self).coarseBpPerPx > 100 ? 'longestCoding' : 'all'
         }
         return this.geneGlyphMode
+      },
+
+      get showIsoformCollapseNotice() {
+        return (
+          !self.isoformCollapseNoticeDismissed &&
+          [...self.rpcDataMap.values()].some(data => data.isoformsCollapsed)
+        )
       },
 
       get isGeneLike() {
@@ -135,6 +148,10 @@ export default function stateModelFactory(
 
       setDisplayDirectionalChevrons(value: boolean) {
         self.setOverride('displayDirectionalChevrons', value)
+      },
+
+      dismissIsoformCollapseNotice() {
+        self.isoformCollapseNoticeDismissed = true
       },
     }))
     .views(self => {

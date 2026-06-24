@@ -21,6 +21,9 @@ export interface FeatureLayout {
   // height + label space (label visibility depends on config, not bpPerPx).
   totalLayoutHeight: number
   children: FeatureLayout[]
+  // set when geneGlyphMode === 'longestCoding' collapsed a multi-isoform gene
+  // down to its single longest coding transcript (layoutSubfeatures)
+  isoformsCollapsed?: boolean
 }
 
 // `bpPerPx` is intentionally NOT part of LayoutArgs — feature widths and

@@ -114,6 +114,12 @@ export interface FeatureDataResult {
   // Number of top-level features in this region (used for density calculations)
   featureCount: number
 
+  // True when at least one gene in this region had >1 isoform and
+  // geneGlyphMode === 'longestCoding' collapsed it down to one transcript —
+  // drives the dismissible "Isoforms collapsed" notice. Undefined in fixtures
+  // that predate this field; treat the same as false.
+  isoformsCollapsed?: boolean
+
   // Index-estimated compressed bytes for this region (when the adapter offers a
   // cheap estimate), so the display's byte gate reflects what was actually
   // fetched. Undefined for adapters with no index estimate.
