@@ -3,67 +3,35 @@ import type { ReactNode } from 'react'
 
 import { exportMargin } from '@jbrowse/core/svg/constants'
 
-import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
-
-import type { ViewDisplayResults } from './SVGLinearGenomeView.tsx'
-import type { TrackLabelMode } from '@jbrowse/plugin-linear-genome-view'
-
+// The synteny ribbons for one level, drawn in [0,width] x [0,levelHeight]. The
+// parent positions this group so its top edge meets the bottom of the upper
+// view and its bottom edge meets the top of the lower view, so the ribbons span
+// the gap between the two genome axes exactly.
 export default function SVGSyntenyLevel({
   clipId,
-  yOffset,
   width,
   levelHeight,
   trackLabelOffset,
-  fontSize,
   rendering,
-  rulerHeight,
-  textHeight,
-  trackLabels,
-  displayResults,
-  showGridlines,
-  tracksHeight,
 }: {
   clipId: string
-  yOffset: number
   width: number
   levelHeight: number
   trackLabelOffset: number
-  fontSize: number
   rendering: ReactNode[]
-  rulerHeight: number
-  textHeight: number
-  trackLabels: TrackLabelMode
-  displayResults: ViewDisplayResults
-  showGridlines: boolean
-  tracksHeight: number
 }) {
   return (
-    <g transform={`translate(0 ${yOffset})`}>
+    <g transform={`translate(${exportMargin + trackLabelOffset} 0)`}>
       <defs>
         <clipPath id={clipId}>
           <rect x={0} y={0} width={width} height={levelHeight} />
         </clipPath>
       </defs>
-      <g
-        transform={`translate(${exportMargin + trackLabelOffset} ${fontSize})`}
-        clipPath={`url(#${clipId})`}
-      >
+      <g clipPath={`url(#${clipId})`}>
         {rendering.map((r, j) => (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- fixed-order rendering list, never reordered
           <Fragment key={j}>{r}</Fragment>
         ))}
-      </g>
-      <g transform={`translate(0 ${levelHeight})`}>
-        <SVGLinearGenomeView
-          rulerHeight={rulerHeight}
-          trackLabelOffset={trackLabelOffset}
-          textHeight={textHeight}
-          trackLabels={trackLabels}
-          displayResults={displayResults}
-          fontSize={fontSize}
-          showGridlines={showGridlines}
-          tracksHeight={tracksHeight}
-        />
       </g>
     </g>
   )

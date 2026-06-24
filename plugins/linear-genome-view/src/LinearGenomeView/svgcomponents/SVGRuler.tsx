@@ -101,9 +101,10 @@ export default function SVGRuler({
                 {refName}
               </text>
             ) : null}
-            {/* very narrow regions (e.g. whole-genome view of small
-            chromosomes) crowd ticks under the refName label, so skip them */}
-            {widthPx >= 150 ? (
+            {/* always draw the tick lines (even on narrow whole-genome
+            chromosomes); the numeric coordinate labels are what crowd a narrow
+            region, and those are already suppressed below via hideText */}
+            {widthPx >= 20 ? (
               <g transform="translate(0 20)">
                 <Ruler
                   hideText={!renderRuler}
