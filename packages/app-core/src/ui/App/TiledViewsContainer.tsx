@@ -202,8 +202,8 @@ const TiledViewsContainer = observer(function TiledViewsContainer({
       setApi(event.api)
 
       event.api.onDidActivePanelChange(e => {
-        if (e?.id) {
-          sessionRef.current.setActivePanelId(e.id)
+        if (e?.panel?.id) {
+          sessionRef.current.setActivePanelId(e.panel.id)
         }
       })
 
