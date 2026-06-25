@@ -70,7 +70,25 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 export default function configSchemaFactory(pluginManager: PluginManager) {
   return ConfigurationSchema(
     'LinearBasicDisplay',
-    {},
+    {
+      /**
+       * #slot
+       * Raises the inherited 1 Mb default: feature (GFF/BED) tracks are light
+       * text, and the tabix index byte estimate is a coarse upper bound that
+       * over-reports small dense regions, so a single gene routinely tripped
+       * the old 1 Mb gate. A few Mb of feature text downloads fast; the
+       * feature-density gate remains the backstop for genuinely over-dense
+       * views. Kept here on the feature leaf so the heavier alignment/variant
+       * displays keep their own tighter inherited limit.
+       */
+      fetchSizeLimit: {
+        type: 'number',
+        defaultValue: 5_000_000,
+        description:
+          'maximum data to attempt to download for a given feature track',
+        advanced: true,
+      },
+    },
     {
       baseConfiguration: baseConfigSchemaFactory(pluginManager),
       explicitlyTyped: true,

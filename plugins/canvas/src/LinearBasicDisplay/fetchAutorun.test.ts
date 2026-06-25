@@ -650,11 +650,11 @@ describe('byte estimate pre-check', () => {
     return { display, view, mockRpcCall: env.mockRpcCall }
   }
 
-  // bytesPerBp=100 over the 50kb region → ~5MB estimate, past the 1MB limit.
+  // bytesPerBp=200 over the 50kb region → ~10MB estimate, past the 5MB limit.
   it('sets regionTooLarge from the byte short-circuit (no features loaded)', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation(makeByteGatedRender(100))
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -671,7 +671,7 @@ describe('byte estimate pre-check', () => {
   it('proceeds to fetch when bytes are within limit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    // bytesPerBp=1 over the 50kb region → ~50kB, under the 1MB limit.
+    // bytesPerBp=1 over the 50kb region → ~50kB, under the 5MB limit.
     mockRpcCall.mockImplementation(makeByteGatedRender(1))
 
     jest.advanceTimersByTime(800)
@@ -691,7 +691,7 @@ describe('byte estimate pre-check', () => {
   it('allows fetch after force load raises the byte size limit', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation(makeByteGatedRender(100))
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -717,7 +717,7 @@ describe('byte estimate pre-check', () => {
   it('does not loop after byte-estimate regionTooLarge is set', async () => {
     const { display, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation(makeByteGatedRender(100))
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -875,8 +875,8 @@ describe('derived regionTooLarge', () => {
       { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
     ])
 
-    // bytesPerBp=1 over the 5MB region → ~5MB estimate, past the 1MB limit.
-    mockRpcCall.mockImplementation(makeByteGatedRender(1))
+    // bytesPerBp=2 over the 5Mbp region → ~10MB estimate, past the 5MB limit.
+    mockRpcCall.mockImplementation(makeByteGatedRender(2))
 
     view.zoomTo(view.maxBpPerPx)
     jest.advanceTimersByTime(800)
@@ -981,7 +981,7 @@ describe('derived regionTooLarge', () => {
   it('byte-estimate banner stays stable across viewport change (no flicker)', async () => {
     const { display, view, mockRpcCall } = createLargeDisplay()
 
-    mockRpcCall.mockImplementation(makeByteGatedRender(100))
+    mockRpcCall.mockImplementation(makeByteGatedRender(200))
 
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
@@ -1017,11 +1017,11 @@ describe('derived regionTooLarge', () => {
       { assemblyName: 'volvox', start: 0, end: 5_000_000, refName: 'ctgA' },
     ])
 
-    // Byte estimate scales with the queried span (bytesPerBp=1): ~5MB zoomed
-    // out, ~50kB zoomed in. Limit is 1MB.
-    mockRpcCall.mockImplementation(makeByteGatedRender(1))
+    // Byte estimate scales with the queried span (bytesPerBp=2): ~10MB zoomed
+    // out, ~100kB zoomed in. Limit is 5MB.
+    mockRpcCall.mockImplementation(makeByteGatedRender(2))
 
-    // Zoom all the way out: the full 5MB span estimates ~5MB > 1MB.
+    // Zoom all the way out: the full 5Mbp span estimates ~10MB > 5MB.
     view.zoomTo(view.maxBpPerPx)
     jest.advanceTimersByTime(800)
     await jest.runAllTimersAsync()
