@@ -51,9 +51,9 @@
   },
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
-    "status": "bad",
-    "note": "should use insertSizeAndOrientation for samplot coloring. it is surprising no pink pairs are seen also. might want to calibrate our stats calculations to surfacethis better. if +/- 3sd is too strict for the -3sd side of things, try to find better stat. likely the insert size distribution is not normal....",
-    "reviewedAt": "2026-06-23T04:04:51.621Z",
+    "status": "good",
+    "note": "Resolved: spec switched to insertSizeAndOrientation; short-insert pairs now override orientation and paint pink (visible #ff3a8c cluster at top), long-/normal-insert pairs colored by orientation, long-insert red baseline. Stats lower bound was not too strict for this dataset (pink appears).",
+    "reviewedAt": "2026-06-25T16:17:13.065Z",
     "hash": "64353b33c5402c608953789d71b27825fbaff9ef"
   },
   "dotplot": {
@@ -464,9 +464,10 @@
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "bad",
-    "note": "this screenshot may want to use human gene. maybe FAF1. can also show it on the gene page in user guide. also need to show the translation exceptions functionality",
-    "reviewedAt": "2026-06-21T20:38:19.708Z"
+    "status": "good",
+    "note": "Resolved: swapped volvox EDEN for the human SELENOP gene on config_demo hg38 + ncbi_refseq_109_hg38_latest (geneGlyphMode longestCoding for a single MANE transcript). Genomic w/ full introns +/- shows the region color-coded (upstream/downstream red, UTR blue, CDS yellow, intron white). Protein view split into new feature_detail_protein spec.",
+    "reviewedAt": "2026-06-25T16:48:04.000Z",
+    "hash": "7e8e59286d86d052f92b179caa75dcb78ced274d"
   },
   "hic_track": {
     "name": "hic_track",
@@ -1095,5 +1096,12 @@
     "note": "",
     "reviewedAt": "2026-06-23T03:58:59.434Z",
     "hash": "88034947379893151f6bd75ab0fa2415f69b4df6"
+  },
+  "feature_detail_protein": {
+    "name": "feature_detail_protein",
+    "status": "good",
+    "note": "New figure demonstrating translation exceptions (reviewer ask): SELENOP Protein view highlights the ten selenocysteine (U) residues recoded from in-frame UGA stops via transl_except, amber, with a legend. Added to feature_sequence.md Protein section.",
+    "reviewedAt": "2026-06-25T16:48:04.000Z",
+    "hash": "10072924fc2e8ac3d0ee00f7a8446b335c58efec"
   }
 }

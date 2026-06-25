@@ -3595,43 +3595,49 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 60000,
     settleMs: 12000,
   },
-  // Gene feature-details sequence panel: click the multi-exon volvox EDEN gene to
-  // open its details, expand "Show feature sequence", and switch the type selector
-  // to the genomic-with-introns + up/down-stream mode so the panel shows the
-  // colored upstream / exon / intron / downstream sequence.
+  // Gene feature-details sequence panel on a human gene (reviewer asked for a
+  // human example over the volvox EDEN one + a demo of the transl_except
+  // functionality, split below into feature_detail_protein). SELENOP
+  // (selenoprotein P, chr5, minus strand) is used for both: here the type
+  // selector is set to "Genomic w/ full introns +/-" so the panel shows the
+  // upstream flank, exons/introns, UTR, and downstream flank color-coded.
   //
-  // NOTE: the reviewer asked for a human FAF1 example on config_demo. That is
-  // blocked headless — the demo human gene tracks (RefSeq `ncbi_gff_hg19` and
-  // Gencode GFF) don't expose the "Genomic w/ full introns" option in the
-  // sequence panel (only plain "Genomic +/- Nbp"), because the clicked gene
-  // feature's CDS subfeatures aren't recognized; the Gencode track also labels by
-  // Ensembl ID, not "FAF1".
+  // Uses config_demo's hg38 + ncbi_refseq_109_hg38_latest (labels by gene
+  // symbol and exposes real CDS subfeatures, unlike the hg19 ncbi_gff / Gencode
+  // tracks the earlier FAF1 attempt tried). geneGlyphMode 'longestCoding' draws a
+  // single transcript so the coordinate click lands unambiguously on the MANE
+  // mRNA row (canvas-drawn glyphs have no DOM label to target by text).
   {
     mode: 'url',
     name: 'feature_detail_sequence',
-    url: sessionSpec(VOLVOX, {
+    url: sessionSpec(DEMO_CONFIG, {
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:17200-23200',
+          assembly: 'hg38',
+          loc: 'chr5:42,799,000-42,812,500',
           tracks: [
-            { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+                height: 200,
+              },
+            },
           ],
         },
       ],
     }),
-    readyText: 'ctgA',
-    settleMs: 4000,
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 90000,
+    settleMs: 8000,
     viewportHeight: 900,
     actions: [
-      // Must click a transcript glyph, not the gene: the gene-level sequence
-      // panel is only a container for its transcripts and offers no
-      // full-introns/CDS option. Transcript glyphs are canvas-drawn with no DOM
-      // text label (only the gene gets a clickable `feature-name-EDEN` div), so a
-      // coordinate click on the transcript row is required here — a text click
-      // can only reach the gene label. (x,y lands on the EDEN.1 transcript.)
-      { type: 'click', from: { x: 430, y: 314 } },
+      // Coordinate click on the single MANE transcript row (canvas glyph, no DOM
+      // label) — lands on a CDS exon of the SELENOP transcript line, below the
+      // CCDC152 neighbor gene above it.
+      { type: 'click', from: { x: 637, y: 211 } },
       { type: 'waitForText', text: 'Show feature sequence' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Show feature sequence' },
@@ -3639,6 +3645,51 @@ export const specs: ScreenshotSpec[] = [
       { type: 'click', selector: '[aria-label="Sequence type"]' },
       { type: 'delay', ms: 1000 },
       { type: 'click', text: 'Genomic w/ full introns +/-' },
+      { type: 'delay', ms: 3000 },
+    ],
+  },
+
+  // Protein translation of SELENOP showing translation exceptions: the ten
+  // in-frame UGA stop codons that NCBI RefSeq annotates as
+  // `transl_except=(...,aa:Sec)` translate to selenocysteine (U), highlighted
+  // amber in the peptide with a legend noting "10 selenocysteines (U) from
+  // transl_except". Same setup/transcript click as feature_detail_sequence; only
+  // the type selector differs (Protein).
+  {
+    mode: 'url',
+    name: 'feature_detail_protein',
+    url: sessionSpec(DEMO_CONFIG, {
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr5:42,799,000-42,812,500',
+          tracks: [
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+                height: 200,
+              },
+            },
+          ],
+        },
+      ],
+    }),
+    readyText: 'NCBI RefSeq',
+    readyTimeout: 90000,
+    settleMs: 8000,
+    viewportHeight: 900,
+    actions: [
+      { type: 'click', from: { x: 637, y: 211 } },
+      { type: 'waitForText', text: 'Show feature sequence' },
+      { type: 'delay', ms: 1000 },
+      { type: 'click', text: 'Show feature sequence' },
+      { type: 'delay', ms: 2000 },
+      { type: 'click', selector: '[aria-label="Sequence type"]' },
+      { type: 'delay', ms: 1000 },
+      { type: 'click', text: 'Protein' },
       { type: 'delay', ms: 3000 },
     ],
   },

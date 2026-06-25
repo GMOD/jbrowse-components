@@ -32,7 +32,15 @@ The sequence type is chosen from the dropdown at the top of the panel. The
 up/downstream extension defaults to 100bp and the intron flank to 10bp; both are
 configurable from the gear icon.
 
-<Figure caption="Sequence panel for a selected feature, color-coded by region: upstream/downstream (red), UTR (blue), CDS (yellow), and intronic (white)." src="/img/feature_detail_sequence.png" />
+<Figure caption="Sequence panel for the human SELENOP gene, color-coded by region: upstream/downstream (red), UTR (blue), CDS (yellow), and intronic (white)." src="/img/feature_detail_sequence.png" />
+
+When the **Protein** type is selected, residues whose translation was overridden
+by a `transl_except` attribute are highlighted (amber) and summarized in a
+legend. The example below is the selenoprotein SELENOP, whose ten in-frame UGA
+stop codons NCBI RefSeq annotates as `transl_except=(...,aa:Sec)` so they
+translate to selenocysteine (U) instead of terminating the protein.
+
+<Figure caption="Protein translation of SELENOP: the ten selenocysteine (U) residues recoded from in-frame UGA stop codons via transl_except are highlighted amber, with a legend summarizing the overrides." src="/img/feature_detail_protein.png" />
 
 <Figure caption="Choosing the sequence type for a volvox gene: the dropdown is set to 'Genomic w/ full introns +/- 100bp up+down stream', so the panel shows the upstream flank, the exons and introns, and the downstream flank." src="/img/upstream_downstream_details.png" />
 
