@@ -407,9 +407,7 @@ export async function executeVariantCellData({
         rest.cellColors.buffer,
         rest.cellShapeTypes.buffer,
         rest.flatbushData,
-        rest.flatbushGenomicStarts.buffer,
-        rest.flatbushGenomicEnds.buffer,
-        rest.flatbushFeatureIndices.buffer,
+        rest.cellFeatureIndices.buffer,
       )
     }
 

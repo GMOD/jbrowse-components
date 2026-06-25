@@ -26,7 +26,9 @@ export type FeatureGenotypeInfo = VariantFeatureGenotypes
 export interface VariantCellData {
   // Absolute genomic positions in uint32 (start, renderEnd) interleaved.
   // The renderer + shader split via hpSplitUint against the per-block
-  // bpRangeX; no region origin is shipped separately.
+  // bpRangeX; no region origin is shipped separately. Hit-testing reads the
+  // same array (the flatbush boxes are built from it), so no parallel
+  // start/end arrays are shipped.
   cellPositions: Uint32Array
   cellRowIndices: Uint32Array
   cellColors: Uint32Array
@@ -34,9 +36,7 @@ export interface VariantCellData {
   numCells: number
   featureGenotypeMap: Record<string, FeatureGenotypeInfo>
   flatbushData: ArrayBuffer
-  flatbushGenomicStarts: Uint32Array
-  flatbushGenomicEnds: Uint32Array
-  flatbushFeatureIndices: Uint32Array
+  cellFeatureIndices: Uint32Array
   featureIdList: string[]
 }
 
@@ -94,9 +94,7 @@ export function computeVariantCells({
   const colors = new Uint32Array(maxCells)
   const shapeTypes = new Uint8Array(maxCells)
   const isRef = new Uint8Array(maxCells)
-  const fbGenomicStarts = new Uint32Array(maxCells)
-  const fbGenomicEnds = new Uint32Array(maxCells)
-  const fbFeatureIndices = new Uint32Array(maxCells)
+  const featureIndices = new Uint32Array(maxCells)
   const featureIdList: string[] = []
 
   const featureGenotypeMap: Record<string, FeatureGenotypeInfo> = {}
@@ -113,8 +111,12 @@ export function computeVariantCells({
     featureIdx: number,
   ) {
     const ci = cellCount
-    // Absolute uint32 genomic positions — the shader hp-splits these
-    // against the per-block bpRangeX (no region origin in the uniform).
+    // Absolute uint32 genomic positions — the shader hp-splits these against the
+    // per-block bpRangeX (no region origin in the uniform). renderEnd, not the
+    // true VCF end, is stored so it doubles as the hit-test/highlight bound: an
+    // insertion's down-triangle is drawn across [start, renderEnd] (centered), so
+    // bounding by `end` (~start for a point insertion) would leave the whole
+    // triangle unhoverable. renderEnd === end for every non-insertion shape.
     positions[ci * 2] = genomicStart
     positions[ci * 2 + 1] = renderEnd
     rowIndices[ci] = rowIndex
@@ -124,14 +126,7 @@ export function computeVariantCells({
     if (isReference) {
       numRefCells++
     }
-    // Hit-test/highlight bounds must match the *rendered* glyph extent, not the
-    // true VCF end: an insertion's down-triangle is drawn across
-    // [start, renderEnd] (centered), so bounding by `end` (~start for a point
-    // insertion) leaves the whole triangle unhoverable. renderEnd === end for
-    // every non-insertion shape.
-    fbGenomicStarts[ci] = genomicStart
-    fbGenomicEnds[ci] = renderEnd
-    fbFeatureIndices[ci] = featureIdx
+    featureIndices[ci] = featureIdx
     cellCount++
   }
 
@@ -269,9 +264,7 @@ export function computeVariantCells({
   const outRowIndices = new Uint32Array(outCount)
   const outColors = new Uint32Array(outCount)
   const outShapeTypes = new Uint8Array(outCount)
-  const outFbGenomicStarts = new Uint32Array(outCount)
-  const outFbGenomicEnds = new Uint32Array(outCount)
-  const outFbFeatureIndices = new Uint32Array(outCount)
+  const outFeatureIndices = new Uint32Array(outCount)
   let refPos = 0
   let nonRefPos = drawRef ? numRefCells : 0
   for (let i = 0; i < cellCount; i++) {
@@ -285,9 +278,7 @@ export function computeVariantCells({
     outRowIndices[w] = rowIndices[i]!
     outColors[w] = colors[i]!
     outShapeTypes[w] = shapeTypes[i]!
-    outFbGenomicStarts[w] = fbGenomicStarts[i]!
-    outFbGenomicEnds[w] = fbGenomicEnds[i]!
-    outFbFeatureIndices[w] = fbFeatureIndices[i]!
+    outFeatureIndices[w] = featureIndices[i]!
   }
 
   // Flatbush requires at least one add() per the constructor-declared count,
@@ -297,9 +288,9 @@ export function computeVariantCells({
   if (outCount > 0) {
     for (let i = 0; i < outCount; i++) {
       flatbush.add(
-        outFbGenomicStarts[i]!,
+        outPositions[i * 2]!,
         outRowIndices[i]!,
-        outFbGenomicEnds[i],
+        outPositions[i * 2 + 1],
         outRowIndices[i]! + 1,
       )
     }
@@ -316,9 +307,7 @@ export function computeVariantCells({
     numCells: outCount,
     featureGenotypeMap,
     flatbushData: flatbush.data,
-    flatbushGenomicStarts: outFbGenomicStarts,
-    flatbushGenomicEnds: outFbGenomicEnds,
-    flatbushFeatureIndices: outFbFeatureIndices,
+    cellFeatureIndices: outFeatureIndices,
     featureIdList,
   }
 }

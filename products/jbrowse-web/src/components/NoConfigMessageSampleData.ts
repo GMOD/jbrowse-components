@@ -121,7 +121,8 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"3:49358083-49358183","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
-    label: 'Human GPX1 selenoprotein (UGA→selenocysteine readthrough in translation)',
+    label:
+      'Human GPX1 selenoprotein (UGA→selenocysteine readthrough in translation)',
   },
   {
     config: 'test_data/arabidopsis_methylation/config.json',

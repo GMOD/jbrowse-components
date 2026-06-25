@@ -69,32 +69,33 @@ function getFeatureUnderMouse(
   const genomicPos = region.reversed
     ? region.end - frac * regionLengthBp
     : region.start + frac * regionLengthBp
-  // mouseY maps to exactly one sample row, so query that row as a Y-point —
-  // padding the row axis would let a genomically-closer cell in an adjacent
-  // sample win and show the wrong sample's genotype.
-  const rowFrac = (mouseY + model.scrollTop) / model.rowHeight
+
+  // Rows under 1px draw 1px tall, so sub-pixel rows stack under one cursor
+  // pixel. Query the band of rows whose 1px-min box overlaps the cursor (a
+  // single Y-point misses sparse rows with no cell under the column), then pick
+  // the shortest feature so a small variant atop a large one stays selectable.
+  // 1px-min mirrors max(u.rowHeight, 1.0) in shaders/variant.slang +
+  // Canvas2DVariantRenderer.ts.
+  const drawnRowHeight = Math.max(model.rowHeight, 1)
+  const rowLo = (mouseY - drawnRowHeight + model.scrollTop) / model.rowHeight
+  const rowHi = (mouseY + 1 + model.scrollTop) / model.rowHeight
 
   const bpPadding = 5 * bpPerPx
   const hits = flatbushIndex.search(
     genomicPos - bpPadding,
-    rowFrac,
+    rowLo,
     genomicPos + bpPadding,
-    rowFrac,
+    rowHi,
   )
 
   let bestIdx = -1
-  let bestDist = Infinity
+  let bestLen = Infinity
   for (const idx of hits) {
-    const gStart = regionCellData.flatbushGenomicStarts[idx]!
-    const gEnd = regionCellData.flatbushGenomicEnds[idx]!
-    const dx =
-      genomicPos < gStart
-        ? gStart - genomicPos
-        : genomicPos > gEnd
-          ? genomicPos - gEnd
-          : 0
-    if (dx < bestDist) {
-      bestDist = dx
+    const len =
+      regionCellData.cellPositions[idx * 2 + 1]! -
+      regionCellData.cellPositions[idx * 2]!
+    if (len < bestLen) {
+      bestLen = len
       bestIdx = idx
     }
   }
@@ -104,9 +105,7 @@ function getFeatureUnderMouse(
   }
 
   const featureId =
-    regionCellData.featureIdList[
-      regionCellData.flatbushFeatureIndices[bestIdx]!
-    ]!
+    regionCellData.featureIdList[regionCellData.cellFeatureIndices[bestIdx]!]!
   const rowIndex = regionCellData.cellRowIndices[bestIdx]!
   // The cell row index maps directly into model.sources (same effectiveSources
   // ordering used to compute the cells), so no per-region sourceNameList is
@@ -115,8 +114,8 @@ function getFeatureUnderMouse(
   if (!source) {
     return undefined
   }
-  const genomicStart = regionCellData.flatbushGenomicStarts[bestIdx]!
-  const genomicEnd = regionCellData.flatbushGenomicEnds[bestIdx]!
+  const genomicStart = regionCellData.cellPositions[bestIdx * 2]!
+  const genomicEnd = regionCellData.cellPositions[bestIdx * 2 + 1]!
   const info = regionCellData.featureGenotypeMap[featureId]!
   const genotype = decodeGenotype(
     cellData.genotypeDict,

@@ -75,8 +75,8 @@ describe('computeVariantCells insertion hit bounds', () => {
       referenceDrawingMode: 'skip',
       genotypesCache: new Map(),
     })
-    expect(result.flatbushGenomicStarts[0]).toBe(100)
-    expect(result.flatbushGenomicEnds[0]).toBe(110)
+    expect(result.cellPositions[0]).toBe(100)
+    expect(result.cellPositions[1]).toBe(110)
   })
 
   test('flatbush end spans SVLEN for symbolic insertions', () => {
@@ -98,7 +98,7 @@ describe('computeVariantCells insertion hit bounds', () => {
       referenceDrawingMode: 'skip',
       genotypesCache: new Map(),
     })
-    expect(result.flatbushGenomicStarts[0]).toBe(100)
-    expect(result.flatbushGenomicEnds[0]).toBe(350)
+    expect(result.cellPositions[0]).toBe(100)
+    expect(result.cellPositions[1]).toBe(350)
   })
 })

@@ -64,7 +64,9 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
 
   // fractional y keeps subpixel rows smooth (no rounding = no discrete jumps
   // during resize); max(...,1) is the minimum quad height to avoid GPU-culled
-  // zero-height geometry while preserving draw order for variant priority
+  // zero-height geometry while preserving draw order for variant priority.
+  // 1px-min mirrored in Canvas2DVariantRenderer.ts (draw) +
+  // VariantComponent.tsx (hit-test) — keep in sync.
   float yTop = float(inst.rowIndex) * u.rowHeight - u.scrollTop;
   float yBot = yTop + max(u.rowHeight, 1.0);
   float pxToClipY = 2.0 / u.canvasHeight;
