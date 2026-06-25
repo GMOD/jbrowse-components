@@ -949,13 +949,14 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'samplot',
                 readConnectionsDown: true,
-                // color the cloud by both insert size and orientation: abnormal
-                // orientations paint by their pair type while the short-insert
-                // (insertion-supporting) pairs keep normal orientation and paint
-                // pink, standing out from the grey normal background (the arc
+                // color the cloud by both insert size and orientation:
+                // short-insert pairs always paint pink (overriding orientation,
+                // so the insertion-supporting cluster stands out from the grey
+                // normal background even though it's RR-oriented), while
+                // long-/normal-insert pairs paint by their pair type. The arc
                 // palette uses a saturated short-insert pink so the thin cloud
-                // lines stay visible)
-                arcColorByType: 'insertSize',
+                // lines stay visible.
+                arcColorByType: 'insertSizeAndOrientation',
                 coverageHeight: 100,
                 readConnectionsHeight: 100,
                 height: 600,

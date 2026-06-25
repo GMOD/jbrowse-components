@@ -1,5 +1,15 @@
 import { sum } from '@jbrowse/core/util'
 
+// For a Gaussian, sd ≈ 1.4826·MAD, so a robust spread built from the MAD lines
+// up with the classic ±Nσ thresholds on well-behaved data.
+const MAD_TO_SD = 1.4826
+
+function median(sorted: number[]) {
+  const n = sorted.length
+  const mid = n >> 1
+  return n % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
+}
+
 export function getInsertSizeStats(filtered: number[]) {
   const len = filtered.length
   const avg = sum(filtered) / len
@@ -14,8 +24,25 @@ export function getInsertSizeStats(filtered: number[]) {
     sumSqDiff += diff * diff
   }
   const sd = Math.sqrt(sumSqDiff / len)
-  const upper = avg + 3 * sd
-  const lower = Math.max(0, avg - 3 * sd)
+
+  // Color thresholds use a robust spread (median ± 3·1.4826·MAD) rather than
+  // mean ± 3·sd. Insert-size distributions are right-skewed: deletions and
+  // large SVs sit in a long upper tail that inflates sd, which on the short
+  // side drives avg − 3·sd negative (clamped to 0) so NOTHING is ever flagged
+  // "short insert" and the insertion-supporting signal silently vanishes. The
+  // MAD measures spread from the normal-insert bulk and ignores that tail, so
+  // the lower bound stays positive and meaningful and the upper bound tracks
+  // the bulk closely enough that moderate deletions aren't masked. When MAD = 0
+  // (over half the values identical) the robust spread is degenerate, so fall
+  // back to the mean/sd estimate there.
+  const sorted = [...filtered].sort((a, b) => a - b)
+  const med = median(sorted)
+  const deviations = filtered.map(x => Math.abs(x - med)).sort((a, b) => a - b)
+  const mad = median(deviations)
+  const center = mad > 0 ? med : avg
+  const spread = mad > 0 ? 3 * MAD_TO_SD * mad : 3 * sd
+  const upper = center + spread
+  const lower = Math.max(0, center - spread)
   return {
     upper,
     lower,

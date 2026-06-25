@@ -172,13 +172,19 @@ export function readColorCategory(
     case ColorScheme.pairOrientation:
       return pairOrientationCategory(data.readPairOrientations[i]!)
 
-    // Non-LR orientation wins; otherwise fall back to insert-size threshold.
+    // Short-insert pairs always show pink, even with abnormal orientation;
+    // otherwise orientation wins, falling back to long-/normal-insert.
     case ColorScheme.insertSizeAndOrientation: {
+      const insert = insertSizeCategory(
+        data.readInsertSizes[i]!,
+        data.insertSizeStats,
+      )
       const po = data.readPairOrientations[i]!
-      if (po === 2 || po === 3 || po === 4) {
-        return pairOrientationCategory(po)
-      }
-      return insertSizeCategory(data.readInsertSizes[i]!, data.insertSizeStats)
+      return insert === 'shortInsert'
+        ? insert
+        : po === 2 || po === 3 || po === 4
+          ? pairOrientationCategory(po)
+          : insert
     }
 
     case ColorScheme.modifications:

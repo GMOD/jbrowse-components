@@ -118,10 +118,15 @@ float3 pairOrientColor(uint po, Uniforms u) {
 }
 
 float3 isAndOrientColor(float is, uint po, Uniforms u) {
+  // Short-insert pairs always show pink, even with abnormal orientation;
+  // otherwise orientation wins, falling back to long-/normal-insert. Mirrors
+  // readColorCategory in colorUtils.ts.
+  if (is < u.insertLower) { return unpackRGBA(u.colorShortInsert).xyz; }
   if (po == 2u) { return unpackRGBA(u.colorPairRL).xyz; }
   if (po == 3u) { return unpackRGBA(u.colorPairRR).xyz; }
   if (po == 4u) { return unpackRGBA(u.colorPairLL).xyz; }
-  return insertSizeColor(is, u);
+  if (is > u.insertUpper) { return unpackRGBA(u.colorLongInsert).xyz; }
+  return unpackRGBA(u.colorPairLR).xyz;
 }
 
 float3 modificationsColor(uint flags, Uniforms u) {

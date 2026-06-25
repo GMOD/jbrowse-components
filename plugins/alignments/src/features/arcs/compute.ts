@@ -181,8 +181,10 @@ function getArcColorType(args: {
       return insert
     case 'orientation':
       return orient ?? COLOR_DEFAULT
+    // Short-insert pairs always paint pink, even with abnormal orientation;
+    // otherwise orientation wins, falling back to long-/normal-insert.
     case 'insertSizeAndOrientation':
-      return orient ?? insert
+      return insert === COLOR_SHORT_INSERT ? insert : (orient ?? insert)
   }
 }
 

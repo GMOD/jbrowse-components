@@ -40,12 +40,14 @@ export function checkboxItem(
 
 export function radioModeMenuItem<T extends string>(
   label: string,
-  options: { value: T; label: string }[],
+  options: { value: T; label: string; subLabel?: string; helpText?: string }[],
   current: T,
   setMode: (m: T) => void,
+  helpText?: string,
 ) {
   return {
     label,
+    helpText,
     type: 'subMenu' as const,
     subMenu: radioItems(options, current, setMode),
   }

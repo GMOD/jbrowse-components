@@ -87,16 +87,35 @@ shades reads continuously by the magnitude of the deviation. Reads with a mate
 on a different chromosome are handled separately (see the table below).
 
 **With paired arcs or linked reads enabled** (via Read connections in the track
-menu), the Insert size ± 3σ option uses threshold-based coloring:
+menu), the Insert size option uses threshold-based coloring:
 
-| Pattern                                    | Color  | Notes                                  |
-| ------------------------------------------ | ------ | -------------------------------------- |
-| Insert > mean + 3σ (larger than expected)  | red    | suggests a deletion spanning the pair  |
-| Insert < mean − 3σ (smaller than expected) | pink   | suggests an insertion between the pair |
-| Mate on a different chromosome             | purple | suggests an inter-chromosomal event    |
+| Pattern                              | Color  | Notes                                  |
+| ------------------------------------ | ------ | -------------------------------------- |
+| Insert larger than expected          | red    | suggests a deletion spanning the pair  |
+| Insert smaller than expected         | pink   | suggests an insertion between the pair |
+| Mate on a different chromosome       | purple | suggests an inter-chromosomal event    |
 
-**Insert size ± 3σ and orientation** combines both signals and is often the most
-informative setting for a general SV scan.
+The "expected" range is a robust band around the typical insert size,
+`median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. Real insert-size
+distributions are a tight bulk plus a long right tail of large inserts
+(deletions, SVs); that tail inflates the standard deviation, which pushes the
+`mean − 3σ` lower bound below zero so that **nothing** is ever flagged as a
+short insert and the insertion signal silently disappears. The median and MAD
+measure the spread of the normal-insert bulk and ignore the tail, so the
+short-insert (pink) threshold stays positive and meaningful, and moderate
+deletions aren't masked by a few very large outliers.
+
+**Insert size and orientation** combines both signals and is often the most
+informative setting for a general SV scan. The two signals are prioritized so
+that the strongest cue wins:
+
+- **Short insert always paints pink**, even if the pair orientation is abnormal.
+  At a short insert the useful signal is simply "an insertion is here" —
+  distinguishing orientation adds little, so pink takes priority.
+- Otherwise an **abnormal pair orientation wins** (teal RL → tandem
+  duplication; green LL / dark blue RR → inversion).
+- A **large insert with normal orientation paints red** — the classic deletion
+  signature.
 
 ## SV-type signatures
 

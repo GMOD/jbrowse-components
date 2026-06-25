@@ -98,11 +98,28 @@ describe('readColorCategory', () => {
     expect(cat(4)).toBe('pairLL')
   })
 
-  test('insertSizeAndOrientation: non-LR orientation wins, else insert size', () => {
+  test('insertSizeAndOrientation: short insert wins, else orientation, else insert', () => {
+    // Short insert overrides abnormal orientation (stays pink)
     expect(
       readColorCategory(
         0,
-        makeData({ pairOrientation: 2 }, stats),
+        makeData({ pairOrientation: 2, insertSize: 50 }, stats),
+        ColorScheme.insertSizeAndOrientation,
+      ),
+    ).toBe('shortInsert')
+    // Long insert keeps abnormal orientation
+    expect(
+      readColorCategory(
+        0,
+        makeData({ pairOrientation: 2, insertSize: 700 }, stats),
+        ColorScheme.insertSizeAndOrientation,
+      ),
+    ).toBe('pairRL')
+    // Normal insert + abnormal orientation paints by orientation
+    expect(
+      readColorCategory(
+        0,
+        makeData({ pairOrientation: 2, insertSize: 300 }, stats),
         ColorScheme.insertSizeAndOrientation,
       ),
     ).toBe('pairRL')

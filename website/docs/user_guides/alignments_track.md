@@ -64,7 +64,13 @@ data), **Color by → Base modifications** paints them. There are two modes:
 For paired-end data, **Color by → Pair orientation** and **Color by → Insert
 size** highlight discordant pairs — the main way to scan short reads for
 structural variants. Reads with an unexpectedly large insert turn red, smaller
-turn pink, and abnormal pair orientations get their own colors.
+turn pink, and abnormal pair orientations get their own colors. The combined
+**Insert size and orientation** mode prioritizes the strongest cue: a short
+insert always paints pink (an insertion is here), otherwise abnormal orientation
+wins, otherwise a large insert paints red (deletion). Insert-size thresholds are
+robust to the long tail of large inserts (`median ± 3·1.4826·MAD`) so the
+short-insert signal isn't washed out — see the [SV visualization
+guide](/docs/user_guides/sv_visualization) for the full color tables.
 
 <Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints — teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
 
