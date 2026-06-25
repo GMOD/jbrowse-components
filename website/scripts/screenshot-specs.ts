@@ -94,6 +94,12 @@ interface CommonSpecFields {
   // suppress the hover/right-click BaseTooltip (which lingers while a context
   // menu is open) so it doesn't clutter the capture
   hideTooltip?: boolean
+  // render this spec with the Firefox backend instead of Chrome. Headless
+  // Chrome's swiftshader rasterizes some WebGL/molstar content (e.g. the
+  // protein3d structure canvas) as a featureless blob with no visible
+  // selection; headless Firefox renders it cleanly. The CLI `--firefox` flag
+  // forces every spec onto Firefox; this opts a single spec in for normal regens
+  firefox?: boolean
   // per-spec override of the content-stable diff gate (fraction of pixels in
   // [0,1]). Raise it for specs with irreducible render jitter — remote-data
   // timing, heavy text, animated chrome — so an unchanged capture isn't
@@ -5558,35 +5564,39 @@ export const specs: ScreenshotSpec[] = [
     readySelector: '[data-testid="protein-view-ready"]',
     readyTimeout: 90000,
     settleMs: 6000,
-    // Click the TP53 tetramerization/oligomerization region (UniProt
-    // "Region" 325-356) on the protein feature track to drive the
-    // genome↔structure cross-highlight: the domain residues select in the 3D
-    // structure (molstar) and a highlight band is drawn over the connected
-    // LGV (NCBI RefSeq + ClinVar) at the mapped genome region. Feature bars
-    // expose data-testid (protein3d ≥ v0.4.14), but "Region" is shared by ~20
-    // UniProt regions, so data-feature-start disambiguates this one. Picked
-    // for being compact (192px) — the alignment track's own
-    // horizontally-scrollable viewport is only 649px, and the previous choice
-    // here ("DNA binding", 1146px/residues 102-292) was wider than that, so
-    // even centered it stayed clipped on both edges. `scroll` centers the
-    // target in its scrollable ancestor before the click (both this and the
-    // wider domain start past residue ~115, off the default-scrolled
-    // viewport, so it's needed regardless of width).
+    // the molstar 3D structure canvas only rasterizes cleanly (cartoon detail +
+    // the magenta motif selection highlight) under headless Firefox; headless
+    // Chrome's swiftshader renders it as a featureless blob
+    firefox: true,
+    // Click the TP53 nuclear export signal (UniProt "Motif" 339-350) on the
+    // protein feature track to drive the genome↔structure cross-highlight: the
+    // motif residues select in the 3D structure (molstar) and a highlight band
+    // is drawn over the connected LGV (NCBI RefSeq + ClinVar) at the mapped
+    // genome region. The Motif track is used here rather than the Region track:
+    // Region features (e.g. the 325-356 tetramerization region used previously)
+    // are long and overlap each other, whereas the five UniProt motifs are
+    // short and non-overlapping, so the clicked feature and its highlight read
+    // cleanly. Feature bars expose data-testid (protein3d ≥ v0.4.14), but
+    // "Motif" is shared by all five motifs, so data-feature-start disambiguates
+    // this one (12 residues, well within the alignment track's 649px
+    // horizontally-scrollable viewport). `scroll` centers the target in its
+    // scrollable ancestor before the click, since the motif starts past residue
+    // ~115, off the default-scrolled viewport.
     actions: [
       {
         type: 'waitForSelector',
         selector:
-          '[data-testid="protein-feature-Region"][data-feature-start="325"]',
+          '[data-testid="protein-feature-Motif"][data-feature-start="339"]',
       },
       {
         type: 'scroll',
         selector:
-          '[data-testid="protein-feature-Region"][data-feature-start="325"]',
+          '[data-testid="protein-feature-Motif"][data-feature-start="339"]',
       },
       {
         type: 'click',
         selector:
-          '[data-testid="protein-feature-Region"][data-feature-start="325"]',
+          '[data-testid="protein-feature-Motif"][data-feature-start="339"]',
       },
       { type: 'delay', ms: 6000 },
     ],

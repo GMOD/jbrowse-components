@@ -67,6 +67,10 @@ const { values } = parseArgs({
     port: { type: 'string' },
     localport: { type: 'string' },
     concurrency: { type: 'string' },
+    // render with the Firefox backend instead of Chrome (some WebGL/molstar
+    // content rasterizes more cleanly under headless Firefox than headless
+    // Chrome's swiftshader)
+    firefox: { type: 'boolean', default: false },
     // overwrite every PNG, bypassing the content-stable diff gate
     force: { type: 'boolean', default: false },
     // render each spec twice and fail if the two captures drift past threshold,
@@ -83,7 +87,7 @@ function optNum(raw: string | undefined) {
   return Number.isFinite(n) ? n : undefined
 }
 
-const { headed, filter, exact, force, check } = values
+const { headed, filter, exact, force, check, firefox } = values
 // With dithering disabled (see optimizePng) flat-UI specs re-render byte-for-
 // byte, but text-heavy specs still drift ~0.2% from headless-Chrome sub-pixel
 // glyph-positioning jitter (ruler/track labels, SNP ticks render a hair
@@ -110,6 +114,7 @@ Options:
                           diff gate
       --check             Render each spec twice and report specs that drift
                           past the threshold; commits nothing
+      --firefox           Render with the Firefox backend instead of Chrome
       --headed            Run a visible browser (defaults --concurrency to 1)
       --concurrency <n>   Browsers to run at once (default: 4, or 1 if headed)
       --diff-threshold <f>  Pixel-diff fraction below which a re-render keeps
@@ -483,15 +488,30 @@ async function main() {
 
   const executablePath = findChromeExecutable()
 
-  const launchOptions = {
+  // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
+  // capture hidpi/retina-crisp (2x backing store) at the larger size
+  const defaultViewport = { width: 1500, height: 800, deviceScaleFactor: 2 }
+  const { width: vpWidth, deviceScaleFactor } = defaultViewport
+
+  // Chrome leans on swiftshader for headless WebGL; Firefox needs WebGL forced
+  // on past the headless GL caveat so molstar's canvas renders at all.
+  const buildLaunchOptions = (useFirefox: boolean) => ({
     headless: !headed,
-    executablePath,
-    args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
-    // wider viewport for more genomic context; deviceScaleFactor 2 keeps the
-    // capture hidpi/retina-crisp (2x backing store) at the larger size
-    defaultViewport: { width: 1500, height: 800, deviceScaleFactor: 2 },
-  }
-  const { width: vpWidth, deviceScaleFactor } = launchOptions.defaultViewport
+    defaultViewport,
+    ...(useFirefox
+      ? {
+          browser: 'firefox' as const,
+          extraPrefsFirefox: {
+            'webgl.force-enabled': true,
+            'webgl.disabled': false,
+            'webgl.disable-fail-if-major-performance-caveat': true,
+          },
+        }
+      : {
+          executablePath,
+          args: [...BASE_CHROME_ARGS, '--enable-unsafe-swiftshader'],
+        }),
+  })
 
   let passed = 0
   let failed = 0
@@ -504,7 +524,7 @@ async function main() {
     spec: BrowserScreenshotSpec,
     body: (page: Page) => Promise<T>,
   ) {
-    const browser = await launch(launchOptions)
+    const browser = await launch(buildLaunchOptions(firefox || !!spec.firefox))
     try {
       const page = await browser.newPage()
       if (spec.viewportHeight || spec.viewportWidth) {
