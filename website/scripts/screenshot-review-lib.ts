@@ -272,6 +272,11 @@ export const desktopAutogenNames = new Set([
 // hand-captured UI-flow images get reviewed too, not just the spec-driven ones.
 // A doc-referenced name with no spec and no PNG on disk is a third-party remote
 // image (not ours to review) and is excluded.
+//
+// Blog-only figures are excluded: blog posts are historical snapshots of past
+// releases, so their images aren't kept current and shouldn't surface as review
+// work. A figure shared by a blog post AND a live doc (or backed by a spec)
+// stays in — its non-blog usage is what makes it reviewable.
 export function collectScreenshots(
   specs: { name: string; curated?: boolean }[],
 ): Screenshot[] {
@@ -279,7 +284,8 @@ export function collectScreenshots(
   const index = getUsageIndex()
   const names = new Set(specs.map(s => s.name))
   for (const [name, usages] of index) {
-    if (usages.length > 0 && pngExists(name)) {
+    const liveUsages = usages.filter(u => !u.file.startsWith('blog/'))
+    if (liveUsages.length > 0 && pngExists(name)) {
       names.add(name)
     }
   }

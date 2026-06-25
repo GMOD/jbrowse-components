@@ -38,7 +38,7 @@
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
     "status": "good",
-    "note": "kept distinct from alignments_soft_clipped_menu: this one illustrates the SV breakpoint-clustering concept (sv_visualization.md, full-width, no menu) vs the menu walkthrough figure documenting how to toggle the feature (alignments_track.md) \u2014 not actually duplicates",
+    "note": "kept distinct from alignments_soft_clipped_menu: this one illustrates the SV breakpoint-clustering concept (sv_visualization.md, full-width, no menu) vs the menu walkthrough figure documenting how to toggle the feature (alignments_track.md) — not actually duplicates",
     "reviewedAt": "2026-06-24T18:19:56.000Z",
     "hash": "2978ac0765ffcb3acd35f9d5de22b49ad8d26128"
   },
@@ -128,7 +128,7 @@
   "cnv": {
     "name": "cnv",
     "status": "good",
-    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) \u2014 scatter now resolves finer copy-number structure (12.33% diff).",
+    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) — scatter now resolves finer copy-number structure (12.33% diff).",
     "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "smalldel": {
@@ -253,7 +253,7 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description  DONE: Shortened the SAM 0x200 label in samFlagLabels (alignments-core) from \"read fails platform/vendor quality checks\" to \"read fails quality checks\" \u2014 no more word wrap in the dialog. JSDoc keeps full spec wording. Regenerated + verified.",
+    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description  DONE: Shortened the SAM 0x200 label in samFlagLabels (alignments-core) from \"read fails platform/vendor quality checks\" to \"read fails quality checks\" — no more word wrap in the dialog. JSDoc keeps full spec wording. Regenerated + verified.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "alignments/modifications1": {
@@ -343,7 +343,7 @@
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
     "status": "good",
-    "note": "fixed: redesigned the callouts into three tiers that follow the three real control rows, each label in the clear band immediately next to its control with a SHORT (~30-50px) arrow into it \u2014 no more long arrows spanning the whole header, and labels are no longer all piled at the top (reviewer). App-bar tier: Add. Toolbar tier (y~62, above the nav controls at y~122): Open track selector / Pan / Search box / Zoom. Ruler tier (y~152, above the track header at y~178): Drag to reorder track / Track menu. Probed live control bounding boxes to place pills+tails precisely; arrow heads stay anchored so they track the UI. Regenerated + visually verified each arrow lands on its target.",
+    "note": "fixed: redesigned the callouts into three tiers that follow the three real control rows, each label in the clear band immediately next to its control with a SHORT (~30-50px) arrow into it — no more long arrows spanning the whole header, and labels are no longer all piled at the top (reviewer). App-bar tier: Add. Toolbar tier (y~62, above the nav controls at y~122): Open track selector / Pan / Search box / Zoom. Ruler tier (y~152, above the track header at y~178): Drag to reorder track / Track menu. Probed live control bounding boxes to place pills+tails precisely; arrow heads stay anchored so they track the UI. Regenerated + visually verified each arrow lands on its target.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "linear_align_ctx_menu": {
@@ -483,7 +483,7 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
-    "note": "fixed (source): long read names in the view-container header now ellipsize. Added maxWidth:300 + textOverflow:ellipsis to the shared EditableTypography input in packages/app-core ViewContainerTitle.tsx (full name kept in the hover tooltip). Verified the read-vs-ref outer title truncates with \"\u2026\"; breakpoint_split_view/link_to_split_view unaffected (titles <300px). Rebuilt jbrowse-web + regenerated.",
+    "note": "fixed (source): long read names in the view-container header now ellipsize. Added maxWidth:300 + textOverflow:ellipsis to the shared EditableTypography input in packages/app-core ViewContainerTitle.tsx (full name kept in the hover tooltip). Verified the read-vs-ref outer title truncates with \"…\"; breakpoint_split_view/link_to_split_view unaffected (titles <300px). Rebuilt jbrowse-web + regenerated.",
     "reviewedAt": "2026-06-21T18:30:50.000Z"
   },
   "recent_tracks": {
@@ -618,7 +618,7 @@
   "variant_panel": {
     "name": "variant_panel",
     "status": "good",
-    "note": "this is good, but try to make more documentation about the 'dosage' mode  DONE: Added a \"Genotype coloring \u2014 allele dosage vs phased\" section to multivariant_track.md explaining the alleleCount/dosage shading (grey ref / mid het / dark hom-alt, distinct color for mixed multi-allelic) and the phased haplotype-row mode. Verified against constants.ts/parseGenotypeDosage.ts.",
+    "note": "this is good, but try to make more documentation about the 'dosage' mode  DONE: Added a \"Genotype coloring — allele dosage vs phased\" section to multivariant_track.md explaining the alleleCount/dosage shading (grey ref / mid het / dark hom-alt, distinct color for mixed multi-allelic) and the phased haplotype-row mode. Verified against constants.ts/parseGenotypeDosage.ts.",
     "reviewedAt": "2026-06-21T22:52:11.000Z"
   },
   "variants/population_1000genomes": {
@@ -636,7 +636,7 @@
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md \u2014 genome-wide real-world Manhattan.",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
@@ -648,7 +648,7 @@
   "menu_demo": {
     "name": "menu_demo",
     "status": "good",
-    "note": "keep curated: this is a standalone Menu-component demo matching the code listing in developer_guides/menus.md, not reproducible app state \u2014 the url/lgv screenshot generator drives the jbrowse-web app only. The committed hand-made PNG is correct.",
+    "note": "keep curated: this is a standalone Menu-component demo matching the code listing in developer_guides/menus.md, not reproducible app state — the url/lgv screenshot generator drives the jbrowse-web app only. The committed hand-made PNG is correct.",
     "reviewedAt": "2026-06-11T17:30:00.000Z"
   },
   "methylation/colo829_cram_and_bedmethyl": {
@@ -678,19 +678,19 @@
   "product_architecture": {
     "name": "product_architecture",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one \u2014 the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source \u2014 tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
     "status": "good",
-    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views \u2014 structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
@@ -742,12 +742,6 @@
     "note": "resolved: deleted; redundant now that a legend exists. modifications1/2 figures retained",
     "reviewedAt": "2026-06-11T12:00:00.000Z"
   },
-  "color_by_tag": {
-    "name": "color_by_tag",
-    "status": "bad",
-    "note": "we can remove focusing on blogpost figures from our screenshot review in general, they are historical. can move to a separate folder in website/ if it helps. for figures in both blog and docs, might consider...not doing that.",
-    "reviewedAt": "2026-06-21T16:07:18.105Z"
-  },
   "desktop-add-track": {
     "name": "desktop-add-track",
     "status": "good",
@@ -775,7 +769,7 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
@@ -799,7 +793,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -891,10 +885,10 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "bad",
-    "note": "it would be nice if this showed the 'svtype' or something, is there really no metadata in the vcf for svtype? the caption should explain why we are searching SV_85...is it because...we thought it was particularly interesting? please also mark up the figure with annotation text, red boxes, and arrows showing that clicking e.g. the link launched the linear genome view below",
-    "reviewedAt": "2026-06-23T18:12:46.295Z",
-    "hash": "d1fec15b2b2df1e24ad22d316e8fc0dab5d173e1"
+    "status": "good",
+    "note": "VCF does carry SVTYPE; hoisted it ahead of REF/ALT and capped runaway column width so the DEL type is visible+filterable in the SV inspector grid. Figure annotated: searched row boxed, SVTYPE column boxed, arrow from location link to LGV, <DEL> on variant boxed.",
+    "reviewedAt": "2026-06-25T09:56:09.359Z",
+    "hash": "82682e9c967481c2c6f67b9e503d7098a7e50879"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -932,13 +926,13 @@
   "alignments/haplotype_groupby": {
     "name": "alignments/haplotype_groupby",
     "status": "good",
-    "note": "fixed: now a two-stage figure (reviewer). Stage 1 = the menu path (track menu -> Group by... submenu, inner item boxed); stage 2 = the Group-by dialog it opens, driven to the 'Tag (HP, RG, ...)' dimension with HP typed in \u2014 the dialog shows the live 'Found values: 1, 2' HP preview and the 'Also color reads by this tag' checkbox. Reads start colored by HP (colorBy tag HP) in both frames, satisfying the 'use colorby tag hp to start with' ask. Used XPath selectors to disambiguate the duplicate 'Group by...' label (inner = last match) and the Tag option (parens/commas break the text pseudo-selector). Regenerated + verified.",
+    "note": "fixed: now a two-stage figure (reviewer). Stage 1 = the menu path (track menu -> Group by... submenu, inner item boxed); stage 2 = the Group-by dialog it opens, driven to the 'Tag (HP, RG, ...)' dimension with HP typed in — the dialog shows the live 'Found values: 1, 2' HP preview and the 'Also color reads by this tag' checkbox. Reads start colored by HP (colorBy tag HP) in both frames, satisfying the 'use colorby tag hp to start with' ask. Used XPath selectors to disambiguate the duplicate 'Group by...' label (inner = last match) and the Tag option (parens/commas break the text pseudo-selector). Regenerated + verified.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
     "status": "good",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING \u2014 GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision \u2014 renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
@@ -964,7 +958,7 @@
   "default_session_form": {
     "name": "default_session_form",
     "status": "good",
-    "note": "fixed: converted to a two-stage figure (reviewer). Stage 1 shows the open Admin menu with the \"Set default session\" item ringed (the click path \u2014 the Admin menu only appears in admin mode); stage 2 is the resulting confirm dialog (Set current session as default / Clear default session). Regenerated + verified.",
+    "note": "fixed: converted to a two-stage figure (reviewer). Stage 1 shows the open Admin menu with the \"Set default session\" item ringed (the click path — the Admin menu only appears in admin mode); stage 2 is the resulting confirm dialog (Set current session as default / Clear default session). Regenerated + verified.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "assembly_manager": {
@@ -982,13 +976,13 @@
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/dark_theme": {
@@ -1000,19 +994,19 @@
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered \u2014 autoDiagonalize now applies; the hs1<->mm39 lower level reorders from a crossing hairball into legible diagonal blocks (top hg38<->hs1 level stays near-vertical). cigar indels not visible at whole-genome scale.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered — autoDiagonalize now applies; the hs1<->mm39 lower level reorders from a crossing hairball into legible diagonal blocks (top hg38<->hs1 level stays near-vertical). cigar indels not visible at whole-genome scale.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered \u2014 autoDiagonalize now applies in jb2export SSR (committed PNG predated it), so mm39 chromosomes reorder and the ribbons read cleanly. cigar indels are not drawn at whole-genome scale, so the cigar-off ask is moot here.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered — autoDiagonalize now applies in jb2export SSR (committed PNG predated it), so mm39 chromosomes reorder and the ribbons read cleanly. cigar indels are not drawn at whole-genome scale, so the cigar-off ask is moot here.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/grape_peach_synteny": {
@@ -1025,25 +1019,25 @@
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "hg38_assembly_table": {
@@ -1055,19 +1049,19 @@
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --drawCurves CLI flag and re-rendered with it \u2014 the ribbon is now a smooth bezier instead of straight trapezoids. render-comparative-examples.sh + README updated.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --drawCurves CLI flag and re-rendered with it — the ribbon is now a smooth bezier instead of straight trapezoids. render-comparative-examples.sh + README updated.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --autoDiagonalize CLI flag (options.ts/main.ts/renderRegion.tsx) and re-rendered with it \u2014 the R64 contigs reorder so the alignment forms a clean continuous diagonal instead of the old staircase. render-comparative-examples.sh + README updated.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --autoDiagonalize CLI flag (options.ts/main.ts/renderRegion.tsx) and re-rendered with it — the R64 contigs reorder so the alignment forms a clean continuous diagonal instead of the old staircase. render-comparative-examples.sh + README updated.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/variants": {
     "name": "jbrowse-img/variants",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/skbr3_cov": {
@@ -1079,7 +1073,7 @@
   "jbrowse-img/sequence": {
     "name": "jbrowse-img/sequence",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "protein/connected": {

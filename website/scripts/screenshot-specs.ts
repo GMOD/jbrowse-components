@@ -949,11 +949,12 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearAlignmentsDisplay',
                 readConnections: 'samplot',
                 readConnectionsDown: true,
-                // color the cloud purely by insert size so the short-insert
-                // (insertion-supporting) pairs paint pink and stand out from the
-                // teal normal-insert background — the default
-                // insertSizeAndOrientation only pinks short pairs that also keep
-                // normal orientation (reviewer: short-insert was hard to see)
+                // color the cloud by both insert size and orientation: abnormal
+                // orientations paint by their pair type while the short-insert
+                // (insertion-supporting) pairs keep normal orientation and paint
+                // pink, standing out from the grey normal background (the arc
+                // palette uses a saturated short-insert pink so the thin cloud
+                // lines stay visible)
                 arcColorByType: 'insertSize',
                 coverageHeight: 100,
                 readConnectionsHeight: 100,
@@ -3061,6 +3062,54 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
+    // Mark up the searched row and the linear view it opens (reviewer): why we
+    // search SV_85, that its location cell is a clickable link, and that the
+    // VCF's SVTYPE survives as the <DEL> ALT allele drawn on the variant below.
+    annotations: [
+      {
+        type: 'text',
+        text: 'Searching "SV_85" filters the table to one call — the SVTYPE column reports a DEL (a heterozygous CUZD1 deletion)',
+        x: 70,
+        y: 295,
+        fontSize: 18,
+        maxWidth: 470,
+      },
+      { type: 'box', anchor: { text: 'chr10:122,835,344..122,837,142' } },
+      // showcase the SV-type quick-filter dropdown (fixed top-left of the grid)
+      { type: 'box', x: 6, y: 90, width: 170, height: 46 },
+      {
+        type: 'text',
+        text: 'Quick-filter the table to one SV type (DEL/DUP/INS/INV/BND)',
+        x: 70,
+        y: 180,
+        fontSize: 18,
+        maxWidth: 360,
+      },
+      // highlight the hoisted SVTYPE column header (anchored so it tracks the
+      // grid offset from the SV-type filter dropdown rendered above the grid)
+      { type: 'box', anchor: { text: 'INFO.SVTYPE' } },
+      { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 598, y: 700 } },
+      {
+        type: 'text',
+        text: 'Clicking the location link opens the region in the linear view below',
+        x: 70,
+        y: 475,
+        fontSize: 18,
+        maxWidth: 360,
+      },
+      { type: 'box', x: 592, y: 700, width: 112, height: 52 },
+      {
+        type: 'text',
+        text: 'The VCF SVTYPE=DEL is drawn as the <DEL> ALT allele on the variant',
+        x: 745,
+        y: 690,
+        fontSize: 18,
+        maxWidth: 360,
+      },
+    ],
+    // remote VCF over the NCBI ftp-trace server: render timing jitters the
+    // circular overview slightly, so soften the content-stable diff gate
+    diffThreshold: 0.02,
   },
 
   {

@@ -6,7 +6,7 @@ import {
   colorPairLR,
   colorPairRL,
   colorPairRR,
-  colorShortInsert,
+  colorShortInsertArc,
 } from '@jbrowse/core/ui/theme'
 import { cssColorToNormalizedRgb } from '@jbrowse/core/util/colorBits'
 
@@ -27,7 +27,7 @@ const rgb = cssColorToNormalizedRgb
 export const arcColorPalette: RGBColor[] = [
   rgb(colorPairLR),
   rgb(colorLongInsert),
-  rgb(colorShortInsert),
+  rgb(colorShortInsertArc),
   rgb(colorInterchrom),
   rgb(colorPairLL),
   rgb(colorPairRR),

@@ -55,6 +55,12 @@ export default function stateModelFactory() {
         types.frozen<Record<string, boolean>>(),
         {},
       ),
+      /**
+       * #property
+       * selected value of the SVTYPE quick-filter dropdown (undefined = show
+       * all); applied to the INFO.SVTYPE column when the imported data has one
+       */
+      svTypeFilter: types.maybe(types.string),
     })
     .volatile(() => ({
       /**
@@ -139,9 +145,15 @@ export default function stateModelFactory() {
                 f =>
                   ({
                     field: f.name,
+                    // cap the auto-fit width: a single multi-kb cell (e.g. a
+                    // VCF REF/ALT carrying a long indel sequence) would
+                    // otherwise stretch the column to measureGridWidth's 1000px
+                    // default and shove every later column off-screen. The full
+                    // value stays available via the cell tooltip / feature
+                    // details; the user can still drag-resize wider.
                     width: measureGridWidth(
                       [...rows.map(r => r[f.name]), f.name],
-                      { minWidth: 20 },
+                      { minWidth: 20, maxWidth: 200 },
                     ),
                     // infer the column type from the first populated cell, not
                     // rows[0]: a leading empty/string cell would otherwise drop
@@ -164,6 +176,31 @@ export default function stateModelFactory() {
           ? self.rows?.filter(row => visibleRowFlags[row.id] !== false)
           : self.rows
       },
+      /**
+       * #getter
+       * the SVTYPE column field name, present only for structural-variant VCFs
+       * (drives whether the SV-type quick-filter dropdown is shown)
+       */
+      get svTypeColumnField() {
+        return self.columns.find(c => c.name === 'INFO.SVTYPE')?.name
+      },
+      /**
+       * #getter
+       * the distinct SVTYPE values present in the data, sorted, for the
+       * quick-filter dropdown options
+       */
+      get svTypeOptions() {
+        const field = this.svTypeColumnField
+        return field
+          ? [
+              ...new Set(
+                self.rows
+                  ?.map(r => r[field])
+                  .filter((v): v is string => typeof v === 'string' && v !== ''),
+              ),
+            ].sort((a, b) => a.localeCompare(b))
+          : []
+      },
     }))
     .actions(self => ({
       /**
@@ -171,6 +208,12 @@ export default function stateModelFactory() {
        */
       setVisibleRows(arg?: Record<number, boolean>) {
         self.visibleRowFlags = arg
+      },
+      /**
+       * #action
+       */
+      setSvTypeFilter(arg?: string) {
+        self.svTypeFilter = arg
       },
       /**
        * #action

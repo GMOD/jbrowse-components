@@ -213,6 +213,12 @@ export const colorNostrand = '#c8c8c8'
 export const colorInterchrom = '#6e4b3a'
 export const colorLongInsert = '#ff0000'
 export const colorShortInsert = '#ffc0cb'
+// Saturated short-insert variant for stroked marks (read-cloud / arc lines).
+// The pale #ffc0cb fill reads fine on filled pileup rectangles but, drawn as a
+// thin translucent line, blends into the white background and vanishes — so the
+// stroke-only arc palette uses a saturated pink instead (mirrors origin/main's
+// strokeColor.color_shortinsert vs its pale fill).
+export const colorShortInsertArc = '#ff3a8c'
 export const colorUnmappedMate = '#b05a20'
 export const colorUnknown = '#808080'
 export const colorLongreadRevFwd = '#6688ee'

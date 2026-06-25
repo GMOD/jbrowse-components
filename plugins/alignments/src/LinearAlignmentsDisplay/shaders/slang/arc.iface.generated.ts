@@ -9,7 +9,7 @@ export const ARC_HEIGHT_MARGIN = 8
 
 export const ARC_FAR_SCREEN_WIDTHS = 1
 
-export const ARC_FLAT_MIN_PX = 1.5
+export const ARC_FLAT_MIN_PX = 2.5
 
 export const UNIFORMS_SIZE_BYTES = 320
 

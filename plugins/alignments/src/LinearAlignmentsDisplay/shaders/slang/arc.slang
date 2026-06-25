@@ -37,7 +37,7 @@ static const float ARC_FAR_SCREEN_WIDTHS = 1.0;
 // Minimum drawn width (CSS px) of a flat samplot line. Short-insert pairs span
 // far less than a pixel, so without a floor the line collapses to an invisible
 // zero-length stroke. Mirrored in drawCanvas.ts.
-static const float ARC_FLAT_MIN_PX = 1.5;
+static const float ARC_FLAT_MIN_PX = 2.5;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -151,10 +151,11 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   o.dist = side * hw;
   // Samplot flat shapes (1, 2): translucent so dense overlapping pairs read as a
-  // band (cf. samplot.py's alpha). Kept above samplot.py's 0.25 because an
-  // isolated short-insert pair is a single thin line — at 0.25 it vanishes into
-  // the background; 0.4 keeps it legible while overlaps still stack darker.
-  float arcAlpha = (inst.shapeType > 0.5) ? 0.4 : 1.0;
+  // band (cf. samplot.py's alpha). Kept well above samplot.py's 0.25 because an
+  // isolated short-insert pair is a single thin line — at 0.25-0.4 it all but
+  // vanishes into the background; 0.7 keeps an isolated line clearly legible
+  // while overlaps still stack darker.
+  float arcAlpha = (inst.shapeType > 0.5) ? 0.7 : 1.0;
   o.color = float4(arcColor(inst.colorType, u), arcAlpha);
   // Split-read flat shape (2) renders dashed.
   o.dashed = (inst.shapeType > 1.5) ? 1.0 : 0.0;

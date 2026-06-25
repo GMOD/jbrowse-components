@@ -84,10 +84,10 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
   } = opts
   // Pre-stringify the palette once per draw — saves N Math.round + string
   // allocations per frame (N = numArcs, often thousands). Faded variant is used
-  // for samplot flat lines; kept above samplot.py's 0.25 so an isolated thin
-  // short-insert pair stays legible (mirrors arc.slang's flat-line alpha).
+  // for samplot flat lines; kept well above samplot.py's 0.25 so an isolated
+  // thin short-insert pair stays legible (mirrors arc.slang's flat-line alpha).
   const cssPalette = palette.map(c => rgb255(c))
-  const cssPaletteFaded = palette.map(c => rgba255(c, 0.4))
+  const cssPaletteFaded = palette.map(c => rgba255(c, 0.7))
   const paletteLen = cssPalette.length
   // Anchor = where arcs meet the adjacent band (insert-size 0). pointing-up
   // sits at the bottom of the band; pointing-down sits at the top. Matches
