@@ -133,7 +133,12 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           rect.setAttribute('width', String(a.width ?? 0))
           rect.setAttribute('height', String(a.height ?? 0))
           rect.setAttribute('rx', '4')
-          rect.setAttribute('fill', 'none')
+          // a positive fillOpacity tints the box with a translucent wash of its
+          // own colour (a "light green/orange" highlight); otherwise hollow
+          rect.setAttribute('fill', a.fillOpacity ? color : 'none')
+          if (a.fillOpacity) {
+            rect.setAttribute('fill-opacity', String(a.fillOpacity))
+          }
           rect.setAttribute('stroke', color)
           rect.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
           svg.appendChild(rect)

@@ -61,6 +61,7 @@ export interface Annotation {
   maxWidth?: number
   fontSize?: number // text/circle label, default 22 for text (min 18)
   strokeWidth?: number // box/circle stroke width (default 5)
+  fillOpacity?: number // box: tint the interior with a translucent wash of color
   anchor?: { selector?: string; text?: string }
   dx?: number
   dy?: number
@@ -224,6 +225,106 @@ function menuCascade(path: string[], delayMs = 500): ScreenshotAction[] {
 // so the highlighted items can't drift from the items actually hovered.
 function cascadeBoxes(path: string[]): Annotation[] {
   return path.map(text => ({ type: 'box' as const, anchor: { text } }))
+}
+
+// ── Trio crossover callouts (analyze_trio.md) ──────────────────────────────
+// The six VCF haplotype rows, top→bottom, sharing the hap-ibd painting's
+// Father/Mother hapN names so the sidebar and the painting read consistently.
+// `name`/`sampleName` keep the canonical "HG020xx HPn" identity; `label` is the
+// friendly sidebar text. trioRowY(label) is the CSS-y of that row's top.
+const TRIO_HAPLOTYPES = [
+  { sample: 'HG02024', hp: 0, label: 'Child hap1' },
+  { sample: 'HG02024', hp: 1, label: 'Child hap2' },
+  { sample: 'HG02025', hp: 0, label: 'Mother hap1' },
+  { sample: 'HG02025', hp: 1, label: 'Mother hap2' },
+  { sample: 'HG02026', hp: 0, label: 'Father hap1' },
+  { sample: 'HG02026', hp: 1, label: 'Father hap2' },
+]
+const trioVcfLayout = TRIO_HAPLOTYPES.map(h => ({
+  name: `${h.sample} HP${h.hp}`,
+  sampleName: h.sample,
+  HP: h.hp,
+  label: h.label,
+}))
+const TRIO_VCF_ROW_TOP = 320 // top of Child hap1, just under the taller painting
+const TRIO_VCF_ROW_PITCH = 44
+const trioRowY = (label: string) =>
+  TRIO_VCF_ROW_TOP +
+  TRIO_VCF_ROW_PITCH * TRIO_HAPLOTYPES.findIndex(h => h.label === label)
+
+// the crossover is centered in the 400 kb window; the genotype canvas spans the
+// full ~1500 px view width
+const TRIO_XOVER_X = 750
+const TRIO_HL_FILL = 0.16 // translucent wash inside each highlight frame
+// distinct palettes so the two figures aren't mistaken for each other
+const TRIO_MATERNAL_COLORS = { left: '#15a01a', right: '#ff6f00' } // green/orange
+const TRIO_PATERNAL_COLORS = { left: '#caa200', right: '#8e44ad' } // yellow/purple
+
+// hap-ibd painting rows, top→bottom: Father hap1, Father hap2, Mother hap1,
+// Mother hap2. trioPaintingStep boxes the two rows a crossover steps between
+// (the Father pair starts at index 0, the Mother pair at index 2).
+const TRIO_PAINT_TOP = 188
+const TRIO_PAINT_ROW_H = 32
+const trioPaintingStep = (topRow: number) => ({
+  type: 'box' as const,
+  color: '#333',
+  x: 722,
+  y: TRIO_PAINT_TOP + topRow * TRIO_PAINT_ROW_H,
+  width: 56,
+  height: TRIO_PAINT_ROW_H * 2,
+})
+
+// Colour-code the two sides of a crossover: the left-colour frame wraps the
+// parental copy matched left of the breakpoint plus the matching left half of
+// the child row; the right-colour frame wraps the copy matched right of it plus
+// the child's right half; each lightly tinted. A neutral box marks the painting
+// step and an arrow drops from it to the crossover point on the child row.
+function crossoverHighlights(opts: {
+  child: string
+  leftSource: string
+  rightSource: string
+  palette: { left: string; right: string }
+  paintingTopRow: number
+  leftText: string
+  rightText: string
+}): Annotation[] {
+  const { child, leftSource, rightSource, palette } = opts
+  const step = trioPaintingStep(opts.paintingTopRow)
+  const leftW = TRIO_XOVER_X - 3
+  const rightW = 1495 - TRIO_XOVER_X
+  const frame = (color: string, x: number, row: string, width: number) =>
+    ({
+      type: 'box',
+      color,
+      fillOpacity: TRIO_HL_FILL,
+      x,
+      y: trioRowY(row),
+      width,
+      height: TRIO_VCF_ROW_PITCH,
+    }) satisfies Annotation
+  const caption = (color: string, x: number, text: string) =>
+    ({
+      type: 'text',
+      color,
+      x,
+      y: trioRowY('Father hap2') + 70,
+      text,
+      maxWidth: 600,
+    }) satisfies Annotation
+  return [
+    step,
+    {
+      type: 'arrow',
+      from: { x: TRIO_XOVER_X, y: step.y + step.height },
+      to: { x: TRIO_XOVER_X, y: trioRowY(child) },
+    },
+    frame(palette.left, 3, leftSource, leftW),
+    frame(palette.left, 3, child, leftW),
+    frame(palette.right, TRIO_XOVER_X, rightSource, rightW),
+    frame(palette.right, TRIO_XOVER_X, child, rightW),
+    caption(palette.left, 60, opts.leftText),
+    caption(palette.right, 800, opts.rightText),
+  ]
 }
 
 function cgiabUrl(session?: object) {
@@ -5075,73 +5176,64 @@ export const specs: ScreenshotSpec[] = [
   // row is solid red across the window (no maternal event here). Compare child
   // HG02024 HP0 against father HG02026's two rows.
   //
+  // Maternal crossover at chr1:55,753,613 — the child's maternal chromosome
+  // steps from Mother hap2 (pink) to Mother hap1 (red). Of every maternal hap-ibd
+  // boundary on chr1 this is the only one the raw genotypes actually corroborate:
+  // left of it the child's maternally-transmitted allele tracks mom copy 2 at
+  // ~95% of mom-heterozygous sites and right of it mom copy 1 at ~98%, a sharp
+  // switch in the direction the painting block steps. The other maternal
+  // boundaries are hap-ibd smoothing artifacts the genotypes contradict (the
+  // child stays on one copy straight across them), so this stays the featured
+  // maternal example. Compare child HG02024 HP1 against mother HG02025's two rows.
+  //
   // Both crossovers sit at the horizontal center of their 400 kb window
   // (crossover x ≈ 750 CSS px). The multi-sample VCF rows are relabeled via the
-  // display `layout` (a friendly `label` per haplotype row, leaving the stable
-  // `name`/`sampleName` identity intact) so the sidebar reads child/mom/dad
-  // h1/h2 instead of the raw HG020xx HP0/HP1 sample IDs. Red callouts box the
-  // crossover step in the hap-ibd painting, the transmitting parent's two
-  // hap-ibd rows, and that parent's two haplotype rows in the VCF below.
+  // display `layout` (trioVcfLayout — a friendly `label` per haplotype row,
+  // leaving the stable `name`/`sampleName` identity intact) so the sidebar reads
+  // Child/Mother/Father hapN, matching the hap-ibd painting's own row names.
+  //
+  // The callouts make the crossover concrete by colour-coding the two segments
+  // with a translucent frame each (maternal greens/oranges, paternal
+  // yellows/purples). Left of the breakpoint the child's inherited haplotype
+  // matches one parental copy: the left-colour frame wraps both that parental
+  // row's left half and the matching left half of the child row. Right of the
+  // breakpoint it matches the other parental copy, wrapped in the right-colour
+  // frame. The child row therefore carries the two tinted blocks abutting exactly
+  // at the crossover, each colour linking the child segment to the specific
+  // parental haplotype it was copied from.
   ...(
     [
       {
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
-        annotations: [
-          // crossover step (Father hap2 → hap1) in the hap-ibd painting
-          { type: 'box', x: 722, y: 193, width: 56, height: 41 },
-          // father's two hap-ibd rows (Father hap1 + Father hap2)
-          { type: 'box', x: 3, y: 193, width: 1492, height: 41 },
-          // same breakpoint column in child h1 (the paternally-inherited
-          // haplotype), connected back to the painting step above so the
-          // reader can trace the crossover from painting block down to the
-          // child's own genotypes
-          {
-            type: 'arrow',
-            from: { x: 750, y: 234 },
-            to: { x: 750, y: 284 },
-          },
-          { type: 'box', x: 722, y: 284, width: 56, height: 44 },
-          {
-            type: 'text',
-            x: 800,
-            y: 300,
-            text: "Child h1 is paternally-inherited — it switches from matching dad's hap2 to dad's hap1 right here.",
-          },
-          // dad h1 / dad h2 rows in the VCF display
-          { type: 'box', x: 3, y: 460, width: 1492, height: 89 },
-        ],
+        // Child hap1 (paternal) matches Father hap2 left, Father hap1 right; the
+        // painting step straddles the Father pair (top pair of the painting)
+        annotations: crossoverHighlights({
+          child: 'Child hap1',
+          leftSource: 'Father hap2',
+          rightSource: 'Father hap1',
+          palette: TRIO_PATERNAL_COLORS,
+          paintingTopRow: 0,
+          leftText:
+            'Left of the crossover, Child hap1 matches Father hap2 (light blue)',
+          rightText: 'Right of it, Child hap1 matches Father hap1 (dark blue)',
+        }),
       },
-      // Maternal crossover at chr1:55,753,613 — the child's maternal chromosome
-      // steps from Mother hap2 (pink) to Mother hap1 (red); the father's row is
-      // solid across. Compare child HG02024 HP1 against mother HG02025's two rows.
       {
         name: 'trio-crossover-maternal',
         loc: 'chr1:55,553,613-55,953,613',
-        annotations: [
-          // crossover step (Mother hap2 → hap1) in the hap-ibd painting
-          { type: 'box', x: 722, y: 210, width: 56, height: 44 },
-          // mother's two hap-ibd rows (Mother hap1 + Mother hap2)
-          { type: 'box', x: 3, y: 210, width: 1492, height: 44 },
-          // same breakpoint column in child h2 (the maternally-inherited
-          // haplotype), connected back to the painting step above so the
-          // reader can trace the crossover from painting block down to the
-          // child's own genotypes
-          {
-            type: 'arrow',
-            from: { x: 750, y: 254 },
-            to: { x: 750, y: 328 },
-          },
-          { type: 'box', x: 722, y: 328, width: 56, height: 45 },
-          {
-            type: 'text',
-            x: 800,
-            y: 345,
-            text: "Child h2 is maternally-inherited — it switches from matching mom's hap2 to mom's hap1 right here.",
-          },
-          // mom h1 / mom h2 rows in the VCF display
-          { type: 'box', x: 3, y: 373, width: 1492, height: 90 },
-        ],
+        // Child hap2 (maternal) matches Mother hap2 left, Mother hap1 right; the
+        // painting step straddles the Mother pair (bottom pair of the painting)
+        annotations: crossoverHighlights({
+          child: 'Child hap2',
+          leftSource: 'Mother hap2',
+          rightSource: 'Mother hap1',
+          palette: TRIO_MATERNAL_COLORS,
+          paintingTopRow: 2,
+          leftText:
+            'Left of the crossover, Child hap2 matches Mother hap2 (pink)',
+          rightText: 'Right of it, Child hap2 matches Mother hap1 (red)',
+        }),
       },
     ] satisfies { name: string; loc: string; annotations: Annotation[] }[]
   ).map(({ name, loc, annotations }) => ({
@@ -5158,7 +5250,7 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
               displaySnapshot: {
                 type: 'LinearMultiRowFeatureDisplay',
-                height: 110,
+                rowHeightOverride: 32,
               },
             },
             {
@@ -5167,46 +5259,9 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearMultiSampleVariantDisplay',
                 renderingMode: 'phased',
                 height: 260,
-                // relabel sidebar rows child/mom/dad h1/h2 (keeps the canonical
-                // HG020xx HP0/HP1 identity in `name`/`sampleName`)
-                layout: [
-                  {
-                    name: 'HG02024 HP0',
-                    sampleName: 'HG02024',
-                    HP: 0,
-                    label: 'child h1',
-                  },
-                  {
-                    name: 'HG02024 HP1',
-                    sampleName: 'HG02024',
-                    HP: 1,
-                    label: 'child h2',
-                  },
-                  {
-                    name: 'HG02025 HP0',
-                    sampleName: 'HG02025',
-                    HP: 0,
-                    label: 'mom h1',
-                  },
-                  {
-                    name: 'HG02025 HP1',
-                    sampleName: 'HG02025',
-                    HP: 1,
-                    label: 'mom h2',
-                  },
-                  {
-                    name: 'HG02026 HP0',
-                    sampleName: 'HG02026',
-                    HP: 0,
-                    label: 'dad h1',
-                  },
-                  {
-                    name: 'HG02026 HP1',
-                    sampleName: 'HG02026',
-                    HP: 1,
-                    label: 'dad h2',
-                  },
-                ],
+                // relabel sidebar rows Child/Mother/Father hapN (keeps the
+                // canonical HG020xx HPn identity in `name`/`sampleName`)
+                layout: trioVcfLayout,
               },
             },
           ],

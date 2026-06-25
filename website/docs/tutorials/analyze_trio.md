@@ -258,13 +258,13 @@ painting's block-step is unmistakable and the genotype columns resolve into
 individual variants. The clearest crossover to start with is the **paternal**
 one near chr1:29.7 Mb:
 
-<Figure caption="Paternal crossover near chr1:29.7 Mb, ~400 kb wide. In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue); the mother's row stays solid red across the window because no maternal crossover happens here. Below, the phased genotypes are drawn at the same genomic scale: compare the child's paternal haplotype (HG02024 HP0) against father HG02026's two rows — left of the boundary it tracks one of them, right of it the other." src="/img/trio-crossover-paternal.png"/>
+<Figure caption="Paternal crossover near chr1:29.7 Mb, ~400 kb wide. In the painting (top) the child's paternal chromosome steps from Father hap2 (light blue) to Father hap1 (dark blue), and an arrow drops to the same breakpoint in the genotypes below. The tinted frames make the switch explicit: left of the crossover the yellow frame ties Child hap1 (the paternally-inherited haplotype) to Father hap2, the copy it matches there; right of the crossover the purple frame ties Child hap1 to Father hap1. The Child hap1 row carries a yellow block abutting a purple block exactly at the crossover, so you can read the inherited copy flipping straight off its own genotypes." src="/img/trio-crossover-paternal.png"/>
 
 The **maternal** chromosome does the same thing at its own boundaries. Near
 chr1:55.8 Mb the child's maternal haplotype steps between the mother's two
 copies:
 
-<Figure caption="Maternal crossover near chr1:55.8 Mb, ~400 kb wide. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red), while the father's row stays solid across the window. Compare the child's maternal haplotype (HG02024 HP1) against mother HG02025's two rows." src="/img/trio-crossover-maternal.png"/>
+<Figure caption="Maternal crossover near chr1:55.8 Mb, ~400 kb wide — the cleanest maternal boundary on chr1, the one place where the raw genotypes plainly switch which maternal copy the child carries. The child's maternal chromosome steps from Mother hap2 (pink) to Mother hap1 (red). Same idea as the paternal figure but in its own palette: the green frame ties Child hap2 (the maternally-inherited haplotype) to Mother hap2 left of the crossover, the orange frame ties Child hap2 to Mother hap1 right of it, and the green/orange blocks abut at the breakpoint on the Child hap2 row. Within each tint the child's barcode and the matched parental copy line up column-for-column." src="/img/trio-crossover-maternal.png"/>
 
 The painting is the clean, readable summary; the genotype rows are the raw,
 statistically-phased evidence it is built from, and that evidence is noisy. If
