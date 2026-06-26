@@ -101,6 +101,34 @@ interface DisplaySnapshot {
   resolution?: number
 }
 
+// Compile-time guard that every DisplaySnapshot key actually exists on one of
+// the display models. SnapshotIn can't be derived from these
+// `_OverrideProps`-composed models, but their Instance types resolve, so we
+// check key existence against those: a property renamed or removed upstream (the
+// silently-dead-snapshot-field class of bug) then fails the build. It checks
+// existence, not snapshot-input validity or value type — value types are pinned
+// by the interface above.
+type DisplayKeys =
+  | keyof LinearAlignmentsDisplayModel
+  | keyof LinearBasicDisplayModel
+  | keyof LinearVariantDisplayModel
+  | keyof LinearHicDisplayModel
+  | keyof WiggleDisplayModel
+
+type AssertNever<T extends never> = T
+// `autoscale` and `defaultRendering` are wiggle config-override keys read only
+// via getConfWithOverride (no direct instance getter, unlike scaleType/colorBy/
+// …), so the instance-key check can't see them; they're allow-listed and
+// exercised at runtime by the skbr3_cov / fill screenshots. `height` resolves
+// fine — it's the getter, and its snapshot value is migrated to heightOverride
+// by TrackHeightMixin's preProcessSnapshot.
+type ConfigOverrideOnlyKeys = 'autoscale' | 'defaultRendering'
+export type UnknownSnapshotKeys = Exclude<
+  keyof DisplaySnapshot,
+  DisplayKeys | ConfigOverrideOnlyKeys
+>
+export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
+
 // The center-line sort is the one setting that depends on view state (the sort
 // pivot is the genomic position under the view center), so it's parsed into this
 // intent and resolved against the view before the snapshot is built.
