@@ -492,7 +492,7 @@ For small to medium SVs, the linear genome view is usually all you need. Use the
 **search** (magnifying glass) button in the SV inspector to find a specific call
 — for example, `SV_85`, a heterozygous deletion that affects two exons of the
 CUZD1 gene
-([live demo at CUZD1](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:97050000-97400000","tracks":%5B"GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf","HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3"%5D%7D%5D%7D)).
+([live demo at CUZD1](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr10:122822045-122850828","tracks":%5B"GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf","HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3"%5D%7D%5D%7D)).
 
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The table's SVTYPE column (hoisted next to ALT) reports the call as a DEL, and clicking the row's location link opens the region in the linear genome view below, where the same SVTYPE is drawn as the <DEL> ALT allele on the variant." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
