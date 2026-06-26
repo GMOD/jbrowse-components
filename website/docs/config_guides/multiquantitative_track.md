@@ -120,8 +120,8 @@ const track = {
 }
 ```
 
-See [Deploying JBrowse Web](/docs/config_guides/deploying) for the full
-pattern of generating `config.json` from a samplesheet in a CI/CD pipeline.
+See [Deploying JBrowse Web](/docs/config_guides/deploying) for the full pattern
+of generating `config.json` from a samplesheet in a CI/CD pipeline.
 
 ## See also
 

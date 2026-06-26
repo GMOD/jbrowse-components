@@ -23,10 +23,10 @@ reference the markdown files in our repo of the checked out git tag
 
 Shared mixin owning "region too large" state and force-load UI.
 
-Composed by both FeatureDensityMixin (block-based server-side rendered displays
-like LinearBasicDisplay, LinearArcDisplay) and MultiRegionDisplayMixin
-(canvas/GPU displays like LinearAlignmentsDisplay, LinearWiggleDisplay,
-LinearBasicDisplay).
+Composed by MultiRegionDisplayMixin (canvas/GPU displays like
+LinearAlignmentsDisplay, LinearWiggleDisplay, LinearBasicDisplay) and directly
+by the SVG arc displays (LinearArcDisplay, LinearPairedArcDisplay), which do
+their own byte-estimate gating in fetchArcFeatures.
 
 Owns the state that TooLargeMessage reads: regionTooLarge, regionTooLargeReason,
 forceLoad.

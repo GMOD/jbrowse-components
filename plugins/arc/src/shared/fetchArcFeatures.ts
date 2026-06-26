@@ -28,10 +28,10 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
     return
   }
 
-  const stats = (await rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
+  const stats = await rpcManager.call(sessionId, 'CoreGetFeatureDensityStats', {
     regions,
     adapterConfig: self.adapterConfig,
-  }))
+  })
   if (!isAlive(self)) {
     return
   }

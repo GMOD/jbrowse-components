@@ -33,8 +33,8 @@ A minimal `HicTrack` config. See the
 ```
 
 With log scale and a coarser resolution (`resolutionBias` nudges the auto-picked
-binsize; negative = finer, positive = coarser). The `displays` object shorthand
-applies settings to whichever display uses them — equivalent to a full
+binsize; negative = finer, positive = coarser). The `displayDefaults` object
+shorthand applies settings to whichever display uses them — equivalent to a full
 `displays: [{ type, displayId, ... }]` array. See
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
@@ -45,7 +45,7 @@ applies settings to whichever display uses them — equivalent to a full
   name: 'Hi-C',
   assemblyNames: ['hg38'],
   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
-  displays: { useLogScale: true, resolutionBias: 1 },
+  displayDefaults: { useLogScale: true, resolutionBias: 1 },
 }
 ```
 
@@ -84,8 +84,8 @@ this page is self-contained.
 {
   type: 'number',
   description:
-    'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-  defaultValue: 0.3,
+    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
+  defaultValue: 1,
   advanced: true,
 }
 ```

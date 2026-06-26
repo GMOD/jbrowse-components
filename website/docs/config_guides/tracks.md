@@ -157,9 +157,9 @@ JSON to reuse elsewhere, you don't have to reconstruct it by hand:
   session links) rather than modifying the shared `config.json`. "Reset track
   settings" clears such an override.
 
-This is the easiest way to turn a tweaked-in-the-UI track into a JSON snippet you
-can paste into `config.json` or into a [generation
-script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
+This is the easiest way to turn a tweaked-in-the-UI track into a JSON snippet
+you can paste into `config.json` or into a
+[generation script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
 
 ## Finding every option for a track or adapter type
 

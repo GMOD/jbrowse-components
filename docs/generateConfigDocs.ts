@@ -396,7 +396,11 @@ function warnAdaptersMissingTrackType(configs: ConfigWithHeader[]) {
   for (const config of configs) {
     const isAdapter =
       configCategory(config.header.name, config.header.category) === 'Adapter'
-    if (isAdapter && config.header.examples.length && !config.header.trackType) {
+    if (
+      isAdapter &&
+      config.header.examples.length &&
+      !config.header.trackType
+    ) {
       console.warn(
         `${config.header.name}: adapter has an #example but no #trackType — its full-config example defaulted to FeatureTrack`,
       )

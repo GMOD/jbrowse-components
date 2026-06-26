@@ -246,8 +246,8 @@ this page is self-contained.
 {
   type: 'number',
   description:
-    'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-  defaultValue: 0.3,
+    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
+  defaultValue: 1,
   advanced: true,
 }
 ```

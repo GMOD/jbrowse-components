@@ -85,8 +85,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),

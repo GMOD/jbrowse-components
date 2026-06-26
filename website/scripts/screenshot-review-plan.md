@@ -47,10 +47,10 @@ review-json `note` has the details.
   and flip to `good`.
 - **trio-hapibd-painting** — the gaps are intentional hap-ibd length-threshold
   behavior, documented in `analyze_trio.md` ("Is hap-ibd the right tool?"). Low
-  priority. To fill them, re-run with lower `min-seed`/`min-output` and lower the
-  conversion script's `MIN_RUN_CM` / raise `MAX_GAP`, or use the direct-genotype
-  method already in the tutorial — both trade gaps for phasing-error noise and
-  need `trio.hapibd.bed.gz` re-uploaded.
+  priority. To fill them, re-run with lower `min-seed`/`min-output` and lower
+  the conversion script's `MIN_RUN_CM` / raise `MAX_GAP`, or use the
+  direct-genotype method already in the tutorial — both trade gaps for
+  phasing-error noise and need `trio.hapibd.bed.gz` re-uploaded.
 
 Closed since the last plan: **sv_inspector_importform_filtered** (not a defect —
 the SV-search-language enhancement is now filed in `agent-docs/TODO.md`). The

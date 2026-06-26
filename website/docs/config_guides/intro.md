@@ -42,9 +42,9 @@ explain the common cases; the reference is the exhaustive master list.
 
 :::tip
 
-You rarely need to write `config.json` by hand. The
-[`@jbrowse/cli`](/docs/cli) commands (`jbrowse add-assembly`,
-`jbrowse add-track`) write the JSON for you, and for repetitive data you can
+You rarely need to write `config.json` by hand. The [`@jbrowse/cli`](/docs/cli)
+commands (`jbrowse add-assembly`, `jbrowse add-track`) write the JSON for you,
+and for repetitive data you can
 [generate `config.json` from a script](/docs/config_guides/deploying). See
 [Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end
 scripted setup.

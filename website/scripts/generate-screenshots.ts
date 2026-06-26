@@ -386,7 +386,11 @@ function serveEmbeddedHarness(html: string, umdPath: string) {
 // Render an embedded-component spec to a finished temp PNG: serve the harness,
 // drive the component to ready, then screenshot the component element (its full
 // height, even past the viewport) rather than the page.
-async function captureEmbeddedToTemp(page: Page, spec: EmbeddedSpec, suffix = '') {
+async function captureEmbeddedToTemp(
+  page: Page,
+  spec: EmbeddedSpec,
+  suffix = '',
+) {
   if (!fs.existsSync(EMBED_UMD_PATH)) {
     throw new Error(
       `Embedded UMD not found at ${EMBED_UMD_PATH}. Build it with "pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack".`,

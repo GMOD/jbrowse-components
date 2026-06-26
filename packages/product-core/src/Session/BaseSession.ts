@@ -163,7 +163,7 @@ export function BaseSessionModel<
        */
       get animationMode(): AnimationMode {
         const mode = self.getPreference('animationMode')
-        return isAnimationMode(mode) ? mode : 'system'
+        return isAnimationMode(mode) ? mode : 'enabled'
       },
       /**
        * #getter

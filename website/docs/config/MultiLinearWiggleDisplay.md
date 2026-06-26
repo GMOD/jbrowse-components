@@ -55,7 +55,7 @@ of the default stacked-per-subtrack layout:
       'https://example.com/sample2.bw',
     ],
   },
-  displays: { height: 300, defaultRendering: 'multixyplot' },
+  displayDefaults: { height: 300, defaultRendering: 'multixyplot' },
 }
 ```
 
@@ -68,7 +68,7 @@ subtracks (e.g. BigWig files) on a shared Y axis
 
 These are display-level slots: set them inside a track's `displays` to change
 its defaults (setting them at the track top level has no effect). The object
-shorthand `displays: { key: value }` is equivalent to the full
+shorthand `displayDefaults: { key: value }` is equivalent to the full
 `displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).

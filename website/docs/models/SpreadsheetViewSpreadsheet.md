@@ -67,6 +67,18 @@ type visibleColumns = IOptionalIType<
 visibleColumns: types.optional(types.frozen<Record<string, boolean>>(), {})
 ```
 
+#### property: svTypeFilter
+
+selected value of the SVTYPE quick-filter dropdown (undefined = show all);
+applied to the INFO.SVTYPE column when the imported data has one
+
+```ts
+// type signature
+type svTypeFilter = IMaybe<ISimpleType<string>>
+// code
+svTypeFilter: types.maybe(types.string)
+```
+
 </details>
 
 <details open>
@@ -110,6 +122,24 @@ type dataGridColumns = ({ field: string; width: number; type: "number" | undefin
 type visibleRows = GridRow[] | undefined
 ```
 
+#### getter: svTypeColumnField
+
+the SVTYPE column field name, present only for structural-variant VCFs (drives
+whether the SV-type quick-filter dropdown is shown)
+
+```ts
+type svTypeColumnField = string | undefined
+```
+
+#### getter: svTypeOptions
+
+the distinct SVTYPE values present in the data, sorted, for the quick-filter
+dropdown options
+
+```ts
+type svTypeOptions = string[]
+```
+
 </details>
 
 <details open>
@@ -119,6 +149,12 @@ type visibleRows = GridRow[] | undefined
 
 ```ts
 type setVisibleRows = (arg?: Record<number, boolean> | undefined) => void
+```
+
+#### action: setSvTypeFilter
+
+```ts
+type setSvTypeFilter = (arg?: string | undefined) => void
 ```
 
 #### action: setVisibleColumns

@@ -33,9 +33,9 @@ jbrowse add-track https://example.com/sample.bam --trackId ngs-reads --name "NGS
 npx serve .         # or copy it into your Nginx image
 ```
 
-Everything `jbrowse add-track` does is write a JSON entry into the `tracks` array
-of `config.json` — so you never have to hand-edit `config.json`, and you can do
-the same thing yourself from a script (next section).
+Everything `jbrowse add-track` does is write a JSON entry into the `tracks`
+array of `config.json` — so you never have to hand-edit `config.json`, and you
+can do the same thing yourself from a script (next section).
 
 :::info
 
@@ -81,9 +81,9 @@ triplicate), emit a single
 :::info
 
 This is also where tools like [Jsonnet](https://jsonnet.org/) fit well, if you
-prefer a templating language to a script. JBrowse does not require Jsonnet —
-the output is still ordinary `config.json` — but it can be a clean way to
-express repeated track shapes.
+prefer a templating language to a script. JBrowse does not require Jsonnet — the
+output is still ordinary `config.json` — but it can be a clean way to express
+repeated track shapes.
 
 :::
 
@@ -105,9 +105,9 @@ Because `config.json` is fetched _before_ it can configure anything, the only
 piece of deploy config that genuinely has to live in `index.html` is the
 [cache-buster](/docs/config_guides/avoiding_stale_config). It is a one-line
 snippet, so it is easy to inject from your build rather than hand-edit. Beyond
-that and any plugin `<script>` tags (see [plugins](/docs/config_guides/plugins)),
-the rest of your setup — assemblies, tracks, default session — is all
-`config.json` and can be fully scripted.
+that and any plugin `<script>` tags (see
+[plugins](/docs/config_guides/plugins)), the rest of your setup — assemblies,
+tracks, default session — is all `config.json` and can be fully scripted.
 
 ## See also
 

@@ -106,8 +106,8 @@ and docs.
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
 [estimatedVisibleBytes](../linearcanvasbasedisplay#getter-estimatedvisiblebytes),
-[bytesEstimateTooLarge](../linearcanvasbasedisplay#getter-bytesestimatetoolarge),
 [densityTooLarge](../linearcanvasbasedisplay#getter-densitytoolarge),
+[tooLargeStatus](../linearcanvasbasedisplay#getter-toolargestatus),
 [regionTooLarge](../linearcanvasbasedisplay#getter-regiontoolarge),
 [regionTooLargeReason](../linearcanvasbasedisplay#getter-regiontoolargereason),
 [laidOutDataMap](../linearcanvasbasedisplay#getter-laidoutdatamap),
@@ -228,8 +228,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
@@ -316,6 +315,20 @@ and docs.
 [clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
+<summary>LinearBasicDisplay - Volatiles</summary>
+
+#### volatile: isoformCollapseNoticeDismissed
+
+```ts
+// type signature
+type isoformCollapseNoticeDismissed = false
+// code
+isoformCollapseNoticeDismissed: false
+```
+
+</details>
+
+<details open>
 <summary>LinearBasicDisplay - Getters</summary>
 
 #### getter: subfeatureLabels
@@ -340,6 +353,12 @@ type displayDirectionalChevrons = boolean
 
 ```ts
 type effectiveGeneGlyphMode = 'auto' | 'all' | 'longestCoding'
+```
+
+#### getter: showIsoformCollapseNotice
+
+```ts
+type showIsoformCollapseNotice = boolean
 ```
 
 #### getter: isGeneLike
@@ -442,6 +461,12 @@ type setShowOnlyGenes = (value: boolean) => void
 
 ```ts
 type setDisplayDirectionalChevrons = (value: boolean) => void
+```
+
+#### action: dismissIsoformCollapseNotice
+
+```ts
+type dismissIsoformCollapseNotice = () => void
 ```
 
 </details>

@@ -288,6 +288,30 @@ type awaitingAutoDiagonalize = false
 awaitingAutoDiagonalize: false
 ```
 
+#### volatile: diagonalizeStatus
+
+Live status from the auto-diagonalize RPC (download %, parse, algorithm phase)
+shown on the reordering spinner; undefined outside that wait.
+
+```ts
+// type signature
+type diagonalizeStatus = RpcStatus | undefined
+// code
+diagonalizeStatus: undefined as RpcStatus | undefined
+```
+
+#### volatile: diagonalizeStopToken
+
+Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort
+it; undefined when none is running.
+
+```ts
+// type signature
+type diagonalizeStopToken = StopToken | undefined
+// code
+diagonalizeStopToken: undefined as StopToken | undefined
+```
+
 </details>
 
 <details open>
@@ -342,11 +366,12 @@ type showLoading = boolean
 
 #### getter: loadingMessage
 
-Label for the loading spinner: a helpful message during the autoDiagonalize
-wait, otherwise just "Loading".
+Label for the generic loading spinner. The auto-diagonalize wait is a separate
+render branch (DiagonalizeLoadingScreen), so this only covers the plain "view
+not ready" case.
 
 ```ts
-type loadingMessage = 'Loading' | 'Reordering chromosomes' | undefined
+type loadingMessage = 'Loading' | undefined
 ```
 
 #### getter: showImportForm
@@ -485,6 +510,27 @@ type setInit = (init?: LinearSyntenyViewInit | undefined) => void
 
 ```ts
 type setAwaitingAutoDiagonalize = (arg: boolean) => void
+```
+
+#### action: setDiagonalizeStatus
+
+```ts
+type setDiagonalizeStatus = (arg?: RpcStatus | undefined) => void
+```
+
+#### action: setDiagonalizeStopToken
+
+```ts
+type setDiagonalizeStopToken = (arg?: StopToken | undefined) => void
+```
+
+#### action: cancelAutoDiagonalize
+
+Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
+revealing the (undiagonalized) view.
+
+```ts
+type cancelAutoDiagonalize = () => void
 ```
 
 #### action: exportSvg

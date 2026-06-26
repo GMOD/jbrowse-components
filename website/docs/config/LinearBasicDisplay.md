@@ -44,6 +44,8 @@ A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
 }
 ```
 
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 configuration for the basic linear feature display (genes, BED, GFF, etc.)
@@ -79,3 +81,27 @@ Color by an attribute with a jexl expression:
   "color": "jexl:get(feature,'type')=='gene'?'blue':'gray'"
 }
 ```
+
+<details open>
+<summary>LinearBasicDisplay - Slots</summary>
+
+#### slot: fetchSizeLimit
+
+Raises the inherited 1 Mb default: feature (GFF/BED) tracks are light text, and
+the tabix index byte estimate is a coarse upper bound that over-reports small
+dense regions, so a single gene routinely tripped the old 1 Mb gate. A few Mb of
+feature text downloads fast; the feature-density gate remains the backstop for
+genuinely over-dense views. Kept here on the feature leaf so the heavier
+alignment/variant displays keep their own tighter inherited limit.
+
+```js
+{
+  type: 'number',
+  defaultValue: 5_000_000,
+  description:
+    'maximum data to attempt to download for a given feature track',
+  advanced: true,
+}
+```
+
+</details>

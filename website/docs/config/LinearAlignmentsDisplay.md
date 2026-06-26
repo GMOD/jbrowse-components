@@ -33,8 +33,8 @@ and display options:
 }
 ```
 
-CRAM colored by CpG methylation (modBAM MM/ML tags). The `displays` object
-shorthand applies settings without spelling out the display `type` or
+CRAM colored by CpG methylation (modBAM MM/ML tags). The `displayDefaults`
+object shorthand applies settings without spelling out the display `type` or
 `displayId` — equivalent to
 `displays: [{ type: 'LinearAlignmentsDisplay', displayId: '...', colorBy: ... }]`.
 See [configuring displays](/docs/config_guides/tracks#configuring-displays):
@@ -46,7 +46,7 @@ See [configuring displays](/docs/config_guides/tracks#configuring-displays):
   name: 'Methylation',
   assemblyNames: ['hg38'],
   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
-  displays: { colorBy: { type: 'methylation' } },
+  displayDefaults: { colorBy: { type: 'methylation' } },
 }
 ```
 
@@ -60,7 +60,7 @@ by arcs:
   name: 'Long reads',
   assemblyNames: ['hg38'],
   adapter: { type: 'BamAdapter', uri: 'https://example.com/longreads.bam' },
-  displays: {
+  displayDefaults: {
     height: 400,
     showSoftClipping: true,
     linkedReads: 'normal',
@@ -252,8 +252,8 @@ this page is self-contained.
 {
   type: 'number',
   description:
-    'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-  defaultValue: 0.3,
+    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
+  defaultValue: 1,
   advanced: true,
 }
 ```

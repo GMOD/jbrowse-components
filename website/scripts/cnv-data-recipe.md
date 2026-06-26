@@ -21,8 +21,8 @@ https://gist.github.com/cmdcolin/4f2ccf037b4c3315d6eb36b0a4ec123d):
 ## 1. log2(tumor/normal) coverage ratio bigWig
 
 Bin the genome, count coverage per bin per sample, median-normalize each, then
-take log2 of the ratio. `mosdepth` gives fast fixed-window depth; `bigWigToBedGraph`/
-`bedGraphToBigWig` (UCSC tools) round-trips to bigWig.
+take log2 of the ratio. `mosdepth` gives fast fixed-window depth;
+`bigWigToBedGraph`/ `bedGraphToBigWig` (UCSC tools) round-trips to bigWig.
 
 ```bash
 # fixed 1kb (or 10kb for whole-genome demo) windows, no per-base output
@@ -54,16 +54,16 @@ PY
 bedGraphToBigWig HG008_log2ratio.bedgraph GRCh38_GIABv3.fa.fai HG008_log2ratio.bw
 ```
 
-Plot as a single bigWig with a symmetric domain around 0 (e.g. min/max
-`-2..2`); log2-ratio 0 = copy-neutral, +1 ≈ 3 copies vs 2, −1 ≈ 1 copy vs 2.
-A `bicolor`/diverging color scale (gain vs loss) reads well.
+Plot as a single bigWig with a symmetric domain around 0 (e.g. min/max `-2..2`);
+log2-ratio 0 = copy-neutral, +1 ≈ 3 copies vs 2, −1 ≈ 1 copy vs 2. A
+`bicolor`/diverging color scale (gain vs loss) reads well.
 
 ## 2. B-allele frequency (BAF) track
 
 At germline-het SNP sites, plot the tumor's fraction of reads supporting the alt
 allele. Copy-neutral het ≈ 0.5; LOH / allelic imbalance pulls it toward 0 or 1.
-Use the het sites from the benchmark VCF (or call germline hets from the normal),
-then read allele depth (`AD`) from the tumor.
+Use the het sites from the benchmark VCF (or call germline hets from the
+normal), then read allele depth (`AD`) from the tumor.
 
 ```bash
 # het sites (GT 0/1) from the germline/benchmark VCF

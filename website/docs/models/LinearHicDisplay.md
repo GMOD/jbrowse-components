@@ -98,7 +98,8 @@ and docs.
 **Volatiles:** [reloadCounter](../globaldatadisplaymixin#volatile-reloadcounter)
 
 **Getters:** [displayPhase](../globaldatadisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../globaldatadisplaymixin#getter-loadingoverlayvisible),
+[dataLoaded](../globaldatadisplaymixin#getter-dataloaded),
+[svgReadyExtraTerminal](../globaldatadisplaymixin#getter-svgreadyextraterminal),
 [svgReady](../globaldatadisplaymixin#getter-svgready)
 
 **Actions:** [reload](../globaldatadisplaymixin#action-reload)
@@ -317,6 +318,16 @@ availableResolutions: undefined as number[] | undefined
 
 <details open>
 <summary>LinearHicDisplay - Getters</summary>
+
+#### getter: dataLoaded
+
+GlobalDataDisplayMixin hook: the contact matrix has been fetched once `rpcData`
+is set (the fetch commits it even for an empty viewport), so `svgReady` waits
+for the debounced `afterAttach` fetch instead of exporting an empty matrix.
+
+```ts
+type dataLoaded = boolean
+```
 
 #### getter: colorScheme
 

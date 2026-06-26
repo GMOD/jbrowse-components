@@ -145,8 +145,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
@@ -355,6 +354,21 @@ type flipStrandLongReadChains = IOptionalIType<
 >
 // code
 flipStrandLongReadChains: types.stripDefault(types.boolean, true)
+```
+
+#### property: colorSupplementaryChains
+
+Opt-in legacy behavior: paint paired supplementary chains a flat supplementary
+color instead of keeping their pair-orientation color.
+
+```ts
+// type signature
+type colorSupplementaryChains = IOptionalIType<
+  ISimpleType<boolean>,
+  [undefined]
+>
+// code
+colorSupplementaryChains: types.stripDefault(types.boolean, false)
 ```
 
 #### property: drawInter
@@ -1233,7 +1247,7 @@ type sortTag = string | undefined
 #### getter: renderState
 
 ```ts
-type renderState = { scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 24 more ...; arcsYDomainBp: number | undefined; } | undefined
+type renderState = { scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 25 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
@@ -1732,6 +1746,12 @@ type setShowInterbaseIndicators = (show: boolean) => void
 
 ```ts
 type setFlipStrandLongReadChains = (flag: boolean) => void
+```
+
+#### action: setColorSupplementaryChains
+
+```ts
+type setColorSupplementaryChains = (flag: boolean) => void
 ```
 
 #### action: setLinkedReads

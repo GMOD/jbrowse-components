@@ -211,7 +211,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
       statusCallback,
       onProgress =>
         bigwig.getFeaturesAsArraysMulti(
-          regions.map(r => ({ refName: r.refName, start: r.start, end: r.end })),
+          regions.map(r => ({
+            refName: r.refName,
+            start: r.start,
+            end: r.end,
+          })),
           {
             ...opts,
             basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,

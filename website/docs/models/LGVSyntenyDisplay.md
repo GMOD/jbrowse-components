@@ -70,6 +70,7 @@ and docs.
 [drawSingletons](../linearalignmentsdisplay#property-drawsingletons),
 [drawProperPairs](../linearalignmentsdisplay#property-drawproperpairs),
 [flipStrandLongReadChains](../linearalignmentsdisplay#property-flipstrandlongreadchains),
+[colorSupplementaryChains](../linearalignmentsdisplay#property-colorsupplementarychains),
 [drawInter](../linearalignmentsdisplay#property-drawinter),
 [drawLongRange](../linearalignmentsdisplay#property-drawlongrange),
 [arcColorByType](../linearalignmentsdisplay#property-arccolorbytype),
@@ -239,6 +240,7 @@ and docs.
 [setDrawProperPairs](../linearalignmentsdisplay#action-setdrawproperpairs),
 [setShowInterbaseIndicators](../linearalignmentsdisplay#action-setshowinterbaseindicators),
 [setFlipStrandLongReadChains](../linearalignmentsdisplay#action-setflipstrandlongreadchains),
+[setColorSupplementaryChains](../linearalignmentsdisplay#action-setcolorsupplementarychains),
 [setLinkedReads](../linearalignmentsdisplay#action-setlinkedreads),
 [setShowBezierConnections](../linearalignmentsdisplay#action-setshowbezierconnections),
 [updateVisibleModifications](../linearalignmentsdisplay#action-updatevisiblemodifications),
@@ -312,8 +314,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),

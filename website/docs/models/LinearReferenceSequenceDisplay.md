@@ -106,8 +106,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
@@ -356,8 +355,8 @@ type renderState = DrawSequenceState
 
 Same precedence as MultiRegionDisplayMixin plus a zoom gate: when zoomed past
 base resolution the body shows a "zoom in" message, so suppress the loading
-phase (fall through to `ready`) and let that message show. The inherited
-`loadingOverlayVisible` reads this overridden getter.
+phase (fall through to `ready`) and let that message show. The chrome's
+loading-overlay visibility derives from this overridden getter.
 
 ```ts
 type displayPhase = DisplayPhase

@@ -100,8 +100,8 @@ and docs.
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
 [estimatedVisibleBytes](../linearcanvasbasedisplay#getter-estimatedvisiblebytes),
-[bytesEstimateTooLarge](../linearcanvasbasedisplay#getter-bytesestimatetoolarge),
 [densityTooLarge](../linearcanvasbasedisplay#getter-densitytoolarge),
+[tooLargeStatus](../linearcanvasbasedisplay#getter-toolargestatus),
 [regionTooLarge](../linearcanvasbasedisplay#getter-regiontoolarge),
 [regionTooLargeReason](../linearcanvasbasedisplay#getter-regiontoolargereason),
 [laidOutDataMap](../linearcanvasbasedisplay#getter-laidoutdatamap),
@@ -222,8 +222,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),

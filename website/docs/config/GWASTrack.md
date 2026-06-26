@@ -157,18 +157,15 @@ pluginManager.pluggableConfigSchemaType('text search adapter')
 
 #### slot: displays
 
-The track's displays. You can give this two ways:
+An **array** of full display configs, e.g.
+`displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`. Each entry names a
+display `type`; use this when you need exact control — your own `displayId`,
+different settings for two displays, or choosing which display is the default.
 
-- an **object** of appearance settings, e.g. `displays: { color: 'green' }`.
-  JBrowse applies each setting to the display that uses it, so you don't need to
-  know the display's name or write the array. If a track can be shown more than
-  one way, each setting lands where it fits (for example `color` on a variant
-  track's linear view, `strokeColor` on its circular view). A setting that
-  nothing on the track uses is ignored, with a console warning so typos show up.
-- an **array** of full display configs, e.g.
-  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, when you need
-  exact control — your own `displayId`, different settings for two displays, or
-  choosing which display is the default.
+For the common case, prefer the `displayDefaults` shorthand instead — an object
+of appearance settings (e.g. `displayDefaults: { color: 'green' }`) that JBrowse
+routes to whichever display uses each setting, so you don't have to name the
+display or write the array.
 
 See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
 

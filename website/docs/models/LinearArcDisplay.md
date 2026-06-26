@@ -96,37 +96,6 @@ and docs.
 [setHeight](../trackheightmixin#action-setheight),
 [resizeHeight](../trackheightmixin#action-resizeheight)
 
-### Available via [FeatureDensityMixin](../featuredensitymixin)
-
-**Properties:**
-[userBpPerPxLimit](../featuredensitymixin#property-userbpperpxlimit)
-
-**Volatiles:**
-[featureDensityStatsP](../featuredensitymixin#volatile-featuredensitystatsp),
-[currStatsBpPerPx](../featuredensitymixin#volatile-currstatsbpperpx)
-
-**Getters:**
-[currentBytesRequested](../featuredensitymixin#getter-currentbytesrequested),
-[currentFeatureScreenDensity](../featuredensitymixin#getter-currentfeaturescreendensity),
-[maxFeatureScreenDensity](../featuredensitymixin#getter-maxfeaturescreendensity),
-[featureDensityStatsReady](../featuredensitymixin#getter-featuredensitystatsready),
-[maxAllowableBytes](../featuredensitymixin#getter-maxallowablebytes),
-[bytesTooLarge](../featuredensitymixin#getter-bytestoolarge),
-[densityTooLarge](../featuredensitymixin#getter-densitytoolarge),
-[regionTooLarge](../featuredensitymixin#getter-regiontoolarge),
-[regionTooLargeReason](../featuredensitymixin#getter-regiontoolargereason),
-[featureDensityStatsReadyAndRegionNotTooLarge](../featuredensitymixin#getter-featuredensitystatsreadyandregionnottoolarge)
-
-**Methods:**
-[regionCannotBeRendered](../featuredensitymixin#method-regioncannotberendered)
-
-**Actions:**
-[setCurrStatsBpPerPx](../featuredensitymixin#action-setcurrstatsbpperpx),
-[setFeatureDensityStatsLimit](../featuredensitymixin#action-setfeaturedensitystatslimit),
-[getFeatureDensityStats](../featuredensitymixin#action-getfeaturedensitystats),
-[setFeatureDensityStatsP](../featuredensitymixin#action-setfeaturedensitystatsp),
-[clearFeatureDensityStats](../featuredensitymixin#action-clearfeaturedensitystats)
-
 ### Available via [RegionTooLargeMixin](../regiontoolargemixin)
 
 **Properties:**

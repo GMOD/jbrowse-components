@@ -40,9 +40,9 @@ its own track):
 }
 ```
 
-GC-skew mode with overlapping windows for a smoother signal. The `displays`
-object shorthand applies settings to whichever display uses them — equivalent to
-a full `displays: [{ type, displayId, ... }]` array. See
+GC-skew mode with overlapping windows for a smoother signal. The
+`displayDefaults` object shorthand applies settings to whichever display uses
+them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
 ```js
@@ -59,7 +59,7 @@ a full `displays: [{ type, displayId, ... }]` array. See
       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
     },
   },
-  displays: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
+  displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
 }
 ```
 

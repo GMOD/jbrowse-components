@@ -29,8 +29,8 @@ the display-level `ConfigOverrideMixin` override pattern at app scope.
 
 #### slot: configuration.preferences.animationMode
 
-controls feature-layout animations: 'system' respects the OS
-prefers-reduced-motion setting, 'enabled' always animates, 'disabled' never
+controls feature-layout animations: 'enabled' always animates (the default),
+'system' respects the OS prefers-reduced-motion setting, 'disabled' never
 animates
 
 ```js
@@ -41,7 +41,7 @@ animates
     'disabled',
   ]),
   type: 'stringEnum',
-  defaultValue: 'system',
+  defaultValue: 'enabled',
 }
 ```
 

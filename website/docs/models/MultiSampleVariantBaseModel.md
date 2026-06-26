@@ -108,8 +108,7 @@ and docs.
 [svgReady](../multiregiondisplaymixin#getter-svgready),
 [svgReadyExtraTerminal](../multiregiondisplaymixin#getter-svgreadyextraterminal),
 [renderBlocks](../multiregiondisplaymixin#getter-renderblocks),
-[displayPhase](../multiregiondisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../multiregiondisplaymixin#getter-loadingoverlayvisible)
+[displayPhase](../multiregiondisplaymixin#getter-displayphase)
 
 **Actions:**
 [setLoadedRegion](../multiregiondisplaymixin#action-setloadedregion),
@@ -261,6 +260,18 @@ lineZoneHeight: types.stripDefault(types.number, 0)
 type showLegend = true
 // code
 showLegend: true
+```
+
+#### volatile: dismissedLegendSections
+
+Ids of legend sections the user has individually closed (e.g. 'genotypes' /
+'group'); reset when the whole legend is re-shown.
+
+```ts
+// type signature
+type dismissedLegendSections = string[]
+// code
+dismissedLegendSections: [] as string[]
 ```
 
 #### volatile: sourcesLoadingStopToken
@@ -584,6 +595,17 @@ type canDisplayLabels = boolean
 type totalHeight = number
 ```
 
+#### getter: hasOverflow
+
+Whether the rows are taller than the viewport, i.e. the display scrolls. Drives
+native-scroll gating in displays that scroll their rows in a native overflow
+container (the plain display); auto-fit mode keeps this false since `rowHeight`
+derives from `availableHeight`.
+
+```ts
+type hasOverflow = boolean
+```
+
 #### getter: featuresReady
 
 ```ts
@@ -631,12 +653,14 @@ type contextMenuItems = () => MenuItem[]
 type getPortableSettings = () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
 ```
 
-#### method: legendItems
+#### method: legendSections
 
-Returns legend items for rendering colors based on current mode
+Legend split into independently-closable sections: the genotype/cell coloring
+and (when colorBy is set) the sample-grouping coloring shown on the sidebar row
+labels. Dismissed sections are filtered out.
 
 ```ts
-type legendItems = () => LegendItem[]
+type legendSections = () => LegendSection[]
 ```
 
 </details>
@@ -672,6 +696,14 @@ type setJexlFilters = (f?: string[] | undefined) => void
 
 ```ts
 type setShowLegend = (s: boolean) => void
+```
+
+#### action: dismissLegendSection
+
+Close a single legend section (leaving the others visible).
+
+```ts
+type dismissLegendSection = (id: string) => void
 ```
 
 #### action: selectFeature

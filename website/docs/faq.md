@@ -531,14 +531,14 @@ It depends which link you mean — there are two, and they behave differently:
   produces the same long URL (given the same config), and it keeps working even
   if you rebuild or move your JBrowse instance.
 
-The one thing that can break reproducibility is your **config**, not the link.
-A restored session references tracks by `trackId`, so if a redeploy regenerates
+The one thing that can break reproducibility is your **config**, not the link. A
+restored session references tracks by `trackId`, so if a redeploy regenerates
 `config.json` with different `trackId`s, the link can no longer find those
-tracks. Keep `trackId`s deterministic across builds and shared links stay
-stable — see [keeping trackIds
-stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
-and [why a saved session fails to
-load](/docs/faq/#why-does-my-saved-session-fail-to-load).
+tracks. Keep `trackId`s deterministic across builds and shared links stay stable
+— see
+[keeping trackIds stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
+and
+[why a saved session fails to load](/docs/faq/#why-does-my-saved-session-fail-to-load).
 
 ## Troubleshooting
 

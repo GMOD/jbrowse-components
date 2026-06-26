@@ -32,7 +32,9 @@ const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
         classes.toggleButton,
         isTrackSelectorOpen ? classes.selected : undefined,
       )}
-      title={isTrackSelectorOpen ? 'Close track selector' : 'Open track selector'}
+      title={
+        isTrackSelectorOpen ? 'Close track selector' : 'Open track selector'
+      }
       value="track_select"
     >
       <TrackSelectorIcon />

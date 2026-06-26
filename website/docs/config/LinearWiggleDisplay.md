@@ -42,7 +42,7 @@ Taller track, log scale, custom color:
   name: 'Coverage',
   assemblyNames: ['hg38'],
   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
-  displays: { height: 200, scaleType: 'log', color: 'darkgreen' },
+  displayDefaults: { height: 200, scaleType: 'log', color: 'darkgreen' },
 }
 ```
 
@@ -55,7 +55,7 @@ density, line, or scatter renderings
 
 These are display-level slots: set them inside a track's `displays` to change
 its defaults (setting them at the track top level has no effect). The object
-shorthand `displays: { key: value }` is equivalent to the full
+shorthand `displayDefaults: { key: value }` is equivalent to the full
 `displays: [{ type: 'LinearWiggleDisplay', displayId: '...', key: value }]`
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).

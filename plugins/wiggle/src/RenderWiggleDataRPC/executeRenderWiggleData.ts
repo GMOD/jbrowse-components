@@ -74,7 +74,9 @@ function fetchRaws(
     return adapter.getFeatureArraysMulti(regions, opts)
   }
   if (hasFeatureArrays(adapter)) {
-    return Promise.all(regions.map(region => adapter.getFeatureArrays(region, opts)))
+    return Promise.all(
+      regions.map(region => adapter.getFeatureArrays(region, opts)),
+    )
   }
   return Promise.all(
     regions.map(region =>

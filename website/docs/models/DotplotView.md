@@ -382,6 +382,30 @@ type awaitingAutoDiagonalize = false
 awaitingAutoDiagonalize: false
 ```
 
+#### volatile: diagonalizeStatus
+
+Live status from the auto-diagonalize RPC (download %, parse, algorithm phase)
+shown on the reordering spinner; undefined outside that wait.
+
+```ts
+// type signature
+type diagonalizeStatus = RpcStatus | undefined
+// code
+diagonalizeStatus: undefined as RpcStatus | undefined
+```
+
+#### volatile: diagonalizeStopToken
+
+Stop token for the in-flight auto-diagonalize, so the spinner's Cancel can abort
+it; undefined when none is running.
+
+```ts
+// type signature
+type diagonalizeStopToken = StopToken | undefined
+// code
+diagonalizeStopToken: undefined as StopToken | undefined
+```
+
 </details>
 
 <details open>
@@ -459,8 +483,12 @@ type showImportForm = boolean
 
 #### getter: loadingMessage
 
+Label for the generic loading spinner. The auto-diagonalize wait is a separate
+render branch (DiagonalizeLoadingScreen), so this only covers the plain "view
+not ready" case.
+
 ```ts
-type loadingMessage = 'Loading' | 'Reordering chromosomes…' | undefined
+type loadingMessage = 'Loading' | undefined
 ```
 
 #### getter: viewWidth
@@ -499,6 +527,17 @@ DotplotDisplays under each track, indexed to match `tracks`.
 
 ```ts
 type dotplotDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 10 more ... & IStateTreeNode<...>)[]
+```
+
+#### getter: settled
+
+Canvas has painted and no display is still fetching, so what's on screen is the
+final settled content. Drives the `dotplot_webgl_canvas_done` test-id that
+screenshot capture and the browser-test suites wait on — so it must mean "done",
+not just "first paint".
+
+```ts
+type settled = boolean
 ```
 
 #### getter: hasLodCapableAdapter
@@ -722,6 +761,27 @@ type setInit = (init?: DotplotViewInit | undefined) => void
 
 ```ts
 type setAwaitingAutoDiagonalize = (arg: boolean) => void
+```
+
+#### action: setDiagonalizeStatus
+
+```ts
+type setDiagonalizeStatus = (arg?: RpcStatus | undefined) => void
+```
+
+#### action: setDiagonalizeStopToken
+
+```ts
+type setDiagonalizeStopToken = (arg?: StopToken | undefined) => void
+```
+
+#### action: cancelAutoDiagonalize
+
+Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
+revealing the (undiagonalized) plot.
+
+```ts
+type cancelAutoDiagonalize = () => void
 ```
 
 #### action: zoomOut

@@ -64,9 +64,11 @@ test('rowColorsByIndex overrides the baked color for that row only', () => {
     ['dadHP1', 1],
   ])
   // override row 0 (momHP0) only; row 1 keeps its baked feature color
-  const { buffer, count } = buildMultiRowInstanceBuffer(region, rowIndexByValue, [
-    0xff123456, undefined,
-  ])
+  const { buffer, count } = buildMultiRowInstanceBuffer(
+    region,
+    rowIndexByValue,
+    [0xff123456, undefined],
+  )
   expect(decode(buffer, count).map(d => d.color)).toEqual([
     0xff123456, // feature 0, row 0 -> overridden
     0xff00ff00, // feature 1, row 1 -> baked

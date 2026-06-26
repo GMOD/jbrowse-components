@@ -117,8 +117,13 @@ const DotplotView = observer(function DotplotView({
 }: {
   model: DotplotViewModel
 }) {
-  const { initialized, showLoading, awaitingAutoDiagonalize, error, loadingMessage } =
-    model
+  const {
+    initialized,
+    showLoading,
+    awaitingAutoDiagonalize,
+    error,
+    loadingMessage,
+  } = model
   if (awaitingAutoDiagonalize) {
     return (
       <DiagonalizeLoadingScreen

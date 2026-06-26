@@ -179,17 +179,6 @@ The display's mutually-exclusive visual state, precedence single-sourced in
 type displayPhase = DisplayPhase
 ```
 
-#### getter: loadingOverlayVisible
-
-The single signal every display's loading overlay reads. Derived from
-`displayPhase` so the loading-vs-terminal precedence isn't re-encoded by
-subtraction. Separate `.views` block so it can read the sibling `displayPhase`
-getter through `self`.
-
-```ts
-type loadingOverlayVisible = boolean
-```
-
 </details>
 
 <details open>

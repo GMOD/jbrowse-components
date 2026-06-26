@@ -35,7 +35,7 @@ Minimal `VariantTrack` config. See the
 }
 ```
 
-Taller track. The `displays` object shorthand is equivalent to
+Taller track. The `displayDefaults` object shorthand is equivalent to
 `displays: [{ type: 'LinearVariantDisplay', displayId: '...', ... }]` — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
@@ -49,7 +49,7 @@ Taller track. The `displays` object shorthand is equivalent to
     type: 'VcfTabixAdapter',
     uri: 'https://example.com/variants.vcf.gz',
   },
-  displays: { height: 200 },
+  displayDefaults: { height: 200 },
 }
 ```
 
@@ -76,18 +76,6 @@ this page is self-contained.
   type: 'number',
   defaultValue: 1200,
   description: 'Maximum height of the display in pixels',
-  advanced: true,
-}
-```
-
-#### slot: maxFeatureScreenDensity
-
-```js
-{
-  type: 'number',
-  defaultValue: 1,
-  description:
-    'Maximum features per pixel before showing region too large message',
   advanced: true,
 }
 ```
@@ -329,8 +317,8 @@ ConfigurationSchema('CanvasFeatureLabels', {
 {
   type: 'number',
   description:
-    'maximum features per pixel that is displayed in the view, used if byte size estimates not available',
-  defaultValue: 0.3,
+    'maximum features per pixel before showing a "too many features" message, used if byte size estimates are not available',
+  defaultValue: 1,
   advanced: true,
 }
 ```

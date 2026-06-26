@@ -4,23 +4,31 @@ Static exports of JBrowse 2 rendering.
 
 ## Prerequisites
 
-You don't need to have JBrowse 2 installed to use this tool. The tool can generate images using files on your hard drive or from remote files. So, all you need to run this tool is
+You don't need to have JBrowse 2 installed to use this tool. The tool can
+generate images using files on your hard drive or from remote files. So, all you
+need to run this tool is
 
 - NodeJS v23+
 
 ## Setup
 
-You can install the `@jbrowse/img` package from npm, which, if your node is configured in a typical configuration, will then have a command `jb2export` in your path
+You can install the `@jbrowse/img` package from npm, which, if your node is
+configured in a typical configuration, will then have a command `jb2export` in
+your path
 
 ```bash
 npm install -g @jbrowse/img
 ```
 
-If you are a developer and want to modify the code, see the [source on GitHub](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-img)
+If you are a developer and want to modify the code, see the
+[source on GitHub](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-img)
 
 ## Quickstart
 
-A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus — NCBI RefSeq genes, ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore reads — rendered straight from public files in a single command (`--aliases` reconciles the `1` / `chr1` / `NC_000001.10` refname styles across the files):
+A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus — NCBI RefSeq
+genes, ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore
+reads — rendered straight from public files in a single command (`--aliases`
+reconciles the `1` / `chr1` / `NC_000001.10` refname styles across the files):
 
 ![A multi-track hg19 view: NCBI RefSeq genes, ClinGen gene-disease mapping, phyloP conservation, and SKBR3 nanopore reads](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/1.png)
 
@@ -39,7 +47,9 @@ jb2export \
 
 ### Local files
 
-We can call this script on local files, and it doesn't require a web browser, not even a headless webbrowser, it just runs a node script and React SSR is used to create the SVG
+We can call this script on local files, and it doesn't require a web browser,
+not even a headless webbrowser, it just runs a node script and React SSR is used
+to create the SVG
 
 ```bash
 ## generate an indexed fasta e.g. fai file
@@ -59,7 +69,8 @@ If `--out` is not specified it writes SVG to stdout
 
 This example shows using remote files, e.g. with human hg19 and several tracks
 
-Note the use of --aliases, which smoothes over refname differences e.g. fasta contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
+Note the use of --aliases, which smoothes over refname differences e.g. fasta
+contains 1 for chr1, and bigbed contains chr1, gff contains NC_000001.10
 
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
@@ -72,7 +83,10 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 ## Output formats
 
-The output format is chosen by the extension of `--out`: `.svg`, `.png`, or `.pdf`. With no `--out`, SVG is written to stdout. PNG and PDF use `rsvg-convert`, so you will need to install it on your system, e.g. with `sudo apt install librsvg2-bin`.
+The output format is chosen by the extension of `--out`: `.svg`, `.png`, or
+`.pdf`. With no `--out`, SVG is written to stdout. PNG and PDF use
+`rsvg-convert`, so you will need to install it on your system, e.g. with
+`sudo apt install librsvg2-bin`.
 
 ```bash
 ## SVG (vector)
@@ -85,11 +99,14 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
 ```
 
-By default the pileup, coverage, and hic layers are rasterized into the SVG to keep file sizes down. Pass `--noRasterize` to render everything as SVG vectors instead (larger files, fully editable in vector tools).
+By default the pileup, coverage, and hic layers are rasterized into the SVG to
+keep file sizes down. Pass `--noRasterize` to render everything as SVG vectors
+instead (larger files, fully editable in vector tools).
 
 ### Converting SVG to PNG manually
 
-The tool runs `rsvg-convert` automatically when `--out` ends in `.png`. Alternatively, you can convert an SVG yourself:
+The tool runs `rsvg-convert` automatically when `--out` ends in `.png`.
+Alternatively, you can convert an SVG yourself:
 
 ```bash
 ## with inkscape
@@ -111,11 +128,15 @@ convert -size 2048x out.svg out.png
 
 ## Track gallery
 
-Each track type renders as you'd expect from JBrowse 2. The examples below are reproducible with the bundled volvox data (and a couple of public remote files); see [Track modifiers](#track-modifiers) for the full list of per-track options used here.
+Each track type renders as you'd expect from JBrowse 2. The examples below are
+reproducible with the bundled volvox data (and a couple of public remote files);
+see [Track modifiers](#track-modifiers) for the full list of per-track options
+used here.
 
 ### Alignments tracks
 
-A `--bam`/`--cram` track renders a coverage histogram over a read pileup, with mismatches highlighted. Reproducible with the bundled volvox alignments:
+A `--bam`/`--cram` track renders a coverage histogram over a read pileup, with
+mismatches highlighted. Reproducible with the bundled volvox alignments:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
@@ -124,7 +145,8 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 
 ![A coverage histogram over a read pileup, with mismatches highlighted](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_pileup.png)
 
-Track modifiers color, sort, and group the reads. Here the reads are colored and sorted by their read-group (`RG`) tag:
+Track modifiers color, sort, and group the reads. Here the reads are colored and
+sorted by their read-group (`RG`) tag:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
@@ -134,7 +156,10 @@ jb2export --fasta data/volvox/volvox.fa \
 
 ![Reads colored and sorted by their read-group tag](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_readgroup.png)
 
-`group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors by the `HP` tag — the heterozygous deletion shows in one haplotype and not the other:
+`group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
+HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
+by the `HP` tag — the heterozygous deletion shows in one haplotype and not the
+other:
 
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
@@ -145,7 +170,10 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 ![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_haplotype.png)
 
-`color:methylation` paints per-base CpG methylation calls from a modified-base (`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829 nanopore CRAM (hg38, streamed from the ONT open-data S3) over a CpG island shows the methylated-to-unmethylated transition:
+`color:methylation` paints per-base CpG methylation calls from a modified-base
+(`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829
+nanopore CRAM (hg38, streamed from the ONT open-data S3) over a CpG island shows
+the methylated-to-unmethylated transition:
 
 ```bash
 jb2export \
@@ -157,7 +185,8 @@ jb2export \
 
 ![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/methylation.png)
 
-More alignment recipes (see [Track modifiers](#track-modifiers) for all options):
+More alignment recipes (see [Track modifiers](#track-modifiers) for all
+options):
 
 ```bash
 ## color by splice strand (XS tag), sort by haplotype (HP tag)
@@ -188,9 +217,12 @@ jb2export --fasta ref.fa --bam rnaseq.bam sashimi:up --loc chr1:1-50000
 
 ### BigWig / quantitative tracks
 
-The special flag `--loc all` shows the full assembly, and there are a number of custom bigwig plotting options that can help draw the bigwig genome wide.
+The special flag `--loc all` shows the full assembly, and there are a number of
+custom bigwig plotting options that can help draw the bigwig genome wide.
 
-This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's read coverage genome-wide (hg19, public bigwig), where the amplifications and deletions of the cancer karyotype stand out:
+This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
+read coverage genome-wide (hg19, public bigwig), where the amplifications and
+deletions of the cancer karyotype stand out:
 
 ```bash
 jb2export --loc all \
@@ -201,7 +233,8 @@ jb2export --loc all \
 
 ![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_cov.png)
 
-The score scaling can also autoscale — here to "localsd" (mean plus/minus three standard deviations) on a linear scale:
+The score scaling can also autoscale — here to "localsd" (mean plus/minus three
+standard deviations) on a linear scale:
 
 ```bash
 jb2export --loc all \
@@ -212,7 +245,8 @@ jb2export --loc all \
 
 ### Variant tracks
 
-A `--vcfgz` track draws each variant with its reference-to-alternate change. Reproducible with the bundled volvox VCF:
+A `--vcfgz` track draws each variant with its reference-to-alternate change.
+Reproducible with the bundled volvox VCF:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.gz \
@@ -223,7 +257,8 @@ jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.
 
 ### Hi-C tracks
 
-A `--hic` track draws the contact matrix as a triangular heatmap. This example streams the public hg19 demo `.hic` and shows the TAD structure along chr1:
+A `--hic` track draws the contact matrix as a triangular heatmap. This example
+streams the public hg19 demo `.hic` and shows the TAD structure along chr1:
 
 ```bash
 jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
@@ -235,7 +270,8 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
 
 ### Gene / feature tracks
 
-Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with labels. Reproducible with the bundled volvox annotations:
+Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with
+labels. Reproducible with the bundled volvox annotations:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz \
@@ -246,7 +282,9 @@ jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz 
 
 ### Reference sequence track
 
-`--refseq` adds the assembly's reference-sequence track. Zoomed in to base level it shows the DNA bases and the six-frame translation (green start codons, red stops):
+`--refseq` adds the assembly's reference-sequence track. Zoomed in to base level
+it shows the DNA bases and the six-frame translation (green start codons, red
+stops):
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa --loc ctgA:108-208 --refseq \
@@ -257,7 +295,9 @@ jb2export --fasta data/volvox/volvox.fa --loc ctgA:108-208 --refseq \
 
 ### Themes
 
-`--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`, `darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names — use the keys above.)
+`--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`,
+`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names — use
+the keys above.)
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
@@ -270,7 +310,9 @@ jb2export --fasta data/volvox/volvox.fa \
 
 ## Track modifiers
 
-Instead of extra `--flags`, per-track settings use a colon-based syntax that follows the track file argument, e.g. `--bam reads.bam color:tag:RG height:400`. This is the full list of available modifiers.
+Instead of extra `--flags`, per-track settings use a colon-based syntax that
+follows the track file argument, e.g. `--bam reads.bam color:tag:RG height:400`.
+This is the full list of available modifiers.
 
 **All tracks**
 
@@ -283,63 +325,65 @@ Instead of extra `--flags`, per-track settings use a colon-based syntax that fol
 
 Reads & coloring:
 
-| Modifier | Example | Description |
-| --- | --- | --- |
-| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below) |
-| `sort:type` or `sort:type:tag` | `sort:strand`, `sort:tag:RG` | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`) |
+| Modifier                         | Example                        | Description                                                                                                                                         |
+| -------------------------------- | ------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `color:type` or `color:type:tag` | `color:strand`, `color:tag:XS` | Color scheme (see types below)                                                                                                                      |
+| `sort:type` or `sort:type:tag`   | `sort:strand`, `sort:tag:RG`   | Sort reads (`position`, `strand`, `basePair`, or `tag:<TAG>`)                                                                                       |
 | `group:type` or `group:type:tag` | `group:strand`, `group:tag:HP` | Group reads into in-track stacked sections (`strand`, `firstOfPairStrand`, `pairOrientation`, `supplementary`, `duplicate`, `mapq`, or `tag:<TAG>`) |
-| `softClipping:true\|false` | `softClipping:true` | Show soft-clipped bases |
+| `softClipping:true\|false`       | `softClipping:true`            | Show soft-clipped bases                                                                                                                             |
 
 Overlays & subtracks:
 
-| Modifier | Example | Description |
-| --- | --- | --- |
-| `arcs:mode` | `arcs:samplot` | Read-connection arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
-| `linkedReads:mode` | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`) |
-| `sashimi:mode` | `sashimi:up` | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`) |
-| `coverage:true\|false` | `coverage:false` | Toggle coverage subtrack |
-| `snpcov` | `snpcov` | Coverage-only view — resizes the coverage band to fill the track |
+| Modifier               | Example              | Description                                                           |
+| ---------------------- | -------------------- | --------------------------------------------------------------------- |
+| `arcs:mode`            | `arcs:samplot`       | Read-connection arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
+| `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                        |
+| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)            |
+| `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                              |
+| `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track      |
 
 Layout & sizing:
 
-| Modifier | Example | Description |
-| --- | --- | --- |
-| `featureHeight:preset\|N` | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
-| `noSpacing:true\|false` | `noSpacing:true` | Remove gap between reads |
-| `coverageHeight:N` | `coverageHeight:200` | Height of the coverage subtrack (also the height of the samplot overlay) |
-| `readConnectionsHeight:N` | `readConnectionsHeight:120` | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down` |
-| `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2` | Stroke width for read-connection arcs/lines in pixels |
+| Modifier                     | Example                                          | Description                                                                      |
+| ---------------------------- | ------------------------------------------------ | -------------------------------------------------------------------------------- |
+| `featureHeight:preset\|N`    | `featureHeight:super-compact`, `featureHeight:4` | Per-read height. Presets: `normal` (7px), `compact` (3px), `super-compact` (1px) |
+| `noSpacing:true\|false`      | `noSpacing:true`                                 | Remove gap between reads                                                         |
+| `coverageHeight:N`           | `coverageHeight:200`                             | Height of the coverage subtrack (also the height of the samplot overlay)         |
+| `readConnectionsHeight:N`    | `readConnectionsHeight:120`                      | Height of the paired-arcs panel — only applies to `arcs:up` / `arcs:down`        |
+| `readConnectionsLineWidth:N` | `readConnectionsLineWidth:2`                     | Stroke width for read-connection arcs/lines in pixels                            |
 
 Available `color:type` values:
 
-| Type | Description |
-| --- | --- |
-| `normal` | Default (grey reads, mismatches highlighted) |
-| `strand` | Forward/reverse strand |
-| `mappingQuality` | MAPQ |
-| `perBaseQuality` | Per-base quality overlay |
-| `insertSize` | Paired-end insert size |
-| `pairOrientation` | Paired-end orientation |
-| `insertSizeAndOrientation` | Combined insert size + orientation |
-| `modifications` | Base modifications via MM/ML tags |
-| `methylation` | CpG methylation via MM/ML tags |
-| `tag:<TAG>` | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
+| Type                       | Description                                               |
+| -------------------------- | --------------------------------------------------------- |
+| `normal`                   | Default (grey reads, mismatches highlighted)              |
+| `strand`                   | Forward/reverse strand                                    |
+| `mappingQuality`           | MAPQ                                                      |
+| `perBaseQuality`           | Per-base quality overlay                                  |
+| `insertSize`               | Paired-end insert size                                    |
+| `pairOrientation`          | Paired-end orientation                                    |
+| `insertSizeAndOrientation` | Combined insert size + orientation                        |
+| `modifications`            | Base modifications via MM/ML tags                         |
+| `methylation`              | CpG methylation via MM/ML tags                            |
+| `tag:<TAG>`                | Color by any BAM tag, e.g. `color:tag:HP`, `color:tag:RG` |
 
 **BigWig tracks**
 
-| Modifier | Example | Description |
-| --- | --- | --- |
-| `autoscale:mode` | `autoscale:localsd` | Autoscale mode (`local`, `global`, `localsd`) |
-| `minmax:min:max` | `minmax:0:100` | Manual score range |
-| `scaletype:type` | `scaletype:log` | Scale type (`linear` or `log`) |
-| `fill:true\|false` | `fill:false` | Fill under curve |
-| `crosshatch:true\|false` | `crosshatch:true` | Draw crosshatches |
-| `resolution:value` | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier) |
-| `color:value` | `color:purple` | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
+| Modifier                 | Example                | Description                                               |
+| ------------------------ | ---------------------- | --------------------------------------------------------- |
+| `autoscale:mode`         | `autoscale:localsd`    | Autoscale mode (`local`, `global`, `localsd`)             |
+| `minmax:min:max`         | `minmax:0:100`         | Manual score range                                        |
+| `scaletype:type`         | `scaletype:log`        | Scale type (`linear` or `log`)                            |
+| `fill:true\|false`       | `fill:false`           | Fill under curve                                          |
+| `crosshatch:true\|false` | `crosshatch:true`      | Draw crosshatches                                         |
+| `resolution:value`       | `resolution:superfine` | BigWig resolution (`fine`, `superfine`, or a multiplier)  |
+| `color:value`            | `color:purple`         | Fill color (any CSS color — `tag:` form is BAM/CRAM only) |
 
 ### Raw display settings (JSON)
 
-Any track modifier that starts with `{` is parsed as JSON and merged into the display's settings — an escape hatch for settings without a dedicated modifier above. Use compact JSON (a single shell token, no spaces):
+Any track modifier that starts with `{` is parsed as JSON and merged into the
+display's settings — an escape hatch for settings without a dedicated modifier
+above. Use compact JSON (a single shell token, no spaces):
 
 ```bash
 jb2export --fasta ref.fa --bam reads.bam '{"colorBy":{"type":"strand"}}' \
@@ -350,11 +394,18 @@ jb2export --fasta ref.fa --bam reads.bam '{"colorBy":{"type":"strand"}}' \
 
 ### Compare two assemblies (dotplot / synteny)
 
-Two assemblies can be compared with the `dotplot` and `synteny` subcommands. The primary assembly is supplied with `--fasta`/`--loc` (as usual) and the second with `--fasta2`/`--loc2`. The alignment between them is a comparison track (`--paf`, `--delta`, `--chain`, or `--blasttab`); the query side of that file is the first assembly and the target side is the second.
+Two assemblies can be compared with the `dotplot` and `synteny` subcommands. The
+primary assembly is supplied with `--fasta`/`--loc` (as usual) and the second
+with `--fasta2`/`--loc2`. The alignment between them is a comparison track
+(`--paf`, `--delta`, `--chain`, or `--blasttab`); the query side of that file is
+the first assembly and the target side is the second.
 
-The examples below use the public yeast comparison (S. cerevisiae R64 vs the YJM1447 strain) and reproduce as-is with network access.
+The examples below use the public yeast comparison (S. cerevisiae R64 vs the
+YJM1447 strain) and reproduce as-is with network access.
 
-A whole-genome dotplot — every query contig on x, every target contig on y. `--autoDiagonalize` reorders the target contigs so the main alignment forms a clean diagonal instead of a staircase:
+A whole-genome dotplot — every query contig on x, every target contig on y.
+`--autoDiagonalize` reorders the target contigs so the main alignment forms a
+clean diagonal instead of a staircase:
 
 ```bash
 jb2export dotplot \
@@ -366,7 +417,9 @@ jb2export dotplot \
 
 ![Whole-genome dotplot of two yeast assemblies (R64 vs the YJM1447 strain)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_dotplot.png)
 
-A linear synteny ribbon between one chromosome in each assembly (here YJM1447 chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the ribbon as a smooth bezier instead of straight trapezoids:
+A linear synteny ribbon between one chromosome in each assembly (here YJM1447
+chr `I` vs R64 chr `I`, accession `NC_001133.9`). `--drawCurves` renders the
+ribbon as a smooth bezier instead of straight trapezoids:
 
 ```bash
 jb2export synteny \
@@ -378,11 +431,22 @@ jb2export synteny \
 
 ![Linear synteny ribbon between YJM1447 chr I and R64 chr I](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/yeast_synteny.png)
 
-Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot` ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and `--drawCurves` are the CLI shortcuts for the busiest-comparison knobs; the full set is available via `--spec` (see the table below). Run `jb2export dotplot --help` for the full list of comparative options.
+Omitting `--loc`/`--loc2` shows the whole assembly on that axis (note: `dotplot`
+ignores `--loc` and always shows the whole genome). `--autoDiagonalize` and
+`--drawCurves` are the CLI shortcuts for the busiest-comparison knobs; the full
+set is available via `--spec` (see the table below). Run
+`jb2export dotplot --help` for the full list of comparative options.
 
 ### Multi-way synteny (three or more assemblies)
 
-The `--fasta2`/`--loc2` shortcut covers the common two-assembly case. To stack three or more assemblies (one synteny ribbon per adjacent pair), describe the view with a session-spec JSON and pass it with `--spec`, supplying the assemblies and comparison tracks via a `--config`. The spec is the same shape used by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a browser URL works directly — see [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way) for the full format.
+The `--fasta2`/`--loc2` shortcut covers the common two-assembly case. To stack
+three or more assemblies (one synteny ribbon per adjacent pair), describe the
+view with a session-spec JSON and pass it with `--spec`, supplying the
+assemblies and comparison tracks via a `--config`. The spec is the same shape
+used by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
+browser URL works directly — see
+[URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way)
+for the full format.
 
 ```bash
 jb2export --config jbrowse.json --spec spec.json --out synteny.svg
@@ -406,20 +470,25 @@ where `spec.json` is, for example:
 }
 ```
 
-`tracks` is one sub-array per level (the gap between adjacent `views`). The subcommand is optional here — the render mode is taken from the spec's view `type` (`LinearSyntenyView`, `DotplotView`, or `CircularView`).
+`tracks` is one sub-array per level (the gap between adjacent `views`). The
+subcommand is optional here — the render mode is taken from the spec's view
+`type` (`LinearSyntenyView`, `DotplotView`, or `CircularView`).
 
-The spec also accepts the same view-level fields the web app uses, which are what make a busy whole-genome comparison legible:
+The spec also accepts the same view-level fields the web app uses, which are
+what make a busy whole-genome comparison legible:
 
-| Field | Effect |
-| --- | --- |
-| `autoDiagonalize` | Reorders the second assembly's chromosomes for least overlap |
+| Field                | Effect                                                          |
+| -------------------- | --------------------------------------------------------------- |
+| `autoDiagonalize`    | Reorders the second assembly's chromosomes for least overlap    |
 | `minAlignmentLength` | Hides alignments shorter than N bp — the main de-spaghetti knob |
-| `colorBy` | `query` tints each ribbon by its query chromosome |
-| `alpha` | Ribbon opacity (0–1); lower values reveal overlap density |
-| `drawCurves` | Bezier ribbons instead of straight trapezoids |
-| `levelHeights` | Per-level pixel height between adjacent assemblies |
+| `colorBy`            | `query` tints each ribbon by its query chromosome               |
+| `alpha`              | Ribbon opacity (0–1); lower values reveal overlap density       |
+| `drawCurves`         | Bezier ribbons instead of straight trapezoids                   |
+| `levelHeights`       | Per-level pixel height between adjacent assemblies              |
 
-A whole-genome example (peach vs grape, the chrom.sizes come from this repo and the alignment PAF from S3). Config and spec are checked in under [`data/comparative`](data/comparative):
+A whole-genome example (peach vs grape, the chrom.sizes come from this repo and
+the alignment PAF from S3). Config and spec are checked in under
+[`data/comparative`](data/comparative):
 
 ```bash
 jb2export \
@@ -430,7 +499,11 @@ jb2export \
 
 ![Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/grape_peach_synteny.png)
 
-A mammalian-scale test — human (hs1/T2T) vs mouse (mm39) liftOver — where the `minAlignmentLength: 500000` filter is what keeps the plot from turning into spaghetti. The assemblies use `ChromSizesAdapter` (whole-genome synteny draws no sequence, so no multi-GB 2bit is needed); the chrom.sizes are committed and the `.pif` alignment streams from S3, so this reproduces with only the public PAF:
+A mammalian-scale test — human (hs1/T2T) vs mouse (mm39) liftOver — where the
+`minAlignmentLength: 500000` filter is what keeps the plot from turning into
+spaghetti. The assemblies use `ChromSizesAdapter` (whole-genome synteny draws no
+sequence, so no multi-GB 2bit is needed); the chrom.sizes are committed and the
+`.pif` alignment streams from S3, so this reproduces with only the public PAF:
 
 ```bash
 jb2export \
@@ -441,7 +514,10 @@ jb2export \
 
 ![Mammalian-scale synteny, human (hs1) vs mouse (mm39)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hs1_mm39_synteny.png)
 
-A three-level stack — hg38, hs1 (T2T), and mm39 — with one ribbon per adjacent pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the diverged hs1↔mm39 human–mouse synteny below. `tracks` is one sub-array per level (a UCSC liftOver `.chain` for the first, the `.pif` for the second):
+A three-level stack — hg38, hs1 (T2T), and mm39 — with one ribbon per adjacent
+pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the
+diverged hs1↔mm39 human–mouse synteny below. `tracks` is one sub-array per level
+(a UCSC liftOver `.chain` for the first, the `.pif` for the second):
 
 ```bash
 jb2export \
@@ -452,11 +528,17 @@ jb2export \
 
 ![Three-level synteny stack: hg38, hs1, and mm39](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hg38_hs1_mm39_synteny.png)
 
-All the example images in this README (including the comparative ones above) are regenerated by `pnpm generate-screenshots --filter jbrowse-img` from the repo root — see the `CliSpec` entries in [`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts).
+All the example images in this README (including the comparative ones above) are
+regenerated by `pnpm generate-screenshots --filter jbrowse-img` from the repo
+root — see the `CliSpec` entries in
+[`website/scripts/screenshot-specs.ts`](https://github.com/GMOD/jbrowse-components/blob/main/website/scripts/screenshot-specs.ts).
 
 ### Circular view (chord plot)
 
-The `circular` subcommand renders one assembly's chord tracks — e.g. a VCF of structural variants — as a circular ideogram with chords drawn between the two breakends of each rearrangement. It is single-assembly and shows the whole genome (no `--loc`); each track picks its chord display automatically.
+The `circular` subcommand renders one assembly's chord tracks — e.g. a VCF of
+structural variants — as a circular ideogram with chords drawn between the two
+breakends of each rearrangement. It is single-assembly and shows the whole
+genome (no `--loc`); each track picks its chord display automatically.
 
 ```bash
 jb2export circular --fasta ref.fa --vcfgz sv.vcf.gz --out circular.svg
@@ -478,7 +560,9 @@ Run `jb2export circular --help` for the full list of options.
 
 ### Use with a jbrowse config.json
 
-A config.json can be specified with extra tracks supplied outside the config e.g. with `--bam`. Files referenced in the config can be remote (`uri`) or local (`localPath`).
+A config.json can be specified with extra tracks supplied outside the config
+e.g. with `--bam`. Files referenced in the config can be remote (`uri`) or local
+(`localPath`).
 
 ```bash
 jb2export --config data/config.json \
@@ -487,7 +571,8 @@ jb2export --config data/config.json \
   --loc 1:1,000,000-1,100,000
 ```
 
-The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths by default, but you replace them with localPath like this
+The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths by
+default, but you replace them with localPath like this
 
 ```js
 
@@ -510,13 +595,18 @@ jb2export --config data/volvox/config.json \
   --loc ctgA:1-50,000
 ```
 
-The localPaths will be resolved relative to the file that is supplied so in this example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath": "volvox.dup.vcf.gz" is used, and `--config data/volvox/config.json` is passed
+The localPaths will be resolved relative to the file that is supplied so in this
+example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
+"volvox.dup.vcf.gz" is used, and `--config data/volvox/config.json` is passed
 
-See data/volvox/config.json for a config that contains localPaths, or data/config.json for a config that just contains URLs
+See data/volvox/config.json for a config that contains localPaths, or
+data/config.json for a config that just contains URLs
 
 ### Use a session file exported from jbrowse
 
-If you use jbrowse-web, you can select File->Export session which produces a session.json file, and then use the --session parameter. Make sure to specify the assembly also, it currently does not infer the assembly from the session
+If you use jbrowse-web, you can select File->Export session which produces a
+session.json file, and then use the --session parameter. Make sure to specify
+the assembly also, it currently does not infer the assembly from the session
 
 ```bash
 jb2export --config data/skbr3/config.json \
@@ -532,13 +622,16 @@ Example:
 jb2export --bam file1.bam --bigwig file.bw --bam file2.bam
 ```
 
-This will respect the order of the tracks and list file1.bam, file.bw, and file2.bam in that order. This requires us to use a custom command line parser instead of an off-the-shelf one like yargs
+This will respect the order of the tracks and list file1.bam, file.bw, and
+file2.bam in that order. This requires us to use a custom command line parser
+instead of an off-the-shelf one like yargs
 
 ## Advanced
 
 ### Force render a large region
 
-Some jbrowse track types (alignments, gene tracks, etc) will not display if zoomed too far out. Add force:true to make it render
+Some jbrowse track types (alignments, gene tracks, etc) will not display if
+zoomed too far out. Add force:true to make it render
 
 ```bash
 jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
@@ -546,7 +639,10 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 ### Render only the SNPCoverage track of an alignments track
 
-`snpcov` collapses the alignments display down to coverage-only by sizing the coverage band to fill the whole track. Combine with `height:N` (overall track height) to get a coverage-only render at the size you want. Reproducible with the bundled volvox alignments:
+`snpcov` collapses the alignments display down to coverage-only by sizing the
+coverage band to fill the whole track. Combine with `height:N` (overall track
+height) to get a coverage-only render at the size you want. Reproducible with
+the bundled volvox alignments:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
@@ -560,12 +656,14 @@ jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
 ### Assembly params
 
 - `--fasta` — path or http(s) URL to an indexed FASTA (`.fa`, `.fa.gz`)
-- `--aliases` — tab-separated refname aliases; column 1 matches the FASTA, other columns are aliases (e.g. maps `1` → `chr1`)
+- `--aliases` — tab-separated refname aliases; column 1 matches the FASTA, other
+  columns are aliases (e.g. maps `1` → `chr1`)
 - `--cytobands` — path or URL to a cytoband BED file for the assembly
 
 ### Track params
 
-Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks of the same type, e.g. `--bam file1.bam --bam file2.bam`
+Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks
+of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
 - `--bam`
 - `--cram`
@@ -578,10 +676,15 @@ Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks o
 
 ### Config file params (optional)
 
-- `--assembly` — path to a JBrowse 2 assembly JSON (e.g. [data/assembly.json](data/assembly.json)), or the name of an assembly in `--config`; can be used in place of `--fasta`
-- `--tracks` — path to a JSON file containing an array of JBrowse 2 track configs (e.g. [data/tracks.json](data/tracks.json))
-- `--session` — path to a JBrowse 2 session JSON exported from File → Export session
-- `--config` — path to a full JBrowse 2 config.json (e.g. [data/config.json](data/config.json))
+- `--assembly` — path to a JBrowse 2 assembly JSON (e.g.
+  [data/assembly.json](data/assembly.json)), or the name of an assembly in
+  `--config`; can be used in place of `--fasta`
+- `--tracks` — path to a JSON file containing an array of JBrowse 2 track
+  configs (e.g. [data/tracks.json](data/tracks.json))
+- `--session` — path to a JBrowse 2 session JSON exported from File → Export
+  session
+- `--config` — path to a full JBrowse 2 config.json (e.g.
+  [data/config.json](data/config.json))
 - `--defaultSession` — use the `defaultSession` embedded in `--config`
 
 ### Output params
@@ -589,17 +692,21 @@ Specify a filename (local) or http(s) URL. Can be repeated for multiple tracks o
 - `--loc` — location string to render, e.g. `chr1:1-10000` or `all`
 - `--out` — output file path; `.svg`, `.png`, or `.pdf`
 - `--width` — view width in pixels (default: 1500)
-- `--noRasterize` — render everything as SVG vectors instead of rasterizing canvas layers (pileup, coverage, hic); results in larger files
+- `--noRasterize` — render everything as SVG vectors instead of rasterizing
+  canvas layers (pileup, coverage, hic); results in larger files
 
 ### Appearance params
 
-- `--themeName` — theme to use for rendering: `default`, `lightStock`, `lightMinimal`, `darkStock`, or `darkMinimal`
+- `--themeName` — theme to use for rendering: `default`, `lightStock`,
+  `lightMinimal`, `darkStock`, or `darkMinimal`
 - `--showGridlines` — draw genomic coordinate gridlines
 - `--trackLabels` — label position: `offset`, `overlay`, `left`, or `none`
 
 ## Use --help
 
-Run `jb2export --help` for the full option list, or `jb2export <subcommand> --help` (e.g. `jb2export dotplot --help`) for a subcommand's options. The complete output:
+Run `jb2export --help` for the full option list, or
+`jb2export <subcommand> --help` (e.g. `jb2export dotplot --help`) for a
+subcommand's options. The complete output:
 
 <!-- INJECT_HELP START: auto-filled from buildFullHelp() by website/scripts/generate-img-doc.ts; run `pnpm gen-img-doc` to refresh -->
 
@@ -750,7 +857,8 @@ Examples:
 
 ### `ENOENT: ... .fa.fai` (or `.bai` / `.tbi` / `.crai`)
 
-Data files are read alongside their index, so generate the index next to the file first:
+Data files are read alongside their index, so generate the index next to the
+file first:
 
 ```bash
 samtools faidx yourfile.fa     # -> yourfile.fa.fai
@@ -760,8 +868,13 @@ tabix -p vcf yourfile.vcf.gz   # -> yourfile.vcf.gz.tbi
 
 ### `unknown reference sequence name in location ...`
 
-The refname in `--loc` doesn't match the FASTA. Use the name exactly as it appears in the FASTA, or pass `--aliases` to reconcile differing naming styles (e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files — see [Remote files](#remote-files).
+The refname in `--loc` doesn't match the FASTA. Use the name exactly as it
+appears in the FASTA, or pass `--aliases` to reconcile differing naming styles
+(e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files — see
+[Remote files](#remote-files).
 
 ### A track renders empty when zoomed far out
 
-Some track types (alignments, genes) refuse to render past a feature-density limit. Add `force:true` after the track to override it — see [Force render a large region](#force-render-a-large-region).
+Some track types (alignments, genes) refuse to render past a feature-density
+limit. Add `force:true` after the track to override it — see
+[Force render a large region](#force-render-a-large-region).

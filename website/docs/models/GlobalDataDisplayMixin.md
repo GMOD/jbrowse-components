@@ -134,29 +134,38 @@ either has its one dataset or is fetching it — so its `loading` axis is simply
 type displayPhase = DisplayPhase
 ```
 
-#### getter: loadingOverlayVisible
+#### getter: dataLoaded
 
-Shared with MultiRegionDisplayMixin's getter of the same name so
-`DisplayLoadingOverlay` reads one signal across all GPU displays. Correctly
-stays hidden over a display that's intentionally empty (e.g. LD with the
-triangle toggled off, which fetches nothing). Separate `.views` block so it can
-read the sibling `displayPhase` getter.
+Overridable hook (default false): a subclass returns true once its single global
+dataset has actually been fetched — even when the fetch committed an empty
+result. The mixin owns no data state, so a global display must express this; it
+is the global-display analog of
+`MultiRegionDisplayMixin.viewportWithinLoadedData`.
 
 ```ts
-type loadingOverlayVisible = boolean
+type dataLoaded = boolean
+```
+
+#### getter: svgReadyExtraTerminal
+
+Overridable hook (default false): a subclass returns true to mark an extra
+terminal state where off-screen export can proceed with no loaded data (mirrors
+`MultiRegionDisplayMixin.svgReadyExtraTerminal`).
+
+```ts
+type svgReadyExtraTerminal = boolean
 ```
 
 #### getter: svgReady
 
 Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
-off-screen (SVG) export can read final data. A global display has no per-region
-spatial axis, so "settled" is simply `displayPhase !== 'loading'` — it has its
-one dataset, is in a terminal state (error / tooLarge), or is intentionally
-empty. This waits out an in-place refetch (which keeps stale `rpcData` until the
-new result commits) and, unlike `isReady`, never gates on `canvasDrawn`, which
-an off-screen export never sets. Off-screen renderers gate on it via
-`awaitSvgReady(model)` instead of inlining a `data != null || error || ...`
-condition.
+off-screen (SVG) export can read final data. Like that mixin it requires the
+dataset to actually be loaded (or a terminal error / too-large / extra state),
+NOT merely "not currently fetching": the fetch trigger is a debounced
+`afterAttach` autorun, so at export time `isLoading` can still be false with no
+data yet — a `displayPhase !== 'loading'` test would then capture an empty
+render. Never gates on `canvasDrawn`, which an off-screen export never sets.
+Off-screen renderers gate on it via `awaitSvgReady(model)`.
 
 ```ts
 type svgReady = boolean

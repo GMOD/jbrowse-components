@@ -731,6 +731,12 @@ is calculated manually with this method
 type cytobandOffset = number
 ```
 
+#### getter: isTrackSelectorOpen
+
+```ts
+type isTrackSelectorOpen = boolean
+```
+
 #### getter: overviewLayout
 
 geometry of the overview scalebar — derived from displayedRegions, width, and
@@ -1376,6 +1382,12 @@ type setDisplayedRegions = (regions: Region[]) => void
 
 ```ts
 type activateTrackSelector = () => Widget
+```
+
+#### action: toggleTrackSelector
+
+```ts
+type toggleTrackSelector = () => Widget
 ```
 
 #### action: horizontalScroll

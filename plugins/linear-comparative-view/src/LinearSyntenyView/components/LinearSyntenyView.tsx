@@ -17,8 +17,12 @@ const LinearSyntenyView = observer(function LinearSyntenyView({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { showLoading, showImportForm, awaitingAutoDiagonalize, loadingMessage } =
-    model
+  const {
+    showLoading,
+    showImportForm,
+    awaitingAutoDiagonalize,
+    loadingMessage,
+  } = model
 
   if (awaitingAutoDiagonalize) {
     return (

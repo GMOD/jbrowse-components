@@ -327,7 +327,9 @@ function applyModifier(
     // rendering type (see migrateWiggleSnapshot); `fill:true` is plain `xyplot`.
     case 'fill': {
       if (isScore) {
-        snap.defaultRendering = booleanize(val1 || 'true') ? 'xyplot' : 'scatter'
+        snap.defaultRendering = booleanize(val1 || 'true')
+          ? 'xyplot'
+          : 'scatter'
       }
       break
     }

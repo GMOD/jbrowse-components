@@ -33,8 +33,8 @@ A minimal `HicTrack` config. See the
 ```
 
 With log scale and a coarser resolution (`resolutionBias` nudges the auto-picked
-binsize; negative = finer, positive = coarser). The `displays` object shorthand
-applies settings to whichever display uses them — equivalent to a full
+binsize; negative = finer, positive = coarser). The `displayDefaults` object
+shorthand applies settings to whichever display uses them — equivalent to a full
 `displays: [{ type, displayId, ... }]` array. See
 [configuring displays](/docs/config_guides/tracks#configuring-displays):
 
@@ -45,7 +45,7 @@ applies settings to whichever display uses them — equivalent to a full
   name: 'Hi-C',
   assemblyNames: ['hg38'],
   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
-  displays: { useLogScale: true, resolutionBias: 1 },
+  displayDefaults: { useLogScale: true, resolutionBias: 1 },
 }
 ```
 
@@ -168,18 +168,15 @@ pluginManager.pluggableConfigSchemaType('text search adapter')
 
 #### slot: displays
 
-The track's displays. You can give this two ways:
+An **array** of full display configs, e.g.
+`displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`. Each entry names a
+display `type`; use this when you need exact control — your own `displayId`,
+different settings for two displays, or choosing which display is the default.
 
-- an **object** of appearance settings, e.g. `displays: { color: 'green' }`.
-  JBrowse applies each setting to the display that uses it, so you don't need to
-  know the display's name or write the array. If a track can be shown more than
-  one way, each setting lands where it fits (for example `color` on a variant
-  track's linear view, `strokeColor` on its circular view). A setting that
-  nothing on the track uses is ignored, with a console warning so typos show up.
-- an **array** of full display configs, e.g.
-  `displays: [{ type: 'LinearBasicDisplay', color: 'green' }]`, when you need
-  exact control — your own `displayId`, different settings for two displays, or
-  choosing which display is the default.
+For the common case, prefer the `displayDefaults` shorthand instead — an object
+of appearance settings (e.g. `displayDefaults: { color: 'green' }`) that JBrowse
+routes to whichever display uses each setting, so you don't have to name the
+display or write the array.
 
 See the [track config guide](/docs/config_guides/tracks/#configuring-displays).
 

@@ -75,7 +75,8 @@ and docs.
 **Volatiles:** [reloadCounter](../globaldatadisplaymixin#volatile-reloadcounter)
 
 **Getters:** [displayPhase](../globaldatadisplaymixin#getter-displayphase),
-[loadingOverlayVisible](../globaldatadisplaymixin#getter-loadingoverlayvisible),
+[dataLoaded](../globaldatadisplaymixin#getter-dataloaded),
+[svgReadyExtraTerminal](../globaldatadisplaymixin#getter-svgreadyextraterminal),
 [svgReady](../globaldatadisplaymixin#getter-svgready)
 
 **Actions:** [reload](../globaldatadisplaymixin#action-reload)

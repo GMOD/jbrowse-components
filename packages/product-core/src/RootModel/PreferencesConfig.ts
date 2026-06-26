@@ -13,9 +13,9 @@ export function PreferencesConfigSchemaFactory() {
   return ConfigurationSchema('Preferences', {
     /**
      * #slot configuration.preferences.animationMode
-     * controls feature-layout animations: 'system' respects the OS
-     * prefers-reduced-motion setting, 'enabled' always animates, 'disabled'
-     * never animates
+     * controls feature-layout animations: 'enabled' always animates (the
+     * default), 'system' respects the OS prefers-reduced-motion setting,
+     * 'disabled' never animates
      */
     animationMode: {
       model: types.enumeration('AnimationMode', [
@@ -24,7 +24,7 @@ export function PreferencesConfigSchemaFactory() {
         'disabled',
       ]),
       type: 'stringEnum',
-      defaultValue: 'system',
+      defaultValue: 'enabled',
     },
     /**
      * #slot configuration.preferences.scrollZoom

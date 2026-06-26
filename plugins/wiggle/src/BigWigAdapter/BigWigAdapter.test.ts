@@ -83,9 +83,13 @@ describe('adapter can fetch features from volvox.bw', () => {
     expect(results[0]!.count).toBe(results[0]!.starts.length)
     expect(results[1]!.count).toBe(results[1]!.starts.length)
     // each region's starts are within its requested range
-    expect(Math.min(...Array.from(results[0]!.starts))).toBeGreaterThanOrEqual(0)
+    expect(Math.min(...Array.from(results[0]!.starts))).toBeGreaterThanOrEqual(
+      0,
+    )
     expect(Math.max(...Array.from(results[0]!.ends))).toBeLessThanOrEqual(10000)
-    expect(Math.min(...Array.from(results[1]!.starts))).toBeGreaterThanOrEqual(10000)
+    expect(Math.min(...Array.from(results[1]!.starts))).toBeGreaterThanOrEqual(
+      10000,
+    )
     expect(Math.max(...Array.from(results[1]!.ends))).toBeLessThanOrEqual(20000)
   })
 
