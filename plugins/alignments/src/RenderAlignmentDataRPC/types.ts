@@ -53,6 +53,12 @@ export interface ModTooltipEntry {
   name: string
 }
 
+// The worker→main transport payload for one group's reads. A wide DTO: the
+// per-feature draw/pack functions depend only on their narrow `features/X/types.ts`
+// contract (which this structurally satisfies), not on the whole struct. Fields
+// group into row-instanced features (carry `*Ys`, packed main-thread post-layout)
+// and position-aggregate features (no `*Ys`, pre-packed in the worker as a
+// `*PackedBuffer`) — see ./CLAUDE.md "Two feature categories".
 export interface PileupDataResult {
   // Read data - positions are absolute genomic uint32
   readPositions: Uint32Array // [start, end] pairs

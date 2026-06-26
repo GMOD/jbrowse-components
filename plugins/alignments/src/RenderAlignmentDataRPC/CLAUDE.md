@@ -10,6 +10,32 @@ in pileup too); chain additionally builds chain metadata, pileup additionally
 does ref-sequence fetch + sort-tag values. Chain-only result fields are optional
 on `PileupDataResult`.
 
+## Two feature categories: row-instanced vs position-aggregate
+
+Every drawable splits along one axis the field names and upload signatures
+otherwise leave implicit. Which category a feature is in answers, in one stroke:
+does it carry `*Ys`, where does it pack, and what upload signature it uses.
+
+|                         | **Row-instanced**                                                                                        | **Position-aggregate**                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| Features                | read, gap, mismatch, insertion/softclip/hardclip, modification, perBaseQuality, perBaseLetter            | coverage, snpCoverage, interbase histogram, indicator, modCoverage           |
+| Carries `*Ys`?          | yes — one instance per (read, pileup row)                                                                | no — a histogram keyed on genomic position                                   |
+| Packed where            | **main thread**, at upload, after layout fills `*Ys` (`features/X/packGpu.ts`)                           | **worker**, emitted as a `*PackedBuffer` + count (`runCoveragePipeline`)      |
+| Upload signature        | `uploadX(hal, idx, data)` — repacks each sync                                                            | `uploadX(hal, idx, packedBuffer, count)` — buffer already built              |
+| In `PILEUP_LAYERS`?     | yes — z-ordered, gated, parity-checked across both renderers                                             | no — different draw signature + its own scissored coverage band              |
+
+Row-instanced features can't pre-pack in the worker for the same reason layout
+runs on the main thread: a read's row (`readYs`) isn't known until the main
+thread lays out all visible regions together (a read spanning a region boundary
+must share one row). Position-aggregate features are row-independent, so the
+worker packs them once and the main thread uploads the bytes verbatim.
+
+`uploadReads` is the lone ordering constraint — it *creates* the region entry
+(readPositions / readYs / readIdToIndex) that every other row-instanced upload
+and `uploadCoverage` read back, so it runs first in `GpuAlignmentsRenderer.sync`.
+(Paired-end arcs / sashimi / chain connectors are a separate scissored-band
+concern — see the LinearAlignmentsDisplay renderer CLAUDE.md.)
+
 ## Group-by partition: pileup per-read, chain per-chain
 
 `groupBy` partitions the single fetch into N ordered sections that the spine

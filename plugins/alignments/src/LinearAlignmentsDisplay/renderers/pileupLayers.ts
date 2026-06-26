@@ -33,11 +33,13 @@ export interface PileupLayer {
 // until it is wired, so a layer can't be half-added and the two backends can't
 // drift on order or gating. `coverageParity.test.ts` cross-checks the result.
 //
-// Coverage-band layers and the paired-end arc band are deliberately NOT here:
-// the coverage draws take a different signature and the arc band is a separate
-// scissored viewport with its own UBO patching, so forcing them into this list
-// would pull per-renderer mechanics into shared data. See the renderer-local
-// coverage pass plan / `drawArcsPass`.
+// This list is the row-instanced feature set (see RenderAlignmentDataRPC/CLAUDE.md
+// "Two feature categories"). The position-aggregate coverage-band layers and the
+// paired-end arc band are deliberately NOT here: the coverage draws take a
+// different signature and the arc band is a separate scissored viewport with its
+// own UBO patching, so forcing them into this list would pull per-renderer
+// mechanics into shared data. See the renderer-local coverage pass plan /
+// `drawArcsPass`.
 export const PILEUP_LAYERS: PileupLayer[] = [
   { id: 'connLine', enabled: s => s.linkedReads === 'normal' },
   { id: 'linkedReadLine', enabled: s => s.showLinkedReadLines },
