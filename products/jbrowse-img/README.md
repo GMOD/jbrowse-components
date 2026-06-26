@@ -255,6 +255,22 @@ jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.
 
 ![A variant track drawing each SNV with its reference-to-alternate change](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/variants.png)
 
+### Multi-sample variant matrix
+
+A VCF with many samples can render as a genotype matrix — one column per
+variant, one row per sample — with the `display:multivariant` modifier (the
+`LinearMultiSampleVariantDisplay`). `display:multivariantmatrix` selects the
+index-spaced matrix variant. Reproducible with the bundled 1094-sample volvox
+VCF (`--aliases` reconciles its `contigA` refname with the FASTA's `ctgA`):
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --aliases data/volvox/volvox.aliases.txt \
+  --vcfgz data/volvox/volvox.test.vcf.gz display:multivariant height:500 force:true \
+  --loc ctgA:2900-3300 --width 1200 --out multisample.png
+```
+
+![A multi-sample variant genotype matrix: variants on x, samples on y, alt genotypes painted over the reference background](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/multisample_variants.png)
+
 ### Hi-C tracks
 
 A `--hic` track draws the contact matrix as a triangular heatmap. This example

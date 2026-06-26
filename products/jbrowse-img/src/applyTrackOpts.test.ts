@@ -137,6 +137,30 @@ describe('wiggle / score modifiers', () => {
   })
 })
 
+describe('display type selection', () => {
+  test('display:multivariant aliases to the multi-sample display', () => {
+    expect(buildDisplaySnapshot('variant', ['display:multivariant']).displayType).toBe(
+      'LinearMultiSampleVariantDisplay',
+    )
+  })
+
+  test('display:multivariantmatrix aliases to the matrix display', () => {
+    expect(
+      buildDisplaySnapshot('variant', ['display:multivariantmatrix']).displayType,
+    ).toBe('LinearMultiSampleVariantMatrixDisplay')
+  })
+
+  test('an unknown display value passes through verbatim', () => {
+    expect(buildDisplaySnapshot('variant', ['display:SomeOtherDisplay']).displayType).toBe(
+      'SomeOtherDisplay',
+    )
+  })
+
+  test('no display modifier leaves displayType undefined (track default)', () => {
+    expect(buildDisplaySnapshot('variant', []).displayType).toBeUndefined()
+  })
+})
+
 test('a {...} token is merged as raw JSON', () => {
   const { snap } = buildDisplaySnapshot('alignments', [
     '{"colorBy":{"type":"strand"}}',

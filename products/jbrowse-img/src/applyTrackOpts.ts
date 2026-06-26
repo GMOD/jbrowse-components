@@ -140,6 +140,17 @@ interface BuildResult {
   // `force` flips a volatile load-gate (no snapshot representation), so it stays
   // an action on the created display.
   force: boolean
+  // An explicit display type picks a non-default display for the track (e.g. the
+  // multi-sample variant matrix), passed to showTrack as the snapshot `type`.
+  displayType?: string
+}
+
+// Friendly aliases for the displays a track type has beyond its default, so the
+// CLI doesn't require the full state-model name. `display:<anything-else>` is
+// passed through verbatim.
+const displayTypeAliases: Record<string, string> = {
+  multivariant: 'LinearMultiSampleVariantDisplay',
+  multivariantmatrix: 'LinearMultiSampleVariantMatrixDisplay',
 }
 
 // Fold one `prefix:val1:val2` modifier into the display snapshot. Gated by
@@ -295,6 +306,12 @@ function applyModifier(
       }
       break
     }
+    case 'display': {
+      if (val1) {
+        result.displayType = displayTypeAliases[val1] ?? val1
+      }
+      break
+    }
     case 'autoscale': {
       if (isScore) {
         snap.autoscale = val1
@@ -395,7 +412,7 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
     throw new Error('invalid command line args')
   }
   const category = categoryByType[trackType] ?? 'feature'
-  const { snap, sort, force } = buildDisplaySnapshot(category, opts)
+  const { snap, sort, force, displayType } = buildDisplaySnapshot(category, opts)
 
   // Resolve the center-line sort against the view (the pivot is the genomic
   // position under the view center) and bake it into the snapshot.
@@ -411,9 +428,13 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   }
 
   // Create the display already in its target state rather than mutating a
-  // default display with setter actions.
-  const display = view.showTrack(path.basename(track), {}, snap)
-    .displays[0] as TrackDisplay
+  // default display with setter actions. An explicit `display:` selects a
+  // non-default display via the snapshot `type` showTrack reads.
+  const display = view.showTrack(
+    path.basename(track),
+    {},
+    displayType ? { ...snap, type: displayType } : snap,
+  ).displays[0] as TrackDisplay
 
   // `force` is the lone non-snapshot setting: it flips a volatile load-gate.
   // (every display in the union implements setFeatureDensityStatsLimit, so no

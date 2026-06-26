@@ -692,6 +692,26 @@ const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
+  // Multi-sample variant genotype matrix: display:multivariant selects the
+  // LinearMultiSampleVariantDisplay for a 1094-sample VCF (volvox.test.vcf.gz,
+  // refname contigA reconciled to ctgA via --aliases). Each column is a variant,
+  // each row a sample; alt genotypes paint over the reference background.
+  cliSpec('multisample_variants', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--aliases',
+    'data/volvox/volvox.aliases.txt',
+    '--vcfgz',
+    'data/volvox/volvox.test.vcf.gz',
+    'display:multivariant',
+    'height:500',
+    'force:true',
+    '--loc',
+    'ctgA:2900-3300',
+    '--width',
+    '1200',
+  ]),
+
   // SKBR3 cell-line whole-genome coverage (hg19, --loc all), log scale — the
   // cancer karyotype's amplifications/deletions stand out.
   cliSpec('skbr3_cov', [

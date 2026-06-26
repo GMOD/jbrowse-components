@@ -9,6 +9,8 @@ const fasta = path.join(volvox, 'volvox.fa')
 const bam = path.join(volvox, 'volvox-rg.bam')
 const sortedBam = path.join(volvox, 'volvox-sorted.bam')
 const coverageBw = path.join(volvox, 'volvox-sorted.bam.coverage.bw')
+const multiVcf = path.join(volvox, 'volvox.test.vcf.gz')
+const aliases = path.join(volvox, 'volvox.aliases.txt')
 
 const { setupEnv, renderRegion } = await import('../src/index.ts')
 setupEnv()
@@ -73,6 +75,23 @@ test('linkedReads:bezier enables the bezier overlay (not an out-of-enum mode)', 
     trackList: [['bam', [sortedBam, 'linkedReads:bezier', 'force:true']]],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
+})
+
+// display:multivariant selects the multi-sample genotype-matrix display for a
+// VCF track (instead of the default LinearVariantDisplay) and renders its cells.
+test('display:multivariant exports the multi-sample variant display', async () => {
+  const svg = await renderRegion({
+    fasta,
+    aliases,
+    loc: 'ctgA:2900-3300',
+    noRasterize: true,
+    trackList: [
+      ['vcfgz', [multiVcf, 'display:multivariant', 'height:500', 'force:true']],
+    ],
+  })
+  assert.ok(svg.includes('<svg'), 'output should be SVG')
+  // the genotype matrix paints a reference-color background rect plus alt cells
+  assert.ok((svg.match(/<rect/g) || []).length > 5, 'should draw genotype cells')
 })
 
 // Exercises every wiggle score snapshot key (including autoscale/defaultRendering
