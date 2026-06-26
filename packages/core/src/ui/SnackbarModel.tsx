@@ -1,23 +1,17 @@
-import { lazy } from 'react'
-
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
-import type {
-  AbstractSessionModel,
-  NotificationLevel,
-  SnackAction,
-} from '../util/types/index.ts'
-
-// lazies
-const ErrorMessageStackTraceDialog = lazy(
-  () => import('./ErrorMessageStackTraceDialog.tsx'),
-)
+import type { NotificationLevel, SnackAction } from '../util/types/index.ts'
 
 export interface SnackbarMessage {
   message: string
   level?: NotificationLevel
   actions?: SnackAction[]
+}
+
+export interface ErrorDialogState {
+  error: unknown
+  extra?: unknown
 }
 
 /**
@@ -32,6 +26,13 @@ export default function SnackbarModel() {
        * #volatile
        */
       snackbarMessages: observable.array<SnackbarMessage>(),
+      /**
+       * #volatile
+       * the error currently shown in the stack-trace dialog. Kept off the
+       * dialog queue so it can stack on top of an already-open dialog (e.g. the
+       * one whose action raised the error) instead of waiting behind it
+       */
+      errorDialog: undefined as ErrorDialogState | undefined,
     }))
     .views(self => ({
       /**
@@ -75,20 +76,17 @@ export default function SnackbarModel() {
         const reportAction: SnackAction = {
           name: 'report',
           onClick: () => {
-            // SnackbarModel is composed into the session, so `self` is the
-            // session at runtime; assert the queueDialog contract structurally
-            ;(self as unknown as AbstractSessionModel).queueDialog(onClose => [
-              ErrorMessageStackTraceDialog,
-              {
-                onClose,
-                error,
-                extra,
-              },
-            ])
+            this.setErrorDialog({ error, extra })
           },
         }
         const actions = action ? [reportAction, action] : [reportAction]
         this.pushSnackbarMessage(errorMessage, 'error', actions)
+      },
+      /**
+       * #action
+       */
+      setErrorDialog(state: ErrorDialogState | undefined) {
+        self.errorDialog = state
       },
       /**
        * #action
