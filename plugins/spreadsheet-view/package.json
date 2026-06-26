@@ -38,7 +38,7 @@
     "@jbrowse/sv-core": "workspace:^",
     "@mui/icons-material": "^9.1.1",
     "@mui/material": "^9.1.2",
-    "@mui/x-data-grid": "^9.6.0",
+    "@mui/x-data-grid": "^9.7.0",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2"
   },

@@ -51,7 +51,7 @@
     "@jbrowse/web": "workspace:^",
     "@mui/material": "^9.1.2",
     "@mui/system": "^9.1.2",
-    "@mui/x-data-grid": "^9.6.0",
+    "@mui/x-data-grid": "^9.7.0",
     "@node-oauth/express-oauth-server": "^4.1.5",
     "@r2wc/react-to-web-component": "^2.1.1",
     "@testing-library/dom": "^10.4.1",

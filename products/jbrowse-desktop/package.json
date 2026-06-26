@@ -88,7 +88,7 @@
     "@jbrowse/text-indexing": "workspace:^",
     "@mui/icons-material": "^9.1.1",
     "@mui/material": "^9.1.2",
-    "@mui/x-data-grid": "^9.6.0",
+    "@mui/x-data-grid": "^9.7.0",
     "date-fns": "^4.4.0",
     "deepmerge": "^4.3.1",
     "dockview-react": "^7.0.2",
