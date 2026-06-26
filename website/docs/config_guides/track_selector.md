@@ -127,3 +127,8 @@ With the config above, the faceted selector gains **origin**, **tissue**, and
 The left-hand filter panel shows checkboxes for each distinct value in a column.
 You can combine filters across multiple columns, and use the search box at the
 top to further narrow results by name, category, or description.
+
+## See also
+
+- [Basic usage](/docs/user_guides/basic_usage) — using the track selector,
+  favorites, and the faceted selector in the app

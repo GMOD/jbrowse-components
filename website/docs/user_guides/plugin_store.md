@@ -24,3 +24,9 @@ matching config entry to be useful — ask an admin if you can't edit the config
 yourself.
 
 <Figure caption="The plugin store inside the app." src="/img/plugin_store.png" />
+
+## See also
+
+- [Developer guide](/docs/developer_guide) — writing your own plugin
+- [Plugin configuration](/docs/config_guides/plugins) — adding plugins to a
+  config file

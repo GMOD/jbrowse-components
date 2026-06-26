@@ -5,7 +5,7 @@ description:
 guide_category: Creating pluggable elements
 ---
 
-### What is an adapter
+## What is an adapter
 
 An adapter is a class that fetches and parses your data and returns it in a
 format JBrowse understands.
@@ -14,7 +14,7 @@ If you have a data source containing genes and want to display them using
 JBrowse's existing gene displays, write a custom adapter. For custom rendering,
 you'll also need a custom display and/or renderer.
 
-### Adapter types
+## Adapter types
 
 - **Feature adapter** - Takes a request for a _region_ (chromosome, start, end)
   and returns _features_ (genes, reads, variants, etc.) in that region.
@@ -34,7 +34,7 @@ you'll also need a custom display and/or renderer.
 - **Text search adapter** - Searches text search indexes and returns results.
   Example: the trix adapter.
 
-### Skeleton of a feature adapter
+## Skeleton of a feature adapter
 
 ```js
 class MyAdapter extends BaseFeatureDataAdapter {
@@ -64,7 +64,7 @@ class MyAdapter extends BaseFeatureDataAdapter {
 Implement `getRefNames` (used for refName renaming) and `getFeatures` (returns
 an rxjs observable stream of features).
 
-### Example feature adapter
+## Example feature adapter
 
 ```js
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -117,15 +117,15 @@ class MyAdapter extends BaseFeatureDataAdapter {
 }
 ```
 
-### Feature adapter API
+## Feature adapter API
 
-#### getRefNames
+### getRefNames
 
 Returns the refNames in the file. Used for "refname renaming" — optional but
 useful when files use different conventions (e.g. chr1 vs 1). See
 [reference renaming](/docs/config_guides/assemblies/#configuring-reference-name-aliasing).
 
-#### getFeatures
+### getFeatures
 
 `getFeatures(region, options)`
 

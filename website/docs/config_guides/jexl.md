@@ -38,7 +38,7 @@ whichever reads more clearly.
 
 :::
 
-### Common patterns
+## Common patterns
 
 A few callbacks cover most real configs:
 
@@ -146,7 +146,7 @@ The equivalent with concatenation:
 "color": "jexl:'hsl('+feature.start/100000+',50%,50%)'"
 ```
 
-### Making sophisticated color callbacks
+## Making sophisticated color callbacks
 
 When a color callback has too much logic to express inline, write a small plugin
 that adds a function to the jexl language (e.g. `colorFeature`) and call it from

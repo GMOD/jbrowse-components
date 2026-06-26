@@ -4,17 +4,17 @@ description: Navigation, searching, opening files, and common UI controls
 guide_category: General usage
 ---
 
-### Linear genome view
+## Linear genome view
 
 To open a linear genome view (LGV), use the menu bar: `Add` →
 `Linear genome view`
 
-#### Scrolling
+### Scrolling
 
 You can scroll using the mouse wheel or by clicking and dragging. The pan
 buttons in the LGV header also scroll left and right.
 
-#### Zooming
+### Zooming
 
 Use the zoom buttons and slider in the LGV header to zoom in and out. You can
 also:
@@ -36,19 +36,19 @@ scroll normally instead.
 
 <Figure caption="Click the scroll-to-zoom toggle button in the LGV header (top) to enable it; once enabled, the mouse wheel zooms the view (bottom)." src="/img/scroll_zoom_toggle.png" />
 
-#### Reordering tracks
+### Reordering tracks
 
 Click and drag up or down on the drag handle on the track labels (indicated by
 six vertical dots) to reorder tracks.
 
 <Figure caption="The main linear genome view controls, labeled in place: the Add menu opens new views, the track selector button opens the track list, the pan buttons scroll left/right, the zoom buttons and slider zoom the view, the search box accepts regions or feature names, and each track can be reordered by its drag handle or configured from its track menu." src="/img/lgv_usage_guide.png" />
 
-#### Reordering views
+### Reordering views
 
 Unlike tracks, views cannot be reordered by drag-and-drop. Instead, use the view
 menu (hamburger icon) and select "Move up"/"Move down".
 
-#### Using the location search box
+### Using the location search box
 
 The location search box at the top of the LGV accepts several search formats:
 
@@ -66,7 +66,7 @@ for setup.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
-### Opening tracks
+## Opening tracks
 
 To open a new track or connection, use the menu bar: `File` → `Open track...`
 
@@ -92,11 +92,11 @@ automatically when the filename follows standard conventions (e.g. `file.bam` �
 `file.bam.bai`), but must be supplied manually for local files or non-standard
 names.
 
-### File format support
+## File format support
 
 The following file formats are supported in core JBrowse 2:
 
-#### General
+### General
 
 - CRAM
 - BAM
@@ -109,11 +109,11 @@ The following file formats are supported in core JBrowse 2:
 - JBrowse 1 nested containment lists (NCList)
 - .hic (Hi-C contact matrix)
 
-#### SV inspector
+### SV inspector
 
 - plain text VCF, BED, CSV, TSV, BEDPE, STAR-fusion output (tabular formats)
 
-#### Synteny and dotplot
+### Synteny and dotplot
 
 - PAF (e.g. minimap2)
 - .delta (MUMmer)
@@ -122,7 +122,7 @@ The following file formats are supported in core JBrowse 2:
 - .out (MashMap)
 - BLAST tabular output
 
-#### Sequence adapters
+### Sequence adapters
 
 - Indexed FASTA
 - BGZip indexed FASTA
@@ -142,12 +142,12 @@ If you are an administrator, you can add tracks with the
 
 :::
 
-### Undo and redo
+## Undo and redo
 
 You can undo any action via Tools → Undo/Redo, or with the keyboard shortcuts
 `ctrl+z`/`cmd+z` (undo) and `ctrl+shift+z`/`ctrl+y`/`cmd+shift+z` (redo).
 
-### Sharing sessions
+## Sharing sessions
 
 On JBrowse Web, the "Share" button in the main menu bar generates a URL you can
 send to other users.
@@ -165,17 +165,14 @@ Sharing sessions is not available for JBrowse Desktop.
 
 The session URL will contain the following:
 
-- what views are on the screen, and settings for the views (e.g. track labels
-  overlapping or offset)
-- what tracks are in the view
-- extra tracks that you added with the "Add track workflow"
-- for the alignments track, the show soft clipping and sort settings on the
-  pileup
-- ...and more
+- the open views and their settings (e.g. track label positioning)
+- the tracks in each view, including any you added yourself
+- per-track display state, such as an alignments track's soft-clipping and sort
+  settings
 
 This means you can share links with custom tracks without being a JBrowse admin.
 
-### Track menu
+## Track menu
 
 The track menu (vertical "..." on the track selector or track label) provides
 access to track-specific functions. Some options are only available when the
@@ -184,7 +181,7 @@ always available from the track selector.
 
 <Figure caption="Screenshot showing how to open the track menu (both in the track selector area and in the track label area of the linear genome view), and an example of a VCF track with its track menu open" src="/img/track_menu.png" />
 
-### Favorite and recently used tracks
+## Favorite and recently used tracks
 
 You can mark favorite tracks from the Track menu and view them using the star
 icon in the top right corner of the Available tracks widget.
@@ -196,13 +193,13 @@ viewable via the clock icon in the Available tracks widget.
 
 <Figure caption="Selected tracks will be added to a recently used list, then they can be viewed using the top right menu." src="/img/recent_tracks.png" />
 
-### About track dialog
+## About track dialog
 
 The track menu provides access to the "About track" dialog.
 
 <Figure caption="Screenshot of the 'About track' dialog for a CRAM file, showing the full CRAM file header and config info. Having the full header of a BAM/CRAM file available is helpful to easily check what genome it was aligned to, for example." src="/img/about_track.png"/>
 
-### Editing track configs
+## Editing track configs
 
 You can edit the settings of any track directly from the track menu's **Track
 actions → Settings** item — there is no longer any need to copy the track first.
@@ -213,14 +210,14 @@ mode change the track config in place.
 
 <Figure caption="Opening Settings from the track menu's Track actions submenu to edit any track's configuration directly." src="/img/edit_track_settings.png" />
 
-### Rubberband selection
+## Rubberband selection
 
 Click and drag on either the main (lower) or overview (upper) scale bar to
 rubberband-select a region.
 
 <Figure caption="Screenshot of rubberbanding both the main and overview scalebars. The main scalebar produces extra options on selection, e.g. Zoom to region, Get sequence, etc." src="/img/rubberband.png" />
 
-### Track label positioning
+## Track label positioning
 
 Track labels can be positioned on their own row or overlapping the data to save
 vertical screen space. They can also be hidden. This is done by clicking on the
@@ -228,7 +225,7 @@ hamburger menu for a specific view.
 
 <Figure caption="Example of using the overlap and offset track label positioning options." src="/img/tracklabels.png" />
 
-### Horizontally flip
+## Horizontally flip
 
 The view can be horizontally flipped (reverse complemented), reversing the
 coordinate direction. Triangles in the overview bar indicate the current
@@ -236,14 +233,14 @@ orientation.
 
 <Figure caption="Before and after horizontally flipping." src="/img/horizontally_flip.png" />
 
-### Toggle drawer widget on left or right side of screen
+## Toggle drawer widget on left or right side of screen
 
 The drawer widget can be toggled to the left or right side of the screen using
 the header bar dropdown. It appears on the right by default.
 
 <Figure caption="Toggling drawer widget to the left side of the screen" src="/img/drawer_widget_toggle.png" />
 
-### Faceted track selector
+## Faceted track selector
 
 The faceted track selector shows all tracks as a filterable table. Open it via
 the filter icon in the top right of the "Available tracks" widget.
@@ -259,3 +256,14 @@ Tracks with `metadata` fields in their config get extra filterable columns:
 ```
 
 See the [configuration guide](/docs/config_guides/track_selector) for more.
+
+## See also
+
+- [Connections](/docs/user_guides/connections) — load an entire UCSC or JBrowse
+  track hub at once
+- [Bookmark widget](/docs/user_guides/bookmark_widget) — save and revisit
+  regions
+- [Plugin store](/docs/user_guides/plugin_store) — add new track, view, and
+  adapter types
+- [Track selector configuration](/docs/config_guides/track_selector) — metadata
+  columns and faceted filtering

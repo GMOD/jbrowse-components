@@ -7,7 +7,7 @@ guide_category: Core concepts
 The configuration model structures the data and features available in a JBrowse
 session. Each pluggable element you create needs its own configuration schema.
 
-### Configuration slot types
+## Configuration slot types
 
 The configuration system is typed to support graphical editing. Each
 configuration schema has a list of slots, each with a name, description, type,
@@ -35,7 +35,7 @@ Here is a mostly comprehensive list of config types:
 
 Let's examine the `LinearCanvasBaseDisplay` configuration as an example.
 
-### Example config with multiple slot types
+## Example config with multiple slot types
 
 This `LinearCanvasBaseDisplay` config (abbreviated) contains an example of
 several different slot types:
@@ -87,7 +87,7 @@ export default function baseConfigSchemaFactory(pluginManager) {
 }
 ```
 
-### Accessing config values
+## Accessing config values
 
 So instead of accessing `config.displayMode`, we say,
 
@@ -107,7 +107,7 @@ Which would be equivalent to calling,
 readConfObject(track.configuration, 'featureHeight')
 ```
 
-### Using config callbacks
+## Using config callbacks
 
 Any config slot can be a callback. The `contextVariable` field lists what
 arguments the callback expects — these must be provided by the calling code. To
@@ -117,7 +117,7 @@ pass arguments:
 readConfObject(config, 'color', { feature })
 ```
 
-### Example of a config callback
+## Example of a config callback
 
 We use Jexl to express callbacks. See https://github.com/TomFrost/Jexl for more
 details.
@@ -174,7 +174,7 @@ callback as its default.
 
 :::
 
-### Configuration internals
+## Configuration internals
 
 A configuration is a type of @jbrowse/mobx-state-tree model, in which leaf nodes
 are ConfigSlot types, and other nodes are ConfigurationSchema types.

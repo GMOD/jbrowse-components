@@ -31,7 +31,7 @@ up-to-date examples.
 
 :::
 
-### Pluggable elements
+## Pluggable elements
 
 Pluggable elements are pieces of functionality that plugins can add to JBrowse.
 Examples of pluggable types include:
@@ -52,7 +52,7 @@ Examples of pluggable types include:
 Elements are composable — adapters can wrap other adapters, views can contain
 sub-views, and tracks can contain other tracks.
 
-### View types
+## View types
 
 View types allow entirely different visualizations alongside the standard linear
 genome view. Examples include:
@@ -64,7 +64,7 @@ genome view. Examples include:
   sub-views
 - And more
 
-### Adapters
+## Adapters
 
 Adapters parse a given data format. To write your own, see
 [creating adapters](/docs/developer_guides/creating_adapter/). The
@@ -75,7 +75,7 @@ Adapters parse a given data format. To write your own, see
 - `CramAdapter` - This adapter uses the `@gmod/cram` NPM module. The sequence
   adapter is automatically injected at runtime from the enclosing assembly
 
-### Track types
+## Track types
 
 Track types are a high level type that controls how features are drawn. In most
 cases, a track combines a renderer and an adapter, and can do additional things
@@ -96,7 +96,7 @@ Example tracks:
 - `FeatureTrack` (from `@jbrowse/plugin-gff3`) - displays generic features
   including gene glyphs
 
-### Displays
+## Displays
 
 A _display_ is a method for displaying a particular track in a particular view.
 
@@ -118,7 +118,7 @@ which has two display methods
 - `ChordVariantDisplay` - used in the circular view to draw breakends and
   structural variants
 
-### Renderers
+## Renderers
 
 A renderer draws features for a display. High-volume track types (alignments,
 wiggle, features, variants) render on the main thread with GPU/Canvas2D from
@@ -146,7 +146,7 @@ How views, tracks, displays, and renderers relate:
 
 :::
 
-### Widgets
+## Widgets
 
 Widgets are custom info panels that can show up in side panels, modals, or other
 places in an app.
@@ -167,7 +167,7 @@ custom display of the alignments.
   the feature details of alignments features that customizes the basic feature
   detail widget
 
-### RPC methods
+## RPC methods
 
 Plugins can register their own RPC methods, which can allow them to offload
 custom behaviors to a web-worker or server side process.
@@ -179,14 +179,14 @@ The wiggle plugin, for example, registers custom RPC method types including:
 
 These methods can run in the web worker when available.
 
-### Add track workflows
+## Add track workflows
 
 Add track workflows allow users to specify a custom react component for loading
 tracks into a jbrowse session.
 
 Checkout the [docs here](/docs/developer_guides/creating_addtrack_workflow).
 
-### Extension points
+## Extension points
 
 Extension points are a pluggable element type which allows users to add a
 callback that is called at an appropriate time.
@@ -195,7 +195,7 @@ Checkout the [full extension point API](/docs/developer_guides/extension_points)
 or an [example for adding context menu items](/docs/developer_guides/menus) for
 more detailed information.
 
-### Next steps
+## Next steps
 
 - [Configuration model](/docs/developer_guides/config_model)
 - [Plugin tutorial](/docs/developer_guides/simple_plugin/)

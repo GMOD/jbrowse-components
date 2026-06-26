@@ -9,7 +9,7 @@ read and a reference genome. Syntenic regions appear as diagonal lines or
 blocks; inversions appear as reverse-diagonal segments; translocations and
 rearrangements appear as off-diagonal blocks.
 
-### Opening a dotplot view
+## Opening a dotplot view
 
 Launch a new Dotplot view from the Add menu, select the two assemblies to
 compare, and optionally supply a synteny file. The import form and the supported
@@ -22,7 +22,7 @@ for the full file-format details.
 
 <Figure caption="Dotplot of grape (Y-axis) vs peach (X-axis) genomes. Diagonal streaks are syntenic blocks where the two genomes are collinear. Off-diagonal blocks indicate chromosomal rearrangements; reverse-diagonal segments indicate inversions." src="/img/dotplot.png" />
 
-### Navigation and interaction
+## Navigation and interaction
 
 **Zooming:** the mouse wheel always zooms both axes simultaneously. Zoom buttons
 in the toolbar work as well.
@@ -39,7 +39,7 @@ crosshair icon):
 **Aspect ratio lock:** the lock button in the toolbar constrains zooming and
 box-selection to keep both axes at the same scale.
 
-### Opening a synteny view from a dotplot view
+## Opening a synteny view from a dotplot view
 
 Click and drag to select a region in the dotplot, then choose **Open linear
 synteny view** from the context menu. This zooms into that region in a new
@@ -47,7 +47,11 @@ linear synteny view with both genomes shown as tracks.
 
 <Figure caption="Top: click-and-drag selection (pink highlight) on the grape vs peach dotplot, with the context menu showing 'Zoom in' and 'Open linear synteny view'. Bottom: the resulting linear synteny view for the selected region (Pp02 vs chr15), with red connection lines linking each syntenic alignment block across the two genome panels." src="/img/synteny_from_dotplot_view.png" />
 
-For a step-by-step walkthrough of loading assemblies, generating a PAF with
-minimap2, and using the dotplot and linear synteny views together, see the
-[Synteny visualization](/docs/tutorials/synteny_visualization) tutorial and the
-[linear synteny view guide](/docs/user_guides/linear_synteny_view).
+## See also
+
+- [Linear synteny view](/docs/user_guides/linear_synteny_view) — base-level
+  side-by-side alignment of two genomes
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization) —
+  loading assemblies and generating a PAF with minimap2
+- [Synteny/dotplot configuration](/docs/config_guides/synteny_track) —
+  config-file options for synteny tracks

@@ -72,3 +72,12 @@ jbrowse add-connection https://myhost/jbrowse1/data/ \
 
 See `jbrowse add-connection --help` or the
 [CLI reference](/docs/cli#jbrowse-add-connection) for all options.
+
+## See also
+
+- [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks) —
+  opening individual tracks and connections from the menu
+- [Plugin store](/docs/user_guides/plugin_store) — add new connection and
+  adapter types
+- [Text searching configuration](/docs/config_guides/text_searching) — indexing
+  feature names for the search box

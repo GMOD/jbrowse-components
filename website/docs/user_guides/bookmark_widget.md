@@ -14,24 +14,24 @@ all assemblies with bookmarks.
 Resize the columns of the table by clicking and dragging the grey lines above
 the table.
 
-### Creating bookmarks
+## Creating bookmarks
 
 Bookmarks can be created by clicking and dragging on the top of any linear
 genome view and selecting "Bookmark region."
 
 <Figure caption="Create a bookmark by clicking and dragging the top of any LGV and select 'Bookmark region.'" src="/img/bookmark_widget_create.png"/>
 
-#### Keyboard shortcuts
+### Keyboard shortcuts
 
 - Create a bookmark: `CTRL/CMD + Shift + D`
 - Navigate to the most recently created bookmark: `CTRL/CMD + Shift + M`
 
-### Selecting bookmarks
+## Selecting bookmarks
 
 Use the checkboxes to the left of the table to select bookmarks for bulk export,
 sharing, deletion, or editing.
 
-### Labels and highlights
+## Labels and highlights
 
 Add a label to a bookmarked region by clicking the label field and typing, or
 double-clicking to open a dialog. Labels are saved and exported with bookmarks,
@@ -39,7 +39,7 @@ and displayed on the LGV via highlights.
 
 <Figure caption="Create a label in the bookmarks widget, and it can be viewed on the LGV." src="/img/bookmark_widget_edit_label.png"/>
 
-#### Highlights
+### Highlights
 
 New bookmarks are assigned a highlight color by default. You can change it
 directly in the Highlight field, or change multiple bookmarks in bulk via the
@@ -48,17 +48,22 @@ directly in the Highlight field, or change multiple bookmarks in bulk via the
 Highlights and labels can be toggled app-wide (via the "Edit colors" dialog) or
 per-view (via a view's "Bookmarks" menu).
 
-### Importing and exporting
+## Importing and exporting
 
 Export bookmarks to a list of regions as a BED or TSV file, or import them from
 the same formats. Imported bookmarks are appended to your existing bookmarks.
 
-### Deleting bookmarks
+## Deleting bookmarks
 
 Select bookmarks (see [Selecting bookmarks](#selecting-bookmarks)) and press
 "Delete" in the widget menu to remove them.
 
-### Bookmark persistence
+## Bookmark persistence
 
 Bookmarks persist in browser localStorage, keyed to the URL JBrowse is hosted
 on. Only bookmarks valid for the currently loaded assemblies are shown.
+
+## See also
+
+- [Basic usage: sharing sessions](/docs/user_guides/basic_usage#sharing-sessions)
+  — share your whole session, bookmarks included, via a link

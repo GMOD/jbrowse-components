@@ -42,7 +42,7 @@ rather than at the app root. Use `esmUrl`/`esmLoc` for a pure ESM module. Use
 `cjsUrl` for jbrowse-desktop, since Electron does not support ESM and the
 jbrowse-plugin-template outputs CJS-specific code for desktop.
 
-#### umdLoc example
+## umdLoc example
 
 ```json
 {
@@ -55,7 +55,7 @@ jbrowse-plugin-template outputs CJS-specific code for desktop.
 }
 ```
 
-#### esmUrl example
+## esmUrl example
 
 ```json
 {
@@ -68,7 +68,7 @@ jbrowse-plugin-template outputs CJS-specific code for desktop.
 }
 ```
 
-### Plugin store
+## Plugin store
 
 Plugin authors can submit their plugin via PR to
 [jbrowse-plugin-list](https://github.com/GMOD/jbrowse-plugin-list).
@@ -80,3 +80,8 @@ You can verify the plugin is installed properly by checking the Plugin Store:
 See our [developer guide](/docs/developer_guide/) for more information on
 developing plugins, or our [plugins page](/plugin_store) to browse currently
 published plugins.
+
+## See also
+
+- [Plugin store](/docs/user_guides/plugin_store) — installing community plugins
+  from inside the app

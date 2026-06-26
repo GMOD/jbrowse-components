@@ -128,3 +128,12 @@ sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
 `treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot`. See the
 [MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) for the
 display's full config reference.
+
+## See also
+
+- [Quantitative track](/docs/user_guides/quantitative_track) — single-signal
+  BigWig/BedGraph display
+- [Methylation tutorial](/docs/tutorials/methylation) — loading modkit bedMethyl
+  as signal
+- [Multi-quantitative track configuration](/docs/config_guides/multiquantitative_track)
+  — config-file options

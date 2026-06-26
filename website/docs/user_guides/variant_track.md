@@ -32,3 +32,14 @@ each row a sample, each column a variant — making shared variants, population
 structure, and runs of homozygosity visible at a glance. See
 [Multi-sample variant displays](/docs/user_guides/multivariant_track) for the
 full walkthrough of the regular and matrix multi-sample displays.
+
+## See also
+
+- [Multi-sample variant display](/docs/user_guides/multivariant_track) —
+  population-scale VCFs as per-sample rows or a genotype matrix
+- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+  interpreting SV calls across views
+- [Alignments track](/docs/user_guides/alignments_track) — inspect the read
+  evidence behind a call
+- [Variant track configuration](/docs/config_guides/variant_track) — SVTYPE
+  coloring, multi-sample display defaults, and LD displays

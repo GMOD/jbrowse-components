@@ -98,3 +98,12 @@ Reference lines mark the conventional GWAS cutoffs (genome-wide 5 × 10⁻⁸,
 suggestive 1 × 10⁻⁵). Toggle via **Show significance lines** in the track menu.
 Thresholds are configurable — see the
 [config guide](/docs/config_guides/gwas_track).
+
+## See also
+
+- [Quantitative track](/docs/user_guides/quantitative_track) — BigWig/BedGraph
+  signal display
+- [Variant track](/docs/user_guides/variant_track) — VCF display, including
+  on-the-fly LD heatmaps
+- [GWAS track configuration](/docs/config_guides/gwas_track) — adapter columns,
+  LD file preparation, and significance thresholds

@@ -148,9 +148,13 @@ optionally `treeAreaWidth` / `subtreeFilter`) in the display's
 [MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) docs for
 the full field reference.
 
-## Walkthroughs
+## See also
 
+- [Variant track](/docs/user_guides/variant_track) — single-sample VCF display
+  and the per-sample genotype table
 - [Phased trio analysis](/docs/tutorials/analyze_trio) — matrix display with a
   phased SNP trio
 - [Multi-sample SVs (1000 Genomes)](/docs/tutorials/sv_multisamples) — regular
   display across a large SV cohort
+- [Variant track configuration](/docs/config_guides/variant_track) — config-file
+  options

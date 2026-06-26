@@ -11,7 +11,7 @@ with their exons, UTRs, and CDS segments. The sections below cover the display
 and analysis options available on gene tracks, from reading the coding sequence
 directly off the track to reshaping the view around a gene's exons.
 
-### Choosing which transcripts to show
+## Choosing which transcripts to show
 
 Genes with many isoforms can stack into tall, hard-to-read blocks. The **Gene
 glyph** option in the track menu controls how a gene's transcripts are drawn:
@@ -23,7 +23,7 @@ glyph** option in the track menu controls how a gene's transcripts are drawn:
 - **Longest coding transcript** — always draws only the longest coding isoform
   of each gene.
 
-### Collapsing introns
+## Collapsing introns
 
 Genes often span far more intronic than exonic sequence, so the coding parts are
 spread thinly across the view. Right-click a gene and choose **Collapse
@@ -40,7 +40,7 @@ collapsed those arcs span directly between the adjacent exons.
 
 <Figure caption="BRCA1 (hg38) with its introns collapsed, so the exons sit side by side. The NA12878 direct-RNA nanopore track below shows per-exon coverage and sashimi arcs joining the spliced exon junctions." src="/img/gene_track_collapse_introns.png" />
 
-### Display density and labels
+## Display density and labels
 
 Several track-menu toggles tune how gene glyphs are drawn:
 
@@ -52,7 +52,7 @@ Several track-menu toggles tune how gene glyphs are drawn:
   strand (on by default).
 - **Show only genes** — hides non-gene features in the track.
 
-### Color by CDS
+## Color by CDS
 
 By default CDS segments use the track's feature color. Turning on **Color by
 CDS** instead tints each CDS segment by its reading frame, so frameshifts and
@@ -62,9 +62,9 @@ Enable it from the linear genome view's hamburger menu → **Color by CDS and dr
 amino acids**. The setting applies to every gene track in that view and is
 remembered across sessions.
 
-<Figure caption="The human BRCA1 gene (hg19, NCBI RefSeq) with color-by-CDS turned on. Each CDS exon is tinted by its reading frame, so neighboring coding exons in different frames get different colors; introns are drawn as the connecting line." src="/img/gene_track_color_by_cds.png" />
+<Figure caption="Turning on Color by CDS for the human BRCA1 gene (hg19, NCBI RefSeq). Top: the view's hamburger menu with the 'Color by CDS and draw amino acids' toggle. Bottom: the result at base-pair resolution — each CDS codon is tinted by its reading frame with its amino acid drawn over it, lined up to the codons in the reference sequence track above." src="/img/gene_track_color_by_cds.png" />
 
-### Peptide lettering
+## Peptide lettering
 
 The same menu option also draws the translated protein. As you zoom in, the
 amino acids are first drawn as a colored background band over the CDS, and once
@@ -87,7 +87,7 @@ and highlighted.
 
 <Figure caption="The selenoprotein GPX1 (glutathione peroxidase 1) on hg19. Its in-frame UGA codon is recoded to selenocysteine via the GFF transl_except attribute, so codon 49 is drawn as a highlighted U on the CDS instead of a stop. The reference sequence track's plain six-frame translation above, which has no CDS context, still shows that codon as a stop (*)." src="/img/gene_track_selenocysteine.png" />
 
-### Mature peptides (polyproteins)
+## Mature peptides (polyproteins)
 
 Many viral genomes encode a single large polyprotein that is cleaved into
 several mature peptides. When a CDS has `mature_protein_region` (or
@@ -105,14 +105,14 @@ is configured to read it, e.g.:
 
 <Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each drawn on its own row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
 
-### Reading a feature's protein sequence
+## Reading a feature's protein sequence
 
 To extract the full protein (or CDS, cDNA, or genomic sequence) for a single
 transcript, click the feature and use the sequence panel in the feature detail
 sidebar. See [Feature sequence panel](/docs/user_guides/feature_sequence) for
 the available options.
 
-### Using gene tracks with the Protein3d plugin
+## Using gene tracks with the Protein3d plugin
 
 The [Protein3d plugin](/docs/tutorials/protein_structure) builds on the same
 transcript-to-protein mapping. Right click a gene and launch the protein
@@ -126,3 +126,14 @@ whether a coding variant lands in a functional domain.
 See the
 [Protein structures and multiple sequence alignments tutorial](/docs/tutorials/protein_structure)
 for installation and connected-view examples.
+
+## See also
+
+- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
+  and six-frame translation the peptide lettering lines up against
+- [Feature sequence panel](/docs/user_guides/feature_sequence) — extract a
+  transcript's protein, CDS, or cDNA
+- [RNA-seq tutorial](/docs/tutorials/rnaseq) — sashimi arcs and collapsing
+  introns with spliced alignments
+- [Track configuration](/docs/config_guides/tracks) — config-file options for
+  tracks and displays

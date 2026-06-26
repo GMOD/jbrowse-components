@@ -26,7 +26,7 @@ Example `AlignmentsTrack` config:
 }
 ```
 
-#### BamAdapter configuration options
+## BamAdapter configuration options
 
 - `bamLocation` - a 'file location' for the BAM
 - `index` - a subconfiguration schema containing
@@ -57,7 +57,7 @@ the index is at `yourfile.bam.bai` (the data URI with `.bai` appended). See the
 { "type": "BamAdapter", "uri": "http://yourhost/file.bam" }
 ```
 
-#### CramAdapter configuration options
+## CramAdapter configuration options
 
 - `cramLocation` - a 'file location' for the CRAM
 - `craiLocation` - a 'file location' for the CRAI
@@ -70,7 +70,7 @@ do not need to set `sequenceAdapter` manually. See the
 { "type": "CramAdapter", "uri": "http://yourhost/file.cram" }
 ```
 
-#### Display options
+## Display options
 
 Display settings — `colorBy`, `height`, `featureHeight`, `filterBy`, and the
 coverage `autoscale`/`minScore`/`maxScore` — are slots on the
@@ -99,3 +99,10 @@ See the
 the full list of slots. To open a track in a particular state from a link or
 embedded view instead of changing the default, see
 [applying display settings](/docs/tutorials/display_settings).
+
+## See also
+
+- [Alignments track](/docs/user_guides/alignments_track) — sorting, coloring,
+  grouping, and filtering reads in the app
+- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+  interpreting SV signals in alignments

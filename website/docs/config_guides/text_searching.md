@@ -77,7 +77,7 @@ via the CLI. See the
 [Gff3TabixAdapter config docs](/docs/config/gff3tabixadapter) for adapter
 options including CSI index support and `dontRedispatch`.
 
-### TrixTextSearchAdapter config
+## TrixTextSearchAdapter config
 
 The trix format is based on the
 [UCSC trix format](https://genome.ucsc.edu/goldenPath/help/trix.html). Use
@@ -92,7 +92,7 @@ three files:
 See the [TrixTextSearchAdapter config docs](/docs/config/trixtextsearchadapter)
 for all options.
 
-### JBrowse1TextSearchAdapter config
+## JBrowse1TextSearchAdapter config
 
 A names index created by JBrowse 1's `generate-names.pl` can still be used via
 the `JBrowse1TextSearchAdapter` — point `namesIndexLocation` at the names
@@ -124,3 +124,10 @@ in the FAQ.
 ```bash
 jbrowse text-index --attributes=Name,ID,gene_name
 ```
+
+## See also
+
+- [Basic usage: the location search box](/docs/user_guides/basic_usage#using-the-location-search-box)
+  — searching for gene names and regions once an index is built
+- [Connections](/docs/user_guides/connections) — loading track hubs that ship
+  their own indexes

@@ -43,3 +43,10 @@ options.
 
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-xS8Eg67AFS&password=jPzH5)
 — Hi-C contact matrix with gene annotations
+
+## See also
+
+- [Hi-C track configuration](/docs/config_guides/hic_track) — color scale,
+  normalization, and other display options
+- [Basic usage: opening tracks](/docs/user_guides/basic_usage#opening-tracks) —
+  loading a `.hic` file from a URL or disk

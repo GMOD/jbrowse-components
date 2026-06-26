@@ -14,7 +14,7 @@ Forward-strand alignments are drawn in one color and inverted alignments in
 another, so a ribbon that twists or crosses between the panels marks an
 inversion or rearrangement relative to the other genome.
 
-### Opening a linear synteny view
+## Opening a linear synteny view
 
 1. Launch a new Linear synteny view, then select the two assemblies to compare
 2. Optionally, add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors or
@@ -24,6 +24,11 @@ inversion or rearrangement relative to the other genome.
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 
-For a step-by-step walkthrough of loading assemblies, generating a PAF with
-minimap2, and using the dotplot and linear synteny views together, see the
-[Synteny visualization](/docs/tutorials/synteny_visualization) tutorial.
+## See also
+
+- [Dotplot view](/docs/user_guides/dotplot_view) — whole-genome synteny overview
+  that can launch this view from a selection
+- [Synteny visualization tutorial](/docs/tutorials/synteny_visualization) —
+  loading assemblies and generating a PAF with minimap2
+- [Synteny/dotplot configuration](/docs/config_guides/synteny_track) —
+  config-file options for synteny tracks

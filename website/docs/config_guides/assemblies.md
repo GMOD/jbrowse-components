@@ -60,7 +60,7 @@ Each assembly contains:
   (fasta.fa.gz + fasta.fa.gz.fai + fasta.fa.gz.gzi), `ChromSizesAdapter`
   (chromosome names only, no sequence)
 
-### Configuring reference name aliasing
+## Configuring reference name aliasing
 
 Reference name aliasing maps chromosomes named differently across files to the
 same sequence (e.g. `chr1` ↔ `1`). The `refNameAliases` field in the config
@@ -83,7 +83,7 @@ with an NCBI `sequence_report.tsv` instead.
 See [RefName aliasing](/docs/developer_guides/refname_aliasing) for full details
 on adapter options and configuration.
 
-### Configuring alternative genetic codes (translation tables)
+## Configuring alternative genetic codes (translation tables)
 
 JBrowse translates protein-coding sequences using the standard genetic code
 (NCBI translation table 1) by default. Some sequences use a different code — for
@@ -153,7 +153,7 @@ If both are present, entries in the inline `geneticCodes` map take precedence
 over the file. See the [BaseAssembly config docs](/docs/config/baseassembly/)
 for the slot reference.
 
-### Adding an assembly with the CLI
+## Adding an assembly with the CLI
 
 Rather than writing this config by hand, the `jbrowse add-assembly` command
 generates it for you (and copies the files into place). See the
@@ -162,7 +162,7 @@ generates it for you (and copies the files into place). See the
 the [admin server quick start](/docs/quickstart_adminserver/) to add assemblies
 graphically through the assembly manager.
 
-### BgzipFastaAdapter
+## BgzipFastaAdapter
 
 A bgzip FASTA is generated with:
 
@@ -192,7 +192,7 @@ adapters below accept the same `uri` shorthand. See the
 }
 ```
 
-### IndexedFastaAdapter
+## IndexedFastaAdapter
 
 An indexed FASTA uses an uncompressed `.fa` plus a `.fai` index.
 
@@ -232,7 +232,7 @@ options.
 }
 ```
 
-#### FASTA metadata
+### FASTA metadata
 
 Meta-information on the assembly can be specified by adding the following
 section to either the IndexedFastaAdapter or BgzipFastaAdapter configuration.
@@ -248,7 +248,7 @@ displayed as-is, so the format is not strict from JBrowse's perspective.
   }
 ```
 
-### TwoBitAdapter
+## TwoBitAdapter
 
 The UCSC twoBit adapter is also supported. Note however that the 2bit format has
 a longer startup time than other adapters because there is a larger upfront
@@ -291,3 +291,8 @@ the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options):
   "chromSizes": "https://jbrowse.org/genomes/hg19/fasta/hg19.chrom.sizes"
 }
 ```
+
+## See also
+
+- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
+  and six-frame translation in the app

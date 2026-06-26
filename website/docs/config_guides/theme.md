@@ -4,7 +4,7 @@ description: Customizing the application color theme
 guide_category: Other features
 ---
 
-### Color
+## Color
 
 The color scheme and some sizing options are configured via a top-level `theme`
 in the config file. For example:
@@ -66,7 +66,7 @@ documents.
 }
 ```
 
-### Extra themes and dark mode
+## Extra themes and dark mode
 
 You can add extra themes via the config. In jbrowse-web and jbrowse-desktop,
 these show up in a "Preferences" dialog that the user can select from. Dark mode
@@ -102,7 +102,7 @@ Example
 }
 ```
 
-### Logo
+## Logo
 
 It is also possible to supply a custom logo to be displayed in the top right
 corner of the app instead of the JBrowse 2 logo. To do this, store an SVG file
@@ -121,7 +121,7 @@ containing your logo on your server, and specify the path in your configuration:
 The built-in logo is `150x48px`. A custom logo is shown at its natural size, so
 size your SVG similarly to fit the header.
 
-### Sizing
+## Sizing
 
 You can also change some sizing options by specifying the "typography" (to
 change font size) and "spacing" (to change the amount of space between elements)
@@ -138,7 +138,7 @@ options:
 }
 ```
 
-### Advanced
+## Advanced
 
 JBrowse uses Material-UI for its theming. You can read more about Material-UI
 themes [here](https://mui.com/material-ui/customization/theming/). Generally,

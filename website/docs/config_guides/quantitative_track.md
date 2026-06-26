@@ -4,7 +4,7 @@ description: BigWig/BedGraph signal track config and display options
 guide_category: Track types
 ---
 
-### QuantitativeTrack config
+## QuantitativeTrack config
 
 Example QuantitativeTrack config:
 
@@ -24,7 +24,7 @@ Example QuantitativeTrack config:
 }
 ```
 
-#### Display options
+### Display options
 
 Scale, autoscale, and color options (`scaleType`, `autoscale`, `minScore`,
 `maxScore`, `defaultRendering`, `color`, `bicolorPivot`, etc.) are appearance
@@ -50,10 +50,17 @@ For per-display control, use the `displays` array form (see the
 [LinearWiggleDisplay config docs](/docs/config/linearwiggledisplay) for the full
 list of display slots and their defaults.
 
-#### Adapters
+### Adapters
 
 BigWig (`BigWigAdapter`) and bedGraph (`BedGraphTabixAdapter`, for a
 bgzip+tabix-indexed file) are both supported. The example above uses the reduced
 `uri` form; see the [BigWigAdapter](/docs/config/bigwigadapter) and
 [BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter) config docs for all
 options.
+
+## See also
+
+- [Quantitative track](/docs/user_guides/quantitative_track) — renderer types,
+  autoscaling, and CNV profiling in the app
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
+  combining several signals on a shared axis

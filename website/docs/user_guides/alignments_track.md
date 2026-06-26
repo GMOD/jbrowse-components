@@ -69,8 +69,9 @@ turn pink, and abnormal pair orientations get their own colors. The combined
 insert always paints pink (an insertion is here), otherwise abnormal orientation
 wins, otherwise a large insert paints red (deletion). Insert-size thresholds are
 robust to the long tail of large inserts (`median ± 3·1.4826·MAD`) so the
-short-insert signal isn't washed out — see the [SV visualization
-guide](/docs/user_guides/sv_visualization) for the full color tables.
+short-insert signal isn't washed out — see the
+[SV visualization guide](/docs/user_guides/sv_visualization) for the full color
+tables.
 
 <Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints — teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
 
@@ -182,7 +183,7 @@ pairs drawn pink lift away from the background.
 
 <Figure caption="Read cloud on a synthetic SV dataset. Reads are stratified by log distance between mates, surfacing insertion pairs (pink) against the background." src="/img/alignments/read_cloud.png" />
 
-## Learn more
+## See also
 
 - [Structural variant visualization](/docs/user_guides/sv_visualization) —
   interpreting SV signals across alignment colorings, arcs, read clouds, and the

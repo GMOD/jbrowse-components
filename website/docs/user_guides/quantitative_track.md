@@ -71,3 +71,12 @@ mapping a divergent strain) hyper-divergent regions. For these reasons coverage
 is often uneven even in samples with no true copy-number changes.
 
 :::
+
+## See also
+
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) —
+  combine several BigWigs on a shared axis
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — score-based variant
+  display
+- [Quantitative track configuration](/docs/config_guides/quantitative_track) —
+  adapters and display slots

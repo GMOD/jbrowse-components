@@ -89,21 +89,21 @@ on a different chromosome are handled separately (see the table below).
 **With paired arcs or linked reads enabled** (via Read connections in the track
 menu), the Insert size option uses threshold-based coloring:
 
-| Pattern                              | Color  | Notes                                  |
-| ------------------------------------ | ------ | -------------------------------------- |
-| Insert larger than expected          | red    | suggests a deletion spanning the pair  |
-| Insert smaller than expected         | pink   | suggests an insertion between the pair |
-| Mate on a different chromosome       | purple | suggests an inter-chromosomal event    |
+| Pattern                        | Color  | Notes                                  |
+| ------------------------------ | ------ | -------------------------------------- |
+| Insert larger than expected    | red    | suggests a deletion spanning the pair  |
+| Insert smaller than expected   | pink   | suggests an insertion between the pair |
+| Mate on a different chromosome | purple | suggests an inter-chromosomal event    |
 
 The "expected" range is a robust band around the typical insert size,
-`median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. Real insert-size
-distributions are a tight bulk plus a long right tail of large inserts
-(deletions, SVs); that tail inflates the standard deviation, which pushes the
-`mean − 3σ` lower bound below zero so that **nothing** is ever flagged as a
-short insert and the insertion signal silently disappears. The median and MAD
-measure the spread of the normal-insert bulk and ignore the tail, so the
-short-insert (pink) threshold stays positive and meaningful, and moderate
-deletions aren't masked by a few very large outliers.
+`median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. Real insert-size distributions
+are a tight bulk plus a long right tail of large inserts (deletions, SVs); that
+tail inflates the standard deviation, which pushes the `mean − 3σ` lower bound
+below zero so that **nothing** is ever flagged as a short insert and the
+insertion signal silently disappears. The median and MAD measure the spread of
+the normal-insert bulk and ignore the tail, so the short-insert (pink) threshold
+stays positive and meaningful, and moderate deletions aren't masked by a few
+very large outliers.
 
 **Insert size and orientation** combines both signals and is often the most
 informative setting for a general SV scan. The two signals are prioritized so
@@ -112,8 +112,8 @@ that the strongest cue wins:
 - **Short insert always paints pink**, even if the pair orientation is abnormal.
   At a short insert the useful signal is simply "an insertion is here" —
   distinguishing orientation adds little, so pink takes priority.
-- Otherwise an **abnormal pair orientation wins** (teal RL → tandem
-  duplication; green LL / dark blue RR → inversion).
+- Otherwise an **abnormal pair orientation wins** (teal RL → tandem duplication;
+  green LL / dark blue RR → inversion).
 - A **large insert with normal orientation paints red** — the classic deletion
   signature.
 
@@ -360,3 +360,13 @@ walks through this workflow end-to-end with the HG008 phased tumor assembly.
   common artefacts in these regions
 - **Short-read orientation coloring** assumes `fr` (Illumina) read pairs;
   SOLiD-style orientations are not supported.
+
+## See also
+
+- [Alignments track](/docs/user_guides/alignments_track) — sorting, coloring,
+  grouping, and filtering reads in general use
+- [SV inspector](/docs/user_guides/sv_inspector_view) — whole-genome SV triage
+- [Variant track](/docs/user_guides/variant_track) — VCF display and the
+  per-sample genotype table
+- [Alignments track configuration](/docs/config_guides/alignments_track) —
+  config-file options for color and filter defaults

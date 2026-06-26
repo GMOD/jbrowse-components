@@ -52,7 +52,7 @@ In the example above we return an object with:
 - `type` - we make this undefined, which removes it from the feature details
 - `newfield` - this generates a new field in the feature details
 
-### How the returned object is applied
+## How the returned object is applied
 
 The object you return is shallow-merged onto the feature (any keys you don't
 mention are left untouched), and the result drives what the panel shows:
@@ -68,7 +68,7 @@ mention are left untouched), and the result drives what the panel shows:
 This applies to core fields too: returning `{type: undefined}` removes the Type
 row, `{name: ...}` rewrites the Name row, and so on.
 
-### Making sophisticated customizations to feature detail panels
+## Making sophisticated customizations to feature detail panels
 
 If your feature detail panel customization is complex, you can create a custom
 javascript function in a plugin that is registered with the jexl system.
@@ -117,7 +117,7 @@ use the custom `jexl` function in your config callbacks as follows:
 See [our no-build plugin tutorial](/docs/developer_guides/no_build_plugin/) for
 more info on setting up a simple plugin for doing these customizations.
 
-### Example: Renaming multiple GFF3 attributes with a single function
+## Example: Renaming multiple GFF3 attributes with a single function
 
 The `formatName` example above returns a single value for one field. You can
 also return an entire object from your jexl function to rename, add, or remove
@@ -178,7 +178,7 @@ new keys with spaces or custom capitalization are added as-is. This approach
 scales better than the inline jexl syntax when you have many attributes to
 rename.
 
-### Example: A generalized solution to dbxrefs
+## Example: A generalized solution to dbxrefs
 
 If you wanted to always link out to different websites mentioned in the dbxrefs
 of your data file, you could make a jexl function such as the following
@@ -253,7 +253,7 @@ form is preferred.
 
 :::
 
-### Going beyond field formatting
+## Going beyond field formatting
 
 `formatDetails` callbacks reshape the fields of an existing feature. To add an
 entirely new section, or to replace the widget wholesale, use a plugin with

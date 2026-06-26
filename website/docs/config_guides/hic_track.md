@@ -22,7 +22,7 @@ Example Hi-C track config:
 }
 ```
 
-#### HicAdapter config
+## HicAdapter config
 
 The HicAdapter currently only requires a `hicLocation`:
 
@@ -46,7 +46,12 @@ A reduced form is also accepted (see the
 }
 ```
 
-#### Color scheme
+## Color scheme
 
 Hi-C contact matrices are drawn with a built-in color ramp, selectable from the
 track menu. Available schemes are `juicebox` (default), `fall`, and `viridis`.
+
+## See also
+
+- [Hi-C track](/docs/user_guides/hic_track) — loading and interpreting contact
+  matrices in the app

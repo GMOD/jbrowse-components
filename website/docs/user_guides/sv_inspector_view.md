@@ -72,3 +72,13 @@ for that variant — two stacked linear genome views, each centered on one
 breakpoint. It opens with empty views; add alignment tracks to both with their
 track selectors and the read arcs and splines connecting supporting reads appear
 automatically.
+
+## See also
+
+- [Structural variant visualization](/docs/user_guides/sv_visualization) —
+  interpreting SV signals across alignment colorings, arcs, and the breakpoint
+  split view
+- [Cancer SVs (C-GIAB) tutorial](/docs/tutorials/sv_visualization_cgiab) —
+  end-to-end workflow on real tumor/normal data
+- [Multi-sample SVs (1000 Genomes) tutorial](/docs/tutorials/sv_multisamples) —
+  population-scale SV genotypes

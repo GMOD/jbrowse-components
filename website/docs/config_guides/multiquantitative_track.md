@@ -4,7 +4,7 @@ description: Multiple BigWig/BedGraph signals combined into one display
 guide_category: Track types
 ---
 
-### MultiQuantitativeTrack config
+## MultiQuantitativeTrack config
 
 Example MultiQuantitativeTrack config:
 
@@ -47,7 +47,7 @@ Example MultiQuantitativeTrack config:
 The `bigWigs` array only works with absolute URLs. For relative URLs or
 per-subtrack options like color and grouping, use `subadapters` instead.
 
-#### The source field
+### The source field
 
 Each subtrack has a `source` identifier used as its label in the UI and carried
 on features as `feature.get('source')`. When using `bigWigs`, `source` is
@@ -95,3 +95,10 @@ Example:
 
 See the [MultiWiggleAdapter config docs](/docs/config/multiwiggleadapter) for
 all options.
+
+## See also
+
+- [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — using
+  multi-quantitative tracks, bedMethyl, and clustering in the app
+- [Quantitative track](/docs/user_guides/quantitative_track) — single-signal
+  display

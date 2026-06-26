@@ -22,3 +22,12 @@ You can also extract or copy the sequence underlying selected features; see the
 [Feature sequence panel](/docs/user_guides/feature_sequence) guide.
 
 <Figure caption="The sequence track showing the reference sequence (top row) and six-frame translation (three frames per strand) at single-base resolution." src="/img/sequence_track.png" />
+
+## See also
+
+- [Gene track](/docs/user_guides/gene_track) — per-transcript translation,
+  color-by-CDS, and peptide lettering
+- [Feature sequence panel](/docs/user_guides/feature_sequence) — extract a
+  feature's CDS, protein, cDNA, or genomic sequence
+- [Assembly configuration](/docs/config_guides/assemblies) — reference sequence
+  adapters and alternative genetic codes

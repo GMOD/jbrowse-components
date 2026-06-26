@@ -49,3 +49,10 @@ translate to selenocysteine (U) instead of terminating the protein.
 For non-gene features, the "Feature sequence" button shows the literal sequence
 underlying the feature, without subfeature stitching. The number of flanking
 bases is configurable from the gear icon.
+
+## See also
+
+- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
+  and six-frame translation
+- [Gene track](/docs/user_guides/gene_track) — color-by-CDS and peptide
+  lettering directly on the track

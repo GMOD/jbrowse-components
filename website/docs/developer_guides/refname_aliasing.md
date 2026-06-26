@@ -11,7 +11,7 @@ an alias adapter is configured on an assembly, JBrowse automatically translates
 refNames so that tracks using different conventions all line up and display
 together.
 
-### How resolution works
+## How resolution works
 
 It helps to keep three distinct names in mind:
 
@@ -31,7 +31,7 @@ When a track adapter is queried, the resolved track refName is passed as
 CRAM/BAM to fetch the correct reference bases). See also
 [configuring reference name aliasing](/docs/config_guides/assemblies/#configuring-reference-name-aliasing).
 
-### Choosing an adapter
+## Choosing an adapter
 
 | Situation                                              | Recommended adapter                                       |
 | ------------------------------------------------------ | --------------------------------------------------------- |
@@ -40,7 +40,7 @@ CRAM/BAM to fetch the correct reference bases). See also
 | FASTA uses RefSeq accessions but you want `chr1` shown | `NcbiSequenceReportAliasAdapter` (default)                |
 | FASTA uses RefSeq accessions and you want them shown   | `NcbiSequenceReportAliasAdapter`, `useNameOverride:false` |
 
-### RefNameAliasAdapter
+## RefNameAliasAdapter
 
 Reads any tab-separated alias file, including the UCSC
 [chromAlias](https://hgdownload.soe.ucsc.edu/goldenPath/hg38/bigZips/hg38.chromAlias.txt)
@@ -87,7 +87,7 @@ chr1	1	NC_000001.11
 }
 ```
 
-### NcbiSequenceReportAliasAdapter
+## NcbiSequenceReportAliasAdapter
 
 Reads NCBI `sequence_report.tsv` files, which map GenBank accessions, RefSeq
 accessions, UCSC-style names, and sequence names all at once. These are
@@ -117,7 +117,7 @@ back to `Sequence name`; all four columns become aliases for it.
   - **`false`** — keep your FASTA's own names canonical. JBrowse displays
     `NC_000001.11`, and `chr1` resolves to it as a searchable alias.
 
-### Troubleshooting
+## Troubleshooting
 
 - **Aliases don't resolve / tracks appear empty.** The primary refName must
   match your FASTA exactly. For `RefNameAliasAdapter`, confirm `refNameColumn`
