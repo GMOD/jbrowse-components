@@ -3,7 +3,6 @@ import * as React from 'react'
 
 import * as mst from '@jbrowse/mobx-state-tree'
 import { alpha, createTheme, useTheme } from '@mui/material'
-import * as MUIStyles from '@mui/material/styles'
 import * as MUIUtils from '@mui/material/utils'
 import {
   useGridApiContext,
@@ -20,6 +19,7 @@ import Plugin from '../Plugin.ts'
 import { BaseFeatureDetail } from './BaseFeatureDetails.tsx'
 import { DataGridEntries } from './MuiDataGridReExports.ts'
 import { Entries } from './MuiReExports.ts'
+import { MUIStyles } from './MuiStylesReExports.ts'
 import { lazyMap } from './lazify.tsx'
 import reExportsList from './list.ts'
 import * as Configuration from '../configuration/index.ts'
