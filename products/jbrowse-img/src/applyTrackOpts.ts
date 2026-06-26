@@ -416,7 +416,9 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
     .displays[0] as TrackDisplay
 
   // `force` is the lone non-snapshot setting: it flips a volatile load-gate.
+  // (every display in the union implements setFeatureDensityStatsLimit, so no
+  // optional chain is needed here — unlike the display-specific actions above.)
   if (force) {
-    display.setFeatureDensityStatsLimit?.({ bytes: Number.MAX_VALUE })
+    display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
   }
 }

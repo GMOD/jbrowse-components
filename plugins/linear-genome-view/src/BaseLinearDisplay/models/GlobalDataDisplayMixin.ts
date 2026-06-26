@@ -63,7 +63,7 @@ export default function GlobalDataDisplayMixin() {
         )
       },
     }))
-    .views(self => ({
+    .views(() => ({
       /**
        * #getter
        * Overridable hook (default false): a subclass returns true once its
