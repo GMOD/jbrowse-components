@@ -40,6 +40,21 @@ trailing `2`, but the published npm packages do:
 `@jbrowse/react-linear-genome-view2`, `@jbrowse/react-app2`,
 `@jbrowse/react-circular-genome-view2`.)
 
+### Do you have any tips for learning React and @jbrowse/mobx-state-tree
+
+See this
+[short orientation guide](https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f).
+
+### What technologies does JBrowse 2 use
+
+Key technologies include:
+
+- React
+- @jbrowse/mobx-state-tree
+- web-workers
+- Typescript
+- Electron (for desktop specifically)
+
 ## General
 
 ### What is special about JBrowse 2
@@ -75,6 +90,20 @@ directly to a running JBrowse 1 data directory and read its `trackList.json`,
 letting you browse your existing JBrowse 1 tracks without a full migration. This
 is not recommended for most purposes — it is limited in functionality and is
 mainly useful as a temporary bridge.
+
+### How do I cite JBrowse 2
+
+Please cite our paper:
+
+Diesh, C., Stevens, G.J., Xie, P. _et al._ JBrowse 2: a modular genome browser
+with views of synteny and structural variation. _Genome Biology_ 24, 74 (2023).
+[https://doi.org/10.1186/s13059-023-02914-z](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-023-02914-z)
+
+### What license is JBrowse 2 released under
+
+JBrowse 2 is open source under the
+[Apache License 2.0](https://github.com/GMOD/jbrowse-components/blob/main/LICENSE).
+It is free for both academic and commercial use.
 
 ## Setup
 
@@ -213,6 +242,22 @@ You can also use remote URLs:
 
 You can also manually edit your config file or use the GUI.
 
+### How do I add an assembly (reference genome)
+
+Tracks need an assembly to attach to, so usually you add the assembly first. The
+CLI does this with `add-assembly`:
+
+    jbrowse add-assembly hg19.fa.gz -n hg19
+
+It indexes the FASTA if needed and writes the assembly entry into config.json.
+Indexed FASTA (`.fa` + `.fai`), bgzip indexed FASTA (`.fa.gz` + `.fai` +
+`.gzi`), and 2bit all work. The `-n`/`--name` is the name your tracks then refer
+to in `assemblyNames`.
+
+On JBrowse Desktop you can do the same thing through the "Open assembly" dialog.
+The [assembly configuration guide](/docs/config_guides/assemblies) covers the
+rest (aliases, refname aliasing, custom genetic codes).
+
 ### How do I change the color of a track
 
 This is one of the most common questions, and there are a few ways depending on
@@ -350,21 +395,6 @@ Some reads, such as secondary reads, do not have a `SEQ` field on their records,
 so they will not display soft-clipping.
 
 The soft-clipping indicators on these reads will appear black.
-
-### Do you have any tips for learning React and @jbrowse/mobx-state-tree
-
-See this
-[short orientation guide](https://gist.github.com/cmdcolin/94d1cbc285e6319cc3af4b9a8556f03f).
-
-### What technologies does JBrowse 2 use
-
-Key technologies include:
-
-- React
-- @jbrowse/mobx-state-tree
-- web-workers
-- Typescript
-- Electron (for desktop specifically)
 
 ### Should I configure gzip on my web server
 
@@ -548,6 +578,32 @@ Post questions on the
 [GitHub discussions board](https://github.com/GMOD/jbrowse-components/discussions)
 or [contact us](/contact). To report a bug, open an issue on
 [GitHub](https://github.com/GMOD/jbrowse-components/issues).
+
+### My track loads but shows no features
+
+If the track turns on without any error but stays empty where you expect data,
+this is usually a reference name mismatch: the file names its chromosomes
+differently than your assembly (e.g. `chr1` vs `1`, or `NC_000001.11` vs
+`chr1`). JBrowse matches features by exact reference name, so `chr1` data won't
+show up on a region the assembly calls `1`.
+
+To check, open the track menu and click "About track" to see the reference names
+the file actually contains. Compare those against your assembly's names — the
+name in the location box, or the sequence names in your FASTA/`.fai`. If they
+don't match, add
+[reference name aliasing](/docs/config_guides/assemblies#configuring-reference-name-aliasing)
+to the assembly to map the two naming schemes together. The
+[RefName aliasing guide](/docs/developer_guides/refname_aliasing) has the full
+details.
+
+A few other things worth checking:
+
+- you're not zoomed into a region that simply has no data there
+- there isn't a "Zoom in to see features" message showing (see
+  [the stats-estimation question](#how-does-jbrowse-know-when-to-display-the-zoom-in-to-see-more-features-message))
+
+(A file that's bgzip compressed or tabix/CSI indexed incorrectly usually throws
+an error rather than rendering blank, so that shows up differently.)
 
 ### Why do I get a CORS error when loading remote files
 
