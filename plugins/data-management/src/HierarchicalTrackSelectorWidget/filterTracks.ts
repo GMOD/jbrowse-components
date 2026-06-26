@@ -45,13 +45,12 @@ export function filterTracks(
           return false
         }
       }
-      if (viewDisplaysSet.size === 0) {
-        return true
-      } else {
-        return pluginManager
+      return (
+        viewDisplaysSet.size === 0 ||
+        pluginManager
           .getTrackType(c.type)
           .displayTypes.some(d => viewDisplaysSet.has(d.name))
-      }
+      )
     })
   }
   return []

@@ -15,6 +15,7 @@ import MoreHorizIcon from '@mui/icons-material/MoreHoriz'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -174,21 +175,15 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const [menuOpen, setMenuOpen] = useState(false)
   const { name, id } = item
   const stats = model.folderCategoryStats.get(id)
   const hasActiveSubtracks = (stats?.active ?? 0) > 0
+  const { setMenuOpen, guard } = useMenuGuardedClick()
 
   return (
     <div
       className={classes.folderLabel}
-      onClick={() => {
-        // ignore clicks that land while the "..." menu is open, so opening it
-        // doesn't also trigger the row action
-        if (!menuOpen) {
-          openFolderDialog(model, item)
-        }
-      }}
+      onClick={() => { guard(() => { openFolderDialog(model, item) }) }}
     >
       <FolderIcon fontSize="small" color="primary" />
       <span data-testid={`htsCategory-${name}`}>
@@ -212,7 +207,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
           ...categoryTrackMenuItems(model, item),
         ]}
         stopPropagation
-        setOpen={setMenuOpen}
+        setOpen={open => { setMenuOpen(open) }}
       >
         <MoreHorizIcon />
       </CascadingMenuButton>
@@ -228,19 +223,14 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
   model: HierarchicalTrackSelectorModel
 }) {
   const { classes } = useStyles()
-  const [menuOpen, setMenuOpen] = useState(false)
   const { name, id } = item
   const isOpen = !model.collapsed.get(id)
+  const { setMenuOpen, guard } = useMenuGuardedClick()
 
   return (
     <div
       className={classes.accordionText}
-      onClick={() => {
-        // see FolderCategoryLabel: don't collapse/expand while the menu is open
-        if (!menuOpen) {
-          model.toggleCategory(id)
-        }
-      }}
+      onClick={() => { guard(() => { model.toggleCategory(id) }) }}
     >
       <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
@@ -262,7 +252,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
           }}
           className={classes.contrastColor}
           stopPropagation
-          setOpen={setMenuOpen}
+          setOpen={open => { setMenuOpen(open) }}
         >
           <MoreHorizIcon />
         </CascadingMenuButton>

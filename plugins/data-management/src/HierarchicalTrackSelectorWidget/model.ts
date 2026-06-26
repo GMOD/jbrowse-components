@@ -482,9 +482,27 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
 
       /**
        * #getter
+       * unfiltered map of every track (incl. connection tracks for other
+       * assemblies/view types); used by the faceted selector
        */
       get allTrackConfigurationMap() {
         return new Map(this.allTrackConfigurations.map(t => [t.trackId, t]))
+      },
+
+      /**
+       * #getter
+       * map restricted to tracks the current view can display; connection
+       * tracks go through the same filterTracks() pass as the tree so favorites
+       * and recently-used don't surface tracks the view can't show
+       */
+      get displayableTrackConfigurationMap() {
+        const { connectionInstances = [] } = getSession(self)
+        return new Map(
+          [
+            ...this.configAndSessionTrackConfigurations,
+            ...connectionInstances.flatMap(c => filterTracks(c.tracks, self)),
+          ].map(t => [t.trackId, t]),
+        )
       },
     }))
     .views(self => ({
@@ -494,7 +512,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get favoriteTracks() {
         return self.favorites
-          .map(t => self.allTrackConfigurationMap.get(t))
+          .map(t => self.displayableTrackConfigurationMap.get(t))
           .filter(notEmpty)
       },
 
@@ -504,7 +522,7 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        */
       get recentlyUsedTracks() {
         return self.recentlyUsed
-          .map(t => self.allTrackConfigurationMap.get(t))
+          .map(t => self.displayableTrackConfigurationMap.get(t))
           .filter(notEmpty)
       },
     }))

@@ -18,7 +18,14 @@ const HierarchicalTree = observer(function HierarchicalTree({
   const [scrollTop, setScrollTop] = useState(0)
   const { flattenedItems } = model
   const { offsets, cumulativeHeight } = model.flattenedItemOffsets
-  const { startIndex, endIndex } = model.itemOffsets(height, scrollTop)
+  // clamp: when the list shrinks (filter/collapse) the browser caps the real
+  // scrollTop but may not fire a scroll event, leaving our state stale-high and
+  // rendering a blank viewport until the next manual scroll
+  const effectiveScrollTop = Math.min(
+    scrollTop,
+    Math.max(0, cumulativeHeight - height),
+  )
+  const { startIndex, endIndex } = model.itemOffsets(height, effectiveScrollTop)
 
   return (
     <div

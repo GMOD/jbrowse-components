@@ -1,5 +1,3 @@
-import { useState } from 'react'
-
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 import { getSession } from '@jbrowse/core/util'
@@ -7,6 +5,7 @@ import { getTrackName } from '@jbrowse/core/util/tracks'
 import { observer } from 'mobx-react'
 
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
+import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
@@ -30,7 +29,7 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
   children: React.ReactElement
 }) {
   const { view } = model
-  const [open, setOpen] = useState(false)
+  const { setMenuOpen, guard } = useMenuGuardedClick()
   const session = getSession(model)
   return view ? (
     <CascadingMenuButton
@@ -52,21 +51,18 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
                 id={t.trackId}
                 model={model}
                 conf={t}
-                setOpen={setOpen}
+                setOpen={open => { setMenuOpen(open) }}
                 stopPropagation
               />
             </>
           ),
           checked: model.shownTrackIds.has(t.trackId),
-          onClick: () => {
-            // skip the row toggle while the per-track "..." submenu is open,
-            // otherwise opening/closing it would also flip the track
-            if (!open) {
+          onClick: () =>
+            { guard(() => {
               if (model.view.toggleTrack(t.trackId)) {
                 model.addToRecentlyUsed(t.trackId)
               }
-            }
-          },
+            }) },
         })),
         ...extraMenuItems,
       ]}
