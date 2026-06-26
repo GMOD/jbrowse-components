@@ -311,12 +311,17 @@ await test('renderRegion circular renders SV chords from a VCF', async () => {
   }
 })
 
+// Comparative assemblies + per-level synteny are built from the parsed CLI
+// entries (argv order): each --fasta opens an assembly, each synteny file binds
+// to the gap it sits in.
 await test('renderRegion dotplot renders two assemblies via a PAF', async () => {
   const result = await renderRegion({
     mode: 'dotplot',
-    fasta: fp('volvox.fa'),
-    fasta2,
-    trackList: [['paf', [paf]]],
+    argv: [
+      ['fasta', [fp('volvox.fa')]],
+      ['paf', [paf]],
+      ['fasta', [fasta2]],
+    ],
   })
   if (!result.includes('<svg')) {
     throw new Error('Expected SVG output')
@@ -329,11 +334,13 @@ await test('renderRegion dotplot renders two assemblies via a PAF', async () => 
 await test('renderRegion synteny renders two assemblies via a PAF', async () => {
   const result = await renderRegion({
     mode: 'synteny',
-    fasta: fp('volvox.fa'),
-    fasta2,
-    trackList: [['paf', [paf]]],
-    loc: 'ctgA',
-    loc2: 'ctgA',
+    argv: [
+      ['fasta', [fp('volvox.fa')]],
+      ['paf', [paf]],
+      ['fasta', [fasta2]],
+      ['loc', ['ctgA']],
+      ['loc2', ['ctgA']],
+    ],
   })
   if (!result.includes('<svg')) {
     throw new Error('Expected SVG output')
@@ -348,8 +355,7 @@ await test('renderRegion comparative without a second assembly throws', async ()
   try {
     await renderRegion({
       mode: 'dotplot',
-      fasta: fp('volvox.fa'),
-      trackList: [['paf', [paf]]],
+      argv: [['fasta', [fp('volvox.fa')]], ['paf', [paf]]],
     })
   } catch (error) {
     message = error.message
