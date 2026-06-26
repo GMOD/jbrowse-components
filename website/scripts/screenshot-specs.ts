@@ -3400,13 +3400,67 @@ export const specs: ScreenshotSpec[] = [
             },
           },
         },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'MultiQuantitativeTrack',
+          trackId: 'hg008_cnv_indexcov',
+          name: 'HG008 normal vs tumor coverage (indexcov)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                name: 'HG008-N (normal)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                name: 'HG008-T (tumor)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+        },
       ],
       views: [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
+          trackLabels: 'offset',
           loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
           tracks: [
+            {
+              // raw normalized coverage (median≈1 → copy number) for both
+              // samples in one band, the signal log2(tumor/normal) is built from
+              trackId: 'hg008_cnv_indexcov',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                defaultRendering: 'multiscatter',
+                resolution: 10,
+                minScore: 0,
+                maxScore: 2.5,
+                height: 160,
+              },
+            },
             {
               trackId: 'hg008_log2ratio',
               displaySnapshot: {
@@ -3418,6 +3472,9 @@ export const specs: ScreenshotSpec[] = [
                 defaultRendering: 'scatter',
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
+                // request bigwig bins 10x finer than screen resolution so the
+                // whole-genome scatter resolves the per-bin CNV signal
+                resolution: 10,
                 minScore: -2,
                 maxScore: 2,
                 height: 160,
@@ -3431,7 +3488,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 440,
+    viewportHeight: 740,
     settleMs: 25000,
   },
 

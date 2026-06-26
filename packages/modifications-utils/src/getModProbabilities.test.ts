@@ -11,7 +11,9 @@ describe('getModProbabilities', () => {
   // would coerce each float result back to a uint8 (every value → 0), so the fix
   // routes through Array.from. This guards that regression.
   test('Uint8Array ML (BAM) scales to fractional 0..1 values', () => {
-    const probs = getModProbabilities(featureWith({ ML: new Uint8Array([251, 0, 128]) }))
+    const probs = getModProbabilities(
+      featureWith({ ML: new Uint8Array([251, 0, 128]) }),
+    )
     expect(probs).toEqual([251.5 / 256, 0.5 / 256, 128.5 / 256])
   })
 
@@ -26,7 +28,9 @@ describe('getModProbabilities', () => {
   })
 
   test('lowercase Ml alias is honored', () => {
-    const probs = getModProbabilities(featureWith({ Ml: new Uint8Array([200]) }))
+    const probs = getModProbabilities(
+      featureWith({ Ml: new Uint8Array([200]) }),
+    )
     expect(probs).toEqual([200.5 / 256])
   })
 

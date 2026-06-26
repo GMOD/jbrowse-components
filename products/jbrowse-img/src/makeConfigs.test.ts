@@ -105,7 +105,12 @@ describe('makeFastaAssembly', () => {
 
 describe('makeChromSizesAssembly', () => {
   test('chrom.sizes → ChromSizesAdapter (no sequence file)', () => {
-    const a = makeChromSizesAssembly('hg38.chrom.sizes', undefined, undefined, 'rs')
+    const a = makeChromSizesAssembly(
+      'hg38.chrom.sizes',
+      undefined,
+      undefined,
+      'rs',
+    )
     expect(a.name).toBe('hg38.chrom.sizes')
     expect(a.sequence.adapter).toEqual({
       type: 'ChromSizesAdapter',

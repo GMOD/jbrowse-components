@@ -188,7 +188,9 @@ async function debugDump(page: Page, name: string) {
   const bodyText = await page
     .evaluate(() => document.body.innerText.substring(0, 800))
     .catch(() => '')
-  console.error(`    [${name}] debug text: ${bodyText.replace(/\s+/g, ' ').trim()}`)
+  console.error(
+    `    [${name}] debug text: ${bodyText.replace(/\s+/g, ' ').trim()}`,
+  )
   const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
   await page
     .screenshot()
@@ -504,6 +506,11 @@ async function renderSpecToTemp(
       await clearAnnotations(page)
       await runActions(page, spec.name, stage.actions)
       await shoot(page, spec, stage.annotations, stageFiles[i]!)
+      // re-check after each stage capture: assertViewsRendered only runs once
+      // before the loop, so a stage that captures a blank view body (a rare
+      // paint race after the stage's interaction) would otherwise be committed
+      // silently — the staged frames ARE the published image.
+      await assertViewsRendered(page, spec.name)
     }
     execFileSync('convert', [...stageFiles, '-append', renderPath])
     for (const f of stageFiles) {
@@ -741,7 +748,9 @@ async function main() {
 
   async function runSpec(spec: ScreenshotSpec) {
     if (spec.curated) {
-      console.log(`${progress()} ⊘ ${spec.name} (curated, keeping committed image)`)
+      console.log(
+        `${progress()} ⊘ ${spec.name} (curated, keeping committed image)`,
+      )
       return
     }
     console.log(`${progress()} → ${spec.name}`)

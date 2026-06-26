@@ -93,7 +93,8 @@ const comparativeOptionDefs: OptionDef[] = [
   },
   {
     name: 'colorBy',
-    description: 'Color synteny ribbons, e.g. "query" tints by query chromosome',
+    description:
+      'Color synteny ribbons, e.g. "query" tints by query chromosome',
   },
   { name: 'alpha', description: 'Ribbon opacity 0-1 (lower reveals density)' },
   {

@@ -137,7 +137,8 @@ export function makeSyntenyTrackConfig(
   upperAssembly: string,
   lowerAssembly: string,
 ): Track {
-  const { adapterType, locSlot, upperAssemblyIsQuery } = syntenyAdapterMap[type]!
+  const { adapterType, locSlot, upperAssemblyIsQuery } =
+    syntenyAdapterMap[type]!
   const queryAssembly = upperAssemblyIsQuery ? upperAssembly : lowerAssembly
   const targetAssembly = upperAssemblyIsQuery ? lowerAssembly : upperAssembly
   return {
