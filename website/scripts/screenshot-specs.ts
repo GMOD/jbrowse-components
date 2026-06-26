@@ -1477,7 +1477,12 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readySelector: '[data-testid="synteny_canvas_done"]',
-    readyTimeout: 120000,
+    // autoDiagonalize holds the synteny canvas (and thus synteny_canvas_done)
+    // off-screen until the diagonalize RPC lands and the reorder is applied, so
+    // the canvas only ever appears in its final diagonalized state. The remote
+    // 2bit genomes + S3 PIF make that whole-genome fetch slow, so allow
+    // generous headroom.
+    readyTimeout: 180000,
     settleMs: 15000,
   },
 
