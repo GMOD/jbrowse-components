@@ -521,6 +521,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       ],
       "displays": [
         {
+          "color": "#bdbdbd",
           "displayId": "volvox_mouse_samples_by_sample-LinearMultiRowFeatureDisplay",
           "partitionField": "sample",
           "rowHeight": 18,
@@ -531,7 +532,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
           "type": "LinearMultiRowFeatureDisplay",
         },
       ],
-      "name": "Mouse samples (per-sample colors)",
+      "name": "Mouse samples (parents highlighted)",
       "trackId": "volvox_mouse_samples_by_sample",
       "type": "FeatureTrack",
     },
