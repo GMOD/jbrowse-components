@@ -141,10 +141,11 @@ bool isOrientationScheme(int cs) {
 
 // SYNC: GPU twin of readColorCategory + categoryColor in colorUtils.ts (which
 // also feeds the Canvas2D/SVG fallback and the floating legend). The precedence
-// below — chain-supplementary → unmapped mate → inter-chromosomal → per-scheme
-// — and the per-scheme color helpers are hand-mirrored there; change both
-// together. Scheme indices (CS_*) are already shared by construction via the
-// export-consts directive at the top of this file.
+// below — opt-in paired-supplementary override → long-read-chain-supplementary
+// strand framing → unmapped mate → inter-chromosomal → per-scheme — and the
+// per-scheme color helpers are hand-mirrored there; change both together.
+// Scheme indices (CS_*) are already shared by construction via the export-consts
+// directive at the top of this file.
 float3 getReadColor(Instance inst, Uniforms u) {
   int cs = u.colorScheme;
   int cm = u.chainMode;
@@ -152,6 +153,7 @@ float3 getReadColor(Instance inst, Uniforms u) {
 
   // Opt-in legacy behavior: paint paired supplementary chains a flat
   // supplementary color (hides the discordant-pair signal; off by default).
+  // SYNC: mirror of the `opts.colorSupplementaryChains` branch in colorUtils.ts.
   if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u && isPaired && u.colorSuppChains == 1) {
     return unpackRGBA(u.colorSupplementary).xyz;
   }

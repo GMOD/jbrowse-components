@@ -93,8 +93,8 @@ const orientationSchemes = new Set([
 ])
 
 // Classify read `i` under the active color scheme. Precedence:
-// long-read-chain-supplementary → unmapped mate → inter-chromosomal →
-// per-scheme bucket.
+// opt-in paired-supplementary override → long-read-chain-supplementary strand
+// framing → unmapped mate → inter-chromosomal → per-scheme bucket.
 //
 // SYNC: `getReadColor` in shaders/slang/read.slang is the GPU twin and must
 // reproduce this exact precedence (it's the path most users see; this JS path
@@ -121,6 +121,7 @@ export function readColorCategory(
 
   // Opt-in legacy behavior: paint paired supplementary chains a flat
   // supplementary color (hides the discordant-pair signal; off by default).
+  // SYNC: mirror of the `u.colorSuppChains == 1` branch in read.slang.
   if (isChain && chainSupp > 0 && isPaired && opts.colorSupplementaryChains) {
     return 'supplementary'
   }
