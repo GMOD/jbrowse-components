@@ -27,8 +27,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * CRAM colored by CpG methylation (modBAM MM/ML tags). The `displays` object
- * shorthand applies settings without spelling out the display `type` or
+ * CRAM colored by CpG methylation (modBAM MM/ML tags). The `displayDefaults`
+ * object shorthand applies settings without spelling out the display `type` or
  * `displayId` — equivalent to `displays: [{ type: 'LinearAlignmentsDisplay',
  * displayId: '...', colorBy: ... }]`. See
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
@@ -39,7 +39,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Methylation',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'CramAdapter', uri: 'https://example.com/sample.cram' },
- *   displays: { colorBy: { type: 'methylation' } },
+ *   displayDefaults: { colorBy: { type: 'methylation' } },
  * }
  * ```
  *
@@ -53,7 +53,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Long reads',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'BamAdapter', uri: 'https://example.com/longreads.bam' },
- *   displays: {
+ *   displayDefaults: {
  *     height: 400,
  *     showSoftClipping: true,
  *     linkedReads: 'normal',

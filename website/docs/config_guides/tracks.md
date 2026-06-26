@@ -58,13 +58,13 @@ the per-format adapters and the `uri` shorthand:
 
 Appearance settings — `color`, `height`, `labels`, jexl color callbacks, and so
 on — belong to a track's **displays** (the different ways a track can be drawn).
-The `displays` field accepts two shapes: a simple object for the common case, or
-the full array when you need precise control.
+There are two ways to set them: the `displayDefaults` object for the common
+case, or the full `displays` array when you need precise control.
 
 ### Shorthand object
 
-Put your settings in a `displays` object and JBrowse applies each one for you —
-you don't have to know or write the display's name:
+Put your settings in a `displayDefaults` object and JBrowse applies each one for
+you — you don't have to know or write the display's name:
 
 ```json
 {
@@ -76,7 +76,7 @@ you don't have to know or write the display's name:
     "type": "BigBedAdapter",
     "uri": "https://jbrowse.org/genomes/hg19/repeats.bb"
   },
-  "displays": { "color": "green", "height": 200 }
+  "displayDefaults": { "color": "green", "height": 200 }
 }
 ```
 
@@ -95,7 +95,7 @@ display with `strokeColor`, both in the same object:
     "type": "VcfTabixAdapter",
     "uri": "https://yourhost/file.vcf.gz"
   },
-  "displays": { "color": "green", "strokeColor": "red" }
+  "displayDefaults": { "color": "green", "strokeColor": "red" }
 }
 ```
 

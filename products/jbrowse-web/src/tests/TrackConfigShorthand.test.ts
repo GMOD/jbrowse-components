@@ -6,7 +6,7 @@ import corePlugins from '../corePlugins.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
-// Exercises the `display: {...}` track-config shorthand
+// Exercises the `displayDefaults: {...}` track-config shorthand
 // (expandTrackConfigShorthand) end to end with the full set of jbrowse-web
 // plugins, using the example tracks in test_data/volvox/config.json. Confirms
 // settings route to the right display configs by slot name after
@@ -39,9 +39,9 @@ function display(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return found
 }
 
-test('displays object shorthand color lands on the LinearBasicDisplay', () => {
-  // the object form (displays: {...}) was expanded to the array form during
-  // hydration; the color routed to the display that defines a `color` slot
+test('displayDefaults shorthand color lands on the LinearBasicDisplay', () => {
+  // the object form (displayDefaults: {...}) was expanded to the array form
+  // during hydration; the color routed to the display that defines a `color` slot
   const conf = hydrateTrack('gff3tabix_genes_shorthand_color')
   expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
     '#6a3d9a',

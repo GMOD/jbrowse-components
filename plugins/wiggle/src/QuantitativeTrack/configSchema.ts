@@ -24,9 +24,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *
  * #example
  * The same track with appearance settings in place. Rather than writing out the
- * full `displays` array, you can list them in a `displays` object — JBrowse works
- * out which display they belong to and applies them for you (here, the
- * `LinearWiggleDisplay`), so you don't have to know display names:
+ * full `displays` array, you can list them in a `displayDefaults` object —
+ * JBrowse works out which display they belong to and applies them for you (here,
+ * the `LinearWiggleDisplay`), so you don't have to know display names:
  * ```js
  * {
  *   type: 'QuantitativeTrack',
@@ -37,7 +37,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     type: 'BigWigAdapter',
  *     uri: 'https://example.com/coverage.bw',
  *   },
- *   displays: { scaleType: 'log', color: 'darkgreen' },
+ *   displayDefaults: { scaleType: 'log', color: 'darkgreen' },
  * }
  * ```
  */

@@ -79,14 +79,14 @@ field via `get(feature,'INFO').SVTYPE` and maps it to a color:
     "type": "VcfTabixAdapter",
     "uri": "http://yourhost/svs.vcf.gz"
   },
-  "displays": {
+  "displayDefaults": {
     "color": "jexl:({'DEL':'red','INS':'blue','DUP':'green','INV':'orange','BND':'purple','TRA':'purple'})[get(feature,'INFO').SVTYPE[0]] || 'gray'"
   }
 }
 ```
 
-The `displays` object is shorthand — JBrowse applies the `color` to the variant
-display for you, so you don't have to know the display's name
+The `displayDefaults` object is shorthand — JBrowse applies the `color` to the
+variant display for you, so you don't have to know the display's name
 (`LinearVariantDisplay`) or write the array. For per-display control use the
 array form (see the
 [track config guide](/docs/config_guides/tracks/#configuring-displays)).

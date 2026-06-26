@@ -29,11 +29,11 @@ const tracks = [
         },
       },
     },
-    // list appearance settings in a `displays` object and JBrowse applies each
-    // one to the right display for you (here the track's LinearBasicDisplay) —
-    // no need to know display names or write the full `displays` array. A `jexl:`
-    // value works here too, e.g. "jexl:get(feature,'type')=='CDS'?'red':'blue'"
-    displays: { color: 'green' },
+    // list appearance settings in a `displayDefaults` object and JBrowse applies
+    // each one to the right display for you (here the track's LinearBasicDisplay)
+    // — no need to know display names or write the full `displays` array. A
+    // `jexl:` value works here too, e.g. "jexl:get(feature,'type')=='CDS'?'red':'blue'"
+    displayDefaults: { color: 'green' },
   },
 ]
 

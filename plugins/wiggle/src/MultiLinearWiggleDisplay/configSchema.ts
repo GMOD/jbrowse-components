@@ -45,8 +45,8 @@ export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
  *
  * These are display-level slots: set them inside a track's `displays` to
  * change its defaults (setting them at the track top level has no effect).
- * The object shorthand `displays: { key: value }` is equivalent to the full
- * `displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
+ * The object shorthand `displayDefaults: { key: value }` is equivalent to the
+ * full `displays: [{ type: 'MultiLinearWiggleDisplay', displayId: '...', key: value }]`
  * array form — see
  * [configuring displays](/docs/config_guides/tracks#configuring-displays).
  *
@@ -86,7 +86,7 @@ export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
  *       'https://example.com/sample2.bw',
  *     ],
  *   },
- *   displays: { height: 300, defaultRendering: 'multixyplot' },
+ *   displayDefaults: { height: 300, defaultRendering: 'multixyplot' },
  * }
  * ```
  */

@@ -12,8 +12,8 @@ import { createBaseTrackConfig } from './index.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 
 // A track with two displays whose color slots differ ('color' vs 'strokeColor'),
-// to exercise slot-name routing of the `displays: {...}` object shorthand end to
-// end through real config creation.
+// to exercise slot-name routing of the `displayDefaults: {...}` object shorthand
+// end to end through real config creation.
 function makePluginManager() {
   const pluginManager = new PluginManager()
   pluginManager.addTrackType(
@@ -71,11 +71,11 @@ function display(conf: { displays: AnyConfigurationModel[] }, type: string) {
   return found
 }
 
-test('displays object routes a slot to the display that defines it', () => {
+test('displayDefaults routes a slot to the display that defines it', () => {
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    displays: { color: 'green' },
+    displayDefaults: { color: 'green' },
   })
   expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
     'green',
@@ -86,7 +86,7 @@ test('settings route by slot name across displays', () => {
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    displays: { color: 'green', strokeColor: 'red' },
+    displayDefaults: { color: 'green', strokeColor: 'red' },
   })
   expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
     'green',
@@ -110,12 +110,29 @@ test('the explicit displays array form passes through untouched', () => {
   )
 })
 
+test('displayDefaults folds into an explicit displays array (explicit wins)', () => {
+  const conf = createTrack({
+    trackId: 'mytrack',
+    type: 'FeatureTrack',
+    displays: [{ type: 'LinearBasicDisplay', displayId: 'd1', color: 'red' }],
+    displayDefaults: { color: 'green', strokeColor: 'blue' },
+  })
+  // explicit array entry keeps its own color; the shorthand still reaches the
+  // other display that defines strokeColor
+  expect(readConfObject(display(conf, 'LinearBasicDisplay'), 'color')).toBe(
+    'red',
+  )
+  expect(
+    readConfObject(display(conf, 'ChordVariantDisplay'), 'strokeColor'),
+  ).toBe('blue')
+})
+
 test('a jexl color expression routes through the shorthand', () => {
   const expr = "jexl:get(feature,'type')=='CDS'?'red':'blue'"
   const conf = createTrack({
     trackId: 'mytrack',
     type: 'FeatureTrack',
-    displays: { color: expr },
+    displayDefaults: { color: expr },
   })
   // read the raw snapshot, not readConfObject, which would evaluate the jexl
   const snap = getSnapshot(display(conf, 'LinearBasicDisplay')) as {

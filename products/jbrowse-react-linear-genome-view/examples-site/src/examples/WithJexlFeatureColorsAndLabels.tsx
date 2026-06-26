@@ -29,10 +29,10 @@ const tracks = [
         },
       },
     },
-    // `displays` OBJECT shorthand routes each setting to the track's display.
+    // `displayDefaults` shorthand routes each setting to the track's display.
     // `color` and `labels.name` accept a `jexl:` expression evaluated per
     // feature (`feature` is in scope) — here: color by strand, label with type.
-    displays: {
+    displayDefaults: {
       color: "jexl:get(feature,'strand')==1?'#1f77b4':'#d62728'",
       labels: { name: "jexl:get(feature,'name')+' ['+get(feature,'type')+']'" },
     },

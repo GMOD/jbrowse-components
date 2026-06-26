@@ -1443,7 +1443,7 @@
           }
         }
       },
-      "displays": { "color": "#6a3d9a" }
+      "displayDefaults": { "color": "#6a3d9a" }
     },
     {
       "type": "FeatureTrack",
@@ -1467,7 +1467,7 @@
           }
         }
       },
-      "displays": {
+      "displayDefaults": {
         "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
         "labels": {
           "name": "jexl:feature.name+' ['+feature.type+']'"
@@ -1496,7 +1496,7 @@
           }
         }
       },
-      "displays": { "color": "#1f78b4", "strokeColor": "#e31a1c" }
+      "displayDefaults": { "color": "#1f78b4", "strokeColor": "#e31a1c" }
     },
     {
       "type": "AlignmentsTrack",

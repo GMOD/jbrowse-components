@@ -75,8 +75,8 @@ do not need to set `sequenceAdapter` manually. See the
 Display settings — `colorBy`, `height`, `featureHeight`, `filterBy`, and the
 coverage `autoscale`/`minScore`/`maxScore` — are slots on the
 `LinearAlignmentsDisplay`, not on the track. Reads are grey by default
-(`colorBy` is `{ "type": "normal" }`). To change a default, nest a display entry
-in the track's `displays` array:
+(`colorBy` is `{ "type": "normal" }`). To change a default, set it with the
+track's `displayDefaults` shorthand:
 
 ```json
 {
@@ -85,13 +85,13 @@ in the track's `displays` array:
   "name": "My Alignments",
   "assemblyNames": ["hg19"],
   "adapter": { "type": "BamAdapter", "uri": "http://yourhost/file.bam" },
-  "displays": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
+  "displayDefaults": { "colorBy": { "type": "pairOrientation" }, "height": 250 }
 }
 ```
 
-The `displays` object is shorthand — JBrowse applies each setting for you, so
-you don't have to know the display's name (`LinearAlignmentsDisplay`) or write
-the array. Use the array form when you need per-display control (see the
+The `displayDefaults` object is shorthand — JBrowse applies each setting for
+you, so you don't have to know the display's name (`LinearAlignmentsDisplay`) or
+write the array. Use the array form when you need per-display control (see the
 [track config guide](/docs/config_guides/tracks/#configuring-displays)).
 
 See the

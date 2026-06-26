@@ -22,9 +22,9 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * #example
  * With log scale and a coarser resolution (`resolutionBias` nudges the
- * auto-picked binsize; negative = finer, positive = coarser). The `displays`
- * object shorthand applies settings to whichever display uses them — equivalent
- * to a full `displays: [{ type, displayId, ... }]` array. See
+ * auto-picked binsize; negative = finer, positive = coarser). The
+ * `displayDefaults` object shorthand applies settings to whichever display uses
+ * them — equivalent to a full `displays: [{ type, displayId, ... }]` array. See
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
@@ -33,7 +33,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *   name: 'Hi-C',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'HicAdapter', uri: 'https://example.com/contacts.hic' },
- *   displays: { useLogScale: true, resolutionBias: 1 },
+ *   displayDefaults: { useLogScale: true, resolutionBias: 1 },
  * }
  * ```
  */

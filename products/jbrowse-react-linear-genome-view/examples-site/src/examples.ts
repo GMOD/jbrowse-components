@@ -174,7 +174,7 @@ export const examples: ExampleMeta[] = [
     slug: 'with-track-color-shorthand',
     name: 'WithTrackColorShorthand',
     title: 'Track color shorthand',
-    description: 'Set a track color with the displays color shorthand.',
+    description: 'Set a track color with the displayDefaults color shorthand.',
     group: 'Track display & coloring',
   },
   {
@@ -182,7 +182,7 @@ export const examples: ExampleMeta[] = [
     name: 'WithWiggleTrack',
     title: 'Quantitative (BigWig) track',
     description:
-      'Render quantitative signal from a BigWig as a wiggle display, configured via the displays shorthand.',
+      'Render quantitative signal from a BigWig as a wiggle display, configured via the displayDefaults shorthand.',
     group: 'Track display & coloring',
   },
   {

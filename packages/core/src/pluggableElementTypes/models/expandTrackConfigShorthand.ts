@@ -38,11 +38,11 @@ export function trackDisplaySlots(trackType: TrackTypeLike) {
 }
 
 /**
- * Pure: route each shorthand `displays: {...}` setting to the display types that
- * define it. A setting goes to every display type whose config schema has that
- * slot, so slot names disambiguate across displays on their own (e.g. `color` →
- * LinearVariantDisplay, `strokeColor` → ChordVariantDisplay). Keys no display
- * defines are returned as `unknownKeys` for the caller to surface.
+ * Pure: route each shorthand `displayDefaults: {...}` setting to the display
+ * types that define it. A setting goes to every display type whose config schema
+ * has that slot, so slot names disambiguate across displays on their own (e.g.
+ * `color` → LinearVariantDisplay, `strokeColor` → ChordVariantDisplay). Keys no
+ * display defines are returned as `unknownKeys` for the caller to surface.
  */
 export function collectDisplayOverrides(
   displaySettings: Record<string, unknown>,
@@ -89,11 +89,16 @@ export function mergeOverridesIntoDisplays(
 }
 
 /**
- * Expands the shorthand `displays` **object** form into the explicit `displays`
+ * Expands the shorthand `displayDefaults` **object** into the explicit `displays`
  * **array**, so users can set display settings without naming the display type
- * or nesting in `displays:[{type,...}]`. `displays:{color:'green'}` routes each
- * setting to the display type(s) that define that slot; `displays:[{type,...}]`
- * (an array) is the explicit form and passes through untouched.
+ * or nesting in `displays:[{type,...}]`. `displayDefaults:{color:'green'}` routes
+ * each setting to the display type(s) that define that slot, folding them into
+ * whatever `displays` array the track already has (explicit entries win).
+ *
+ * `displayDefaults` is kept separate from `displays` (rather than overloading
+ * `displays` by shape) so a config using it still loads in a JBrowse version
+ * that predates the feature — the unknown key is ignored, instead of crashing
+ * when the array-typed `displays` slot receives an object.
  *
  * Runs inside `baseTrackConfig.preProcessSnapshot`, before display-stub
  * injection. Takes/returns the loosely-typed snapshot (as `evaluateExtensionPoint`
@@ -106,9 +111,10 @@ export function expandTrackConfigShorthand(
   if (!isPlainObject(input)) {
     return input
   }
+  // `rest` is the snapshot without the consumed shorthand key, so the expanded
+  // result never carries `displayDefaults` forward.
+  const { displayDefaults: shorthand, ...rest } = input
   const snap = input
-  // Shorthand is `displays` given as an object; an array is the explicit form.
-  const shorthand = snap.displays
   const type = typeof snap.type === 'string' ? snap.type : undefined
   const trackId = typeof snap.trackId === 'string' ? snap.trackId : undefined
   if (
@@ -141,8 +147,11 @@ export function expandTrackConfigShorthand(
     )
   }
 
+  const displays = Array.isArray(rest.displays)
+    ? (rest.displays as DisplaySnapshot[])
+    : []
   return {
-    ...snap,
-    displays: mergeOverridesIntoDisplays([], overrides, trackId),
+    ...rest,
+    displays: mergeOverridesIntoDisplays(displays, overrides, trackId),
   }
 }

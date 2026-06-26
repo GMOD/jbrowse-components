@@ -53,15 +53,15 @@ Put `myplugin.js` in the same folder as your config file and reference it:
           "uri": "volvox.filtered.gff"
         }
       },
-      "displays": { "color": "jexl:colorFeature(feature)" }
+      "displayDefaults": { "color": "jexl:colorFeature(feature)" }
     }
   ]
 }
 ```
 
-The `color` is set with the `displays` shorthand and works as a plain CSS color
-(`"displays": { "color": "green" }`) or, as here, a `jexl:` expression evaluated
-per feature. See
+The `color` is set with the `displayDefaults` shorthand and works as a plain CSS
+color (`"displayDefaults": { "color": "green" }`) or, as here, a `jexl:`
+expression evaluated per feature. See
 [configuring displays](/docs/config_guides/tracks/#configuring-displays) for the
 shorthand and the per-display array form.
 

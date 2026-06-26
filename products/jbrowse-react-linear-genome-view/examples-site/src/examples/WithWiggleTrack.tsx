@@ -24,10 +24,10 @@ const tracks = [
         uri: 'https://jbrowse.org/code/jb2/main/test_data/volvox/volvox_microarray.bw',
       },
     },
-    // the `displays` shorthand routes these settings to the track's
+    // the `displayDefaults` shorthand routes these settings to the track's
     // LinearWiggleDisplay — pick the renderer, pin the score axis, set colors
     // and height without naming the display
-    displays: {
+    displayDefaults: {
       defaultRendering: 'xyplot',
       height: 150,
       color: '#a05195',

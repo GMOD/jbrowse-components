@@ -1,6 +1,6 @@
 Per-track appearance — color, height, display mode — is set on a track's
 **displays** (the different ways a track can be drawn). Rather than writing out
-the full `displays` array, you can list your settings in a `displays`
+the full `displays` array, you can list your settings in a `displayDefaults`
 **object**. JBrowse works out which display each setting belongs to and applies
 it, so you don't have to know the display's type name:
 
@@ -12,7 +12,7 @@ it, so you don't have to know the display's type name:
   assemblyNames: ['volvox'],
   adapter: { /* ... */ },
   // applied to the track's LinearBasicDisplay for you
-  displays: { color: 'green' },
+  displayDefaults: { color: 'green' },
 }
 ```
 

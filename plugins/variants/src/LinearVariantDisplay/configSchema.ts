@@ -26,7 +26,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * ```
  *
  * #example
- * Taller track. The `displays` object shorthand is equivalent to
+ * Taller track. The `displayDefaults` object shorthand is equivalent to
  * `displays: [{ type: 'LinearVariantDisplay', displayId: '...', ... }]` — see
  * [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
@@ -39,7 +39,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     type: 'VcfTabixAdapter',
  *     uri: 'https://example.com/variants.vcf.gz',
  *   },
- *   displays: { height: 200 },
+ *   displayDefaults: { height: 200 },
  * }
  * ```
  */

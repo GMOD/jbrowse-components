@@ -6,12 +6,12 @@ renders through a
 which offers several renderers (`xyplot`, `density`, `line`) and an autoscaling
 score axis.
 
-The [`displays` object shorthand](../with-track-color-shorthand/) is the easiest
-way to configure all of this up front — JBrowse routes each key to the wiggle
-display:
+The [`displayDefaults` object shorthand](../with-track-color-shorthand/) is the
+easiest way to configure all of this up front — JBrowse routes each key to the
+wiggle display:
 
 ```js
-displays: {
+displayDefaults: {
   defaultRendering: 'xyplot', // 'xyplot' | 'density' | 'line'
   height: 150,
   color: '#a05195',

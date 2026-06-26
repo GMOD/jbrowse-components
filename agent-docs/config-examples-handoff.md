@@ -3,7 +3,7 @@
 ## Goal
 Standardize all `#example` JSDoc blocks in config schema source files:
 1. First example = minimal (no `displays` override)
-2. Additional examples = instructive display customizations using `displays: { ... }` object shorthand (not array), unless the display is non-default (then array required)
+2. Additional examples = instructive display customizations using `displayDefaults: { ... }` object shorthand (not array), unless the display is non-default (then array required)
 3. Shorthand notes link to `/docs/config_guides/tracks#configuring-displays`
 4. Track-specific guides cross-linked where they exist
 5. Height examples included (they're high-value)
@@ -31,16 +31,16 @@ These 6 source files (+ their generated docs) are staged/modified but not commit
 
 ### `plugins/wiggle/src/LinearWiggleDisplay/configSchema.ts`
 - Removed old array-form untagged prose block; replaced with shorthand equivalence note + link
-- Split into: minimal / `displays: { height: 200, scaleType: 'log', color: 'darkgreen' }`
+- Split into: minimal / `displayDefaults: { height: 200, scaleType: 'log', color: 'darkgreen' }`
 - Link to `/docs/config_guides/quantitative_track`
 
 ### `plugins/wiggle/src/MultiLinearWiggleDisplay/configSchema.ts`
 - Same prose-block fix
-- Split into: minimal / `displays: { height: 300, defaultRendering: 'multixyplot' }`
+- Split into: minimal / `displayDefaults: { height: 300, defaultRendering: 'multixyplot' }`
 - Link to `/docs/config_guides/multiquantitative_track`
 
 ### `plugins/variants/src/LinearVariantDisplay/configSchema.ts`
-- Split into: minimal / `displays: { height: 200 }`
+- Split into: minimal / `displayDefaults: { height: 200 }`
 - Link to `/docs/config_guides/variant_track`
 
 ### `plugins/gwas/src/LinearManhattanDisplay/configSchemaFactory.ts`
@@ -60,11 +60,11 @@ These 6 source files (+ their generated docs) are staged/modified but not commit
 ## Open issues (raised by user, not yet resolved)
 
 ### 1. `ldAdapter` in `LinearManhattanDisplay` example
-User flagged: putting an adapter config inside `displays` is unusual. Options:
+User flagged: putting an adapter config inside `displayDefaults` is unusual. Options:
 - Make `ldAdapter` a subadapter of `GWASAdapter` (so it lives at the adapter level, not display level)
-- Or keep it in `displays` but note it explicitly
+- Or keep it in `displayDefaults` but note it explicitly
 
-Current state in the file: `displays: { height: 400, colorBy: 'ld', ldAdapter: { type: 'PlinkLDTabixAdapter', ... } }`
+Current state in the file: `displayDefaults: { height: 400, colorBy: 'ld', ldAdapter: { type: 'PlinkLDTabixAdapter', ... } }`
 
 ### 2. `displayId` in array-form examples
 User noted `displayId` is not required in the array form — MST defaults it to `{trackId}-{displayType}`. The multi-sample variant examples currently include explicit `displayId`. Remove them.

@@ -31,9 +31,9 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * #example
  * GC-skew mode with a small, overlapping sliding window for a smoother signal
  * (`windowDelta` smaller than `windowSize` means windows overlap). The
- * `displays` object shorthand applies settings to whichever display uses them —
- * equivalent to writing a full `displays: [{ type, displayId, ... }]` array.
- * See [configuring displays](/docs/config_guides/tracks#configuring-displays):
+ * `displayDefaults` object shorthand applies settings to whichever display uses
+ * them — equivalent to writing a full `displays: [{ type, displayId, ... }]`
+ * array. See [configuring displays](/docs/config_guides/tracks#configuring-displays):
  * ```js
  * {
  *   type: 'GCContentTrack',
@@ -48,7 +48,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *       faiLocation: { uri: 'https://example.com/genome.fa.fai' },
  *     },
  *   },
- *   displays: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
+ *   displayDefaults: { gcMode: 'skew', windowSize: 50, windowDelta: 10 },
  * }
  * ```
  */
