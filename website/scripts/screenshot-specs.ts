@@ -601,6 +601,21 @@ const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
+  // snpcov collapses the alignments display to coverage-only by sizing the
+  // coverage band to fill the whole track (no read pileup below).
+  cliSpec('alignments_snpcov', [
+    '--fasta',
+    'data/volvox/volvox.fa',
+    '--bam',
+    'data/volvox/volvox-sorted.bam',
+    'snpcov',
+    'height:200',
+    '--loc',
+    'ctgA:1-20000',
+    '--width',
+    '1200',
+  ]),
+
   // Reads colored and sorted by their read-group (RG) tag.
   cliSpec('alignments_readgroup', [
     '--fasta',

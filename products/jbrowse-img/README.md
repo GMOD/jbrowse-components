@@ -628,11 +628,15 @@ jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
 
 `snpcov` collapses the alignments display down to coverage-only by sizing the
 coverage band to fill the whole track. Combine with `height:N` (overall track
-height) to get a coverage-only render at the size you want.
+height) to get a coverage-only render at the size you want. Reproducible with
+the bundled volvox alignments:
 
 ```bash
-jb2export --bam file.bam snpcov height:200 --fasta hg19.fa
+jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
+  snpcov height:200 --loc ctgA:1-20000 --width 1200 --out snpcov.png
 ```
+
+![Coverage-only render of an alignments track (snpcov), the SNP-coverage histogram filling the whole track with no read pileup](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_snpcov.png)
 
 ## Parameters
 
