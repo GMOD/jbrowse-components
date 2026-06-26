@@ -11,6 +11,35 @@ import type LinearGenomeViewPlugin from '@jbrowse/plugin-linear-genome-view'
  * ancestry painting"). Rows are partitioned by a feature attribute
  * (`partitionField`); each block's color comes from the per-feature `color`
  * slot.
+ *
+ * These are display-level slots. This is not a `FeatureTrack`'s default display,
+ * so configure it with an explicit `displays` entry (rather than the
+ * `displayDefaults` shorthand, whose `color` would also reach the default
+ * `LinearBasicDisplay`).
+ *
+ * #example
+ * A `FeatureTrack` painting BED intervals onto one row per sample, colored by
+ * the BED `itemRgb` column:
+ * ```js
+ * {
+ *   type: 'FeatureTrack',
+ *   trackId: 'ancestry_painting',
+ *   name: 'Ancestry painting',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'BedTabixAdapter',
+ *     uri: 'https://example.com/painting.bed.gz',
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearMultiRowFeatureDisplay',
+ *       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
+ *       partitionField: 'sample',
+ *       color: "jexl:get(feature,'itemRgb')",
+ *     },
+ *   ],
+ * }
+ * ```
  */
 export default function configSchemaF(pluginManager: PluginManager) {
   const LinearGenomePlugin = pluginManager.getPlugin(

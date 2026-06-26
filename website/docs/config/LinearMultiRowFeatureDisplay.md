@@ -17,11 +17,44 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/LinearMultiRowFeatureDisplay.md)
 
+## Example usage
+
+A `FeatureTrack` painting BED intervals onto one row per sample, colored by the
+BED `itemRgb` column:
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'ancestry_painting',
+  name: 'Ancestry painting',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    uri: 'https://example.com/painting.bed.gz',
+  },
+  displays: [
+    {
+      type: 'LinearMultiRowFeatureDisplay',
+      displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
+      partitionField: 'sample',
+      color: "jexl:get(feature,'itemRgb')",
+    },
+  ],
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 Paints interval features as colored blocks on stacked rows ("chromosome /
 ancestry painting"). Rows are partitioned by a feature attribute
 (`partitionField`); each block's color comes from the per-feature `color` slot.
+
+These are display-level slots. This is not a `FeatureTrack`'s default display,
+so configure it with an explicit `displays` entry (rather than the
+`displayDefaults` shorthand, whose `color` would also reach the default
+`LinearBasicDisplay`).
 
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Slots</summary>
