@@ -1,7 +1,7 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 
-import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
@@ -10,7 +10,7 @@ import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
-import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
+import { useVariantNativeScroll } from '../../shared/useVariantNativeScroll.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -18,6 +18,26 @@ import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+const useStyles = makeStyles()({
+  // sticky-canvas + tall-spacer native scroll, mirroring the canvas feature
+  // display (FeatureComponent.tsx): the content div grows to totalHeight and
+  // scrolls natively while the canvas stays pinned and redraws at scrollTop
+  scrollContainer: {
+    position: 'absolute',
+    inset: 0,
+    overflowX: 'hidden',
+  },
+  content: {
+    position: 'relative',
+    minHeight: '100%',
+  },
+  canvas: {
+    display: 'block',
+    position: 'sticky',
+    top: 0,
+  },
+})
 
 interface HoveredCell {
   rowIndex: number
@@ -164,7 +184,9 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const px2 = toX(cell.genomicEnd)
   const left = Math.min(px1, px2)
   const right = Math.max(px1, px2)
-  const top = cell.rowIndex * model.rowHeight - model.scrollTop
+  // content coords: the highlight lives in the natively-scrolling content div,
+  // so it moves with the rows (no manual scrollTop subtraction)
+  const top = cell.rowIndex * model.rowHeight
   return (
     <div
       style={{
@@ -188,29 +210,18 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
 const VariantBody = observer(function VariantBody({
   model,
   canvasRef,
-  canvas,
 }: {
   model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
-  canvas: HTMLCanvasElement | null
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
+  const { classes } = useStyles()
+  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
   const width = view.trackWidthPx
-  const height = model.availableHeight
 
-  useVariantVirtualScroll({
-    canvas,
-    scrollTop: model.scrollTop,
-    setScrollTop: model.setScrollTop,
-    totalHeight: model.totalHeight,
-    viewportHeight: model.availableHeight,
-    scrollZoom: view.scrollZoom,
-    rowHeight: model.rowHeight,
-    nrow: model.nrow,
-    setRowHeight: model.setRowHeight,
-  })
+  useVariantNativeScroll(scrollContainerRef, model, view)
 
   const { canvasHandlers, contextMenuNode } =
     useVariantCanvasInteraction<VariantHit>({
@@ -235,31 +246,34 @@ const VariantBody = observer(function VariantBody({
 
   return (
     <>
-      <canvas
-        data-testid="variant_canvas"
-        ref={canvasRef}
-        style={{
-          width,
-          height,
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          backgroundColor:
-            model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
-        }}
-        {...canvasHandlers}
-      />
-      {hoveredCell ? (
-        <HoveredCellHighlight cell={hoveredCell} model={model} />
-      ) : null}
-      <VerticalScrollbar
-        scrollTop={model.scrollTop}
-        setScrollTop={n => {
-          model.setScrollTop(n)
-        }}
-        viewportHeight={model.availableHeight}
-        contentHeight={model.totalHeight}
-      />
+      <div
+        ref={scrollContainerRef}
+        className={classes.scrollContainer}
+        style={{ overflowY: model.hasOverflow ? 'auto' : 'hidden' }}
+      >
+        <div
+          className={classes.content}
+          style={{ height: model.hasOverflow ? model.totalHeight : '100%' }}
+        >
+          <canvas
+            data-testid="variant_canvas"
+            ref={canvasRef}
+            className={classes.canvas}
+            style={{
+              width,
+              height: model.availableHeight,
+              backgroundColor:
+                model.referenceDrawingMode === 'skip'
+                  ? REFERENCE_COLOR
+                  : undefined,
+            }}
+            {...canvasHandlers}
+          />
+          {hoveredCell ? (
+            <HoveredCellHighlight cell={hoveredCell} model={model} />
+          ) : null}
+        </div>
+      </div>
       {contextMenuNode}
     </>
   )

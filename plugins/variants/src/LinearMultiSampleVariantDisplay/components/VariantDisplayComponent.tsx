@@ -27,20 +27,15 @@ const VariantDisplayComponent = observer(
         factory={VariantRenderer}
         ref={ref}
         testid="variant-display"
+        style={{ height: model.height }}
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {({ canvasRef, canvas }) => (
+        {({ canvasRef }) => (
           <>
+            <VariantBody model={model} canvasRef={canvasRef} />
             <LegendOverlay model={model} />
             <TreeSidebar model={model} />
-            <div style={{ position: 'absolute', left: 0 }}>
-              <VariantBody
-                model={model}
-                canvasRef={canvasRef}
-                canvas={canvas}
-              />
-            </div>
             {mouseState ? (
               <Crosshair mouseState={mouseState} model={model} />
             ) : null}

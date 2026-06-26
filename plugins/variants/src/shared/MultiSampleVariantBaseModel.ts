@@ -875,6 +875,16 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Whether the rows are taller than the viewport, i.e. the display
+         * scrolls. Drives native-scroll gating in displays that scroll their
+         * rows in a native overflow container (the plain display); auto-fit
+         * mode keeps this false since `rowHeight` derives from `availableHeight`.
+         */
+        get hasOverflow(): boolean {
+          return this.totalHeight > self.availableHeight
+        },
+        /**
+         * #getter
          */
         get featuresReady() {
           return !!self.featuresVolatile
