@@ -4,13 +4,15 @@ import { observer } from 'mobx-react'
 
 import BlockMsg from './BlockMsg.tsx'
 
+export interface TooLargeMessageModel {
+  regionTooLargeReason: string
+  forceLoad: () => void
+}
+
 const TooLargeMessage = observer(function TooLargeMessage({
   model,
 }: {
-  model: {
-    regionTooLargeReason: string
-    forceLoad: () => void
-  }
+  model: TooLargeMessageModel
 }) {
   const { regionTooLargeReason } = model
   return (

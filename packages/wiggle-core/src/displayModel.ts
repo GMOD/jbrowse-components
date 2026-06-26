@@ -20,7 +20,6 @@ export interface WiggleGpuDisplayModel<
   error: Error | null
   isLoading: boolean
   displayPhase: DisplayPhase
-  loadingOverlayVisible: boolean
   statusMessage?: string
   reload: () => void
   regionTooLarge: boolean

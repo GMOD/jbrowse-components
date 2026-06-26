@@ -167,18 +167,6 @@ export default function MultiRegionDisplayMixin() {
         )
       },
     }))
-    .views(self => ({
-      /**
-       * #getter
-       * The single signal every display's loading overlay reads. Derived from
-       * `displayPhase` so the loading-vs-terminal precedence isn't re-encoded by
-       * subtraction. Separate `.views` block so it can read the sibling
-       * `displayPhase` getter through `self`.
-       */
-      get loadingOverlayVisible() {
-        return self.displayPhase === 'loading'
-      },
-    }))
     .actions(self => ({
       /**
        * #action

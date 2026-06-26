@@ -76,11 +76,6 @@ const TestChromeModel = types
       )
     },
   }))
-  .views(self => ({
-    get loadingOverlayVisible() {
-      return self.displayPhase === 'loading'
-    },
-  }))
   .actions(self => ({
     reload() {},
     forceLoad() {},

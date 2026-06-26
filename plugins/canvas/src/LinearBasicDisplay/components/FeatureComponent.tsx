@@ -51,7 +51,6 @@ export interface LinearBasicDisplayModel {
   endYMorph: () => void
   featureItemMap: Map<string, FeatureItemEntry>
   displayPhase: DisplayPhase
-  loadingOverlayVisible: boolean
   error: unknown
   maxY: number
   hasOverflow: boolean

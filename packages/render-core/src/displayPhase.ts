@@ -2,10 +2,10 @@
  * The mutually-exclusive visual state of a GPU display. Computing it in one
  * place means the precedence — renderError > tooLarge > error > loading > ready
  * — lives in a single function instead of being re-encoded by subtraction
- * (`&& !regionTooLarge && !error && !renderError`) in every display model's
- * `loadingOverlayVisible` AND mirrored a second time by `DisplayChrome`'s JSX
- * order. `DisplayChrome` switches on it; `loadingOverlayVisible` is just
- * `displayPhase === 'loading'`.
+ * (`&& !regionTooLarge && !error && !renderError`) in every display model AND
+ * mirrored a second time by `DisplayChrome`'s JSX order. `DisplayChrome`
+ * switches on it; the loading scrim's visibility is just
+ * `displayPhase === 'loading'`, computed once in the chrome.
  *
  * `renderError` and `tooLarge` replace the whole display subtree (their own
  * root element, so the transition unmounts the canvas → `canvasRef(null)` →

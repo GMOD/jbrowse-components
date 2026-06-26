@@ -8,25 +8,27 @@ import DisplayLoadingOverlay from './DisplayLoadingOverlay.tsx'
 import DisplayRenderErrorOverlay from './DisplayRenderErrorOverlay.tsx'
 import TooLargeMessage from '../../shared/TooLargeMessage.tsx'
 
+import type { DisplayErrorBarModel } from './DisplayErrorBar.tsx'
+import type { DisplayLoadingOverlayModel } from './DisplayLoadingOverlay.tsx'
+import type { TooLargeMessageModel } from '../../shared/TooLargeMessage.tsx'
 import type { RenderLifecycleModel } from '@jbrowse/core/util/useRenderingBackend'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
 
-// `renderError`/`setRenderError` are NOT here — they live on
-// `RenderLifecycleModel`, which the chrome's model is always intersected with.
-// These are the fetch/region/status fields DisplayChrome reads itself or hands
-// to its sub-overlays.
-export interface ChromeModel {
-  error: unknown
-  reload: () => void
-  forceLoad: () => void
+// The model contract is the *union of what the chrome and its sub-overlays
+// read*, composed directly from each overlay's own model prop type so it can't
+// drift: add/remove a field an overlay reads and this updates with no edit here.
+// The chrome itself reads only `displayPhase`/`height`/`canvasDrawn`; everything
+// else flows through to a named overlay. (`renderError`/`setRenderError` are NOT
+// here — they live on `RenderLifecycleModel`, always intersected in below.
+// Loading-overlay *visibility* is derived from `displayPhase` by the chrome, so
+// the overlay model doesn't re-encode `=== 'loading'`.)
+export type ChromeModel = {
   displayPhase: DisplayPhase
-  loadingOverlayVisible: boolean
-  statusMessage?: string
-  regionTooLarge: boolean
-  regionTooLargeReason: string
   height: number
   canvasDrawn: boolean
-}
+} & DisplayErrorBarModel &
+  TooLargeMessageModel &
+  DisplayLoadingOverlayModel
 
 interface CanvasHandle {
   canvasRef: (node: HTMLCanvasElement | null) => void
@@ -39,11 +41,12 @@ interface CanvasHandle {
 // collapse to one getter, `model.displayPhase`
 // ('renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'). The precedence
 // among them is single-sourced in `computeDisplayPhase` (see displayPhase.ts);
-// this component branches on it, and `loadingOverlayVisible` is just
-// `displayPhase === 'loading'`. So a display can't show a canvas while skipping
-// a terminal state, can't bury the hook somewhere the chrome can't see (the
-// seam alignments drifted through), and the loading-vs-terminal precedence
-// isn't re-encoded by subtraction in each model's `loadingOverlayVisible`.
+// this component branches on it, and the loading scrim's visibility is just
+// `displayPhase === 'loading'` (computed here once and passed to
+// `DisplayLoadingOverlay`, never re-encoded as a per-model getter). So a display
+// can't show a canvas while skipping a terminal state, can't bury the hook
+// somewhere the chrome can't see (the seam alignments drifted through), and the
+// loading-vs-terminal precedence isn't re-encoded by subtraction per display.
 //
 // The two subtree-replacing states (renderError, tooLarge) **early-`return`**
 // their own component; `error` and `loading` are overlays drawn *over* the
@@ -102,12 +105,13 @@ function DisplayChromeInner<B extends { dispose(): void }>({
   testid?: string
 } & Omit<ComponentPropsWithRef<'div'>, 'children'>) {
   const { canvas, canvasRef, retry } = useRenderingBackend(factory, model)
+  const phase = model.displayPhase
   // Terminal states are literal early-`return`s, NOT ternary branches of a
   // single return — empirically the two are NOT interchangeable here (identical
   // element tree, but the ternary form fails to commit the banner subtree in
   // React 19 + mobx-react + jsdom; StatsEstimation.test catches it). See the
   // comment block above for the full rule.
-  if (model.displayPhase === 'renderError') {
+  if (phase === 'renderError') {
     return (
       <DisplayRenderErrorOverlay
         error={model.renderError}
@@ -116,7 +120,7 @@ function DisplayChromeInner<B extends { dispose(): void }>({
       />
     )
   }
-  if (model.displayPhase === 'tooLarge') {
+  if (phase === 'tooLarge') {
     return <TooLargeMessage model={model} />
   }
   return (
@@ -136,7 +140,7 @@ function DisplayChromeInner<B extends { dispose(): void }>({
     >
       {children({ canvasRef, canvas })}
       <DisplayErrorBar model={model} />
-      <DisplayLoadingOverlay model={model} />
+      <DisplayLoadingOverlay model={model} visible={phase === 'loading'} />
     </div>
   )
 }

@@ -84,8 +84,8 @@ export function RenderLifecycleMixin() {
        * undefined. Single source of truth for the render-error terminal state:
        * `useRenderingBackend` writes it from the canvas-init mechanism so the
        * model — not React-local hook state — owns every terminal state. Read by
-       * `loadingOverlayVisible` (suppresses the scrim) and by `DisplayChrome`
-       * (shows the retry overlay).
+       * `displayPhase` (whose `renderError` term outranks `loading`, suppressing
+       * the scrim) and by `DisplayChrome` (shows the retry overlay).
        */
       renderError: undefined,
     }))

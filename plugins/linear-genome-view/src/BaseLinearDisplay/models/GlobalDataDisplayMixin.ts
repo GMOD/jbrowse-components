@@ -66,18 +66,6 @@ export default function GlobalDataDisplayMixin() {
     .views(self => ({
       /**
        * #getter
-       * Shared with MultiRegionDisplayMixin's getter of the same name so
-       * `DisplayLoadingOverlay` reads one signal across all GPU displays.
-       * Correctly stays hidden over a display that's intentionally empty (e.g.
-       * LD with the triangle toggled off, which fetches nothing). Separate
-       * `.views` block so it can read the sibling `displayPhase` getter.
-       */
-      get loadingOverlayVisible() {
-        return self.displayPhase === 'loading'
-      },
-
-      /**
-       * #getter
        * Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
        * off-screen (SVG) export can read final data. A global display has no
        * per-region spatial axis, so "settled" is simply `displayPhase !==

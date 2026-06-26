@@ -232,7 +232,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * Same precedence as MultiRegionDisplayMixin plus a zoom gate: when zoomed
        * past base resolution the body shows a "zoom in" message, so suppress the
        * loading phase (fall through to `ready`) and let that message show. The
-       * inherited `loadingOverlayVisible` reads this overridden getter.
+       * chrome's loading-overlay visibility derives from this overridden getter.
        */
       get displayPhase(): DisplayPhase {
         return computeDisplayPhase(
