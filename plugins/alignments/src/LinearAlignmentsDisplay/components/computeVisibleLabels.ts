@@ -199,7 +199,7 @@ export function computeVisibleLabels(
         if (type === INTERBASE_INSERTION) {
           const insertionType = getInsertionType(length, pxPerBp)
           if (insertionType === 'large') {
-            const halfW = insertionBarWidth(length, pxPerBp) / 2
+            const halfW = insertionBarWidth(length, pxPerBp, featureHeight) / 2
             insertionShadows.push({
               row: interbaseYs[i]!,
               x0: xPx - halfW,

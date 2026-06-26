@@ -10,8 +10,6 @@
 
 
 
-## trans except
-feature_sequence
 
 ## toggle off tooltips
 for multivariantdisplay
@@ -20,4 +18,6 @@ for multivariantdisplay
 
 ## add option "hide this feature" to multisamplevariantdisplay, etc
 
-## improve byte size estimate from tabix in particular
+
+## jb2hubs real ncbi gff for ucsc
+

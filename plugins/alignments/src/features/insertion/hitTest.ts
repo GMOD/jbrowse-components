@@ -18,6 +18,7 @@ function hitTestInsertion(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   sizeFilter: 'small' | 'large',
+  featureHeight: number,
 ): CigarHitResult | undefined {
   const { bpPerPx, genomicPos, row } = coords
   const {
@@ -50,7 +51,7 @@ function hitTestInsertion(
         ) {
           continue
         }
-        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp) + 4
+        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp, featureHeight) + 4
         const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
         if (Math.abs(genomicPos - pos) < rectHalfWidthBp) {
           return {
@@ -70,13 +71,15 @@ function hitTestInsertion(
 export function hitTestLargeInsertion(
   resolved: ResolvedBlock,
   coords: CigarCoords,
+  featureHeight: number,
 ) {
-  return hitTestInsertion(resolved, coords, 'large')
+  return hitTestInsertion(resolved, coords, 'large', featureHeight)
 }
 
 export function hitTestSmallInsertion(
   resolved: ResolvedBlock,
   coords: CigarCoords,
+  featureHeight: number,
 ) {
-  return hitTestInsertion(resolved, coords, 'small')
+  return hitTestInsertion(resolved, coords, 'small', featureHeight)
 }

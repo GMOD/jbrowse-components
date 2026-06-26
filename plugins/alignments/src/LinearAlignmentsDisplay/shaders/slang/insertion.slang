@@ -12,6 +12,7 @@ public static const uint VERTS_PER_INSTANCE = 18u;
 static const uint  LONG_INSERTION_MIN_LENGTH = 10u;
 static const float LONG_INSERTION_TEXT_THRESHOLD_PX = 15.0;
 static const float INSERTION_SERIF_MIN_PX_PER_BP = 3.0;
+static const float MIN_HEIGHT_FOR_TEXT = 5.0;
 
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -45,7 +46,11 @@ ColorVsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   bool isLong = inst.length >= LONG_INSERTION_MIN_LENGTH;
   float insWPx = float(inst.length) * pxPerBp;
   bool canText = insWPx >= LONG_INSERTION_TEXT_THRESHOLD_PX;
-  bool isLarge = isLong && canText;
+  // A 'large' insertion only earns the wide count-label box when the row is tall
+  // enough to draw the count; in compact/super-compact pileups it shrinks to the
+  // narrow 'long' bar instead of a wide empty box. SYNC(insertionBarWidth).
+  bool tallEnoughForText = u.featHeight >= MIN_HEIGHT_FOR_TEXT;
+  bool isLarge = isLong && canText && tallEnoughForText;
 
   float rectW;
   if (isLarge)      { rectW = textWidth(inst.length); }

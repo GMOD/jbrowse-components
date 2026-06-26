@@ -107,9 +107,9 @@ function hitTestCigarItem(
     return undefined
   }
   return (
-    hitTestLargeInsertion(resolved, coords) ??
+    hitTestLargeInsertion(resolved, coords, featureHeight) ??
     hitTestMismatch(resolved, coords) ??
-    hitTestSmallInsertion(resolved, coords) ??
+    hitTestSmallInsertion(resolved, coords, featureHeight) ??
     hitTestGap(resolved, coords) ??
     hitTestClip(resolved, coords, 'softclip') ??
     hitTestClip(resolved, coords, 'hardclip')
@@ -224,7 +224,11 @@ export function performHitTest(
       // When zoomed out, surface features that are still visually significant.
       // Mirror hitTestCigarItem's adjustedY/yWithinRow guards so inter-row
       // spacing doesn't produce false hits.
-      const largeInsertionHit = hitTestLargeInsertion(resolved, coords)
+      const largeInsertionHit = hitTestLargeInsertion(
+        resolved,
+        coords,
+        featureHeight,
+      )
       if (largeInsertionHit) {
         return { type: 'cigar', hit: largeInsertionHit, resolved }
       }

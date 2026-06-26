@@ -18,7 +18,7 @@
     "@jbrowse/core": "workspace:*",
     "@jbrowse/mobx-state-tree": "^5.11.1",
     "@jbrowse/react-circular-genome-view2": "workspace:*",
-    "astro": "^7.0.0",
+    "astro": "^7.0.2",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2",
     "react": "^19.2.7",

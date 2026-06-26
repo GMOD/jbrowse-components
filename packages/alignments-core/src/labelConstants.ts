@@ -79,8 +79,8 @@ export function getInsertionType(
 }
 
 // The short bar a 'long' insertion draws. Also the fallback width for a 'large'
-// insertion whose count label can't be drawn (see drawInsertionMarker), so an
-// unlabelled large insertion shrinks to this instead of an empty wide box.
+// insertion whose count label can't be drawn (row too short, see
+// insertionBarWidth), so it shrinks to this instead of an empty wide box.
 function longInsertionBarWidth(len: number, pxPerBp: number) {
   return Math.min(5, (len * pxPerBp) / 3)
 }
@@ -91,10 +91,23 @@ function longInsertionBarWidth(len: number, pxPerBp: number) {
 // GPU shader (via that mirror), the Canvas2D/SVG renderer, hit-testing (both
 // alignments and MAF), and SNP-letter shadowing. insertionWidth.test.ts pins
 // this against the shader.
-export function insertionBarWidth(len: number, pxPerBp: number) {
+//
+// `featureHeight` is the marker's drawn pixel height. A 'large' insertion only
+// earns the wide count-label box when the row is tall enough to actually draw
+// the count (>= MIN_HEIGHT_FOR_TEXT); in compact/super-compact pileups it shrinks
+// to the same noticeable bar a 'long' insertion uses, instead of a wide empty
+// box. Defaults to MIN_HEIGHT_FOR_TEXT so width-only callers (hit-testing) that
+// don't track row height get the labelled width.
+export function insertionBarWidth(
+  len: number,
+  pxPerBp: number,
+  featureHeight = MIN_HEIGHT_FOR_TEXT,
+) {
   const type = getInsertionType(len, pxPerBp)
   if (type === 'large') {
-    return textWidthForNumber(len)
+    return featureHeight >= MIN_HEIGHT_FOR_TEXT
+      ? textWidthForNumber(len)
+      : longInsertionBarWidth(len, pxPerBp)
   }
   if (type === 'long') {
     return longInsertionBarWidth(len, pxPerBp)
@@ -116,10 +129,13 @@ export const INSERTION_SERIF_MIN_PX_PER_BP = 3
 
 // Draw one insertion marker centered on `xCenter`: a box whose width follows
 // insertionBarWidth (1px small / short bar long / number-label-width large) plus
-// serif caps on small insertions when zoomed in. The caller sets `ctx.fillStyle`
-// (including any frequency alpha) and draws the count text. Shared by plugin-
-// alignments (Canvas2D/SVG export) and plugin-maf (insertion overlay + export)
-// so the marker geometry can't drift between the two displays.
+// serif caps on small insertions when zoomed in. The box width is gated on
+// `height` (the marker's pixel height) so a 'large' insertion in a row too short
+// to fit its count label shrinks to the narrow bar instead of an empty wide box.
+// The caller sets `ctx.fillStyle` (including any frequency alpha) and draws the
+// count text. Shared by plugin-alignments (Canvas2D/SVG export) and plugin-maf
+// (insertion overlay + export) so the marker geometry can't drift between the
+// two displays.
 export function drawInsertionMarker(
   ctx: DrawCtx,
   xCenter: number,
@@ -127,16 +143,8 @@ export function drawInsertionMarker(
   height: number,
   length: number,
   pxPerBp: number,
-  // When false, the caller won't draw the count label inside the box (e.g. the
-  // row is too short to fit text), so a 'large' insertion shrinks to the narrow
-  // 'long' bar rather than leaving an empty number-width box. Defaults to true
-  // so labelled callers (plugin-alignments) are unaffected.
-  labelled = true,
 ) {
-  const w =
-    !labelled && getInsertionType(length, pxPerBp) === 'large'
-      ? longInsertionBarWidth(length, pxPerBp)
-      : insertionBarWidth(length, pxPerBp)
+  const w = insertionBarWidth(length, pxPerBp, height)
   ctx.fillRect(xCenter - w / 2, y, w, height)
   const isLong = length >= LONG_INSERTION_MIN_LENGTH
   if (!isLong && pxPerBp >= INSERTION_SERIF_MIN_PX_PER_BP) {

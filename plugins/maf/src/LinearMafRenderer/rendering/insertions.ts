@@ -32,9 +32,11 @@ export function drawMafInsertionMarker(
   insertionColor: string,
 ) {
   const type = getInsertionType(length, pxPerBp)
+  // drawInsertionMarker gates the box width on `h` itself, so it shrinks a large
+  // insertion to the narrow bar when the row is too short to show the count.
   const labelFits = h >= MIN_HEIGHT_FOR_TEXT
   ctx.fillStyle = insertionColor
-  drawInsertionMarker(ctx, xCenter, rowTop, h, length, pxPerBp, labelFits)
+  drawInsertionMarker(ctx, xCenter, rowTop, h, length, pxPerBp)
   const yMid = Math.round(rowTop + h / 2)
   if (type === 'large' && labelFits) {
     const text = String(length)
