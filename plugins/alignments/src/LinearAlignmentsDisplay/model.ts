@@ -402,6 +402,12 @@ export default function stateModelFactory(
           flipStrandLongReadChains: types.stripDefault(types.boolean, true),
           /**
            * #property
+           * Opt-in legacy behavior: paint paired supplementary chains a flat
+           * supplementary color instead of keeping their pair-orientation color.
+           */
+          colorSupplementaryChains: types.stripDefault(types.boolean, false),
+          /**
+           * #property
            */
           drawInter: types.stripDefault(types.boolean, true),
           /**
@@ -896,6 +902,7 @@ export default function stateModelFactory(
             const opts = {
               linkedReads: self.linkedReads,
               flipStrandLongReadChains: self.flipStrandLongReadChains,
+              colorSupplementaryChains: self.colorSupplementaryChains,
             }
             for (const data of eachGroupData(self.rpcDataMap)) {
               for (let i = 0; i < data.readFlags.length; i++) {
@@ -1594,6 +1601,7 @@ export default function stateModelFactory(
             linkedReads: self.linkedReads,
             showLinkedReadLines: self.showLinkedReadLines,
             flipStrandLongReadChains: self.flipStrandLongReadChains,
+            colorSupplementaryChains: self.colorSupplementaryChains,
             readConnectionsLineWidth: self.readConnectionsLineWidth,
             arcsYDomainBp: this.arcsYDomainBp,
           }
@@ -2234,6 +2242,13 @@ export default function stateModelFactory(
            */
           setFlipStrandLongReadChains(flag: boolean) {
             self.flipStrandLongReadChains = flag
+          },
+
+          /**
+           * #action
+           */
+          setColorSupplementaryChains(flag: boolean) {
+            self.colorSupplementaryChains = flag
           },
 
           /**

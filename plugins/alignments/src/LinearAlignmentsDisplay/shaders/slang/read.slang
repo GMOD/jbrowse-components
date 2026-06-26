@@ -150,12 +150,16 @@ float3 getReadColor(Instance inst, Uniforms u) {
   int cm = u.chainMode;
   bool isPaired = (inst.flags & 1u) != 0u;
 
-  // Linked-read overrides: supplementary colored distinctly, or strand
-  // flipped to match primary.
-  if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u && isPaired) {
+  // Opt-in legacy behavior: paint paired supplementary chains a flat
+  // supplementary color (hides the discordant-pair signal; off by default).
+  if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u && isPaired && u.colorSuppChains == 1) {
     return unpackRGBA(u.colorSupplementary).xyz;
   }
-  if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u) {
+  // Long-read (unpaired) supplementary chains frame each segment's strand
+  // against the primary so an inversion at a split junction reads as a strand
+  // flip. Paired supplementary chains otherwise keep their per-scheme color —
+  // see colorUtils.ts.
+  if (cm == CM_LINKED_READ && inst.chainHasSupp > 0u && !isPaired) {
     int primaryStrand = (inst.chainHasSupp > 1u) ? -1 : 1;
     int eff = (u.flipStrandLongRead == 1) ? inst.strand * primaryStrand : inst.strand;
     return strandColor(eff, u);

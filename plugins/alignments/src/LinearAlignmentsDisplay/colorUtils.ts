@@ -93,7 +93,8 @@ const orientationSchemes = new Set([
 ])
 
 // Classify read `i` under the active color scheme. Precedence:
-// chain-supplementary → unmapped mate → inter-chromosomal → per-scheme bucket.
+// long-read-chain-supplementary → unmapped mate → inter-chromosomal →
+// per-scheme bucket.
 //
 // SYNC: `getReadColor` in shaders/slang/read.slang is the GPU twin and must
 // reproduce this exact precedence (it's the path most users see; this JS path
@@ -108,19 +109,28 @@ export function readColorCategory(
   opts?: {
     linkedReads?: LinkedReadsMode
     flipStrandLongReadChains?: boolean
+    colorSupplementaryChains?: boolean
   },
 ): ReadColorCategory {
   const flags = data.readFlags[i]!
   const strand = data.readStrands[i]!
   const isChain = opts?.linkedReads !== undefined && opts.linkedReads !== 'off'
 
-  // In chain/linked-read mode, supplementary chains use one distinct color for
-  // paired-end reads; long-read supplementary fall back to (oriented) strand.
   const chainSupp = data.readChainHasSupp?.[i] ?? 0
-  if (isChain && chainSupp > 0) {
-    if ((flags & 1) !== 0) {
-      return 'supplementary'
-    }
+  const isPaired = (flags & 1) !== 0
+
+  // Opt-in legacy behavior: paint paired supplementary chains a flat
+  // supplementary color (hides the discordant-pair signal; off by default).
+  if (isChain && chainSupp > 0 && isPaired && opts.colorSupplementaryChains) {
+    return 'supplementary'
+  }
+
+  // Long-read (unpaired) supplementary chains frame each segment's strand
+  // against the primary, so an inversion at a split junction reads as a strand
+  // flip. Paired supplementary chains otherwise keep their normal per-scheme
+  // color (pair orientation, insert size, …): a flat override would hide the
+  // discordant-pair signal, and the split is already shown by arcs/clip marks.
+  if (isChain && chainSupp > 0 && !isPaired) {
     const primaryStrand = chainSupp > 1 ? -1 : 1
     const effectiveStrand =
       opts.flipStrandLongReadChains !== false ? strand * primaryStrand : strand
@@ -280,6 +290,7 @@ export function getReadColor(
   opts?: {
     linkedReads?: LinkedReadsMode
     flipStrandLongReadChains?: boolean
+    colorSupplementaryChains?: boolean
   },
 ) {
   return categoryColor(

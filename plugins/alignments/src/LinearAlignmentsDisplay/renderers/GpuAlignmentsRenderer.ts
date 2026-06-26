@@ -13,9 +13,11 @@ import {
 } from './rendererTypes.ts'
 import {
   ARC_LINE_PASS,
+  ARC_MARKER_PASS,
   ARC_PASS,
   PASS_ARC,
   PASS_ARC_LINE,
+  PASS_ARC_MARKER,
 } from '../../features/arcs/packGpu.ts'
 import { uploadArcs } from '../../features/arcs/uploadGpu.ts'
 import {
@@ -182,6 +184,7 @@ function fillFrameUniforms(
   i[U.chainMode] = state.linkedReads === 'normal' ? 1 : 0
   i[U.showStroke] = state.showOutline && state.featureHeight >= 4 ? 1 : 0
   i[U.flipStrandLongRead] = state.flipStrandLongReadChains ? 1 : 0
+  i[U.colorSuppChains] = state.colorSupplementaryChains ? 1 : 0
   f[U.reversed] = frame.reversed ? 1 : 0
 }
 
@@ -294,6 +297,7 @@ export const ALIGNMENTS_PASSES: PassDescriptor[] = [
   INTERBASE_PASS,
   INDICATOR_PASS,
   ARC_PASS,
+  ARC_MARKER_PASS,
   ARC_LINE_PASS,
   CONN_LINE_PASS,
   LINKED_READ_LINE_PASS,
@@ -826,6 +830,8 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
       this.hal.setViewport(geom.vpX, viewportTop, geom.vpW, viewportH)
       this.hal.setScissor(geom.vpX, scissor.top, geom.vpW, scissor.height)
       this.hal.drawPass(PASS_ARC, regionKey)
+      // Endpoint squares paint on top of the (now black) flat connector lines.
+      this.hal.drawPass(PASS_ARC_MARKER, regionKey)
       this.hal.drawPass(PASS_ARC_LINE, regionKey)
 
       this.restoreUBO()

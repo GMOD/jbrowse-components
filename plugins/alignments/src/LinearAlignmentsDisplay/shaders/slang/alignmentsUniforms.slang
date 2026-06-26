@@ -130,6 +130,11 @@ public struct Uniforms {
   public uint linkedReadColor6;
   public uint linkedReadColor7;
   public float pxPerBp;
+  // 1 = opt-in legacy behavior: paint paired supplementary chains a flat
+  // supplementary color (hides pair orientation); 0 = keep per-scheme color.
+  // Only the read pass reads it; kept last so adding it leaves every other
+  // shader's shared-UBO field offsets unchanged.
+  public int colorSuppChains;
 };
 
 // ---- Helper functions ---------------------------------------------------

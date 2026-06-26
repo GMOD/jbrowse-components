@@ -131,6 +131,7 @@ export function drawReads(
   const colorOpts = {
     linkedReads: state.linkedReads,
     flipStrandLongReadChains: state.flipStrandLongReadChains,
+    colorSupplementaryChains: state.colorSupplementaryChains,
   }
   const chevronFrame: ChevronFrame = {
     pxPerBp: fullBlockWidth / bpLength,

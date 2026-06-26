@@ -133,16 +133,69 @@ describe('readColorCategory', () => {
     ).toBe('longInsert')
   })
 
-  test('supplementary is a chain-mode-only bucket', () => {
-    const supp = makeData({ chainHasSupp: 1, flags: 1 })
-    // pileup (linkedReads off): supplementary is never painted as such
-    expect(readColorCategory(0, supp, ColorScheme.strand)).not.toBe(
-      'supplementary',
-    )
-    // chain mode: paired supplementary read is its own bucket
-    expect(readColorCategory(0, supp, ColorScheme.strand, chainOpts)).toBe(
-      'supplementary',
-    )
+  test('paired supplementary chains keep their per-scheme color', () => {
+    // chain mode, paired (flags=1) supplementary read: no flat override, so it
+    // falls through to the active scheme and the discordant-pair signal survives
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 1, flags: 1, pairOrientation: 3 }),
+        ColorScheme.pairOrientation,
+        chainOpts,
+      ),
+    ).toBe('pairRR')
+    // never the flat 'supplementary' bucket, in chain mode or pileup
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 1, flags: 1 }),
+        ColorScheme.strand,
+        chainOpts,
+      ),
+    ).not.toBe('supplementary')
+  })
+
+  test('colorSupplementaryChains opt-in restores the flat orange override', () => {
+    // with the opt-in on, a paired supplementary chain is the flat bucket again,
+    // overriding the pair-orientation color
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 1, flags: 1, pairOrientation: 3 }),
+        ColorScheme.pairOrientation,
+        { ...chainOpts, colorSupplementaryChains: true },
+      ),
+    ).toBe('supplementary')
+    // opt-in has no effect outside chain mode
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 1, flags: 1, pairOrientation: 3 }),
+        ColorScheme.pairOrientation,
+        { colorSupplementaryChains: true },
+      ),
+    ).toBe('pairRR')
+  })
+
+  test('long-read (unpaired) supplementary chains frame strand against primary', () => {
+    // unpaired (flags=0) supplementary with a reverse primary (chainHasSupp=2):
+    // a forward segment reads as reverse once flipped into the primary frame
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 2, flags: 0, strand: 1 }),
+        ColorScheme.strand,
+        chainOpts,
+      ),
+    ).toBe('revStrand')
+    // pileup (linkedReads off): no chain framing, plain strand applies
+    expect(
+      readColorCategory(
+        0,
+        makeData({ chainHasSupp: 2, flags: 0, strand: 1 }),
+        ColorScheme.strand,
+      ),
+    ).toBe('fwdStrand')
   })
 
   test('unmapped mate and inter-chromosomal apply to orientation schemes', () => {
@@ -172,15 +225,17 @@ describe('getReadColor maps each category to its palette color', () => {
     expect(
       getReadColor(0, makeData({ strand: -1 }), ColorScheme.strand, palette),
     ).toBe(rgb255(palette.colorRevStrand))
+    // paired supplementary chain: falls through to the scheme color, not a flat
+    // supplementary override
     expect(
       getReadColor(
         0,
-        makeData({ chainHasSupp: 1, flags: 1 }),
+        makeData({ chainHasSupp: 1, flags: 1, strand: -1 }),
         ColorScheme.strand,
         palette,
         chainOpts,
       ),
-    ).toBe(rgb255(palette.colorSupplementary))
+    ).toBe(rgb255(palette.colorRevStrand))
     expect(
       getReadColor(
         0,

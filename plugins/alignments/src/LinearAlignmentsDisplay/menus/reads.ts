@@ -25,6 +25,8 @@ interface ReadsModel {
   setShowOutline: (v: boolean | undefined) => void
   flipStrandLongReadChains: boolean
   setFlipStrandLongReadChains: (flag: boolean) => void
+  colorSupplementaryChains: boolean
+  setColorSupplementaryChains: (flag: boolean) => void
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -85,6 +87,13 @@ export function getReadsMenuItem(model: ReadsModel) {
             model.flipStrandLongReadChains,
             () => {
               model.setFlipStrandLongReadChains(!model.flipStrandLongReadChains)
+            },
+          ),
+          checkboxItem(
+            'Color supplementary chains orange',
+            model.colorSupplementaryChains,
+            () => {
+              model.setColorSupplementaryChains(!model.colorSupplementaryChains)
             },
           ),
         ],

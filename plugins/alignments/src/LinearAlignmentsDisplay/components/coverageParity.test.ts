@@ -590,6 +590,7 @@ describe('GPU renderBlocks canvasDrawn gating', () => {
       linkedReads: 'off',
       showLinkedReadLines: false,
       flipStrandLongReadChains: true,
+      colorSupplementaryChains: false,
       readConnectionsLineWidth: 1,
       readConnections: 'off',
       readConnectionsDown: false,

@@ -53,6 +53,9 @@ export interface RenderState {
   // Chain layout has its own connecting-line pass, so this is never needed there.
   showLinkedReadLines: boolean
   flipStrandLongReadChains: boolean
+  // Opt-in legacy behavior: paint paired supplementary chains a flat
+  // supplementary color (hides pair orientation). Off by default.
+  colorSupplementaryChains: boolean
   readConnectionsLineWidth: number
   // Genomic bp that map to the arcs band's vertical extent. Arc/bezier mode
   // passes availH/pxPerBp (zoom-proportional); samplot mode passes the
