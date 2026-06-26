@@ -17,7 +17,7 @@ import {
   suffixCategory,
   typeAliasBlock,
   typeAndCodeBlock,
-  warnDuplicateHeader,
+  assertSingleHeader,
   warnHeaderGaps,
   withHeaders,
 } from './util.ts'
@@ -82,7 +82,7 @@ export function accumulateModel(
   const member = parseNode(obj)
 
   if (obj.type === 'stateModel') {
-    warnDuplicateHeader({
+    assertSingleHeader({
       filename: file.filename,
       tag: 'stateModel',
       existing: file.header?.name,

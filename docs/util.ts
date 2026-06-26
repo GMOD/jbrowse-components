@@ -104,23 +104,22 @@ export function extractWithComment(
   const blindSpots: BlindSpot[] = []
 
   for (const sourceFile of program.getSourceFiles()) {
-    if (!sourceFile.isDeclarationFile) {
+    // Test files are excluded outright: their fixtures (a `#config` fixture
+    // comment, a hand-built `new DisplayType(...)`) would otherwise be mistaken
+    // for real documented entities or track/display links.
+    const isTestFile = /\.test\.tsx?$/.test(sourceFile.fileName)
+    if (!sourceFile.isDeclarationFile && !isTestFile) {
       // Structural member detection only runs in files that document a
       // #stateModel, so non-model helper files with their own .views()/
       // .actions() chains don't contribute spurious members.
       const isStateModel = hasTag(sourceFile.getFullText(), 'stateModel')
-      const isTestFile = /\.test\.tsx?$/.test(sourceFile.fileName)
-      ts.forEachChild(sourceFile, node => visit(node, isStateModel, isTestFile))
+      ts.forEachChild(sourceFile, node => visit(node, isStateModel))
     }
   }
   reportBlindSpots(blindSpots)
 
-  function visit(node: ts.Node, isStateModel: boolean, isTestFile: boolean) {
-    // Unlike the JSDoc-tag pass below, this structural check isn't gated by a
-    // tag a test fixture would never carry — a unit test that constructs its
-    // own `new DisplayType(...)` fixture would otherwise show up as a real
-    // track/display link, so test files are excluded outright.
-    const link = isTestFile ? undefined : displayTrackLink(node)
+  function visit(node: ts.Node, isStateModel: boolean) {
+    const link = displayTrackLink(node)
     if (link) {
       onDisplayLink(link)
     }
@@ -155,7 +154,7 @@ export function extractWithComment(
       // is examined here, so no member is ever emitted twice.
       emitUntaggedMember(checker, node, comment, cb, blindSpots)
     }
-    ts.forEachChild(node, n => visit(n, isStateModel, isTestFile))
+    ts.forEachChild(node, n => visit(n, isStateModel))
   }
 }
 
@@ -971,13 +970,16 @@ ${body}
 `
 }
 
-// Warn when a second, differently-named #config/#stateModel tag turns up in a
-// file that already documents one (only the last is rendered — one per file).
+// Fail hard when a second, differently-named #config/#stateModel tag turns up in
+// a file that already documents one. Both accumulators key by filename and
+// overwrite, so without this only the last header would render and the rest
+// would vanish with no trace (this once silently dropped a whole model page) —
+// far better to abort the run and make the author split the file.
 // A #config/#stateModel const is tagged twice (the VariableStatement and its
 // inner declaration); the statement half resolves to an empty name when the tag
 // carries none, so an empty `incoming` never trips this — only two non-empty,
 // differing names do. Shared by both accumulators.
-export function warnDuplicateHeader({
+export function assertSingleHeader({
   filename,
   tag,
   existing,
@@ -989,8 +991,8 @@ export function warnDuplicateHeader({
   incoming: string
 }) {
   if (existing && incoming && incoming !== existing) {
-    console.warn(
-      `${filename}: multiple #${tag} tags ("${existing}" then "${incoming}"); only the last is documented (one #${tag} per file)`,
+    throw new Error(
+      `${filename}: multiple #${tag} tags ("${existing}" then "${incoming}"). The autogen documents one #${tag} per file, so all but the last would be silently dropped — move "${existing}" into its own file.`,
     )
   }
 }

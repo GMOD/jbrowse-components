@@ -16,7 +16,7 @@ import {
   section,
   stripPropertyName,
   suffixCategory,
-  warnDuplicateHeader,
+  assertSingleHeader,
   warnHeaderGaps,
   withHeaders,
 } from './util.ts'
@@ -78,7 +78,7 @@ export function accumulateConfig(
   const item = parseNode(obj)
 
   if (obj.type === 'config') {
-    warnDuplicateHeader({
+    assertSingleHeader({
       filename: file.filename,
       tag: 'config',
       existing: file.header?.name,
