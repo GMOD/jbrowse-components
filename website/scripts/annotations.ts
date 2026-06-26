@@ -90,16 +90,23 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
         }
       })
 
+      // arrowhead length in marker units (path spans x:0..ARROW_LEN); the line
+      // is shortened by this much (scaled by strokeWidth, since markerUnits
+      // defaults to strokeWidth) so it ends at the arrowhead's base
+      const ARROW_LEN = 8
       const defs = document.createElementNS(NS, 'defs')
       const marker = document.createElementNS(NS, 'marker')
       marker.setAttribute('id', 'arrowhead')
       marker.setAttribute('markerWidth', '10')
       marker.setAttribute('markerHeight', '10')
-      marker.setAttribute('refX', '8')
+      // anchor the marker at its BASE (refX=0) so the line stops at the base and
+      // the triangle extends forward to the target, covering the line end — this
+      // avoids the butt-capped line poking past the sharp tip as a "nub"
+      marker.setAttribute('refX', '0')
       marker.setAttribute('refY', '3')
       marker.setAttribute('orient', 'auto')
       const arrowPath = document.createElementNS(NS, 'path')
-      arrowPath.setAttribute('d', 'M0,0 L8,3 L0,6 Z')
+      arrowPath.setAttribute('d', `M0,0 L${ARROW_LEN},3 L0,6 Z`)
       arrowPath.setAttribute('fill', '#e3242b')
       marker.appendChild(arrowPath)
       defs.appendChild(marker)
@@ -115,15 +122,25 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           // anchored arrow: head points at the resolved element center
           const headX = a.anchor ? cx : (a.to?.x ?? 0)
           const headY = a.anchor ? cy : (a.to?.y ?? 0)
+          const strokeWidth = a.strokeWidth ?? 4
+          // pull the line endpoint back to the arrowhead's base so the triangle
+          // (placed base-first at the endpoint) extends forward to the true
+          // target; the line end is then hidden under the filled head
+          const ddx = headX - a.from.x
+          const ddy = headY - a.from.y
+          const dist = Math.hypot(ddx, ddy) || 1
+          const headLen = ARROW_LEN * strokeWidth
+          const endX = headX - (ddx / dist) * headLen
+          const endY = headY - (ddy / dist) * headLen
           const line = document.createElementNS(NS, 'line')
           line.setAttribute('x1', String(a.from.x))
           line.setAttribute('y1', String(a.from.y))
-          line.setAttribute('x2', String(headX))
-          line.setAttribute('y2', String(headY))
+          line.setAttribute('x2', String(endX))
+          line.setAttribute('y2', String(endY))
           line.setAttribute('stroke', color)
           // the arrowhead marker uses markerUnits=strokeWidth, so a thinner
           // line also shrinks the head proportionally
-          line.setAttribute('stroke-width', String(a.strokeWidth ?? 4))
+          line.setAttribute('stroke-width', String(strokeWidth))
           line.setAttribute('marker-end', 'url(#arrowhead)')
           // recolor the shared arrowhead to match the last arrow's stroke
           arrowPath.setAttribute('fill', color)
