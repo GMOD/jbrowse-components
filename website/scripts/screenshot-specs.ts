@@ -108,6 +108,9 @@ interface CommonSpecFields {
   // reach for this only when the jitter can't be designed out. Defaults to the
   // global DEFAULT_DIFF_THRESHOLD.
   diffThreshold?: number
+  // crop the capture to this CSS-px rect (ignored by embedded specs, which
+  // screenshot the component element directly)
+  crop?: { x: number; y: number; width: number; height: number }
 }
 
 // Mode 1: navigate to app, interact via UI to open tracks.
@@ -118,7 +121,6 @@ interface LGVSpec extends CommonSpecFields {
   config?: string // defaults to volvox config
   loc?: string // location to navigate to (default: config default)
   openTracks?: string[] // track IDs to click open in the track selector
-  crop?: { x: number; y: number; width: number; height: number }
   settleMs?: number
   actions?: ScreenshotAction[]
 }
@@ -133,7 +135,6 @@ interface SessionUrlSpec extends CommonSpecFields {
   readySelector?: string // CSS selector to wait for before settle
   readyTimeout?: number // ms override for the ready wait (default 30000)
   waitUntil?: 'networkidle0' | 'domcontentloaded' // override goto waitUntil
-  crop?: { x: number; y: number; width: number; height: number }
   settleMs?: number
   actions?: ScreenshotAction[]
 }
@@ -151,7 +152,26 @@ export interface CliSpec {
   diffThreshold?: number
 }
 
-export type BrowserScreenshotSpec = LGVSpec | SessionUrlSpec
+// Mode 4: render the embedded `@jbrowse/react-linear-genome-view2` component
+// itself (not the jbrowse-web app) via its prebuilt UMD bundle, the exact
+// script-tag setup the embed tutorial documents. The generator serves a tiny
+// harness page that calls `createViewState(viewState)` and mounts
+// `<JBrowseLinearGenomeView>`, then screenshots the component element. Use for
+// figures that must show the embedded component rather than the full app.
+export interface EmbeddedSpec extends CommonSpecFields {
+  mode: 'embedded'
+  name: string
+  // the object passed verbatim to the UMD's `createViewState(...)` (assembly /
+  // tracks / defaultSession / location). Must be plain JSON — it is serialized
+  // into the harness page, so no functions / jexl callbacks.
+  viewState: object
+  readyText?: string // text to wait for before settle (e.g. a track label)
+  readySelector?: string // CSS selector to wait for before settle
+  readyTimeout?: number // ms override for the ready wait (default 30000)
+  settleMs?: number
+}
+
+export type BrowserScreenshotSpec = LGVSpec | SessionUrlSpec | EmbeddedSpec
 export type ScreenshotSpec = BrowserScreenshotSpec | CliSpec
 
 const VOLVOX = 'test_data/volvox/config.json'
@@ -899,9 +919,12 @@ export const specs: ScreenshotSpec[] = [
 
   // Read cloud (samplot-style) display on the volvox synthetic-SV CRAM: mates are
   // laid out on the Y axis by the log distance between them, so insertion pairs
-  // (drawn pink) separate from background. Drawn below the coverage band
-  // (readConnectionsDown) so the cloud doesn't overlap the coverage histogram.
-  // Read arcs in an SV context are shown by the multi-sv-trio spec.
+  // (drawn pink) separate from background. Each pair renders as two colored
+  // squares at the read positions joined by a black connector line (the
+  // arcMarker pass; see arc.slang / drawCanvas.ts) — the classic samplot look.
+  // Drawn below the coverage band (readConnectionsDown) so the cloud doesn't
+  // overlap the coverage histogram. Read arcs in an SV context are shown by the
+  // multi-sv-trio spec.
   {
     mode: 'url',
     name: 'alignments/read_cloud',
@@ -947,11 +970,6 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportHeight: 520,
-    // NOTE: the samplot read-cloud display currently hangs on "Loading" in the
-    // local build (the same CRAM loads fine via group_by_strand), so this spec
-    // can't be regenerated until that load regression is fixed; the committed
-    // PNG predates it. The coverageHeight/readConnectionsHeight bumps above are
-    // the reviewer's taller-panels fix for when it can re-render.
     settleMs: 25000,
   },
 
@@ -5767,6 +5785,126 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 1500,
   },
 
+  // The embed tutorial's hero figure: the *embedded*
+  // `@jbrowse/react-linear-genome-view2` component (not the jbrowse-web app),
+  // captured from its prebuilt UMD bundle via the script-tag setup the tutorial
+  // documents. `viewState` mirrors the hg38 config in
+  // docs/tutorials/embed_linear_genome_view.md verbatim (gene / repeat /
+  // alignment / variant / conservation tracks at the MYD88 locus). Remote hg38
+  // data (jbrowse.org + UCSC phyloP) — long ready timeout + settle, and a
+  // relaxed diff gate since remote-timing jitter is irreducible.
+  {
+    mode: 'embedded',
+    name: 'embed_linear_genome_view/final',
+    viewState: {
+      assembly: {
+        name: 'hg38',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'GRCh38-ReferenceSequenceTrack',
+          adapter: {
+            type: 'BgzipFastaAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz',
+          },
+        },
+        refNameAliases: {
+          adapter: {
+            type: 'RefNameAliasAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/hg38_aliases.txt',
+          },
+        },
+        cytobands: {
+          adapter: {
+            type: 'CytobandAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/cytoBand.txt',
+          },
+        },
+      },
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'ncbi_genes',
+          name: 'NCBI RefSeq Genes',
+          assemblyNames: ['hg38'],
+          category: ['Genes'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/ncbi_refseq/GCA_000001405.15_GRCh38_full_analysis_set.refseq_annotation.sorted.gff.gz',
+          },
+        },
+        {
+          type: 'FeatureTrack',
+          trackId: 'repeats_hg38',
+          name: 'Repeats',
+          assemblyNames: ['hg38'],
+          category: ['Annotation'],
+          adapter: {
+            type: 'BigBedAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/repeats.bb',
+          },
+        },
+        {
+          type: 'AlignmentsTrack',
+          trackId: 'NA12878_exome',
+          name: 'NA12878 Exome',
+          assemblyNames: ['hg38'],
+          category: ['1000 Genomes', 'Alignments'],
+          adapter: {
+            type: 'CramAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/alignments/NA12878/NA12878.alt_bwamem_GRCh38DH.20150826.CEU.exome.cram',
+          },
+        },
+        {
+          type: 'VariantTrack',
+          trackId: '1000g_vcf',
+          name: '1000 Genomes Variant Calls',
+          assemblyNames: ['hg38'],
+          category: ['1000 Genomes', 'Variants'],
+          adapter: {
+            type: 'VcfTabixAdapter',
+            uri: 'https://jbrowse.org/genomes/GRCh38/variants/ALL.wgs.shapeit2_integrated_snvindels_v2a.GRCh38.27022019.sites.vcf.gz',
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'phyloP100way',
+          name: 'hg38.100way.phyloP100way',
+          category: ['Conservation'],
+          assemblyNames: ['hg38'],
+          adapter: {
+            type: 'BigWigAdapter',
+            uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
+          },
+        },
+      ],
+      defaultSession: {
+        name: 'My session',
+        margin: 0,
+        view: {
+          id: 'linearGenomeView',
+          type: 'LinearGenomeView',
+          init: {
+            assembly: 'hg38',
+            loc: '10:29,838,565..29,838,850',
+            tracks: [
+              'GRCh38-ReferenceSequenceTrack',
+              'ncbi_genes',
+              'NA12878_exome',
+              'phyloP100way',
+              '1000g_vcf',
+            ],
+          },
+        },
+      },
+    },
+    readyText: 'NCBI RefSeq Genes',
+    readyTimeout: 90000,
+    settleMs: 15000,
+    viewportWidth: 1200,
+    viewportHeight: 1000,
+    diffThreshold: 0.02,
+  },
+
   // products/jbrowse-img/README.md example images, rendered by the jb2export
   // CLI (see CliSpec above). Ported 1:1 from the old
   // render-comparative-examples.sh so the args stay in sync with the README's
@@ -5806,6 +5944,12 @@ export const screenshotLiveUrls: Record<string, string> = Object.fromEntries(
     return url ? [[spec.name, url] as const] : []
   }),
 )
+
+// Every figure produced by a spec, whether or not it has a public live URL.
+// audit-figures uses this to classify a figure as autogenerated — an embedded
+// or localhost-build capture is still autogenerated even though it has no
+// interactive jbrowse.org link.
+export const screenshotSpecNames = new Set(specs.map(spec => spec.name))
 
 // Split a `--filter a,b,c` value into trimmed, non-empty tokens. Shared by the
 // generate and review scripts so `--filter`/`--exact` mean the same thing in

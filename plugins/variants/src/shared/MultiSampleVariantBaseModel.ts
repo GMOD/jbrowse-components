@@ -33,10 +33,7 @@ import {
   variantShowSubmenuItems,
   variantTrackMenuItems,
 } from './multiSampleVariantMenuItems.ts'
-import {
-  getGenotypeLegendItems,
-  getSampleGroupLegendItems,
-} from './variantLegend.ts'
+import { getVariantLegendSections } from './variantLegend.ts'
 
 import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
@@ -51,7 +48,7 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ByteEstimateConfig,
   FetchContext,
-  LegendItem,
+  LegendSection,
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -303,6 +300,12 @@ export default function MultiSampleVariantBaseModelF(
         showLegend: true,
         /**
          * #volatile
+         * Ids of legend sections the user has individually closed (e.g.
+         * 'genotypes' / 'group'); reset when the whole legend is re-shown.
+         */
+        dismissedLegendSections: [] as string[],
+        /**
+         * #volatile
          */
         sourcesLoadingStopToken: undefined as StopToken | undefined,
         /**
@@ -438,6 +441,17 @@ export default function MultiSampleVariantBaseModelF(
          */
         setShowLegend(s: boolean) {
           self.showLegend = s
+          // Re-showing the legend restores any individually-closed sections.
+          if (s) {
+            self.dismissedLegendSections = []
+          }
+        },
+        /**
+         * #action
+         * Close a single legend section (leaving the others visible).
+         */
+        dismissLegendSection(id: string) {
+          self.dismissedLegendSections = [...self.dismissedLegendSections, id]
         },
         /**
          * #action
@@ -882,21 +896,18 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #method
-         * Returns legend items for rendering colors based on current mode
+         * Legend split into independently-closable sections: the genotype/cell
+         * coloring and (when colorBy is set) the sample-grouping coloring shown
+         * on the sidebar row labels. Dismissed sections are filtered out.
          */
-        legendItems(): LegendItem[] {
-          return [
-            ...getGenotypeLegendItems({
-              renderingMode: self.renderingMode,
-              hasSecondaryAlt: self.hasSecondaryAlt,
-              hasUnphased: self.hasUnphased,
-            }),
-            // sidebar row colors encode the colorBy sample-metadata group
-            ...getSampleGroupLegendItems(
-              getConf(self, 'colorBy') as string,
-              self.sources,
-            ),
-          ]
+        legendSections(): LegendSection[] {
+          return getVariantLegendSections({
+            renderingMode: self.renderingMode,
+            hasSecondaryAlt: self.hasSecondaryAlt,
+            hasUnphased: self.hasUnphased,
+            colorBy: getConf(self, 'colorBy') as string,
+            sources: self.sources,
+          }).filter(s => !self.dismissedLegendSections.includes(s.id))
         },
       }))
       .actions(self => ({

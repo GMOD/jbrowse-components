@@ -2,6 +2,7 @@ import {
   getGenotypeLegendItems,
   getMaxLabelWidth,
   getSampleGroupLegendItems,
+  getVariantLegendSections,
 } from './variantLegend.ts'
 
 import type { Source } from './types.ts'
@@ -85,6 +86,37 @@ describe('getSampleGroupLegendItems', () => {
       { name: 'b', color: '#b' },
     ]
     expect(getSampleGroupLegendItems('population', noPop)).toEqual([])
+  })
+})
+
+describe('getVariantLegendSections', () => {
+  const sources: Source[] = [
+    { name: 'HG1', population: 'EUR', color: '#a' },
+    { name: 'HG2', population: 'AFR', color: '#b' },
+  ]
+
+  it('only the genotype section when colorBy is unset', () => {
+    const sections = getVariantLegendSections({
+      renderingMode: 'alleleCount',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      colorBy: '',
+      sources,
+    })
+    expect(sections.map(s => s.id)).toEqual(['genotypes'])
+  })
+
+  it('adds a title-cased group section when colorBy is set', () => {
+    const sections = getVariantLegendSections({
+      renderingMode: 'alleleCount',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      colorBy: 'population',
+      sources,
+    })
+    expect(sections.map(s => s.id)).toEqual(['genotypes', 'group'])
+    expect(sections[1]!.title).toBe('Population')
+    expect(sections[1]!.items.map(i => i.label)).toEqual(['EUR', 'AFR'])
   })
 })
 

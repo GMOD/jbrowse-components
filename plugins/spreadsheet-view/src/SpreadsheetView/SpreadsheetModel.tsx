@@ -196,7 +196,9 @@ export default function stateModelFactory() {
               ...new Set(
                 self.rows
                   ?.map(r => r[field])
-                  .filter((v): v is string => typeof v === 'string' && v !== ''),
+                  .filter(
+                    (v): v is string => typeof v === 'string' && v !== '',
+                  ),
               ),
             ].sort((a, b) => a.localeCompare(b))
           : []

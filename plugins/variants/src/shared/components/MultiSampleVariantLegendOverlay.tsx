@@ -4,13 +4,14 @@ import { observer } from 'mobx-react'
 import MultiSampleVariantRowColors from './MultiSampleVariantRowColors.tsx'
 
 import type { RowColorsModel } from './types.ts'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type { LegendSection } from '@jbrowse/plugin-linear-genome-view'
 
 interface LegendOverlayModel extends RowColorsModel {
   availableHeight: number
   showLegend: boolean
-  legendItems(): LegendItem[]
+  legendSections(): LegendSection[]
   setShowLegend(s: boolean): void
+  dismissLegendSection(id: string): void
 }
 
 const MultiSampleVariantLegendOverlay = observer(
@@ -45,9 +46,12 @@ const MultiSampleVariantLegendOverlay = observer(
         </svg>
         {showLegend ? (
           <FloatingLegend
-            items={model.legendItems()}
+            sections={model.legendSections()}
             onDismiss={() => {
               model.setShowLegend(false)
+            }}
+            onDismissSection={id => {
+              model.dismissLegendSection(id)
             }}
           />
         ) : null}

@@ -150,13 +150,18 @@ VsOut vs_main(Instance inst, uint vid : SV_VertexID) {
   float clipY = 1.0 - ((off.y + u.covOffset) / u.canvasH) * 2.0;
   o.position = float4(flipX(clipX, u), clipY, 0.0, 1.0);
   o.dist = side * hw;
-  // Samplot flat shapes (1, 2): translucent so dense overlapping pairs read as a
-  // band (cf. samplot.py's alpha). Kept well above samplot.py's 0.25 because an
-  // isolated short-insert pair is a single thin line — at 0.25-0.4 it all but
-  // vanishes into the background; 0.7 keeps an isolated line clearly legible
-  // while overlaps still stack darker.
-  float arcAlpha = (inst.shapeType > 0.5) ? 0.7 : 1.0;
-  o.color = float4(arcColor(inst.colorType, u), arcAlpha);
+  // Samplot flat shapes (1, 2): the connector line itself is neutral black —
+  // the insert-size / orientation color lives in the endpoint squares drawn by
+  // the arcMarker pass (mirrors samplot.py's per-read colored markers joined by
+  // a plain line). Translucent so dense overlapping pairs read as a band (cf.
+  // samplot.py's alpha). Kept well above samplot.py's 0.25 because an isolated
+  // short-insert pair is a single thin line — at 0.25-0.4 it all but vanishes
+  // into the background; 0.7 keeps an isolated line clearly legible while
+  // overlaps still stack darker.
+  bool flat = inst.shapeType > 0.5;
+  float arcAlpha = flat ? 0.7 : 1.0;
+  float3 rgb = flat ? float3(0.0, 0.0, 0.0) : arcColor(inst.colorType, u);
+  o.color = float4(rgb, arcAlpha);
   // Split-read flat shape (2) renders dashed.
   o.dashed = (inst.shapeType > 1.5) ? 1.0 : 0.0;
   return o;

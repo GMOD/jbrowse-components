@@ -29,18 +29,10 @@ The SV inspector is best for long-range SV records — VCF entries with
 caller-specific `SVTYPE=TRA` used by some tools. Single-locus deletions and
 duplications load fine but don't show up usefully in the circular overview.
 
-Compatible variant callers:
+Compatible variant callers include:
 
-Short read based:
-
-- Manta
-- Delly
-- Lumpy
-
-Long read based:
-
-- pbsv
-- Sniffles
+- **Short-read** — Manta, Delly, Lumpy
+- **Long-read** — pbsv, Sniffles
 
 ## Example workflow
 
@@ -69,9 +61,9 @@ Click a feature in the circular view, or the triangle dropdown on any table row,
 to open the
 [breakpoint split view](/docs/user_guides/sv_visualization#breakpoint-split-view)
 for that variant — two stacked linear genome views, each centered on one
-breakpoint. It opens with empty views; add alignment tracks to both with their
-track selectors and the read arcs and splines connecting supporting reads appear
-automatically.
+breakpoint. It opens with empty views; add alignment tracks to both via their
+track selectors, and the read arcs and splines connecting supporting reads
+appear automatically.
 
 ## See also
 

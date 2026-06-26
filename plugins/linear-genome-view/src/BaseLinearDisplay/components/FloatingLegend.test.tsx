@@ -40,4 +40,31 @@ describe('FloatingLegend', () => {
     fireEvent.click(getByText('Show less'))
     expect(queryByText('item12')).toBeNull()
   })
+
+  it('shows section titles and per-section close when multi-section', () => {
+    const onDismissSection = jest.fn()
+    const { getByText, getByTitle } = render(
+      <FloatingLegend
+        sections={[
+          { id: 'genotypes', title: 'Genotypes', items: items(2) },
+          { id: 'group', title: 'Population', items: items(2) },
+        ]}
+        onDismissSection={onDismissSection}
+      />,
+    )
+    expect(getByText('Genotypes')).toBeTruthy()
+    expect(getByText('Population')).toBeTruthy()
+    fireEvent.click(getByTitle('Hide Population'))
+    expect(onDismissSection).toHaveBeenCalledWith('group')
+  })
+
+  it('hides section titles when only one section', () => {
+    const { queryByText, getByText } = render(
+      <FloatingLegend
+        sections={[{ id: 'genotypes', title: 'Genotypes', items: items(2) }]}
+      />,
+    )
+    expect(getByText('item0')).toBeTruthy()
+    expect(queryByText('Genotypes')).toBeNull()
+  })
 })

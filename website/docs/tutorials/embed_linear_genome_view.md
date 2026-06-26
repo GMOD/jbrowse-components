@@ -176,16 +176,6 @@ const state = createViewState({
         uri: 'https://hgdownload.cse.ucsc.edu/goldenpath/hg38/phyloP100way/hg38.phyloP100way.bw',
       },
     },
-    {
-      type: 'AlignmentsTrack',
-      trackId: 'skbr3_pacbio',
-      name: 'SKBR3 pacbio',
-      assemblyNames: ['hg38'],
-      adapter: {
-        type: 'BamAdapter',
-        uri: 'https://jbrowse.org/genomes/GRCh38/skbr3/SKBR3_Feb17_GRCh38.sorted.bam',
-      },
-    },
   ],
   defaultSession: {
     name: 'My session',
@@ -201,7 +191,6 @@ const state = createViewState({
           'ncbi_genes',
           'NA12878_exome',
           'phyloP100way',
-          'skbr3_pacbio',
           '1000g_vcf',
         ],
       },

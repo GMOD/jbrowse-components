@@ -4,16 +4,14 @@ description: Multiple signal tracks displayed together
 guide_category: Track types
 ---
 
-A multi-quantitative track combines several quantitative signals (BigWig files,
-typically) into one track with a shared Y axis. Rendering modes are switchable
-from the track menu, in two families:
+A multi-quantitative track combines several quantitative signals (typically
+BigWig files) into one track with a shared Y axis. The track menu's
+renderer-type submenu offers two families of rendering mode:
 
 - **Multi-row** (`Multi-row XY plot`, `Multi-row density`, `Multi-row line`,
   `Multi-row scatter`) — one plot per subtrack, stacked
 - **Overlapping** (`Overlapping XY plot`, `Overlapping lines`,
   `Overlapping scatter`) — all subtracks drawn together
-
-Switch between them from the track menu's renderer-type submenu.
 
 <Figure caption="The track menu lists the available renderer types." src="/img/multiwig/multi_renderer_types.png" />
 
@@ -110,8 +108,8 @@ modes:
   `hclust`. Run the script in R, then paste the resulting row ordering back into
   the dialog and click **Apply clustering**.
 
-After clustering, the rows are reordered by similarity so that individuals with
-similar copy-number patterns sit together.
+After clustering, the rows are reordered so that subtracks with similar signal
+profiles sit together.
 
 <Figure caption="Clustering a multi-quantitative track. Top: the 'Cluster by score' dialog with its auto/manual mode options. Bottom: after clustering, rows are reordered by signal similarity." src="/img/multiwig/cluster_dialog.png" />
 

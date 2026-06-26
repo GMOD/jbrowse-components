@@ -1,5 +1,6 @@
 import { execFile, execFileSync } from 'child_process'
 import fs from 'fs'
+import http from 'http'
 import os from 'os'
 import path from 'path'
 import { fileURLToPath } from 'url'
@@ -44,6 +45,7 @@ import type {
   Annotation,
   BrowserScreenshotSpec,
   CliSpec,
+  EmbeddedSpec,
   ScreenshotAction,
   ScreenshotSpec,
 } from './screenshot-specs.ts'
@@ -148,6 +150,15 @@ const jbrowseImgDir = path.resolve(repoRoot, 'products', 'jbrowse-img')
 const jbrowseImgOutDir = path.join(jbrowseImgDir, 'img')
 const jb2exportBin = path.join(jbrowseImgDir, 'src', 'bin.ts')
 const repoTsconfig = path.join(repoRoot, 'tsconfig.json')
+// Prebuilt UMD of the embedded LGV component, used by `mode:'embedded'` specs.
+// Built by `pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack`.
+const EMBED_UMD_PATH = path.resolve(
+  repoRoot,
+  'products',
+  'jbrowse-react-linear-genome-view',
+  'dist',
+  'react-linear-genome-view.umd.production.min.js',
+)
 const VOLVOX_CONFIG = 'test_data/volvox/config.json'
 // Maximum time to wait for canvas displays to signal paint-complete via their
 // *-done testids. Acts as a timeout (proceed if it expires), not a fixed floor.
@@ -290,13 +301,19 @@ async function shoot(
   } else {
     await clearAnnotations(page)
   }
-  // Wait for the browser to actually rasterize the current DOM before capturing.
-  // A single rAF callback fires *before* paint, so a freshly-composited layer —
-  // e.g. a just-opened menu Popper, on its own GPU layer that software-GL
-  // (swiftshader) rasterizes a frame late at deviceScaleFactor 2 — can be fully
-  // settled in the DOM (opacity:1, laid out) yet still absent from the capture,
-  // the dominant cause of menu-spec flakiness. Two chained rAFs guarantee a full
-  // frame committed; the trailing settle gives slow layer rasterization a beat.
+  await waitForRasterize(page)
+  const clip = spec.crop
+  await page.screenshot(clip ? { path: file, clip } : { path: file })
+}
+
+// Wait for the browser to actually rasterize the current DOM before capturing.
+// A single rAF callback fires *before* paint, so a freshly-composited layer —
+// e.g. a just-opened menu Popper, on its own GPU layer that software-GL
+// (swiftshader) rasterizes a frame late at deviceScaleFactor 2 — can be fully
+// settled in the DOM (opacity:1, laid out) yet still absent from the capture,
+// the dominant cause of menu-spec flakiness. Two chained rAFs guarantee a full
+// frame committed; the trailing settle gives slow layer rasterization a beat.
+async function waitForRasterize(page: Page) {
   await page.evaluate(
     () =>
       new Promise<void>(resolve => {
@@ -307,8 +324,119 @@ async function shoot(
         })
       }),
   )
-  const clip = spec.crop
-  await page.screenshot(clip ? { path: file, clip } : { path: file })
+}
+
+// Self-contained harness page for an embedded-component capture: load the UMD
+// bundle and mount the LGV with the spec's createViewState arg, exactly the
+// script-tag setup the embed tutorial documents.
+function embeddedHarnessHtml(viewState: object) {
+  return `<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <style>
+      html, body, #root { margin: 0; padding: 0; }
+    </style>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script src="/jbrowse.umd.js"></script>
+    <script>
+      const { createViewState, JBrowseLinearGenomeView, React, createRoot } =
+        window.JBrowseReactLinearGenomeView
+      const viewState = createViewState(${JSON.stringify(viewState)})
+      createRoot(document.getElementById('root')).render(
+        React.createElement(JBrowseLinearGenomeView, { viewState }),
+      )
+    </script>
+  </body>
+</html>`
+}
+
+// Minimal static server for one embedded harness: '/' serves the harness HTML,
+// '/jbrowse.umd.js' streams the prebuilt UMD bundle. Listens on an ephemeral
+// port so concurrent embedded captures never collide.
+function serveEmbeddedHarness(html: string, umdPath: string) {
+  return new Promise<{ server: Server; port: number }>((resolve, reject) => {
+    const server = http.createServer((req, res) => {
+      const url = req.url ?? '/'
+      if (url.startsWith('/jbrowse.umd.js')) {
+        res.writeHead(200, { 'content-type': 'application/javascript' })
+        fs.createReadStream(umdPath).pipe(res)
+      } else if (url === '/' || url.startsWith('/index')) {
+        res.writeHead(200, { 'content-type': 'text/html' })
+        res.end(html)
+      } else {
+        res.writeHead(404)
+        res.end()
+      }
+    })
+    server.on('error', reject)
+    server.listen(0, () => {
+      const addr = server.address()
+      if (addr && typeof addr === 'object') {
+        resolve({ server, port: addr.port })
+      } else {
+        reject(new Error('embedded server failed to bind a port'))
+      }
+    })
+  })
+}
+
+// Render an embedded-component spec to a finished temp PNG: serve the harness,
+// drive the component to ready, then screenshot the component element (its full
+// height, even past the viewport) rather than the page.
+async function captureEmbeddedToTemp(page: Page, spec: EmbeddedSpec, suffix = '') {
+  if (!fs.existsSync(EMBED_UMD_PATH)) {
+    throw new Error(
+      `Embedded UMD not found at ${EMBED_UMD_PATH}. Build it with "pnpm --filter @jbrowse/react-linear-genome-view2 build:webpack".`,
+    )
+  }
+  const { server, port } = await serveEmbeddedHarness(
+    embeddedHarnessHtml(spec.viewState),
+    EMBED_UMD_PATH,
+  )
+  try {
+    await page.goto(`http://localhost:${port}/`, {
+      waitUntil: 'domcontentloaded',
+      timeout: 60000,
+    })
+    const readyTimeout = spec.readyTimeout ?? 30000
+    const readySelectors = [
+      spec.readyText ? textSelector(spec.readyText) : undefined,
+      spec.readySelector,
+    ].filter((s): s is string => s !== undefined)
+    for (const selector of readySelectors) {
+      await waitForVisible(page, selector, { timeout: readyTimeout }).catch(
+        async (e: unknown) => {
+          await debugDump(page, spec.name)
+          throw e
+        },
+      )
+    }
+    await waitForLoadingComplete(page, {
+      waitForDownloads: true,
+      timeout: readyTimeout,
+    })
+    await waitForQuiescent(page)
+    await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
+    await waitForRasterize(page)
+
+    const safeSpecName = spec.name.replace(/\//g, '_')
+    const renderPath = path.join(
+      os.tmpdir(),
+      `jb-final-${process.pid}-${safeSpecName}${suffix}.png`,
+    )
+    const el = await page.$('#root')
+    if (!el) {
+      throw new Error('embedded harness #root not found')
+    }
+    await el.screenshot({ path: renderPath })
+    optimizePng(renderPath)
+    return renderPath
+  } finally {
+    server.close()
+  }
 }
 
 async function runActions(
@@ -333,6 +461,12 @@ async function renderSpecToTemp(
   port: number,
   suffix = '',
 ) {
+  // Embedded captures run their own harness server + element screenshot, so
+  // they bypass the jbrowse-web goto and the shared shoot/stages path entirely.
+  if (spec.mode === 'embedded') {
+    return captureEmbeddedToTemp(page, spec, suffix)
+  }
+
   if (spec.mode === 'url') {
     await captureUrl(page, spec, port)
   } else {
@@ -461,7 +595,10 @@ async function main() {
   )
 
   const needsLocalServer = filteredSpecs.some(
-    s => s.mode !== 'cli' && (s.mode !== 'url' || !s.url.startsWith('http')),
+    s =>
+      s.mode !== 'cli' &&
+      s.mode !== 'embedded' &&
+      (s.mode !== 'url' || !s.url.startsWith('http')),
   )
 
   let server: Server | undefined

@@ -51,7 +51,8 @@ function hitTestInsertion(
         ) {
           continue
         }
-        const rectWidthPx = getInsertionRectWidthPx(len, pxPerBp, featureHeight) + 4
+        const rectWidthPx =
+          getInsertionRectWidthPx(len, pxPerBp, featureHeight) + 4
         const rectHalfWidthBp = (rectWidthPx / 2) * bpPerPx
         if (Math.abs(genomicPos - pos) < rectHalfWidthBp) {
           return {

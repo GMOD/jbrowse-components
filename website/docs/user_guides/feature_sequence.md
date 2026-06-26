@@ -10,7 +10,7 @@ selected feature, with options that vary by feature type.
 ## Gene features
 
 For gene or transcript features, the feature detail sidebar stitches the
-sequence together for you. Options:
+subfeature sequences together. The available types are:
 
 - **CDS** — the stitched-together coding sequences
 - **Protein** — protein translation of the CDS. The standard genetic code (NCBI
@@ -37,8 +37,8 @@ configurable from the gear icon.
 When the **Protein** type is selected, residues whose translation was overridden
 by a `transl_except` attribute are highlighted (amber) and summarized in a
 legend. The example below is the selenoprotein SELENOP, whose ten in-frame UGA
-stop codons NCBI RefSeq annotates as `transl_except=(...,aa:Sec)` so they
-translate to selenocysteine (U) instead of terminating the protein.
+stop codons are annotated by NCBI RefSeq as `transl_except=(...,aa:Sec)`, so
+they translate to selenocysteine (U) instead of terminating the protein.
 
 <Figure caption="Protein translation of SELENOP: the ten selenocysteine (U) residues recoded from in-frame UGA stop codons via transl_except are highlighted amber, with a legend summarizing the overrides." src="/img/feature_detail_protein.png" />
 

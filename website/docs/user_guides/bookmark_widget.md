@@ -6,20 +6,17 @@ guide_category: Other features
 
 The bookmark widget stores genomic regions for easy navigation. Each bookmark is
 a single region (chromosome, start, end); clicking one navigates a linear genome
-view to it.
+view (LGV) to it.
 
-The dropdown menu above the table of bookmarks can be used to view a subset of
-all assemblies with bookmarks.
-
-Resize the columns of the table by clicking and dragging the grey lines above
-the table.
+In the bookmark table, the dropdown menu above the table filters bookmarks by
+assembly, and the columns can be resized by dragging the grey divider lines.
 
 ## Creating bookmarks
 
 Bookmarks can be created by clicking and dragging on the top of any linear
 genome view and selecting "Bookmark region."
 
-<Figure caption="Create a bookmark by clicking and dragging the top of any LGV and select 'Bookmark region.'" src="/img/bookmark_widget_create.png"/>
+<Figure caption="Create a bookmark by clicking and dragging the top of any LGV and selecting 'Bookmark region.'" src="/img/bookmark_widget_create.png"/>
 
 ### Keyboard shortcuts
 

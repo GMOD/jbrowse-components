@@ -10,7 +10,10 @@ import {
 } from './constants.ts'
 
 import type { Source } from './types.ts'
-import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  LegendItem,
+  LegendSection,
+} from '@jbrowse/plugin-linear-genome-view'
 
 const LABEL_PADDING_PX = 10
 const SWATCH_ONLY_WIDTH_PX = 20
@@ -106,4 +109,50 @@ export function getSampleGroupLegendItems(
       color: colorByValue.get(value),
       label: value || '(unlabeled)',
     }))
+}
+
+// Title-case the colorBy metadata key for the sample-grouping section header
+// (e.g. "population" -> "Population").
+function titleCase(s: string) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
+
+// The legend split into independently-closable sections: the genotype/cell
+// coloring and (when colorBy is set) the sample-grouping coloring used for the
+// sidebar row labels — two distinct color meanings that share one legend box.
+// The group section is omitted when colorBy is unset or carries a single value.
+export function getVariantLegendSections({
+  renderingMode,
+  hasSecondaryAlt,
+  hasUnphased,
+  colorBy,
+  sources,
+}: {
+  renderingMode: string
+  hasSecondaryAlt: boolean
+  hasUnphased: boolean
+  colorBy: string
+  sources: Source[] | undefined
+}): LegendSection[] {
+  const groupItems = getSampleGroupLegendItems(colorBy, sources)
+  return [
+    {
+      id: 'genotypes',
+      title: 'Genotypes',
+      items: getGenotypeLegendItems({
+        renderingMode,
+        hasSecondaryAlt,
+        hasUnphased,
+      }),
+    },
+    ...(groupItems.length
+      ? [
+          {
+            id: 'group',
+            title: titleCase(colorBy) || 'Samples',
+            items: groupItems,
+          },
+        ]
+      : []),
+  ]
 }

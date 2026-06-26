@@ -1,6 +1,6 @@
 import { arcYFraction } from './arcYScale.ts'
 import { ARC_SHAPE_FLAT, ARC_SHAPE_FLAT_SPLIT } from './compute.ts'
-import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
+import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   type DrawBlock,
   type RenderState,
@@ -14,6 +14,7 @@ import {
   ARC_FAR_SCREEN_WIDTHS,
   ARC_FLAT_MIN_PX,
 } from '../../LinearAlignmentsDisplay/shaders/slang/arc.iface.generated.ts'
+import { ARC_MARKER_PX } from '../../LinearAlignmentsDisplay/shaders/slang/arcMarker.iface.generated.ts'
 
 import type { ArcsUploadData } from './types.ts'
 import type { RGBColor } from '../../LinearAlignmentsDisplay/shaders/colors.ts'
@@ -83,12 +84,14 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     screenWidthPx,
   } = opts
   // Pre-stringify the palette once per draw — saves N Math.round + string
-  // allocations per frame (N = numArcs, often thousands). Faded variant is used
-  // for samplot flat lines; kept well above samplot.py's 0.25 so an isolated
-  // thin short-insert pair stays legible (mirrors arc.slang's flat-line alpha).
+  // allocations per frame (N = numArcs, often thousands).
   const cssPalette = palette.map(c => rgb255(c))
-  const cssPaletteFaded = palette.map(c => rgba255(c, 0.7))
   const paletteLen = cssPalette.length
+  // Flat (samplot) connector lines are neutral black; the category color lives
+  // in the endpoint squares. Alpha kept well above samplot.py's 0.25 so an
+  // isolated thin short-insert pair stays legible — mirrors arc.slang's
+  // flat-line color/alpha and the arcMarker pass.
+  const flatLineCss = 'rgba(0,0,0,0.7)'
   // Anchor = where arcs meet the adjacent band (insert-size 0). pointing-up
   // sits at the bottom of the band; pointing-down sits at the top. Matches
   // the GPU shader and the right-side insert-size scalebar.
@@ -112,19 +115,25 @@ function drawArcsToCtx(ctx: Ctx2D, data: ArcsUploadData, opts: DrawArcsOpts) {
     const apexY = pairedArcsDown ? anchorY + arcH : anchorY - arcH
 
     const isFlat = shape === ARC_SHAPE_FLAT || shape === ARC_SHAPE_FLAT_SPLIT
-    const paletteForShape = isFlat ? cssPaletteFaded : cssPalette
-    ctx.strokeStyle = paletteForShape[colorIdx % paletteLen]!
     ctx.setLineDash(shape === ARC_SHAPE_FLAT_SPLIT ? [3, 3] : [])
     if (isFlat) {
-      // clamp to a minimum drawn width (centered on the midpoint) so
-      // short-insert pairs stay visible; mirrors arc.slang's flat-line clamp
+      // Black connector line clamped to a minimum drawn width (centered on the
+      // midpoint) so short-insert pairs stay visible; mirrors arc.slang's
+      // flat-line clamp. The endpoint squares carry the category color.
+      ctx.strokeStyle = flatLineCss
       const mid = (sx1 + sx2) / 2
       const halfPx = Math.max(Math.abs(sx2 - sx1), ARC_FLAT_MIN_PX) / 2
       ctx.beginPath()
       ctx.moveTo(mid - halfPx, apexY)
       ctx.lineTo(mid + halfPx, apexY)
       ctx.stroke()
+      // Colored square at each read endpoint (mirrors the arcMarker GPU pass).
+      ctx.fillStyle = cssPalette[colorIdx % paletteLen]!
+      const m = ARC_MARKER_PX
+      ctx.fillRect(sx1 - m / 2, apexY - m / 2, m, m)
+      ctx.fillRect(sx2 - m / 2, apexY - m / 2, m, m)
     } else {
+      ctx.strokeStyle = cssPalette[colorIdx % paletteLen]!
       // far is purely a function of on-screen span — no bp limit.
       const far = Math.abs(sx2 - sx1) > ARC_FAR_SCREEN_WIDTHS * screenWidthPx
       strokeArc(ctx, sx1, sx2, anchorY, apexY, pairedArcsDown, far)
