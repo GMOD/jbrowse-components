@@ -7,10 +7,10 @@ import RegionTooLargeMixin from './RegionTooLargeMixin.tsx'
 import TooLargeMessage from './TooLargeMessage.tsx'
 import autorunFeatureDensityStats from './autorunFeatureDensityStats.ts'
 import {
-  getDisplayStr,
+  evaluateRegionTooLarge,
   getFeatureDensityStatsPre,
+  resolveByteLimit,
 } from './featureDensityUtils.ts'
-import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
 
 import type { FeatureDensityModel } from './autorunFeatureDensityStats.ts'
 import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
@@ -53,10 +53,6 @@ export default function FeatureDensityMixin<
       currStatsBpPerPx: 0,
     }))
     .views(self => ({
-      get currentBytesRequested() {
-        return self.featureDensityStats?.bytes ?? 0
-      },
-
       get currentFeatureScreenDensity() {
         const view = getContainingView(self) as LGV
         return (self.featureDensityStats?.featureDensity ?? 0) * view.bpPerPx
@@ -75,18 +71,17 @@ export default function FeatureDensityMixin<
       },
 
       get maxAllowableBytes() {
-        return (
-          self.userByteSizeLimit ??
-          self.featureDensityStats?.fetchSizeLimit ??
-          (getConf(self as unknown as TConf, 'fetchSizeLimit') as number)
-        )
+        return resolveByteLimit({
+          userByteSizeLimit: self.userByteSizeLimit,
+          adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
+          configFetchSizeLimit: getConf(
+            self as unknown as TConf,
+            'fetchSizeLimit',
+          ) as number,
+        })
       },
     }))
     .views(self => ({
-      get bytesTooLarge() {
-        return self.currentBytesRequested > self.maxAllowableBytes
-      },
-
       // a force-load sets userBpPerPxLimit, switching density gating from the
       // automatic screen-density check to a "this zoom or finer is allowed"
       get densityTooLarge() {
@@ -111,7 +106,7 @@ export default function FeatureDensityMixin<
         self.currStatsBpPerPx = n
       },
 
-      // regionTooLarge is bytesTooLarge || densityTooLarge, so force-load must
+      // regionTooLarge gates on bytes-over-limit OR density, so force-load must
       // relax both: always set userBpPerPxLimit, and raise the byte limit with
       // headroom when bytes are present (else clear it so it can't re-gate)
       setFeatureDensityStatsLimit(stats?: FeatureDensityStats) {
@@ -144,18 +139,27 @@ export default function FeatureDensityMixin<
       },
     }))
     .views(self => ({
+      // Shared verdict + reason: bytes-over-limit takes precedence over density,
+      // gated by AUTO_FORCE_LOAD_BP. Shares the reason text and threshold with
+      // the canvas and pre-fetch byte paths so the banner can't drift.
+      get tooLargeStatus() {
+        const view = getContainingView(self) as LGV
+        return evaluateRegionTooLarge({
+          visibleBp: view.visibleBp,
+          bytes: self.featureDensityStats?.bytes,
+          byteLimit: self.maxAllowableBytes,
+          densityTooLarge: self.densityTooLarge,
+        })
+      },
+    }))
+    .views(self => ({
       // reactive replacement for RegionTooLargeMixin's imperative version
       get regionTooLarge() {
-        const view = getContainingView(self) as LGV
-        const gatesActive =
-          self.featureDensityStatsReady && view.visibleBp >= AUTO_FORCE_LOAD_BP
-        return gatesActive && (self.bytesTooLarge || self.densityTooLarge)
+        return self.featureDensityStatsReady && self.tooLargeStatus.tooLarge
       },
 
       get regionTooLargeReason() {
-        return self.bytesTooLarge
-          ? `Requested too much data (${getDisplayStr(self.currentBytesRequested)})`
-          : ''
+        return self.tooLargeStatus.reason
       },
     }))
     .views(self => ({

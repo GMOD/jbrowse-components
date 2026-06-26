@@ -14,9 +14,10 @@ import {
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
+  bytesTooLargeReason,
   computeRenderTransform,
-  getDisplayStr,
   migrateOldSettingSnapshots,
+  resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
@@ -662,14 +663,13 @@ export default function sharedModelFactory(
           }
           self.setFeatureDensityStats(stats)
           if (visibleBp >= AUTO_FORCE_LOAD_BP) {
-            const fetchSizeLimit =
-              stats.fetchSizeLimit ?? getConf(self, 'fetchSizeLimit')
-            const limit = self.userByteSizeLimit ?? fetchSizeLimit
+            const limit = resolveByteLimit({
+              userByteSizeLimit: self.userByteSizeLimit,
+              adapterFetchSizeLimit: stats.fetchSizeLimit,
+              configFetchSizeLimit: getConf(self, 'fetchSizeLimit'),
+            })
             if (stats.bytes && stats.bytes > limit) {
-              self.setRegionTooLarge(
-                true,
-                `Requested too much data (${getDisplayStr(stats.bytes)})`,
-              )
+              self.setRegionTooLarge(true, bytesTooLargeReason(stats.bytes))
               return
             }
           }

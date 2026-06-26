@@ -42,6 +42,13 @@ export {
   computeRenderTransform,
 } from './models/renderTransform.ts'
 export { drawCanvasImageData } from './util.ts'
-export { getDisplayStr } from '../shared/featureDensityUtils.ts'
+export {
+  TOO_MANY_FEATURES_REASON,
+  bytesTooLargeReason,
+  evaluateRegionTooLarge,
+  getDisplayStr,
+  resolveByteLimit,
+} from '../shared/featureDensityUtils.ts'
+export type { RegionTooLargeStatus } from '../shared/featureDensityUtils.ts'
 export { default as TooLargeMessage } from '../shared/TooLargeMessage.tsx'
 export { default as FloatingLegend } from './components/FloatingLegend.tsx'

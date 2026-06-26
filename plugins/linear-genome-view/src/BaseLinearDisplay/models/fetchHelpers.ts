@@ -1,5 +1,8 @@
 import { AUTO_FORCE_LOAD_BP } from '../../LinearGenomeView/model.ts'
-import { getDisplayStr } from '../../shared/featureDensityUtils.ts'
+import {
+  bytesTooLargeReason,
+  resolveByteLimit,
+} from '../../shared/featureDensityUtils.ts'
 
 import type { FeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/types'
 import type RpcManager from '@jbrowse/core/rpc/RpcManager'
@@ -42,18 +45,17 @@ export async function checkByteEstimate(
     return null
   }
 
-  // Effective limit: user override → adapter's own limit → display config default.
-  // 0 from the adapter means "no limit"; treat it as absent so config takes over.
-  const adapterLimit =
-    stats.fetchSizeLimit !== 0 ? stats.fetchSizeLimit : undefined
-  const effectiveLimit =
-    config.userByteSizeLimit ?? adapterLimit ?? config.fetchSizeLimit
+  const effectiveLimit = resolveByteLimit({
+    userByteSizeLimit: config.userByteSizeLimit,
+    adapterFetchSizeLimit: stats.fetchSizeLimit,
+    configFetchSizeLimit: config.fetchSizeLimit,
+  })
 
   if (stats.bytes && stats.bytes > effectiveLimit) {
     return {
       stats,
       tooLarge: true,
-      reason: `Requested too much data (${getDisplayStr(stats.bytes)})`,
+      reason: bytesTooLargeReason(stats.bytes),
     }
   }
 

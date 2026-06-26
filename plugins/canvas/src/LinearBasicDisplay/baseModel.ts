@@ -20,10 +20,12 @@ import {
   AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
+  TOO_MANY_FEATURES_REASON,
   TrackHeightMixin,
   autorunOnReadyView,
-  getDisplayStr,
+  bytesTooLargeReason,
   onDisplayedRegionsChange,
+  resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
@@ -674,10 +676,11 @@ export default function baseStateModelFactory(
           ) {
             return false
           }
-          const limit =
-            self.userByteSizeLimit ??
-            stats?.fetchSizeLimit ??
-            readConfObject(self.conf, 'fetchSizeLimit')
+          const limit = resolveByteLimit({
+            userByteSizeLimit: self.userByteSizeLimit,
+            adapterFetchSizeLimit: stats?.fetchSizeLimit,
+            configFetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
+          })
           return bytes > limit
         },
 
@@ -704,9 +707,9 @@ export default function baseStateModelFactory(
          */
         get regionTooLargeReason() {
           if (self.bytesEstimateTooLarge) {
-            return `Requested too much data (${getDisplayStr(self.estimatedVisibleBytes ?? 0)})`
+            return bytesTooLargeReason(self.estimatedVisibleBytes ?? 0)
           }
-          return self.densityTooLarge ? 'Too many features' : ''
+          return self.densityTooLarge ? TOO_MANY_FEATURES_REASON : ''
         },
       }))
       // Laid-out data derived from the raw per-region fetch results. MobX
