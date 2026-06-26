@@ -430,11 +430,20 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   // Create the display already in its target state rather than mutating a
   // default display with setter actions. An explicit `display:` selects a
   // non-default display via the snapshot `type` showTrack reads.
-  const display = view.showTrack(
+  const opened = view.showTrack(
     path.basename(track),
     {},
     displayType ? { ...snap, type: displayType } : snap,
-  ).displays[0] as TrackDisplay
+  )
+  // showTrack returns undefined on any failure (invalid track config, or a
+  // display: type that doesn't exist for this track) — surface a clear message
+  // instead of a downstream "cannot read 'displays' of undefined".
+  if (!opened) {
+    throw new Error(
+      `Failed to open track "${track}"${displayType ? ` with display "${displayType}"` : ''}`,
+    )
+  }
+  const display = opened.displays[0] as TrackDisplay
 
   // `force` is the lone non-snapshot setting: it flips a volatile load-gate.
   // (every display in the union implements setFeatureDensityStatsLimit, so no
