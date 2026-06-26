@@ -20,7 +20,7 @@
     "@jbrowse/plugin-linear-genome-view": "workspace:*",
     "@jbrowse/react-linear-genome-view2": "workspace:*",
     "@r2wc/react-to-web-component": "^2.1.1",
-    "astro": "^7.0.2",
+    "astro": "^7.0.3",
     "mobx": "^6.16.1",
     "mobx-react": "^9.2.2",
     "react": "^19.2.7",
