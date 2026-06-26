@@ -9,7 +9,6 @@ import OpenInNewIcon from '@mui/icons-material/OpenInNew'
 import SettingsIcon from '@mui/icons-material/Settings'
 import SettingsBackupRestoreIcon from '@mui/icons-material/SettingsBackupRestore'
 
-import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseTrackConfig } from '@jbrowse/core/pluggableElementTypes'
@@ -211,6 +210,10 @@ interface SessionWithGetTrackActions extends SessionWithDialog {
   getTrackActions(config: BaseTrackConfig, view?: TrackActionView): MenuItem[]
 }
 
+// (TrackMenuSessionMixin — the minimal embedded-view variant — lives in its own
+// file so each documented state model is the sole one in its file, which the
+// autogen docs generator requires.)
+
 /**
  * #stateModel TrackMenuItemsSessionMixin
  *
@@ -265,34 +268,6 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
           self.getTrackActions(config, view),
           extraTrackActions,
         )
-      },
-    }
-  })
-}
-
-/**
- * #stateModel TrackMenuSessionMixin
- */
-export function TrackMenuSessionMixin(_pluginManager: PluginManager) {
-  return types.model('TrackMenuSessionMixin', {}).views(s => {
-    const self = s as typeof s & BaseSession
-    return {
-      /**
-       * #method
-       */
-      getTrackActionMenuItems({
-        effectiveConfig,
-        extraTrackActions,
-      }: {
-        config: AnyConfigurationModel
-        effectiveConfig: Record<string, unknown>
-        extraTrackActions?: MenuItem[]
-        view?: TrackActionView
-      }): MenuItem[] {
-        return [
-          aboutTrackMenuItem(self, effectiveConfig),
-          ...(extraTrackActions ?? []),
-        ]
       },
     }
   })

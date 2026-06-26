@@ -51,7 +51,10 @@ function parseColorTag(comment: string | undefined, where: string) {
   if (!m) {
     return undefined
   }
-  const [group, label, description = ''] = m[1].split('|').map(s => s.trim())
+  const parts = m[1].split('|').map(s => s.trim())
+  const [group, label] = parts
+  // join the remainder back so a description may itself contain a `|`
+  const description = parts.slice(2).join(' | ')
   if (!group || !label) {
     throw new Error(`${where}: malformed #color tag "${m[0].trim()}"`)
   }

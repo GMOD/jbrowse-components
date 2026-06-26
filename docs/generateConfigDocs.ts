@@ -222,8 +222,8 @@ function adapterValueLines(code: string) {
 // query/target (or assemblyNames) rather than a generic placeholder that would
 // contradict it.
 function syntenyAssemblyNames(adapterCode: string) {
-  const query = /queryAssembly:\s*'([^']*)'/.exec(adapterCode)
-  const target = /targetAssembly:\s*'([^']*)'/.exec(adapterCode)
+  const query = /queryAssembly:\s*['"]([^'"]*)['"]/.exec(adapterCode)
+  const target = /targetAssembly:\s*['"]([^'"]*)['"]/.exec(adapterCode)
   const names = /assemblyNames:\s*(\[[^\]]*\])/.exec(adapterCode)
   return query && target
     ? `['${query[1]}', '${target[1]}']`
@@ -269,7 +269,7 @@ function trackConfigLines(trackType: string, adapterCode: string) {
 // alone. Final indentation is normalized by the prettier pass in generate.ts.
 function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
   return content.replace(
-    /```(?:js|javascript|json)?\n([\s\S]*?)\n```/,
+    /```(?:js|javascript|json)?\n([\s\S]*?)\n```/g,
     (full: string, inner: string) => {
       const code = inner.trim()
       const isBareAdapter = code.startsWith('{') && /\btype\s*:/.test(code)
