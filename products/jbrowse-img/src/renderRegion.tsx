@@ -1,11 +1,11 @@
-import { destroy } from '@jbrowse/mobx-state-tree'
+import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
 import { renderToSvg as renderLinearToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
-import { when } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import { applyTrackOpts } from './applyTrackOpts.ts'
 import { readData } from './readData.ts'
@@ -23,7 +23,7 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 // LGV-only react2 host could not. RPC runs on the main thread (the rpc
 // defaultDriver default), so no worker is needed for headless export.
 function createModel(data: Config) {
-  return createViewState({
+  const model = createViewState({
     config: {
       assemblies: data.assemblies,
       tracks: data.tracks,
@@ -31,6 +31,25 @@ function createModel(data: Config) {
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
   })
+  // The interactive app routes failures (a bad track config, an assembly that
+  // won't load, an RPC error) to session.notifyError, which only pushes a
+  // snackbar — invisible in this headless tool, so errors would otherwise be
+  // silently swallowed and surface as a blank render. Echo error notifications
+  // to stderr so the real cause is reported.
+  const { session } = model
+  const reported = new Set<string>()
+  addDisposer(
+    session,
+    autorun(() => {
+      for (const { message, level } of session.snackbarMessages) {
+        if (level === 'error' && !reported.has(message)) {
+          reported.add(message)
+          console.error(`jb2export: ${message}`)
+        }
+      }
+    }),
+  )
+  return model
 }
 
 type Model = ReturnType<typeof createModel>
