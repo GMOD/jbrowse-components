@@ -191,6 +191,52 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     }
   }
 
+  // Multi-region fast path: one bbi pass over all regions, coalescing adjacent
+  // on-disk blocks across region boundaries (fewer range requests than N
+  // independent getFeatureArrays calls — the win for collapsed-intron and
+  // whole-genome overviews). All regions share one zoom level, selected from the
+  // view's bpPerPx, so a single basesPerSpan is correct. The bbi result packs
+  // every region into one backing set of typed arrays plus regionOffsets;
+  // regionOffsets[i]..regionOffsets[i+1] is region i's copy-free slice.
+  public async getFeatureArraysMulti(
+    regions: Region[],
+    opts: WiggleOptions = {},
+  ): Promise<RawFeatureArrays[]> {
+    const { bpPerPx = 0, resolution = 1, statusCallback = () => {} } = opts
+    const resolutionMultiplier = this.getConf('resolutionMultiplier')
+    const { bigwig } = await this.setup(opts)
+
+    const res = await downloadStatus(
+      'Downloading bigwig data',
+      statusCallback,
+      onProgress =>
+        bigwig.getFeaturesAsArraysMulti(
+          regions.map(r => ({ refName: r.refName, start: r.start, end: r.end })),
+          {
+            ...opts,
+            basesPerSpan: (bpPerPx / resolution) * resolutionMultiplier,
+            onProgress,
+          },
+        ),
+    )
+
+    const { starts, ends, scores, regionOffsets } = res
+    const minScores = res.isSummary ? res.minScores : undefined
+    const maxScores = res.isSummary ? res.maxScores : undefined
+    return regions.map((_region, i) => {
+      const lo = regionOffsets[i]!
+      const hi = regionOffsets[i + 1]!
+      return {
+        starts: starts.subarray(lo, hi),
+        ends: ends.subarray(lo, hi),
+        scores: scores.subarray(lo, hi),
+        minScores: minScores?.subarray(lo, hi),
+        maxScores: maxScores?.subarray(lo, hi),
+        count: hi - lo,
+      }
+    })
+  }
+
   public async getRegionQuantitativeStats(
     region: Region,
     opts?: WiggleOptions,

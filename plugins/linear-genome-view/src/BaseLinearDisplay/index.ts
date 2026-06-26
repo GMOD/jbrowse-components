@@ -25,6 +25,7 @@ export {
   type MultiRegionDisplayMixinType,
   autorunOnReadyView,
   default as MultiRegionDisplayMixin,
+  fetchAllRegions,
   fetchEachRegion,
   onDisplayedRegionsChange,
 } from './models/MultiRegionDisplayMixin.ts'

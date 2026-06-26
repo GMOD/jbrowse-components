@@ -516,6 +516,42 @@ export async function fetchEachRegion<R>(
   })
 }
 
+/**
+ * Batched counterpart to {@link fetchEachRegion}: hands every needed region to
+ * a single RPC `call`, which returns one result per region aligned to the input
+ * order (`results[i]` ↔ `needed[i]`). Use when the adapter serves all regions in
+ * one pass more efficiently than N independent calls — e.g. BigWig coalesces
+ * adjacent on-disk blocks across region boundaries (`getFeaturesAsArraysMulti`),
+ * which the per-region fan-out can't exploit; collapsed-intron views (many small
+ * regions on one refName) benefit most. The single `ctx.isStale()` guard is the
+ * same correctness primitive as the per-region helper — a moved-on viewport
+ * skips both the commit and the post-fetch step. `call` keeps the literal RPC
+ * method name at the call site so its typed args/return survive and `R` flows
+ * into `onResult` with no cast.
+ */
+export async function fetchAllRegions<R>(
+  self: FetchEachRegionModel,
+  needed: { region: Region; displayedRegionIndex: number }[],
+  opts: {
+    call: (regions: Region[], ctx: FetchContext) => Promise<R[]>
+    onResult: (displayedRegionIndex: number, result: R) => void
+    onComplete?: () => void
+  },
+) {
+  await self.fetchRegions(needed, async ctx => {
+    const results = await opts.call(
+      needed.map(n => n.region),
+      ctx,
+    )
+    if (!ctx.isStale()) {
+      needed.forEach(({ displayedRegionIndex }, i) => {
+        opts.onResult(displayedRegionIndex, results[i]!)
+      })
+      opts.onComplete?.()
+    }
+  })
+}
+
 // Run `clear` whenever the containing view's `displayedRegions` reference
 // changes (chromosome navigation, region reorder, etc). Use for state keyed
 // by `displayedRegionIndex` that intentionally survives `clearAllRpcData` —

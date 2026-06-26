@@ -12,7 +12,7 @@ import { types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  fetchEachRegion,
+  fetchAllRegions,
 } from '@jbrowse/plugin-linear-genome-view'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
@@ -272,16 +272,17 @@ export default function stateModelFactory(
           const { bpPerPx } = view
           const sessionId = getRpcSessionId(self)
           const { rpcManager } = getSession(self)
-          return fetchEachRegion(self, needed, {
-            call: (region, ctx, displayedRegionIndex) =>
+          return fetchAllRegions(self, needed, {
+            call: (regions, ctx) =>
               rpcManager.call(sessionId, 'RenderWiggleData', {
                 adapterConfig,
-                region,
+                regions,
                 ...self.rpcProps(),
                 stopToken: ctx.stopToken,
                 bpPerPx,
-                statusCallback:
-                  self.makeRegionStatusCallback(displayedRegionIndex),
+                statusCallback: self.makeRegionStatusCallback(
+                  needed[0]!.displayedRegionIndex,
+                ),
               }),
             onResult: (idx, result) => {
               self.setRpcData(idx, result)

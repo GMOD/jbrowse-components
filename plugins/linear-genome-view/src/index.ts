@@ -97,6 +97,7 @@ export {
   computeRenderTransform,
   drawCanvasImageData,
   evaluateRegionTooLarge,
+  fetchAllRegions,
   fetchEachRegion,
   getDisplayStr,
   migrateOldSettingSnapshots,
