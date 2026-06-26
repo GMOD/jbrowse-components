@@ -15,6 +15,8 @@ import {
 import {
   bandScreenTop,
   contentScreenY,
+  makeBpToPx,
+  makeScroll,
   sectionBandBottom,
 } from './sectionScreen.ts'
 
@@ -92,7 +94,7 @@ export function computeVisibleLabels(
   // Each stacked section places its labels at its own pileup top; ungrouped is
   // one section, so this reduces to the prior single-offset loop. See
   // sectionScreen.ts for the band-top-vs-content scroll tiers used below.
-  const scroll = { isGrouped: sections.length > 1, scrollTop, canvasHeight: height } // prettier-ignore
+  const scroll = makeScroll(sections.length, scrollTop, height)
   for (const { laidOutPileupMap, topOffset, pileupHeight } of sections) {
     const rowYPx = (y: number) =>
       contentScreenY(y * rowHeight + featureHeight / 2 + topOffset, scroll)
@@ -109,11 +111,7 @@ export function computeVisibleLabels(
       }
       const blockStart = vr.start
       const blockEnd = vr.end
-      const blockScreenOffsetPx = vr.screenStartPx
-      const reversed = vr.reversed ?? false
-      const bpEdge = reversed ? blockEnd : blockStart
-      const bpToPx = (bp: number) =>
-        (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + blockScreenOffsetPx
+      const bpToPx = makeBpToPx(vr, bpPerPx)
 
       // Screen-x spans of the wide purple boxes the GPU draws for large
       // insertions (insertion.slang), keyed by integer pileup row. A SNP letter

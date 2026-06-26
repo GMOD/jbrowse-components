@@ -4,6 +4,8 @@ import { NumberTextField, SubmitDialog } from '@jbrowse/core/ui'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
+
 import type { ColorBy } from '../../shared/types.ts'
 
 const SetModificationThresholdDialog = observer(
@@ -29,11 +31,18 @@ const SetModificationThresholdDialog = observer(
         onSubmit={() => {
           if (threshold !== undefined) {
             const currentColorBy = model.colorBy ?? { type: 'modifications' }
+            // Drop any prior threshold, then re-add only a non-default value so a
+            // session left at the default doesn't carry a redundant field (mirrors
+            // the menu's modThresholdField).
+            const { threshold: _prev, ...restMods } =
+              currentColorBy.modifications ?? {}
             model.setColorScheme({
               ...currentColorBy,
               modifications: {
-                ...currentColorBy.modifications,
-                threshold,
+                ...restMods,
+                ...(threshold === DEFAULT_MODIFICATION_THRESHOLD
+                  ? {}
+                  : { threshold }),
               },
             })
           }

@@ -27,10 +27,10 @@ interface ReadConnectionsModel {
   setDrawInter: (draw: boolean) => void
   showBezierConnections: boolean
   setShowBezierConnections: (flag: boolean) => void
-  drawSingletons?: boolean
-  drawProperPairs?: boolean
-  setDrawSingletons?: (arg: boolean) => void
-  setDrawProperPairs?: (arg: boolean) => void
+  drawSingletons: boolean
+  drawProperPairs: boolean
+  setDrawSingletons: (arg: boolean) => void
+  setDrawProperPairs: (arg: boolean) => void
 }
 
 // Everything about pairing/connecting reads lives here, so the concept is in one
@@ -53,11 +53,11 @@ export function getReadConnectionsMenuItem(model: ReadConnectionsModel) {
           model.setLinkedReads(model.linkedReads === 'off' ? 'normal' : 'off')
         },
       ),
-      checkboxItem('Show singletons', model.drawSingletons ?? false, () => {
-        model.setDrawSingletons?.(!model.drawSingletons)
+      checkboxItem('Show singletons', model.drawSingletons, () => {
+        model.setDrawSingletons(!model.drawSingletons)
       }),
-      checkboxItem('Show proper pairs', model.drawProperPairs ?? false, () => {
-        model.setDrawProperPairs?.(!model.drawProperPairs)
+      checkboxItem('Show proper pairs', model.drawProperPairs, () => {
+        model.setDrawProperPairs(!model.drawProperPairs)
       }),
       // Arcs and read cloud share one band and the read cloud repurposes the
       // band's Y axis to |tlen| (insertSizeTicks/arcsYDomainBp), so the two

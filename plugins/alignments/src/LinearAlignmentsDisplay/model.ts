@@ -854,7 +854,7 @@ export default function stateModelFactory(
               }
             }
           }
-          return computeVisibleCoverageStats(covBlocks, b => b.cov)
+          return computeVisibleCoverageStats(covBlocks, cb => cb.cov)
         },
 
         /**

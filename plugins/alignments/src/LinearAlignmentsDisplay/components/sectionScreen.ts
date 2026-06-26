@@ -20,6 +20,35 @@ export interface ScrollModel {
   canvasHeight: number
 }
 
+// Assemble a ScrollModel from a section list. Grouping is "more than one
+// section" (mirrors the model's `isGrouped`), so this is the one place that
+// rule is spelled for the pure label/highlight passes that don't hold a model.
+export function makeScroll(
+  sectionCount: number,
+  scrollTop: number,
+  canvasHeight: number,
+): ScrollModel {
+  return { isGrouped: sectionCount > 1, scrollTop, canvasHeight }
+}
+
+// Project a genomic bp to a screen-x within one visible region, honoring
+// reverse-strand regions. Single source for the label/highlight overlays so the
+// reversed-edge arithmetic can't drift between them (the hit-test path runs the
+// inverse and stays separate). Pure; the region only needs its bp edges and
+// screen offset.
+export interface BpScreenRegion {
+  start: number
+  end: number
+  reversed?: boolean
+  screenStartPx: number
+}
+export function makeBpToPx(region: BpScreenRegion, bpPerPx: number) {
+  const reversed = region.reversed ?? false
+  const bpEdge = reversed ? region.end : region.start
+  return (bp: number) =>
+    (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + region.screenStartPx
+}
+
 // Screen Y of a sticky-capable band top (coverage / arcs / sashimi), or of a
 // section's pileup-clip ceiling. Sticky (unscrolled) when ungrouped; scrolls
 // with its section when grouped.

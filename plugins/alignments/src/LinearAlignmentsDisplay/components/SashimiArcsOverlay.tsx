@@ -166,11 +166,7 @@ const SashimiArcsOverlay = observer(function SashimiArcsOverlay({
 
   // Ungrouped coverage is sticky (only the pileup scrolls), so its bands keep
   // their content-space tops; grouped sections scroll as a unit.
-  const scroll = {
-    isGrouped: model.isGrouped,
-    scrollTop: model.scrollTop,
-    canvasHeight: model.height,
-  }
+  const { scrollModel: scroll } = model
   return (
     <>
       {model.sashimiSections.map(section => (

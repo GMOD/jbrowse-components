@@ -31,14 +31,31 @@ const useStyles = makeStyles()(theme => ({
     display: 'flex',
     gap: theme.spacing(4),
   },
+  flagRow: {
+    display: 'flex',
+    alignItems: 'center',
+  },
+  checkbox: {
+    margin: 0,
+    padding: 0,
+  },
 }))
 
 function toggleBit(flag: number, index: number, checked: boolean) {
   return checked ? flag | (1 << index) : flag & ~(1 << index)
 }
 
+// Shared tag-name validity: a tag is "invalid" only once typed and not matching
+// the 2-char tag pattern (an empty field is allowed, not flagged). Used by the
+// tag section's error display and the dialog's submit-disable so they can't
+// disagree.
+function isInvalidTag(tag: string) {
+  return tag !== '' && !TAG_REGEX.test(tag)
+}
+
 function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
   const { flag = 0, setFlag } = props
+  const { classes } = useStyles()
   return (
     <>
       <TextField
@@ -53,7 +70,7 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
       {samFlagLabels.map((name, index) => {
         const checked = Boolean(flag & (1 << index))
         return (
-          <div key={name} style={{ display: 'flex', alignItems: 'center' }}>
+          <div key={name} className={classes.flagRow}>
             <Checkbox
               checked={checked}
               onChange={event => {
@@ -65,7 +82,7 @@ function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
                 },
               }}
               size="small"
-              sx={{ m: 0, p: 0 }}
+              className={classes.checkbox}
             />
             <label htmlFor={`flag_${index}`}>{name}</label>
           </div>
@@ -116,8 +133,7 @@ function TagFilterSection(props: {
 }) {
   const { classes } = useStyles()
   const { tag, tagValue, setTag, setTagValue } = props
-  const validTag = TAG_REGEX.test(tag)
-  const tagInvalid = tag !== '' && !validTag
+  const tagInvalid = isInvalidTag(tag)
 
   return (
     <Paper className={classes.paper} variant="outlined">
@@ -186,10 +202,10 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const { filterBy } = model
   const [flagInclude, setFlagInclude] = useState(filterBy.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy.flagExclude)
-  const [tag, setTag] = useState(filterBy.tagFilter?.tag || '')
-  const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value || '')
-  const [readName, setReadName] = useState(filterBy.readName || '')
-  const tagInvalid = tag !== '' && !TAG_REGEX.test(tag)
+  const [tag, setTag] = useState(filterBy.tagFilter?.tag ?? '')
+  const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value ?? '')
+  const [readName, setReadName] = useState(filterBy.readName ?? '')
+  const tagInvalid = isInvalidTag(tag)
 
   const handleReset = () => {
     setFlagInclude(defaultFilterFlags.flagInclude)

@@ -1,6 +1,8 @@
 import {
   bandScreenTop,
   contentScreenY,
+  makeBpToPx,
+  makeScroll,
   sectionBandBottom,
 } from './sectionScreen.ts'
 
@@ -123,16 +125,13 @@ export function computeHighlightBoxes(
   const boxes: HighlightBox[] = []
   // See sectionScreen.ts for the band-top-vs-content scroll tiers: a row is
   // content (always scrolls), the section ceiling is a sticky-capable band top.
-  const scroll = { isGrouped: sections.length > 1, scrollTop, canvasHeight: height } // prettier-ignore
+  const scroll = makeScroll(sections.length, scrollTop, height)
   for (const vr of view.visibleRegions) {
+    const bpToPx = makeBpToPx(vr, bpPerPx)
     for (const bounds of byKey.values()) {
       if (bounds.displayedRegionIndex !== vr.displayedRegionIndex) {
         continue
       }
-      const reversed = vr.reversed ?? false
-      const bpEdge = reversed ? vr.end : vr.start
-      const bpToPx = (bp: number) =>
-        (reversed ? bpEdge - bp : bp - bpEdge) / bpPerPx + vr.screenStartPx
       const x1 = bpToPx(bounds.startBp)
       const x2 = bpToPx(bounds.endBp)
       const top = contentScreenY(
