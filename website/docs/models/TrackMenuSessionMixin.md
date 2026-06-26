@@ -15,30 +15,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Links
 
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenu.ts)
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/TrackMenuSessionMixin.ts)
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/TrackMenuSessionMixin.md)
 
 ## Overview
 
+The minimal in-view track-label menu (just "About track" plus any
+plugin-contributed extra actions) used by the embedded react views, which have
+no track-editing actions to offer.
+
 <details open>
 <summary>TrackMenuSessionMixin - Methods</summary>
-
-#### method: getTrackListMenuItems
-
-flattened menu items for use in hierarchical track selector
-
-```ts
-type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
-```
-
-#### method: getTrackActionMenuItems
-
-track menu with About + "Track actions" submenu for the in-view label
-
-```ts
-type getTrackActionMenuItems = ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
-```
 
 #### method: getTrackActionMenuItems
 

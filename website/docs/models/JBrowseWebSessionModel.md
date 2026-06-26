@@ -267,6 +267,12 @@ and docs.
 [moveViewToTopInPanel](../dockviewlayoutmixin#action-moveviewtotopinpanel),
 [moveViewToBottomInPanel](../dockviewlayoutmixin#action-moveviewtobottominpanel)
 
+### Available via [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin)
+
+**Methods:**
+[getTrackListMenuItems](../trackmenuitemssessionmixin#method-gettracklistmenuitems),
+[getTrackActionMenuItems](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)
+
 ### Available via [WebSessionManagementMixin](../websessionmanagementmixin)
 
 **Getters:**

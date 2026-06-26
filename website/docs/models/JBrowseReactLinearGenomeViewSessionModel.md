@@ -148,8 +148,6 @@ and docs.
 ### Available via [TrackMenuSessionMixin](../trackmenusessionmixin)
 
 **Methods:**
-[getTrackListMenuItems](../trackmenusessionmixin#method-gettracklistmenuitems),
-[getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems),
 [getTrackActionMenuItems](../trackmenusessionmixin#method-gettrackactionmenuitems)
 
 <details open>

@@ -157,6 +157,12 @@ and docs.
 **Methods:**
 [getTrackActions](../desktopsessiontrackmenumixin#method-gettrackactions)
 
+### Available via [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin)
+
+**Methods:**
+[getTrackListMenuItems](../trackmenuitemssessionmixin#method-gettracklistmenuitems),
+[getTrackActionMenuItems](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)
+
 ### Available via [DockviewLayoutMixin](../dockviewlayoutmixin)
 
 **Properties:**

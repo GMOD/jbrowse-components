@@ -21,6 +21,17 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+## Inherited members
+
+Available on this model via composition. Follow each link for full signatures
+and docs.
+
+### Available via [TrackMenuItemsSessionMixin](../trackmenuitemssessionmixin)
+
+**Methods:**
+[getTrackListMenuItems](../trackmenuitemssessionmixin#method-gettracklistmenuitems),
+[getTrackActionMenuItems](../trackmenuitemssessionmixin#method-gettrackactionmenuitems)
+
 <details open>
 <summary>DesktopSessionTrackMenuMixin - Methods</summary>
 
