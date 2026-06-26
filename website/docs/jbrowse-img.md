@@ -338,10 +338,20 @@ This is the full list of available modifiers.
 
 **All tracks**
 
-| Modifier     | Example      | Description                        |
-| ------------ | ------------ | ---------------------------------- |
-| `height:N`   | `height:400` | Track height in pixels             |
-| `force:true` | `force:true` | Render even if region is too large |
+| Modifier        | Example                | Description                                          |
+| --------------- | ---------------------- | ---------------------------------------------------- |
+| `height:N`      | `height:400`           | Track height in pixels                               |
+| `force:true`    | `force:true`           | Render even if region is too large                   |
+| `display:value` | `display:multivariant` | Pick a non-default display for the track (see below) |
+
+By default each track uses its primary display. `display:value` selects an
+alternate one. These friendly aliases are recognized (any other value is passed
+through verbatim as a display state-model name):
+
+| `display:` value     | Selected display                        | Use                                           |
+| -------------------- | --------------------------------------- | --------------------------------------------- |
+| `multivariant`       | `LinearMultiSampleVariantDisplay`       | multi-sample VCF genotype matrix (rows)       |
+| `multivariantmatrix` | `LinearMultiSampleVariantMatrixDisplay` | multi-sample matrix laid out by feature index |
 
 **Alignment tracks (BAM/CRAM)**
 
