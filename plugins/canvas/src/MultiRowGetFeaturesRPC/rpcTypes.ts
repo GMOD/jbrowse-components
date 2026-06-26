@@ -29,6 +29,9 @@ export interface MultiRowGetFeaturesResult {
   featurePartitionIndex: Uint32Array
   // per-feature display name (feature `name` attribute), for hover tooltips
   featureNames: string[]
+  // per-feature adapter id, used to re-fetch the full feature on click (feature
+  // details widget) via GetCanvasFeatureDetails
+  featureIds: string[]
 }
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {

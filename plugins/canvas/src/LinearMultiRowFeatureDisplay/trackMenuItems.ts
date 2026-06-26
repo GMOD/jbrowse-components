@@ -13,6 +13,12 @@ const SetRowArrangementDialog = lazy(
   () => import('./components/SetRowArrangementDialog.tsx'),
 )
 
+// Preset pixel row heights for the "Row height" menu (0 = auto-fit, handled
+// separately). The read (which preset is checked) and the write (setRowHeight)
+// must agree, so they share these.
+const ROW_HEIGHT_NORMAL = 14
+const ROW_HEIGHT_COMPACT = 8
+
 interface MultiRowMenuSelf extends IAnyStateTreeNode {
   showTree: boolean
   showBranchLength: boolean
@@ -36,9 +42,9 @@ export function buildMultiRowTrackMenuItems(
   const rowHeightChoice =
     self.rowHeightSetting === 0
       ? 'fit'
-      : self.rowHeightSetting === 14
+      : self.rowHeightSetting === ROW_HEIGHT_NORMAL
         ? 'normal'
-        : self.rowHeightSetting === 8
+        : self.rowHeightSetting === ROW_HEIGHT_COMPACT
           ? 'compact'
           : 'custom'
   return [
@@ -63,7 +69,9 @@ export function buildMultiRowTrackMenuItems(
         if (value === 'fit') {
           self.setFitToHeight()
         } else {
-          self.setRowHeight(value === 'compact' ? 8 : 14)
+          self.setRowHeight(
+            value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
+          )
         }
       },
     ),

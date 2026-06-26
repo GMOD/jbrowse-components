@@ -35,6 +35,7 @@ const region: MultiRowRegionData = {
   partitionValues: ['momHP0', 'dadHP1'],
   featurePartitionIndex: Uint32Array.from([0, 1, 0]),
   featureNames: ['a', 'b', 'c'],
+  featureIds: ['f1', 'f2', 'f3'],
 }
 
 test('maps partition values to global row indices', () => {

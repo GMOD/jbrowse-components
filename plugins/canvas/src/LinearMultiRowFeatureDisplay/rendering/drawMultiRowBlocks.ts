@@ -4,6 +4,8 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
+
 import type {
   MultiRowRegionData,
   MultiRowRenderState,
@@ -44,9 +46,10 @@ export function drawMultiRowBlocks(
           partitionValues,
           featurePartitionIndex,
         } = regionData
-        // resolve each region-local partition value to its global row index once,
-        // so the per-feature lookup is an array index, not a string-keyed Map.get
-        const rowForLocal = partitionValues.map(v => rowIndexByValue.get(v))
+        const rowForLocal = resolveLocalRowIndices(
+          partitionValues,
+          rowIndexByValue,
+        )
 
         ctx.save()
         ctx.beginPath()

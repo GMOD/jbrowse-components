@@ -17,6 +17,9 @@ export interface MultiRowRegionData {
   featurePartitionIndex: Uint32Array
   // per-feature display name, for hover tooltips (render path ignores it)
   featureNames: string[]
+  // per-feature adapter id, for the click → feature-details fetch (render path
+  // ignores it)
+  featureIds: string[]
 }
 
 export interface MultiRowRenderState {

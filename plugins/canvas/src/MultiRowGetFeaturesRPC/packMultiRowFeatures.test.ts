@@ -80,6 +80,18 @@ test('missing partition value collapses to a single empty-string row', () => {
   expect([...r.featurePartitionIndex]).toEqual([0, 0])
 })
 
+test('captures feature id for the click → details fetch', () => {
+  const r = packMultiRowFeatures({
+    features: [
+      feat({ id: 'feat1', start: 0, end: 5, sample: 'mom' }),
+      feat({ id: 'feat2', start: 5, end: 9, sample: 'mom' }),
+    ],
+    partitionField: 'sample',
+    colorConfig: 'red',
+  })
+  expect(r.featureIds).toEqual(['feat1', 'feat2'])
+})
+
 test('captures feature name for tooltips ("" when absent)', () => {
   const r = packMultiRowFeatures({
     features: [

@@ -19,13 +19,20 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
   canvasRef: (node: HTMLCanvasElement | null) => void
 }) {
   const view = getContainingView(model) as LinearGenomeViewModel
-  const { height, sources, rowHeight, sidebarOffset } = model
+  const { hoveredFeature, height, sources, rowHeight, sidebarOffset } = model
   function onMouseMove(e: React.MouseEvent<HTMLCanvasElement>) {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
     model.setHoveredFeature(
       hit ? { ...hit, clientX: e.clientX, clientY: e.clientY } : undefined,
     )
+  }
+  function onClick(e: React.MouseEvent<HTMLCanvasElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const hit = model.featureAt(e.clientX - rect.left, e.clientY - rect.top)
+    if (hit) {
+      model.selectFeatureById(hit.id, hit.regionIndex)
+    }
   }
   return (
     <>
@@ -38,10 +45,19 @@ const MultiRowCanvas = observer(function MultiRowCanvas({
         onMouseLeave={() => {
           model.setHoveredFeature(undefined)
         }}
+        onClick={e => {
+          onClick(e)
+        }}
         onContextMenu={() => {
           model.setHoveredFeature(undefined)
         }}
-        style={{ width: view.width, height, position: 'absolute', left: 0 }}
+        style={{
+          width: view.width,
+          height,
+          position: 'absolute',
+          left: 0,
+          cursor: hoveredFeature ? 'pointer' : 'default',
+        }}
       />
       {sources.length ? (
         <svg

@@ -1,3 +1,4 @@
+import { resolveLocalRowIndices } from './resolveLocalRowIndices.ts'
 import {
   FIELD_OFFSET_F32,
   INSTANCE_STRIDE_BYTES,
@@ -26,9 +27,7 @@ export function buildMultiRowInstanceBuffer(
   const n = featureStarts.length
   const buffer = new ArrayBuffer(n * INSTANCE_STRIDE_BYTES)
   const u32 = new Uint32Array(buffer)
-  // resolve each region-local partition value to its global row index once, so
-  // the per-feature lookup is an array index rather than a string-keyed Map.get
-  const rowForLocal = partitionValues.map(v => rowIndexByValue.get(v))
+  const rowForLocal = resolveLocalRowIndices(partitionValues, rowIndexByValue)
   let count = 0
   for (let i = 0; i < n; i++) {
     const rowIndex = rowForLocal[data.featurePartitionIndex[i]!]

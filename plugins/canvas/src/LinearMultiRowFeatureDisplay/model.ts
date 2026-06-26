@@ -2,11 +2,15 @@ import type React from 'react'
 
 import {
   ConfigurationReference,
-  getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import { getContainingView } from '@jbrowse/core/util'
+import {
+  getContainingView,
+  getSession,
+  openFeatureWidget,
+} from '@jbrowse/core/util'
+import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
@@ -22,6 +26,7 @@ import {
 import { observable } from 'mobx'
 
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
+import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import {
@@ -48,6 +53,10 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 export interface MultiRowHit {
+  // adapter feature id + the region it was found in, so a click can re-fetch
+  // the full feature for the details widget
+  id: string
+  regionIndex: number
   row: string
   name: string
   refName: string
@@ -157,7 +166,7 @@ export default function stateModelFactory(
        * worker which resolves it per feature.
        */
       get colorConfig(): string {
-        return getConfSnapshot(self.configuration).color as string
+        return self.conf.color
       },
       /**
        * #getter
@@ -388,6 +397,7 @@ export default function stateModelFactory(
           partitionValues,
           featurePartitionIndex,
           featureNames,
+          featureIds,
         } = region
         // resolve the hovered row to this region's local partition index once,
         // so the per-feature test is an int compare (and naturally matches
@@ -401,6 +411,8 @@ export default function stateModelFactory(
             bp < featureEnds[i]!
           ) {
             return {
+              id: featureIds[i]!,
+              regionIndex: p.index,
               row: source.label ?? source.name,
               name: featureNames[i]!,
               refName: p.refName,
@@ -436,6 +448,29 @@ export default function stateModelFactory(
        */
       setHoveredFeature(arg?: HoveredFeature) {
         self.hoveredFeature = arg
+      },
+      /**
+       * #action
+       * Re-fetch the full clicked feature by id and open it in the feature
+       * details widget. The painting ships only the slim render arrays, so the
+       * complete feature is fetched on demand (GetCanvasFeatureDetails).
+       */
+      selectFeatureById(featureId: string, displayedRegionIndex: number) {
+        const region = self.loadedRegions.get(displayedRegionIndex)
+        if (region) {
+          void (async () => {
+            const feature = await fetchCanvasFeatureDetails(
+              getSession(self),
+              getRpcSessionId(self),
+              self.adapterConfig,
+              featureId,
+              region,
+            )
+            if (feature && isAlive(self)) {
+              openFeatureWidget(self, feature.toJSON())
+            }
+          })()
+        }
       },
       /**
        * #action

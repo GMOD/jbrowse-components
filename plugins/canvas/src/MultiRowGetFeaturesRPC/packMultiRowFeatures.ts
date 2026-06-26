@@ -48,6 +48,7 @@ export function packMultiRowFeatures({
   const featureColors = new Uint32Array(n)
   const featurePartitionIndex = new Uint32Array(n)
   const featureNames: string[] = new Array(n)
+  const featureIds: string[] = new Array(n)
   const partitionValues: string[] = []
   const valueIndex = new Map<string, number>()
   const colorCfg = { color: colorConfig }
@@ -56,6 +57,7 @@ export function packMultiRowFeatures({
     const feature = features[i]!
     featureStarts[i] = feature.get('start')
     featureEnds[i] = feature.get('end')
+    featureIds[i] = feature.id()
     const name = feature.get('name')
     featureNames[i] = typeof name === 'string' ? name : ''
 
@@ -78,5 +80,6 @@ export function packMultiRowFeatures({
     partitionValues,
     featurePartitionIndex,
     featureNames,
+    featureIds,
   }
 }
