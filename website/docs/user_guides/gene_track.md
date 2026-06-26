@@ -69,11 +69,10 @@ remembered across sessions.
 The same menu option also draws the translated protein. As you zoom in, the
 amino acids are first drawn as a colored background band over the CDS, and once
 you are zoomed in far enough (roughly base-pair resolution) the single-letter
-amino acid code is drawn over each codon. The letters line up with the codons in
-the reference sequence track, so you can read the genomic sequence, the codons,
-and the resulting peptide in register.
-
-<Figure caption="Zoomed into a CDS exon with the reference sequence track above. Each codon is labeled with its single-letter amino acid, aligned to the bases that encode it. The translation uses the standard genetic code (NCBI table 1)." src="/img/gene_track_peptides.png" />
+amino acid code is drawn over each codon — as in the lower frame of the figure
+above. The letters line up with the codons in the reference sequence track, so
+you can read the genomic sequence, the codons, and the resulting peptide in
+register. The translation uses the standard genetic code (NCBI table 1).
 
 The translation follows the transcript's strand and CDS phase, and codons that
 straddle an exon boundary are split across the two exons. When a CDS carries a

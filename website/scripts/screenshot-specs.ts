@@ -60,7 +60,7 @@ export interface Annotation {
   // CSS px (default 420)
   maxWidth?: number
   fontSize?: number // text/circle label, default 22 for text (min 18)
-  strokeWidth?: number // box/circle stroke width (default 5)
+  strokeWidth?: number // box/circle stroke width (default 5); arrow line+head (default 4)
   fillOpacity?: number // box: tint the interior with a translucent wash of color
   anchor?: { selector?: string; text?: string }
   dx?: number
@@ -205,6 +205,20 @@ function sessionSpec(config: string, session: object) {
   return `?config=${config}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
+// The overwhelmingly common spec shape: a session with a single
+// LinearGenomeView. `view` carries the view-level props (assembly/loc/tracks and
+// any extras like colorByCDS/trackLabels); `type: 'LinearGenomeView'` is filled
+// in. Encodes identically to the hand-written `sessionSpec(cfg, { views: [{ type:
+// 'LinearGenomeView', ...view }] })`, so it never changes a rendered image.
+function lgvSession(
+  config: string,
+  view: { assembly: string } & Record<string, unknown>,
+) {
+  return sessionSpec(config, {
+    views: [{ type: 'LinearGenomeView', ...view }],
+  })
+}
+
 // Expand a menu drill-down into wait/hover/delay actions: each non-terminal item
 // is hovered to open its submenu; the terminal item is only waited for. The
 // caller lists the whole path, so an intermediate level can't be skipped — the
@@ -246,7 +260,10 @@ const trioVcfLayout = TRIO_HAPLOTYPES.map(h => ({
   HP: h.hp,
   label: h.label,
 }))
-const TRIO_VCF_ROW_TOP = 320 // top of Child hap1, just under the taller painting
+// top of Child hap1, just under the painting track. The painting is filtered to
+// one parent's 2 haplotype rows, so it's shorter than the old 4-row painting and
+// the VCF panel sits ~44px higher (measured; was 320).
+const TRIO_VCF_ROW_TOP = 276
 const TRIO_VCF_ROW_PITCH = 44
 const trioRowY = (label: string) =>
   TRIO_VCF_ROW_TOP +
@@ -315,6 +332,8 @@ function crossoverHighlights(opts: {
     step,
     {
       type: 'arrow',
+      // thinner line -> smaller arrowhead (reviewer: head was too big)
+      strokeWidth: 2,
       from: { x: TRIO_XOVER_X, y: step.y + step.height },
       to: { x: TRIO_XOVER_X, y: trioRowY(child) },
     },
@@ -648,15 +667,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'volvox_alignments',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_cram_alignments'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_cram_alignments'],
     }),
     viewportWidth: 1000,
     viewportHeight: 550,
@@ -667,15 +681,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'volvox_variants',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:5000-10000',
-          tracks: ['volvox_test_vcf'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:5000-10000',
+      tracks: ['volvox_test_vcf'],
     }),
     viewportWidth: 1000,
     viewportHeight: 550,
@@ -686,22 +695,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'variant_with_pileup',
-    url: sessionSpec(VOLVOX, {
-      views: [
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:14439-14515',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:14439-14515',
-          tracks: [
-            {
-              trackId: 'volvox_filtered_vcf',
-              // the variant track is a single row of features, so shrink its
-              // band so it doesn't dominate the figure over the pileup (reviewer)
-              displaySnapshot: { height: 60 },
-            },
-            'volvox_cram_alignments',
-          ],
+          trackId: 'volvox_filtered_vcf',
+          // the variant track is a single row of features, so shrink its
+          // band so it doesn't dominate the figure over the pileup (reviewer)
+          displaySnapshot: { height: 60 },
         },
+        'volvox_cram_alignments',
       ],
     }),
     readyText: 'ctgA',
@@ -716,22 +720,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'variants/population_1000genomes',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr1:1,000,000-1,020,000',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:1,000,000-1,020,000',
-          tracks: [
-            {
-              trackId:
-                '1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
-                height: 500,
-              },
-            },
-          ],
+          trackId:
+            '1kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantDisplay',
+            height: 500,
+          },
         },
       ],
     }),
@@ -744,15 +743,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'bigwig_xyplot',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_microarray'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_microarray'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -761,15 +755,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'bigwig_line',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_microarray_line'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_microarray_line'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -786,28 +775,27 @@ export const specs: ScreenshotSpec[] = [
     // start at a single chromosome so the figure can walk through the setup
     // (reviewer: show how to build this view). Stage 1 opens the View → Show...
     // menu with "Show all regions in assembly" boxed; stage 2 is the result.
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr10',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr10',
-          tracks: [
-            {
-              trackId: 'colo_tumor',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                autoscale: 'localsd',
-                numStdDev: 3,
-                // scatter rendering reads copy-number gains/losses better than
-                // the filled XY plot across the whole genome (reviewer request)
-                defaultRendering: 'scatter',
-                // finer binning (basesPerSpan = bpPerPx/resolution) so the
-                // whole-genome scatter resolves copy-number structure (reviewer)
-                resolution: 5,
-              },
-            },
-          ],
+          trackId: 'colo_tumor',
+          displaySnapshot: {
+            type: 'LinearWiggleDisplay',
+            autoscale: 'localsd',
+            numStdDev: 3,
+            // scatter rendering reads copy-number gains/losses better than
+            // the filled XY plot across the whole genome (reviewer request)
+            defaultRendering: 'scatter',
+            // finer binning (basesPerSpan = bpPerPx/resolution) so the
+            // whole-genome scatter resolves copy-number structure (reviewer)
+            resolution: 5,
+            // plot the per-bin average rather than the default whiskers
+            // (min/max/avg) — at whole-genome zoom the avg score reads the
+            // copy-number level cleanly without the noise band (reviewer)
+            summaryScoreMode: 'avg',
+          },
         },
       ],
     }),
@@ -859,15 +847,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sequence_track',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:20000-20050',
-          tracks: ['volvox_refseq'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:20000-20050',
+      tracks: ['volvox_refseq'],
     }),
     viewportWidth: 1100,
     viewportHeight: 400,
@@ -889,21 +872,16 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments_soft_clipped',
-    url: sessionSpec(VOLVOX, {
-      views: [
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:2615-2725',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:2615-2725',
-          tracks: [
-            {
-              trackId: 'volvox-long-reads-sv-bam',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                showSoftClipping: true,
-              },
-            },
-          ],
+          trackId: 'volvox-long-reads-sv-bam',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            showSoftClipping: true,
+          },
         },
       ],
     }),
@@ -999,15 +977,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'about_track',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_cram'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_cram'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -1021,67 +994,58 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // Color-by-CDS frame coloring on a gene track: human BRCA1 (hg19 NCBI RefSeq)
-  // with colorByCDS on at the view level, so each CDS segment is tinted by its
-  // reading frame. The window spans several small coding exons whose reading
-  // frames differ, so the per-frame colors are visible. Too zoomed-out for
-  // peptide lettering, so only the frame colors show.
+  // zoomed to base-pair resolution with the reference sequence track above
+  // (reviewer). Two stages mirror the how-to: stage 1 opens the view menu with
+  // "Color by CDS and draw amino acids" boxed; stage 2 clicks it, so each CDS
+  // codon is tinted by its reading frame with the amino acid drawn over it,
+  // lined up to the reference codons above.
   {
     mode: 'url',
     name: 'gene_track_color_by_cds',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr17:41,244,000-41,244,120',
+      // offset labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
+        'Pd8Wh30ei9R',
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr17:41,222,000-41,235,000',
-          colorByCDS: true,
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: ['ncbi_gff_hg19'],
+          trackId: 'ncbi_gff_hg19',
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+          },
         },
       ],
     }),
     readyText: 'RefSeq',
     readyTimeout: 60000,
-    settleMs: 6000,
-    viewportHeight: 500,
-  },
-
-  // Peptide lettering: zoomed into the large BRCA1 exon 11 with the reference
-  // sequence track above, colorByCDS on. Below ~1/8 bp/px the per-codon amino
-  // acid letters are drawn over the frame-colored CDS, lined up with the codons
-  // in the sequence track.
-  {
-    mode: 'url',
-    name: 'gene_track_peptides',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr17:41,244,000-41,244,120',
-          colorByCDS: true,
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            'Pd8Wh30ei9R',
-            {
-              trackId: 'ncbi_gff_hg19',
-              // one transcript per gene keeps the peptide row uncluttered
-              // (reviewer: only show longest transcript)
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'RefSeq',
-    readyTimeout: 60000,
-    settleMs: 6000,
-    viewportHeight: 500,
+    viewportHeight: 600,
+    stages: [
+      {
+        // top frame: the view (hamburger) menu open, the color-by-CDS toggle
+        // ringed + boxed so the one click that enables it reads at a glance
+        actions: [
+          { type: 'click', selector: '[data-testid="view_menu_icon"]' },
+          ...menuCascade(['Color by CDS and draw amino acids']),
+        ],
+        annotations: [
+          {
+            type: 'circle',
+            anchor: { selector: '[data-testid="view_menu_icon"]' },
+          },
+          ...cascadeBoxes(['Color by CDS and draw amino acids']),
+        ],
+      },
+      {
+        // bottom frame: after the click each codon is frame-tinted with its
+        // amino acid drawn over it, aligned to the reference sequence above
+        actions: [
+          { type: 'click', text: 'Color by CDS and draw amino acids' },
+          { type: 'delay', ms: 5000 },
+        ],
+      },
+    ],
   },
 
   // Selenoprotein transl_except highlight: GPX1 (hg19 NCBI RefSeq, chr3, minus
@@ -1095,24 +1059,19 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gene_track_selenocysteine',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr3:49,395,505-49,395,625',
+      colorByCDS: true,
+      trackLabels: 'offset',
+      tracks: [
+        'Pd8Wh30ei9R',
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr3:49,395,505-49,395,625',
-          colorByCDS: true,
-          trackLabels: 'offset',
-          tracks: [
-            'Pd8Wh30ei9R',
-            {
-              trackId: 'ncbi_gff_hg19',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
-            },
-          ],
+          trackId: 'ncbi_gff_hg19',
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+          },
         },
       ],
     }),
@@ -1132,25 +1091,20 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gene_track_mature_peptides',
-    url: sessionSpec('test_data/enterovirus_d/config.json', {
-      views: [
+    url: lgvSession('test_data/enterovirus_d/config.json', {
+      assembly: 'GCF_000861205.1',
+      loc: 'NC_001430.1:727-7,311',
+      // offset labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'GCF_000861205.1',
-          loc: 'NC_001430.1:727-7,311',
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'ncbi_genes_enterovirus_d',
-              // tall enough for the gene row + all 12 stacked mature peptides
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                height: 220,
-                subfeatureLabels: 'overlay',
-              },
-            },
-          ],
+          trackId: 'ncbi_genes_enterovirus_d',
+          // tall enough for the gene row + all 12 stacked mature peptides
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            height: 220,
+            subfeatureLabels: 'overlay',
+          },
         },
       ],
     }),
@@ -1167,34 +1121,29 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gene_track_collapse_introns',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr10:87,863,113-87,971,930',
+      // offset labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr10:87,863,113-87,971,930',
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'ncbi_refseq_109_hg38_latest',
-              // one clean transcript per gene so the PTEN glyph + label is tidy
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
-            },
-            {
-              // compact pileup so the RNA-seq reads pack tightly (reviewer)
-              trackId:
-                'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                featureHeight: 3,
-                featureSpacing: 0,
-              },
-            },
-          ],
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          // one clean transcript per gene so the PTEN glyph + label is tidy
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+          },
+        },
+        {
+          // compact pileup so the RNA-seq reads pack tightly (reviewer)
+          trackId:
+            'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            featureHeight: 3,
+            featureSpacing: 0,
+          },
         },
       ],
     }),
@@ -1235,15 +1184,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'searching_lgv',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '1:1-100,000',
-          tracks: ['ncbi_gff_hg19'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:1-100,000',
+      tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
@@ -1268,15 +1212,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'rubberband',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_cram'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_cram'],
     }),
     viewportWidth: 1000,
     viewportHeight: 550,
@@ -1299,16 +1238,11 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments_soft_clipped_menu',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          // zoomed in toward the soft-clip breakpoint (reviewer request)
-          loc: 'ctgA:2670-2730',
-          tracks: ['volvox-long-reads-sv-bam'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      // zoomed in toward the soft-clip breakpoint (reviewer request)
+      loc: 'ctgA:2670-2730',
+      tracks: ['volvox-long-reads-sv-bam'],
     }),
     readyText: 'ctgA',
     // wider + taller per reviewer request so the menu cascade and result-frame
@@ -1352,17 +1286,12 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'linear_align_ctx_menu',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1500-2000',
-          // short paired reads from volvox-sv (reviewer: more interesting than
-          // the big long reads the old capture used)
-          tracks: ['volvox_sv_cram'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1500-2000',
+      // short paired reads from volvox-sv (reviewer: more interesting than
+      // the big long reads the old capture used)
+      tracks: ['volvox_sv_cram'],
     }),
     readyText: 'ctgA',
     settleMs: 6000,
@@ -1395,15 +1324,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'variant_panel',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:6257-6305',
-          tracks: ['volvox_test_vcf'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:6257-6305',
+      tracks: ['volvox_test_vcf'],
     }),
     readyText: 'ctgA',
     settleMs: 3000,
@@ -1446,15 +1370,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments/filter_dialog',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_sv_cram'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_sv_cram'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -1571,27 +1490,22 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments_sort_by_base',
-    url: sessionSpec(VOLVOX, {
-      views: [
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:14427-14534',
+      showCenterLine: true,
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:14427-14534',
-          showCenterLine: true,
-          tracks: [
-            {
-              trackId: 'volvox_bam',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                sortedBy: {
-                  type: 'basePair',
-                  pos: 14481,
-                  refName: 'ctgA',
-                  assemblyName: 'volvox',
-                },
-              },
+          trackId: 'volvox_bam',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            sortedBy: {
+              type: 'basePair',
+              pos: 14481,
+              refName: 'ctgA',
+              assemblyName: 'volvox',
             },
-          ],
+          },
         },
       ],
     }),
@@ -1656,27 +1570,22 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments_track_arcs',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      // B2M (plus strand, chr15) — a ubiquitously-expressed housekeeping gene
+      // with a single isoform and just 3 introns, so the RNA-seq sashimi arcs
+      // are few and clean (GAPDH's many short exons gave "tons of small arcs").
+      loc: 'chr15:45,003,000-45,012,000',
+      // offset track labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          // B2M (plus strand, chr15) — a ubiquitously-expressed housekeeping gene
-          // with a single isoform and just 3 introns, so the RNA-seq sashimi arcs
-          // are few and clean (GAPDH's many short exons gave "tons of small arcs").
-          loc: 'chr15:45,003,000-45,012,000',
-          // offset track labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'ncbi_gff_hg19',
-              // give the gene track room so the B2M model is clearly visible
-              // above the sashimi arcs (reviewer: gene track too short to see)
-              displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
-            },
-            'Pairend_StrandSpecific_51mer_Human_hg19',
-          ],
+          trackId: 'ncbi_gff_hg19',
+          // give the gene track room so the B2M model is clearly visible
+          // above the sashimi arcs (reviewer: gene track too short to see)
+          displaySnapshot: { type: 'LinearBasicDisplay', height: 120 },
         },
+        'Pairend_StrandSpecific_51mer_Human_hg19',
       ],
     }),
     readyText: 'B2M',
@@ -1687,27 +1596,22 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'hic_track',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr8:50,366,343-61,321,733',
+      // offset labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr8:50,366,343-61,321,733',
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            {
-              trackId: 'ncbi_gff_hg19',
-              // hide gene descriptions so the gene track stays compact next to
-              // the Hi-C display (reviewer request)
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                showDescriptions: false,
-              },
-            },
-            'hic',
-          ],
+          trackId: 'ncbi_gff_hg19',
+          // hide gene descriptions so the gene track stays compact next to
+          // the Hi-C display (reviewer request)
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            showDescriptions: false,
+          },
         },
+        'hic',
       ],
     }),
     readySelector: '[data-testid="hic-display-done"]',
@@ -1727,37 +1631,32 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'methylation/colo829_cram_and_bedmethyl',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      // zoomed into a ~2.5kb core of the CpG island (was ~18kb, then ~5kb)
+      // so the per-base methylation calls + bedmethyl transition are legible
+      // rather than a tiny large-scale smear (reviewer asked to zoom further)
+      loc: 'chr20:18,500,750-18,503,250',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          // zoomed into a ~2.5kb core of the CpG island (was ~18kb, then ~5kb)
-          // so the per-base methylation calls + bedmethyl transition are legible
-          // rather than a tiny large-scale smear (reviewer asked to zoom further)
-          loc: 'chr20:18,500,750-18,503,250',
-          tracks: [
-            {
-              trackId: 'COLO829_tumor.ht',
-              displaySnapshot: {
-                // one-color modifications rendering (only methylated calls
-                // colored) rather than the two-color methylation mode whose
-                // blue "unmethylated" signal has no counterpart in the
-                // bedmethyl track below (reviewer)
-                colorBy: { type: 'modifications' },
-              },
-            },
-            {
-              trackId: 'COLO829_tumor.ht_modkit.bed_multi',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                defaultRendering: 'multirowdensity',
-                minScore: 0,
-                maxScore: 100,
-                height: 150,
-              },
-            },
-          ],
+          trackId: 'COLO829_tumor.ht',
+          displaySnapshot: {
+            // one-color modifications rendering (only methylated calls
+            // colored) rather than the two-color methylation mode whose
+            // blue "unmethylated" signal has no counterpart in the
+            // bedmethyl track below (reviewer)
+            colorBy: { type: 'modifications' },
+          },
+        },
+        {
+          trackId: 'COLO829_tumor.ht_modkit.bed_multi',
+          displaySnapshot: {
+            type: 'MultiLinearWiggleDisplay',
+            defaultRendering: 'multirowdensity',
+            minScore: 0,
+            maxScore: 100,
+            height: 150,
+          },
         },
       ],
     }),
@@ -1935,21 +1834,16 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'horizontally_flip',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,562,000-5,575,000',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr7:5,562,000-5,575,000',
-          tracks: [
-            {
-              trackId: 'ncbi_gff_hg19',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-              },
-            },
-          ],
+          trackId: 'ncbi_gff_hg19',
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+          },
         },
       ],
     }),
@@ -2520,15 +2414,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'link_to_split_view',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '14:84,871,462-84,871,480',
-          tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '14:84,871,462-84,871,480',
+      tracks: ['breast_cancer_sniffles_hg19_traonly_tabix'],
     }),
     readyText: '84,871',
     settleMs: 5000,
@@ -2659,23 +2548,18 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignment_clipping_indicators',
-    url: sessionSpec(VOLVOX, {
-      views: [
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:2,560-2,760',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:2,560-2,760',
-          tracks: [
-            {
-              trackId: 'volvox-long-reads-sv-bam',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                // taller coverage band so the clip-indicator ticks above it are
-                // large enough to read (default coverageHeight is 45)
-                coverageHeight: 120,
-              },
-            },
-          ],
+          trackId: 'volvox-long-reads-sv-bam',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            // taller coverage band so the clip-indicator ticks above it are
+            // large enough to read (default coverageHeight is 45)
+            coverageHeight: 120,
+          },
         },
       ],
     }),
@@ -3063,45 +2947,24 @@ export const specs: ScreenshotSpec[] = [
       },
       { type: 'delay', ms: 4000 },
     ],
-    // Mark up the searched row and the linear view it opens (reviewer): why we
-    // search SV_85, that its location cell is a clickable link, and that the
-    // VCF's SVTYPE survives as the <DEL> ALT allele drawn on the variant below.
+    // Pared down to the single core narrative (reviewer: too many annotations):
+    // search SV_85 -> one DEL row -> clicking its location link opens the region
+    // below, where SVTYPE=DEL is drawn as the <DEL> ALT allele on the variant.
     annotations: [
       {
         type: 'text',
-        text: 'Searching "SV_85" filters the table to one call — the SVTYPE column reports a DEL (a heterozygous CUZD1 deletion)',
-        x: 70,
-        y: 295,
-        fontSize: 18,
-        maxWidth: 470,
-      },
-      { type: 'box', anchor: { text: 'chr10:122,835,344..122,837,142' } },
-      // showcase the SV-type quick-filter dropdown (fixed top-left of the grid)
-      { type: 'box', x: 6, y: 90, width: 170, height: 46 },
-      {
-        type: 'text',
-        text: 'Quick-filter the table to one SV type (DEL/DUP/INS/INV/BND)',
+        text: 'Searching "SV_85" filters the table to one DEL call (a heterozygous CUZD1 deletion)',
         x: 70,
         y: 180,
         fontSize: 18,
-        maxWidth: 360,
+        maxWidth: 420,
       },
-      // highlight the hoisted SVTYPE column header (anchored so it tracks the
-      // grid offset from the SV-type filter dropdown rendered above the grid)
-      { type: 'box', anchor: { text: 'INFO.SVTYPE' } },
+      { type: 'box', anchor: { text: 'chr10:122,835,344..122,837,142' } },
       { type: 'arrow', from: { x: 185, y: 268 }, to: { x: 598, y: 700 } },
-      {
-        type: 'text',
-        text: 'Clicking the location link opens the region in the linear view below',
-        x: 70,
-        y: 475,
-        fontSize: 18,
-        maxWidth: 360,
-      },
       { type: 'box', x: 592, y: 700, width: 112, height: 52 },
       {
         type: 'text',
-        text: 'The VCF SVTYPE=DEL is drawn as the <DEL> ALT allele on the variant',
+        text: 'Clicking the location link opens the region below, where SVTYPE=DEL is drawn as the <DEL> ALT allele',
         x: 745,
         y: 690,
         fontSize: 18,
@@ -3610,22 +3473,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'feature_detail_sequence',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr5:42,799,000-42,812,500',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr5:42,799,000-42,812,500',
-          tracks: [
-            {
-              trackId: 'ncbi_refseq_109_hg38_latest',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-                height: 200,
-              },
-            },
-          ],
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+            height: 200,
+          },
         },
       ],
     }),
@@ -3658,22 +3516,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'feature_detail_protein',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr5:42,799,000-42,812,500',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr5:42,799,000-42,812,500',
-          tracks: [
-            {
-              trackId: 'ncbi_refseq_109_hg38_latest',
-              displaySnapshot: {
-                type: 'LinearBasicDisplay',
-                geneGlyphMode: 'longestCoding',
-                height: 200,
-              },
-            },
-          ],
+          trackId: 'ncbi_refseq_109_hg38_latest',
+          displaySnapshot: {
+            type: 'LinearBasicDisplay',
+            geneGlyphMode: 'longestCoding',
+            height: 200,
+          },
         },
       ],
     }),
@@ -3704,15 +3557,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'lgv_usage_guide',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_cram_alignments'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_cram_alignments'],
     }),
     readyText: 'ctgA',
     settleMs: 5000,
@@ -3794,15 +3642,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'scroll_zoom_toggle',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_cram_alignments'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_cram_alignments'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -3834,15 +3677,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'add_track_form',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:1,000,000-1,100,000',
-          tracks: ['ncbi_gff_hg19'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr1:1,000,000-1,100,000',
+      tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
     // smaller window so the File menu + add-track drawer are easy to read
@@ -3885,15 +3723,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'add_track_tracklist',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_bam'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
     settleMs: 3000,
@@ -3948,15 +3781,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'track_menu',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_sv_test'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_sv_test'],
     }),
     viewportWidth: 1000,
     // shorter browser in both stages (reviewer)
@@ -4013,15 +3841,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'tracklabels',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_bam'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -4047,15 +3870,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'edit_track_settings',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_bam'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
     settleMs: 4000,
@@ -4088,15 +3906,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'drawer_widget_toggle',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_bam'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
     // smaller capture window in both dimensions (reviewer request)
@@ -4161,15 +3974,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'share_button',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_cram_alignments'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_cram_alignments'],
     }),
     viewportWidth: 1000,
     viewportHeight: 550,
@@ -4193,15 +4001,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'bookmark_widget_create',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr10:89,613,000-89,740,000',
-          tracks: ['ncbi_gff_hg19'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr10:89,613,000-89,740,000',
+      tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
@@ -4231,15 +4034,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'bookmark_widget_edit_label',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:1-20,000',
-          tracks: ['ncbi_gff_hg19'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr1:1-20,000',
+      tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
@@ -4295,22 +4093,17 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments/compact',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr1:161,172,613-161,181,745',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr1:161,172,613-161,181,745',
-          tracks: [
-            {
-              trackId: 'illumina_hg002',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                featureHeight: 3,
-                featureSpacing: 0,
-              },
-            },
-          ],
+          trackId: 'illumina_hg002',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            featureHeight: 3,
+            featureSpacing: 0,
+          },
         },
       ],
     }),
@@ -4332,15 +4125,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments/select_arc_display',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_sv_cram'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_sv_cram'],
     }),
     readyText: 'ctgA',
     // shorter viewport (rather than a crop) so the result frame isn't mostly
@@ -4377,25 +4165,20 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'alignments/modifications1',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr20:18,493,346-18,511,070',
+      tracks: [
+        'cpgisland_ucsc_hg38',
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr20:18,493,346-18,511,070',
-          tracks: [
-            'cpgisland_ucsc_hg38',
-            {
-              trackId: 'COLO829_tumor.ht',
-              displaySnapshot: {
-                colorBy: { type: 'modifications' },
-                // legend is opt-in now; this teaching figure explicitly shows
-                // the 5mC/5hmC color key
-                showLegend: true,
-                userByteSizeLimit: 100_000_000,
-              },
-            },
-          ],
+          trackId: 'COLO829_tumor.ht',
+          displaySnapshot: {
+            colorBy: { type: 'modifications' },
+            // legend is opt-in now; this teaching figure explicitly shows
+            // the 5mC/5hmC color key
+            showLegend: true,
+            userByteSizeLimit: 100_000_000,
+          },
         },
       ],
     }),
@@ -4438,18 +4221,13 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'hierarchical/hierarchical_user_menu-fs8',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          // no track opened — the figure is about the track-selector hamburger
-          // menu, and an open gene track in the LGV behind it was distracting
-          // (reviewer)
-          tracks: [],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      // no track opened — the figure is about the track-selector hamburger
+      // menu, and an open gene track in the LGV behind it was distracting
+      // (reviewer)
+      tracks: [],
     }),
     readyText: 'ctgA',
     settleMs: 3000,
@@ -4482,14 +4260,9 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'recent_tracks',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '1:1-100,000',
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:1-100,000',
     }),
     // hg19 displays the refname as "1" (no chr prefix); wait for the menubar
     // instead of a chr label since this view starts with no tracks
@@ -4552,15 +4325,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'favorite_tracks',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-          tracks: ['volvox_bam'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
+      tracks: ['volvox_bam'],
     }),
     readyText: 'ctgA',
     viewportHeight: 560,
@@ -4627,15 +4395,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiwig/multi_renderer_types',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['volvox_microarray_multi'],
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: ['volvox_microarray_multi'],
     }),
     readyText: 'ctgA',
     settleMs: 5000,
@@ -4653,14 +4416,9 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiwig/trackselector',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
     settleMs: 3000,
@@ -4730,14 +4488,9 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiwig/addtrack',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
     settleMs: 3000,
@@ -4826,18 +4579,13 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gwas/manhattan',
-    url: sessionSpec('test_data/config_gwas.json', {
-      views: [
+    url: lgvSession('test_data/config_gwas.json', {
+      assembly: 'hg19',
+      loc: '2',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '2',
-          tracks: [
-            {
-              trackId: 'gwas_track',
-              displaySnapshot: { type: 'LinearManhattanDisplay', height: 250 },
-            },
-          ],
+          trackId: 'gwas_track',
+          displaySnapshot: { type: 'LinearManhattanDisplay', height: 250 },
         },
       ],
     }),
@@ -4854,18 +4602,13 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gwas/locuszoom_ld',
-    url: sessionSpec('test_data/config_gwas.json', {
-      views: [
+    url: lgvSession('test_data/config_gwas.json', {
+      assembly: 'hg19',
+      loc: '2:191,790,000-192,120,000',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '2:191,790,000-192,120,000',
-          tracks: [
-            {
-              trackId: 'sle_gwas_ld',
-              displaySnapshot: { type: 'LinearManhattanDisplay', height: 200 },
-            },
-          ],
+          trackId: 'sle_gwas_ld',
+          displaySnapshot: { type: 'LinearManhattanDisplay', height: 200 },
         },
       ],
     }),
@@ -4892,14 +4635,9 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'plugin_store',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-20000',
-        },
-      ],
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-20000',
     }),
     readyText: 'ctgA',
     settleMs: 3000,
@@ -5034,36 +4772,31 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'rnaseq/compact_stacked',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,566,500-5,570,500',
+      // offset labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr7:5,566,500-5,570,500',
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            'ncbi_gff_hg19',
-            {
-              trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                featureHeight: 3,
-                featureSpacing: 0,
-                maxHeight: 2000,
-                // taller SNPCoverage band + shorter pileup viewport + shorter
-                // browser (reviewer): coverageHeight is the LinearAlignmentsDisplay
-                // coverage band, the pileup viewport = height - coverageHeight
-                coverageHeight: 120,
-                height: 420,
-                // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
-                // the spurious forward-strand sashimi arcs are single-/2-read
-                // aligner noise (correct XS-tag strand, just low support). A
-                // min-support of 3 drops the noise, keeps the real junctions.
-                minSashimiScore: 3,
-              },
-            },
-          ],
+          trackId: 'Pairend_StrandSpecific_51mer_Human_hg19',
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            featureHeight: 3,
+            featureSpacing: 0,
+            maxHeight: 2000,
+            // taller SNPCoverage band + shorter pileup viewport + shorter
+            // browser (reviewer): coverageHeight is the LinearAlignmentsDisplay
+            // coverage band, the pileup viewport = height - coverageHeight
+            coverageHeight: 120,
+            height: 420,
+            // ACTB's real minus-strand introns have 449/290/29/27/4 reads;
+            // the spurious forward-strand sashimi arcs are single-/2-read
+            // aligner noise (correct XS-tag strand, just low support). A
+            // min-support of 3 drops the noise, keeps the real junctions.
+            minSashimiScore: 3,
+          },
         },
       ],
     }),
@@ -5077,31 +4810,26 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'rnaseq/longread_isoseq',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: 'chr7:5,566,000-5,571,000',
+      // offset labels so they overlay the tracks (reviewer)
+      trackLabels: 'offset',
+      tracks: [
+        'ncbi_gff_hg19',
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: 'chr7:5,566,000-5,571,000',
-          // offset labels so they overlay the tracks (reviewer)
-          trackLabels: 'offset',
-          tracks: [
-            'ncbi_gff_hg19',
-            {
-              trackId: 'hg_isoforms.fasta_bam',
-              // taller SNPCoverage band (reviewer): coverageHeight is the
-              // LinearAlignmentsDisplay coverage-track height (default 45).
-              // super-compact featureHeight=1 (reviewer) so every isoform read
-              // stacks in view instead of hitting "Max layout height reached".
-              displaySnapshot: {
-                type: 'LinearAlignmentsDisplay',
-                coverageHeight: 120,
-                height: 620,
-                featureHeight: 1,
-                featureSpacing: 0,
-              },
-            },
-          ],
+          trackId: 'hg_isoforms.fasta_bam',
+          // taller SNPCoverage band (reviewer): coverageHeight is the
+          // LinearAlignmentsDisplay coverage-track height (default 45).
+          // super-compact featureHeight=1 (reviewer) so every isoform read
+          // stacks in view instead of hitting "Max layout height reached".
+          displaySnapshot: {
+            type: 'LinearAlignmentsDisplay',
+            coverageHeight: 120,
+            height: 620,
+            featureHeight: 1,
+            featureSpacing: 0,
+          },
         },
       ],
     }),
@@ -5120,15 +4848,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-basic',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:1,000,000-1,001,000',
-          tracks: ['HG02024_VN049_KHVTrio.chr1.vcf'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:1,000,000-1,001,000',
+      tracks: ['HG02024_VN049_KHVTrio.chr1.vcf'],
     }),
     readyText: 'chr1',
     readyTimeout: 60000,
@@ -5140,20 +4863,15 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-matrix',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:62,174,000-65,097,304',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:62,174,000-65,097,304',
-          tracks: [
-            {
-              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-              },
-            },
-          ],
+          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+          },
         },
       ],
     }),
@@ -5179,21 +4897,16 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-matrix-phased',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:62,174,000-65,097,304',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:62,174,000-65,097,304',
-          tracks: [
-            {
-              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-                renderingMode: 'phased',
-              },
-            },
-          ],
+          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+            renderingMode: 'phased',
+          },
         },
       ],
     }),
@@ -5211,21 +4924,16 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-matrix-phased-clean',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:62,174,000-65,097,304',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:62,174,000-65,097,304',
-          tracks: [
-            {
-              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-                renderingMode: 'phased',
-              },
-            },
-          ],
+          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+            renderingMode: 'phased',
+          },
         },
       ],
     }),
@@ -5241,21 +4949,16 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'trio-hapibd-painting',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:1-248,956,422',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc: 'chr1:1-248,956,422',
-          tracks: [
-            {
-              trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
-              displaySnapshot: {
-                type: 'LinearMultiRowFeatureDisplay',
-                height: 120,
-              },
-            },
-          ],
+          trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            height: 120,
+          },
         },
       ],
     }),
@@ -5307,8 +5010,11 @@ export const specs: ScreenshotSpec[] = [
       {
         name: 'trio-crossover-paternal',
         loc: 'chr1:29,497,418-29,897,418',
-        // Child hap1 (paternal) matches Father hap2 left, Father hap1 right; the
-        // painting step straddles the Father pair (top pair of the painting)
+        // only paint the father's two haplotypes (reviewer): the mother's rows
+        // are solid across this window and just add noise. With the painting
+        // filtered to the Father pair they sit at painting rows 0-1.
+        paintingFilter: ['Father hap1', 'Father hap2'],
+        // Child hap1 (paternal) matches Father hap2 left, Father hap1 right
         annotations: crossoverHighlights({
           child: 'Child hap1',
           leftSource: 'Father hap2',
@@ -5323,49 +5029,53 @@ export const specs: ScreenshotSpec[] = [
       {
         name: 'trio-crossover-maternal',
         loc: 'chr1:55,553,613-55,953,613',
-        // Child hap2 (maternal) matches Mother hap2 left, Mother hap1 right; the
-        // painting step straddles the Mother pair (bottom pair of the painting)
+        // only paint the mother's two haplotypes (reviewer); filtered to the
+        // Mother pair they sit at painting rows 0-1.
+        paintingFilter: ['Mother hap1', 'Mother hap2'],
+        // Child hap2 (maternal) matches Mother hap2 left, Mother hap1 right
         annotations: crossoverHighlights({
           child: 'Child hap2',
           leftSource: 'Mother hap2',
           rightSource: 'Mother hap1',
           palette: TRIO_MATERNAL_COLORS,
-          paintingTopRow: 2,
+          paintingTopRow: 0,
           leftText:
             'Left of the crossover, Child hap2 matches Mother hap2 (pink)',
           rightText: 'Right of it, Child hap2 matches Mother hap1 (red)',
         }),
       },
-    ] satisfies { name: string; loc: string; annotations: Annotation[] }[]
-  ).map(({ name, loc, annotations }) => ({
+    ] satisfies {
+      name: string
+      loc: string
+      paintingFilter: string[]
+      annotations: Annotation[]
+    }[]
+  ).map(({ name, loc, paintingFilter, annotations }) => ({
     mode: 'url' as const,
     name,
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc,
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          loc,
-          tracks: [
-            {
-              trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
-              displaySnapshot: {
-                type: 'LinearMultiRowFeatureDisplay',
-                rowHeightOverride: 32,
-              },
-            },
-            {
-              trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantDisplay',
-                renderingMode: 'phased',
-                height: 260,
-                // relabel sidebar rows Child/Mother/Father hapN (keeps the
-                // canonical HG020xx HPn identity in `name`/`sampleName`)
-                layout: trioVcfLayout,
-              },
-            },
-          ],
+          trackId: 'HG02024_VN049_KHVTrio.chr1.hapibd',
+          displaySnapshot: {
+            type: 'LinearMultiRowFeatureDisplay',
+            rowHeightOverride: 32,
+            // show only this parent's haplotype rows (reviewer)
+            subtreeFilter: paintingFilter,
+          },
+        },
+        {
+          trackId: 'HG02024_VN049_KHVTrio.chr1.vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantDisplay',
+            renderingMode: 'phased',
+            height: 260,
+            // relabel sidebar rows Child/Mother/Father hapN (keeps the
+            // canonical HG020xx HPn identity in `name`/`sampleName`)
+            layout: trioVcfLayout,
+          },
         },
       ],
     }),
@@ -5448,16 +5158,11 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'customized_feature_details',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:17200-23200',
-          tracks: [
-            { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
-          ],
-        },
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:17200-23200',
+      tracks: [
+        { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
       ],
     }),
     readyText: 'ctgA',
@@ -5499,16 +5204,11 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'upstream_downstream_details',
-    url: sessionSpec(VOLVOX, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:17200-23200',
-          tracks: [
-            { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
-          ],
-        },
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:17200-23200',
+      tracks: [
+        { trackId: 'gff3tabix_genes', displaySnapshot: { height: 300 } },
       ],
     }),
     readyText: 'ctgA',
@@ -5588,15 +5288,10 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'cytobands',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'hg19',
-          loc: '1:38,543,322-41,918,323',
-          tracks: ['ncbi_gff_hg19'],
-        },
-      ],
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:38,543,322-41,918,323',
+      tracks: ['ncbi_gff_hg19'],
     }),
     readyText: 'NCBI RefSeq',
     readyTimeout: 60000,
@@ -5722,8 +5417,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 6000,
     // the molstar 3D structure canvas only rasterizes cleanly (cartoon detail +
     // the magenta motif selection highlight) under headless Firefox; headless
-    // Chrome's swiftshader renders it as a featureless blob
-    firefox: true,
+    // Chrome's swiftshader renders it as a featureless blob, which is needed on mac only
+    // firefox: true,
+
     // Click the TP53 nuclear export signal (UniProt "Motif" 339-350) on the
     // protein feature track to drive the genome↔structure cross-highlight: the
     // motif residues select in the 3D structure (molstar) and a highlight band
@@ -5776,29 +5472,24 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiwig/cluster_dialog',
-    url: sessionSpec(DEMO_CONFIG, {
-      views: [
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      // reviewer-specified region
+      loc: 'chr3:162,275,163-163,360,944',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'hg38',
-          // reviewer-specified region
-          loc: 'chr3:162,275,163-163,360,944',
-          tracks: [
-            {
-              trackId: 'pur_copynumber_1000g',
-              displaySnapshot: {
-                type: 'MultiLinearWiggleDisplay',
-                height: 420,
-                // multi-row density renderer (reviewer): one colored density
-                // strip per individual; `defaultRendering` is a config slot, so
-                // this flat key routes into the display's configOverrides
-                defaultRendering: 'multirowdensity',
-                // hide the post-clustering dendrogram — the reordered rows are
-                // the point; a tree implies a phylogeny we don't mean (reviewer)
-                showTree: false,
-              },
-            },
-          ],
+          trackId: 'pur_copynumber_1000g',
+          displaySnapshot: {
+            type: 'MultiLinearWiggleDisplay',
+            height: 420,
+            // multi-row density renderer (reviewer): one colored density
+            // strip per individual; `defaultRendering` is a config slot, so
+            // this flat key routes into the display's configOverrides
+            defaultRendering: 'multirowdensity',
+            // hide the post-clustering dendrogram — the reordered rows are
+            // the point; a tree implies a phylogeny we don't mean (reviewer)
+            showTree: false,
+          },
         },
       ],
     }),
@@ -5843,21 +5534,16 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'variants/cluster_dialog',
-    url: sessionSpec(VOLVOX, {
-      views: [
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: [
-            {
-              trackId: 'volvox_test_vcf',
-              displaySnapshot: {
-                type: 'LinearMultiSampleVariantMatrixDisplay',
-                height: 400,
-              },
-            },
-          ],
+          trackId: 'volvox_test_vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantMatrixDisplay',
+            height: 400,
+          },
         },
       ],
     }),
@@ -5894,24 +5580,19 @@ export const specs: ScreenshotSpec[] = [
     // slow to fetch + render, so the settle is long.
     mode: 'url',
     name: 'maf_track',
-    url: sessionSpec(CE_MAF, {
-      views: [
+    url: lgvSession(CE_MAF, {
+      // zoomed out further (reviewer): wider window so the per-species
+      // mismatch columns read as a conservation pattern, not just a handful
+      // of bases
+      assembly: 'ce11',
+      loc: 'chrI:3,000,648-3,001,368',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          // zoomed out further (reviewer): wider window so the per-species
-          // mismatch columns read as a conservation pattern, not just a handful
-          // of bases
-          assembly: 'ce11',
-          loc: 'chrI:3,000,648-3,001,368',
-          tracks: [
-            {
-              trackId: 'ce11.26way',
-              displaySnapshot: {
-                type: 'LinearMafDisplay',
-                rowHeight: 12,
-              },
-            },
-          ],
+          trackId: 'ce11.26way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            rowHeight: 12,
+          },
         },
       ],
     }),
@@ -5936,18 +5617,13 @@ export const specs: ScreenshotSpec[] = [
     // (coding) vs divergent regions — is the readable signal, not the bases.
     mode: 'url',
     name: 'maf_conservation',
-    url: sessionSpec(CE_MAF, {
-      views: [
+    url: lgvSession(CE_MAF, {
+      assembly: 'ce11',
+      loc: 'chrI:2,998,500-3,001,800',
+      tracks: [
         {
-          type: 'LinearGenomeView',
-          assembly: 'ce11',
-          loc: 'chrI:2,998,500-3,001,800',
-          tracks: [
-            {
-              trackId: 'ce11.26way',
-              displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 8 },
-            },
-          ],
+          trackId: 'ce11.26way',
+          displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 8 },
         },
       ],
     }),

@@ -121,7 +121,9 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           line.setAttribute('x2', String(headX))
           line.setAttribute('y2', String(headY))
           line.setAttribute('stroke', color)
-          line.setAttribute('stroke-width', '4')
+          // the arrowhead marker uses markerUnits=strokeWidth, so a thinner
+          // line also shrinks the head proportionally
+          line.setAttribute('stroke-width', String(a.strokeWidth ?? 4))
           line.setAttribute('marker-end', 'url(#arrowhead)')
           // recolor the shared arrowhead to match the last arrow's stroke
           arrowPath.setAttribute('fill', color)
