@@ -9,6 +9,22 @@ export {
 // Instancing limits
 export const MAX_VISIBLE_CHEVRONS_PER_LINE = 128
 
+// Continuation markers ("feature keeps going") fire only where a block edge is
+// the true canvas edge, never an internal seam between two on-screen
+// displayedRegions. Both the Canvas2D and GPU backends derive the flags from
+// this one helper so the 0.5px epsilon can't drift between them (mirrors
+// continuation.slang's edge gates).
+export function canvasEdgeFlags(
+  scissorX: number,
+  scissorW: number,
+  canvasWidth: number,
+) {
+  return {
+    leftIsCanvasEdge: scissorX <= 0.5,
+    rightIsCanvasEdge: scissorX + scissorW >= canvasWidth - 0.5,
+  }
+}
+
 // Overlay stacking. The overflow indicator sits on top of the canvas, label
 // overlays, and amino-acid overlay (all of which sit at default z-index inside
 // the scroll container). Keep above MUI's tooltip floor (1500) is unnecessary

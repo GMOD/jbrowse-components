@@ -8,7 +8,7 @@ import { layoutProcessedTranscript } from './processed.ts'
 import { isRepeatRegion, layoutRepeatRegion } from './repeatRegion.ts'
 import { layoutSegments } from './segments.ts'
 import { layoutSubfeatures } from './subfeatures.ts'
-import { isCDS } from '../util.ts'
+import { featureType, getSubfeatures, isCDS } from '../util.ts'
 
 import type { DisplayConfig } from '../renderConfig.ts'
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
@@ -33,9 +33,8 @@ export function findGlyph(
   isTopLevel?: boolean,
 ): (args: LayoutArgs) => FeatureLayout {
   isTopLevel ??= !feature.parent?.()
-  const type = feature.get('type') ?? ''
-  const subfeatures = feature.get('subfeatures')
-  const hasSubfeatures = !!subfeatures?.length
+  const type = featureType(feature)
+  const hasSubfeatures = getSubfeatures(feature).length > 0
 
   if (isCDS(feature)) {
     return hasMatureProteinChildren(feature)

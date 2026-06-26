@@ -1,4 +1,9 @@
-import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import {
+  abgrBlue,
+  abgrGreen,
+  abgrRed,
+  abgrToCssRgba,
+} from '@jbrowse/core/util/colorBits'
 import {
   clipBlockForCanvas,
   makeBpMapper,
@@ -19,6 +24,7 @@ import {
   MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
+  canvasEdgeFlags,
 } from './sharedRendererConstants.ts'
 
 import type {
@@ -173,14 +179,19 @@ function drawContinuation(
   region: RegionRenderData,
   toX: BpToScreen,
   scrollY: number,
-  scissorLeft: number,
-  scissorRight: number,
+  scissorX: number,
+  scissorW: number,
   canvasWidth: number,
 ) {
+  const scissorLeft = scissorX
+  const scissorRight = scissorX + scissorW
   // Only the true canvas edges get markers, never an internal seam between two
-  // on-screen displayedRegions (mirrors continuation.slang's edge gates).
-  const leftIsCanvasEdge = scissorLeft <= 0.5
-  const rightIsCanvasEdge = scissorRight >= canvasWidth - 0.5
+  // on-screen displayedRegions.
+  const { leftIsCanvasEdge, rightIsCanvasEdge } = canvasEdgeFlags(
+    scissorX,
+    scissorW,
+    canvasWidth,
+  )
   for (let i = 0; i < region.rectYs.length; i++) {
     const x1 = toX(region.rectPositions[i * 2]!)
     const x2 = toX(region.rectPositions[i * 2 + 1]!)
@@ -198,8 +209,7 @@ function drawContinuation(
       left < scissorRight
     if (offLeft || offRight) {
       const c = region.rectColors[i]!
-      const lum =
-        0.299 * (c & 255) + 0.587 * ((c >> 8) & 255) + 0.114 * ((c >> 16) & 255)
+      const lum = 0.299 * abgrRed(c) + 0.587 * abgrGreen(c) + 0.114 * abgrBlue(c)
       ctx.strokeStyle =
         lum > 127.5 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'
       ctx.lineWidth = 1
@@ -278,7 +288,7 @@ export function drawFeatureBlocks(
       toX,
       scrollY,
       clip.scissorX,
-      clip.scissorX + clip.scissorW,
+      clip.scissorW,
       canvasWidth,
     )
 

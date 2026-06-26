@@ -1,6 +1,7 @@
 import { applyLabelDimensions } from '../labelUtils.ts'
 import { findGlyph } from './findGlyph.ts'
 import { hasCodingSubfeature } from './glyphUtils.ts'
+import { featureType, getSubfeatures } from '../util.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -9,16 +10,18 @@ import type { Feature } from '@jbrowse/core/util'
 // linearly — main-thread compact scaling (multiplier × all y values) is exact.
 const TRANSCRIPT_PADDING_RATIO = 0.2
 
+// Returns the single longest coding transcript, plus whether an actual choice
+// among multiple isoforms was collapsed (drives the "Isoforms collapsed" notice).
 function longestCodingTranscript(
   subfeatures: Feature[],
   transcriptTypes: string[],
-): Feature[] {
+): { result: Feature[]; collapsed: boolean } {
   if (subfeatures.length <= 1) {
-    return subfeatures
+    return { result: subfeatures, collapsed: false }
   }
 
   const transcriptSubfeatures = subfeatures.filter(sub =>
-    transcriptTypes.includes(sub.get('type') ?? ''),
+    transcriptTypes.includes(featureType(sub)),
   )
   let candidates =
     transcriptSubfeatures.length > 0 ? transcriptSubfeatures : subfeatures
@@ -31,7 +34,7 @@ function longestCodingTranscript(
   const longest = candidates.reduce((a, b) =>
     a.get('end') - a.get('start') > b.get('end') - b.get('start') ? a : b,
   )
-  return [longest]
+  return { result: [longest], collapsed: true }
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
@@ -40,14 +43,12 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
 
   const heightPx = config.featureHeight
 
-  let subfeatures = [...(feature.get('subfeatures') ?? [])]
-  // longestCodingTranscript always reduces a multi-element input to one, so
-  // the pre-call length is the only thing that tells us whether it collapsed
-  // an actual choice among isoforms (vs. a gene that only ever had one).
-  const isoformsCollapsed =
-    geneGlyphMode === 'longestCoding' && subfeatures.length > 1
+  let subfeatures = [...getSubfeatures(feature)]
+  let isoformsCollapsed = false
   if (geneGlyphMode === 'longestCoding') {
-    subfeatures = longestCodingTranscript(subfeatures, transcriptTypes)
+    const collapsed = longestCodingTranscript(subfeatures, transcriptTypes)
+    subfeatures = collapsed.result
+    isoformsCollapsed = collapsed.collapsed
   } else {
     // Sort coding transcripts first so they render on top in stacked layout.
     // Skipped for longestCoding which collapses to a single feature.
@@ -66,7 +67,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
   let currentYPx = 0
 
   for (const [i, child] of subfeatures.entries()) {
-    const childType = child.get('type') ?? ''
+    const childType = featureType(child)
     const isChildTranscript = transcriptTypeSet.has(childType)
     const childLayout = findGlyph(
       child,

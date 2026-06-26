@@ -1,4 +1,4 @@
-import { isCDS } from '../util.ts'
+import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { DisplayMode } from '../renderConfig.ts'
 import type { FeatureLayout, GlyphType, LayoutArgs } from '../types.ts'
@@ -28,7 +28,7 @@ export function sortByPosition(children: FeatureLayout[]) {
 
 // Direct CDS child: picks the ProcessedTranscript layout (CDS + implied UTRs)
 export function hasCDSSubfeature(feature: Feature) {
-  return (feature.get('subfeatures') ?? []).some(isCDS)
+  return getSubfeatures(feature).some(isCDS)
 }
 
 // Direct child that is itself a container (has its own subfeatures). This is
@@ -36,16 +36,14 @@ export function hasCDSSubfeature(feature: Feature) {
 // their own rows (gene → transcripts) from one whose children are leaves that
 // share a single row (match → segments).
 export function hasContainerChildren(feature: Feature) {
-  return (feature.get('subfeatures') ?? []).some(
-    (sub: Feature) => sub.get('subfeatures')?.length,
-  )
+  return getSubfeatures(feature).some(sub => getSubfeatures(sub).length > 0)
 }
 
 // CDS anywhere in the subtree: ranks coding transcripts ahead of non-coding
 // ones when stacking, so they render on top
 export function hasCodingSubfeature(feature: Feature): boolean {
-  return (feature.get('subfeatures') ?? []).some(
-    (sub: Feature) => isCDS(sub) || hasCodingSubfeature(sub),
+  return getSubfeatures(feature).some(
+    sub => isCDS(sub) || hasCodingSubfeature(sub),
   )
 }
 

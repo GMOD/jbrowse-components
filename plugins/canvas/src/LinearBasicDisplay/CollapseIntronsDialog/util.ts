@@ -2,7 +2,7 @@ import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import { isCDS, isExon } from '../../RenderFeatureDataRPC/util.ts'
+import { getSubfeatures, isCDS, isExon } from '../../RenderFeatureDataRPC/util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -11,22 +11,20 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 const isExonOrCDS = (f: Feature) => isExon(f) || isCDS(f)
 
 export function getExonsAndCDS(transcripts: Feature[]) {
-  return transcripts.flatMap(
-    transcript => transcript.get('subfeatures')?.filter(isExonOrCDS) ?? [],
+  return transcripts.flatMap(transcript =>
+    getSubfeatures(transcript).filter(isExonOrCDS),
   )
 }
 
 export function featureHasExonsOrCDS(feature: Feature) {
-  return (feature.get('subfeatures') ?? []).some(isExonOrCDS)
+  return getSubfeatures(feature).some(isExonOrCDS)
 }
 
 export function getTranscripts(feature?: Feature): Feature[] {
   if (!feature) {
     return []
   }
-  return featureHasExonsOrCDS(feature)
-    ? [feature]
-    : (feature.get('subfeatures') ?? [])
+  return featureHasExonsOrCDS(feature) ? [feature] : getSubfeatures(feature)
 }
 
 export function hasIntrons(transcripts: Feature[]) {

@@ -1,7 +1,10 @@
 import { bpRangeXTuple } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import { MAX_VISIBLE_CHEVRONS_PER_LINE } from './sharedRendererConstants.ts'
+import {
+  MAX_VISIBLE_CHEVRONS_PER_LINE,
+  canvasEdgeFlags,
+} from './sharedRendererConstants.ts'
 import {
   ARROW_PASS as PASS_ARROW,
   ArrowPass,
@@ -119,6 +122,13 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
     region: RegionRenderData,
     state: RenderState,
   ) {
+    // Continuation markers only fire where the block edge is the real canvas
+    // edge, not a seam between two on-screen displayedRegions.
+    const { leftIsCanvasEdge, rightIsCanvasEdge } = canvasEdgeFlags(
+      clip.scissorX,
+      clip.scissorW,
+      state.canvasWidth,
+    )
     rectShader.writeUniforms(this.uniformData, {
       bpRangeX: bpRangeXTuple(clip, block.reversed),
       canvasHeight: state.canvasHeight,
@@ -128,17 +138,14 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
       zero: 0,
       reversed: block.reversed ? 1 : 0,
       outlineColor: region.outlineColor,
-      // Continuation markers only fire where the block edge is the real canvas
-      // edge, not a seam between two on-screen displayedRegions.
-      leftIsCanvasEdge: clip.scissorX <= 0.5 ? 1 : 0,
-      rightIsCanvasEdge:
-        clip.scissorX + clip.scissorW >= state.canvasWidth - 0.5 ? 1 : 0,
+      leftIsCanvasEdge: leftIsCanvasEdge ? 1 : 0,
+      rightIsCanvasEdge: rightIsCanvasEdge ? 1 : 0,
     })
 
     this.hal.writeUniforms(this.uniformData)
 
     // HAL.drawPass short-circuits when the region has no buffer for that pass,
-    // so we can issue all four unconditionally instead of caching has-rects /
+    // so we can issue every pass unconditionally instead of caching has-rects /
     // has-lines / has-arrows flags on the renderer.
     this.hal.drawPass(PASS_LINE, block.displayedRegionIndex)
     this.hal.drawPass(PASS_CHEVRON, block.displayedRegionIndex, PASS_LINE)

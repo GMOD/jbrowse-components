@@ -47,22 +47,34 @@ export function hasVisibleText(text: string) {
   return /\S/.test(text)
 }
 
+// Feature type as a plain string, never undefined — the single place the
+// optional `type` slot is defaulted. Pairs with isCDS/isExon/isUTR below.
+export function featureType(feature: Feature) {
+  return feature.get('type') ?? ''
+}
+
+// Direct children as a plain array, never undefined — the single place the
+// optional `subfeatures` slot is resolved.
+export function getSubfeatures(feature: Feature): Feature[] {
+  return feature.get('subfeatures') ?? []
+}
+
 export function isUTR(feature: Feature) {
-  return UTR_REGEX.test(feature.get('type') ?? '')
+  return UTR_REGEX.test(featureType(feature))
 }
 
 // Case-insensitive: GFF3 mandates uppercase `CDS`, but lowercase `cds` shows up
 // in real-world files. Centralizing avoids the dispatch path matching one case
 // and the layout path matching another.
 export function isCDS(feature: Feature) {
-  return feature.get('type')?.toLowerCase() === 'cds'
+  return featureType(feature).toLowerCase() === 'cds'
 }
 
 // Case-insensitive for the same reason as isCDS: a function that finds CDS
 // bounds case-insensitively but matches exons case-sensitively would derive
 // UTRs from only some exons.
 export function isExon(feature: Feature) {
-  return feature.get('type')?.toLowerCase() === 'exon'
+  return featureType(feature).toLowerCase() === 'exon'
 }
 
 export function getBoxColor({

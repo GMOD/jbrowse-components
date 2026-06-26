@@ -1,4 +1,5 @@
 import { layoutContainerGlyph } from './glyphUtils.ts'
+import { getSubfeatures } from '../util.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -12,7 +13,7 @@ import type { Feature } from '@jbrowse/core/util'
 export function isRepeatRegion(feature: Feature) {
   return (
     feature.get('type') === 'repeat_region' &&
-    !!feature.get('subfeatures')?.length
+    getSubfeatures(feature).length > 0
   )
 }
 
@@ -20,6 +21,6 @@ export function layoutRepeatRegion(args: LayoutArgs): FeatureLayout {
   return layoutContainerGlyph(
     'RepeatRegion',
     args,
-    args.feature.get('subfeatures') ?? [],
+    getSubfeatures(args.feature),
   )
 }

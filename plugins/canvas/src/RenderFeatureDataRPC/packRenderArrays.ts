@@ -1,3 +1,5 @@
+import type { FeatureDataResult } from './rpcTypes.ts'
+
 export interface RectData {
   start: number
   end: number
@@ -35,7 +37,25 @@ export function packRenderArrays(
   arrows: ArrowData[],
   regionStart: number,
   regionEnd: number,
-) {
+): Pick<
+  FeatureDataResult,
+  | 'rectPositions'
+  | 'rectYs'
+  | 'rectHeights'
+  | 'rectColors'
+  | 'rectStrands'
+  | 'rectFeatureIndices'
+  | 'linePositions'
+  | 'lineYs'
+  | 'lineColors'
+  | 'lineDirections'
+  | 'lineFeatureIndices'
+  | 'arrowXs'
+  | 'arrowYs'
+  | 'arrowDirections'
+  | 'arrowColors'
+  | 'arrowFeatureIndices'
+> {
   const visibleRects = rects.filter(
     r => r.end > regionStart && r.start < regionEnd,
   )

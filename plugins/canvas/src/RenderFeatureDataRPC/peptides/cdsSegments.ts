@@ -1,4 +1,4 @@
-import { isCDS } from '../util.ts'
+import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { CdsSegment } from './aggregateAminoAcids.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -13,7 +13,7 @@ import type { Feature } from '@jbrowse/core/util'
 export function dedupedSortedCDS(feature: Feature): CdsSegment[] {
   const seen = new Set<string>()
   const cds: CdsSegment[] = []
-  const subfeatures = [...(feature.get('subfeatures') ?? [])].sort(
+  const subfeatures = [...getSubfeatures(feature)].sort(
     (a, b) => a.get('start') - b.get('start'),
   )
   for (const sub of subfeatures) {

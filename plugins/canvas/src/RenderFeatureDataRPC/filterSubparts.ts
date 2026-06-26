@@ -1,6 +1,6 @@
 import { type Feature, SimpleFeature } from '@jbrowse/core/util'
 
-import { isCDS, isExon, isUTR } from './util.ts'
+import { featureType, getSubfeatures, isCDS, isExon, isUTR } from './util.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
@@ -45,36 +45,37 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   const parentStrand = parent.get('strand') ?? 0
   const parentRefName = parent.get('refName')
 
-  for (const sub of subparts) {
-    if (isExon(sub)) {
-      const exonStart = sub.get('start')
-      const exonEnd = sub.get('end')
-      if (exonStart < codeStart) {
-        haveLeftUTR = true
-        subparts.push(
-          new SimpleFeature({
-            uniqueId: `${sub.id()}-utr`,
-            refName: parentRefName,
-            start: exonStart,
-            end: Math.min(exonEnd, codeStart),
-            strand: parentStrand,
-            type: utrType(parentStrand, true),
-          }),
-        )
-      }
-      if (exonEnd > codeEnd) {
-        haveRightUTR = true
-        subparts.push(
-          new SimpleFeature({
-            uniqueId: `${sub.id()}-utr2`,
-            refName: parentRefName,
-            start: Math.max(exonStart, codeEnd),
-            end: exonEnd,
-            strand: parentStrand,
-            type: utrType(parentStrand, false),
-          }),
-        )
-      }
+  // Snapshot the exons before pushing: appending to `subparts` while iterating
+  // it would otherwise visit the synthesized UTRs (they're skipped only because
+  // they aren't exons — a fragile invariant to lean on).
+  for (const sub of subparts.filter(isExon)) {
+    const exonStart = sub.get('start')
+    const exonEnd = sub.get('end')
+    if (exonStart < codeStart) {
+      haveLeftUTR = true
+      subparts.push(
+        new SimpleFeature({
+          uniqueId: `${sub.id()}-utr`,
+          refName: parentRefName,
+          start: exonStart,
+          end: Math.min(exonEnd, codeStart),
+          strand: parentStrand,
+          type: utrType(parentStrand, true),
+        }),
+      )
+    }
+    if (exonEnd > codeEnd) {
+      haveRightUTR = true
+      subparts.push(
+        new SimpleFeature({
+          uniqueId: `${sub.id()}-utr2`,
+          refName: parentRefName,
+          start: Math.max(exonStart, codeEnd),
+          end: exonEnd,
+          strand: parentStrand,
+          type: utrType(parentStrand, false),
+        }),
+      )
     }
   }
 
@@ -108,15 +109,15 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
 }
 
 export function getSubparts(f: Feature, config: DisplayConfig) {
-  let c = f.get('subfeatures')
-  if (!c || c.length === 0) {
+  let c = getSubfeatures(f)
+  if (c.length === 0) {
     return []
   }
-  const hasUTRs = c.some(child => isUTR(child))
+  const hasUTRs = c.some(isUTR)
   // Use the configured transcriptTypes (which includes primary_transcript by
   // default) rather than a separate hardcoded list, so every type that routes
   // to this layout can also get implied UTRs.
-  const isTranscript = config.transcriptTypes.includes(f.get('type') ?? '')
+  const isTranscript = config.transcriptTypes.includes(featureType(f))
   const impliedUTRs = !hasUTRs && isTranscript
 
   if (impliedUTRs || config.impliedUTRs) {
@@ -126,7 +127,5 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
   const allowedTypes = new Set(
     config.subParts.split(/\s*,\s*/).map(t => t.toLowerCase()),
   )
-  return c.filter(child =>
-    allowedTypes.has(child.get('type')?.toLowerCase() ?? ''),
-  )
+  return c.filter(child => allowedTypes.has(featureType(child).toLowerCase()))
 }

@@ -13,7 +13,7 @@ import { firstValueFrom, toArray } from 'rxjs'
 
 import { dedupedSortedCDS } from './cdsSegments.ts'
 import { hasCDSSubfeature } from '../glyphs/glyphUtils.ts'
-import { isCDS } from '../util.ts'
+import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { PeptideData } from '../types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -113,7 +113,7 @@ export function transcriptGeneticCodeId(
   transcript: Feature,
   assemblyGeneticCodeId: number | undefined,
 ) {
-  const cds = (transcript.get('subfeatures') ?? []).find(f => isCDS(f))
+  const cds = getSubfeatures(transcript).find(isCDS)
   return (
     parseTranslTable(transcript.get('transl_table')) ??
     parseTranslTable(cds?.get('transl_table')) ??
@@ -125,7 +125,7 @@ export function transcriptGeneticCodeId(
 // the transcript. Relativized to the strand-corrected CDS coordinate system so a
 // selenocysteine reads as U etc., matching the feature-detail protein view.
 function transcriptTranslExcept(transcript: Feature) {
-  const cds = (transcript.get('subfeatures') ?? []).find(f => isCDS(f))
+  const cds = getSubfeatures(transcript).find(isCDS)
   const raw = transcript.get('transl_except') ?? cds?.get('transl_except')
   const start = transcript.get('start')
   return raw

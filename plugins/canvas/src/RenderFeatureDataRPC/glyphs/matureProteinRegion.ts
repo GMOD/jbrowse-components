@@ -1,4 +1,5 @@
 import { layoutChild, sortByPosition } from './glyphUtils.ts'
+import { featureType, getSubfeatures } from '../util.ts'
 
 import type { FeatureLayout, LayoutArgs } from '../types.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -14,11 +15,8 @@ const MATURE_PROTEIN_TYPES = new Set([
 ])
 
 function getMatureProteinChildren(feature: Feature): Feature[] {
-  const subfeatures = feature.get('subfeatures')
-  return (
-    subfeatures?.filter(sub =>
-      MATURE_PROTEIN_TYPES.has(sub.get('type') ?? ''),
-    ) ?? []
+  return getSubfeatures(feature).filter(sub =>
+    MATURE_PROTEIN_TYPES.has(featureType(sub)),
   )
 }
 

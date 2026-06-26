@@ -1,5 +1,7 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 
+import { featureType } from './util.ts'
+
 import type { DisplayConfig } from './renderConfig.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -46,5 +48,5 @@ export function buildFeatureAdmission({
   return (feature: Feature) =>
     filterChain.passes(feature) &&
     (geneLikeTypes === undefined ||
-      geneLikeTypes.has((feature.get('type') ?? '').toLowerCase()))
+      geneLikeTypes.has(featureType(feature).toLowerCase()))
 }
