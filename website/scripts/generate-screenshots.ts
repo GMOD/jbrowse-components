@@ -188,7 +188,7 @@ async function debugDump(page: Page, name: string) {
   const bodyText = await page
     .evaluate(() => document.body.innerText.substring(0, 800))
     .catch(() => '')
-  console.error(`    debug text: ${bodyText.replace(/\s+/g, ' ').trim()}`)
+  console.error(`    [${name}] debug text: ${bodyText.replace(/\s+/g, ' ').trim()}`)
   const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
   await page
     .screenshot()
@@ -196,7 +196,7 @@ async function debugDump(page: Page, name: string) {
       fs.writeFileSync(debugPath, png)
     })
     .catch(() => {})
-  console.error(`    debug screenshot: ${debugPath}`)
+  console.error(`    [${name}] debug screenshot: ${debugPath}`)
 }
 
 async function captureLGV(
@@ -521,7 +521,6 @@ async function captureSpec(
   spec: BrowserScreenshotSpec,
   port: number,
 ) {
-  console.log(`  → ${spec.name}`)
   const renderPath = await renderSpecToTemp(page, spec, port)
   const outputPath = path.join(outDir, `${spec.name}.png`)
   fs.mkdirSync(path.dirname(outputPath), { recursive: true })
@@ -559,7 +558,6 @@ async function renderCliSpecToTemp(spec: CliSpec, suffix = '') {
 }
 
 async function captureCliSpec(spec: CliSpec) {
-  console.log(`  → ${spec.name}`)
   const renderPath = await renderCliSpecToTemp(spec)
   const baseName = spec.name.replace(/^jbrowse-img\//, '')
   const outputPath = path.join(jbrowseImgOutDir, `${baseName}.png`)
@@ -656,8 +654,17 @@ async function main() {
 
   let passed = 0
   let failed = 0
+  let started = 0
+  const total = filteredSpecs.length
   const failures: { name: string; error: string }[] = []
   const flaky: { name: string; frac: number }[] = []
+
+  // Zero-padded `[ 7/40]` so the counter column stays aligned as it grows,
+  // keeping the interleaved per-worker lines readable.
+  function progress() {
+    started += 1
+    return `[${String(started).padStart(String(total).length)}/${total}]`
+  }
 
   // Fresh browser per call (avoids service-worker caching between navigations),
   // viewport set per spec, then run the body with the prepared page.
@@ -678,7 +685,9 @@ async function main() {
       page.on('console', msg => {
         const t = msg.type()
         if (!isBrowserConsoleNoise(msg.text())) {
-          console.error(`    browser[${t}]: ${msg.text().substring(0, 300)}`)
+          console.error(
+            `    [${spec.name}] browser[${t}]: ${msg.text().substring(0, 300)}`,
+          )
         }
       })
       return await body(page)
@@ -713,7 +722,6 @@ async function main() {
   // nondeterministic — it would churn its committed PNG on every regen. Doesn't
   // touch committed files.
   async function checkSpec(spec: BrowserScreenshotSpec) {
-    console.log(`  → ${spec.name}`)
     const a = await withFreshPage(spec, p =>
       renderSpecToTemp(p, spec, port, '-a'),
     )
@@ -726,7 +734,6 @@ async function main() {
   // --check for cli specs: render jb2export twice and diff, same contract as
   // checkSpec but without a browser.
   async function checkCliSpec(spec: CliSpec) {
-    console.log(`  → ${spec.name}`)
     const a = await renderCliSpecToTemp(spec, '-a')
     const b = await renderCliSpecToTemp(spec, '-b')
     reportDiffOrFlaky(spec.name, a, b, spec.diffThreshold ?? diffThreshold)
@@ -734,9 +741,10 @@ async function main() {
 
   async function runSpec(spec: ScreenshotSpec) {
     if (spec.curated) {
-      console.log(`  ⊘ ${spec.name} (curated, keeping committed image)`)
+      console.log(`${progress()} ⊘ ${spec.name} (curated, keeping committed image)`)
       return
     }
+    console.log(`${progress()} → ${spec.name}`)
     try {
       if (spec.mode === 'cli') {
         await (check ? checkCliSpec(spec) : captureCliSpec(spec))
