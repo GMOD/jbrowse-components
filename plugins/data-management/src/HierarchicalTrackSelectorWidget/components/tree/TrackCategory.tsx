@@ -1,7 +1,11 @@
-import { lazy, useState } from 'react'
-import type { FC } from 'react'
+import { lazy } from 'react'
+import type { ComponentType } from 'react'
 
-import { CascadingMenuButton, SanitizedHTML } from '@jbrowse/core/ui'
+import {
+  CascadingMenuButton,
+  PluggableComponent,
+  SanitizedHTML,
+} from '@jbrowse/core/ui'
 import { getEnv, getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown'
@@ -18,6 +22,7 @@ import type { TreeCategoryNode, TreeTrackNode } from '../../types.ts'
 
 export interface FolderDialogProps {
   model: HierarchicalTrackSelectorModel
+  categoryId: string
   title: string
   subtracks: TreeTrackNode[]
   handleClose: () => void
@@ -26,18 +31,29 @@ export interface FolderDialogProps {
 declare module '@jbrowse/core/PluginManager' {
   interface ExtensionPointRegistry {
     'TrackSelector-folderDialog': {
-      args: FC<FolderDialogProps>
-      result: FC<FolderDialogProps>
-      props: {
-        categoryId: string
-        model: HierarchicalTrackSelectorModel
-        subtracks: TreeTrackNode[]
-      }
+      args: ComponentType<FolderDialogProps>
+      result: ComponentType<FolderDialogProps>
+      props: FolderDialogProps
     }
   }
 }
 
 const DefaultFolderDialog = lazy(() => import('../DefaultFolderDialog.tsx'))
+
+// resolves TrackSelector-folderDialog at render time (consistent with all other
+// component extension points) rather than evaluating the point by hand; queued
+// into the session dialog stack, which provides its own Suspense boundary
+const FolderDialog = observer(function FolderDialog(props: FolderDialogProps) {
+  const { pluginManager } = getEnv(props.model)
+  return (
+    <PluggableComponent
+      pluginManager={pluginManager}
+      name="TrackSelector-folderDialog"
+      component={DefaultFolderDialog}
+      props={props}
+    />
+  )
+})
 
 const useStyles = makeStyles()(theme => ({
   contrastColor: {
@@ -137,18 +153,12 @@ function openFolderDialog(
   model: HierarchicalTrackSelectorModel,
   item: TreeCategoryNode,
 ) {
-  const session = getSession(model)
-  const { pluginManager } = getEnv(model)
   const subtracks = getAllTrackNodes(item)
-  const DialogComponent = pluginManager.evaluateExtensionPoint(
-    'TrackSelector-folderDialog',
-    DefaultFolderDialog as FC<FolderDialogProps>,
-    { categoryId: item.id, model, subtracks },
-  )
-  session.queueDialog((handleClose: () => void) => [
-    DialogComponent,
+  getSession(model).queueDialog(handleClose => [
+    FolderDialog,
     {
       model,
+      categoryId: item.id,
       title: item.name,
       subtracks,
       handleClose,

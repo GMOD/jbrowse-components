@@ -1,3 +1,5 @@
+import { Suspense } from 'react'
+
 import { getEnv } from '@jbrowse/core/util'
 import {
   FormControl,
@@ -125,11 +127,13 @@ const TrackSelector = observer(function TrackSelector({
         />
       ) : null}
       {selectedCustomOption ? (
-        <selectedCustomOption.ReactComponent
-          model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
-        />
+        <Suspense fallback={null}>
+          <selectedCustomOption.ReactComponent
+            model={model}
+            assembly1={assembly1}
+            assembly2={assembly2}
+          />
+        </Suspense>
       ) : null}
     </>
   )

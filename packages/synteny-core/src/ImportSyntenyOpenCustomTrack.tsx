@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import {
   FormControlLabel,
@@ -68,28 +68,30 @@ const ImportSyntenyOpenCustomTrack = observer(
         </RadioGroup>
         {selectedFormat ? (
           <Grid container sx={{ justifyContent: 'center' }}>
-            <selectedFormat.Component
-              key={radioOption}
-              assembly1={assembly1}
-              assembly2={assembly2}
-              onAdapterChange={result => {
-                if (result) {
-                  const trackId = `${result.name}-${Date.now()}-sessionTrack`
-                  onSetTrack({
-                    type: 'userOpened',
-                    value: {
-                      trackId,
-                      name: result.name,
-                      assemblyNames: [assembly2, assembly1],
-                      type: 'SyntenyTrack',
-                      adapter: result.adapter,
-                    },
-                  })
-                } else {
-                  onSetTrack({ type: 'none' })
-                }
-              }}
-            />
+            <Suspense fallback={null}>
+              <selectedFormat.Component
+                key={radioOption}
+                assembly1={assembly1}
+                assembly2={assembly2}
+                onAdapterChange={result => {
+                  if (result) {
+                    const trackId = `${result.name}-${Date.now()}-sessionTrack`
+                    onSetTrack({
+                      type: 'userOpened',
+                      value: {
+                        trackId,
+                        name: result.name,
+                        assemblyNames: [assembly2, assembly1],
+                        type: 'SyntenyTrack',
+                        adapter: result.adapter,
+                      },
+                    })
+                  } else {
+                    onSetTrack({ type: 'none' })
+                  }
+                }}
+              />
+            </Suspense>
           </Grid>
         ) : null}
       </Paper>

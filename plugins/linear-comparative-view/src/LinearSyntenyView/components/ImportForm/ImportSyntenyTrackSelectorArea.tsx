@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { Suspense, useState } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import { FormControl, FormControlLabel, Radio, RadioGroup } from '@mui/material'
@@ -128,12 +128,14 @@ export default function ImportSyntenyTrackSelectorArea({
         />
       ) : null}
       {selectedCustomOption ? (
-        <selectedCustomOption.ReactComponent
-          model={model}
-          assembly1={assembly1}
-          assembly2={assembly2}
-          selectedRow={selectedRow}
-        />
+        <Suspense fallback={null}>
+          <selectedCustomOption.ReactComponent
+            model={model}
+            assembly1={assembly1}
+            assembly2={assembly2}
+            selectedRow={selectedRow}
+          />
+        </Suspense>
       ) : null}
     </div>
   )
