@@ -503,37 +503,79 @@ const jbrowseImgSpecs: CliSpec[] = [
     '1400',
   ]),
 
-  // Whole-genome multi-chromosome synteny via a session-spec
-  // (autoDiagonalize reorders grape chromosomes for least overlap; colorBy:
-  // query tints ribbons by peach chromosome).
+  // Whole-genome multi-chromosome synteny straight from the CLI (assemblies
+  // stack in argv order, the PAF binds to the gap between them). autoDiagonalize
+  // reorders grape chromosomes for least overlap; colorBy query tints ribbons by
+  // peach chromosome.
   cliSpec('grape_peach_synteny', [
-    '--config',
-    'data/comparative/grape_peach.config.json',
-    '--spec',
-    'data/comparative/grape_peach.spec.json',
+    'synteny',
+    '--chromSizes',
+    'data/comparative/peach.chrom.sizes',
+    '--paf',
+    'https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz',
+    '--chromSizes',
+    'data/comparative/grape.chrom.sizes',
+    '--autoDiagonalize',
+    '--colorBy',
+    'query',
+    '--alpha',
+    '0.4',
+    '--levelHeights',
+    '350',
+    '--drawCurves',
     '--width',
     '1400',
   ]),
 
-  // Mammalian-scale: human (hs1) vs mouse (mm39). minAlignmentLength:500000
-  // (in the spec) drops short alignments so the large syntenic blocks stay
-  // legible.
+  // Mammalian-scale: human (hs1) vs mouse (mm39). --minAlignmentLength 500000
+  // drops short alignments so the large syntenic blocks stay legible.
   cliSpec('hs1_mm39_synteny', [
-    '--config',
-    'data/comparative/hs1_mm39.config.json',
-    '--spec',
-    'data/comparative/hs1_mm39.spec.json',
+    'synteny',
+    '--chromSizes',
+    'data/comparative/hs1.chrom.sizes',
+    '--chain',
+    'https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz',
+    '--chromSizes',
+    'data/comparative/mm39.chrom.sizes',
+    '--minAlignmentLength',
+    '500000',
+    '--autoDiagonalize',
+    '--colorBy',
+    'query',
+    '--alpha',
+    '0.4',
+    '--levelHeights',
+    '350',
+    '--drawCurves',
     '--width',
     '1400',
   ]),
 
-  // Three-level stack: hg38 / hs1 / mm39 (one ribbon per adjacent pair — a
-  // UCSC liftOver chain for hg38<->hs1, the .pif for hs1<->mm39).
+  // Three-level stack: hg38 / hs1 / mm39 (one ribbon per adjacent pair — a UCSC
+  // liftOver chain between each, each placed between the two assemblies it
+  // relates).
   cliSpec('hg38_hs1_mm39_synteny', [
-    '--config',
-    'data/comparative/hg38_hs1_mm39.config.json',
-    '--spec',
-    'data/comparative/hg38_hs1_mm39.spec.json',
+    'synteny',
+    '--chromSizes',
+    'data/comparative/hg38.chrom.sizes',
+    '--chain',
+    'data/comparative/hg38ToHs1.over.chain.gz',
+    '--chromSizes',
+    'data/comparative/hs1.chrom.sizes',
+    '--chain',
+    'https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz',
+    '--chromSizes',
+    'data/comparative/mm39.chrom.sizes',
+    '--minAlignmentLength',
+    '500000',
+    '--autoDiagonalize',
+    '--colorBy',
+    'query',
+    '--alpha',
+    '0.4',
+    '--levelHeights',
+    '300,300',
+    '--drawCurves',
     '--width',
     '1400',
   ]),
@@ -707,7 +749,7 @@ const jbrowseImgSpecs: CliSpec[] = [
     'height:500',
     'force:true',
     '--loc',
-    'ctgA:2900-3300',
+    'ctgA:2950-4250',
     '--width',
     '1200',
   ]),
@@ -4029,6 +4071,9 @@ export const specs: ScreenshotSpec[] = [
       loc: 'ctgA:1-20000',
       tracks: ['volvox_bam'],
     }),
+    // smaller browser in both stages (reviewer: reduce figure width/height)
+    viewportWidth: 1000,
+    viewportHeight: 600,
     readyText: 'ctgA',
     settleMs: 3000,
     // two-stage: the top frame circles the track-selector icon in the LGV header

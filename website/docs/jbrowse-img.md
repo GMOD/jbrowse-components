@@ -471,76 +471,85 @@ set is available via `--spec` (see the table below). Run
 
 ### Multi-way synteny (three or more assemblies)
 
-The `--fasta2`/`--loc2` shortcut covers the common two-assembly case. To stack
-three or more assemblies (one synteny ribbon per adjacent pair), describe the
-view with a session-spec JSON and pass it with `--spec`, supplying the
-assemblies and comparison tracks via a `--config`. The spec is the same shape
-used by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
+Stack any number of assemblies straight from the command line: repeat the
+assembly flag for each one and place each alignment file between the two
+assemblies it compares. Assemblies stack top-to-bottom in the order written, and
+each synteny file becomes the ribbon for the gap it sits in — no config or spec
+JSON required.
+
+Use `--chromSizes` instead of `--fasta` for a whole-genome comparison: it builds
+the assembly from a `chrom.sizes` file (two tab-separated columns,
+`name<TAB>length`), skipping the multi-GB sequence a genome-wide dotplot never
+draws.
+
+```bash
+jb2export synteny \
+  --chromSizes a.chrom.sizes \
+  --paf a_vs_b.paf \
+  --chromSizes b.chrom.sizes \
+  --paf b_vs_c.paf \
+  --chromSizes c.chrom.sizes \
+  --out synteny.svg
+```
+
+Per-assembly options ride on the assembly flag as `key:value` modifiers, e.g.
+`--fasta a.fa loc:chr1 aliases:a.aliases.txt`. The busy-comparison knobs are
+flags:
+
+| Flag                   | Effect                                                          |
+| ---------------------- | --------------------------------------------------------------- |
+| `--autoDiagonalize`    | Reorders each lower assembly's chromosomes for least overlap    |
+| `--minAlignmentLength` | Hides alignments shorter than N bp — the main de-spaghetti knob |
+| `--colorBy query`      | Tints each ribbon by its query chromosome                       |
+| `--alpha`              | Ribbon opacity (0–1); lower values reveal overlap density       |
+| `--drawCurves`         | Bezier ribbons instead of straight trapezoids                   |
+| `--levelHeights`       | Per-level pixel height (comma-separated, e.g. `300,300`)        |
+
+> **Query vs. target orientation.** PAF/BLAST list the query first, so the
+> assembly written _above_ the alignment is the query. A chain/delta liftover
+> maps target→query (a UCSC `targetToQuery.over.chain`), so there the assembly
+> above is the _target_. `jb2export` handles this per format automatically —
+> just write the assemblies in stacked order.
+
+Alternatively, drive the view from a session-spec JSON with `--spec` (assemblies
+and comparison tracks supplied via `--config`). The spec is the same shape used
+by the JBrowse Web URL `&session=spec-` parameter, so JSON copied out of a
 browser URL works directly — see
 [URL query parameter API](https://jbrowse.org/jb2/docs/urlparams/#linear-synteny-view-multi-way)
-for the full format.
+for the full format. `tracks` is one sub-array per level (the gap between
+adjacent `views`); the subcommand is optional since the render mode comes from
+the spec's view `type`.
 
 ```bash
 jb2export --config jbrowse.json --spec spec.json --out synteny.svg
 ```
 
-where `spec.json` is, for example:
-
-```json
-{
-  "views": [
-    {
-      "type": "LinearSyntenyView",
-      "tracks": [["a_vs_b.paf"], ["b_vs_c.paf"]],
-      "views": [
-        { "assembly": "a", "loc": "chr1" },
-        { "assembly": "b", "loc": "chr1" },
-        { "assembly": "c", "loc": "chr1" }
-      ]
-    }
-  ]
-}
-```
-
-`tracks` is one sub-array per level (the gap between adjacent `views`). The
-subcommand is optional here — the render mode is taken from the spec's view
-`type` (`LinearSyntenyView`, `DotplotView`, or `CircularView`).
-
-The spec also accepts the same view-level fields the web app uses, which are
-what make a busy whole-genome comparison legible:
-
-| Field                | Effect                                                          |
-| -------------------- | --------------------------------------------------------------- |
-| `autoDiagonalize`    | Reorders the second assembly's chromosomes for least overlap    |
-| `minAlignmentLength` | Hides alignments shorter than N bp — the main de-spaghetti knob |
-| `colorBy`            | `query` tints each ribbon by its query chromosome               |
-| `alpha`              | Ribbon opacity (0–1); lower values reveal overlap density       |
-| `drawCurves`         | Bezier ribbons instead of straight trapezoids                   |
-| `levelHeights`       | Per-level pixel height between adjacent assemblies              |
-
 A whole-genome example (peach vs grape, the chrom.sizes come from this repo and
-the alignment PAF from S3). Config and spec are checked in under
-[`data/comparative`](https://github.com/GMOD/jbrowse-components/blob/main/products/jbrowse-img/data/comparative):
+the alignment PAF from S3):
 
 ```bash
-jb2export \
-  --config data/comparative/grape_peach.config.json \
-  --spec data/comparative/grape_peach.spec.json \
+jb2export synteny \
+  --chromSizes data/comparative/peach.chrom.sizes \
+  --paf https://s3.amazonaws.com/jbrowse.org/genomes/synteny/peach_grape.paf.gz \
+  --chromSizes data/comparative/grape.chrom.sizes \
+  --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves \
   --width 1400 --out grape_peach.png
 ```
 
 <Figure src="/img/jbrowse-img/grape_peach_synteny.png" caption="Whole-genome synteny, grape vs peach, with autoDiagonalize and colorBy query" />
 
 A mammalian-scale test — human (hs1/T2T) vs mouse (mm39) liftOver — where the
-`minAlignmentLength: 500000` filter is what keeps the plot from turning into
-spaghetti. The assemblies use `ChromSizesAdapter` (whole-genome synteny draws no
-sequence, so no multi-GB 2bit is needed); the chrom.sizes are committed and the
-`.pif` alignment streams from S3, so this reproduces with only the public PAF:
+`--minAlignmentLength 500000` filter is what keeps the plot from turning into
+spaghetti. `--chromSizes` means no multi-GB sequence is downloaded (whole-genome
+synteny draws none); the chrom.sizes are committed and the liftOver chain
+streams from the web, so this reproduces with only the public chain:
 
 ```bash
-jb2export \
-  --config data/comparative/hs1_mm39.config.json \
-  --spec data/comparative/hs1_mm39.spec.json \
+jb2export synteny \
+  --chromSizes data/comparative/hs1.chrom.sizes \
+  --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
+  --chromSizes data/comparative/mm39.chrom.sizes \
+  --minAlignmentLength 500000 --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 350 --drawCurves \
   --width 1400 --out hs1_mm39.png
 ```
 
@@ -548,13 +557,18 @@ jb2export \
 
 A three-level stack — hg38, hs1 (T2T), and mm39 — with one ribbon per adjacent
 pair: the conserved hg38↔hs1 build liftover on top (near-vertical bands) and the
-diverged hs1↔mm39 human–mouse synteny below. `tracks` is one sub-array per level
-(a UCSC liftOver `.chain` for the first, the `.pif` for the second):
+diverged hs1↔mm39 human–mouse synteny below. Each UCSC liftOver `.chain` sits
+between the two assemblies it relates (`hg38ToHs1` between hg38 and hs1,
+`hs1ToMm39` between hs1 and mm39):
 
 ```bash
-jb2export \
-  --config data/comparative/hg38_hs1_mm39.config.json \
-  --spec data/comparative/hg38_hs1_mm39.spec.json \
+jb2export synteny \
+  --chromSizes data/comparative/hg38.chrom.sizes \
+  --chain data/comparative/hg38ToHs1.over.chain.gz \
+  --chromSizes data/comparative/hs1.chrom.sizes \
+  --chain https://jbrowse.org/demos/hs1ToMm39/hs1ToMm39.over.chain.gz \
+  --chromSizes data/comparative/mm39.chrom.sizes \
+  --minAlignmentLength 500000 --autoDiagonalize --colorBy query --alpha 0.4 --levelHeights 300,300 --drawCurves \
   --width 1400 --out hg38_hs1_mm39.png
 ```
 
@@ -749,6 +763,7 @@ Usage: jb2export [options]
 
 Options:
   --fasta           Path to indexed FASTA file
+  --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON or name in config
   --config          Path to JBrowse config.json
@@ -787,81 +802,94 @@ Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circ
 Usage: jb2export dotplot [options]
 
 Options:
-  --fasta            Path to indexed FASTA file
-  --aliases          Path to reference name aliases file
-  --assembly         Path to assembly JSON or name in config
-  --config           Path to JBrowse config.json
-  --session          Path to session JSON
-  --loc              Location to render (e.g., chr1:1-1000 or "all")
-  --out              Output file path (SVG or PNG)
-  --width            Width of output in pixels [default: 1500]
-  --noRasterize      Disable rasterization of pileup/coverage [default: false]
-  --defaultSession   Use default session from config [default: false]
-  --tracks           Path to JSON file with an array of track configs
-  --cytobands        Path to cytoband file for the assembly
-  --themeName        Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
-  --showGridlines    Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels      Track label position: offset, overlay, left, or none
-  --refseq           Show the reference sequence track [default: false]
-  --spec             Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
-  --fasta2           Second assembly indexed FASTA
-  --aliases2         Reference name aliases for fasta2
-  --assembly2        Second assembly name in config
-  --loc2             Location on the second assembly
-  --autoDiagonalize  Reorder the second assembly's chromosomes for least overlap (a clean diagonal) [default: false]
-  --drawCurves       Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
+  --fasta               Path to indexed FASTA file
+  --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
+  --aliases             Path to reference name aliases file
+  --assembly            Path to assembly JSON or name in config
+  --config              Path to JBrowse config.json
+  --session             Path to session JSON
+  --loc                 Location to render (e.g., chr1:1-1000 or "all")
+  --out                 Output file path (SVG or PNG)
+  --width               Width of output in pixels [default: 1500]
+  --noRasterize         Disable rasterization of pileup/coverage [default: false]
+  --defaultSession      Use default session from config [default: false]
+  --tracks              Path to JSON file with an array of track configs
+  --cytobands           Path to cytoband file for the assembly
+  --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --showGridlines       Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels         Track label position: offset, overlay, left, or none
+  --refseq              Show the reference sequence track [default: false]
+  --spec                Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --fasta2              Second assembly indexed FASTA (shorthand)
+  --aliases2            Reference name aliases for fasta2
+  --loc2                Location on the second assembly
+  --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
+  --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
+  --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
+  --colorBy             Color synteny ribbons, e.g. "query" tints by query chromosome
+  --alpha               Ribbon opacity 0-1 (lower reveals density)
+  --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
       Whole-genome dotplot of two assemblies via a PAF
-  jb2export synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg
-      Linear synteny view of a region in each assembly
+  jb2export synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg
+      Linear synteny of a region in each assembly (loc: rides on the assembly flag)
+  jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
+      Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
   jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
       N-way synteny from a config + session-spec JSON (see urlparams.md)
 
-Comparison track options: --paf, --delta, --chain, --blasttab
+Comparison track options: --paf, --blasttab, --chain, --delta
 
 Usage: jb2export synteny [options]
 
 Options:
-  --fasta            Path to indexed FASTA file
-  --aliases          Path to reference name aliases file
-  --assembly         Path to assembly JSON or name in config
-  --config           Path to JBrowse config.json
-  --session          Path to session JSON
-  --loc              Location to render (e.g., chr1:1-1000 or "all")
-  --out              Output file path (SVG or PNG)
-  --width            Width of output in pixels [default: 1500]
-  --noRasterize      Disable rasterization of pileup/coverage [default: false]
-  --defaultSession   Use default session from config [default: false]
-  --tracks           Path to JSON file with an array of track configs
-  --cytobands        Path to cytoband file for the assembly
-  --themeName        Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
-  --showGridlines    Show genomic coordinate gridlines in the output [default: false]
-  --trackLabels      Track label position: offset, overlay, left, or none
-  --refseq           Show the reference sequence track [default: false]
-  --spec             Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
-  --fasta2           Second assembly indexed FASTA
-  --aliases2         Reference name aliases for fasta2
-  --assembly2        Second assembly name in config
-  --loc2             Location on the second assembly
-  --autoDiagonalize  Reorder the second assembly's chromosomes for least overlap (a clean diagonal) [default: false]
-  --drawCurves       Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
+  --fasta               Path to indexed FASTA file
+  --chromSizes          Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
+  --aliases             Path to reference name aliases file
+  --assembly            Path to assembly JSON or name in config
+  --config              Path to JBrowse config.json
+  --session             Path to session JSON
+  --loc                 Location to render (e.g., chr1:1-1000 or "all")
+  --out                 Output file path (SVG or PNG)
+  --width               Width of output in pixels [default: 1500]
+  --noRasterize         Disable rasterization of pileup/coverage [default: false]
+  --defaultSession      Use default session from config [default: false]
+  --tracks              Path to JSON file with an array of track configs
+  --cytobands           Path to cytoband file for the assembly
+  --themeName           Theme for rendering: default, lightStock, lightMinimal, darkStock, or darkMinimal
+  --showGridlines       Show genomic coordinate gridlines in the output [default: false]
+  --trackLabels         Track label position: offset, overlay, left, or none
+  --refseq              Show the reference sequence track [default: false]
+  --spec                Session-spec JSON (inline or path to .json) describing the view; see urlparams.md. Drives N-way comparative views from a --config
+  --fasta2              Second assembly indexed FASTA (shorthand)
+  --aliases2            Reference name aliases for fasta2
+  --loc2                Location on the second assembly
+  --autoDiagonalize     Reorder the next assembly's chromosomes for least overlap (a clean diagonal) [default: false]
+  --drawCurves          Draw synteny ribbons as bezier curves instead of trapezoids [default: false]
+  --minAlignmentLength  Hide alignments shorter than N bp (de-spaghetti a busy plot)
+  --colorBy             Color synteny ribbons, e.g. "query" tints by query chromosome
+  --alpha               Ribbon opacity 0-1 (lower reveals density)
+  --levelHeights        Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)
 
 Examples:
   jb2export dotplot --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --out out.svg
       Whole-genome dotplot of two assemblies via a PAF
-  jb2export synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg
-      Linear synteny view of a region in each assembly
+  jb2export synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg
+      Linear synteny of a region in each assembly (loc: rides on the assembly flag)
+  jb2export synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg
+      Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares
   jb2export synteny --config jbrowse.json --spec spec.json --out out.svg
       N-way synteny from a config + session-spec JSON (see urlparams.md)
 
-Comparison track options: --paf, --delta, --chain, --blasttab
+Comparison track options: --paf, --blasttab, --chain, --delta
 
 Usage: jb2export circular [options]
 
 Options:
   --fasta           Path to indexed FASTA file
+  --chromSizes      Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON or name in config
   --config          Path to JBrowse config.json

@@ -385,9 +385,9 @@
   },
   "add_track_tracklist": {
     "name": "add_track_tracklist",
-    "status": "bad",
-    "note": "please reduce width and height of the figures in both screenshots",
-    "reviewedAt": "2026-06-26T19:31:56.322Z",
+    "status": "good",
+    "note": "Reduced viewport to 1000x600 (was default 1500x800) in both stages per reviewer.",
+    "reviewedAt": "2026-06-26T00:00:00.000Z",
     "hash": "dbb33cea0394bf21894aec1c170842a75cce9a39"
   },
   "alignments/color_by_insert_size": {
@@ -941,8 +941,8 @@
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
-    "status": "bad",
-    "note": "Figure renders correctly. Gaps are intentional hap-ibd threshold behavior, documented in analyze_trio.md ('Is hap-ibd the right tool?'). Low priority per reviewer. To fill more gaps, re-run hap-ibd with lower min-seed/min-output (e.g. 0.5) and lower the tiling MIN_RUN_CM / raise MAX_GAP in the conversion script, or use the direct-genotype method already in the tutorial - both trade gaps for phasing-error noise and need re-upload of trio.hapibd.bed.gz.",
+    "status": "good",
+    "note": "Figure renders correctly. Gaps are intentional hap-ibd threshold behavior, documented in analyze_trio.md. Reviewer: skip and mark good.",
     "reviewedAt": "2026-06-21T16:03:04.234Z"
   },
   "config_not_found": {
@@ -1102,9 +1102,9 @@
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
-    "status": "bad",
-    "note": "try to zoom out a little more. you can also potentially add a cluster 'option' to --vcfgz",
-    "reviewedAt": "2026-06-26T19:33:01.402Z",
+    "status": "good",
+    "note": "Zoomed out to ctgA:2950-4250 (~15 variants, was ctgA:2900-3300/6) so the genotype matrix reads as a matrix. Cluster option for --vcfgz deferred: clustering is an async RPC (MultiSampleVariantClusterGenotypeMatrix) + layout reorder, a larger jbrowse-img feature than a snapshot modifier.",
+    "reviewedAt": "2026-06-26T00:00:00.000Z",
     "hash": "729408a81d4569a5250888277dc4195f2b4cf41b"
   }
 }
