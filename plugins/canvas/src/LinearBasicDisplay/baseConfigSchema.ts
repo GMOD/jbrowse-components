@@ -126,10 +126,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
           'normal',
           'compact',
           'superCompact',
-          'reducedRepresentation',
-          'collapse',
         ]),
-        description: 'Alternative display modes',
+        description: 'Feature height preset (normal/compact/super-compact)',
         defaultValue: 'normal',
       },
       /**

@@ -105,6 +105,23 @@ test('migrates legacy trackGeneGlyphMode "longest" to "longestCoding"', () => {
   expect(result).toEqual({ geneGlyphMode: 'longestCoding' })
 })
 
+// The removed `collapse`/`reducedRepresentation` displayMode values map back to
+// `normal` so a stale flat override still passes the narrowed enum on load.
+test('normalizes removed displayMode override values to normal', () => {
+  expect(migrateBasicSnapshot({ displayMode: 'collapse' })).toEqual({
+    displayMode: 'normal',
+  })
+  expect(migrateBasicSnapshot({ displayMode: 'reducedRepresentation' })).toEqual(
+    { displayMode: 'normal' },
+  )
+})
+
+test('leaves a valid displayMode override untouched', () => {
+  expect(migrateBasicSnapshot({ displayMode: 'compact' })).toEqual({
+    displayMode: 'compact',
+  })
+})
+
 // `false` and `0` are valid override values; the migration must distinguish
 // "explicitly set to falsy" from "absent". Pre-fix risk: a `!val` check would
 // drop these silently.

@@ -411,12 +411,7 @@ type autoHeight = boolean
 #### getter: displayMode
 
 ```ts
-type displayMode =
-  | 'normal'
-  | 'compact'
-  | 'superCompact'
-  | 'reducedRepresentation'
-  | 'collapse'
+type displayMode = 'normal' | 'compact' | 'superCompact'
 ```
 
 #### getter: showLabelsMode

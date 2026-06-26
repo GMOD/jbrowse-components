@@ -19,6 +19,15 @@ function liftRendererProps(
   return { ...rendererProps, ...rest }
 }
 
+// The removed `reducedRepresentation` (always a no-op) and `collapse` (only
+// ever decimated labels, never UI-reachable) displayMode values map back to
+// `normal` so old configs/sessions still pass the narrowed enum validation.
+function normalizeDisplayMode(value: unknown) {
+  return value === 'reducedRepresentation' || value === 'collapse'
+    ? 'normal'
+    : value
+}
+
 // color1/color2/color3 → color/connectorColor/utrColor; outline → outlineColor.
 // New name wins if both are present.
 function renameLegacyColorKeys(
@@ -53,6 +62,9 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
   }
   if (result.geneGlyphMode !== undefined) {
     result.geneGlyphMode = legacyGeneGlyphMode(result.geneGlyphMode)
+  }
+  if (result.displayMode !== undefined) {
+    result.displayMode = normalizeDisplayMode(result.displayMode)
   }
   return result
 }
@@ -117,6 +129,12 @@ export function migrateBasicSnapshot(
   }
   set('displayMode', trackDisplayMode)
   set('displayDirectionalChevrons', trackDisplayDirectionalChevrons)
+
+  // `rest` carries a flat displayMode override (ConfigOverrideMixin serializes
+  // it flat); normalize removed enum values it may still hold.
+  if (rest.displayMode !== undefined) {
+    rest.displayMode = normalizeDisplayMode(rest.displayMode)
+  }
 
   return { ...rest, ...migrated }
 }

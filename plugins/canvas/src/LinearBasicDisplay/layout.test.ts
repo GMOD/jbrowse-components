@@ -60,12 +60,7 @@ function layout(
   showLabels = true,
   showDescriptions = true,
   reversedRegions = new Set<number>(),
-  displayMode:
-    | 'normal'
-    | 'compact'
-    | 'superCompact'
-    | 'reducedRepresentation'
-    | 'collapse' = 'normal',
+  displayMode: 'normal' | 'compact' | 'superCompact' = 'normal',
 ) {
   return computeLaidOutData(raw, {
     bpPerPx,

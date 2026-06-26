@@ -102,7 +102,6 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
     laidOutDataMap: new Map([[0, makeData([{ startBp: 1100, endBp: 1200 }])]]),
     showLabels: true,
     effectiveShowDescriptions: true,
-    displayMode: 'normal',
     ...overrides,
   }
 }

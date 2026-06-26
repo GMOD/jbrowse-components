@@ -145,10 +145,8 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
     'normal',
     'compact',
     'superCompact',
-    'reducedRepresentation',
-    'collapse',
   ]),
-  description: 'Alternative display modes',
+  description: 'Feature height preset (normal/compact/super-compact)',
   defaultValue: 'normal',
 }
 ```

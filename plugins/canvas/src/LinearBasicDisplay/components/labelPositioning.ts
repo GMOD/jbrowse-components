@@ -50,8 +50,6 @@ export interface ResolvedLabel {
   kind: 'name' | 'desc' | 'sub'
 }
 
-const LABEL_DECIMATION_GAP_PX = 4
-
 export interface LabelVisibility {
   showLabels: boolean
   showDescriptions: boolean
@@ -107,37 +105,23 @@ function resolveFeatureLabels(
   return out
 }
 
-function labelGroupBounds(labels: ResolvedLabel[]) {
-  return {
-    minX: Math.min(...labels.map(l => l.labelX)),
-    maxX: Math.max(...labels.map(l => l.labelX + l.label.textWidth)),
-  }
-}
-
 // Walks a region's floatingLabelsData and emits one position-resolved label
 // list per in-bounds feature. Both the DOM overlay (useFloatingLabels) and the
 // SVG export (renderSvg.renderLabels) call this so the "collapse description
 // when name is hidden" rule and the bounds math don't drift between paths.
-//
-// When decimateLabels is true (collapse display mode), all visible labels are
-// collected, sorted by pixel position, then greedily filtered so only
-// horizontally non-overlapping labels are emitted.
 export function forEachRenderedLabel(
   data: FeatureDataResult,
   vr: BpRegionBounds,
   visibility: LabelVisibility,
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
-  decimateLabels = false,
   skip?: Set<string>,
 ) {
   const { showLabels, showDescriptions } = visibility
   let toScreen: ((bp: number) => number) | undefined
-  const collected: { featureId: string; labels: ResolvedLabel[] }[] = []
 
   for (const featureId in data.floatingLabelsData) {
     // Features already emitted by an earlier region (collapsed introns) are
-    // dropped before decimation accounting, so they don't consume a slot in a
-    // later region and crowd out a neighbor that should show.
+    // dropped so they don't double-paint in a later region.
     if (skip?.has(featureId)) {
       continue
     }
@@ -147,40 +131,16 @@ export function forEachRenderedLabel(
     }
     const wantName = showLabels && !!labelData.nameLabel
     const wantDesc = showDescriptions && !!labelData.descriptionLabel
-    const wantSub = !decimateLabels && !!labelData.subfeatureLabel
+    const wantSub = !!labelData.subfeatureLabel
     if (!wantName && !wantDesc && !wantSub) {
       continue
     }
     // Lazy: only build the bp→px mapper once we know we'll emit something.
     toScreen ??= makeBpMapper(vr)
-    const labels = resolveFeatureLabels(
-      labelData,
-      toScreen,
-      vr,
-      wantName,
-      wantDesc,
-      wantSub,
+    emit(
+      featureId,
+      resolveFeatureLabels(labelData, toScreen, vr, wantName, wantDesc, wantSub),
     )
-    collected.push({ featureId, labels })
-  }
-
-  if (decimateLabels) {
-    const withBounds = collected.map(item => ({
-      ...item,
-      ...labelGroupBounds(item.labels),
-    }))
-    withBounds.sort((a, b) => a.minX - b.minX)
-    let nextX = -Infinity
-    for (const { featureId, labels, minX, maxX } of withBounds) {
-      if (minX >= nextX) {
-        emit(featureId, labels)
-        nextX = maxX + LABEL_DECIMATION_GAP_PX
-      }
-    }
-  } else {
-    for (const { featureId, labels } of collected) {
-      emit(featureId, labels)
-    }
   }
 }
 
@@ -201,7 +161,6 @@ export function forEachDisplayLabel(
     labels: ResolvedLabel[],
     region: RegionWithData,
   ) => void,
-  decimateLabels = false,
 ) {
   const rendered = new Set<string>()
   for (const region of regions) {
@@ -217,7 +176,6 @@ export function forEachDisplayLabel(
         rendered.add(featureId)
         emit(featureId, labels, region)
       },
-      decimateLabels,
       rendered,
     )
   }

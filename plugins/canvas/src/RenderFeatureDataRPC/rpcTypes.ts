@@ -209,23 +209,19 @@ export interface FeatureLabelData {
 // Returns the max rendered width of any label that will actually display for
 // this feature. Mirrors the visibility logic in useOverlayElements: name is
 // gated on showLabels, description is gated on showDescriptions only (not
-// showLabels), and subfeature labels are gated on showSubfeatureLabels (false
-// in collapse mode, where labels are decimated). Each textWidth is the true
-// measured width of the (already-truncated) label text, so the reservation
-// computed here always matches what is drawn.
+// showLabels), and subfeature labels always render when present. Each textWidth
+// is the true measured width of the (already-truncated) label text, so the
+// reservation computed here always matches what is drawn.
 export function maxLabelTextWidth(
   labelData: FeatureLabelData,
   showLabels = true,
   showDescriptions = true,
-  showSubfeatureLabels = true,
 ) {
   const nameWidth = showLabels ? (labelData.nameLabel?.textWidth ?? 0) : 0
   const descWidth = showDescriptions
     ? (labelData.descriptionLabel?.textWidth ?? 0)
     : 0
-  const subfeatureWidth = showSubfeatureLabels
-    ? (labelData.subfeatureLabel?.textWidth ?? 0)
-    : 0
+  const subfeatureWidth = labelData.subfeatureLabel?.textWidth ?? 0
   return Math.max(nameWidth, descWidth, subfeatureWidth)
 }
 

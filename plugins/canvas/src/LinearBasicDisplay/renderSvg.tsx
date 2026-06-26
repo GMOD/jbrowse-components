@@ -14,7 +14,6 @@ import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
 } from './components/sharedRendererConstants.ts'
-import { decimatesLabels } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { ResolvedLabel } from './components/labelPositioning.ts'
@@ -35,7 +34,6 @@ export interface RenderSvgModel extends SvgExportable {
   laidOutDataMap: Map<number, FeatureDataResult>
   showLabels: boolean
   effectiveShowDescriptions: boolean
-  displayMode: string
 }
 
 // Labels and amino-acid overlays are rendered as DOM/React overlays
@@ -93,7 +91,6 @@ export async function renderSvg(
     showLabels: model.showLabels,
     showDescriptions: model.effectiveShowDescriptions,
   }
-  const decimateLabels = decimatesLabels(model.displayMode)
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
   const textNode = paintLayer(totalWidth, height, undefined, ctx => {
@@ -105,7 +102,6 @@ export async function renderSvg(
       (_, labels) => {
         paintLabel(ctx, labels)
       },
-      decimateLabels,
     )
     // Peptides need no cross-region dedup (unlike labels above): a codon
     // straddling a region boundary is drawn by both regions, but makeBpMapper

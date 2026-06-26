@@ -12,8 +12,6 @@ export const HEIGHT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
   compact: 0.6,
   superCompact: 0.3,
-  reducedRepresentation: 1,
-  collapse: 1,
 }
 
 // Sort children left-to-right; ties broken by longest first

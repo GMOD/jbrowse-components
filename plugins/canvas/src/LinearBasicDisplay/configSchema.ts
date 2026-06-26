@@ -44,8 +44,8 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
- * `tracks`. `displayMode` switches between `normal`, `compact`,
- * `superCompact`, `reducedRepresentation`, and `collapse`:
+ * `tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
+ * or `superCompact`):
  * ```js
  * {
  *   type: 'FeatureTrack',

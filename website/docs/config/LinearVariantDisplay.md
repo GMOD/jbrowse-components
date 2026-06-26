@@ -190,10 +190,8 @@ this page is self-contained.
     'normal',
     'compact',
     'superCompact',
-    'reducedRepresentation',
-    'collapse',
   ]),
-  description: 'Alternative display modes',
+  description: 'Feature height preset (normal/compact/super-compact)',
   defaultValue: 'normal',
 }
 ```

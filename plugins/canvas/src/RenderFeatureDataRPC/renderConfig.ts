@@ -51,29 +51,15 @@ export function resolveThemeColor(value: string, fallback: string) {
   return value === THEME_DERIVED_COLOR ? fallback : value
 }
 
-export type DisplayMode =
-  | 'normal'
-  | 'compact'
-  | 'superCompact'
-  | 'reducedRepresentation'
-  | 'collapse'
-
-// Collapse mode stacks every feature into one row, so per-feature and
-// subfeature labels are suppressed and overlapping labels decimated. Single
-// source of the rule consumed by the model, layout, hit testing, the DOM
-// overlay, and SVG export so they can't drift apart.
-export function decimatesLabels(displayMode: string) {
-  return displayMode === 'collapse'
-}
+export type DisplayMode = 'normal' | 'compact' | 'superCompact'
 
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
 // any property is a type error rather than silently typing as `unknown`. The
 // widening to `Record<string, unknown>` that the core config reader wants is
 // confined to the readConfigValue wrapper above.
 export interface DisplayConfig {
-  // displayMode is NOT sent to the worker — compact/superCompact scaling and
-  // collapse-mode label decimation are applied on the main thread so switching
-  // modes skips an RPC round-trip.
+  // displayMode is NOT sent to the worker — compact/superCompact height scaling
+  // is applied on the main thread so switching modes skips an RPC round-trip.
   geneGlyphMode: 'auto' | 'all' | 'longestCoding'
   subfeatureLabels: 'none' | 'below' | 'overlay'
   transcriptTypes: string[]

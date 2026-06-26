@@ -5,7 +5,6 @@ import {
   HEIGHT_MULTIPLIERS,
   STRAND_ARROW_WIDTH,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
-import { decimatesLabels } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
@@ -59,16 +58,10 @@ function reservedLabelWidthPx(
   labelData: FeatureLabelData,
   showLabels: boolean,
   showDescriptions: boolean,
-  showSubfeatureLabels: boolean,
 ) {
   // Reserve exactly the measured text width, matching the legacy renderer — no
   // extra padding, which would widen every labeled feature and cut density.
-  return maxLabelTextWidth(
-    labelData,
-    showLabels,
-    showDescriptions,
-    showSubfeatureLabels,
-  )
+  return maxLabelTextWidth(labelData, showLabels, showDescriptions)
 }
 
 // Scales all height/y fields in a cloned FeatureDataResult by the compact
@@ -160,19 +153,12 @@ export function computeLaidOutData(
     group.push([displayedRegionIndex, data])
   }
 
-  // In collapse mode, labels are decimated at render time and don't contribute
-  // to feature stacking height, so treat them as absent for layout purposes.
-  const showLabelsInLayout = !decimatesLabels(displayMode)
-  const packShowLabels = showLabelsInLayout && showLabels
-  const packShowDescriptions = showLabelsInLayout && showDescriptions
-
   for (const [key, regions] of refGroups) {
     const { layoutMap, layoutHeights } = packRef(
       regions,
       bpPerPx,
-      packShowLabels,
-      packShowDescriptions,
-      showLabelsInLayout,
+      showLabels,
+      showDescriptions,
       reversedRegions,
       seedLayoutMaps?.get(key),
     )
@@ -349,7 +335,6 @@ function packRef(
   bpPerPx: number,
   showLabels: boolean,
   showDescriptions: boolean,
-  showSubfeatureLabels: boolean,
   reversedRegions: ReadonlySet<number>,
   prevLayoutMap?: ReadonlyMap<string, number>,
 ) {
@@ -371,7 +356,6 @@ function packRef(
         labelData,
         showLabels,
         showDescriptions,
-        showSubfeatureLabels,
       )
       const existing = labelInfoByFeatureId.get(targetId)
       if (existing) {

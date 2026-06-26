@@ -142,7 +142,6 @@ function buildIndexes(
 const DEFAULT_LABELS: LabelVisibility = {
   showLabels: true,
   showDescriptions: false,
-  showSubfeatureLabels: true,
 }
 
 function hit(
@@ -466,7 +465,7 @@ test('label hit area extends past feature when showLabels is true', () => {
     [makeRegion(0, 0, 10000, 0, 800)],
     250,
     10,
-    { showLabels: true, showDescriptions: false, showSubfeatureLabels: true },
+    { showLabels: true, showDescriptions: false },
   )
   expect(result.feature).not.toBeNull()
 })
@@ -478,7 +477,7 @@ test('label hit area collapses when showLabels is false', () => {
     [makeRegion(0, 0, 10000, 0, 800)],
     250,
     10,
-    { showLabels: false, showDescriptions: false, showSubfeatureLabels: true },
+    { showLabels: false, showDescriptions: false },
   )
   expect(result.feature).toBeNull()
 })
@@ -524,7 +523,7 @@ test('hoverTooltip omits a missing isoform, leaving only the residue', () => {
   )
 })
 
-test('subfeature label hit area is reserved only when showSubfeatureLabels is true', () => {
+test('subfeature label hit area is reserved when the label is present', () => {
   const makeDataWithSubLabel = (): FeatureDataResult => {
     const items = [makeItem('gene1', 1000, 1100, 0, 20)]
     const data = makeData(items)
@@ -550,20 +549,11 @@ test('subfeature label hit area is reserved only when showSubfeatureLabels is tr
     }
   }
   const regions = [makeRegion(0, 0, 10000, 0, 800)]
-  // 250px is past the 100bp feature but within the reserved subfeature label.
+  // 250px is past the 100bp feature but within the reserved subfeature label;
+  // subfeature labels always render when present, so the width is reserved.
   const shown = hit(new Map([[0, makeDataWithSubLabel()]]), regions, 250, 10, {
     showLabels: false,
     showDescriptions: false,
-    showSubfeatureLabels: true,
   })
   expect(shown.feature).not.toBeNull()
-
-  // In collapse mode the subfeature label isn't drawn, so its width must not be
-  // reserved in the hit box.
-  const hidden = hit(new Map([[0, makeDataWithSubLabel()]]), regions, 250, 10, {
-    showLabels: false,
-    showDescriptions: false,
-    showSubfeatureLabels: false,
-  })
-  expect(hidden.feature).toBeNull()
 })

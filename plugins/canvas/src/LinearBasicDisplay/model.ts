@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
+import HeightIcon from '@mui/icons-material/Height'
 
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
@@ -30,8 +31,8 @@ export type { Region } from '@jbrowse/core/util'
  *
  * #example
  * A complete `FeatureTrack` config (e.g. genes from a GFF3) to paste into
- * `tracks`. `displayMode` switches between `normal`, `compact`,
- * `superCompact`, `reducedRepresentation`, and `collapse`:
+ * `tracks`. `displayMode` sets the feature height preset (`normal`, `compact`,
+ * or `superCompact`):
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -209,18 +210,21 @@ export default function stateModelFactory(
                 self.setGeneGlyphMode(value)
               },
             ),
-            radioSubMenu(
-              'Display mode',
-              self.displayMode,
-              [
-                { value: 'normal', label: 'Normal' },
-                { value: 'compact', label: 'Compact' },
-                { value: 'superCompact', label: 'Super-compact' },
-              ],
-              value => {
-                self.setDisplayMode(value)
-              },
-            ),
+            {
+              icon: HeightIcon,
+              ...radioSubMenu(
+                'Set feature height',
+                self.displayMode,
+                [
+                  { value: 'normal', label: 'Normal' },
+                  { value: 'compact', label: 'Compact' },
+                  { value: 'superCompact', label: 'Super-compact' },
+                ],
+                value => {
+                  self.setDisplayMode(value)
+                },
+              ),
+            },
           ]
         },
 

@@ -9,7 +9,6 @@ import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
 } from './sharedRendererConstants.ts'
-import { decimatesLabels } from '../../RenderFeatureDataRPC/renderConfig.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -21,7 +20,6 @@ import type {
 interface OverlayModel {
   showLabels: boolean
   effectiveShowDescriptions: boolean
-  displayMode: string
   selectedFeatureId: string | undefined
   selectFeatureById: (
     featureInfo: FlatbushItem,
@@ -33,7 +31,6 @@ interface OverlayModel {
 interface HighlightModel {
   showLabels: boolean
   effectiveShowDescriptions: boolean
-  displayMode: string
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
@@ -96,13 +93,7 @@ export function useFloatingLabels(
   onLabelMouseOver?: (item: FlatbushItem, e: React.MouseEvent) => void,
 ) {
   const { classes, cx } = useStyles()
-  const {
-    showLabels,
-    effectiveShowDescriptions,
-    displayMode,
-    selectFeatureById,
-  } = model
-  const decimateLabels = decimatesLabels(displayMode)
+  const { showLabels, effectiveShowDescriptions, selectFeatureById } = model
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
@@ -176,7 +167,6 @@ export function useFloatingLabels(
         )
       }
     },
-    decimateLabels,
   )
 
   return elements.length > 0 ? elements : null
@@ -196,9 +186,7 @@ export function useHighlightOverlays(
     selectedFeatureId,
     showLabels,
     effectiveShowDescriptions,
-    displayMode,
   } = model
-  const decimateLabels = decimatesLabels(displayMode)
   const theme = useTheme()
   // theme-aware (lightens on dark tracks, darkens on light) — see theme.ts
   const hoverColor = theme.palette.featureHover
@@ -286,7 +274,6 @@ export function useHighlightOverlays(
       featureWidthPx,
       showLabels,
       effectiveShowDescriptions,
-      !decimateLabels,
     )
   }
 

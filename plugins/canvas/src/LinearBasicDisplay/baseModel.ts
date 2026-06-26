@@ -55,10 +55,7 @@ import {
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
-import {
-  THEME_DERIVED_COLOR,
-  decimatesLabels,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
@@ -908,7 +905,6 @@ export default function baseStateModelFactory(
           const labels = {
             showLabels: self.showLabels,
             showDescriptions: self.effectiveShowDescriptions,
-            showSubfeatureLabels: !decimatesLabels(self.displayMode),
           }
           const reversedRegions = self.reversedRegions
           const bpPerPx = view.bpPerPx
