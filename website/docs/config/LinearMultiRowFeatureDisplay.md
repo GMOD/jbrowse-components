@@ -19,18 +19,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-"Ancestry painting" data is usually a custom BED: one feature per segment, plus
-extra columns naming the row (`partitionField`) and the block color. For a
-tab-separated BED like this (shown space-aligned) whose columns are named via
-the adapter's `columnNames`:
+The data is a custom BED with a column naming each row (`partitionField`). Name
+the columns with a `#`-prefixed header line so the adapter picks them up
+(tab-separated, shown space-aligned):
 
 ```
-chr1  0        2000000  seg1  HG00096  #4e79a7
-chr1  2000000  5500000  seg2  HG00096  #f28e2b
-chr1  0        3500000  seg3  HG00097  #59a14f
+#chrom  start    end      name  sample
+chr1    0        2000000  seg1  HG00096
+chr1    2000000  5500000  seg2  HG00096
+chr1    0        3500000  seg3  HG00097
 ```
 
-paint one row per `sample`, coloring each block from the custom `color` column:
+Paint one row per `sample`, coloring each row from `sampleColorMap`:
 
 ```js
 {
@@ -41,23 +41,22 @@ paint one row per `sample`, coloring each block from the custom `color` column:
   adapter: {
     type: 'BedTabixAdapter',
     uri: 'https://example.com/painting.bed.gz',
-    columnNames: ['chrom', 'start', 'end', 'name', 'sample', 'color'],
   },
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
       partitionField: 'sample',
-      color: "jexl:get(feature,'color')",
+      sampleColorMap: { HG00096: '#4e79a7', HG00097: '#f28e2b' },
     },
   ],
 }
 ```
 
-A standard BED12 has no per-row attribute, but its `itemRgb` works directly
-(`color: "jexl:get(feature,'itemRgb')"`); you can likewise manufacture a color
-from any attribute, e.g. a population label
-(`color: "jexl:get(feature,'pop')=='EUR'?'#4e79a7':'#f28e2b'"`).
+Omit `sampleColorMap` entirely and each row is auto-assigned a distinct palette
+color. For per-feature (not per-row) colors, set the `color` slot instead:
+`color: "jexl:get(feature,'itemRgb')"` for a standard BED12, or read a custom
+color column.
 
 _See the **Slots** section below for all available configuration fields._
 
@@ -65,7 +64,9 @@ _See the **Slots** section below for all available configuration fields._
 
 Paints interval features as colored blocks on stacked rows ("chromosome /
 ancestry painting"). Rows are partitioned by a feature attribute
-(`partitionField`); each block's color comes from the per-feature `color` slot.
+(`partitionField`). Block color comes from `sampleColorMap` (keyed by the
+partition value) when set, else a customized per-feature `color` slot, else an
+automatically-assigned per-row color from a categorical palette.
 
 These are display-level slots. This is not a `FeatureTrack`'s default display,
 so configure it with an explicit `displays` entry (rather than the
@@ -91,15 +92,31 @@ name). Features sharing a value stack into the same row.
 #### slot: color
 
 Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring,
-e.g. `jexl:get(feature,'itemRgb')`).
+e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets
+a distinct color from a categorical palette.
 
 ```js
 {
   type: 'color',
-  defaultValue: 'goldenrod',
+  defaultValue: MULTIROW_DEFAULT_COLOR,
   description:
-    'fill color of each block (CSS color or jexl expression for per-feature coloring)',
+    'fill color of each block (CSS color or jexl expression for per-feature coloring); the default auto-assigns a per-row palette color',
   contextVariable: ['feature'],
+}
+```
+
+#### slot: sampleColorMap
+
+Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.
+When a feature's partition value has an entry here it overrides the `color`
+slot, so whole rows can be colored without a per-feature color column.
+
+```js
+{
+  type: 'frozen',
+  defaultValue: {},
+  description:
+    'map of partition value to color; overrides the color slot for matching features',
 }
 ```
 

@@ -14,6 +14,7 @@ interface FetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
   partitionField: string
   colorConfig: string
+  sampleColorMap: Record<string, string>
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
@@ -34,6 +35,7 @@ export function fetchMultiRowFeatures(self: FetchSelf, needed: Needed) {
         region,
         partitionField: self.partitionField,
         colorConfig: self.colorConfig,
+        sampleColorMap: self.sampleColorMap,
         stopToken: ctx.stopToken,
       }),
     onResult: (idx, result) => {

@@ -159,6 +159,14 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Map of partition value → color, forwarded to the worker which applies it
+       * over the per-feature `color`.
+       */
+      get sampleColorMap(): Record<string, string> {
+        return readConfObject(self.conf, 'sampleColorMap')
+      },
+      /**
+       * #getter
        */
       get rowProportion(): number {
         return readConfObject(self.conf, 'rowProportion')
@@ -330,6 +338,7 @@ export default function stateModelFactory(
         return {
           partitionField: self.partitionField,
           colorConfig: self.colorConfig,
+          sampleColorMap: self.sampleColorMap,
         }
       },
       /**

@@ -16,6 +16,9 @@ export interface MultiRowGetFeaturesArgs {
   // raw `color` config slot (a CSS color or `jexl:...`), evaluated per feature
   // in the worker against the feature
   colorConfig: string
+  // optional map of partition value -> color; overrides colorConfig for any
+  // feature whose partition value has an entry
+  sampleColorMap?: Record<string, string>
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }

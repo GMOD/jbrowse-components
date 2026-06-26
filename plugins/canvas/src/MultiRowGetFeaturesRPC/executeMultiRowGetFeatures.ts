@@ -28,6 +28,7 @@ export async function executeMultiRowGetFeatures({
     region,
     partitionField,
     colorConfig,
+    sampleColorMap = {},
     stopToken,
     statusCallback = () => {},
   } = args
@@ -42,12 +43,13 @@ export async function executeMultiRowGetFeatures({
   )
   checkStopToken2(stopTokenCheck)
 
-  const result = packMultiRowFeatures(
+  const result = packMultiRowFeatures({
     features,
     partitionField,
     colorConfig,
-    pluginManager.jexl,
-  )
+    sampleColorMap,
+    jexl: pluginManager.jexl,
+  })
   return rpcResult(result, [
     result.featureStarts.buffer,
     result.featureEnds.buffer,
