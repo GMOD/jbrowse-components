@@ -53,6 +53,13 @@
     "react-dom": "^19.2.7",
     "tmp": "^0.2.7"
   },
+  "devDependencies": {
+    "@jbrowse/plugin-alignments": "workspace:^",
+    "@jbrowse/plugin-canvas": "workspace:^",
+    "@jbrowse/plugin-hic": "workspace:^",
+    "@jbrowse/plugin-variants": "workspace:^",
+    "@jbrowse/plugin-wiggle": "workspace:^"
+  },
   "publishConfig": {
     "access": "public"
   }

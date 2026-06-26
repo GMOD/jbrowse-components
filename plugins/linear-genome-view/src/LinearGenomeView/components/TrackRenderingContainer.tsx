@@ -20,9 +20,16 @@ const useStyles = makeStyles()({
     width: '100%',
   },
 
+  // Tracks never scroll natively on this outer container — every display owns
+  // its own vertical scroll: canvas displays scroll an inner sticky-canvas
+  // container (FeatureComponent), while alignments and variants draw a custom
+  // VerticalScrollbar overlay and redraw the canvas at `scrollTop`. A native
+  // scroll port here only produced a *second*, spurious scrollbar whenever a
+  // display's absolutely-positioned overlays extended a pixel past `height`
+  // (the reported double/flickering/full-height scrollbars). `contain: strict`
+  // already clips the paint, so overflow stays hidden with no scrollbar.
   trackRenderingContainer: {
-    overflowY: 'auto',
-    overflowX: 'hidden',
+    overflow: 'hidden',
     whiteSpace: 'nowrap',
     position: 'relative',
     background: 'none',
@@ -64,12 +71,7 @@ const TrackRenderingContainer = observer(function TrackRenderingContainer({
       className={classes.trackRenderingContainer}
       style={{
         height: minimized ? MINIMIZED_TRACK_HEIGHT : height,
-        // only contain vertical scroll-chaining when scrollZoom captures the
-        // vertical wheel for zooming; otherwise vertical wheel over a track
-        // must still scroll the page normally
-        overscrollBehaviorY: model.scrollZoom ? 'contain' : undefined,
       }}
-      onScroll={evt => display.setScrollTop(evt.currentTarget.scrollTop)}
       data-testid={`trackRenderingContainer-${model.id}-${trackId}`}
     >
       {!minimized ? (

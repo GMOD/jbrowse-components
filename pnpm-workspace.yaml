@@ -27,3 +27,4 @@ minimumReleaseAgeExclude:
   - '@astrojs/markdown-satteri@0.3.1'
   - '@astrojs/react@6.0.0'
   - astro@7.0.0
+  - webpack@5.108.1

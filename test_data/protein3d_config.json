@@ -2,7 +2,7 @@
   "plugins": [
     {
       "name": "Protein3d",
-      "url": "https://cdn.jsdelivr.net/npm/jbrowse-plugin-protein3d@0.4.14/dist/jbrowse-plugin-protein3d.umd.production.min.js"
+      "url": "https://jbrowse.org/plugins/jbrowse-plugin-protein3d/latest/dist/jbrowse-plugin-protein3d.umd.production.min.js"
     }
   ],
   "assemblies": [

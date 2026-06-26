@@ -19,3 +19,5 @@ export default class HicPlugin extends Plugin {
     GuessAdapterF(pluginManager)
   }
 }
+
+export type { LinearHicDisplayModel } from './LinearHicDisplay/model.ts'

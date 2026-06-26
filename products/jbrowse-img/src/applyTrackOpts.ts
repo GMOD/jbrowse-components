@@ -77,9 +77,16 @@ export function applyTrackModifier(
       display.setLinkedReads?.(val1)
       break
     }
-    // 'off' | 'up' | 'down' — splice-junction arcs
+    // 'off' | 'up' | 'down' | 'auto' — splice-junction arcs. Visibility and
+    // placement are separate model fields (showSashimiArcs defaults on), so a
+    // bare direction must also (re-)enable the arcs.
     case 'sashimi': {
-      display.setSashimiArcs?.(val1)
+      if (val1 === 'off') {
+        display.setShowSashimiArcs?.(false)
+      } else if (val1 === 'up' || val1 === 'down' || val1 === 'auto') {
+        display.setShowSashimiArcs?.(true)
+        display.setSashimiArcsMode?.(val1)
+      }
       break
     }
     case 'coverage': {
