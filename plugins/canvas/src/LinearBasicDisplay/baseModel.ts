@@ -20,10 +20,9 @@ import {
   AUTO_FORCE_LOAD_BP,
   ConfigOverrideMixin,
   MultiRegionDisplayMixin,
-  TOO_MANY_FEATURES_REASON,
   TrackHeightMixin,
   autorunOnReadyView,
-  bytesTooLargeReason,
+  evaluateRegionTooLarge,
   onDisplayedRegionsChange,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -667,26 +666,6 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        get bytesEstimateTooLarge() {
-          const stats = self.featureDensityStats
-          const bytes = self.estimatedVisibleBytes
-          if (
-            getView(self).visibleBp < AUTO_FORCE_LOAD_BP ||
-            bytes === undefined
-          ) {
-            return false
-          }
-          const limit = resolveByteLimit({
-            userByteSizeLimit: self.userByteSizeLimit,
-            adapterFetchSizeLimit: stats?.fetchSizeLimit,
-            configFetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
-          })
-          return bytes > limit
-        },
-
-        /**
-         * #getter
-         */
         get densityTooLarge() {
           const max = self.maxFeatureDensity
           return max === undefined
@@ -695,21 +674,37 @@ export default function baseStateModelFactory(
         },
       }))
       .views(self => ({
+        // Shared verdict + reason: bytes-over-limit takes precedence over
+        // density, gated by AUTO_FORCE_LOAD_BP. Same helper as the block-based
+        // and pre-fetch byte paths so the banner text can't drift. Feeds the
+        // scaled estimatedVisibleBytes so the byte gate self-releases on
+        // zoom-in (see estimatedVisibleBytes).
+        get tooLargeStatus() {
+          return evaluateRegionTooLarge({
+            visibleBp: getView(self).visibleBp,
+            bytes: self.estimatedVisibleBytes,
+            byteLimit: resolveByteLimit({
+              userByteSizeLimit: self.userByteSizeLimit,
+              adapterFetchSizeLimit: self.featureDensityStats?.fetchSizeLimit,
+              configFetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),
+            }),
+            densityTooLarge: self.densityTooLarge,
+          })
+        },
+      }))
+      .views(self => ({
         /**
          * #getter
          */
         get regionTooLarge() {
-          return self.bytesEstimateTooLarge || self.densityTooLarge
+          return self.tooLargeStatus.tooLarge
         },
 
         /**
          * #getter
          */
         get regionTooLargeReason() {
-          if (self.bytesEstimateTooLarge) {
-            return bytesTooLargeReason(self.estimatedVisibleBytes ?? 0)
-          }
-          return self.densityTooLarge ? TOO_MANY_FEATURES_REASON : ''
+          return self.tooLargeStatus.reason
         },
       }))
       // Laid-out data derived from the raw per-region fetch results. MobX
