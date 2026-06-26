@@ -89,10 +89,6 @@ the PAF columns.
 
 <Figure caption="A dotplot of the H. pylori J99 (X-axis) vs 26695 (Y-axis) whole-genome alignment. The long diagonal is the collinear backbone; the off-diagonal segments are genuine rearrangements between the two strains." src="/img/sv_synteny/dotplot.png" />
 
-[Live demo: H. pylori J99 vs 26695 dotplot](https://jbrowse.org/code/jb2/latest/?config=/demos/hpylori/config.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"hpylori_j99"%7D,%7B"assembly":"hpylori_26695"%7D%5D,"tracks":%5B"26695_vs_j99.pif"%5D%7D%5D%7D)
-— the long diagonal is the collinear backbone, and the off-diagonal blocks are
-genuine inversions and translocations between the two strains.
-
 ### Launching a linear synteny view from the dotplot
 
 To inspect a region, click and drag over it in the dotplot, then choose **Open

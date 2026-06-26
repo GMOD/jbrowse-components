@@ -105,8 +105,6 @@ HG01880	ACB
 NA20525	TSI
 ```
 
-[**Explore this track in a live JBrowse instance →**](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22hg19%22%2C%22loc%22%3A%22chr1%3A1%2C000%2C000-1%2C020%2C000%22%2C%22tracks%22%3A%5B%7B%22trackId%22%3A%221kGP_high_coverage_Illumina.chr1.filtered.SNV_INDEL_SV_phased_panel.vcf%22%2C%22displaySnapshot%22%3A%7B%22type%22%3A%22LinearMultiSampleVariantDisplay%22%2C%22height%22%3A500%7D%7D%5D%7D%5D%7D&sessionName=Population%20coloring)
-
 <Figure caption="The 1000 Genomes phase 3 chr1 callset as a multi-sample variant display. All 2,504 samples are sorted and colored by their population code — the colored strip down the left edge resolves into contiguous population blocks — while each genotype cell is shaded by allele dosage." src="/img/variants/population_1000genomes.png" />
 
 You can also change the grouping attribute and colors interactively after the

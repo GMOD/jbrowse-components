@@ -491,8 +491,7 @@ the circular overview), see the
 For small to medium SVs, the linear genome view is usually all you need. Use the
 **search** (magnifying glass) button in the SV inspector to find a specific call
 — for example, `SV_85`, a heterozygous deletion that affects two exons of the
-CUZD1 gene
-([live demo at CUZD1](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr10:122822045-122850828","tracks":%5B"GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf","HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3"%5D%7D%5D%7D)).
+CUZD1 gene.
 
 <Figure caption="The SV inspector after searching for SV_85, a heterozygous CUZD1 deletion. The table's SVTYPE column (hoisted next to ALT) reports the call as a DEL, and clicking the row's location link opens the region in the linear genome view below, where the same SVTYPE is drawn as the <DEL> ALT allele on the variant." src="/img/sv_cgiab/deletion_sv_inspector_search.png" />
 
@@ -630,10 +629,8 @@ A few interpretive caveats worth keeping in mind:
 
 Showing the tumor assembly side-by-side with the reference often makes complex
 SVs much easier to read than the alignment track alone. Open a dotplot view from
-the start screen
-([live demo: HG008T hap1 vs GRCh38](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"DotplotView","views":%5B%7B"assembly":"HG008T.hap1"%7D,%7B"assembly":"GRCh38_GIABv3"%7D%5D,"tracks":%5B"HG008T.hap1"%5D%7D%5D%7D)),
-set the de novo assembly as one axis and GRCh38 as the other, and pick the
-matching synteny track.
+the start screen, set the de novo assembly as one axis and GRCh38 as the other,
+and pick the matching synteny track.
 
 <Figure caption="The dotplot import form, with the HG008-T hap1 assembly on one axis and GRCh38 on the other." src="/img/sv_cgiab/dotplot_import_form.png" />
 

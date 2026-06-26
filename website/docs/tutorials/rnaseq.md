@@ -59,8 +59,6 @@ tells you, genome-wide, how much each gene is being expressed.
 
 <Figure caption="The compact visualization showing reads stacking up over a gene. Read coverage depth broadly tracks how much a gene is expressed, though turning it into an accurate expression estimate requires normalization (for gene length, library size, and mapping biases)." src="/img/rnaseq/compact_stacked.png" />
 
-[Live demo — ACTB read pileup (turn on "compact" from the track menu)](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5566500-5570500","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
-
 ## RNA-seq is a qualitative measure of gene structure
 
 RNA is transcribed from DNA and then undergoes splicing, which removes intronic
@@ -129,8 +127,6 @@ Here is what long-read RNA sequencing looks like in JBrowse 2. The data below is
 called IsoSeq:
 
 <Figure caption="Long-read (IsoSeq) RNA-seq in JBrowse 2. Long reads often span all of a transcript's exons at once, producing long, clean spliced alignments." src="/img/rnaseq/longread_isoseq.png" />
-
-[Live demo — long-read IsoSeq at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5566000-5571000","tracks":["ncbi_gff_hg19","hg_isoforms.fasta_bam"]}]})
 
 Just as a short read may align partially to exon 1 and exon 2, a long read often
 aligns partially to all of the exons. So if you had a gene with five 10 bp exons
