@@ -32,10 +32,15 @@ export function getModProbabilities(feature: Feature) {
   // ML is an 8-bit scaled probability. Per SAMtags, integer N covers the
   // continuous range N/256..(N+1)/256, so the representative value is the
   // midpoint (N + 0.5) / 256.
-  const ml = getTagAlt(feature, 'ML', 'Ml') as number[] | string | undefined
-  if (ml !== undefined) {
-    const values = typeof ml === 'string' ? ml.split(',') : ml
-    return values.map(v => (+v + 0.5) / 256)
+  const ml = getTagAlt(feature, 'ML', 'Ml')
+  if (ml === undefined) {
+    return undefined
   }
-  return undefined
+  // BAM returns ML:B:C as a Uint8Array; mapping with TypedArray.prototype.map
+  // would coerce each float result back to a uint8 (truncating every value to
+  // 0). Array.from(values, fn) always produces a plain number[]. A string ML
+  // (htsget/SAM text) is split on commas first.
+  const values =
+    typeof ml === 'string' ? ml.split(',') : (ml as ArrayLike<number | string>)
+  return Array.from(values, v => (+v + 0.5) / 256)
 }
