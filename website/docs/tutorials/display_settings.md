@@ -14,9 +14,9 @@ on — live in two places:
   These set the track's _initial_ state when a particular link or embedded view
   loads, and override the `config.json` defaults.
 
-Both use the same setting names. A `displaySnapshot` is a runtime override of
-the same fields you can bake in as defaults with `displays`. This tutorial shows
-the three contexts in which you set them.
+Both use the same setting names — a `displaySnapshot` is just a per-session
+override of the fields you can bake in as defaults with `displays`. This
+tutorial shows the three places you set them.
 
 ## Finding a setting's name
 
@@ -147,3 +147,13 @@ When both are present, the `displaySnapshot` overrides the `config.json`
 defaults for that session. Use `displays` for settings everyone should always
 get, and `displaySnapshot` for a link or embedded view that should open in a
 specific state.
+
+## See also
+
+- [Configuring tracks](/docs/config_guides/tracks) — the full `displays` array
+  and other track config
+- [URL parameters](/docs/urlparams) — the session-spec format, including
+  `trackSnapshot` and multi-view specs
+- [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) — passing
+  snapshots through an embedded component
+- [Config schema docs](/docs/config_guide) — every display type's settable keys

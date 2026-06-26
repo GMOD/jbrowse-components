@@ -179,6 +179,13 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 The splice arcs and per-read splicing shown above come for free from the CIGAR
 strings — no extra configuration is needed. For a precomputed coverage signal
 (e.g. a strand-specific BigWig produced by your aligner), load it separately as
-a [quantitative track](/docs/user_guides/quantitative_track). For the full set
-of alignment display options — including paired arcs, soft-clipping, and
-coloring — see the [alignments track guide](/docs/user_guides/alignments_track).
+a [quantitative track](/docs/user_guides/quantitative_track).
+
+## See also
+
+- [Alignments track](/docs/user_guides/alignments_track) — splice arcs,
+  soft-clipping, coloring, and the other display options for BAM/CRAM
+- [Quantitative track](/docs/user_guides/quantitative_track) — loading a
+  precomputed coverage signal such as a strand-specific BigWig
+- [Gene tracks](/docs/user_guides/gene_track) — displaying the reference gene
+  annotations that RNA-seq reads are compared against

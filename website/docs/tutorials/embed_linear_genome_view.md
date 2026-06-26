@@ -8,12 +8,10 @@ This tutorial embeds a single JBrowse linear genome view into a web page using a
 `<script>` tag — no build step or React project required. For the full JBrowse
 app, see the [web quickstart](/docs/quickstart_web) instead.
 
-Note: The [LGV storybook](https://jbrowse.org/storybook/lgv/) is the most
-complete source of live, runnable usage examples for this component
-
-Note 2: If you want to embed other types of views (synteny, dotplot, circular,
-etc) or use other bundler setups, see the
-[Embedded components](/docs/embedded_components) page.
+The [LGV storybook](https://jbrowse.org/storybook/lgv/) has the most complete
+set of live, runnable examples for this component. To embed other view types
+(synteny, dotplot, circular) or use a different bundler, see
+[Embedded components](/docs/embedded_components).
 
 <Figure caption="JBrowse linear genome view in a web page" src="/img/embed_linear_genome_view/final.png"/>
 
@@ -46,7 +44,7 @@ data files you symlink into the folder will load.
 
 ## Preparing a bgzip FASTA file
 
-This is generally done with samtools
+This is generally done with samtools:
 
 ```bash
 bgzip file.fa
@@ -58,7 +56,7 @@ Running `samtools faidx` on the bgzipped file produces both the `.fa.gz.fai` and
 
 ## Preparing a tabix indexed GFF3 file
 
-We recommend using the @jbrowse/cli
+We recommend the [@jbrowse/cli](/docs/cli):
 
 ```bash
 npm install -g @jbrowse/cli
@@ -84,6 +82,10 @@ You can add these to a "per-track text search adapter", as shown in the more
 elaborate example below.
 
 ## Setup
+
+Pass the assembly, tracks, and an initial session to `createViewState`. This
+example wires up an hg38 genome with gene, repeat, alignment, variant, and
+conservation tracks:
 
 ```typescript
 const state = createViewState({
@@ -242,29 +244,22 @@ The hook creates the view state once on mount and keeps it stable across
 re-renders, so panning, zooming, and parent state changes do not reset the
 browser.
 
-## Further reading
+## See also
 
-The tutorial above is just a simple example to get you started. There is much
-more you can do with this component, such as programmatically controlling it,
-customizing it, and more. Here is some further reading:
+This tutorial is a starting point — you can also control the component
+programmatically and customize it further.
 
-- Link to a live example of the instance set up above
-  https://jbrowse.org/demos/lgv-vanillajs/ (source code:
-  https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo)
-
-- Examples site for the linear genome view component, which describes many of
-  the customizations you can do https://jbrowse.org/storybook/lgv/
-
-- The [Embedded components](/docs/embedded_components) page, which lists every
-  embedded package (app, linear, circular) and ready-to-clone bundler demos
-  (Vite, Next.js, rsbuild, vanilla JS)
-
-- You can also see the "@jbrowse/react-app2" component, which is like this
-  tutorial, but it allows loading multiple assemblies, showing synteny, etc
-  https://jbrowse.org/demos/app-vanillajs (also has an examples site
-  https://jbrowse.org/storybook/app/)
-
-- As mentioned earlier, the embedded components are not a full app deployment
-  (no shareable session URLs, no track hub connections, no admin panel). If you
-  haven't checked it out, the "jbrowse-web" quickstart guide is our main
-  suggestion for a full deployment https://jbrowse.org/jb2/docs/quickstart_web/
+- [Vanilla JS demo](https://jbrowse.org/demos/lgv-vanillajs/) — a live example
+  of the instance set up above
+  ([source](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo))
+- [LGV storybook](https://jbrowse.org/storybook/lgv/) — runnable examples
+  covering most of the component's customizations
+- [Embedded components](/docs/embedded_components) — every embedded package
+  (app, linear, circular) plus ready-to-clone bundler demos (Vite, Next.js,
+  rsbuild, vanilla JS)
+- [@jbrowse/react-app2 demo](https://jbrowse.org/demos/app-vanillajs) — like
+  this tutorial but supports multiple assemblies, synteny, and more
+  ([storybook](https://jbrowse.org/storybook/app/))
+- [Web quickstart](/docs/quickstart_web) — a full JBrowse deployment, with the
+  shareable session URLs, track hub connections, and admin panel that the
+  embedded components don't provide
