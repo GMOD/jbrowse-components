@@ -555,7 +555,7 @@ const InsertSizeAxisHost = observer(function InsertSizeAxisHost({
         <TlenAxisLabel
           yTop={insertSizeTicks.yTop}
           yBottom={insertSizeTicks.yBottom}
-          x={readConnectionsDown ? 6 : undefined}
+          x={readConnectionsDown ? 11 : undefined}
         />
       </g>
     </svg>

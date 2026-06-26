@@ -26,7 +26,11 @@ function render(opts) {
 test('rasterization is on by default and --noRasterize turns it off', async () => {
   const rasterized = await render({})
   const vector = await render({ noRasterize: true })
-  assert.match(rasterized, /data:image\/png/, 'default should embed a raster image')
+  assert.match(
+    rasterized,
+    /data:image\/png/,
+    'default should embed a raster image',
+  )
   assert.ok(
     !/data:image\/png/.test(vector),
     'noRasterize should emit vectors, no embedded raster',
@@ -41,7 +45,7 @@ test('rasterization is on by default and --noRasterize turns it off', async () =
 test('--showGridlines adds coordinate gridlines', async () => {
   const without = await render({ noRasterize: true })
   const withGrid = await render({ noRasterize: true, showGridlines: true })
-  const lineCount = (svg) => (svg.match(/<line/g) || []).length
+  const lineCount = svg => (svg.match(/<line/g) || []).length
   assert.ok(
     lineCount(withGrid) > lineCount(without),
     'gridlines should add <line> elements',

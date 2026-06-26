@@ -499,6 +499,19 @@ type setShowBranchLength = (f: boolean) => void
 type setHoveredFeature = (arg?: HoveredFeature | undefined) => void
 ```
 
+#### action: selectFeatureById
+
+Re-fetch the full clicked feature by id and open it in the feature details
+widget. The painting ships only the slim render arrays, so the complete feature
+is fetched on demand (GetCanvasFeatureDetails).
+
+```ts
+type selectFeatureById = (
+  featureId: string,
+  displayedRegionIndex: number,
+) => void
+```
+
 #### action: setRpcData
 
 ```ts

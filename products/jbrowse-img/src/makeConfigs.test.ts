@@ -74,7 +74,12 @@ describe('makeFastaAssembly', () => {
   })
 
   test('a remote fasta uses uri locations for fasta + fai', () => {
-    const a = makeFastaAssembly('https://e.com/g.fa', undefined, undefined, 'rs')
+    const a = makeFastaAssembly(
+      'https://e.com/g.fa',
+      undefined,
+      undefined,
+      'rs',
+    )
     expect(a.sequence.adapter).toMatchObject({
       fastaLocation: { uri: 'https://e.com/g.fa' },
       faiLocation: { uri: 'https://e.com/g.fa.fai' },

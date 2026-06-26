@@ -143,7 +143,7 @@ export async function renderSvg(
             <TlenAxisLabel
               yTop={model.insertSizeTicks.yTop}
               yBottom={model.insertSizeTicks.yBottom}
-              x={6}
+              x={11}
             />
           </g>
         ) : (

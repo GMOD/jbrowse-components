@@ -91,7 +91,10 @@ test('display:multivariant exports the multi-sample variant display', async () =
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   // the genotype matrix paints a reference-color background rect plus alt cells
-  assert.ok((svg.match(/<rect/g) || []).length > 5, 'should draw genotype cells')
+  assert.ok(
+    (svg.match(/<rect/g) || []).length > 5,
+    'should draw genotype cells',
+  )
 })
 
 // Exercises every wiggle score snapshot key (including autoscale/defaultRendering

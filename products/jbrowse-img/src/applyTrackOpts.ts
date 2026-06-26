@@ -412,7 +412,10 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
     throw new Error('invalid command line args')
   }
   const category = categoryByType[trackType] ?? 'feature'
-  const { snap, sort, force, displayType } = buildDisplaySnapshot(category, opts)
+  const { snap, sort, force, displayType } = buildDisplaySnapshot(
+    category,
+    opts,
+  )
 
   // Resolve the center-line sort against the view (the pivot is the genomic
   // position under the view center) and bake it into the snapshot.
