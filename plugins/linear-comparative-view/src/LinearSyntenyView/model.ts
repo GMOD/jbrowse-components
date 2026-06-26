@@ -667,26 +667,20 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                 applyInitSettings(self, init)
 
                 if (init.autoDiagonalize) {
-                  // Wait for the first synteny RPC to populate featureData on
-                  // every display, then diagonalize. Race with a 30s ceiling
-                  // so a stuck/minimized display never deadlocks init. The
-                  // awaitingAutoDiagonalize flag flips showLoading on, so the
-                  // user sees a spinner with the "Reordering chromosomes…"
-                  // message instead of an undiagonalized hairball flash.
+                  // The views are initialized and their displayedRegions are
+                  // populated by this point (above), and runDiagonalize fetches
+                  // the whole-genome alignments it needs in its own RPC — so we
+                  // diagonalize directly, no need to wait on the per-display
+                  // render fetch first. awaitingAutoDiagonalize flips showLoading
+                  // on, so the user sees a "Reordering chromosomes…" spinner
+                  // instead of an undiagonalized hairball flash.
                   self.setAwaitingAutoDiagonalize(true)
                   try {
-                    const { runDiagonalize, displaysReady } =
+                    const { runDiagonalize } =
                       await import('./util/runDiagonalize.ts')
-                    const view = self
-                    await Promise.race([
-                      when(() => displaysReady(view)),
-                      new Promise(resolve => {
-                        setTimeout(resolve, 30_000)
-                      }),
-                    ])
-                    if (displaysReady(view)) {
-                      await runDiagonalize(view)
-                    }
+                    await runDiagonalize(self)
+                  } catch (e) {
+                    console.error(e)
                   } finally {
                     if (isAlive(self)) {
                       self.setAwaitingAutoDiagonalize(false)

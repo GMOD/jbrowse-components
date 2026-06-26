@@ -53,10 +53,3 @@ export async function runDotplotDiagonalize(
     totalReversed: result.stats.regionsReversed,
   }
 }
-
-// Whether the first display on the first track has produced its first
-// rpcData payload (or has surfaced an error). The init autorun pairs this
-// with a wall-clock race so a stuck display can't deadlock startup.
-export function dotplotDisplaysReady(model: DotplotViewModel): boolean {
-  return model.dotplotDisplays.every(d => !!d.rpcData || !!d.error)
-}

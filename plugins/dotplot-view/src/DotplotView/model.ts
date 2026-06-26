@@ -459,6 +459,20 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * Canvas has painted and no display is still fetching, so what's on
+         * screen is the final settled content. Drives the
+         * `dotplot_webgl_canvas_done` test-id that screenshot capture and the
+         * browser-test suites wait on — so it must mean "done", not just
+         * "first paint".
+         */
+        get settled() {
+          return (
+            self.canvasDrawn &&
+            this.dotplotDisplays.every(d => !d.isLoading && !d.isRefetching)
+          )
+        },
+        /**
+         * #getter
          * True if any track has an adapter that declares the 'lod'
          * capability. Used to gate the LOD menu — only PIF supports it.
          */

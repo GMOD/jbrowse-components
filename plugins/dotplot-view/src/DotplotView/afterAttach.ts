@@ -163,16 +163,21 @@ function applyInitHighlights(self: DotplotViewModel, init: DotplotViewInit) {
 }
 
 async function runAutoDiagonalize(self: DotplotViewModel) {
-  // Wait for the first DotplotDisplay RPC to populate rpcData so the
-  // diagonalize result is meaningful. awaitingAutoDiagonalize flips showLoading
-  // on so the user sees a "Reordering chromosomes…" spinner instead of an
-  // undiagonalized plot that immediately re-paints.
+  // runDotplotDiagonalize reads the axes' displayedRegions and fetches the
+  // alignments it needs in its own RPC, so the only precondition is that the
+  // view's regions are populated (assemblies loaded) — not the display's render
+  // fetch. Wait on `initialized` directly so a slow remote load can't expire a
+  // fixed ceiling and skip the reorder, leaving an undiagonalized plot; bail if
+  // the assemblies error out. awaitingAutoDiagonalize flips showLoading on so
+  // the user sees a "Reordering chromosomes…" spinner meanwhile.
   self.setAwaitingAutoDiagonalize(true)
   try {
-    const { runDotplotDiagonalize, dotplotDisplaysReady } =
+    const { runDotplotDiagonalize } =
       await import('./util/runDotplotDiagonalize.ts')
-    await waitFor(() => dotplotDisplaysReady(self), 30_000)
-    if (dotplotDisplaysReady(self) && isAlive(self)) {
+    await when(
+      () => self.initialized || !!self.volatileError || !!self.assemblyErrors,
+    )
+    if (self.initialized && isAlive(self)) {
       await runDotplotDiagonalize(self)
     }
   } catch (e) {
