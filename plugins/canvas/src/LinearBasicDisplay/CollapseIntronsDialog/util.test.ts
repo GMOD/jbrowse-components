@@ -139,6 +139,20 @@ describe('CollapseIntrons utilities', () => {
       })
       expect(regions).toHaveLength(2)
     })
+
+    it('clamps padded regions to the chromosome bounds', () => {
+      // exon near coordinate 0 + padding would go negative; end would run past
+      // the contig length without clamping
+      const regions = buildCollapsedRegions({
+        intervals: [{ start: 10, end: 90 }],
+        padding: 50,
+        bounds: { start: 0, end: 120 },
+        ...args,
+      })
+      expect(regions).toEqual([
+        { refName: 'chr1', assemblyName: 'hg19', start: 0, end: 120 },
+      ])
+    })
   })
 
   describe('calculateInitialViewState', () => {

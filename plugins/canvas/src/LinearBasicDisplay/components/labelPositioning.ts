@@ -139,7 +139,14 @@ export function forEachRenderedLabel(
     toScreen ??= makeBpMapper(vr)
     emit(
       featureId,
-      resolveFeatureLabels(labelData, toScreen, vr, wantName, wantDesc, wantSub),
+      resolveFeatureLabels(
+        labelData,
+        toScreen,
+        vr,
+        wantName,
+        wantDesc,
+        wantSub,
+      ),
     )
   }
 }

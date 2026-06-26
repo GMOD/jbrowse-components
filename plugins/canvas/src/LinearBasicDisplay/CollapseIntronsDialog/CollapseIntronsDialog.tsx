@@ -5,15 +5,17 @@ import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
+  Checkbox,
   DialogActions,
   DialogContent,
   DialogContentText,
+  FormControlLabel,
 } from '@mui/material'
 import { isObservableArray } from 'mobx'
 import { observer } from 'mobx-react'
 
+import IntronActionButtons from './IntronActionButtons.tsx'
 import TranscriptTable from './TranscriptTable.tsx'
-import { collapseIntrons, replaceIntrons, runIntronAction } from './util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
@@ -44,10 +46,11 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
 }) {
   const { classes } = useStyles()
   const [showAll, setShowAll] = useState(false)
+  // default to flipping for a minus-strand gene so it reads 5'->3'
+  const [flip, setFlip] = useState(transcripts[0]?.get('strand') === -1)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
-  const validWindowSize = windowSize !== undefined
   const canLaunchView = isObservableArray(getSession(view).views)
 
   return (
@@ -62,9 +65,10 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
       <DialogContent>
         <DialogContentText component="div">
           <p>
-            Select the 'window size' which will be the extra space surrounding
-            splice boundary to include. 10bp will only include a small 10bp
-            region around splice boundary
+            Select the 'window size', the amount of extra space to include around
+            each splice boundary. The default of {DEFAULT_WINDOW_SIZE}bp shows
+            {DEFAULT_WINDOW_SIZE}bp of context on either side of every exon; 0
+            shows only the exons themselves.
           </p>
           <p>
             By default the union of exons from all transcripts will be used. To
@@ -79,6 +83,17 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           min={0}
           errorText="Must be a non-negative number"
           className={classes.windowSizeField}
+        />
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={flip}
+              onChange={event => {
+                setFlip(event.target.checked)
+              }}
+            />
+          }
+          label="Reverse region order (read minus-strand gene 5'→3')"
         />
         {transcripts.length > 1 ? (
           <Button
@@ -96,61 +111,22 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             view={view}
             assembly={assembly}
             windowSize={windowSize}
+            flip={flip}
             canLaunchView={canLaunchView}
             handleClose={handleClose}
           />
         ) : null}
       </DialogContent>
       <DialogActions>
-        <Button
-          size="small"
-          variant="contained"
-          color="primary"
-          disabled={!validWindowSize}
-          onClick={() => {
-            if (windowSize !== undefined) {
-              void runIntronAction(
-                view,
-                () => {
-                  replaceIntrons({
-                    view,
-                    transcripts,
-                    assembly,
-                    padding: windowSize,
-                  })
-                },
-                handleClose,
-              )
-            }
-          }}
-        >
-          Replace current view
-        </Button>
-        {canLaunchView ? (
-          <Button
-            size="small"
-            variant="contained"
-            color="primary"
-            disabled={!validWindowSize}
-            onClick={() => {
-              if (windowSize !== undefined) {
-                void runIntronAction(
-                  view,
-                  () =>
-                    collapseIntrons({
-                      view,
-                      transcripts,
-                      assembly,
-                      padding: windowSize,
-                    }),
-                  handleClose,
-                )
-              }
-            }}
-          >
-            Open in new view
-          </Button>
-        ) : null}
+        <IntronActionButtons
+          view={view}
+          transcripts={transcripts}
+          assembly={assembly}
+          windowSize={windowSize}
+          flip={flip}
+          canLaunchView={canLaunchView}
+          handleClose={handleClose}
+        />
         <Button
           onClick={() => {
             handleClose()

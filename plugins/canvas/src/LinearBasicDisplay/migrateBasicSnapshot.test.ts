@@ -111,9 +111,9 @@ test('normalizes removed displayMode override values to normal', () => {
   expect(migrateBasicSnapshot({ displayMode: 'collapse' })).toEqual({
     displayMode: 'normal',
   })
-  expect(migrateBasicSnapshot({ displayMode: 'reducedRepresentation' })).toEqual(
-    { displayMode: 'normal' },
-  )
+  expect(
+    migrateBasicSnapshot({ displayMode: 'reducedRepresentation' }),
+  ).toEqual({ displayMode: 'normal' })
 })
 
 test('leaves a valid displayMode override untouched', () => {

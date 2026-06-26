@@ -2,7 +2,6 @@ import { toLocale } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Box,
-  Button,
   Table,
   TableBody,
   TableCell,
@@ -11,12 +10,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import {
-  collapseIntrons,
-  getExonsAndCDS,
-  replaceIntrons,
-  runIntronAction,
-} from './util.ts'
+import IntronActionButtons from './IntronActionButtons.tsx'
+import { getExonsAndCDS } from './util.ts'
 import { isExon } from '../../RenderFeatureDataRPC/util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
@@ -66,6 +61,7 @@ const TranscriptTable = observer(function TranscriptTable({
   view,
   assembly,
   windowSize,
+  flip,
   canLaunchView,
   handleClose,
 }: {
@@ -73,6 +69,7 @@ const TranscriptTable = observer(function TranscriptTable({
   view: LinearGenomeViewModel
   assembly: Assembly
   windowSize: number | undefined
+  flip: boolean
   canLaunchView: boolean
   handleClose: () => void
 }) {
@@ -101,55 +98,15 @@ const TranscriptTable = observer(function TranscriptTable({
               <TableCell align="right">{row.exonCount}</TableCell>
               <TableCell align="right">{row.cdsCount}</TableCell>
               <TableCell align="right">
-                <Button
-                  size="small"
-                  variant="contained"
-                  color="primary"
-                  disabled={windowSize === undefined}
-                  onClick={() => {
-                    if (windowSize !== undefined) {
-                      void runIntronAction(
-                        view,
-                        () => {
-                          replaceIntrons({
-                            view,
-                            transcripts: [row.transcript],
-                            assembly,
-                            padding: windowSize,
-                          })
-                        },
-                        handleClose,
-                      )
-                    }
-                  }}
-                >
-                  Replace
-                </Button>
-                {canLaunchView ? (
-                  <Button
-                    size="small"
-                    variant="contained"
-                    color="primary"
-                    disabled={windowSize === undefined}
-                    onClick={() => {
-                      if (windowSize !== undefined) {
-                        void runIntronAction(
-                          view,
-                          () =>
-                            collapseIntrons({
-                              view,
-                              transcripts: [row.transcript],
-                              assembly,
-                              padding: windowSize,
-                            }),
-                          handleClose,
-                        )
-                      }
-                    }}
-                  >
-                    Open in new view
-                  </Button>
-                ) : null}
+                <IntronActionButtons
+                  view={view}
+                  transcripts={[row.transcript]}
+                  assembly={assembly}
+                  windowSize={windowSize}
+                  flip={flip}
+                  canLaunchView={canLaunchView}
+                  handleClose={handleClose}
+                />
               </TableCell>
             </TableRow>
           ))}
