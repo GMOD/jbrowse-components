@@ -47,7 +47,7 @@ import { drawReads } from '../../features/read/drawCanvas.ts'
 import { drawSnpSegmentsCanvas } from '../../features/snpCoverage/drawCanvas.ts'
 import { drawSoftclipBases } from '../../features/softclip/drawBases.ts'
 import { drawHardclips, drawSoftclips } from '../../shared/drawClipBars.ts'
-import { getChainBounds } from '../components/chainOverlayUtils.ts'
+import { getSelectionBounds } from '../components/chainOverlayUtils.ts'
 
 import type { PileupLayerId } from './pileupLayers.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -494,21 +494,6 @@ function paintSelectionBox(
   ctx.strokeRect(x1, y, x2 - x1, state.featureHeight)
 }
 
-function readBoundsForId(
-  region: Canvas2DRegionData,
-  id: string,
-): OverlayBounds | undefined {
-  const idx = region.readIdToIndex.get(id)
-  if (idx === undefined || idx >= region.readFlags.length) {
-    return undefined
-  }
-  return {
-    startBp: region.readPositions[idx * 2]!,
-    endBp: region.readPositions[idx * 2 + 1]!,
-    yRow: region.readYs[idx]!,
-  }
-}
-
 // Selection only — the hover highlight is a React overlay (HighlightOverlay).
 function drawSelectionOverlays(
   ctx: Ctx2D,
@@ -516,16 +501,8 @@ function drawSelectionOverlays(
   block: OverlayBlock,
   state: RenderState,
 ) {
-  if (state.selectedChainIds.length === 0 && state.selectedFeatureId) {
-    const bounds = readBoundsForId(region, state.selectedFeatureId)
-    if (bounds) {
-      paintSelectionBox(ctx, bounds, block, state)
-    }
-  }
-  if (state.selectedChainIds.length > 0) {
-    const bounds = getChainBounds(state.selectedChainIds, region)
-    if (bounds) {
-      paintSelectionBox(ctx, bounds, block, state)
-    }
+  const bounds = getSelectionBounds(state, region)
+  if (bounds) {
+    paintSelectionBox(ctx, bounds, block, state)
   }
 }

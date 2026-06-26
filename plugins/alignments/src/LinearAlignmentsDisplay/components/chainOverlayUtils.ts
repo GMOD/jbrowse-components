@@ -44,6 +44,31 @@ export function getChainBounds(ids: string[], region: ChainBoundsRegion) {
   return startBp < Infinity ? { startBp, endBp, yRow } : undefined
 }
 
+// Bounds of the current selection, or undefined when nothing is selected (or the
+// selection isn't in this region). A chain selection supersedes a single-read
+// selection — the chain bounds already cover the read. Both renderers share this
+// decision so they can't drift on selection priority; only the paint differs
+// (the GPU pushes a selection-frame quad, Canvas2D strokes a box).
+export function getSelectionBounds(
+  state: RenderState,
+  region: ChainBoundsRegion,
+) {
+  let result: { startBp: number; endBp: number; yRow: number } | undefined
+  if (state.selectedChainIds.length > 0) {
+    result = getChainBounds(state.selectedChainIds, region)
+  } else if (state.selectedFeatureId) {
+    const idx = region.readIdToIndex.get(state.selectedFeatureId)
+    if (idx !== undefined && idx < region.readYs.length) {
+      result = {
+        startBp: region.readPositions[idx * 2]!,
+        endBp: region.readPositions[idx * 2 + 1]!,
+        yRow: region.readYs[idx]!,
+      }
+    }
+  }
+  return result
+}
+
 export function toClipRect(
   absStart: number,
   absEnd: number,

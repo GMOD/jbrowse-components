@@ -81,52 +81,39 @@ function readExtent(
   }
 }
 
-function sortOverlappingByIndex(
-  overlapping: number[],
+// Build the per-read sort key for the two data-driven sort types: the base
+// call at `sortPos` (basePair) or the longest interbase length at `sortPos`
+// (insertion/softclip/hardclip). `desc` is true for interbases (longest first)
+// and false for base calls. Returns undefined for the comparator-based types
+// (position/strand/tag), which don't go through a key map.
+function buildSortKeyMap(
   data: PileupDataResult,
-  sortedBy: SortedBy,
-  sortTagValues: string[] | undefined,
-) {
-  const { type, pos: sortPos } = sortedBy
-  const {
-    readPositions,
-    readStrands,
-    mismatchReadIndices,
-    mismatchPositions,
-    mismatchBases,
-    gapReadIndices,
-    gapPositions,
-    gapTypes,
-    interbaseReadIndices,
-    interbasePositions,
-    interbaseLengths,
-    interbaseTypes,
-  } = data
-  const numMismatches = mismatchPositions.length
-  const numGaps = gapPositions.length / 2
-  const numInterbases = interbasePositions.length
-
+  type: SortedBy['type'],
+  sortPos: number,
+): { map: Map<number, number>; desc: boolean } | undefined {
+  let result: { map: Map<number, number>; desc: boolean } | undefined
   if (type === 'basePair') {
+    const { mismatchReadIndices, mismatchPositions, mismatchBases } = data
+    const { gapReadIndices, gapPositions, gapTypes } = data
     const baseAtPos = new Map<number, number>()
-    for (let i = 0; i < numMismatches; i++) {
+    for (let i = 0; i < mismatchPositions.length; i++) {
       if (mismatchPositions[i] === sortPos) {
         baseAtPos.set(mismatchReadIndices[i]!, mismatchBases[i]!)
       }
     }
-    for (let i = 0; i < numGaps; i++) {
-      if (gapTypes[i] !== 0) {
-        continue
-      }
-      const gapStart = gapPositions[i * 2]!
-      const gapEnd = gapPositions[i * 2 + 1]!
-      if (gapStart <= sortPos && gapEnd > sortPos) {
-        const readIdx = gapReadIndices[i]!
-        if (!baseAtPos.has(readIdx)) {
-          baseAtPos.set(readIdx, DELETION_CHAR)
+    for (let i = 0; i < gapPositions.length / 2; i++) {
+      if (gapTypes[i] === 0) {
+        const gapStart = gapPositions[i * 2]!
+        const gapEnd = gapPositions[i * 2 + 1]!
+        if (gapStart <= sortPos && gapEnd > sortPos) {
+          const readIdx = gapReadIndices[i]!
+          if (!baseAtPos.has(readIdx)) {
+            baseAtPos.set(readIdx, DELETION_CHAR)
+          }
         }
       }
     }
-    sortByMapWithUnknownsLast(overlapping, baseAtPos, false)
+    result = { map: baseAtPos, desc: false }
   } else if (['insertion', 'softclip', 'hardclip'].includes(type)) {
     const targetType =
       type === 'insertion'
@@ -134,24 +121,38 @@ function sortOverlappingByIndex(
         : type === 'softclip'
           ? INTERBASE_SOFTCLIP
           : INTERBASE_HARDCLIP
+    const { interbaseReadIndices, interbasePositions } = data
+    const { interbaseLengths, interbaseTypes } = data
     const lengthAtPos = new Map<number, number>()
-    for (let i = 0; i < numInterbases; i++) {
-      if (interbaseTypes[i] !== targetType) {
-        continue
-      }
-      if (interbasePositions[i] === sortPos) {
+    for (let i = 0; i < interbasePositions.length; i++) {
+      if (interbaseTypes[i] === targetType && interbasePositions[i] === sortPos) {
         const readIdx = interbaseReadIndices[i]!
         const len = interbaseLengths[i]!
-        const existing = lengthAtPos.get(readIdx) ?? 0
-        if (len > existing) {
+        if (len > (lengthAtPos.get(readIdx) ?? 0)) {
           lengthAtPos.set(readIdx, len)
         }
       }
     }
-    sortByMapWithUnknownsLast(overlapping, lengthAtPos, true)
+    result = { map: lengthAtPos, desc: true }
+  }
+  return result
+}
+
+function sortOverlappingByIndex(
+  overlapping: number[],
+  data: PileupDataResult,
+  sortedBy: SortedBy,
+  sortTagValues: string[] | undefined,
+) {
+  const { type, pos: sortPos } = sortedBy
+  const keyMap = buildSortKeyMap(data, type, sortPos)
+  if (keyMap) {
+    sortByMapWithUnknownsLast(overlapping, keyMap.map, keyMap.desc)
   } else if (type === 'position') {
+    const { readPositions } = data
     overlapping.sort((a, b) => readPositions[a * 2]! - readPositions[b * 2]!)
   } else if (type === 'strand') {
+    const { readStrands } = data
     overlapping.sort((a, b) => readStrands[b]! - readStrands[a]!)
   } else if (type === 'tag' && sortTagValues) {
     const first = overlapping[0]

@@ -92,7 +92,10 @@ import {
 } from '../../features/softclip/packBases.ts'
 import { uploadSoftclipBases } from '../../features/softclip/uploadBases.ts'
 import { CLIP_PASS, PASS_CLIP, uploadClips } from '../../shared/clipPass.ts'
-import { getChainBounds, toClipRect } from '../components/chainOverlayUtils.ts'
+import {
+  getSelectionBounds,
+  toClipRect,
+} from '../components/chainOverlayUtils.ts'
 import {
   ARC_HEIGHT_MARGIN,
   arcColorPalette,
@@ -849,68 +852,35 @@ export class GpuAlignmentsRenderer implements AlignmentsRenderingBackend {
     bufH: number,
   ) {
     const { region, clippedBpStart, clippedBpEnd } = frame
-    const regionSelectIdx = state.selectedFeatureId
-      ? (region.readIdToIndex.get(state.selectedFeatureId) ?? -1)
-      : -1
 
-    // Skip all the allocations below unless something is actually selected.
-    const hasChainSelection = state.selectedChainIds.length > 0
-    if (regionSelectIdx >= 0 || hasChainSelection) {
+    // Chain selection supersedes single-read; shared with the Canvas2D renderer.
+    const bounds = getSelectionBounds(state, region)
+    if (bounds) {
       const bpLen = clippedBpEnd - clippedBpStart
-      // Capture per-block transforms so the toClipRect call sites below don't
-      // each repeat the same 7 uniform-derived args.
-      const clipFor = (absStart: number, absEnd: number, y: number) =>
+      const quads: number[] = []
+      pushSelectionFrame(
+        quads,
         toClipRect(
-          absStart,
-          absEnd,
-          y,
+          bounds.startBp,
+          bounds.endBp,
+          bounds.yRow,
           state,
           clippedBpStart,
           bpLen,
           state.pileupTopOffset,
           state.canvasHeight,
           block.reversed,
-        )
-
-      // Selection frames (single read + chain) accumulate into one quad buffer
-      // and draw together — the hover highlight moved to the HighlightOverlay div.
-      const quads: number[] = []
-
-      // A chain selection supersedes the single-read frame (the chain bounds
-      // already cover the read), matching the prior either/or behavior.
-      if (hasChainSelection) {
-        const bounds = getChainBounds(state.selectedChainIds, region)
-        if (bounds) {
-          pushSelectionFrame(
-            quads,
-            clipFor(bounds.startBp, bounds.endBp, bounds.yRow),
-            geom.scissorW,
-            state.canvasHeight,
-          )
-        }
-      } else {
-        const idx = regionSelectIdx
-        pushSelectionFrame(
-          quads,
-          clipFor(
-            region.readPositions[idx * 2]!,
-            region.readPositions[idx * 2 + 1]!,
-            region.readYs[idx]!,
-          ),
-          geom.scissorW,
-          state.canvasHeight,
-        )
-      }
-
-      if (quads.length > 0) {
-        this.drawOverlayQuads(
-          new Float32Array(quads),
-          quads.length / 8,
-          geom,
-          pileup,
-          bufH,
-        )
-      }
+        ),
+        geom.scissorW,
+        state.canvasHeight,
+      )
+      this.drawOverlayQuads(
+        new Float32Array(quads),
+        quads.length / 8,
+        geom,
+        pileup,
+        bufH,
+      )
     }
   }
 
