@@ -51,14 +51,25 @@ Here is a complete config.json file containing only the hg19 assembly:
 
 Each assembly contains:
 
-- `name` - unique assembly name; each track references this name
+- `name` - unique assembly name; each track references this name. There is no
+  separate `id` field — the `name` is the id, usually a short machine-readable
+  string like `hg38`
+- `displayName` - optional human-readable label shown in the assembly selector
+  (e.g. `"Homo sapiens (hg38)"`) while `name` stays a short id like `hg38`
 - `aliases` - alternate names for the assembly (e.g. hg19/GRCh37). Aliases are
   most useful when connecting to a UCSC trackHub, which specifies assembly names
   that may differ from your own
 - `sequence` - a ReferenceSequenceTrack with an adapter configuration. Supported
   adapters: `IndexedFastaAdapter` (fasta.fa + fasta.fai), `BgzipFastaAdapter`
-  (fasta.fa.gz + fasta.fa.gz.fai + fasta.fa.gz.gzi), `ChromSizesAdapter`
+  (fasta.fa.gz + fasta.fa.gz.fai + fasta.fa.gz.gzi), `TwoBitAdapter` (UCSC
+  .2bit), `UnindexedFastaAdapter` (plain .fa, no index), and `ChromSizesAdapter`
   (chromosome names only, no sequence)
+- `refNameAliases` - maps chromosomes named differently across files to the same
+  sequence (see below)
+- `cytobands` - optional ideogram banding data, shown by views that draw
+  ideograms (see below)
+- `refNameColors` - optional list of colors cycled across the reference
+  sequences
 
 ## Configuring reference name aliasing
 
@@ -232,6 +243,24 @@ options.
 }
 ```
 
+## UnindexedFastaAdapter
+
+A plain (non-bgzipped) FASTA with no separate index. The adapter reads the whole
+sequence into memory, so prefer `IndexedFastaAdapter` or `BgzipFastaAdapter` for
+large genomes — this is mainly convenient for small genomes where you don't want
+to run `samtools faidx`.
+
+```json
+{
+  "type": "UnindexedFastaAdapter",
+  "uri": "https://example.com/genome.fa"
+}
+```
+
+The full form uses `fastaLocation` (see the
+[UnindexedFastaAdapter config docs](/docs/config/unindexedfastaadapter) for all
+options).
+
 ### FASTA metadata
 
 Meta-information on the assembly can be specified by adding the following
@@ -292,7 +321,79 @@ the [TwoBitAdapter config docs](/docs/config/twobitadapter) for all options):
 }
 ```
 
+## ChromSizesAdapter
+
+When you only have chromosome names and lengths but no actual sequence (for
+example to set up a karyotype or to anchor synteny/whole-genome views without
+loading a FASTA), use a `.chrom.sizes` file (tab-separated `name<TAB>length`).
+
+```json
+{
+  "type": "ChromSizesAdapter",
+  "chromSizesLocation": {
+    "uri": "https://jbrowse.org/genomes/hg19/hg19.chrom.sizes",
+    "locationType": "UriLocation"
+  }
+}
+```
+
+The `uri` shorthand applies here too:
+
+```json
+{
+  "type": "ChromSizesAdapter",
+  "uri": "https://jbrowse.org/genomes/hg19/hg19.chrom.sizes"
+}
+```
+
+The reference sequence track displays no base-level sequence with this adapter,
+since there is none to show.
+
+## Configuring cytoband ideograms
+
+The optional `cytobands` field supplies chromosome banding data, which views can
+draw as an ideogram (the chromosome overview with stained bands). The data is
+fetched from a `CytobandAdapter` pointing at a UCSC-style `cytoBand.txt` file:
+
+```json
+{
+  "name": "hg19",
+  "sequence": {
+    "type": "ReferenceSequenceTrack",
+    "trackId": "hg19_config",
+    "adapter": {
+      "type": "BgzipFastaAdapter",
+      "uri": "https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz"
+    }
+  },
+  "cytobands": {
+    "adapter": {
+      "type": "CytobandAdapter",
+      "cytobandLocation": {
+        "uri": "https://jbrowse.org/genomes/hg19/hg19_cytoband.txt",
+        "locationType": "UriLocation"
+      }
+    }
+  }
+}
+```
+
+## Customizing reference sequence colors
+
+The optional `refNameColors` field assigns colors to the reference sequences
+(used in overviews such as the whole-genome ideogram). It is a list of CSS
+colors cycled across the sequences in order, so it does not need an entry per
+chromosome:
+
+```json
+{
+  "refNameColors": ["red", "green", "blue", "orange", "purple"]
+}
+```
+
 ## See also
 
 - [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
   and six-frame translation in the app
+- [BaseAssembly config docs](/docs/config/baseassembly/) — the full slot
+  reference (auto-generated from the schema)

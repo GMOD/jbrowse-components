@@ -17,7 +17,26 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/ChromSizesAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'ReferenceSequenceTrack',
+  trackId: 'my_assembly-ReferenceSequenceTrack',
+  adapter: {
+    type: 'ChromSizesAdapter',
+    uri: 'https://example.com/species.chrom.sizes',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+loads only chromosome names and lengths from a UCSC-style `.chrom.sizes` file
+(tab-separated `name<TAB>length`), with no actual sequence. Useful for karyotype
+or whole-genome/synteny views where the base-level sequence isn't needed.
 
 ### ChromSizesAdapter - Pre-processor / simplified config
 
