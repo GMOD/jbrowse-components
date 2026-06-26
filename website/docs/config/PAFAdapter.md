@@ -24,10 +24,16 @@ first):
 
 ```js
 {
-  type: 'PAFAdapter',
-  uri: 'https://example.com/aln.paf',
-  queryAssembly: 'hg19',
-  targetAssembly: 'hg38',
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['assembly1', 'assembly2'],
+  adapter: {
+    type: 'PAFAdapter',
+    uri: 'https://example.com/aln.paf',
+    queryAssembly: 'hg19',
+    targetAssembly: 'hg38',
+  },
 }
 ```
 

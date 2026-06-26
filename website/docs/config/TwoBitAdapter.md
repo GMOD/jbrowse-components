@@ -24,8 +24,12 @@ scan on genomes with many contigs:
 
 ```js
 {
-  type: 'TwoBitAdapter',
-  uri: 'https://example.com/genome.2bit',
+  type: 'ReferenceSequenceTrack',
+  trackId: 'my_assembly-ReferenceSequenceTrack',
+  adapter: {
+    type: 'TwoBitAdapter',
+    uri: 'https://example.com/genome.2bit',
+  },
 }
 ```
 

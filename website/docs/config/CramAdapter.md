@@ -23,8 +23,14 @@ The `uri` shorthand auto-resolves the `.crai` index:
 
 ```js
 {
-  type: 'CramAdapter',
-  uri: 'https://example.com/sample.cram',
+  type: 'AlignmentsTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'CramAdapter',
+    uri: 'https://example.com/sample.cram',
+  },
 }
 ```
 

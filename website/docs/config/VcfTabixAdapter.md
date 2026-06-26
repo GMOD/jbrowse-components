@@ -24,8 +24,14 @@ The `uri` shorthand auto-resolves the `.tbi` index (pass `csi: true` for a
 
 ```js
 {
-  type: 'VcfTabixAdapter',
-  uri: 'https://example.com/variants.vcf.gz',
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/variants.vcf.gz',
+  },
 }
 ```
 
@@ -94,6 +100,18 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
       'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
     locationType: 'UriLocation',
   },
+}
+```
+
+#### slot: fetchSizeLimit
+
+```js
+{
+  type: 'number',
+  description:
+    'size in bytes over which to display a warning to the user that too much data will be fetched',
+  defaultValue: 1_000_000,
+  advanced: true,
 }
 ```
 

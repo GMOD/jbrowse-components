@@ -21,6 +21,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config BedTabixAdapter
+ * #trackType FeatureTrack
  *
  * #example
  * The `uri` shorthand auto-resolves the `.tbi` index; add `csi: true` for a

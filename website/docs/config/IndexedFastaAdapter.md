@@ -23,8 +23,12 @@ The `uri` shorthand auto-resolves the `.fai` index:
 
 ```js
 {
-  type: 'IndexedFastaAdapter',
-  uri: 'https://example.com/genome.fa',
+  type: 'ReferenceSequenceTrack',
+  trackId: 'my_assembly-ReferenceSequenceTrack',
+  adapter: {
+    type: 'IndexedFastaAdapter',
+    uri: 'https://example.com/genome.fa',
+  },
 }
 ```
 

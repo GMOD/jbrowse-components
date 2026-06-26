@@ -5,6 +5,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BamAdapter
+ * #trackType AlignmentsTrack
  * used to configure BAM adapter
  *
  * Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse

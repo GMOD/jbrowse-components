@@ -6,6 +6,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config IndexedFastaAdapter
+ * #trackType ReferenceSequenceTrack
  *
  * #example
  * The `uri` shorthand auto-resolves the `.fai` index:

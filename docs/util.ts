@@ -678,7 +678,9 @@ export interface Example {
 //   const state = createViewState({ ... })
 //   ```
 // Multiple #example blocks are supported; an optional label follows the tag
-// (#example minimal, #example full). Returns { name, docs, examples }.
+// (#example minimal, #example full). An optional #trackType tag (on adapter
+// #config blocks) names the track type the example should be wrapped in.
+// Returns { name, category, trackType, docs, examples }.
 // Examples are authored LAST so they stay out of the prose `docs` and any
 // legacy `extends`/`composed of` block that stripComposedBlock removes.
 export function parseTaggedComment(
@@ -690,6 +692,7 @@ export function parseTaggedComment(
   const lines = comment.split('\n')
   let name = fallbackName
   let category: string | undefined
+  let trackType: string | undefined
   const docs: string[] = []
   const examples: Example[] = []
   let current: { label: string; lines: string[] } | undefined
@@ -709,6 +712,8 @@ export function parseTaggedComment(
       }
     } else if (containsTag(line, 'category')) {
       category = line.replace(/.*#category\s*/, '').trim() || undefined
+    } else if (containsTag(line, 'trackType')) {
+      trackType = line.replace(/.*#trackType\s*/, '').trim() || undefined
     } else if (current) {
       current.lines.push(line)
     } else {
@@ -724,6 +729,7 @@ export function parseTaggedComment(
   return {
     name,
     category,
+    trackType,
     docs: docs.join('\n'),
     examples,
   }
@@ -734,6 +740,9 @@ export interface ParsedNode {
   docs: string
   examples: Example[]
   category?: string
+  // `#trackType <TrackType>` on an adapter's #config — the track type its
+  // example should be wrapped in (see wrapAdapterExample in generateConfigDocs)
+  trackType?: string
   code: string
   signature: string
 }
@@ -743,7 +752,7 @@ export interface ParsedNode {
 // category, plus the comment-stripped source and type signature. Shared so the
 // two near-identical buildItem/buildMember helpers don't drift.
 export function parseNode(obj: ExtractedNode): ParsedNode {
-  const { name, docs, examples, category } = parseTaggedComment(
+  const { name, docs, examples, category, trackType } = parseTaggedComment(
     obj.comment,
     obj.type,
     obj.name,
@@ -753,6 +762,7 @@ export function parseNode(obj: ExtractedNode): ParsedNode {
     docs,
     examples,
     category,
+    trackType,
     code: removeComments(obj.node),
     signature: obj.signature,
   }

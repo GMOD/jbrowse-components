@@ -23,8 +23,14 @@ The `uri` shorthand works for plain or gzipped GTF:
 
 ```js
 {
-  type: 'GtfAdapter',
-  uri: 'https://example.com/genes.gtf',
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GtfAdapter',
+    uri: 'https://example.com/genes.gtf',
+  },
 }
 ```
 

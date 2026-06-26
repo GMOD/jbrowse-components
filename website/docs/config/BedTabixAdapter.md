@@ -24,8 +24,14 @@ index instead:
 
 ```js
 {
-  type: 'BedTabixAdapter',
-  uri: 'https://example.com/features.bed.gz',
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedTabixAdapter',
+    uri: 'https://example.com/features.bed.gz',
+  },
 }
 ```
 

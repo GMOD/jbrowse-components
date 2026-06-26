@@ -23,8 +23,14 @@ The `uri` shorthand auto-resolves the `.tbi` index:
 
 ```js
 {
-  type: 'GtfTabixAdapter',
-  uri: 'https://example.com/genes.gtf.gz',
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'GtfTabixAdapter',
+    uri: 'https://example.com/genes.gtf.gz',
+  },
 }
 ```
 

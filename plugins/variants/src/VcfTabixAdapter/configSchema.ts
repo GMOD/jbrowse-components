@@ -21,6 +21,7 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config VcfTabixAdapter
+ * #trackType VariantTrack
  * used to load bgzip-compressed, tabix-indexed VCF files
  *
  * #example
@@ -79,6 +80,16 @@ const VcfTabixAdapter = ConfigurationSchema(
           'tsv with header like name\tpopulation\tetc. where the first column is required, and is the sample names',
         locationType: 'UriLocation',
       },
+    },
+    /**
+     * #slot
+     */
+    fetchSizeLimit: {
+      type: 'number',
+      description:
+        'size in bytes over which to display a warning to the user that too much data will be fetched',
+      defaultValue: 1_000_000,
+      advanced: true,
     },
   },
   {

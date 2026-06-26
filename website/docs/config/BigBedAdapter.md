@@ -21,8 +21,14 @@ reference the markdown files in our repo of the checked out git tag
 
 ```js
 {
-  type: 'BigBedAdapter',
-  uri: 'https://example.com/features.bb',
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BigBedAdapter',
+    uri: 'https://example.com/features.bb',
+  },
 }
 ```
 

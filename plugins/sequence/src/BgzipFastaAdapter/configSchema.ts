@@ -3,6 +3,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { deriveFastaLocations } from '../chromSizesUtils.ts'
 /**
  * #config BgzipFastaAdapter
+ * #trackType ReferenceSequenceTrack
  *
  * #example
  * The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:

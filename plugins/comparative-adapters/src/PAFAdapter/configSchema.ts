@@ -2,6 +2,7 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 /**
  * #config PAFAdapter
+ * #trackType SyntenyTrack
  *
  * #example
  * A PAF has no index, but it needs the query and target assembly names (query

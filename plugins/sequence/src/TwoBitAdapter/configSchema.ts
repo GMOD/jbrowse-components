@@ -4,6 +4,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config TwoBitAdapter
+ * #trackType ReferenceSequenceTrack
  *
  * #example
  * A `.2bit` file is self-contained; add `chromSizes` to skip an initial

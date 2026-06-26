@@ -43,6 +43,10 @@ interface ConfigHeader {
   // explicit #category tag value, e.g. "assemblyManagement" — wins over the
   // name-suffix heuristic in configCategory() when present
   category?: string
+  // explicit #trackType tag value, e.g. "AlignmentsTrack" — the track type an
+  // adapter's example is wrapped in to show a full track config (see
+  // wrapAdapterExample). Adapter pages only.
+  trackType?: string
 }
 export interface Config {
   header?: ConfigHeader
@@ -87,6 +91,7 @@ export function accumulateConfig(
       id: slugify(item.name, { lower: true }),
       declId: obj.selfDeclId,
       category: item.category,
+      trackType: item.trackType,
     }
   } else if (obj.type === 'baseConfiguration') {
     file.derives = item
@@ -202,6 +207,65 @@ function displayTypesSection(name: string, links: DisplayLinkContext) {
     : ''
 }
 
+// Re-indent a bare adapter object so it nests cleanly as the 2-space-indented
+// `adapter:` value of a track config, with a trailing comma. Prettier does not
+// reformat embedded markdown code fences, so we emit final indentation here.
+function adapterValueLines(code: string) {
+  const [first, ...rest] = code.split('\n')
+  const lines = [`  adapter: ${first}`, ...rest.map(line => `  ${line}`)]
+  lines[lines.length - 1] += ','
+  return lines
+}
+
+// The full track config that nests an adapter snapshot, shaped per track type:
+// a reference sequence track has no assemblyNames (it is the assembly's own
+// sequence) and synteny spans two assemblies, while ordinary data tracks take a
+// single assembly.
+function trackConfigLines(trackType: string, adapterCode: string) {
+  const adapter = adapterValueLines(adapterCode)
+  if (trackType === 'ReferenceSequenceTrack') {
+    return [
+      '{',
+      "  type: 'ReferenceSequenceTrack',",
+      "  trackId: 'my_assembly-ReferenceSequenceTrack',",
+      ...adapter,
+      '}',
+    ]
+  }
+  const assemblyNames =
+    trackType === 'SyntenyTrack' ? "['assembly1', 'assembly2']" : "['hg38']"
+  return [
+    '{',
+    `  type: '${trackType}',`,
+    "  trackId: 'my_track',",
+    "  name: 'My track',",
+    `  assemblyNames: ${assemblyNames},`,
+    ...adapter,
+    '}',
+  ]
+}
+
+// An adapter's #example is authored as a bare adapter snapshot
+// (`{ type: 'BamAdapter', uri: '...' }`). On the rendered page we want the full
+// track configuration a user actually pastes, so wrap that snapshot's code
+// fence as the `adapter:` value of a track config of the adapter's #trackType
+// (defaulting to FeatureTrack). Prose around the fence is preserved; an example
+// that already spells out a full config (declares trackId/adapter) is left
+// alone. Final indentation is normalized by the prettier pass in generate.ts.
+function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
+  return content.replace(
+    /```(?:js|javascript|json)?\n([\s\S]*?)\n```/,
+    (full: string, inner: string) => {
+      const code = inner.trim()
+      const isBareAdapter = code.startsWith('{') && /\btype\s*:/.test(code)
+      const alreadyFull = /\b(?:trackId|adapter)\s*:/.test(code)
+      return isBareAdapter && !alreadyFull
+        ? ['```js', ...trackConfigLines(trackType, code), '```'].join('\n')
+        : full
+    },
+  )
+}
+
 function renderConfig(
   {
     header,
@@ -245,14 +309,19 @@ function renderConfig(
   const slotsNote = hasSlots
     ? 'See the **Slots** section below for all available configuration fields.'
     : ''
-  const exSection = exampleSection(
-    header.examples,
-    '## Example usage',
-    slotsNote,
-  )
+  const category = configCategory(header.name, header.category)
+  // On adapter pages, show the full track config a user pastes, not just the
+  // bare adapter snapshot the #example is authored as.
+  const examples =
+    category === 'Adapter'
+      ? header.examples.map(ex => ({
+          ...ex,
+          content: wrapAdapterExample(ex.content, header.trackType),
+        }))
+      : header.examples
+  const exSection = exampleSection(examples, '## Example usage', slotsNote)
   const docsSection = overviewSection(header.docs, sections)
 
-  const category = configCategory(header.name, header.category)
   return docPage({
     id: header.id,
     title: header.name,
@@ -305,6 +374,21 @@ function warnUnresolvedBases(configs: ConfigWithHeader[], index: ConfigIndex) {
   }
 }
 
+// An adapter page wraps its #example in a full track config of its #trackType.
+// Without the tag we fall back to FeatureTrack, which is wrong for e.g.
+// alignments/variant/sequence adapters — warn so the author adds the tag.
+function warnAdaptersMissingTrackType(configs: ConfigWithHeader[]) {
+  for (const config of configs) {
+    const isAdapter =
+      configCategory(config.header.name, config.header.category) === 'Adapter'
+    if (isAdapter && config.header.examples.length && !config.header.trackType) {
+      console.warn(
+        `${config.header.name}: adapter has an #example but no #trackType — its full-config example defaulted to FeatureTrack`,
+      )
+    }
+  }
+}
+
 export async function writeConfigDocs(
   byFile: Record<string, Config>,
   displayTypesByTrack: Map<string, string[]>,
@@ -318,6 +402,7 @@ export async function writeConfigDocs(
   const index: ConfigIndex = { byDeclId, byName }
   const links: DisplayLinkContext = { displayTypesByTrack, byName, modelNames }
   warnUnresolvedBases(withHeader, index)
+  warnAdaptersMissingTrackType(withHeader)
   for (const cfg of withHeader) {
     await writeFormatted(
       `${dir}/${cfg.header.name}.md`,

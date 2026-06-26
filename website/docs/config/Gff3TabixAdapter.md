@@ -24,8 +24,14 @@ index instead:
 
 ```js
 {
-  type: 'Gff3TabixAdapter',
-  uri: 'https://example.com/genes.gff3.gz',
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3TabixAdapter',
+    uri: 'https://example.com/genes.gff3.gz',
+  },
 }
 ```
 

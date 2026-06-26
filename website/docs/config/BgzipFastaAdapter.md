@@ -23,8 +23,12 @@ The `uri` shorthand auto-resolves the `.fai` and `.gzi` indexes:
 
 ```js
 {
-  type: 'BgzipFastaAdapter',
-  uri: 'https://example.com/genome.fa.gz',
+  type: 'ReferenceSequenceTrack',
+  trackId: 'my_assembly-ReferenceSequenceTrack',
+  adapter: {
+    type: 'BgzipFastaAdapter',
+    uri: 'https://example.com/genome.fa.gz',
+  },
 }
 ```
 

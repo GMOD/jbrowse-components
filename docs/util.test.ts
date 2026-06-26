@@ -41,6 +41,16 @@ describe('parseTaggedComment', () => {
     expect(docs).toBe('the description')
   })
 
+  test('extracts a #trackType and removes it from docs', () => {
+    const { trackType, docs } = parseTaggedComment(
+      '#config BamAdapter\n#trackType AlignmentsTrack\nthe description',
+      'config',
+      'BamAdapter',
+    )
+    expect(trackType).toBe('AlignmentsTrack')
+    expect(docs).toBe('the description')
+  })
+
   test('collects multiple labeled examples in order', () => {
     const { examples } = parseTaggedComment(
       '#config Foo\nprose\n#example minimal\ncode A\n#example full\ncode B',

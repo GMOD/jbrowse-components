@@ -4,6 +4,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BigBedAdapter
+ * #trackType FeatureTrack
  *
  * #example
  * ```js

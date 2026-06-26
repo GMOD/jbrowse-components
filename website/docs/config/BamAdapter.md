@@ -24,8 +24,14 @@ differently-named index, set `index` explicitly with the full slot form:
 
 ```js
 {
-  type: 'BamAdapter',
-  uri: 'https://example.com/sample.bam',
+  type: 'AlignmentsTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BamAdapter',
+    uri: 'https://example.com/sample.bam',
+  },
 }
 ```
 
