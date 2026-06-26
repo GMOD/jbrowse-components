@@ -6,7 +6,7 @@ export {
   Tooltip,
   default as BaseLinearDisplayComponent,
 } from './components/BaseLinearDisplay.tsx'
-export type { LegendItem } from './components/FloatingLegend.tsx'
+export type { LegendItem, LegendSection } from './components/FloatingLegend.tsx'
 export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
@@ -18,7 +18,7 @@ export {
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { MIN_DISPLAY_HEIGHT } from './models/const.ts'
 
-export { default as FeatureDensityMixin } from '../shared/FeatureDensityMixin.tsx'
+export { default as RegionTooLargeMixin } from '../shared/RegionTooLargeMixin.tsx'
 export {
   type ByteEstimateConfig,
   type FetchContext,

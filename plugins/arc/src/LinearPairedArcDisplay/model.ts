@@ -8,7 +8,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import { openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
-  FeatureDensityMixin,
+  RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
@@ -56,7 +56,7 @@ export function stateModelFactory(
       'LinearPairedArcDisplay',
       BaseDisplay,
       TrackHeightMixin(),
-      FeatureDensityMixin(),
+      RegionTooLargeMixin(),
       types.model({
         /**
          * #property

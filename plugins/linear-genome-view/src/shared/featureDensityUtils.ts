@@ -1,10 +1,4 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
-import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-
 import { AUTO_FORCE_LOAD_BP } from '../LinearGenomeView/index.ts'
-
-import type { LinearGenomeViewModel } from '../LinearGenomeView/index.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 
 export function getDisplayStr(totalBytes: number) {
   if (Math.floor(totalBytes / 1000000) > 0) {
@@ -71,13 +65,17 @@ export function evaluateRegionTooLarge({
   bytes,
   byteLimit,
   densityTooLarge,
+  alwaysRender,
 }: {
   visibleBp: number
   bytes?: number
   byteLimit?: number
   densityTooLarge?: boolean
+  alwaysRender?: boolean
 }): RegionTooLargeStatus {
-  if (visibleBp < AUTO_FORCE_LOAD_BP) {
+  // Self-summarizing adapters (e.g. BigWig) cap returned data at screen
+  // resolution, so no region is ever too large regardless of span or threshold.
+  if (alwaysRender || visibleBp < AUTO_FORCE_LOAD_BP) {
     return NOT_TOO_LARGE
   }
   if (bytes !== undefined && byteLimit !== undefined && bytes > byteLimit) {
@@ -87,31 +85,4 @@ export function evaluateRegionTooLarge({
     return { tooLarge: true, reason: TOO_MANY_FEATURES_REASON }
   }
   return NOT_TOO_LARGE
-}
-
-export async function getFeatureDensityStatsPre(self: {
-  adapterConfig?: AnyConfigurationModel
-  setStatusMessage: (arg: string) => void
-  effectiveRpcDriverName?: string
-}) {
-  const view = getContainingView(self) as LinearGenomeViewModel
-  const regions = view.staticBlocks.contentBlocks
-
-  const { rpcManager } = getSession(self)
-  const { adapterConfig, effectiveRpcDriverName } = self
-  if (!adapterConfig) {
-    return {}
-  } else {
-    const sessionId = getRpcSessionId(self)
-
-    return rpcManager.call(
-      sessionId,
-      'CoreGetFeatureDensityStats',
-      {
-        regions,
-        adapterConfig,
-      },
-      { rpcDriverName: effectiveRpcDriverName },
-    )
-  }
 }

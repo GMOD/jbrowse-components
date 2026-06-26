@@ -72,6 +72,7 @@ export type {
   ExportSvgDisplayOptions,
   LayoutRecord,
   LegendItem,
+  LegendSection,
 } from './BaseLinearDisplay/index.ts'
 
 export {
@@ -81,11 +82,11 @@ export {
   DisplayChrome,
   DisplayErrorBar,
   DisplayLoadingOverlay,
-  FeatureDensityMixin,
   FloatingLegend,
   GlobalDataDisplayMixin,
   MIN_DISPLAY_HEIGHT,
   MultiRegionDisplayMixin,
+  RegionTooLargeMixin,
   StaleViewportRescaleMixin,
   TOO_MANY_FEATURES_REASON,
   TooLargeMessage,

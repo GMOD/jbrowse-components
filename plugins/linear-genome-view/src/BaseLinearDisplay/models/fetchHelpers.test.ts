@@ -143,7 +143,7 @@ describe('checkByteEstimate', () => {
   })
 
   it('not tooLarge when stats have no bytes field', async () => {
-    const rpc = makeRpcManager({ featureDensity: 0.5 })
+    const rpc = makeRpcManager({})
     const config = makeConfig()
 
     const result = await checkByteEstimate(
@@ -160,7 +160,7 @@ describe('checkByteEstimate', () => {
 
   it('adapter fetchSizeLimit takes precedence over display limit', async () => {
     // When adapter returns its own fetchSizeLimit, it takes precedence over the
-    // display config's fetchSizeLimit (replicates FeatureDensityMixin fallback chain).
+    // display config's fetchSizeLimit (the resolveByteLimit precedence chain).
     // adapter limit = 5MB, display limit = 10MB, bytes = 7MB → too large (7MB > 5MB)
     const rpc = makeRpcManager({ bytes: 7_000_000, fetchSizeLimit: 5_000_000 })
     const config = makeConfig({ fetchSizeLimit: 10_000_000 })

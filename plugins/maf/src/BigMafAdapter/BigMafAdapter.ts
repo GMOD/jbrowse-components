@@ -127,7 +127,7 @@ export default class BigMafAdapter extends BaseFeatureDataAdapter {
     const samples = this.getConf('samples')
     const n = Array.isArray(samples) ? samples.length : 0
     if (!n) {
-      return { featureDensity: 0 }
+      return { alwaysRender: true }
     }
     let bp = 0
     for (const r of regions) {

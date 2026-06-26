@@ -1,6 +1,7 @@
 import { Suspense, lazy } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { TooLargeMessage } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import LoadingBar from './LoadingBar.tsx'
@@ -29,7 +30,7 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
       <ArcErrorDisplay model={model} />
     </Suspense>
   ) : regionTooLarge ? (
-    model.regionCannotBeRendered()
+    <TooLargeMessage model={model} />
   ) : (
     <div
       className={classes.container}

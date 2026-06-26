@@ -2,13 +2,10 @@ import { type Observable, firstValueFrom, merge } from 'rxjs'
 import { toArray } from 'rxjs/operators'
 
 import { BaseAdapter } from './BaseAdapter.ts'
-import {
-  aggregateQuantitativeStats,
-  calculateFeatureDensityStats,
-} from './stats.ts'
+import { aggregateQuantitativeStats } from './stats.ts'
 import { blankStats, scoresToStats } from '../../util/stats.ts'
 
-import type { BaseOptions } from './types.ts'
+import type { BaseOptions, FeatureDensityStats } from './types.ts'
 import type { AnyConfigurationModel } from '../../configuration/index.ts'
 import type { Feature } from '../../util/simpleFeature.ts'
 import type { RectifiedQuantitativeStats } from '../../util/stats.ts'
@@ -179,39 +176,20 @@ export abstract class BaseFeatureDataAdapter<
   }
 
   /**
-   * Calculates the "feature density" of a region. The primary purpose of this
-   * API is to alert the user if they are going to be downloading too much
-   * information, and give them a hint to zoom in to see more. The default
-   * implementation samples from the regions, downloads feature data with
-   * getFeatures, and returns an object with the form \{featureDensity:number\}
-
-   * 1. alternative calculations for featureDensity
-   * 2. they can also return an object containing a byte size calculation with
-   * the format \{bytes:number, fetchSizeLimit:number\}
-   *
-   * In 2. the fetchSizeLimit is the adapter-defined limit for what it thinks
-   * is 'too much data' (e.g. CRAM and BAM may vary on what they think too much
-   * data is)
-   */
-  getRegionFeatureDensityStats(region: Region, opts?: BaseOptions) {
-    return calculateFeatureDensityStats(
-      region,
-      (region2, opts2) => this.getFeatures(region2, opts2),
-      opts,
-    )
-  }
-
-  /**
-   * Calculates the "feature density" of a set of regions. Note: Currently only
-   * fetches from the first region because it is a heuristic
+   * Estimates how much data a fetch of `regions` would pull, so a display can
+   * warn the user (and offer force-load) before downloading too much. Returns
+   * the adapter's cheap index-only byte estimate via `getRegionByteSize` (the
+   * tabix family overrides it); adapters with no index estimate return no bytes
+   * and aren't byte-gated. BAM/CRAM/VCF override this to attach their own
+   * `fetchSizeLimit`; self-summarizing adapters (BigWig) return `alwaysRender`.
    */
   public async getMultiRegionFeatureDensityStats(
     regions: Region[],
     opts?: BaseOptions,
-  ) {
+  ): Promise<FeatureDensityStats> {
     return regions[0]
-      ? this.getRegionFeatureDensityStats(regions[0], opts)
-      : { featureDensity: 0 }
+      ? { bytes: await this.getRegionByteSize(regions, opts) }
+      : {}
   }
 
   /**

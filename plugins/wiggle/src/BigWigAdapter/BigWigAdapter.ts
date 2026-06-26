@@ -204,10 +204,11 @@ export default class BigWigAdapter extends BaseFeatureDataAdapter<BigWigAdapterC
     return computeStatsFromView(view, start, end)
   }
 
-  // always render bigwig instead of calculating a feature density for it
+  // bbi zoom levels cap returned data at screen resolution, so a bigwig is
+  // never too large to render — skip the density/byte estimate entirely
   async getMultiRegionFeatureDensityStats(_regions: Region[]) {
     return {
-      featureDensity: 0,
+      alwaysRender: true,
     }
   }
 

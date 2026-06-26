@@ -28,16 +28,8 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
         description: 'Maximum height of the display in pixels',
         advanced: true,
       },
-      /**
-       * #slot
-       */
-      maxFeatureScreenDensity: {
-        type: 'number',
-        defaultValue: 1,
-        description:
-          'Maximum features per pixel before showing region too large message',
-        advanced: true,
-      },
+      // maxFeatureScreenDensity is inherited from baseLinearDisplayConfigSchema
+      // (default 1) — single source of truth for the density gate
       /**
        * #slot
        */

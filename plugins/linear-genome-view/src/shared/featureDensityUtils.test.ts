@@ -56,7 +56,9 @@ describe('resolveByteLimit', () => {
 
 describe('bytesTooLargeReason', () => {
   it('formats a human-readable byte size', () => {
-    expect(bytesTooLargeReason(5_000_000)).toBe('Requested too much data (5 Mb)')
+    expect(bytesTooLargeReason(5_000_000)).toBe(
+      'Requested too much data (5 Mb)',
+    )
   })
 })
 
@@ -135,6 +137,20 @@ describe('evaluateRegionTooLarge', () => {
         visibleBp: big,
         bytes: 2_000_000,
         densityTooLarge: false,
+      }),
+    ).toEqual({ tooLarge: false, reason: '' })
+  })
+
+  // Self-summarizing adapters (BigWig/Hic) declare alwaysRender; it must win
+  // over both gates and stay immune to a threshold/byte budget of any size.
+  it('never gates when alwaysRender is set, even over byte and density limits', () => {
+    expect(
+      evaluateRegionTooLarge({
+        visibleBp: big,
+        bytes: 1e9,
+        byteLimit: 1,
+        densityTooLarge: true,
+        alwaysRender: true,
       }),
     ).toEqual({ tooLarge: false, reason: '' })
   })

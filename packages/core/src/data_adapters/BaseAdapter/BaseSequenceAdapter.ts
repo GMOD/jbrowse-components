@@ -14,8 +14,9 @@ export abstract class BaseSequenceAdapter<
   extends BaseFeatureDataAdapter<CONF>
   implements RegionsAdapter
 {
+  // a sequence track renders the reference at any zoom and is never too large
   async getMultiRegionFeatureDensityStats() {
-    return { featureDensity: 0 }
+    return { alwaysRender: true }
   }
 
   /**

@@ -63,7 +63,7 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
   ) {
     const { vcf } = await this.configure(opts)
     const bytes = await vcf.bytesForRegions(regions, opts)
-    return { bytes, fetchSizeLimit: 1_000_000 }
+    return { bytes, fetchSizeLimit: this.getConf('fetchSizeLimit') }
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
