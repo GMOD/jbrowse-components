@@ -227,6 +227,8 @@ is the sample's genome-wide median, **not** absolute diploid: in a tumor where
 much of the genome is deleted, copy-neutral regions sit above 0. The benchmark
 CNV BED track gives the absolute copy-number reference alongside it.
 
+<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, capped to a symmetric ±2 domain so the bicolor xyplot separates gains (positive, blue) from losses (negative, red), above the benchmark somatic CNV calls. Unlike the two independently-normalized coverage tracks, this single track reads directly as relative copy number and lines up with the called intervals." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
+
 > If you only want a quick approximation and don't want to download the full
 > alignments, you can build the same track from
 > [indexcov](https://github.com/brentp/goleft) bigWigs (computed in seconds from
@@ -294,6 +296,8 @@ a line. Pairing the log2 ratio (copy number) with BAF (allelic state) is the
 conventional two-panel somatic-CNV view: a deletion shows up as a negative log2
 ratio **and** a BAF split toward 0/1, while copy-neutral LOH shows the BAF split
 with a flat log2 ratio.
+
+<Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above BAF (bottom), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF density splitting away from 0.5 — while the q-arm returns to a balanced state with the BAF density concentrated at 0.5. BAF is rendered as a density (rather than a line, which would average the 0/1 LOH signal back to 0.5)." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
 ### Calibrate the log2 baseline to diploid using BAF
 
@@ -380,6 +384,8 @@ To see the effect, keep **both** tracks loaded: the raw `HG008_log2ratio.bw`
 (centered on diploid). Side by side they make the baseline shift obvious — in a
 heavily-deleted tumor like HG008-T the raw 0-line sits well above copy-neutral,
 while the calibrated track puts the benchmark's CN=2 segments right at 0.
+
+<Figure caption="The raw, median-centered log2 ratio (top) and the BAF-calibrated track (bottom) over chromosome 3, both on a ±2 domain above the benchmark CNV calls. The calibrated track is shifted down by the diploid baseline offset: the CN=2 q-arm drops from above 0 onto 0, and the CN=1 p-arm settles near −1 = log2(1/2), so the y-axis reads directly as relative copy number." src="/img/sv_cgiab/cnv_calibration.png" />
 
 ## Align the phased tumor assembly to GRCh38
 

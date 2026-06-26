@@ -373,6 +373,16 @@ function cgiabUrl(session?: object) {
   return `${CGIAB_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
+// Same cgiab session, but captured against the public jb2/latest release rather
+// than the local build. The CNV log2/BAF figures only use released wiggle/multi-
+// wiggle features, and their bigWigs are hosted at jbrowse.org/demos/cgiab, so
+// the live instance renders them identically — and specLiveUrl returns this
+// absolute url verbatim as the docs reader link.
+const CGIAB_LIVE = 'https://jbrowse.org/code/jb2/latest/'
+function cgiabLiveUrl(session: object) {
+  return `${CGIAB_LIVE}${cgiabUrl(session)}`
+}
+
 function hpyloriUrl(session: object) {
   return `${HPYLORI_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
@@ -3282,6 +3292,209 @@ export const specs: ScreenshotSpec[] = [
         ],
       },
     ],
+  },
+
+  // The normalized CNV signal built in the "Build CNV tracks" tutorial section:
+  // a single log2(tumor/normal) coverage ratio bigWig across all chromosomes,
+  // over the benchmark CNV BED. Unlike the two independently-median-normalized
+  // indexcov tracks above, one log2-ratio track reads directly as copy number
+  // (0 = the genome-wide median, + = gain, - = loss) so gains/losses line up
+  // with the called intervals without eyeballing two bands. Domain capped to a
+  // symmetric -2..2 so the bicolor xyplot reads gains vs losses around 0.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_log2ratio_genome',
+    url: cgiabLiveUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                constraints: { min: -2, max: 2 },
+                height: 160,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 440,
+    settleMs: 25000,
+  },
+
+  // The conventional two-panel somatic-CNV view over chromosome 3: log2 ratio
+  // (copy number) above BAF (allelic state), with the benchmark CNV calls below.
+  // chr3 is a clean teaching example — the p-arm is a single-copy loss WITH
+  // loss-of-heterozygosity (negative log2 AND the BAF split toward 0/1), while
+  // the q-arm is balanced (log2 back up, BAF tight at 0.5). BAF is one value per
+  // germline-het SNP, so it renders as a scatter (a line/density would average
+  // the 0-and-1 LOH bands back to ~0.5 and hide the split).
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_log2_baf',
+    url: cgiabLiveUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr3',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                constraints: { min: -2, max: 2 },
+                height: 140,
+              },
+            },
+            {
+              trackId: 'hg008_baf',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                // density (not scatter) at chromosome scale: each pixel bins
+                // hundreds of SNPs, and scatter's min/max whiskers would fill
+                // 0..1 and erase the split. Density draws the LOH bimodality as
+                // two bands (0 and 1) vs a single balanced band at 0.5.
+                defaultRendering: 'density',
+                constraints: { min: 0, max: 1 },
+                height: 140,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr3',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 560,
+    settleMs: 30000,
+  },
+
+  // BAF-anchored baseline calibration, before vs after, over chromosome 3. The
+  // raw log2 track is centered on each sample's genome-wide median, so 0 is the
+  // modal copy state rather than diploid; the calibrated track subtracts the
+  // median log2 of allelically-balanced (BAF~0.5) windows so 0 is absolute
+  // diploid. Stacked over the benchmark CNV BED, the shift is obvious: chr3's
+  // CN=2 q-arm sits above 0 in the raw track but drops onto 0 once calibrated,
+  // and the CN=1 p-arm lands near -1 (log2(1/2)).
+  {
+    mode: 'url',
+    name: 'sv_cgiab/cnv_calibration',
+    url: cgiabLiveUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio_raw',
+          name: 'HG008 log2 ratio (raw, median-centered)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio_cal',
+          name: 'HG008 log2 ratio (BAF-calibrated to diploid)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.calibrated.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr3',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio_raw',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                constraints: { min: -2, max: 2 },
+                height: 140,
+              },
+            },
+            {
+              trackId: 'hg008_log2ratio_cal',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                constraints: { min: -2, max: 2 },
+                height: 140,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr3',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 560,
+    settleMs: 25000,
   },
 
   {
