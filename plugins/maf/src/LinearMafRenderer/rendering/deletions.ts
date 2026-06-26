@@ -24,6 +24,10 @@ export function renderDeletions(
   // gap cells are drawn by renderBases.
   if (h >= MIN_HEIGHT_FOR_TEXT) {
     ctx.fillStyle = 'white'
+    // Set explicitly rather than relying on the once-set outer 'center': a small
+    // insertion earlier in the same block leaves textAlign='left', which would
+    // otherwise mis-align these centered count labels.
+    ctx.textAlign = 'center'
     const yMid = Math.round(rowTop + h / 2)
     forEachDeletion(seq, alignment, startBp, (start, length) => {
       const text = String(length)

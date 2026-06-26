@@ -11,7 +11,6 @@ export const GAP_STROKE_OFFSET = 0.4
 export interface RenderingContext {
   ctx: Ctx2D
   scale: number
-  rowHeight: number
   h: number
   palette: MafColorPalette
   /** Pre-built once per draw call; consumed by `resolveCellColor` per cell. */

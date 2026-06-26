@@ -10,7 +10,7 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 
 interface MafFetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
-  sources?: { name: string }[]
+  orderedSampleIds?: string[]
   fetchRegions: (
     needed: Needed,
     work: (ctx: FetchContext) => Promise<void>,
@@ -77,7 +77,7 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
         adapterConfig: self.adapterConfig,
         region,
         // Display row order; the worker keys rowIndex off it (see rpcProps).
-        orderedSampleIds: self.sources?.map(s => s.name),
+        orderedSampleIds: self.orderedSampleIds,
         stopToken: ctx.stopToken,
       }),
     results => {

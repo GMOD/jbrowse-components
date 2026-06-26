@@ -59,7 +59,6 @@ export function drawMafBlocks(
     const renderingContext = {
       ctx,
       scale,
-      rowHeight,
       h,
       palette,
       cellColorConfig,

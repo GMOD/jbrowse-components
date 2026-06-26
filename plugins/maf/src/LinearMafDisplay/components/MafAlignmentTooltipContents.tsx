@@ -1,22 +1,11 @@
-import React from 'react'
+import type { ReactNode } from 'react'
 
 import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
 
+import { useTooltipStyles } from './tooltipStyles.ts'
 import { describeMafStatus } from '../../util/mafStatus.ts'
 
 import type { GenomicPosition, MafHover } from '../util.ts'
-
-const useStyles = makeStyles()(theme => ({
-  table: {
-    fontSize: theme.typography.fontSize * 0.85,
-    borderCollapse: 'collapse',
-    '& td, & th': {
-      border: '1px solid rgba(255,255,255,0.3)',
-      padding: '2px 4px',
-    },
-  },
-}))
 
 function strandStr(strand?: number) {
   return strand === -1 ? '-' : '+'
@@ -29,7 +18,7 @@ function locationStr(chr?: string, pos?: number, strand?: number) {
   return `${chr}:${toLocale(pos + 1)} (${strandStr(strand)})`
 }
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+function Row({ label, value }: { label: string; value: ReactNode }) {
   return (
     <tr>
       <td>{label}</td>
@@ -43,9 +32,9 @@ function TableShell({
   children,
 }: {
   caption: string
-  children: React.ReactNode
+  children: ReactNode
 }) {
-  const { classes } = useStyles()
+  const { classes } = useTooltipStyles()
   return (
     <table className={classes.table}>
       <caption>{caption}</caption>
@@ -159,7 +148,7 @@ export default function MafAlignmentTooltipContents({
   p2: GenomicPosition
   hover?: MafHover
 }) {
-  const { classes } = useStyles()
+  const { classes } = useTooltipStyles()
 
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />

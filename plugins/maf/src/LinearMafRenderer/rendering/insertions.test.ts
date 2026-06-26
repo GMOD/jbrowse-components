@@ -30,7 +30,6 @@ function makeContext(ctx: object, h = 12): RenderingContext {
   return {
     ctx: ctx as RenderingContext['ctx'],
     scale: 10,
-    rowHeight: 15,
     h,
     palette: {
       colorForBase: { a: '#f00', c: '#0f0', g: '#00f', t: '#ff0', n: '#888' },

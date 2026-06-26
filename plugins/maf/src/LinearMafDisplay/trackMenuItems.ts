@@ -34,7 +34,6 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   rowHeightMode: number
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
-  clusterTree?: string
   setRowHeight: (n: number) => void
   setFitToHeight: () => void
   setRowProportion: (n: number) => void
@@ -49,6 +48,8 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setRowIdentityMode: (m: RowIdentityModeWithOff) => void
   setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
+  // Consumed structurally by SetRowArrangementDialog's TreeLayoutModel<MafSource>
+  // prop (model={self}), not directly in this file.
   setLayout: (s: MafSource[]) => void
   clearLayout: () => void
   willClearTree: (s: MafSource[]) => boolean

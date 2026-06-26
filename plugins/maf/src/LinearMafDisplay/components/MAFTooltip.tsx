@@ -1,7 +1,4 @@
-import React from 'react'
-
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import MafAlignmentTooltipContents from './MafAlignmentTooltipContents.tsx'
@@ -9,7 +6,6 @@ import MafCoverageTooltipContents from './MafCoverageTooltipContents.tsx'
 import MafInterbaseTooltipContents from './MafInterbaseTooltipContents.tsx'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const MAFTooltip = observer(function ({
   model,
@@ -40,7 +36,7 @@ const MAFTooltip = observer(function ({
     clientX !== undefined && clientY !== undefined
       ? { x: clientX, y: clientY }
       : undefined
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = model.lgv
   const p1 = origMouseX !== undefined ? view.pxToBp(origMouseX) : undefined
   const p2 = view.pxToBp(mouseX)
   // Absolute fractional genomic coordinate under the cursor, for px-accurate

@@ -3,9 +3,8 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import { subscribeToObservable } from '../util/observableUtils.ts'
 
-import type { MafSummaryRecord, Sample } from '../types.ts'
+import type { MafSamplesAdapter, MafSummaryRecord, Sample } from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Observable } from 'rxjs'
@@ -13,11 +12,7 @@ import type { Observable } from 'rxjs'
 // Only BigMafAdapter ships a summary sub-adapter; the tabix/TAF adapters don't,
 // so the method is tolerant of its absence (returns no rows → display falls
 // back to the byte-estimate force-load gate).
-type SummaryCapableAdapter = BaseFeatureDataAdapter & {
-  getSamples: () => Promise<{
-    samples: Sample[]
-    treeNewick: string | undefined
-  }>
+type SummaryCapableAdapter = MafSamplesAdapter & {
   getSummaryFeatures?: (
     region: Region,
     opts?: { stopToken?: StopToken },

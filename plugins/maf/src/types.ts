@@ -1,4 +1,7 @@
-import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type {
+  BaseFeatureDataAdapter,
+  BaseOptions,
+} from '@jbrowse/core/data_adapters/BaseAdapter'
 
 /**
  * Shared types for MAF alignment data
@@ -11,6 +14,20 @@ import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 export interface MafAdapterOptions extends BaseOptions {
   /** If provided, only parse alignments for these sample IDs */
   samples?: Sample[]
+}
+
+/**
+ * Sample set + guide tree every MAF adapter ships alongside features (so a track
+ * needs no separate setup RPC). `treeNewick` is undefined when there's no tree.
+ */
+export interface MafSamplesResult {
+  samples: Sample[]
+  treeNewick: string | undefined
+}
+
+/** Adapter contract the MAF RPC methods rely on: features plus `getSamples`. */
+export type MafSamplesAdapter = BaseFeatureDataAdapter & {
+  getSamples: () => Promise<MafSamplesResult>
 }
 
 /**

@@ -1,7 +1,7 @@
-import type VirtualOffset from './virtualOffset.ts'
-
-// Re-export AlignmentRecord from central types for convenience
-export type { AlignmentRecord } from '../types.ts'
+export interface VirtualOffset {
+  blockPosition: number // offset of the compressed data block
+  dataPosition: number // offset into the uncompressed data
+}
 
 export interface ByteRange {
   chrStart: number

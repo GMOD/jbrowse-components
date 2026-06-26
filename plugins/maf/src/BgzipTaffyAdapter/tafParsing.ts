@@ -5,7 +5,7 @@ import {
 } from '../util/parseAssemblyName.ts'
 
 import type { RowInstruction } from './rowInstructions.ts'
-import type { AlignmentRecord } from './types.ts'
+import type { AlignmentRecord } from '../types.ts'
 
 // Represents a row in the alignment (like Alignment_Row in C)
 export interface RowState {
@@ -164,8 +164,9 @@ export function finalizeBlock(
       const col = columns[i]!
       const charCode = col.charCodeAt(j)
       // Use dash if character doesn't exist (NaN from charCodeAt)
-      buffer[i] = isNaN(charCode) ? DASH : charCode
-      if (buffer[i] !== DASH) {
+      const code = isNaN(charCode) ? DASH : charCode
+      buffer[i] = code
+      if (code !== DASH) {
         length++
       }
     }

@@ -9,11 +9,7 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  getContainingView,
-  getSession,
-  openFeatureWidget,
-} from '@jbrowse/core/util'
+import { getContainingView, getSession } from '@jbrowse/core/util'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
@@ -399,29 +395,6 @@ export default function stateModelFactory(
       setConservationHeight(arg: number) {
         self.conservationHeight = arg
       },
-      /**
-       * #action
-       */
-      showInsertionSequenceDialog(insertionData: {
-        sequence: string
-        sampleLabel: string
-        chr: string
-        pos: number
-      }) {
-        const { sequence, sampleLabel, chr, pos } = insertionData
-        openFeatureWidget(self, {
-          uniqueId: `insertion-${chr}-${pos}-${sampleLabel}`,
-          type: 'insertion',
-          refName: chr,
-          start: pos,
-          end: pos + 1,
-          sample: sampleLabel,
-          insertionLength: sequence.length,
-          sequence: self.showAsUpperCase
-            ? sequence.toUpperCase()
-            : sequence.toLowerCase(),
-        })
-      },
     }))
     .actions(self => {
       const superClearLayout = self.clearLayout
@@ -449,6 +422,14 @@ export default function stateModelFactory(
        */
       get conf(): LinearMafDisplayConfig {
         return self.configuration
+      },
+      /**
+       * #getter
+       * The containing LGV, typed once here so views/actions don't each repeat
+       * the `getContainingView(self) as LinearGenomeViewModel` cast.
+       */
+      get lgv(): LinearGenomeViewModel {
+        return getContainingView(self) as LinearGenomeViewModel
       },
     }))
     .views(self => ({
@@ -505,6 +486,15 @@ export default function stateModelFactory(
           label: s.label ?? s.name,
           color: s.color,
         }))
+      },
+      /**
+       * #getter
+       * Display row order shipped to the worker so its block `rowIndex` matches
+       * the on-screen row. Single source for both `rpcProps` (cache-invalidation
+       * key) and the alignment-fetch RPC arg so the two can't drift.
+       */
+      get orderedSampleIds(): string[] | undefined {
+        return self.sources?.map(s => s.name)
       },
       /**
        * #getter
@@ -694,7 +684,7 @@ export default function stateModelFactory(
        * coverage band is drawn on a separate Canvas2D overlay above.
        */
       get renderState(): MafGPURenderState | undefined {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized || !self.sources) {
           return undefined
         }
@@ -734,7 +724,7 @@ export default function stateModelFactory(
        * `layout`/`subtreeFilter` user-driven), so it doesn't churn per fetch.
        */
       rpcProps() {
-        return { orderedSampleIds: self.sources?.map(s => s.name) }
+        return { orderedSampleIds: self.orderedSampleIds }
       },
     }))
     .views(self => ({
@@ -749,7 +739,7 @@ export default function stateModelFactory(
         if (!self.showCoverage) {
           return undefined
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized) {
           return undefined
         }
@@ -906,7 +896,7 @@ export default function stateModelFactory(
        * #getter
        */
       get visibleLabels() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized || !self.sources || self.resizing) {
           return []
         }
@@ -924,7 +914,7 @@ export default function stateModelFactory(
        * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
        */
       get visibleEmptyLines() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized) {
           return []
         }
@@ -940,7 +930,7 @@ export default function stateModelFactory(
        * Positioned insertion markers (interbase) for the visible aligned rows.
        */
       get visibleInsertions() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized) {
           return []
         }
@@ -957,7 +947,7 @@ export default function stateModelFactory(
        * the deleted-base count inside each run when it fits.
        */
       get visibleDeletions() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!view.initialized) {
           return []
         }
@@ -978,7 +968,7 @@ export default function stateModelFactory(
        * gate. Tracks without a summary never enter this path.
        */
       get showSummary() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         return (
           !!readConfObject(self.adapterConfig, 'summaryAdapter') &&
           view.initialized &&
@@ -995,7 +985,7 @@ export default function stateModelFactory(
        * mid-zoom. False until the view is initialized.
        */
       get zoomedToBaseLevel() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         return view.initialized && view.coarseBpPerPx <= 1
       },
     }))
@@ -1018,15 +1008,11 @@ export default function stateModelFactory(
         // zoomed in to base level — UCSC wigMaf. Auto off pins it on everywhere.
         const autoHidesAtBaseLevel =
           self.rowIdentityAutoZoom && self.zoomedToBaseLevel
-        let result: 'bases' | RowIdentityMode = 'bases'
-        if (
-          rowIdentityMode !== 'none' &&
+        return rowIdentityMode !== 'none' &&
           !self.showSummary &&
           !autoHidesAtBaseLevel
-        ) {
-          result = rowIdentityMode
-        }
-        return result
+          ? rowIdentityMode
+          : 'bases'
       },
     }))
     .views(self => ({
@@ -1038,7 +1024,7 @@ export default function stateModelFactory(
        * extra species.
        */
       get visibleSummaryBars() {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         if (!self.showSummary || !self.sources) {
           return []
         }
@@ -1162,7 +1148,7 @@ export default function stateModelFactory(
         if (self.showSummary) {
           return null
         }
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.lgv
         return {
           adapterConfig: self.adapterConfig,
           fetchSizeLimit: readConfObject(self.conf, 'fetchSizeLimit'),

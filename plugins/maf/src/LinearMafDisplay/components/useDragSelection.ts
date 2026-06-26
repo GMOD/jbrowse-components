@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react'
 
 const MIN_DRAG_DISTANCE = 3
 
+function movedFarEnough(d: DragRect) {
+  return Math.abs(d.endX - d.startX) > MIN_DRAG_DISTANCE
+}
+
 export interface DragRect {
   startX: number
   startY: number
@@ -73,10 +77,7 @@ export function useDragSelection(
     // Decide outside the setState updater so the updater stays pure
     // (React strict mode double-invokes updaters).
     const { drag, isDragging } = state
-    const draggedFar =
-      isDragging &&
-      drag !== undefined &&
-      Math.abs(drag.endX - drag.startX) > MIN_DRAG_DISTANCE
+    const draggedFar = isDragging && drag !== undefined && movedFarEnough(drag)
     if (draggedFar) {
       const { x, y } = relativeXY(ref, e)
       setContextCoord({
@@ -126,8 +127,7 @@ export function useDragSelection(
   }, [ref, state.showSelectionBox])
 
   const { drag, mouse, isDragging, showSelectionBox } = state
-  const draggedEnough =
-    drag !== undefined && Math.abs(drag.endX - drag.startX) > MIN_DRAG_DISTANCE
+  const draggedEnough = drag !== undefined && movedFarEnough(drag)
 
   return {
     isDragging: isDragging && draggedEnough,

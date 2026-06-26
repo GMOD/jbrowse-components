@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef } from 'react'
 
+import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { useTheme } from '@mui/material'
 
 import { CHAR_WIDTH, ROW_HEIGHT } from './constants.ts'
@@ -62,16 +63,8 @@ export default function SequenceCanvas({
   const canvasWidth = (endCol - startCol) * CHAR_WIDTH
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    const ctx = canvas?.getContext('2d')
-    if (canvas && ctx && canvasWidth > 0 && canvasHeight > 0) {
-      const dpr = window.devicePixelRatio || 1
-      canvas.width = canvasWidth * dpr
-      canvas.height = canvasHeight * dpr
-      canvas.style.width = `${canvasWidth}px`
-      canvas.style.height = `${canvasHeight}px`
-      ctx.scale(dpr, dpr)
-
+    const ctx = getPreparedCanvas2D(canvasRef.current, canvasWidth, canvasHeight)
+    if (ctx && canvasWidth > 0 && canvasHeight > 0) {
       drawSequenceGrid({
         ctx,
         sequences,
@@ -128,6 +121,8 @@ export default function SequenceCanvas({
         position: 'absolute',
         top: startRow * ROW_HEIGHT,
         left: startCol * CHAR_WIDTH,
+        width: canvasWidth,
+        height: canvasHeight,
       }}
       onMouseMove={handleMouseMove}
       onMouseLeave={onLeave}

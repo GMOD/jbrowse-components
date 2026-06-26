@@ -712,6 +712,39 @@ describe('BgzipTaffyAdapter integration tests', () => {
     }
   })
 
+  test('adapter fetches the chromosome tail past the last index entry', async () => {
+    // chrI's last .tai entry is at chrStart ~15,053,438; a query starting after
+    // it and running past the chromosome end exercises the ranPastEnd read path
+    // (bound at the chromosome data end / EOF via chrDataEndOffset + stat).
+    const adapter = new BgzipTaffyAdapter(
+      configSchema.create({
+        tafGzLocation: {
+          localPath: require.resolve('../../test_data/celegans/chrI.taf.gz'),
+          locationType: 'LocalPathLocation',
+        },
+        taiLocation: {
+          localPath:
+            require.resolve('../../test_data/celegans/chrI.taf.gz.tai'),
+          locationType: 'LocalPathLocation',
+        },
+      }),
+    )
+
+    const features = adapter.getFeatures({
+      assemblyName: 'ce10',
+      refName: 'chrI',
+      start: 15_053_500,
+      end: 15_200_000,
+    })
+
+    const featuresArray = await firstValueFrom(features.pipe(toArray()))
+    expect(featuresArray.length).toBeGreaterThan(0)
+    // Features land in the queried tail, not stale earlier blocks.
+    expect(Math.max(...featuresArray.map(f => f.get('end')))).toBeGreaterThan(
+      15_053_500,
+    )
+  })
+
   test('adapter returns empty array for region with no data', async () => {
     const adapter = new BgzipTaffyAdapter(
       configSchema.create({

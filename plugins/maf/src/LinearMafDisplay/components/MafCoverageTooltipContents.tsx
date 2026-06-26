@@ -1,23 +1,8 @@
-import React from 'react'
-
 import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+
+import { useTooltipStyles } from './tooltipStyles.ts'
 
 import type { CoverageTooltipBin } from '@jbrowse/alignments-core'
-
-const useStyles = makeStyles()(theme => ({
-  td: {
-    whiteSpace: 'nowrap',
-  },
-  table: {
-    fontSize: theme.typography.fontSize * 0.85,
-    borderCollapse: 'collapse',
-    '& td, & th': {
-      border: '1px solid rgba(255,255,255,0.3)',
-      padding: '2px 4px',
-    },
-  },
-}))
 
 /**
  * Depth + SNP-base-counts table for the MAF coverage band. Consumes the same
@@ -36,7 +21,7 @@ export default function MafCoverageTooltipContents({
   bin: CoverageTooltipBin & { identity?: number }
   refName?: string
 }) {
-  const { classes } = useStyles()
+  const { classes } = useTooltipStyles()
   const { position, depth, snps, identity } = bin
   const pos = toLocale(position + 1)
   const location = refName ? `${refName}:${pos}` : pos

@@ -1,23 +1,8 @@
-import React from 'react'
-
 import { toLocale } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
+
+import { useTooltipStyles } from './tooltipStyles.ts'
 
 import type { CoverageInsertionHit } from '../coverageInsertion.ts'
-
-const useStyles = makeStyles()(theme => ({
-  td: {
-    whiteSpace: 'nowrap',
-  },
-  table: {
-    fontSize: theme.typography.fontSize * 0.85,
-    borderCollapse: 'collapse',
-    '& td, & th': {
-      border: '1px solid rgba(255,255,255,0.3)',
-      padding: '2px 4px',
-    },
-  },
-}))
 
 function sizeStr(minLen: number, maxLen: number) {
   return minLen === maxLen ? `${minLen} bp` : `${minLen}-${maxLen} bp`
@@ -36,7 +21,7 @@ export default function MafInterbaseTooltipContents({
   hit: CoverageInsertionHit
   refName?: string
 }) {
-  const { classes } = useStyles()
+  const { classes } = useTooltipStyles()
   const { position, interbaseDepth, count, minLen, maxLen } = hit
   const pos = toLocale(position + 1)
   const location = refName ? `${refName}:${pos}` : pos

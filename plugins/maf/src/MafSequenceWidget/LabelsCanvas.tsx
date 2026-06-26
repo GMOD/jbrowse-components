@@ -1,8 +1,10 @@
 import { useEffect, useRef } from 'react'
 
+import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { useTheme } from '@mui/material'
 
 import { FONT, ROW_HEIGHT } from './constants.ts'
+import { virtualRange } from './virtualRange.ts'
 
 import type { Sample } from '../types.ts'
 
@@ -24,44 +26,27 @@ export default function LabelsCanvas({
   const theme = useTheme()
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const startRow = Math.max(0, Math.floor(scrollTop / ROW_HEIGHT) - OVERSCAN)
-  const visibleRows = Math.ceil(containerHeight / ROW_HEIGHT) + OVERSCAN * 2
-  const endRow = Math.min(samples.length, startRow + visibleRows)
-  const renderedRowCount = endRow - startRow
-
-  const canvasHeight = renderedRowCount * ROW_HEIGHT
+  const { start: startRow, end: endRow } = virtualRange({
+    scroll: scrollTop,
+    cellSize: ROW_HEIGHT,
+    viewport: containerHeight,
+    overscan: OVERSCAN,
+    total: samples.length,
+  })
+  const canvasHeight = (endRow - startRow) * ROW_HEIGHT
   const offsetY = scrollTop - startRow * ROW_HEIGHT
 
   useEffect(() => {
-    const canvas = canvasRef.current
-    if (!canvas || canvasHeight <= 0 || labelWidth <= 0) {
-      return
-    }
-
-    const ctx = canvas.getContext('2d')
-    if (!ctx) {
-      return
-    }
-
-    const dpr = window.devicePixelRatio || 1
-    canvas.width = labelWidth * dpr
-    canvas.height = canvasHeight * dpr
-    canvas.style.width = `${labelWidth}px`
-    canvas.style.height = `${canvasHeight}px`
-    ctx.scale(dpr, dpr)
-
-    ctx.fillStyle = theme.palette.background.paper
-    ctx.fillRect(0, 0, labelWidth, canvasHeight)
-
-    ctx.font = FONT
-    ctx.textBaseline = 'top'
-
-    for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
-      const sample = samples[rowIdx]!
-      const y = (rowIdx - startRow) * ROW_HEIGHT
-
+    const ctx = getPreparedCanvas2D(canvasRef.current, labelWidth, canvasHeight)
+    if (ctx && canvasHeight > 0 && labelWidth > 0) {
+      ctx.fillStyle = theme.palette.background.paper
+      ctx.fillRect(0, 0, labelWidth, canvasHeight)
+      ctx.font = FONT
+      ctx.textBaseline = 'top'
       ctx.fillStyle = theme.palette.text.secondary
-      ctx.fillText(sample.label, 2, y + 2)
+      for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
+        ctx.fillText(samples[rowIdx]!.label, 2, (rowIdx - startRow) * ROW_HEIGHT + 2)
+      }
     }
   }, [samples, labelWidth, canvasHeight, startRow, endRow, theme])
 
@@ -73,6 +58,8 @@ export default function LabelsCanvas({
         position: 'absolute',
         top: 0,
         left: 0,
+        width: labelWidth,
+        height: canvasHeight,
         transform: `translateY(${-offsetY}px)`,
       }}
     />

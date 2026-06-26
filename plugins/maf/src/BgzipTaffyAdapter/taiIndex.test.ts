@@ -1,6 +1,11 @@
-import { lowerBound, parseTaiIndex, selectIndexEntries } from './taiIndex.ts'
+import {
+  lowerBound,
+  nextChrStartBlock,
+  parseTaiIndex,
+  selectIndexEntries,
+} from './taiIndex.ts'
 
-import type { ByteRange } from './types.ts'
+import type { ByteRange, IndexData } from './types.ts'
 
 // Build records at fixed chrStart positions; virtualOffset is irrelevant to
 // selection so a simple ascending offset keeps the fixtures readable.
@@ -115,9 +120,20 @@ describe('selectIndexEntries', () => {
 
   test('nextEntry reaches one entry past queryEnd as a read cushion', () => {
     const recs = records(0, 100, 200, 300, 400, 500)
-    const { nextEntry } = selectIndexEntries(recs, 110, 120)
+    const { nextEntry, ranPastEnd } = selectIndexEntries(recs, 110, 120)
     // first chrStart >= 120 is index 2 (200); +1 -> index 3 (300)
     expect(nextEntry).toMatchObject({ chrStart: 300 })
+    expect(ranPastEnd).toBe(false)
+  })
+
+  test('ranPastEnd is true only when there is no cushion entry past queryEnd', () => {
+    const recs = records(0, 100, 200, 300)
+    // queryEnd 150 -> first chrStart >= 150 is index 2 (200); cushion index 3 (300)
+    expect(selectIndexEntries(recs, 50, 150).ranPastEnd).toBe(false)
+    // queryEnd 250 -> first chrStart >= 250 is index 3 (300); cushion index 4 absent
+    expect(selectIndexEntries(recs, 50, 250).ranPastEnd).toBe(true)
+    // queryEnd past everything -> no cushion
+    expect(selectIndexEntries(recs, 50, 9999).ranPastEnd).toBe(true)
   })
 
   test('query before all entries clamps firstEntry to the first record', () => {
@@ -135,8 +151,39 @@ describe('selectIndexEntries', () => {
 
   test('single-entry index returns that entry for both ends', () => {
     const recs = records(0)
-    const { firstEntry, nextEntry } = selectIndexEntries(recs, 10, 50)
+    const { firstEntry, nextEntry, ranPastEnd } = selectIndexEntries(
+      recs,
+      10,
+      50,
+    )
     expect(firstEntry).toMatchObject({ chrStart: 0 })
     expect(nextEntry).toMatchObject({ chrStart: 0 })
+    expect(ranPastEnd).toBe(true)
+  })
+})
+
+describe('nextChrStartBlock', () => {
+  // blockPosition = compressed byte offset; chrStart is irrelevant here.
+  const at = (blockPosition: number): ByteRange => ({
+    chrStart: 0,
+    virtualOffset: { blockPosition, dataPosition: 0 } as ByteRange['virtualOffset'],
+  })
+  const index: IndexData = {
+    chr1: [at(0), at(1000)],
+    chr2: [at(5000), at(6000)],
+    chr3: [at(9000)],
+  }
+
+  test('interior chromosome bounds at the next chromosome first block', () => {
+    expect(nextChrStartBlock(index, 'chr1')).toBe(5000)
+    expect(nextChrStartBlock(index, 'chr2')).toBe(9000)
+  })
+
+  test('last chromosome has no next block', () => {
+    expect(nextChrStartBlock(index, 'chr3')).toBeUndefined()
+  })
+
+  test('single-chromosome index has no next block', () => {
+    expect(nextChrStartBlock({ chr1: [at(0)] }, 'chr1')).toBeUndefined()
   })
 })

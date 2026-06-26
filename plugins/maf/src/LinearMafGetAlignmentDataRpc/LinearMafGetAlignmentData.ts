@@ -9,18 +9,15 @@ import type {
   MafBlock,
   MafRegionData,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
-import type { AlignmentRecord, EmptyRecord, Sample } from '../types.ts'
+import type {
+  AlignmentRecord,
+  EmptyRecord,
+  MafSamplesAdapter,
+  Sample,
+} from '../types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-
-type MafAdapter = BaseFeatureDataAdapter & {
-  getSamples: () => Promise<{
-    samples: Sample[]
-    treeNewick: string | undefined
-  }>
-}
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -76,7 +73,7 @@ export default class LinearMafGetAlignmentData extends RpcMethodTypeWithFiltersA
     const { region, adapterConfig, sessionId } = deserializedArgs
 
     const { dataAdapter } = await getAdapter(pm, sessionId, adapterConfig)
-    const adapter = dataAdapter as MafAdapter
+    const adapter = dataAdapter as MafSamplesAdapter
 
     // Sample set + tree ship with every region response (avoids a setup RPC).
     const { samples: configSamples, treeNewick } = await adapter.getSamples()

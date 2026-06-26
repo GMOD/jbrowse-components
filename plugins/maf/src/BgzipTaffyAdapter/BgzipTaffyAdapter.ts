@@ -14,7 +14,11 @@ import {
   parseBasesColumn,
   parseCoordinatesAndEstablishBlock,
 } from './tafParsing.ts'
-import { parseTaiIndex, selectIndexEntries } from './taiIndex.ts'
+import {
+  nextChrStartBlock,
+  parseTaiIndex,
+  selectIndexEntries,
+} from './taiIndex.ts'
 import MafFeature from '../MafFeature.ts'
 import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
 import { lazyInit } from '../util/loadSubAdapter.ts'
@@ -47,13 +51,15 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
     return Object.keys(index)
   }
 
-  // Streaming generator version of parseTafBlocks
-  // Yields features one at a time instead of collecting into array
   *parseTafBlocksStreaming(
     buffer: Uint8Array,
     runLengthEncodeBases: boolean,
     sampleIds?: Set<string>,
   ): Generator<TafFeature> {
+    const buildFeature = (block: AlignmentBlock, cols: string[]) => {
+      finalizeBlock(block, cols, this.decoder)
+      return blockToFeature(block, sampleIds)
+    }
     let pBlock: AlignmentBlock | undefined
     let currentBlock: AlignmentBlock | undefined
     let columns: string[] = []
@@ -72,10 +78,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       const hasCoordinates = semicolonIndex !== -1
 
       if (hasCoordinates) {
-        // If we have a current block with columns, finalize and yield it
         if (currentBlock && columns.length > 0) {
-          finalizeBlock(currentBlock, columns, this.decoder)
-          const feature = blockToFeature(currentBlock, sampleIds)
+          const feature = buildFeature(currentBlock, columns)
           if (feature) {
             yield feature
           }
@@ -113,10 +117,8 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
       }
     }
 
-    // Finalize and yield last block
     if (currentBlock && columns.length > 0) {
-      finalizeBlock(currentBlock, columns, this.decoder)
-      const feature = blockToFeature(currentBlock, sampleIds)
+      const feature = buildFeature(currentBlock, columns)
       if (feature) {
         yield feature
       }
@@ -179,13 +181,13 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
           return
         }
 
-        const { firstEntry, nextEntry } = selectIndexEntries(
+        const { firstEntry, nextEntry, ranPastEnd } = selectIndexEntries(
           records,
           query.start,
           query.end,
         )
 
-        if (!firstEntry || !nextEntry) {
+        if (!firstEntry) {
           observer.complete()
           return
         }
@@ -193,7 +195,16 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         // Read and decompress the data
         const file = openLocation(this.getConf('tafGzLocation'))
         const startBlock = firstEntry.virtualOffset.blockPosition
-        const endBlock = nextEntry.virtualOffset.blockPosition
+        // When the query reaches a chromosome's last sparse index entry there is
+        // no cushion entry past it, and taffy doesn't place an entry near the
+        // chromosome end — so bound the read at the next chromosome's first block
+        // rather than the fallback entry, which would truncate a final bracket
+        // larger than one bgzf block. The last chromosome has no next block to
+        // bound against (and reading the file size needs a CORS-exposed
+        // Content-Range), so it keeps the one-block cushion below.
+        const endBlock = ranPastEnd
+          ? (nextChrStartBlock(index, query.refName) ?? startBlock)
+          : (nextEntry?.virtualOffset.blockPosition ?? startBlock)
 
         const MIN_BLOCK_SIZE = 65536
         const readLength =
@@ -209,9 +220,11 @@ export default class BgzipTaffyAdapter extends BaseFeatureDataAdapter {
         const buffer = await unzip(response)
 
         const startOffset = firstEntry.virtualOffset.dataPosition
-        const nextOffset = nextEntry.virtualOffset.dataPosition
+        const nextOffset = nextEntry?.virtualOffset.dataPosition ?? 0
+        // Trim to the cushion entry only for interior reads sharing the start
+        // block; a past-the-end read keeps everything decoded to the chr end.
         const endOffset =
-          endBlock === startBlock && nextOffset > startOffset
+          !ranPastEnd && endBlock === startBlock && nextOffset > startOffset
             ? nextOffset
             : buffer.length
 

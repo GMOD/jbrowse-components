@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import { getSession } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   SvgRowLabels,
@@ -16,11 +16,10 @@ import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
 import InsertionsOverlay from './InsertionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
+import MafBandResizeHandle from './MafBandResizeHandle.tsx'
 import MafConservationCanvas from './MafConservationCanvas.tsx'
-import MafConservationResizeHandle from './MafConservationResizeHandle.tsx'
 import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
-import MafCoverageResizeHandle from './MafCoverageResizeHandle.tsx'
 import MafCoverageYScale from './MafCoverageYScale.tsx'
 import MafRowIdentityCanvas from './MafRowIdentityCanvas.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
@@ -33,7 +32,6 @@ import { MafRendererFactory } from '../../LinearMafRenderer/MafRendererFactory.t
 import { openInsertionWidgetOnClick } from '../openInsertionWidget.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // Thin outer: owns the DisplayChrome + the drag-selection hook, which needs a
 // ref to the chrome container (so it can't live in the body). The drag object
@@ -96,7 +94,7 @@ const MafBody = observer(function MafBody({
     useState(false)
   const resizeActive = coverageResizeActive || conservationResizeActive
   const session = getSession(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
+  const view = model.lgv
   const { width } = view
   const { colorPalette } = model
 
@@ -135,14 +133,22 @@ const MafBody = observer(function MafBody({
     <>
       <MafCoverageCanvas model={model} />
       <MafCoverageYScale model={model} />
-      <MafCoverageResizeHandle
+      <MafBandResizeHandle
         model={model}
+        show={model.showCoverage}
+        height={model.coverageHeight}
+        setHeight={arg => { model.setCoverageHeight(arg) }}
+        top={model.coverageHeight - 4}
         onActiveChange={setCoverageResizeActive}
       />
       <MafConservationCanvas model={model} />
       <MafConservationYScale model={model} />
-      <MafConservationResizeHandle
+      <MafBandResizeHandle
         model={model}
+        show={model.showConservation}
+        height={model.conservationHeight}
+        setHeight={arg => { model.setConservationHeight(arg) }}
+        top={rowsTopOffset - 4}
         onActiveChange={setConservationResizeActive}
       />
       <MafBandLabels model={model} />
