@@ -515,6 +515,31 @@ DynamoDB entry and decodes it using the key embedded in the URL.
 
 The DynamoDB contents cannot be decrypted even by JBrowse administrators.
 
+### Are my share links reproducible
+
+It depends which link you mean — there are two, and they behave differently:
+
+- The **short link** (`&session=share-<ID>&password=<KEY>`) is _not_
+  reproducible. Each click of the Share button mints a new random encryption key
+  and uploads a new encrypted blob, so you get a new `<ID>`/`<KEY>` pair every
+  time — even for the exact same view. This is by design: the short link is just
+  a key into our hosted store.
+
+- The **long URL** _is_ reproducible. Click the gear icon in the Share dialog to
+  switch to "Long URL" mode; this encodes the entire session as JSON directly in
+  the URL, with no server round-trip and no minted password. The same view
+  produces the same long URL (given the same config), and it keeps working even
+  if you rebuild or move your JBrowse instance.
+
+The one thing that can break reproducibility is your **config**, not the link.
+A restored session references tracks by `trackId`, so if a redeploy regenerates
+`config.json` with different `trackId`s, the link can no longer find those
+tracks. Keep `trackId`s deterministic across builds and shared links stay
+stable — see [keeping trackIds
+stable](/docs/config_guides/deploying/#keep-trackids-stable-for-reproducible-links)
+and [why a saved session fails to
+load](/docs/faq/#why-does-my-saved-session-fail-to-load).
+
 ## Troubleshooting
 
 ### Where can I get help or report a bug

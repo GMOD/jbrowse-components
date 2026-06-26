@@ -141,3 +141,37 @@ Common display types, for the array form:
 | QuantitativeTrack      | LinearWiggleDisplay      |
 
 See the [config_guides](/docs/config_guide) for per-track display options.
+
+## Copying a track's config out of the app
+
+If you have configured a track the way you like it in the app and want the raw
+JSON to reuse elsewhere, you don't have to reconstruct it by hand:
+
+- **Copy track** — in the track menu (the dropdown on the track label), choose
+  "Copy track" to copy the track's full config JSON. "Copy and open track" does
+  the same and immediately opens the copy in the current view.
+- **Settings** — also in the track menu, "Settings" opens the configuration
+  editor for that track, where you can review and copy every slot's current
+  value. This is available to any user, not just admins; a non-admin's edits
+  become a per-session override that travels with the session (and with shared
+  session links) rather than modifying the shared `config.json`. "Reset track
+  settings" clears such an override.
+
+This is the easiest way to turn a tweaked-in-the-UI track into a JSON snippet you
+can paste into `config.json` or into a [generation
+script](/docs/config_guides/deploying/#generating-configjson-from-a-script).
+
+## Finding every option for a track or adapter type
+
+The config guides cover common settings, but the complete, always-up-to-date
+list of every slot for every track, display, and adapter type is the
+auto-generated **config reference** (generated directly from the source, so it
+never drifts). For example:
+
+- [BamAdapter](/docs/config/bamadapter),
+  [VcfTabixAdapter](/docs/config/vcftabixadapter),
+  [BigWigAdapter](/docs/config/bigwigadapter)
+- [LinearAlignmentsDisplay](/docs/config/linearalignmentsdisplay),
+  [LinearWiggleDisplay](/docs/config/linearwiggledisplay)
+
+Browse the full list under the [config reference](/docs/config_guide).

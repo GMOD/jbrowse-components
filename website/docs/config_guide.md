@@ -7,6 +7,7 @@ a JBrowse 2 session.
 
 ## Getting started
 
+- [Deploying JBrowse Web](/docs/config_guides/deploying) - Serving JBrowse Web as a static site, and scripting its config in a CI/CD pipeline
 - [Intro to the config.json format](/docs/config_guides/intro) - Overall structure and key fields of the config.json file
 
 ## Core configuration

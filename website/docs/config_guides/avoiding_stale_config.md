@@ -16,3 +16,9 @@ Some servers aggressively cache `config.json`. To force a fresh fetch, add this
 
 This appends a random query string to the config.json request, bypassing the
 browser cache.
+
+Because `config.json` is fetched before it can configure anything, this snippet
+is the one piece of deploy config that must live in `index.html` rather than in
+`config.json`. It is a single line, so it is easy to inject from a build script
+instead of hand-editing — see [Deploying JBrowse
+Web](/docs/config_guides/deploying).

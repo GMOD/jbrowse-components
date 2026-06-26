@@ -96,6 +96,33 @@ Example:
 See the [MultiWiggleAdapter config docs](/docs/config/multiwiggleadapter) for
 all options.
 
+### Generating the subadapters from a samplesheet
+
+Because `subadapters` is just an array of objects, it templates cleanly from
+repetitive data like an RNA-seq timecourse. Given rows of
+`{ timepoint, bigwig }`, build the track in a script rather than by hand:
+
+```js
+// rows: [{ timepoint: '0h', bigwig: 's3://.../t0.bw' }, ...]
+const track = {
+  type: 'MultiQuantitativeTrack',
+  trackId: 'rnaseq-timecourse', // keep this stable across rebuilds
+  name: 'RNA-seq timecourse',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: rows.map(row => ({
+      type: 'BigWigAdapter',
+      source: row.timepoint,
+      uri: row.bigwig,
+    })),
+  },
+}
+```
+
+See [Deploying JBrowse Web](/docs/config_guides/deploying) for the full
+pattern of generating `config.json` from a samplesheet in a CI/CD pipeline.
+
 ## See also
 
 - [Multi-quantitative track](/docs/user_guides/multiquantitative_track) — using

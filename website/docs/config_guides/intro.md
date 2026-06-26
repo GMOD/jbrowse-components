@@ -29,6 +29,28 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 The most important things to configure are your assemblies and your tracks.
 
+:::tip
+
+Looking for the complete list of options for a specific track or adapter type?
+The auto-generated [config reference](/docs/config_guide) has one page per type,
+generated directly from the source code (so it never goes stale) — e.g.
+[BamAdapter](/docs/config/bamadapter) or
+[LinearWiggleDisplay](/docs/config/linearwiggledisplay). The hand-written guides
+explain the common cases; the reference is the exhaustive master list.
+
+:::
+
+:::tip
+
+You rarely need to write `config.json` by hand. The
+[`@jbrowse/cli`](/docs/cli) commands (`jbrowse add-assembly`,
+`jbrowse add-track`) write the JSON for you, and for repetitive data you can
+[generate `config.json` from a script](/docs/config_guides/deploying). See
+[Deploying JBrowse Web](/docs/config_guides/deploying) for an end-to-end
+scripted setup.
+
+:::
+
 :::info
 
 On jbrowse desktop, a "session" is a complete JBrowse config with a `.jbrowse`
