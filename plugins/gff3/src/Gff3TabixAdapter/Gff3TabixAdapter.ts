@@ -8,7 +8,7 @@ import {
 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { extractType, parseRecordsJBrowse } from 'gff-nostream'
+import { extractType, parseRecords } from 'gff-nostream'
 
 import type { Gff3TabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -102,7 +102,7 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
         }
 
         // emit only top-level features intersecting the original query
-        for (const feature of parseRecordsJBrowse(lines)) {
+        for (const feature of parseRecords(lines)) {
           if (
             doesIntersect2(feature.start, feature.end, query.start, query.end)
           ) {

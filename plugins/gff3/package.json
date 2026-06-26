@@ -33,7 +33,7 @@
     "@gmod/tabix": "^3.4.2",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/mobx-state-tree": "^5.11.1",
-    "gff-nostream": "^3.0.11",
+    "gff-nostream": "^4.0.0",
     "mobx": "^6.16.1",
     "rxjs": "^7.8.2"
   },

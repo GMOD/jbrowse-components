@@ -7,14 +7,14 @@ import {
 } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseStringSyncJBrowse } from 'gff-nostream'
+import { parseStringSync } from 'gff-nostream'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
-import type { JBrowseFeature } from 'gff-nostream'
+import type { GffFeature } from 'gff-nostream'
 
-type Gff3Feature = JBrowseFeature & { uniqueId: string }
+type Gff3Feature = GffFeature & { uniqueId: string }
 
 export default class Gff3Adapter extends BaseFeatureDataAdapter {
   private gffFeatures?: ReturnType<Gff3Adapter['loadDataP']>
@@ -33,7 +33,7 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
     const intervalTreeMap = makeFeatureIntervalTreeMap<Gff3Feature>(
       linesByRef,
       (lines, refName) =>
-        parseStringSyncJBrowse(`${lines.join('\n')}\n`).map((f, i) => ({
+        parseStringSync(`${lines.join('\n')}\n`).map((f, i) => ({
           ...f,
           uniqueId: `${this.id}-${refName}-${i}`,
         })),
