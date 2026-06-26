@@ -561,6 +561,20 @@ const jbrowseImgSpecs: CliSpec[] = [
     '1200',
   ]),
 
+  // Hi-C contact matrix: the public hg19 demo .hic streamed from S3. The
+  // triangular heatmap shows TAD structure along chr1.
+  cliSpec('hic', [
+    '--fasta',
+    'https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz',
+    '--hic',
+    'https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic',
+    'height:400',
+    '--loc',
+    '1:2,500,000-12,500,000',
+    '--width',
+    '1200',
+  ]),
+
   // Dark theme (bundled volvox coverage + annotations).
   cliSpec('dark_theme', [
     '--fasta',

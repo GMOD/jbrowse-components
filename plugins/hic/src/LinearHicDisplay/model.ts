@@ -158,6 +158,16 @@ export default function stateModelFactory(
       return mode === 'adjust' ? { ...rest, fitToHeight: true } : rest
     })
     .views(self => ({
+      /**
+       * #getter
+       * GlobalDataDisplayMixin hook: the contact matrix has been fetched once
+       * `rpcData` is set (the fetch commits it even for an empty viewport), so
+       * `svgReady` waits for the debounced `afterAttach` fetch instead of
+       * exporting an empty matrix.
+       */
+      get dataLoaded(): boolean {
+        return self.rpcData !== null
+      },
       get colorScheme(): HicColorScheme | undefined {
         return self.getOverride<HicColorScheme>('colorScheme')
       },

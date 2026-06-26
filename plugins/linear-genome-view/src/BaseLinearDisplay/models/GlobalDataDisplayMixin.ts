@@ -66,19 +66,45 @@ export default function GlobalDataDisplayMixin() {
     .views(self => ({
       /**
        * #getter
+       * Overridable hook (default false): a subclass returns true once its
+       * single global dataset has actually been fetched — even when the fetch
+       * committed an empty result. The mixin owns no data state, so a global
+       * display must express this; it is the global-display analog of
+       * `MultiRegionDisplayMixin.viewportWithinLoadedData`.
+       */
+      get dataLoaded(): boolean {
+        return false
+      },
+      /**
+       * #getter
+       * Overridable hook (default false): a subclass returns true to mark an
+       * extra terminal state where off-screen export can proceed with no loaded
+       * data (mirrors `MultiRegionDisplayMixin.svgReadyExtraTerminal`).
+       */
+      get svgReadyExtraTerminal(): boolean {
+        return false
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
        * Global-display analog of `MultiRegionDisplayMixin.svgReady`: true once an
-       * off-screen (SVG) export can read final data. A global display has no
-       * per-region spatial axis, so "settled" is simply `displayPhase !==
-       * 'loading'` — it has its one dataset, is in a terminal state (error /
-       * tooLarge), or is intentionally empty. This waits out an in-place
-       * refetch (which keeps stale `rpcData` until the new result commits) and,
-       * unlike `isReady`, never gates on `canvasDrawn`, which an off-screen
-       * export never sets. Off-screen renderers gate on it via
-       * `awaitSvgReady(model)` instead of inlining a `data != null || error ||
-       * ...` condition.
+       * off-screen (SVG) export can read final data. Like that mixin it requires
+       * the dataset to actually be loaded (or a terminal error / too-large /
+       * extra state), NOT merely "not currently fetching": the fetch trigger is
+       * a debounced `afterAttach` autorun, so at export time `isLoading` can
+       * still be false with no data yet — a `displayPhase !== 'loading'` test
+       * would then capture an empty render. Never gates on `canvasDrawn`, which
+       * an off-screen export never sets. Off-screen renderers gate on it via
+       * `awaitSvgReady(model)`.
        */
       get svgReady(): boolean {
-        return self.displayPhase !== 'loading'
+        return (
+          self.dataLoaded ||
+          !!self.error ||
+          self.regionTooLarge ||
+          self.svgReadyExtraTerminal
+        )
       },
     }))
     .actions(self => ({

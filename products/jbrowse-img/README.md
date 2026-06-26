@@ -255,6 +255,19 @@ jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.
 
 ![A variant track drawing each SNV with its reference-to-alternate change](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/variants.png)
 
+### Hi-C tracks
+
+A `--hic` track draws the contact matrix as a triangular heatmap. This example
+streams the public hg19 demo `.hic` and shows the TAD structure along chr1:
+
+```bash
+jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --hic https://jbrowse.org/genomes/hg19/intra_nofrag_30.hic height:400 \
+  --loc 1:2,500,000-12,500,000 --width 1200 --out hic.png
+```
+
+![Hi-C contact matrix as a triangular heatmap showing TAD structure along hg19 chr1](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/hic.png)
+
 ### Gene / feature tracks
 
 Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with
