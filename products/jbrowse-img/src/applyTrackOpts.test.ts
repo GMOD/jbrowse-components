@@ -1,153 +1,133 @@
-import { applyCoverageOnly, applyTrackModifier } from './applyTrackOpts.ts'
+import { buildDisplaySnapshot } from './applyTrackOpts.ts'
 
-import type { TrackDisplay } from './applyTrackOpts.ts'
+// buildDisplaySnapshot turns a track's modifier list into a declarative display
+// snapshot (passed to showTrack), instead of a sequence of setter actions.
 
-// A recording stand-in for a display model. Each setter is a jest.fn so tests
-// assert what a modifier dispatched, without spinning up a real MST tree.
-function mockDisplay(extra: Record<string, unknown> = {}) {
-  return {
-    setHeight: jest.fn(),
-    setSortedBy: jest.fn(),
-    setGroupBy: jest.fn(),
-    setColorScheme: jest.fn(),
-    setColor: jest.fn(),
-    setShowCoverage: jest.fn(),
-    setCoverageHeight: jest.fn(),
-    setFeatureHeight: jest.fn(),
-    setCompactness: jest.fn(),
-    setFeatureSpacing: jest.fn(),
-    ...extra,
-  } as unknown as TrackDisplay
-}
-
-describe('applyTrackModifier', () => {
-  test('group:type:tag sets a GroupBy object', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'group', 'tag', 'HP')
-    expect(display.setGroupBy).toHaveBeenCalledWith({ type: 'tag', tag: 'HP' })
+describe('alignments modifiers', () => {
+  test('group:type:tag sets a groupBy object', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['group:tag:HP'])
+    expect(snap.groupBy).toEqual({ type: 'tag', tag: 'HP' })
   })
 
-  test('group with bare type omits tag', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'group', 'strand', undefined)
-    expect(display.setGroupBy).toHaveBeenCalledWith({
-      type: 'strand',
-      tag: undefined,
-    })
-  })
-
-  test('group with empty value clears grouping', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'group', '', undefined)
-    expect(display.setGroupBy).toHaveBeenCalledWith(undefined)
+  test('color sets colorBy', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['color:tag:XS'])
+    expect(snap.colorBy).toEqual({ type: 'tag', tag: 'XS' })
   })
 
   test('height parses a number', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'height', '400', undefined)
-    expect(display.setHeight).toHaveBeenCalledWith(400)
+    const { snap } = buildDisplaySnapshot('alignments', ['height:400'])
+    expect(snap.height).toBe(400)
   })
 
-  test('color prefers setColorScheme when present', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'color', 'tag', 'XS')
-    expect(display.setColorScheme).toHaveBeenCalledWith({
-      type: 'tag',
-      tag: 'XS',
+  test('arcs:samplot and arcs:down map to readConnections fields', () => {
+    expect(buildDisplaySnapshot('alignments', ['arcs:samplot']).snap)
+      .toMatchObject({ readConnections: 'samplot' })
+    expect(buildDisplaySnapshot('alignments', ['arcs:down']).snap).toMatchObject(
+      { readConnections: 'arc', readConnectionsDown: true },
+    )
+  })
+
+  test('linkedReads:bezier is the showBezierConnections overlay, not a layout mode', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['linkedReads:bezier'])
+    expect(snap.showBezierConnections).toBe(true)
+    expect(snap.linkedReads).toBeUndefined()
+  })
+
+  test('sashimi:off hides arcs; sashimi:down sets mode', () => {
+    expect(buildDisplaySnapshot('alignments', ['sashimi:off']).snap).toMatchObject(
+      { showSashimiArcs: false },
+    )
+    expect(buildDisplaySnapshot('alignments', ['sashimi:down']).snap).toMatchObject(
+      { showSashimiArcs: true, sashimiArcsMode: 'down' },
+    )
+  })
+
+  test('sort is returned as an intent (resolved against the view)', () => {
+    const { sort, snap } = buildDisplaySnapshot('alignments', ['sort:base'])
+    expect(sort).toEqual({ type: 'base', tag: undefined })
+    expect(snap.sortedBy).toBeUndefined()
+  })
+
+  test('force is returned as a flag (volatile, not a snapshot value)', () => {
+    expect(buildDisplaySnapshot('alignments', ['force:true']).force).toBe(true)
+    expect(buildDisplaySnapshot('alignments', []).force).toBe(false)
+  })
+
+  test('featureHeight preset maps to per-read height/spacing', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['featureHeight:super-compact'])
+    expect(snap).toMatchObject({ featureHeight: 1, featureSpacing: 0 })
+  })
+
+  test('featureHeight numeric sets featureHeight', () => {
+    expect(buildDisplaySnapshot('alignments', ['featureHeight:4']).snap.featureHeight).toBe(4)
+  })
+
+  test('featureHeight rejects a non-numeric, non-preset value', () => {
+    expect(() => buildDisplaySnapshot('alignments', ['featureHeight:bogus'])).toThrow(
+      /Invalid featureHeight/,
+    )
+  })
+
+  test('snpcov hides the pileup and fills coverage to the given height', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['snpcov', 'height:200'])
+    expect(snap).toMatchObject({
+      showPileup: false,
+      showCoverage: true,
+      coverageHeight: 200,
     })
-    expect(display.setColor).not.toHaveBeenCalled()
+  })
+})
+
+describe('feature modifiers', () => {
+  test('featureHeight preset maps to displayMode for canvas features', () => {
+    const { snap } = buildDisplaySnapshot('feature', ['featureHeight:super-compact'])
+    expect(snap.displayMode).toBe('superCompact')
   })
 
-  test('color on a score display patches color + disables bicolor', () => {
-    const display = mockDisplay({
-      setColorScheme: undefined,
-      setScaleType: jest.fn(),
-    })
-    const patch = {}
-    applyTrackModifier(display, 'color', 'purple', undefined, patch)
-    expect(patch).toEqual({ color: 'purple', useBicolor: false })
+  test('alignment-only modifiers are ignored on a feature track', () => {
+    const { snap } = buildDisplaySnapshot('feature', ['arcs:up', 'sashimi:down'])
+    expect(snap.readConnections).toBeUndefined()
+    expect(snap.showSashimiArcs).toBeUndefined()
   })
+})
 
-  test('score-display settings accumulate into a declarative snapshot patch', () => {
-    const display = mockDisplay({ setScaleType: jest.fn() })
-    const patch = {}
-    applyTrackModifier(display, 'scaletype', 'log', undefined, patch)
-    applyTrackModifier(display, 'fill', 'false', undefined, patch)
-    applyTrackModifier(display, 'minmax', '1', '1024', patch)
-    applyTrackModifier(display, 'crosshatch', 'true', undefined, patch)
-    applyTrackModifier(display, 'resolution', 'superfine', undefined, patch)
-    expect(patch).toEqual({
+describe('wiggle / score modifiers', () => {
+  test('score settings accumulate into the snapshot', () => {
+    const { snap } = buildDisplaySnapshot('wiggle', [
+      'scaletype:log',
+      'fill:false',
+      'minmax:1:1024',
+      'crosshatch:true',
+      'resolution:superfine',
+      'color:purple',
+    ])
+    expect(snap).toMatchObject({
       scaleType: 'log',
       defaultRendering: 'scatter',
       minScore: 1,
       maxScore: 1024,
       displayCrossHatches: true,
       resolution: 100,
+      color: 'purple',
+      useBicolor: false,
     })
   })
 
-  test('fill:true maps to the xyplot rendering type', () => {
-    const display = mockDisplay({ setScaleType: jest.fn() })
-    const patch = {}
-    applyTrackModifier(display, 'fill', 'true', undefined, patch)
-    expect(patch).toEqual({ defaultRendering: 'xyplot' })
-  })
-
-  test('score settings no-op on a non-score display', () => {
-    const display = mockDisplay()
-    const patch = {}
-    applyTrackModifier(display, 'scaletype', 'log', undefined, patch)
-    applyTrackModifier(display, 'fill', 'false', undefined, patch)
-    expect(patch).toEqual({})
-  })
-
-  test('featureHeight presets route to setCompactness', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'featureHeight', 'super-compact', undefined)
-    expect(display.setCompactness).toHaveBeenCalledWith('super-compact')
-    expect(display.setFeatureHeight).not.toHaveBeenCalled()
-  })
-
-  test('featureHeight numeric routes to setFeatureHeight', () => {
-    const display = mockDisplay()
-    applyTrackModifier(display, 'featureHeight', '4', undefined)
-    expect(display.setFeatureHeight).toHaveBeenCalledWith(4)
-  })
-
-  test('featureHeight rejects a non-numeric, non-preset value', () => {
-    const display = mockDisplay()
-    expect(() => {
-      applyTrackModifier(display, 'featureHeight', 'bogus', undefined)
-    }).toThrow(/Invalid featureHeight/)
-  })
-
-  test('unknown modifier warns and does nothing', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    const display = mockDisplay()
-    applyTrackModifier(display, 'colour', 'red', undefined)
-    expect(warn).toHaveBeenCalledWith('Warning: unknown track option "colour"')
-    warn.mockRestore()
-  })
-
-  test('snpcov is a no-op in the modifier dispatch (no warning)', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
-    applyTrackModifier(mockDisplay(), 'snpcov', '', undefined)
-    expect(warn).not.toHaveBeenCalled()
-    warn.mockRestore()
+  test('score settings are ignored on a non-score (alignments) track', () => {
+    const { snap } = buildDisplaySnapshot('alignments', ['scaletype:log', 'fill:false'])
+    expect(snap.scaleType).toBeUndefined()
+    expect(snap.defaultRendering).toBeUndefined()
   })
 })
 
-describe('applyCoverageOnly', () => {
-  test('snpcov fills the coverage band to the track height', () => {
-    const display = mockDisplay({ height: 200 })
-    applyCoverageOnly(display, ['snpcov'])
-    expect(display.setShowCoverage).toHaveBeenCalledWith(true)
-    expect(display.setCoverageHeight).toHaveBeenCalledWith(200)
-  })
+test('a {...} token is merged as raw JSON', () => {
+  const { snap } = buildDisplaySnapshot('alignments', ['{"colorBy":{"type":"strand"}}'])
+  expect(snap.colorBy).toEqual({ type: 'strand' })
+})
 
-  test('no snpcov leaves coverage untouched', () => {
-    const display = mockDisplay({ height: 200 })
-    applyCoverageOnly(display, ['height:200'])
-    expect(display.setCoverageHeight).not.toHaveBeenCalled()
-  })
+test('unknown modifier warns and does nothing', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => undefined)
+  buildDisplaySnapshot('alignments', ['colour:red'])
+  expect(warn).toHaveBeenCalledWith('Warning: unknown track option "colour"')
+  warn.mockRestore()
 })

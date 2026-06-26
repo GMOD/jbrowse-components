@@ -344,7 +344,7 @@ Overlays & subtracks:
 | ---------------------- | -------------------- | --------------------------------------------------------------------- |
 | `arcs:mode`            | `arcs:samplot`       | Read-connection arcs / samplot panel (`off`, `up`, `down`, `samplot`) |
 | `linkedReads:mode`     | `linkedReads:normal` | Linked-read chains (`off`, `normal`, `bezier`)                        |
-| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`)                    |
+| `sashimi:mode`         | `sashimi:up`         | Sashimi splice-junction arcs (`off`, `up`, `down`, `auto`)            |
 | `coverage:true\|false` | `coverage:false`     | Toggle coverage subtrack                                              |
 | `snpcov`               | `snpcov`             | Coverage-only view — resizes the coverage band to fill the track      |
 

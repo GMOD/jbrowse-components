@@ -2027,6 +2027,22 @@ importers:
       tmp:
         specifier: ^0.2.7
         version: 0.2.7
+    devDependencies:
+      '@jbrowse/plugin-alignments':
+        specifier: workspace:^
+        version: link:../../plugins/alignments
+      '@jbrowse/plugin-canvas':
+        specifier: workspace:^
+        version: link:../../plugins/canvas
+      '@jbrowse/plugin-hic':
+        specifier: workspace:^
+        version: link:../../plugins/hic
+      '@jbrowse/plugin-variants':
+        specifier: workspace:^
+        version: link:../../plugins/variants
+      '@jbrowse/plugin-wiggle':
+        specifier: workspace:^
+        version: link:../../plugins/wiggle
 
   products/jbrowse-react-app:
     dependencies:
