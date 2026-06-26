@@ -315,6 +315,48 @@
       ]
     },
     {
+      "type": "FeatureTrack",
+      "trackId": "volvox_mouse_samples_by_sample",
+      "name": "Mouse samples (per-sample colors)",
+      "category": ["Miscellaneous"],
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BedTabixAdapter",
+        "disableGeneHeuristic": true,
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample"
+        ],
+        "bedGzLocation": {
+          "uri": "volvox_mouse_inheritance.bed.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiRowFeatureDisplay",
+          "displayId": "volvox_mouse_samples_by_sample-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "sampleColorMap": { "mom": "#e41a1c", "dad": "#377eb8" },
+          "rowHeight": 18
+        }
+      ]
+    },
+    {
       "type": "GWASTrack",
       "trackId": "volvox_gwas",
       "name": "Manhattan plot",

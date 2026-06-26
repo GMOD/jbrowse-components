@@ -490,6 +490,55 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "adapter": {
         "bedGzLocation": {
           "locationType": "UriLocation",
+          "uri": "volvox_mouse_inheritance.bed.gz",
+        },
+        "columnNames": [
+          "chrom",
+          "chromStart",
+          "chromEnd",
+          "name",
+          "score",
+          "strand",
+          "thickStart",
+          "thickEnd",
+          "itemRgb",
+          "sample",
+        ],
+        "disableGeneHeuristic": true,
+        "index": {
+          "location": {
+            "locationType": "UriLocation",
+            "uri": "volvox_mouse_inheritance.bed.gz.tbi",
+          },
+        },
+        "type": "BedTabixAdapter",
+      },
+      "assemblyNames": [
+        "volvox",
+      ],
+      "category": [
+        "Miscellaneous",
+      ],
+      "displays": [
+        {
+          "displayId": "volvox_mouse_samples_by_sample-LinearMultiRowFeatureDisplay",
+          "partitionField": "sample",
+          "rowHeight": 18,
+          "sampleColorMap": {
+            "dad": "#377eb8",
+            "mom": "#e41a1c",
+          },
+          "type": "LinearMultiRowFeatureDisplay",
+        },
+      ],
+      "name": "Mouse samples (per-sample colors)",
+      "trackId": "volvox_mouse_samples_by_sample",
+      "type": "FeatureTrack",
+    },
+    {
+      "adapter": {
+        "bedGzLocation": {
+          "locationType": "UriLocation",
           "uri": "volvox.gwas.tsv.gz",
         },
         "index": {
@@ -1817,7 +1866,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Shorthand examples",
       ],
-      "displays": {
+      "displayDefaults": {
         "color": "#6a3d9a",
       },
       "metadata": {
@@ -1847,7 +1896,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Shorthand examples",
       ],
-      "displays": {
+      "displayDefaults": {
         "color": "jexl:feature.strand==1?'#1f77b4':'#d62728'",
         "labels": {
           "name": "jexl:feature.name+' ['+feature.type+']'",
@@ -1880,7 +1929,7 @@ exports[`JBrowse model creates with non-empty snapshot 1`] = `
       "category": [
         "Shorthand examples",
       ],
-      "displays": {
+      "displayDefaults": {
         "color": "#1f78b4",
         "strokeColor": "#e31a1c",
       },
