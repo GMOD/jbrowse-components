@@ -19,8 +19,18 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A `FeatureTrack` painting BED intervals onto one row per sample, colored by the
-BED `itemRgb` column:
+"Ancestry painting" data is usually a custom BED: one feature per segment, plus
+extra columns naming the row (`partitionField`) and the block color. For a
+tab-separated BED like this (shown space-aligned) whose columns are named via
+the adapter's `columnNames`:
+
+```
+chr1  0        2000000  seg1  HG00096  #4e79a7
+chr1  2000000  5500000  seg2  HG00096  #f28e2b
+chr1  0        3500000  seg3  HG00097  #59a14f
+```
+
+paint one row per `sample`, coloring each block from the custom `color` column:
 
 ```js
 {
@@ -31,17 +41,23 @@ BED `itemRgb` column:
   adapter: {
     type: 'BedTabixAdapter',
     uri: 'https://example.com/painting.bed.gz',
+    columnNames: ['chrom', 'start', 'end', 'name', 'sample', 'color'],
   },
   displays: [
     {
       type: 'LinearMultiRowFeatureDisplay',
       displayId: 'ancestry_painting-LinearMultiRowFeatureDisplay',
       partitionField: 'sample',
-      color: "jexl:get(feature,'itemRgb')",
+      color: "jexl:get(feature,'color')",
     },
   ],
 }
 ```
+
+A standard BED12 has no per-row attribute, but its `itemRgb` works directly
+(`color: "jexl:get(feature,'itemRgb')"`); you can likewise manufacture a color
+from any attribute, e.g. a population label
+(`color: "jexl:get(feature,'pop')=='EUR'?'#4e79a7':'#f28e2b'"`).
 
 _See the **Slots** section below for all available configuration fields._
 
