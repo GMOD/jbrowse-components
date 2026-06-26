@@ -10,7 +10,20 @@ need to run this tool is
 
 - NodeJS v23+
 
-## Screenshot
+## Setup
+
+You can install the `@jbrowse/img` package from npm, which, if your node is
+configured in a typical configuration, will then have a command `jb2export` in
+your path
+
+```bash
+npm install -g @jbrowse/img
+```
+
+If you are a developer and want to modify the code, see the
+[source on GitHub](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-img)
+
+## Quickstart
 
 A multi-track human (hg19) view at the IFFO2 / ALDH4A1 locus — NCBI RefSeq
 genes, ClinGen gene–disease mapping, phyloP conservation, and SKBR3 nanopore
@@ -30,22 +43,9 @@ jb2export \
   --loc 1:19,197,000-19,233,000 --width 1200 --out overview.png
 ```
 
-## Setup
+## Basic usage
 
-You can install the `@jbrowse/img` package from npm, which, if your node is
-configured in a typical configuration, will then have a command `jb2export` in
-your path
-
-```bash
-npm install -g @jbrowse/img
-```
-
-If you are a developer and want to modify the code, see the
-[source on GitHub](https://github.com/GMOD/jbrowse-components/tree/main/products/jbrowse-img)
-
-## Example usages
-
-### Use with local files
+### Local files
 
 We can call this script on local files, and it doesn't require a web browser,
 not even a headless webbrowser, it just runs a node script and React SSR is used
@@ -65,27 +65,7 @@ jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 
 
 If `--out` is not specified it writes SVG to stdout
 
-### Generate PNG instead of SVG
-
-Supply a file with the png extension to `--out`, uses rsvg-convert so you will
-need to install rsvg-convert to your system e.g. with
-`sudo apt install librsvg2-bin`
-
-```bash
-jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.png
-```
-
-### Generate PDF instead of SVG
-
-Supply a file with the pdf extension to `--out`, uses rsvg-convert so you will
-need to install rsvg-convert to your system e.g. with
-`sudo apt install librsvg2-bin`
-
-```bash
-jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
-```
-
-### Use with remote files
+### Remote files
 
 This example shows using remote files, e.g. with human hg19 and several tracks
 
@@ -101,19 +81,112 @@ jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
   --loc 1:48,683,542..48,907,531
 ```
 
-### Customizing track
+## Output formats
 
-In addition to possibly specifying custom track configuration files, sometimes
-specializing specifically track state is helpful. This example helps color and
-sort by the read group (RG) tag
+The output format is chosen by the extension of `--out`: `.svg`, `.png`, or
+`.pdf`. With no `--out`, SVG is written to stdout. PNG and PDF use
+`rsvg-convert`, so you will need to install it on your system, e.g. with
+`sudo apt install librsvg2-bin`.
+
+```bash
+## SVG (vector)
+jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.svg
+
+## PNG
+jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.png
+
+## PDF
+jb2export --fasta yourfile.fa --bam yourfile.bam --loc chr1:1,000,000-1,001,000 --out file.pdf
+```
+
+By default the pileup, coverage, and hic layers are rasterized into the SVG to
+keep file sizes down. Pass `--noRasterize` to render everything as SVG vectors
+instead (larger files, fully editable in vector tools).
+
+### Converting SVG to PNG manually
+
+The tool runs `rsvg-convert` automatically when `--out` ends in `.png`.
+Alternatively, you can convert an SVG yourself:
+
+```bash
+## with inkscape
+
+sudo apt install inkscape
+inkscape --export-type png --export-filename out.png -w 2048 out.svg
+
+## with librsvg
+
+sudo apt install librsvg2-bin
+rsvg-convert -w 2048 out.svg -o out.png
+
+## with imagemagick
+
+sudo apt install imagemagick
+convert -size 2048x out.svg out.png
+
+```
+
+## Track gallery
+
+Each track type renders as you'd expect from JBrowse 2. The examples below are
+reproducible with the bundled volvox data (and a couple of public remote files);
+see [Track modifiers](#track-modifiers) for the full list of per-track options
+used here.
+
+### Alignments tracks
+
+A `--bam`/`--cram` track renders a coverage histogram over a read pileup, with
+mismatches highlighted. Reproducible with the bundled volvox alignments:
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
+  --loc ctgA:1-20000 --width 1200 --out pileup.png
+```
+
+![A coverage histogram over a read pileup, with mismatches highlighted](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_pileup.png)
+
+Track modifiers color, sort, and group the reads. Here the reads are colored and
+sorted by their read-group (`RG`) tag:
 
 ```bash
 jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-rg.bam color:tag:RG sort:tag:RG height:400 \
-  --loc ctgA:609..968
+  --bam data/volvox/volvox-rg.bam color:tag:RG sort:tag:RG height:300 \
+  --loc ctgA:1000-2000 --width 1200 --out readgroup.png
 ```
 
-Other common alignment recipes:
+![Reads colored and sorted by their read-group tag](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_readgroup.png)
+
+`group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
+HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
+by the `HP` tag — the heterozygous deletion shows in one haplotype and not the
+other:
+
+```bash
+jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --bam https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam \
+  group:tag:HP color:tag:HP height:400 \
+  --loc 1:63,005,675-63,007,432 --width 1200 --out haplotype.png
+```
+
+![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_haplotype.png)
+
+`color:methylation` paints per-base CpG methylation calls from a modified-base
+(`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829
+nanopore CRAM (hg38, streamed from the ONT open-data S3) over a CpG island shows
+the methylated-to-unmethylated transition:
+
+```bash
+jb2export \
+  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
+  --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
+  --cram https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram color:methylation height:350 \
+  --loc 20:18,500,750-18,503,250 --width 1200 --out methylation.png
+```
+
+![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/methylation.png)
+
+More alignment recipes (see [Track modifiers](#track-modifiers) for all
+options):
 
 ```bash
 ## color by splice strand (XS tag), sort by haplotype (HP tag)
@@ -142,8 +215,91 @@ jb2export --fasta ref.fa --bam linked.bam linkedReads:bezier --loc chr1:1-50000
 jb2export --fasta ref.fa --bam rnaseq.bam sashimi:up --loc chr1:1-50000
 ```
 
-Instead of extra `--flags`, track modifiers use a colon-based syntax that
-follows the track file argument. Full list of available modifiers:
+### BigWig / quantitative tracks
+
+The special flag `--loc all` shows the full assembly, and there are a number of
+custom bigwig plotting options that can help draw the bigwig genome wide.
+
+This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
+read coverage genome-wide (hg19, public bigwig), where the amplifications and
+deletions of the cancer karyotype stand out:
+
+```bash
+jb2export --loc all \
+  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
+  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
+  --width 1400 --out skbr3_coverage.png
+```
+
+![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_cov.png)
+
+The score scaling can also autoscale — here to "localsd" (mean plus/minus three
+standard deviations) on a linear scale:
+
+```bash
+jb2export --loc all \
+  --bigwig coverage.bw autoscale:localsd fill:false resolution:superfine height:400 color:purple \
+  --assembly hg19 \
+  --config data/config.json
+```
+
+### Variant tracks
+
+A `--vcfgz` track draws each variant with its reference-to-alternate change.
+Reproducible with the bundled volvox VCF:
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.gz \
+  --loc ctgA:1-20000 --width 1200 --out variants.png
+```
+
+![A variant track drawing each SNV with its reference-to-alternate change](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/variants.png)
+
+### Gene / feature tracks
+
+Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with
+labels. Reproducible with the bundled volvox annotations:
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz \
+  --loc ctgA:1-50000 --width 1200 --out genes.png
+```
+
+![A gene/feature track rendered with glyphs and labels (volvox annotations)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
+
+### Reference sequence track
+
+`--refseq` adds the assembly's reference-sequence track. Zoomed in to base level
+it shows the DNA bases and the six-frame translation (green start codons, red
+stops):
+
+```bash
+jb2export --fasta data/volvox/volvox.fa --loc ctgA:108-208 --refseq \
+  --width 1500 --out sequence.png
+```
+
+![The reference sequence track at base level, showing DNA bases and the six-frame translation](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/sequence.png)
+
+### Themes
+
+`--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`,
+`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names — use
+the keys above.)
+
+```bash
+jb2export --fasta data/volvox/volvox.fa \
+  --bigwig data/volvox/volvox-sorted.bam.coverage.bw \
+  --gffgz data/volvox/volvox.sort.gff3.gz \
+  --loc ctgA:1-20000 --themeName darkStock --width 1200 --out dark.png
+```
+
+![A coverage and gene track rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
+
+## Track modifiers
+
+Instead of extra `--flags`, per-track settings use a colon-based syntax that
+follows the track file argument, e.g. `--bam reads.bam color:tag:RG height:400`.
+This is the full list of available modifiers.
 
 **All tracks**
 
@@ -221,193 +377,7 @@ jb2export --fasta ref.fa --bam reads.bam '{"colorBy":{"type":"strand"}}' \
   --loc chr1:1-10000 --out out.svg
 ```
 
-### Force render a large region
-
-Some jbrowse track types (alignments, gene tracks, etc) will not display if
-zoomed too far out. Add force:true to make it render
-
-```bash
-jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
-```
-
-### Render only the SNPCoverage track of an alignments track
-
-`snpcov` collapses the alignments display down to coverage-only by sizing the
-coverage band to fill the whole track. Combine with `height:N` (overall track
-height) to get a coverage-only render at the size you want.
-
-```bash
-jb2export --bam file.bam snpcov height:200 --fasta hg19.fa
-```
-
-### Use with a jbrowse config.json (remote files in the config.json)
-
-A config.json can be specified with extra tracks supplied outside the config
-e.g. with `--bam`
-
-```bash
-jb2export --config data/config.json \
-  --assembly hg19 \
-  --bam custom_bam.bam \
-  --loc 1:1,000,000-1,100,000
-```
-
-### Respects the order of the files you input
-
-Example:
-
-```
-jb2export --bam file1.bam --bigwig file.bw --bam file2.bam
-```
-
-This will respect the order of the tracks and list file1.bam, file.bw, and
-file2.bam in that order. This requires us to use a custom command line parser
-instead of an off-the-shelf one like yargs
-
-### Use a session file exported from jbrowse
-
-If you use jbrowse-web, you can select File->Export session which produces a
-session.json file, and then use the --session parameter. Make sure to specify
-the assembly also, it currently does not infer the assembly from the session
-
-```bash
-jb2export --config data/skbr3/config.json \
-  --session session.json \
-  --assembly hg19
-```
-
-### Plot whole-genome overview of bigwig
-
-The special flag --loc all shows the full assembly, and there are a number of
-custom bigwig plotting options that can help draw the bigwig genome wide.
-
-This logscale, manual-minmax example plots the SKBR3 breast-cancer cell line's
-read coverage genome-wide (hg19, public bigwig), where the amplifications and
-deletions of the cancer karyotype stand out:
-
-```bash
-jb2export --loc all \
-  --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bigwig https://jbrowse.org/genomes/hg19/reads_lr_skbr3.fa_ngmlr-0.2.3_mapped.bam.regions.bw scaletype:log fill:false resolution:superfine height:400 color:purple minmax:1:1024 \
-  --width 1400 --out skbr3_coverage.png
-```
-
-![SKBR3 cell-line read coverage genome-wide, log scale, showing cancer amplifications and deletions](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/skbr3_cov.png)
-
-The score scaling can also autoscale — here to "localsd" (mean plus/minus three
-standard deviations) on a linear scale:
-
-```bash
-jb2export --loc all \
-  --bigwig coverage.bw autoscale:localsd fill:false resolution:superfine height:400 color:purple \
-  --assembly hg19 \
-  --config data/config.json
-```
-
-### Alignments tracks
-
-A `--bam`/`--cram` track renders a coverage histogram over a read pileup, with
-mismatches highlighted. Reproducible with the bundled volvox alignments:
-
-```bash
-jb2export --fasta data/volvox/volvox.fa --bam data/volvox/volvox-sorted.bam \
-  --loc ctgA:1-20000 --width 1200 --out pileup.png
-```
-
-![A coverage histogram over a read pileup, with mismatches highlighted](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_pileup.png)
-
-The track modifiers (see [Customizing track](#customizing-track) for the full
-list) color, sort, and group the reads. Here the reads are colored and sorted by
-their read-group (`RG`) tag:
-
-```bash
-jb2export --fasta data/volvox/volvox.fa \
-  --bam data/volvox/volvox-rg.bam color:tag:RG sort:tag:RG height:300 \
-  --loc ctgA:1000-2000 --width 1200 --out readgroup.png
-```
-
-![Reads colored and sorted by their read-group tag](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_readgroup.png)
-
-`group:tag:HP` splits the pileup into one stacked sub-track per haplotype. This
-HG002 ultralong-ONT example (hg19, streamed from the GIAB FTP) groups and colors
-by the `HP` tag — the heterozygous deletion shows in one haplotype and not the
-other:
-
-```bash
-jb2export --fasta https://jbrowse.org/genomes/hg19/fasta/hg19.fa.gz \
-  --bam https://ftp-trace.ncbi.nlm.nih.gov/giab/ftp/data/AshkenazimTrio/HG002_NA24385_son/Ultralong_OxfordNanopore/combined_2018-08-10/HG002_ONTrel2_16x_RG_HP10xtrioRTG.cram.bam \
-  group:tag:HP color:tag:HP height:400 \
-  --loc 1:63,005,675-63,007,432 --width 1200 --out haplotype.png
-```
-
-![Reads grouped and colored by haplotype (HP tag), showing a heterozygous deletion in one haplotype](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/alignments_haplotype.png)
-
-`color:methylation` paints per-base CpG methylation calls from a modified-base
-(`MM`/`ML`) BAM/CRAM — methylated cytosines red, unmethylated blue. This COLO829
-nanopore CRAM (hg38, streamed from the ONT open-data S3) over a CpG island shows
-the methylated-to-unmethylated transition:
-
-```bash
-jb2export \
-  --fasta https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz \
-  --aliases https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt \
-  --cram https://ont-open-data.s3.amazonaws.com/colo829_2024.03/wf_somatic_variation/sup/COLO829_tumor.ht.cram color:methylation height:350 \
-  --loc 20:18,500,750-18,503,250 --width 1200 --out methylation.png
-```
-
-![COLO829 nanopore reads colored by per-base CpG methylation over a CpG island](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/methylation.png)
-
-### Variant tracks
-
-A `--vcfgz` track draws each variant with its reference-to-alternate change.
-Reproducible with the bundled volvox VCF:
-
-```bash
-jb2export --fasta data/volvox/volvox.fa --vcfgz data/volvox/volvox.filtered.vcf.gz \
-  --loc ctgA:1-20000 --width 1200 --out variants.png
-```
-
-![A variant track drawing each SNV with its reference-to-alternate change](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/variants.png)
-
-### Gene / feature tracks
-
-Feature tracks (`--gffgz`, `--bigbed`, `--bedgz`) render their glyphs with
-labels. Reproducible with the bundled volvox annotations:
-
-```bash
-jb2export --fasta data/volvox/volvox.fa --gffgz data/volvox/volvox.sort.gff3.gz \
-  --loc ctgA:1-50000 --width 1200 --out genes.png
-```
-
-![A gene/feature track rendered with glyphs and labels (volvox annotations)](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/gene_track.png)
-
-### Reference sequence track
-
-`--refseq` adds the assembly's reference-sequence track. Zoomed in to base level
-it shows the DNA bases and the six-frame translation (green start codons, red
-stops):
-
-```bash
-jb2export --fasta data/volvox/volvox.fa --loc ctgA:108-208 --refseq \
-  --width 1500 --out sequence.png
-```
-
-![The reference sequence track at base level, showing DNA bases and the six-frame translation](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/sequence.png)
-
-### Dark theme
-
-`--themeName` selects a built-in theme: `default`, `lightStock`, `lightMinimal`,
-`darkStock`, or `darkMinimal`. (Plain `dark`/`light` are not theme names — use
-the keys above.)
-
-```bash
-jb2export --fasta data/volvox/volvox.fa \
-  --bigwig data/volvox/volvox-sorted.bam.coverage.bw \
-  --gffgz data/volvox/volvox.sort.gff3.gz \
-  --loc ctgA:1-20000 --themeName darkStock --width 1200 --out dark.png
-```
-
-![A coverage and gene track rendered with the darkStock theme](https://raw.githubusercontent.com/GMOD/jbrowse-components/main/products/jbrowse-img/img/dark_theme.png)
+## Comparative views
 
 ### Compare two assemblies (dotplot / synteny)
 
@@ -573,7 +543,20 @@ jb2export circular \
 
 Run `jb2export circular --help` for the full list of options.
 
-### Use with a jbrowse config.json (local files in the config.json)
+## Configs and sessions
+
+### Use with a jbrowse config.json
+
+A config.json can be specified with extra tracks supplied outside the config
+e.g. with `--bam`. Files referenced in the config can be remote (`uri`) or local
+(`localPath`).
+
+```bash
+jb2export --config data/config.json \
+  --assembly hg19 \
+  --bam custom_bam.bam \
+  --loc 1:1,000,000-1,100,000
+```
 
 The jbrowse CLI tool (e.g. npm install -g @jbrowse/cli) refers to "uri" paths by
 default, but you replace them with localPath like this
@@ -605,6 +588,51 @@ example we would resolve data/volvox/volvox.dup.vcf.gz if "localPath":
 
 See data/volvox/config.json for a config that contains localPaths, or
 data/config.json for a config that just contains URLs
+
+### Use a session file exported from jbrowse
+
+If you use jbrowse-web, you can select File->Export session which produces a
+session.json file, and then use the --session parameter. Make sure to specify
+the assembly also, it currently does not infer the assembly from the session
+
+```bash
+jb2export --config data/skbr3/config.json \
+  --session session.json \
+  --assembly hg19
+```
+
+### Respects the order of the files you input
+
+Example:
+
+```
+jb2export --bam file1.bam --bigwig file.bw --bam file2.bam
+```
+
+This will respect the order of the tracks and list file1.bam, file.bw, and
+file2.bam in that order. This requires us to use a custom command line parser
+instead of an off-the-shelf one like yargs
+
+## Advanced
+
+### Force render a large region
+
+Some jbrowse track types (alignments, gene tracks, etc) will not display if
+zoomed too far out. Add force:true to make it render
+
+```bash
+jb2export --bam file.bam force:true --loc 1:1,100,000-1,200,000 --fasta hg19.fa
+```
+
+### Render only the SNPCoverage track of an alignments track
+
+`snpcov` collapses the alignments display down to coverage-only by sizing the
+coverage band to fill the whole track. Combine with `height:N` (overall track
+height) to get a coverage-only render at the size you want.
+
+```bash
+jb2export --bam file.bam snpcov height:200 --fasta hg19.fa
+```
 
 ## Parameters
 
@@ -808,31 +836,6 @@ Examples:
 
 <!-- INJECT_HELP END -->
 
-## Convert to PNG
-
-The tool will automatically try to run rsvg-convert and convert to PNG if a
-filename with png extension is supplied to --out
-
-Alternatively, you can do so manually with commands like this
-
-```bash
-## with inkscape
-
-sudo apt install inkscape
-inkscape --export-type png --export-filename out.png -w 2048 out.svg
-
-## with librsvg
-
-sudo apt install librsvg2-bin
-rsvg-convert -w 2048 out.svg -o out.png
-
-## with imagemagick
-
-sudo apt install imagemagick
-convert -size 2048x out.svg out.png
-
-```
-
 ## Troubleshooting
 
 ### `ENOENT: ... .fa.fai` (or `.bai` / `.tbi` / `.crai`)
@@ -851,7 +854,7 @@ tabix -p vcf yourfile.vcf.gz   # -> yourfile.vcf.gz.tbi
 The refname in `--loc` doesn't match the FASTA. Use the name exactly as it
 appears in the FASTA, or pass `--aliases` to reconcile differing naming styles
 (e.g. `1` vs `chr1` vs `NC_000001.10`) across the assembly and track files — see
-[Use with remote files](#use-with-remote-files).
+[Remote files](#remote-files).
 
 ### A track renders empty when zoomed far out
 
