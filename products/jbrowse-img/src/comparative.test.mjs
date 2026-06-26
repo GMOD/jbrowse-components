@@ -23,12 +23,17 @@ const fasta3 = path.join(tmp, 'volvox3.fa')
 fs.copyFileSync(volvoxFasta, fasta3)
 fs.copyFileSync(`${volvoxFasta}.fai`, `${fasta3}.fai`)
 
+// Comparative assemblies + per-level synteny are built from the parsed CLI
+// entries (argv order): each --fasta/--chromSizes opens an assembly, each synteny
+// file binds to the gap it sits in.
 test('dotplot renders two assemblies via a PAF', async () => {
   const svg = await renderRegion({
     mode: 'dotplot',
-    fasta: volvoxFasta,
-    fasta2,
-    trackList: [['paf', [paf]]],
+    argv: [
+      ['fasta', [volvoxFasta]],
+      ['paf', [paf]],
+      ['fasta', [fasta2]],
+    ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   assert.ok(svg.includes('<image'), 'dotplot should rasterize a dots layer')
@@ -37,20 +42,39 @@ test('dotplot renders two assemblies via a PAF', async () => {
 test('synteny renders two assemblies via a PAF', async () => {
   const svg = await renderRegion({
     mode: 'synteny',
-    fasta: volvoxFasta,
-    fasta2,
-    trackList: [['paf', [paf]]],
+    argv: [
+      ['fasta', [volvoxFasta]],
+      ['paf', [paf]],
+      ['fasta', [fasta2]],
+    ],
   })
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   assert.ok(svg.includes('<image'), 'synteny should rasterize a ribbon layer')
+})
+
+test('three-assembly synteny renders from interleaved CLI args', async () => {
+  const svg = await renderRegion({
+    mode: 'synteny',
+    argv: [
+      ['fasta', [volvoxFasta]],
+      ['paf', [paf]],
+      ['fasta', [fasta2]],
+      ['paf', [paf]],
+      ['fasta', [fasta3]],
+    ],
+  })
+  assert.ok(svg.includes('<svg'), 'output should be SVG')
+  assert.ok(svg.includes('<image'), 'synteny should rasterize ribbon layers')
 })
 
 test('comparative mode without a second assembly throws', async () => {
   await assert.rejects(
     renderRegion({
       mode: 'dotplot',
-      fasta: volvoxFasta,
-      trackList: [['paf', [paf]]],
+      argv: [
+        ['fasta', [volvoxFasta]],
+        ['paf', [paf]],
+      ],
     }),
     /second assembly/,
   )

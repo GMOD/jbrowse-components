@@ -1,9 +1,9 @@
 import fs from 'fs'
 import path from 'path'
 
+import { buildComparative, hasComparativeArgs } from './comparativeArgs.ts'
 import {
   makeFastaAssembly,
-  makeSyntenyTrackConfig,
   makeTrackConfig,
   syntenyTrackTypes,
 } from './makeConfigs.ts'
@@ -47,9 +47,7 @@ export function readData({
   defaultSession,
   tracks,
   trackList = [],
-  fasta2,
-  aliases2,
-  assembly2,
+  argv = [],
 }: Opts) {
   let assemblyData: Assembly | undefined
   if (asm && fs.existsSync(asm)) {
@@ -92,6 +90,10 @@ export function readData({
     sessionData.views = [(sessionData.views as Record<string, unknown>[])[0]]
   }
 
+  // The synteny tracks of a comparative view built from CLI args; pushed once
+  // configData.tracks exists below.
+  let syntenyTracks: Track[] = []
+
   // use assembly from file if a file existed
   if (assemblyData) {
     configData.assembly = assemblyData
@@ -108,9 +110,16 @@ export function readData({
       configData.assembly = configData.assemblies[0]!
     }
   }
-  // else load fasta from command line. trackId stays 'refseq' for the primary
-  // assembly (back-compat with the --refseq flag and tests).
-  else if (fasta) {
+  // else build the assemblies from CLI args: a comparative view's stacked
+  // assemblies + per-level synteny tracks (--fasta/--chromSizes/--paf/…), or a
+  // single linear assembly from --fasta (trackId 'refseq' for --refseq + tests).
+  else if (hasComparativeArgs(argv)) {
+    const comparative = buildComparative(argv)
+    configData.assemblies = comparative.assemblies
+    configData.assembly = comparative.assemblies[0]!
+    configData.assemblyLocs = comparative.locs
+    syntenyTracks = comparative.syntenyTracks
+  } else if (fasta) {
     configData.assembly = makeFastaAssembly(fasta, aliases, cytobands, 'refseq')
   }
 
@@ -120,55 +129,22 @@ export function readData({
     )
   }
 
-  // Second assembly for comparative modes (dotplot/synteny). The view init
-  // reads both from configData.assemblies in order [primary, secondary].
-  if (fasta2 || assembly2) {
-    let secondary: Assembly | undefined
-    if (fasta2) {
-      const trackId = `${path.basename(fasta2)}-refseq`
-      secondary = makeFastaAssembly(fasta2, aliases2, undefined, trackId)
-    } else if (assembly2 && configData.assemblies?.length) {
-      secondary = configData.assemblies.find(entry => entry.name === assembly2)
-      if (!secondary) {
-        throw new Error(`assembly2 ${assembly2} not found in config`)
-      }
-    }
-    if (!secondary) {
-      throw new Error(
-        `could not resolve second assembly (--fasta2 ${fasta2 ?? ''} --assembly2 ${assembly2 ?? ''})`,
-      )
-    }
-    configData.assemblies = [configData.assembly, secondary]
-  }
-
   if (tracksData) {
     configData.tracks = tracksData
   } else if (!configData.tracks) {
     configData.tracks = []
   }
+  configData.tracks.push(...syntenyTracks)
 
-  const secondaryAssembly = configData.assemblies?.[1]
-  for (const track of trackList) {
-    const [type, opts] = track
+  // Regular (non-synteny) tracks attach to the primary assembly; synteny tracks
+  // are built per-level in buildComparative above.
+  for (const [type, opts] of trackList) {
     const [file, ...rest] = opts
     const index = rest.find(r => r.startsWith('index:'))?.slice('index:'.length)
-    if (!file) {
+    if (syntenyTrackTypes.includes(type)) {
+      continue
+    } else if (!file) {
       throw new Error('no file specified')
-    } else if (syntenyTrackTypes.includes(type)) {
-      if (!secondaryAssembly) {
-        throw new Error(
-          `comparison track "${type}" requires a second assembly (--fasta2 or --assembly2)`,
-        )
-      } else {
-        configData.tracks.push(
-          makeSyntenyTrackConfig(
-            type,
-            file,
-            configData.assembly.name,
-            secondaryAssembly.name,
-          ),
-        )
-      }
     } else {
       const trackConfig = makeTrackConfig(
         type,

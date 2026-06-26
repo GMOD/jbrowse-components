@@ -19,17 +19,20 @@ export interface Opts {
   showGridlines?: boolean
   trackLabels?: TrackLabelMode
   refseq?: boolean
-  // Comparative modes (dotplot/synteny) render two assemblies. The second
-  // assembly and its location are supplied alongside the primary --fasta/--loc.
   mode?: ViewMode
-  fasta2?: string
-  aliases2?: string
-  assembly2?: string
-  loc2?: string
+  // The raw parsed CLI entries, in argv order. Comparative modes (dotplot /
+  // synteny) build their stacked assemblies + per-level synteny tracks from this
+  // — each --fasta/--chromSizes opens an assembly, each synteny file binds to the
+  // gap it sits in. See comparativeArgs.ts.
+  argv?: Entry[]
   // Comparative view-level settings exposed as CLI flags so the simple
   // dotplot/synteny subcommands can opt in without a full --spec JSON.
   autoDiagonalize?: boolean
   drawCurves?: boolean
+  minAlignmentLength?: number
+  colorBy?: string
+  alpha?: number
+  levelHeights?: number[]
   // N-way comparative views: a session-spec JSON (inline or path to .json,
   // the same shape as the web's `&session=spec-`) that supplies the view's
   // sub-views and level-indexed tracks directly. Assemblies and synteny-track
@@ -57,5 +60,9 @@ export interface Config {
   assemblies: Assembly[]
   assembly: Assembly
   tracks: Track[]
+  // Per-assembly location strings (aligned with `assemblies`) for comparative
+  // views built from CLI args; undefined entries render that assembly
+  // whole-genome.
+  assemblyLocs?: (string | undefined)[]
   [key: string]: unknown
 }

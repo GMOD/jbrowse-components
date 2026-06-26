@@ -1,4 +1,8 @@
-import { makeFastaAssembly, makeSyntenyTrackConfig } from './makeConfigs.ts'
+import {
+  makeChromSizesAssembly,
+  makeFastaAssembly,
+  makeSyntenyTrackConfig,
+} from './makeConfigs.ts'
 
 // makeLocation / makeTrackConfig / readData are covered in renderRegion.test.ts;
 // these target the two config builders that file doesn't exercise.
@@ -10,17 +14,29 @@ describe('makeSyntenyTrackConfig', () => {
     ['chain', 'ChainAdapter', 'chainLocation'],
     ['blasttab', 'BlastTabularAdapter', 'blastTableLocation'],
   ])('%s → %s on slot %s', (type, adapterType, locSlot) => {
-    const t = makeSyntenyTrackConfig(type, `aln.${type}`, 'qry', 'tgt')
+    const t = makeSyntenyTrackConfig(type, `aln.${type}`, 'upper', 'lower')
     expect(t.type).toBe('SyntenyTrack')
     expect(t.trackId).toBe(`aln.${type}`)
     expect(t.adapter.type).toBe(adapterType)
     expect(t.adapter[locSlot]).toEqual({ localPath: `aln.${type}` })
   })
 
-  test('assemblyNames are [query, target] on both track and adapter', () => {
-    const t = makeSyntenyTrackConfig('paf', 'a.paf', 'query', 'target')
-    expect(t.assemblyNames).toEqual(['query', 'target'])
-    expect(t.adapter.assemblyNames).toEqual(['query', 'target'])
+  // PAF/BLAST list the query first, so the upper (first) assembly is the query.
+  test('paf: upper assembly is the query, lower is the target', () => {
+    const t = makeSyntenyTrackConfig('paf', 'a.paf', 'upper', 'lower')
+    expect(t.adapter.queryAssembly).toBe('upper')
+    expect(t.adapter.targetAssembly).toBe('lower')
+    expect(t.assemblyNames).toEqual(['upper', 'lower'])
+  })
+
+  // A chain/delta liftover maps target→query, so the upper assembly is the
+  // target — the opposite of PAF. This is the orientation that's easy to get
+  // backwards.
+  test('chain: upper assembly is the target, lower is the query', () => {
+    const t = makeSyntenyTrackConfig('chain', 'a.chain', 'upper', 'lower')
+    expect(t.adapter.queryAssembly).toBe('lower')
+    expect(t.adapter.targetAssembly).toBe('upper')
+    expect(t.assemblyNames).toEqual(['lower', 'upper'])
   })
 
   test('a remote comparison file uses a uri location', () => {
@@ -83,6 +99,27 @@ describe('makeFastaAssembly', () => {
     expect(a.sequence.adapter).toMatchObject({
       fastaLocation: { uri: 'https://e.com/g.fa' },
       faiLocation: { uri: 'https://e.com/g.fa.fai' },
+    })
+  })
+})
+
+describe('makeChromSizesAssembly', () => {
+  test('chrom.sizes → ChromSizesAdapter (no sequence file)', () => {
+    const a = makeChromSizesAssembly('hg38.chrom.sizes', undefined, undefined, 'rs')
+    expect(a.name).toBe('hg38.chrom.sizes')
+    expect(a.sequence.adapter).toEqual({
+      type: 'ChromSizesAdapter',
+      chromSizesLocation: { localPath: 'hg38.chrom.sizes' },
+    })
+  })
+
+  test('shares the aliases/cytobands attach logic', () => {
+    const a = makeChromSizesAssembly('a.sizes', 'al.txt', 'cyto.bed', 'rs')
+    expect(a.refNameAliases?.adapter).toMatchObject({
+      location: { localPath: 'al.txt' },
+    })
+    expect(a.cytobands?.adapter).toMatchObject({
+      location: { localPath: 'cyto.bed' },
     })
   })
 })

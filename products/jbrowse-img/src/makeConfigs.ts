@@ -88,64 +88,80 @@ function makeAdapter(
   return undefined
 }
 
-// Comparison/synteny adapters: each maps a CLI file type to its adapter type
-// and the fileLocation slot that adapter reads from.
+// Comparison/synteny adapters. Each maps a CLI file type to its adapter type,
+// the fileLocation slot that adapter reads from, and which of the two stacked
+// assemblies the file's QUERY coordinates belong to.
+//
+// The distinction matters and is easy to get backwards: PAF/BLAST list the query
+// first (minimap2/blast align a query against a target), so the upper assembly —
+// written first — is the query. A chain/delta file instead describes a
+// target→query liftover (a UCSC `targetToQuery.over.chain` maps FROM the target
+// reference TO the query), so there the upper assembly is the TARGET. Picking the
+// wrong one silently mis-maps coordinates and most alignments drop out.
 const syntenyAdapterMap: Record<
   string,
-  [adapterType: string, locSlot: string]
+  { adapterType: string; locSlot: string; upperAssemblyIsQuery: boolean }
 > = {
-  paf: ['PAFAdapter', 'pafLocation'],
-  delta: ['DeltaAdapter', 'deltaLocation'],
-  chain: ['ChainAdapter', 'chainLocation'],
-  blasttab: ['BlastTabularAdapter', 'blastTableLocation'],
+  paf: {
+    adapterType: 'PAFAdapter',
+    locSlot: 'pafLocation',
+    upperAssemblyIsQuery: true,
+  },
+  blasttab: {
+    adapterType: 'BlastTabularAdapter',
+    locSlot: 'blastTableLocation',
+    upperAssemblyIsQuery: true,
+  },
+  chain: {
+    adapterType: 'ChainAdapter',
+    locSlot: 'chainLocation',
+    upperAssemblyIsQuery: false,
+  },
+  delta: {
+    adapterType: 'DeltaAdapter',
+    locSlot: 'deltaLocation',
+    upperAssemblyIsQuery: false,
+  },
 }
 
 export const syntenyTrackTypes = Object.keys(syntenyAdapterMap)
 
-// assemblyNames order is [query, target], matching the two views in order: the
-// first --fasta/--assembly is the query (top in synteny, x-axis in dotplot),
-// the second is the target.
+// Build a SyntenyTrack for one level of a comparative view, given the two
+// assemblies it sits between in stacked (top-to-bottom) order. The file format
+// decides which is the query and which the target (see syntenyAdapterMap); the
+// adapter's explicit queryAssembly/targetAssembly slots make that wiring legible
+// rather than hiding it in a positional [query, target] array.
 export function makeSyntenyTrackConfig(
   type: string,
   file: string,
-  queryName: string,
-  targetName: string,
+  upperAssembly: string,
+  lowerAssembly: string,
 ): Track {
-  const [adapterType, locSlot] = syntenyAdapterMap[type]!
-  const assemblyNames = [queryName, targetName]
+  const { adapterType, locSlot, upperAssemblyIsQuery } = syntenyAdapterMap[type]!
+  const queryAssembly = upperAssemblyIsQuery ? upperAssembly : lowerAssembly
+  const targetAssembly = upperAssemblyIsQuery ? lowerAssembly : upperAssembly
   return {
     type: 'SyntenyTrack',
     trackId: path.basename(file),
     name: path.basename(file),
-    assemblyNames,
+    // assemblyNames is [query, target] (see comparative-adapters/util.ts).
+    assemblyNames: [queryAssembly, targetAssembly],
     adapter: {
       type: adapterType,
       [locSlot]: makeLocation(file),
-      assemblyNames,
+      queryAssembly,
+      targetAssembly,
     },
   }
 }
 
-export function makeFastaAssembly(
-  fasta: string,
+// Attach the optional refNameAliases/cytobands adapters shared by every assembly
+// builder, then return the assembly so callers can build-and-decorate in one go.
+function withAliasesCytobands(
+  assembly: Assembly,
   aliases: string | undefined,
   cytobands: string | undefined,
-  trackId: string,
 ): Assembly {
-  const bgzip = fasta.endsWith('gz')
-  const assembly: Assembly = {
-    name: path.basename(fasta),
-    sequence: {
-      type: 'ReferenceSequenceTrack',
-      trackId,
-      adapter: {
-        type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
-        fastaLocation: makeLocation(fasta),
-        faiLocation: makeLocation(`${fasta}.fai`),
-        gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
-      },
-    },
-  }
   if (aliases) {
     assembly.refNameAliases = {
       adapter: { type: 'RefNameAliasAdapter', location: makeLocation(aliases) },
@@ -157,6 +173,58 @@ export function makeFastaAssembly(
     }
   }
   return assembly
+}
+
+export function makeFastaAssembly(
+  fasta: string,
+  aliases: string | undefined,
+  cytobands: string | undefined,
+  trackId: string,
+): Assembly {
+  const bgzip = fasta.endsWith('gz')
+  return withAliasesCytobands(
+    {
+      name: path.basename(fasta),
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId,
+        adapter: {
+          type: bgzip ? 'BgzipFastaAdapter' : 'IndexedFastaAdapter',
+          fastaLocation: makeLocation(fasta),
+          faiLocation: makeLocation(`${fasta}.fai`),
+          gziLocation: bgzip ? makeLocation(`${fasta}.gzi`) : undefined,
+        },
+      },
+    },
+    aliases,
+    cytobands,
+  )
+}
+
+// Whole-genome comparative views (e.g. a synteny dotplot) need only chromosome
+// sizes, not the sequence itself, so a `.chrom.sizes` assembly skips the
+// multi-GB FASTA/2bit entirely.
+export function makeChromSizesAssembly(
+  chromSizes: string,
+  aliases: string | undefined,
+  cytobands: string | undefined,
+  trackId: string,
+): Assembly {
+  return withAliasesCytobands(
+    {
+      name: path.basename(chromSizes),
+      sequence: {
+        type: 'ReferenceSequenceTrack',
+        trackId,
+        adapter: {
+          type: 'ChromSizesAdapter',
+          chromSizesLocation: makeLocation(chromSizes),
+        },
+      },
+    },
+    aliases,
+    cytobands,
+  )
 }
 
 export function makeTrackConfig(

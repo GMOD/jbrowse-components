@@ -11,6 +11,11 @@ export interface OptionDef {
 
 export const optionDefs: OptionDef[] = [
   { name: 'fasta', description: 'Path to indexed FASTA file' },
+  {
+    name: 'chromSizes',
+    description:
+      'Path to a chrom.sizes file (whole-genome assembly, no sequence). Repeat for each assembly in a comparative view',
+  },
   { name: 'aliases', description: 'Path to reference name aliases file' },
   { name: 'assembly', description: 'Path to assembly JSON or name in config' },
   { name: 'config', description: 'Path to JBrowse config.json' },
@@ -62,23 +67,39 @@ export const optionDefs: OptionDef[] = [
   },
 ]
 
-// Extra options accepted only by the comparative subcommands (dotplot/synteny),
-// where the second assembly is rendered against the primary --fasta/--loc.
+// Extra options accepted only by the comparative subcommands (dotplot/synteny).
+// Assemblies stack in argv order: repeat --fasta/--chromSizes per assembly and
+// put each synteny file (--paf/--chain/…) between the two it compares. Per-
+// assembly options ride on the assembly flag as `loc:`/`aliases:`/`cytobands:`
+// modifiers; --fasta2/--loc2/--aliases2 are kept as the two-assembly shorthand.
 const comparativeOptionDefs: OptionDef[] = [
-  { name: 'fasta2', description: 'Second assembly indexed FASTA' },
+  { name: 'fasta2', description: 'Second assembly indexed FASTA (shorthand)' },
   { name: 'aliases2', description: 'Reference name aliases for fasta2' },
-  { name: 'assembly2', description: 'Second assembly name in config' },
   { name: 'loc2', description: 'Location on the second assembly' },
   {
     name: 'autoDiagonalize',
     description:
-      "Reorder the second assembly's chromosomes for least overlap (a clean diagonal)",
+      "Reorder the next assembly's chromosomes for least overlap (a clean diagonal)",
     default: false,
   },
   {
     name: 'drawCurves',
     description: 'Draw synteny ribbons as bezier curves instead of trapezoids',
     default: false,
+  },
+  {
+    name: 'minAlignmentLength',
+    description: 'Hide alignments shorter than N bp (de-spaghetti a busy plot)',
+  },
+  {
+    name: 'colorBy',
+    description: 'Color synteny ribbons, e.g. "query" tints by query chromosome',
+  },
+  { name: 'alpha', description: 'Ribbon opacity 0-1 (lower reveals density)' },
+  {
+    name: 'levelHeights',
+    description:
+      'Comma-separated pixel height per level, e.g. 300,300 (one value applies to all)',
   },
 ]
 
@@ -115,8 +136,12 @@ const comparativeExamples: [string, string][] = [
     'Whole-genome dotplot of two assemblies via a PAF',
   ],
   [
-    'synteny --fasta a.fa --fasta2 b.fa --paf a_vs_b.paf --loc chr1 --loc2 chr1 --out out.svg',
-    'Linear synteny view of a region in each assembly',
+    'synteny --fasta a.fa loc:chr1 --paf a_vs_b.paf --fasta b.fa loc:chr1 --out out.svg',
+    'Linear synteny of a region in each assembly (loc: rides on the assembly flag)',
+  ],
+  [
+    'synteny --chromSizes a.sizes --paf a_b.paf --chromSizes b.sizes --chain b_c.chain --chromSizes c.sizes --out out.svg',
+    'Multi-way (3+) synteny: repeat the assembly flag, put each alignment between the pair it compares',
   ],
   [
     'synteny --config jbrowse.json --spec spec.json --out out.svg',
@@ -149,6 +174,26 @@ export function getNumber(
   const v = rest[key]
   const n = typeof v === 'string' ? Number(v) : NaN
   return Number.isFinite(n) ? n : fallback
+}
+
+export function getOptionalNumber(rest: Record<string, unknown>, key: string) {
+  const v = rest[key]
+  const n = typeof v === 'string' ? Number(v) : NaN
+  return Number.isFinite(n) ? n : undefined
+}
+
+// A comma-separated numeric list (e.g. levelHeights:300,300), dropping any
+// non-numeric entries; undefined when the flag is absent.
+export function getNumberList(rest: Record<string, unknown>, key: string) {
+  const v = rest[key]
+  if (typeof v !== 'string') {
+    return undefined
+  }
+  const list = v
+    .split(',')
+    .map(s => Number(s))
+    .filter(n => Number.isFinite(n))
+  return list.length ? list : undefined
 }
 
 const trackLabelModes: TrackLabelMode[] = ['offset', 'overlay', 'left', 'none']

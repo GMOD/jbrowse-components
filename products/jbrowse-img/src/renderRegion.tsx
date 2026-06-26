@@ -155,21 +155,22 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
 }
 
 // Build a sub-view spec per assembly in [query, target, …] order: the first
-// --fasta/--assembly is the query (top in synteny, x-axis in dotplot).
+// --fasta/--chromSizes is the query (top in synteny, x-axis in dotplot).
 // Comparative views render adjacent assembly pairs as stacked levels, so this
-// supports an arbitrary number of assemblies (a-vs-b is the common case). The
-// CLI exposes --loc/--loc2 for the first two; any further assembly shows its
-// whole genome.
-function comparativeViews({ data, opts }: ModeContext) {
-  const { assemblies } = data
+// supports an arbitrary number of assemblies (a-vs-b is the common case). Each
+// assembly's optional location comes from data.assemblyLocs (a `loc:` modifier
+// or the legacy --loc/--loc2); the rest show their whole genome.
+function comparativeViews({ data }: ModeContext) {
+  const { assemblies, assemblyLocs = [] } = data
   if (assemblies.length < 2) {
     throw new Error(
-      'comparative mode requires at least two assemblies (--fasta + --fasta2, or --assembly + --assembly2)',
+      'comparative mode requires at least two assemblies (repeat --fasta/--chromSizes, or use --fasta2)',
     )
   }
-  const locs = [opts.loc, opts.loc2]
   return assemblies.map((asm, i) =>
-    locs[i] ? { assembly: asm.name, loc: locs[i] } : { assembly: asm.name },
+    assemblyLocs[i]
+      ? { assembly: asm.name, loc: assemblyLocs[i] }
+      : { assembly: asm.name },
   )
 }
 
@@ -215,14 +216,29 @@ const renderDotplot: ModeRenderer = async ctx => {
   })
 }
 
+// View-level synteny settings from CLI flags, included only when set so they
+// don't clobber the view's own defaults. The full set lives in --spec; these are
+// the busy-comparison knobs the simple subcommand exposes directly.
+function syntenyViewKnobs(opts: Opts) {
+  const { autoDiagonalize, drawCurves, minAlignmentLength, colorBy, alpha } =
+    opts
+  return {
+    ...(autoDiagonalize ? { autoDiagonalize: true } : {}),
+    ...(drawCurves ? { drawCurves: true } : {}),
+    ...(minAlignmentLength === undefined ? {} : { minAlignmentLength }),
+    ...(colorBy ? { colorBy } : {}),
+    ...(alpha === undefined ? {} : { alpha }),
+    ...(opts.levelHeights ? { levelHeights: opts.levelHeights } : {}),
+  }
+}
+
 const renderSynteny: ModeRenderer = async ctx => {
   const init = ctx.spec
     ? initFromSpec(ctx.spec)
     : {
         views: comparativeViews(ctx),
         tracks: syntenyTrackLevels(ctx.data),
-        ...(ctx.opts.autoDiagonalize ? { autoDiagonalize: true } : {}),
-        ...(ctx.opts.drawCurves ? { drawCurves: true } : {}),
+        ...syntenyViewKnobs(ctx.opts),
       }
   const view = await addInitView<LinearSyntenyViewModel>(
     ctx,
