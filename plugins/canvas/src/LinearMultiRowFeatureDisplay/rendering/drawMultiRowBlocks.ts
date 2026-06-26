@@ -26,6 +26,7 @@ export function drawMultiRowBlocks(
     rowHeight,
     rowProportion,
     rowIndexByValue,
+    rowColorsByIndex,
   } = state
   const h = rowHeight * rowProportion
   const offset = (rowHeight - h) / 2
@@ -60,7 +61,7 @@ export function drawMultiRowBlocks(
             const left = Math.min(xa, xb)
             const width = Math.max(1, Math.abs(xb - xa))
             const top = offset + rowHeight * rowIndex
-            setAbgrFill(ctx, featureColors[i]!)
+            setAbgrFill(ctx, rowColorsByIndex?.[rowIndex] ?? featureColors[i]!)
             ctx.fillRect(left, top, width, h)
           }
         }

@@ -12,10 +12,15 @@ import type { MultiRowRegionData } from './multiRowRenderingBackendTypes.ts'
  * per-region encode autorun) so the row index, resolved here from the global
  * `rowIndexByValue` map, re-encodes on a row reorder without an RPC roundtrip.
  * Features whose partition value has no assigned row are skipped.
+ *
+ * `rowColorsByIndex` (indexed by global row) overrides the worker-baked
+ * per-feature color for rows whose color was set in the arrangement dialog, so
+ * a row recolor re-encodes here too — no RPC roundtrip.
  */
 export function buildMultiRowInstanceBuffer(
   data: MultiRowRegionData,
   rowIndexByValue: ReadonlyMap<string, number>,
+  rowColorsByIndex?: readonly (number | undefined)[],
 ): { buffer: ArrayBuffer; count: number } {
   const { featureStarts, featureEnds, featureColors, partitionValues } = data
   const n = featureStarts.length
@@ -32,7 +37,8 @@ export function buildMultiRowInstanceBuffer(
       u32[base + FIELD_OFFSET_F32.startBp] = featureStarts[i]!
       u32[base + FIELD_OFFSET_F32.endBp] = featureEnds[i]!
       u32[base + FIELD_OFFSET_F32.rowIndex] = rowIndex
-      u32[base + FIELD_OFFSET_F32.color] = featureColors[i]!
+      u32[base + FIELD_OFFSET_F32.color] =
+        rowColorsByIndex?.[rowIndex] ?? featureColors[i]!
       count++
     }
   }

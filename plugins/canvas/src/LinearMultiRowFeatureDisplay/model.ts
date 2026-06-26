@@ -7,6 +7,7 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
@@ -221,6 +222,18 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * Per-row color override (ABGR), indexed by display row, from the row's
+       * `color` set in the arrangement dialog. `undefined` rows fall through to
+       * the worker-baked color (sampleColorMap / color slot / palette). Applied
+       * at render time, so editing a row color repaints without a refetch.
+       */
+      get rowColorsByIndex(): (number | undefined)[] {
+        return self.sources.map(s =>
+          s.color ? cssColorToABGR(s.color) : undefined,
+        )
+      },
+      /**
+       * #getter
        * Number of displayed rows (at least 1, so the auto-fit division is safe
        * and the canvas mounts before data arrives).
        */
@@ -327,6 +340,7 @@ export default function stateModelFactory(
           rowHeight: self.rowHeight,
           rowProportion: self.rowProportion,
           rowIndexByValue: self.rowIndexByValue,
+          rowColorsByIndex: self.rowColorsByIndex,
         }
       },
       /**
@@ -479,6 +493,7 @@ export default function stateModelFactory(
             const { buffer, count } = buildMultiRowInstanceBuffer(
               regionData,
               self.rowIndexByValue,
+              self.rowColorsByIndex,
             )
             return { instanceBuffer: buffer, instanceCount: count }
           },

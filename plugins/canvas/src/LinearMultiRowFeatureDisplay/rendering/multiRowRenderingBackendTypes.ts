@@ -28,6 +28,10 @@ export interface MultiRowRenderState {
   // the raw region data and so resolves each feature's row here (the GPU path
   // bakes the row index into its uploaded buffer and ignores this).
   rowIndexByValue: ReadonlyMap<string, number>
+  // per-row color override (ABGR) by global row index, from the arrangement
+  // dialog; `undefined` rows use the worker-baked per-feature color. The GPU
+  // path bakes this into its buffer and ignores it here.
+  rowColorsByIndex?: readonly (number | undefined)[]
 }
 
 // Pre-encoded GPU instance buffer ({startBp,endBp,rowIndex,color} per feature),

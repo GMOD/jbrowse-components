@@ -3,10 +3,16 @@ import { SetColorDialog } from '@jbrowse/tree-sidebar'
 import type { MultiRowSource } from '../sourcesLogic.ts'
 import type { TreeLayoutModel } from '@jbrowse/tree-sidebar'
 
-// Per-row color isn't used (block colors come per feature), so the color column
-// is suppressed; the dialog edits row order / labels / subtree only.
-const RESERVED = new Set(['color'])
-const NO_COLOR_COLUMNS: never[] = []
+// A per-row `color` overrides that row's blocks at render time (over the
+// worker-baked sampleColorMap / color slot / palette). Other use cases color
+// per feature via the `color` slot, so leave rows uncolored to keep that.
+const COLOR_COLUMNS = [
+  {
+    field: 'color' as const,
+    headerName: 'Row color',
+    bulkLabel: 'Change color of selected rows',
+  },
+]
 
 export default function SetRowArrangementDialog({
   model,
@@ -19,9 +25,10 @@ export default function SetRowArrangementDialog({
     <SetColorDialog
       model={model}
       handleClose={handleClose}
-      title="Multi-row painting — row arrangement"
-      colorColumns={NO_COLOR_COLUMNS}
-      reservedFields={RESERVED}
+      title="Multi-row painting — colors & arrangement"
+      colorColumns={COLOR_COLUMNS}
+      enableBulkEdit
+      enableRowPalettizer
     />
   )
 }

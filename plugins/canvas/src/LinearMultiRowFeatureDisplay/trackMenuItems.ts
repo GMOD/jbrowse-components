@@ -68,7 +68,7 @@ export function buildMultiRowTrackMenuItems(
       },
     ),
     {
-      label: 'Edit row arrangement...',
+      label: 'Edit colors/arrangement...',
       disabled: !self.editableSources.length,
       onClick: () => {
         getSession(self).queueDialog(handleClose => [

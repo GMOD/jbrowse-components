@@ -86,3 +86,17 @@ test('skips features whose row is filtered out of rowIndexByValue', () => {
     { x: 100, y: 0, w: 100, h: 20, fillStyle: abgrToCssRgba(RED) },
   ])
 })
+
+test('rowColorsByIndex overrides the baked feature color per row', () => {
+  const GREEN = 0xff00ff00
+  const { ctx, calls } = mockCtx()
+  // override row 0 with green; row 1 keeps its baked BLUE
+  drawMultiRowBlocks(ctx, new Map([[0, region]]), [block], {
+    ...state,
+    rowColorsByIndex: [GREEN, undefined],
+  })
+  expect(calls.map(c => c.fillStyle)).toEqual([
+    abgrToCssRgba(GREEN),
+    abgrToCssRgba(BLUE),
+  ])
+})

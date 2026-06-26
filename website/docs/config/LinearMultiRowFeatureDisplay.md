@@ -66,7 +66,9 @@ Paints interval features as colored blocks on stacked rows ("chromosome /
 ancestry painting"). Rows are partitioned by a feature attribute
 (`partitionField`). Block color comes from `sampleColorMap` (keyed by the
 partition value) when set, else a customized per-feature `color` slot, else an
-automatically-assigned per-row color from a categorical palette.
+automatically-assigned per-row color from a categorical palette. A row color
+picked interactively in the "Edit colors/arrangement..." track-menu dialog
+overrides all of these for that row (applied at render time, no refetch).
 
 These are display-level slots. This is not a `FeatureTrack`'s default display,
 so configure it with an explicit `displays` entry (rather than the
