@@ -505,3 +505,12 @@ Recommendation: hybrid weighted toward GitHub — per-page button → GitHub raw
 build SHA; `llms.txt` curated index → generated at build with links pointing at GitHub
 raw URLs; `llms-full.txt` optional generate-and-commit. The only thing hosted is a tiny
 index file.
+
+## expressive SV search language for the SV inspector import form
+Current import-form filtering matches query strings like `CHR2=17` against the
+spreadsheet columns — narrow (won't catch variants *originating* from chr17, only
+those naming it in a column). A richer SV query language (by breakend chrom/pos,
+type, length range, INFO fields, AND/OR) would be more useful. Net-new feature,
+not a screenshot defect. (Was: sv_inspector_importform_filtered review item.)
+
+
