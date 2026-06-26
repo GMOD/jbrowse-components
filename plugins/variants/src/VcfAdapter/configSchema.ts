@@ -10,6 +10,17 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config VcfAdapter
+ * #trackType VariantTrack
+ * used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
+ * memory, so prefer the VcfTabixAdapter for large files.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'VcfAdapter',
+ *   uri: 'https://example.com/variants.vcf',
+ * }
+ * ```
  */
 
 const VcfAdapter = ConfigurationSchema(

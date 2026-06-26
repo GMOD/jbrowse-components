@@ -27,7 +27,7 @@ first):
   type: 'SyntenyTrack',
   trackId: 'my_track',
   name: 'My track',
-  assemblyNames: ['assembly1', 'assembly2'],
+  assemblyNames: ['hg19', 'hg38'],
   adapter: {
     type: 'PAFAdapter',
     uri: 'https://example.com/aln.paf',

@@ -17,6 +17,24 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HtsgetBamAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'AlignmentsTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'HtsgetBamAdapter',
+    htsgetBase: 'https://htsget.example.com/reads/',
+    htsgetTrackId: 'NA12878',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam

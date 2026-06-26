@@ -4,6 +4,17 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config UnindexedFastaAdapter
+ * #trackType ReferenceSequenceTrack
+ * loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
+ * sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'UnindexedFastaAdapter',
+ *   uri: 'https://example.com/genome.fa',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

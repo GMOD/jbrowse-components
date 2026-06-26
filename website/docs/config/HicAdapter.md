@@ -17,7 +17,26 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/HicAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'HicTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'HicAdapter',
+    uri: 'https://example.com/map.hic',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load Hi-C contact matrix data from a `.hic` file
 
 ### HicAdapter - Pre-processor / simplified config
 

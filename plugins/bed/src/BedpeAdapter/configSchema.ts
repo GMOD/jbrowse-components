@@ -17,7 +17,16 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config BedpeAdapter
+ * #trackType VariantTrack
  * intended for SVs in a single assembly
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BedpeAdapter',
+ *   uri: 'https://example.com/sv.bedpe',
+ * }
+ * ```
  */
 
 const BedpeAdapter = ConfigurationSchema(

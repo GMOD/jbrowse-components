@@ -17,7 +17,28 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedGraphTabixAdapter.md)
 
+## Example usage
+
+The `uri` shorthand auto-resolves the `.tbi` index:
+
+```js
+{
+  type: 'QuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphTabixAdapter',
+    uri: 'https://example.com/signal.bedGraph.gz',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load bgzip-compressed, tabix-indexed bedGraph signal files
 
 ### BedGraphTabixAdapter - Pre-processor / simplified config
 

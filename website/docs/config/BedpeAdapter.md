@@ -17,6 +17,23 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedpeAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedpeAdapter',
+    uri: 'https://example.com/sv.bedpe',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 intended for SVs in a single assembly

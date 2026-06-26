@@ -17,7 +17,25 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/UnindexedFastaAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'ReferenceSequenceTrack',
+  trackId: 'my_assembly-ReferenceSequenceTrack',
+  adapter: {
+    type: 'UnindexedFastaAdapter',
+    uri: 'https://example.com/genome.fa',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
+sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
 
 ### UnindexedFastaAdapter - Pre-processor / simplified config
 

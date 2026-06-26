@@ -17,7 +17,27 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedGraphAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'QuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedGraphAdapter',
+    uri: 'https://example.com/signal.bedGraph',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load plain-text bedGraph signal files. Loads the whole file into memory,
+so prefer the BedGraphTabixAdapter for large files.
 
 ### BedGraphAdapter - Pre-processor / simplified config
 

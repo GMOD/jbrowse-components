@@ -3,6 +3,16 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 /**
  * #config HicAdapter
  * #category adapter
+ * #trackType HicTrack
+ * used to load Hi-C contact matrix data from a `.hic` file
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'HicAdapter',
+ *   uri: 'https://example.com/map.hic',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

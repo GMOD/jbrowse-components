@@ -4,6 +4,17 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BedGraphAdapter
+ * #trackType QuantitativeTrack
+ * used to load plain-text bedGraph signal files. Loads the whole file into
+ * memory, so prefer the BedGraphTabixAdapter for large files.
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'BedGraphAdapter',
+ *   uri: 'https://example.com/signal.bedGraph',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

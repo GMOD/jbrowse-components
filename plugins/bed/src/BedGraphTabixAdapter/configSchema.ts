@@ -5,6 +5,17 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config BedGraphTabixAdapter
+ * #trackType QuantitativeTrack
+ * used to load bgzip-compressed, tabix-indexed bedGraph signal files
+ *
+ * #example
+ * The `uri` shorthand auto-resolves the `.tbi` index:
+ * ```js
+ * {
+ *   type: 'BedGraphTabixAdapter',
+ *   uri: 'https://example.com/signal.bedGraph.gz',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

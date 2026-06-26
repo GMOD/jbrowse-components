@@ -17,7 +17,29 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/PairwiseIndexedPAFAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg19', 'hg38'],
+  adapter: {
+    type: 'PairwiseIndexedPAFAdapter',
+    uri: 'https://example.com/aln.pif.gz',
+    queryAssembly: 'hg19',
+    targetAssembly: 'hg38',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
+auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 
 ### PairwiseIndexedPAFAdapter - Pre-processor / simplified config
 

@@ -17,7 +17,27 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BedAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'BedAdapter',
+    uri: 'https://example.com/features.bed',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load plain-text BED files. Loads the whole file into memory, so prefer
+the BedTabixAdapter for large files.
 
 ### BedAdapter - Pre-processor / simplified config
 

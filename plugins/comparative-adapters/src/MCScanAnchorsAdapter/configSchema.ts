@@ -4,6 +4,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config MCScanAnchorsAdapter
+ * #trackType SyntenyTrack
+ * used to load MCScan (jcvi) `.anchors` files with their two BED files
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'MCScanAnchorsAdapter',
+ *   uri: 'https://example.com/data.anchors',
+ *   bed1: 'https://example.com/query.bed',
+ *   bed2: 'https://example.com/target.bed',
+ *   assemblyNames: ['hg19', 'hg38'],
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

@@ -17,7 +17,29 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MCScanAnchorsAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg19', 'hg38'],
+  adapter: {
+    type: 'MCScanAnchorsAdapter',
+    uri: 'https://example.com/data.anchors',
+    bed1: 'https://example.com/query.bed',
+    bed2: 'https://example.com/target.bed',
+    assemblyNames: ['hg19', 'hg38'],
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load MCScan (jcvi) `.anchors` files with their two BED files
 
 ### MCScanAnchorsAdapter - Pre-processor / simplified config
 

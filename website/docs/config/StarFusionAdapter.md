@@ -17,7 +17,26 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/StarFusionAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'StarFusionAdapter',
+    uri: 'https://example.com/star-fusion.fusion_predictions.tsv',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
 ### StarFusionAdapter - Pre-processor / simplified config
 

@@ -17,7 +17,27 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/VcfAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfAdapter',
+    uri: 'https://example.com/variants.vcf',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
+memory, so prefer the VcfTabixAdapter for large files.
 
 ### VcfAdapter - Pre-processor / simplified config
 

@@ -17,6 +17,16 @@ export function normalizeSnapshot(snap: Record<string, unknown>) {
 
 /**
  * #config StarFusionAdapter
+ * #trackType VariantTrack
+ * used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'StarFusionAdapter',
+ *   uri: 'https://example.com/star-fusion.fusion_predictions.tsv',
+ * }
+ * ```
  */
 
 const StarFusionAdapter = ConfigurationSchema(

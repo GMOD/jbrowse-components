@@ -5,6 +5,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 /**
  * #config PairwiseIndexedPAFAdapter
+ * #trackType SyntenyTrack
+ * a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
+ * auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
+ *
+ * #example
+ * ```js
+ * {
+ *   type: 'PairwiseIndexedPAFAdapter',
+ *   uri: 'https://example.com/aln.pif.gz',
+ *   queryAssembly: 'hg19',
+ *   targetAssembly: 'hg38',
+ * }
+ * ```
  */
 
 export function normalizeSnapshot(snap: Record<string, unknown>) {

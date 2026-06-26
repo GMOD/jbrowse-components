@@ -17,7 +17,29 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/DeltaAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'SyntenyTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg19', 'hg38'],
+  adapter: {
+    type: 'DeltaAdapter',
+    uri: 'https://example.com/aln.delta',
+    queryAssembly: 'hg19',
+    targetAssembly: 'hg38',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load MUMmer `.delta` alignment files (query and target assembly
+required)
 
 ### DeltaAdapter - Pre-processor / simplified config
 

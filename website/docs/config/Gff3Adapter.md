@@ -17,7 +17,27 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/Gff3Adapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'FeatureTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'Gff3Adapter',
+    uri: 'https://example.com/genes.gff3',
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+used to load plain-text GFF3 files. Loads the whole file into memory, so prefer
+the Gff3TabixAdapter for large files.
 
 ### Gff3Adapter - Pre-processor / simplified config
 

@@ -217,6 +217,19 @@ function adapterValueLines(code: string) {
   return lines
 }
 
+// A synteny track spans two assemblies. Keep the track's assemblyNames
+// consistent with the adapter snapshot it wraps: reuse the adapter's own
+// query/target (or assemblyNames) rather than a generic placeholder that would
+// contradict it.
+function syntenyAssemblyNames(adapterCode: string) {
+  const query = /queryAssembly:\s*'([^']*)'/.exec(adapterCode)
+  const target = /targetAssembly:\s*'([^']*)'/.exec(adapterCode)
+  const names = /assemblyNames:\s*(\[[^\]]*\])/.exec(adapterCode)
+  return query && target
+    ? `['${query[1]}', '${target[1]}']`
+    : (names?.[1] ?? "['assembly1', 'assembly2']")
+}
+
 // The full track config that nests an adapter snapshot, shaped per track type:
 // a reference sequence track has no assemblyNames (it is the assembly's own
 // sequence) and synteny spans two assemblies, while ordinary data tracks take a
@@ -233,7 +246,9 @@ function trackConfigLines(trackType: string, adapterCode: string) {
     ]
   }
   const assemblyNames =
-    trackType === 'SyntenyTrack' ? "['assembly1', 'assembly2']" : "['hg38']"
+    trackType === 'SyntenyTrack'
+      ? syntenyAssemblyNames(adapterCode)
+      : "['hg38']"
   return [
     '{',
     `  type: '${trackType}',`,

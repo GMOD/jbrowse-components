@@ -17,7 +17,29 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/MultiWiggleAdapter.md)
 
+## Example usage
+
+```js
+{
+  type: 'MultiQuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    bigWigs: [
+      'https://example.com/sample1.bw',
+      'https://example.com/sample2.bw',
+    ],
+  },
+}
+```
+
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
+
+combines multiple BigWig files into a single multi-row quantitative track
 
 <details open>
 <summary>MultiWiggleAdapter - Slots</summary>
