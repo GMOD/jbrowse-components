@@ -47,10 +47,8 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
       throw new Error('must pass a unique session id')
     }
 
-    statusCallback?.('Initializing diagonalization...')
-
     checkStopToken(stopToken)
-    statusCallback?.('Fetching features...')
+    statusCallback?.('Fetching features')
 
     const { dataAdapter } = await getAdapter(
       this.pluginManager,
@@ -69,7 +67,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     )
 
     checkStopToken(stopToken)
-    statusCallback?.('Extracting alignment data...')
+    statusCallback?.('Extracting alignment data')
 
     const alignments = extractAlignmentData(feats)
 
@@ -78,7 +76,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     }
 
     statusCallback?.(
-      `Running diagonalization on ${alignments.length} alignments...`,
+      `Running diagonalization on ${alignments.length} alignments`,
     )
 
     const result = await diagonalizeRegions(

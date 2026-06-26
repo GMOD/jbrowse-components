@@ -1,6 +1,7 @@
 import { ErrorBanner, LoadingEllipses, ResizeHandle } from '@jbrowse/core/ui'
 import { useRenderingBackend } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import { HorizontalAxis, VerticalAxis } from './Axes.tsx'
@@ -116,8 +117,18 @@ const DotplotView = observer(function DotplotView({
 }: {
   model: DotplotViewModel
 }) {
-  const { initialized, showLoading, error, loadingMessage } = model
-  if (showLoading) {
+  const { initialized, showLoading, awaitingAutoDiagonalize, error, loadingMessage } =
+    model
+  if (awaitingAutoDiagonalize) {
+    return (
+      <DiagonalizeLoadingScreen
+        status={model.diagonalizeStatus}
+        onCancel={() => {
+          model.cancelAutoDiagonalize()
+        }}
+      />
+    )
+  } else if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if (!initialized || error) {
     return <ImportForm model={model} />

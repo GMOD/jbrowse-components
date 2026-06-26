@@ -1,7 +1,9 @@
 import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
-import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
+import { addDisposer, types } from '@jbrowse/mobx-state-tree'
+import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import AddIcon from '@mui/icons-material/Add'
 import CropFreeIcon from '@mui/icons-material/CropFree'
 import LinkIcon from '@mui/icons-material/Link'
@@ -19,6 +21,8 @@ import type {
   LinearSyntenyViewInit,
 } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
+import type { RpcStatus } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -154,6 +158,18 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * watches an undiagonalized hairball flash before the reorder kicks in.
        */
       awaitingAutoDiagonalize: false,
+      /**
+       * #volatile
+       * Live status from the auto-diagonalize RPC (download %, parse, algorithm
+       * phase) shown on the reordering spinner; undefined outside that wait.
+       */
+      diagonalizeStatus: undefined as RpcStatus | undefined,
+      /**
+       * #volatile
+       * Stop token for the in-flight auto-diagonalize, so the spinner's Cancel
+       * can abort it; undefined when none is running.
+       */
+      diagonalizeStopToken: undefined as StopToken | undefined,
     }))
     .views(self => ({
       /**
@@ -213,15 +229,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       },
       /**
        * #getter
-       * Label for the loading spinner: a helpful message during the
-       * autoDiagonalize wait, otherwise just "Loading".
+       * Label for the generic loading spinner. The auto-diagonalize wait is a
+       * separate render branch (DiagonalizeLoadingScreen), so this only covers
+       * the plain "view not ready" case.
        */
       get loadingMessage() {
-        if (self.awaitingAutoDiagonalize) {
-          return 'Reordering chromosomes'
-        } else {
-          return this.showLoading ? 'Loading' : undefined
-        }
+        return this.showLoading ? 'Loading' : undefined
       },
       /**
        * #getter
@@ -329,6 +342,26 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setAwaitingAutoDiagonalize(arg: boolean) {
         self.awaitingAutoDiagonalize = arg
+      },
+      /**
+       * #action
+       */
+      setDiagonalizeStatus(arg?: RpcStatus) {
+        self.diagonalizeStatus = arg
+      },
+      /**
+       * #action
+       */
+      setDiagonalizeStopToken(arg?: StopToken) {
+        self.diagonalizeStopToken = arg
+      },
+      /**
+       * #action
+       * Abort an in-flight auto-diagonalize; the runner's finally clears the
+       * wait flag, revealing the (undiagonalized) view.
+       */
+      cancelAutoDiagonalize() {
+        stopStopToken(self.diagonalizeStopToken)
       },
     }))
     .actions(self => ({
@@ -671,21 +704,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
                   // populated by this point (above), and runDiagonalize fetches
                   // the whole-genome alignments it needs in its own RPC — so we
                   // diagonalize directly, no need to wait on the per-display
-                  // render fetch first. awaitingAutoDiagonalize flips showLoading
-                  // on, so the user sees a "Reordering chromosomes…" spinner
-                  // instead of an undiagonalized hairball flash.
-                  self.setAwaitingAutoDiagonalize(true)
-                  try {
+                  // render fetch first. withDiagonalizeProgress drives the
+                  // reordering spinner + cancel and swallows the abort.
+                  await withDiagonalizeProgress(self, async opts => {
                     const { runDiagonalize } =
                       await import('./util/runDiagonalize.ts')
-                    await runDiagonalize(self)
-                  } catch (e) {
-                    console.error(e)
-                  } finally {
-                    if (isAlive(self)) {
-                      self.setAwaitingAutoDiagonalize(false)
-                    }
-                  }
+                    await runDiagonalize(self, opts)
+                  })
                 }
 
                 self.setInit(undefined)

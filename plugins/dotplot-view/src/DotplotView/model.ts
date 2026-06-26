@@ -11,6 +11,7 @@ import {
   minmax,
 } from '@jbrowse/core/util'
 import { getLayoutHighlightCoords } from '@jbrowse/core/util/Base1DUtils'
+import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import {
   getParentRenderProps,
   hideTrackGeneric,
@@ -44,7 +45,9 @@ import type {
 import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.tsx'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
+import type { RpcStatus } from '@jbrowse/core/util'
 import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type {
   IAnyStateTreeNode,
   Instance,
@@ -288,6 +291,19 @@ export default function stateModelFactory(pm: PluginManager) {
          * instead of an undiagonalized plot that immediately re-paints.
          */
         awaitingAutoDiagonalize: false,
+        /**
+         * #volatile
+         * Live status from the auto-diagonalize RPC (download %, parse,
+         * algorithm phase) shown on the reordering spinner; undefined outside
+         * that wait.
+         */
+        diagonalizeStatus: undefined as RpcStatus | undefined,
+        /**
+         * #volatile
+         * Stop token for the in-flight auto-diagonalize, so the spinner's
+         * Cancel can abort it; undefined when none is running.
+         */
+        diagonalizeStopToken: undefined as StopToken | undefined,
       }))
       .actions(self => ({
         /**
@@ -394,11 +410,11 @@ export default function stateModelFactory(pm: PluginManager) {
 
         /**
          * #getter
+         * Label for the generic loading spinner. The auto-diagonalize wait is a
+         * separate render branch (DiagonalizeLoadingScreen), so this only covers
+         * the plain "view not ready" case.
          */
         get loadingMessage() {
-          if (self.awaitingAutoDiagonalize) {
-            return 'Reordering chromosomes…'
-          }
           return this.showLoading ? 'Loading' : undefined
         },
 
@@ -684,6 +700,26 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setAwaitingAutoDiagonalize(arg: boolean) {
           self.awaitingAutoDiagonalize = arg
+        },
+        /**
+         * #action
+         */
+        setDiagonalizeStatus(arg?: RpcStatus) {
+          self.diagonalizeStatus = arg
+        },
+        /**
+         * #action
+         */
+        setDiagonalizeStopToken(arg?: StopToken) {
+          self.diagonalizeStopToken = arg
+        },
+        /**
+         * #action
+         * Abort an in-flight auto-diagonalize; the runner's finally clears the
+         * wait flag, revealing the (undiagonalized) plot.
+         */
+        cancelAutoDiagonalize() {
+          stopStopToken(self.diagonalizeStopToken)
         },
 
         /**

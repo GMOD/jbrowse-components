@@ -1,6 +1,7 @@
 import { lazy } from 'react'
 
 import { LoadingEllipses } from '@jbrowse/core/ui'
+import { DiagonalizeLoadingScreen } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import LinearComparativeViewComponent from '../../LinearComparativeView/components/LinearComparativeView.tsx'
@@ -16,9 +17,19 @@ const LinearSyntenyView = observer(function LinearSyntenyView({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { showLoading, showImportForm, loadingMessage } = model
+  const { showLoading, showImportForm, awaitingAutoDiagonalize, loadingMessage } =
+    model
 
-  if (showLoading) {
+  if (awaitingAutoDiagonalize) {
+    return (
+      <DiagonalizeLoadingScreen
+        status={model.diagonalizeStatus}
+        onCancel={() => {
+          model.cancelAutoDiagonalize()
+        }}
+      />
+    )
+  } else if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
   } else if (showImportForm) {
     return <LinearSyntenyImportForm model={model} />

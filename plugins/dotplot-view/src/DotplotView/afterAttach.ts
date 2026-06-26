@@ -4,6 +4,7 @@ import {
   parseLocString,
 } from '@jbrowse/core/util'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
+import { withDiagonalizeProgress } from '@jbrowse/synteny-core'
 import { autorun, when } from 'mobx'
 
 import { LS_CURSOR_MODE } from './types.ts'
@@ -168,25 +169,18 @@ async function runAutoDiagonalize(self: DotplotViewModel) {
   // view's regions are populated (assemblies loaded) — not the display's render
   // fetch. Wait on `initialized` directly so a slow remote load can't expire a
   // fixed ceiling and skip the reorder, leaving an undiagonalized plot; bail if
-  // the assemblies error out. awaitingAutoDiagonalize flips showLoading on so
-  // the user sees a "Reordering chromosomes…" spinner meanwhile.
-  self.setAwaitingAutoDiagonalize(true)
-  try {
+  // the assemblies error out. withDiagonalizeProgress drives the reordering
+  // spinner + cancel and swallows the abort.
+  await withDiagonalizeProgress(self, async opts => {
     const { runDotplotDiagonalize } =
       await import('./util/runDotplotDiagonalize.ts')
     await when(
       () => self.initialized || !!self.volatileError || !!self.assemblyErrors,
     )
     if (self.initialized && isAlive(self)) {
-      await runDotplotDiagonalize(self)
+      await runDotplotDiagonalize(self, opts)
     }
-  } catch (e) {
-    console.error(e)
-  } finally {
-    if (isAlive(self)) {
-      self.setAwaitingAutoDiagonalize(false)
-    }
-  }
+  })
 }
 
 // region-based linking: navigate each axis to its requested loc. Assumes the

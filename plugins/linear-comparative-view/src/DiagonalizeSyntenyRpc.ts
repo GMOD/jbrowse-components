@@ -58,6 +58,13 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
       throw new Error('must pass a unique session id')
     }
 
+    // Phase labels mirror DiagonalizeDotplotRpc so both views report the same
+    // progression; the getFeatures call upgrades "Fetching features" to a
+    // determinate download/parse bar while it runs. Fetch sequentially (not
+    // Promise.all): the adapters share one statusCallback, so concurrent
+    // fetches would clobber each other's bar.
+    statusCallback?.('Fetching features')
+
     const alignments: AlignmentData[] = []
     for (const adapterConfig of adapterConfigs) {
       const { dataAdapter } = await getAdapter(
@@ -90,7 +97,7 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
     statusCallback?.(
       `Running diagonalization on ${alignments.length} alignments`,
     )
-    return diagonalizeRegions(
+    const result = await diagonalizeRegions(
       alignments,
       referenceRegions,
       currentRegions,
@@ -98,5 +105,8 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
         checkStopToken(stopToken)
       },
     )
+
+    statusCallback?.('Diagonalization complete!')
+    return result
   }
 }
