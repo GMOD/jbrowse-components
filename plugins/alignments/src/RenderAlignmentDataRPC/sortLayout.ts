@@ -125,7 +125,10 @@ function buildSortKeyMap(
     const { interbaseLengths, interbaseTypes } = data
     const lengthAtPos = new Map<number, number>()
     for (let i = 0; i < interbasePositions.length; i++) {
-      if (interbaseTypes[i] === targetType && interbasePositions[i] === sortPos) {
+      if (
+        interbaseTypes[i] === targetType &&
+        interbasePositions[i] === sortPos
+      ) {
         const readIdx = interbaseReadIndices[i]!
         const len = interbaseLengths[i]!
         if (len > (lengthAtPos.get(readIdx) ?? 0)) {

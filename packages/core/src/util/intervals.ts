@@ -12,16 +12,17 @@ export function mergeIntervals<T extends { start: number; end: number }>(
     return intervals
   }
 
-  const stack: T[] = []
-  intervals = intervals.sort((a, b) => a.start - b.start)
-  stack.push(intervals[0]!)
+  // clone so neither the input array order nor its elements are mutated
+  const sorted = [...intervals].sort((a, b) => a.start - b.start)
+  const stack: T[] = [{ ...sorted[0]! }]
 
-  for (let i = 1; i < intervals.length; i++) {
+  for (let i = 1; i < sorted.length; i++) {
     const top = stack.at(-1)!
-    if (top.end + w < intervals[i]!.start - w) {
-      stack.push(intervals[i]!)
-    } else if (top.end < intervals[i]!.end) {
-      top.end = intervals[i]!.end
+    const next = sorted[i]!
+    if (top.end + w < next.start - w) {
+      stack.push({ ...next })
+    } else if (top.end < next.end) {
+      top.end = next.end
     }
   }
 

@@ -50,6 +50,7 @@ export interface Assembly {
 export interface Track {
   trackId: string
   displays?: unknown[]
+  adapter?: Record<string, unknown>
   // SyntenyTracks carry their compared assemblies in [query, target] order;
   // used to place the track at the right level in a multi-assembly synteny view.
   assemblyNames?: string[]

@@ -17,15 +17,15 @@ describe('makeSyntenyTrackConfig', () => {
     const t = makeSyntenyTrackConfig(type, `aln.${type}`, 'upper', 'lower')
     expect(t.type).toBe('SyntenyTrack')
     expect(t.trackId).toBe(`aln.${type}`)
-    expect(t.adapter.type).toBe(adapterType)
-    expect(t.adapter[locSlot]).toEqual({ localPath: `aln.${type}` })
+    expect(t.adapter?.type).toBe(adapterType)
+    expect(t.adapter?.[locSlot]).toEqual({ localPath: `aln.${type}` })
   })
 
   // PAF/BLAST list the query first, so the upper (first) assembly is the query.
   test('paf: upper assembly is the query, lower is the target', () => {
     const t = makeSyntenyTrackConfig('paf', 'a.paf', 'upper', 'lower')
-    expect(t.adapter.queryAssembly).toBe('upper')
-    expect(t.adapter.targetAssembly).toBe('lower')
+    expect(t.adapter?.queryAssembly).toBe('upper')
+    expect(t.adapter?.targetAssembly).toBe('lower')
     expect(t.assemblyNames).toEqual(['upper', 'lower'])
   })
 
@@ -34,14 +34,14 @@ describe('makeSyntenyTrackConfig', () => {
   // backwards.
   test('chain: upper assembly is the target, lower is the query', () => {
     const t = makeSyntenyTrackConfig('chain', 'a.chain', 'upper', 'lower')
-    expect(t.adapter.queryAssembly).toBe('lower')
-    expect(t.adapter.targetAssembly).toBe('upper')
+    expect(t.adapter?.queryAssembly).toBe('lower')
+    expect(t.adapter?.targetAssembly).toBe('upper')
     expect(t.assemblyNames).toEqual(['lower', 'upper'])
   })
 
   test('a remote comparison file uses a uri location', () => {
     const t = makeSyntenyTrackConfig('paf', 'https://e.com/a.paf', 'q', 't')
-    expect(t.adapter.pafLocation).toEqual({ uri: 'https://e.com/a.paf' })
+    expect(t.adapter?.pafLocation).toEqual({ uri: 'https://e.com/a.paf' })
   })
 })
 
