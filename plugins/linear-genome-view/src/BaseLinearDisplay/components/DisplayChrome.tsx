@@ -140,7 +140,13 @@ function DisplayChromeInner<B extends { dispose(): void }>({
     >
       {children({ canvasRef, canvas })}
       <DisplayErrorBar model={model} />
-      <DisplayLoadingOverlay model={model} visible={phase === 'loading'} />
+      <DisplayLoadingOverlay
+        model={model}
+        visible={phase === 'loading'}
+        // initial load (nothing painted yet) shows the indicator immediately;
+        // a refetch over already-drawn content keeps the anti-flash delay
+        immediate={!model.canvasDrawn}
+      />
     </div>
   )
 }

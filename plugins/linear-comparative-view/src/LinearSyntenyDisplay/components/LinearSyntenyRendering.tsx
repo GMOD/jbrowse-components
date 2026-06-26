@@ -30,6 +30,7 @@ const LinearSyntenyRendering = observer(function LinearSyntenyRendering({
         statusMessage={statusMessage}
         progress={statusProgress}
         isVisible={loading}
+        immediate
       />
       {/* Refetch: stale ribbons stay on screen, so a small shared corner chip
           carries the same statusCallback message + determinate fraction. */}

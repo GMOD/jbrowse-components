@@ -41,6 +41,11 @@ describe('LoadingOverlay anti-flash', () => {
     flash()
     expect(queryByTestId('loading-overlay')).toBeNull()
   })
+
+  it('appears immediately, skipping the flash delay, when immediate is set', () => {
+    const { queryByTestId } = render(<LoadingOverlay isVisible immediate />)
+    expect(queryByTestId('loading-overlay')).not.toBeNull()
+  })
 })
 
 describe('LoadingOverlay status + progress', () => {

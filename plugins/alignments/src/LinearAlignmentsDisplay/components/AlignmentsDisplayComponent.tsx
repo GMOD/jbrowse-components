@@ -67,7 +67,7 @@ const AlignmentsDisplayComponent = observer(
     if (!view.initialized) {
       return (
         <div className={classes.display}>
-          <LoadingOverlay statusMessage="Initializing" isVisible />
+          <LoadingOverlay statusMessage="Initializing" isVisible immediate />
         </div>
       )
     }

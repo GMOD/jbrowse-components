@@ -10,8 +10,10 @@ import { cx, makeStyles } from '../util/tss-react/index.ts'
 
 const cancelDelayMs = 5000
 
-// suppress the overlay for the first moments of a load so quick loads stay
-// silent and only genuinely slow loads ever draw the indicator
+// suppress the overlay for the first moments of a refetch so quick zoom/pan
+// loads stay silent and only genuinely slow loads ever draw the indicator.
+// Skipped when `immediate` is set (initial load with nothing on screen yet) —
+// there's no content to flash over, so the indicator shows right away.
 const flashDelayMs = 250
 
 const useStyles = makeStyles()(theme => {
@@ -77,6 +79,7 @@ export default function LoadingOverlay({
   statusMessage,
   progress,
   isVisible,
+  immediate,
   canceled,
   onCancel,
   onRetry,
@@ -84,6 +87,7 @@ export default function LoadingOverlay({
   statusMessage?: string
   progress?: number
   isVisible?: boolean
+  immediate?: boolean
   canceled?: boolean
   onCancel?: () => void
   onRetry?: () => void
@@ -93,10 +97,11 @@ export default function LoadingOverlay({
 
   // anti-flash: only render after the load has run long enough to be worth
   // signaling, so fast loads show nothing at all. The delayed flag resets in
-  // cleanup so a subsequent load gets a fresh flash delay.
+  // cleanup so a subsequent load gets a fresh flash delay. `immediate` bypasses
+  // this for initial loads, where nothing is on screen to flash over yet.
   const [shownAfterDelay, setShownAfterDelay] = useState(false)
   useEffect(() => {
-    if (isVisible) {
+    if (isVisible && !immediate) {
       const id = setTimeout(() => {
         setShownAfterDelay(true)
       }, flashDelayMs)
@@ -106,8 +111,8 @@ export default function LoadingOverlay({
       }
     }
     return undefined
-  }, [isVisible])
-  const shown = isVisible && shownAfterDelay
+  }, [isVisible, immediate])
+  const shown = isVisible && (immediate || shownAfterDelay)
 
   // only offer cancel after the overlay has been continuously visible for a few
   // seconds, so a quick load can't be canceled by an accidental click
