@@ -11,6 +11,9 @@ const useStyles = makeStyles()(theme => ({
     border: 'none',
     marginLeft: theme.spacing(4),
   },
+  selected: {
+    color: theme.palette.primary.main,
+  },
 }))
 
 const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
@@ -18,14 +21,18 @@ const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
 }: {
   model: LinearGenomeViewModel
 }) {
-  const { classes } = useStyles()
+  const { classes, cx } = useStyles()
+  const { isTrackSelectorOpen } = model
   return (
     <IconButton
       onClick={() => {
-        model.activateTrackSelector()
+        model.toggleTrackSelector()
       }}
-      className={classes.toggleButton}
-      title="Open track selector"
+      className={cx(
+        classes.toggleButton,
+        isTrackSelectorOpen ? classes.selected : undefined,
+      )}
+      title={isTrackSelectorOpen ? 'Close track selector' : 'Open track selector'}
       value="track_select"
     >
       <TrackSelectorIcon />

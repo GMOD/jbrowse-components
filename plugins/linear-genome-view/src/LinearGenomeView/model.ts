@@ -1239,6 +1239,29 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #action
+       */
+      toggleTrackSelector() {
+        if (self.trackSelectorType === 'hierarchical') {
+          const session = getSession(self)
+          if (isSessionModelWithWidgets(session)) {
+            const selector = session.addWidget(
+              'HierarchicalTrackSelectorWidget',
+              'hierarchicalTrackSelector',
+              { view: self },
+            )
+            if (session.activeWidgets.has(selector.id) && !session.minimized) {
+              session.hideWidget(selector)
+            } else {
+              session.showWidget(selector)
+            }
+            return selector
+          }
+        }
+        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+      },
+
+      /**
        * #method
        * Helper method for the fetchSequence.
        * Retrieves the corresponding regions that were selected by the
@@ -1493,6 +1516,17 @@ export function stateModelFactory(pluginManager: PluginManager) {
         return this.showCytobands
           ? measureText(self.displayedRegions[0]?.refName || '', 12) + 15
           : 0
+      },
+      /**
+       * #getter
+       */
+      get isTrackSelectorOpen() {
+        const session = getSession(self)
+        return (
+          isSessionModelWithWidgets(session) &&
+          session.activeWidgets.has('hierarchicalTrackSelector') &&
+          !session.minimized
+        )
       },
     }))
     .views(self => ({
