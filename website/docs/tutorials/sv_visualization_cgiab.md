@@ -47,8 +47,13 @@ You will need:
   - [Node.js](https://nodejs.org/) (v24.1.0 or later)
   - [tabix](http://www.htslib.org/doc/tabix.html) (v1.21 or later)
   - [samtools](http://www.htslib.org/) (v1.21 or later)
+  - [bcftools](http://www.htslib.org/) (v1.20 or later) — for the BAF track
+  - [mosdepth](https://github.com/brentp/mosdepth) (v0.3 or later) — for the
+    log2 ratio track
   - [minimap2](https://github.com/lh3/minimap2)
   - [megadepth](https://github.com/ChristopherWilks/megadepth) (v1.2.0 or later)
+  - [bedGraphToBigWig](https://hgdownload.soe.ucsc.edu/admin/exe/) (UCSC tool) —
+    for the log2 ratio and BAF tracks
 
 A script with all of the data-preparation commands below is available as a
 [gist](https://gist.github.com/cmdcolin/4f2ccf037b4c3315d6eb36b0a4ec123d).
@@ -150,6 +155,231 @@ for i in *.cram; do
   jbrowse add-track $i.all.bw --out $OUT --category "Coverage" --load move
 done
 ```
+
+## Build CNV tracks: a log2(tumor/normal) ratio and a BAF track
+
+The coverage bigWigs above are each normalized to their own genome-wide median,
+so tumor and normal don't share a baseline and copy-number changes have to be
+eyeballed. Two derived tracks make somatic copy-number state readable directly:
+
+- a **log2(tumor/normal) coverage ratio** — the standard somatic copy-number
+  signal: 0 = copy-neutral relative to the genome median, positive = gain,
+  negative = loss;
+- a **B-allele frequency (BAF)** track — the tumor's alt-allele fraction at
+  germline-heterozygous SNP sites: ~0.5 where both alleles are retained, pulled
+  toward 0 or 1 under loss-of-heterozygosity (LOH) or allelic imbalance.
+
+These steps are generic. Point the variables at your own matched tumor/normal
+alignments and a germline small-variant VCF for the normal:
+
+```bash
+REF=GRCh38_GIABv3.fa
+NORMAL=HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram
+TUMOR=HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.cram
+# a 2-column chrom.sizes for the UCSC bedGraphToBigWig tool
+cut -f1,2 $REF.fai > GRCh38_GIABv3.chrom.sizes
+```
+
+### log2(tumor/normal) coverage ratio
+
+Bin the genome, take mean depth per bin per sample with mosdepth, median-normalize
+each sample to 1, then take log2 of the ratio:
+
+```bash
+# fixed 10kb windows, no per-base output (-n); -f gives the reference for CRAM
+mosdepth -t8 -n -b 10000 -f $REF HG008-N $NORMAL
+mosdepth -t8 -n -b 10000 -f $REF HG008-T $TUMOR
+# -> HG008-{N,T}.regions.bed.gz : chrom  start  end  meandepth
+
+python3 - <<'PY'
+import gzip, math, statistics
+def load(p):
+    d = {}
+    with gzip.open(p, 'rt') as fh:
+        for line in fh:
+            c, s, e, v = line.split()
+            d[(c, int(s), int(e))] = float(v)
+    return d
+n = load('HG008-N.regions.bed.gz')
+t = load('HG008-T.regions.bed.gz')
+autosomes = {f'chr{i}' for i in range(1, 23)}
+def median(d):
+    return statistics.median(v for k, v in d.items() if k[0] in autosomes and v > 0)
+mn, mt = median(n), median(t)   # per-sample autosomal median
+with open('HG008_log2ratio.bedgraph', 'w') as out:
+    for k in sorted(k for k in n if k in t):
+        nv, tv = n[k] / mn, t[k] / mt
+        if nv > 0 and tv > 0:
+            out.write(f'{k[0]}\t{k[1]}\t{k[2]}\t{math.log2(tv / nv):.4f}\n')
+PY
+
+# bedGraph -> bigWig (LC_COLLATE=C so decoy/HLA contigs sort the way bigWig expects)
+LC_COLLATE=C sort -k1,1 -k2,2n HG008_log2ratio.bedgraph > HG008_log2ratio.sorted.bedgraph
+bedGraphToBigWig HG008_log2ratio.sorted.bedgraph GRCh38_GIABv3.chrom.sizes HG008_log2ratio.bw
+
+jbrowse add-track HG008_log2ratio.bw --out $OUT --category "CNV" --load move
+```
+
+Plot the log2 ratio with a symmetric y-axis — set **min/max score** to about
+`-2`/`2` from the track menu so gains and losses read symmetrically around 0, and
+pick a bicolor/diverging color scale to separate gain from loss. Note the 0 line
+is the sample's genome-wide median, **not** absolute diploid: in a tumor where
+much of the genome is deleted, copy-neutral regions sit above 0. The benchmark
+CNV BED track gives the absolute copy-number reference alongside it.
+
+> If you only want a quick approximation and don't want to download the full
+> alignments, you can build the same track from
+> [indexcov](https://github.com/brentp/goleft) bigWigs (computed in seconds from
+> the BAM/CRAM indexes) instead of mosdepth — read each indexcov bigWig over the
+> same bins and apply the identical normalization. On this dataset the two
+> approaches agree closely (Pearson _r_ ≈ 0.99 across benchmark CNV regions).
+
+### B-allele frequency (BAF)
+
+At germline-heterozygous SNP sites, plot the tumor's fraction of reads supporting
+the alt allele. Take the het sites from a germline small-variant VCF for the
+**normal** sample (the C-GIAB PacBio germline workflow publishes one), then read
+tumor allele depths with `bcftools mpileup`:
+
+```bash
+# germline small-variant calls for the normal sample
+curl -O https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/PacBio_Revio_20240125/pacbio-wgs-wdl_germline_20240206/HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+GERMLINE_VCF=HG008-N-P.GRCh38.deepvariant.phased.vcf.gz
+bcftools index -t $GERMLINE_VCF
+
+# heterozygous SNP sites (GT 0/1), PASS only
+bcftools view -g het -v snps -f PASS $GERMLINE_VCF -Oz -o hets.vcf.gz
+bcftools index -t hets.vcf.gz
+
+# tumor alt-allele fraction at those sites (sites with depth >= 10)
+# use -T (stream the BAM once) rather than -R (which does a per-site index seek
+# over millions of sites and takes hours); restrict to the main chromosomes
+CHROMS=$(printf 'chr%s,' {1..22})chrX,chrY
+bcftools mpileup -f $REF -r $CHROMS -T hets.vcf.gz -a AD -q 1 -Q 0 $TUMOR \
+  | bcftools query -f '%CHROM\t%POS\t[%AD]\n' \
+  | awk -F'[\t,]' '{d=$3+$4; if(d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' \
+  > HG008-T_baf.bedgraph
+
+LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph > HG008-T_baf.sorted.bedgraph
+bedGraphToBigWig HG008-T_baf.sorted.bedgraph GRCh38_GIABv3.chrom.sizes HG008-T_baf.bw
+
+jbrowse add-track HG008-T_baf.bw --out $OUT --category "CNV" --load move
+```
+
+`bcftools mpileup` is single-threaded for the pileup itself (`--threads` only
+parallelizes BGZF compression), and this step dominates the runtime on
+deep long-read data. To speed it up, split by region and run one process per
+chromosome, then concatenate — on a 24-core machine this took ~11 minutes versus
+well over an hour for the single streaming pass:
+
+```bash
+mpileup_chrom() {
+  bcftools mpileup -f $REF -r $1 -T hets.vcf.gz -a AD -q 1 -Q 0 $TUMOR \
+    | bcftools query -f '%CHROM\t%POS\t[%AD]\n' \
+    | awk -F'[\t,]' '{d=$3+$4; if(d>=10) printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,$4/d}' \
+    > baf_part.$1.bedgraph
+}
+export -f mpileup_chrom; export REF TUMOR
+printf 'chr%s\n' {1..22} chrX chrY | xargs -P$(nproc) -I{} bash -c 'mpileup_chrom "$@"' _ {}
+cat $(printf 'baf_part.chr%s.bedgraph ' {1..22} chrX chrY) > HG008-T_baf.bedgraph
+```
+
+When merging per-region output, drop duplicate positions before
+`bedGraphToBigWig` (multiallelic sites can emit a position twice, which it
+rejects as overlapping): `LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph | awk '!seen[$1"\t"$2]++' > HG008-T_baf.sorted.bedgraph`.
+
+Plot BAF with a fixed `0`..`1` domain. Because it is one value per SNP rather
+than a continuous signal, a **density** or **xyplot** renderer reads better than
+a line. Pairing the log2 ratio (copy number) with BAF (allelic state) is the
+conventional two-panel somatic-CNV view: a deletion shows up as a negative log2
+ratio **and** a BAF split toward 0/1, while copy-neutral LOH shows the BAF split
+with a flat log2 ratio.
+
+### Calibrate the log2 baseline to diploid using BAF
+
+The log2 track above is centered on each sample's genome-wide median, so 0 is the
+modal copy state rather than absolute diploid. With a matched normal already
+cancelling technical bias, one extra step gives an absolute, diploid-referenced
+baseline without any purity/ploidy model: **anchor 0 to allelically-balanced
+regions**. Windows where the het BAF stays tight around 0.5 have both parental
+alleles present, so they are copy-neutral diploid; subtract their median log2
+from the whole track.
+
+```bash
+# WIN must match the mosdepth bin size used above
+python3 - <<'PY'
+import statistics
+from collections import defaultdict
+WIN = 10000
+autosomes = {f'chr{i}' for i in range(1, 23)}
+# allelic balance per window, from the BAF bedgraph
+bal = defaultdict(lambda: [0, 0])
+for ln in open('HG008-T_baf.bedgraph'):
+    c, s, e, v = ln.split()
+    if c not in autosomes:
+        continue
+    k = (c, int(s) // WIN * WIN)
+    bal[k][0] += 1
+    if abs(float(v) - 0.5) < 0.1:
+        bal[k][1] += 1
+# diploid baseline = median log2 over windows that are mostly balanced
+rows = [ln.split() for ln in open('HG008_log2ratio.bedgraph')]
+anchor = []
+for c, s, e, v in rows:
+    if c not in autosomes:
+        continue
+    n, b = bal.get((c, int(s) // WIN * WIN), (0, 0))
+    if n >= 5 and b / n > 0.7:
+        anchor.append(float(v))
+off = statistics.median(anchor)
+print('diploid baseline (log2) =', round(off, 3))
+with open('HG008_log2ratio.calibrated.bedgraph', 'w') as out:
+    for c, s, e, v in rows:
+        out.write(f'{c}\t{s}\t{e}\t{float(v) - off:.4f}\n')
+PY
+
+LC_COLLATE=C sort -k1,1 -k2,2n HG008_log2ratio.calibrated.bedgraph > HG008_log2ratio.calibrated.sorted.bedgraph
+bedGraphToBigWig HG008_log2ratio.calibrated.sorted.bedgraph GRCh38_GIABv3.chrom.sizes HG008_log2ratio.calibrated.bw
+jbrowse add-track HG008_log2ratio.calibrated.bw --out $OUT --category "CNV" --load move
+```
+
+On HG008-T this lands copy-neutral diploid (CN=2) at ~0, single-copy loss (CN=1)
+near −1, and a single-copy gain (CN=3) near +0.58 — close to the theoretical
+`log2(CN/2)` — so the y-axis can be read directly as relative copy number. This
+is a deliberately minimal calibration: it assumes some of the genome is diploid
+and heterozygous, and it does not model tumor purity or whole-genome doubling.
+
+The two signals built here — a depth ratio and a BAF/MAF track — are exactly what
+production somatic-CNV callers compute internally; the steps above are a way to
+understand and visualize that signal, not a replacement for a caller. For real
+calling, those tools add segmentation, purity/ploidy estimation, and integer
+copy-number assignment on top. For this PacBio HiFi data the natural choices are
+long-read aware:
+
+- [HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV) (PacBio) — read-depth
+  CNV caller that emits a depth bigWig, a copy-number-segmentation bedGraph, a
+  CNV VCF, and a **MAF bigWig** for allelic imbalance — i.e. productionized
+  versions of the two tracks above.
+- [Wakhan](https://github.com/KolmogorovLab/Wakhan) — haplotype-specific somatic
+  copy number from long reads: it reads tumor SNP frequencies at the normal's
+  phased heterozygous sites (the BAF signal above) and assigns integer copy
+  numbers by Gaussian-mixture deconvolution, also flagging subclonal segments.
+  The C-GIAB project publishes Wakhan CNA analyses for HG008-T.
+
+For short-read or array data the established equivalents include
+[GATK](https://gatk.broadinstitute.org/) (somatic CNV / CollectAllelicCounts),
+[PURPLE](https://github.com/hartwigmedical/hmftools/tree/master/purple),
+[FACETS](https://github.com/mskcc/facets),
+[Sequenza](https://sequenzatools.bitbucket.io/),
+[ASCAT](https://github.com/VanLoo-lab/ascat), and
+[CNVkit](https://github.com/etal/cnvkit) — all of which pair a depth ratio with a
+BAF track much like this walkthrough.
+
+To see the effect, keep **both** tracks loaded: the raw `HG008_log2ratio.bw`
+(centered on the genome median) and the calibrated `HG008_log2ratio.calibrated.bw`
+(centered on diploid). Side by side they make the baseline shift obvious — in a
+heavily-deleted tumor like HG008-T the raw 0-line sits well above copy-neutral,
+while the calibrated track puts the benchmark's CN=2 segments right at 0.
 
 ## Align the phased tumor assembly to GRCh38
 
@@ -272,8 +502,11 @@ coverage changes line up with the called CNVs.
 
 <Figure caption="After switching to no-fill mode, zooming into chromosome 5, and opening the benchmark CNV BED track — orange boxes mark individual CNVs and clicking them shows feature details." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
-This protocol does not perform normalization or CNV calling; the bigWig view is
-a sanity check on existing calls, not a substitute for a CNV caller. See the
+This protocol does not perform normalization or CNV calling; the raw-coverage
+bigWig view is a sanity check on existing calls. For a normalized,
+copy-number-aware signal, use the log2(tumor/normal) ratio and BAF tracks built
+in [Build CNV tracks](#build-cnv-tracks-a-log2tumornormal-ratio-and-a-baf-track)
+above. See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for
 more on tumor vs normal coverage comparison.
 
