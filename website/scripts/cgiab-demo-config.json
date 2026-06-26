@@ -1,0 +1,287 @@
+{
+  "assemblies": [
+    {
+      "name": "GRCh38_GIABv3",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "GRCh38_GIABv3-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "GRCh38_GIABv3.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "GRCh38_GIABv3.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "GRCh38_GIABv3.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG008T.hap1",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG008T.hap1-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "HG008T.hap1.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "HG008T.hap1.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "HG008T.hap1.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "name": "HG008T.hap2",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "HG008T.hap2-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "fastaLocation": {
+            "uri": "HG008T.hap2.fa.gz",
+            "locationType": "UriLocation"
+          },
+          "faiLocation": {
+            "uri": "HG008T.hap2.fa.gz.fai",
+            "locationType": "UriLocation"
+          },
+          "gziLocation": {
+            "uri": "HG008T.hap2.fa.gz.gzi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    }
+  ],
+  "configuration": {},
+  "connections": [],
+  "defaultSession": {
+    "name": "New Session"
+  },
+  "tracks": [
+    {
+      "type": "VariantTrack",
+      "trackId": "GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf",
+      "name": "GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf",
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/analysis/NIST_HG008-T_somatic-stvar-CNV_DraftBenchmark_V0.4-20250714/GRCh38_HG008-T-V0.4_somatic-stvar_PASS.draftbenchmark.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "category": ["Variant calls"],
+      "assemblyNames": ["GRCh38_GIABv3"]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls",
+      "name": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls",
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Variant calls"],
+      "assemblyNames": ["GRCh38_GIABv3"]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all",
+      "name": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all",
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "category": ["Coverage"],
+      "assemblyNames": ["GRCh38_GIABv3"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "HG008T.hap1",
+      "name": "HG008T.hap1",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "HG008T.hap1.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "HG008T.hap1.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["HG008T.hap1", "GRCh38_GIABv3"]
+      },
+      "assemblyNames": ["HG008T.hap1", "GRCh38_GIABv3"]
+    },
+    {
+      "type": "SyntenyTrack",
+      "trackId": "HG008T.hap2",
+      "name": "HG008T.hap2",
+      "adapter": {
+        "type": "PAFAdapter",
+        "pafLocation": {
+          "uri": "HG008T.hap2.pif.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "HG008T.hap2.pif.gz.tbi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "TBI"
+        },
+        "assemblyNames": ["HG008T.hap2", "GRCh38_GIABv3"]
+      },
+      "assemblyNames": ["HG008T.hap2", "GRCh38_GIABv3"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3",
+      "name": "HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        }
+      },
+      "category": ["Reads"],
+      "assemblyNames": ["GRCh38_GIABv3"]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3",
+      "name": "HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3",
+      "adapter": {
+        "type": "BamAdapter",
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai",
+            "locationType": "UriLocation"
+          },
+          "indexType": "BAI"
+        }
+      },
+      "category": ["Reads"],
+      "assemblyNames": ["GRCh38_GIABv3"]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "HG008_log2ratio",
+      "name": "HG008 log2(tumor/normal) coverage ratio",
+      "category": ["CNV"],
+      "assemblyNames": ["GRCh38_GIABv3"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "HG008_log2ratio.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "HG008_log2ratio-LinearWiggleDisplay",
+          "defaultRendering": "scatter",
+          "summaryScoreMode": "avg",
+          "scatterPointSize": 1,
+          "minScore": -2,
+          "maxScore": 2,
+          "height": 120
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "HG008_log2ratio_calibrated",
+      "name": "HG008 log2 ratio (BAF-calibrated to diploid)",
+      "category": ["CNV"],
+      "assemblyNames": ["GRCh38_GIABv3"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "HG008_log2ratio.calibrated.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "HG008_log2ratio_calibrated-LinearWiggleDisplay",
+          "defaultRendering": "scatter",
+          "summaryScoreMode": "avg",
+          "scatterPointSize": 1,
+          "minScore": -2,
+          "maxScore": 2,
+          "height": 120
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "HG008-T_baf",
+      "name": "HG008-T B-allele frequency (BAF)",
+      "category": ["CNV"],
+      "assemblyNames": ["GRCh38_GIABv3"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "HG008-T_baf.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "HG008-T_baf-LinearWiggleDisplay",
+          "defaultRendering": "scatter",
+          "scatterPointSize": 1,
+          "minScore": 0,
+          "maxScore": 1,
+          "height": 120
+        }
+      ]
+    }
+  ]
+}

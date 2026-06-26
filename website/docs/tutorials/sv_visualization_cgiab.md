@@ -227,7 +227,7 @@ is the sample's genome-wide median, **not** absolute diploid: in a tumor where
 much of the genome is deleted, copy-neutral regions sit above 0. The benchmark
 CNV BED track gives the absolute copy-number reference alongside it.
 
-<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, capped to a symmetric ±2 domain so the bicolor xyplot separates gains (positive, blue) from losses (negative, red), above the benchmark somatic CNV calls. Unlike the two independently-normalized coverage tracks, this single track reads directly as relative copy number and lines up with the called intervals." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
+<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, drawn as a scatter of the per-bin average and capped to a symmetric ±2 domain so the bicolor split separates gains (positive, blue) from losses (negative, red), above the benchmark somatic CNV calls. Unlike the two independently-normalized coverage tracks, this single track reads directly as relative copy number and lines up with the called intervals." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
 
 > If you only want a quick approximation and don't want to download the full
 > alignments, you can build the same track from
@@ -290,14 +290,17 @@ When merging per-region output, drop duplicate positions before
 `bedGraphToBigWig` (multiallelic sites can emit a position twice, which it
 rejects as overlapping): `LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph | awk '!seen[$1"\t"$2]++' > HG008-T_baf.sorted.bedgraph`.
 
-Plot BAF with a fixed `0`..`1` domain. Because it is one value per SNP rather
-than a continuous signal, a **density** or **xyplot** renderer reads better than
-a line. Pairing the log2 ratio (copy number) with BAF (allelic state) is the
+Plot BAF with a fixed `0`..`1` domain and a **scatter** rendering. Because it is
+one value per SNP rather than a continuous signal, scatter reads better than a
+line — and at whole-chromosome zoom, where each pixel bins many SNPs, scatter's
+per-bin min/max points keep the 0/1 LOH split visible, whereas a line or density
+averages it back to 0.5. Pairing the log2 ratio (copy number) with BAF (allelic
+state) is the
 conventional two-panel somatic-CNV view: a deletion shows up as a negative log2
 ratio **and** a BAF split toward 0/1, while copy-neutral LOH shows the BAF split
 with a flat log2 ratio.
 
-<Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above BAF (bottom), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF density splitting away from 0.5 — while the q-arm returns to a balanced state with the BAF density concentrated at 0.5. BAF is rendered as a density (rather than a line, which would average the 0/1 LOH signal back to 0.5)." src="/img/sv_cgiab/cnv_log2_baf.png" />
+<Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above BAF (bottom), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF splitting away from 0.5 toward 0 and 1 — while the q-arm returns to a balanced state with the BAF clustered at 0.5. Both tracks use scatter rendering; for BAF this exposes the 0/1 LOH split that a line or density would average back to 0.5." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
 ### Calibrate the log2 baseline to diploid using BAF
 

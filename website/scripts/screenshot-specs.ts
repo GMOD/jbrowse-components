@@ -373,16 +373,6 @@ function cgiabUrl(session?: object) {
   return `${CGIAB_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
 
-// Same cgiab session, but captured against the public jb2/latest release rather
-// than the local build. The CNV log2/BAF figures only use released wiggle/multi-
-// wiggle features, and their bigWigs are hosted at jbrowse.org/demos/cgiab, so
-// the live instance renders them identically — and specLiveUrl returns this
-// absolute url verbatim as the docs reader link.
-const CGIAB_LIVE = 'https://jbrowse.org/code/jb2/latest/'
-function cgiabLiveUrl(session: object) {
-  return `${CGIAB_LIVE}${cgiabUrl(session)}`
-}
-
 function hpyloriUrl(session: object) {
   return `${HPYLORI_BASE}&session=${encodeSessionSpec(session)}&sessionName=Screenshot`
 }
@@ -3304,7 +3294,7 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2ratio_genome',
-    url: cgiabLiveUrl({
+    url: cgiabUrl({
       sessionTracks: [
         {
           type: 'QuantitativeTrack',
@@ -3330,7 +3320,15 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_log2ratio',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                constraints: { min: -2, max: 2 },
+                // scatter of the per-bin average (not the default filled/whisker
+                // xyplot) reads copy-number gains/losses as a clean point band,
+                // the conventional CNV depth-ratio plot; bicolor still splits
+                // gains (positive) from losses (negative) about 0
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
                 height: 160,
               },
             },
@@ -3356,7 +3354,7 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2_baf',
-    url: cgiabLiveUrl({
+    url: cgiabUrl({
       sessionTracks: [
         {
           type: 'QuantitativeTrack',
@@ -3395,7 +3393,13 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_log2ratio',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                constraints: { min: -2, max: 2 },
+                // scatter of the per-bin average — the conventional CNV depth-
+                // ratio plot (see cnv_log2ratio_genome)
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
                 height: 140,
               },
             },
@@ -3403,12 +3407,16 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_baf',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                // density (not scatter) at chromosome scale: each pixel bins
-                // hundreds of SNPs, and scatter's min/max whiskers would fill
-                // 0..1 and erase the split. Density draws the LOH bimodality as
-                // two bands (0 and 1) vs a single balanced band at 0.5.
-                defaultRendering: 'density',
-                constraints: { min: 0, max: 1 },
+                // scatter at chromosome scale: each pixel bins hundreds of SNPs,
+                // so plotting the per-bin min/max/avg as points exposes the BAF
+                // spread — LOH bins put points at both 0 and 1 (two bands), while
+                // balanced bins cluster at 0.5. Density is wrong here: it colors
+                // each bin by its mean, and both LOH (a mix of 0s and 1s) and
+                // balanced bins average to ~0.5, washing out to a uniform fill.
+                defaultRendering: 'scatter',
+                scatterPointSize: 1,
+                minScore: 0,
+                maxScore: 1,
                 height: 140,
               },
             },
@@ -3434,7 +3442,7 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_calibration',
-    url: cgiabLiveUrl({
+    url: cgiabUrl({
       sessionTracks: [
         {
           type: 'QuantitativeTrack',
@@ -3473,7 +3481,11 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_log2ratio_raw',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                constraints: { min: -2, max: 2 },
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
                 height: 140,
               },
             },
@@ -3481,7 +3493,11 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_log2ratio_cal',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                constraints: { min: -2, max: 2 },
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
                 height: 140,
               },
             },
