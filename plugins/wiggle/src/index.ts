@@ -56,6 +56,7 @@ export {
 
 export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
 export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
+export type { WiggleScoreConfigKey } from './shared/WiggleScoreConfigMixin.ts'
 
 export type {
   SourceRenderData,

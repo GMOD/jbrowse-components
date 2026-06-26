@@ -9,7 +9,10 @@ import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
-import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
+import type {
+  WiggleScoreConfigKey,
+  linearWiggleDisplayModelFactory,
+} from '@jbrowse/plugin-wiggle'
 
 type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>
@@ -108,25 +111,24 @@ interface DisplaySnapshot {
 // silently-dead-snapshot-field class of bug) then fails the build. It checks
 // existence, not snapshot-input validity or value type — value types are pinned
 // by the interface above.
+// Valid keys = every member of the display Instance types (MST props + resolved
+// getters) plus the wiggle config-override key list. The latter is the
+// authoritative source for keys whose resolved getter is named differently from
+// the config key (`autoscale`→`autoscaleType`, `defaultRendering`→
+// `renderingType`), which `keyof` the instance therefore misses — and unlike a
+// hand allow-list it also catches a config-key rename. `height` resolves fine —
+// it's the getter, and its snapshot value is migrated to `heightOverride` by
+// TrackHeightMixin's preProcessSnapshot.
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
   | keyof LinearVariantDisplayModel
   | keyof LinearHicDisplayModel
   | keyof WiggleDisplayModel
+  | WiggleScoreConfigKey
 
 type AssertNever<T extends never> = T
-// `autoscale` and `defaultRendering` are wiggle config-override keys read only
-// via getConfWithOverride (no direct instance getter, unlike scaleType/colorBy/
-// …), so the instance-key check can't see them; they're allow-listed and
-// exercised at runtime by the skbr3_cov / fill screenshots. `height` resolves
-// fine — it's the getter, and its snapshot value is migrated to heightOverride
-// by TrackHeightMixin's preProcessSnapshot.
-type ConfigOverrideOnlyKeys = 'autoscale' | 'defaultRendering'
-export type UnknownSnapshotKeys = Exclude<
-  keyof DisplaySnapshot,
-  DisplayKeys | ConfigOverrideOnlyKeys
->
+export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>
 export type AssertSnapshotKeysExist = AssertNever<UnknownSnapshotKeys>
 
 // The center-line sort is the one setting that depends on view state (the sort

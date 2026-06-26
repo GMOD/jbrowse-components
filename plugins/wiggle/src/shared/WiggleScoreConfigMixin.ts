@@ -27,6 +27,14 @@ const WIGGLE_SCORE_CONFIG_KEYS = [
 ] as const
 
 /**
+ * The wiggle-family config-override keys (the names that appear flat in a
+ * display snapshot). Several resolve through divergently-named getters
+ * (`autoscale`→`autoscaleType`, `defaultRendering`→`renderingType`), so this
+ * list — not `keyof` the instance — is the authoritative set of valid keys.
+ */
+export type WiggleScoreConfigKey = (typeof WIGGLE_SCORE_CONFIG_KEYS)[number]
+
+/**
  * #stateModel WiggleScoreConfigMixin
  * #category display
  *
