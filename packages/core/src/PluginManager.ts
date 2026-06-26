@@ -24,8 +24,17 @@ import type TrackType from './pluggableElementTypes/TrackType.ts'
 import type ViewType from './pluggableElementTypes/ViewType.ts'
 import type WidgetType from './pluggableElementTypes/WidgetType.ts'
 import type { PluggableElementType } from './pluggableElementTypes/index.ts'
-import type { AbstractRootModel } from './util/index.ts'
-import type { IAnyModelType, IAnyType } from '@jbrowse/mobx-state-tree'
+import type {
+  AbstractRootModel,
+  AbstractSessionModel,
+  SimpleFeatureSerialized,
+} from './util/index.ts'
+import type {
+  IAnyModelType,
+  IAnyStateTreeNode,
+  IAnyType,
+} from '@jbrowse/mobx-state-tree'
+import type { ComponentType } from 'react'
 
 type PluggableElementTypeGroup =
   | 'adapter'
@@ -111,10 +120,54 @@ type ExtensionPointCallback = (
 // method and fall back to the prior loose typing. Built-in points defined here
 // in PluginManager are declared inline; points owned by other modules augment
 // this interface via `declare module '@jbrowse/core/PluginManager'`.
+// a feature-detail widget carries trackId/trackType (undefined when the
+// producing track was closed), which is what lets a panel scope itself to a
+// track
+type FeatureWidgetModel = IAnyStateTreeNode & {
+  trackId?: string
+  trackType?: string
+}
+
+// any widget additionally exposes its type discriminator, which scopes a
+// replacement to a kind of widget
+type WidgetModel = FeatureWidgetModel & {
+  type: string
+}
+
+// props passed to Core-extraFeaturePanel components (and threaded as the second
+// arg to each accumulating callback)
+export interface FeaturePanelProps {
+  model: FeatureWidgetModel
+  feature: SimpleFeatureSerialized
+}
+
+// props passed to Core-replaceWidget components
+export interface ReplaceWidgetProps {
+  session: AbstractSessionModel
+  model: WidgetModel
+  toolbarHeight?: number
+}
+
 export interface ExtensionPointRegistry {
   'Core-extendPluggableElement': {
     args: PluggableElementType
     result: PluggableElementType
+  }
+  // accumulates an array of panels — every callback appends its own component
+  // (scoping itself via the model) and returns the array, so multiple plugins
+  // compose instead of overwriting one another
+  'Core-extraFeaturePanel': {
+    args: ComponentType<FeaturePanelProps>[]
+    result: ComponentType<FeaturePanelProps>[]
+    props: FeaturePanelProps
+  }
+  // singular: one widget renders, so this stays a single-component fold. A
+  // callback returns its own component to replace/wrap the default, or the
+  // default unchanged to opt out
+  'Core-replaceWidget': {
+    args: ComponentType<ReplaceWidgetProps>
+    result: ComponentType<ReplaceWidgetProps>
+    props: ReplaceWidgetProps
   }
 }
 

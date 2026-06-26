@@ -38,6 +38,7 @@ export * from './hooks.ts'
 export * from './localStorage.ts'
 export * from './renameRegions.ts'
 export * from './makeTrackId.ts'
+export * from './matchTrackId.ts'
 
 export * from './offscreenCanvasPonyfill.ts'
 export * from './rpc.ts'

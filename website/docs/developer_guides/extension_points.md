@@ -269,21 +269,38 @@ adds option to provide a different component for a given widget, drawer or modal
 - `props` - an object of the type below
 
 ```typescript
+import type { ReplaceWidgetProps } from '@jbrowse/core/PluginManager'
+// ReplaceWidgetProps:
 interface props {
   session: AbstractSessionModel
-  model: WidgetModel
+  model: WidgetModel // has model.type; feature widgets also have trackId/trackType
 }
 ```
 
-See also: `Core-extraFeaturePanel`
+See also: `Core-extraFeaturePanel`. Unlike that point (which accumulates an
+array of additive panels), `Core-replaceWidget` is singular — one widget renders
+— so it stays a single-component fold: return your own component to
+replace/wrap the default, or return the default unchanged to opt out.
 
 Return value: The new React component you want to use
 
 Note: Core-replaceWidget is called any time any widget opens, so if you are
 trying to only customize e.g. the feature details widget, you can filter on
-widget.trackId because only feature detail widgets has a 'trackId' field. You
-can filter on widget.type also but this is stringly typed, and may vary
-depending on track type.
+`model.trackId` because only feature detail widgets have a `trackId` field. You
+can also filter on `model.type` (e.g. `'AlignmentsFeatureWidget'`), but the type
+string varies depending on track type. To match a track id robustly — including
+"user copies" of a track, which get a timestamp and `-sessionTrack` suffix
+appended — use the `matchTrackId` helper with a `RegExp`:
+
+```tsx
+import { matchTrackId } from '@jbrowse/core/util'
+
+pluginManager.addToExtensionPoint(
+  'Core-replaceWidget',
+  (DefaultWidget, { model }) =>
+    matchTrackId(model.trackId, [/^volvox\.inv\.vcf/]) ? MyWidget : DefaultWidget,
+)
+```
 
 Example of Core-replaceWidget - add widget above the default widget
 
@@ -312,61 +329,82 @@ Note 1: it is not always possible to retrieve the configuration associated with
 a track that produced the feature details. Therefore, we check model.trackId
 that produced the popup instead.
 
-Note 2: If you want e.g. a "User copy" of your track to get same treatment,
-might use a regex to loose match the trackId (the copy of a track will have a
-timestamp and -sessionTrack added to it).
+Note 2: If you want e.g. a "User copy" of your track to get the same treatment,
+match the trackId with a `RegExp` via `matchTrackId` (shown above) rather than
+an exact compare — the copy of a track has a timestamp and `-sessionTrack`
+appended to its id.
 
 ### Core-extraFeaturePanel
 
 type: synchronous
 
-Adds an extra panel to the feature details widget. Return a React component that
-renders its own card chrome (use `BaseCard` for a titled section); it is
-rendered after the built-in Attributes/Sequence sections. The default renders
-nothing.
+Adds extra panels to the feature details widget. This point **accumulates an
+array of React components**: each callback appends its own panel and returns the
+array, so panels from multiple plugins compose instead of overwriting one
+another. Each component renders its own card chrome (use `BaseCard` for a titled
+section) and is rendered after the built-in Attributes/Sequence sections. The
+default is an empty array.
 
-- `args` - a `ReactComponent`, by default a no-op that renders nothing
-- `props` - the feature-detail props below, also passed to your component
+- `args` - `React.ComponentType<FeaturePanelProps>[]` - the accumulated panels,
+  empty by default. Append yours and return the array.
+- `props` - the feature-detail props below, also passed to each component
 
 ```typescript
+import type { FeaturePanelProps } from '@jbrowse/core/PluginManager'
+// FeaturePanelProps:
 interface props {
-  model: BaseFeatureWidget // widget model, has model.trackId if you want to check track
-  feature: Record<string, unknown> // snapshot of feature object
-  // (plus depth/omit/descriptions/formatter used by the details renderer)
+  model: FeatureWidgetModel // has model.trackId / model.trackType
+  feature: SimpleFeatureSerialized // snapshot of the feature object
 }
 ```
 
-Note: the model has properties `model.trackId`, `model.trackType`, and
-`model.track`, though `model.track` may be undefined if the user closed the
-track, while trackId and trackType will be defined even if user closed the
-track. The `session` is no longer passed in `props` — derive it with
-`getSession(model)` if you need it.
+The `model` has `model.trackId`, `model.trackType`, and `model.track`, though
+`model.track` may be undefined if the user closed the track (trackId/trackType
+remain defined either way). Derive the session with `getSession(model)` if you
+need it.
 
-Return value: the React component to render. It receives the `props` above.
-
-Example:
+A panel decides for itself whether it applies by returning `null` — this is
+idiomatic React and keeps the registration trivial:
 
 ```tsx
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 
 pluginManager.addToExtensionPoint(
   'Core-extraFeaturePanel',
-  (DefaultPanel, { model }) => {
-    return model.trackId !== 'volvox_filtered_vcf'
-      ? DefaultPanel
-      : function ExtraFeaturePanel({ feature }) {
-          return <BaseCard title="Extra info">{/* your content */}</BaseCard>
-        }
-  },
+  (panels, { model }) => [
+    ...panels,
+    function ExtraFeaturePanel({ model, feature }) {
+      return model.trackType === 'VariantTrack' ? (
+        <BaseCard title="Extra info">{/* your content */}</BaseCard>
+      ) : null
+    },
+  ],
+)
+```
+
+Or scope at registration so you only append when the track matches. Use
+`matchTrackId` (accepts a `RegExp`) so a "user copy" of the track — which gets a
+timestamp and `-sessionTrack` suffix appended to its id — still matches:
+
+```tsx
+import { matchTrackId } from '@jbrowse/core/util'
+
+pluginManager.addToExtensionPoint(
+  'Core-extraFeaturePanel',
+  (panels, { model }) =>
+    matchTrackId(model.trackId, [/^volvox_filtered_vcf/])
+      ? [...panels, MyVariantPanel]
+      : panels,
 )
 ```
 
 :::note
 
-This extension point previously returned a `{ name, Component }` descriptor and
-the widget supplied the titled card. It now returns a bare React component that
-renders its own chrome (matching `Core-replaceWidget`). Wrap your content in
-`BaseCard` to keep the old titled-section look.
+This extension point previously folded to a **single** component. It now
+accumulates an **array** — append your component (`[...panels, MyPanel]`) and
+return the array. A legacy callback that returns a bare component is still
+tolerated (it's normalized into the array), but to compose with other plugins'
+panels you must append rather than replace.
 
 :::
 

@@ -8,7 +8,7 @@ import BaseCard from './BaseCard.tsx'
 import CoreDetails from './CoreDetails.tsx'
 import { generateTitle } from './util.ts'
 import { ErrorBoundary } from '../../ui/ErrorBoundary.tsx'
-import { ErrorBanner, PluggableComponent } from '../../ui/index.ts'
+import { ErrorBanner } from '../../ui/index.ts'
 import { getEnv } from '../../util/index.ts'
 import SequenceFeatureDetails from '../SequenceFeatureDetails/index.tsx'
 
@@ -51,13 +51,6 @@ interface FeatureDetailsProps {
   formatter?: FeatureFormatter
 }
 
-// default for the Core-extraFeaturePanel slot: renders nothing. A plugin
-// replaces this via PluggableComponent and is responsible for its own
-// Divider/BaseCard chrome.
-function NoFeaturePanel(_props: FeatureDetailsProps) {
-  return null
-}
-
 const FeatureDetails = observer(function FeatureDetails(
   props: FeatureDetailsProps,
 ) {
@@ -79,6 +72,12 @@ const FeatureDetails = observer(function FeatureDetails(
     uniqueId,
   } = feature
   const pm = getEnv(model).pluginManager
+  // each registered panel scopes itself (returns null when it doesn't apply)
+  // and owns its own BaseCard/Divider chrome. [x].flat() tolerates a legacy
+  // callback that returned a single component instead of appending to the array
+  const extraPanels = [
+    pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], props),
+  ].flat()
   return (
     <BaseCard title={generateTitle(name, id, type)}>
       {joinByDivider(
@@ -113,14 +112,15 @@ const FeatureDetails = observer(function FeatureDetails(
         <SequenceFeatureDetails {...props} />
       </ErrorBoundary>
 
-      <Suspense fallback={null}>
-        <PluggableComponent
-          pluginManager={pm}
-          name="Core-extraFeaturePanel"
-          component={NoFeaturePanel}
-          props={props}
-        />
-      </Suspense>
+      {extraPanels.map((Panel, i) => (
+        <Suspense
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- panels are registration-ordered, stable across renders
+          key={i}
+          fallback={null}
+        >
+          <Panel {...props} />
+        </Suspense>
+      ))}
 
       {depth < maxDepth && subfeatures?.length ? (
         <BaseCard
