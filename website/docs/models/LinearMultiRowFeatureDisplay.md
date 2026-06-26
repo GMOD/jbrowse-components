@@ -290,6 +290,15 @@ resolves it per feature.
 type colorConfig = string
 ```
 
+#### getter: sampleColorMap
+
+Map of partition value → color, forwarded to the worker which applies it over
+the per-feature `color`.
+
+```ts
+type sampleColorMap = Record<string, string>
+```
+
 #### getter: rowProportion
 
 ```ts
@@ -329,6 +338,17 @@ type sources = MultiRowSource[]
 
 ```ts
 type rowIndexByValue = Map<string, number>
+```
+
+#### getter: rowColorsByIndex
+
+Per-row color (ABGR) by display row — the single per-row resolver (dialog
+color > config `sampleColorMap` > palette-when-default). Applied at render time
+over the worker-baked per-feature `color` slot, so any color change repaints
+without a refetch.
+
+```ts
+type rowColorsByIndex = (number | undefined)[]
 ```
 
 #### getter: nrow

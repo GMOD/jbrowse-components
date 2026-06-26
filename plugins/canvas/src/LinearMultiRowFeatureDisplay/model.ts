@@ -7,7 +7,6 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import { getContainingView } from '@jbrowse/core/util'
-import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MIN_DISPLAY_HEIGHT,
@@ -23,11 +22,13 @@ import {
 import { observable } from 'mobx'
 
 import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
+import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
 import {
   buildEditableSources,
   buildSources,
   orderPartitionValues,
+  resolveRowColors,
 } from './sourcesLogic.ts'
 import { buildMultiRowTrackMenuItems } from './trackMenuItems.ts'
 
@@ -222,14 +223,16 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Per-row color override (ABGR), indexed by display row, from the row's
-       * `color` set in the arrangement dialog. `undefined` rows fall through to
-       * the worker-baked color (sampleColorMap / color slot / palette). Applied
-       * at render time, so editing a row color repaints without a refetch.
+       * Per-row color (ABGR) by display row — the single per-row resolver
+       * (dialog color > config `sampleColorMap` > palette-when-default). Applied
+       * at render time over the worker-baked per-feature `color` slot, so any
+       * color change repaints without a refetch.
        */
       get rowColorsByIndex(): (number | undefined)[] {
-        return self.sources.map(s =>
-          s.color ? cssColorToABGR(s.color) : undefined,
+        return resolveRowColors(
+          self.sources,
+          self.sampleColorMap,
+          self.colorConfig === MULTIROW_DEFAULT_COLOR,
         )
       },
       /**
@@ -352,7 +355,6 @@ export default function stateModelFactory(
         return {
           partitionField: self.partitionField,
           colorConfig: self.colorConfig,
-          sampleColorMap: self.sampleColorMap,
         }
       },
       /**

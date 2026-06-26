@@ -14,11 +14,9 @@ export interface MultiRowGetFeaturesArgs {
   // feature attribute whose value assigns each feature to a row
   partitionField: string
   // raw `color` config slot (a CSS color or `jexl:...`), evaluated per feature
-  // in the worker against the feature
+  // in the worker against the feature. Per-row color (sampleColorMap / palette /
+  // dialog) is applied on the main thread at render time, not here.
   colorConfig: string
-  // optional map of partition value -> color; overrides colorConfig for any
-  // feature whose partition value has an entry
-  sampleColorMap?: Record<string, string>
   stopToken?: StopToken
   statusCallback?: StatusCallback
 }

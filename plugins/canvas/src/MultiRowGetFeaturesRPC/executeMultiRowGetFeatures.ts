@@ -28,7 +28,6 @@ export async function executeMultiRowGetFeatures({
     region,
     partitionField,
     colorConfig,
-    sampleColorMap = {},
     stopToken,
     statusCallback = () => {},
   } = args
@@ -47,7 +46,6 @@ export async function executeMultiRowGetFeatures({
     features,
     partitionField,
     colorConfig,
-    sampleColorMap,
     jexl: pluginManager.jexl,
   })
   return rpcResult(result, [

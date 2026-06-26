@@ -1,8 +1,5 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
-import { tagColorPalette } from '@jbrowse/core/ui/theme'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-
-import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
 
 import type { MultiRowGetFeaturesResult } from './rpcTypes.ts'
 import type { Feature } from '@jbrowse/core/util'
@@ -23,48 +20,26 @@ function evalColorSlot(
   }
 }
 
-// The per-block color "scale" (→ ABGR): a `sampleColorMap` entry for the row
-// wins; else a customized `color` slot is evaluated per feature; else each row
-// takes a distinct categorical-palette color by its index. Built once, then
-// applied per feature with positional args (no per-feature allocation).
-function makeBlockColorScale({
-  colorConfig,
-  sampleColorMap,
-  jexl,
-}: {
-  colorConfig: string
-  sampleColorMap: Record<string, string>
-  jexl?: JexlInstance
-}) {
-  const colorCfg = { color: colorConfig }
-  const colorIsDefault = colorConfig === MULTIROW_DEFAULT_COLOR
-  return (value: string, rowIndex: number, feature: Feature) => {
-    const css =
-      sampleColorMap[value] ??
-      (colorIsDefault
-        ? tagColorPalette[rowIndex % tagColorPalette.length]!
-        : evalColorSlot(colorCfg, feature, jexl))
-    return cssColorToABGR(css)
-  }
-}
-
 /**
  * Pack features into the multi-row wire arrays: absolute genomic start/end, a
- * per-feature ABGR color (see makeBlockColorScale), and a row reference
+ * per-feature ABGR color (the `color` slot evaluated per feature — this is the
+ * per-feature axis, e.g. per-segment `itemRgb` painting), and a row reference
  * indirected through a deduplicated `partitionValues` list (so row strings ship
  * once, not per feature). Pure — the worker supplies the features.
+ *
+ * Per-ROW color (sampleColorMap / palette / the arrangement dialog) is resolved
+ * on the main thread at render time (see resolveRowColors), so it never refetches
+ * and isn't this function's concern.
  */
 export function packMultiRowFeatures({
   features,
   partitionField,
   colorConfig,
-  sampleColorMap,
   jexl,
 }: {
   features: Feature[]
   partitionField: string
   colorConfig: string
-  sampleColorMap: Record<string, string>
   jexl?: JexlInstance
 }): MultiRowGetFeaturesResult {
   const n = features.length
@@ -75,7 +50,7 @@ export function packMultiRowFeatures({
   const featureNames: string[] = new Array(n)
   const partitionValues: string[] = []
   const valueIndex = new Map<string, number>()
-  const blockColor = makeBlockColorScale({ colorConfig, sampleColorMap, jexl })
+  const colorCfg = { color: colorConfig }
 
   for (let i = 0; i < n; i++) {
     const feature = features[i]!
@@ -93,7 +68,7 @@ export function packMultiRowFeatures({
       valueIndex.set(value, idx)
     }
     featurePartitionIndex[i] = idx
-    featureColors[i] = blockColor(value, idx, feature)
+    featureColors[i] = cssColorToABGR(evalColorSlot(colorCfg, feature, jexl))
   }
 
   return {
