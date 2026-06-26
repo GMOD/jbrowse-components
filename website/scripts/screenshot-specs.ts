@@ -3381,7 +3381,7 @@ export const specs: ScreenshotSpec[] = [
   // indexcov tracks above, one log2-ratio track reads directly as copy number
   // (0 = the genome-wide median, + = gain, - = loss) so gains/losses line up
   // with the called intervals without eyeballing two bands. Domain capped to a
-  // symmetric -2..2 so the bicolor xyplot reads gains vs losses around 0.
+  // symmetric -2..2 so gains/losses read around the 0 line.
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2ratio_genome',
@@ -3467,9 +3467,11 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearWiggleDisplay',
                 // scatter of the per-bin average (not the default filled/whisker
                 // xyplot) reads copy-number gains/losses as a clean point band,
-                // the conventional CNV depth-ratio plot; bicolor still splits
-                // gains (positive) from losses (negative) about 0
+                // the conventional CNV depth-ratio plot. useBicolor:false keeps it
+                // a single color: gains/losses read off the 0 line by position, so
+                // red/blue stays free to mean tumor/normal on the indexcov track
                 defaultRendering: 'scatter',
+                useBicolor: false,
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 // request bigwig bins 10x finer than screen resolution so the
@@ -3542,8 +3544,10 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
                 // scatter of the per-bin average — the conventional CNV depth-
-                // ratio plot (see cnv_log2ratio_genome)
+                // ratio plot (see cnv_log2ratio_genome). Single color
+                // (useBicolor:false); gains/losses read off the 0 line
                 defaultRendering: 'scatter',
+                useBicolor: false,
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 minScore: -2,
@@ -3630,6 +3634,7 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
                 defaultRendering: 'scatter',
+                useBicolor: false,
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 minScore: -2,
@@ -3642,6 +3647,7 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
                 defaultRendering: 'scatter',
+                useBicolor: false,
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 minScore: -2,

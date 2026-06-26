@@ -222,12 +222,16 @@ jbrowse add-track HG008_log2ratio.bw --out $OUT --category "CNV" --load move
 
 Plot the log2 ratio with a symmetric y-axis — set **min/max score** to about
 `-2`/`2` from the track menu so gains and losses read symmetrically around 0,
-and pick a bicolor/diverging color scale to separate gain from loss. Note the 0
-line is the sample's genome-wide median, **not** absolute diploid: in a tumor
-where much of the genome is deleted, copy-neutral regions sit above 0. The
-benchmark CNV BED track gives the absolute copy-number reference alongside it.
+and use the **scatter** rendering. We leave it a single overall color rather
+than the wiggle's default positive/negative (bicolor) coloring — gains and
+losses already read off their position above or below the 0 line, and keeping
+this track one color frees red/blue to mean tumor vs normal on the coverage
+track below. Note the 0 line is the sample's genome-wide median, **not**
+absolute diploid: in a tumor where much of the genome is deleted, copy-neutral
+regions sit above 0. The benchmark CNV BED track gives the absolute copy-number
+reference alongside it.
 
-<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, drawn as a scatter of the per-bin average and capped to a symmetric ±2 domain so the bicolor split separates gains (positive, blue) from losses (negative, red), above the benchmark somatic CNV calls. Unlike the two independently-normalized coverage tracks, this single track reads directly as relative copy number and lines up with the called intervals." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
+<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, drawn as a single-color scatter of the per-bin average and capped to a symmetric ±2 domain, above the benchmark somatic CNV calls. Gains (positive) and losses (negative) read off the 0 line by position. Unlike the two independently-normalized coverage tracks, this single track reads directly as relative copy number and lines up with the called intervals." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
 
 > If you only want a quick approximation and don't want to download the full
 > alignments, you can build the same track from
@@ -291,14 +295,28 @@ When merging per-region output, drop duplicate positions before
 rejects as overlapping):
 `LC_COLLATE=C sort -k1,1 -k2,2n HG008-T_baf.bedgraph | awk '!seen[$1"\t"$2]++' > HG008-T_baf.sorted.bedgraph`.
 
-Plot BAF with a fixed `0`..`1` domain and a **scatter** rendering. Because it is
+Plot BAF with a fixed `0`..`1` domain and a **scatter** rendering. The wiggle's
+default summary mode draws min/max **whiskers** per bin, which for
+one-value-per-SNP data spans nearly 0–1 in every bin and fills the track to a
+solid band — switch to scatter, which reads this data correctly. Because BAF is
 one value per SNP rather than a continuous signal, scatter reads better than a
-line — and at whole-chromosome zoom, where each pixel bins many SNPs, scatter's
+line: at whole-chromosome zoom, where each pixel bins many SNPs, scatter's
 per-bin min/max points keep the 0/1 LOH split visible, whereas a line or density
 averages it back to 0.5. Pairing the log2 ratio (copy number) with BAF (allelic
 state) is the conventional two-panel somatic-CNV view: a deletion shows up as a
 negative log2 ratio **and** a BAF split toward 0/1, while copy-neutral LOH shows
 the BAF split with a flat log2 ratio.
+
+This is an _informative-sites_ BAF: we plot only germline-**heterozygous** SNPs,
+so it looks different from a SNP-array BAF. An array genotypes every probe and
+shows three bands — homozygous-reference (0/0) near 0, het (0/1) near 0.5, and
+homozygous-alt (1/1) near 1. Here, balanced regions show a single 0.5 band that
+splits toward 0 and 1 under LOH. Restricting to het sites is deliberate: at a
+homozygous site the alt fraction is ~0 or ~1 regardless of copy number, so those
+sites carry no allelic-imbalance signal — and worse, they would land exactly
+where LOH pushes the het signal, drowning out the split this track exists to
+show. This is why somatic CNV callers (FACETS, ASCAT, and the like) all work
+from germline-het sites.
 
 <Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above BAF (bottom), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF splitting away from 0.5 toward 0 and 1 — while the q-arm returns to a balanced state with the BAF clustered at 0.5. Both tracks use scatter rendering; for BAF this exposes the 0/1 LOH split that a line or density would average back to 0.5." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
@@ -502,15 +520,17 @@ Open the tumor and normal bigWigs as a multi-bigwig track for direct comparison.
 
 Apply a manual **min/max score** limit from the track menu to cap the y-axis so
 a few high-coverage spikes (centromeres, repeats) don't flatten the copy-number
-signal — for the normalized indexcov scale a max of ~2.5 works well.
+signal — for the normalized indexcov scale a max of ~2.5 works well. Then switch
+the rendering type to **overlapping scatter** so the two samples plot as points
+in a single band (tumor red, normal blue), making relative copy-number changes
+easy to compare side by side.
 
-<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes (top, autoscaled), then the track menu's Set min/max score dialog where a manual y-axis cap is entered (middle), then the same track after capping (bottom) — the copy-number band is no longer compressed by a few centromere/repeat spikes. These bigWigs are indexcov coverage estimates (computed in seconds from the BAM indexes) normalized so a copy-number-neutral region sits near 1." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
+<Figure caption="A multi-bigwig track with tumor and normal coverage across all chromosomes: first the track menu's Set min/max score dialog with a manual y-axis cap of 2.5 entered (top), then the same track switched to overlapping scatter (bottom), with normal (blue) and tumor (red) coverage plotted as points in one band. Capping keeps a few centromere/repeat spikes from compressing the copy-number band. These bigWigs are indexcov coverage estimates (computed in seconds from the BAM indexes) normalized so a copy-number-neutral region sits near 1." src="/img/sv_cgiab/cnv_multi_bigwig.png" />
 
-Switch the fill mode to **No fill** for a clearer line-style trace, zoom into a
-region of interest, and open the benchmark CNV BED track to check whether
-coverage changes line up with the called CNVs.
+Zoom into a region of interest and open the benchmark CNV BED track to check
+whether coverage changes line up with the called CNVs.
 
-<Figure caption="After switching to no-fill mode, zooming into chromosome 5, and opening the benchmark CNV BED track — orange boxes mark individual CNVs and clicking them shows feature details." src="/img/sv_cgiab/cnv_with_bed_track.png" />
+<Figure caption="The overlapping-scatter coverage track (tumor red, normal blue) zoomed to chromosome 5, above the benchmark CNV BED track — orange boxes mark individual CNVs and clicking them shows feature details. Coverage drops and gains line up with the called intervals below." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
 This protocol does not perform normalization or CNV calling; the raw-coverage
 bigWig view is a sanity check on existing calls. For a normalized,
