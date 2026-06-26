@@ -110,7 +110,9 @@ expressed through the `regionTooLarge` getter so consumers
 - **Derived** (canvas's `LinearCanvasBaseDisplay`): a pure function of cached
   stats × current `bpPerPx` + visible regions, mirroring `FeatureDensityMixin`.
   - `bytesEstimateTooLarge` tests `estimatedVisibleBytes` against
-    `userByteSizeLimit ?? adapter limit ?? config`. `applyFetchResults` sets
+    `resolveByteLimit()` (user override → adapter limit → config; an adapter
+    limit of `0` means "no opinion" and is skipped, not a zero budget).
+    `applyFetchResults` sets
     `featureDensityStats.bytes` (summed from the per-region fetch results) for
     the span visible *at fetch time*, recorded
     as `byteEstimateVisibleBp`; `estimatedVisibleBytes` rescales it to the
@@ -152,6 +154,22 @@ state recomputes the same value before and after.
 `RegionTooLargeMixin` read through `self.regionTooLarge` (the getter) rather
 than `self.regionTooLargeState` (the volatile) so subclass overrides flow
 into the banner UI and SVG export text.
+
+**Shared decision primitives.** The imperative, derived, and block
+(`FeatureDensityMixin`) paths diverge only in *how* they measure bytes/density;
+the verdict, threshold, and banner text are unified in
+`shared/featureDensityUtils.ts` so they can't drift:
+
+- `resolveByteLimit({ userByteSizeLimit, adapterFetchSizeLimit, configFetchSizeLimit })`
+  — the one byte-budget resolution (with the `0 = no opinion` guard).
+- `bytesTooLargeReason(bytes)` / `TOO_MANY_FEATURES_REASON` — the one source
+  for the two banner strings.
+- `evaluateRegionTooLarge({ visibleBp, bytes, byteLimit, densityTooLarge })` —
+  the canonical verdict+reason: below `AUTO_FORCE_LOAD_BP` nothing gates, else
+  bytes-over-limit takes precedence over density. `densityTooLarge` is
+  **opt-in**, so byte-only displays (alignments) pass only bytes and never gate
+  on density. Used by `FeatureDensityMixin`; the derived canvas path composes
+  the same pieces around its scaled `estimatedVisibleBytes`.
 
 Variants are monolithic: `MultiSampleVariantGetCellData` returns one batched
 payload covering all visible regions, so variants' `fetchNeeded` expands

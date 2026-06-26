@@ -21,3 +21,6 @@ for multivariantdisplay
 
 ## jb2hubs real ncbi gff for ucsc
 
+## generate-docs hs1_vs_mm39_synteny.png    sometimes captures intermediate states pre-diagonalization maybe
+
+## weird 'nub' at end of arrows in generate-screenshots annotations
