@@ -12,6 +12,7 @@ import {
   isEdgeCulled,
   pickFeatureAtPoint,
   projectCorners,
+  strokeCenterline,
   strokeFeatureSideEdges,
 } from './syntenyPickEngine.ts'
 import {
@@ -111,15 +112,7 @@ function drawInstances(
       const xb = (c.sx3 + c.sx4) * 0.5
       ctx.strokeStyle = `rgba(${abgrRed(packed)},${abgrGreen(packed)},${abgrBlue(packed)},${abgrAlpha(packed) / 255})`
       ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(xt, yTop)
-      if (drawCurves) {
-        const halfH = height * 0.5
-        ctx.bezierCurveTo(xt, yTop + halfH, xb, yTop + halfH, xb, yTop + height)
-      } else {
-        ctx.lineTo(xb, yTop + height)
-      }
-      ctx.stroke()
+      strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
       continue
     }
 
@@ -162,15 +155,7 @@ function drawInstances(
         : 1
       ctx.strokeStyle = `rgba(${r},${g},${b},${isCigar ? fa : fa * widthFade})`
       ctx.lineWidth = 1
-      ctx.beginPath()
-      ctx.moveTo(xt, yTop)
-      if (drawCurves) {
-        const halfH = height * 0.5
-        ctx.bezierCurveTo(xt, yTop + halfH, xb, yTop + halfH, xb, yTop + height)
-      } else {
-        ctx.lineTo(xb, yTop + height)
-      }
-      ctx.stroke()
+      strokeCenterline(ctx, xt, xb, yTop, height, drawCurves)
     } else {
       ctx.fillStyle = `rgba(${r},${g},${b},${fa})`
       buildFeaturePath(ctx, c, yTop, height, drawCurves)

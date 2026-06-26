@@ -101,6 +101,31 @@ export function strokeFeatureSideEdges(
   ctx.stroke()
 }
 
+// Stroke the ribbon centerline (xt at top → xb at bottom) — the centerline
+// sibling of strokeFeatureSideEdges. Used for sub-pixel-thin features and
+// zero-width KIND_MARKER ticks, where a 1px centerline stroke renders cleanly
+// at any slope instead of ctx.fill()ing a degenerate sliver. Caller sets
+// strokeStyle/lineWidth first.
+export function strokeCenterline(
+  ctx: CanvasLike,
+  xt: number,
+  xb: number,
+  yTop: number,
+  height: number,
+  isCurve: boolean,
+) {
+  const yBot = yTop + height
+  ctx.beginPath()
+  ctx.moveTo(xt, yTop)
+  if (isCurve) {
+    const halfH = yTop + height * 0.5
+    ctx.bezierCurveTo(xt, halfH, xb, halfH, xb, yBot)
+  } else {
+    ctx.lineTo(xb, yBot)
+  }
+  ctx.stroke()
+}
+
 export interface ComputedTransform {
   bpPerPxInv0: number
   bpPerPxInv1: number
