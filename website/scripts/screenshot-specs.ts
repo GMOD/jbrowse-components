@@ -3667,6 +3667,167 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 25000,
   },
 
+  // CDKN2A focal homozygous deletion (chr9:21,952,497-21,972,343, benchmark
+  // SV_75, total CN=0 / hap 0+0) — the canonical PDAC two-hit tumor-suppressor
+  // loss. A homozygous deletion reads differently from a heterozygous (single-
+  // copy) loss: the log2 ratio drops to the floor (depth ratio -> ~0, both
+  // parental copies gone), whereas a het loss only halves depth (~ -1). The
+  // deletion is punched into a larger single-copy-loss arm (CN=1), so it shows
+  // as a deeper focal dip. Shown over NCBI RefSeq genes (CDKN2A context) with
+  // the benchmark CNV BED's CN=0 SV_75 call. (The indexcov coverage estimate is
+  // ~16kb-binned, too coarse to resolve a 20kb event, so the mosdepth-derived
+  // log2 ratio is the informative track here.)
+  {
+    mode: 'url',
+    name: 'sv_cgiab/driver_cdkn2a_deletion',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'FeatureTrack',
+          trackId: 'hg38_ncbiRefSeq_ucsc',
+          name: 'NCBI RefSeq genes (hg38)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'Gff3TabixAdapter',
+            gffGzLocation: {
+              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
+              locationType: 'UriLocation',
+            },
+            index: {
+              location: {
+                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
+                locationType: 'UriLocation',
+              },
+              indexType: 'CSI',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr9:21,900,000-22,020,000',
+          tracks: [
+            'hg38_ncbiRefSeq_ucsc',
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                useBicolor: false,
+                summaryScoreMode: 'avg',
+                scatterPointSize: 3,
+                minScore: -2,
+                maxScore: 2,
+                height: 160,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr9',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 520,
+    settleMs: 20000,
+  },
+
+  // chr17 as the log2xBAF decision-table teacher. One chromosome shows two
+  // distinct LOH mechanisms: 17p is a single-copy loss WITH LOH (CN=1, hap 1+0,
+  // covering TP53) — negative log2 AND a BAF split; 17q is COPY-NEUTRAL LOH
+  // (CN=2, hap 2+0, ~43Mb) — flat log2 at 0 but a full BAF split. The 17q event
+  // is invisible to depth alone; only the BAF reveals it, which is the whole
+  // argument for pairing the two tracks.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/driver_chr17_loh',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr17',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                useBicolor: false,
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
+                height: 140,
+              },
+            },
+            {
+              trackId: 'hg008_baf',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                scatterPointSize: 1,
+                minScore: 0,
+                maxScore: 1,
+                height: 140,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr17',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 620,
+    settleMs: 30000,
+  },
+
   {
     mode: 'url',
     name: 'sv_cgiab/dotplot_result',

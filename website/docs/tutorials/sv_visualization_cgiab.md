@@ -540,6 +540,92 @@ above. See also the
 [multi-quantitative track guide](/docs/user_guides/multiquantitative_track) for
 more on tumor vs normal coverage comparison.
 
+### Walkthrough: reading the somatic driver landscape
+
+The tracks built above are not just generic copy-number plots — HG008-T is a
+pancreatic ductal adenocarcinoma, and its benchmark calls contain the canonical
+PDAC driver alterations. Each of the four classic PDAC drivers shows a
+**different** signature across the log2 ratio, BAF, and benchmark CNV tracks,
+which makes this dataset a compact tour of how to read somatic copy number:
+
+| Gene             | Role       | Alteration in HG008-T            | Signature on the tracks                  |
+| ---------------- | ---------- | -------------------------------- | ---------------------------------------- |
+| **CDKN2A**       | suppressor | Focal homozygous deletion (CN 0) | log2 drops to the floor; depth ratio → 0 |
+| **TP53**         | suppressor | 17p loss + LOH (CN 1, 1+0)       | negative log2 **and** a BAF split        |
+| **SMAD4** (DPC4) | suppressor | 18q loss + LOH (CN 1, 0+1)       | negative log2 **and** a BAF split        |
+| **KRAS**         | oncogene   | Allelic gain (CN 3, 2+1)         | positive log2, imbalanced BAF            |
+
+#### CDKN2A: a homozygous deletion vs a single-copy loss
+
+Navigate to `CDKN2A` on chr9. The benchmark calls a focal ~20 kb homozygous
+deletion (`SV_75`, total copy number 0) right over the gene, and it reads very
+differently from the heterozygous deletions elsewhere in the genome: the
+log2(tumor/normal) ratio drops all the way to the **floor**, because a
+homozygous deletion removes **both** parental copies and the tumor/normal depth
+ratio goes to ~0 (log2 → −∞, here clipped at the −2 axis limit). A single-copy
+(heterozygous) loss only halves depth, landing near −1. The deletion sits inside
+a larger single-copy-loss arm, so it appears as a deeper focal notch punched
+into an already-reduced baseline.
+
+<Figure caption="CDKN2A on chr9: the benchmark SV_75 call is a focal homozygous deletion (copy number 0). The log2 ratio plunges to the floor over the gene — both parental copies are gone, so the depth ratio goes to ~0 — distinct from the surrounding single-copy-loss arm sitting near −0.5. This homozygous-vs-heterozygous distinction is the key to telling a complete two-hit suppressor knockout from a single allelic loss." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+
+#### chr17: loss-with-LOH vs copy-neutral LOH
+
+Chromosome 17 by itself teaches why you build a BAF track alongside the depth
+ratio. Open the whole chromosome with the log2 ratio above the BAF:
+
+- the **p-arm** (covering `TP53`) is a single-copy loss with LOH (CN 1, 1+0) —
+  the log2 ratio is negative **and** the BAF splits away from 0.5;
+- the **q-arm** is **copy-neutral LOH** (CN 2, 2+0): one parental haplotype was
+  lost and the other duplicated, so the total copy number is still 2 and the
+  log2 ratio stays **flat at 0** — but the BAF still splits hard away from 0.5.
+
+The q-arm event is invisible to depth alone; only the BAF reveals it. That is
+the entire argument for pairing the two signals.
+
+<Figure caption="Chromosome 17: log2 ratio (top) over BAF (bottom). The p-arm (left, over TP53) is a single-copy loss with LOH — negative log2 and a BAF split. The q-arm (right) is copy-neutral LOH — the log2 ratio is flat at 0 (total copy number is still 2) yet the BAF splits away from 0.5, so it would be missed by a depth-only analysis. Reading the two tracks together separates the two LOH mechanisms." src="/img/sv_cgiab/driver_chr17_loh.png" />
+
+This is the log2 × BAF decision table the whole CNV section has been building
+toward:
+
+| log2 ratio | BAF            | Interpretation            |
+| ---------- | -------------- | ------------------------- |
+| ~0 (flat)  | tight at 0.5   | balanced diploid          |
+| ~0 (flat)  | split from 0.5 | copy-neutral LOH          |
+| negative   | split from 0.5 | single-copy loss with LOH |
+| positive   | imbalanced     | allelic gain              |
+
+The benchmark BED's per-haplotype columns (`hap1_copy_number`,
+`hap2_copy_number`) encode exactly this allelic state: any segment with a `0`
+haplotype (e.g. `1+0`, `2+0`) has lost one parental allele and will show a BAF
+split, regardless of its total copy number. Clicking a CNV feature shows these
+values in the feature details, so you can confirm the allelic call against the
+BAF track directly.
+
+#### KRAS and SMAD4
+
+The same reading applies to the remaining two drivers. `KRAS`, the central PDAC
+oncogene, sits on a low-level gain on chr12 (CN 3, 2+1) — a positive log2 ratio
+with an imbalanced BAF
+([live demo at KRAS](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr12%3A24%2C000%2C000-27%2C500%2C000%22%2C%22tracks%22%3A%5B%22HG008_log2ratio%22%2C%22HG008-T_baf%22%2C%22GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls%22%5D%7D%5D%7D)).
+`SMAD4` (historically "DPC4", _deleted in pancreatic cancer_) is lost with LOH
+on 18q (CN 1, 0+1), the mirror image of the TP53 event
+([live demo at SMAD4](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr18%3A1-80%2C373%2C285%22%2C%22tracks%22%3A%5B%22HG008_log2ratio%22%2C%22HG008-T_baf%22%2C%22GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls%22%5D%7D%5D%7D)).
+
+A few interpretive caveats worth keeping in mind:
+
+- **Purity.** How far the BAF bands separate from 0.5 reflects tumor purity — a
+  pure tumor splits LOH all the way to 0 and 1, while normal-cell contamination
+  pulls the bands back toward 0.5. The BAF spread is a rough purity readout, not
+  just an LOH flag.
+- **Whole-genome doubling.** PDAC genomes are doubled in roughly half of cases,
+  which shifts the ploidy baseline the simple diploid calibration above assumes;
+  allelic states like 2+2 or 2+1 are the tell. Dedicated callers
+  ([HiFiCNV](https://github.com/PacificBiosciences/HiFiCNV),
+  [Wakhan](https://github.com/KolmogorovLab/Wakhan)) model purity and ploidy
+  explicitly — this walkthrough is for reading the raw signal, not replacing
+  those tools.
+
 ### Walkthrough: synteny and dotplot views of the tumor assembly
 
 Showing the tumor assembly side-by-side with the reference often makes complex
