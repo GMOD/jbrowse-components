@@ -1,32 +1,30 @@
-import { SVGErrorBox, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import { getContainingView, when } from '@jbrowse/core/util'
+import { SvgClipRect, renderSvgChrome } from '@jbrowse/plugin-linear-genome-view'
 
 import Arcs from './components/Arcs.tsx'
 
 import type { LinearPairedArcDisplayModel } from './model.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
+import type {
+  ExportSvgDisplayOptions,
+  LinearGenomeViewModel,
+} from '@jbrowse/plugin-linear-genome-view'
 
-// Bezier-arc-overlay exception (see ARCHITECTURE.md "SVG export pipeline"):
-// arc paths render as vector SVG on both on-screen and export paths so
-// hover/tooltips work natively. The clip wrapper still uses the shared
-// SvgClipRect for consistency with every other plugin.
+// Bezier-arc-overlay exception (see ARCHITECTURE.md "SVG export pipeline"): arc
+// paths render as vector SVG on both on-screen and export paths so
+// hover/tooltips work natively, so the body returns JSX directly rather than
+// routing through paintLayer. renderSvgChrome still owns the shared svgReady
+// gate + SVGErrorBox preamble, and SvgClipRect the clip wrapper, so arc shares
+// the same terminal-state contract as every other LGV track display.
 export async function renderArcSvg(
   model: LinearPairedArcDisplayModel,
-  _opts: {
-    rasterizeLayers?: boolean
-  },
+  opts?: ExportSvgDisplayOptions,
 ) {
-  await when(() => model.fetchSettled)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const width = view.dynamicBlocks.totalWidthPx
-  if (model.error) {
-    return (
-      <SVGErrorBox error={model.error} width={width} height={model.height} />
-    )
-  }
-  return (
-    <SvgClipRect id={`arc-${model.id}`} width={width} height={model.height}>
+  return renderSvgChrome<LinearGenomeViewModel>(model, opts, (view, height) => (
+    <SvgClipRect
+      id={`arc-${model.id}`}
+      width={view.totalWidthPx}
+      height={height}
+    >
       <Arcs model={model} exportSVG={true} />
     </SvgClipRect>
-  )
+  ))
 }

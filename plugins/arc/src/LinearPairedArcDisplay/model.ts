@@ -14,12 +14,14 @@ import {
 
 import { makeFeaturePair } from './components/util.ts'
 
+
 import type {
   LinearPairedArcDisplayConfig,
   LinearPairedArcDisplayConfigModel,
 } from './configSchema.ts'
 import type { Feature } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view'
 
 /**
  * #stateModel LinearPairedArcDisplay
@@ -85,7 +87,18 @@ export function stateModelFactory(
       },
     }))
     .views(self => ({
-      get fetchSettled() {
+      /**
+       * #getter
+       * the SVG-export terminal-state gate (the `SvgExportable` contract every
+       * LGV track display shares). Arc fetches all features into a single array
+       * via `FeatureDensityMixin`, so it has no `loadedRegions` spatial-coverage
+       * signal like the GPU mixins — "settled" is just features-present / error
+       * / too-large. Known gap: this stays true through an in-place refetch, so
+       * an export fired immediately after a pan/zoom can capture stale arcs
+       * (same stale-then-reposition behavior arc shows on-screen); tightening it
+       * would need fetch-generation tracking the single-array model lacks.
+       */
+      get svgReady() {
         return (
           self.features !== undefined || !!self.error || self.regionTooLarge
         )
@@ -149,9 +162,7 @@ export function stateModelFactory(
       /**
        * #action
        */
-      async renderSvg(opts: {
-        rasterizeLayers?: boolean
-      }): Promise<React.ReactNode> {
+      async renderSvg(opts?: ExportSvgDisplayOptions): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
         return renderArcSvg(self as LinearPairedArcDisplayModel, opts)
       },

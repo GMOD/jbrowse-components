@@ -24,7 +24,7 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
   children?: React.ReactNode
 }) {
   const { classes } = useStyles()
-  const { error, regionTooLarge, loading, fetchSettled } = model
+  const { error, regionTooLarge, loading, svgReady } = model
   return error ? (
     <Suspense fallback={null}>
       <ArcErrorDisplay model={model} />
@@ -34,7 +34,7 @@ const BaseDisplayComponent = observer(function BaseDisplayComponent({
   ) : (
     <div
       className={classes.container}
-      data-testid={fetchSettled ? 'arc-display-done' : 'arc-display'}
+      data-testid={svgReady ? 'arc-display-done' : 'arc-display'}
     >
       {children}
       {loading ? <LoadingBar model={model} /> : null}

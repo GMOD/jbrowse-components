@@ -146,7 +146,7 @@ test('arc display SVG export renders bezier arcs for BND variants', async () => 
 
   await findByTestId('arc-display-done', ...opts)
 
-  // renderArcSvg awaits model.fetchSettled internally
+  // renderArcSvg awaits model.svgReady (via renderSvgChrome) internally
   await view.exportSvg({ rasterizeLayers: false })
   const svg = getSavedSvg()
   fs.writeFileSync(`${snapshotDir}/arc_sv_snapshot.svg`, svg)
