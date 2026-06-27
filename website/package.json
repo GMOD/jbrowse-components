@@ -10,7 +10,6 @@
     "lint-docs": "node --experimental-strip-types scripts/generate-guide-indexes.ts",
     "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check",
     "generate-screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
-    "review-screenshots": "node --experimental-strip-types scripts/review-screenshots.ts",
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts",
     "audit-figures": "node --experimental-strip-types scripts/audit-figures.ts"
   },
