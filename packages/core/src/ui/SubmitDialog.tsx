@@ -14,6 +14,12 @@ export interface SubmitDialogProps extends DialogComponentProps {
   submitDisabled?: boolean
   submitColor?: ButtonProps['color']
   submitStartIcon?: React.ReactNode
+  // When provided, the secondary button becomes a "Restore default" action
+  // (calls onReset, does NOT dismiss) in place of Cancel — for dialogs whose
+  // settings apply live, where Submit is really just "Close". onCancel still
+  // handles backdrop/escape dismissal.
+  onReset?: () => void
+  resetText?: string
 }
 
 const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
@@ -25,6 +31,8 @@ const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
     submitDisabled = false,
     submitColor = 'primary',
     submitStartIcon,
+    onReset,
+    resetText = 'Restore default',
     children,
     ...dialogProps
   } = props
@@ -44,10 +52,14 @@ const SubmitDialog = observer(function SubmitDialog(props: SubmitDialogProps) {
             color="secondary"
             variant="contained"
             onClick={() => {
-              onCancel()
+              if (onReset) {
+                onReset()
+              } else {
+                onCancel()
+              }
             }}
           >
-            {cancelText}
+            {onReset ? resetText : cancelText}
           </Button>
           <Button
             type="submit"

@@ -1,4 +1,4 @@
-import { RestoreDefaultsDialog } from '@jbrowse/core/ui'
+import { SubmitDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
 import { FormControlLabel, Radio, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -20,11 +20,13 @@ const SetColorDialog = observer(function SetColorDialog({
   handleClose: () => void
 }) {
   return (
-    <RestoreDefaultsDialog
+    <SubmitDialog
       open
       title="Set color"
-      onClose={handleClose}
-      onRestoreDefault={() => {
+      submitText="Close"
+      onCancel={handleClose}
+      onSubmit={handleClose}
+      onReset={() => {
         model.setPosColor(undefined)
         model.setNegColor(undefined)
         model.setColor(undefined)
@@ -81,7 +83,7 @@ const SetColorDialog = observer(function SetColorDialog({
           />
         </>
       )}
-    </RestoreDefaultsDialog>
+    </SubmitDialog>
   )
 })
 
