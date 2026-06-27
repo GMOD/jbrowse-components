@@ -1,7 +1,9 @@
 import { useEffect } from 'react'
 import type React from 'react'
 
-import { autorun } from 'mobx'
+import { useScrollTopSync } from '@jbrowse/core/util/useScrollTopSync'
+
+import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
 
 interface VariantScrollModel {
   scrollTop: number
@@ -23,44 +25,21 @@ interface VariantScrollView {
 // (useScrollSync.ts). The matrix display keeps a custom VerticalScrollbar
 // because its connecting-lines zone is pinned above the rows.
 //
-// 1. model.scrollTop -> DOM via autorun (catches programmatic resets like
-//    clearDisplaySpecificData). 2. DOM -> model via a rAF-coalesced scroll
-//    listener. The wheel handler keeps the variant-specific gesture from
-//    ADR-027: shift = change row height (a zoom-like gesture), plain wheel =
-//    native scroll when zoom is off, and preventDefault under scrollZoom so the
-//    view zooms rather than the panel scrolling.
+// model.scrollTop <-> DOM via useScrollTopSync; the wheel handler keeps the
+// variant-specific gesture from ADR-027: shift = change row height (a zoom-like
+// gesture), plain wheel = native scroll when zoom is off, and preventDefault
+// under scrollZoom so the view zooms rather than the panel scrolling.
 export function useVariantNativeScroll(
   containerRef: React.RefObject<HTMLDivElement | null>,
   model: VariantScrollModel,
   view: VariantScrollView,
 ) {
-  useEffect(() => {
-    const el = containerRef.current
-    if (!el) {
-      return
-    }
-    return autorun(() => {
-      const target = model.scrollTop
-      if (el.scrollTop !== target) {
-        el.scrollTop = target
-      }
-    })
-  }, [containerRef, model])
+  useScrollTopSync(containerRef, model)
 
   useEffect(() => {
     const container = containerRef.current
     if (!container) {
       return
-    }
-
-    let rafId = 0
-    const scheduleSync = () => {
-      if (rafId === 0) {
-        rafId = requestAnimationFrame(() => {
-          rafId = 0
-          model.setScrollTop(container.scrollTop)
-        })
-      }
     }
 
     const handleWheel = (e: WheelEvent) => {
@@ -70,18 +49,14 @@ export function useVariantNativeScroll(
       if (e.shiftKey) {
         // shift = resize rows under the cursor (works whether or not the rows
         // currently overflow, so you can grow them out of the fit state)
-        e.preventDefault()
-        const delta = e.deltaY > 0 ? -1 : 1
-        const minRowHeight = model.availableHeight / model.nrow
-        const newRowHeight = Math.min(
-          20,
-          Math.max(minRowHeight, model.rowHeight + delta),
-        )
-        const rect = container.getBoundingClientRect()
-        const mouseY = e.clientY - rect.top
-        const rowUnderMouse = (mouseY + model.scrollTop) / model.rowHeight
-        model.setRowHeight(newRowHeight)
-        model.setScrollTop(Math.max(0, rowUnderMouse * newRowHeight - mouseY))
+        applyRowResizeWheel(e, container, {
+          rowHeight: model.rowHeight,
+          scrollTop: model.scrollTop,
+          nrow: model.nrow,
+          viewportHeight: model.availableHeight,
+          setRowHeight: model.setRowHeight,
+          setScrollTop: model.setScrollTop,
+        })
       } else if (model.hasOverflow && view.scrollZoom) {
         // suppress native scroll so the view's wheel handler zooms instead;
         // without scrollZoom the container scrolls natively (no preventDefault)
@@ -89,14 +64,9 @@ export function useVariantNativeScroll(
       }
     }
 
-    container.addEventListener('scroll', scheduleSync, { passive: true })
     container.addEventListener('wheel', handleWheel, { passive: false })
     return () => {
-      container.removeEventListener('scroll', scheduleSync)
       container.removeEventListener('wheel', handleWheel)
-      if (rafId !== 0) {
-        cancelAnimationFrame(rafId)
-      }
     }
   }, [containerRef, model, view])
 }

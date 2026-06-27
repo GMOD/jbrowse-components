@@ -57,9 +57,13 @@ export default function VerticalScrollbar({
   if (scrollableHeight <= 0) {
     return null
   }
-  const thumbHeight = Math.max(
-    MIN_THUMB_HEIGHT,
-    viewportHeight * (viewportHeight / contentHeight),
+  // never taller than the track itself — on a very short viewport the
+  // MIN_THUMB_HEIGHT floor would otherwise exceed viewportHeight, pushing
+  // thumbTop negative (thumb drawn above the track) and making usableTrack
+  // negative (drag mapping dead)
+  const thumbHeight = Math.min(
+    viewportHeight,
+    Math.max(MIN_THUMB_HEIGHT, viewportHeight * (viewportHeight / contentHeight)),
   )
   const thumbTop =
     (scrollTop / scrollableHeight) * (viewportHeight - thumbHeight)

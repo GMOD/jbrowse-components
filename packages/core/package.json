@@ -144,7 +144,8 @@
     "./util/types/mst": "./src/util/types/mst.ts",
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
-    "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts"
+    "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts",
+    "./util/useScrollTopSync": "./src/util/useScrollTopSync.ts"
   },
   "files": [
     "esm"
@@ -695,6 +696,10 @@
       "./util/useRenderingBackend": {
         "types": "./esm/util/useRenderingBackend.d.ts",
         "import": "./esm/util/useRenderingBackend.js"
+      },
+      "./util/useScrollTopSync": {
+        "types": "./esm/util/useScrollTopSync.d.ts",
+        "import": "./esm/util/useScrollTopSync.js"
       }
     },
     "typesVersions": {
@@ -1073,6 +1078,9 @@
         ],
         "util/useRenderingBackend": [
           "esm/util/useRenderingBackend.d.ts"
+        ],
+        "util/useScrollTopSync": [
+          "esm/util/useScrollTopSync.d.ts"
         ]
       }
     }

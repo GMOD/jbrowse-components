@@ -3,6 +3,7 @@ import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   SimpleFeature,
+  clamp,
   getContainingView,
   getSession,
   openFeatureWidget,
@@ -943,6 +944,14 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Max valid `scrollTop`: how far the rows can scroll before the bottom
+         * row reaches the viewport floor. Zero when the rows fit.
+         */
+        get scrollableHeight() {
+          return Math.max(0, this.totalHeight - self.availableHeight)
+        },
+        /**
+         * #getter
          */
         get featuresReady() {
           return !!self.featuresVolatile
@@ -979,6 +988,14 @@ export default function MultiSampleVariantBaseModelF(
         },
       }))
       .actions(self => ({
+        // Clamp into the valid range so a row-height shrink or a display-resize
+        // (which lowers scrollableHeight while scrollTop sits at the old bottom)
+        // can't strand scrollTop past the content. The matrix display has no DOM
+        // overflow container to self-correct it, so the clamp must live here.
+        setScrollTop(scrollTop: number) {
+          self.scrollTop = clamp(scrollTop, 0, self.scrollableHeight)
+        },
+
         clearDisplaySpecificData() {
           // hasPhased / sampleInfo / featuresVolatile are derived from cellData
           // via getters, so clearing cellData clears all of them.

@@ -3,6 +3,8 @@ import { useEffect, useMemo } from 'react'
 import { createScrollLatch, normalizeWheelDeltaY } from '@jbrowse/core/util'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 
+import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
+
 export function useVariantVirtualScroll({
   canvas,
   scrollTop,
@@ -29,19 +31,14 @@ export function useVariantVirtualScroll({
 
   const handleWheel = useEventCallback((e: WheelEvent) => {
     if (e.shiftKey) {
-      e.preventDefault()
-      const delta = e.deltaY > 0 ? -1 : 1
-      const minRowHeight = viewportHeight / nrow
-      const newRowHeight = Math.min(
-        20,
-        Math.max(minRowHeight, rowHeight + delta),
-      )
-      const rect = canvas!.getBoundingClientRect()
-      const mouseY = e.clientY - rect.top
-      const rowUnderMouse = (mouseY + scrollTop) / rowHeight
-      const newScrollTop = Math.max(0, rowUnderMouse * newRowHeight - mouseY)
-      setRowHeight(newRowHeight)
-      setScrollTop(newScrollTop)
+      applyRowResizeWheel(e, canvas!, {
+        rowHeight,
+        scrollTop,
+        nrow,
+        viewportHeight,
+        setRowHeight,
+        setScrollTop,
+      })
     } else if (
       !scrollZoom &&
       !e.ctrlKey &&
