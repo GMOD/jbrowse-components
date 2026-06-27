@@ -22,16 +22,28 @@ export function getZoomNormalizer(deltaY: number) {
   return 75
 }
 
-// WheelEvent.deltaMode is pixels (0), lines (1), or pages (2); convert lines
-// and pages to an approximate pixel delta
-export function normalizeWheelDelta(delta: number, mode: number) {
-  if (mode === 1) {
-    return delta * 16
-  }
-  if (mode === 2) {
-    return delta * 100
-  }
-  return delta
+// One wheel notch in line mode (deltaMode 1) is roughly this many pixels, and a
+// page (deltaMode 2) roughly WHEEL_PAGE_HEIGHT — the values Facebook's
+// normalize-wheel uses, the de-facto cross-browser convention. Pixel mode (0),
+// which trackpads and modern mice report, passes through untouched.
+const WHEEL_LINE_HEIGHT = 40
+const WHEEL_PAGE_HEIGHT = 800
+
+// Convert a WheelEvent delta from its deltaMode units to pixels. Panel-scroll
+// callers pass the viewport height as `pageHeight` so a page maps to exactly one
+// screen; the zoom path omits it and takes the default. Single normalizer for
+// both the zoom math here and the vertical-scroll handlers so a notch means the
+// same thing everywhere.
+export function normalizeWheelDelta(
+  delta: number,
+  deltaMode: number,
+  pageHeight = WHEEL_PAGE_HEIGHT,
+) {
+  return deltaMode === 1
+    ? delta * WHEEL_LINE_HEIGHT
+    : deltaMode === 2
+      ? delta * pageHeight
+      : delta
 }
 
 // elapsed since the previous animation frame, clamped to 100ms and defaulting

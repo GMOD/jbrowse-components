@@ -6,7 +6,7 @@ import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
 import {
   createScrollLatch,
   getContainingView,
-  normalizeWheelDeltaY,
+  normalizeWheelDelta,
 } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
@@ -90,7 +90,7 @@ const PileupBody = observer(function PileupBody({
     if (scrollableHeight <= 0) {
       return
     }
-    const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, pileupViewportHeight)
+    const dy = normalizeWheelDelta(e.deltaY, e.deltaMode, pileupViewportHeight)
     const next = latch.scroll(e, scrollTop, dy, scrollableHeight)
     if (next !== null) {
       model.setScrollTop(next)

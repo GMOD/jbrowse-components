@@ -1,6 +1,6 @@
 import { useEffect, useMemo } from 'react'
 
-import { createScrollLatch, normalizeWheelDeltaY } from '@jbrowse/core/util'
+import { createScrollLatch, normalizeWheelDelta } from '@jbrowse/core/util'
 import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
 
 import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
@@ -45,7 +45,7 @@ export function useVariantVirtualScroll({
       !e.metaKey &&
       scrollableHeight > 0
     ) {
-      const dy = normalizeWheelDeltaY(e.deltaY, e.deltaMode, viewportHeight)
+      const dy = normalizeWheelDelta(e.deltaY, e.deltaMode, viewportHeight)
       const next = latch.scroll(e, scrollTop, dy, scrollableHeight)
       if (next !== null) {
         setScrollTop(next)

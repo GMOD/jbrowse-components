@@ -10,21 +10,6 @@
 // trackpad/mouse scrolling fires every ~16ms, so 200ms reliably marks a pause
 const LATCH_TIMEOUT_MS = 200
 
-// Wheel deltaY arrives in one of three units (WheelEvent.deltaMode): pixels
-// (0), lines (1), or pages (2). Convert lines and pages to pixels so a vertical
-// panel can scroll by a consistent amount regardless of the source device.
-export function normalizeWheelDeltaY(
-  deltaY: number,
-  deltaMode: number,
-  viewportHeight: number,
-) {
-  return deltaMode === 1
-    ? deltaY * 40
-    : deltaMode === 2
-      ? deltaY * viewportHeight
-      : deltaY
-}
-
 export function createScrollLatch(timeoutMs = LATCH_TIMEOUT_MS) {
   let lastConsumed = -Infinity
   return {

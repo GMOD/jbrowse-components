@@ -1,4 +1,4 @@
-import { createScrollLatch, normalizeWheelDeltaY } from './scrollLatch.ts'
+import { createScrollLatch } from './scrollLatch.ts'
 
 // minimal stand-in for a WheelEvent: scroll() only reads timestamp and calls
 // preventDefault, so a tracked spy is enough
@@ -66,10 +66,4 @@ test('each consumed scroll refreshes the latch window', () => {
   const e = wheelEvent(300)
   expect(latch.scroll(e, 100, 30, 100)).toBe(null)
   expect(e.prevented).toBe(true)
-})
-
-test('normalizeWheelDeltaY converts line and page modes to pixels', () => {
-  expect(normalizeWheelDeltaY(3, 0, 500)).toBe(3)
-  expect(normalizeWheelDeltaY(3, 1, 500)).toBe(120)
-  expect(normalizeWheelDeltaY(2, 2, 500)).toBe(1000)
 })

@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 
-import { createScrollLatch, normalizeWheelDeltaY } from '@jbrowse/core/util'
+import { createScrollLatch, normalizeWheelDelta } from '@jbrowse/core/util'
 import { useScrollTopSync } from '@jbrowse/core/util/useScrollTopSync'
 
 interface ScrollSyncModel {
@@ -38,7 +38,7 @@ export function useScrollSync(
       }
       if (e.shiftKey) {
         const max = container.scrollHeight - container.clientHeight
-        const dy = normalizeWheelDeltaY(
+        const dy = normalizeWheelDelta(
           e.deltaY,
           e.deltaMode,
           container.clientHeight,

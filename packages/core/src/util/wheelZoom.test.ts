@@ -39,14 +39,20 @@ describe('normalizeWheelDelta', () => {
     expect(normalizeWheelDelta(-5, 0)).toBe(-5)
   })
 
-  test('line mode (1) multiplies by 16', () => {
-    expect(normalizeWheelDelta(3, 1)).toBe(48)
-    expect(normalizeWheelDelta(-2, 1)).toBe(-32)
+  test('line mode (1) multiplies by 40', () => {
+    expect(normalizeWheelDelta(3, 1)).toBe(120)
+    expect(normalizeWheelDelta(-2, 1)).toBe(-80)
   })
 
-  test('page mode (2) multiplies by 100', () => {
-    expect(normalizeWheelDelta(1, 2)).toBe(100)
-    expect(normalizeWheelDelta(-2, 2)).toBe(-200)
+  test('page mode (2) uses the default page height', () => {
+    expect(normalizeWheelDelta(1, 2)).toBe(800)
+    expect(normalizeWheelDelta(-2, 2)).toBe(-1600)
+  })
+
+  test('page mode (2) honors an explicit pageHeight (panel scroll)', () => {
+    expect(normalizeWheelDelta(2, 2, 500)).toBe(1000)
+    expect(normalizeWheelDelta(1, 1, 500)).toBe(40)
+    expect(normalizeWheelDelta(3, 0, 500)).toBe(3)
   })
 })
 
