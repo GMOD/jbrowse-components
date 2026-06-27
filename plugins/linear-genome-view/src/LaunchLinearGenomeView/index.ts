@@ -22,17 +22,19 @@ declare module '@jbrowse/core/PluginManager' {
 
 export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
   pluginManager.addToExtensionPoint('LaunchView-LinearGenomeView', args => {
-    // args is the InitState plus the target session and an optional id, so
+    // args is the InitState plus the target session and an optional id;
     // everything except session/id forwards verbatim into the view's
-    // declarative init. A provided id is passed top-level so MST's optional
-    // identifier honors it (undefined falls back to an auto-generated id).
-    const { session, id, ...init } = args
-    if (!init.assembly) {
+    // declarative init. assembly is pulled out so the throw narrows it to a
+    // required string (InitState requires it). A provided id is passed
+    // top-level so MST's optional identifier honors it (undefined falls back to
+    // an auto-generated id).
+    const { session, id, assembly, ...rest } = args
+    if (!assembly) {
       throw new Error('No assembly provided when launching linear genome view')
     }
     session.addView('LinearGenomeView', {
       id,
-      init: { ...init, assembly: init.assembly },
+      init: { ...rest, assembly },
     })
     return args
   })

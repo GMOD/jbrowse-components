@@ -77,10 +77,9 @@ async function navigateInit(
 ) {
   try {
     if (init.loc) {
-      const asm = await session.assemblyManager.waitForAssembly(init.assembly)
-      if (!asm) {
-        throw new Error('Assembly not found')
-      }
+      // navToLocString waits for the assembly itself, and this autorun only
+      // runs once `initialized` confirms init.assembly has loaded regions, so
+      // no explicit waitForAssembly is needed here
       await self.navToLocString(init.loc, init.assembly)
     } else if (!self.hasDisplayedRegions) {
       // a highlight-only init (no loc) must not clobber a defaultSession's
