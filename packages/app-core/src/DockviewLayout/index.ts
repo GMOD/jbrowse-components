@@ -57,15 +57,26 @@ export function DockviewLayoutMixin() {
          * The currently active panel ID in dockview
          */
         activePanelId: types.stripDefault(types.maybe(types.string), undefined),
+        /**
+         * #property
+         * The initial nested layout to build dockview from (simple viewIds/
+         * direction/size form, vs. the verbose `dockviewLayout` dockview emits).
+         * Set from URL params (spec layout) OR carried in a loaded session
+         * snapshot (e.g. the `encoded-` session param), then consumed once when
+         * the dockview container mounts — `createInitialPanels` reads it,
+         * `applyInitLayout` builds the panels, and it is cleared to undefined
+         * (stripped from snapshots) so it never re-applies on a later remount.
+         */
+        init: types.stripDefault(
+          types.maybe(types.frozen<DockviewLayoutNode>()),
+          undefined,
+        ),
       })
-      // Both are transient: set once (init from URL params, pendingMove from a
-      // queued move) and consumed when the dockview container mounts. Volatile so
-      // they are never persisted — no snapshot strip needed.
+      // Transient: queued before workspaces were enabled and consumed when the
+      // dockview container mounts. Volatile so it is never persisted.
       .volatile<{
-        init: DockviewLayoutNode | undefined
         pendingMove: PendingMove | undefined
       }>(() => ({
-        init: undefined,
         pendingMove: undefined,
       }))
       .views(self => ({

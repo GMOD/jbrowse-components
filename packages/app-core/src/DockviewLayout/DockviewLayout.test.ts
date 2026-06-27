@@ -328,15 +328,23 @@ describe('init configuration', () => {
     expect(session.init).toBeUndefined()
   })
 
-  it('init is excluded from snapshot', () => {
+  it('init round-trips through the snapshot (so a loaded session can carry a layout)', () => {
     const session = createTestSession()
-    session.setInit({
-      direction: 'horizontal',
+    const initConfig = {
+      direction: 'horizontal' as const,
       children: [{ viewIds: ['view-1'] }, { viewIds: ['view-2'] }],
-    })
-    const snapshot = getSnapshot(session)
+    }
+    session.setInit(initConfig)
 
-    expect(snapshot).not.toHaveProperty('init')
+    expect(getSnapshot(session)).toHaveProperty('init', initConfig)
+  })
+
+  it('init is stripped from the snapshot once cleared', () => {
+    const session = createTestSession()
+    session.setInit({ viewIds: ['view-1'] })
+    session.setInit(undefined)
+
+    expect(getSnapshot(session)).not.toHaveProperty('init')
   })
 })
 

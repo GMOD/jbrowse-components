@@ -1,12 +1,35 @@
+// jbrowse-web is a static client-side app — nothing here is processed
+// server-side — so URL params can live in the hash fragment instead of the
+// query string. The fragment is never sent to the server, so a large param
+// (e.g. a declarative `session=encoded-…`/`spec-…`) can't trip the server's
+// request-line limit (HTTP 414); the query string can, and historically did.
+//
+// We read params from the hash when the current URL puts them there (it looks
+// like `#key=value…`) and otherwise from the query string (legacy URLs), and we
+// write updates back to whichever the current URL uses — so both forms keep
+// working and a hash URL stays a hash URL across the post-load `session=local-…`
+// rewrite and reloads.
+
+function paramsInHash() {
+  return window.location.hash.includes('=')
+}
+
 function getSearchParams() {
-  return new URLSearchParams(window.location.search)
+  return new URLSearchParams(
+    paramsInHash()
+      ? window.location.hash.slice(1)
+      : window.location.search,
+  )
 }
 
 function updateUrl(params: URLSearchParams) {
-  const newSearch = params.toString()
-  const newUrl = newSearch
-    ? `${window.location.pathname}?${newSearch}`
-    : window.location.pathname
+  const str = params.toString()
+  const { pathname, search } = window.location
+  const newUrl = paramsInHash()
+    ? `${pathname}${search}${str ? `#${str}` : ''}`
+    : str
+      ? `${pathname}?${str}`
+      : pathname
   window.history.replaceState(null, '', newUrl)
 }
 
