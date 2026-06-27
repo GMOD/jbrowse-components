@@ -209,7 +209,8 @@ function drawContinuation(
       left < scissorRight
     if (offLeft || offRight) {
       const c = region.rectColors[i]!
-      const lum = 0.299 * abgrRed(c) + 0.587 * abgrGreen(c) + 0.114 * abgrBlue(c)
+      const lum =
+        0.299 * abgrRed(c) + 0.587 * abgrGreen(c) + 0.114 * abgrBlue(c)
       ctx.strokeStyle =
         lum > 127.5 ? 'rgba(0,0,0,0.55)' : 'rgba(255,255,255,0.55)'
       ctx.lineWidth = 1

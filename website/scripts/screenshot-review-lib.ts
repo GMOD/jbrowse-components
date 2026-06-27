@@ -253,9 +253,7 @@ export const desktopAutogenNames = new Set([
 // releases, so their images aren't kept current and shouldn't surface as review
 // work. A figure shared by a blog post AND a live doc (or backed by a spec)
 // stays in — its non-blog usage is what makes it reviewable.
-export function collectScreenshots(
-  specs: { name: string }[],
-): Screenshot[] {
+export function collectScreenshots(specs: { name: string }[]): Screenshot[] {
   const specNames = new Set(specs.map(s => s.name))
   const index = getUsageIndex()
   const names = new Set(specNames)

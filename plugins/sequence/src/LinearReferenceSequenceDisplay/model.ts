@@ -16,6 +16,7 @@ import { type Instance, getEnv, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
+  fetchEachRegion,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   type DisplayPhase,
@@ -327,27 +328,33 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
         if (self.zoomedOut) {
           return
         }
-        await self.fetchRegions(needed, async ctx => {
-          const session = getSession(self)
-          const { rpcManager, assemblyManager } = session
-          const sessionId = getRpcSessionId(self)
-          const adapterConfig = self.adapterConfig
-          for (const { region, displayedRegionIndex } of needed) {
+        const { rpcManager, assemblyManager } = getSession(self)
+        const sessionId = getRpcSessionId(self)
+        const adapterConfig = self.adapterConfig
+        await fetchEachRegion(self, needed, {
+          call: async (region, ctx, displayedRegionIndex) => {
             const features = await rpcManager.call(
               sessionId,
               'CoreGetFeatures',
-              { regions: [region], adapterConfig, stopToken: ctx.stopToken },
+              {
+                regions: [region],
+                adapterConfig,
+                stopToken: ctx.stopToken,
+                statusCallback:
+                  self.makeRegionStatusCallback(displayedRegionIndex),
+              },
             )
-            if (ctx.isStale()) {
-              return
-            }
-            const assembly = assemblyManager.get(region.assemblyName)
             const geneticCodeId =
-              assembly?.getGeneticCodeId(region.refName) ?? 1
+              assemblyManager
+                .get(region.assemblyName)
+                ?.getGeneticCodeId(region.refName) ?? 1
+            return { features, geneticCodeId }
+          },
+          onResult: (idx, { features, geneticCodeId }) => {
             for (const f of dedupe(features, f => f.id())) {
               const seq = f.get('seq') as string | undefined
               if (seq) {
-                self.setSequenceRegion(displayedRegionIndex, {
+                self.setSequenceRegion(idx, {
                   seq,
                   start: f.get('start'),
                   end: f.get('end'),
@@ -355,7 +362,7 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
                 })
               }
             }
-          }
+          },
         })
       },
     }))

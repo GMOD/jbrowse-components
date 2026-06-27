@@ -63,7 +63,11 @@ export default function SequenceCanvas({
   const canvasWidth = (endCol - startCol) * CHAR_WIDTH
 
   useEffect(() => {
-    const ctx = getPreparedCanvas2D(canvasRef.current, canvasWidth, canvasHeight)
+    const ctx = getPreparedCanvas2D(
+      canvasRef.current,
+      canvasWidth,
+      canvasHeight,
+    )
     if (ctx && canvasWidth > 0 && canvasHeight > 0) {
       drawSequenceGrid({
         ctx,

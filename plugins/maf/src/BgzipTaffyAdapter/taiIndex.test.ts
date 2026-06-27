@@ -15,7 +15,7 @@ function records(...starts: number[]): ByteRange[] {
     virtualOffset: {
       blockPosition: i,
       dataPosition: 0,
-    } as ByteRange['virtualOffset'],
+    },
   }))
 }
 
@@ -166,7 +166,7 @@ describe('nextChrStartBlock', () => {
   // blockPosition = compressed byte offset; chrStart is irrelevant here.
   const at = (blockPosition: number): ByteRange => ({
     chrStart: 0,
-    virtualOffset: { blockPosition, dataPosition: 0 } as ByteRange['virtualOffset'],
+    virtualOffset: { blockPosition, dataPosition: 0 },
   })
   const index: IndexData = {
     chr1: [at(0), at(1000)],

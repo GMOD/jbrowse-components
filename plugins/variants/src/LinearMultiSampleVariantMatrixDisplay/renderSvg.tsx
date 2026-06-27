@@ -1,6 +1,7 @@
+/* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
-import { SVGErrorBox, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
+import { SvgChrome, awaitSvgReady } from '@jbrowse/plugin-linear-genome-view'
 
 import { drawVariantMatrixBlocks } from './components/Canvas2DVariantMatrixRenderer.ts'
 import SvgVariantOverlay from '../shared/components/SvgVariantOverlay.tsx'
@@ -18,20 +19,35 @@ export async function renderSvg(
   model: RenderSvgBaseModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  const view = getContainingView(model) as LGV
   // svgReady waits for every visible region to load (not just the first datum)
   // and goes false during an in-place refetch, so exports never capture a
   // partial or stale viewport.
   await awaitSvgReady(model)
-  if (model.error) {
-    return (
-      <SVGErrorBox
-        error={model.error}
-        width={view.width}
-        height={model.height}
+  const view = getContainingView(model) as LGV
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome error={model.error} width={view.width} height={height}>
+      <VariantMatrixSvgBody
+        model={model}
+        view={view}
+        height={height}
+        opts={opts}
       />
-    )
-  }
+    </SvgChrome>
+  )
+}
+
+function VariantMatrixSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: RenderSvgBaseModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions | undefined
+}) {
   const cellData = model.cellData as MatrixCellData | undefined
   if (!cellData || cellData.numCells === 0) {
     return null
@@ -53,7 +69,7 @@ export async function renderSvg(
     <SvgVariantOverlay
       id={`variant-matrix-clip-${model.id}`}
       width={canvasWidth}
-      height={model.height}
+      height={height}
       content={cellsNode}
       sources={sources}
       rowHeight={rowHeight}

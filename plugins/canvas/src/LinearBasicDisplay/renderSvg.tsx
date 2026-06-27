@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SVGErrorBox,
+  SvgChrome,
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -55,21 +56,34 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  const view = getContainingView(model) as LGV
   // svgReady waits for ALL visible regions, not just the first to stream in, so
   // whole-genome / multi-region exports aren't partially drawn.
   await awaitSvgReady(model)
-
-  if (model.error) {
-    return (
-      <SVGErrorBox
-        error={model.error}
-        width={view.width}
-        height={model.height}
+  const view = getContainingView(model) as LGV
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome error={model.error} width={view.width} height={height}>
+      <CanvasFeaturesSvgBody
+        model={model}
+        view={view}
+        height={height}
+        opts={opts}
       />
-    )
-  }
+    </SvgChrome>
+  )
+}
 
+function CanvasFeaturesSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: RenderSvgModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions | undefined
+}) {
   if (model.laidOutDataMap.size === 0) {
     return null
   }
@@ -77,7 +91,6 @@ export async function renderSvg(
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
   const totalWidth = view.totalWidthPx
-  const height = model.height
 
   const renderBlocks = buildRenderBlocks(visibleRegions)
   const featuresNode = paintLayer(totalWidth, height, opts, ctx => {

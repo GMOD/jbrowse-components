@@ -785,7 +785,7 @@ issues no fetch, so `svgReady` alone would never resolve.
 **Displays outside the two LGV GPU mixins define their own `svgReady`** rather
 than inheriting a mixin's — they don't track `loadedRegions`/`displayPhase` the
 same way. Arc / paired-arc are still LGV track displays, so they keep the full
-contract (own `svgReady` getter + `renderSvgChrome` + `SVGErrorBox`): drawing
+contract (own `svgReady` getter + `awaitSvgReady` + `SvgChrome`/`SVGErrorBox`): drawing
 all features into a single array via `FeatureDensityMixin`, their `svgReady` is
 just `features !== undefined || error || regionTooLarge` (no `loadedRegions`
 spatial-coverage signal to wait on). Known gap: that stays true through an
@@ -793,7 +793,7 @@ in-place refetch, so an export fired right after a pan/zoom can capture stale
 arcs — tightening it would need fetch-generation tracking the single-array model
 lacks. The non-LGV views are a different category — radial / dotplot canvas with
 no rectangular width/height or per-region axis — so they keep a bespoke gate and
-their own error UI instead of `renderSvgChrome` + `SVGErrorBox`: dotplot
+their own error UI instead of `SvgChrome` + `SVGErrorBox`: dotplot
 (`!!geometry || !!error`), multi-LGV-synteny (`featureData != null || error`),
 circular chord (`ready || error`, renders `<DisplayError>`).
 

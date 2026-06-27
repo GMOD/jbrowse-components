@@ -51,18 +51,21 @@ const DropdownTrackSelector = observer(function DropdownTrackSelector({
                 id={t.trackId}
                 model={model}
                 conf={t}
-                setOpen={open => { setMenuOpen(open) }}
+                setOpen={open => {
+                  setMenuOpen(open)
+                }}
                 stopPropagation
               />
             </>
           ),
           checked: model.shownTrackIds.has(t.trackId),
-          onClick: () =>
-            { guard(() => {
+          onClick: () => {
+            guard(() => {
               if (model.view.toggleTrack(t.trackId)) {
                 model.addToRecentlyUsed(t.trackId)
               }
-            }) },
+            })
+          },
         })),
         ...extraMenuItems,
       ]}

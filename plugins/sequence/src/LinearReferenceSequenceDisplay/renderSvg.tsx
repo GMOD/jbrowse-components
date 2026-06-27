@@ -1,8 +1,9 @@
+/* eslint-disable react-refresh/only-export-components */
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SVGErrorBox,
+  SvgChrome,
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -39,20 +40,27 @@ export async function renderSvg(
   model: SequenceDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ) {
-  const view = getContainingView(model) as LGV
-
   await awaitSvgReady(model)
+  const view = getContainingView(model) as LGV
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome error={model.error} width={view.width} height={height}>
+      <SequenceSvgBody model={model} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
 
-  if (model.error) {
-    return (
-      <SVGErrorBox
-        error={model.error}
-        width={view.width}
-        height={model.height}
-      />
-    )
-  }
-
+function SequenceSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: SequenceDisplayModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions | undefined
+}) {
   const { sequenceData } = model
   if (sequenceData.size === 0 || model.zoomedOut) {
     return null
@@ -64,8 +72,11 @@ export async function renderSvg(
   const palette = buildColorPalette(theme, view.colorByCDS)
   const textColors = buildTextColors(palette, theme)
   const totalWidth = view.trackWidthPx
-  const height = model.height
-  const state: DrawSequenceState = { ...model.renderState, palette, textColors }
+  const state: DrawSequenceState = {
+    ...model.renderState,
+    palette,
+    textColors,
+  }
 
   // Sequence is text-heavy; routed through paintLayer so rasterizeLayers can
   // PNG-embed when set, but the default (vector) path keeps letters crisp.

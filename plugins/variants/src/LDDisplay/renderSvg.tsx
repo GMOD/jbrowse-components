@@ -1,7 +1,8 @@
+/* eslint-disable react-refresh/only-export-components */
 import { getContainingView, max } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SVGErrorBox,
+  SvgChrome,
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -27,15 +28,30 @@ export async function renderSvg(
   self: SharedLDModel,
   opts: ExportSvgDisplayOptions,
 ) {
-  const view = getContainingView(self) as LGV
   // svgReady (GlobalDataDisplayMixin) waits out an in-place refetch — which
-  // holds stale rpcData until the new result commits — so exports never
-  // capture a partial or stale viewport.
+  // holds stale rpcData until the new result commits — so exports never capture
+  // a partial or stale viewport.
   await awaitSvgReady(self)
+  const view = getContainingView(self) as LGV
   const height = opts.overrideHeight ?? self.height
-  if (self.error) {
-    return <SVGErrorBox error={self.error} width={view.width} height={height} />
-  }
+  return (
+    <SvgChrome error={self.error} width={view.width} height={height}>
+      <LdSvgBody self={self} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
+
+function LdSvgBody({
+  self,
+  view,
+  height,
+  opts,
+}: {
+  self: SharedLDModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions
+}) {
   const { rpcData } = self
 
   const {

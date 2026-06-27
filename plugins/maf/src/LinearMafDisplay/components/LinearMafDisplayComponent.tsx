@@ -137,7 +137,9 @@ const MafBody = observer(function MafBody({
         model={model}
         show={model.showCoverage}
         height={model.coverageHeight}
-        setHeight={arg => { model.setCoverageHeight(arg) }}
+        setHeight={arg => {
+          model.setCoverageHeight(arg)
+        }}
         top={model.coverageHeight - 4}
         onActiveChange={setCoverageResizeActive}
       />
@@ -147,7 +149,9 @@ const MafBody = observer(function MafBody({
         model={model}
         show={model.showConservation}
         height={model.conservationHeight}
-        setHeight={arg => { model.setConservationHeight(arg) }}
+        setHeight={arg => {
+          model.setConservationHeight(arg)
+        }}
         top={rowsTopOffset - 4}
         onActiveChange={setConservationResizeActive}
       />

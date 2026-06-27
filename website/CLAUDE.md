@@ -4,11 +4,11 @@ Astro static site deployed to `s3://jbrowse.org/jb2/` via GitHub Actions on
 commits to `main` containing "update docs".
 
 Upload uses `rclone sync --checksum` (see `rclone.conf`) rather than
-`aws s3 sync`: an Astro rebuild gives every file a fresh mtime, and `aws s3 sync`
-compares size+mtime so it re-uploads the whole site each run. rclone compares by
-content hash and only uploads changed files. `sync` (not `copy`) preserves the
-delete-stale-files behavior. rclone's `env_auth` reads the same AWS credentials
-the workflow exports.
+`aws s3 sync`: an Astro rebuild gives every file a fresh mtime, and
+`aws s3 sync` compares size+mtime so it re-uploads the whole site each run.
+rclone compares by content hash and only uploads changed files. `sync` (not
+`copy`) preserves the delete-stale-files behavior. rclone's `env_auth` reads the
+same AWS credentials the workflow exports.
 
 ## Staging deploys
 

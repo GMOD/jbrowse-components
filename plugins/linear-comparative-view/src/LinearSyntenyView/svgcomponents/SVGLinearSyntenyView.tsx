@@ -52,6 +52,9 @@ export async function renderToSvg(
   )
   const viewHeights = tracksHeights.map(h => headerHeight + h)
 
+  // each display's renderSvg owns its own readiness wait (LGV track displays
+  // await feature-density stats internally, renderSyntenyDisplaySvg awaits
+  // featureData/error), so no outer when() gate is needed here
   const displayResults = await Promise.all(
     views.map(
       async view =>
@@ -60,7 +63,6 @@ export async function renderToSvg(
           data: await Promise.all(
             view.tracks.map(async track => {
               const d = track.displays[0]
-              await when(() => d.ready ?? true)
               return {
                 track,
                 result: await d.renderSvg({ ...opts, theme: themeVar }),
@@ -72,16 +74,13 @@ export async function renderToSvg(
   )
 
   const renderings = await Promise.all(
-    levels.map(async level => {
-      const { tracks } = level
-      return Promise.all(
-        tracks.map(async (track: TrackEntry) => {
-          const d = track.displays[0]!
-          await when(() => !d.loading)
-          return renderSyntenyDisplaySvg(d, opts)
-        }),
-      )
-    }),
+    levels.map(level =>
+      Promise.all(
+        level.tracks.map((track: TrackEntry) =>
+          renderSyntenyDisplaySvg(track.displays[0]!, opts),
+        ),
+      ),
+    ),
   )
 
   const trackLabelMaxLen =

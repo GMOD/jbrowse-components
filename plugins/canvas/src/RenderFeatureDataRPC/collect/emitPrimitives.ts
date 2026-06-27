@@ -7,7 +7,11 @@ import { lighten } from '@mui/material'
 
 import { createTranscriptFloatingLabel } from '../floatingLabels.ts'
 import { hasVisibleText, isUTR } from '../util.ts'
-import { TRANSL_EXCEPT_HIGHLIGHT, boxColor, strokeColor } from './glyphColors.ts'
+import {
+  TRANSL_EXCEPT_HIGHLIGHT,
+  boxColor,
+  strokeColor,
+} from './glyphColors.ts'
 
 import type { Collector, RenderContext } from './renderContext.ts'
 import type { ArrowData, LineData, RectData } from '../packRenderArrays.ts'

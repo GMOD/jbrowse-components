@@ -279,8 +279,8 @@ interface props {
 
 See also: `Core-extraFeaturePanel`. Unlike that point (which accumulates an
 array of additive panels), `Core-replaceWidget` is singular — one widget renders
-— so it stays a single-component fold: return your own component to
-replace/wrap the default, or return the default unchanged to opt out.
+— so it stays a single-component fold: return your own component to replace/wrap
+the default, or return the default unchanged to opt out.
 
 Return value: The new React component you want to use
 
@@ -298,7 +298,9 @@ import { matchTrackId } from '@jbrowse/core/util'
 pluginManager.addToExtensionPoint(
   'Core-replaceWidget',
   (DefaultWidget, { model }) =>
-    matchTrackId(model.trackId, [/^volvox\.inv\.vcf/]) ? MyWidget : DefaultWidget,
+    matchTrackId(model.trackId, [/^volvox\.inv\.vcf/])
+      ? MyWidget
+      : DefaultWidget,
 )
 ```
 

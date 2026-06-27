@@ -15,7 +15,6 @@ import {
 
 import { migrateArcSnapshot } from './migrate.ts'
 
-
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
@@ -200,7 +199,9 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       /**
        * #action
        */
-      async renderSvg(opts?: ExportSvgDisplayOptions): Promise<React.ReactNode> {
+      async renderSvg(
+        opts?: ExportSvgDisplayOptions,
+      ): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
         return renderArcSvg(self as LinearArcDisplayModel, opts)
       },

@@ -14,7 +14,6 @@ import {
 
 import { makeFeaturePair } from './components/util.ts'
 
-
 import type {
   LinearPairedArcDisplayConfig,
   LinearPairedArcDisplayConfigModel,
@@ -162,7 +161,9 @@ export function stateModelFactory(
       /**
        * #action
        */
-      async renderSvg(opts?: ExportSvgDisplayOptions): Promise<React.ReactNode> {
+      async renderSvg(
+        opts?: ExportSvgDisplayOptions,
+      ): Promise<React.ReactNode> {
         const { renderArcSvg } = await import('./renderSvg.tsx')
         return renderArcSvg(self as LinearPairedArcDisplayModel, opts)
       },

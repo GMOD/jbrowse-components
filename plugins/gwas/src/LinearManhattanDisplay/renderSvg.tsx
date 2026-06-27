@@ -1,9 +1,10 @@
+/* eslint-disable react-refresh/only-export-components */
 import type React from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SVGErrorBox,
+  SvgChrome,
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -42,20 +43,32 @@ export async function renderSvg(
   model: RenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  const view = getContainingView(model) as LGV
   await awaitSvgReady(model)
+  const view = getContainingView(model) as LGV
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome error={model.error} width={view.width} height={height}>
+      <ManhattanSvgBody model={model} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
+
+function ManhattanSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: RenderSvgModel
+  view: LGV
+  height: number
+  opts: ExportSvgDisplayOptions | undefined
+}) {
   const { offsetPx } = view
   // anchors scale bars to left edge of content; non-zero only when scrolled before genome start
   const scalebarLeft = Math.max(-offsetPx, 0)
-  const height = model.height
   const { ticks, rpcDataMap } = model
   const { renderState } = model
-
-  if (model.error) {
-    return (
-      <SVGErrorBox error={model.error} width={view.width} height={height} />
-    )
-  }
 
   if (rpcDataMap.size === 0 || !renderState) {
     return null

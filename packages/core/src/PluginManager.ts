@@ -1,3 +1,5 @@
+import type { ComponentType } from 'react'
+
 import { isModelType, isType, types } from '@jbrowse/mobx-state-tree'
 
 import CorePlugin from './CorePlugin.ts'
@@ -34,7 +36,6 @@ import type {
   IAnyStateTreeNode,
   IAnyType,
 } from '@jbrowse/mobx-state-tree'
-import type { ComponentType } from 'react'
 
 type PluggableElementTypeGroup =
   | 'adapter'

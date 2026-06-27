@@ -1,4 +1,9 @@
-import { SvgClipRect, renderSvgChrome } from '@jbrowse/plugin-linear-genome-view'
+import { getContainingView } from '@jbrowse/core/util'
+import {
+  SvgChrome,
+  SvgClipRect,
+  awaitSvgReady,
+} from '@jbrowse/plugin-linear-genome-view'
 
 import Arcs from './components/Arcs.tsx'
 
@@ -11,20 +16,26 @@ import type {
 // Bezier-arc-overlay exception (see ARCHITECTURE.md "SVG export pipeline"): arc
 // paths render as vector SVG on both on-screen and export paths so
 // hover/tooltips work natively, so the body returns JSX directly rather than
-// routing through paintLayer. renderSvgChrome still owns the shared svgReady
-// gate + SVGErrorBox preamble, and SvgClipRect the clip wrapper, so arc shares
-// the same terminal-state contract as every other LGV track display.
+// routing through paintLayer. SvgChrome still owns the shared SVGErrorBox
+// terminal state and SvgClipRect the clip wrapper, so arc shares the same
+// contract as every other LGV track display; the svgReady gate stays an
+// explicit await at the top.
 export async function renderArcSvg(
   model: LinearPairedArcDisplayModel,
   opts?: ExportSvgDisplayOptions,
 ) {
-  return renderSvgChrome<LinearGenomeViewModel>(model, opts, (view, height) => (
-    <SvgClipRect
-      id={`arc-${model.id}`}
-      width={view.totalWidthPx}
-      height={height}
-    >
-      <Arcs model={model} exportSVG={true} />
-    </SvgClipRect>
-  ))
+  await awaitSvgReady(model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const height = opts?.overrideHeight ?? model.height
+  return (
+    <SvgChrome error={model.error} width={view.width} height={height}>
+      <SvgClipRect
+        id={`arc-${model.id}`}
+        width={view.totalWidthPx}
+        height={height}
+      >
+        <Arcs model={model} exportSVG={true} />
+      </SvgClipRect>
+    </SvgChrome>
+  )
 }

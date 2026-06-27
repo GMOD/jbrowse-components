@@ -63,7 +63,10 @@ export default function VerticalScrollbar({
   // negative (drag mapping dead)
   const thumbHeight = Math.min(
     viewportHeight,
-    Math.max(MIN_THUMB_HEIGHT, viewportHeight * (viewportHeight / contentHeight)),
+    Math.max(
+      MIN_THUMB_HEIGHT,
+      viewportHeight * (viewportHeight / contentHeight),
+    ),
   )
   const thumbTop =
     (scrollTop / scrollableHeight) * (viewportHeight - thumbHeight)

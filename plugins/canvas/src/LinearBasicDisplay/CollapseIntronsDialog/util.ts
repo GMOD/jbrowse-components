@@ -2,7 +2,11 @@ import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 import { when } from 'mobx'
 
-import { getSubfeatures, isCDS, isExon } from '../../RenderFeatureDataRPC/util.ts'
+import {
+  getSubfeatures,
+  isCDS,
+  isExon,
+} from '../../RenderFeatureDataRPC/util.ts'
 
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'

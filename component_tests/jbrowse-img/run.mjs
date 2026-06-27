@@ -355,7 +355,10 @@ await test('renderRegion comparative without a second assembly throws', async ()
   try {
     await renderRegion({
       mode: 'dotplot',
-      argv: [['fasta', [fp('volvox.fa')]], ['paf', [paf]]],
+      argv: [
+        ['fasta', [fp('volvox.fa')]],
+        ['paf', [paf]],
+      ],
     })
   } catch (error) {
     message = error.message

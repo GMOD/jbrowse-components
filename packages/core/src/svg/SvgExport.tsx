@@ -76,6 +76,30 @@ export function SVGErrorBox({
   )
 }
 
+// SVG-export counterpart of DisplayChrome (BaseLinearDisplay/components): the
+// shared terminal-state gate every display's `renderSvg` ends in — render a
+// themed SVGErrorBox on error, otherwise the children. The display body is an
+// ordinary child component, rendered (and thus painted) only in the non-error
+// branch. The readiness wait stays an explicit `await awaitSvgReady(model)` in
+// each `renderSvg` (the one genuinely async step), so this component is sync.
+export function SvgChrome({
+  error,
+  width,
+  height,
+  children,
+}: {
+  error: unknown
+  width: number
+  height: number
+  children: React.ReactNode
+}) {
+  return error ? (
+    <SVGErrorBox error={error} width={width} height={height} />
+  ) : (
+    <>{children}</>
+  )
+}
+
 export function SvgClipRect({
   id,
   width,

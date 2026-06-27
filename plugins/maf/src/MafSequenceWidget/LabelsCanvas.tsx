@@ -45,7 +45,11 @@ export default function LabelsCanvas({
       ctx.textBaseline = 'top'
       ctx.fillStyle = theme.palette.text.secondary
       for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
-        ctx.fillText(samples[rowIdx]!.label, 2, (rowIdx - startRow) * ROW_HEIGHT + 2)
+        ctx.fillText(
+          samples[rowIdx]!.label,
+          2,
+          (rowIdx - startRow) * ROW_HEIGHT + 2,
+        )
       }
     }
   }, [samples, labelWidth, canvasHeight, startRow, endRow, theme])

@@ -183,7 +183,11 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
   return (
     <div
       className={classes.folderLabel}
-      onClick={() => { guard(() => { openFolderDialog(model, item) }) }}
+      onClick={() => {
+        guard(() => {
+          openFolderDialog(model, item)
+        })
+      }}
     >
       <FolderIcon fontSize="small" color="primary" />
       <span data-testid={`htsCategory-${name}`}>
@@ -207,7 +211,9 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
           ...categoryTrackMenuItems(model, item),
         ]}
         stopPropagation
-        setOpen={open => { setMenuOpen(open) }}
+        setOpen={open => {
+          setMenuOpen(open)
+        }}
       >
         <MoreHorizIcon />
       </CascadingMenuButton>
@@ -230,7 +236,11 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
   return (
     <div
       className={classes.accordionText}
-      onClick={() => { guard(() => { model.toggleCategory(id) }) }}
+      onClick={() => {
+        guard(() => {
+          model.toggleCategory(id)
+        })
+      }}
     >
       <Typography data-testid={`htsCategory-${name}`}>
         {isOpen ? <ArrowDropDownIcon /> : <ArrowRightIcon />}
@@ -252,7 +262,9 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
           }}
           className={classes.contrastColor}
           stopPropagation
-          setOpen={open => { setMenuOpen(open) }}
+          setOpen={open => {
+            setMenuOpen(open)
+          }}
         >
           <MoreHorizIcon />
         </CascadingMenuButton>

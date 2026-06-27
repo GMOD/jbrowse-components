@@ -395,7 +395,14 @@ function processDefaultLayout(
   ctx: RenderContext,
   collector: Collector,
 ) {
-  pushBoxRect(layout.feature, 0, layout.height, flatbushIdx, ctx, collector.rects)
+  pushBoxRect(
+    layout.feature,
+    0,
+    layout.height,
+    flatbushIdx,
+    ctx,
+    collector.rects,
+  )
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }
 
@@ -412,20 +419,31 @@ type GlyphEmit = (
   collector: Collector,
 ) => void
 
-const emitTranscript: GlyphEmit = (layout, feature, flatbushIdx, ctx, collector) =>
-  { processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector) }
+const emitTranscript: GlyphEmit = (
+  layout,
+  feature,
+  flatbushIdx,
+  ctx,
+  collector,
+) => {
+  processTranscriptLayout(layout, 0, feature, flatbushIdx, ctx, collector)
+}
 
 const GLYPH_EMITTERS: Record<GlyphType, GlyphEmit> = {
-  Box: (layout, _feature, flatbushIdx, ctx, collector) =>
-    { processDefaultLayout(layout, flatbushIdx, ctx, collector) },
+  Box: (layout, _feature, flatbushIdx, ctx, collector) => {
+    processDefaultLayout(layout, flatbushIdx, ctx, collector)
+  },
   ProcessedTranscript: emitTranscript,
   Segments: emitTranscript,
-  Subfeatures: (layout, _feature, flatbushIdx, ctx, collector) =>
-    { processSubfeaturesLayout(layout, flatbushIdx, ctx, collector) },
-  MatureProteinRegion: (layout, feature, flatbushIdx, ctx, collector) =>
-    { processMatureProteinLayout(layout, feature, 0, flatbushIdx, ctx, collector) },
-  RepeatRegion: (layout, feature, flatbushIdx, ctx, collector) =>
-    { processRepeatRegionLayout(layout, feature, flatbushIdx, ctx, collector) },
+  Subfeatures: (layout, _feature, flatbushIdx, ctx, collector) => {
+    processSubfeaturesLayout(layout, flatbushIdx, ctx, collector)
+  },
+  MatureProteinRegion: (layout, feature, flatbushIdx, ctx, collector) => {
+    processMatureProteinLayout(layout, feature, 0, flatbushIdx, ctx, collector)
+  },
+  RepeatRegion: (layout, feature, flatbushIdx, ctx, collector) => {
+    processRepeatRegionLayout(layout, feature, flatbushIdx, ctx, collector)
+  },
 }
 
 export function processFeatureRecord(

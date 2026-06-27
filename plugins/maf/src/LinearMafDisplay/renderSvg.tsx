@@ -1,10 +1,11 @@
+/* eslint-disable react-refresh/only-export-components */
 import React from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
-  SVGErrorBox,
+  SvgChrome,
   SvgClipRect,
   awaitSvgReady,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -38,22 +39,30 @@ export async function renderSvg(
   model: LinearMafDisplayModel,
   opts: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
-  const view = getContainingView(model) as LinearGenomeViewModel
   // svgReady waits for every visible region to load (not just sources to
   // resolve) and goes false during an in-place refetch, so exports never
   // capture a partial or stale viewport.
   await awaitSvgReady(model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const height = opts.overrideHeight ?? model.height
+  return (
+    <SvgChrome error={model.error} width={view.width} height={height}>
+      <MafSvgBody model={model} view={view} height={height} opts={opts} />
+    </SvgChrome>
+  )
+}
 
-  if (model.error) {
-    return (
-      <SVGErrorBox
-        error={model.error}
-        width={view.width}
-        height={model.height}
-      />
-    )
-  }
-
+function MafSvgBody({
+  model,
+  view,
+  height,
+  opts,
+}: {
+  model: LinearMafDisplayModel
+  view: LinearGenomeViewModel
+  height: number
+  opts: ExportSvgDisplayOptions
+}) {
   const state = model.renderState
   if (!state) {
     return null
@@ -61,7 +70,6 @@ export async function renderSvg(
 
   const theme = createJBrowseTheme(opts.theme)
   const width = view.totalWidthPx
-  const height = model.height
   const {
     hierarchy,
     showTree,

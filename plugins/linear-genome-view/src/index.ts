@@ -151,7 +151,11 @@ export {
 } from './LinearGenomeView/svgcomponents/SVGLinearGenomeView.tsx'
 export { default as SVGHighlights } from './LinearGenomeView/svgcomponents/SVGHighlights.tsx'
 export { default as ExportSvgDialog } from './LinearGenomeView/components/ExportSvgDialog.tsx'
-export { SVGErrorBox, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+export {
+  SVGErrorBox,
+  SvgChrome,
+  SvgClipRect,
+} from '@jbrowse/core/svg/SvgExport'
 export { awaitSvgReady } from '@jbrowse/core/svg/svgReady'
 export type { SvgExportable } from '@jbrowse/core/svg/svgReady'
 export {

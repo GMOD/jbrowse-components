@@ -115,5 +115,6 @@ export function selectIndexEntries(
 export function nextChrStartBlock(index: IndexData, refName: string) {
   const chrs = Object.keys(index)
   const nextChr = chrs[chrs.indexOf(refName) + 1]
-  return (nextChr ? index[nextChr] : undefined)?.[0]?.virtualOffset.blockPosition
+  return (nextChr ? index[nextChr] : undefined)?.[0]?.virtualOffset
+    .blockPosition
 }
