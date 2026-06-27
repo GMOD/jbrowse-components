@@ -88,7 +88,8 @@ const FacetFilter = observer(function FacetFilter({
           value={filters.get(field) ?? []}
           onChange={event => {
             // native <select multiple>: event.target.value is only the first
-            // selected option, so read the full selection off selectedOptions
+            // selected option, so read the full selection off selectedOptions.
+            // Widen through EventTarget since MUI types target as an input.
             const target: EventTarget = event.target
             const select = target as HTMLSelectElement
             faceted.setFilter(

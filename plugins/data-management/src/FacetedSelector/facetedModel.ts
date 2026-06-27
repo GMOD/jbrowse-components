@@ -5,13 +5,14 @@ import {
   localStorageGetNumber,
   localStorageSetBoolean,
   localStorageSetItem,
+  localStorageSetNumber,
   measureGridWidth,
 } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { types } from '@jbrowse/mobx-state-tree'
 import { observable } from 'mobx'
 
-import { getRowStr } from './components/util.ts'
+import { getRowStr, isMetadataFacet, metadataFacet } from './components/util.ts'
 import {
   computeFacetCategoryCounts,
   filterRowsByFacets,
@@ -154,7 +155,7 @@ export function facetedStateTreeF() {
        */
       setPanelWidth(width: number) {
         self.panelWidth = width
-        localStorageSetItem('facet-panelWidth', JSON.stringify(width))
+        localStorageSetNumber('facet-panelWidth', width)
       },
       /**
        * #action
@@ -240,18 +241,6 @@ export function facetedStateTreeF() {
       /**
        * #getter
        */
-      get filteredNonMetadataKeys() {
-        return self.showSparse
-          ? nonMetadataKeys
-          : findNonSparseKeys(
-              nonMetadataKeys,
-              self.allRows,
-              (r, f) => r[f as keyof typeof r],
-            )
-      },
-      /**
-       * #getter
-       */
       get metadataKeys() {
         return [
           ...new Set(self.allRows.flatMap(row => getRootKeys(row.metadata))),
@@ -259,33 +248,37 @@ export function facetedStateTreeF() {
       },
       /**
        * #getter
+       * Facet field ids in column order (non-metadata first, then
+       * `metadata.<key>`); both kinds resolve through getRowStr. Sparse fields
+       * are dropped unless showSparse.
        */
-      get filteredMetadataKeys() {
+      get facetFields() {
+        const candidates = [
+          ...nonMetadataKeys,
+          ...this.metadataKeys.map(metadataFacet),
+        ]
         return self.showSparse
-          ? this.metadataKeys
-          : findNonSparseKeys(
-              this.metadataKeys,
-              self.allRows,
-              (r, f) => r.metadata[f],
+          ? candidates
+          : findNonSparseKeys(candidates, self.allRows, (r, f) =>
+              getRowStr(f, r),
             )
       },
       /**
        * #getter
        */
       get fields() {
-        return [
-          'name',
-          ...this.filteredNonMetadataKeys,
-          ...this.filteredMetadataKeys.map(m => `metadata.${m}`),
-        ]
+        return ['name', ...this.facetFields]
       },
       /**
        * #getter
-       * Used to detect when a metadata key collides with a non-metadata column
-       * name (so the header can show "x (from metadata)").
+       * The non-metadata field names, used to detect when a metadata key
+       * collides with one (so the header can show "x (from metadata)").
        */
       get nonMetadataFieldSet() {
-        return new Set(['name', ...this.filteredNonMetadataKeys])
+        return new Set([
+          'name',
+          ...this.facetFields.filter(f => !isMetadataFacet(f)),
+        ])
       },
       /**
        * #getter
@@ -310,7 +303,7 @@ export function facetedStateTreeF() {
       get facetCategoryCounts() {
         return computeFacetCategoryCounts(
           self.rows,
-          this.fields.slice(1),
+          this.facetFields,
           self.filters,
         )
       },
@@ -320,27 +313,17 @@ export function facetedStateTreeF() {
        * stay stable and don't recompute on every filterText keystroke.
        */
       get initialWidths(): Record<string, number> {
-        return {
-          name: measureNameColumnWidth(self.allRows),
-          ...Object.fromEntries(
-            this.filteredNonMetadataKeys.map(e => [
-              e,
-              measureGridWidth(
-                self.allRows.map(r => r[e as keyof typeof r] as string),
-                { maxWidth: 400, stripHTML: true },
-              ),
-            ]),
-          ),
-          ...Object.fromEntries(
-            this.filteredMetadataKeys.map(e => [
-              `metadata.${e}`,
-              measureGridWidth(
-                self.allRows.map(r => r.metadata[e]),
-                { maxWidth: 400, stripHTML: true },
-              ),
-            ]),
-          ),
-        }
+        return Object.fromEntries(
+          this.fields.map(f => [
+            f,
+            f === 'name'
+              ? measureNameColumnWidth(self.allRows)
+              : measureGridWidth(
+                  self.allRows.map(r => getRowStr(f, r)),
+                  { maxWidth: 400, stripHTML: true },
+                ),
+          ]),
+        )
       },
     }))
     .views(self => ({

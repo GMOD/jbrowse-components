@@ -9,6 +9,7 @@ import type { Row } from './components/util.ts'
 interface TestRow extends Row {
   name: string
   category?: string
+  adapter?: string
   description?: string
   metadata: Record<string, unknown>
 }
@@ -18,6 +19,7 @@ const rows: TestRow[] = [
     id: 't1',
     name: 'Genes',
     category: 'Annotation',
+    adapter: 'Gff3TabixAdapter',
     metadata: { sampleType: 'tumor', assay: 'RNA' },
   },
   {
@@ -46,6 +48,9 @@ describe('filterRowsByText', () => {
     expect(filterRowsByText(rows, 'quantitative').map(r => r.id)).toEqual([
       't3',
     ])
+  })
+  test('matches adapter type', () => {
+    expect(filterRowsByText(rows, 'gff3tabix').map(r => r.id)).toEqual(['t1'])
   })
   test('matches description', () => {
     expect(filterRowsByText(rows, 'calls').map(r => r.id)).toEqual(['t2'])
@@ -119,6 +124,25 @@ describe('computeFacetCategoryCounts', () => {
       ['DNA', 2],
     ])
     // other facets count only among the DNA rows (t2, t3)
+    expect([...counts.get('category')!]).toEqual([
+      ['Annotation', 1],
+      ['Quantitative', 1],
+    ])
+    expect([...counts.get('metadata.sampleType')!]).toEqual([
+      ['normal', 1],
+      ['tumor', 1],
+    ])
+  })
+
+  test('honors an active filter on a column absent from the facets list', () => {
+    // metadata.assay is filtered but not in `facets` (e.g. it went sparse and
+    // dropped out) — its constraint must still drill down the listed facets
+    const counts = computeFacetCategoryCounts(
+      rows,
+      ['category', 'metadata.sampleType'],
+      new Map([['metadata.assay', ['DNA']]]),
+    )
+    // only DNA rows (t2, t3) are counted
     expect([...counts.get('category')!]).toEqual([
       ['Annotation', 1],
       ['Quantitative', 1],

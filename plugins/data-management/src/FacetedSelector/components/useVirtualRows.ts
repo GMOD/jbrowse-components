@@ -48,7 +48,12 @@ export function useVirtualRows(
 
   const { scrollTop, clientHeight } = scrollState
   const totalSize = count * rowHeight
-  const startIdx = Math.max(0, Math.floor(scrollTop / rowHeight) - overscan)
+  // clamp to count so a stale (too-large) scrollTop from a shrunk list can't
+  // push the window past the end and render nothing before the reset effect runs
+  const startIdx = Math.min(
+    count,
+    Math.max(0, Math.floor(scrollTop / rowHeight) - overscan),
+  )
   const endIdx = Math.min(
     count,
     Math.ceil((scrollTop + clientHeight) / rowHeight) + overscan,

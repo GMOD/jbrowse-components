@@ -2,9 +2,18 @@ import { getRowStr } from './components/util.ts'
 
 import type { Row } from './components/util.ts'
 
+// The facets with a non-empty selection, each as a lookup set. Facets with no
+// selection are dropped since they don't constrain anything.
+function activeFilterSets(filters: Map<string, string[]>) {
+  return [...filters.entries()]
+    .filter(([, vals]) => vals.length > 0)
+    .map(([key, vals]) => [key, new Set(vals)] as const)
+}
+
 /**
- * Free-text filter over a row's name, category, description, and every metadata
- * value. Case-insensitive substring match; an empty query returns all rows.
+ * Free-text filter over a row's name, category, adapter, description, and every
+ * metadata value. Case-insensitive substring match; an empty query returns all
+ * rows.
  */
 export function filterRowsByText<T extends Row>(rows: T[], query: string): T[] {
   const q = query.toLowerCase()
@@ -15,6 +24,7 @@ export function filterRowsByText<T extends Row>(rows: T[], query: string): T[] {
     row =>
       `${row.name ?? ''}`.toLowerCase().includes(q) ||
       `${row.category ?? ''}`.toLowerCase().includes(q) ||
+      `${row.adapter ?? ''}`.toLowerCase().includes(q) ||
       `${row.description ?? ''}`.toLowerCase().includes(q) ||
       Object.values(row.metadata ?? {}).some(
         v => v != null && `${v}`.toLowerCase().includes(q),
@@ -30,9 +40,7 @@ export function filterRowsByFacets<T extends Row>(
   rows: T[],
   filters: Map<string, string[]>,
 ): T[] {
-  const active = [...filters.entries()]
-    .filter(([, vals]) => vals.length > 0)
-    .map(([key, vals]) => [key, new Set(vals)] as const)
+  const active = activeFilterSets(filters)
   return rows.filter(row =>
     active.every(([key, set]) => set.has(getRowStr(key, row))),
   )
@@ -50,10 +58,10 @@ export function computeFacetCategoryCounts<T extends Row>(
   facets: string[],
   filters: Map<string, string[]>,
 ): Map<string, Map<string, number>> {
-  const activeFilters = facets
-    .map(f => [f, filters.get(f)] as const)
-    .filter(([, vals]) => vals?.length)
-    .map(([f, vals]) => [f, new Set(vals)] as const)
+  // Honor every active filter (matching filterRowsByFacets), not just those in
+  // `facets` — a filter on a column that has dropped out of `facets` (e.g. gone
+  // sparse) still constrains the grid, so it must constrain these counts too.
+  const activeFilters = activeFilterSets(filters)
   return new Map(
     facets.map(facet => {
       const categoryCountMap = new Map<string, number>()
