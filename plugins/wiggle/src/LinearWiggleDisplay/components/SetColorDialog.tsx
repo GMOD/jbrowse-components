@@ -1,13 +1,6 @@
-import { Dialog } from '@jbrowse/core/ui'
+import { RestoreDefaultsDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  FormControlLabel,
-  Radio,
-  Typography,
-} from '@mui/material'
+import { FormControlLabel, Radio, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 const SetColorDialog = observer(function SetColorDialog({
@@ -27,86 +20,68 @@ const SetColorDialog = observer(function SetColorDialog({
   handleClose: () => void
 }) {
   return (
-    <Dialog open onClose={handleClose} title="Set color">
-      <DialogContent>
-        <Typography>
-          Select either an overall color, or the positive/negative colors. Note
-          that density renderers only work properly with positive/negative
-          colors
-        </Typography>
-        <FormControlLabel
-          checked={!model.useBicolor}
-          onClick={() => {
-            model.setUseBicolor(false)
-          }}
-          control={<Radio />}
-          label="Overall color"
-        />
-        <FormControlLabel
-          checked={model.useBicolor}
-          onClick={() => {
-            model.setUseBicolor(true)
-          }}
-          control={<Radio />}
-          label="Positive/negative color"
-        />
+    <RestoreDefaultsDialog
+      open
+      title="Set color"
+      onClose={handleClose}
+      onRestoreDefault={() => {
+        model.setPosColor(undefined)
+        model.setNegColor(undefined)
+        model.setColor(undefined)
+        model.setUseBicolor(undefined)
+      }}
+    >
+      <Typography>
+        Select either an overall color, or the positive/negative colors. Note
+        that density renderers only work properly with positive/negative colors
+      </Typography>
+      <FormControlLabel
+        checked={!model.useBicolor}
+        onClick={() => {
+          model.setUseBicolor(false)
+        }}
+        control={<Radio />}
+        label="Overall color"
+      />
+      <FormControlLabel
+        checked={model.useBicolor}
+        onClick={() => {
+          model.setUseBicolor(true)
+        }}
+        control={<Radio />}
+        label="Positive/negative color"
+      />
 
-        {model.useBicolor ? (
-          <>
-            <Typography>Positive color</Typography>
-            <ColorPicker
-              color={model.posColor}
-              onChange={event => {
-                model.setPosColor(event)
-              }}
-            />
-            <Typography>Negative color</Typography>
+      {model.useBicolor ? (
+        <>
+          <Typography>Positive color</Typography>
+          <ColorPicker
+            color={model.posColor}
+            onChange={event => {
+              model.setPosColor(event)
+            }}
+          />
+          <Typography>Negative color</Typography>
 
-            <ColorPicker
-              color={model.negColor}
-              onChange={event => {
-                model.setNegColor(event)
-              }}
-            />
-          </>
-        ) : (
-          <>
-            <Typography>Overall color</Typography>
-            <ColorPicker
-              color={model.color}
-              onChange={event => {
-                model.setColor(event)
-              }}
-            />
-          </>
-        )}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            model.setPosColor(undefined)
-            model.setNegColor(undefined)
-            model.setColor(undefined)
-            model.setUseBicolor(undefined)
-          }}
-          color="secondary"
-          variant="contained"
-        >
-          Restore default
-        </Button>
-
-        <Button
-          variant="contained"
-          color="primary"
-          type="submit"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Submit
-        </Button>
-      </DialogActions>
-    </Dialog>
+          <ColorPicker
+            color={model.negColor}
+            onChange={event => {
+              model.setNegColor(event)
+            }}
+          />
+        </>
+      ) : (
+        <>
+          <Typography>Overall color</Typography>
+          <ColorPicker
+            color={model.color}
+            onChange={event => {
+              model.setColor(event)
+            }}
+          />
+        </>
+      )}
+    </RestoreDefaultsDialog>
   )
 })
 

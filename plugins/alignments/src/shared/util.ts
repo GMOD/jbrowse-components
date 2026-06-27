@@ -1,6 +1,8 @@
-export const TAG_REGEX = /^[A-Za-z][A-Za-z0-9]$/
+import { tagRegex } from '@jbrowse/core/util'
 
 import type { Theme } from '@mui/material'
+
+export const TAG_REGEX = tagRegex
 
 export const defaultFilterFlags = {
   flagInclude: 0,

@@ -1,10 +1,8 @@
 import { useState } from 'react'
 
-import { SubmitDialog } from '@jbrowse/core/ui'
-import { TextField, Typography } from '@mui/material'
+import { SubmitDialog, TagTextField } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
-
-import { TAG_REGEX } from '../../shared/util.ts'
 
 const SortByTagDialog = observer(function SortByTagDialog(props: {
   model: {
@@ -13,41 +11,26 @@ const SortByTagDialog = observer(function SortByTagDialog(props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  const [tag, setTag] = useState('')
-  const validTag = TAG_REGEX.test(tag)
+  const [tag, setTag] = useState<string | undefined>()
   return (
     <SubmitDialog
       open
       title="Sort by tag"
-      submitDisabled={!validTag}
+      submitDisabled={tag === undefined}
       onCancel={handleClose}
       onSubmit={() => {
-        model.setSortedBy('tag', tag)
-        handleClose()
+        if (tag !== undefined) {
+          model.setSortedBy('tag', tag)
+          handleClose()
+        }
       }}
     >
       <Typography>Set the tag to sort by</Typography>
-      <TextField
-        value={tag}
+      <TagTextField
         autoFocus
-        onChange={event => {
-          setTag(event.target.value)
-        }}
-        label="Tag name"
-        helperText={
-          tag.length === 2 && !validTag
-            ? 'Not a valid tag'
-            : '2 characters, e.g. HP or RG'
-        }
-        error={tag.length === 2 && !validTag}
-        autoComplete="off"
+        onValueChange={setTag}
         data-testid="sort-tag-name"
-        slotProps={{
-          htmlInput: {
-            maxLength: 2,
-            'data-testid': 'sort-tag-name-input',
-          },
-        }}
+        inputTestId="sort-tag-name-input"
       />
     </SubmitDialog>
   )

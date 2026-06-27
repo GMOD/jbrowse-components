@@ -1,6 +1,6 @@
-import { Dialog } from '@jbrowse/core/ui'
+import { RestoreDefaultsDialog } from '@jbrowse/core/ui'
 import ColorPicker from '@jbrowse/core/ui/ColorPicker'
-import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
+import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // Simple solid-color picker for canvas feature displays. The headline "make
@@ -21,55 +21,34 @@ const SetColorDialog = observer(function SetColorDialog({
   showUtrColor?: boolean
 }) {
   return (
-    <Dialog
+    <RestoreDefaultsDialog
       open
-      onClose={() => {
-        handleClose()
-      }}
       title="Set colors"
+      onClose={handleClose}
+      onRestoreDefault={() => {
+        model.setFeatureColor(undefined)
+        model.setUtrColor(undefined)
+      }}
     >
-      <DialogContent>
-        <Typography>Feature color</Typography>
-        <ColorPicker
-          color={model.featureColor}
-          onChange={color => {
-            model.setFeatureColor(color)
-          }}
-        />
-        {showUtrColor ? (
-          <>
-            <Typography>UTR color (gene/transcript UTRs)</Typography>
-            <ColorPicker
-              color={model.utrColor}
-              onChange={color => {
-                model.setUtrColor(color)
-              }}
-            />
-          </>
-        ) : null}
-      </DialogContent>
-      <DialogActions>
-        <Button
-          onClick={() => {
-            model.setFeatureColor(undefined)
-            model.setUtrColor(undefined)
-          }}
-          variant="contained"
-          color="secondary"
-        >
-          Restore default
-        </Button>
-        <Button
-          variant="contained"
-          color="primary"
-          onClick={() => {
-            handleClose()
-          }}
-        >
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
+      <Typography>Feature color</Typography>
+      <ColorPicker
+        color={model.featureColor}
+        onChange={color => {
+          model.setFeatureColor(color)
+        }}
+      />
+      {showUtrColor ? (
+        <>
+          <Typography>UTR color (gene/transcript UTRs)</Typography>
+          <ColorPicker
+            color={model.utrColor}
+            onChange={color => {
+              model.setUtrColor(color)
+            }}
+          />
+        </>
+      ) : null}
+    </RestoreDefaultsDialog>
   )
 })
 
