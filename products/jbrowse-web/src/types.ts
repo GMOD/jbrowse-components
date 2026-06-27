@@ -37,6 +37,9 @@ export type TrackInit =
 
 export interface ViewSpec {
   type: string
+  // optional explicit view id so another view in the spec can reference it
+  // (e.g. a connected MsaView pointing at this view via connectedViewId)
+  id?: string
   tracks?: TrackInit[]
   assembly: string
   loc?: string
