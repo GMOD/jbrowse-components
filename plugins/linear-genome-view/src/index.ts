@@ -121,6 +121,7 @@ export {
   type LinearGenomeViewModel,
   type LinearGenomeViewStateModel,
   OverviewHighlightBand,
+  SVGHighlightBand,
   SearchBox,
   type SyncableViewAction,
   installLinkedViewSync,

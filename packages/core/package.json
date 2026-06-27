@@ -120,6 +120,7 @@
     "./util/formatFastaStrings": "./src/util/formatFastaStrings.ts",
     "./util/geneticCodes": "./src/util/geneticCodes.ts",
     "./util/getRelativeX": "./src/util/getRelativeX.ts",
+    "./util/highlights": "./src/util/highlights.ts",
     "./util/io": "./src/util/io/index.ts",
     "./util/io/RemoteFileWithRangeCache": "./src/util/io/RemoteFileWithRangeCache.ts",
     "./util/jexl": "./src/util/jexl.ts",
@@ -597,6 +598,10 @@
         "types": "./esm/util/getRelativeX.d.ts",
         "import": "./esm/util/getRelativeX.js"
       },
+      "./util/highlights": {
+        "types": "./esm/util/highlights.d.ts",
+        "import": "./esm/util/highlights.js"
+      },
       "./util/io": {
         "types": "./esm/util/io/index.d.ts",
         "import": "./esm/util/io/index.js"
@@ -1003,6 +1008,9 @@
         ],
         "util/getRelativeX": [
           "esm/util/getRelativeX.d.ts"
+        ],
+        "util/highlights": [
+          "esm/util/highlights.d.ts"
         ],
         "util/io": [
           "esm/util/io/index.d.ts"

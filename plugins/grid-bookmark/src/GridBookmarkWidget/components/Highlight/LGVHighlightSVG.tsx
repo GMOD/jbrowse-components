@@ -1,4 +1,4 @@
-import { getFillProps } from '@jbrowse/core/util'
+import { SVGHighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -23,27 +23,15 @@ const LGVHighlightSVG = observer(function LGVHighlightSVG({
   return bookmarks.map((r, idx) => {
     const coords = model.getHighlightCoords(r)
     return coords ? (
-      // eslint-disable-next-line @eslint-react/no-array-index-key
-      <g key={`${bookmarkKey(r)}_${idx}`}>
-        <rect
-          x={coords.left}
-          y={0}
-          width={coords.width}
-          height={height}
-          {...getFillProps(r.highlight)}
-        />
-        {labelsVisible && r.label && coords.width > 3 ? (
-          <text
-            x={coords.left + 3}
-            y={2}
-            fontSize={11}
-            dominantBaseline="hanging"
-            {...getFillProps(theme.palette.text.primary)}
-          >
-            {r.label}
-          </text>
-        ) : null}
-      </g>
+      <SVGHighlightBand
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
+        key={`${bookmarkKey(r)}_${idx}`}
+        coords={coords}
+        height={height}
+        color={r.highlight}
+        label={labelsVisible ? r.label : undefined}
+        labelColor={theme.palette.text.primary}
+      />
     ) : null
   })
 })

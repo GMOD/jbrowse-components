@@ -14,7 +14,7 @@ import Rubberband from './Rubberband.tsx'
 import Scalebar from './Scalebar.tsx'
 import VerticalGuide from './VerticalGuide.tsx'
 import { useRangeSelect } from './useRangeSelect.ts'
-import { getHighlightColor } from './util.ts'
+import { getHighlightColor, highlightKey } from './util.ts'
 import { SCALE_BAR_HEIGHT } from '../consts.ts'
 import { useSideScroll } from './useSideScroll.ts'
 
@@ -137,8 +137,7 @@ const HighlightGroup = observer(function HighlightGroup({
     <Suspense fallback={null}>
       {model.highlight.map((highlight, idx) => (
         <Highlight
-          // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
-          key={`${highlight.assemblyName}-${highlight.refName}:${highlight.start}-${highlight.end}-${idx}`}
+          key={highlightKey(highlight, idx)}
           model={model}
           highlight={highlight}
         />
@@ -160,8 +159,7 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
         const coords = model.getHighlightCoords(h)
         return coords ? (
           <OverviewHighlightBand
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- highlights have no id and can duplicate; idx only breaks ties
-            key={`${h.assemblyName}-${h.refName}:${h.start}-${h.end}-${idx}`}
+            key={highlightKey(h, idx)}
             coords={coords}
             background={getHighlightColor(h, theme).toRgbString()}
           />
