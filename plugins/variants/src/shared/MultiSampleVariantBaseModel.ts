@@ -1,4 +1,4 @@
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import { ConfigurationReference } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
@@ -52,15 +52,15 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
-// Apply the `colorBy` config palette the first time sources arrive — but only
-// when the user hasn't already set a layout. Returns the colored sources, or
-// undefined when there's nothing to apply (no colorBy config, or sources lack
-// the requested attribute).
+// Apply a `colorBy` palette to the sample sources. Returns the colored sources,
+// or undefined when there's nothing to apply (no colorBy attribute, or sources
+// lack the requested attribute). `colorBy` is the resolved value (config default
+// or runtime override) so the same palettizing drives both initial load and the
+// interactive "Color samples by" menu.
 export function maybeApplyColorByPalette(
-  configuration: AnyConfigurationModel,
+  colorBy: string,
   sources: Source[],
 ): Source[] | undefined {
-  const colorBy = getConf({ configuration }, 'colorBy') as string
   if (!colorBy) {
     return undefined
   }
@@ -73,6 +73,20 @@ export function maybeApplyColorByPalette(
   )
   return undefined
 }
+
+// Sample-metadata keys that aren't user-facing grouping attributes — internal
+// row plumbing (identity, haplotype index, rendering color/label). Everything
+// else a samplesTsv carries (population, sex, superpopulation, …) is offered as
+// a "Color samples by" choice.
+const NON_COLORBY_KEYS = new Set([
+  'name',
+  'sampleName',
+  'HP',
+  'baseUri',
+  'color',
+  'label',
+  'labelColor',
+])
 
 function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
@@ -256,6 +270,7 @@ export default function MultiSampleVariantBaseModelF(
           'showBranchLength',
           'referenceDrawingMode',
           'showReferenceAlleles',
+          'colorBy',
         ]),
         TreeSidebarMixin<Source>(),
         types.model({
@@ -418,6 +433,16 @@ export default function MultiSampleVariantBaseModelF(
           return self.getConfWithOverride('renderingMode')
         },
 
+        /**
+         * #getter
+         * The effective sample-grouping attribute (config default or runtime
+         * override). Drives the sidebar row coloring and the legend's group
+         * section; '' means no grouping.
+         */
+        get colorBy(): string {
+          return self.getConfWithOverride('colorBy')
+        },
+
         get featureWidgetType() {
           return VARIANT_FEATURE_WIDGET
         },
@@ -506,16 +531,28 @@ export default function MultiSampleVariantBaseModelF(
             return
           }
           self.sourcesVolatile = sources
-          // Apply the configured colorBy palette only when the user hasn't
-          // already arranged the layout themselves.
+          // Apply the colorBy palette only when the user hasn't already
+          // arranged the layout themselves.
           if (self.layout.length === 0) {
-            const colored = maybeApplyColorByPalette(
-              self.configuration,
-              sources,
-            )
+            const colored = maybeApplyColorByPalette(self.colorBy, sources)
             if (colored) {
               self.layout = colored
             }
+          }
+        },
+        /**
+         * #action
+         * Recolor sample rows by a metadata attribute (e.g. 'population'), or
+         * pass '' to clear the grouping. Persists the colored arrangement as the
+         * layout and records the choice as a `colorBy` override so it survives a
+         * data refetch and serializes into the session.
+         */
+        setColorBy(colorBy: string) {
+          self.setOverride('colorBy', colorBy)
+          const sources = self.sourcesVolatile
+          if (sources) {
+            const colored = maybeApplyColorByPalette(colorBy, sources)
+            self.layout = colored ?? []
           }
         },
         /**
@@ -529,7 +566,7 @@ export default function MultiSampleVariantBaseModelF(
           self.clusterTree = undefined
           const sources = self.sourcesVolatile
           const colored = sources
-            ? maybeApplyColorByPalette(self.configuration, sources)
+            ? maybeApplyColorByPalette(self.colorBy, sources)
             : undefined
           self.layout = colored ?? []
         },
@@ -636,6 +673,27 @@ export default function MultiSampleVariantBaseModelF(
             self.getOverride<string>('referenceDrawingMode') ??
             (self.getConfWithOverride('showReferenceAlleles') ? 'draw' : 'skip')
           )
+        },
+
+        /**
+         * #getter
+         * Distinct sample-metadata attributes (from samplesTsv) the user can
+         * color rows by — every key the sources carry except internal plumbing.
+         */
+        get colorByAttributes(): string[] {
+          const sources = self.sourcesVolatile
+          if (!sources?.length) {
+            return []
+          }
+          const keys = new Set<string>()
+          for (const source of sources) {
+            for (const key in source) {
+              if (!NON_COLORBY_KEYS.has(key)) {
+                keys.add(key)
+              }
+            }
+          }
+          return [...keys]
         },
 
         // Four views on the source list, each with a different consumer:
@@ -915,7 +973,7 @@ export default function MultiSampleVariantBaseModelF(
             renderingMode: self.renderingMode,
             hasSecondaryAlt: self.hasSecondaryAlt,
             hasUnphased: self.hasUnphased,
-            colorBy: getConf(self, 'colorBy') as string,
+            colorBy: self.colorBy,
             sources: self.sources,
           }).filter(s => !self.dismissedLegendSections.includes(s.id))
         },

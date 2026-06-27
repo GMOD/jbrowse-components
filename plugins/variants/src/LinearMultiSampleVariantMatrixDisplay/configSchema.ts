@@ -1,9 +1,6 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
-import { sharedVariantConfigSlots } from '../shared/SharedVariantConfigSchema.ts'
-
-import type PluginManager from '@jbrowse/core/PluginManager'
+import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
 
 /**
  * #config LinearMultiSampleVariantMatrixDisplay
@@ -63,7 +60,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  * ```
  */
 
-export default function configSchemaF(_pluginManager: PluginManager) {
+export default function configSchemaF() {
   return ConfigurationSchema(
     'LinearMultiSampleVariantMatrixDisplay',
     {
@@ -74,17 +71,12 @@ export default function configSchemaF(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 250,
       },
-
-      /**
-       * #slot
-       */
-      ...sharedVariantConfigSlots,
     },
     {
       /**
        * #baseConfiguration
        */
-      baseConfiguration: baseLinearDisplayConfigSchema,
+      baseConfiguration: sharedVariantConfigFactory(),
       explicitlyTyped: true,
     },
   )

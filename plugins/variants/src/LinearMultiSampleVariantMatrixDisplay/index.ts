@@ -11,7 +11,7 @@ export default function LinearMultiSampleVariantMatrixDisplayF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addDisplayType(() => {
-    const configSchema = configSchemaF(pluginManager)
+    const configSchema = configSchemaF()
     return new DisplayType({
       name: 'LinearMultiSampleVariantMatrixDisplay',
       displayName: 'Multi-sample variant display (matrix)',

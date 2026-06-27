@@ -211,41 +211,31 @@ describe('colorBy config slot', () => {
   })
 })
 
-// Guards the on-initial-load wiring (setSources -> maybeApplyColorByPalette):
-// the display reads its `colorBy` config slot when sources first arrive and
-// colors them, or no-ops when colorBy is unset / the attribute is missing.
+// Guards the colorBy wiring (setSources / setColorBy -> maybeApplyColorByPalette):
+// the display colors sample rows by the resolved `colorBy` value, or no-ops when
+// colorBy is unset / the attribute is missing.
 describe('maybeApplyColorByPalette', () => {
-  const configSchema = sharedVariantConfigFactory()
-  function makeConfig(colorBy: string) {
-    return configSchema.create({
-      type: 'SharedVariantDisplay',
-      displayId: `maybe-colorby-${colorBy || 'empty'}`,
-      colorBy,
-    })
-  }
   const sources = [
     { name: 'sample1', population: 'EUR' },
     { name: 'sample2', population: 'AFR' },
     { name: 'sample3', population: 'EUR' },
   ]
 
-  it('returns undefined when colorBy is unset (no palette applied on load)', () => {
-    expect(maybeApplyColorByPalette(makeConfig(''), sources)).toBeUndefined()
+  it('returns undefined when colorBy is unset (no palette applied)', () => {
+    expect(maybeApplyColorByPalette('', sources)).toBeUndefined()
   })
 
-  it('colors sources by the configured attribute on load', () => {
-    const result = maybeApplyColorByPalette(makeConfig('population'), sources)
+  it('colors sources by the requested attribute', () => {
+    const result = maybeApplyColorByPalette('population', sources)
     expect(result).toBeDefined()
     // same population => same color, different population => different color
     expect(result![0]!.color).toBe(result![2]!.color)
     expect(result![0]!.color).not.toBe(result![1]!.color)
   })
 
-  it('returns undefined when the configured attribute is absent from sources', () => {
+  it('returns undefined when the requested attribute is absent from sources', () => {
     const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
-    expect(maybeApplyColorByPalette(makeConfig('nonexistent'), sources)).toBe(
-      undefined,
-    )
+    expect(maybeApplyColorByPalette('nonexistent', sources)).toBe(undefined)
     expect(warn).toHaveBeenCalled()
     warn.mockRestore()
   })

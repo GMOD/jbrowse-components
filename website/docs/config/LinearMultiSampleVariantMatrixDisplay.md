@@ -89,6 +89,18 @@ _See the **Slots** section below for all available configuration fields._
 }
 ```
 
+</details>
+
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
+
+<details open>
+<summary>Inherited from SharedVariantDisplay</summary>
+
+[SharedVariantDisplay config →](../sharedvariantdisplay)
+
 #### slot:
 
 ```js
@@ -96,11 +108,6 @@ _See the **Slots** section below for all available configuration fields._
 ```
 
 </details>
-
-## Inherited config slots
-
-Slots available on this config via its base configuration(s), shown in full so
-this page is self-contained.
 
 <details open>
 <summary>Inherited from BaseLinearDisplay</summary>
@@ -170,8 +177,8 @@ runtime rather than being stored with jexl in the config
 
 ### LinearMultiSampleVariantMatrixDisplay - Derives from
 
-- [BaseLinearDisplay](../baselineardisplay)
+- [SharedVariantDisplay](../sharedvariantdisplay)
 
 ```js
-baseConfiguration: baseLinearDisplayConfigSchema
+baseConfiguration: sharedVariantConfigFactory()
 ```

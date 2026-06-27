@@ -80,16 +80,6 @@ _See the **Slots** section below for all available configuration fields._
 <details open>
 <summary>LinearMultiSampleVariantDisplay - Slots</summary>
 
-#### slot: defaultRendering
-
-```js
-{
-  type: 'stringEnum',
-  model: types.enumeration('Rendering', ['multivariant']),
-  defaultValue: 'multivariant',
-}
-```
-
 #### slot: height
 
 ```js

@@ -1,5 +1,4 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
-import { types } from '@jbrowse/mobx-state-tree'
 
 import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
 
@@ -65,15 +64,6 @@ export default function configSchemaFactory() {
   return ConfigurationSchema(
     'LinearMultiSampleVariantDisplay',
     {
-      /**
-       * #slot
-       */
-      defaultRendering: {
-        type: 'stringEnum',
-        model: types.enumeration('Rendering', ['multivariant']),
-        defaultValue: 'multivariant',
-      },
-
       /**
        * #slot
        */

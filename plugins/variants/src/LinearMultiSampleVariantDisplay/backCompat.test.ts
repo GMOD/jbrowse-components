@@ -1,5 +1,3 @@
-import PluginManager from '@jbrowse/core/PluginManager'
-
 import multiSampleConfigFactory from './configSchema.ts'
 import multiSampleStateModelFactory from './model.ts'
 import matrixConfigFactory from '../LinearMultiSampleVariantMatrixDisplay/configSchema.ts'
@@ -27,7 +25,7 @@ describe('multi-sample variant display rename back-compat', () => {
   })
 
   it('remaps old LinearVariantMatrixDisplay type on the matrix display', () => {
-    const configSchema = matrixConfigFactory(new PluginManager())
+    const configSchema = matrixConfigFactory()
     const model = matrixStateModelFactory(configSchema)
     const inst = model.create({
       // @ts-expect-error -- testing back-compat: preProcessSnapshot remaps this old type string

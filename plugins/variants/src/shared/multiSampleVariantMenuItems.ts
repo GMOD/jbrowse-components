@@ -5,6 +5,7 @@ import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import HeightIcon from '@mui/icons-material/Height'
+import PaletteIcon from '@mui/icons-material/Palette'
 import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
@@ -26,6 +27,11 @@ const ClusterDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
+
+// "population" -> "Population" for the metadata-attribute menu labels.
+function titleCase(s: string) {
+  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
+}
 
 // Items for the "Show..." submenu — toggles for sidebar labels, the clustering
 // tree, subtree filter, and the legend. Extended by subclasses via super-capture
@@ -180,6 +186,32 @@ export function variantTrackMenuItems(
         ])
       },
     },
+    ...(self.colorByAttributes.length
+      ? [
+          {
+            label: 'Color samples by',
+            icon: PaletteIcon,
+            subMenu: [
+              {
+                label: 'None',
+                type: 'radio' as const,
+                checked: !self.colorBy,
+                onClick: () => {
+                  self.setColorBy('')
+                },
+              },
+              ...self.colorByAttributes.map(attr => ({
+                label: titleCase(attr),
+                type: 'radio' as const,
+                checked: self.colorBy === attr,
+                onClick: () => {
+                  self.setColorBy(attr)
+                },
+              })),
+            ],
+          },
+        ]
+      : []),
     {
       label: 'Edit colors/arrangement...',
       disabled: !self.sourcesVolatile?.length,

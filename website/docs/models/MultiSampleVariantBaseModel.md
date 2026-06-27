@@ -415,6 +415,16 @@ Returns the effective rendering mode, falling back to config
 type renderingMode = string
 ```
 
+#### getter: colorBy
+
+The effective sample-grouping attribute (config default or runtime override).
+Drives the sidebar row coloring and the legend's group section; '' means no
+grouping.
+
+```ts
+type colorBy = string
+```
+
 #### getter: featureWidgetType
 
 ```ts
@@ -469,6 +479,15 @@ type showBranchLength = boolean
 
 ```ts
 type referenceDrawingMode = string
+```
+
+#### getter: colorByAttributes
+
+Distinct sample-metadata attributes (from samplesTsv) the user can color rows by
+— every key the sources carry except internal plumbing.
+
+```ts
+type colorByAttributes = string[]
 ```
 
 #### getter: sourcesWithoutLayout
@@ -738,6 +757,17 @@ type setSourcesLoading = (token: StopToken) => void
 
 ```ts
 type setSources = (sources: Source[]) => void
+```
+
+#### action: setColorBy
+
+Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' to
+clear the grouping. Persists the colored arrangement as the layout and records
+the choice as a `colorBy` override so it survives a data refetch and serializes
+into the session.
+
+```ts
+type setColorBy = (colorBy: string) => void
 ```
 
 #### action: clearLayout
