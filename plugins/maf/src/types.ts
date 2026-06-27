@@ -1,11 +1,31 @@
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
+import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { Observable } from 'rxjs'
 
 /**
  * Shared types for MAF alignment data
  */
+
+/**
+ * Fields every MAF RPC method shares. `regions` is always a single-element
+ * array (never a bare `region`) so the `RpcMethodTypeWithRenameRegions` base
+ * class maps the refName into the adapter's naming scheme — see
+ * `renameRegionsIfNeeded`. A bare region would silently skip that rename and
+ * fetch nothing when the assembly and adapter disagree on chromosome names
+ * (e.g. `5` vs `chr5`).
+ */
+export interface BaseMafRpcArgs {
+  adapterConfig: AnyConfigurationModel
+  sessionId: string
+  regions: Region[]
+  stopToken?: StopToken
+  statusCallback?: StatusCallback
+}
 
 /**
  * Options for MAF adapter getFeatures call.
@@ -25,9 +45,18 @@ export interface MafSamplesResult {
   treeNewick: string | undefined
 }
 
-/** Adapter contract the MAF RPC methods rely on: features plus `getSamples`. */
+/**
+ * Adapter contract the MAF RPC methods rely on: features plus `getSamples`.
+ * `getSummaryFeatures` is optional — only BigMafAdapter ships a summary
+ * sub-adapter; the tabix/TAF adapters omit it (the summary RPC then returns no
+ * rows and the display falls back to the byte-estimate force-load gate).
+ */
 export type MafSamplesAdapter = BaseFeatureDataAdapter & {
   getSamples: () => Promise<MafSamplesResult>
+  getSummaryFeatures?: (
+    region: Region,
+    opts?: { stopToken?: StopToken },
+  ) => Observable<MafSummaryRecord>
 }
 
 /**

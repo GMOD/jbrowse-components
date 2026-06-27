@@ -91,3 +91,29 @@ test('renameRegionsIfNeeded passes through regions that need no renaming', async
   expect(r.refName).toBe('chr1')
   expect(r.originalRefName).toBeUndefined()
 })
+
+test('renameRegionsIfNeeded throws on a singular `region` with no `regions`', async () => {
+  // guards the silent-skip footgun: a `region` field is never renamed (only
+  // `regions` is), so fetching against it would use un-mapped refNames
+  await expect(
+    renameRegionsIfNeeded(mockAssemblyManager({ refNameMap: { chr1: '1' } }), {
+      adapterConfig: {},
+      sessionId: 'test',
+      region,
+    } as unknown as Parameters<typeof renameRegionsIfNeeded>[1]),
+  ).rejects.toThrow(/singular .region./)
+})
+
+test('renameRegionsIfNeeded allows `region` mirrored into a populated `regions`', async () => {
+  // the legitimate singular base class passes both; renaming uses `regions`
+  const result = await renameRegionsIfNeeded(
+    mockAssemblyManager({ refNameMap: { chr1: '1' } }),
+    {
+      adapterConfig: {},
+      sessionId: 'test',
+      region,
+      regions: [region],
+    } as unknown as Parameters<typeof renameRegionsIfNeeded>[1],
+  )
+  expect(result.regions[0]!.refName).toBe('1')
+})

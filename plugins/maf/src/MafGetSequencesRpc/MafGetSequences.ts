@@ -3,12 +3,9 @@ import RpcMethodTypeWithFiltersAndRenameRegions from '@jbrowse/core/pluggableEle
 
 import { processFeaturesToFasta } from '../util/processFeaturesToFasta.ts'
 
-import type { Sample } from '../types.ts'
+import type { BaseMafRpcArgs, Sample } from '../types.ts'
 import type { FastaResult } from '../util/processFeaturesToFasta.ts'
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 declare module '@jbrowse/core/rpc/RpcRegistry' {
   interface RpcRegistry {
@@ -19,14 +16,10 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
   }
 }
 
-export interface MafGetSequencesArgs {
-  sessionId: string
-  adapterConfig: AnyConfigurationModel
+export interface MafGetSequencesArgs extends BaseMafRpcArgs {
   samples: Sample[]
-  regions: Region[]
   showAllLetters: boolean
   includeInsertions?: boolean
-  stopToken?: StopToken
 }
 
 export default class MafGetSequences extends RpcMethodTypeWithFiltersAndRenameRegions {

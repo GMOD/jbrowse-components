@@ -28,6 +28,19 @@ export function renameRegionIfNeeded(
   return region
 }
 
+// Region-shaped enough that, if it slipped through under a `region` key, it was
+// meant to be renamed. Used only by the guard below.
+function isRegionShaped(r: unknown): r is Region {
+  return (
+    !!r &&
+    typeof r === 'object' &&
+    'refName' in r &&
+    'assemblyName' in r &&
+    'start' in r &&
+    'end' in r
+  )
+}
+
 export async function renameRegionsIfNeeded<
   ARGTYPE extends {
     assemblyName?: string
@@ -41,6 +54,24 @@ export async function renameRegionsIfNeeded<
   const { regions = [], adapterConfig } = args
   if (!args.sessionId) {
     throw new Error('sessionId is required')
+  }
+
+  // Renaming only ever touches the `regions` array. An RPC method that instead
+  // carries a singular `region` (e.g. by pairing a one-region wire contract
+  // with a *plural* rename base class) would silently fetch against un-renamed
+  // refNames — the exact bug where an assembly's `5` never maps to an adapter's
+  // `chr5`. The legitimate singular base class (RpcMethodTypeWithRenameRegion)
+  // always mirrors `region` into a populated `regions`, so flag only the
+  // un-mirrored case and fail loudly instead of returning wrong data.
+  if (
+    regions.length === 0 &&
+    isRegionShaped((args as { region?: unknown }).region)
+  ) {
+    throw new Error(
+      'renameRegionsIfNeeded got a singular `region` but no `regions` array; ' +
+        'refName renaming applies only to `regions`. Pass `regions: [region]` ' +
+        '(or extend RpcMethodTypeWithRenameRegion) so the region is renamed.',
+    )
   }
 
   // capture assembly names before the await, since MST regions may be dead after

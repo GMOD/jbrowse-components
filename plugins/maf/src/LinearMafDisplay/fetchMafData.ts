@@ -75,7 +75,7 @@ export function fetchMafAlignmentData(self: MafFetchSelf, needed: Needed) {
     (region, ctx) =>
       rpcManager.call(sessionId, 'LinearMafGetAlignmentData', {
         adapterConfig: self.adapterConfig,
-        region,
+        regions: [region],
         // Display row order; the worker keys rowIndex off it (see rpcProps).
         orderedSampleIds: self.orderedSampleIds,
         stopToken: ctx.stopToken,
@@ -102,7 +102,7 @@ export function fetchMafSummaryData(self: MafFetchSelf, needed: Needed) {
     (region, ctx) =>
       rpcManager.call(sessionId, 'LinearMafGetSummaryData', {
         adapterConfig: self.adapterConfig,
-        region,
+        regions: [region],
         stopToken: ctx.stopToken,
       }),
     results => {
