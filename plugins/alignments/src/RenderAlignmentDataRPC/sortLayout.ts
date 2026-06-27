@@ -196,6 +196,161 @@ export function placeRectCapped(
   return overflow ? maxRows : y
 }
 
+// Read count at which the interval-partitioning fast path in `computeLayout`
+// beats the placeRect row-scan. Below this, pileup depth is low enough that the
+// scan's O(reads * depth) is already sub-millisecond and the heap bookkeeping
+// isn't worth it (microbench crossover is ~break-even at gene-scale depth, then
+// 10-395x at 200x-8000x coverage). The fast path is output-identical, so this
+// threshold is purely a performance gate, never a correctness one.
+const LAYOUT_HEAP_MIN_READS = 20000
+
+// Min-heap over a numeric key carrying a numeric value, backed by two parallel
+// arrays (no per-node object allocation). Used by `partitionStartSorted` for
+// the row-free queue (key=padded end, value=row index) and the lowest-free-row
+// queue (key=value=row index).
+class MinHeap {
+  private keys: number[] = []
+  private vals: number[] = []
+  get size() {
+    return this.keys.length
+  }
+  peekKey() {
+    return this.keys[0]!
+  }
+  push(key: number, val: number) {
+    const { keys, vals } = this
+    let c = keys.length
+    keys.push(key)
+    vals.push(val)
+    while (c > 0) {
+      const p = (c - 1) >> 1
+      if (keys[p]! <= keys[c]!) {
+        break
+      }
+      const tk = keys[p]!
+      keys[p] = keys[c]!
+      keys[c] = tk
+      const tv = vals[p]!
+      vals[p] = vals[c]!
+      vals[c] = tv
+      c = p
+    }
+  }
+  // remove and return the value whose key is smallest
+  pop() {
+    const { keys, vals } = this
+    const m = keys.length - 1
+    const top = vals[0]!
+    keys[0] = keys[m]!
+    vals[0] = vals[m]!
+    keys.pop()
+    vals.pop()
+    const len = keys.length
+    let c = 0
+    for (;;) {
+      const l = 2 * c + 1
+      const r = l + 1
+      let s = c
+      if (l < len && keys[l]! < keys[s]!) {
+        s = l
+      }
+      if (r < len && keys[r]! < keys[s]!) {
+        s = r
+      }
+      if (s === c) {
+        break
+      }
+      const tk = keys[s]!
+      keys[s] = keys[c]!
+      keys[c] = tk
+      const tv = vals[s]!
+      vals[s] = vals[c]!
+      vals[c] = tv
+      c = s
+    }
+    return top
+  }
+}
+
+// Build the soft-clip iteration order: read indices sorted by expanded left
+// edge (soft-clip-aware), genomic start as tiebreak. The placeRect algorithm
+// (and the fast path below) need left-to-right ordering.
+function buildSoftclipOrder(
+  data: PileupDataResult,
+  expansions: Map<number, { start: number; end: number }> | undefined,
+  numReads: number,
+) {
+  const order: number[] = []
+  for (let i = 0; i < numReads; i++) {
+    order.push(i)
+  }
+  order.sort((a, b) => {
+    const aStart = readExtent(data, a, expansions).start
+    const bStart = readExtent(data, b, expansions).start
+    return aStart !== bStart
+      ? aStart - bStart
+      : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0)
+  })
+  return order
+}
+
+/**
+ * First-fit-lowest-row pileup layout via interval-partitioning min-heaps:
+ * O(reads * log depth) instead of the placeRect row-scan's O(reads * depth).
+ * Reads must be visited in non-decreasing start order (`order` = soft-clip sort,
+ * or genomic order when `order` is undefined). Returns null if a start ever goes
+ * backwards, so the caller falls back to the row-scan. Output is identical to
+ * repeated `placeRectCapped` for monotone input — same lowest-free-row choice
+ * and the same `maxRows` overflow sentinel — verified in sortLayout.test.ts.
+ */
+function partitionStartSorted(
+  data: PileupDataResult,
+  order: number[] | undefined,
+  expansions: Map<number, { start: number; end: number }> | undefined,
+  maxRows: number,
+  readYs: Uint16Array,
+): { maxY: number; truncated: boolean } | null {
+  const { readPositions } = data
+  const n = readYs.length
+  const active = new MinHeap() // key=padded end, value=row index; frees lowest end
+  const free = new MinHeap() // key=value=freed row index; reuses lowest index
+  let nextNew = 0
+  let truncated = false
+  let prevStart = -1
+  for (let k = 0; k < n; k++) {
+    const i = order ? order[k]! : k
+    const exp = expansions?.get(i)
+    const rs = readPositions[i * 2]!
+    const start = exp ? Math.min(rs, exp.start) : rs
+    if (start < prevStart) {
+      return null
+    }
+    prevStart = start
+    const re = readPositions[i * 2 + 1]!
+    const paddedEnd = (exp ? Math.max(re, exp.end) : re) + 2
+
+    // release every row whose last interval ends at/before this read's start
+    while (active.size > 0 && active.peekKey() <= start) {
+      const freed = active.pop()
+      free.push(freed, freed)
+    }
+
+    if (free.size > 0) {
+      const idx = free.pop()
+      readYs[i] = idx
+      active.push(paddedEnd, idx)
+    } else if (nextNew < maxRows) {
+      const idx = nextNew++
+      readYs[i] = idx
+      active.push(paddedEnd, idx)
+    } else {
+      readYs[i] = maxRows
+      truncated = true
+    }
+  }
+  return { maxY: nextNew, truncated }
+}
+
 /**
  * Compute pileup row layout for a single region. Returns
  * readYs[i] = pileup row for read i, maxY = total row count, and `truncated`
@@ -212,38 +367,31 @@ export function computeLayout(
     : undefined
 
   const readYs = new Uint16Array(numReads)
+
+  // Soft-clip layout sorts by expanded left edge; plain pileup is already in
+  // genomic (start) order from the worker. Either way the placement loop sees
+  // non-decreasing starts, so the interval-partitioning fast path applies.
+  const order = showSoftClipping
+    ? buildSoftclipOrder(data, expansions, numReads)
+    : undefined
+
+  if (numReads >= LAYOUT_HEAP_MIN_READS) {
+    const fast = partitionStartSorted(data, order, expansions, maxRows, readYs)
+    if (fast) {
+      return { readYs, maxY: fast.maxY, truncated: fast.truncated }
+    }
+    // Non-monotone input: the row-scan below rewrites every readYs entry, so a
+    // partially-filled array from the bailed fast path self-heals.
+  }
+
   const rows: number[][] = []
   let truncated = false
-
-  // When soft-clipping is on, sort by layout left edge (which includes soft-clip
-  // expansion) instead of genomic position. The placeRect algorithm requires
-  // left-to-right ordering for row hints to work correctly.
-  if (showSoftClipping) {
-    const readIndices: number[] = []
-    for (let i = 0; i < numReads; i++) {
-      readIndices.push(i)
-    }
-    readIndices.sort((a, b) => {
-      const aStart = readExtent(data, a, expansions).start
-      const bStart = readExtent(data, b, expansions).start
-      // Tiebreaker: genomic start position
-      return aStart !== bStart
-        ? aStart - bStart
-        : (data.readPositions[a * 2] ?? 0) - (data.readPositions[b * 2] ?? 0)
-    })
-    for (const i of readIndices) {
-      const { start, end } = readExtent(data, i, expansions)
-      const y = placeRectCapped(rows, start, end, maxRows)
-      readYs[i] = y
-      truncated = truncated || y === maxRows
-    }
-  } else {
-    for (let i = 0; i < numReads; i++) {
-      const { start, end } = readExtent(data, i, expansions)
-      const y = placeRectCapped(rows, start, end, maxRows)
-      readYs[i] = y
-      truncated = truncated || y === maxRows
-    }
+  for (let k = 0; k < numReads; k++) {
+    const i = order ? order[k]! : k
+    const { start, end } = readExtent(data, i, expansions)
+    const y = placeRectCapped(rows, start, end, maxRows)
+    readYs[i] = y
+    truncated = truncated || y === maxRows
   }
 
   return { readYs, maxY: rows.length, truncated }

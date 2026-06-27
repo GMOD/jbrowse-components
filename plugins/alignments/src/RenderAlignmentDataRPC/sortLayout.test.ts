@@ -334,6 +334,88 @@ describe('computeLayout', () => {
   })
 })
 
+// Above LAYOUT_HEAP_MIN_READS, computeLayout switches from the placeRect
+// row-scan to the interval-partitioning heaps. The two paths must produce an
+// identical first-fit-lowest-row layout. The small-input tests above pin the
+// row-scan; these tests pin the heap path independently: a valid layout
+// (no two reads in one row overlap) packed optimally (maxY equals the peak
+// number of simultaneously-overlapping reads, which first-fit achieves).
+describe('computeLayout fast path (interval partitioning)', () => {
+  // peak count of reads whose padded [start, end+2) intervals overlap a point;
+  // an end frees its row when paddedEnd <= start, so process ends before starts
+  // at an equal coordinate (delta -1 sorts before +1).
+  function peakPaddedDepth(data: PileupDataResult) {
+    const n = data.readIds.length
+    const events: [number, number][] = []
+    for (let i = 0; i < n; i++) {
+      events.push([data.readPositions[i * 2]!, 1])
+      events.push([data.readPositions[i * 2 + 1]! + 2, -1])
+    }
+    events.sort((a, b) => (a[0] !== b[0] ? a[0] - b[0] : a[1] - b[1]))
+    let depth = 0
+    let peak = 0
+    for (const [, delta] of events) {
+      depth += delta
+      peak = Math.max(peak, depth)
+    }
+    return peak
+  }
+
+  // deterministic start-sorted deep-coverage reads (mirrors the worker output
+  // order: BAM is coordinate-sorted)
+  function makeDeepReads(numReads: number, span: number, readLen: number) {
+    let s = 99
+    const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
+    const starts = Array.from({ length: numReads }, () =>
+      Math.floor(rnd() * span),
+    ).sort((a, b) => a - b)
+    return starts.map(start => ({
+      start,
+      end: start + readLen + Math.floor(rnd() * 40),
+    }))
+  }
+
+  test('large start-sorted layout is valid and optimally packed', () => {
+    const reads = makeDeepReads(25000, 5000, 150) // ~750x deep
+    const data = makePileupData({ regionStart: 0, reads })
+    const { readYs, maxY } = computeLayout(data)
+    assertNonOverlappingLayout(data, readYs)
+    expect(maxY).toBe(peakPaddedDepth(data))
+  })
+
+  test('large layout honors maxRows with the overflow sentinel', () => {
+    const reads = makeDeepReads(25000, 5000, 150)
+    const data = makePileupData({ regionStart: 0, reads })
+    const cap = 50
+    const uncapped = computeLayout(data)
+    expect(uncapped.maxY).toBeGreaterThan(cap) // this region really overflows
+    const { readYs, maxY, truncated } = computeLayout(data, false, cap)
+    expect(maxY).toBe(cap)
+    expect(truncated).toBe(true)
+    for (const y of readYs) {
+      expect(y).toBeLessThanOrEqual(cap)
+    }
+    // reads that fit (row < cap) keep the same row as the uncapped layout —
+    // capping only pushes overflow reads to the sentinel, never reshuffles
+    for (let i = 0; i < readYs.length; i++) {
+      if (uncapped.readYs[i]! < cap) {
+        expect(readYs[i]).toBe(uncapped.readYs[i])
+      }
+    }
+  })
+
+  test('non-monotone input above the threshold falls back and stays valid', () => {
+    // worker output is normally start-sorted; if it ever isn't, the heap path
+    // bails (start goes backwards) to the row-scan. Reverse the order to force
+    // the fallback — the result must still be a valid layout. (first-fit isn't
+    // guaranteed minimal-row for unsorted input, so maxY isn't asserted here.)
+    const reads = makeDeepReads(25000, 5000, 150).reverse()
+    const data = makePileupData({ regionStart: 0, reads })
+    const { readYs } = computeLayout(data)
+    assertNonOverlappingLayout(data, readYs)
+  })
+})
+
 describe('computeSortedLayout', () => {
   test('overlapping reads get distinct rows in base-sort order', () => {
     // All three reads straddle pos 500. Base codes: A=65, C=67, G=71.
