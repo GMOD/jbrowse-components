@@ -1,6 +1,6 @@
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ActionLink } from '@jbrowse/core/ui'
-import { SimpleFeature, getSession } from '@jbrowse/core/util'
+import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
 import {
   getAssemblyName,
   hasBreakpointSplitView,
@@ -32,7 +32,7 @@ const LocStringList = observer(function LocStringList({
                 navToLoc(locString, model)
               }}
             >
-              (LGV)
+              Open in linear view
             </ActionLink>
           </li>
         ))}
@@ -60,7 +60,7 @@ const LaunchBreakpointSplitViewPanel = observer(
         <ul>
           {locStrings.map(locString => (
             <li key={locString}>
-              {`${feature.refName}:${feature.start} // ${locString}`}{' '}
+              {`${feature.refName}:${toLocale(feature.start + 1)} // ${locString}`}{' '}
               <ActionLink
                 onClick={() => {
                   launchBreakpointSplitView({
@@ -72,7 +72,7 @@ const LaunchBreakpointSplitViewPanel = observer(
                   })
                 }}
               >
-                (breakpoint split view)
+                Open in breakpoint split view
               </ActionLink>
             </li>
           ))}

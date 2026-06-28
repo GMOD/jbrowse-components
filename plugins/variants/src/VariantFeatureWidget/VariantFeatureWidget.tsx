@@ -18,6 +18,9 @@ import type { Descriptions, VCFFeatureSerialized } from './types.ts'
 const LaunchBreakendPanel = lazy(
   () => import('./LaunchBreakendPanel/LaunchBreakendPanel.tsx'),
 )
+const LaunchSvPanel = lazy(
+  () => import('./LaunchBreakendPanel/LaunchSvPanel.tsx'),
+)
 const VariantConsequenceDataGrid = lazy(
   () => import('./VariantConsequence/VariantConsequenceDataGrid.tsx'),
 )
@@ -52,7 +55,7 @@ function LaunchBreakendWidgetArea({
   model: VariantFeatureWidgetModel
   feat: VCFFeatureSerialized
 }) {
-  const { type = '', ALT = [], INFO, mate, refName, start, end } = feat
+  const { type = '', ALT = [], INFO, mate } = feat
 
   return type === 'breakend' ? (
     <LaunchBreakendPanel
@@ -73,17 +76,7 @@ function LaunchBreakendWidgetArea({
       locStrings={[`${mate.refName}:${mate.start}`]}
     />
   ) : svTypes.some(t => type.includes(t)) ? (
-    <LaunchBreakendPanel
-      feature={{
-        uniqueId: 'random',
-        refName,
-        start,
-        end: start + 1,
-        mate: { refName, start: end, end: end + 1 },
-      }}
-      model={model}
-      locStrings={[`${refName}:${end}`]}
-    />
+    <LaunchSvPanel feature={feat} model={model} />
   ) : null
 }
 
