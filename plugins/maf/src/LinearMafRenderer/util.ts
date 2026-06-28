@@ -43,6 +43,16 @@ export function getMafColorPalette(theme: Theme): MafColorPalette {
   }
 }
 
+/**
+ * The theme's CDS reading-frame colors as plain CSS strings, indexed the same
+ * as `theme.palette.framesCDS` (slot 0 unused; slots 1..3 are the `+`-strand
+ * frames, 4..6 the mirrored `−`-strand frames). The annotation overlay indexes
+ * this with the `frameIndex` from `computeVisibleAnnotations` via `.at()`.
+ */
+export function getFrameColors(theme: Theme): (string | undefined)[] {
+  return theme.palette.framesCDS.map(c => c?.main)
+}
+
 export function getContrastBaseMap(theme: Theme) {
   return Object.fromEntries(
     Object.entries(getColorBaseMap(theme)).map(([key, value]) => [

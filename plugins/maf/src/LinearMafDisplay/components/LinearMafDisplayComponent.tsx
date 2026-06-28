@@ -9,6 +9,7 @@ import {
 } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
+import AnnotationOverlay from './AnnotationOverlay.tsx'
 import Crosshairs from './Crosshairs.tsx'
 import DeletionsOverlay from './DeletionsOverlay.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
@@ -188,6 +189,12 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
           palette={colorPalette}
+        />
+        <AnnotationOverlay
+          markers={model.visibleFrames}
+          width={width}
+          height={rowsHeight}
+          frameColors={model.frameColors}
         />
         {model.activeRowRendering === 'bases' ? (
           <InsertionsOverlay

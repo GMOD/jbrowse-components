@@ -136,6 +136,28 @@ export interface MafSummaryRecord {
 }
 
 /**
+ * One row of a UCSC `mafFrames.bb` (autoSql `mafFrames`): a CDS reading-frame
+ * assignment for a single species, projected onto the reference coordinates of
+ * a MAF component. Lets the gene structure be drawn on every aligned species'
+ * row (the species is keyed by `src`, exactly like `MafSummaryRecord`), coloring
+ * each CDS segment by its reading `frame` (0/1/2 of the first base on `+`, last
+ * base on `-`). `name` is the gene that defined the frame.
+ */
+export interface MafFrameRecord {
+  refName: string
+  start: number
+  end: number
+  /** species / source db name, e.g. "panTro6" */
+  src: string
+  /** codon position (0,1,2) of the first base (+) or last base (−) */
+  frame: number
+  /** +1/−1 */
+  strand: number
+  /** gene that defined the frame */
+  name: string
+}
+
+/**
  * Sample/organism metadata for display
  */
 export interface Sample {

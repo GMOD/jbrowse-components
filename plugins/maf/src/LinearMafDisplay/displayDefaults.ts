@@ -16,4 +16,5 @@ export const DEFAULTS = {
   conservationHeight: 40,
   rowIdentityMode: 'none',
   rowIdentityAutoZoom: true,
+  showAnnotations: true,
 } as const

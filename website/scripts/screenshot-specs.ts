@@ -396,6 +396,11 @@ function kgUrl(session: object) {
 // render with the local build's code instead.
 const CE_MAF = 'test_data/ce_maf.json'
 
+// Same ce11 26-way MAF, plus an `annotationAdapter` (a local bigBed built from
+// the real UCSC ce11 multiz26wayFrames data) on the LinearMafDisplay, so the
+// per-species CDS reading-frame overlay renders.
+const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
+
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
 // each adjacent pair and a gene annotation track on each genome, used by the
 // synteny_visualization.md tutorial.
@@ -6225,6 +6230,37 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 2500 },
         ],
       },
+    ],
+  },
+  {
+    // Per-species CDS reading-frame overlay (UCSC mafFrames) on the 26-way
+    // alignment: a thin frame-colored strip at the bottom of each species row
+    // marks the coding exons projected onto every aligned species, so the gene
+    // structure (exon segments, shared reading frame) reads across the whole
+    // alignment. Sourced from a local bigBed built from the real UCSC ce11
+    // multiz26wayFrames data; the overlay is on by default once an
+    // `annotationAdapter` is configured.
+    mode: 'url',
+    name: 'maf_cds_frames',
+    url: lgvSession(CE_MAF_FRAMES, {
+      assembly: 'ce11',
+      loc: 'chrI:2,998,950-2,999,780',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 13 },
+        },
+      ],
+    }),
+    readyText: 'chrI',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 560,
+    settleMs: 12000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 100 } },
+      { type: 'delay', ms: 2000 },
     ],
   },
 

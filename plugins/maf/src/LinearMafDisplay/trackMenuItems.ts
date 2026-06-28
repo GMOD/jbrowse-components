@@ -29,6 +29,8 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
+  showAnnotations: boolean
+  annotationAdapterConfig: Record<string, unknown> | undefined
   rowIdentityMode: RowIdentityModeWithOff
   rowIdentityAutoZoom: boolean
   rowHeightMode: number
@@ -45,6 +47,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
+  setShowAnnotations: (f: boolean) => void
   setRowIdentityMode: (m: RowIdentityModeWithOff) => void
   setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
@@ -155,6 +158,18 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
             self.setShowConservation(!self.showConservation)
           },
         },
+        ...(self.annotationAdapterConfig
+          ? [
+              {
+                label: 'Show CDS frames',
+                type: 'checkbox' as const,
+                checked: self.showAnnotations,
+                onClick: () => {
+                  self.setShowAnnotations(!self.showAnnotations)
+                },
+              },
+            ]
+          : []),
         makeRadioSubMenu({
           label: 'Per-row identity',
           value: self.rowIdentityMode,

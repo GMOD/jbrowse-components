@@ -89,3 +89,55 @@ from the track menu, with two styles:
 
 The zoom-driven swap is the default; uncheck **Auto-switch by zoom** in the same
 menu to pin the identity plot on at every zoom level instead.
+
+## Per-species CDS frames (gene structure)
+
+A MAF display can overlay coding structure on every aligned species by reading a
+UCSC `mafFrames` file — the CDS reading frame of a gene projected through the
+alignment, one record per (species, region). Configure it as an
+`annotationAdapter` on the `LinearMafDisplay` (a feature adapter, typically a
+`BigBedAdapter` over `multiz<N>wayFrames.bb`). Each `mafFrames` row is keyed by
+its `src` species and drawn as a thin strip at the bottom of that species' row,
+colored by reading frame, so the gene's exon/CDS structure reads across the whole
+alignment without hiding the per-base coloring. Toggle it from the track menu
+(**Show CDS frames**), and hover any species row to read the gene name and
+reading frame at that position.
+
+<Figure src="/img/maf_cds_frames.png" caption="The ce11 26-way alignment with the per-species CDS frame overlay: each species row carries a thin reading-frame-colored strip marking the coding exons projected onto that species, so the gene structure reads vertically across the whole alignment. Frame colors are mirrored by strand (the three +-strand frames and three −-strand frames), matching JBrowse's CDS coloring elsewhere."/>
+
+```json
+{
+  "type": "MafTrack",
+  "trackId": "multiz470way",
+  "name": "Multiz 470-way",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigMafAdapter",
+    "bigBedLocation": {
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470way.bigMaf"
+    },
+    "summaryAdapter": {
+      "type": "BigBedAdapter",
+      "bigBedLocation": {
+        "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
+      }
+    }
+  },
+  "displays": [
+    {
+      "type": "LinearMafDisplay",
+      "displayId": "multiz470way-LinearMafDisplay",
+      "annotationAdapter": {
+        "type": "BigBedAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"
+        }
+      }
+    }
+  ]
+}
+```
+
+The reference species' own gene structure appears on the reference (top) row when
+the `mafFrames` file carries a record for the reference `src`, so this doubles as
+a reference annotation overlay.

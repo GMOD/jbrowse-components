@@ -11,7 +11,19 @@ export default function configSchemaF(pluginManager: PluginManager) {
   const { baseLinearDisplayConfigSchema } = LinearGenomePlugin.exports
   return ConfigurationSchema(
     'LinearMafDisplay',
-    {},
+    {
+      /**
+       * #slot
+       * Optional feature adapter (e.g. a BigBedAdapter over a UCSC
+       * `multiz<N>wayFrames.bb`) whose CDS reading-frame rows are drawn as a
+       * per-species annotation overlay — each `mafFrames` row keyed by its
+       * `src` species, colored by reading `frame`. `null` disables the overlay.
+       */
+      annotationAdapter: {
+        type: 'frozen',
+        defaultValue: null,
+      },
+    },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

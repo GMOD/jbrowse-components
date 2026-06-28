@@ -21,11 +21,13 @@ import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawRowIdentity } from './components/drawRowIdentity.ts'
 import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
+import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import { drawMafSummaryBars } from '../LinearMafRenderer/rendering/summaryBars.ts'
 import {
   getContrastBaseMap,
+  getFrameColors,
   getMafColorPalette,
 } from '../LinearMafRenderer/util.ts'
 
@@ -140,6 +142,7 @@ function MafSvgBody({
           }
           drawMafEmptyLines(ctx, model.visibleEmptyLines, svgState.palette)
           drawMafSummaryBars(ctx, model.visibleSummaryBars, svgState.palette)
+          drawMafAnnotations(ctx, model.visibleFrames, getFrameColors(theme))
           drawMafLabels(
             ctx,
             model.visibleLabels,

@@ -4,6 +4,7 @@ import BgzipTaffyAdapterF from './BgzipTaffyAdapter/index.ts'
 import BigMafAdapterF from './BigMafAdapter/index.ts'
 import LinearMafDisplayF from './LinearMafDisplay/index.ts'
 import LinearMafGetAlignmentDataF from './LinearMafGetAlignmentDataRpc/index.ts'
+import LinearMafGetAnnotationDataF from './LinearMafGetAnnotationDataRpc/index.ts'
 import LinearMafGetSummaryDataF from './LinearMafGetSummaryDataRpc/index.ts'
 import MafAddTrackWorkflowF from './MafAddTrackWorkflow/index.ts'
 import MafGetSequencesF from './MafGetSequencesRpc/index.ts'
@@ -22,6 +23,7 @@ export default class MafPlugin extends Plugin {
     MafTrackF(pluginManager)
     LinearMafDisplayF(pluginManager)
     LinearMafGetAlignmentDataF(pluginManager)
+    LinearMafGetAnnotationDataF(pluginManager)
     LinearMafGetSummaryDataF(pluginManager)
     MafTabixAdapterF(pluginManager)
     MafAddTrackWorkflowF(pluginManager)

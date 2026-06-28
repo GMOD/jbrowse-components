@@ -26,6 +26,10 @@ import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
 import deepEqual from 'fast-deep-equal'
 import { observable } from 'mobx'
 
+import {
+  computeVisibleAnnotations,
+  findFrameAt,
+} from './components/computeVisibleAnnotations.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
@@ -39,8 +43,9 @@ import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
-import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
+import { getFrameColors, getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
+import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
 import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
@@ -52,7 +57,7 @@ import type {
   MafRenderingBackend,
 } from '../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafColorPalette } from '../LinearMafRenderer/util.ts'
-import type { MafSummaryRecord, Sample } from '../types.ts'
+import type { MafFrameRecord, MafSummaryRecord, Sample } from '../types.ts'
 import type { LinearMafDisplayConfig } from './configSchema.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Region } from '@jbrowse/core/util'
@@ -228,6 +233,16 @@ export default function stateModelFactory(
           types.boolean,
           DEFAULTS.rowIdentityAutoZoom,
         ),
+        /**
+         * #property
+         * Show the per-species CDS reading-frame overlay sourced from the
+         * configured `annotationAdapter` (UCSC `mafFrames`). No effect unless
+         * an `annotationAdapter` is configured.
+         */
+        showAnnotations: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showAnnotations,
+        ),
       }),
     )
     .volatile(() => ({
@@ -243,6 +258,14 @@ export default function stateModelFactory(
        * never read each other's data.
        */
       summaryDataMap: observable.map<number, MafSummaryRecord[]>(),
+      /**
+       * #volatile
+       * Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
+       * populated by the frames RPC in parallel with the main fetch. Kept
+       * separate from the alignment/summary maps so the overlay survives the
+       * summary↔detail data swap.
+       */
+      framesDataMap: observable.map<number, MafFrameRecord[]>(),
       /**
        * #volatile
        */
@@ -392,6 +415,12 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setShowAnnotations(arg: boolean) {
+        self.showAnnotations = arg
+      },
+      /**
+       * #action
+       */
       setConservationHeight(arg: number) {
         self.conservationHeight = arg
       },
@@ -430,6 +459,27 @@ export default function stateModelFactory(
        */
       get lgv(): LinearGenomeViewModel {
         return getContainingView(self) as LinearGenomeViewModel
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`),
+       * or undefined when unset. A frozen config slot, so this is a plain
+       * snapshot the frames RPC hands straight to `getAdapter`.
+       */
+      get annotationAdapterConfig(): Record<string, unknown> | undefined {
+        return readConfObject(self.conf, 'annotationAdapter') ?? undefined
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the per-species CDS frame overlay should fetch + draw: an
+       * annotation adapter is configured and the toggle is on.
+       */
+      get annotationsActive(): boolean {
+        return self.showAnnotations && !!self.annotationAdapterConfig
       },
     }))
     .views(self => ({
@@ -495,6 +545,17 @@ export default function stateModelFactory(
        */
       get orderedSampleIds(): string[] | undefined {
         return self.sources?.map(s => s.name)
+      },
+      /**
+       * #getter
+       * Maps a `src` (species) to its display row index. The single source for
+       * the `src`→row projection used by the summary-bar and CDS-frame overlays
+       * and the frame hover lookup, so they can't disagree on row placement.
+       */
+      get rowIndexBySrc(): Map<string, number> {
+        return new Map(
+          self.sources?.map((s, i): [string, number] => [s.name, i]) ?? [],
+        )
       },
       /**
        * #getter
@@ -675,6 +736,15 @@ export default function stateModelFactory(
       get colorPalette(): MafColorPalette {
         return getMafColorPalette(getSession(self).theme)
       },
+      /**
+       * #getter
+       * Theme CDS reading-frame colors for the annotation overlay, indexed by
+       * the marker `frameIndex` via `Array.at`. Theme-derived (like
+       * `colorPalette`) so it's available headless for SVG export too.
+       */
+      get frameColors(): (string | undefined)[] {
+        return getFrameColors(getSession(self).theme)
+      },
     }))
     .views(self => ({
       /**
@@ -724,7 +794,13 @@ export default function stateModelFactory(
        * `layout`/`subtreeFilter` user-driven), so it doesn't churn per fetch.
        */
       rpcProps() {
-        return { orderedSampleIds: self.orderedSampleIds }
+        // `annotationsActive` is a cache key so toggling the CDS-frame overlay
+        // on triggers a refetch that populates `framesDataMap` for the loaded
+        // regions (the frames piggyback on the same fetch pass).
+        return {
+          orderedSampleIds: self.orderedSampleIds,
+          annotationsActive: self.annotationsActive,
+        }
       },
     }))
     .views(self => ({
@@ -817,6 +893,29 @@ export default function stateModelFactory(
           ...hit,
           sampleLabel: source.label ?? source.name,
         }
+      },
+      /**
+       * #method
+       * The CDS frame record covering absolute genomic `bp` (uint32) on display
+       * `rowIndex`, or undefined when no frame overlaps there (or the overlay is
+       * off). Powers the gene/reading-frame rows in the hover tooltip — the
+       * species is matched by the same `src`→row projection the overlay draws
+       * with, so the tooltip and the strip can't disagree about which row a gene
+       * is on.
+       */
+      frameHoverInfo(displayedRegionIndex: number, bp: number, rowIndex: number) {
+        if (!self.annotationsActive) {
+          return undefined
+        }
+        const hit = findFrameAt(
+          self.framesDataMap.get(displayedRegionIndex),
+          Math.floor(bp),
+          rowIndex,
+          self.rowIndexBySrc,
+        )
+        return hit
+          ? { name: hit.name, frame: hit.frame, strand: hit.strand }
+          : undefined
       },
       /**
        * #method
@@ -1031,9 +1130,27 @@ export default function stateModelFactory(
         return computeVisibleSummaryBars({
           view,
           summaryDataMap: self.summaryDataMap,
-          rowIndexBySrc: new Map(
-            self.sources.map((s, i): [string, number] => [s.name, i]),
-          ),
+          rowIndexBySrc: self.rowIndexBySrc,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+        })
+      },
+      /**
+       * #getter
+       * Positioned per-species CDS frame boxes for the annotation overlay.
+       * Empty unless an annotation adapter is configured and the overlay is on.
+       * Reuses the `src`→row mapping the summary bars established, so frame rows
+       * for species the track doesn't list drop out.
+       */
+      get visibleFrames(): FrameMarker[] {
+        const view = self.lgv
+        if (!view.initialized || !self.annotationsActive || !self.sources) {
+          return []
+        }
+        return computeVisibleAnnotations({
+          view,
+          framesDataMap: self.framesDataMap,
+          rowIndexBySrc: self.rowIndexBySrc,
           rowHeight: self.rowHeight,
           rowProportion: self.rowProportion,
         })
@@ -1069,6 +1186,9 @@ export default function stateModelFactory(
       setSummaryData(regionIndex: number, records: MafSummaryRecord[]) {
         self.summaryDataMap.set(regionIndex, records)
       },
+      setFramesData(regionIndex: number, records: MafFrameRecord[]) {
+        self.framesDataMap.set(regionIndex, records)
+      },
       // Drop alignment blocks when entering summary mode so the GPU sequence
       // canvas paints nothing under the summary overlay (and vice versa).
       clearAlignmentData() {
@@ -1077,6 +1197,7 @@ export default function stateModelFactory(
       clearDisplaySpecificData() {
         self.rpcDataMap.clear()
         self.summaryDataMap.clear()
+        self.framesDataMap.clear()
       },
       // reload() not overridden — MultiRegionDisplayMixin's base default
       // (clearAllRpcData) is exactly maf's behavior; no extra teardown.

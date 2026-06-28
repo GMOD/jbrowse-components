@@ -139,28 +139,55 @@ function HoverContents({
   )
 }
 
+export interface FrameHover {
+  name: string
+  frame: number
+  strand: number
+}
+
+// The CDS reading frame projected onto this species' row (UCSC mafFrames),
+// shown as its own captioned section so the gene structure is readable by
+// hovering any species — alongside the per-base/insertion/etc. hover.
+function FrameContents({ frame }: { frame: FrameHover }) {
+  return (
+    <TableShell caption="CDS frame">
+      {frame.name ? <Row label="Gene" value={frame.name} /> : null}
+      <Row
+        label="Reading frame"
+        value={`${frame.frame} (${strandStr(frame.strand)})`}
+      />
+    </TableShell>
+  )
+}
+
 export default function MafAlignmentTooltipContents({
   p1,
   p2,
   hover,
+  frame,
 }: {
   p1?: GenomicPosition
   p2: GenomicPosition
   hover?: MafHover
+  frame?: FrameHover
 }) {
   const { classes } = useTooltipStyles()
 
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />
   }
-  if (hover) {
-    return <HoverContents hover={hover} refName={p2.refName} coord={p2.coord} />
-  }
   return (
-    <table className={classes.table}>
-      <tbody>
-        <Row label="Ref" value={refLabel(p2)} />
-      </tbody>
-    </table>
+    <>
+      {hover ? (
+        <HoverContents hover={hover} refName={p2.refName} coord={p2.coord} />
+      ) : (
+        <table className={classes.table}>
+          <tbody>
+            <Row label="Ref" value={refLabel(p2)} />
+          </tbody>
+        </table>
+      )}
+      {frame ? <FrameContents frame={frame} /> : null}
+    </>
   )
 }

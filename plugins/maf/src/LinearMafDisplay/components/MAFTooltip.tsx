@@ -78,19 +78,22 @@ const MAFTooltip = observer(function ({
   // Per-row hover: convert (mouseX, mouseY) to (bp, rowIndex into `sources`)
   // and resolve the aligned base or bridged/empty region at that row. Skipped
   // during a selection drag (origMouseX set) so the drag's range readout stays.
+  const rowIndex = Math.floor((mouseY + scrollTop - rowsTopOffset) / rowHeight)
   const hover =
     origMouseX === undefined && !p2.oob
-      ? model.rowHoverInfo(
-          p2.index,
-          gposFrac,
-          Math.floor((mouseY + scrollTop - rowsTopOffset) / rowHeight),
-          view.bpPerPx,
-        )
+      ? model.rowHoverInfo(p2.index, gposFrac, rowIndex, view.bpPerPx)
+      : undefined
+  // CDS gene/reading-frame at this row, when the mafFrames overlay is on, so
+  // the gene structure is identifiable by hovering any species — not just the
+  // colored strip.
+  const frame =
+    origMouseX === undefined && !p2.oob
+      ? model.frameHoverInfo(p2.index, gposFrac, rowIndex)
       : undefined
 
   return (
     <BaseTooltip clientPoint={clientPoint}>
-      <MafAlignmentTooltipContents p1={p1} p2={p2} hover={hover} />
+      <MafAlignmentTooltipContents p1={p1} p2={p2} hover={hover} frame={frame} />
     </BaseTooltip>
   )
 })
