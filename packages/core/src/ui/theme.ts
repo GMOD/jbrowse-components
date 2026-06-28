@@ -31,6 +31,9 @@ declare module '@mui/material/styles' {
     textHighlight: PaletteColor
     stopCodon: string
     startCodon: string
+    codonNonsynonymous: string
+    codonSynonymous: string
+    codonStop: string
     coverage: string
     insertion: string
     softclip: string
@@ -69,6 +72,9 @@ declare module '@mui/material/styles' {
     textHighlight?: PaletteColorOptions
     stopCodon?: string
     startCodon?: string
+    codonNonsynonymous?: string
+    codonSynonymous?: string
+    codonStop?: string
     coverage?: string
     hardclip?: string
     softclip?: string
@@ -147,6 +153,12 @@ const frames: Frames = [
 ]
 const stopCodon = '#e22'
 const startCodon = '#3e3'
+/** #color maf | Nonsynonymous codon | MAF codon view: the species' amino acid differs from the reference (nonsynonymous) */
+const codonNonsynonymous = '#e8930c'
+/** #color maf | Synonymous codon | MAF codon view: the codon differs from the reference but the amino acid is unchanged (silent) */
+const codonSynonymous = '#3a7bd5'
+/** #color maf | Codon stop | MAF codon view: a stop codon */
+const codonStop = '#cc2222'
 const coverage = grey[400]
 /** #color alignments-indicators | Insertion | Reads carry an insertion relative to the reference */
 const insertion = '#800080'
@@ -260,6 +272,9 @@ const alignmentFill = {
 const stringColorDefaults = {
   stopCodon,
   startCodon,
+  codonNonsynonymous,
+  codonSynonymous,
+  codonStop,
   coverage,
   insertion,
   deletion,

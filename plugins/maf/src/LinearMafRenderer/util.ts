@@ -65,9 +65,9 @@ export function getCodonColors(theme: Theme) {
   return {
     fill: {
       same: undefined,
-      syn: alpha(theme.palette.info.main, 0.18),
-      nonsyn: alpha(theme.palette.warning.main, 0.55),
-      stop: alpha(theme.palette.error.main, 0.6),
+      syn: alpha(theme.palette.codonSynonymous, 0.18),
+      nonsyn: alpha(theme.palette.codonNonsynonymous, 0.55),
+      stop: alpha(theme.palette.codonStop, 0.6),
     },
     text: theme.palette.text.primary,
   }
