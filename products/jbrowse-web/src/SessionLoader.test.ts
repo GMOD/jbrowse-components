@@ -698,6 +698,20 @@ describe('SessionLoader', () => {
       expect(loader.hubURL).toEqual(['https://a/hub.txt', 'https://b/hub.txt'])
     })
 
+    // a large declarative session is shared in the hash fragment (see
+    // buildShareUrl); the loader must read session AND config from there
+    it('reads session and config from the hash fragment', () => {
+      window.history.replaceState(
+        null,
+        '',
+        `${window.location.pathname}#config=foo.json&session=encoded-BIG`,
+      )
+      const loader = createSessionLoaderFromUrl(0)
+      expect(loader.configPath).toBe('foo.json')
+      expect(loader.sessionQuery).toBe('encoded-BIG')
+      expect(loader.sessionQueryType).toBe('encoded')
+    })
+
     it('treats tracklist=true as true and any other value as false', () => {
       setSearch('?tracklist=true')
       expect(createSessionLoaderFromUrl(0).tracklist).toBe(true)

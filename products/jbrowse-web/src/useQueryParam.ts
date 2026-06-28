@@ -9,6 +9,10 @@
 // write updates back to whichever the current URL uses — so both forms keep
 // working and a hash URL stays a hash URL across the post-load `session=local-…`
 // rewrite and reloads.
+//
+// INVARIANT: params live in the hash XOR the query string, never split across
+// both — once the hash holds params we read ONLY the hash. Producers of jbrowse
+// URLs (buildShareUrl) must keep all params together in one component.
 
 type ParamLocation = 'hash' | 'search'
 
