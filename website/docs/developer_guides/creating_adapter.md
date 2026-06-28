@@ -12,7 +12,8 @@ format JBrowse understands.
 
 If you have a data source containing genes and want to display them using
 JBrowse's existing gene displays, write a custom adapter. For custom rendering,
-you'll also need a custom display and/or renderer.
+you'll also need a [custom display](/docs/developer_guides/creating_display)
+and/or a [renderer](/docs/developer_guides/renderer_architecture).
 
 ## Adapter types
 
@@ -32,7 +33,8 @@ you'll also need a custom display and/or renderer.
   e.g. "chr1" → "1". See
   [RefName aliasing](/docs/developer_guides/refname_aliasing).
 - **Text search adapter** - Searches text search indexes and returns results.
-  Example: the trix adapter.
+  Example: the trix adapter. See
+  [creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter).
 
 ## Skeleton of a feature adapter
 
@@ -165,3 +167,16 @@ interface Options {
 Returns an rxjs `Observable`. Emit features with
 `observer.next(new SimpleFeature(...))`, signal completion with
 `observer.complete()`, and errors with `observer.error(error)`.
+
+## See also
+
+- [Creating custom track types](/docs/developer_guides/creating_track) and
+  [display types](/docs/developer_guides/creating_display) — pair an adapter
+  with a display to draw its features
+- [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
+- [Configuration schema](/docs/developer_guides/configuration_schema) — define
+  the adapter's config slots
+- [RPC and worker system](/docs/developer_guides/rpc_workers) — adapters run
+  inside web workers
+- [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
+  — where `@jbrowse/core/util/rxjs` and other shared imports come from

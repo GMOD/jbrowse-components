@@ -40,6 +40,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load UCSC chain alignment files (query and target assembly required)
 
+### Used in
+
+This adapter supplies data to the [SyntenyTrack](../syntenytrack) track type.
+
 ### ChainAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -58,6 +62,11 @@ preprocessor to allow minimal config:
 
 #### slot: assemblyNames
 
+Array of assembly names to use for this file. The query assembly name is the
+first value in the array, target assembly name is the second
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -71,6 +80,8 @@ preprocessor to allow minimal config:
 
 can be specified as alternative to assemblyNames
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -83,6 +94,8 @@ can be specified as alternative to assemblyNames
 
 can be specified as alternative to assemblyNames
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -92,6 +105,8 @@ can be specified as alternative to assemblyNames
 ```
 
 #### slot: chainLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

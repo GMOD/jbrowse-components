@@ -47,7 +47,7 @@ A per-track config looks like this:
   "textSearching": {
     "textSearchAdapter": {
       "type": "TrixTextSearchAdapter",
-      "textSearchAdapterId": "hg19-index",
+      "textSearchAdapterId": "mytrack-index",
       "ixFilePath": {
         "uri": "https://jbrowse.org/genomes/hg19/trix/hg19.ix"
       },
@@ -98,7 +98,8 @@ A names index created by JBrowse 1's `generate-names.pl` can still be used via
 the `JBrowse1TextSearchAdapter` — point `namesIndexLocation` at the names
 directory. See the
 [JBrowse1TextSearchAdapter config docs](/docs/config/jbrowse1textsearchadapter)
-for the config slots.
+for the config slots. To build a custom text-search adapter, see
+[creating a text search adapter](/docs/developer_guides/creating_text_search_adapter).
 
 ## Troubleshooting
 

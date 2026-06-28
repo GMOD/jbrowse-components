@@ -24,6 +24,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: assemblyNames
 
+Query assembly is the first value in the array, target assembly is the second
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -35,6 +39,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: targetAssembly
 
+Alternative to assemblyNames array: the target assembly
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -45,6 +53,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: queryAssembly
 
+Alternative to assemblyNames array: the query assembly
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -54,6 +66,8 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: blastTableLocation
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -66,6 +80,13 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: columns
+
+Optional space-separated column name list. If custom columns were used in
+outfmt, enter them here exactly as specified in the command. At least qseqid,
+sseqid, qstart, qend, sstart, and send are required
+
+**Type:** `string` · **Default:**
+`'qseqid sseqid pident length mismatch gapopen qstart qend sstart send evalue bitscore'`
 
 ```js
 {

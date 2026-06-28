@@ -21,6 +21,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchDotplotView(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-DotplotView | async | Programmatically launch a dotplot view */
   pluginManager.addToExtensionPoint('LaunchView-DotplotView', args => {
     const { session, views, tracks = [], ...rest } = args
     if (views.length < 2) {

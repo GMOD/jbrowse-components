@@ -27,6 +27,8 @@ reference the markdown files in our repo of the checked out git tag
 stable identifier used as the adapter cache key; avoids hashing the (potentially
 large) features array. optional — falls back to hash.
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -35,6 +37,8 @@ large) features array. optional — falls back to hash.
 ```
 
 #### slot: features
+
+**Type:** `frozen`
 
 ```js
 {

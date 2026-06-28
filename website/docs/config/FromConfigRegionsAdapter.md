@@ -26,6 +26,8 @@ used for specifying refNames+sizes of an assembly
 
 #### slot: adapterId
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -34,6 +36,8 @@ used for specifying refNames+sizes of an assembly
 ```
 
 #### slot: features
+
+**Type:** `frozen`
 
 ```js
 {

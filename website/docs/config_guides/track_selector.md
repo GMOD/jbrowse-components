@@ -85,8 +85,7 @@ For plugin developers: the category ID used internally is
 `Tracks-{categoryPath}` (the full comma-joined path), which is the value matched
 against in the `TrackSelector-folderDialog` extension point.
 
-See the
-[hierarchical config schema docs](https://jbrowse.org/jb2/docs/config/hierarchicalconfigschema/)
+See the [hierarchical config schema docs](/docs/config/hierarchicalconfigschema)
 for the full auto-generated reference.
 
 ## Faceted track selector

@@ -21,6 +21,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### JB2TrackHubConnection - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/jb2trackhubconnection).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

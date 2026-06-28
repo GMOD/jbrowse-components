@@ -40,6 +40,8 @@ RpcManager.configSchema
 
 #### slot: configuration.highResolutionScaling
 
+**Type:** `number` · **Default:** `2`
+
 ```js
 {
   type: 'number',
@@ -48,6 +50,8 @@ RpcManager.configSchema
 ```
 
 #### slot: configuration.disableAnalytics
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -60,6 +64,8 @@ RpcManager.configSchema
 
 when true, URL params like `&loc=` navigate within the configured defaultSession
 (preserving its tracks and settings) instead of starting a fresh session
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -76,6 +82,8 @@ PreferencesConfigSchemaFactory()
 
 #### slot: configuration.theme
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -85,6 +93,8 @@ PreferencesConfigSchemaFactory()
 
 #### slot: configuration.extraThemes
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -93,6 +103,8 @@ PreferencesConfigSchemaFactory()
 ```
 
 #### slot: configuration.logoPath
+
+**Type:** `fileLocation`
 
 ```js
 {

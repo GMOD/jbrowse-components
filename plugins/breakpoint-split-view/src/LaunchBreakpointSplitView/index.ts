@@ -32,6 +32,7 @@ declare module '@jbrowse/core/PluginManager' {
 export default function LaunchBreakpointSplitViewF(
   pluginManager: PluginManager,
 ) {
+  /** #extensionPoint LaunchView-BreakpointSplitView | async | Programmatically launch a breakpoint split view */
   pluginManager.addToExtensionPoint('LaunchView-BreakpointSplitView', args => {
     const { session, views, ...rest } = args
     if (views.length < 2) {

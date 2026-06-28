@@ -1,0 +1,157 @@
+import fs from 'fs'
+import path from 'path'
+
+import * as ts from 'typescript'
+
+import { jsDocText } from './util.ts'
+
+// Render the jexl function catalog into the jexl config guide straight from the
+// `j.addFunction(...)` / `j.addBinaryOp(...)` registrations, so the documented
+// functions can never drift from the code (the color helpers were silently
+// missing from the hand-written list for several releases). Each documented
+// function is tagged at its registration site with a JSDoc `#jexlFunction` tag —
+// same docs-from-source idea as `#color`/`#api`/`#config`:
+//
+//   /** #jexlFunction String functions | charAt('abc', 2) | c */
+//   j.addFunction('charAt', (s, index) => s.charAt(index))
+//
+// i.e. `#jexlFunction <category> | <example> | <result>`. The result (rendered as
+// the trailing `// ...` comment) is optional. One registration may carry several
+// tags to show multiple examples (e.g. getTag). A guide opts the catalog in with
+// a single marker pair, regenerated on `pnpm autogen`:
+//
+//   <!-- JEXL_CATALOG START -->
+//   <!-- JEXL_CATALOG END -->
+//
+// Editing between the markers is pointless — it is overwritten on regen.
+
+const JEXL_SOURCE = 'packages/core/src/util/jexl.ts'
+
+interface Entry {
+  category: string
+  example: string
+  result: string
+}
+
+// Syntactic-only parse (no type checker / program) — we only read JSDoc text off
+// the statements wrapping each registration, mirroring generateColorDocs.ts.
+function parseFile(file: string) {
+  return ts.createSourceFile(
+    file,
+    fs.readFileSync(file, 'utf8'),
+    ts.ScriptTarget.Latest,
+    true,
+  )
+}
+
+// Every `#jexlFunction <category> | <example> | <result>` tag in one comment, in
+// source order.
+function parseJexlTags(comment: string | undefined, where: string): Entry[] {
+  const re = /#jexlFunction\s+([^\n]*)/g
+  const entries: Entry[] = []
+  let m: RegExpExecArray | null
+  while ((m = re.exec(comment ?? '')) !== null) {
+    const parts = m[1].split('|').map(s => s.trim())
+    const [category, example] = parts
+    // join the remainder back so a result may itself contain a `|`
+    const result = parts.slice(2).join(' | ')
+    if (!category || !example) {
+      throw new Error(`${where}: malformed #jexlFunction tag "${m[0].trim()}"`)
+    }
+    entries.push({ category, example, result })
+  }
+  return entries
+}
+
+// Collect tagged functions grouped by their category, preserving source order of
+// both the categories and the functions within each. Tags sit on the expression
+// statement wrapping each `j.addFunction(...)` / `j.addBinaryOp(...)` call.
+function collectFunctions(file: string) {
+  const groups = new Map<string, Entry[]>()
+  const visit = (node: ts.Node) => {
+    if (ts.isExpressionStatement(node)) {
+      for (const entry of parseJexlTags(jsDocText(node), file)) {
+        const list = groups.get(entry.category)
+        if (list) {
+          list.push(entry)
+        } else {
+          groups.set(entry.category, [entry])
+        }
+      }
+    }
+    node.forEachChild(visit)
+  }
+  visit(parseFile(file))
+  return groups
+}
+
+function renderCategory(category: string, entries: Entry[]) {
+  const lines = entries
+    .map(e =>
+      e.result ? `jexl: ${e.example} // ${e.result}` : `jexl: ${e.example}`,
+    )
+    .join('\n')
+  return `**${category}**\n\n\`\`\`js\n${lines}\n\`\`\``
+}
+
+function renderCatalog(groups: Map<string, Entry[]>) {
+  return [...groups]
+    .map(([category, entries]) => renderCategory(category, entries))
+    .join('\n\n')
+}
+
+const START = '<!-- JEXL_CATALOG START -->'
+const END = '<!-- JEXL_CATALOG END -->'
+
+function listDocs(dir: string): string[] {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap(e => {
+    const full = path.join(dir, e.name)
+    if (e.isDirectory()) {
+      return listDocs(full)
+    }
+    return e.name.endsWith('.md') ? [full] : []
+  })
+}
+
+// Collapse the whitespace prettier adds around the markers so the freshness
+// check compares content rather than formatting, matching generateColorDocs.ts.
+function normalize(s: string) {
+  return s.replaceAll(/[ \t]+/g, ' ').replaceAll(/-+/g, '-')
+}
+
+// In `check` mode, report which docs have a stale catalog instead of rewriting —
+// used by CI to fail when a jexl function changed but the docs were not
+// regenerated.
+export function writeJexlDocs({ check = false } = {}) {
+  const block = `${START}\n\n${renderCatalog(collectFunctions(JEXL_SOURCE))}\n\n${END}`
+  const re = new RegExp(`${START}[\\s\\S]*?${END}`)
+  const stale: string[] = []
+  for (const file of listDocs('website/docs')) {
+    const original = fs.readFileSync(file, 'utf8')
+    if (original.includes(START)) {
+      const updated = original.replace(re, () => block)
+      if (check) {
+        if (normalize(updated) !== normalize(original)) {
+          stale.push(file)
+        }
+      } else if (updated !== original) {
+        fs.writeFileSync(file, updated)
+      }
+    }
+  }
+  return stale
+}
+
+// Run as a script: `node docs/generateJexlDocs.ts [--check]`. The guard keeps
+// this inert when the module is imported by generate.ts (argv[1] is generate.ts
+// there), so the catalog isn't generated twice in one `pnpm gendocs`.
+if (process.argv[1]?.endsWith('generateJexlDocs.ts')) {
+  const stale = writeJexlDocs({ check: process.argv.includes('--check') })
+  if (stale.length) {
+    console.error(
+      `Jexl catalog is out of date — run \`pnpm autogen\`:\n${stale.map(f => `  ${f}`).join('\n')}`,
+    )
+    process.exit(1)
+  }
+  console.log('Jexl catalog is up to date')
+}

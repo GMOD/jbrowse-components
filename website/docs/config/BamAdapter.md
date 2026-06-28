@@ -44,6 +44,11 @@ used to configure BAM adapter
 Note: `sequenceAdapter` does **not** need to be specified manually — JBrowse
 automatically supplies it from the enclosing assembly's sequence track.
 
+### Used in
+
+This adapter supplies data to the [AlignmentsTrack](../alignmentstrack) track
+type.
+
 ### BamAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bam.bai:
@@ -60,6 +65,8 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 
 #### slot: bamLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -72,6 +79,8 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'BAI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['BAI', 'CSI']),
@@ -81,6 +90,8 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -93,6 +104,11 @@ preprocessor to allow minimal config, assumes yourfile.bam.bai:
 ```
 
 #### slot: fetchSizeLimit
+
+size to fetch in bytes over which to display a warning to the user that too much
+data will be fetched
+
+**Type:** `number` · **Default:** `5_000_000`
 
 ```js
 {

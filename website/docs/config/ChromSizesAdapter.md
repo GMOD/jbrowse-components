@@ -38,6 +38,11 @@ loads only chromosome names and lengths from a UCSC-style `.chrom.sizes` file
 (tab-separated `name<TAB>length`), with no actual sequence. Useful for karyotype
 or whole-genome/synteny views where the base-level sequence isn't needed.
 
+### Used in
+
+This adapter supplies data to the
+[ReferenceSequenceTrack](../referencesequencetrack) track type.
+
 ### ChromSizesAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -53,6 +58,8 @@ preprocessor to allow minimal config:
 <summary>ChromSizesAdapter - Slots</summary>
 
 #### slot: chromSizesLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

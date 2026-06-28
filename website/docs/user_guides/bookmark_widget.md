@@ -20,8 +20,8 @@ genome view and selecting "Bookmark region."
 
 ### Keyboard shortcuts
 
-- Create a bookmark: `CTRL/CMD + Shift + D`
-- Navigate to the most recently created bookmark: `CTRL/CMD + Shift + M`
+- Create a bookmark: `Ctrl`/`Cmd` + `Shift` + `D`
+- Navigate to the most recently created bookmark: `Ctrl`/`Cmd` + `Shift` + `M`
 
 ## Selecting bookmarks
 
@@ -64,3 +64,5 @@ on. Only bookmarks valid for the currently loaded assemblies are shown.
 
 - [Basic usage: sharing sessions](/docs/user_guides/basic_usage#sharing-sessions)
   — share your whole session, bookmarks included, via a link
+- [Basic usage: rubberband selection](/docs/user_guides/basic_usage#rubberband-selection)
+  — the same click-and-drag-on-scalebar gesture used to create a bookmark

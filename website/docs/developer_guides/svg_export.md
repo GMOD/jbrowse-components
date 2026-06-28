@@ -119,9 +119,9 @@ display model also exposes a `renderBlocks` getter via
 
 ## Reusing on-screen drawing code
 
-The recommended pattern is to write drawing functions that accept
-`CanvasRenderingContext2D | SvgCanvas` as the context type (imported from
-`@jbrowse/core/util/SvgCanvas`) and call them from both the on-screen renderer
+The recommended pattern is to write drawing functions that accept the `Ctx2D`
+type (`CanvasRenderingContext2D | SvgCanvas`, exported from
+`@jbrowse/core/util/paintLayer`) and call them from both the on-screen renderer
 and `renderSvg`. Alignments, canvas-features, and wiggle displays all do this.
 
 ```ts
@@ -147,3 +147,12 @@ From simplest to most complex:
   layers
 - `plugins/alignments/src/LinearAlignmentsDisplay/renderSvg.tsx` — coverage,
   pileup, arcs
+
+## See also
+
+- [Creating custom display types](/docs/developer_guides/creating_display) —
+  `renderSvg` is a display-model action
+- [Renderer architecture](/docs/developer_guides/renderer_architecture) —
+  `paintLayer` is the shared on-screen/export draw path
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+  — `buildRenderBlocks`/`renderBlocks` come from the same GPU render-block utils

@@ -18,7 +18,8 @@ subfeature sequences together. The available types are:
   the GFF (e.g. `transl_table=2` for vertebrate mitochondria) the matching
   alternative codon table is applied, including start-codon and `transl_except`
   handling
-- **cDNA** — the "copy DNA" of the transcript, formed from the exon sequences
+- **cDNA** — the complementary DNA of the transcript, formed from the exon
+  sequences
 - **Genomic w/ full introns** — the entire gene region including introns, with
   UTR and CDS highlighted
 - **Genomic w/ full introns +/- Nbp up+down stream** — the above plus N bases
@@ -56,3 +57,5 @@ bases is configurable from the gear icon.
   and six-frame translation
 - [Gene track](/docs/user_guides/gene_track) — color-by-CDS and peptide
   lettering directly on the track
+- [Assembly configuration: alternative genetic codes](/docs/config_guides/assemblies#configuring-alternative-genetic-codes-translation-tables)
+  — `transl_table` and per-sequence translation tables

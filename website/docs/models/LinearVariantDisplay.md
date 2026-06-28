@@ -47,6 +47,11 @@ A complete `VariantTrack` config to paste into `tracks`:
 
 GPU-accelerated variant display with custom feature widget on click.
 
+### LinearVariantDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearvariantdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

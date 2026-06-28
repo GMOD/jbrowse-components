@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GFF3 files
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### Gff3TabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
@@ -59,6 +63,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
 
 #### slot: gffGzLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -71,6 +77,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -80,6 +88,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
 ```
 
 #### slot: index.indexType
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -96,6 +106,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gff3.gz.tbi
 the Gff3TabixAdapter has to "redispatch" if it fetches a region and features it
 finds inside that region extend outside the region we requested. you can disable
 this for certain feature types to avoid fetching e.g. the entire chromosome
+
+**Type:** `stringArray`
 
 ```js
 {

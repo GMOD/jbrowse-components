@@ -75,10 +75,19 @@ _See the **Slots** section below for all available configuration fields._
 
 configuration schema for the LinearAlignmentsDisplay
 
+### LinearAlignmentsDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearalignmentsdisplay).
+
 <details open>
 <summary>LinearAlignmentsDisplay - Slots</summary>
 
 #### slot: featureHeight
+
+Height of each feature (read) in pixels
+
+**Type:** `number` · **Default:** `7`
 
 ```js
 {
@@ -90,6 +99,10 @@ configuration schema for the LinearAlignmentsDisplay
 
 #### slot: featureSpacing
 
+Spacing between features in pixels
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -99,6 +112,10 @@ configuration schema for the LinearAlignmentsDisplay
 ```
 
 #### slot: readConnectionsLineWidth
+
+Line width for read-connection arcs/lines in pixels
+
+**Type:** `number` · **Default:** `1`
 
 ```js
 {
@@ -110,6 +127,10 @@ configuration schema for the LinearAlignmentsDisplay
 
 #### slot: showSashimiLabels
 
+Draw the supporting-read count on each sashimi arc
+
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -119,6 +140,11 @@ configuration schema for the LinearAlignmentsDisplay
 ```
 
 #### slot: maxHeight
+
+Maximum pixel height of the pileup layout; reads beyond this are not stacked
+(coverage still reflects true depth)
+
+**Type:** `number` · **Default:** `6000`
 
 ```js
 {
@@ -132,6 +158,8 @@ configuration schema for the LinearAlignmentsDisplay
 
 #### slot: height
 
+**Type:** `number` · **Default:** `250`
+
 ```js
 {
   type: 'number',
@@ -140,6 +168,10 @@ configuration schema for the LinearAlignmentsDisplay
 ```
 
 #### slot: colorBy
+
+Color scheme for reads
+
+**Type:** `frozen`
 
 ```js
 {
@@ -155,6 +187,8 @@ configuration schema for the LinearAlignmentsDisplay
 default filter flags is exclude 1540 read unmapped (0x4) read fails
 platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -165,6 +199,11 @@ platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 ```
 
 #### slot: groupBy
+
+In-track stacked grouping, e.g. `{ type: "strand" }` to pre-group reads by
+strand (null = ungrouped)
+
+**Type:** `frozen`
 
 ```js
 {
@@ -177,6 +216,10 @@ platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 ```
 
 #### slot: autoscale
+
+Coverage autoscale type
+
+**Type:** `stringEnum` · **Default:** `'local'`
 
 ```js
 {
@@ -192,6 +235,10 @@ platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 
 #### slot: minScore
 
+Minimum coverage depth bound
+
+**Type:** `number`
+
 ```js
 {
   type: 'number',
@@ -202,6 +249,10 @@ platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 ```
 
 #### slot: maxScore
+
+Maximum coverage depth bound
+
+**Type:** `number`
 
 ```js
 {
@@ -214,6 +265,10 @@ platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 
 #### slot: scaleType
 
+Coverage scale type (linear or log)
+
+**Type:** `stringEnum` · **Default:** `'linear'`
+
 ```js
 {
   type: 'stringEnum',
@@ -224,6 +279,10 @@ platform/vendor quality checks (0x200) read is PCR or optical duplicate (0x400)
 ```
 
 #### slot: numStdDev
+
+Number of standard deviations for localsd autoscale
+
+**Type:** `number` · **Default:** `3`
 
 ```js
 {
@@ -248,6 +307,11 @@ this page is self-contained.
 
 #### slot: maxFeatureScreenDensity
 
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -259,6 +323,11 @@ this page is self-contained.
 ```
 
 #### slot: fetchSizeLimit
+
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {
@@ -272,6 +341,10 @@ this page is self-contained.
 
 #### slot: height
 
+default height for the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -281,6 +354,11 @@ this page is self-contained.
 ```
 
 #### slot: mouseover
+
+text to display when the cursor hovers over a feature
+
+**Type:** `string` · **Default:**
+`'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
 {
@@ -295,6 +373,8 @@ this page is self-contained.
 
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
+
+**Type:** `stringArray`
 
 ```js
 {

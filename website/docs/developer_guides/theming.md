@@ -6,7 +6,9 @@ guide_category: Getting started
 
 JBrowse uses [MUI theming](https://mui.com/material-ui/customization/theming/)
 with additional custom palette properties. The theme is configured via the
-`configuration.theme` field in your JBrowse config.
+`configuration.theme` field in your JBrowse config. For an end-user walkthrough
+of changing colors, dark mode, the logo, and sizing, see the
+[Coloring/theming config guide](/docs/config_guides/theme).
 
 ## Built-in themes
 
@@ -52,15 +54,27 @@ plain constants from `@jbrowse/core/ui/theme`:
 
 ```ts
 import {
-  methylated5mC, // '#ff0000'
-  unmethylated5mC, // '#0000ff'
-  methylated5hmC, // '#ffc0cb'
-  unmethylated5hmC, // '#800080'
+  methylated5mC,
+  unmethylated5mC,
+  methylated5hmC,
+  unmethylated5hmC,
 } from '@jbrowse/core/ui/theme'
 ```
 
+<!-- COLOR_TABLE theme-methylation START -->
+
+| Color                                                                                                                                                                       | Name             | Value     | Description                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | --------- | ------------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | methylated5mC    | `#ff0000` | 5-methylcytosine, methylated          |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0000ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0000ff"></span> | unmethylated5mC  | `#0000ff` | 5-methylcytosine, unmethylated        |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | methylated5hmC   | `#ffc0cb` | 5-hydroxymethylcytosine, methylated   |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | unmethylated5hmC | `#800080` | 5-hydroxymethylcytosine, unmethylated |
+
+<!-- COLOR_TABLE theme-methylation END -->
+
 Use these constants directly; do not re-derive them from `theme.palette` in
-worker code.
+worker code. The table above is generated from the `#color`-tagged definitions
+in `theme.ts`, so it never drifts from the actual values.
 
 ## Example config
 

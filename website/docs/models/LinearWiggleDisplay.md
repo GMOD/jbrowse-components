@@ -47,6 +47,11 @@ min/max score, renderer) are config slots on the track itself — see the
 
 State model factory for the single-source wiggle display.
 
+### LinearWiggleDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearwiggledisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

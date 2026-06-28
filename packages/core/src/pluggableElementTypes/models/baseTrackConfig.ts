@@ -185,6 +185,7 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       preProcessSnapshot: s2 => {
         const snap = expandTrackConfigShorthand(
           pluginManager.evaluateExtensionPoint(
+            /** #extensionPoint Core-preProcessTrackConfig | sync | Rewrite a track config snapshot before it is instantiated */
             'Core-preProcessTrackConfig',
             structuredClone(s2),
           ),

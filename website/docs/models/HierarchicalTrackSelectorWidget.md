@@ -215,8 +215,21 @@ type allTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { s
 
 #### getter: allTrackConfigurationMap
 
+unfiltered map of every track (incl. connection tracks for other assemblies/view
+types); used by the faceted selector
+
 ```ts
 type allTrackConfigurationMap = Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
+```
+
+#### getter: displayableTrackConfigurationMap
+
+map restricted to tracks the current view can display; connection tracks go
+through the same filterTracks() pass as the tree so favorites and recently-used
+don't surface tracks the view can't show
+
+```ts
+type displayableTrackConfigurationMap = Map<any, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
 #### getter: favoriteTracks

@@ -24,6 +24,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: search
 
+Search string or regex to search for
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -34,6 +38,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: sequenceAdapter
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -42,6 +48,8 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: searchForward
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {
@@ -52,6 +60,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: searchReverse
 
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   type: 'boolean',
@@ -60,6 +70,8 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: caseInsensitive
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {

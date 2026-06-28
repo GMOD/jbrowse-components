@@ -45,6 +45,8 @@ Preprocessor to allow minimal config:
 
 Location of the PLINK LD file (.ld or .ld.gz)
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',

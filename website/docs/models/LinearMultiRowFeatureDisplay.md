@@ -28,6 +28,11 @@ shared per-region lifecycle. Rows are a `sources` chain (discovered →
 layout-reconciled → subtree-filtered) and the left sidebar (labels +
 dendrogram + reorder) is the shared `TreeSidebarMixin`.
 
+### LinearMultiRowFeatureDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearmultirowfeaturedisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

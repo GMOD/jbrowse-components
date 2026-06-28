@@ -17,6 +17,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchCircularViewF(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-CircularView | async | Programmatically launch a circular view */
   pluginManager.addToExtensionPoint('LaunchView-CircularView', args => {
     const { session, assembly, tracks = [] } = args
     if (!assembly) {

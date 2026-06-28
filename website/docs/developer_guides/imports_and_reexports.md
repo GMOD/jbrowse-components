@@ -94,9 +94,11 @@ Reach for these instead of re-implementing the parsing/scale math yourself:
 | `@jbrowse/synteny-core`        | Synteny/dotplot color and coordinate helpers             |
 | `@jbrowse/sv-core`             | VCF breakend / structural-variant parsing helpers        |
 
-The exported functions for each are documented under
-[Exported functions](/docs/api/cigar-utils) in the sidebar, and mirrored into
-each package's README on npm.
+The exported functions for each are documented in the API reference
+([cigar-utils](/docs/api/cigar-utils),
+[modifications-utils](/docs/api/modifications-utils),
+[wiggle-core](/docs/api/wiggle-core), [synteny-core](/docs/api/synteny-core),
+[sv-core](/docs/api/sv-core)) and mirrored into each package's README on npm.
 
 ## How to import, by plugin type
 

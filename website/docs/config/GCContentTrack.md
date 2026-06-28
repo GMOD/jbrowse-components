@@ -91,6 +91,10 @@ this page is self-contained.
 
 #### slot: name
 
+descriptive name of the track
+
+**Type:** `string` · **Default:** `'Track'`
+
 ```js
 {
   description: 'descriptive name of the track',
@@ -100,6 +104,10 @@ this page is self-contained.
 ```
 
 #### slot: assemblyNames
+
+name of the assembly (or assemblies) track belongs to
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -111,6 +119,10 @@ this page is self-contained.
 
 #### slot: description
 
+a description of the track
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'a description of the track',
@@ -120,6 +132,10 @@ this page is self-contained.
 ```
 
 #### slot: category
+
+the category and sub-categories of a track
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -131,6 +147,10 @@ this page is self-contained.
 
 #### slot: metadata
 
+anything to add about this track
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -140,6 +160,11 @@ this page is self-contained.
 ```
 
 #### slot: rpcDriverName
+
+RPC driver to use for this track. Leave empty to use the display-level or global
+default.
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -159,6 +184,10 @@ pluginManager.pluggableConfigSchemaType('adapter')
 
 #### slot: textSearching.indexedAttributes
 
+list of which feature attributes to index for text searching
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -169,6 +198,10 @@ pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
 #### slot: textSearching.indexingFeatureTypesToExclude
+
+list of feature types to exclude in text search index
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -204,6 +237,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: formatDetails.feature
 
+adds extra fields to the feature details
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -214,6 +251,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: formatDetails.subfeatures
+
+adds extra fields to the subfeatures of a feature
+
+**Type:** `frozen`
 
 ```js
 {
@@ -226,6 +267,11 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: formatDetails.depth
 
+depth of subfeatures to iterate the formatter on formatDetails.subfeatures (e.g.
+you may not want to format the exon/cds subfeatures, so limited to 2
+
+**Type:** `number` · **Default:** `2`
+
 ```js
 {
   type: 'number',
@@ -237,6 +283,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: formatDetails.maxDepth
 
+Maximum depth to render subfeatures
+
+**Type:** `number` · **Default:** `99999`
+
 ```js
 {
   type: 'number',
@@ -246,6 +296,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: formatAbout.config
+
+formats configuration object in about dialog
+
+**Type:** `frozen`
 
 ```js
 {
@@ -257,6 +311,8 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: formatAbout.hideUris
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

@@ -53,10 +53,19 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearHicDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearhicdisplay).
+
 <details open>
 <summary>LinearHicDisplay - Slots</summary>
 
 #### slot: height
+
+default height for the Hi-C track
+
+**Type:** `number` · **Default:** `300`
 
 ```js
 {
@@ -80,6 +89,11 @@ this page is self-contained.
 
 #### slot: maxFeatureScreenDensity
 
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -91,6 +105,11 @@ this page is self-contained.
 ```
 
 #### slot: fetchSizeLimit
+
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {
@@ -104,6 +123,10 @@ this page is self-contained.
 
 #### slot: height
 
+default height for the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -113,6 +136,11 @@ this page is self-contained.
 ```
 
 #### slot: mouseover
+
+text to display when the cursor hovers over a feature
+
+**Type:** `string` · **Default:**
+`'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
 {
@@ -127,6 +155,8 @@ this page is self-contained.
 
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
+
+**Type:** `stringArray`
 
 ```js
 {

@@ -19,6 +19,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### UCSCTrackHubConnection - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/ucsctrackhubconnection).
+
 ### UCSCTrackHubConnection - Pre-processor / simplified config
 
 preprocessor to allow minimal config, where `uri` points at the hub.txt:
@@ -35,6 +40,10 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 
 #### slot: hubTxtLocation
 
+location of the hub file (usually called hub.txt)
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -47,6 +56,11 @@ preprocessor to allow minimal config, where `uri` points at the hub.txt:
 ```
 
 #### slot: assemblyNames
+
+optional list of genomes to import from this track hub, if empty all genomes
+will be imported
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -71,6 +85,10 @@ this page is self-contained.
 
 #### slot: name
 
+a unique name for this connection
+
+**Type:** `string` · **Default:** `'nameOfConnection'`
+
 ```js
 {
   type: 'string',
@@ -80,6 +98,10 @@ this page is self-contained.
 ```
 
 #### slot: assemblyNames
+
+optional list of names of assemblies in this connection
+
+**Type:** `stringArray`
 
 ```js
 {

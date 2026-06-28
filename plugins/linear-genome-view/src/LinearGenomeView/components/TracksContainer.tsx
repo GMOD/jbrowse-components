@@ -80,6 +80,7 @@ const TracksContainer = observer(function TracksContainer({
   const range = useRangeSelect(ref, model, true)
 
   const additional = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-TracksContainerComponent | sync | Add a component into the LGV tracks container */
     'LinearGenomeView-TracksContainerComponent',
     [],
     { model },
@@ -167,6 +168,7 @@ const ScalebarHighlightGroup = observer(function ScalebarHighlightGroup({
       })
     : []
   const additional = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-ScalebarHighlightComponent | sync | Add a highlight component to the scalebar */
     'LinearGenomeView-ScalebarHighlightComponent',
     [] as ReactNode[],
     { model },

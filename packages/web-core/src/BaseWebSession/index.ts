@@ -279,6 +279,7 @@ export function finalizeWebSession<T extends IAnyModelType>(
   sessionModel: T,
 ) {
   const extendedSessionModel = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-extendSession | sync | Extend the session model with extra state or actions */
     'Core-extendSession',
     sessionModel,
   ) as T

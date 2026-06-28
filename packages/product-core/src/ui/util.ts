@@ -61,6 +61,7 @@ export function generateDisplayableConfig({
     config: conf,
   })
   return pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-customizeAbout | sync | Transform the config shown in a track's About dialog */
     'Core-customizeAbout',
     {
       config: {

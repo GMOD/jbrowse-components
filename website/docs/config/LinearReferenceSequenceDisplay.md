@@ -42,3 +42,10 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
   ],
 }
 ```
+
+## Overview
+
+### LinearReferenceSequenceDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearreferencesequencedisplay).

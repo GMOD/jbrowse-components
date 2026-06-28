@@ -26,6 +26,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchLinearSyntenyView(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-LinearSyntenyView | async | Programmatically launch a linear synteny view */
   pluginManager.addToExtensionPoint('LaunchView-LinearSyntenyView', args => {
     const { session, views, tracks = [], ...rest } = args
     if (views.length < 2) {

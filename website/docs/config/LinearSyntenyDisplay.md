@@ -43,12 +43,19 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearSyntenyDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearsyntenydisplay).
+
 <details open>
 <summary>LinearSyntenyDisplay - Slots</summary>
 
 #### slot: trackIds
 
 currently unused
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -60,6 +67,8 @@ currently unused
 #### slot: middle
 
 currently unused
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {

@@ -41,10 +41,19 @@ _See the **Slots** section below for all available configuration fields._
 
 combines multiple BigWig files into a single multi-row quantitative track
 
+### Used in
+
+This adapter supplies data to the
+[MultiQuantitativeTrack](../multiquantitativetrack) track type.
+
 <details open>
 <summary>MultiWiggleAdapter - Slots</summary>
 
 #### slot: subadapters
+
+array of subadapter JSON objects
+
+**Type:** `frozen`
 
 ```js
 {
@@ -55,6 +64,10 @@ combines multiple BigWig files into a single multi-row quantitative track
 ```
 
 #### slot: bigWigs
+
+array of bigwig filenames, alternative to the subadapters slot
+
+**Type:** `frozen`
 
 ```js
 {

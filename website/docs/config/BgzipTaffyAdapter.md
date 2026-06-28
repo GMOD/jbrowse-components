@@ -26,6 +26,10 @@ used to configure BgzipTaffy adapter
 
 #### slot: samples
 
+string[] or {id:string,label:string,color?:string}[]
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -35,6 +39,10 @@ used to configure BgzipTaffy adapter
 ```
 
 #### slot: tafGzLocation
+
+bgzip taffy file
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -49,6 +57,10 @@ used to configure BgzipTaffy adapter
 
 #### slot: taiLocation
 
+taffy index
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -61,6 +73,10 @@ used to configure BgzipTaffy adapter
 ```
 
 #### slot: nhLocation
+
+newick tree
+
+**Type:** `fileLocation`
 
 ```js
 {

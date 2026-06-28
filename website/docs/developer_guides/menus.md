@@ -88,7 +88,8 @@ any menu items defined for it.
 It's possible to add items to that menu, and you can also have different menu
 items based on if the click was on a feature or not, and based on what feature
 is clicked. This is done by extending the `contextMenuItems` view of the display
-model. Here is an example:
+model via the `Core-extendPluggableElement`
+[extension point](/docs/developer_guides/extension_points). Here is an example:
 
 ```js
 class SomePlugin extends Plugin {
@@ -324,3 +325,11 @@ Insert a menu item into a sub-menu
 #### Return value
 
 The new length of the sub-menu
+
+## See also
+
+- [Extension points](/docs/developer_guides/extension_points) —
+  `Core-extendPluggableElement` and the full extension-point API
+- [Creating custom track types](/docs/developer_guides/creating_track) and
+  [display types](/docs/developer_guides/creating_display) — where
+  `trackMenuItems` / `contextMenuItems` live

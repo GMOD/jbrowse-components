@@ -11,27 +11,25 @@ session. Each pluggable element you create needs its own configuration schema.
 
 The configuration system is typed to support graphical editing. Each
 configuration schema has a list of slots, each with a name, description, type,
-and value.
+and value. For the canonical list of slot types and their JS types see the
+[configuration schema](/docs/developer_guides/configuration_schema#slot-types)
+guide; below is how each type renders in the graphical config editor:
 
-Here is a mostly comprehensive list of config types:
-
-- `stringEnum` - allows assigning one of a limited set of entries, becomes a
-  dropdown box in the GUI
-- `color` - allows selecting a color, becomes a color picker in the GUI
-- `number` - allows entering any numeric value
-- `string` - allows entering any string
-- `integer` - allows entering a integer value
-- `boolean` - allows a boolean value
-- `frozen` - an arbitrary JSON can be specified in this config slot, becomes
-  textarea in the GUI
+- `stringEnum` - one of a limited set of entries, becomes a dropdown box in the
+  GUI
+- `color` - select a color, becomes a color picker in the GUI
+- `number` - enter any numeric value
+- `string` - enter any string
+- `integer` - enter an integer value
+- `boolean` - a checkbox
+- `frozen` - arbitrary JSON, becomes a textarea in the GUI
 - `fileLocation` - refers to a URL, local file path on desktop, or file blob
   object in the browser
-- `text` - allows entering a string, becomes textarea in the GUI
-- `stringArray` - allows entering a list of strings, becomes a "todolist" style
-  editor in the GUI where you can add or delete things
-- `stringArrayMap` - allows entering a list of key-value entries
-- `numberMap` - allows entering a list of key-value entries where values are
-  numbers
+- `text` - enter a string, becomes a textarea in the GUI
+- `stringArray` - enter a list of strings, becomes a "todolist" style editor in
+  the GUI where you can add or delete things
+- `stringArrayMap` - enter a list of key-value entries
+- `numberMap` - enter a list of key-value entries where values are numbers
 
 Let's examine the `LinearCanvasBaseDisplay` configuration as an example.
 
@@ -89,23 +87,31 @@ export default function baseConfigSchemaFactory(pluginManager) {
 
 ## Accessing config values
 
-So instead of accessing `config.displayMode`, we say,
+Config values are read through helper functions rather than direct property
+access, so that default-value resolution and jexl callbacks are applied. Instead
+of accessing `config.displayMode` directly, use `readConfObject`:
 
 ```js
 readConfObject(config, 'displayMode')
 ```
 
-You might also see in the code like this:
+You might also see `getConf` used on a state model that has a `.configuration`
+member:
 
 ```js
 getConf(track, 'featureHeight')
 ```
 
-Which would be equivalent to calling,
+which is equivalent to:
 
 ```js
 readConfObject(track.configuration, 'featureHeight')
 ```
+
+See the [configuration API reference](/docs/api/core-configuration) for the full
+signatures, and
+[configuration schema](/docs/developer_guides/configuration_schema#reading-config-values)
+for when to use each.
 
 ## Using config callbacks
 
@@ -246,3 +252,11 @@ const indexType = readConfObject(config, ['index', 'indexType'])
 Note: avoid accessing properties directly on the result of `readConfObject`
 (e.g. `readConfObject(config, ['index']).indexType`) as this bypasses the
 default value resolution logic.
+
+## See also
+
+- [Configuration schema](/docs/developer_guides/configuration_schema) — slot
+  type reference, inheritance, `preProcessSnapshot`, `ConfigurationReference`
+- [Configuration API reference](/docs/api/core-configuration) — `getConf` /
+  `readConfObject` signatures
+- [jexl config callbacks](/docs/config_guides/jexl)

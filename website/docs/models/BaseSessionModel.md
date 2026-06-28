@@ -31,12 +31,14 @@ and docs.
 
 ### Available via [SnackbarModel](../snackbarmodel)
 
-**Volatiles:** [snackbarMessages](../snackbarmodel#volatile-snackbarmessages)
+**Volatiles:** [snackbarMessages](../snackbarmodel#volatile-snackbarmessages),
+[errorDialog](../snackbarmodel#volatile-errordialog)
 
 **Getters:** [snackbarMessageSet](../snackbarmodel#getter-snackbarmessageset)
 
 **Actions:** [notify](../snackbarmodel#action-notify),
 [notifyError](../snackbarmodel#action-notifyerror),
+[setErrorDialog](../snackbarmodel#action-seterrordialog),
 [pushSnackbarMessage](../snackbarmodel#action-pushsnackbarmessage),
 [popSnackbarMessage](../snackbarmodel#action-popsnackbarmessage),
 [removeSnackbarMessage](../snackbarmodel#action-removesnackbarmessage)

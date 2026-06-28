@@ -363,6 +363,7 @@ export function guessAdapter(
   if (model) {
     const { pluginManager } = getEnv(model)
     const adapterGuesser = pluginManager.evaluateExtensionPoint(
+      /** #extensionPoint Core-guessAdapterForLocation | sync | Guess an adapter config from a file location */
       'Core-guessAdapterForLocation',
       (): AdapterConfig | undefined => undefined,
     ) as AdapterGuesser
@@ -389,6 +390,7 @@ export function guessTrackType(
     const trackTypeGuesser = getEnv(
       session,
     ).pluginManager.evaluateExtensionPoint(
+      /** #extensionPoint Core-guessTrackTypeForLocation | sync | Guess a track type from a file location */
       'Core-guessTrackTypeForLocation',
       (): string | undefined => undefined,
     ) as TrackTypeGuesser

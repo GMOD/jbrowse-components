@@ -18,6 +18,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchSpreadsheetViewF(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-SpreadsheetView | async | Programmatically launch a spreadsheet view */
   pluginManager.addToExtensionPoint('LaunchView-SpreadsheetView', args => {
     const { session, assembly, uri, fileType } = args
     session.addView('SpreadsheetView', {

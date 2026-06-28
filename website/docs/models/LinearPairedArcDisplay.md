@@ -48,6 +48,11 @@ to its mate, even across displayed regions:
 this is a non-block-based track type, and can connect arcs across multiple
 displayedRegions
 
+### LinearPairedArcDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearpairedarcdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -177,10 +182,19 @@ move as `BaseAdapter<CONF>`)
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
-#### getter: fetchSettled
+#### getter: svgReady
+
+the SVG-export terminal-state gate (the `SvgExportable` contract every LGV track
+display shares). Arc fetches all features into a single array via
+`FeatureDensityMixin`, so it has no `loadedRegions` spatial-coverage signal like
+the GPU mixins — "settled" is just features-present / error / too-large. Known
+gap: this stays true through an in-place refetch, so an export fired immediately
+after a pan/zoom can capture stale arcs (same stale-then-reposition behavior arc
+shows on-screen); tightening it would need fetch-generation tracking the
+single-array model lacks.
 
 ```ts
-type fetchSettled = boolean
+type svgReady = boolean
 ```
 
 #### getter: arcStyles
@@ -238,9 +252,9 @@ type setFeatures = (f: Feature[]) => void
 #### action: renderSvg
 
 ```ts
-type renderSvg = (opts: {
-  rasterizeLayers?: boolean | undefined
-}) => Promise<ReactNode>
+type renderSvg = (
+  opts?: ExportSvgDisplayOptions | undefined,
+) => Promise<ReactNode>
 ```
 
 </details>

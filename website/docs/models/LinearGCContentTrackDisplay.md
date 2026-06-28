@@ -54,6 +54,11 @@ its own track):
 used on GCContentTrack, separately from the display type on the
 ReferenceSequenceTrack
 
+### LinearGCContentTrackDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/lineargccontenttrackdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

@@ -72,19 +72,33 @@ type activePanelId = IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>
 activePanelId: types.stripDefault(types.maybe(types.string), undefined)
 ```
 
+#### property: init
+
+The initial nested layout to build dockview from (simple viewIds/ direction/size
+form, vs. the verbose `dockviewLayout` dockview emits). Set from URL params
+(spec layout) OR carried in a loaded session snapshot (e.g. the `encoded-`
+session param), then consumed once when the dockview container mounts —
+`createInitialPanels` reads it, `applyInitLayout` builds the panels, and it is
+cleared to undefined (stripped from snapshots) so it never re-applies on a later
+remount.
+
+```ts
+// type signature
+type init = IOptionalIType<
+  IMaybe<IType<DockviewLayoutNode, DockviewLayoutNode, DockviewLayoutNode>>,
+  [undefined]
+>
+// code
+init: types.stripDefault(
+  types.maybe(types.frozen<DockviewLayoutNode>()),
+  undefined,
+)
+```
+
 </details>
 
 <details open>
 <summary>DockviewLayoutMixin - Volatiles</summary>
-
-#### volatile: init
-
-```ts
-// type signature
-type init = undefined
-// code
-init: undefined
-```
 
 #### volatile: pendingMove
 

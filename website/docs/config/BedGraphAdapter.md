@@ -39,6 +39,11 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text bedGraph signal files. Loads the whole file into memory,
 so prefer the BedGraphTabixAdapter for large files.
 
+### Used in
+
+This adapter supplies data to the [QuantitativeTrack](../quantitativetrack)
+track type.
+
 ### BedGraphAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -55,6 +60,8 @@ preprocessor to allow minimal config:
 
 #### slot: bedGraphLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -66,6 +73,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: columnNames
+
+List of column names
+
+**Type:** `stringArray`
 
 ```js
 {

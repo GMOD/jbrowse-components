@@ -75,6 +75,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: name
 
+optional track name, otherwise uses the "Reference sequence (assemblyName)"
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -86,6 +90,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: sequenceType
 
+either dna or pep
+
+**Type:** `string` · **Default:** `'dna'`
+
 ```js
 {
   type: 'string',
@@ -95,6 +103,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: description
+
+a description of the track
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -106,6 +118,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 
 #### slot: metadata
 
+anything to add about this track
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -115,6 +131,10 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: formatAbout.config
+
+formats configuration in about dialog
+
+**Type:** `frozen`
 
 ```js
 {
@@ -126,6 +146,8 @@ types.array(pluginManager.pluggableConfigSchemaType('display'))
 ```
 
 #### slot: formatAbout.hideUris
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

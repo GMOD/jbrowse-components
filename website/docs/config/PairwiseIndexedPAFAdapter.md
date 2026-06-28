@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 a tabix-indexed PAF (PIF) for large synteny datasets. The `uri` shorthand
 auto-resolves the `.tbi` index (pass `csi: true` for a `.csi` index).
 
+### Used in
+
+This adapter supplies data to the [SyntenyTrack](../syntenytrack) track type.
+
 ### PairwiseIndexedPAFAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes file.pif.gz.tbi:
@@ -59,6 +63,11 @@ preprocessor to allow minimal config, assumes file.pif.gz.tbi:
 
 #### slot: assemblyNames
 
+Array of assembly names to use for this file. The query assembly name is the
+first value in the array, target assembly name is the second
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -70,6 +79,10 @@ preprocessor to allow minimal config, assumes file.pif.gz.tbi:
 
 #### slot: targetAssembly
 
+Alternative to assemblyNames: the target assembly name
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -80,6 +93,10 @@ preprocessor to allow minimal config, assumes file.pif.gz.tbi:
 
 #### slot: queryAssembly
 
+Alternative to assemblyNames: the query assembly name
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -89,6 +106,10 @@ preprocessor to allow minimal config, assumes file.pif.gz.tbi:
 ```
 
 #### slot: pifGzLocation
+
+location of pairwise tabix indexed PAF (pif)
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -107,6 +128,8 @@ bpPerPx threshold at which the reader switches from the per-row CIGAR tier
 (lowercase t/q prefix) to the coarse no-CIGAR tier (uppercase T/Q prefix), when
 make-pif was run with --coarse. No coarse tier present in the file = always uses
 fine tier.
+
+**Type:** `number` · **Default:** `10000`
 
 ```js
 {
@@ -138,6 +161,8 @@ ConfigurationSchema('TabixIndex', {
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -147,6 +172,8 @@ ConfigurationSchema('TabixIndex', {
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {

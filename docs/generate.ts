@@ -7,6 +7,8 @@ import {
   writeApiReadmes,
 } from './generateApiDocs.ts'
 import { writeColorDocs } from './generateColorDocs.ts'
+import { writeExtensionPointDocs } from './generateExtensionPointDocs.ts'
+import { writeJexlDocs } from './generateJexlDocs.ts'
 import { accumulateConfig, writeConfigDocs } from './generateConfigDocs.ts'
 import { accumulateModel, writeModelDocs } from './generateStateModelDocs.ts'
 
@@ -51,12 +53,19 @@ async function main() {
       .map(m => m.header?.name)
       .filter((name): name is string => Boolean(name)),
   )
+  const configNames = new Set(
+    Object.values(configs)
+      .map(c => c.header?.name)
+      .filter((name): name is string => Boolean(name)),
+  )
 
   await writeConfigDocs(configs, displayTypesByTrack, modelNames)
-  await writeModelDocs(models)
+  await writeModelDocs(models, configNames)
   await writeApiDocs(api)
   await writeApiReadmes(api)
   writeColorDocs()
+  writeJexlDocs()
+  writeExtensionPointDocs()
 
   // writeFormatted's programmatic prettier.format() call on embedded markdown
   // code fences isn't always a fixed point of the prettier CLI (e.g. arrow

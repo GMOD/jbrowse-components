@@ -21,6 +21,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchLinearGenomeViewF(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-LinearGenomeView | async | Programmatically launch a linear genome view */
   pluginManager.addToExtensionPoint('LaunchView-LinearGenomeView', args => {
     // args is the InitState plus the target session and an optional id;
     // everything except session/id forwards verbatim into the view's

@@ -59,6 +59,11 @@ _See the **Slots** section below for all available configuration fields._
 
 Extends LinearCanvasBaseDisplay for GPU-accelerated variant rendering.
 
+### LinearVariantDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearvariantdisplay).
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
@@ -71,6 +76,10 @@ this page is self-contained.
 
 #### slot: maxHeight
 
+Maximum height of the display in pixels
+
+**Type:** `number` · **Default:** `1200`
+
 ```js
 {
   type: 'number',
@@ -82,6 +91,10 @@ this page is self-contained.
 
 #### slot: autoHeight
 
+Automatically resize the track height to fit all features
+
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -92,6 +105,11 @@ this page is self-contained.
 ```
 
 #### slot: showLabels
+
+Show feature labels: "auto" hides labels at high feature density, "on" always
+shows, "off" always hides
+
+**Type:** `stringEnum` · **Default:** `'auto'`
 
 ```js
 {
@@ -105,6 +123,11 @@ this page is self-contained.
 
 #### slot: maxLabelFeatureDensity
 
+In "auto" showLabels mode, hide labels when visible feature density
+(features/pixel) exceeds this value
+
+**Type:** `number`
+
 ```js
 {
   type: 'number',
@@ -117,6 +140,10 @@ this page is self-contained.
 
 #### slot: showDescriptions
 
+Show feature descriptions
+
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   type: 'boolean',
@@ -126,6 +153,11 @@ this page is self-contained.
 ```
 
 #### slot: color
+
+the main fill color of each feature (a CSS color, or a jexl expression for
+per-feature coloring)
+
+**Type:** `color` · **Default:** `'goldenrod'`
 
 ```js
 {
@@ -139,6 +171,11 @@ this page is self-contained.
 
 #### slot: connectorColor
 
+color of the connecting/intron lines between feature segments (defaults to the
+theme text color)
+
+**Type:** `color`
+
 ```js
 {
   type: 'color',
@@ -151,6 +188,10 @@ this page is self-contained.
 
 #### slot: utrColor
 
+fill color for UTRs on gene/transcript glyphs
+
+**Type:** `color` · **Default:** `'#357089'`
+
 ```js
 {
   type: 'color',
@@ -162,6 +203,10 @@ this page is self-contained.
 
 #### slot: outlineColor
 
+outline color for features (empty string = no outline)
+
+**Type:** `color` · **Default:** `''`
+
 ```js
 {
   type: 'color',
@@ -171,6 +216,10 @@ this page is self-contained.
 ```
 
 #### slot: featureHeight
+
+height in pixels of the main body of each feature
+
+**Type:** `number` · **Default:** `10`
 
 ```js
 {
@@ -182,6 +231,10 @@ this page is self-contained.
 ```
 
 #### slot: displayMode
+
+Feature height preset (normal/compact/super-compact)
+
+**Type:** `stringEnum` · **Default:** `'normal'`
 
 ```js
 {
@@ -198,6 +251,11 @@ this page is self-contained.
 
 #### slot: geneGlyphMode
 
+Gene glyph display mode: "auto" switches based on zoom level, "all" shows all
+transcripts, "longestCoding" shows only the longest coding transcript
+
+**Type:** `stringEnum` · **Default:** `'auto'`
+
 ```js
 {
   type: 'stringEnum',
@@ -209,6 +267,10 @@ this page is self-contained.
 ```
 
 #### slot: subfeatureLabels
+
+subfeature label display mode
+
+**Type:** `stringEnum` · **Default:** `'none'`
 
 ```js
 {
@@ -225,6 +287,10 @@ this page is self-contained.
 
 #### slot: displayDirectionalChevrons
 
+Display directional chevrons on intron lines to indicate strand direction
+
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   type: 'boolean',
@@ -235,6 +301,8 @@ this page is self-contained.
 ```
 
 #### slot: transcriptTypes
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -256,6 +324,8 @@ this page is self-contained.
 
 #### slot: containerTypes
 
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -264,6 +334,10 @@ this page is self-contained.
 ```
 
 #### slot: subParts
+
+subparts for a glyph
+
+**Type:** `string` · **Default:** `'CDS,UTR,five_prime_UTR,three_prime_UTR'`
 
 ```js
 {
@@ -274,6 +348,10 @@ this page is self-contained.
 ```
 
 #### slot: impliedUTRs
+
+imply UTR from the exon and CDS differences
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -311,6 +389,11 @@ ConfigurationSchema('CanvasFeatureLabels', {
 
 #### slot: maxFeatureScreenDensity
 
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -322,6 +405,11 @@ ConfigurationSchema('CanvasFeatureLabels', {
 ```
 
 #### slot: fetchSizeLimit
+
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {
@@ -335,6 +423,10 @@ ConfigurationSchema('CanvasFeatureLabels', {
 
 #### slot: height
 
+default height for the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -344,6 +436,11 @@ ConfigurationSchema('CanvasFeatureLabels', {
 ```
 
 #### slot: mouseover
+
+text to display when the cursor hovers over a feature
+
+**Type:** `string` · **Default:**
+`'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
 {
@@ -358,6 +455,8 @@ ConfigurationSchema('CanvasFeatureLabels', {
 
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
+
+**Type:** `stringArray`
 
 ```js
 {

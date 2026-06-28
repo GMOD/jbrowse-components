@@ -37,7 +37,7 @@ Example `FromConfigAdapter`:
 ## FromConfigSequenceAdapter
 
 Like `FromConfigAdapter`, but optimized for sequence features (used by reference
-sequence tracks).
+sequence tracks — see [configuring assemblies](/docs/config_guides/assemblies)).
 
 Example `FromConfigSequenceAdapter`:
 
@@ -62,3 +62,11 @@ Example `FromConfigSequenceAdapter`:
   ]
 }
 ```
+
+## See also
+
+- [Configuring tracks](/docs/config_guides/tracks) — the track config these
+  adapters plug into
+- [FromConfigAdapter config docs](/docs/config/fromconfigadapter) and
+  [FromConfigSequenceAdapter config docs](/docs/config/fromconfigsequenceadapter)
+  — the full slot reference

@@ -60,12 +60,19 @@ shorthand `displayDefaults: { key: value }` is equivalent to the full
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
+### LinearWiggleDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearwiggledisplay).
+
 <details open>
 <summary>LinearWiggleDisplay - Slots</summary>
 
 #### slot: defaultRendering
 
 Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+
+**Type:** `stringEnum` · **Default:** `'xyplot'`
 
 ```js
 {
@@ -87,6 +94,10 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
 #### slot: height
 
+Default height of the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -96,6 +107,10 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 ```
 
 #### slot: useBicolor
+
+Use separate positive/negative colors instead of a single color
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {
@@ -108,6 +123,10 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 
 #### slot: color
 
+Color for the wiggle bars (when not using bicolor mode)
+
+**Type:** `color`
+
 ```js
 {
   type: 'color',
@@ -117,6 +136,11 @@ Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
 ```
 
 #### slot: summaryScoreMode
+
+choose whether to use max/min/average or whiskers which combines all three into
+the same rendering
+
+**Type:** `stringEnum` · **Default:** `'whiskers'`
 
 ```js
 {

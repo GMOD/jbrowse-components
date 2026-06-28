@@ -447,6 +447,7 @@ export default class PluginManager {
         typeRecord.add(
           newElement.name,
           this.evaluateExtensionPoint(
+            /** #extensionPoint Core-extendPluggableElement | sync | Mutate any pluggable element after it is created */
             'Core-extendPluggableElement',
             newElement,
           ),

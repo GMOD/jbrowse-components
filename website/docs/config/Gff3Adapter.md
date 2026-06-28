@@ -39,6 +39,10 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text GFF3 files. Loads the whole file into memory, so prefer
 the Gff3TabixAdapter for large files.
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### Gff3Adapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -54,6 +58,8 @@ preprocessor to allow minimal config:
 <summary>Gff3Adapter - Slots</summary>
 
 #### slot: gffLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

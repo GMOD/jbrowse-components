@@ -53,11 +53,12 @@ list of display slots and their defaults.
 
 ### Adapters
 
-BigWig (`BigWigAdapter`) and bedGraph (`BedGraphTabixAdapter`, for a
-bgzip+tabix-indexed file) are both supported. The example above uses the reduced
-`uri` form; see the [BigWigAdapter](/docs/config/bigwigadapter) and
-[BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter) config docs for all
-options.
+BigWig (`BigWigAdapter`) and bedGraph are both supported. For bedGraph, use
+`BedGraphTabixAdapter` (a bgzip+tabix-indexed file) for large data, or
+`BedGraphAdapter` for a small plain `.bedGraph`. The example above uses the
+reduced `uri` form; see the [BigWigAdapter](/docs/config/bigwigadapter),
+[BedGraphTabixAdapter](/docs/config/bedgraphtabixadapter), and
+[BedGraphAdapter](/docs/config/bedgraphadapter) config docs for all options.
 
 ## See also
 

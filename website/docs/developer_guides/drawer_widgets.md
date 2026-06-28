@@ -80,7 +80,10 @@ interface InitState {
   loc?: string // initial location (e.g., 'chr1:1000..2000')
   tracks?: TrackInit[] // tracks to display
   nav?: boolean // show navigation header (default: true)
-  highlight?: string[] // genomic regions to highlight
+  highlight?: (string | HighlightType)[] // genomic regions to highlight
+  showCenterLine?: boolean // show the center line
+  trackLabels?: 'overlapping' | 'offset' | 'hidden' // track-label placement mode
+  colorByCDS?: boolean // color CDS by reading frame + draw amino acid lettering
 }
 ```
 
@@ -123,3 +126,10 @@ fetched when it first opens.
 See the `WithDrawerWidget` example in the JBrowse examples site:
 
 https://jbrowse.org/storybook/lgv/with-drawer-widget/
+
+## See also
+
+- [Creating custom widgets](/docs/developer_guides/creating_widget) — how to
+  register the widget type shown in a drawer
+- [Extension points](/docs/developer_guides/extension_points) —
+  `Core-replaceWidget` and `Core-extraFeaturePanel` customize widget contents

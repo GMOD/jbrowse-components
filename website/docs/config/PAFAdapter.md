@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### Used in
+
+This adapter supplies data to the [SyntenyTrack](../syntenytrack) track type.
+
 ### PAFAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -59,6 +63,11 @@ preprocessor to allow minimal config:
 
 #### slot: assemblyNames
 
+Array of assembly names to use for this file. The query assembly name is the
+first value in the array, target assembly name is the second
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -70,6 +79,10 @@ preprocessor to allow minimal config:
 
 #### slot: targetAssembly
 
+Alternative to assemblyNames: the target assembly name
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -80,6 +93,10 @@ preprocessor to allow minimal config:
 
 #### slot: queryAssembly
 
+Alternative to assemblyNames: the query assembly name
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -89,6 +106,8 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: pafLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

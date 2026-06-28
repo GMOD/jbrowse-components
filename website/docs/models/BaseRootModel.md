@@ -135,9 +135,10 @@ type setError = (error: unknown) => void
 
 Sets the active session. Remaps any legacy display type names (e.g.
 LinearPileupDisplay → LinearAlignmentsDisplay), then walks the resulting MST
-tree to drop undefined references in arrays/maps so shared sessions still load
-when referencing tracks/widgets that no longer exist. If filtering throws, the
-previous session is restored.
+tree to drop open tracks whose config can't hydrate so shared sessions still
+load when referencing tracks that no longer exist. Dropped tracks are surfaced
+to the user via a snackbar. If filtering throws, the previous session is
+restored.
 
 ```ts
 type setSession = (sessionSnapshot?: any) => void

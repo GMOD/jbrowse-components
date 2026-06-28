@@ -26,6 +26,8 @@ generally exists on the config.json or root config as configuration.hierarchical
 
 #### slot: configuration.hierarchical.sort.trackNames
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -35,6 +37,8 @@ generally exists on the config.json or root config as configuration.hierarchical
 
 #### slot: configuration.hierarchical.sort.categories
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -43,6 +47,10 @@ generally exists on the config.json or root config as configuration.hierarchical
 ```
 
 #### slot: configuration.hierarchical.defaultFolderCategories
+
+list of category names to display as folders by default
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -54,6 +62,8 @@ generally exists on the config.json or root config as configuration.hierarchical
 
 #### slot: configuration.hierarchical.defaultCollapsed.categoryNames
 
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -63,6 +73,8 @@ generally exists on the config.json or root config as configuration.hierarchical
 
 #### slot: configuration.hierarchical.defaultCollapsed.topLevelCategories
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -71,6 +83,8 @@ generally exists on the config.json or root config as configuration.hierarchical
 ```
 
 #### slot: configuration.hierarchical.defaultCollapsed.subCategories
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

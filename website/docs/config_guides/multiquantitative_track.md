@@ -54,8 +54,9 @@ on features as `feature.get('source')`. When using `bigWigs`, `source` is
 auto-derived from the URL filename. When using `subadapters`, set it explicitly.
 `name` is an alias — `source` takes priority if both are set.
 
-Since features carry a `source` attribute, you can reference it in jexl color
-callbacks, e.g. `jexl:get(feature,'source')=='k1'?'red':'blue'`.
+Since features carry a `source` attribute, you can reference it in
+[jexl color callbacks](/docs/config_guides/jexl), e.g.
+`jexl:feature.source=='k1'?'red':'blue'`.
 
 The `subadapters` slot also supports:
 

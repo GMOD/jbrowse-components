@@ -35,6 +35,8 @@ preprocessor to allow minimal config:
 
 #### slot: cytobandLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',

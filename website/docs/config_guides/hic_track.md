@@ -10,7 +10,7 @@ Example Hi-C track config:
 {
   "type": "HicTrack",
   "trackId": "hic",
-  "name": "HiC Track",
+  "name": "Hi-C Track",
   "assemblyNames": ["hg19"],
   "adapter": {
     "type": "HicAdapter",
@@ -24,7 +24,7 @@ Example Hi-C track config:
 
 ## HicAdapter config
 
-The HicAdapter currently only requires a `hicLocation`:
+The HicAdapter only requires a `hicLocation`:
 
 ```json
 {
@@ -50,6 +50,8 @@ A reduced form is also accepted (see the
 
 Hi-C contact matrices are drawn with a built-in color ramp, selectable from the
 track menu. Available schemes are `juicebox` (default), `fall`, and `viridis`.
+See the [LinearHicDisplay config docs](/docs/config/linearhicdisplay) for the
+full list of display slots.
 
 ## See also
 

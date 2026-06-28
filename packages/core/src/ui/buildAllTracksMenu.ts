@@ -73,6 +73,7 @@ export function buildAllTracksMenu(
   tracks: { displays: unknown[] }[],
 ): MenuItem[] {
   const displays = tracks.flatMap(t => t.displays)
+  /** #extensionPoint Core-extendAllTracksMenu | sync | Add items to the all-tracks menu */
   const ops = pluginManager.evaluateExtensionPoint('Core-extendAllTracksMenu', [
     compactnessGroupOp,
   ])

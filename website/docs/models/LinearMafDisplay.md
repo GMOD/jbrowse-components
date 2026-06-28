@@ -365,6 +365,63 @@ rowIdentityAutoZoom: types.stripDefault(
 )
 ```
 
+#### property: showAnnotations
+
+Show the per-species CDS reading-frame overlay sourced from the configured
+`annotationAdapter` (UCSC `mafFrames`). No effect unless an `annotationAdapter`
+is configured.
+
+```ts
+// type signature
+type showAnnotations = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showAnnotations: types.stripDefault(types.boolean, DEFAULTS.showAnnotations)
+```
+
+#### property: showTranslation
+
+Translate each species in the reference reading frame (from the
+`annotationAdapter` `mafFrames`) and draw the amino acid centered on each codon
+in place of the nucleotide letters — UCSC `wigMaf` "show translation". Residues
+differing from the reference (nonsynonymous) are emphasized. Needs an
+`annotationAdapter`.
+
+```ts
+// type signature
+type showTranslation = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showTranslation: types.stripDefault(types.boolean, DEFAULTS.showTranslation)
+```
+
+#### property: colorByChromosome
+
+Color each species' alignment blocks by their source chromosome
+(`MafAlignedRow.chr`) instead of the per-base SNP coloring — a row whose blocks
+come from different source chromosomes changes color, surfacing
+translocations/rearrangements (MCGV "color by chromosome"). Detail (non-summary)
+view only; needs no extra fetch.
+
+```ts
+// type signature
+type colorByChromosome = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+colorByChromosome: types.stripDefault(types.boolean, DEFAULTS.colorByChromosome)
+```
+
+#### property: showInversions
+
+Overlay a strand-flip (inversion) indicator: blocks aligning inverted relative
+to their own source chromosome's consensus orientation get a diagonal hatch.
+Composes on top of any rows rendering; needs no extra fetch
+(`MafAlignedRow.strand` is already shipped).
+
+```ts
+// type signature
+type showInversions = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showInversions: types.stripDefault(types.boolean, DEFAULTS.showInversions)
+```
+
 </details>
 
 <details open>
@@ -391,6 +448,19 @@ other's data.
 type summaryDataMap = ObservableMap<number, MafSummaryRecord[]>
 // code
 summaryDataMap: observable.map<number, MafSummaryRecord[]>()
+```
+
+#### volatile: framesDataMap
+
+Per-region CDS frame rows (UCSC `mafFrames`) for the annotation overlay,
+populated by the frames RPC in parallel with the main fetch. Kept separate from
+the alignment/summary maps so the overlay survives the summary↔detail data swap.
+
+```ts
+// type signature
+type framesDataMap = ObservableMap<number, MafFrameRecord[]>
+// code
+framesDataMap: observable.map<number, MafFrameRecord[]>()
 ```
 
 #### volatile: prefersOffset
@@ -467,6 +537,34 @@ the config typed off the concrete schema; `ConfigurationReference` erases
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
+#### getter: lgv
+
+The containing LGV, typed once here so views/actions don't each repeat the
+`getContainingView(self) as LinearGenomeViewModel` cast.
+
+```ts
+type lgv = ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>
+```
+
+#### getter: annotationAdapterConfig
+
+The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`), or
+undefined when unset. A frozen config slot, so this is a plain snapshot the
+frames RPC hands straight to `getAdapter`.
+
+```ts
+type annotationAdapterConfig = Record<string, unknown> | undefined
+```
+
+#### getter: annotationsActive
+
+Whether the per-species CDS frame overlay should fetch + draw: an annotation
+adapter is configured and the toggle is on.
+
+```ts
+type annotationsActive = boolean
+```
+
 #### getter: editableSources
 
 The full row set with the user's arrangement applied: `layout` supplies order +
@@ -495,6 +593,41 @@ legend, etc.
 
 ```ts
 type samples = Sample[] | undefined
+```
+
+#### getter: orderedSampleIds
+
+Display row order shipped to the worker so its block `rowIndex` matches the
+on-screen row. Single source for both `rpcProps` (cache-invalidation key) and
+the alignment-fetch RPC arg so the two can't drift.
+
+```ts
+type orderedSampleIds = string[] | undefined
+```
+
+#### getter: rowIndexBySrc
+
+Maps a `src` (species) to its display row index. The single source for the
+`src`→row projection used by the summary-bar and CDS-frame overlays and the
+frame hover lookup, so they can't disagree on row placement.
+
+```ts
+type rowIndexBySrc = Map<string, number>
+```
+
+#### getter: defaultCodonSpecies
+
+The anchor species whose `mafFrames` reading frame is used to translate every
+row (UCSC `codonDefault`). Tied to the _reference assembly_, not the top display
+row: every species' codon is compared against the reference sequence
+(`block.refSeqBytes`), so the frame must be enumerated from the reference's own
+frames. A row reorder (layout) can move a non-reference species to row 0 —
+reading `sources[0]` there would enumerate codons in the wrong frame. Falls back
+to the worker's canonical first row (pre-reorder) when the reference isn't
+itself a listed sample.
+
+```ts
+type defaultCodonSpecies = string | undefined
 ```
 
 #### getter: coverageDisplayHeight
@@ -653,12 +786,6 @@ Y-axis tick marks for the coverage band.
 type coverageTicks = YScaleTicks | undefined
 ```
 
-#### getter: visibleLabels
-
-```ts
-type visibleLabels = VisibleLabel[]
-```
-
 #### getter: visibleEmptyLines
 
 Positioned bridge-line segments for `e`-line (empty/bridged) rows.
@@ -684,6 +811,15 @@ deleted-base count inside each run when it fits.
 type visibleDeletions = DeletionMarker[]
 ```
 
+#### getter: visibleInversions
+
+Positioned strand-flip (inversion) markers for the visible aligned rows. Empty
+unless the indicator is toggled on.
+
+```ts
+type visibleInversions = InversionMarker[]
+```
+
 #### getter: showSummary
 
 Use the cheap summary path when a `bigMafSummary` sub-adapter is configured and
@@ -706,19 +842,41 @@ until the view is initialized.
 type zoomedToBaseLevel = boolean
 ```
 
+#### getter: codonViewActive
+
+The codon view is on: the toggle is set, frame data is available to define the
+reading frame, and we're zoomed to base level (so codons are meaningful) and not
+in the cheap summary path. When active it replaces the per-base SNP rendering
+with per-codon change coloring.
+
+```ts
+type codonViewActive = boolean
+```
+
 #### getter: activeRowRendering
 
 Single source of truth for what the per-sample rows area draws right now:
-`bases` (the GPU SNP/base coloring) or one of the per-row identity styles
-(`heatmap` / `xyplot`). With `rowIdentityAutoZoom` (default) it emulates UCSC
-`wigMaf` — bases at base level, the identity plot when zoomed out; with auto off
-the selected mode is pinned at every zoom. Either way it's off when no mode is
-selected or the cheap `bigMafSummary` path already owns the zoom-out view. The
-GPU canvas, the identity canvas, and SVG export all branch on this one getter so
-they can't disagree about what's on screen.
+`bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring from
+`mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or a per-row
+identity style (`heatmap` / `xyplot`). Codon view takes precedence when on, then
+color-by-chromosome (an explicit SV toggle, but not in the cheap summary path
+which carries no per-row chr); otherwise, with `rowIdentityAutoZoom` (default)
+it emulates UCSC `wigMaf` — bases at base level, the identity plot when zoomed
+out; with auto off the selected mode is pinned. The GPU canvas, the
+identity/chromosome canvases, the codon overlay, and SVG export all branch on
+this one getter so they can't disagree about what's on screen.
 
 ```ts
-type activeRowRendering = 'bases' | RowIdentityMode
+type activeRowRendering = 'bases' | 'codon' | 'sourceChrom' | RowIdentityMode
+```
+
+#### getter: visibleLabels
+
+Positioned per-base SNP/sequence letters. Suppressed in any non-base rendering
+(the identity plot and codon view both replace the letters).
+
+```ts
+type visibleLabels = VisibleLabel[]
 ```
 
 #### getter: visibleSummaryBars
@@ -729,6 +887,37 @@ index, keeping the render robust to summary files that list extra species.
 
 ```ts
 type visibleSummaryBars = SummaryBar[]
+```
+
+#### getter: visibleFrames
+
+Positioned per-species CDS frame boxes for the annotation overlay. Empty unless
+an annotation adapter is configured and the overlay is on. Reuses the `src`→row
+mapping the summary bars established, so frame rows for species the track
+doesn't list drop out.
+
+```ts
+type visibleFrames = FrameMarker[]
+```
+
+#### getter: visibleCodons
+
+Per-species codon cells for the codon view (the per-codon change coloring that
+replaces the SNP cells). Empty unless codon view is the active rendering and an
+anchor species is known.
+
+```ts
+type visibleCodons = CodonMarker[]
+```
+
+#### getter: visibleSourceChromosomes
+
+Distinct source chromosomes among the visible alignment blocks, each with its
+stable color — the legend for the color-by-chromosome SV mode. Empty unless that
+mode is the active rendering.
+
+```ts
+type visibleSourceChromosomes = { chr: string; color: string }[]
 ```
 
 #### getter: msaHighlights
@@ -766,7 +955,10 @@ deepEqual-guarded in `setSamples`, `layout`/`subtreeFilter` user-driven), so it
 doesn't churn per fetch.
 
 ```ts
-type rpcProps = () => { orderedSampleIds: string[] | undefined }
+type rpcProps = () => {
+  orderedSampleIds: string[] | undefined
+  annotationsActive: boolean
+}
 ```
 
 #### method: rowHoverInfo
@@ -778,6 +970,22 @@ block covers the bp, the row is out of range, or the cell is a gap.
 
 ```ts
 type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: number, bpPerPx: number) => { sampleLabel: string; kind: "cell"; base: string; chr?: string | undefined; pos?: number | undefined; strand?: number | undefined; context?: AlignmentContext | undefined; } | { ...; } | { ...; } | { ...; } | undefined
+```
+
+#### method: frameHoverInfo
+
+The CDS frame record covering absolute genomic `bp` (uint32) on display
+`rowIndex`, or undefined when no frame overlaps there (or the overlay is off).
+Powers the gene/reading-frame rows in the hover tooltip — the species is matched
+by the same `src`→row projection the overlay draws with, so the tooltip and the
+strip can't disagree about which row a gene is on.
+
+```ts
+type frameHoverInfo = (
+  displayedRegionIndex: number,
+  bp: number,
+  rowIndex: number,
+) => { name: string; frame: number; strand: number } | undefined
 ```
 
 #### method: coverageTooltipBin
@@ -806,6 +1014,23 @@ type coverageInsertionHit = (
   gposFrac: number,
   bpPerPx: number,
 ) => CoverageInsertionHit | undefined
+```
+
+#### method: codonHoverInfo
+
+The codon under the cursor on display `rowIndex` at absolute genomic `bp`, when
+the codon view is the active rendering: the species' codon + amino acid, the
+reference codon + amino acid, and the syn/nonsyn/stop classification. Reuses the
+same anchor frames + reference comparison the colored cells are drawn from
+(`findCodonAt`), so the tooltip and the cell agree. Undefined off codon view or
+where no codon covers the row there.
+
+```ts
+type codonHoverInfo = (
+  displayedRegionIndex: number,
+  bp: number,
+  rowIndex: number,
+) => CodonHit | undefined
 ```
 
 #### method: trackMenuItems
@@ -923,21 +1148,34 @@ type setRowIdentityMode = (arg: 'none' | 'xyplot' | 'heatmap') => void
 type setRowIdentityAutoZoom = (arg: boolean) => void
 ```
 
+#### action: setShowAnnotations
+
+```ts
+type setShowAnnotations = (arg: boolean) => void
+```
+
+#### action: setShowTranslation
+
+```ts
+type setShowTranslation = (arg: boolean) => void
+```
+
+#### action: setColorByChromosome
+
+```ts
+type setColorByChromosome = (arg: boolean) => void
+```
+
+#### action: setShowInversions
+
+```ts
+type setShowInversions = (arg: boolean) => void
+```
+
 #### action: setConservationHeight
 
 ```ts
 type setConservationHeight = (arg: number) => void
-```
-
-#### action: showInsertionSequenceDialog
-
-```ts
-type showInsertionSequenceDialog = (insertionData: {
-  sequence: string
-  sampleLabel: string
-  chr: string
-  pos: number
-}) => void
 ```
 
 #### action: clearLayout
@@ -983,6 +1221,12 @@ type setRpcData = (regionIndex: number, data: MafRegionData) => void
 
 ```ts
 type setSummaryData = (regionIndex: number, records: MafSummaryRecord[]) => void
+```
+
+#### action: setFramesData
+
+```ts
+type setFramesData = (regionIndex: number, records: MafFrameRecord[]) => void
 ```
 
 #### action: clearAlignmentData

@@ -29,6 +29,10 @@ that identifies it (not one of the config slots below).
 
 #### slot: name
 
+a unique name for this connection
+
+**Type:** `string` · **Default:** `'nameOfConnection'`
+
 ```js
 {
   type: 'string',
@@ -38,6 +42,10 @@ that identifies it (not one of the config slots below).
 ```
 
 #### slot: assemblyNames
+
+optional list of names of assemblies in this connection
+
+**Type:** `stringArray`
 
 ```js
 {

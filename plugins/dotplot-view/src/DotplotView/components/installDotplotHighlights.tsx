@@ -12,6 +12,7 @@ export default function installDotplotHighlights(pluginManager: PluginManager) {
     ],
   )
   pluginManager.addToExtensionPoint(
+    /** #extensionPoint DotplotView-OverlayHTMLComponent | sync | Add an HTML overlay component to the dotplot view */
     'DotplotView-OverlayHTMLComponent',
     () => DotplotHighlightChipOverlay,
   )

@@ -24,6 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: rootUrlTemplate
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -35,6 +37,10 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: refNames
+
+List of refNames used by the NCList used for aliasing
+
+**Type:** `stringArray`
 
 ```js
 {

@@ -24,6 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: adapterId
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -32,6 +34,8 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: features
+
+**Type:** `frozen`
 
 ```js
 {

@@ -31,6 +31,10 @@ field that identifies it (not one of the config slots below).
 
 #### slot: name
 
+descriptive name of the internet account
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'descriptive name of the internet account',
@@ -40,6 +44,10 @@ field that identifies it (not one of the config slots below).
 ```
 
 #### slot: description
+
+a description of the internet account
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -51,6 +59,10 @@ field that identifies it (not one of the config slots below).
 
 #### slot: authHeader
 
+request header for credentials
+
+**Type:** `string` · **Default:** `'Authorization'`
+
 ```js
 {
   description: 'request header for credentials',
@@ -61,6 +73,10 @@ field that identifies it (not one of the config slots below).
 
 #### slot: tokenType
 
+a custom name for a token to include in the header
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'a custom name for a token to include in the header',
@@ -70,6 +86,10 @@ field that identifies it (not one of the config slots below).
 ```
 
 #### slot: domains
+
+array of valid domains the url can contain to use this account
+
+**Type:** `stringArray`
 
 ```js
 {

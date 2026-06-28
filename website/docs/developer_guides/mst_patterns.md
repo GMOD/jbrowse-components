@@ -187,3 +187,12 @@ flags, cached computed values, maps that are rebuilt from props):
 Observable maps (`.map<K, V>()`) give you reactive key-level tracking — an
 autorun that reads `map.get(key)` re-fires when that specific key changes, not
 on every map write.
+
+## See also
+
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) — these
+  patterns in action across the fetch autoruns
+- [Configuration schema](/docs/developer_guides/configuration_schema) —
+  `ConfigurationReference` and `getConf` in models
+- [Creating custom view types](/docs/developer_guides/creating_view) — the view
+  state model

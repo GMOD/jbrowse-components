@@ -38,6 +38,10 @@ _See the **Slots** section below for all available configuration fields._
 
 intended for SVs in a single assembly
 
+### Used in
+
+This adapter supplies data to the [VariantTrack](../varianttrack) track type.
+
 ### BedpeAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -54,6 +58,10 @@ preprocessor to allow minimal config:
 
 #### slot: bedpeLocation
 
+can be plaintext or gzipped, not indexed so loaded into memory on startup
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -67,6 +75,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: columnNames
+
+List of column names
+
+**Type:** `stringArray`
 
 ```js
 {

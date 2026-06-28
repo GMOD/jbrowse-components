@@ -14,7 +14,9 @@ Kinh-Vietnamese trio HG02024 (chr1 only):
 - [VCF](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz)
 - [Index (.tbi)](https://hgdownload.soe.ucsc.edu/gbdb/hg38/1000Genomes/trio/HG02024_VN049_KHV/HG02024_VN049_KHVTrio.chr1.vcf.gz.tbi)
 
-Add the VCF to JBrowse via the CLI or the GUI. Once loaded:
+Add the VCF to JBrowse via the CLI (`jbrowse add-track`) or the in-app "Add
+track" workflow (see the
+[variant track guide](/docs/config_guides/variant_track)). Once loaded:
 
 <Figure caption="Initial load of the VCF file, showing the default display mode with simple orange boxes for each variant" src="/img/trio-basic.png"/>
 
@@ -32,8 +34,8 @@ connecting columns back to their genomic positions.
 The matrix display has a "phased" rendering mode, available when the genotypes
 use the `0|1` (phased) separator instead of `0/1` (unphased).
 
-Ideally, your variants will be "completely phased". This sometimes requires
-specialized programs like SHAPEIT.
+Ideally your variants are fully phased, which often requires a dedicated phasing
+program such as SHAPEIT.
 
 <Figure caption="Screenshot showing the phased rendering mode along with the menu item used to select it 'Rendering mode'->'Phased'" src="/img/trio-matrix-phased.png"/>
 

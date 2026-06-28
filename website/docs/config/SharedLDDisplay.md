@@ -27,6 +27,8 @@ reference the markdown files in our repo of the checked out git tag
 Filter variants by minor allele frequency (0-1). Variants with MAF below this
 threshold will be hidden
 
+**Type:** `number` · **Default:** `0.1`
+
 ```js
 {
   type: 'number',
@@ -38,6 +40,8 @@ threshold will be hidden
 #### slot: lengthCutoffFilter
 
 Maximum length of variants to include (in bp)
+
+**Type:** `number`
 
 ```js
 {
@@ -51,6 +55,8 @@ Maximum length of variants to include (in bp)
 
 Height of the zone for connecting lines at the top
 
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -62,6 +68,8 @@ Height of the zone for connecting lines at the top
 #### slot: ldMetric
 
 LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
+
+**Type:** `stringEnum` · **Default:** `'r2'`
 
 ```js
 {
@@ -75,6 +83,8 @@ LD metric to compute: 'r2' (squared correlation) or 'dprime' (normalized D)
 
 Whether to show the legend
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -85,6 +95,8 @@ Whether to show the legend
 #### slot: showLDTriangle
 
 Whether to show the LD triangle heatmap
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {
@@ -97,6 +109,8 @@ Whether to show the LD triangle heatmap
 
 Whether to show the recombination rate track
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -107,6 +121,8 @@ Whether to show the recombination rate track
 #### slot: recombinationZoneHeight
 
 Height of the recombination track zone at the top
+
+**Type:** `number` · **Default:** `50`
 
 ```js
 {
@@ -119,6 +135,8 @@ Height of the recombination track zone at the top
 #### slot: fitToHeight
 
 When true, squash the LD triangle to fit the display height
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -133,6 +151,8 @@ When true, squash the LD triangle to fit the display height
 HWE filter p-value threshold (variants with HWE p < this are excluded). Set to 0
 to disable HWE filtering
 
+**Type:** `number` · **Default:** `0`
+
 ```js
 {
   type: 'number',
@@ -146,6 +166,8 @@ to disable HWE filtering
 Call rate filter threshold (0-1). Variants with fewer than this proportion of
 non-missing genotypes are excluded. Set to 0 to disable.
 
+**Type:** `number` · **Default:** `0`
+
 ```js
 {
   type: 'number',
@@ -157,6 +179,8 @@ non-missing genotypes are excluded. Set to 0 to disable.
 #### slot: showVerticalGuides
 
 Whether to show vertical guides at the connected genome positions on hover
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {
@@ -170,6 +194,8 @@ Whether to show vertical guides at the connected genome positions on hover
 
 Whether to show variant labels above the tick marks
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -181,6 +207,8 @@ Whether to show variant labels above the tick marks
 #### slot: tickHeight
 
 Height of the vertical tick marks at the genomic position
+
+**Type:** `number` · **Default:** `6`
 
 ```js
 {
@@ -195,6 +223,8 @@ Height of the vertical tick marks at the genomic position
 When true, draw cells sized according to genomic distance between SNPs rather
 than uniform squares
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -208,6 +238,8 @@ than uniform squares
 When true, show signed LD values (-1 to 1) instead of absolute values (0 to 1).
 For R², this shows R (correlation) instead. For D', this preserves the sign.
 
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -219,6 +251,8 @@ For R², this shows R (correlation) instead. For D', this preserves the sign.
 #### slot: jexlFilters
 
 JEXL filter expressions to apply to variants (one per line, starting with jexl:)
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -242,6 +276,11 @@ this page is self-contained.
 
 #### slot: maxFeatureScreenDensity
 
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -253,6 +292,11 @@ this page is self-contained.
 ```
 
 #### slot: fetchSizeLimit
+
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {
@@ -266,6 +310,10 @@ this page is self-contained.
 
 #### slot: height
 
+default height for the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -275,6 +323,11 @@ this page is self-contained.
 ```
 
 #### slot: mouseover
+
+text to display when the cursor hovers over a feature
+
+**Type:** `string` · **Default:**
+`'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
 {
@@ -289,6 +342,8 @@ this page is self-contained.
 
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
+
+**Type:** `stringArray`
 
 ```js
 {

@@ -21,3 +21,8 @@ turns off both:
 Embedded components do not collect any analytics.
 
 :::
+
+`disableAnalytics` is one of the global `configuration` slots — see the
+[intro to the config.json format](/docs/config_guides/intro) for where it sits,
+and the [JBrowseConfiguration config docs](/docs/config/jbrowseconfiguration)
+for the other global slots.

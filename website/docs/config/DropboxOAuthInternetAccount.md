@@ -19,10 +19,19 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### DropboxOAuthInternetAccount - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/dropboxoauthinternetaccount).
+
 <details open>
 <summary>DropboxOAuthInternetAccount - Slots</summary>
 
 #### slot: authEndpoint
+
+the authorization code endpoint of the internet account
+
+**Type:** `string` · **Default:** `'https://www.dropbox.com/oauth2/authorize'`
 
 ```js
 {
@@ -34,6 +43,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: tokenEndpoint
 
+the token endpoint of the internet account
+
+**Type:** `string` · **Default:** `'https://api.dropbox.com/oauth2/token'`
+
 ```js
 {
   description: 'the token endpoint of the internet account',
@@ -44,6 +57,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: needsPKCE
 
+boolean to indicate if the endpoint needs a PKCE code
+
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   description: 'boolean to indicate if the endpoint needs a PKCE code',
@@ -53,6 +70,10 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: domains
+
+array of valid domains the url can contain to use this account
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -85,6 +106,10 @@ this page is self-contained.
 
 #### slot: tokenType
 
+a custom name for a token to include in the header
+
+**Type:** `string` · **Default:** `'Bearer'`
+
 ```js
 {
   description: 'a custom name for a token to include in the header',
@@ -94,6 +119,10 @@ this page is self-contained.
 ```
 
 #### slot: authEndpoint
+
+the authorization code endpoint of the internet account
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -105,6 +134,10 @@ this page is self-contained.
 
 #### slot: tokenEndpoint
 
+the token endpoint of the internet account
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'the token endpoint of the internet account',
@@ -114,6 +147,10 @@ this page is self-contained.
 ```
 
 #### slot: needsPKCE
+
+boolean to indicate if the endpoint needs a PKCE code
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -125,6 +162,10 @@ this page is self-contained.
 
 #### slot: clientId
 
+id for the OAuth application
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'id for the OAuth application',
@@ -134,6 +175,10 @@ this page is self-contained.
 ```
 
 #### slot: scopes
+
+optional scopes for the authorization call
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -145,6 +190,10 @@ this page is self-contained.
 
 #### slot: state
 
+optional state for the authorization call
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'optional state for the authorization call',
@@ -154,6 +203,10 @@ this page is self-contained.
 ```
 
 #### slot: responseType
+
+the type of response from the authorization endpoint. can be 'token' or 'code'
+
+**Type:** `string` · **Default:** `'code'`
 
 ```js
 {
@@ -173,6 +226,10 @@ this page is self-contained.
 
 #### slot: name
 
+descriptive name of the internet account
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'descriptive name of the internet account',
@@ -182,6 +239,10 @@ this page is self-contained.
 ```
 
 #### slot: description
+
+a description of the internet account
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -193,6 +254,10 @@ this page is self-contained.
 
 #### slot: authHeader
 
+request header for credentials
+
+**Type:** `string` · **Default:** `'Authorization'`
+
 ```js
 {
   description: 'request header for credentials',
@@ -203,6 +268,10 @@ this page is self-contained.
 
 #### slot: tokenType
 
+a custom name for a token to include in the header
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'a custom name for a token to include in the header',
@@ -212,6 +281,10 @@ this page is self-contained.
 ```
 
 #### slot: domains
+
+array of valid domains the url can contain to use this account
+
+**Type:** `stringArray`
 
 ```js
 {

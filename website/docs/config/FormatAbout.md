@@ -26,6 +26,10 @@ generally exists on the config.json or root config as configuration.formatAbout
 
 #### slot: configuration.formatAbout.config
 
+formats configuration object in about dialog
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -36,6 +40,8 @@ generally exists on the config.json or root config as configuration.formatAbout
 ```
 
 #### slot: configuration.formatAbout.hideUris
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

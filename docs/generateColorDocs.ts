@@ -44,21 +44,23 @@ function parseFile(file: string) {
   )
 }
 
-// `#color <group> | <label> | <description>` -> structured parts, or undefined
-// when the comment carries no `#color` tag.
-function parseColorTag(comment: string | undefined, where: string) {
-  const m = comment ? /#color\s+([^\n]*)/.exec(comment) : null
-  if (!m) {
-    return undefined
+// Every `#color <group> | <label> | <description>` tag in one comment. A color
+// used in more than one context (e.g. the inter-chromosomal mate color appears
+// in both the pair-orientation and insert-size legends) carries one tag per
+// group, so it documents itself in each table.
+function parseColorTags(comment: string | undefined, where: string) {
+  const tags: { group: string; label: string; description: string }[] = []
+  for (const m of (comment ?? '').matchAll(/#color\s+([^\n]*)/g)) {
+    const parts = m[1].split('|').map(s => s.trim())
+    const [group, label] = parts
+    // join the remainder back so a description may itself contain a `|`
+    const description = parts.slice(2).join(' | ')
+    if (!group || !label) {
+      throw new Error(`${where}: malformed #color tag "${m[0].trim()}"`)
+    }
+    tags.push({ group, label, description })
   }
-  const parts = m[1].split('|').map(s => s.trim())
-  const [group, label] = parts
-  // join the remainder back so a description may itself contain a `|`
-  const description = parts.slice(2).join(' | ')
-  if (!group || !label) {
-    throw new Error(`${where}: malformed #color tag "${m[0].trim()}"`)
-  }
-  return { group, label, description }
+  return tags
 }
 
 // Collect tagged colors grouped by their `#color` group, preserving source
@@ -66,8 +68,7 @@ function parseColorTag(comment: string | undefined, where: string) {
 // members of an object literal (each member can carry its own JSDoc).
 function collectColors(file: string, groups: Record<string, Row[]>) {
   const add = (comment: string | undefined, value: string, name: string) => {
-    const tag = parseColorTag(comment, `${file} (${name})`)
-    if (tag) {
+    for (const tag of parseColorTags(comment, `${file} (${name})`)) {
       ;(groups[tag.group] ??= []).push({
         label: tag.label,
         description: tag.description,

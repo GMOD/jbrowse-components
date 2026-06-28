@@ -40,10 +40,19 @@ _See the **Slots** section below for all available configuration fields._
 Used to fetch data from Htsget endpoints in BAM format, using the gmod/bam
 library
 
+### Used in
+
+This adapter supplies data to the [AlignmentsTrack](../alignmentstrack) track
+type.
+
 <details open>
 <summary>HtsgetBamAdapter - Slots</summary>
 
 #### slot: htsgetBase
+
+the base URL to fetch from
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -54,6 +63,10 @@ library
 ```
 
 #### slot: htsgetTrackId
+
+the trackId, which is appended to the base URL
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {

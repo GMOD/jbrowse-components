@@ -36,6 +36,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### Used in
+
+This adapter supplies data to the
+[ReferenceSequenceTrack](../referencesequencetrack) track type.
+
 ### BgzipFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.fa.fai and
@@ -53,6 +58,8 @@ yourfile.fa.gzi:
 
 #### slot: fastaLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -61,6 +68,8 @@ yourfile.fa.gzi:
 ```
 
 #### slot: faiLocation
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -74,6 +83,10 @@ yourfile.fa.gzi:
 
 #### slot: metadataLocation
 
+Optional metadata file
+
+**Type:** `fileLocation`
+
 ```js
 {
   description: 'Optional metadata file',
@@ -86,6 +99,8 @@ yourfile.fa.gzi:
 ```
 
 #### slot: gziLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

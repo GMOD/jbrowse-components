@@ -78,5 +78,7 @@ is often uneven even in samples with no true copy-number changes.
   combine several BigWigs on a shared axis
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) — score-based variant
   display
+- [SV visualization: working with large SVs](/docs/user_guides/sv_visualization#working-with-large-svs)
+  — using coverage tracks to survey copy-number changes at chromosome scale
 - [Quantitative track configuration](/docs/config_guides/quantitative_track) —
   adapters and display slots

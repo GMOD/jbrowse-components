@@ -49,7 +49,8 @@ export default function (pluginManager: PluginManager) {
 ```
 
 The state model is a [mobx-state-tree](https://mobx-state-tree.js.org/) model
-and the React component receives `{ model }` as a prop.
+(see [MST patterns](/docs/developer_guides/mst_patterns)) and the React
+component receives `{ model }` as a prop.
 
 ## Reference implementations in this repo
 
@@ -61,3 +62,12 @@ and the React component receives `{ model }` as a prop.
 - `plugins/circular-view/src/CircularView` - radial layout with chord tracks
 
 Read these alongside the simple plugin tutorial when designing your own.
+
+## See also
+
+- [Creating custom display types](/docs/developer_guides/creating_display) — if
+  you only need to render features differently inside an existing view
+- [Extension points](/docs/developer_guides/extension_points) — the
+  `LaunchView-*` points are a reference for launching your own view type
+- [MST patterns](/docs/developer_guides/mst_patterns)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

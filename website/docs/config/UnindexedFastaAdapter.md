@@ -37,6 +37,11 @@ _See the **Slots** section below for all available configuration fields._
 loads a plain (non-bgzipped) FASTA without a separate index. Reads the whole
 sequence into memory, so prefer the IndexedFastaAdapter for large genomes.
 
+### Used in
+
+This adapter supplies data to the
+[ReferenceSequenceTrack](../referencesequencetrack) track type.
+
 ### UnindexedFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -53,6 +58,8 @@ preprocessor to allow minimal config:
 
 #### slot: rewriteRefNames
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -62,6 +69,8 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: fastaLocation
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -74,6 +83,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: metadataLocation
+
+Optional metadata file
+
+**Type:** `fileLocation`
 
 ```js
 {

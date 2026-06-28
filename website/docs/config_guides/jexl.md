@@ -64,16 +64,25 @@ Label with a fallback — the first non-empty attribute wins:
 The "Jexl callback examples" track in `test_data/config_demo.json` is a live
 example combining a lookup-table color with a template-string mouseover.
 
-We have a number of other functions available in jexl, such as:
+Other functions available in jexl include the categories below. The `getTag`
+function smooths over slight differences in BAM and CRAM features to access
+their tags.
 
-**Feature operations - getTag**
+<!-- JEXL_CATALOG START -->
 
-The getTag function smooths over slight differences in BAM and CRAM features to
-access their tags
+**Math functions**
 
 ```js
-jexl: getTag(feature, 'MD') // fetches MD string from BAM or CRAM feature
-jexl: getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
+jexl: max(0, 2)
+jexl: min(0, 2)
+jexl: sqrt(4)
+jexl: ceil(0.5)
+jexl: floor(0.5)
+jexl: round(0.5)
+jexl: abs(-0.5)
+jexl: log10(50000)
+jexl: parseInt('2')
+jexl: parseFloat('2.054')
 ```
 
 **String functions**
@@ -102,19 +111,21 @@ jexl: repeat('ab', 3) // ababab
 jexl: jsonParse('{"a":1}') // parses a JSON string
 ```
 
-**Math functions**
+**Feature operations - getTag**
 
 ```js
-jexl: max(0, 2)
-jexl: min(0, 2)
-jexl: sqrt(4)
-jexl: ceil(0.5)
-jexl: floor(0.5)
-jexl: round(0.5)
-jexl: abs(-0.5)
-jexl: log10(50000)
-jexl: parseInt('2')
-jexl: parseFloat('2.054')
+jexl: getTag(feature, 'MD') // fetches MD string from BAM or CRAM feature
+jexl: getTag(feature, 'HP') // fetches haplotype tag from BAM or CRAM feature
+```
+
+**Color functions**
+
+```js
+jexl: randomColor(feature.type) // deterministic color from a string (e.g. a feature type)
+jexl: alpha('green', 0.5) // a color at 50% opacity
+jexl: hsl('#ff0000') // converts a color to its HSL form
+jexl: colorString('green') // normalizes a color name or value to a hex string
+jexl: interpolate(feature.score, scale) // applies a scale function to a value
 ```
 
 **Console logging**
@@ -128,6 +139,12 @@ jexl: log(feature) // console.logs output and returns value
 ```js
 jexl: feature.flags & 2 // bitwise and to check if BAM or CRAM feature flags has 2 set
 ```
+
+<!-- JEXL_CATALOG END -->
+
+The catalog above is generated from the `j.addFunction` registrations in
+`packages/core/src/util/jexl.ts`, so it never drifts from the available
+functions.
 
 **Template strings**
 
@@ -153,3 +170,14 @@ that adds a function to the jexl language (e.g. `colorFeature`) and call it from
 your callback as `"color": "jexl:colorFeature(feature)"`. See
 [customizing feature colors with callbacks and plugins](/docs/config_guides/customizing_feature_colors)
 for the full walkthrough.
+
+## See also
+
+- [Customizing feature colors](/docs/config_guides/customizing_feature_colors) —
+  worked color-callback examples
+- [Customizing feature details](/docs/config_guides/customizing_feature_details)
+  — jexl in the feature-details panel
+- [Variant track](/docs/user_guides/variant_track) — reading VCF `INFO` fields
+  (e.g. `feature.INFO.SVTYPE`) in callbacks
+- [Alignments track](/docs/user_guides/alignments_track) — BAM/CRAM tags and
+  `getTag` in callbacks

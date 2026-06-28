@@ -61,8 +61,8 @@ The location search box at the top of the LGV accepts several search formats:
 - Gene name or feature keyword (if a text index is configured), e.g. `BRCA1`
 
 Name searching requires a text index — see the
-[configuration guide](/docs/quickstart_web/#indexing-feature-names-for-searching)
-for setup.
+[text searching configuration guide](/docs/config_guides/text_searching) for
+setup.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
@@ -267,3 +267,5 @@ See the [configuration guide](/docs/config_guides/track_selector) for more.
   adapter types
 - [Track selector configuration](/docs/config_guides/track_selector) — metadata
   columns and faceted filtering
+- [Avoiding stale config](/docs/config_guides/avoiding_stale_config) — how admin
+  edits and session-track overrides interact

@@ -38,6 +38,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load Hi-C contact matrix data from a `.hic` file
 
+### Used in
+
+This adapter supplies data to the [HicTrack](../hictrack) track type.
+
 ### HicAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -53,6 +57,8 @@ preprocessor to allow minimal config:
 <summary>HicAdapter - Slots</summary>
 
 #### slot: hicLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

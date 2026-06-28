@@ -58,6 +58,7 @@ export default function ImportSyntenyTrackSelectorArea({
   })
 
   const customOptions = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearSyntenyView-ImportFormSyntenyOptions | sync | Add options to the linear synteny view import form */
     'LinearSyntenyView-ImportFormSyntenyOptions',
     [],
     { model, assembly1, assembly2, selectedRow },

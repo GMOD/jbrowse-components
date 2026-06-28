@@ -7,7 +7,8 @@ guide_category: Other features
 ## Color
 
 The color scheme and some sizing options are configured via a top-level `theme`
-in the config file. For example:
+in the [`configuration`](/docs/config/jbrowseconfiguration) section of the
+config file. For example:
 
 ```json
 {
@@ -23,7 +24,7 @@ in the config file. For example:
 }
 ```
 
-JBrowse uses 4 colors that can be changed. For example, this is the default
+JBrowse's palette has 4 customizable colors. For example, this is the default
 theme:
 
 <Figure src="/img/default_theme.png" caption="Example screenshot showing the default theme"/>
@@ -118,7 +119,7 @@ containing your logo on your server, and specify the path in your configuration:
 }
 ```
 
-The built-in logo is `150x48px`. A custom logo is shown at its natural size, so
+The built-in logo is 150×48px. A custom logo is shown at its natural size, so
 size your SVG similarly to fit the header.
 
 ## Sizing
@@ -140,13 +141,17 @@ options:
 
 ## Advanced
 
-JBrowse uses Material-UI for its theming. You can read more about Material-UI
-themes [here](https://mui.com/material-ui/customization/theming/). Generally,
-most options that you can pass to Material-UI's
+JBrowse uses Material-UI for its theming (see the
+[developer theming guide](/docs/developer_guides/theming) for the full palette
+and exported color constants). You can read more about Material-UI themes
+[here](https://mui.com/material-ui/customization/theming/). Generally, most
+options that you can pass to Material-UI's
 [`createTheme`](https://mui.com/material-ui/customization/theming/#createtheme-options-args-theme)
 should work in the theme configuration.
 
 Some aspects of the theme, like style overrides, accept callback functions that
 can't be expressed in the config but can be added via a plugin. See
 [this example plugin](https://github.com/GMOD/jbrowse-components/blob/main/test_data/volvox/umd_plugin.js),
-which adds a theme and overrides the 'default' theme from a plugin.
+which adds a theme and overrides the 'default' theme from a plugin. See
+[no-build plugin tutorial](/docs/developer_guides/no_build_plugin) for how to
+load a small plugin like this from config.

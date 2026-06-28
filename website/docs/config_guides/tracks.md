@@ -10,8 +10,11 @@ All tracks can contain:
 - `name` - displayed track name
 - `assemblyNames` - an array of assembly names a track is associated with, often
   just a single assemblyName
-- `category` - (optional) array of categories to display in a hierarchical track
-  selector
+- `category` - (optional) array of categories to display in a
+  [hierarchical track selector](/docs/config_guides/track_selector)
+
+See the [BaseTrack config docs](/docs/config/basetrack) for every slot common to
+all track types.
 
 File locations in adapter configs use a `{ "uri": "..." }` object. The
 `"locationType": "UriLocation"` field is optional for URI locations and can be
@@ -124,7 +127,7 @@ optional and defaults to `{trackId}-{displayType}`.
       "type": "LinearBasicDisplay",
       "displayId": "repeats_hg19-LinearBasicDisplay",
       "height": 200,
-      "color": "jexl:get(feature,'strand')==1?'blue':'red'"
+      "color": "jexl:feature.strand==1?'blue':'red'"
     }
   ]
 }
@@ -140,7 +143,7 @@ Common display types, for the array form:
 | MultiQuantitativeTrack | MultiLinearWiggleDisplay |
 | QuantitativeTrack      | LinearWiggleDisplay      |
 
-See the [config_guides](/docs/config_guide) for per-track display options.
+See the [config guides](/docs/config_guide) for per-track display options.
 
 ## Copying a track's config out of the app
 

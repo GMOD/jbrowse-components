@@ -38,8 +38,8 @@ base-level CIGAR that the linear synteny view needs to draw alignments at base
 resolution. The `--eqx` flag makes minimap2 distinguish matches (`=`) from
 mismatches (`X`) in the CIGAR, which lets JBrowse compute per-alignment identity
 and offer the **Color by → Identity** mode described below. You can also use
-[MUMmer](http://mummer.sourceforge.net/) and convert the `.delta` output to PAF
-with `delta2paf` from
+[MUMmer](https://github.com/mummer4/mummer) and convert the `.delta` output to
+PAF with `delta2paf` from
 [paftools.js](https://github.com/lh3/minimap2/blob/master/misc/paftools.js), or
 convert UCSC chain files with `chain2paf` from the same toolkit. For small files
 you can load `.delta` or `.chain` directly into JBrowse without converting.
@@ -172,11 +172,12 @@ See the [PIF format guide](/docs/developer_guides/pif_format) for details.
 - **Compare multiple organisms** — load several pairwise alignments to build a
   phylogenetic perspective on genome evolution.
 - **Multiway alignment** — for visualizing MAF (Multiple Alignment Format) data
-  across more than two genomes, see
-  [jbrowse-plugin-mafviewer](https://github.com/cmdcolin/jbrowse-plugin-mafviewer).
+  across more than two genomes, see the
+  [MAF track config guide](/docs/config_guides/maf_track).
 
 For more on working with synteny views, see the
-[dotplot view guide](/docs/user_guides/dotplot_view) and the
+[synteny track config guide](/docs/config_guides/synteny_track), the
+[dotplot view guide](/docs/user_guides/dotplot_view), and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view). The
 [gallery](/gallery) has a grape-vs-peach linear synteny example (genes plus
 synteny blocks, rendered both as ribbons and as a feature track) alongside a

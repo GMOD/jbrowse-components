@@ -91,6 +91,7 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
             // eventually trigger assemblies to be loaded and new evaluations
             // via observable behavior
             pm.evaluateExtensionPoint(
+              /** #extensionPoint Core-handleUnrecognizedAssembly | sync | Supply an assembly config when a referenced assembly is unknown */
               'Core-handleUnrecognizedAssembly',
               undefined,
               {

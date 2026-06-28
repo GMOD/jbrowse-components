@@ -27,6 +27,10 @@ configuration.formatDetails
 
 #### slot: configuration.formatDetails.feature
 
+adds extra fields to the feature details
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -37,6 +41,10 @@ configuration.formatDetails
 ```
 
 #### slot: configuration.formatDetails.subfeatures
+
+adds extra fields to the subfeatures of a feature
+
+**Type:** `frozen`
 
 ```js
 {
@@ -49,6 +57,11 @@ configuration.formatDetails
 
 #### slot: configuration.formatDetails.depth
 
+depth to iterate the formatDetails->subfeatures callback on subfeatures (used
+for example to only apply the callback to the first layer of subfeatures)
+
+**Type:** `number` · **Default:** `2`
+
 ```js
 {
   type: 'number',
@@ -59,6 +72,10 @@ configuration.formatDetails
 ```
 
 #### slot: configuration.formatDetails.maxDepth
+
+hide subfeatures greater than a certain depth
+
+**Type:** `number` · **Default:** `10000`
 
 ```js
 {

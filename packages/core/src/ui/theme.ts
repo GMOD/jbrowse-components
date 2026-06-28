@@ -221,9 +221,14 @@ export const colorPairLL = '#4d9a4d'
 /** #color alignments-pair-orientation | RR (← ←, both mates reverse strand) | Abnormal orientation */
 export const colorPairRR = '#5555bb'
 export const colorNostrand = '#c8c8c8'
-/** #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation */
+/**
+ * #color alignments-pair-orientation | Inter-chromosomal | Mate maps to a different chromosome; colored distinctly rather than by orientation
+ * #color alignments-insert-size | Mate on a different chromosome | Suggests an inter-chromosomal event
+ */
 export const colorInterchrom = '#6e4b3a'
+/** #color alignments-insert-size | Insert larger than expected | Suggests a deletion spanning the pair */
 export const colorLongInsert = '#ff0000'
+/** #color alignments-insert-size | Insert smaller than expected | Suggests an insertion between the pair */
 export const colorShortInsert = '#ffc0cb'
 // Saturated short-insert variant for stroked marks (read-cloud / arc lines).
 // The pale #ffc0cb fill reads fine on filled pileup rectangles but, drawn as a
@@ -253,9 +258,13 @@ export const tagColorPalette = [
   'lightsalmon',
 ]
 
+/** #color theme-methylation | methylated5mC | 5-methylcytosine, methylated */
 export const methylated5mC = '#ff0000'
+/** #color theme-methylation | unmethylated5mC | 5-methylcytosine, unmethylated */
 export const unmethylated5mC = '#0000ff'
+/** #color theme-methylation | methylated5hmC | 5-hydroxymethylcytosine, methylated */
 export const methylated5hmC = '#ffc0cb'
+/** #color theme-methylation | unmethylated5hmC | 5-hydroxymethylcytosine, unmethylated */
 export const unmethylated5hmC = '#800080'
 
 const alignmentFill = {

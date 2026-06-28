@@ -46,6 +46,11 @@ auto-picked binsize (negative = finer, positive = coarser):
 
 Hi-C display that renders contact matrix using WebGL
 
+### LinearHicDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearhicdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -350,7 +355,7 @@ type colorMaxScore = number
 #### getter: autoResolutionIdx
 
 Index into `availableResolutions` that pure auto-mode would pick at the current
-zoom — largest binsize ≤ 2\*bpPerPx, falling back to the finest binsize (idx 0)
+zoom — largest binsize ≤ 2*bpPerPx, falling back to the finest binsize (idx 0)
 when nothing qualifies (very zoomed in).
 
 The factor 2 floors at ~0.5 bins/screen-pixel, which keeps bins visible without

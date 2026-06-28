@@ -21,6 +21,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### GoogleDriveOAuthInternetAccount - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/googledriveoauthinternetaccount).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

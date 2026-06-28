@@ -33,6 +33,19 @@ type snackbarMessages = IObservableArray<SnackbarMessage>
 snackbarMessages: observable.array<SnackbarMessage>()
 ```
 
+#### volatile: errorDialog
+
+the error currently shown in the stack-trace dialog. Kept off the dialog queue
+so it can stack on top of an already-open dialog (e.g. the one whose action
+raised the error) instead of waiting behind it
+
+```ts
+// type signature
+type errorDialog = ErrorDialogState | undefined
+// code
+errorDialog: undefined as ErrorDialogState | undefined
+```
+
 </details>
 
 <details open>
@@ -68,6 +81,12 @@ type notifyError = (
   extra?: unknown,
   action?: SnackAction | undefined,
 ) => void
+```
+
+#### action: setErrorDialog
+
+```ts
+type setErrorDialog = (state: ErrorDialogState | undefined) => void
 ```
 
 #### action: pushSnackbarMessage

@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load MCScan (jcvi) `.anchors` files with their two BED files
 
+### Used in
+
+This adapter supplies data to the [SyntenyTrack](../syntenytrack) track type.
+
 ### MCScanAnchorsAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -60,6 +64,8 @@ preprocessor to allow minimal config:
 
 #### slot: mcscanAnchorsLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -71,6 +77,8 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: bed1Location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -84,6 +92,8 @@ preprocessor to allow minimal config:
 
 #### slot: bed2Location
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -95,6 +105,8 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: assemblyNames
+
+**Type:** `stringArray`
 
 ```js
 {

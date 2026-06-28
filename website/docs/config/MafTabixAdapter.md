@@ -36,6 +36,10 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 
 #### slot: samples
 
+string[] or {id:string,label:string,color?:string}[]
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -45,6 +49,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 ```
 
 #### slot: bedGzLocation
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -58,6 +64,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 
 #### slot: refAssemblyName
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -66,6 +74,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -78,6 +88,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -87,6 +99,10 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.bed.gz.tbi:
 ```
 
 #### slot: nhLocation
+
+newick tree
+
+**Type:** `fileLocation`
 
 ```js
 {

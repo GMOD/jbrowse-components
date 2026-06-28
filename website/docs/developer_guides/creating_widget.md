@@ -4,6 +4,11 @@ description: Add new drawer/panel UI components
 guide_category: Creating pluggable elements
 ---
 
+Widgets are info panels that appear in side panels (drawers), modals, or other
+places in the app — for example the configuration editor, feature detail popups,
+and the add-track form. A custom widget pairs a state model with a React
+component and is registered with `pluginManager.addWidgetType`.
+
 Here is an example of registering a custom widget in `index.tsx`:
 
 ```tsx
@@ -61,3 +66,13 @@ const widget = session.addWidget('MyWidget', 'instanceOfMyWidget', {
 })
 session.showWidget(widget)
 ```
+
+## See also
+
+- [Drawer widgets in embedded components](/docs/developer_guides/drawer_widgets)
+  — show a widget as a resizable side panel
+- [Extension points](/docs/developer_guides/extension_points) —
+  `Core-replaceWidget` and `Core-extraFeaturePanel` customize existing widgets
+- [Configuration schema](/docs/developer_guides/configuration_schema) — define
+  the widget's `configSchema`
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

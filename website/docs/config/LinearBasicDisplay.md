@@ -82,6 +82,11 @@ Color by an attribute with a jexl expression:
 }
 ```
 
+### LinearBasicDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearbasicdisplay).
+
 <details open>
 <summary>LinearBasicDisplay - Slots</summary>
 
@@ -93,6 +98,8 @@ dense regions, so a single gene routinely tripped the old 1 Mb gate. A few Mb of
 feature text downloads fast; the feature-density gate remains the backstop for
 genuinely over-dense views. Kept here on the feature leaf so the heavier
 alignment/variant displays keep their own tighter inherited limit.
+
+**Type:** `number` · **Default:** `5_000_000`
 
 ```js
 {

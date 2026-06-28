@@ -46,10 +46,19 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearArcDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/lineararcdisplay).
+
 <details open>
 <summary>LinearArcDisplay - Slots</summary>
 
 #### slot: color
+
+the color of the arcs
+
+**Type:** `color` · **Default:** `'darkblue'`
 
 ```js
 {
@@ -62,6 +71,10 @@ _See the **Slots** section below for all available configuration fields._
 
 #### slot: thickness
 
+the thickness of the arcs
+
+**Type:** `number` · **Default:** `'jexl:logThickness(feature,'score')'`
+
 ```js
 {
   type: 'number',
@@ -72,6 +85,10 @@ _See the **Slots** section below for all available configuration fields._
 ```
 
 #### slot: label
+
+the label to appear at the apex of the arcs
+
+**Type:** `string` · **Default:** `'jexl:get(feature,'score')'`
 
 ```js
 {
@@ -84,6 +101,11 @@ _See the **Slots** section below for all available configuration fields._
 
 #### slot: arcHeight
 
+the height of the arcs
+
+**Type:** `number` · **Default:**
+`'jexl:log10(get(feature,'end')-get(feature,'start'))*50'`
+
 ```js
 {
   type: 'number',
@@ -94,6 +116,10 @@ _See the **Slots** section below for all available configuration fields._
 ```
 
 #### slot: caption
+
+the caption to appear when hovering over any point on the arcs
+
+**Type:** `string` · **Default:** `'jexl:get(feature,'name')'`
 
 ```js
 {
@@ -106,6 +132,10 @@ _See the **Slots** section below for all available configuration fields._
 ```
 
 #### slot: displayMode
+
+render semi-circles instead of arcs
+
+**Type:** `enum` · **Default:** `'arcs'`
 
 ```js
 {
@@ -130,6 +160,11 @@ this page is self-contained.
 
 #### slot: maxFeatureScreenDensity
 
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -141,6 +176,11 @@ this page is self-contained.
 ```
 
 #### slot: fetchSizeLimit
+
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {
@@ -154,6 +194,10 @@ this page is self-contained.
 
 #### slot: height
 
+default height for the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -163,6 +207,11 @@ this page is self-contained.
 ```
 
 #### slot: mouseover
+
+text to display when the cursor hovers over a feature
+
+**Type:** `string` · **Default:**
+`'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
 {
@@ -177,6 +226,8 @@ this page is self-contained.
 
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
+
+**Type:** `stringArray`
 
 ```js
 {

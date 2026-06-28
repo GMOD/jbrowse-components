@@ -28,6 +28,11 @@ menus via the showSubmenuMenuItems / trackMenuItems / contextMenuItems
 super-extension pattern, and extend rpcProps() via the standard super-capture
 pattern.
 
+### LinearCanvasBaseDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearcanvasbasedisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

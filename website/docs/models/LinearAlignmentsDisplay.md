@@ -88,6 +88,11 @@ Long reads with soft-clipping shown and split/mate reads connected by arcs:
 
 State model factory for LinearAlignmentsDisplay
 
+### LinearAlignmentsDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearalignmentsdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

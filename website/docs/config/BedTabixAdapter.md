@@ -39,6 +39,10 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### BedTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
@@ -55,6 +59,8 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 
 #### slot: bedGzLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -67,6 +73,8 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -76,6 +84,8 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -89,6 +99,10 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 
 #### slot: columnNames
 
+List of column names
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -98,6 +112,10 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 ```
 
 #### slot: scoreColumn
+
+The column to use as a "score" attribute
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -109,6 +127,10 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 
 #### slot: autoSql
 
+The autoSql definition for the data fields in the file
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -118,6 +140,12 @@ preprocessor to allow minimal config, assumes yourfile.bed.gz.tbi:
 ```
 
 #### slot: disableGeneHeuristic
+
+Disable the heuristic that auto-detects BED12 features as gene/transcript
+structures. Useful for files that have BED12-like structure but are not genes
+(e.g. tandem duplications)
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

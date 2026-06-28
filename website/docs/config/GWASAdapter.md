@@ -28,6 +28,10 @@ the box
 
 #### slot: scoreColumn
 
+BED column to read as the Manhattan plot score
+
+**Type:** `string` · **Default:** `'neg_log_pvalue'`
+
 ```js
 {
   type: 'string',
@@ -39,9 +43,11 @@ the box
 #### slot: scoreTransform
 
 transform applied to `scoreColumn` to produce the Manhattan -log10(p) value:
-`none` (column is already -log10, e.g. Pan-UKBB neglog10*pval*\*), `negLog10`
+`none` (column is already -log10, e.g. Pan-UKBB neglog10_pval_*), `negLog10`
 (column is a raw p-value), or `negLog10FromLn` (column is a natural-log p-value,
 e.g. Pan-UKBB Hail `ln P`)
+
+**Type:** `stringEnum` · **Default:** `'none'`
 
 ```js
 {
@@ -70,6 +76,8 @@ this page is self-contained.
 
 #### slot: bedGzLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -82,6 +90,8 @@ this page is self-contained.
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -91,6 +101,8 @@ this page is self-contained.
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -104,6 +116,10 @@ this page is self-contained.
 
 #### slot: columnNames
 
+List of column names
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -113,6 +129,10 @@ this page is self-contained.
 ```
 
 #### slot: scoreColumn
+
+The column to use as a "score" attribute
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -124,6 +144,10 @@ this page is self-contained.
 
 #### slot: autoSql
 
+The autoSql definition for the data fields in the file
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -133,6 +157,12 @@ this page is self-contained.
 ```
 
 #### slot: disableGeneHeuristic
+
+Disable the heuristic that auto-detects BED12 features as gene/transcript
+structures. Useful for files that have BED12-like structure but are not genes
+(e.g. tandem duplications)
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

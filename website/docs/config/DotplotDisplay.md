@@ -46,6 +46,11 @@ The dot-plot rendering of a `SyntenyTrack`, for use inside a `DotplotView`
 
 ## Overview
 
+### DotplotDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/dotplotdisplay).
+
 ### DotplotDisplay - Identifier
 
 Every DotplotDisplay has a unique `displayId`, a required top-level field that

@@ -19,6 +19,7 @@ Pick the adapter that matches how your alignment was produced:
 | Alignment source                               | Adapter                      |
 | ---------------------------------------------- | ---------------------------- |
 | minimap2, wfmash, or any PAF-producing aligner | `PAFAdapter`                 |
+| PAF tabix-indexed for large alignments         | `PairwiseIndexedPAFAdapter`  |
 | MUMmer / nucmer (`.delta`)                     | `DeltaAdapter`               |
 | UCSC liftOver / lastz (`.chain`)               | `ChainAdapter`               |
 | MCScan gene-level synteny (`.anchors`)         | `MCScanAnchorsAdapter`       |
@@ -80,8 +81,11 @@ All adapters accept `assemblyNames` as a two-element array `["query", "target"]`
 `ChainAdapter`) also accept the `queryAssembly` and `targetAssembly` fields
 separately; the MCScan adapters take only `assemblyNames`. Query first is the
 reverse of the order minimap2/nucmer take their inputs (`target query`), so
-double-check it. All file locations accept gzip-compressed input and are read
-into memory in full (none of these formats are indexed).
+double-check it. All file locations accept gzip-compressed input. The
+plaintext-file adapters above are read into memory in full; for very large PAF
+alignments use `PairwiseIndexedPAFAdapter`, which reads a tabix-indexed PAF
+region by region instead (see the
+[PairwiseIndexedPAFAdapter config docs](/docs/config/pairwiseindexedpafadapter)).
 
 ### PAFAdapter
 

@@ -173,23 +173,20 @@ Text-filtered rows. Cheap string filtering on already-built allRows.
 type rows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
-#### getter: filteredNonMetadataKeys
-
-```ts
-type filteredNonMetadataKeys =
-  string[] | readonly ['category', 'adapter', 'description']
-```
-
 #### getter: metadataKeys
 
 ```ts
 type metadataKeys = string[]
 ```
 
-#### getter: filteredMetadataKeys
+#### getter: facetFields
+
+Facet field ids in column order (non-metadata first, then `metadata.<key>`);
+both kinds resolve through getRowStr. Sparse fields are dropped unless
+showSparse.
 
 ```ts
-type filteredMetadataKeys = string[]
+type facetFields = string[]
 ```
 
 #### getter: fields
@@ -200,8 +197,8 @@ type fields = string[]
 
 #### getter: nonMetadataFieldSet
 
-Used to detect when a metadata key collides with a non-metadata column name (so
-the header can show "x (from metadata)").
+The non-metadata field names, used to detect when a metadata key collides with
+one (so the header can show "x (from metadata)").
 
 ```ts
 type nonMetadataFieldSet = Set<string>

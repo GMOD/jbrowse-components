@@ -133,6 +133,12 @@ jobs:
           website/scripts/generate-guide-indexes.ts --check
       - name: Check color tables are up to date
         run: node --experimental-strip-types docs/generateColorDocs.ts --check
+      - name: Check jexl catalog is up to date
+        run: node --experimental-strip-types docs/generateJexlDocs.ts --check
+      - name: Check extension point index is up to date
+        run:
+          node --experimental-strip-types docs/generateExtensionPointDocs.ts
+          --check
       - name: Check config/model/api docs are up to date
         run: |
           pnpm gendocs

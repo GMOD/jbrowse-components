@@ -46,5 +46,10 @@ references:
 - `plugins/variants/src/VariantTrack` - track shared across view types
 - `plugins/hic/src/HicTrack` - track with a single dedicated display
 
-See also
-[creating custom display types](/docs/developer_guides/creating_display).
+## See also
+
+- [Creating custom display types](/docs/developer_guides/creating_display)
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) — a track
+  combines an adapter with its displays
+- [Configuration schema](/docs/developer_guides/configuration_schema) — define a
+  custom config schema for the track category

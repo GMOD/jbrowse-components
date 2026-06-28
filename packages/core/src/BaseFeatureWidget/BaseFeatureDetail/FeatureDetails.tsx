@@ -76,6 +76,7 @@ const FeatureDetails = observer(function FeatureDetails(
   // and owns its own BaseCard/Divider chrome. [x].flat() tolerates a legacy
   // callback that returned a single component instead of appending to the array
   const extraPanels = [
+    /** #extensionPoint Core-extraFeaturePanel | sync | Add extra panels to the feature details widget */
     pm.evaluateExtensionPoint('Core-extraFeaturePanel', [], props),
   ].flat()
   return (

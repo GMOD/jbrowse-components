@@ -34,9 +34,9 @@ default the union of exons across all transcripts is used; you can instead pick
 a single transcript from the dialog. This makes it easy to read a gene's coding
 sequence — or inspect reads spanning it — without scrolling past large introns.
 
-This pairs especially well with an RNA-seq track: the spliced reads draw
-**sashimi arcs** connecting splice donors and acceptors, and with the introns
-collapsed those arcs span directly between the adjacent exons.
+This pairs especially well with an [RNA-seq track](/docs/tutorials/rnaseq): the
+spliced reads draw **sashimi arcs** connecting splice donors and acceptors, and
+with the introns collapsed those arcs span directly between the adjacent exons.
 
 <Figure caption="BRCA1 (hg38) with its introns collapsed, so the exons sit side by side. The NA12878 direct-RNA nanopore track below shows per-exon coverage and sashimi arcs joining the spliced exon junctions." src="/img/gene_track_collapse_introns.png" />
 
@@ -101,6 +101,9 @@ is configured to read it, e.g.:
   "name": "jexl:get(feature,'product') || get(feature,'name') || get(feature,'id')"
 }
 ```
+
+See the [jexl configuration guide](/docs/config_guides/jexl) for the expression
+syntax.
 
 <Figure caption="The enterovirus D (GCF_000861205.1) ORF1 polyprotein. The CDS is cleaved into its mature peptides (VP0, VP1–VP4, the 2A–2C and 3A–3D proteins), each drawn on its own row in a distinct color; hovering a region shows its product name." src="/img/gene_track_mature_peptides.png" />
 

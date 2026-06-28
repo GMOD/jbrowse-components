@@ -51,6 +51,11 @@ display type:
 displays location of "synteny" feature in a plain LGV, allowing linking out to
 external synteny views
 
+### LGVSyntenyDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/lgvsyntenydisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

@@ -410,3 +410,14 @@ full registration pattern).
   pixels; do not scale by `devicePixelRatio` before writing them.
 - **Never edit `*.generated.ts`** — always edit `.slang` and run
   `pnpm gen:shaders`; CI enforces this with `git diff --exit-code`.
+
+## See also
+
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) — the
+  `MultiRegionDisplayMixin` autorun chain, `rpcProps`, and `renderState`
+- [RPC and worker system](/docs/developer_guides/rpc_workers) — the worker that
+  packs the upload buffers this display renders
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)
+- [Creating custom display types](/docs/developer_guides/creating_display) — the
+  Canvas2D-only path and display registration
+- [Adding SVG export to a display](/docs/developer_guides/svg_export)

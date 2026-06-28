@@ -38,6 +38,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load STAR-Fusion `star-fusion.fusion_predictions.tsv` output
 
+### Used in
+
+This adapter supplies data to the [VariantTrack](../varianttrack) track type.
+
 ### StarFusionAdapter - Pre-processor / simplified config
 
 Allows minimal config:
@@ -50,6 +54,10 @@ Allows minimal config:
 <summary>StarFusionAdapter - Slots</summary>
 
 #### slot: starFusionLocation
+
+STAR-Fusion TSV output file (plain text or gzipped)
+
+**Type:** `fileLocation`
 
 ```js
 {

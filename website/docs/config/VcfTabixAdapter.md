@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed VCF files
 
+### Used in
+
+This adapter supplies data to the [VariantTrack](../varianttrack) track type.
+
 ### VcfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
@@ -57,6 +61,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 
 #### slot: vcfGzLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -69,6 +75,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -78,6 +86,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -90,6 +100,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 ```
 
 #### slot: samplesTsvLocation
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -104,6 +116,11 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.vcf.gz.tbi:
 ```
 
 #### slot: fetchSizeLimit
+
+size in bytes over which to display a warning to the user that too much data
+will be fetched
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {

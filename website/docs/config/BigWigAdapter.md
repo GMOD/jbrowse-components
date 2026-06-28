@@ -38,6 +38,11 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load BigWig or BigBed quantitative signal files
 
+### Used in
+
+This adapter supplies data to the [QuantitativeTrack](../quantitativetrack)
+track type.
+
 ### BigWigAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -54,6 +59,8 @@ preprocessor to allow minimal config:
 
 #### slot: bigWigLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -68,6 +75,8 @@ preprocessor to allow minimal config:
 
 added as feature.get('source') on all features
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -77,6 +86,10 @@ added as feature.get('source') on all features
 ```
 
 #### slot: resolutionMultiplier
+
+Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution
+
+**Type:** `number` · **Default:** `1`
 
 ```js
 {

@@ -41,7 +41,7 @@ You will need:
 - The following command-line tools, with versions tested at the time of writing
   in parentheses:
   - [JBrowse CLI](/docs/cli) (`@jbrowse/cli` v3.6.5 or later)
-  - [Node.js](https://nodejs.org/) (v24.1.0 or later)
+  - [Node.js](https://nodejs.org/) (v18 minimum; v24.1.0 used for this tutorial)
   - [tabix](http://www.htslib.org/doc/tabix.html) (v1.21 or later)
   - [samtools](http://www.htslib.org/) (v1.21 or later)
   - [bcftools](http://www.htslib.org/) (v1.20 or later) — for the BAF track
@@ -359,6 +359,8 @@ parameters for same-species assembly-to-assembly alignment. Note that
 `minimap2` argument order (`minimap2 target query`). Above, minimap2 is given
 `GRCh38_GIABv3.fa HG008T.hap1.fa` (target then query), so the track is loaded
 with `-a HG008T.hap1,GRCh38_GIABv3` (query then target). See the
+[synteny track config guide](/docs/config_guides/synteny_track) for the adapter
+options and the
 [linear synteny view guide](/docs/user_guides/linear_synteny_view).
 
 ## Walkthroughs

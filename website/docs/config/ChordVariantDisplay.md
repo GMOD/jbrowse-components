@@ -47,10 +47,19 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### ChordVariantDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/chordvariantdisplay).
+
 <details open>
 <summary>ChordVariantDisplay - Slots</summary>
 
 #### slot: onChordClick
+
+callback that should be run when a chord in the track is clicked
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -64,6 +73,10 @@ _See the **Slots** section below for all available configuration fields._
 
 #### slot: strokeColor
 
+the line color of each arc
+
+**Type:** `color` · **Default:** `'rgba(255,133,0,0.32)'`
+
 ```js
 {
   type: 'color',
@@ -75,6 +88,10 @@ _See the **Slots** section below for all available configuration fields._
 
 #### slot: strokeColorSelected
 
+the line color of an arc that has been selected
+
+**Type:** `color` · **Default:** `'black'`
+
 ```js
 {
   type: 'color',
@@ -85,6 +102,10 @@ _See the **Slots** section below for all available configuration fields._
 ```
 
 #### slot: strokeColorHover
+
+the line color of an arc that is being hovered over with the mouse
+
+**Type:** `color` · **Default:** `'#555'`
 
 ```js
 {

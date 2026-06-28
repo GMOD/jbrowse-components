@@ -9,8 +9,9 @@ adapter implements a `searchIndex()` method and returns a list of results. The
 framework handles fuzzy matching, ranking, and navigation.
 
 The built-in adapters are `TrixTextSearchAdapter` (pre-built trix indexes) and
-`JBrowse1TextSearchAdapter` (JBrowse 1 names indexes). You can add your own to
-search against any data source — an API, a local file, a SQLite database, etc.
+`JBrowse1TextSearchAdapter` (JBrowse 1 `names/` indexes). You can add your own
+to search against any data source — an API, a local file, a SQLite database,
+etc.
 
 ## The interface
 
@@ -196,3 +197,14 @@ Per-track:
   }
 }
 ```
+
+## See also
+
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) — feature,
+  region, and sequence adapters
+- [Configuration schema](/docs/developer_guides/configuration_schema) — slot
+  types and `explicitIdentifier`
+- Built-in adapter configs:
+  [TrixTextSearchAdapter](/docs/config/trixtextsearchadapter) and
+  [JBrowse1TextSearchAdapter](/docs/config/jbrowse1textsearchadapter)
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

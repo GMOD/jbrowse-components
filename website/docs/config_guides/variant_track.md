@@ -261,9 +261,9 @@ by:
 }
 ```
 
-With this configuration, when the track loads, samples will automatically be
-colored based on their `population` value. Each unique value (EUR, AFR, EAS,
-etc.) will be assigned a distinct color from the palette.
+With this configuration, samples are colored by their `population` value when
+the track loads. Each unique value (EUR, AFR, EAS, etc.) gets a distinct color
+from the palette.
 
 #### Complete example with all options
 
@@ -311,15 +311,13 @@ display options:
   `LinearMultiSampleVariantDisplay` and `LinearMultiSampleVariantMatrixDisplay`,
   though the visual effect may differ between them due to their different
   rendering approaches.
-- Users can still change these settings at runtime using the track menu. The
-  configuration values serve as the initial defaults.
-- When a user changes a setting via the track menu, their preference is stored
-  in the session and will override the configuration default for that session.
+- The configuration values are just the initial defaults. Users can change these
+  settings at runtime via the track menu or the "Edit colors/arrangement"
+  dialog, and their preference is stored in the session, overriding the
+  configuration default for that session.
 - The `colorBy` attribute must exist in the sample metadata TSV file. If the
-  attribute is not found, a warning will be logged to the console and no
-  automatic coloring will be applied.
-- Users can still use the "Edit colors/arrangement" dialog to manually change
-  colors or re-color by a different attribute at any time.
+  attribute is not found, a warning is logged to the console and no automatic
+  coloring is applied.
 
 ## Linkage disequilibrium (LD) display
 

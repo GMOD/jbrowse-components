@@ -27,3 +27,13 @@ output back — `ArcRenderer` (`@jbrowse/plugin-arc`) and
 subclass `ServerSideRendererType` in
 `packages/core/src/pluggableElementTypes/renderers`. New track types should use
 the GPU path above rather than this pattern.
+
+## See also
+
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) — the
+  worker-fetch side that feeds the renderer
+- [RPC and worker system](/docs/developer_guides/rpc_workers)
+- [Adding SVG export to a display](/docs/developer_guides/svg_export) — the
+  shared `paintLayer` draw path
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

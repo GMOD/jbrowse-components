@@ -24,6 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: sequenceAdapter
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -32,6 +34,8 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: windowSize
+
+**Type:** `number` · **Default:** `100`
 
 ```js
 {
@@ -43,6 +47,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: windowDelta
 
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -52,6 +58,10 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: gcMode
+
+calculate GC content fraction or GC skew (G-C)/(G+C)
+
+**Type:** `stringEnum` · **Default:** `'content'`
 
 ```js
 {

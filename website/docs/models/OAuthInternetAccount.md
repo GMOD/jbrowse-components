@@ -21,6 +21,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### OAuthInternetAccount - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/oauthinternetaccount).
+
 <details open>
 <summary>OAuthInternetAccount - Properties</summary>
 

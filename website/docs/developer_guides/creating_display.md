@@ -17,9 +17,11 @@ per-feature drawing.
   tracks, soft-clip indicators in alignments)
 - Adding track-menu items that toggle display-only state (e.g. "Show soft
   clipping", "Color by methylation")
-- Wiring a custom widget into feature clicks (e.g. `VariantFeatureWidget`)
+- Wiring a [custom widget](/docs/developer_guides/creating_widget) into feature
+  clicks (e.g. `VariantFeatureWidget`)
 - Bundling a specific adapter + renderer pair so users get the right combination
-  by default, instead of relying on the generic `BasicTrack`
+  by default, instead of relying on the generic `FeatureTrack` /
+  `LinearBasicDisplay`
 
 ## Pairing displays with tracks and views
 
@@ -46,3 +48,15 @@ In-tree references:
 - `plugins/variants/src/LinearVariantDisplay` and
   `plugins/circular-view/src/ChordVariantDisplay` - two displays for one track
   type, in different view types
+
+## See also
+
+- [Creating custom track types](/docs/developer_guides/creating_track) — the
+  track a display belongs to
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+  — for large or dense datasets
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) — how a display
+  fetches its data via the autorun chain
+- [Adding SVG export to a display](/docs/developer_guides/svg_export)
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)
+- [Creating custom widgets](/docs/developer_guides/creating_widget)

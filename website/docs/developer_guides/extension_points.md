@@ -19,9 +19,11 @@ const ret = pluginManager.evaluateExtensionPoint('ExtensionPointName', {
 })
 ```
 
-And consumers can say:
+And consumers can say (here two separate callbacks register against the same
+point, e.g. from two different plugins):
 
 ```typescript
+// first consumer
 pluginManager.addToExtensionPoint(
   'ExtensionPointName',
   (arg: { value: number }) => {
@@ -29,6 +31,7 @@ pluginManager.addToExtensionPoint(
   },
 )
 
+// second consumer
 pluginManager.addToExtensionPoint(
   'ExtensionPointName',
   (arg: { value: number }) => {
@@ -38,7 +41,9 @@ pluginManager.addToExtensionPoint(
 ```
 
 Each registered callback receives the return value of the previous one as its
-argument (chained). In the example above, `ret` would be `{value:3}`.
+argument (chained). In the example above, the producer passes `{value:1}`, the
+first consumer returns `{value:2}`, the second returns `{value:3}`, so `ret`
+would be `{value:3}`.
 
 ## TypeScript types for extension points
 
@@ -107,7 +112,49 @@ returned value becomes the `args` for the next callback in the chain.
 
 ## Current listing of extension points used in codebase
 
-Here are the extension points in the core codebase:
+The table below is an at-a-glance index of every extension point registered in
+the codebase. It is generated from the `#extensionPoint` tags at each point's
+fire/registration site, so it always lists every point; the detailed sections
+that follow are hand-written.
+
+<!-- EXTENSION_POINTS_INDEX START -->
+
+| Extension point                               | Type  | Description                                                     |
+| --------------------------------------------- | ----- | --------------------------------------------------------------- |
+| `Core-addTrackComponent`                      | sync  | Inject a custom React component into a track's rendering area   |
+| `Core-customizeAbout`                         | sync  | Transform the config shown in a track's About dialog            |
+| `Core-extendAllTracksMenu`                    | sync  | Add items to the all-tracks menu                                |
+| `Core-extendPluggableElement`                 | sync  | Mutate any pluggable element after it is created                |
+| `Core-extendSession`                          | sync  | Extend the session model with extra state or actions            |
+| `Core-extendWorker`                           | sync  | Register extra RPC methods on the web worker                    |
+| `Core-extraFeaturePanel`                      | sync  | Add extra panels to the feature details widget                  |
+| `Core-extraTrackMenuItems`                    | sync  | Add items to a single track's menu                              |
+| `Core-guessAdapterForLocation`                | sync  | Guess an adapter config from a file location                    |
+| `Core-guessTrackTypeForLocation`              | sync  | Guess a track type from a file location                         |
+| `Core-handleUnrecognizedAssembly`             | sync  | Supply an assembly config when a referenced assembly is unknown |
+| `Core-preferencesDialogPanels`                | sync  | Add panels to the preferences dialog                            |
+| `Core-preProcessTrackConfig`                  | sync  | Rewrite a track config snapshot before it is instantiated       |
+| `DotplotView-ImportFormSyntenyOptions`        | sync  | Add options to the dotplot view import form                     |
+| `DotplotView-OverlayHTMLComponent`            | sync  | Add an HTML overlay component to the dotplot view               |
+| `DotplotView-OverlaySVGComponent`             | sync  | Add an SVG overlay component to the dotplot view                |
+| `LaunchView-BreakpointSplitView`              | async | Programmatically launch a breakpoint split view                 |
+| `LaunchView-CircularView`                     | async | Programmatically launch a circular view                         |
+| `LaunchView-DotplotView`                      | async | Programmatically launch a dotplot view                          |
+| `LaunchView-LinearGenomeView`                 | async | Programmatically launch a linear genome view                    |
+| `LaunchView-LinearSyntenyView`                | async | Programmatically launch a linear synteny view                   |
+| `LaunchView-SpreadsheetView`                  | async | Programmatically launch a spreadsheet view                      |
+| `LaunchView-SvInspectorView`                  | async | Programmatically launch the SV inspector view                   |
+| `LinearGenomeView-HighlightSVGComponent`      | sync  | Add an SVG highlight overlay in the LGV SVG export              |
+| `LinearGenomeView-OverviewScalebarComponent`  | sync  | Add a component to the overview scalebar                        |
+| `LinearGenomeView-ScalebarHighlightComponent` | sync  | Add a highlight component to the scalebar                       |
+| `LinearGenomeView-searchResultSelected`       | async | Invoked when a search result is selected                        |
+| `LinearGenomeView-TracksContainerComponent`   | sync  | Add a component into the LGV tracks container                   |
+| `LinearSyntenyView-ImportFormSyntenyOptions`  | sync  | Add options to the linear synteny view import form              |
+| `TrackSelector-multiTrackMenuItems`           | sync  | Add items to the multi-track (shopping cart) menu               |
+
+<!-- EXTENSION_POINTS_INDEX END -->
+
+The detailed reference for the core extension points follows.
 
 ### Core-extendPluggableElement
 
@@ -118,9 +165,10 @@ type: synchronous
 
 Used to add extra functionality to e.g. state tree models, for example extra
 right-click context menus. Your callback receives every pluggable element
-registered to the system.
+registered to the system. See [Adding menus](/docs/developer_guides/menus) for a
+worked example that uses this point to add track context-menu items.
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
 
 ### Core-guessAdapterForLocation
 
@@ -130,9 +178,11 @@ type: synchronous
 
 used to infer an adapter type given a location type from the "Add track"
 workflow. you will receive a callback asking if you can provide an adapter
-config given a location object
+config given a location object. See the
+[add track workflow guide](/docs/developer_guides/creating_addtrack_workflow)
+for how this fits into adding tracks.
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/gff3/src/index.ts#L27-L53
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/gff3/src/index.ts#L27-L53
 
 ### Core-guessTrackTypeForLocation
 
@@ -143,7 +193,7 @@ type: synchronous
 used to infer a track type given a location type from the "Add track workflow"
 
 example
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/alignments/src/index.ts#L108-L118
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/alignments/src/index.ts#L108-L118
 
 ### Core-extendSession
 
@@ -450,7 +500,7 @@ used to add new menu items to the "shopping cart" in the header of the
 hierarchical track menu when tracks are added to the selection
 
 example
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/wiggle/src/CreateMultiWiggleExtension/index.ts#L10-L67
 
 ### TrackSelector-folderDialog
 
@@ -559,7 +609,8 @@ A more complete example using this extension point is in
 type: async
 
 Launches a linear genome view. Rarely extended directly, but useful as a
-reference for implementing a LaunchView for your own view type.
+reference for implementing a `LaunchView-*` point for your own view type — see
+[Creating view types](/docs/developer_guides/creating_view).
 
 - `args` - an object with the following format
 
@@ -577,7 +628,7 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-genome-view/src/index.ts#L131-L189
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-genome-view/src/index.ts#L131-L189
 
 ### LaunchView-CircularView
 
@@ -595,7 +646,7 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/circular-view/src/index.ts#L30-L66
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/circular-view/src/index.ts#L30-L66
 
 ### LaunchView-SvInspectorView
 
@@ -614,7 +665,7 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/sv-inspector/src/index.ts#L21-L61
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/sv-inspector/src/index.ts#L21-L61
 
 ### LaunchView-SpreadsheetView
 
@@ -633,7 +684,7 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/spreadsheet-view/src/index.ts#L26-L59
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/spreadsheet-view/src/index.ts#L26-L59
 
 ### LaunchView-DotplotView
 
@@ -653,7 +704,7 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/dotplot-view/src/LaunchDotplotView.ts#L7-L46
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/LaunchDotplotView.ts#L7-L46
 
 ### LaunchView-LinearSyntenyView
 
@@ -673,7 +724,7 @@ interface args {
 }
 ```
 
-https://github.com/GMOD/jbrowse-components/blob/6ceeac51f8bcecfc3b0a99e23f2277a6e5a7662e/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/linear-comparative-view/src/LaunchLinearSyntenyView.ts#L9-L68
 
 ### LinearGenomeView-TracksContainerComponent
 

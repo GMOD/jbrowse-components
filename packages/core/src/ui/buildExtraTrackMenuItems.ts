@@ -48,6 +48,7 @@ export function buildExtraTrackMenuItems(
   props: ExtraTrackMenuItemsProps,
 ): MenuItem[] {
   return pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-extraTrackMenuItems | sync | Add items to a single track's menu */
     'Core-extraTrackMenuItems',
     [],
     props,

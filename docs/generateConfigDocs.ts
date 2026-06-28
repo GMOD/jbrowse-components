@@ -1,6 +1,7 @@
 import fs from 'fs'
 
 import slugify from 'slugify'
+import * as ts from 'typescript'
 
 import {
   codeBlock,
@@ -281,6 +282,39 @@ function wrapAdapterExample(content: string, trackType = 'FeatureTrack') {
   )
 }
 
+// An adapter declares the track type its example is wrapped in via #trackType
+// (see wrapAdapterExample). Surface that as a link so an adapter page points at
+// the track that consumes it — the data was already parsed, just unused here.
+function usedInSection(
+  trackType: string | undefined,
+  links: DisplayLinkContext,
+) {
+  const track = trackType ? links.byName.get(trackType) : undefined
+  return track
+    ? section(
+        '### Used in',
+        `This adapter supplies data to the [${track.header.name}](../${track.header.id}) track type.`,
+      )
+    : ''
+}
+
+// The inverse of the per-display model link in displayTypesSection: a config
+// (commonly a Display or Track) links to its own state-model page when one with
+// the same name is documented, so the two halves of a pluggable element — config
+// slots and runtime API — reference each other.
+function stateModelSection(
+  name: string,
+  id: string,
+  links: DisplayLinkContext,
+) {
+  return links.modelNames.has(name)
+    ? section(
+        `### ${name} - State model`,
+        `This config's runtime API is documented on its [state model page](../../models/${id}).`,
+      )
+    : ''
+}
+
 function renderConfig(
   {
     header,
@@ -296,6 +330,8 @@ function renderConfig(
   const directBase = bases[0]
   const sections = section(
     displayTypesSection(header.name, links),
+    usedInSection(header.trackType, links),
+    stateModelSection(header.name, header.id, links),
     preProcess &&
       section(
         `### ${header.name} - Pre-processor / simplified config`,
@@ -364,11 +400,75 @@ function identifierField(identifier: Item) {
     .replace(/^['"]|['"]$/g, '')
 }
 
+interface SlotMeta {
+  type?: string
+  description?: string
+  defaultValue?: string
+}
+
+// A slot's value is an object literal (`{ type, description, defaultValue, ... }`).
+// Surface its fields as prose/labels rather than leaving a reader to parse them
+// out of the dumped code: the in-object `description` becomes the slot's prose
+// when no JSDoc was written, and type/default render as a compact label line.
+function parseSlotMeta(value: string): SlotMeta {
+  const sf = ts.createSourceFile(
+    'slot.ts',
+    `const __x = ${value}`,
+    ts.ScriptTarget.Latest,
+    true,
+  )
+  const decl = sf.statements.find(ts.isVariableStatement)
+  const init = decl?.declarationList.declarations[0]?.initializer
+  const meta: SlotMeta = {}
+  if (init && ts.isObjectLiteralExpression(init)) {
+    for (const p of init.properties) {
+      if (ts.isPropertyAssignment(p) && ts.isIdentifier(p.name)) {
+        if (p.name.text === 'type' && ts.isStringLiteralLike(p.initializer)) {
+          meta.type = p.initializer.text
+        } else if (
+          p.name.text === 'description' &&
+          ts.isStringLiteralLike(p.initializer)
+        ) {
+          meta.description = p.initializer.text
+        } else if (p.name.text === 'defaultValue') {
+          meta.defaultValue = renderScalarDefault(p.initializer)
+        }
+      }
+    }
+  }
+  return meta
+}
+
+// Only scalar defaults render inline; objects/arrays/callbacks stay in the code
+// block below where their shape is legible.
+function renderScalarDefault(node: ts.Expression): string | undefined {
+  return ts.isStringLiteralLike(node)
+    ? `'${node.text}'`
+    : ts.isNumericLiteral(node) ||
+        node.kind === ts.SyntaxKind.TrueKeyword ||
+        node.kind === ts.SyntaxKind.FalseKeyword ||
+        (ts.isPrefixUnaryExpression(node) && ts.isNumericLiteral(node.operand))
+      ? node.getText()
+      : undefined
+}
+
+function slotMetaLine(meta: SlotMeta): string {
+  return [
+    meta.type && `**Type:** \`${meta.type}\``,
+    meta.defaultValue !== undefined && `**Default:** \`${meta.defaultValue}\``,
+  ]
+    .filter(Boolean)
+    .join(' · ')
+}
+
 function slotBlock({ name, docs, examples, code }: Item) {
+  const value = stripPropertyName(code)
+  const meta = parseSlotMeta(value)
   return section(
     `#### slot: ${name}`,
-    docs,
-    codeBlock(stripPropertyName(code)),
+    docs || meta.description,
+    slotMetaLine(meta),
+    codeBlock(value),
     exampleSection(examples, '**Example:**'),
   )
 }

@@ -96,3 +96,13 @@ export default function modelFactory(pluginManager) {
 
 `BaseConnectionModelFactory` provides `addTrackConf`, `addTrackConfs`, and
 `setTrackConfs` for adding tracks incrementally or all at once.
+
+## See also
+
+- [Creating custom add-track workflows](/docs/developer_guides/creating_addtrack_workflow)
+  — another way to add tracks with custom UI
+- [Configuration schema](/docs/developer_guides/configuration_schema) — define
+  the connection's config slots
+- [MST patterns](/docs/developer_guides/mst_patterns) — `types.compose` and
+  model factories
+- [Pluggable elements](/docs/developer_guides/pluggable_elements)

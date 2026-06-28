@@ -45,6 +45,8 @@ Preprocessor to allow minimal config:
 
 Location of the bgzipped PLINK LD file (.ld.gz)
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -57,6 +59,8 @@ Location of the bgzipped PLINK LD file (.ld.gz)
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -66,6 +70,8 @@ Location of the bgzipped PLINK LD file (.ld.gz)
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {

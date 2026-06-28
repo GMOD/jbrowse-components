@@ -32,9 +32,10 @@ Zoom in further to see the individual reads:
 
 [Live demo — reads zoomed in](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5568000-5569000","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
 
-Each little grey box is a read that came from a DNA sequencer — in this case, an
-Illumina machine. The important part: each read corresponds directly with a
-fragment of RNA. This is why we call it RNA-seq.
+Each little grey box is a read off the sequencer — in this case, an Illumina
+machine (the RNA is reverse-transcribed to cDNA before sequencing). The
+important part: each read corresponds directly with a fragment of RNA. This is
+why we call it RNA-seq.
 
 ## The central dogma
 
@@ -99,9 +100,11 @@ called the Watson and Crick strands).
 
 With the compact view turned off, you can mouse over a specific read to inspect
 it. A single spliced read has its exon-aligned ends drawn as grey boxes, joined
-by a thin **teal** line across the skipped intron — the same teal used for the
-sashimi junctions above. Part of the read aligns to the left exon and part to
-the right exon, and the teal line marks the intronic region the read skips over.
+by a thin **teal** line across the skipped intron — the same per-read connector
+shown when reads are zoomed in above (distinct from the red/blue sashimi arcs,
+which are colored by strand). Part of the read aligns to the left exon and part
+to the right exon, and the teal line marks the intronic region the read skips
+over.
 
 [Live demo — single spliced read at ACTB](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=spec-{"views":[{"type":"LinearGenomeView","assembly":"hg19","loc":"chr7:5568200-5569200","tracks":["ncbi_gff_hg19","Pairend_StrandSpecific_51mer_Human_hg19"]}]})
 
@@ -173,9 +176,11 @@ JBrowse Web from **Add track**, or add it to a config as an `AlignmentsTrack`:
 ```
 
 The splice arcs and per-read splicing shown above come for free from the CIGAR
-strings — no extra configuration is needed. For a precomputed coverage signal
-(e.g. a strand-specific BigWig produced by your aligner), load it separately as
-a [quantitative track](/docs/user_guides/quantitative_track).
+strings — no extra configuration is needed. See the
+[alignments track config guide](/docs/config_guides/alignments_track) for
+adapter and display options. For a precomputed coverage signal (e.g. a
+strand-specific BigWig produced by your aligner), load it separately as a
+[quantitative track](/docs/user_guides/quantitative_track).
 
 ## See also
 

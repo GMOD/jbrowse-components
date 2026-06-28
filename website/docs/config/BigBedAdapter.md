@@ -36,6 +36,10 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### BigBedAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -52,6 +56,8 @@ preprocessor to allow minimal config:
 
 #### slot: bigBedLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -64,6 +70,10 @@ preprocessor to allow minimal config:
 
 #### slot: scoreColumn
 
+The column to use as a "score" attribute
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -74,6 +84,10 @@ preprocessor to allow minimal config:
 
 #### slot: aggregateField
 
+An attribute to aggregate features with
+
+**Type:** `string` · **Default:** `'geneName2'`
+
 ```js
 {
   type: 'string',
@@ -83,6 +97,12 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: disableGeneHeuristic
+
+Disable the heuristic that auto-detects BED12 features as gene/transcript
+structures. Useful for files that have BED12-like structure but are not genes
+(e.g. tandem duplications)
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

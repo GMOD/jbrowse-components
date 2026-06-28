@@ -24,6 +24,11 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: dataDirLocation
 
+the location of the JBrowse 1 data directory, often something like
+https://mysite.com/jbrowse/data/
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -37,6 +42,10 @@ reference the markdown files in our repo of the checked out git tag
 ```
 
 #### slot: assemblyNames
+
+name of the assembly the connection belongs to, should be a single entry
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -61,6 +70,10 @@ this page is self-contained.
 
 #### slot: name
 
+a unique name for this connection
+
+**Type:** `string` · **Default:** `'nameOfConnection'`
+
 ```js
 {
   type: 'string',
@@ -70,6 +83,10 @@ this page is self-contained.
 ```
 
 #### slot: assemblyNames
+
+optional list of names of assemblies in this connection
+
+**Type:** `stringArray`
 
 ```js
 {

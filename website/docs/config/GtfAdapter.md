@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text GTF files (optionally gzipped). Loads the whole file
 into memory, so prefer the GtfTabixAdapter for large files.
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### GtfAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -57,6 +61,10 @@ preprocessor to allow minimal config:
 
 #### slot: gtfLocation
 
+path to gtf file, also allows for gzipped gtf
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -69,6 +77,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: aggregateField
+
+field used to aggregate multiple transcripts into a single parent gene feature
+
+**Type:** `string` · **Default:** `'gene_name'`
 
 ```js
 {

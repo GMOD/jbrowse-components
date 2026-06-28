@@ -39,6 +39,10 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text BED files. Loads the whole file into memory, so prefer
 the BedTabixAdapter for large files.
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### BedAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -55,6 +59,10 @@ preprocessor to allow minimal config:
 
 #### slot: bedLocation
 
+path to bed file, also allows gzipped bed
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -68,6 +76,10 @@ preprocessor to allow minimal config:
 
 #### slot: columnNames
 
+List of column names
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -77,6 +89,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: scoreColumn
+
+The column to use as a "score" attribute
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -88,6 +104,10 @@ preprocessor to allow minimal config:
 
 #### slot: autoSql
 
+The autoSql definition for the data fields in the file
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -97,6 +117,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: colRef
+
+The column to use as a "refName" attribute
+
+**Type:** `number` · **Default:** `0`
 
 ```js
 {
@@ -108,6 +132,10 @@ preprocessor to allow minimal config:
 
 #### slot: colStart
 
+The column to use as a "start" attribute
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -118,6 +146,10 @@ preprocessor to allow minimal config:
 
 #### slot: colEnd
 
+The column to use as a "end" attribute
+
+**Type:** `number` · **Default:** `2`
+
 ```js
 {
   type: 'number',
@@ -127,6 +159,12 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: disableGeneHeuristic
+
+Disable the heuristic that auto-detects BED12 features as gene/transcript
+structures. Useful for files that have BED12-like structure but are not genes
+(e.g. tandem duplications)
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

@@ -14,7 +14,8 @@ JBrowse supports three built-in connection types:
 - **UCSC Track Hub** — any
   [UCSC Genome Browser track hub](https://genome.ucsc.edu/goldenPath/help/hgTrackHubHelp.html)
   reachable over the network
-- **JB2 Track Hub** — a track hub based on a JBrowse 2 config file
+- **JB2 Track Hub** — a track hub based on a
+  [JBrowse 2 config file](/docs/config_guides/from_config)
 - **JBrowse 1 data directory** — a legacy JBrowse 1 data directory with a
   `trackList.json`
 

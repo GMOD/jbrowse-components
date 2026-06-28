@@ -28,6 +28,8 @@ which RPC backend to use by default. Empty means "use the host application's
 default" (web/desktop default to the web worker driver, embedded/headless to the
 main thread). A per-track or per-call `rpcDriverName` still overrides this.
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -42,6 +44,8 @@ main thread). A per-track or per-call `rpcDriverName` still overrides this.
 
 number of web workers to spawn for the web worker RPC driver. 0 lets JBrowse
 pick based on hardware concurrency.
+
+**Type:** `number` · **Default:** `0`
 
 ```js
 {

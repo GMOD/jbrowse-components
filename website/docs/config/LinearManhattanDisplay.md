@@ -73,6 +73,10 @@ configuration for the Manhattan plot display used by GWAS tracks
 
 #### slot: color
 
+CSS color or jexl callback for Manhattan points
+
+**Type:** `color` · **Default:** `'#0068d1'`
+
 ```js
 {
   type: 'color',
@@ -85,6 +89,8 @@ configuration for the Manhattan plot display used by GWAS tracks
 
 LocusZoom-style coloring. 'normal' uses `color`; 'ld' colors each point by its
 r² to the index SNP, read from `ldAdapter`.
+
+**Type:** `stringEnum` · **Default:** `'normal'`
 
 ```js
 {
@@ -99,6 +105,8 @@ r² to the index SNP, read from `ldAdapter`.
 
 PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r²
 used when colorBy is 'ld'.
+
+**Type:** `frozen`
 
 ```js
 {

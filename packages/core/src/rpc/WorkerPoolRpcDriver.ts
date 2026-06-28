@@ -137,6 +137,7 @@ export default abstract class WorkerPoolRpcDriver extends BaseRpcDriver {
   ) {
     const unextendedWorker = await this.getWorker(sessionId)
     const worker = pluginManager.evaluateExtensionPoint(
+      /** #extensionPoint Core-extendWorker | sync | Register extra RPC methods on the web worker */
       'Core-extendWorker',
       unextendedWorker,
     )

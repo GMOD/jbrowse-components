@@ -26,6 +26,10 @@ used to configure BigMaf adapter
 
 #### slot: samples
 
+string[] or {id:string,label:string,color?:string}[]
+
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -35,6 +39,8 @@ used to configure BigMaf adapter
 ```
 
 #### slot: bigBedLocation
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -48,6 +54,10 @@ used to configure BigMaf adapter
 
 #### slot: nhLocation
 
+newick tree
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -60,6 +70,11 @@ used to configure BigMaf adapter
 ```
 
 #### slot: summaryAdapter
+
+optional swappable sub-adapter (e.g. a BigBedAdapter over UCSC bigMafSummary.bb)
+used for cheap zoom-out rendering; null disables it
+
+**Type:** `frozen`
 
 ```js
 {

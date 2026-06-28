@@ -41,6 +41,10 @@ _See the **Slots** section below for all available configuration fields._
 used to load MUMmer `.delta` alignment files (query and target assembly
 required)
 
+### Used in
+
+This adapter supplies data to the [SyntenyTrack](../syntenytrack) track type.
+
 ### DeltaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -59,6 +63,11 @@ preprocessor to allow minimal config:
 
 #### slot: assemblyNames
 
+Array of assembly names to use for this file. The query assembly name is the
+first value in the array, target assembly name is the second
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -72,6 +81,8 @@ preprocessor to allow minimal config:
 
 alternative to assembly names
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -84,6 +95,8 @@ alternative to assembly names
 
 alternative to assembly names
 
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   type: 'string',
@@ -93,6 +106,8 @@ alternative to assembly names
 ```
 
 #### slot: deltaLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

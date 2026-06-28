@@ -53,6 +53,11 @@ canvas base display (`LinearCanvasBaseDisplay`). This is the GPU stack — despi
 the name it does NOT extend `BaseLinearDisplay` (the legacy block stack). See
 agent-docs/ARCHITECTURE.md "Display stacks".
 
+### LinearBasicDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearbasicdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

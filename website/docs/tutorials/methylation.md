@@ -23,7 +23,7 @@ Turn on modification or methylation coloring from the track menu. Each
 modification type renders in its own color, with intensity reflecting the
 modification probability (ML tag value).
 
-<Figure caption="The same nanopore track shown in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode only draws the positive 5mC calls listed in the MM tag, so a hypomethylated region looks nearly empty. The MM tag does not necessarily mark unmodified bases, so methylation mode instead scans the read sequence itself for CpG dinucleotides and paints any that the MM tag did not call methylated blue — that manual lookup is what lets it fill a hypomethylated region with solid blue where modifications mode shows nothing." src="/img/alignments/modifications2.png" />
+<Figure caption="The same nanopore track shown in modifications mode (top) and methylation mode (bottom) over a hypo-methylated CpG island. Modifications mode only draws the positive 5mC calls listed in the MM tag, so a hypomethylated region looks nearly empty. The MM tag does not necessarily mark unmodified bases, so methylation mode instead scans the read sequence itself for CpG dinucleotides and paints any CpG the MM tag left uncalled in blue. That manual lookup is what fills a hypomethylated region with solid blue where modifications mode shows nothing." src="/img/alignments/modifications2.png" />
 
 ## Aggregate methylation with modkit bedMethyl
 
@@ -53,9 +53,10 @@ tabix -p bed output_dir/combined.bedmethyl.gz
 ### Loading as a MultiQuantitativeTrack
 
 Because bedMethyl is a BED-format file with a numeric score column, it can be
-loaded using a `BedTabixAdapter` inside a `MultiQuantitativeTrack`. JBrowse
-reads the modification type from the `name` column (e.g. `m` for 5mC, `h` for
-5hmC) and creates one subtrack per type.
+loaded using a `BedTabixAdapter` inside a `MultiQuantitativeTrack` (see the
+[multi-quantitative track config guide](/docs/config_guides/multiquantitative_track)).
+JBrowse reads the modification type from the `name` column (e.g. `m` for 5mC,
+`h` for 5hmC) and creates one subtrack per type.
 
 ```json
 {

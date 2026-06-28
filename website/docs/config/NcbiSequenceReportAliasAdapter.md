@@ -37,6 +37,8 @@ preprocessor to allow minimal config:
 
 #### slot: location
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -48,6 +50,10 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: useNameOverride
+
+forces usage of the UCSC names over the NCBI style names from a FASTA
+
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {

@@ -622,6 +622,15 @@ derives from `availableHeight`.
 type hasOverflow = boolean
 ```
 
+#### getter: scrollableHeight
+
+Max valid `scrollTop`: how far the rows can scroll before the bottom row reaches
+the viewport floor. Zero when the rows fit.
+
+```ts
+type scrollableHeight = number
+```
+
 #### getter: featuresReady
 
 ```ts
@@ -840,6 +849,12 @@ type setReferenceDrawingMode = (arg: string) => void
 
 ```ts
 type sortByGenotype = (featureId: string) => void
+```
+
+#### action: setScrollTop
+
+```ts
+type setScrollTop = (scrollTop: number) => void
 ```
 
 #### action: clearDisplaySpecificData

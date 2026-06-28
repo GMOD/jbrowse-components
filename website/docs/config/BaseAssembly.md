@@ -111,6 +111,8 @@ the "displayName" config slot instead
 
 aliases are "reference name aliases" e.g. aliases for hg38 might be "GRCh38"
 
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -130,6 +132,11 @@ pluginManager.getTrackType('ReferenceSequenceTrack').configSchema
 
 #### slot: refNameColors
 
+Define custom colors for each reference sequence. Will cycle through this list
+if there are not enough colors for every sequence.
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -147,6 +154,8 @@ vertebrate mitochondrial code or `{ "chrPltd": 11 }` for a plastid. Drives the
 reference sequence track's translation rows; unlisted refNames use the standard
 code (1). CDS-level translation reads the GFF `transl_table` attribute directly
 and ignores this.
+
+**Type:** `frozen`
 
 ```js
 {
@@ -174,6 +183,8 @@ to load the same refName-to-genetic-code mapping from, instead of inlining it â€
 useful when a config generator emits a sidecar rather than inlining per
 assembly. Entries in the inline `geneticCodes` slot take precedence over the
 file.
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -214,6 +225,11 @@ pluginManager.pluggableConfigSchemaType('adapter')
 ```
 
 #### slot: displayName
+
+A human readable display name for the assembly e.g. "Homo sapiens (hg38)" while
+the assembly name may just be "hg38"
+
+**Type:** `string` Â· **Default:** `''`
 
 ```js
 {

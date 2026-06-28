@@ -40,6 +40,11 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed bedGraph signal files
 
+### Used in
+
+This adapter supplies data to the [QuantitativeTrack](../quantitativetrack)
+track type.
+
 ### BedGraphTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
@@ -56,6 +61,8 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 
 #### slot: bedGraphGzLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -68,6 +75,8 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -77,6 +86,8 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -89,6 +100,10 @@ preprocessor to allow minimal config, assumes yourfile.bg.gz.tbi:
 ```
 
 #### slot: columnNames
+
+List of column names
+
+**Type:** `stringArray`
 
 ```js
 {

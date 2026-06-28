@@ -40,6 +40,10 @@ _See the **Slots** section below for all available configuration fields._
 
 used to load bgzip-compressed, tabix-indexed GTF files
 
+### Used in
+
+This adapter supplies data to the [FeatureTrack](../featuretrack) track type.
+
 ### GtfTabixAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
@@ -56,6 +60,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
 
 #### slot: gtfGzLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -68,6 +74,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
 
 #### slot: index.indexType
 
+**Type:** `stringEnum` · **Default:** `'TBI'`
+
 ```js
 {
   model: types.enumeration('IndexType', ['TBI', 'CSI']),
@@ -77,6 +85,8 @@ preprocessor to allow minimal config, assumes tbi index at yourfile.gtf.gz.tbi:
 ```
 
 #### slot: index.location
+
+**Type:** `fileLocation`
 
 ```js
 {
@@ -94,6 +104,8 @@ the GtfTabixAdapter has to "redispatch" if it fetches a region and features it
 finds inside that region extend outside the region we requested. you can disable
 this for certain feature types to avoid fetching e.g. the entire chromosome
 
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -102,6 +114,10 @@ this for certain feature types to avoid fetching e.g. the entire chromosome
 ```
 
 #### slot: aggregateField
+
+field used to aggregate multiple transcripts into a single parent gene feature
+
+**Type:** `string` · **Default:** `'gene_name'`
 
 ```js
 {

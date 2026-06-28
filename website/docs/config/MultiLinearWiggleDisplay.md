@@ -78,6 +78,10 @@ array form — see
 
 #### slot: height
 
+Default height of the track
+
+**Type:** `number` · **Default:** `200`
+
 ```js
 {
   type: 'number',
@@ -87,6 +91,11 @@ array form — see
 ```
 
 #### slot: summaryScoreMode
+
+choose whether to use max/min/average or whiskers which combines all three into
+the same rendering
+
+**Type:** `stringEnum` · **Default:** `'avg'`
 
 ```js
 {
@@ -104,6 +113,8 @@ Default rendering type. Multi-row modes (`multirowxy`, `multirowdensity`,
 `multirowline`, `multirowscatter`) draw one stacked plot per subtrack;
 overlapping modes (`multixyplot`, `multiline`, `multiscatter`) draw all
 subtracks together in one shared plot.
+
+**Type:** `stringEnum` · **Default:** `'multirowxy'`
 
 ```js
 {

@@ -38,6 +38,8 @@ preprocessor to allow minimal config:
 
 #### slot: location
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -53,6 +55,8 @@ preprocessor to allow minimal config:
 by default, the "ref names that match the fasta" are assumed to be in the first
 column (0), change this variable if needed
 
+**Type:** `number` · **Default:** `0`
+
 ```js
 {
   type: 'number',
@@ -64,6 +68,8 @@ column (0), change this variable if needed
 #### slot: refNameColumnHeaderName
 
 refNameColumnHeaderName
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {

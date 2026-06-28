@@ -37,6 +37,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### Used in
+
+This adapter supplies data to the
+[ReferenceSequenceTrack](../referencesequencetrack) track type.
+
 ### TwoBitAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config (note that adding chromSizes improves
@@ -57,6 +62,8 @@ names and sizes):
 
 #### slot: twoBitLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -68,6 +75,11 @@ names and sizes):
 ```
 
 #### slot: chromSizesLocation
+
+An optional chrom.sizes file can be supplied to speed up loading since parsing
+the twobit file can take time
+
+**Type:** `fileLocation`
 
 ```js
 {

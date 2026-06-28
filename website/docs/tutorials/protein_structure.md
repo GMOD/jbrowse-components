@@ -39,9 +39,10 @@ For a one-click example, this link opens the AlphaFold structure of human BRAF
 
 To add the feature to your own JBrowse 2:
 
-- Open the plugin store (Tools menu) and install **Protein3d** and **MSAView**,
-  or
+- Open the [plugin store](/docs/user_guides/plugin_store) (Tools menu) and
+  install **Protein3d** and **MSAView**, or
 - As an admin, add the plugins to your `config.json` so they load for all users
+  (see [configuring plugins](/docs/config_guides/plugins))
 
 ## Viewing a 3D structure
 

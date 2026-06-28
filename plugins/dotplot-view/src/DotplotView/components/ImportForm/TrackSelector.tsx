@@ -62,6 +62,7 @@ const TrackSelector = observer(function TrackSelector({
   const assembly1 = assemblyY
   const assembly2 = assemblyX
   const customOptions = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint DotplotView-ImportFormSyntenyOptions | sync | Add options to the dotplot view import form */
     'DotplotView-ImportFormSyntenyOptions',
     [],
     { model, assembly1, assembly2 },

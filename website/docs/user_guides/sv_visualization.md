@@ -89,11 +89,15 @@ on a different chromosome are handled separately (see the table below).
 **With paired arcs or linked reads enabled** (via Read connections in the track
 menu), the Insert size option uses threshold-based coloring:
 
-| Pattern                        | Color  | Notes                                  |
-| ------------------------------ | ------ | -------------------------------------- |
-| Insert larger than expected    | red    | suggests a deletion spanning the pair  |
-| Insert smaller than expected   | pink   | suggests an insertion between the pair |
-| Mate on a different chromosome | purple | suggests an inter-chromosomal event    |
+<!-- COLOR_TABLE alignments-insert-size START -->
+
+| Color                                                                                                                                                                       | Name                           | Value     | Description                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | --------- | -------------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Mate on a different chromosome | `#6e4b3a` | Suggests an inter-chromosomal event    |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | Insert larger than expected    | `#ff0000` | Suggests a deletion spanning the pair  |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | Insert smaller than expected   | `#ffc0cb` | Suggests an insertion between the pair |
+
+<!-- COLOR_TABLE alignments-insert-size END -->
 
 The "expected" range is a robust band around the typical insert size,
 `median ± 3·1.4826·MAD`, rather than `mean ± 3σ`. Real insert-size distributions
@@ -268,7 +272,8 @@ supplementary alignments, connecting more than two breakpoints simultaneously.
 For heterozygous SVs, confirming that supporting reads come from a single
 haplotype is strong evidence for the call. If your BAM/CRAM has been haplotagged
 (e.g., with WhatsHap or HiPhase), reads carry an `HP` tag identifying the
-haplotype.
+haplotype; the [phased trio tutorial](/docs/tutorials/analyze_trio) covers
+working with phased haplotypes end-to-end.
 
 Sort and color by the `HP` tag from the track menu. Reads from each haplotype
 cluster together, making it easy to see whether an SV is present on one or both
@@ -316,10 +321,11 @@ inter-chromosomal SVs, a better approach is:
 When a de novo assembly of the sample is available — for example, a phased tumor
 assembly from PacBio HiFi or ONT data — aligning it back to the reference with a
 tool like [minimap2](https://github.com/lh3/minimap2) and loading the resulting
-PAF as a synteny track gives a chromosome-scale view of rearrangements that
-read-level displays cannot. Complex events like chromosomal fusions appear as
-off-diagonal blocks in the [dotplot view](/docs/user_guides/dotplot_view), and
-clicking and dragging over a region in the dotplot can launch a base-level
+PAF as a [synteny track](/docs/tutorials/synteny_visualization) gives a
+chromosome-scale view of rearrangements that read-level displays cannot. Complex
+events like chromosomal fusions appear as off-diagonal blocks in the
+[dotplot view](/docs/user_guides/dotplot_view), and clicking and dragging over a
+region in the dotplot can launch a base-level
 [linear synteny view](/docs/user_guides/linear_synteny_view) with the same
 alignment.
 

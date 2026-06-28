@@ -39,6 +39,10 @@ _See the **Slots** section below for all available configuration fields._
 used to load plain-text (non-bgzipped) VCF files. Loads the whole file into
 memory, so prefer the VcfTabixAdapter for large files.
 
+### Used in
+
+This adapter supplies data to the [VariantTrack](../varianttrack) track type.
+
 ### VcfAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config:
@@ -55,6 +59,8 @@ preprocessor to allow minimal config:
 
 #### slot: vcfLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -66,6 +72,8 @@ preprocessor to allow minimal config:
 ```
 
 #### slot: samplesTsvLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

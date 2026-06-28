@@ -97,6 +97,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
 }) {
   const { classes } = useStyles()
   const extraPanels = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint Core-preferencesDialogPanels | sync | Add panels to the preferences dialog */
     'Core-preferencesDialogPanels',
     [],
     { session },

@@ -56,6 +56,9 @@ data), **Color by → Base modifications** paints them. There are two modes:
   context. That's why a hypomethylated island fills with solid blue here but
   looks nearly empty in modification-type mode.
 
+See the [methylation tutorial](/docs/tutorials/methylation) for an end-to-end
+modified-base workflow.
+
 <Figure caption="COLO829 tumor nanopore reads colored by base modification (5mC/5hmC) across a CpG island on chr20." src="/img/alignments/modifications1.png" />
 <Figure caption="The same track in modification-type mode (top) and methylation mode (bottom) over a hypomethylated CpG island. Modification-type mode draws only the positive 5mC calls, so the region looks empty; methylation mode paints every CpG, filling the unmethylated ones blue." src="/img/alignments/modifications2.png" />
 
@@ -84,7 +87,9 @@ color tables and worked examples on real structural variants.
 
 You can color, sort, or filter by any BAM tag. The common case is the `HP`
 (haplotype) tag to see phased reads; grouping by `HP` (below) usually reads even
-more clearly than coloring alone.
+more clearly than coloring alone. The
+[phased trio tutorial](/docs/tutorials/analyze_trio) walks through working with
+`HP`-tagged reads alongside a phased VCF.
 
 ## Grouping reads
 
@@ -155,7 +160,8 @@ or tag value (`HP:1` for one haplotype, `HP:*` for any read carrying the tag).
 Sashimi-style arcs are drawn automatically over spliced alignments (reads with
 `N` in the CIGAR), so RNA-seq and Iso-Seq splice junctions appear with no setup.
 When reads carry the XS tag, the arc strand follows it. Turn them off from the
-track menu.
+track menu. See the [RNA-seq tutorial](/docs/tutorials/rnaseq) for a worked
+splice-junction example.
 
 <Figure caption="Sashimi-style arcs over spliced alignments, drawn by default for short-read (RNA-seq) and long-read (Iso-Seq) data." src="/img/alignments_track_arcs.png" />
 

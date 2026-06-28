@@ -63,6 +63,7 @@ const MouseInteractionLayer = observer(function MouseInteractionLayer({
   const { classes } = useStyles()
   const { pluginManager } = getEnv(model)
   const svgOverlays = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint DotplotView-OverlaySVGComponent | sync | Add an SVG overlay component to the dotplot view */
     'DotplotView-OverlaySVGComponent',
     [],
     { model },

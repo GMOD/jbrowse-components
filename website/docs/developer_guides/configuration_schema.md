@@ -13,6 +13,7 @@ instances are created from config JSON and observed reactively.
 
 ```ts
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 const MyAdapterConfigSchema = ConfigurationSchema(
   'MyAdapter', // schema name, must match the `type` field in config
@@ -41,19 +42,24 @@ const MyAdapterConfigSchema = ConfigurationSchema(
 
 ## Slot types
 
-| Type             | JS type                    | Notes                                      |
-| ---------------- | -------------------------- | ------------------------------------------ |
-| `string`         | `string`                   |                                            |
-| `text`           | `string`                   | Alias for string                           |
-| `number`         | `number`                   | Float                                      |
-| `integer`        | `number`                   | Integer                                    |
-| `boolean`        | `boolean`                  |                                            |
-| `color`          | `string`                   | Validated CSS color string                 |
-| `fileLocation`   | `FileLocation`             | `{ uri, locationType }` or `{ localPath }` |
-| `stringArray`    | `string[]`                 |                                            |
-| `stringArrayMap` | `Record<string, string[]>` |                                            |
-| `numberMap`      | `Record<string, number>`   |                                            |
-| `frozen`         | `unknown`                  | Arbitrary JSON; not deeply reactive        |
+This is the canonical list of slot types; the
+[configuration model basics](/docs/developer_guides/config_model) guide
+describes how each renders in the graphical config editor.
+
+| Type             | JS type                    | Notes                                               |
+| ---------------- | -------------------------- | --------------------------------------------------- |
+| `string`         | `string`                   |                                                     |
+| `text`           | `string`                   | Alias for string; textarea in the GUI               |
+| `number`         | `number`                   | Float                                               |
+| `integer`        | `number`                   | Integer                                             |
+| `boolean`        | `boolean`                  |                                                     |
+| `stringEnum`     | `string`                   | One of a fixed set; needs a `model` (see below)     |
+| `color`          | `string`                   | Validated CSS color string; color picker in the GUI |
+| `fileLocation`   | `FileLocation`             | `{ uri, locationType }` or `{ localPath }`          |
+| `stringArray`    | `string[]`                 |                                                     |
+| `stringArrayMap` | `Record<string, string[]>` |                                                     |
+| `numberMap`      | `Record<string, number>`   |                                                     |
+| `frozen`         | `unknown`                  | Arbitrary JSON; not deeply reactive                 |
 
 For enums, use `type: 'stringEnum'` and add a `model` field:
 
@@ -126,6 +132,9 @@ for each display type the track supports.
 
 ## Reading config values
 
+The full signatures for `getConf` and `readConfObject` are in the
+[configuration API reference](/docs/api/core-configuration).
+
 Use `getConf` when you hold a **state model** that has a `.configuration` member
 (a track model, display model, etc.):
 
@@ -196,3 +205,12 @@ MST node.
 
 This is why `session.tracksById` returns plain objects: access them with
 `readConfObject`, not `getConf`.
+
+## See also
+
+- [Configuration model basics](/docs/developer_guides/config_model) — slot types
+  in the graphical editor and config callbacks (jexl)
+- [Configuration API reference](/docs/api/core-configuration) — `getConf`,
+  `readConfObject`, `ConfigurationReference` signatures
+- [MST patterns](/docs/developer_guides/mst_patterns) — `types.frozen` and model
+  composition

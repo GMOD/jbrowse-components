@@ -52,6 +52,7 @@ export default function SVGLinearGenomeView({
   const { pluginManager } = getEnv(view)
   const clipId = `highlight-clip-${view.id}`
   const bookmarkHighlights = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-HighlightSVGComponent | sync | Add an SVG highlight overlay in the LGV SVG export */
     'LinearGenomeView-HighlightSVGComponent',
     [] as ReactNode[],
     { model: view, height: tracksHeight },

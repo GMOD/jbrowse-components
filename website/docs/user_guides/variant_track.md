@@ -7,7 +7,7 @@ guide_category: Track types
 A common workflow is to view a VCF variant track alongside the alignment track
 that produced the calls:
 
-<Figure caption="Variant track indicating a SNP alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
+<Figure caption="Variant track indicating an SNV alongside the alignment track evidence." src="/img/variant_with_pileup.png" />
 
 ## Variant widget
 
@@ -41,5 +41,7 @@ full walkthrough of the regular and matrix multi-sample displays.
   interpreting SV calls across views
 - [Alignments track](/docs/user_guides/alignments_track) — inspect the read
   evidence behind a call
+- [GWAS / Manhattan track](/docs/user_guides/gwas_track) — r² LD coloring to an
+  index SNP, the same linkage concept behind variant LD displays
 - [Variant track configuration](/docs/config_guides/variant_track) — SVTYPE
   coloring, multi-sample display defaults, and LD displays

@@ -186,3 +186,11 @@ Use `"indexType": "CSI"` if you created the index with `--csi`.
 
 PAFAdapter is simpler to set up and fine for small alignments. For large
 whole-genome comparisons PIF is strongly preferred.
+
+## See also
+
+- Adapter config reference:
+  [PairwiseIndexedPAFAdapter](/docs/config/pairwiseindexedpafadapter) and
+  [PAFAdapter](/docs/config/pafadapter)
+- [Creating custom view types](/docs/developer_guides/creating_view) — the
+  dotplot and linear synteny views that render PIF data

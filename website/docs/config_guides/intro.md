@@ -21,7 +21,9 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 }
 ```
 
-The most important things to configure are your assemblies and your tracks.
+The most important things to configure are your
+[assemblies](/docs/config_guides/assemblies) and your
+[tracks](/docs/config_guides/tracks).
 
 :::tip
 
@@ -55,7 +57,9 @@ file extension.
 :::info
 
 Embedded components (e.g. `@jbrowse/react-linear-genome-view2`) take a config
-object at runtime rather than a config file. To fetch one on the fly:
+object at runtime rather than a config file (see
+[embedding a linear genome view](/docs/tutorials/embed_linear_genome_view)). To
+fetch one on the fly:
 
 ```typescript
 const url = 'config.json'

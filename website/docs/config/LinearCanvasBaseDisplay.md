@@ -21,10 +21,19 @@ reference the markdown files in our repo of the checked out git tag
 
 base config for canvas-based linear feature displays (pileup-style glyphs)
 
+### LinearCanvasBaseDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearcanvasbasedisplay).
+
 <details open>
 <summary>LinearCanvasBaseDisplay - Slots</summary>
 
 #### slot: maxHeight
+
+Maximum height of the display in pixels
+
+**Type:** `number` · **Default:** `1200`
 
 ```js
 {
@@ -37,6 +46,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: autoHeight
 
+Automatically resize the track height to fit all features
+
+**Type:** `boolean` · **Default:** `false`
+
 ```js
 {
   type: 'boolean',
@@ -47,6 +60,11 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: showLabels
+
+Show feature labels: "auto" hides labels at high feature density, "on" always
+shows, "off" always hides
+
+**Type:** `stringEnum` · **Default:** `'auto'`
 
 ```js
 {
@@ -60,6 +78,11 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: maxLabelFeatureDensity
 
+In "auto" showLabels mode, hide labels when visible feature density
+(features/pixel) exceeds this value
+
+**Type:** `number`
+
 ```js
 {
   type: 'number',
@@ -72,6 +95,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: showDescriptions
 
+Show feature descriptions
+
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   type: 'boolean',
@@ -81,6 +108,11 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: color
+
+the main fill color of each feature (a CSS color, or a jexl expression for
+per-feature coloring)
+
+**Type:** `color` · **Default:** `'goldenrod'`
 
 ```js
 {
@@ -94,6 +126,11 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: connectorColor
 
+color of the connecting/intron lines between feature segments (defaults to the
+theme text color)
+
+**Type:** `color`
+
 ```js
 {
   type: 'color',
@@ -106,6 +143,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: utrColor
 
+fill color for UTRs on gene/transcript glyphs
+
+**Type:** `color` · **Default:** `'#357089'`
+
 ```js
 {
   type: 'color',
@@ -117,6 +158,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: outlineColor
 
+outline color for features (empty string = no outline)
+
+**Type:** `color` · **Default:** `''`
+
 ```js
 {
   type: 'color',
@@ -126,6 +171,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: featureHeight
+
+height in pixels of the main body of each feature
+
+**Type:** `number` · **Default:** `10`
 
 ```js
 {
@@ -137,6 +186,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: displayMode
+
+Feature height preset (normal/compact/super-compact)
+
+**Type:** `stringEnum` · **Default:** `'normal'`
 
 ```js
 {
@@ -153,6 +206,11 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: geneGlyphMode
 
+Gene glyph display mode: "auto" switches based on zoom level, "all" shows all
+transcripts, "longestCoding" shows only the longest coding transcript
+
+**Type:** `stringEnum` · **Default:** `'auto'`
+
 ```js
 {
   type: 'stringEnum',
@@ -164,6 +222,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: subfeatureLabels
+
+subfeature label display mode
+
+**Type:** `stringEnum` · **Default:** `'none'`
 
 ```js
 {
@@ -180,6 +242,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: displayDirectionalChevrons
 
+Display directional chevrons on intron lines to indicate strand direction
+
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   type: 'boolean',
@@ -190,6 +256,8 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: transcriptTypes
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -211,6 +279,8 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 
 #### slot: containerTypes
 
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -219,6 +289,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: subParts
+
+subparts for a glyph
+
+**Type:** `string` · **Default:** `'CDS,UTR,five_prime_UTR,three_prime_UTR'`
 
 ```js
 {
@@ -229,6 +303,10 @@ base config for canvas-based linear feature displays (pileup-style glyphs)
 ```
 
 #### slot: impliedUTRs
+
+imply UTR from the exon and CDS differences
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {
@@ -271,6 +349,11 @@ this page is self-contained.
 
 #### slot: maxFeatureScreenDensity
 
+maximum features per pixel before showing a "too many features" message, used if
+byte size estimates are not available
+
+**Type:** `number` · **Default:** `1`
+
 ```js
 {
   type: 'number',
@@ -282,6 +365,11 @@ this page is self-contained.
 ```
 
 #### slot: fetchSizeLimit
+
+maximum data to attempt to download for a given track, used if adapter doesn't
+specify one
+
+**Type:** `number` · **Default:** `1_000_000`
 
 ```js
 {
@@ -295,6 +383,10 @@ this page is self-contained.
 
 #### slot: height
 
+default height for the track
+
+**Type:** `number` · **Default:** `100`
+
 ```js
 {
   type: 'number',
@@ -304,6 +396,11 @@ this page is self-contained.
 ```
 
 #### slot: mouseover
+
+text to display when the cursor hovers over a feature
+
+**Type:** `string` · **Default:**
+`'jexl:mouseoverExtraInformation||get(feature,'_mouseOver')||get(feature,'name')||get(feature,'id')'`
 
 ```js
 {
@@ -318,6 +415,8 @@ this page is self-contained.
 
 config jexlFilters are deferred evaluated so they are prepended with jexl at
 runtime rather than being stored with jexl in the config
+
+**Type:** `stringArray`
 
 ```js
 {

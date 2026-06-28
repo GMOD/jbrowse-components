@@ -220,6 +220,7 @@ const OverviewScalebarContent = observer(function OverviewScalebarContent({
   const { overviewLayout: overview, overviewBlocks } = model
 
   const additional = pluginManager.evaluateExtensionPoint(
+    /** #extensionPoint LinearGenomeView-OverviewScalebarComponent | sync | Add a component to the overview scalebar */
     'LinearGenomeView-OverviewScalebarComponent',
     [],
     { model, overview },

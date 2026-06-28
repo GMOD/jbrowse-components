@@ -46,7 +46,10 @@ Three ways to create one:
 tab-separated BED format where each row reports the methylation fraction at a
 single CpG position for one modification type (e.g. 5mC or 5hmC). It loads as
 `BedTabixAdapter` and naturally maps to `MultiQuantitativeTrack`, with one
-subtrack per modification type.
+subtrack per modification type. For the per-read view of the same modified-base
+calls, see
+[Color by base modifications](/docs/user_guides/alignments_track#modifications-and-methylation)
+on the alignments track.
 
 ### Generating the file
 

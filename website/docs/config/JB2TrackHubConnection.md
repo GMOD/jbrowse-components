@@ -19,6 +19,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### JB2TrackHubConnection - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/jb2trackhubconnection).
+
 ### JB2TrackHubConnection - Pre-processor / simplified config
 
 preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
@@ -35,6 +40,10 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 
 #### slot: configJsonLocation
 
+location of the jb2 config file (usually called config.json)
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -48,6 +57,11 @@ preprocessor to allow minimal config, where `uri` points at the jb2 config.json:
 ```
 
 #### slot: assemblyNames
+
+optional list of genomes to import from this config.json, if empty all genomes
+will be imported
+
+**Type:** `stringArray`
 
 ```js
 {
@@ -72,6 +86,10 @@ this page is self-contained.
 
 #### slot: name
 
+a unique name for this connection
+
+**Type:** `string` · **Default:** `'nameOfConnection'`
+
 ```js
 {
   type: 'string',
@@ -81,6 +99,10 @@ this page is self-contained.
 ```
 
 #### slot: assemblyNames
+
+optional list of names of assemblies in this connection
+
+**Type:** `stringArray`
 
 ```js
 {

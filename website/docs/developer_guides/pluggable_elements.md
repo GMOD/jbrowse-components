@@ -199,3 +199,5 @@ more detailed information.
 
 - [Configuration model](/docs/developer_guides/config_model)
 - [Plugin tutorial](/docs/developer_guides/simple_plugin/)
+- [Creating a custom text search adapter](/docs/developer_guides/creating_text_search_adapter)
+- [Creating custom connections](/docs/developer_guides/creating_connection)

@@ -117,8 +117,7 @@ export default class MyPlugin extends Plugin {
 ## Calling from the main thread
 
 ```ts
-import { getRpcSessionId } from '@jbrowse/core/util'
-import { getSession } from '@jbrowse/core/util'
+import { getRpcSessionId, getSession } from '@jbrowse/core/util'
 
 // Inside an MST action or async function that has access to a model
 const sessionId = getRpcSessionId(self)
@@ -203,6 +202,18 @@ override it per-driver in config:
   }
 }
 ```
+
+## See also
+
+- [Data fetching pipeline](/docs/developer_guides/data_fetching) — the
+  main-thread caller side that drives `rpcManager.call` from `fetchNeeded`
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+  — RPC methods that pack and transfer GPU buffers with `rpcResult`
+- [Creating custom adapters](/docs/developer_guides/creating_adapter) — adapters
+  run inside these workers
+- [RefName aliasing](/docs/developer_guides/refname_aliasing) — what
+  `renameRegions` resolves before args cross the worker boundary
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)
 
 [sca]:
   https://developer.mozilla.org/en-US/docs/Web/API/Web_Workers_API/Structured_clone_algorithm

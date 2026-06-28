@@ -24,6 +24,10 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: validateWithHEAD
 
+validate the token with a HEAD request before using it
+
+**Type:** `boolean` · **Default:** `true`
+
 ```js
 {
   description: 'validate the token with a HEAD request before using it',
@@ -46,6 +50,10 @@ this page is self-contained.
 
 #### slot: name
 
+descriptive name of the internet account
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'descriptive name of the internet account',
@@ -55,6 +63,10 @@ this page is self-contained.
 ```
 
 #### slot: description
+
+a description of the internet account
+
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
@@ -66,6 +78,10 @@ this page is self-contained.
 
 #### slot: authHeader
 
+request header for credentials
+
+**Type:** `string` · **Default:** `'Authorization'`
+
 ```js
 {
   description: 'request header for credentials',
@@ -76,6 +92,10 @@ this page is self-contained.
 
 #### slot: tokenType
 
+a custom name for a token to include in the header
+
+**Type:** `string` · **Default:** `''`
+
 ```js
 {
   description: 'a custom name for a token to include in the header',
@@ -85,6 +105,10 @@ this page is self-contained.
 ```
 
 #### slot: domains
+
+array of valid domains the url can contain to use this account
+
+**Type:** `stringArray`
 
 ```js
 {

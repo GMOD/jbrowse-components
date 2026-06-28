@@ -33,6 +33,8 @@ controls feature-layout animations: 'enabled' always animates (the default),
 'system' respects the OS prefers-reduced-motion setting, 'disabled' never
 animates
 
+**Type:** `stringEnum` · **Default:** `'enabled'`
+
 ```js
 {
   model: types.enumeration('AnimationMode', [
@@ -49,6 +51,8 @@ animates
 
 when true, scrolling the mouse wheel over a track zooms in and out without
 holding Ctrl. Applies globally to all wheel-zoom views.
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
 {

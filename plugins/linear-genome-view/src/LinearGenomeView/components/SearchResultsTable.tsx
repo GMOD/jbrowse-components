@@ -74,6 +74,7 @@ const SearchResultsTable = observer(function SearchResultsTable({
         model.showAllRegions()
       }
       await pluginManager.evaluateAsyncExtensionPoint(
+        /** #extensionPoint LinearGenomeView-searchResultSelected | async | Invoked when a search result is selected */
         'LinearGenomeView-searchResultSelected',
         undefined,
         { session, result, model, assemblyName },

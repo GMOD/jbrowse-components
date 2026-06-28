@@ -18,6 +18,7 @@ declare module '@jbrowse/core/PluginManager' {
 }
 
 export default function LaunchSvInspectorViewF(pluginManager: PluginManager) {
+  /** #extensionPoint LaunchView-SvInspectorView | async | Programmatically launch the SV inspector view */
   pluginManager.addToExtensionPoint('LaunchView-SvInspectorView', args => {
     const { session, assembly, uri, fileType } = args
     // only carry an init when there's a file to import; a bare launch should

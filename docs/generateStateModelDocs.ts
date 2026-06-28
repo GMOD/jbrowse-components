@@ -218,6 +218,20 @@ function inheritedSection(ancestors: ModelWithHeader[]) {
     : ''
 }
 
+// A model and its config schema are two halves of one pluggable element (runtime
+// API vs. configuration slots). They live on separate pages under sibling dirs;
+// link a model to its config page when one with the same name is documented.
+// Name-match mirrors the config-wins-for-shared-name heuristic the site's
+// render-layer autolinker uses.
+function configLinkSection(name: string, id: string, configNames: Set<string>) {
+  return configNames.has(name)
+    ? section(
+        `### ${name} - Configuration`,
+        `The configuration slots for this model are documented on its [config schema page](../../config/${id}).`,
+      )
+    : ''
+}
+
 function renderModel(
   {
     header,
@@ -229,6 +243,7 @@ function renderModel(
     filename,
   }: ModelWithHeader,
   ancestors: ModelWithHeader[],
+  configNames: Set<string>,
 ): string {
   const sections = section(
     memberSection(header.name, 'Properties', properties, p =>
@@ -251,6 +266,7 @@ function renderModel(
   const exSection = exampleSection(header.examples)
   const docsSection = overviewSection(
     header.docs,
+    configLinkSection(header.name, header.id, configNames),
     inheritedSection(ancestors),
     sections,
   )
@@ -295,7 +311,10 @@ function memberSection(
     : ''
 }
 
-export async function writeModelDocs(byFile: Record<string, StateModel>) {
+export async function writeModelDocs(
+  byFile: Record<string, StateModel>,
+  configNames: Set<string>,
+) {
   const dir = 'website/docs/models'
   fs.mkdirSync(dir, { recursive: true })
   const withHeader = withHeaders(byFile)
@@ -307,7 +326,7 @@ export async function writeModelDocs(byFile: Record<string, StateModel>) {
     const ancestors = collectAncestors(model, index)
     await writeFormatted(
       `${dir}/${model.header.name}.md`,
-      renderModel(model, ancestors),
+      renderModel(model, ancestors, configNames),
     )
   }
   warnHeaderGaps({

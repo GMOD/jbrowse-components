@@ -201,13 +201,16 @@ const state = createViewState({
 
 Notes about the above config:
 
-- The CRAM track contains a reference to the sequence adapter. This currently
-  must be done for CRAM, and also for BAM tracks that do not have an MD tag
-  (e.g. from samtools calmd)
+- CRAM tracks need the assembly's sequence to decode reads, but JBrowse supplies
+  it automatically from the enclosing assembly, so no manual `sequenceAdapter`
+  is required (the same applies to BAM tracks that lack an MD tag, e.g. from
+  `samtools calmd`). See the
+  [alignments track config guide](/docs/config_guides/alignments_track).
 
-- The configs we discussed so far assume e.g. that the BAM index will be
-  bamFile+'.bai'. The full configuration schema allows handling cases where the
-  bai is in a different place. Our auto-generated config docs have more info.
+- The configs above use the `uri` shorthand, which assumes each index sits next
+  to its data file (e.g. `file.cram.crai`). To place an index elsewhere, use the
+  full adapter form — see the
+  [auto-generated config reference](/docs/config_guide).
 
 ## Using the component in a React app
 
@@ -235,9 +238,14 @@ browser.
 
 ## See also
 
-This tutorial is a starting point — you can also control the component
-programmatically and customize it further.
-
+- [Configuring assemblies](/docs/config_guides/assemblies) — the bgzip-FASTA and
+  refname-aliasing setup used above
+- [Configuring tracks](/docs/config_guides/tracks) — common track config and the
+  `displayDefaults` shorthand
+- [Supported file types](/docs/config_guides/file_types) — per-format adapters
+  and the tabix/bgzip prep steps
+- [Text searching](/docs/config_guides/text_searching) — building the trix
+  indexes referenced above
 - [Vanilla JS demo](https://jbrowse.org/demos/lgv-vanillajs/) — a live example
   of the instance set up above
   ([source](https://github.com/GMOD/jbrowse-react-linear-genome-view-vanillajs-demo))

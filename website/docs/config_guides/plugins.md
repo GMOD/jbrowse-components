@@ -85,3 +85,7 @@ published plugins.
 
 - [Plugin store](/docs/user_guides/plugin_store) — installing community plugins
   from inside the app
+- [No-build plugin](/docs/developer_guides/no_build_plugin) — writing a small
+  single-file plugin with no build step
+- [Simple plugin tutorial](/docs/developer_guides/simple_plugin) — scaffolding a
+  full plugin with the plugin template

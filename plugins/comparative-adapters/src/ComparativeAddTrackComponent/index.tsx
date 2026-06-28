@@ -13,6 +13,7 @@ export default function ComparativeAddTrackComponentF(
   pluginManager: PluginManager,
 ) {
   pluginManager.addToExtensionPoint(
+    /** #extensionPoint Core-addTrackComponent | sync | Inject a custom React component into a track's rendering area */
     'Core-addTrackComponent',
     (
       comp: unknown,

@@ -49,6 +49,11 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
 
 base model `BaseDisplay` + `TrackHeightMixin` + `MultiRegionDisplayMixin`
 
+### LinearReferenceSequenceDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearreferencesequencedisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures
@@ -372,7 +377,7 @@ type displayPhase = DisplayPhase
 ```ts
 type renderSvg = (
   opts?: ExportSvgDisplayOptions | undefined,
-) => Promise<Element | null>
+) => Promise<Element>
 ```
 
 #### method: trackMenuItems

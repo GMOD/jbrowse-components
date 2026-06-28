@@ -34,7 +34,7 @@ callbacks. Create `myplugin.js`:
 
 `myplugin.js`
 
-```typescript
+```js
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -77,7 +77,7 @@ plugin class.
 
 `myplugin.js`
 
-```typescript
+```js
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -111,7 +111,7 @@ See
 for the full story on what's available and why, and the
 [canonical list](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/ReExports/list.ts).
 
-```typescript
+```js
 const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 ```
 
@@ -119,7 +119,7 @@ const { types } = pluginManager.jbrequire('@jbrowse/mobx-state-tree')
 
 `esmplugin.js`
 
-```typescript
+```js
 export default class MyPlugin {
   name = 'MyPlugin'
   version = '1.0'
@@ -150,7 +150,7 @@ export default class MyPlugin {
       const content = React.createElement(
         'p',
         null,
-        'Diesh, Colin, et al. "JBrowse 2: A modular genome browser with views of synteny and structural variation." bioRxiv. 2022.',
+        'Diesh, Colin, et al. "JBrowse 2: a modular genome browser with views of synteny and structural variation." Genome Biology 24, 74 (2023).',
       )
 
       return React.createElement('div', null, [header, content])

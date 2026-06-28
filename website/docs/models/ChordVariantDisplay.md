@@ -47,6 +47,11 @@ controls how far the chords bow toward the center:
 
 ## Overview
 
+### ChordVariantDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/chordvariantdisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

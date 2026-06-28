@@ -31,6 +31,10 @@ top-level field that identifies it (not one of the config slots below).
 
 #### slot: namesIndexLocation
 
+the location of the JBrowse1 names index data directory
+
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -41,6 +45,10 @@ top-level field that identifies it (not one of the config slots below).
 
 #### slot: tracks
 
+List of tracks covered by text search adapter
+
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -50,6 +58,10 @@ top-level field that identifies it (not one of the config slots below).
 ```
 
 #### slot: assemblyNames
+
+List of assemblies covered by text search adapter
+
+**Type:** `stringArray`
 
 ```js
 {

@@ -36,6 +36,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### Used in
+
+This adapter supplies data to the
+[ReferenceSequenceTrack](../referencesequencetrack) track type.
+
 ### IndexedFastaAdapter - Pre-processor / simplified config
 
 preprocessor to allow minimal config, assumes yourfile.fa.fai:
@@ -52,6 +57,8 @@ preprocessor to allow minimal config, assumes yourfile.fa.fai:
 
 #### slot: fastaLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -61,6 +68,8 @@ preprocessor to allow minimal config, assumes yourfile.fa.fai:
 
 #### slot: faiLocation
 
+**Type:** `fileLocation`
+
 ```js
 {
   type: 'fileLocation',
@@ -69,6 +78,10 @@ preprocessor to allow minimal config, assumes yourfile.fa.fai:
 ```
 
 #### slot: metadataLocation
+
+Optional metadata file
+
+**Type:** `fileLocation`
 
 ```js
 {

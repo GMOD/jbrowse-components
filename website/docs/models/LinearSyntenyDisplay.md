@@ -53,6 +53,11 @@ the upload autorun (which watches every display's `instanceData` and keys it by
 `displayKey`), and the render autorun. This display only carries per-track state
 and the `renderParams` the view reads out.
 
+### LinearSyntenyDisplay - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/linearsyntenydisplay).
+
 ## Inherited members
 
 Available on this model via composition. Follow each link for full signatures

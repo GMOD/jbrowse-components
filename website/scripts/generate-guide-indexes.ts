@@ -4,6 +4,30 @@ import { join } from 'path'
 const docsDir = join(import.meta.dirname, '..', 'docs')
 const check = process.argv.includes('--check')
 
+// The category order (and thus the allowed `guide_category` values) for each
+// guide index. A page tagged with a category not in its guide's list is silently
+// dropped from every index, so these double as the validation allow-lists below.
+const USER_CATEGORIES = [
+  'General usage',
+  'Track types',
+  'Views',
+  'Other features',
+  'Tutorials',
+]
+const CONFIG_CATEGORIES = [
+  'Getting started',
+  'Core configuration',
+  'Track types',
+  'Callbacks and customization',
+  'Other features',
+]
+const DEVELOPER_CATEGORIES = [
+  'Getting started',
+  'Core concepts',
+  'Creating pluggable elements',
+  'Advanced topics',
+]
+
 interface Entry {
   title: string
   description: string
@@ -112,13 +136,10 @@ function buildUserGuide(): string {
     'title: User guide',
     '---',
     '',
-    ...buildTocSection(
-      ['General usage', 'Track types', 'Views', 'Other features', 'Tutorials'],
-      [
-        { dir: join(docsDir, 'user_guides'), urlDir: 'user_guides' },
-        { dir: join(docsDir, 'tutorials'), urlDir: 'tutorials' },
-      ],
-    ),
+    ...buildTocSection(USER_CATEGORIES, [
+      { dir: join(docsDir, 'user_guides'), urlDir: 'user_guides' },
+      { dir: join(docsDir, 'tutorials'), urlDir: 'tutorials' },
+    ]),
   ]
   return lines.join('\n')
 }
@@ -132,16 +153,9 @@ function buildConfigGuide(): string {
     'This guide covers the structure and usage of the `config.json` file that drives',
     'a JBrowse 2 session.',
     '',
-    ...buildTocSection(
-      [
-        'Getting started',
-        'Core configuration',
-        'Track types',
-        'Callbacks and customization',
-        'Other features',
-      ],
-      [{ dir: join(docsDir, 'config_guides'), urlDir: 'config_guides' }],
-    ),
+    ...buildTocSection(CONFIG_CATEGORIES, [
+      { dir: join(docsDir, 'config_guides'), urlDir: 'config_guides' },
+    ]),
   ]
   return lines.join('\n')
 }
@@ -210,12 +224,7 @@ own via pull request.
 `
 
   const toc = buildTocSection(
-    [
-      'Getting started',
-      'Core concepts',
-      'Creating pluggable elements',
-      'Advanced topics',
-    ],
+    DEVELOPER_CATEGORIES,
     [{ dir: join(docsDir, 'developer_guides'), urlDir: 'developer_guides' }],
     '###',
   )
@@ -241,9 +250,21 @@ function checkOrWrite(path: string, generated: string, label: string) {
 // tutorials/ is excluded: it's a mixed-use directory (user + developer tutorials)
 // managed explicitly in sidebars.json rather than auto-indexed.
 const guideDirs = [
-  { dir: join(docsDir, 'user_guides'), label: 'user_guides' },
-  { dir: join(docsDir, 'config_guides'), label: 'config_guides' },
-  { dir: join(docsDir, 'developer_guides'), label: 'developer_guides' },
+  {
+    dir: join(docsDir, 'user_guides'),
+    label: 'user_guides',
+    categories: USER_CATEGORIES,
+  },
+  {
+    dir: join(docsDir, 'config_guides'),
+    label: 'config_guides',
+    categories: CONFIG_CATEGORIES,
+  },
+  {
+    dir: join(docsDir, 'developer_guides'),
+    label: 'developer_guides',
+    categories: DEVELOPER_CATEGORIES,
+  },
 ]
 const problems = guideDirs.flatMap(({ dir, label }) =>
   checkMissingFrontmatter(dir, label),
@@ -254,6 +275,30 @@ if (problems.length) {
   }
   console.error(
     `\nAdd the missing fields so these pages appear in the guide indexes.`,
+  )
+  process.exit(1)
+}
+
+// A guide_category not in its guide's category list buckets nowhere and the page
+// vanishes from the index with no other signal — catch the typo here.
+const badCategories = guideDirs.flatMap(({ dir, label, categories }) =>
+  readdirSync(dir)
+    .filter(f => f.endsWith('.md'))
+    .flatMap(file => {
+      const fm = parseFrontmatter(readFileSync(join(dir, file), 'utf8'))
+      return fm.guide_category && !categories.includes(fm.guide_category)
+        ? [{ file: `${label}/${file}`, cat: fm.guide_category, categories }]
+        : []
+    }),
+)
+if (badCategories.length) {
+  for (const { file, cat, categories } of badCategories) {
+    console.error(
+      `${file}: unknown guide_category "${cat}" — expected one of: ${categories.join(', ')}`,
+    )
+  }
+  console.error(
+    `\nFix the guide_category so these pages appear in the guide indexes.`,
   )
   process.exit(1)
 }

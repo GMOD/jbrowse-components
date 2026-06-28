@@ -75,6 +75,11 @@ so configure it with an explicit `displays` entry (rather than the
 `displayDefaults` shorthand, whose `color` would also reach the default
 `LinearBasicDisplay`).
 
+### LinearMultiRowFeatureDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearmultirowfeaturedisplay).
+
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Slots</summary>
 
@@ -82,6 +87,8 @@ so configure it with an explicit `displays` entry (rather than the
 
 Feature attribute whose value assigns each feature to a row (e.g. a BED column
 name). Features sharing a value stack into the same row.
+
+**Type:** `string` · **Default:** `'name'`
 
 ```js
 {
@@ -96,6 +103,8 @@ name). Features sharing a value stack into the same row.
 Per-block fill (a CSS color, or a `jexl:` expression for per-feature coloring,
 e.g. `jexl:get(feature,'itemRgb')`). Left at its default, each row instead gets
 a distinct color from a categorical palette.
+
+**Type:** `color`
 
 ```js
 {
@@ -113,6 +122,8 @@ Optional map of `partitionField` value to color, e.g. `{ HG00096: '#4e79a7' }`.
 When a feature's partition value has an entry here it overrides the `color`
 slot, so whole rows can be colored without a per-feature color column.
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -128,6 +139,8 @@ Optional explicit row order. Rows listed here come first in this order; any
 remaining partition values are appended in sorted order. Empty = fully auto
 (sorted).
 
+**Type:** `stringArray`
+
 ```js
 {
   type: 'stringArray',
@@ -142,6 +155,8 @@ Fixed height in pixels of each row. `0` (the default) auto-fits: all rows
 stretch to fill the display height, so adding rows shrinks them instead of
 growing the track — a dense, fully-visible painting.
 
+**Type:** `number` · **Default:** `0`
+
 ```js
 {
   type: 'number',
@@ -155,6 +170,8 @@ growing the track — a dense, fully-visible painting.
 
 Fraction of the row height each block fills (1 = full, leaving no gap between
 rows).
+
+**Type:** `number` · **Default:** `0.9`
 
 ```js
 {

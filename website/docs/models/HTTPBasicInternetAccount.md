@@ -21,6 +21,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### HTTPBasicInternetAccount - Configuration
+
+The configuration slots for this model are documented on its
+[config schema page](../../config/httpbasicinternetaccount).
+
 <details open>
 <summary>HTTPBasicInternetAccount - Properties</summary>
 

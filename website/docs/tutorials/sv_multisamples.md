@@ -77,8 +77,8 @@ details on the display modes.
 ## Inspecting a trio
 
 The demo includes BAM tracks for a parent–child trio, available under **1000
-Genomes → Alignments** in the track selector. Load all three (mother, father,
-child) to stack them beneath the variant track.
+Genomes → Alignments** in the track selector. Load all three (mother, child,
+father) to stack them beneath the variant track.
 
 [Open the extended trio session](https://jbrowse.org/code/jb2/latest/?config=/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F)
 

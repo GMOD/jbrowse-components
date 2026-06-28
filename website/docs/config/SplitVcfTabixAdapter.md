@@ -26,6 +26,8 @@ reference the markdown files in our repo of the checked out git tag
 
 object like `{chr1:{uri:'url to file'}}`
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -37,6 +39,8 @@ object like `{chr1:{uri:'url to file'}}`
 
 object like `{chr1:{uri:'url to index'}}`
 
+**Type:** `frozen`
+
 ```js
 {
   type: 'frozen',
@@ -46,6 +50,8 @@ object like `{chr1:{uri:'url to index'}}`
 
 #### slot: indexType
 
+**Type:** `string` · **Default:** `'TBI'`
+
 ```js
 {
   type: 'string',
@@ -54,6 +60,8 @@ object like `{chr1:{uri:'url to index'}}`
 ```
 
 #### slot: samplesTsvLocation
+
+**Type:** `fileLocation`
 
 ```js
 {

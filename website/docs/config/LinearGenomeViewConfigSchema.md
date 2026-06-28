@@ -24,6 +24,8 @@ reference the markdown files in our repo of the checked out git tag
 
 #### slot: configuration.LinearGenomeViewPlugin.trackLabels
 
+**Type:** `string` · **Default:** `'overlapping'`
+
 ```js
 {
   type: 'string',

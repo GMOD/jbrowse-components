@@ -17,6 +17,8 @@
     "generate.ts",
     "generateApiDocs.ts",
     "generateColorDocs.ts",
+    "generateJexlDocs.ts",
+    "generateExtensionPointDocs.ts",
     "generateConfigDocs.ts",
     "generateStateModelDocs.ts",
     "util.ts"

@@ -14,6 +14,7 @@ title: User guide
 - [Gene track](/docs/user_guides/gene_track) - Transcript display modes, collapsing introns, color by CDS reading frame, peptide lettering, and mature peptides on gene/transcript tracks
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) - Visualize genome-wide association study results as an interactive Manhattan plot
 - [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
+- [MAF track](/docs/user_guides/maf_track) - Viewing multiple alignment format (MAF) data
 - [Multi-quantitative track](/docs/user_guides/multiquantitative_track) - Multiple signal tracks displayed together
 - [Multi-sample variant display](/docs/user_guides/multivariant_track) - Population-level variant views
 - [Quantitative track](/docs/user_guides/quantitative_track) - BigWig/BedGraph signal tracks

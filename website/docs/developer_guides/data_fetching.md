@@ -224,3 +224,14 @@ visibleRegions changes → FetchVisibleRegions (600ms) → fetchNeeded(needed)
       increment fetchGeneration
   → FetchVisibleRegions re-fires → nothing needed → done
 ```
+
+## See also
+
+- [Creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
+  — the rendering side that consumes this fetched data
+- [RPC and worker system](/docs/developer_guides/rpc_workers) — implementing the
+  `MyRpcMethod` the work callback calls
+- [MST patterns](/docs/developer_guides/mst_patterns) — autoruns, `untracked`,
+  the super-capture pattern, and volatile maps used here
+- [Creating custom display types](/docs/developer_guides/creating_display)
+- [Renderer architecture](/docs/developer_guides/renderer_architecture)
