@@ -30,6 +30,7 @@ import {
   computeVisibleAnnotations,
   findFrameAt,
 } from './components/computeVisibleAnnotations.ts'
+import { computeVisibleCodons } from './components/computeVisibleCodons.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
@@ -43,9 +44,10 @@ import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
-import { getFrameColors, getMafColorPalette } from '../LinearMafRenderer/util.ts'
+import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
 import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
+import type { CodonMarker } from './components/computeVisibleCodons.ts'
 import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
@@ -243,6 +245,18 @@ export default function stateModelFactory(
           types.boolean,
           DEFAULTS.showAnnotations,
         ),
+        /**
+         * #property
+         * Translate each species in the reference reading frame (from the
+         * `annotationAdapter` `mafFrames`) and draw the amino acid centered on
+         * each codon in place of the nucleotide letters — UCSC `wigMaf`
+         * "show translation". Residues differing from the reference
+         * (nonsynonymous) are emphasized. Needs an `annotationAdapter`.
+         */
+        showTranslation: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showTranslation,
+        ),
       }),
     )
     .volatile(() => ({
@@ -421,6 +435,12 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setShowTranslation(arg: boolean) {
+        self.showTranslation = arg
+      },
+      /**
+       * #action
+       */
       setConservationHeight(arg: number) {
         self.conservationHeight = arg
       },
@@ -480,6 +500,19 @@ export default function stateModelFactory(
        */
       get annotationsActive(): boolean {
         return self.showAnnotations && !!self.annotationAdapterConfig
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Whether the per-species amino-acid translation should draw: the toggle
+       * is on and frame data is available to define the reading frame. The
+       * actual codon glyphs additionally require zooming in to codon level and
+       * `activeRowRendering === 'bases'` (handled in `visibleCodons` + the
+       * component), but this gates the nucleotide-label suppression too.
+       */
+      get translationActive(): boolean {
+        return self.showTranslation && self.annotationsActive
       },
     }))
     .views(self => ({
@@ -556,6 +589,15 @@ export default function stateModelFactory(
         return new Map(
           self.sources?.map((s, i): [string, number] => [s.name, i]) ?? [],
         )
+      },
+      /**
+       * #getter
+       * The anchor species whose `mafFrames` reading frame is used to translate
+       * every row (UCSC `codonDefault`). Row 0 is the reference assembly, so its
+       * `src` is the natural default.
+       */
+      get defaultCodonSpecies(): string | undefined {
+        return self.sources?.[0]?.name
       },
       /**
        * #getter
@@ -735,15 +777,6 @@ export default function stateModelFactory(
        */
       get colorPalette(): MafColorPalette {
         return getMafColorPalette(getSession(self).theme)
-      },
-      /**
-       * #getter
-       * Theme CDS reading-frame colors for the annotation overlay, indexed by
-       * the marker `frameIndex` via `Array.at`. Theme-derived (like
-       * `colorPalette`) so it's available headless for SVG export too.
-       */
-      get frameColors(): (string | undefined)[] {
-        return getFrameColors(getSession(self).theme)
       },
     }))
     .views(self => ({
@@ -996,7 +1029,13 @@ export default function stateModelFactory(
        */
       get visibleLabels() {
         const view = self.lgv
-        if (!view.initialized || !self.sources || self.resizing) {
+        // Translation replaces the nucleotide letters with amino acids.
+        if (
+          !view.initialized ||
+          !self.sources ||
+          self.resizing ||
+          self.translationActive
+        ) {
           return []
         }
         return computeVisibleLabels({
@@ -1151,6 +1190,31 @@ export default function stateModelFactory(
           view,
           framesDataMap: self.framesDataMap,
           rowIndexBySrc: self.rowIndexBySrc,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+        })
+      },
+      /**
+       * #getter
+       * Per-species amino-acid residues for the codon-translation overlay. Empty
+       * unless translation is on, frames are loaded, and the base rendering is
+       * active (the residues replace the nucleotide letters at codon zoom).
+       */
+      get visibleCodons(): CodonMarker[] {
+        const view = self.lgv
+        if (
+          !view.initialized ||
+          !self.translationActive ||
+          self.activeRowRendering !== 'bases' ||
+          !self.defaultCodonSpecies
+        ) {
+          return []
+        }
+        return computeVisibleCodons({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          framesDataMap: self.framesDataMap,
+          defaultSrc: self.defaultCodonSpecies,
           rowHeight: self.rowHeight,
           rowProportion: self.rowProportion,
         })

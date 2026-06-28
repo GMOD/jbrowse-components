@@ -54,7 +54,6 @@ test('positions a CDS frame strip at the bottom of its species row', () => {
       rowTop: 40.5,
       h: 3,
       frameIndex: 2,
-      name: 'GENE1',
     },
   ])
 })

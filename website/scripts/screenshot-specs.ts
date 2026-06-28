@@ -6263,6 +6263,40 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+  {
+    // Codon translation on the 26-way alignment, zoomed to codon level: each
+    // species' coding sequence translated in the reference reading frame, one
+    // amino acid centered per codon. Residues differing from the reference
+    // (nonsynonymous) are emphasized over the muted conserved ones, with the
+    // nucleotide SNP cells still visible beneath. Enabled via showTranslation
+    // on the same frames-configured config.
+    mode: 'url',
+    name: 'maf_codon_translation',
+    url: lgvSession(CE_MAF_FRAMES, {
+      assembly: 'ce11',
+      loc: 'chrI:2,999,200-2,999,370',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            rowHeight: 15,
+            showTranslation: true,
+          },
+        },
+      ],
+    }),
+    readyText: 'chrI',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 600,
+    settleMs: 12000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 100 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
 
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled

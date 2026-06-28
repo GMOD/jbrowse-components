@@ -105,6 +105,21 @@ reading frame at that position.
 
 <Figure src="/img/maf_cds_frames.png" caption="The ce11 26-way alignment with the per-species CDS frame overlay: each species row carries a thin reading-frame-colored strip marking the coding exons projected onto that species, so the gene structure reads vertically across the whole alignment. Frame colors are mirrored by strand (the three +-strand frames and three −-strand frames), matching JBrowse's CDS coloring elsewhere."/>
 
+### Amino-acid translation
+
+With the same `annotationAdapter`, **Show translation (amino acids)** in the
+track menu translates every species in the reference reading frame (UCSC `wigMaf`
+"show codons") and draws the amino acid centered on each codon in place of the
+nucleotide letters once you zoom in. The reference residue is translated first,
+so residues that differ in a species (**nonsynonymous** changes) are emphasized
+while conserved residues are muted and stop codons are drawn in the error color.
+Because the per-base SNP coloring still shows underneath, a colored (changed)
+nucleotide beneath an unchanged residue reads directly as a **synonymous**
+substitution — letting selective pressure be eyeballed across the whole
+alignment.
+
+<Figure src="/img/maf_codon_translation.png" caption="Codon translation on the ce11 26-way alignment, zoomed to codon level: each species' coding sequence translated in the reference reading frame, one amino acid per codon. Conserved residues are muted, residues that differ from the reference (nonsynonymous substitutions) stand out, and the nucleotide SNP coloring beneath distinguishes synonymous changes (a colored base under an unchanged residue) from nonsynonymous ones."/>
+
 ```json
 {
   "type": "MafTrack",

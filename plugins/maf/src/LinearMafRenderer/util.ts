@@ -53,6 +53,20 @@ export function getFrameColors(theme: Theme): (string | undefined)[] {
   return theme.palette.framesCDS.map(c => c?.main)
 }
 
+/**
+ * Amino-acid residue colors for the codon-translation overlay: conserved
+ * residues muted (so the eye is drawn to change), residues differing from the
+ * reference (nonsynonymous) in the primary text color, stops in the theme error
+ * color. Theme-derived so it's available headless for SVG export.
+ */
+export function getCodonColors(theme: Theme) {
+  return {
+    match: theme.palette.text.disabled,
+    differ: theme.palette.text.primary,
+    stop: theme.palette.error.main,
+  }
+}
+
 export function getContrastBaseMap(theme: Theme) {
   return Object.fromEntries(
     Object.entries(getColorBaseMap(theme)).map(([key, value]) => [

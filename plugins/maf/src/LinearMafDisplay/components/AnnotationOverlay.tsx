@@ -1,7 +1,9 @@
+import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import OverlayCanvas from './OverlayCanvas.tsx'
 import { drawMafAnnotations } from '../../LinearMafRenderer/rendering/annotations.ts'
+import { getFrameColors } from '../../LinearMafRenderer/util.ts'
 
 import type { FrameMarker } from './computeVisibleAnnotations.ts'
 
@@ -12,13 +14,12 @@ const AnnotationOverlay = observer(function AnnotationOverlay({
   markers,
   width,
   height,
-  frameColors,
 }: {
   markers: FrameMarker[]
   width: number
   height: number
-  frameColors: (string | undefined)[]
 }) {
+  const theme = useTheme()
   if (markers.length === 0) {
     return null
   }
@@ -27,7 +28,7 @@ const AnnotationOverlay = observer(function AnnotationOverlay({
       width={width}
       height={height}
       draw={ctx => {
-        drawMafAnnotations(ctx, markers, frameColors)
+        drawMafAnnotations(ctx, markers, getFrameColors(theme))
       }}
     />
   )

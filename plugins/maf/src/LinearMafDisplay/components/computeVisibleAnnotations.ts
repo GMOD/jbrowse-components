@@ -16,8 +16,6 @@ export interface FrameMarker {
    * reference reading frame reads as the same color across species rows.
    */
   frameIndex: number
-  /** gene that defined the frame, for tooltip/SVG title */
-  name: string
 }
 
 interface ComputeVisibleAnnotationsParams {
@@ -91,7 +89,6 @@ export function computeVisibleAnnotations(
         rowTop: stripOffset + rowHeight * rowIndex,
         h: stripH,
         frameIndex: r.strand === -1 ? -base : base,
-        name: r.name,
       })
     }
   }

@@ -30,6 +30,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showAlignments: boolean
   showConservation: boolean
   showAnnotations: boolean
+  showTranslation: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   rowIdentityMode: RowIdentityModeWithOff
   rowIdentityAutoZoom: boolean
@@ -48,6 +49,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
   setShowAnnotations: (f: boolean) => void
+  setShowTranslation: (f: boolean) => void
   setRowIdentityMode: (m: RowIdentityModeWithOff) => void
   setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
@@ -166,6 +168,14 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
                 checked: self.showAnnotations,
                 onClick: () => {
                   self.setShowAnnotations(!self.showAnnotations)
+                },
+              },
+              {
+                label: 'Show translation (amino acids)',
+                type: 'checkbox' as const,
+                checked: self.showTranslation,
+                onClick: () => {
+                  self.setShowTranslation(!self.showTranslation)
                 },
               },
             ]

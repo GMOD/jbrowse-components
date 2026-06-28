@@ -22,10 +22,12 @@ import { drawRowIdentity } from './components/drawRowIdentity.ts'
 import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
+import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import { drawMafSummaryBars } from '../LinearMafRenderer/rendering/summaryBars.ts'
 import {
+  getCodonColors,
   getContrastBaseMap,
   getFrameColors,
   getMafColorPalette,
@@ -149,6 +151,7 @@ function MafSvgBody({
             contrast,
             state.mismatchRendering,
           )
+          drawMafCodons(ctx, model.visibleCodons, getCodonColors(theme))
         })}
         {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
         {sources?.length ? (

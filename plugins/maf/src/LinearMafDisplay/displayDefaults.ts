@@ -17,4 +17,5 @@ export const DEFAULTS = {
   rowIdentityMode: 'none',
   rowIdentityAutoZoom: true,
   showAnnotations: true,
+  showTranslation: false,
 } as const

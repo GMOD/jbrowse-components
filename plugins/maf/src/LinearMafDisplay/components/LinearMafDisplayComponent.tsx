@@ -10,6 +10,7 @@ import {
 import { observer } from 'mobx-react'
 
 import AnnotationOverlay from './AnnotationOverlay.tsx'
+import CodonTranslationOverlay from './CodonTranslationOverlay.tsx'
 import Crosshairs from './Crosshairs.tsx'
 import DeletionsOverlay from './DeletionsOverlay.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
@@ -194,7 +195,6 @@ const MafBody = observer(function MafBody({
           markers={model.visibleFrames}
           width={width}
           height={rowsHeight}
-          frameColors={model.frameColors}
         />
         {model.activeRowRendering === 'bases' ? (
           <InsertionsOverlay
@@ -215,6 +215,11 @@ const MafBody = observer(function MafBody({
           width={width}
           height={rowsHeight}
           mismatchRendering={model.mismatchRendering}
+        />
+        <CodonTranslationOverlay
+          markers={model.visibleCodons}
+          width={width}
+          height={rowsHeight}
         />
         {showTree && sources?.length ? (
           <svg

@@ -37,12 +37,14 @@ export type BpToPx = (bp: number) => number
 
 /**
  * Walk the visible regions that have data in `dataMap`, yielding each region's
- * data alongside its `bpToPx` mapper.
+ * data alongside its `bpToPx` mapper and `displayedRegionIndex` (the latter lets
+ * a caller correlate a second per-region map — e.g. codon translation reads both
+ * the alignment and the frames map).
  */
 export function* eachVisibleRegion<T>(
   view: VisibleRegionsView,
   dataMap: { get(idx: number): T | undefined },
-): Generator<{ data: T; bpToPx: BpToPx }> {
+): Generator<{ data: T; bpToPx: BpToPx; displayedRegionIndex: number }> {
   const scale = 1 / view.bpPerPx
   for (const vr of view.visibleRegions) {
     const data = dataMap.get(vr.displayedRegionIndex)
@@ -52,6 +54,6 @@ export function* eachVisibleRegion<T>(
     const bpToPx: BpToPx = vr.reversed
       ? bp => vr.screenStartPx + (vr.end - bp) * scale
       : bp => vr.screenStartPx + (bp - vr.start) * scale
-    yield { data, bpToPx }
+    yield { data, bpToPx, displayedRegionIndex: vr.displayedRegionIndex }
   }
 }
