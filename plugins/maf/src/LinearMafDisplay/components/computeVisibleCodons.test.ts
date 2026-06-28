@@ -112,7 +112,6 @@ const frames: MafFrameRecord[] = [
   },
 ]
 
-// bpPerPx 0.1 → 3/0.1 = 30 px per codon ≥ CHAR_SIZE_WIDTH, so codons compute
 const view = {
   visibleRegions: [
     {
@@ -126,29 +125,36 @@ const view = {
   bpPerPx: 0.1,
 }
 
-test('computeVisibleCodons translates each row and flags nonsynonymous change', () => {
+test('classifies each species codon vs the reference', () => {
   // ref:  ATG AAA TAA  → M K *
-  // row1: ATG AAA TAA  → identical
-  // row2: ATG GAA TAA  → M E *  (codon 2 nonsynonymous: K→E)
+  // row1: ATG AAA TAA  → identical            → same, same, stop
+  // row2: ATG GAA TAA  → M E *  (K→E)          → same, nonsyn, stop
+  // row3: ATG AAG TAA  → M K *  (AAA→AAG, K=K) → same, syn,   stop
   const markers = computeVisibleCodons({
     view,
-    rpcDataMap: new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA', 'ATGGAATAA'])]]),
+    rpcDataMap: new Map([
+      [0, regionData('ATGAAATAA', ['ATGAAATAA', 'ATGGAATAA', 'ATGAAGTAA'])],
+    ]),
     framesDataMap: new Map([[0, frames]]),
     defaultSrc: 'ref',
     rowHeight: 15,
     rowProportion: 0.8,
   })
-  // 2 rows × 3 codons, emitted codon-major (each codon, then its rows)
-  expect(markers.map(m => m.aa)).toEqual(['M', 'M', 'K', 'E', '*', '*'])
-  // only row2 codon2 (E) differs from the reference residue
-  expect(markers.filter(m => m.differsFromRef).map(m => m.aa)).toEqual(['E'])
-  // centered on the middle base of each codon: scale=10, center=(p0+1.5-100)*10
-  // codon at p0=100 → (1.5)*10 = 15
-  expect(markers[0]!.x).toBe(15)
+  // 3 rows × 3 codons, emitted codon-major (each codon, then its rows)
+  expect(markers.map(m => m.aa)).toEqual([
+    'M', 'M', 'M', 'K', 'E', 'K', '*', '*', '*',
+  ])
+  expect(markers.map(m => m.change)).toEqual([
+    'same', 'same', 'same', // codon 1 (M) — identical in all
+    'same', 'nonsyn', 'syn', // codon 2 — ref K, row2 E, row3 silent
+    'stop', 'stop', 'stop', // codon 3 (stop)
+  ])
+  // cell spans the 3 bases: scale=10, p0=100 → xLeft=0, width=30; center x=15
+  expect(markers[0]).toMatchObject({ xLeft: 0, width: 30, x: 15 })
 })
 
 test('codons with a gap in a row are skipped for that row only', () => {
-  // row2 has a gap in codon 1 → no residue there, but codons 2/3 still translate
+  // row2 has a gap in codon 1 → no cell there, but codons 2/3 still classify
   const markers = computeVisibleCodons({
     view,
     rpcDataMap: new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA', 'A-GAAATAA'])]]),
@@ -157,18 +163,6 @@ test('codons with a gap in a row are skipped for that row only', () => {
     rowHeight: 15,
     rowProportion: 0.8,
   })
-  // ref: M K * ; row2: (gap) K * — row2's codon-1 residue is dropped
+  // ref: M K * ; row2: (gap) K * — row2's codon-1 cell is dropped
   expect(markers.map(m => m.aa)).toEqual(['M', 'K', 'K', '*', '*'])
-})
-
-test('nothing computed when zoomed out past codon legibility', () => {
-  const markers = computeVisibleCodons({
-    view: { ...view, bpPerPx: 5 },
-    rpcDataMap: new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA'])]]),
-    framesDataMap: new Map([[0, frames]]),
-    defaultSrc: 'ref',
-    rowHeight: 15,
-    rowProportion: 0.8,
-  })
-  expect(markers).toHaveLength(0)
 })

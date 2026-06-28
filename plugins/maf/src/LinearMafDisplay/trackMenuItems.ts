@@ -171,7 +171,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
                 },
               },
               {
-                label: 'Show translation (amino acids)',
+                label: 'Codon view (amino-acid changes)',
                 type: 'checkbox' as const,
                 checked: self.showTranslation,
                 onClick: () => {

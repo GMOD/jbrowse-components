@@ -505,19 +505,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Whether the per-species amino-acid translation should draw: the toggle
-       * is on and frame data is available to define the reading frame. The
-       * actual codon glyphs additionally require zooming in to codon level and
-       * `activeRowRendering === 'bases'` (handled in `visibleCodons` + the
-       * component), but this gates the nucleotide-label suppression too.
-       */
-      get translationActive(): boolean {
-        return self.showTranslation && self.annotationsActive
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
        * The full row set with the user's arrangement applied: `layout` supplies
        * order + label/color overrides, merged over the worker's `sourcesVolatile`
        * by name. Empty `layout` (no customization) passes the worker set through.
@@ -1026,29 +1013,6 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       */
-      get visibleLabels() {
-        const view = self.lgv
-        // Translation replaces the nucleotide letters with amino acids.
-        if (
-          !view.initialized ||
-          !self.sources ||
-          self.resizing ||
-          self.translationActive
-        ) {
-          return []
-        }
-        return computeVisibleLabels({
-          view,
-          rpcDataMap: self.rpcDataMap,
-          rowHeight: self.rowHeight,
-          rowProportion: self.rowProportion,
-          showAllLetters: self.showAllLetters,
-          showAsUpperCase: self.showAsUpperCase,
-        })
-      },
-      /**
-       * #getter
        * Positioned bridge-line segments for `e`-line (empty/bridged) rows.
        */
       get visibleEmptyLines() {
@@ -1130,17 +1094,36 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Single source of truth for what the per-sample rows area draws right now:
-       * `bases` (the GPU SNP/base coloring) or one of the per-row identity styles
-       * (`heatmap` / `xyplot`). With `rowIdentityAutoZoom` (default) it emulates
-       * UCSC `wigMaf` — bases at base level, the identity plot when zoomed out;
-       * with auto off the selected mode is pinned at every zoom. Either way it's
-       * off when no mode is selected or the cheap `bigMafSummary` path already
-       * owns the zoom-out view. The GPU canvas, the identity canvas, and SVG
-       * export all branch on this one getter so they can't disagree about what's
-       * on screen.
+       * The codon view is on: the toggle is set, frame data is available to
+       * define the reading frame, and we're zoomed to base level (so codons are
+       * meaningful) and not in the cheap summary path. When active it replaces
+       * the per-base SNP rendering with per-codon change coloring.
        */
-      get activeRowRendering(): 'bases' | RowIdentityMode {
+      get codonViewActive(): boolean {
+        return (
+          self.showTranslation &&
+          self.annotationsActive &&
+          self.zoomedToBaseLevel &&
+          !self.showSummary
+        )
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * Single source of truth for what the per-sample rows area draws right now:
+       * `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring
+       * from `mafFrames`), or a per-row identity style (`heatmap` / `xyplot`).
+       * Codon view takes precedence when on; otherwise, with `rowIdentityAutoZoom`
+       * (default) it emulates UCSC `wigMaf` — bases at base level, the identity
+       * plot when zoomed out; with auto off the selected mode is pinned. The GPU
+       * canvas, the identity canvas, the codon overlay, and SVG export all branch
+       * on this one getter so they can't disagree about what's on screen.
+       */
+      get activeRowRendering(): 'bases' | 'codon' | RowIdentityMode {
+        if (self.codonViewActive) {
+          return 'codon'
+        }
         const { rowIdentityMode } = self
         // With auto on (default) the identity plot yields to the bases once
         // zoomed in to base level — UCSC wigMaf. Auto off pins it on everywhere.
@@ -1154,6 +1137,32 @@ export default function stateModelFactory(
       },
     }))
     .views(self => ({
+      /**
+       * #getter
+       * Positioned per-base SNP/sequence letters. Suppressed in any non-base
+       * rendering (the identity plot and codon view both replace the letters).
+       */
+      get visibleLabels() {
+        const view = self.lgv
+        // Suppressed in any non-base rendering (identity plot / codon view both
+        // replace the per-base letters).
+        if (
+          !view.initialized ||
+          !self.sources ||
+          self.resizing ||
+          self.activeRowRendering !== 'bases'
+        ) {
+          return []
+        }
+        return computeVisibleLabels({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+          showAllLetters: self.showAllLetters,
+          showAsUpperCase: self.showAsUpperCase,
+        })
+      },
       /**
        * #getter
        * Positioned per-species presence bars for the zoom-out summary overlay.
@@ -1196,16 +1205,15 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Per-species amino-acid residues for the codon-translation overlay. Empty
-       * unless translation is on, frames are loaded, and the base rendering is
-       * active (the residues replace the nucleotide letters at codon zoom).
+       * Per-species codon cells for the codon view (the per-codon change
+       * coloring that replaces the SNP cells). Empty unless codon view is the
+       * active rendering and an anchor species is known.
        */
       get visibleCodons(): CodonMarker[] {
         const view = self.lgv
         if (
           !view.initialized ||
-          !self.translationActive ||
-          self.activeRowRendering !== 'bases' ||
+          self.activeRowRendering !== 'codon' ||
           !self.defaultCodonSpecies
         ) {
           return []

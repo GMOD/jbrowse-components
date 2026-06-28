@@ -17,21 +17,27 @@ const MafRowIdentityCanvas = observer(function MafRowIdentityCanvas({
   model: LinearMafDisplayModel
 }) {
   const { activeRowRendering, rowsHeight, rowHeight, rowProportion } = model
+  // Only the identity styles (heatmap / xyplot) draw here; `codon` and `bases`
+  // are rendered elsewhere (codon overlay / GPU canvas).
+  const identityMode =
+    activeRowRendering === 'bases' || activeRowRendering === 'codon'
+      ? undefined
+      : activeRowRendering
   return (
     <TrackBandCanvas
       model={model}
       top={0}
       height={rowsHeight}
-      show={activeRowRendering !== 'bases'}
+      show={!!identityMode}
       draw={ctx => {
         const nRows = model.sources?.length ?? 0
-        if (activeRowRendering !== 'bases' && nRows > 0) {
+        if (identityMode && nRows > 0) {
           drawRowIdentity(ctx, model.renderBlocks, model.rpcDataMap, {
             rowHeight,
             rowProportion,
             nRows,
             canvasWidth: model.lgv.width,
-            mode: activeRowRendering,
+            mode: identityMode,
           })
         }
       }}

@@ -1,23 +1,38 @@
-import { MIN_HEIGHT_FOR_TEXT } from '@jbrowse/alignments-core'
 import { codonTable } from '@jbrowse/core/util'
 
 import { eachVisibleRegion, rowBandGeometry } from './visibleRegionGeometry.ts'
-import { CHAR_SIZE_WIDTH } from '../../LinearMafRenderer/rendering/types.ts'
 import { DASH, LOWER_BIT, SPACE } from '../../util/asciiBytes.ts'
 
 import type { VisibleRegionsView } from './visibleRegionGeometry.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { MafFrameRecord } from '../../types.ts'
 
+/**
+ * How a species' codon compares to the reference (anchor) codon:
+ * - `same` — identical codon (no change)
+ * - `syn` — synonymous: nucleotides differ but the amino acid is unchanged
+ * - `nonsyn` — nonsynonymous: the amino acid changed
+ * - `stop` — a stop codon
+ */
+export type CodonChange = 'same' | 'syn' | 'nonsyn' | 'stop'
+
 export interface CodonMarker {
-  /** screen px center of the codon (its middle reference base) */
+  /** left px of the 3-base codon cell */
+  xLeft: number
+  /** px width of the codon cell */
+  width: number
+  /** top px of the row band */
+  rowTop: number
+  /** band height */
+  h: number
+  /** center px (amino-acid glyph) */
   x: number
-  /** baseline-center y of the amino-acid glyph */
+  /** baseline-center y (amino-acid glyph) */
   y: number
   /** single-letter amino acid (`*` = stop) */
   aa: string
-  /** the residue differs from the reference (anchor) residue → nonsynonymous */
-  differsFromRef: boolean
+  /** how the codon compares to the reference — drives the cell color */
+  change: CodonChange
 }
 
 /** A reference codon: three consecutive reference positions + reading strand. */
@@ -130,15 +145,21 @@ interface ComputeVisibleCodonsParams {
   rowProportion: number
 }
 
+// Case-insensitive equality of two alignment bytes (ASCII letter-case bit).
+function sameBase(a: number, b: number) {
+  return (a & ~LOWER_BIT) === (b & ~LOWER_BIT)
+}
+
 /**
- * Per-species amino-acid residues for the codon-translation overlay: each
- * reference codon (from the anchor `mafFrames`) translated in every aligned
- * species, drawn centered on the codon. The anchor residue is translated first;
- * a species residue that differs is flagged `differsFromRef` so nonsynonymous
- * substitutions stand out, while the underlying SNP cell coloring still shows
- * whether the nucleotide changed (a colored cell under an unchanged residue =
- * synonymous). Mirrors `computeVisibleLabels`' block/row walk + zoom gate; only
- * emits once a codon is wide enough to fit a glyph.
+ * Per-species codon cells for the codon view: each reference codon (from the
+ * anchor `mafFrames`) classified in every aligned species against the reference
+ * codon — `nonsyn` (amino acid changed), `syn` (silent, nucleotides changed but
+ * amino acid unchanged), `stop`, or `same`. Carries the 3-base cell geometry so
+ * the overlay can color the codon (replacing the per-base SNP cells) and the
+ * center + amino acid so it can draw the residue glyph when the codon is wide
+ * enough. Gapped/`N` codons in a species emit no cell (a deletion shows blank).
+ * Zoom/mode gating lives in the model (`activeRowRendering === 'codon'`), so this
+ * always computes when called.
  */
 export function computeVisibleCodons(
   params: ComputeVisibleCodonsParams,
@@ -153,10 +174,6 @@ export function computeVisibleCodons(
   } = params
   const markers: CodonMarker[] = []
   const { h, offset } = rowBandGeometry(rowHeight, rowProportion)
-  // A codon spans 3 reference bases; require room for one glyph across them.
-  if (3 / view.bpPerPx < CHAR_SIZE_WIDTH || h < MIN_HEIGHT_FOR_TEXT) {
-    return markers
-  }
   const hp2 = h / 2
 
   for (const {
@@ -187,29 +204,39 @@ export function computeVisibleCodons(
         const c0 = refColumns[g0]!
         const c1 = refColumns[g0 + 1]!
         const c2 = refColumns[g0 + 2]!
-        const refAa = translateCodonBytes(
-          block.refSeqBytes[c0]!,
-          block.refSeqBytes[c1]!,
-          block.refSeqBytes[c2]!,
-          codon.strand,
-        )
-        // center on the middle reference base
+        const ref = block.refSeqBytes
+        const refAa = translateCodonBytes(ref[c0]!, ref[c1]!, ref[c2]!, codon.strand)
+        // 3-base cell span + middle-base center, orientation-aware via bpToPx
+        const xa = bpToPx(codon.p0)
+        const xb = bpToPx(codon.p0 + 3)
+        const xLeft = Math.min(xa, xb)
+        const width = Math.abs(xb - xa)
         const x = bpToPx(codon.p0 + 1.5)
         for (const row of block.rows) {
-          const aa = translateCodonBytes(
-            row.alignmentBytes[c0]!,
-            row.alignmentBytes[c1]!,
-            row.alignmentBytes[c2]!,
-            codon.strand,
-          )
+          const a = row.alignmentBytes
+          const aa = translateCodonBytes(a[c0]!, a[c1]!, a[c2]!, codon.strand)
           if (aa === undefined) {
             continue
           }
+          const change: CodonChange =
+            aa === '*'
+              ? 'stop'
+              : refAa !== undefined && aa !== refAa
+                ? 'nonsyn'
+                : sameBase(a[c0]!, ref[c0]!) &&
+                    sameBase(a[c1]!, ref[c1]!) &&
+                    sameBase(a[c2]!, ref[c2]!)
+                  ? 'same'
+                  : 'syn'
           markers.push({
+            xLeft,
+            width,
+            rowTop: offset + rowHeight * row.rowIndex,
+            h,
             x,
             y: Math.round(hp2 + offset + rowHeight * row.rowIndex),
             aa,
-            differsFromRef: refAa !== undefined && aa !== refAa,
+            change,
           })
         }
       }

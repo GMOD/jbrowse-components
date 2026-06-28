@@ -129,9 +129,12 @@ function MafSvgBody({
       ) : null}
       <g transform={`translate(0, ${rowsTopOffset})`}>
         {paintLayer(width, rowsHeight, opts, ctx => {
-          // Either/or, like UCSC wigMaf: the per-row identity plot replaces the
-          // base SNP rendering when zoomed out past base level.
-          if (activeRowRendering !== 'bases' && sources?.length) {
+          // One rows rendering at a time (see activeRowRendering): the codon view
+          // and the per-row identity plot each replace the base SNP rendering;
+          // codon cells are drawn by drawMafCodons below.
+          if (activeRowRendering === 'codon') {
+            // codon cells drawn below; no base/identity rendering
+          } else if (activeRowRendering !== 'bases' && sources?.length) {
             drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
               rowHeight,
               rowProportion,

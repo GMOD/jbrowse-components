@@ -1,3 +1,5 @@
+import { alpha } from '@mui/material'
+
 import type { Theme } from '@mui/material'
 
 /**
@@ -54,16 +56,20 @@ export function getFrameColors(theme: Theme): (string | undefined)[] {
 }
 
 /**
- * Amino-acid residue colors for the codon-translation overlay: conserved
- * residues muted (so the eye is drawn to change), residues differing from the
- * reference (nonsynonymous) in the primary text color, stops in the theme error
- * color. Theme-derived so it's available headless for SVG export.
+ * Codon-view cell colors: nonsynonymous changes get a clear highlight, silent
+ * (synonymous) changes a faint fill, stops the error color, and conserved codons
+ * no fill (the cell stays clean). The amino-acid glyph drawn on top uses the
+ * primary text color. Theme-derived so it's available headless for SVG export.
  */
 export function getCodonColors(theme: Theme) {
   return {
-    match: theme.palette.text.disabled,
-    differ: theme.palette.text.primary,
-    stop: theme.palette.error.main,
+    fill: {
+      same: undefined,
+      syn: alpha(theme.palette.info.main, 0.18),
+      nonsyn: alpha(theme.palette.warning.main, 0.55),
+      stop: alpha(theme.palette.error.main, 0.6),
+    },
+    text: theme.palette.text.primary,
   }
 }
 
