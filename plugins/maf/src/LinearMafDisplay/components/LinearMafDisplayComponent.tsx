@@ -20,6 +20,7 @@ import InversionsOverlay from './InversionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
 import MafBandResizeHandle from './MafBandResizeHandle.tsx'
+import MafCodonLegend from './MafCodonLegend.tsx'
 import MafConservationCanvas from './MafConservationCanvas.tsx'
 import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
@@ -184,6 +185,7 @@ const MafBody = observer(function MafBody({
         <MafRowIdentityCanvas model={model} />
         <MafSourceChromCanvas model={model} />
         <MafSourceChromLegend model={model} />
+        <MafCodonLegend model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}

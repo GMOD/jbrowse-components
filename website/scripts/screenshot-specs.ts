@@ -6398,6 +6398,47 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+  {
+    // Larger, less-fragmented demo: the UCSC hg38 470-way multiz (mammals +
+    // more), codon view over a conserved CDS, filtered to a representative set of
+    // species. Human chromosomes (not scaffolds) read far cleaner than the
+    // nematode multiz. Remote UCSC data, so a generous readyTimeout.
+    mode: 'url',
+    name: 'maf_470way_codon',
+    url: lgvSession('test_data/hg38_multiz470way.json', {
+      assembly: 'hg38',
+      loc: '12:6,536,485-6,536,600',
+      tracks: [
+        {
+          trackId: 'hg38.multiz470way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            rowHeight: 18,
+            showTranslation: true,
+            subtreeFilter: [
+              'hg38',
+              'HLcalJac4',
+              'rheMac10',
+              'mm10',
+              'canFam4',
+              'felCat9',
+              'monDom5',
+            ],
+          },
+        },
+      ],
+    }),
+    readyText: '6,536,5',
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    viewportHeight: 360,
+    settleMs: 18000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
   // purely by the &adminKey= URL param (adminMode = !!adminKey, client-side), so

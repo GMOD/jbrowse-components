@@ -140,38 +140,43 @@ function HoverContents({
   )
 }
 
+// Just the gene name; the raw reading-frame number isn't useful to read.
 export interface FrameHover {
   name: string
-  frame: number
-  strand: number
 }
 
-// The CDS reading frame projected onto this species' row (UCSC mafFrames),
-// shown as its own captioned section so the gene structure is readable by
-// hovering any species — alongside the per-base/insertion/etc. hover.
+// The CDS gene projected onto this species' row (UCSC mafFrames), so the gene is
+// identifiable by hovering any species. Shown only in the base view — codon view
+// folds the gene into the consolidated codon table.
 function FrameContents({ frame }: { frame: FrameHover }) {
-  return (
-    <TableShell caption="CDS frame">
-      {frame.name ? <Row label="Gene" value={frame.name} /> : null}
-      <Row
-        label="Reading frame"
-        value={`${frame.frame} (${strandStr(frame.strand)})`}
-      />
+  return frame.name ? (
+    <TableShell caption="CDS">
+      <Row label="Gene" value={frame.name} />
     </TableShell>
-  )
+  ) : null
 }
 
 const CHANGE_LABEL: Record<CodonChange, string> = {
   same: 'none',
-  syn: 'synonymous (silent)',
+  syn: 'synonymous',
   nonsyn: 'nonsynonymous',
   stop: 'stop',
 }
 
-// The codon under the cursor in codon view (per-species translation): the
-// species' codon + amino acid alongside the reference's, so a specific
-// syn/nonsyn change reads directly rather than being inferred from cell color.
-function CodonContents({ codon }: { codon: CodonHit }) {
+// The codon under the cursor in codon view, as a single compact table: the
+// species + gene + the species' codon/amino acid against the reference's, so a
+// specific syn/nonsyn change reads directly rather than inferred from cell color.
+function CodonContents({
+  codon,
+  location,
+  sampleLabel,
+  gene,
+}: {
+  codon: CodonHit
+  location: string
+  sampleLabel?: string
+  gene?: string
+}) {
   const aaStr =
     codon.refAa !== undefined && codon.refAa !== codon.aa
       ? `${codon.refAa} → ${codon.aa}`
@@ -181,7 +186,9 @@ function CodonContents({ codon }: { codon: CodonHit }) {
       ? `${codon.refCodon} → ${codon.codon}`
       : codon.codon
   return (
-    <TableShell caption="Codon">
+    <TableShell caption={`Codon — ${location}`}>
+      {sampleLabel ? <Row label="Sample" value={sampleLabel} /> : null}
+      {gene ? <Row label="Gene" value={gene} /> : null}
       <Row label="Codon" value={codonStr} />
       <Row label="Amino acid" value={aaStr} />
       <Row label="Change" value={CHANGE_LABEL[codon.change]} />
@@ -207,6 +214,18 @@ export default function MafAlignmentTooltipContents({
   if (p1) {
     return <RangeContents p1={p1} p2={p2} />
   }
+  // Codon view: one consolidated table (species + gene + codon change) instead
+  // of stacking the per-base alignment, CDS, and codon tables.
+  if (codon) {
+    return (
+      <CodonContents
+        codon={codon}
+        location={refLabel(p2)}
+        sampleLabel={hover?.sampleLabel}
+        gene={frame?.name}
+      />
+    )
+  }
   return (
     <>
       {hover ? (
@@ -219,7 +238,6 @@ export default function MafAlignmentTooltipContents({
         </table>
       )}
       {frame ? <FrameContents frame={frame} /> : null}
-      {codon ? <CodonContents codon={codon} /> : null}
     </>
   )
 }

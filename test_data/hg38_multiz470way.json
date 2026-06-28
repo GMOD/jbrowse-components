@@ -1,0 +1,63 @@
+{
+  "assemblies": [
+    {
+      "name": "hg38",
+      "aliases": ["GRCh38"],
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "hg38-ReferenceSequenceTrack",
+        "adapter": {
+          "type": "BgzipFastaAdapter",
+          "uri": "https://jbrowse.org/genomes/GRCh38/fasta/hg38.prefix.fa.gz"
+        }
+      },
+      "refNameAliases": {
+        "adapter": {
+          "type": "RefNameAliasAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/hg38_aliases.txt"
+        }
+      },
+      "cytobands": {
+        "adapter": {
+          "type": "CytobandAdapter",
+          "uri": "https://s3.amazonaws.com/jbrowse.org/genomes/GRCh38/cytoBand.txt"
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "MafTrack",
+      "trackId": "hg38.multiz470way",
+      "name": "UCSC 470-way multiz alignment (mammals + more)",
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "BigMafAdapter",
+        "bigBedLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470way.bigMaf"
+        },
+        "nhLocation": {
+          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/hg38.470way.nh"
+        },
+        "summaryAdapter": {
+          "type": "BigBedAdapter",
+          "bigBedLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMafDisplay",
+          "displayId": "hg38.multiz470way-LinearMafDisplay",
+          "annotationAdapter": {
+            "type": "BigBedAdapter",
+            "bigBedLocation": {
+              "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

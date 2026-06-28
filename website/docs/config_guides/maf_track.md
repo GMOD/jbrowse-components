@@ -195,6 +195,18 @@ per-row identity rendering without replacing them, and needs no extra files
 
 <Figure src="/img/maf_inversions.png" caption="The inversion indicator on the ce11 26-way alignment (filtered to a few species): bruMal2's left block aligns to the reference on the opposite strand from the rest of its scaffold and is hatched + outlined, while the species that align in a single orientation (caeRem4, cb4) show nothing — a strand-flip rearrangement flagged without leaving the base view."/>
 
+## A larger example: the human 470-way
+
+These features scale to genome-scale alignments. The UCSC hg38 **470-way multiz**
+(mammals and more) is a `BigMafAdapter` over `multiz470way.bigMaf` with its
+`multiz470waySummary.bb` (zoom-out) and `multiz470wayFrames.bb` (codon view) — the
+same configuration shape as above, just pointed at the UCSC downloads. Because
+the reference is a chromosome-level assembly, the rows read far cleaner than a
+fragmented scaffold-level alignment. The track menu's **Edit row arrangement** /
+subtree filter keeps a focused set of species in view among the hundreds.
+
+<Figure src="/img/maf_470way_codon.png" caption="Codon view on the UCSC hg38 470-way multiz at GAPDH exon 3, filtered to a representative set of mammals: each species' coding sequence is translated in the human reading frame, so the conserved residues line up and the few amino-acid changes in the more distant species (mouse, opossum) stand out — reading protein-level conservation across mammals at a glance."/>
+
 ## See also
 
 - [Synteny track config](/docs/config_guides/synteny_track) — pairwise alignment

@@ -984,9 +984,7 @@ export default function stateModelFactory(
           rowIndex,
           self.rowIndexBySrc,
         )
-        return hit
-          ? { name: hit.name, frame: hit.frame, strand: hit.strand }
-          : undefined
+        return hit ? { name: hit.name } : undefined
       },
       /**
        * #method
@@ -1304,29 +1302,31 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Distinct source chromosomes among the visible alignment blocks, each with
-       * its stable color — the legend for the color-by-chromosome SV mode. Empty
-       * unless that mode is the active rendering.
+       * Source chromosomes among the visible alignment blocks, each with its
+       * stable color, ordered by descending bp coverage so the legend can keep
+       * the most prevalent ones and fold the long tail of rare scaffolds into a
+       * count. Empty unless the color-by-chromosome mode is active.
        */
       get visibleSourceChromosomes(): { chr: string; color: string }[] {
         const view = self.lgv
         if (self.activeRowRendering !== 'sourceChrom' || !view.initialized) {
           return []
         }
-        const chrs = new Set<string>()
+        const bpByChr = new Map<string, number>()
         for (const block of view.dynamicBlocks.contentBlocks) {
           const region = self.rpcDataMap.get(block.displayedRegionIndex!)
           for (const mafBlock of region?.blocks ?? []) {
+            const len = mafBlock.endBp - mafBlock.startBp
             for (const row of mafBlock.rows) {
               if (row.chr) {
-                chrs.add(row.chr)
+                bpByChr.set(row.chr, (bpByChr.get(row.chr) ?? 0) + len)
               }
             }
           }
         }
-        return [...chrs]
-          .sort()
-          .map(chr => ({ chr, color: chromosomeColor(chr) }))
+        return [...bpByChr]
+          .sort((a, b) => b[1] - a[1])
+          .map(([chr]) => ({ chr, color: chromosomeColor(chr) }))
       },
       /**
        * #method
