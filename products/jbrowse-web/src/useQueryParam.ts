@@ -16,9 +16,7 @@ function paramsInHash() {
 
 function getSearchParams() {
   return new URLSearchParams(
-    paramsInHash()
-      ? window.location.hash.slice(1)
-      : window.location.search,
+    paramsInHash() ? window.location.hash.slice(1) : window.location.search,
   )
 }
 

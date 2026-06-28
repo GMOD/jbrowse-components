@@ -316,7 +316,9 @@ function partitionStartSorted(
   const free = new MinHeap() // key=value=freed row index; reuses lowest index
   let nextNew = 0
   let truncated = false
-  let prevStart = -1
+  // -Infinity, not -1: a soft-clip-expanded start can go negative near a contig
+  // start, and -1 would spuriously bail the whole region to the row-scan.
+  let prevStart = Number.NEGATIVE_INFINITY
   for (let k = 0; k < n; k++) {
     const i = order ? order[k]! : k
     const exp = expansions?.get(i)

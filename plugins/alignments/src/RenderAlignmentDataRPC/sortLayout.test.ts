@@ -365,7 +365,7 @@ describe('computeLayout fast path (interval partitioning)', () => {
   // order: BAM is coordinate-sorted)
   function makeDeepReads(numReads: number, span: number, readLen: number) {
     let s = 99
-    const rnd = () => ((s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff)
+    const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
     const starts = Array.from({ length: numReads }, () =>
       Math.floor(rnd() * span),
     ).sort((a, b) => a - b)
@@ -413,6 +413,61 @@ describe('computeLayout fast path (interval partitioning)', () => {
     const data = makePileupData({ regionStart: 0, reads })
     const { readYs } = computeLayout(data)
     assertNonOverlappingLayout(data, readYs)
+  })
+
+  // Independent first-fit-lowest-row reference over padded (end+2) intervals in
+  // monotone start order. Deliberately does NOT use placeRect, so a shared bug
+  // can't hide the divergence — this is the spec the heap path must match.
+  function refFirstFit(data: PileupDataResult, maxRows: number) {
+    const { readPositions } = data
+    const n = data.readIds.length
+    const rowEnds: number[] = [] // rowEnds[r] = last padded end placed in row r
+    const ys = new Uint16Array(n)
+    let truncated = false
+    for (let i = 0; i < n; i++) {
+      const start = readPositions[i * 2]!
+      const paddedEnd = readPositions[i * 2 + 1]! + 2
+      let placed = -1
+      for (let r = 0; r < rowEnds.length; r++) {
+        if (rowEnds[r]! <= start) {
+          placed = r
+          break
+        }
+      }
+      if (placed >= 0) {
+        ys[i] = placed
+        rowEnds[placed] = paddedEnd
+      } else if (rowEnds.length < maxRows) {
+        ys[i] = rowEnds.length
+        rowEnds.push(paddedEnd)
+      } else {
+        ys[i] = maxRows
+        truncated = true
+      }
+    }
+    return { ys, maxY: rowEnds.length, truncated }
+  }
+
+  // The whole premise of the fast path is byte-identical output to the row-scan.
+  // Fuzz it against the independent reference across read shapes and caps; every
+  // input here is ≥ LAYOUT_HEAP_MIN_READS so the heap path is the one exercised.
+  test('fast path output is byte-identical to first-fit reference (fuzz)', () => {
+    let s = 0xc0ffee
+    const rnd = () => (s = (s * 1103515245 + 12345) & 0x7fffffff) / 0x7fffffff
+    const caps = [Number.POSITIVE_INFINITY, 1, 8, 50, 200]
+    for (let trial = 0; trial < 40; trial++) {
+      const numReads = 20000 + Math.floor(rnd() * 4000)
+      const span = 1 + Math.floor(rnd() * 6000) // tiny spans force deep ties
+      const readLen = 1 + Math.floor(rnd() * 250)
+      const reads = makeDeepReads(numReads, span, readLen)
+      const data = makePileupData({ regionStart: 0, reads })
+      const cap = caps[trial % caps.length]!
+      const got = computeLayout(data, false, cap)
+      const ref = refFirstFit(data, cap)
+      expect(got.maxY).toBe(ref.maxY)
+      expect(got.truncated).toBe(ref.truncated)
+      expect(Array.from(got.readYs)).toEqual(Array.from(ref.ys))
+    }
   })
 })
 
