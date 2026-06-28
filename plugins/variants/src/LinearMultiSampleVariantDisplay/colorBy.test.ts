@@ -16,7 +16,6 @@ describe('multi-sample variant colorBy', () => {
     const configSchema = configSchemaFactory()
     return stateModelFactory(configSchema).create({
       type: 'LinearMultiSampleVariantDisplay',
-      displayId: 'colorby-test',
       configuration: configSchema.create({
         type: 'LinearMultiSampleVariantDisplay',
         displayId: 'colorby-test',
