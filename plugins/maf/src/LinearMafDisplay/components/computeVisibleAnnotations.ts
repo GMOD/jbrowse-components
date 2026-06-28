@@ -53,10 +53,7 @@ export function findFrameAt(
   rowIndexBySrc: Map<string, number>,
 ): MafFrameRecord | undefined {
   return records?.find(
-    r =>
-      pos >= r.start &&
-      pos < r.end &&
-      rowIndexBySrc.get(r.src) === rowIndex,
+    r => pos >= r.start && pos < r.end && rowIndexBySrc.get(r.src) === rowIndex,
   )
 }
 

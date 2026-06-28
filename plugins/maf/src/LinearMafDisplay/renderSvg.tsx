@@ -2,6 +2,7 @@
 import React from 'react'
 
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { colorLongreadInv } from '@jbrowse/core/ui/theme'
 import { getContainingView } from '@jbrowse/core/util'
 import { paintLayer } from '@jbrowse/core/util/paintLayer'
 import {
@@ -19,11 +20,13 @@ import {
 } from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
 import { drawRowIdentity } from './components/drawRowIdentity.ts'
+import { drawSourceChrom } from './components/drawSourceChrom.ts'
 import { YSCALE_AXIS_X } from './components/yScaleAxis.ts'
 import { drawMafBlocks } from '../LinearMafRenderer/drawMafBlocks.ts'
 import { drawMafAnnotations } from '../LinearMafRenderer/rendering/annotations.ts'
 import { drawMafCodons } from '../LinearMafRenderer/rendering/codons.ts'
 import { drawMafEmptyLines } from '../LinearMafRenderer/rendering/emptyLines.ts'
+import { drawInversions } from '../LinearMafRenderer/rendering/inversions.ts'
 import { drawMafLabels } from '../LinearMafRenderer/rendering/labels.ts'
 import { drawMafSummaryBars } from '../LinearMafRenderer/rendering/summaryBars.ts'
 import {
@@ -134,14 +137,25 @@ function MafSvgBody({
           // codon cells are drawn by drawMafCodons below.
           if (activeRowRendering === 'codon') {
             // codon cells drawn below; no base/identity rendering
-          } else if (activeRowRendering !== 'bases' && sources?.length) {
-            drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
-              rowHeight,
-              rowProportion,
-              nRows: sources.length,
-              canvasWidth: width,
-              mode: activeRowRendering,
-            })
+          } else if (activeRowRendering === 'sourceChrom') {
+            if (sources?.length) {
+              drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
+                rowHeight,
+                rowProportion,
+                nRows: sources.length,
+                canvasWidth: width,
+              })
+            }
+          } else if (activeRowRendering !== 'bases') {
+            if (sources?.length) {
+              drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
+                rowHeight,
+                rowProportion,
+                nRows: sources.length,
+                canvasWidth: width,
+                mode: activeRowRendering,
+              })
+            }
           } else {
             drawMafBlocks(ctx, model.rpcDataMap, renderBlocks, svgState)
           }
@@ -155,6 +169,7 @@ function MafSvgBody({
             state.mismatchRendering,
           )
           drawMafCodons(ctx, model.visibleCodons, getCodonColors(theme))
+          drawInversions(ctx, model.visibleInversions, colorLongreadInv)
         })}
         {treeShowing ? <SvgTreePath hierarchy={hierarchy} /> : null}
         {sources?.length ? (

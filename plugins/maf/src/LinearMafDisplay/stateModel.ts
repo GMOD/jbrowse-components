@@ -30,12 +30,17 @@ import {
   computeVisibleAnnotations,
   findFrameAt,
 } from './components/computeVisibleAnnotations.ts'
-import { computeVisibleCodons } from './components/computeVisibleCodons.ts'
+import {
+  computeVisibleCodons,
+  findCodonAt,
+} from './components/computeVisibleCodons.ts'
 import { computeVisibleDeletions } from './components/computeVisibleDeletions.ts'
 import { computeVisibleEmptyLines } from './components/computeVisibleEmptyLines.ts'
 import { computeVisibleInsertions } from './components/computeVisibleInsertions.ts'
+import { computeVisibleInversions } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
+import { chromosomeColor } from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
@@ -257,6 +262,29 @@ export default function stateModelFactory(
           types.boolean,
           DEFAULTS.showTranslation,
         ),
+        /**
+         * #property
+         * Color each species' alignment blocks by their source chromosome
+         * (`MafAlignedRow.chr`) instead of the per-base SNP coloring — a row
+         * whose blocks come from different source chromosomes changes color,
+         * surfacing translocations/rearrangements (MCGV "color by chromosome").
+         * Detail (non-summary) view only; needs no extra fetch.
+         */
+        colorByChromosome: types.stripDefault(
+          types.boolean,
+          DEFAULTS.colorByChromosome,
+        ),
+        /**
+         * #property
+         * Overlay a strand-flip (inversion) indicator: blocks aligning inverted
+         * relative to their own source chromosome's consensus orientation get a
+         * diagonal hatch. Composes on top of any rows rendering; needs no extra
+         * fetch (`MafAlignedRow.strand` is already shipped).
+         */
+        showInversions: types.stripDefault(
+          types.boolean,
+          DEFAULTS.showInversions,
+        ),
       }),
     )
     .volatile(() => ({
@@ -441,6 +469,18 @@ export default function stateModelFactory(
       /**
        * #action
        */
+      setColorByChromosome(arg: boolean) {
+        self.colorByChromosome = arg
+      },
+      /**
+       * #action
+       */
+      setShowInversions(arg: boolean) {
+        self.showInversions = arg
+      },
+      /**
+       * #action
+       */
       setConservationHeight(arg: number) {
         self.conservationHeight = arg
       },
@@ -580,11 +620,18 @@ export default function stateModelFactory(
       /**
        * #getter
        * The anchor species whose `mafFrames` reading frame is used to translate
-       * every row (UCSC `codonDefault`). Row 0 is the reference assembly, so its
-       * `src` is the natural default.
+       * every row (UCSC `codonDefault`). Tied to the *reference assembly*, not
+       * the top display row: every species' codon is compared against the
+       * reference sequence (`block.refSeqBytes`), so the frame must be enumerated
+       * from the reference's own frames. A row reorder (layout) can move a
+       * non-reference species to row 0 — reading `sources[0]` there would
+       * enumerate codons in the wrong frame. Falls back to the worker's canonical
+       * first row (pre-reorder) when the reference isn't itself a listed sample.
        */
       get defaultCodonSpecies(): string | undefined {
-        return self.sources?.[0]?.name
+        const refAssembly = self.lgv.assemblyNames[0]
+        const rows = self.sourcesVolatile
+        return rows.find(s => s.name === refAssembly)?.name ?? rows[0]?.name
       },
       /**
        * #getter
@@ -923,7 +970,11 @@ export default function stateModelFactory(
        * with, so the tooltip and the strip can't disagree about which row a gene
        * is on.
        */
-      frameHoverInfo(displayedRegionIndex: number, bp: number, rowIndex: number) {
+      frameHoverInfo(
+        displayedRegionIndex: number,
+        bp: number,
+        rowIndex: number,
+      ) {
         if (!self.annotationsActive) {
           return undefined
         }
@@ -1060,6 +1111,23 @@ export default function stateModelFactory(
           rowProportion: self.rowProportion,
         })
       },
+      /**
+       * #getter
+       * Positioned strand-flip (inversion) markers for the visible aligned rows.
+       * Empty unless the indicator is toggled on.
+       */
+      get visibleInversions() {
+        const view = self.lgv
+        if (!view.initialized || !self.showInversions) {
+          return []
+        }
+        return computeVisibleInversions({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          rowHeight: self.rowHeight,
+          rowProportion: self.rowProportion,
+        })
+      },
     }))
     .views(self => ({
       /**
@@ -1113,16 +1181,23 @@ export default function stateModelFactory(
        * #getter
        * Single source of truth for what the per-sample rows area draws right now:
        * `bases` (the GPU SNP/base coloring), `codon` (per-codon change coloring
-       * from `mafFrames`), or a per-row identity style (`heatmap` / `xyplot`).
-       * Codon view takes precedence when on; otherwise, with `rowIdentityAutoZoom`
-       * (default) it emulates UCSC `wigMaf` — bases at base level, the identity
-       * plot when zoomed out; with auto off the selected mode is pinned. The GPU
-       * canvas, the identity canvas, the codon overlay, and SVG export all branch
-       * on this one getter so they can't disagree about what's on screen.
+       * from `mafFrames`), `sourceChrom` (color-by-source-chromosome SV mode), or
+       * a per-row identity style (`heatmap` / `xyplot`). Codon view takes
+       * precedence when on, then color-by-chromosome (an explicit SV toggle, but
+       * not in the cheap summary path which carries no per-row chr); otherwise,
+       * with `rowIdentityAutoZoom` (default) it emulates UCSC `wigMaf` — bases at
+       * base level, the identity plot when zoomed out; with auto off the selected
+       * mode is pinned. The GPU canvas, the identity/chromosome canvases, the
+       * codon overlay, and SVG export all branch on this one getter so they can't
+       * disagree about what's on screen.
        */
-      get activeRowRendering(): 'bases' | 'codon' | RowIdentityMode {
+      get activeRowRendering():
+        'bases' | 'codon' | 'sourceChrom' | RowIdentityMode {
         if (self.codonViewActive) {
           return 'codon'
+        }
+        if (self.colorByChromosome && !self.showSummary) {
+          return 'sourceChrom'
         }
         const { rowIdentityMode } = self
         // With auto on (default) the identity plot yields to the bases once
@@ -1226,6 +1301,62 @@ export default function stateModelFactory(
           rowHeight: self.rowHeight,
           rowProportion: self.rowProportion,
         })
+      },
+      /**
+       * #getter
+       * Distinct source chromosomes among the visible alignment blocks, each with
+       * its stable color — the legend for the color-by-chromosome SV mode. Empty
+       * unless that mode is the active rendering.
+       */
+      get visibleSourceChromosomes(): { chr: string; color: string }[] {
+        const view = self.lgv
+        if (self.activeRowRendering !== 'sourceChrom' || !view.initialized) {
+          return []
+        }
+        const chrs = new Set<string>()
+        for (const block of view.dynamicBlocks.contentBlocks) {
+          const region = self.rpcDataMap.get(block.displayedRegionIndex!)
+          for (const mafBlock of region?.blocks ?? []) {
+            for (const row of mafBlock.rows) {
+              if (row.chr) {
+                chrs.add(row.chr)
+              }
+            }
+          }
+        }
+        return [...chrs]
+          .sort()
+          .map(chr => ({ chr, color: chromosomeColor(chr) }))
+      },
+      /**
+       * #method
+       * The codon under the cursor on display `rowIndex` at absolute genomic
+       * `bp`, when the codon view is the active rendering: the species' codon +
+       * amino acid, the reference codon + amino acid, and the syn/nonsyn/stop
+       * classification. Reuses the same anchor frames + reference comparison the
+       * colored cells are drawn from (`findCodonAt`), so the tooltip and the cell
+       * agree. Undefined off codon view or where no codon covers the row there.
+       */
+      codonHoverInfo(
+        displayedRegionIndex: number,
+        bp: number,
+        rowIndex: number,
+      ) {
+        const { defaultCodonSpecies } = self
+        if (self.activeRowRendering !== 'codon' || !defaultCodonSpecies) {
+          return undefined
+        }
+        const region = self.rpcDataMap.get(displayedRegionIndex)
+        const frames = self.framesDataMap.get(displayedRegionIndex)
+        return region && frames
+          ? findCodonAt({
+              blocks: region.blocks,
+              frames,
+              defaultSrc: defaultCodonSpecies,
+              bp: Math.floor(bp),
+              rowIndex,
+            })
+          : undefined
       },
     }))
     .views(self => {

@@ -18,4 +18,6 @@ export const DEFAULTS = {
   rowIdentityAutoZoom: true,
   showAnnotations: true,
   showTranslation: false,
+  colorByChromosome: false,
+  showInversions: false,
 } as const

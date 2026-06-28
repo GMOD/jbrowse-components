@@ -11,6 +11,39 @@ landed (see `plugins/maf`, and the `key_pattern_maf_cds_frames_overlay` memory).
   Hover any row → gene name + reading frame. Screenshot: `maf_cds_frames`
   (`test_data/ce_maf_frames.json`, local bigBed built from real ce11
   multiz26wayFrames).
+- **Codon view** (per-species amino-acid translation in the reference reading
+  frame; replaces the SNP cells with per-codon syn/nonsyn/stop coloring). Polish
+  landed: hover tooltip (`findCodonAt` → codon nt · AA · ref AA · syn/nonsyn),
+  anchor tied to the *reference assembly* (`defaultCodonSpecies` resolves
+  `lgv.assemblyNames[0]`, not the reordered `sources[0]`), dark-mode-tuned fill
+  alphas, and **cross-exon stitching**. A codon is modeled as three reference
+  positions (ascending genomic); `enumerateCodons` walks each exon in
+  transcription order (one strand-agnostic path via `txPos`) and completes a
+  trailing partial codon from the next exon via `nextFramePos` (the 4 extra
+  `mafFrames` columns now flow through `MafFrameRecord`). The boundary codon
+  paints one cell per exon piece (glyph on the wider). Both exons must be in one
+  fetched MAF block (reference is contiguous across introns), else the codon is
+  dropped as before.
+- **Color-by-source-chromosome SV mode** (`colorByChromosome` toggle →
+  `activeRowRendering === 'sourceChrom'`): each species' alignment blocks filled
+  by a stable hash color of `MafAlignedRow.chr`, so a row drawing from >1 source
+  chromosome changes color = translocation/rearrangement flag. Zero new fetch.
+  Detail view only (summary path carries no per-row chr). Compact legend overlay
+  (`visibleSourceChromosomes`). Canvas + SVG export both branch on the shared
+  `activeRowRendering` getter.
+- **Inversion (strand-flip) indicator** (`showInversions` toggle, an *overlay*
+  not a mode): hatch + outline on a block whose strand differs from the
+  length-weighted consensus orientation of its own `(row, source chromosome)` —
+  so arbitrarily-oriented scaffolds aren't mistaken for inversions, only genuine
+  intra-scaffold flips. `computeVisibleInversions` + `drawInversions`
+  (colorLongreadInv). Found+fixed a latent bug: **`MafTabixAdapter` dropped the
+  strand + srcSize fields** of each species entry (`assembly.chr:start:size:`
+  **`strand`**`:`**`srcSize`**`:seq`), so every row defaulted to `+` — broke this
+  indicator and `−`-strand hover coordinates. Now parsed via the pure, tested
+  `parseMafTabixEntry`. NOTE: jbrowse-web bundles plugins from `src` (not `esm`;
+  esm is publish-only), but `tsgo --build` emits esm — irrelevant to the running
+  app. A subtle real-data caveat: the ce11 26-way *subset* has only one tiny
+  inversion (bruMal2 forward blocks, 87 bp); a bigger dataset shows it better.
 
 ## NCBI MCGV / CGV (researched 2026-06-28)
 
@@ -94,12 +127,17 @@ dotplot + linear synteny" and "Explicit SV-type classification".
 
 ## Next concrete steps (ranked)
 
-1. **Codon translation per species** (in progress; UCSC `wigMafTrack.c`
-   `translateCodons` is the reference algorithm — translate each species in the
-   anchor reading frame from `mafFrames`, AA letter centered on each codon, with
-   alternating codon shading; `codonDefault` = use one anchor species' frames for
-   all rows). Enables eyeballing amino-acid changes across species; syn/nonsyn
-   coloring falls out once per-species AAs vs anchor AA are known.
-2. **Color-by-source-chromosome SV mode** (above) — MCGV's most borrowable idea,
-   fits the existing per-row rendering scaffold.
-3. **Mid-tier conservation/identity LOD** for large bigMaf (MCGV's ~1 Mb tier).
+1. **Mid-tier conservation/identity LOD** for large bigMaf (MCGV's ~1 Mb tier):
+   a "matched-to-anchor proportion" track between the per-base detail and the
+   bigMafSummary bars, so a genome-scale multiz isn't always per-base.
+2. **Rearrangement markers at block junctions** — the per-species split-read
+   analog (chr change / large jump / order reversal between adjacent blocks on a
+   row), building on the now-correct per-row `chr`/`start`/`strand`.
+3. **react-msaview extract bridge (T3)** — the honest answer to non-reference
+   structure (a species' own insertions have zero reference width on the MAF
+   axis); spans the `~/src/react-msaview` repo.
+
+Stitching note: cross-exon stitching is done but only joins exons that share a
+fetched MAF block. If a future need arises to stitch across MAF block boundaries
+(adjacent exons in different blocks), it requires a region-wide ref-position →
+(block, column) index rather than the current per-block `refColumns`.

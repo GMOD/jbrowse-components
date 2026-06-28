@@ -31,6 +31,8 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showConservation: boolean
   showAnnotations: boolean
   showTranslation: boolean
+  colorByChromosome: boolean
+  showInversions: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   rowIdentityMode: RowIdentityModeWithOff
   rowIdentityAutoZoom: boolean
@@ -50,6 +52,8 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowConservation: (f: boolean) => void
   setShowAnnotations: (f: boolean) => void
   setShowTranslation: (f: boolean) => void
+  setColorByChromosome: (f: boolean) => void
+  setShowInversions: (f: boolean) => void
   setRowIdentityMode: (m: RowIdentityModeWithOff) => void
   setRowIdentityAutoZoom: (f: boolean) => void
   setSubtreeFilter: (names?: string[]) => void
@@ -158,6 +162,22 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
           checked: self.showConservation,
           onClick: () => {
             self.setShowConservation(!self.showConservation)
+          },
+        },
+        {
+          label: 'Color by source chromosome',
+          type: 'checkbox',
+          checked: self.colorByChromosome,
+          onClick: () => {
+            self.setColorByChromosome(!self.colorByChromosome)
+          },
+        },
+        {
+          label: 'Show inversions (strand flips)',
+          type: 'checkbox',
+          checked: self.showInversions,
+          onClick: () => {
+            self.setShowInversions(!self.showInversions)
           },
         },
         ...(self.annotationAdapterConfig

@@ -155,6 +155,19 @@ export interface MafFrameRecord {
   strand: number
   /** gene that defined the frame */
   name: string
+  /**
+   * Reference position of the connecting base in the previous CDS exon, or -1.
+   * Used (with `nextFramePos`) to stitch a codon that straddles an exon/block
+   * boundary: the partial codon at one exon's edge is completed from the
+   * adjacent exon. `+`/`−` aware (previous = lower coords on `+`, higher on `−`).
+   */
+  prevFramePos?: number
+  /** Reference position of the connecting base in the next CDS exon, or -1. */
+  nextFramePos?: number
+  /** 1 when this record's first base (transcription order) starts an exon. */
+  isExonStart?: number
+  /** 1 when this record's last base (transcription order) ends an exon. */
+  isExonEnd?: number
 }
 
 /**

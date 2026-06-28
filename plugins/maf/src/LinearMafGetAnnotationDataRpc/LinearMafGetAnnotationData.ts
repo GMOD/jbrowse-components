@@ -25,9 +25,8 @@ export default class LinearMafGetAnnotationData extends RpcMethodTypeWithFilters
       args,
       rpcDriverClassName,
     )
-    const { executeMafAnnotationData } = await import(
-      './executeMafAnnotationData.ts'
-    )
+    const { executeMafAnnotationData } =
+      await import('./executeMafAnnotationData.ts')
     return executeMafAnnotationData({
       pluginManager: this.pluginManager,
       args: deserializedArgs,

@@ -60,14 +60,19 @@ export function getFrameColors(theme: Theme): (string | undefined)[] {
  * (synonymous) changes a faint fill, stops the error color, and conserved codons
  * no fill (the cell stays clean). The amino-acid glyph drawn on top uses the
  * primary text color. Theme-derived so it's available headless for SVG export.
+ *
+ * Dark mode uses higher alphas: a translucent fill composites toward the (dark)
+ * track background, so the light-mode synonymous blue at 0.18 nearly vanishes
+ * there — the per-mode alphas keep every change category legible on both.
  */
 export function getCodonColors(theme: Theme) {
+  const dark = theme.palette.mode === 'dark'
   return {
     fill: {
       same: undefined,
-      syn: alpha(theme.palette.codonSynonymous, 0.18),
-      nonsyn: alpha(theme.palette.codonNonsynonymous, 0.55),
-      stop: alpha(theme.palette.codonStop, 0.6),
+      syn: alpha(theme.palette.codonSynonymous, dark ? 0.4 : 0.18),
+      nonsyn: alpha(theme.palette.codonNonsynonymous, dark ? 0.68 : 0.55),
+      stop: alpha(theme.palette.codonStop, dark ? 0.72 : 0.6),
     },
     text: theme.palette.text.primary,
   }

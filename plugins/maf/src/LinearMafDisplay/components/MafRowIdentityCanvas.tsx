@@ -17,10 +17,13 @@ const MafRowIdentityCanvas = observer(function MafRowIdentityCanvas({
   model: LinearMafDisplayModel
 }) {
   const { activeRowRendering, rowsHeight, rowHeight, rowProportion } = model
-  // Only the identity styles (heatmap / xyplot) draw here; `codon` and `bases`
-  // are rendered elsewhere (codon overlay / GPU canvas).
+  // Only the identity styles (heatmap / xyplot) draw here; `codon`, `bases`, and
+  // `sourceChrom` are rendered elsewhere (codon overlay / GPU canvas / source-
+  // chromosome canvas).
   const identityMode =
-    activeRowRendering === 'bases' || activeRowRendering === 'codon'
+    activeRowRendering === 'bases' ||
+    activeRowRendering === 'codon' ||
+    activeRowRendering === 'sourceChrom'
       ? undefined
       : activeRowRendering
   return (

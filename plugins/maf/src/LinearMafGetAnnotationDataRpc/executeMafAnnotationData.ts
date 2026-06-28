@@ -58,6 +58,13 @@ export async function executeMafAnnotationData({
     // contribute; a plain reference annotation adapter without `src` is ignored
     // here (it would need a different, reference-row-only path).
     if (typeof src === 'string') {
+      // mafFrames carries prevFramePos/nextFramePos/isExonStart/isExonEnd
+      // (autoSql `mafFrames`) for cross-exon codon stitching; a plain annotation
+      // adapter without them just yields undefined (stitching then no-ops).
+      const num = (field: string) => {
+        const v = f.get(field)
+        return v === undefined ? undefined : Number(v)
+      }
       records.push({
         refName: region.refName,
         start: f.get('start'),
@@ -66,6 +73,10 @@ export async function executeMafAnnotationData({
         frame: Number(f.get('frame')),
         strand: f.get('strand') ?? 1,
         name: String(f.get('name') ?? ''),
+        prevFramePos: num('prevFramePos'),
+        nextFramePos: num('nextFramePos'),
+        isExonStart: num('isExonStart'),
+        isExonEnd: num('isExonEnd'),
       })
     }
   })

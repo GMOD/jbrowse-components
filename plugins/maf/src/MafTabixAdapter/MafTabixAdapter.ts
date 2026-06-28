@@ -6,8 +6,7 @@ import { buildSampleFilter, getSamplesFromConfig } from '../util/getSamples.ts'
 import { lazyInit, loadSubAdapter } from '../util/loadSubAdapter.ts'
 import { subscribeToObservable } from '../util/observableUtils.ts'
 import {
-  matchSampleId,
-  parseAssemblyAndChr,
+  parseMafTabixEntry,
   selectReferenceSequenceString,
 } from '../util/parseAssemblyName.ts'
 
@@ -55,32 +54,13 @@ export default class MafTabixAdapter extends BaseFeatureDataAdapter<MafTabixAdap
         const alignments: Record<string, AlignmentRecord> = {}
 
         for (let j = 0, l = data.length; j < l; j++) {
-          const elt = data[j]!
-          const parts = elt.split(':')
-
-          const [assemblyAndChr, startStr, , , , seq] = parts
-
-          if (!assemblyAndChr || !seq) {
-            continue
-          }
-
-          // Known set → exact resolution (keeps the haplotype suffix, e.g.
-          // `Species1.1`). No set → dot-position split to discover genomes.
-          const parsed = sampleIds
-            ? matchSampleId(assemblyAndChr, sampleIds)
-            : parseAssemblyAndChr(assemblyAndChr)
-
-          if (parsed?.assemblyName) {
-            const { assemblyName, chr } = parsed
+          const entry = parseMafTabixEntry(data[j]!, sampleIds)
+          if (entry) {
+            const { assemblyName, chr, start, strand, srcSize, seq } = entry
             if (!firstAssemblyNameFound) {
               firstAssemblyNameFound = assemblyName
             }
-
-            alignments[assemblyName] = {
-              chr,
-              start: parseInt(startStr!, 10),
-              seq,
-            }
+            alignments[assemblyName] = { chr, start, strand, srcSize, seq }
           }
         }
 

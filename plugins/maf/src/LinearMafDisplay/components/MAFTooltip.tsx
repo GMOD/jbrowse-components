@@ -90,10 +90,22 @@ const MAFTooltip = observer(function ({
     origMouseX === undefined && !p2.oob
       ? model.frameHoverInfo(p2.index, gposFrac, rowIndex)
       : undefined
+  // In codon view, the actual codon/amino-acid change at this row (so a specific
+  // change can be read directly rather than inferred from the cell color).
+  const codon =
+    origMouseX === undefined && !p2.oob
+      ? model.codonHoverInfo(p2.index, gposFrac, rowIndex)
+      : undefined
 
   return (
     <BaseTooltip clientPoint={clientPoint}>
-      <MafAlignmentTooltipContents p1={p1} p2={p2} hover={hover} frame={frame} />
+      <MafAlignmentTooltipContents
+        p1={p1}
+        p2={p2}
+        hover={hover}
+        frame={frame}
+        codon={codon}
+      />
     </BaseTooltip>
   )
 })

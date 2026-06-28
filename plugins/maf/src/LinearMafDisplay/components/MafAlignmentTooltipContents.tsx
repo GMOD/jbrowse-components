@@ -5,6 +5,7 @@ import { getBpDisplayStr, toLocale } from '@jbrowse/core/util'
 import { useTooltipStyles } from './tooltipStyles.ts'
 import { describeMafStatus } from '../../util/mafStatus.ts'
 
+import type { CodonChange, CodonHit } from './computeVisibleCodons.ts'
 import type { GenomicPosition, MafHover } from '../util.ts'
 
 function strandStr(strand?: number) {
@@ -160,16 +161,46 @@ function FrameContents({ frame }: { frame: FrameHover }) {
   )
 }
 
+const CHANGE_LABEL: Record<CodonChange, string> = {
+  same: 'none',
+  syn: 'synonymous (silent)',
+  nonsyn: 'nonsynonymous',
+  stop: 'stop',
+}
+
+// The codon under the cursor in codon view (per-species translation): the
+// species' codon + amino acid alongside the reference's, so a specific
+// syn/nonsyn change reads directly rather than being inferred from cell color.
+function CodonContents({ codon }: { codon: CodonHit }) {
+  const aaStr =
+    codon.refAa !== undefined && codon.refAa !== codon.aa
+      ? `${codon.refAa} → ${codon.aa}`
+      : codon.aa
+  const codonStr =
+    codon.refCodon !== undefined && codon.refCodon !== codon.codon
+      ? `${codon.refCodon} → ${codon.codon}`
+      : codon.codon
+  return (
+    <TableShell caption="Codon">
+      <Row label="Codon" value={codonStr} />
+      <Row label="Amino acid" value={aaStr} />
+      <Row label="Change" value={CHANGE_LABEL[codon.change]} />
+    </TableShell>
+  )
+}
+
 export default function MafAlignmentTooltipContents({
   p1,
   p2,
   hover,
   frame,
+  codon,
 }: {
   p1?: GenomicPosition
   p2: GenomicPosition
   hover?: MafHover
   frame?: FrameHover
+  codon?: CodonHit
 }) {
   const { classes } = useTooltipStyles()
 
@@ -188,6 +219,7 @@ export default function MafAlignmentTooltipContents({
         </table>
       )}
       {frame ? <FrameContents frame={frame} /> : null}
+      {codon ? <CodonContents codon={codon} /> : null}
     </>
   )
 }

@@ -16,6 +16,7 @@ import DeletionsOverlay from './DeletionsOverlay.tsx'
 import DragSelectionRect from './DragSelectionRect.tsx'
 import EmptyLinesOverlay from './EmptyLinesOverlay.tsx'
 import InsertionsOverlay from './InsertionsOverlay.tsx'
+import InversionsOverlay from './InversionsOverlay.tsx'
 import MAFTooltip from './MAFTooltip.tsx'
 import MafBandLabels from './MafBandLabels.tsx'
 import MafBandResizeHandle from './MafBandResizeHandle.tsx'
@@ -24,6 +25,8 @@ import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageYScale from './MafCoverageYScale.tsx'
 import MafRowIdentityCanvas from './MafRowIdentityCanvas.tsx'
+import MafSourceChromCanvas from './MafSourceChromCanvas.tsx'
+import MafSourceChromLegend from './MafSourceChromLegend.tsx'
 import MsaHighlightOverlay from './MsaHighlightOverlay.tsx'
 import SubsequenceContextMenu from './SubsequenceContextMenu.tsx'
 import SummaryBarsOverlay from './SummaryBarsOverlay.tsx'
@@ -179,6 +182,8 @@ const MafBody = observer(function MafBody({
           }}
         />
         <MafRowIdentityCanvas model={model} />
+        <MafSourceChromCanvas model={model} />
+        <MafSourceChromLegend model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}
@@ -218,6 +223,11 @@ const MafBody = observer(function MafBody({
         />
         <CodonTranslationOverlay
           markers={model.visibleCodons}
+          width={width}
+          height={rowsHeight}
+        />
+        <InversionsOverlay
+          markers={model.visibleInversions}
           width={width}
           height={rowsHeight}
         />

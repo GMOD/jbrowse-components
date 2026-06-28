@@ -2,8 +2,41 @@ import {
   matchSampleId,
   parseAssemblyAndChr,
   parseAssemblyAndChrSimple,
+  parseMafTabixEntry,
   selectReferenceSequenceString,
 } from './parseAssemblyName.ts'
+
+describe('parseMafTabixEntry', () => {
+  const samples = new Set(['ce11', 'caeRem4'])
+
+  test('parses strand and srcSize from a + entry', () => {
+    expect(
+      parseMafTabixEntry('ce11.chrI:2996373:67:+:15072434:GAATTC', samples),
+    ).toEqual({
+      assemblyName: 'ce11',
+      chr: 'chrI',
+      start: 2996373,
+      strand: 1,
+      srcSize: 15072434,
+      seq: 'GAATTC',
+    })
+  })
+
+  test('parses a − entry (the strand the old code dropped)', () => {
+    const e = parseMafTabixEntry(
+      'caeRem4.Crem_Contig89:203343:79:-:273340:gaaatc',
+      samples,
+    )
+    expect(e).toMatchObject({ strand: -1, srcSize: 273340, start: 203343 })
+  })
+
+  test('returns undefined for an unknown sample or malformed entry', () => {
+    expect(
+      parseMafTabixEntry('unknown.chr1:1:2:+:9:ACGT', samples),
+    ).toBeUndefined()
+    expect(parseMafTabixEntry('', samples)).toBeUndefined()
+  })
+})
 
 describe('matchSampleId (sample-set aware splitting)', () => {
   const samples = new Set(['Species1.1', 'Species1.2', 'mm10'])

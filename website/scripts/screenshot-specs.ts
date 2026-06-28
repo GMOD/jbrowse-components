@@ -6297,7 +6297,71 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
-
+  {
+    // Codon-view hover tooltip: in the per-species codon translation, hovering a
+    // codon cell reads out the species codon + amino acid alongside the reference
+    // codon + amino acid and the syn/nonsyn classification, so a specific change
+    // is identifiable rather than inferred from the cell color.
+    mode: 'url',
+    name: 'maf_codon_tooltip',
+    url: lgvSession(CE_MAF_FRAMES, {
+      assembly: 'ce11',
+      loc: 'chrI:2,999,200-2,999,370',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            rowHeight: 15,
+            showTranslation: true,
+          },
+        },
+      ],
+    }),
+    readyText: 'chrI',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 600,
+    settleMs: 12000,
+    actions: [
+      { type: 'hover', from: { x: 500, y: 300 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+  {
+    // Color-by-source-chromosome SV mode on the 26-way alignment: each species'
+    // alignment blocks are filled by a stable color of their source chromosome
+    // (MCGV "color by chromosome"), so a row drawing from more than one source
+    // chromosome changes color — a translocation/rearrangement flag with no
+    // extra fetch. A compact legend (top-right) maps each visible source
+    // chromosome to its color.
+    mode: 'url',
+    name: 'maf_color_by_chromosome',
+    url: lgvSession(CE_MAF_FRAMES, {
+      assembly: 'ce11',
+      loc: 'chrI:2,995,000-3,003,000',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            rowHeight: 13,
+            colorByChromosome: true,
+          },
+        },
+      ],
+    }),
+    readyText: 'chrI',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 560,
+    settleMs: 12000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 100 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
   // purely by the &adminKey= URL param (adminMode = !!adminKey, client-side), so

@@ -41,7 +41,11 @@ export function drawMafCodons(
   ctx.textAlign = 'center'
   ctx.fillStyle = colors.text
   for (const m of markers) {
-    if (m.width >= CHAR_SIZE_WIDTH && m.h >= MIN_HEIGHT_FOR_TEXT) {
+    if (
+      m.drawGlyph &&
+      m.width >= CHAR_SIZE_WIDTH &&
+      m.h >= MIN_HEIGHT_FOR_TEXT
+    ) {
       ctx.fillText(m.aa, m.x, m.y)
     }
   }

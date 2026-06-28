@@ -80,6 +80,51 @@ export function matchSampleId(
   return undefined
 }
 
+/** One parsed species entry of a MAF-tabix feature's encoded alignment list. */
+export interface ParsedMafTabixEntry {
+  assemblyName: string
+  chr: string
+  start: number
+  /** +1/−1, from the entry's strand field */
+  strand: number
+  /** total source sequence length, or undefined if absent */
+  srcSize: number | undefined
+  seq: string
+}
+
+/**
+ * Parse one `assembly.chr:start:size:strand:srcSize:seq` entry from a MAF-tabix
+ * feature's comma-joined alignment list, resolving the species against the known
+ * sample set (or a dot-split when unknown). Returns undefined when the entry is
+ * malformed or names no known sample. Strand and srcSize are carried because a
+ * `−`-strand component's `start` is relative to the reverse complement (needed
+ * for correct hover coordinates) and the strand drives the inversion indicator.
+ */
+export function parseMafTabixEntry(
+  elt: string,
+  sampleIds: Set<string> | undefined,
+): ParsedMafTabixEntry | undefined {
+  const [assemblyAndChr, startStr, , strandStr, srcSizeStr, seq] =
+    elt.split(':')
+  if (!assemblyAndChr || startStr === undefined || !seq) {
+    return undefined
+  }
+  const parsed = sampleIds
+    ? matchSampleId(assemblyAndChr, sampleIds)
+    : parseAssemblyAndChr(assemblyAndChr)
+  if (!parsed?.assemblyName) {
+    return undefined
+  }
+  return {
+    assemblyName: parsed.assemblyName,
+    chr: parsed.chr,
+    start: parseInt(startStr, 10),
+    strand: strandStr === '-' ? -1 : 1,
+    srcSize: srcSizeStr === undefined ? undefined : parseInt(srcSizeStr, 10),
+    seq,
+  }
+}
+
 /**
  * Parses assembly name and chromosome from a combined string in BigMaf format.
  *
