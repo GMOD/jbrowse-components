@@ -39,8 +39,7 @@ export async function navToMultiLevelBreak({
   const { refName, pos, mateRefName, matePos } = coverage
 
   let view = session.views.find(f => f.id === stableViewId) as
-    | BreakpointSplitView
-    | undefined
+    BreakpointSplitView | undefined
   if (!view) {
     view = session.addView('BreakpointSplitView', {
       id: stableViewId,

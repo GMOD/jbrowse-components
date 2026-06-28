@@ -13,11 +13,7 @@
  * still-mounted canvas, so they share the `ready` branch's root.
  */
 export type DisplayPhase =
-  | 'renderError'
-  | 'tooLarge'
-  | 'error'
-  | 'loading'
-  | 'ready'
+  'renderError' | 'tooLarge' | 'error' | 'loading' | 'ready'
 
 export interface DisplayPhaseInputs {
   renderError: unknown

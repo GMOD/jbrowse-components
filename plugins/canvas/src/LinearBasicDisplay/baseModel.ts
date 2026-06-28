@@ -232,8 +232,7 @@ export default function baseStateModelFactory(
          * #volatile
          */
         contextMenuInfo: undefined as
-          | { item: FlatbushItem; displayedRegionIndex: number }
-          | undefined,
+          { item: FlatbushItem; displayedRegionIndex: number } | undefined,
         /**
          * #volatile
          */

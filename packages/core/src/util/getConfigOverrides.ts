@@ -22,8 +22,7 @@ export function getEffectiveTrackConfig(
   const conf: Record<string, unknown> = getSnapshot(trackConfig)
 
   const trackDisplays = (trackConfig as { displays?: unknown }).displays as
-    | ({ type?: string } & Record<string, unknown>)[]
-    | undefined
+    ({ type?: string } & Record<string, unknown>)[] | undefined
   if (!Array.isArray(trackDisplays)) {
     return conf
   }

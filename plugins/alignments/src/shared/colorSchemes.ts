@@ -7,8 +7,7 @@ export type ColorGroup = 'basic' | 'pairedEnd'
 // 'special' — driven by its own dialog/submenu (tag, modifications, methylation,
 // bisulfite) or a legacy alias never shown on its own ('stranded').
 export type ColorSchemeMenu =
-  | { kind: 'radio'; label: string; group: ColorGroup }
-  | { kind: 'special' }
+  { kind: 'radio'; label: string; group: ColorGroup } | { kind: 'special' }
 
 export interface ColorSchemeDef {
   type: ColorSchemeType

@@ -50,8 +50,7 @@ function VariantSvgBody({
   opts: ExportSvgDisplayOptions | undefined
 }) {
   const cellData = model.cellData as
-    | { perRegionCellData: Record<number, VariantCellData> }
-    | undefined
+    { perRegionCellData: Record<number, VariantCellData> } | undefined
   if (!cellData) {
     return null
   }

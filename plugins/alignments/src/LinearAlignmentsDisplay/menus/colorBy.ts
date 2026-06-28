@@ -203,16 +203,14 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
             setByType(model, false)
           },
         },
-        ...types.map(
-          (k): MenuItem => ({
-            label: modName(k),
-            type: 'radio',
-            checked: isModType && !twoColor && onlyKey(k),
-            onClick: () => {
-              setByType(model, false, k)
-            },
-          }),
-        ),
+        ...types.map((k): MenuItem => ({
+          label: modName(k),
+          type: 'radio',
+          checked: isModType && !twoColor && onlyKey(k),
+          onClick: () => {
+            setByType(model, false, k)
+          },
+        })),
       ]
     : [
         {
@@ -238,16 +236,14 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
       },
     },
     ...(multiType
-      ? types.map(
-          (k): MenuItem => ({
-            label: `Two-color: ${modName(k)}`,
-            type: 'radio',
-            checked: isModType && twoColor && onlyKey(k),
-            onClick: () => {
-              setByType(model, true, k)
-            },
-          }),
-        )
+      ? types.map((k): MenuItem => ({
+          label: `Two-color: ${modName(k)}`,
+          type: 'radio',
+          checked: isModType && twoColor && onlyKey(k),
+          onClick: () => {
+            setByType(model, true, k)
+          },
+        }))
       : []),
   ]
 

@@ -326,8 +326,7 @@ type filterStats = FilterStats | undefined
 
 ```ts
 type recombination =
-  | { values: Float32Array<ArrayBufferLike>; positions: number[] }
-  | undefined
+  { values: Float32Array<ArrayBufferLike>; positions: number[] } | undefined
 ```
 
 #### getter: isPrecomputedLD

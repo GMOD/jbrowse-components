@@ -10,8 +10,7 @@ import type { SessionWithWidgets } from '@jbrowse/core/util'
 export function getBookmarkHighlights(model: IExtendedLGV) {
   const session = getSession(model) as SessionWithWidgets
   const bookmarkWidget = session.widgets.get('GridBookmark') as
-    | GridBookmarkModel
-    | undefined
+    GridBookmarkModel | undefined
   const viewAssemblies = new Set(model.assemblyNames)
   const bookmarks =
     model.bookmarkHighlightsVisible && bookmarkWidget

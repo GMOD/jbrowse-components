@@ -105,16 +105,14 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
           {
             label: 'Normalization',
             type: 'subMenu' as const,
-            subMenu: self.availableNormalizations.map(
-              (norm): MenuItem => ({
-                label: norm,
-                type: 'radio',
-                checked: norm === self.activeNormalization,
-                onClick: () => {
-                  self.setActiveNormalization(norm)
-                },
-              }),
-            ),
+            subMenu: self.availableNormalizations.map((norm): MenuItem => ({
+              label: norm,
+              type: 'radio',
+              checked: norm === self.activeNormalization,
+              onClick: () => {
+                self.setActiveNormalization(norm)
+              },
+            })),
           },
         ]
       : []),

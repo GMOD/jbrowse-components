@@ -15,8 +15,7 @@ const DotplotHighlight = observer(function DotplotHighlight({
   const session = getSession(model) as SessionWithWidgets
   const { bookmarkHighlightsVisible } = model
   const bookmarkWidget = session.widgets.get('GridBookmark') as
-    | GridBookmarkModel
-    | undefined
+    GridBookmarkModel | undefined
 
   // unlike the LGV overlays there is no assembly filter: a dotplot draws two
   // assemblies and DotplotHighlightBands resolves which axis a region maps to

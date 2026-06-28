@@ -36,7 +36,7 @@ export function filterSessionInPlace(node: IAnyStateTreeNode, type: IAnyType) {
     const array = node as MSTArray
     const childType = getChildType(node)
     const isRef = isReferenceType(childType)
-    for (let i = 0; i < array.length; ) {
+    for (let i = 0; i < array.length;) {
       if (!walkChildOrDrop(() => array[i], childType, isRef)) {
         array.splice(i, 1)
       } else {

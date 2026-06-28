@@ -108,7 +108,7 @@
         else {
           t.innerHTML = ''
           let s = 0
-          for (; document.querySelector(`#pfmod-input-${s}`); ) s += 1
+          for (; document.querySelector(`#pfmod-input-${s}`);) s += 1
           let n = new r('form').class('pagefind-modular-input-wrapper').attrs({
             role: 'search',
             'aria-label': 'Search this site',
@@ -252,7 +252,7 @@
         this.result = await this.rawResult.data()
         let e = this.resultFn(this.result, this.showImages),
           t = g(e)
-        for (; this.placeholderNodes.length > 1; )
+        for (; this.placeholderNodes.length > 1;)
           this.placeholderNodes.pop().remove()
         this.placeholderNodes[0].replaceWith(...t)
       }
@@ -611,7 +611,7 @@
     }
     async __load__() {
       if (this.__initializing__) {
-        for (; !this.__pagefind__; ) await P(50)
+        for (; !this.__pagefind__;) await P(50)
         return
       }
       if (((this.__initializing__ = !0), !this.__pagefind__)) {

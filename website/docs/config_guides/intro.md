@@ -8,9 +8,7 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
 
 ```json
 {
-  "configuration": {
-    /* global configs here */
-  },
+  "configuration": {/* global configs here */},
   "assemblies": [
     /* list of assembly configurations, e.g. the genomes being viewed */
   ],
@@ -18,12 +16,8 @@ The JBrowse 2 config file (typically `config.json`) is structured as follows:
     /* array of tracks being loaded; each references the assembly or assemblies
     it belongs to */
   ],
-  "aggregateTextSearchAdapters": [
-    /* optional array of text search adapters */
-  ],
-  "defaultSession": {
-    /* optional default session */
-  }
+  "aggregateTextSearchAdapters": [/* optional array of text search adapters */],
+  "defaultSession": {/* optional default session */}
 }
 ```
 

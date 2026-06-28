@@ -261,12 +261,10 @@ contextMenuFeature: undefined as Feature | undefined
 ```ts
 // type signature
 type contextMenuInfo =
-  | { item: FlatbushItem; displayedRegionIndex: number }
-  | undefined
+  { item: FlatbushItem; displayedRegionIndex: number } | undefined
 // code
 contextMenuInfo: undefined as
-  | { item: FlatbushItem; displayedRegionIndex: number }
-  | undefined
+  { item: FlatbushItem; displayedRegionIndex: number } | undefined
 ```
 
 #### volatile: userFeatureDensityLimit

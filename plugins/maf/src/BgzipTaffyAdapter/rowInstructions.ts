@@ -41,11 +41,7 @@ interface RowGapSubstring {
   gapSubstring: string
 }
 export type RowInstruction =
-  | RowInsert
-  | RowDelete
-  | RowGap
-  | RowGapSubstring
-  | RowSubstitute
+  RowInsert | RowDelete | RowGap | RowGapSubstring | RowSubstitute
 
 // Faithfully replicates change_s_coordinates_to_i from taffy/impl/tai.c
 // When starting from an indexed position:
@@ -80,7 +76,7 @@ export function parseRowInstructions(meta: string) {
   const ret = meta.split(' ')
   const rows: RowInstruction[] = []
 
-  for (let i = 0; i < ret.length; ) {
+  for (let i = 0; i < ret.length;) {
     const type = ret[i++]
     if (type === 'i' || type === 's') {
       rows.push({

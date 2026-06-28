@@ -2195,7 +2195,7 @@
         ? ze(l)
         : ((e[Gt.includes(r) ? 'regular' : 'irregular'] = t), e)
     }
-    for (; b(r.charCodeAt(i)) && i < 9; ) i++
+    for (; b(r.charCodeAt(i)) && i < 9;) i++
     if (i > 1 && i < 9) {
       if (((e.language = t.slice(0, i)), i < 4)) {
         let l = 0
@@ -2240,7 +2240,7 @@
       ) {
         let l = i + 1,
           o = l
-        for (; k(r.charCodeAt(o)); ) {
+        for (; k(r.charCodeAt(o));) {
           if (o - l > 7)
             return a(o, 1, 'Too long variant, expected at most 8 characters')
           o++
@@ -2268,7 +2268,7 @@
           k(r.charCodeAt(l + 2));
         ) {
           let c = l + 1
-          for (l = c + 2, o++; k(r.charCodeAt(l)); ) {
+          for (l = c + 2, o++; k(r.charCodeAt(l));) {
             if (l - c > 7)
               return a(
                 l,
@@ -2297,9 +2297,9 @@
     ) {
       i = i ? i + 2 : 1
       let l = i
-      for (; r.charCodeAt(l) === 45 && k(r.charCodeAt(l + 1)); ) {
+      for (; r.charCodeAt(l) === 45 && k(r.charCodeAt(l + 1));) {
         let o = i + 1
-        for (l = o; k(r.charCodeAt(l)); ) {
+        for (l = o; k(r.charCodeAt(l));) {
           if (l - o > 7)
             return a(
               l,
@@ -3058,7 +3058,7 @@
         },
         a = () => {
           let u = ''
-          for (; e < s.length && /\w/.test(s[e]); ) u += s[e++]
+          for (; e < s.length && /\w/.test(s[e]);) u += s[e++]
           return u
         },
         l = () => {
@@ -3069,7 +3069,7 @@
           if (_ === '"' || _ === "'") {
             let p = s[e++],
               g = ''
-            for (; e < s.length && s[e] !== p; ) {
+            for (; e < s.length && s[e] !== p;) {
               if (s[e] === '\\' && e + 1 < s.length) {
                 e++
                 let E = s[e]
@@ -3109,22 +3109,22 @@
             else if ((t(), s[e] === '(')) {
               e++
               let g = []
-              for (t(); e < s.length && s[e] !== ')' && s[e] !== '}'; )
+              for (t(); e < s.length && s[e] !== ')' && s[e] !== '}';)
                 (g.push(l()), t(), s[e] === ',' && (e++, t()))
               ;(s[e] === ')' && e++, (d = { t: 'C', fn: p, args: g }))
             } else {
               let g = [p]
-              for (; s[e] === '.'; ) (e++, g.push(a()))
+              for (; s[e] === '.';) (e++, g.push(a()))
               d = { t: 'V', path: g }
             }
           }
-          for (t(); s[e] === '|'; ) {
+          for (t(); s[e] === '|';) {
             ;(e++, t())
             let p = a()
             t()
             let g = []
             if (s[e] === '(') {
-              for (e++, t(); e < s.length && s[e] !== ')' && s[e] !== '}'; )
+              for (e++, t(); e < s.length && s[e] !== ')' && s[e] !== '}';)
                 (g.push(l()), t(), s[e] === ',' && (e++, t()))
               s[e] === ')' && e++
             }
@@ -3134,7 +3134,7 @@
         },
         o = (u = []) => {
           let d = []
-          e: for (; e < s.length; ) {
+          e: for (; e < s.length;) {
             for (let p of u) if (r(p)) break e
             if (s[e] === '\\' && r('\\{{')) {
               ;(e++, d.push({ t: 'T', val: '{{' }), (e += 2))
@@ -3144,7 +3144,7 @@
               if (((e += 2), t(), s[e] === '+')) {
                 ;(e++, t())
                 let g = l()
-                for (t(), i('+'), t(); e < s.length && !r('}}'); ) e++
+                for (t(), i('+'), t(); e < s.length && !r('}}');) e++
                 ;(i('}}'), d.push({ t: 'I', expr: g, raw: 1 }))
                 continue
               }
@@ -3220,12 +3220,12 @@
                 continue
               }
               let p = l()
-              for (t(); e < s.length && !r('}}'); ) e++
+              for (t(); e < s.length && !r('}}');) e++
               ;(i('}}'), d.push({ t: 'I', expr: p }))
               continue
             }
             let _ = ''
-            for (; e < s.length; ) {
+            for (; e < s.length;) {
               for (let p of u)
                 if (r(p)) {
                   _ && d.push({ t: 'T', val: _ })
@@ -3726,7 +3726,7 @@
                 linkTarget: this.linkTarget,
               }),
               e = ss(s)
-            for (rs(e, this.index); this.placeholderNodes.length > 1; ) {
+            for (rs(e, this.index); this.placeholderNodes.length > 1;) {
               let r = this.placeholderNodes.pop()
               r instanceof Element && r.remove()
             }
@@ -3983,7 +3983,7 @@
       resultIndexForNode(e) {
         if (!this.containerEl) return -1
         let t = e
-        for (; t && t.parentNode !== this.containerEl; ) t = t.parentNode
+        for (; t && t.parentNode !== this.containerEl;) t = t.parentNode
         if (!t || !(t instanceof Element)) return -1
         let r = t.getAttribute('data-pf-result-index')
         if (r === null) return -1
@@ -5316,7 +5316,7 @@
     init() {
       this.classList.add('pf-modal-header')
       let e = document.createElement('div')
-      for (e.className = 'pf-modal-header-content'; this.firstChild; )
+      for (e.className = 'pf-modal-header-content'; this.firstChild;)
         e.appendChild(this.firstChild)
       ;((this.closeBtn = document.createElement('button')),
         (this.closeBtn.type = 'button'),
@@ -6007,7 +6007,7 @@
         let e = this.pendingNavigation > 0 ? 1 : -1,
           t = this.activeIndex,
           r = this.activeOptionOffset
-        for (; this.pendingNavigation !== 0; )
+        for (; this.pendingNavigation !== 0;)
           if (e > 0) {
             let i = this.results[t]
             if (i?.data) {

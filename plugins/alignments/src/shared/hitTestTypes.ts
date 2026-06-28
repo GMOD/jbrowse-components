@@ -7,12 +7,7 @@
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 
 export type CigarItemType =
-  | 'mismatch'
-  | 'insertion'
-  | 'deletion'
-  | 'skip'
-  | 'softclip'
-  | 'hardclip'
+  'mismatch' | 'insertion' | 'deletion' | 'skip' | 'softclip' | 'hardclip'
 
 export interface CigarHitResult {
   type: CigarItemType

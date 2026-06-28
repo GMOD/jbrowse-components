@@ -93,8 +93,7 @@ export interface JBrowsePlugin {
 }
 
 export type DialogComponentType =
-  | React.LazyExoticComponent<React.FC<any>>
-  | React.FC<any>
+  React.LazyExoticComponent<React.FC<any>> | React.FC<any>
 
 /**
  * the slice of a view that track-action menu items need: opening a track, and
@@ -623,10 +622,7 @@ export function isAuthNeededException(
 export interface BlobLocation extends SnapshotIn<typeof MUBlobLocation> {}
 
 export type FileLocation =
-  | LocalPathLocation
-  | UriLocation
-  | BlobLocation
-  | FileHandleLocation
+  LocalPathLocation | UriLocation | BlobLocation | FileHandleLocation
 
 // These types are slightly different than the MST models representing a
 // location because a blob cannot be stored in a MST, so this is the

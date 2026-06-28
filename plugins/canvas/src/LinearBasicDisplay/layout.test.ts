@@ -706,14 +706,11 @@ test('stable seeding reduces churn across a zoom sweep without going sparse or o
   const zoomLevels = [16, 8, 4, 2, 1]
 
   const memo = createIncrementalLayout()
-  const seeded = zoomLevels.map(
-    bpPerPx => memo(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(0)!,
+  const seeded = zoomLevels.map(bpPerPx =>
+    memo(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(0)!,
   )
-  const fresh = zoomLevels.map(
-    bpPerPx =>
-      computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(
-        0,
-      )!,
+  const fresh = zoomLevels.map(bpPerPx =>
+    computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, bpPerPx)).get(0)!,
   )
 
   const sum = (xs: number[]) => xs.reduce((a, b) => a + b, 0)

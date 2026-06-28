@@ -66,8 +66,7 @@ export default function ConfigOverrideMixin<
   EXTRA extends string = never,
 >(
   configKeys: readonly (
-    | ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>
-    | EXTRA
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONF>> | EXTRA
   )[] = [],
 ) {
   type SlotName = ConfigurationSlotName<ConfigurationSchemaForModel<CONF>>

@@ -165,8 +165,7 @@ const SessionLoader = types
      */
     get extendDefaultSession() {
       const config = self.configSnapshot?.configuration as
-        | { extendDefaultSessionWithUrlParams?: boolean }
-        | undefined
+        { extendDefaultSessionWithUrlParams?: boolean } | undefined
       return !!config?.extendDefaultSessionWithUrlParams
     },
     /**

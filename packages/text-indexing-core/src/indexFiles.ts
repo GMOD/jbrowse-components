@@ -22,9 +22,7 @@ function getIndexingLocation(track: Track) {
   // sits directly on the adapter
   const loc = key
     ? ((adapter?.[key] ?? adapter) as
-        | UriLocation
-        | LocalPathLocation
-        | undefined)
+        UriLocation | LocalPathLocation | undefined)
     : undefined
   return loc?.locationType === 'LocalPathLocation' ? loc.localPath : loc?.uri
 }

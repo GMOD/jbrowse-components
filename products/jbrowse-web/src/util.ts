@@ -9,8 +9,7 @@ export function readConf(
   def: string,
 ) {
   const configuration = root?.configuration as
-    | Record<string, unknown>
-    | undefined
+    Record<string, unknown> | undefined
   return configuration?.[attr] ?? def
 }
 

@@ -601,8 +601,7 @@ type hierarchy = PositionedHierarchyNode<NewickNode> | undefined
 
 ```ts
 type spatialIndex =
-  | { index: Flatbush; nodes: ClusterHierarchyNode[] }
-  | undefined
+  { index: Flatbush; nodes: ClusterHierarchyNode[] } | undefined
 ```
 
 #### getter: colorPalette

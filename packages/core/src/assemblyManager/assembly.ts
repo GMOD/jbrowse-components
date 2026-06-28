@@ -267,8 +267,7 @@ export default function assemblyFactory(
          * These may differ when refNameAliases with override:true remap names.
          */
         canonicalToSeqAdapterRefNames: undefined as
-          | Record<string, string>
-          | undefined,
+          Record<string, string> | undefined,
 
         /**
          * #volatile

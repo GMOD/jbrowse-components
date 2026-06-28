@@ -61,8 +61,7 @@ export default class VariantsPlugin extends Plugin {
     // Add jexl function to calculate MAF for a feature
     jexl.addFunction('maf', (feature: Feature) => {
       const genotypes = feature.get('genotypes') as
-        | Record<string, string>
-        | undefined
+        Record<string, string> | undefined
       if (!genotypes) {
         return 0
       }

@@ -79,8 +79,7 @@ function memberMatches(
     )
   } else if (isConfigurationSchemaType(slotSchema)) {
     const slot = schema[slotName] as
-      | AnyConfigurationModel
-      | AnyConfigurationModel[]
+      AnyConfigurationModel | AnyConfigurationModel[]
     return (
       slotName.toLowerCase().includes(query) ||
       (Array.isArray(slot)

@@ -25,12 +25,8 @@ import {
 
 function View() {
   const state = createViewState({
-    assembly: {
-      /* assembly */
-    },
-    tracks: [
-      /* tracks */
-    ],
+    assembly: {/* assembly */},
+    tracks: [/* tracks */],
   })
   return <JBrowseCircularGenomeView viewState={state} />
 }

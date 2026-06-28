@@ -269,8 +269,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             .map(feature => {
               const clipLengthAtStartOfRead =
                 (feature.get('clipLengthAtStartOfRead') as
-                  | number
-                  | undefined) ?? 0
+                  number | undefined) ?? 0
               for (const [level, track] of tracks.entries()) {
                 const layout = calc(track, feature)
                 if (layout) {

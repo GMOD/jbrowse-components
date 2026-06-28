@@ -52,8 +52,7 @@ type gitCommit = string | undefined
 
 ```ts
 type history =
-  | { canUndo: boolean; canRedo: boolean; undo(): void; redo(): void }
-  | undefined
+  { canUndo: boolean; canRedo: boolean; undo(): void; redo(): void } | undefined
 ```
 
 #### getter: assemblyManager

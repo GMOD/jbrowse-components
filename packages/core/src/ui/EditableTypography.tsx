@@ -11,10 +11,7 @@ import type { TypographyProps } from '@mui/material'
 type Variant = TypographyProps['variant']
 
 type EditableTypographyClassKey =
-  | 'input'
-  | 'inputBase'
-  | 'inputRoot'
-  | 'inputFocused'
+  'input' | 'inputBase' | 'inputRoot' | 'inputFocused'
 
 const useStyles = makeStyles()(theme => ({
   input: {},

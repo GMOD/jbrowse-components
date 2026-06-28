@@ -14,9 +14,7 @@ const state = createViewState({
     assemblies: [
       {
         name: 'volvox',
-        sequence: {
-          /* ... */
-        },
+        sequence: {/* ... */},
       },
     ],
     tracks: [{ trackId: 'my_track', type: 'AlignmentsTrack' /* ... */ }],

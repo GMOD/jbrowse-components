@@ -793,8 +793,7 @@ and polygon
 
 ```ts
 type overviewContentBlocksPxSpan =
-  | { leftPx: number; rightPx: number }
-  | undefined
+  { leftPx: number; rightPx: number } | undefined
 ```
 
 #### getter: scalebarRegionEndPx

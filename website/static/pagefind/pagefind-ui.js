@@ -197,21 +197,21 @@
     let l = te
     do {
       try {
-        for (; ce < se.length; ) {
+        for (; ce < se.length;) {
           let e = se[ce]
           ;(ce++, j(e), aa(e.$$))
         }
       } catch (e) {
         throw ((se.length = 0), (ce = 0), e)
       }
-      for (j(null), se.length = 0, ce = 0; Ce.length; ) Ce.pop()()
+      for (j(null), se.length = 0, ce = 0; Ce.length;) Ce.pop()()
       for (let e = 0; e < ue.length; e += 1) {
         let t = ue[e]
         Zt.has(t) || (Zt.add(t), t())
       }
       ue.length = 0
     } while (se.length)
-    for (; Gt.length; ) Gt.pop()()
+    for (; Gt.length;) Gt.pop()()
     ;((Nt = !1), Zt.clear(), j(l))
   }
   function aa(l) {
@@ -264,12 +264,12 @@
       d = r.length,
       o = c,
       I = {}
-    for (; o--; ) I[l[o].key] = o
+    for (; o--;) I[l[o].key] = o
     let m = [],
       f = new Map(),
       p = new Map(),
       U = []
-    for (o = d; o--; ) {
+    for (o = d; o--;) {
       let N = A(a, r, o),
         S = t(N),
         E = i.get(S)
@@ -282,7 +282,7 @@
     function J(N) {
       ;(k(N, 1), N.m(n, u), i.set(N.key, N), (u = N.first), d--)
     }
-    for (; c && d; ) {
+    for (; c && d;) {
       let N = m[d - 1],
         S = l[c - 1],
         E = N.key,
@@ -299,11 +299,11 @@
                 : (y.add(v), c--)
           : (g(S, i), c--)
     }
-    for (; c--; ) {
+    for (; c--;) {
       let N = l[c]
       f.has(N.key) || g(N, i)
     }
-    for (; d; ) J(m[d - 1])
+    for (; d;) J(m[d - 1])
     return (H(U), m)
   }
   var ra = [
@@ -652,7 +652,7 @@
         ? Qt(n)
         : ((t[jl.includes(a) ? 'regular' : 'irregular'] = s), t)
     }
-    for (; T(a.charCodeAt(r)) && r < 9; ) r++
+    for (; T(a.charCodeAt(r)) && r < 9;) r++
     if (r > 1 && r < 9) {
       if (((t.language = s.slice(0, r)), r < 4)) {
         let n = 0
@@ -697,7 +697,7 @@
       ) {
         let n = r + 1,
           g = n
-        for (; P(a.charCodeAt(g)); ) {
+        for (; P(a.charCodeAt(g));) {
           if (g - n > 7)
             return i(g, 1, 'Too long variant, expected at most 8 characters')
           g++
@@ -725,7 +725,7 @@
           P(a.charCodeAt(n + 2));
         ) {
           let C = n + 1
-          for (n = C + 2, g++; P(a.charCodeAt(n)); ) {
+          for (n = C + 2, g++; P(a.charCodeAt(n));) {
             if (n - C > 7)
               return i(
                 n,
@@ -754,9 +754,9 @@
     ) {
       r = r ? r + 2 : 1
       let n = r
-      for (; a.charCodeAt(n) === 45 && P(a.charCodeAt(n + 1)); ) {
+      for (; a.charCodeAt(n) === 45 && P(a.charCodeAt(n + 1));) {
         let g = r + 1
-        for (n = g; P(a.charCodeAt(n)); ) {
+        for (n = g; P(a.charCodeAt(n));) {
           if (n - g > 7)
             return i(
               n,
@@ -4631,7 +4631,7 @@
           Ts())
       },
       Rl = async () => {
-        for (; !E; ) (Ll(), await new Promise(Q => setTimeout(Q, 50)))
+        for (; !E;) (Ll(), await new Promise(Q => setTimeout(Q, 50)))
       },
       Ds = async (Q, X) => {
         ;(t(16, (Nl = Q || '')),

@@ -306,12 +306,10 @@ sourcesVolatile: undefined as Source[] | undefined
 ```ts
 // type signature
 type hoveredGenotype =
-  | (Record<string, unknown> & { genotype: string; name: string })
-  | undefined
+  (Record<string, unknown> & { genotype: string; name: string }) | undefined
 // code
 hoveredGenotype: undefined as
-  | (Record<string, unknown> & { genotype: string; name: string })
-  | undefined
+  (Record<string, unknown> & { genotype: string; name: string }) | undefined
 ```
 
 #### volatile: cellData
@@ -579,8 +577,7 @@ type hierarchy = PositionedHierarchyNode<NewickNode> | undefined
 
 ```ts
 type spatialIndex =
-  | { index: Flatbush; nodes: ClusterHierarchyNode[] }
-  | undefined
+  { index: Flatbush; nodes: ClusterHierarchyNode[] } | undefined
 ```
 
 #### getter: hoveredTooltipSource
@@ -742,8 +739,7 @@ type setRowHeight = (arg: number) => void
 ```ts
 type setHoveredGenotype = (
   arg?:
-    | (Record<string, unknown> & { genotype: string; name: string })
-    | undefined,
+    (Record<string, unknown> & { genotype: string; name: string }) | undefined,
 ) => void
 ```
 

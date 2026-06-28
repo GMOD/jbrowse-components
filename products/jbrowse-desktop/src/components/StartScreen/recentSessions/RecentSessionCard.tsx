@@ -77,8 +77,7 @@ function RecentSessionCard({
     ['loadThumbnail', path],
     async () =>
       ((await ipcRenderer.invoke('loadThumbnail', path)) as
-        | string
-        | undefined) ?? defaultSessionScreenshot,
+        string | undefined) ?? defaultSessionScreenshot,
     {
       onError: e => {
         console.error(e)

@@ -15,11 +15,7 @@ import { findAndUpdateOrAdd } from '../shared/config-operations.ts'
 import type { Assembly, Config, Sequence } from '../../base.ts'
 
 export type SequenceType =
-  | 'indexedFasta'
-  | 'bgzipFasta'
-  | 'twoBit'
-  | 'chromSizes'
-  | 'custom'
+  'indexedFasta' | 'bgzipFasta' | 'twoBit' | 'chromSizes' | 'custom'
 
 const sequenceTypes = new Set<SequenceType>([
   'indexedFasta',

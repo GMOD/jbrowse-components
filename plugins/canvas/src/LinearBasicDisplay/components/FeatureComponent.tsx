@@ -98,8 +98,7 @@ export interface LinearBasicDisplayModel {
     displayedRegionIndex: number,
   ) => void
   contextMenuInfo:
-    | { item: FlatbushItem; displayedRegionIndex: number }
-    | undefined
+    { item: FlatbushItem; displayedRegionIndex: number } | undefined
   setContextMenuInfo: (info?: {
     item: FlatbushItem
     displayedRegionIndex: number

@@ -676,12 +676,10 @@ coverage.
 ```ts
 // type signature
 type hoverCoverageBand =
-  | { topOffset: number; coverageHeight: number }
-  | undefined
+  { topOffset: number; coverageHeight: number } | undefined
 // code
 hoverCoverageBand: undefined as
-  | { topOffset: number; coverageHeight: number }
-  | undefined
+  { topOffset: number; coverageHeight: number } | undefined
 ```
 
 </details>
@@ -772,8 +770,7 @@ type TooltipComponent = LazyExoticComponent<
     model: {
       mouseoverExtraInformation: TooltipPayload | undefined
       hoverCoverageBand:
-        | { topOffset: number; coverageHeight: number }
-        | undefined
+        { topOffset: number; coverageHeight: number } | undefined
     }
     offsetMouseCoord?: Coord | undefined
     clientMouseCoord: Coord

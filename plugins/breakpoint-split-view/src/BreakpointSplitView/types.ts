@@ -21,8 +21,7 @@ export interface BreakpointSplitViewInitView {
   // a track id, or a declarative {trackId, displaySnapshot} so per-view display
   // settings (e.g. a shorter alignments height) can be specified
   tracks?: (
-    | string
-    | { trackId: string; displaySnapshot?: Record<string, unknown> }
+    string | { trackId: string; displaySnapshot?: Record<string, unknown> }
   )[]
 }
 

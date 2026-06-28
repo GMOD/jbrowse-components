@@ -45,8 +45,7 @@ export function getTrackAssemblyNames(
 
 export function getConfAssemblyNames(conf: AnyConfigurationModel) {
   const trackAssemblyNames = readConfObject(conf, 'assemblyNames') as
-    | string[]
-    | undefined
+    string[] | undefined
   if (!trackAssemblyNames) {
     const parent = getParent<AnyConfigurationModel & { sequence?: unknown }>(
       conf,

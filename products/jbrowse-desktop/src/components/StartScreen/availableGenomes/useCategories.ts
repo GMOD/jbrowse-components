@@ -11,8 +11,7 @@ export default function useCategories() {
 
   return {
     categories: data as
-      | { categories: { key: string; title: string; url: string }[] }
-      | undefined,
+      { categories: { key: string; title: string; url: string }[] } | undefined,
     isLoading,
     error,
   }

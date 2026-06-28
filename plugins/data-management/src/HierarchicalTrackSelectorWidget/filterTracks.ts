@@ -30,8 +30,7 @@ export function filterTracks(
     )
     return tracks.filter(c => {
       const trackConfigAssemblyNames = readConfObject(c, 'assemblyNames') as
-        | string[]
-        | undefined
+        string[] | undefined
       const trackCanonicalAssemblyNames = trackConfigAssemblyNames
         ?.map(name => assemblyManager.getCanonicalAssemblyName(name))
         .filter(notEmpty)

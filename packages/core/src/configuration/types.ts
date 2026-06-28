@@ -41,13 +41,13 @@ export type ConfigurationSlotName<SCHEMA> = SCHEMA extends undefined
   ? never
   : SCHEMA extends ConfigurationSchemaType<infer D, any>
     ? // this provides the ability to type check names in the config readConfObject usage
-        // it is not commonly used but retained for now with this lint ignore
+      // it is not commonly used but retained for now with this lint ignore
 
-        | (keyof D & string)
-        | GetExplicitIdentifier<SCHEMA>
-        | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
-            ? ConfigurationSlotName<GetBase<SCHEMA>>
-            : never)
+      | (keyof D & string)
+      | GetExplicitIdentifier<SCHEMA>
+      | (GetBase<SCHEMA> extends ConfigurationSchemaType<any, any>
+          ? ConfigurationSlotName<GetBase<SCHEMA>>
+          : never)
     : never
 
 // Value type of a single slot. A `stringEnum` slot carries its precise literal
@@ -103,5 +103,4 @@ export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
 
 /** any configuration model, or snapshot thereof */
 export type AnyConfiguration =
-  | AnyConfigurationModel
-  | SnapshotOut<AnyConfigurationModel>
+  AnyConfigurationModel | SnapshotOut<AnyConfigurationModel>

@@ -55,8 +55,7 @@ function evalConfigCallback(
 // types.map of sub-schemas (e.g. an assembly's per-key configs) whose entries
 // are reachable via `.get()` rather than property access.
 type ReadableConfig =
-  | AnyConfigurationModel
-  | IMSTMap<AnyConfigurationSchemaType>
+  AnyConfigurationModel | IMSTMap<AnyConfigurationSchemaType>
 
 function isConfigMap(
   confObject: ReadableConfig,
@@ -113,8 +112,8 @@ function readSlot(
 export function readConfObject<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
-    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   confObject: CONFMODEL,
   slotPath?: SLOT,
@@ -211,8 +210,8 @@ export function getConfSnapshot(confObject: AnyConfigurationModel) {
 export function getConf<
   CONFMODEL extends AnyConfigurationModel,
   SLOT extends
-    | ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>
-    | string[] = ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>> | string[] =
+    ConfigurationSlotName<ConfigurationSchemaForModel<CONFMODEL>>,
 >(
   model: { configuration: CONFMODEL },
   slotPath?: SLOT,

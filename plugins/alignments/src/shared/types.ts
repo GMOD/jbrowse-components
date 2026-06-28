@@ -8,9 +8,7 @@ export interface ModificationTypeWithColor {
 }
 
 export type ArcColorByType =
-  | 'insertSizeAndOrientation'
-  | 'insertSize'
-  | 'orientation'
+  'insertSizeAndOrientation' | 'insertSize' | 'orientation'
 
 // Minimum modification-call probability (%) shown by default. Stored threshold
 // is omitted at this value so default sessions don't carry a redundant field.

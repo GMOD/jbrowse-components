@@ -177,8 +177,7 @@ type rows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<
 
 ```ts
 type filteredNonMetadataKeys =
-  | string[]
-  | readonly ['category', 'adapter', 'description']
+  string[] | readonly ['category', 'adapter', 'description']
 ```
 
 #### getter: metadataKeys
