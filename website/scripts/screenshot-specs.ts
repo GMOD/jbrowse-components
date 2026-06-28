@@ -6264,40 +6264,6 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
   {
-    // Codon translation on the 26-way alignment, zoomed to codon level: each
-    // species' coding sequence translated in the reference reading frame, one
-    // amino acid centered per codon. Residues differing from the reference
-    // (nonsynonymous) are emphasized over the muted conserved ones, with the
-    // nucleotide SNP cells still visible beneath. Enabled via showTranslation
-    // on the same frames-configured config.
-    mode: 'url',
-    name: 'maf_codon_translation',
-    url: lgvSession(CE_MAF_FRAMES, {
-      assembly: 'ce11',
-      loc: 'chrI:2,999,200-2,999,370',
-      tracks: [
-        {
-          trackId: 'ce11.26way',
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            rowHeight: 15,
-            showTranslation: true,
-          },
-        },
-      ],
-    }),
-    readyText: 'chrI',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 600,
-    settleMs: 12000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 100 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-  {
     // Codon-view hover tooltip: in the per-species codon translation, hovering a
     // codon cell reads out the species codon + amino acid alongside the reference
     // codon + amino acid and the syn/nonsyn classification, so a specific change
@@ -6399,45 +6365,36 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
   {
-    // Larger, less-fragmented demo: the UCSC hg38 470-way multiz (mammals +
-    // more), codon view over a conserved CDS, filtered to a representative set of
-    // species. Human chromosomes (not scaffolds) read far cleaner than the
-    // nematode multiz. Remote UCSC data, so a generous readyTimeout.
+    // Dense comparative view: the UCSC hg38 470-way multiz (mammals + more), all
+    // ~470 species at once over the GAPDH gene with the per-row identity heatmap
+    // pinned on (red = divergent, blue = conserved). The coding exons light up as
+    // conserved blue bands across the whole phylogeny while the introns stay red
+    // — genome-scale conservation read at a glance. Remote UCSC data, generous
+    // timeout.
     mode: 'url',
-    name: 'maf_470way_codon',
+    name: 'maf_470way',
     url: lgvSession('test_data/hg38_multiz470way.json', {
       assembly: 'hg38',
-      loc: '12:6,536,485-6,536,600',
+      loc: '12:6,534,400-6,538,500',
       tracks: [
         {
           trackId: 'hg38.multiz470way',
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 18,
-            showTranslation: true,
-            subtreeFilter: [
-              'hg38',
-              'HLcalJac4',
-              'rheMac10',
-              'mm10',
-              'canFam4',
-              'felCat9',
-              'monDom5',
-            ],
+            rowHeight: 2,
+            rowIdentityMode: 'heatmap',
+            rowIdentityAutoZoom: false,
           },
         },
       ],
     }),
-    readyText: '6,536,5',
+    readyText: '6,53',
     readyTimeout: 120000,
-    viewportWidth: 1000,
-    viewportHeight: 360,
-    settleMs: 18000,
+    viewportWidth: 1100,
+    viewportHeight: 1180,
+    settleMs: 20000,
     hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 60 } },
-      { type: 'delay', ms: 2000 },
-    ],
+    actions: [{ type: 'delay', ms: 2000 }],
   },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
