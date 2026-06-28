@@ -53,26 +53,13 @@ function groupByCategory(links: SidebarLink[]): SidebarEntry[] {
 
   for (const link of links) {
     const match = /^(.+?)\s*->\s*(.+)$/.exec(link.label)
-    let category: string
-    let label: string
-    if (match && match.length > 2) {
-      category = match[1]!.trim()
-      label = match[2]!.trim()
-    } else {
-      category = 'General'
-      label = link.label
-    }
+    const category = match ? match[1]!.trim() : 'General'
+    const label = match ? match[2]!.trim() : link.label
 
     if (!grouped.has(category)) {
       grouped.set(category, [])
     }
-    const categoryItems = grouped.get(category)
-    if (categoryItems) {
-      categoryItems.push({
-        ...link,
-        label,
-      })
-    }
+    grouped.get(category)!.push({ ...link, label })
   }
 
   return Array.from(grouped.entries())

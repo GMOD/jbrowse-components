@@ -245,40 +245,6 @@ const sidebar = buildSidebar(allDocs, baseUrl)
   }
 
   @media (max-width: 768px) {
-    .docs-layout {
-      flex-direction: column;
-    }
-
-    .sidebar-toggle {
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      width: 100%;
-      padding: 0.6rem 1rem;
-      background: var(--color-surface);
-      border: none;
-      border-bottom: 1px solid var(--color-border);
-      font-size: 0.9rem;
-      font-weight: 600;
-      color: var(--color-sidebar-text);
-      cursor: pointer;
-      text-align: left;
-    }
-
-    .docs-sidebar {
-      display: none;
-      width: 100%;
-      height: auto;
-      max-height: 50vh;
-      position: static;
-      border-right: none;
-      border-bottom: 1px solid var(--color-border);
-      overflow-y: auto;
-    }
-    .docs-sidebar.sidebar-open {
-      display: block;
-    }
-
     .docs-content h1 {
       font-size: 1.5rem;
     }
