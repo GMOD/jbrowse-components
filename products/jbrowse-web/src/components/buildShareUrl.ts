@@ -32,17 +32,24 @@ export async function buildShareUrl(
     snap,
     { shareURL, referer: locationUrl.href },
   )
-  const inline = mode !== 'short'
-  const params = new URLSearchParams(inline ? '' : locationUrl.search)
+  // carry over the page's existing params (e.g. config) from wherever they live
+  // so none are lost when session is relocated, then write them all to one place
+  const params = new URLSearchParams(
+    locationUrl.hash.includes('=')
+      ? locationUrl.hash.slice(1)
+      : locationUrl.search,
+  )
   params.set('session', sessionParam)
   if (password) {
     params.set('password', password)
   }
   const str = params.toString()
-  if (inline) {
-    locationUrl.hash = str
-  } else {
+  if (mode === 'short') {
     locationUrl.search = str
+    locationUrl.hash = ''
+  } else {
+    locationUrl.search = ''
+    locationUrl.hash = str
   }
   return {
     url: locationUrl.href,
