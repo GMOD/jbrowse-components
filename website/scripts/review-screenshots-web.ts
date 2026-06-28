@@ -214,6 +214,7 @@ const PAGE = /* html */ `<!doctype html>
   }
   header h1 { font-size: 16px; margin: 0; }
   header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid #ccc; border-radius: 6px; }
+  header select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; background: #fff; cursor: pointer; }
   header label { font-size: 13px; display: flex; gap: 5px; align-items: center; cursor: pointer; }
   .tabs { display: flex; gap: 6px; }
   .tab {
@@ -273,6 +274,11 @@ const PAGE = /* html */ `<!doctype html>
 <header>
   <h1>Screenshot review</h1>
   <input id="search" type="search" placeholder="filter by name…" />
+  <select id="group" title="Filter by group"><option value="">All groups</option></select>
+  <select id="sortby" title="Sort order">
+    <option value="default">A–Z</option>
+    <option value="recent">Recently reviewed</option>
+  </select>
   <div class="tabs">
     <button class="tab" data-status="needs">Needs review<span class="tabcount" data-count="needs"></span></button>
     <button class="tab" data-status="good">Approved</button>
@@ -285,7 +291,7 @@ const PAGE = /* html */ `<!doctype html>
 <main id="main"></main>
 <script>
 let data = []
-const filters = { status: 'needs', changedOnly: false }
+const filters = { status: 'needs', changedOnly: false, sortBy: 'default', group: '' }
 // Names acted on since the current filter view was entered. They stay visible
 // even once their new verdict no longer matches the filter, so you can still
 // type a reason after clicking Deny in the unreviewed/denied queue.
@@ -295,6 +301,8 @@ const $ = sel => document.querySelector(sel)
 const esc = s => String(s ?? '').replace(/[&<>"]/g, c =>
   ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]))
 const pill = (cls, text) => '<span class="pill ' + cls + '">' + text + '</span>'
+
+const nameGroup = name => name.split('-')[0] ?? name
 
 // Diff vs origin/main, the screenshots a branch review cares about:
 // "new" = added on this branch (not on main); "changed" = on main but the
@@ -311,8 +319,24 @@ function changeFilter(key, value) {
   render()
 }
 
+function buildGroupOptions() {
+  const sel = $('#group')
+  const current = sel.value
+  const groups = [...new Set(data.map(s => nameGroup(s.name)))].sort()
+  sel.innerHTML = '<option value="">All groups</option>' +
+    groups.map(g => '<option value="' + g + '">' + g + '</option>').join('')
+  if (groups.includes(current)) {
+    sel.value = current
+    filters.group = current
+  } else {
+    sel.value = ''
+    filters.group = ''
+  }
+}
+
 async function load() {
   data = await (await fetch('/api/specs')).json()
+  buildGroupOptions()
   render()
 }
 
@@ -429,6 +453,7 @@ function syncControls() {
     b.classList.toggle('active', b.dataset.status === filters.status)
   }
   $('[data-toggle="changed"]').classList.toggle('active', filters.changedOnly)
+  $('#sortby').value = filters.sortBy
 }
 
 function renderCounts() {
@@ -448,20 +473,28 @@ function renderCounts() {
 
 function matchesFilters(s, q) {
   const matchesQuery = !q || s.name.toLowerCase().includes(q)
+  const matchesGroup = !filters.group || nameGroup(s.name) === filters.group
   const matchesStatus =
     filters.status === 'all' ||
     (filters.status === 'needs' && needsReview(s)) ||
     (filters.status === 'good' && s.verdict?.status === 'good' && !s.stale) ||
     (filters.status === 'bad' && s.verdict?.status === 'bad' && !s.stale)
   const matchesChanged = !filters.changedOnly || isNew(s) || isChanged(s)
-  return matchesQuery && (justActed.has(s.name) || (matchesStatus && matchesChanged))
+  return matchesQuery && matchesGroup && (justActed.has(s.name) || (matchesStatus && matchesChanged))
 }
 
 function render() {
   syncControls()
   renderCounts()
   const q = $('#search').value.toLowerCase()
-  const visible = data.filter(s => matchesFilters(s, q))
+  let visible = data.filter(s => matchesFilters(s, q))
+  if (filters.sortBy === 'recent') {
+    visible = [...visible].sort((a, b) => {
+      const ta = a.verdict ? new Date(a.verdict.reviewedAt).getTime() : 0
+      const tb = b.verdict ? new Date(b.verdict.reviewedAt).getTime() : 0
+      return tb - ta
+    })
+  }
   $('#main').innerHTML = visible.map(card).join('')
 }
 
@@ -486,6 +519,8 @@ $('header').addEventListener('click', e => {
   }
 })
 $('#search').addEventListener('input', render)
+$('#sortby').addEventListener('change', () => changeFilter('sortBy', $('#sortby').value))
+$('#group').addEventListener('change', () => changeFilter('group', $('#group').value))
 load()
 </script>
 </body>
