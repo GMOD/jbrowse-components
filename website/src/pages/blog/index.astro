@@ -11,10 +11,16 @@ const posts = (await getCollection('blog')).sort(
   (a, b) => b.data.date.getTime() - a.data.date.getTime(),
 )
 
+const EXCERPT_CHARS = 600
+
 const renderedPosts = await Promise.all(
   posts.slice(0, 10).map(async post => {
-    const { html } = await renderMarkdown(post.body ?? '')
-    return { post, html }
+    const body = post.body ?? ''
+    const truncated = body.length > EXCERPT_CHARS
+    const { html } = await renderMarkdown(
+      truncated ? body.slice(0, EXCERPT_CHARS) : body,
+    )
+    return { post, html, truncated }
   }),
 )
 ---
@@ -25,7 +31,7 @@ const renderedPosts = await Promise.all(
 >
   <div class="content">
     {
-      renderedPosts.map(({ post, html }) => (
+      renderedPosts.map(({ post, html, truncated }) => (
         <article>
           <header>
             <h2>
@@ -55,6 +61,11 @@ const renderedPosts = await Promise.all(
           </header>
           <div class:list={['post-body', blog.prose]}>
             <Fragment set:html={html} />
+            {truncated && (
+              <a class="read-more" href={`${baseUrl}/blog/${blogPath(post)}/`}>
+                Read more →
+              </a>
+            )}
           </div>
         </article>
       ))
@@ -116,5 +127,16 @@ const renderedPosts = await Promise.all(
   }
   .post-body :global(h3) {
     font-size: 1.1rem;
+  }
+  .read-more {
+    display: inline-block;
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--color-accent);
+    text-decoration: none;
+  }
+  .read-more:hover {
+    text-decoration: underline;
   }
 </style>

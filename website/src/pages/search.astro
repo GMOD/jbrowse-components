@@ -7,7 +7,10 @@ import styles from '../styles/search.module.css'
 const q = Astro.url.searchParams.get('q') ?? ''
 ---
 
-<BaseLayout title="Search — JBrowse">
+<BaseLayout
+  title="Search — JBrowse"
+  description="Search JBrowse documentation, user guides, config reference, and API docs."
+>
   <div class={page.content}>
     <h1 class={styles.heading}>Search</h1>
     <div class={styles.inputWrap}>
