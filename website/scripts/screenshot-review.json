@@ -1102,9 +1102,9 @@
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
-    "status": "good",
-    "note": "Zoomed out to ctgA:2950-4250 (~15 variants, was ctgA:2900-3300/6) so the genotype matrix reads as a matrix. Cluster option for --vcfgz deferred: clustering is an async RPC (MultiSampleVariantClusterGenotypeMatrix) + layout reorder, a larger jbrowse-img feature than a snapshot modifier.",
-    "reviewedAt": "2026-06-26T00:00:00.000Z",
-    "hash": "729408a81d4569a5250888277dc4195f2b4cf41b"
+    "status": "bad",
+    "note": "this screenshot is not very interesting, its mostly grey. we may way to show human 1000 genomes data or something",
+    "reviewedAt": "2026-06-28T16:57:58.928Z",
+    "hash": "8c31fbe844e19685b6a0316a108b9a57eecc5454"
   }
 }

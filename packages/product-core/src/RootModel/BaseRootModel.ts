@@ -8,6 +8,7 @@ import { filterSessionInPlace } from '../sessionUtils.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseAssemblyConfigSchema } from '@jbrowse/core/assemblyManager'
+import type { NotificationLevel } from '@jbrowse/core/util'
 import type { IAnyType, Instance, SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -89,9 +90,10 @@ export function BaseRootModelFactory({
        * #action
        * Sets the active session. Remaps any legacy display type names
        * (e.g. LinearPileupDisplay → LinearAlignmentsDisplay), then walks the
-       * resulting MST tree to drop undefined references in arrays/maps so
-       * shared sessions still load when referencing tracks/widgets that no
-       * longer exist. If filtering throws, the previous session is restored.
+       * resulting MST tree to drop open tracks whose config can't hydrate so
+       * shared sessions still load when referencing tracks that no longer
+       * exist. Dropped tracks are surfaced to the user via a snackbar. If
+       * filtering throws, the previous session is restored.
        */
       setSession(sessionSnapshot?: SnapshotIn<IAnyType>) {
         const oldSession = self.session
@@ -102,7 +104,24 @@ export function BaseRootModelFactory({
         self.session = cast(migrated)
         if (self.session) {
           try {
-            filterSessionInPlace(self.session, getType(self.session))
+            const dropped = filterSessionInPlace(
+              self.session,
+              getType(self.session),
+            )
+            if (dropped.length > 0) {
+              const names = dropped
+                .map(d => d.configuration ?? d.type ?? 'unknown')
+                .join(', ')
+              const plural = dropped.length > 1
+              ;(
+                self.session as {
+                  notify?: (message: string, level?: NotificationLevel) => void
+                }
+              ).notify?.(
+                `Removed ${dropped.length} track${plural ? 's' : ''} that could not be loaded: ${names}`,
+                'warning',
+              )
+            }
           } catch (error) {
             self.session = oldSession
             throw error

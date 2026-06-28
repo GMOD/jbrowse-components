@@ -124,4 +124,4 @@ export const stripPrefix = (s: string) => s.replace(PREFIX_RE, '')
 
 // Returns the type prefix (without the trailing `-`), or undefined when the
 // sessionQuery has no recognized prefix
-export const getSessionQueryType = (s: string) => (PREFIX_RE.exec(s))?.[1]
+export const getSessionQueryType = (s: string) => PREFIX_RE.exec(s)?.[1]

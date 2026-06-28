@@ -144,7 +144,7 @@ test('filterSessionInPlace validates a config-bearing element by its config, not
   expect(container.children.map(c => c.id)).toEqual(['keep'])
 })
 
-test('filterSessionInPlace drops a config-bearing element whose config is dangling', () => {
+test('filterSessionInPlace drops a config-bearing element whose config is dangling and reports it', () => {
   const errorSpy = jest.spyOn(console, 'error').mockImplementation(() => {})
   const container = ConfigBearingContainer.create({
     items: { a: { id: 'a', name: 'A' } },
@@ -154,10 +154,11 @@ test('filterSessionInPlace drops a config-bearing element whose config is dangli
     ],
   })
   unprotect(container)
-  runInAction(() => {
-    filterSessionInPlace(container, getType(container))
-  })
+  const dropped = runInAction(() =>
+    filterSessionInPlace(container, getType(container)),
+  )
   expect(container.children.map(c => c.id)).toEqual(['keep'])
+  expect(dropped).toEqual([{ type: undefined, configuration: 'missing' }])
   errorSpy.mockRestore()
 })
 
