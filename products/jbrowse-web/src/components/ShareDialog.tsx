@@ -26,7 +26,6 @@ import { observer } from 'mobx-react'
 
 import ShareInfoDialog from './ShareInfoDialog.tsx'
 import { SHARE_URL_LOCALSTORAGE_KEY, buildShareUrl } from './buildShareUrl.ts'
-import { setQueryParams } from '../useQueryParam.ts'
 
 const SHARE_MODES = [
   { value: 'short', label: 'Short URL' },
@@ -145,10 +144,12 @@ const ShareDialog = observer(function ShareDialog({
             disabled={disabled}
             onClick={event => {
               event.preventDefault()
-              setQueryParams({
-                password: data?.passwordParam ?? '',
-                session: data?.sessionParam ?? '',
-              })
+              // point the address bar at the assembled share URL (inline
+              // sessions live in the hash, see buildShareUrl) so the bookmark
+              // the user saves is the shareable one
+              if (url) {
+                window.history.replaceState(null, '', url)
+              }
               alert('Now press Ctrl+D (PC) or Cmd+D (Mac)')
             }}
           >

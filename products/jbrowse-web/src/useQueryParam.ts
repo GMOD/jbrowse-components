@@ -10,29 +10,35 @@
 // working and a hash URL stays a hash URL across the post-load `session=local-…`
 // rewrite and reloads.
 
-function paramsInHash() {
-  return window.location.hash.includes('=')
+type ParamLocation = 'hash' | 'search'
+
+// The single decision of where this URL keeps its params. Computed once per
+// operation and threaded through read+write so the two can't disagree.
+function paramLocation(): ParamLocation {
+  return window.location.hash.includes('=') ? 'hash' : 'search'
 }
 
-function getSearchParams() {
+function readParams(loc: ParamLocation) {
   return new URLSearchParams(
-    paramsInHash() ? window.location.hash.slice(1) : window.location.search,
+    loc === 'hash' ? window.location.hash.slice(1) : window.location.search,
   )
 }
 
-function updateUrl(params: URLSearchParams) {
+// Writes params back into `loc`, leaving the other URL component untouched — the
+// URL hash/search setters each replace only their own component.
+function writeParams(loc: ParamLocation, params: URLSearchParams) {
+  const url = new URL(window.location.href)
   const str = params.toString()
-  const { pathname, search } = window.location
-  const newUrl = paramsInHash()
-    ? `${pathname}${search}${str ? `#${str}` : ''}`
-    : str
-      ? `${pathname}?${str}`
-      : pathname
-  window.history.replaceState(null, '', newUrl)
+  if (loc === 'hash') {
+    url.hash = str
+  } else {
+    url.search = str
+  }
+  window.history.replaceState(null, '', url.href)
 }
 
 export function readQueryParams<T extends string>(keys: T[]) {
-  const params = getSearchParams()
+  const params = readParams(paramLocation())
   const result = {} as Record<T, string | undefined>
   for (const key of keys) {
     result[key] = params.get(key) ?? undefined
@@ -41,15 +47,17 @@ export function readQueryParams<T extends string>(keys: T[]) {
 }
 
 export function deleteQueryParams(keys: readonly string[]) {
-  const params = getSearchParams()
+  const loc = paramLocation()
+  const params = readParams(loc)
   for (const key of keys) {
     params.delete(key)
   }
-  updateUrl(params)
+  writeParams(loc, params)
 }
 
 export function setQueryParams(values: Record<string, string | undefined>) {
-  const params = getSearchParams()
+  const loc = paramLocation()
+  const params = readParams(loc)
   for (const [key, value] of Object.entries(values)) {
     if (value === undefined) {
       params.delete(key)
@@ -57,5 +65,5 @@ export function setQueryParams(values: Record<string, string | undefined>) {
       params.set(key, value)
     }
   }
-  updateUrl(params)
+  writeParams(loc, params)
 }

@@ -108,6 +108,20 @@ export function buildJb1SessionSpec(args: {
   }
 }
 
-// Strips share-/spec-/encoded-/json-/local- prefix from a sessionQuery
-export const stripPrefix = (s: string) =>
-  s.replace(/^(share|spec|encoded|json|local)-/, '')
+// The recognized `session=` type prefixes; single source for stripPrefix and
+// the loader's sessionQueryType dispatch so they can't drift
+const SESSION_QUERY_PREFIXES = [
+  'share',
+  'spec',
+  'encoded',
+  'json',
+  'local',
+] as const
+const PREFIX_RE = new RegExp(`^(${SESSION_QUERY_PREFIXES.join('|')})-`)
+
+// Strips the share-/spec-/encoded-/json-/local- prefix from a sessionQuery
+export const stripPrefix = (s: string) => s.replace(PREFIX_RE, '')
+
+// Returns the type prefix (without the trailing `-`), or undefined when the
+// sessionQuery has no recognized prefix
+export const getSessionQueryType = (s: string) => (PREFIX_RE.exec(s))?.[1]

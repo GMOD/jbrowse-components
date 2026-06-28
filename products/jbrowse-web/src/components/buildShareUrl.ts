@@ -13,9 +13,14 @@ export interface ShareUrlResult {
   plaintext?: string
 }
 
-// Builds a self-referential jbrowse-web URL (current page + `?session=`) for the
-// chosen share mode. Session encoding is shared with desktop's export-to-web via
-// encodeSessionParam, so only the URL assembly lives here.
+// Builds a self-referential jbrowse-web URL for the chosen share mode. Session
+// encoding is shared with desktop's export-to-web via encodeSessionParam, so
+// only the URL assembly lives here.
+//
+// The large inline modes (`encoded-`/`json-`) go in the hash fragment, which is
+// never sent to the server and so can't trip the request-line limit (HTTP 414)
+// the query string can; the tiny `share-<id>` short link stays in the query
+// string. The SessionLoader reads `session=` from either location.
 export async function buildShareUrl(
   mode: SessionShareMode,
   snap: unknown,
@@ -27,12 +32,18 @@ export async function buildShareUrl(
     snap,
     { shareURL, referer: locationUrl.href },
   )
-  const params = new URLSearchParams(locationUrl.search)
+  const inline = mode !== 'short'
+  const params = new URLSearchParams(inline ? '' : locationUrl.search)
   params.set('session', sessionParam)
   if (password) {
     params.set('password', password)
   }
-  locationUrl.search = params.toString()
+  const str = params.toString()
+  if (inline) {
+    locationUrl.hash = str
+  } else {
+    locationUrl.search = str
+  }
   return {
     url: locationUrl.href,
     sessionParam,

@@ -7,6 +7,7 @@ import { createPluginManager } from './createPluginManager.ts'
 import {
   buildJb1SessionSpec,
   fetchRemoteConfig,
+  getSessionQueryType,
   loadPluginRecords,
   readSessionFromIDB,
   readSessionFromStorage,
@@ -144,7 +145,9 @@ const SessionLoader = types
      * prefixes stripped by stripPrefix()
      */
     get sessionQueryType() {
-      return self.sessionQuery?.match(/^(share|spec|encoded|json|local)-/)?.[1]
+      return self.sessionQuery
+        ? getSessionQueryType(self.sessionQuery)
+        : undefined
     },
     /**
      * #getter
