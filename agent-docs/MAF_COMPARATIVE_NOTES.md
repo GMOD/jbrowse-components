@@ -42,8 +42,12 @@ landed (see `plugins/maf`, and the `key_pattern_maf_cds_frames_overlay` memory).
   indicator and `−`-strand hover coordinates. Now parsed via the pure, tested
   `parseMafTabixEntry`. NOTE: jbrowse-web bundles plugins from `src` (not `esm`;
   esm is publish-only), but `tsgo --build` emits esm — irrelevant to the running
-  app. A subtle real-data caveat: the ce11 26-way *subset* has only one tiny
-  inversion (bruMal2 forward blocks, 87 bp); a bigger dataset shows it better.
+  app. Screenshot (`maf_inversions`): the ce11 subset's only inversion is small
+  (bruMal2 forward blocks, 87 bp), so the figure filters to a few species
+  (`subtreeFilter`) at a tall row height. **Sidebar-occlusion gotcha:** the rows
+  canvas spans the full view width with the tree sidebar drawn *over* its left,
+  so a feature at the far-left genomic edge renders *under* the sidebar and looks
+  missing — frame the locus so the feature of interest sits past the sidebar.
 
 ## NCBI MCGV / CGV (researched 2026-06-28)
 

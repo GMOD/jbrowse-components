@@ -6362,6 +6362,42 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
     ],
   },
+  {
+    // Inversion (strand-flip) indicator. Filtered to a few species (incl. bruMal2,
+    // which has a genuine intra-scaffold inversion here) at a tall row height so
+    // the flip reads clearly: bruMal2's left block aligns on the opposite strand
+    // from the rest of its scaffold and is hatched + outlined, while its other
+    // blocks (the scaffold's consensus orientation) are left plain. CDS frames
+    // are off so the only overlay is the inversion cue.
+    mode: 'url',
+    name: 'maf_inversions',
+    url: lgvSession(CE_MAF_FRAMES, {
+      assembly: 'ce11',
+      loc: 'chrI:3,000,300-3,002,800',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            rowHeight: 28,
+            showInversions: true,
+            showAnnotations: false,
+            subtreeFilter: ['ce11', 'caeRem4', 'cb4', 'bruMal2', 'triSpi1'],
+          },
+        },
+      ],
+    }),
+    readyText: 'chrI',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 460,
+    settleMs: 12000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled
   // purely by the &adminKey= URL param (adminMode = !!adminKey, client-side), so

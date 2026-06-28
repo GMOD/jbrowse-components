@@ -193,6 +193,8 @@ flip is marked. It is an overlay, so it composes on top of the base, codon, or
 per-row identity rendering without replacing them, and needs no extra files
 (strand is already carried per block).
 
+<Figure src="/img/maf_inversions.png" caption="The inversion indicator on the ce11 26-way alignment (filtered to a few species): bruMal2's left block aligns to the reference on the opposite strand from the rest of its scaffold and is hatched + outlined, while the species that align in a single orientation (caeRem4, cb4) show nothing — a strand-flip rearrangement flagged without leaving the base view."/>
+
 ## See also
 
 - [Synteny track config](/docs/config_guides/synteny_track) — pairwise alignment
