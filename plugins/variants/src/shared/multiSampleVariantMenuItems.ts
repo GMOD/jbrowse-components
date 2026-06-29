@@ -4,7 +4,9 @@ import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
+import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import HeightIcon from '@mui/icons-material/Height'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
@@ -241,12 +243,14 @@ export function variantContextMenuItems(
   return [
     {
       label: 'Open feature details',
+      icon: MenuOpenIcon,
       onClick: () => {
         self.selectFeature(feat)
       },
     },
     {
       label: 'Copy to clipboard',
+      icon: ContentCopyIcon,
       onClick: async () => {
         try {
           const loc = `${feat.get('refName')}:${feat.get('start') + 1}..${feat.get('end')}`

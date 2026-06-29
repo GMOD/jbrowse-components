@@ -1748,11 +1748,16 @@ export default function baseStateModelFactory(
                 const region = self.loadedRegions.get(displayedRegionIndex)
                 if (region) {
                   const view = getView(self)
-                  view.navTo({
-                    refName: region.refName,
-                    start: startBp,
-                    end: endBp,
-                  })
+                  // grow 0.2 adds ~20% flanks so the feature isn't pinned to
+                  // the viewport edges (matches synteny/bookmark zoom-to).
+                  view.navTo(
+                    {
+                      refName: region.refName,
+                      start: startBp,
+                      end: endBp,
+                    },
+                    0.2,
+                  )
                 }
               },
             },

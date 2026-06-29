@@ -28,6 +28,7 @@ import {
   makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
+import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
@@ -410,6 +411,7 @@ export function stateModelFactory(
         return [
           {
             label: 'Open feature details',
+            icon: MenuOpenIcon,
             onClick: () => {
               self.selectFeature(hit)
             },

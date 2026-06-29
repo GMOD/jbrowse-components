@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
+import HeightIcon from '@mui/icons-material/Height'
 
 import { radioSubMenu } from '../LinearBasicDisplay/baseModelHelpers.ts'
 
@@ -57,24 +58,27 @@ export function buildMultiRowTrackMenuItems(
       },
     },
     treeBranchLengthMenuItem(self),
-    radioSubMenu(
-      'Row height',
-      rowHeightChoice,
-      [
-        { value: 'fit', label: 'Auto-fit to display height' },
-        { value: 'normal', label: 'Normal' },
-        { value: 'compact', label: 'Compact' },
-      ],
-      value => {
-        if (value === 'fit') {
-          self.setFitToHeight()
-        } else {
-          self.setRowHeight(
-            value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
-          )
-        }
-      },
-    ),
+    {
+      icon: HeightIcon,
+      ...radioSubMenu(
+        'Row height',
+        rowHeightChoice,
+        [
+          { value: 'fit', label: 'Auto-fit to display height' },
+          { value: 'normal', label: 'Normal' },
+          { value: 'compact', label: 'Compact' },
+        ],
+        value => {
+          if (value === 'fit') {
+            self.setFitToHeight()
+          } else {
+            self.setRowHeight(
+              value === 'compact' ? ROW_HEIGHT_COMPACT : ROW_HEIGHT_NORMAL,
+            )
+          }
+        },
+      ),
+    },
     {
       label: 'Edit colors/arrangement...',
       disabled: !self.editableSources.length,

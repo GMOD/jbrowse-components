@@ -4,6 +4,7 @@ import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import HeightIcon from '@mui/icons-material/Height'
+import SegmentIcon from '@mui/icons-material/Segment'
 
 import { getTranscripts, hasIntrons } from './CollapseIntronsDialog/util.ts'
 import baseStateModelFactory, { getView } from './baseModel.ts'
@@ -198,18 +199,24 @@ export default function stateModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
-            radioSubMenu(
-              'Gene glyph',
-              self.geneGlyphMode,
-              [
-                { value: 'auto', label: 'Auto' },
-                { value: 'all', label: 'All transcripts' },
-                { value: 'longestCoding', label: 'Longest coding transcript' },
-              ],
-              value => {
-                self.setGeneGlyphMode(value)
-              },
-            ),
+            {
+              icon: SegmentIcon,
+              ...radioSubMenu(
+                'Gene glyph',
+                self.geneGlyphMode,
+                [
+                  { value: 'auto', label: 'Auto' },
+                  { value: 'all', label: 'All transcripts' },
+                  {
+                    value: 'longestCoding',
+                    label: 'Longest coding transcript',
+                  },
+                ],
+                value => {
+                  self.setGeneGlyphMode(value)
+                },
+              ),
+            },
             {
               icon: HeightIcon,
               ...radioSubMenu(

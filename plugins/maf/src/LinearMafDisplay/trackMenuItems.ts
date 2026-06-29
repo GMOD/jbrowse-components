@@ -3,6 +3,8 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
+import HeightIcon from '@mui/icons-material/Height'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { DEFAULTS } from './displayDefaults.ts'
 import { ROW_IDENTITY_MODES } from './rowIdentityModes.ts'
@@ -68,6 +70,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
   return [
     {
       label: 'Set feature height',
+      icon: HeightIcon,
       type: 'subMenu',
       subMenu: [
         {
@@ -109,6 +112,7 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
     },
     {
       label: 'Show...',
+      icon: VisibilityIcon,
       type: 'subMenu',
       subMenu: [
         {

@@ -6,6 +6,7 @@ import { getSession, isSessionModelWithWidgets } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import MoreVert from '@mui/icons-material/MoreVert'
 import ShuffleIcon from '@mui/icons-material/Shuffle'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 import ZoomIn from '@mui/icons-material/ZoomIn'
 import ZoomOut from '@mui/icons-material/ZoomOut'
 import { IconButton } from '@mui/material'
@@ -119,6 +120,7 @@ const DotplotControls = observer(function DotplotControls({
           },
           {
             label: 'Show...',
+            icon: VisibilityIcon,
             subMenu: [
               {
                 label: 'Show all regions',

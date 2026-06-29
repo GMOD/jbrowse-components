@@ -1,3 +1,6 @@
+import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
+
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -23,6 +26,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
   return [
     {
       label: 'Show...',
+      icon: VisibilityIcon,
       type: 'subMenu',
       subMenu: [
         {
@@ -69,6 +73,7 @@ export function buildHicTrackMenuItems(self: HicMenuSelf): MenuItem[] {
     },
     {
       label: 'Color scheme',
+      icon: PaletteIcon,
       type: 'subMenu',
       subMenu: [
         {

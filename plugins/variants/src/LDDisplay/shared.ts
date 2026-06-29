@@ -19,6 +19,8 @@ import {
   migrateOldSettingSnapshots,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
+import ClearAllIcon from '@mui/icons-material/ClearAll'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { generateLDColorRamp } from './components/ldColorRamp.ts'
 import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
@@ -536,6 +538,7 @@ export default function sharedModelFactory(
             },
             {
               label: 'Show...',
+              icon: VisibilityIcon,
               type: 'subMenu',
               subMenu: [
                 {
@@ -612,6 +615,7 @@ export default function sharedModelFactory(
               : [
                   {
                     label: 'Filter by...',
+                    icon: ClearAllIcon,
                     type: 'subMenu',
                     subMenu: self.filterMenuItems(),
                   },
