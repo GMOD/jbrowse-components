@@ -55,7 +55,7 @@ export default function stateModelFactory(
             // so cells/lines/clicks stay pixel-aligned.
             canvasWidth: view.totalWidthPxWithoutBorders,
             canvasHeight: self.availableHeight,
-            rowHeight: self.rowHeight,
+            rowHeight: self.effectiveRowHeight,
             scrollTop: self.scrollTop,
           }
         },

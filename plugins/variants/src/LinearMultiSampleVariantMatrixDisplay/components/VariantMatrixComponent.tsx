@@ -43,7 +43,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     totalHeight: model.totalHeight,
     viewportHeight: model.availableHeight,
     scrollZoom: view.scrollZoom,
-    rowHeight: model.rowHeight,
+    rowHeight: model.effectiveRowHeight,
     nrow: model.nrow,
     setRowHeight: model.setRowHeight,
   })
@@ -66,7 +66,9 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     const mouseX = clientX - rect.left
     const mouseY = clientY - rect.top
     const featureIdx = Math.floor((mouseX / w) * cellData.numFeatures)
-    const rowIdx = Math.floor((mouseY + model.scrollTop) / model.rowHeight)
+    const rowIdx = Math.floor(
+      (mouseY + model.scrollTop) / model.effectiveRowHeight,
+    )
     const source = sources[rowIdx]
     const feature = cellData.featureData[featureIdx]
     if (source && feature) {

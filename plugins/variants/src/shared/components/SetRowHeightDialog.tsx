@@ -7,12 +7,14 @@ export default function SetRowHeight({
   handleClose,
 }: {
   model: {
-    rowHeight: number
+    effectiveRowHeight: number
     setRowHeight: (arg: number) => void
   }
   handleClose: () => void
 }) {
-  const [value, setValue] = useState<number | undefined>(model.rowHeight)
+  const [value, setValue] = useState<number | undefined>(
+    model.effectiveRowHeight,
+  )
 
   return (
     <SubmitDialog
@@ -28,7 +30,7 @@ export default function SetRowHeight({
       }}
     >
       <NumberTextField
-        defaultValue={model.rowHeight}
+        defaultValue={model.effectiveRowHeight}
         onValueChange={setValue}
       />
     </SubmitDialog>

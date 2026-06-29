@@ -42,15 +42,19 @@ const LaunchSvPanel = observer(function LaunchSvPanel({
       </Typography>
       <ul>
         <li>
-          <ActionLink onClick={() => { navToLoc(locString, model) }}>
+          <ActionLink
+            onClick={() => {
+              navToLoc(locString, model)
+            }}
+          >
             Zoom to variant in linear view
           </ActionLink>
         </li>
         {length >= splitViewMinSpan && hasBreakpointSplitView(model) ? (
           <li>
             <ActionLink
-              onClick={() =>
-                { launchBreakpointSplitView({
+              onClick={() => {
+                launchBreakpointSplitView({
                   session: getSession(model),
                   view: model.view,
                   assemblyName,
@@ -62,8 +66,8 @@ const LaunchSvPanel = observer(function LaunchSvPanel({
                     mate: { refName, start: end, end: end + 1 },
                   }),
                   stableViewId: `${model.id}_${assemblyName}_breakpointsplitview`,
-                }) }
-              }
+                })
+              }}
             >
               Open breakpoints in split view
             </ActionLink>

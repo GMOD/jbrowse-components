@@ -96,9 +96,10 @@ function getFeatureUnderMouse(
   // the shortest feature so a small variant atop a large one stays selectable.
   // 1px-min mirrors max(u.rowHeight, 1.0) in shaders/variant.slang +
   // Canvas2DVariantRenderer.ts.
-  const drawnRowHeight = Math.max(model.rowHeight, 1)
-  const rowLo = (mouseY - drawnRowHeight + model.scrollTop) / model.rowHeight
-  const rowHi = (mouseY + 1 + model.scrollTop) / model.rowHeight
+  const drawnRowHeight = Math.max(model.effectiveRowHeight, 1)
+  const rowLo =
+    (mouseY - drawnRowHeight + model.scrollTop) / model.effectiveRowHeight
+  const rowHi = (mouseY + 1 + model.scrollTop) / model.effectiveRowHeight
 
   const bpPadding = 5 * bpPerPx
   const hits = flatbushIndex.search(
@@ -186,7 +187,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const right = Math.max(px1, px2)
   // content coords: the highlight lives in the natively-scrolling content div,
   // so it moves with the rows (no manual scrollTop subtraction)
-  const top = cell.rowIndex * model.rowHeight
+  const top = cell.rowIndex * model.effectiveRowHeight
   return (
     <div
       style={{
@@ -194,7 +195,7 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
         left,
         top,
         width: Math.max(right - left, 2),
-        height: model.rowHeight,
+        height: model.effectiveRowHeight,
         border: '1px solid rgba(0,0,0,0.5)',
         background: 'rgba(255,255,255,0.3)',
         pointerEvents: 'none',

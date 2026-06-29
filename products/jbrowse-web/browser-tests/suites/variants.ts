@@ -22,7 +22,7 @@ const overflowingMultiSampleSpec = {
           trackId: 'volvox_test_vcf',
           displaySnapshot: {
             type: 'LinearMultiSampleVariantDisplay',
-            rowHeightMode: 8,
+            rowHeight: 8,
             heightOverride: 200,
           },
         },

@@ -277,7 +277,10 @@ export default function MultiSampleVariantBaseModelF(
         types.model({
           type: types.string,
           configuration: ConfigurationReference(configSchema),
-          rowHeightMode: types.stripDefault(types.number, 0),
+          // Raw per-row height in px; `0` means fit-to-display-height (rows
+          // divide the available height). The resolved value is the
+          // `effectiveRowHeight` getter — consumers read that, never this.
+          rowHeight: types.stripDefault(types.number, 0),
           jexlFilters: types.stripDefault(
             types.maybe(types.array(types.string)),
             undefined,
@@ -505,7 +508,7 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setRowHeight(arg: number) {
-          self.rowHeightMode = arg
+          self.rowHeight = arg
         },
         /**
          * #action
@@ -610,7 +613,7 @@ export default function MultiSampleVariantBaseModelF(
          * Toggle auto height mode. When turning off, uses default of 10px per row.
          */
         setFitToHeight() {
-          self.rowHeightMode = 0
+          self.rowHeight = 0
           self.scrollTop = 0
         },
         /**
@@ -622,8 +625,8 @@ export default function MultiSampleVariantBaseModelF(
           const oldHeight = self.height
           const newHeight = Math.max(self.height + distance, 20)
           self.heightOverride = newHeight
-          if (self.rowHeightMode > 0) {
-            self.rowHeightMode = self.rowHeightMode * (newHeight / oldHeight)
+          if (self.rowHeight > 0) {
+            self.rowHeight = self.rowHeight * (newHeight / oldHeight)
           }
           return newHeight - oldHeight
         },
@@ -810,8 +813,9 @@ export default function MultiSampleVariantBaseModelF(
             ? buildSampleIndex(self.cellData.sampleNames)
             : undefined
         },
-        // Row-height model: keep `rowHeightMode`, `autoRowHeight`, `rowHeight`,
-        // and the proportional `resizeHeight` in sync across related displays.
+        // Row-height model: keep `rowHeight`, `autoRowHeight`,
+        // `effectiveRowHeight`, and the proportional `resizeHeight` in sync
+        // across related displays.
         /**
          * #getter
          * Available height for rows (total height minus lineZoneHeight)
@@ -835,15 +839,14 @@ export default function MultiSampleVariantBaseModelF(
 
         /**
          * #getter
-         * rowHeightMode === 0 means auto-fit (computed from availableHeight /
-         * nrow); any positive value is a user-pinned height. `resizeHeight`
-         * scales pinned values proportionally so manual + display-resize stay
-         * in sync without snap-back fuzziness.
+         * Resolved per-row height. `rowHeight === 0` means auto-fit (computed
+         * from availableHeight / nrow); any positive value is a user-pinned
+         * height. `resizeHeight` scales pinned values proportionally so manual +
+         * display-resize stay in sync without snap-back fuzziness. Every consumer
+         * reads this, never the raw `rowHeight` property.
          */
-        get rowHeight() {
-          return self.rowHeightMode === 0
-            ? this.autoRowHeight
-            : self.rowHeightMode
+        get effectiveRowHeight() {
+          return self.rowHeight === 0 ? this.autoRowHeight : self.rowHeight
         },
         /**
          * #getter
@@ -855,7 +858,7 @@ export default function MultiSampleVariantBaseModelF(
           }
           return clusterLayout(
             r,
-            this.rowHeight * this.nrow,
+            this.effectiveRowHeight * this.nrow,
             self.treeAreaWidth,
             self.showBranchLength,
           )
@@ -924,13 +927,13 @@ export default function MultiSampleVariantBaseModelF(
          * #getter
          */
         get canDisplayLabels() {
-          return self.rowHeight >= 6 && self.showSidebarLabels
+          return self.effectiveRowHeight >= 6 && self.showSidebarLabels
         },
         /**
          * #getter
          */
         get totalHeight() {
-          return self.rowHeight * (self.sources?.length ?? 1)
+          return self.effectiveRowHeight * (self.sources?.length ?? 1)
         },
         /**
          * #getter

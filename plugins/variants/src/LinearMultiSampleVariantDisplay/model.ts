@@ -49,7 +49,7 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
             return {
               canvasWidth: view.trackWidthPx,
               canvasHeight: self.availableHeight,
-              rowHeight: self.rowHeight,
+              rowHeight: self.effectiveRowHeight,
               scrollTop: self.scrollTop,
             }
           },

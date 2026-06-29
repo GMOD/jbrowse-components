@@ -8,7 +8,7 @@ import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
 interface VariantScrollModel {
   scrollTop: number
   hasOverflow: boolean
-  rowHeight: number
+  effectiveRowHeight: number
   nrow: number
   availableHeight: number
   setScrollTop: (n: number) => void
@@ -50,7 +50,7 @@ export function useVariantNativeScroll(
         // shift = resize rows under the cursor (works whether or not the rows
         // currently overflow, so you can grow them out of the fit state)
         applyRowResizeWheel(e, container, {
-          rowHeight: model.rowHeight,
+          rowHeight: model.effectiveRowHeight,
           scrollTop: model.scrollTop,
           nrow: model.nrow,
           viewportHeight: model.availableHeight,

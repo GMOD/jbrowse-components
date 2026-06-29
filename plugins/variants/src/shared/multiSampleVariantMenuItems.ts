@@ -111,6 +111,8 @@ export function variantTrackMenuItems(
         },
         {
           label: 'Fit to display height',
+          type: 'checkbox',
+          checked: self.rowHeight === 0,
           onClick: () => {
             self.setFitToHeight()
           },
