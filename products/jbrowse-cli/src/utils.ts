@@ -7,12 +7,10 @@ import fetch from './cliFetch.ts'
 interface GithubRelease {
   tag_name: string
   prerelease: boolean
-  assets?: [
-    {
-      browser_download_url: string
-      name: string
-    },
-  ]
+  assets?: {
+    browser_download_url: string
+    name: string
+  }[]
 }
 
 export function parseCommaSeparatedString(value?: string): string[] {
@@ -61,7 +59,7 @@ export async function readInlineOrFileJson<T>(inlineOrFileName: string) {
   let result: T
   // see if it's inline JSON
   try {
-    result = JSON.parse(inlineOrFileName) as T
+    result = JSON.parse(inlineOrFileName)
   } catch (error) {
     debug(
       `Not valid inline JSON, attempting to parse as filename: '${inlineOrFileName}'`,
@@ -81,20 +79,33 @@ export async function fetchGithubVersions() {
   return versions
 }
 
+// fetch + parse JSON from the GitHub API, throwing on a non-ok response. The
+// lone cast localizes the unavoidable response.json(): Promise<unknown>
+async function fetchJson<T>(url: string): Promise<T> {
+  const response = await fetch(url)
+  if (!response.ok) {
+    throw new Error(`HTTP ${response.status} fetching ${url}`)
+  }
+  return response.json() as Promise<T>
+}
+
+// the jbrowse-web build is the asset we unpack; a release can have no matching
+// asset if it was just uploaded or its build failed
+function findWebAssetUrl(release: GithubRelease) {
+  return release.assets?.find(f => f.name.includes('jbrowse-web'))
+    ?.browser_download_url
+}
+
 async function getLatest() {
   for await (const versions of fetchVersions()) {
-    // if a release was just uploaded, or an erroneous build was made then it
-    // might have no build asset
     const release = versions.find(r => !r.prerelease && r.assets?.length)
-    if (release?.assets) {
-      const file = release.assets.find(f =>
-        f.name.includes('jbrowse-web'),
-      )?.browser_download_url
-
-      if (!file) {
+    if (release) {
+      const file = findWebAssetUrl(release)
+      if (file) {
+        return file
+      } else {
         throw new Error('no jbrowse-web download found')
       }
-      return file
     }
   }
 
@@ -103,40 +114,33 @@ async function getLatest() {
 
 async function* fetchVersions() {
   let page = 1
-  let result: GithubRelease[] | undefined
+  let done = false
 
-  do {
-    const url = `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`
-    const response = await fetch(url)
-    if (response.ok) {
-      result = (await response.json()) as GithubRelease[]
-
+  while (!done) {
+    const result = await fetchJson<GithubRelease[]>(
+      `https://api.github.com/repos/GMOD/jbrowse-components/releases?page=${page}`,
+    )
+    if (result.length === 0) {
+      done = true
+    } else {
       yield result.filter(release => release.tag_name.startsWith('v'))
       page++
-    } else {
-      throw new Error(`HTTP ${response.status} fetching ${url}`)
     }
-  } while (result.length)
+  }
 }
 
 async function getTag(tag: string) {
-  const response = await fetch(
+  const release = await fetchJson<GithubRelease>(
     `https://api.github.com/repos/GMOD/jbrowse-components/releases/tags/${tag}`,
   )
-  if (response.ok) {
-    const result = (await response.json()) as GithubRelease
-    const file = result.assets?.find(f =>
-      f.name.includes('jbrowse-web'),
-    )?.browser_download_url
-
-    if (!file) {
-      throw new Error(
-        'Could not find version specified. Use --listVersions to see all available versions',
-      )
-    }
+  const file = findWebAssetUrl(release)
+  if (file) {
     return file
+  } else {
+    throw new Error(
+      'Could not find version specified. Use --listVersions to see all available versions',
+    )
   }
-  throw new Error(`Could not find version: ${response.statusText}`)
 }
 
 function getBranch(branch: string) {
@@ -159,12 +163,15 @@ export async function resolveReleaseUrl({
   branch,
   tag,
 }: ReleaseFlags) {
-  return (
-    url ||
-    (nightly ? getBranch('main') : '') ||
-    (branch ? getBranch(branch) : '') ||
-    (tag ? await getTag(tag) : await getLatest())
-  )
+  return url
+    ? url
+    : nightly
+      ? getBranch('main')
+      : branch
+        ? getBranch(branch)
+        : tag
+          ? getTag(tag)
+          : getLatest()
 }
 
 // shared by create/upgrade: resolve the release URL then download it. Returns
@@ -297,6 +304,15 @@ function wrapText(text: string, width: number, indent: string) {
   return lines.join(`\n${indent}`)
 }
 
+// the subset of a parseArgs option definition that printHelp renders (the
+// definitions also carry `type`/`multiple`, which are ignored here)
+interface HelpOption {
+  short?: string
+  description?: string
+  choices?: readonly string[]
+  default?: string | boolean
+}
+
 export function printHelp({
   description,
   options,
@@ -305,7 +321,7 @@ export function printHelp({
   usage,
 }: {
   description: string
-  options: Record<string, unknown>
+  options: Record<string, HelpOption>
   examples: string[]
   notes?: string
   usage?: string
@@ -314,17 +330,15 @@ export function printHelp({
   console.log(description)
   console.log(`\nUsage: ${usage || 'jbrowse <command> [options]'}`)
   console.log('\nOptions:')
-  for (const [name, option] of Object.entries(options)) {
-    const opt = option as Record<string, unknown>
-    const shortFlag = opt.short
-    const prefix = shortFlag ? `  -${shortFlag}, ` : ' '.repeat(6)
+  for (const [name, opt] of Object.entries(options)) {
+    const prefix = opt.short ? `  -${opt.short}, ` : ' '.repeat(6)
     const namePadded = `--${name}`.padEnd(22, ' ')
     const indent = ' '.repeat(prefix.length + namePadded.length + 1)
     const descWidth = termWidth - indent.length
 
-    let desc = (opt.description as string) || ''
+    let desc = opt.description ?? ''
     if (opt.choices) {
-      desc += ` [choices: ${(opt.choices as string[]).join(', ')}]`
+      desc += ` [choices: ${opt.choices.join(', ')}]`
     }
     if (opt.default !== undefined) {
       desc += ` [default: ${opt.default}]`

@@ -18,7 +18,7 @@ import { run as textIndexRun } from './commands/text-index/index.ts'
 import { run as upgradeRun } from './commands/upgrade.ts'
 import { version } from './version.ts'
 
-const commands = {
+const commands: Record<string, (args: string[]) => Promise<void>> = {
   create: createRun,
   'add-assembly': addAssemblyRun,
   'add-track': addTrackRun,
@@ -72,8 +72,7 @@ export async function main(args: string[]) {
       process.exit(1)
     }
 
-    const command = commands[commandName as keyof typeof commands]
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
+    const command = commands[commandName]
     if (!command) {
       console.error(`Error: Unknown command "${commandName}"`)
       console.error(`Available commands: ${Object.keys(commands).join(', ')}`)

@@ -91,8 +91,13 @@ export async function run(args?: string[]) {
 
   const child = spawnSortProcess(outputFile, csi)
   const stdin = child.stdin
-  await createPIF(file, stdin, coarseSplitGap)
-  stdin.end()
+  // end stdin even if createPIF throws, otherwise the spawned sort/index child
+  // is left running with an open stdin
+  try {
+    await createPIF(file, stdin, coarseSplitGap)
+  } finally {
+    stdin.end()
+  }
   const exitCode = await waitForProcessClose(child)
   if (exitCode !== 0) {
     throw new Error(`PIF sort/index pipeline exited with code ${exitCode}`)

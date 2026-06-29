@@ -76,16 +76,6 @@ export async function run(args?: string[]) {
   app.use(cors())
   app.use(json({ limit: bodySizeLimit }))
 
-  app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
-    if (err) {
-      console.error('Server error:', err)
-      res.status(500).setHeader('Content-Type', 'text/plain')
-      res.send('Internal Server Error')
-    } else {
-      next()
-    }
-  })
-
   const key = generateKey()
   const keyPath = path.join(os.tmpdir(), `jbrowse-admin-${key}`)
 
@@ -103,5 +93,18 @@ export async function run(args?: string[]) {
   const serverRef: { current: Server | null } = { current: null }
 
   setupRoutes({ app, baseDir, outFile, key, serverRef })
+
+  // error-handling middleware must be registered after the routes it guards so
+  // it can catch errors thrown from them (and from the json() body parser)
+  app.use((err: unknown, _req: Request, res: Response, next: () => void) => {
+    if (err) {
+      console.error('Server error:', err)
+      res.status(500).setHeader('Content-Type', 'text/plain')
+      res.send('Internal Server Error')
+    } else {
+      next()
+    }
+  })
+
   startServer({ app, port, key, outFile, keyPath, serverRef })
 }

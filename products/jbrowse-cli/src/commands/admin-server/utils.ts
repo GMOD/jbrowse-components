@@ -65,14 +65,19 @@ function validateAndExtractParams({
   outFile: string
 }): { isValid: boolean; configPath?: string; error?: string } {
   const { body } = req
-  const adminKey = body?.adminKey || (req.query.adminKey as string | undefined)
+  const queryAdminKey = req.query.adminKey
+  const adminKey =
+    body?.adminKey ||
+    (typeof queryAdminKey === 'string' ? queryAdminKey : undefined)
 
   if (adminKey !== key) {
     return { isValid: false, error: 'Invalid admin key' }
   }
 
+  const queryConfig = req.query.config
   const configPathParam =
-    body?.configPath || (req.query.config as string | undefined)
+    body?.configPath ||
+    (typeof queryConfig === 'string' ? queryConfig : undefined)
 
   try {
     const configPath = configPathParam
@@ -118,6 +123,12 @@ export function setupRoutes({
     if (!validation.isValid) {
       res.status(401).setHeader('Content-Type', 'text/plain')
       res.send(`Error: ${validation.error}`)
+      return
+    }
+
+    if (config === undefined) {
+      res.status(400).setHeader('Content-Type', 'text/plain')
+      res.send('Error: Missing config in request body')
       return
     }
 

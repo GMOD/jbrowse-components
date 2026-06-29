@@ -29,19 +29,28 @@ export async function* indexVcf({
 
   for await (const line of rl) {
     checkAbort?.()
-    if (line.startsWith('#')) {
+    if (!line.trim() || line.startsWith('#')) {
       continue
     }
 
     const [ref, pos, id, , , , , info] = line.split('\t')
 
-    if (id === '.') {
+    // a valid VCF data row has at least 8 tab-delimited columns; skip blank or
+    // malformed/short lines that would otherwise emit garbage records or throw
+    if (
+      ref === undefined ||
+      pos === undefined ||
+      id === undefined ||
+      info === undefined ||
+      id === '.'
+    ) {
       continue
     }
 
-    const fields = parseAttributes(info!, decodeURIComponentNoThrow)
-    const end = fields.END
-    const locStr = `${ref}:${pos}..${end || +pos! + 1}`
+    const fields = parseAttributes(info, decodeURIComponentNoThrow)
+    const endNum = Number(fields.END)
+    const end = Number.isFinite(endNum) ? endNum : Number(pos) + 1
+    const locStr = `${ref}:${pos}..${end}`
     const encodedLocStr = encodeURIComponent(locStr)
 
     const infoAttrs = attributesToIndex
@@ -50,7 +59,7 @@ export async function* indexVcf({
 
     const encodedInfoAttrs = infoAttrs.map(a => `"${encodeURIComponent(a)}"`)
 
-    for (const variantId of id!.split(',')) {
+    for (const variantId of id.split(',')) {
       const encodedId = encodeURIComponent(variantId)
       const record = `["${encodedLocStr}"|"${encodedTrackId}"|"${encodedId}"${encodedInfoAttrs.length > 0 ? `|${encodedInfoAttrs.join('|')}` : ''}]`
       yield `${record} ${variantId}\n`

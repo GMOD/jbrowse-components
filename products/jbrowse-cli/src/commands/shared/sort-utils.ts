@@ -69,8 +69,10 @@ function createSortCommandForStdin(sortColumn: number): {
   pathArg: string
 } {
   const tmpFile = fileSync({ prefix: 'jbrowse-sort' }).name
+  // trap on EXIT removes the temp file whether or not the sort pipeline
+  // succeeds (a bare `&& rm` leaks the file when the pipeline fails)
   return {
-    command: `cat > "$1" && (${sortPipeline(sortColumn)}) && rm -f "$1"`,
+    command: `trap 'rm -f "$1"' EXIT; cat > "$1" && (${sortPipeline(sortColumn)})`,
     pathArg: tmpFile,
   }
 }

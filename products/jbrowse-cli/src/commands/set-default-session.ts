@@ -31,8 +31,8 @@ const options = {
   name: {
     type: 'string',
     short: 'n',
-    description: 'Give a name for the default session',
-    default: 'New Default Session',
+    description:
+      'Give a name for the default session (overrides any name in the session file; defaults to "New Default Session")',
   },
   currentSession: {
     type: 'boolean',
@@ -84,9 +84,15 @@ export async function run(args: string[]) {
   } else if (!session) {
     throw new Error('Please provide a --session file')
   } else {
+    const fileSession = await readDefaultSessionFile(session)
     await writeJsonFile(target, {
       ...configContents,
-      defaultSession: { name, ...(await readDefaultSessionFile(session)) },
+      // precedence: explicit --name > the session file's own name > fallback
+      defaultSession: {
+        name: 'New Default Session',
+        ...fileSession,
+        ...(name !== undefined ? { name } : {}),
+      },
     })
   }
 }

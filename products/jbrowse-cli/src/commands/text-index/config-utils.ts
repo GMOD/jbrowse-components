@@ -36,7 +36,7 @@ export function prepareIndexDriverFlags(flags: {
 }
 
 export function readConf(configPath: string): Config {
-  return JSON.parse(fs.readFileSync(configPath, 'utf8')) as Config
+  return JSON.parse(fs.readFileSync(configPath, 'utf8'))
 }
 
 export function writeConf(obj: Config, configPath: string): void {
@@ -88,43 +88,37 @@ export function getTrackConfigs(
   assemblyName?: string,
   excludeTrackIds?: string[],
 ): Track[] {
-  const { tracks } = config
-  if (!tracks) {
-    return []
-  }
-  const trackIdsToIndex = trackIds?.length
-    ? trackIds
-    : tracks.map(track => track.trackId)
-  const excludeSet = new Set(excludeTrackIds)
+  const tracks = config.tracks ?? []
 
-  return trackIdsToIndex
-    .map(trackId => {
-      const currentTrack = tracks.find(t => trackId === t.trackId)
-      if (!currentTrack) {
-        throw new Error(
-          `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
-        )
-      }
-      return currentTrack
-    })
-    .filter(track => {
-      if (excludeSet.has(track.trackId)) {
-        return false
-      }
-      if (track.metadata?.skipTextIndex) {
-        return false
-      }
-      if (!supported(track.adapter?.type)) {
-        return false
-      }
-      if (assemblyName && !track.assemblyNames.includes(assemblyName)) {
-        console.log(
-          `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,
-        )
-        return false
-      }
-      return true
-    })
+  // when specific trackIds are requested every one must exist; otherwise
+  // consider all tracks in the config
+  const requested = trackIds?.length
+    ? trackIds.map(trackId => {
+        const track = tracks.find(t => t.trackId === trackId)
+        if (track) {
+          return track
+        } else {
+          throw new Error(
+            `Track not found in config.json for trackId ${trackId}, please add track configuration before indexing.`,
+          )
+        }
+      })
+    : tracks
+
+  const excludeSet = new Set(excludeTrackIds)
+  return requested.filter(track => {
+    const inAssembly =
+      !assemblyName || track.assemblyNames.includes(assemblyName)
+    if (!inAssembly) {
+      console.log(`Skipping ${track.trackId}: not in assembly '${assemblyName}'`)
+    }
+    return (
+      inAssembly &&
+      !excludeSet.has(track.trackId) &&
+      !track.metadata?.skipTextIndex &&
+      supported(track.adapter?.type)
+    )
+  })
 }
 
 export { sanitizeForFilename as sanitizeNameForPath } from '@jbrowse/text-indexing-core'

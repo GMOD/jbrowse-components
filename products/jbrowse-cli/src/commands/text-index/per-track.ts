@@ -27,6 +27,7 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     force,
     exclude,
     prefixSize,
+    dryrun,
   } = flags
   const { config, configPath, outLocation } = await loadConfigForIndexing(
     target,
@@ -42,42 +43,48 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
     parseCommaSeparatedString(excludeTracks),
   )
   validateTrackConfigs(confs)
-  let hasChanges = false
-  for (const trackConfig of confs) {
-    const { textSearching, trackId, assemblyNames } = trackConfig
-    if (textSearching?.textSearchAdapter && !force) {
-      console.log(
-        `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
-      )
-      continue
-    }
-    console.log(`Indexing track ${trackId}...`)
-
-    await indexDriver({
-      trackConfigs: [trackConfig],
-      outLocation,
-      name: trackId,
-      assemblyNames,
-      ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
-    })
-    if (!textSearching?.textSearchAdapter) {
-      const index = configTracks.findIndex(track => trackId === track.trackId)
-      if (index !== -1) {
-        configTracks[index] = {
-          ...trackConfig,
-          textSearching: {
-            ...textSearching,
-            textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
-          },
-        }
-        hasChanges = true
+  if (dryrun) {
+    console.log(confs.map(e => `${e.trackId}\t${e.adapter?.type}`).join('\n'))
+  } else {
+    let hasChanges = false
+    for (const trackConfig of confs) {
+      const { textSearching, trackId, assemblyNames } = trackConfig
+      if (textSearching?.textSearchAdapter && !force) {
+        console.log(
+          `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
+        )
       } else {
-        console.warn(`Warning: can't find trackId ${trackId}`)
+        console.log(`Indexing track ${trackId}...`)
+
+        await indexDriver({
+          trackConfigs: [trackConfig],
+          outLocation,
+          name: trackId,
+          assemblyNames,
+          ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
+        })
+        if (!textSearching?.textSearchAdapter) {
+          const index = configTracks.findIndex(
+            track => trackId === track.trackId,
+          )
+          if (index !== -1) {
+            configTracks[index] = {
+              ...trackConfig,
+              textSearching: {
+                ...textSearching,
+                textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
+              },
+            }
+            hasChanges = true
+          } else {
+            console.warn(`Warning: can't find trackId ${trackId}`)
+          }
+        }
       }
     }
-  }
 
-  if (hasChanges) {
-    writeConf({ ...config, tracks: configTracks }, configPath)
+    if (hasChanges) {
+      writeConf({ ...config, tracks: configTracks }, configPath)
+    }
   }
 }

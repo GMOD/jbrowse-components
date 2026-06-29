@@ -57,6 +57,8 @@ export async function getLocalOrRemoteStream({
       throw new Error(`Failed to fetch ${file}: no response body`)
     }
 
+    // depending on the fetch implementation, body may already be a node
+    // Readable (e.g. node-fetch) or a web ReadableStream (global fetch)
     const nodeStream =
       body instanceof Readable ? body : Readable.fromWeb(body as ReadableStream)
     nodeStream.on('data', chunk => {
@@ -110,70 +112,43 @@ export function parseAttributes(
   return result
 }
 
-export function makeLocation(location: string, protocol: string) {
+export function makeLocation(
+  location: string,
+  protocol: string,
+): UriLocation | LocalPathLocation {
   if (protocol === 'uri') {
-    return { uri: location, locationType: 'UriLocation' } as UriLocation
+    return { uri: location, locationType: 'UriLocation' }
   }
   if (protocol === 'localPath') {
     return {
       localPath: path.resolve(location),
       locationType: 'LocalPathLocation',
-    } as LocalPathLocation
+    }
   }
   throw new Error(`invalid protocol ${protocol}`)
 }
 
+// ordered most-specific-first so e.g. `.vcf.gz` matches before `.vcf`
+const adapterGuesses = [
+  { regex: /\.vcf\.b?gz$/i, type: 'VcfTabixAdapter', locationKey: 'vcfGzLocation' },
+  { regex: /\.gff3?\.b?gz$/i, type: 'Gff3TabixAdapter', locationKey: 'gffGzLocation' },
+  { regex: /\.gtf?$/i, type: 'GtfAdapter', locationKey: 'gtfLocation' },
+  { regex: /\.vcf$/i, type: 'VcfAdapter', locationKey: 'vcfLocation' },
+  { regex: /\.gff3?$/i, type: 'Gff3Adapter', locationKey: 'gffLocation' },
+]
+
 export function guessAdapterFromFileName(filePath: string): Track {
-  const protocol = isURL(filePath) ? 'uri' : 'localPath'
-  const name = path.basename(filePath)
-  if (/\.vcf\.b?gz$/i.test(filePath)) {
+  const guess = adapterGuesses.find(g => g.regex.test(filePath))
+  if (guess) {
+    const name = path.basename(filePath)
+    const protocol = isURL(filePath) ? 'uri' : 'localPath'
     return {
       trackId: name,
       name,
       assemblyNames: [],
       adapter: {
-        type: 'VcfTabixAdapter',
-        vcfGzLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.gff3?\.b?gz$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'Gff3TabixAdapter',
-        gffGzLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.gtf?$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'GtfAdapter',
-        gtfLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.vcf$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'VcfAdapter',
-        vcfLocation: makeLocation(filePath, protocol),
-      },
-    }
-  } else if (/\.gff3?$/i.test(filePath)) {
-    return {
-      trackId: name,
-      name,
-      assemblyNames: [],
-      adapter: {
-        type: 'Gff3Adapter',
-        gffLocation: makeLocation(filePath, protocol),
+        type: guess.type,
+        [guess.locationKey]: makeLocation(filePath, protocol),
       },
     }
   } else {
