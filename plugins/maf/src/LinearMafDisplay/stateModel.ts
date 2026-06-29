@@ -16,6 +16,7 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { MAX_CANVAS_DIM_PX, getDpr } from '@jbrowse/render-core'
 import { installPerRegionLifecycle } from '@jbrowse/render-core/installPerRegionLifecycle'
 import {
   TreeSidebarMixin,
@@ -139,9 +140,11 @@ export default function stateModelFactory(
          * Per-row height in px, or `0` for "fit to display height" mode, where
          * rows stretch to fill the dragged track height. Mirrors the variants
          * MultiSampleVariantDisplay `rowHeightMode`. The `rowHeight` getter
-         * resolves this to a concrete px value.
+         * resolves this to a concrete px value. Defaults to fit-to-height (`0`)
+         * so large alignments (hundreds of species) stay bounded by the track
+         * height rather than growing a canvas past the browser's max size.
          */
-        rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeight),
+        rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeightMode),
         /**
          * #property
          */
@@ -525,21 +528,37 @@ export default function stateModelFactory(
       /**
        * #getter
        * The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`),
-       * or undefined when unset. A frozen config slot, so this is a plain
-       * snapshot the frames RPC hands straight to `getAdapter`.
+       * or undefined when unset. Read from the MAF *adapter* config as a swappable
+       * sub-adapter (alongside `summaryAdapter`), not the display — a frozen slot,
+       * so this is a plain snapshot the frames RPC hands straight to `getAdapter`.
        */
       get annotationAdapterConfig(): Record<string, unknown> | undefined {
-        return readConfObject(self.conf, 'annotationAdapter') ?? undefined
+        return readConfObject(self.adapterConfig, 'annotationAdapter') ?? undefined
       },
     }))
     .views(self => ({
       /**
        * #getter
-       * Whether the per-species CDS frame overlay should fetch + draw: an
-       * annotation adapter is configured and the toggle is on.
+       * Whether the per-species CDS frame *strip* should draw: an annotation
+       * adapter is configured and the "Show CDS frames" toggle is on. The codon
+       * view consumes the same frames data but is gated separately (see
+       * `annotationDataActive`), so the strip can be off while codon view is on.
        */
       get annotationsActive(): boolean {
         return self.showAnnotations && !!self.annotationAdapterConfig
+      },
+      /**
+       * #getter
+       * Whether the frames data needs to be fetched: an annotation adapter is
+       * configured and either the strip or the codon view wants it. Gates the
+       * frames RPC and keys the fetch cache so toggling *either* consumer on
+       * triggers the fetch.
+       */
+      get annotationDataActive(): boolean {
+        return (
+          (self.showAnnotations || self.showTranslation) &&
+          !!self.annotationAdapterConfig
+        )
       },
     }))
     .views(self => ({
@@ -670,12 +689,28 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The track height that fit-to-height mode divides among rows: the
-       * user-dragged `heightOverride` (TrackHeightMixin) or the config `height`
-       * default before any drag.
+       * Max CSS-px height the rows canvas may take before its backing store
+       * (`× dpr`) hits the browser/GPU canvas limit. The single ceiling both the
+       * fit-target sizing and the `rowHeight` cap respect.
+       */
+      get maxRowsHeight() {
+        return MAX_CANVAS_DIM_PX / getDpr()
+      },
+    }))
+    .views(self => ({
+      /**
+       * #getter
+       * The track height that fit-to-height mode divides among rows. Once the
+       * user drags, that `heightOverride` (TrackHeightMixin) wins; before any
+       * drag we size to show every row at the default px height, so a typical
+       * alignment looks exactly like fixed mode. Huge alignments are bounded by
+       * the `rowHeight` cap, not here, so this needs no cap of its own.
        */
       get fitTargetHeight(): number {
-        return self.heightOverride ?? readConfObject(self.conf, 'height')
+        return (
+          self.heightOverride ??
+          self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset
+        )
       },
     }))
     .views(self => ({
@@ -697,11 +732,18 @@ export default function stateModelFactory(
        * Resolved per-row height. `rowHeightMode === 0` is fit-to-height (rows
        * stretch to the dragged track height); any positive value is a pinned px
        * height. Every consumer reads this getter, never `rowHeightMode`.
+       *
+       * Capped so the rows canvas backing store (`rowsHeight × dpr`) can never
+       * exceed the browser/GPU max canvas size: a fixed px height across
+       * hundreds of species would otherwise throw `Canvas exceeds max size`.
+       * The cap shrinks rows to fit instead of crashing (or clipping); fit mode
+       * already stays small so it never engages there. Bands have their own
+       * small canvases, so the rows-only ceiling is the whole limit.
        */
       get rowHeight() {
-        return self.rowHeightMode === 0
-          ? self.autoRowHeight
-          : self.rowHeightMode
+        const raw =
+          self.rowHeightMode === 0 ? self.autoRowHeight : self.rowHeightMode
+        return Math.min(raw, self.maxRowsHeight / self.nrow)
       },
     }))
     .views(self => ({
@@ -861,12 +903,13 @@ export default function stateModelFactory(
        * `layout`/`subtreeFilter` user-driven), so it doesn't churn per fetch.
        */
       rpcProps() {
-        // `annotationsActive` is a cache key so toggling the CDS-frame overlay
-        // on triggers a refetch that populates `framesDataMap` for the loaded
-        // regions (the frames piggyback on the same fetch pass).
+        // `annotationDataActive` is a cache key so toggling the CDS-frame strip
+        // *or* the codon view on triggers a refetch that populates
+        // `framesDataMap` for the loaded regions (the frames piggyback on the
+        // same fetch pass).
         return {
           orderedSampleIds: self.orderedSampleIds,
-          annotationsActive: self.annotationsActive,
+          annotationDataActive: self.annotationDataActive,
         }
       },
     }))
@@ -964,8 +1007,9 @@ export default function stateModelFactory(
       /**
        * #method
        * The CDS frame record covering absolute genomic `bp` (uint32) on display
-       * `rowIndex`, or undefined when no frame overlaps there (or the overlay is
-       * off). Powers the gene/reading-frame rows in the hover tooltip — the
+       * `rowIndex`, or undefined when no frame overlaps there (or no frames data
+       * is loaded). Gated on `annotationDataActive` not the strip toggle, so the
+       * gene name still reads on hover in codon view with the strip off. The
        * species is matched by the same `src`→row projection the overlay draws
        * with, so the tooltip and the strip can't disagree about which row a gene
        * is on.
@@ -975,7 +1019,7 @@ export default function stateModelFactory(
         bp: number,
         rowIndex: number,
       ) {
-        if (!self.annotationsActive) {
+        if (!self.annotationDataActive) {
           return undefined
         }
         const hit = findFrameAt(
@@ -1168,7 +1212,7 @@ export default function stateModelFactory(
       get codonViewActive(): boolean {
         return (
           self.showTranslation &&
-          self.annotationsActive &&
+          !!self.annotationAdapterConfig &&
           self.zoomedToBaseLevel &&
           !self.showSummary
         )

@@ -11,6 +11,36 @@ export function getDpr() {
   return typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
 }
 
+// Conservative ceiling (physical/backing px) for a single canvas dimension.
+// Browsers throw `InvalidStateError: Canvas exceeds max size` once the backing
+// store crosses their (browser/GPU-specific) limit — Firefox caps the area,
+// WebGL caps a texture at MAX_TEXTURE_SIZE (>= 8192 on essentially all real
+// hardware), Safari/Chrome cap the dimension. 8192 is under all of these, so a
+// canvas whose backing store stays within it on both axes can't throw. Callers
+// that can produce arbitrarily tall/wide content (e.g. the MAF rows canvas with
+// hundreds of species) bound their CSS size against `MAX_CANVAS_DIM_PX / dpr`.
+export const MAX_CANVAS_DIM_PX = 8192
+
+let warnedCanvasClamp = false
+
+// CSS px → backing-store px, clamped to the safe ceiling (warning once if the
+// clamp engages). The model-level sizing (e.g. MAF `rowHeight`) should keep
+// canvases within the limit on its own; this is the last-resort guard so a
+// pathological size degrades to a clipped canvas instead of a thrown exception.
+function backingPx(cssSize: number, dpr: number, axis: 'width' | 'height') {
+  const value = Math.round(cssSize * dpr)
+  if (value > MAX_CANVAS_DIM_PX) {
+    if (!warnedCanvasClamp) {
+      warnedCanvasClamp = true
+      console.warn(
+        `Canvas ${axis} ${value}px exceeds the safe limit ${MAX_CANVAS_DIM_PX}px and was clamped`,
+      )
+    }
+    return MAX_CANVAS_DIM_PX
+  }
+  return value
+}
+
 // Apply CSS dimensions + dpr-scaled physical dimensions to `canvas`. Returns
 // whether the backing dimensions actually changed — both HAL impls and any
 // 2D-canvas backend use this so the dpr math and style-vs-attribute logic
@@ -21,8 +51,8 @@ export function syncCanvasSize(
   height: number,
 ): boolean {
   const dpr = getDpr()
-  const pw = Math.round(width * dpr)
-  const ph = Math.round(height * dpr)
+  const pw = backingPx(width, dpr, 'width')
+  const ph = backingPx(height, dpr, 'height')
   const changed = canvas.width !== pw || canvas.height !== ph
   if (changed) {
     canvas.width = pw
@@ -40,8 +70,8 @@ export function prepareCanvas(
   canvasHeight: number,
 ) {
   const dpr = getDpr()
-  const bufW = Math.round(canvasWidth * dpr)
-  const bufH = Math.round(canvasHeight * dpr)
+  const bufW = backingPx(canvasWidth, dpr, 'width')
+  const bufH = backingPx(canvasHeight, dpr, 'height')
 
   if (canvas.width !== bufW || canvas.height !== bufH) {
     canvas.width = bufW

@@ -1,4 +1,8 @@
-import { getPreparedCanvas2D } from './canvas2dUtils.ts'
+import {
+  MAX_CANVAS_DIM_PX,
+  getPreparedCanvas2D,
+  syncCanvasSize,
+} from './canvas2dUtils.ts'
 
 function makeFakeCanvas(ctx: unknown) {
   const calls = { setTransform: 0, clearRect: 0 }
@@ -43,4 +47,24 @@ test('returns the prepared context and applies the DPR backing-store sizing', ()
   expect(canvas.height).toBe(20)
   expect(calls.setTransform).toBe(1)
   expect(calls.clearRect).toBe(1)
+})
+
+test('clamps an oversized backing store to the safe max instead of throwing', () => {
+  const warn = jest.spyOn(console, 'warn').mockImplementation(() => {})
+  const canvas = {
+    width: 0,
+    height: 0,
+    style: {} as { width?: string; height?: string },
+  }
+  syncCanvasSize(
+    canvas as unknown as HTMLCanvasElement,
+    1000,
+    MAX_CANVAS_DIM_PX + 5000,
+  )
+  // backing store capped to the limit, but CSS size stays the requested value
+  expect(canvas.height).toBe(MAX_CANVAS_DIM_PX)
+  expect(canvas.width).toBe(1000)
+  expect(canvas.style.height).toBe(`${MAX_CANVAS_DIM_PX + 5000}px`)
+  expect(warn).toHaveBeenCalled()
+  warn.mockRestore()
 })

@@ -67,6 +67,7 @@ export {
 } from './blockClipUtils.ts'
 export type { BlockClipResult } from './blockClipUtils.ts'
 export {
+  MAX_CANVAS_DIM_PX,
   bpToScreenPx,
   clampBlockScissor,
   clipBlockForCanvas,
