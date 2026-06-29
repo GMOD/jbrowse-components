@@ -82,8 +82,8 @@ export async function doSubmit({
       }
     }
   }
-  if (model.levels.length >= 4) {
-    model.autoScaleLevelHeights()
-  }
+  // no-op for few levels (per-level height is capped at the 100px default), so
+  // safe to always run; only shrinks bands once the stack gets tall
+  model.autoScaleLevelHeights()
   model.clearImportFormSyntenyTracks()
 }

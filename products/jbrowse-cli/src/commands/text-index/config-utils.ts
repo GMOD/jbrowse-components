@@ -110,7 +110,9 @@ export function getTrackConfigs(
     const inAssembly =
       !assemblyName || track.assemblyNames.includes(assemblyName)
     if (!inAssembly) {
-      console.log(`Skipping ${track.trackId}: not in assembly '${assemblyName}'`)
+      console.log(
+        `Skipping ${track.trackId}: not in assembly '${assemblyName}'`,
+      )
     }
     return (
       inAssembly &&

@@ -113,7 +113,8 @@ levels: types.array(LinearSyntenyViewHelper)
 
 #### property: views
 
-currently this is limited to an array of two
+N genome rows, with N-1 synteny `levels` between adjacent pairs. The
+views/levels invariant is maintained by reconcileLevels().
 
 ```ts
 // type signature

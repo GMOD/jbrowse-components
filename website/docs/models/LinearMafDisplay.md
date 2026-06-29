@@ -22,8 +22,8 @@ reference the markdown files in our repo of the checked out git tag
 ## Example usage
 
 A complete `MafTrack` config to paste into `tracks`. `samples` lists the aligned
-species in track order; `rowHeightMode` sets the per-sample band height in px
-(or `0` to stretch rows to fill the track height):
+species in track order; `rowHeight` sets the per-sample band height in px (or
+`0` to stretch rows to fill the track height):
 
 ```js
 {
@@ -40,7 +40,7 @@ species in track order; `rowHeightMode` sets the per-sample band height in px
     {
       type: 'LinearMafDisplay',
       displayId: 'multiz-LinearMafDisplay',
-      rowHeightMode: 16,
+      rowHeight: 16,
       showCoverage: true,
     },
   ],
@@ -202,20 +202,20 @@ type configuration = ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: rowHeightMode
+#### property: rowHeight
 
-Per-row height in px, or `0` for "fit to display height" mode, where rows
+Raw per-row height in px, or `0` for "fit to display height" mode, where rows
 stretch to fill the dragged track height. Mirrors the variants
-MultiSampleVariantDisplay `rowHeightMode`. The `rowHeight` getter resolves this
-to a concrete px value. Defaults to fit-to-height (`0`) so large alignments
-(hundreds of species) stay bounded by the track height rather than growing a
-canvas past the browser's max size.
+MultiSampleVariantDisplay `rowHeight`. The resolved value is the
+`effectiveRowHeight` getter — consumers read that, never this. Defaults to
+fit-to-height (`0`) so large alignments (hundreds of species) stay bounded by
+the track height rather than growing a canvas past the browser's max size.
 
 ```ts
 // type signature
-type rowHeightMode = IOptionalIType<ISimpleType<number>, [undefined]>
+type rowHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeightMode)
+rowHeight: types.stripDefault(types.number, 0)
 ```
 
 #### property: rowProportion
@@ -711,11 +711,11 @@ fixed bands) split evenly across rows.
 type autoRowHeight = number
 ```
 
-#### getter: rowHeight
+#### getter: effectiveRowHeight
 
-Resolved per-row height. `rowHeightMode === 0` is fit-to-height (rows stretch to
-the dragged track height); any positive value is a pinned px height. Every
-consumer reads this getter, never `rowHeightMode`.
+Resolved per-row height. `rowHeight === 0` is fit-to-height (rows stretch to the
+dragged track height); any positive value is a pinned px height. Every consumer
+reads this getter, never the raw `rowHeight` property.
 
 Capped so the rows canvas backing store (`rowsHeight × dpr`) can never exceed
 the browser/GPU max canvas size: a fixed px height across hundreds of species
@@ -725,7 +725,7 @@ engages there. Bands have their own small canvases, so the rows-only ceiling is
 the whole limit.
 
 ```ts
-type rowHeight = number
+type effectiveRowHeight = number
 ```
 
 #### getter: rowsHeight
@@ -1227,7 +1227,7 @@ type clearLayout = () => void
 
 Switch to fit-to-height mode: rows stretch to fill the track height. Seeds
 `heightOverride` from the current content height so toggling on doesn't jump,
-then `rowHeightMode = 0` makes `rowHeight` derive from it.
+then `rowHeight = 0` makes `effectiveRowHeight` derive from it.
 
 ```ts
 type setFitToHeight = () => void
@@ -1236,7 +1236,7 @@ type setFitToHeight = () => void
 #### action: resizeHeight
 
 Drag-resize. In fit mode the new height drives `autoRowHeight` (rows stretch).
-In fixed mode the pinned `rowHeightMode` scales proportionally so dragging still
+In fixed mode the pinned `rowHeight` scales proportionally so dragging still
 resizes rows. Mirrors the variants display.
 
 Flips `resizing` for the duration of the drag (cleared a beat after the last

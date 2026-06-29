@@ -53,32 +53,31 @@ export async function perTrackIndex(flags: TextIndexFlags): Promise<void> {
         console.log(
           `Note: ${trackId} has already been indexed with this configuration, use --force to overwrite this track. Skipping for now`,
         )
-      } else {
-        console.log(`Indexing track ${trackId}...`)
+        continue
+      }
+      console.log(`Indexing track ${trackId}...`)
 
-        await indexDriver({
-          trackConfigs: [trackConfig],
-          outLocation,
-          name: trackId,
-          assemblyNames,
-          ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
-        })
-        if (!textSearching?.textSearchAdapter) {
-          const index = configTracks.findIndex(
-            track => trackId === track.trackId,
-          )
-          if (index !== -1) {
-            configTracks[index] = {
-              ...trackConfig,
-              textSearching: {
-                ...textSearching,
-                textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
-              },
-            }
-            hasChanges = true
-          } else {
-            console.warn(`Warning: can't find trackId ${trackId}`)
+      await indexDriver({
+        trackConfigs: [trackConfig],
+        outLocation,
+        name: trackId,
+        assemblyNames,
+        ...prepareIndexDriverFlags({ attributes, exclude, quiet, prefixSize }),
+      })
+
+      if (!textSearching?.textSearchAdapter) {
+        const index = configTracks.findIndex(track => trackId === track.trackId)
+        if (index !== -1) {
+          configTracks[index] = {
+            ...trackConfig,
+            textSearching: {
+              ...textSearching,
+              textSearchAdapter: createTrixAdapter(trackId, assemblyNames),
+            },
           }
+          hasChanges = true
+        } else {
+          console.warn(`Warning: can't find trackId ${trackId}`)
         }
       }
     }

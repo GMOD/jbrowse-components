@@ -130,8 +130,16 @@ export function makeLocation(
 
 // ordered most-specific-first so e.g. `.vcf.gz` matches before `.vcf`
 const adapterGuesses = [
-  { regex: /\.vcf\.b?gz$/i, type: 'VcfTabixAdapter', locationKey: 'vcfGzLocation' },
-  { regex: /\.gff3?\.b?gz$/i, type: 'Gff3TabixAdapter', locationKey: 'gffGzLocation' },
+  {
+    regex: /\.vcf\.b?gz$/i,
+    type: 'VcfTabixAdapter',
+    locationKey: 'vcfGzLocation',
+  },
+  {
+    regex: /\.gff3?\.b?gz$/i,
+    type: 'Gff3TabixAdapter',
+    locationKey: 'gffGzLocation',
+  },
   { regex: /\.gtf?$/i, type: 'GtfAdapter', locationKey: 'gtfLocation' },
   { regex: /\.vcf$/i, type: 'VcfAdapter', locationKey: 'vcfLocation' },
   { regex: /\.gff3?$/i, type: 'Gff3Adapter', locationKey: 'gffLocation' },

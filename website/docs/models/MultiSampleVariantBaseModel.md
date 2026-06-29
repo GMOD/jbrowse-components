@@ -215,13 +215,13 @@ type configuration = ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: rowHeightMode
+#### property: rowHeight
 
 ```ts
 // type signature
-type rowHeightMode = IOptionalIType<ISimpleType<number>, [undefined]>
+type rowHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeightMode: types.stripDefault(types.number, 0)
+rowHeight: types.stripDefault(types.number, 0)
 ```
 
 #### property: jexlFilters
@@ -556,15 +556,16 @@ type nrow = number
 type autoRowHeight = number
 ```
 
-#### getter: rowHeight
+#### getter: effectiveRowHeight
 
-rowHeightMode === 0 means auto-fit (computed from availableHeight / nrow); any
-positive value is a user-pinned height. `resizeHeight` scales pinned values
-proportionally so manual + display-resize stay in sync without snap-back
-fuzziness.
+Resolved per-row height. `rowHeight === 0` means auto-fit (computed from
+availableHeight / nrow); any positive value is a user-pinned height.
+`resizeHeight` scales pinned values proportionally so manual + display-resize
+stay in sync without snap-back fuzziness. Every consumer reads this, never the
+raw `rowHeight` property.
 
 ```ts
-type rowHeight = number
+type effectiveRowHeight = number
 ```
 
 #### getter: hierarchy
