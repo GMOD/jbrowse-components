@@ -207,13 +207,15 @@ configuration: ConfigurationReference(configSchema)
 Per-row height in px, or `0` for "fit to display height" mode, where rows
 stretch to fill the dragged track height. Mirrors the variants
 MultiSampleVariantDisplay `rowHeightMode`. The `rowHeight` getter resolves this
-to a concrete px value.
+to a concrete px value. Defaults to fit-to-height (`0`) so large alignments
+(hundreds of species) stay bounded by the track height rather than growing a
+canvas past the browser's max size.
 
 ```ts
 // type signature
 type rowHeightMode = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
-rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeight)
+rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeightMode)
 ```
 
 #### property: rowProportion
@@ -549,8 +551,9 @@ type lgv = ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleTyp
 #### getter: annotationAdapterConfig
 
 The configured CDS-frame annotation adapter snapshot (UCSC `mafFrames`), or
-undefined when unset. A frozen config slot, so this is a plain snapshot the
-frames RPC hands straight to `getAdapter`.
+undefined when unset. Read from the MAF _adapter_ config as a swappable
+sub-adapter (alongside `summaryAdapter`), not the display — a frozen slot, so
+this is a plain snapshot the frames RPC hands straight to `getAdapter`.
 
 ```ts
 type annotationAdapterConfig = Record<string, unknown> | undefined
@@ -558,11 +561,23 @@ type annotationAdapterConfig = Record<string, unknown> | undefined
 
 #### getter: annotationsActive
 
-Whether the per-species CDS frame overlay should fetch + draw: an annotation
-adapter is configured and the toggle is on.
+Whether the per-species CDS frame _strip_ should draw: an annotation adapter is
+configured and the "Show CDS frames" toggle is on. The codon view consumes the
+same frames data but is gated separately (see `annotationDataActive`), so the
+strip can be off while codon view is on.
 
 ```ts
 type annotationsActive = boolean
+```
+
+#### getter: annotationDataActive
+
+Whether the frames data needs to be fetched: an annotation adapter is configured
+and either the strip or the codon view wants it. Gates the frames RPC and keys
+the fetch cache so toggling _either_ consumer on triggers the fetch.
+
+```ts
+type annotationDataActive = boolean
 ```
 
 #### getter: editableSources
@@ -665,11 +680,23 @@ Number of displayed rows (at least 1, so the fit-mode division is safe).
 type nrow = number
 ```
 
+#### getter: maxRowsHeight
+
+Max CSS-px height the rows canvas may take before its backing store (`× dpr`)
+hits the browser/GPU canvas limit. The single ceiling both the fit-target sizing
+and the `rowHeight` cap respect.
+
+```ts
+type maxRowsHeight = number
+```
+
 #### getter: fitTargetHeight
 
-The track height that fit-to-height mode divides among rows: the user-dragged
-`heightOverride` (TrackHeightMixin) or the config `height` default before any
-drag.
+The track height that fit-to-height mode divides among rows. Once the user
+drags, that `heightOverride` (TrackHeightMixin) wins; before any drag we size to
+show every row at the default px height, so a typical alignment looks exactly
+like fixed mode. Huge alignments are bounded by the `rowHeight` cap, not here,
+so this needs no cap of its own.
 
 ```ts
 type fitTargetHeight = number
@@ -689,6 +716,13 @@ type autoRowHeight = number
 Resolved per-row height. `rowHeightMode === 0` is fit-to-height (rows stretch to
 the dragged track height); any positive value is a pinned px height. Every
 consumer reads this getter, never `rowHeightMode`.
+
+Capped so the rows canvas backing store (`rowsHeight × dpr`) can never exceed
+the browser/GPU max canvas size: a fixed px height across hundreds of species
+would otherwise throw `Canvas exceeds max size`. The cap shrinks rows to fit
+instead of crashing (or clipping); fit mode already stays small so it never
+engages there. Bands have their own small canvases, so the rows-only ceiling is
+the whole limit.
 
 ```ts
 type rowHeight = number
@@ -912,9 +946,10 @@ type visibleCodons = CodonMarker[]
 
 #### getter: visibleSourceChromosomes
 
-Distinct source chromosomes among the visible alignment blocks, each with its
-stable color — the legend for the color-by-chromosome SV mode. Empty unless that
-mode is the active rendering.
+Source chromosomes among the visible alignment blocks, each with its stable
+color, ordered by descending bp coverage so the legend can keep the most
+prevalent ones and fold the long tail of rare scaffolds into a count. Empty
+unless the color-by-chromosome mode is active.
 
 ```ts
 type visibleSourceChromosomes = { chr: string; color: string }[]
@@ -957,7 +992,7 @@ doesn't churn per fetch.
 ```ts
 type rpcProps = () => {
   orderedSampleIds: string[] | undefined
-  annotationsActive: boolean
+  annotationDataActive: boolean
 }
 ```
 
@@ -975,9 +1010,10 @@ type rowHoverInfo = (displayedRegionIndex: number, gposFrac: number, rowIndex: n
 #### method: frameHoverInfo
 
 The CDS frame record covering absolute genomic `bp` (uint32) on display
-`rowIndex`, or undefined when no frame overlaps there (or the overlay is off).
-Powers the gene/reading-frame rows in the hover tooltip — the species is matched
-by the same `src`→row projection the overlay draws with, so the tooltip and the
+`rowIndex`, or undefined when no frame overlaps there (or no frames data is
+loaded). Gated on `annotationDataActive` not the strip toggle, so the gene name
+still reads on hover in codon view with the strip off. The species is matched by
+the same `src`→row projection the overlay draws with, so the tooltip and the
 strip can't disagree about which row a gene is on.
 
 ```ts
@@ -985,7 +1021,7 @@ type frameHoverInfo = (
   displayedRegionIndex: number,
   bp: number,
   rowIndex: number,
-) => { name: string; frame: number; strand: number } | undefined
+) => { name: string } | undefined
 ```
 
 #### method: coverageTooltipBin

@@ -3,6 +3,7 @@ import {
   clusterTree,
   getLeafNames,
   parseClusterTree,
+  pruneNewickToLeaves,
 } from './clusterUtils.ts'
 import { hierarchy, leaves } from './hierarchy.ts'
 
@@ -67,13 +68,43 @@ test('parseClusterTree filter matches nested clade', () => {
   ).toEqual(['B', 'C'])
 })
 
-test('parseClusterTree returns full tree when filter has no exact subtree', () => {
+test('parseClusterTree prunes to a scattered (non-monophyletic) leaf set', () => {
   const root = parseClusterTree('((A:1,B:1):1,(C:1,D:1):1);', ['A', 'C'])
   expect(
     leaves(root)
       .map(l => l.data.name)
       .sort(),
-  ).toEqual(['A', 'B', 'C', 'D'])
+  ).toEqual(['A', 'C'])
+})
+
+test('parseClusterTree collapses unary nodes and preserves leaf order', () => {
+  // keep one leaf from each pair: the (X,Y) parents collapse to their kept leaf
+  const root = parseClusterTree('((A:1,B:1):2,(C:1,D:1):2);', ['B', 'D'])
+  expect(leaves(root).map(l => l.data.name)).toEqual(['B', 'D'])
+  // both kept leaves sit directly under the root after the unary collapse
+  expect(root.children!.map(c => c.data.name)).toEqual(['B', 'D'])
+})
+
+test('pruneNewickToLeaves sums branch length when collapsing a unary node', () => {
+  // root -> (clade -> (B,C)); keep only C: clade collapses, C's branch absorbs it
+  const pruned = pruneNewickToLeaves(
+    {
+      children: [
+        { name: 'A', length: 1 },
+        {
+          length: 5,
+          children: [
+            { name: 'B', length: 1 },
+            { name: 'C', length: 2 },
+          ],
+        },
+      ],
+    },
+    new Set(['C']),
+  )
+  // root now has a single kept leaf C; its length is 2 (own) + 5 (collapsed clade)
+  expect(pruned?.name).toBe('C')
+  expect(pruned?.length).toBe(7)
 })
 
 test('parseClusterTree returns whole tree for filter matching root leaves', () => {

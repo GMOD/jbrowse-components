@@ -16,4 +16,21 @@ describe('BigMafAdapter configSchema', () => {
     const conf = configSchema.create({ type: 'BigMafAdapter', summaryAdapter })
     expect(readConfObject(conf, 'summaryAdapter')).toEqual(summaryAdapter)
   })
+
+  test('annotationAdapter defaults to null (no CDS-frames overlay)', () => {
+    const conf = configSchema.create({ type: 'BigMafAdapter' })
+    expect(readConfObject(conf, 'annotationAdapter')).toBe(null)
+  })
+
+  test('annotationAdapter stores the CDS-frames sub-adapter config verbatim', () => {
+    const annotationAdapter = {
+      type: 'BigBedAdapter',
+      bigBedLocation: { uri: 'https://example.com/x.frames.bb' },
+    }
+    const conf = configSchema.create({
+      type: 'BigMafAdapter',
+      annotationAdapter,
+    })
+    expect(readConfObject(conf, 'annotationAdapter')).toEqual(annotationAdapter)
+  })
 })

@@ -2,12 +2,11 @@
 // the state model (stripDefault seeds) and the track menu presets can reference
 // them without a circular import between stateModel and trackMenuItems.
 export const DEFAULTS = {
-  // Px height used by the "Normal" preset / "Set feature height" dialog.
-  rowHeight: 15,
-  // Default for the `rowHeightMode` property: 0 = fit-to-display-height, so a
+  // Px height used by the "Normal" preset / "Set feature height" dialog. The
+  // `rowHeight` property itself defaults to 0 (fit-to-display-height) so a
   // freshly loaded track bounds itself to the track height regardless of how
-  // many species it has. The "Normal" preset switches to the px `rowHeight`.
-  rowHeightMode: 0,
+  // many species it has; the "Normal" preset switches to this px value.
+  rowHeight: 15,
   rowProportion: 0.8,
   showAllLetters: false,
   mismatchRendering: true,

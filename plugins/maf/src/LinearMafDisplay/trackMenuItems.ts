@@ -36,7 +36,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   annotationAdapterConfig: Record<string, unknown> | undefined
   rowIdentityMode: RowIdentityModeWithOff
   rowIdentityAutoZoom: boolean
-  rowHeightMode: number
+  rowHeight: number
   subtreeFilter?: readonly string[]
   editableSources?: MafSource[]
   setRowHeight: (n: number) => void
@@ -73,13 +73,15 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         {
           label: 'Fit to display height',
           type: 'checkbox',
-          checked: self.rowHeightMode === 0,
+          checked: self.rowHeight === 0,
           onClick: () => {
             self.setFitToHeight()
           },
         },
         {
           label: 'Normal',
+          type: 'checkbox',
+          checked: self.rowHeight === DEFAULTS.rowHeight,
           onClick: () => {
             self.setRowHeight(DEFAULTS.rowHeight)
             self.setRowProportion(DEFAULTS.rowProportion)
@@ -87,6 +89,8 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
         },
         {
           label: 'Compact',
+          type: 'checkbox',
+          checked: self.rowHeight === 8,
           onClick: () => {
             self.setRowHeight(8)
             self.setRowProportion(0.9)

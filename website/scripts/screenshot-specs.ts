@@ -396,10 +396,54 @@ function kgUrl(session: object) {
 // render with the local build's code instead.
 const CE_MAF = 'test_data/ce_maf.json'
 
-// Same ce11 26-way MAF, plus an `annotationAdapter` (a local bigBed built from
-// the real UCSC ce11 multiz26wayFrames data) on the LinearMafDisplay, so the
-// per-species CDS reading-frame overlay renders.
+// Same ce11 26-way MAF, plus an `annotationAdapter` sub-adapter (a local bigBed
+// built from the real UCSC ce11 multiz26wayFrames data) on the MAF adapter, so
+// the per-species CDS reading-frame overlay + codon view render.
 const CE_MAF_FRAMES = 'test_data/ce_maf_frames.json'
+
+// UCSC hg38 470-way multiz (Zoonomia + more) config.
+const HG38_470WAY = 'test_data/hg38_multiz470way.json'
+
+// A representative ~30-species slice of the hg38 470-way spanning the major
+// mammalian clades (primates, rodents+glires, laurasiatheria, afrotheria,
+// xenarthra) plus opossum and platypus as marsupial/monotreme outgroups — close
+// to the classic UCSC "30-way vertebrate" sampling. Exact leaf names from
+// hg38.470way.nh (the Cactus alignment uses HL-prefixed names for many
+// assemblies). Used as a `subtreeFilter`; the pruned guide tree then reads as a
+// clean ~30-leaf dendrogram instead of the full 470-species tree.
+const HG38_470WAY_30 = [
+  'hg38', // human
+  'panTro6', // chimp
+  'gorGor6', // gorilla
+  'ponAbe3', // orangutan
+  'rheMac10', // rhesus macaque
+  'HLcalJac4', // marmoset
+  'otoGar3', // bushbaby
+  'mm39', // mouse
+  'rn6', // rat
+  'cavPor3', // guinea pig
+  'hetGla2', // naked mole-rat
+  'oryCun2', // rabbit
+  'tupBel1', // tree shrew
+  'bosTau9', // cow
+  'HLoviAri5', // sheep
+  'susScr11', // pig
+  'vicPac2', // alpaca
+  'turTru2', // dolphin
+  'equCab3', // horse
+  'cerSim1', // white rhino
+  'felCat9', // cat
+  'canFam4', // dog
+  'ursMar1', // polar bear
+  'myoLuc2', // little brown bat
+  'eriEur2', // hedgehog
+  'HLloxAfr4', // elephant
+  'echTel2', // tenrec
+  'oryAfe1', // aardvark
+  'dasNov3', // armadillo
+  'monDom5', // opossum
+  'HLornAna3', // platypus
+]
 
 // Three H. pylori strains stacked top-to-bottom, with a synteny track between
 // each adjacent pair and a gene annotation track on each genome, used by the
@@ -6164,9 +6208,10 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ce11.26way',
+          // fit-to-display-height is the default; rows fill heightOverride
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 12,
+            heightOverride: 360,
           },
         },
       ],
@@ -6198,7 +6243,12 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ce11.26way',
-          displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 8 },
+          // fit-to-display-height; rows shrink to make room when the
+          // conservation band is toggled on below
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            heightOverride: 320,
+          },
         },
       ],
     }),
@@ -6248,7 +6298,12 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ce11.26way',
-          displaySnapshot: { type: 'LinearMafDisplay', rowHeight: 13 },
+          // strip is opt-in (off by default), so enable it for this figure
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            heightOverride: 400,
+            showAnnotations: true,
+          },
         },
       ],
     }),
@@ -6256,6 +6311,39 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 90000,
     viewportWidth: 1000,
     viewportHeight: 560,
+    settleMs: 12000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 100 } },
+      { type: 'delay', ms: 2000 },
+    ],
+  },
+  {
+    // Codon view on the 26-way, zoomed to codon level: each species' coding
+    // sequence translated in the reference reading frame, one amino acid per
+    // codon cell, colored by amino-acid change (nonsynonymous stands out,
+    // synonymous faint, stops flagged, conserved clean). Enabled via
+    // showTranslation alone — the CDS-frame strip stays off (decoupled default).
+    mode: 'url',
+    name: 'maf_codon_translation',
+    url: lgvSession(CE_MAF_FRAMES, {
+      assembly: 'ce11',
+      loc: 'chrI:2,999,200-2,999,370',
+      tracks: [
+        {
+          trackId: 'ce11.26way',
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            heightOverride: 470,
+            showTranslation: true,
+          },
+        },
+      ],
+    }),
+    readyText: 'chrI',
+    readyTimeout: 90000,
+    viewportWidth: 1000,
+    viewportHeight: 600,
     settleMs: 12000,
     hideTooltip: true,
     actions: [
@@ -6278,7 +6366,7 @@ export const specs: ScreenshotSpec[] = [
           trackId: 'ce11.26way',
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 15,
+            heightOverride: 470,
             showTranslation: true,
           },
         },
@@ -6311,7 +6399,7 @@ export const specs: ScreenshotSpec[] = [
           trackId: 'ce11.26way',
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 13,
+            heightOverride: 400,
             colorByChromosome: true,
           },
         },
@@ -6334,7 +6422,7 @@ export const specs: ScreenshotSpec[] = [
     // the flip reads clearly: bruMal2's left block aligns on the opposite strand
     // from the rest of its scaffold and is hatched + outlined, while its other
     // blocks (the scaffold's consensus orientation) are left plain. CDS frames
-    // are off so the only overlay is the inversion cue.
+    // are off (the default) so the only overlay is the inversion cue.
     mode: 'url',
     name: 'maf_inversions',
     url: lgvSession(CE_MAF_FRAMES, {
@@ -6343,11 +6431,12 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ce11.26way',
+          // fit-to-display-height: the 5 filtered rows fill the track tall
+          // enough for the strand-flip hatch to read clearly
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 28,
+            heightOverride: 200,
             showInversions: true,
-            showAnnotations: false,
             subtreeFilter: ['ce11', 'caeRem4', 'cb4', 'bruMal2', 'triSpi1'],
           },
         },
@@ -6373,15 +6462,16 @@ export const specs: ScreenshotSpec[] = [
     // timeout.
     mode: 'url',
     name: 'maf_470way',
-    url: lgvSession('test_data/hg38_multiz470way.json', {
+    url: lgvSession(HG38_470WAY, {
       assembly: 'hg38',
       loc: '12:6,534,400-6,538,500',
       tracks: [
         {
           trackId: 'hg38.multiz470way',
+          // fit-to-display-height: all ~470 rows packed into the track height
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            rowHeight: 2,
+            heightOverride: 1080,
             rowIdentityMode: 'heatmap',
             rowIdentityAutoZoom: false,
           },
@@ -6392,9 +6482,50 @@ export const specs: ScreenshotSpec[] = [
     readyTimeout: 120000,
     viewportWidth: 1100,
     viewportHeight: 1180,
-    settleMs: 20000,
+    // all ~470 species over remote UCSC data — long settle so the heatmap is
+    // fully painted and the loading indicator has cleared before capture
+    settleMs: 35000,
     hideTooltip: true,
     actions: [{ type: 'delay', ms: 2000 }],
+  },
+  {
+    // The hg38 470-way narrowed to a representative ~30 mammals (subtreeFilter,
+    // HG38_470WAY_30) in codon view over a conserved GAPDH exon: each species'
+    // coding sequence is translated in the human reading frame, so conserved
+    // residues line up and the few amino-acid changes in the more distant
+    // species stand out. With the tree-pruning fix the guide tree on the left is
+    // the pruned ~30-leaf dendrogram (not the full 470-species tree). Chromosome-
+    // level human reference reads far cleaner than a fragmented scaffold MAF.
+    mode: 'url',
+    name: 'maf_470way_codon',
+    url: lgvSession(HG38_470WAY, {
+      assembly: 'hg38',
+      loc: '12:6,536,485-6,536,600',
+      tracks: [
+        {
+          trackId: 'hg38.multiz470way',
+          // fit-to-display-height: the ~30 filtered rows fill the track tall
+          // enough to read the per-codon amino acids
+          displaySnapshot: {
+            type: 'LinearMafDisplay',
+            heightOverride: 560,
+            showTranslation: true,
+            subtreeFilter: HG38_470WAY_30,
+          },
+        },
+      ],
+    }),
+    readyText: '6,536,5',
+    readyTimeout: 120000,
+    viewportWidth: 1000,
+    // tall enough to show all ~30 fitted rows + the pruned guide tree
+    viewportHeight: 820,
+    settleMs: 18000,
+    hideTooltip: true,
+    actions: [
+      { type: 'hover', from: { x: 250, y: 60 } },
+      { type: 'delay', ms: 2000 },
+    ],
   },
   // ────────────────────────────────────────────────────────────────────────
   // Admin-mode screenshots (quickstart_adminserver.md). Admin mode is enabled

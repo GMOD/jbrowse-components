@@ -85,17 +85,59 @@ export function buildTree(newick: string): HierarchyNode<ClusterNodeData> {
   return root
 }
 
-// Descend into the deepest subtree whose leaves exactly match the filter.
-// Returns the original root when no filter is given or no match is found.
-export function applySubtreeFilter<T extends ClusterNodeData>(
-  root: HierarchyNode<T>,
+// Prune a Newick-shaped tree down to just the leaves in `keep`, preserving the
+// topology among them. Internal nodes left with a single child are collapsed
+// into that child (their branch length added on) so the result has no spurious
+// unary nodes. Returns undefined if no kept leaf is below `node`.
+//
+// Unlike `findSubtree` (which only matches a single monophyletic clade), this
+// works for any leaf set — e.g. a scattered hand-picked species selection — so
+// the rendered dendrogram always matches the visible rows rather than falling
+// back to the full tree.
+export function pruneNewickToLeaves(
+  node: ClusterNodeData,
+  keep: Set<string>,
+): ClusterNodeData | undefined {
+  if (node.children?.length) {
+    const children = node.children
+      .map(c => pruneNewickToLeaves(c, keep))
+      .filter((c): c is ClusterNodeData => c !== undefined)
+    if (children.length === 0) {
+      return undefined
+    }
+    if (children.length === 1) {
+      const child = children[0]!
+      return { ...child, length: (child.length ?? 0) + (node.length ?? 0) }
+    }
+    return { ...node, children }
+  }
+  return node.name !== undefined && keep.has(node.name) ? node : undefined
+}
+
+// Narrow a tree to the active subtree filter. A filter that names exactly one
+// clade's leaves descends into that clade (the monophyletic case, e.g. clicking
+// an internal node); any other leaf set is pruned to those leaves with the
+// topology preserved. Returns the original root when no filter is given or no
+// kept leaf remains.
+export function applySubtreeFilter(
+  root: HierarchyNode<ClusterNodeData>,
   subtreeFilter: string[] | undefined,
-): HierarchyNode<T> {
+): HierarchyNode<ClusterNodeData> {
   if (!subtreeFilter?.length) {
     return root
   }
   const filterSet = new Set(subtreeFilter)
-  return findSubtree(root, filterSet) ?? root
+  const monophyletic = findSubtree(root, filterSet)
+  if (monophyletic) {
+    return monophyletic
+  }
+  const pruned = pruneNewickToLeaves(root.data, filterSet)
+  if (!pruned) {
+    return root
+  }
+  const filtered = hierarchy<ClusterNodeData>(pruned, d => d.children)
+  sum(filtered, d => (d.children ? 0 : 1))
+  return filtered
 }
 
 export function parseClusterTree(newick: string, subtreeFilter?: string[]) {

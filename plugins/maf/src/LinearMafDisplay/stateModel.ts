@@ -92,7 +92,7 @@ const minDisplayHeight = 20
  *
  * #example
  * A complete `MafTrack` config to paste into `tracks`. `samples` lists the
- * aligned species in track order; `rowHeightMode` sets the per-sample band
+ * aligned species in track order; `rowHeight` sets the per-sample band
  * height in px (or `0` to stretch rows to fill the track height):
  * ```js
  * {
@@ -109,7 +109,7 @@ const minDisplayHeight = 20
  *     {
  *       type: 'LinearMafDisplay',
  *       displayId: 'multiz-LinearMafDisplay',
- *       rowHeightMode: 16,
+ *       rowHeight: 16,
  *       showCoverage: true,
  *     },
  *   ],
@@ -137,14 +137,15 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * Per-row height in px, or `0` for "fit to display height" mode, where
-         * rows stretch to fill the dragged track height. Mirrors the variants
-         * MultiSampleVariantDisplay `rowHeightMode`. The `rowHeight` getter
-         * resolves this to a concrete px value. Defaults to fit-to-height (`0`)
-         * so large alignments (hundreds of species) stay bounded by the track
-         * height rather than growing a canvas past the browser's max size.
+         * Raw per-row height in px, or `0` for "fit to display height" mode,
+         * where rows stretch to fill the dragged track height. Mirrors the
+         * variants MultiSampleVariantDisplay `rowHeight`. The resolved value is
+         * the `effectiveRowHeight` getter — consumers read that, never this.
+         * Defaults to fit-to-height (`0`) so large alignments (hundreds of
+         * species) stay bounded by the track height rather than growing a canvas
+         * past the browser's max size.
          */
-        rowHeightMode: types.stripDefault(types.number, DEFAULTS.rowHeightMode),
+        rowHeight: types.stripDefault(types.number, 0),
         /**
          * #property
          */
@@ -347,7 +348,7 @@ export default function stateModelFactory(
        * #action
        */
       setRowHeight(n: number) {
-        self.rowHeightMode = n
+        self.rowHeight = n
       },
       /**
        * #action
@@ -533,7 +534,9 @@ export default function stateModelFactory(
        * so this is a plain snapshot the frames RPC hands straight to `getAdapter`.
        */
       get annotationAdapterConfig(): Record<string, unknown> | undefined {
-        return readConfObject(self.adapterConfig, 'annotationAdapter') ?? undefined
+        return (
+          readConfObject(self.adapterConfig, 'annotationAdapter') ?? undefined
+        )
       },
     }))
     .views(self => ({
@@ -729,9 +732,10 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Resolved per-row height. `rowHeightMode === 0` is fit-to-height (rows
+       * Resolved per-row height. `rowHeight === 0` is fit-to-height (rows
        * stretch to the dragged track height); any positive value is a pinned px
-       * height. Every consumer reads this getter, never `rowHeightMode`.
+       * height. Every consumer reads this getter, never the raw `rowHeight`
+       * property.
        *
        * Capped so the rows canvas backing store (`rowsHeight × dpr`) can never
        * exceed the browser/GPU max canvas size: a fixed px height across
@@ -740,9 +744,8 @@ export default function stateModelFactory(
        * already stays small so it never engages there. Bands have their own
        * small canvases, so the rows-only ceiling is the whole limit.
        */
-      get rowHeight() {
-        const raw =
-          self.rowHeightMode === 0 ? self.autoRowHeight : self.rowHeightMode
+      get effectiveRowHeight() {
+        const raw = self.rowHeight === 0 ? self.autoRowHeight : self.rowHeight
         return Math.min(raw, self.maxRowsHeight / self.nrow)
       },
     }))
@@ -756,7 +759,7 @@ export default function stateModelFactory(
         if (!self.showAlignments) {
           return 0
         }
-        return self.sources ? self.sources.length * self.rowHeight : 1
+        return self.sources ? self.sources.length * self.effectiveRowHeight : 1
       },
     }))
     .views(self => ({
@@ -801,19 +804,20 @@ export default function stateModelFactory(
        * #action
        * Switch to fit-to-height mode: rows stretch to fill the track height.
        * Seeds `heightOverride` from the current content height so toggling on
-       * doesn't jump, then `rowHeightMode = 0` makes `rowHeight` derive from it.
+       * doesn't jump, then `rowHeight = 0` makes `effectiveRowHeight` derive
+       * from it.
        */
       setFitToHeight() {
         // Seed from the current content height so toggling on never jumps,
         // even if a prior fixed-mode drag left a stale heightOverride.
         self.heightOverride = Math.max(self.height, minDisplayHeight)
-        self.rowHeightMode = 0
+        self.rowHeight = 0
         self.scrollTop = 0
       },
       /**
        * #action
        * Drag-resize. In fit mode the new height drives `autoRowHeight` (rows
-       * stretch). In fixed mode the pinned `rowHeightMode` scales proportionally
+       * stretch). In fixed mode the pinned `rowHeight` scales proportionally
        * so dragging still resizes rows. Mirrors the variants display.
        *
        * Flips `resizing` for the duration of the drag (cleared a beat after the
@@ -824,8 +828,8 @@ export default function stateModelFactory(
         const oldHeight = self.height
         const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
         self.heightOverride = newHeight
-        if (self.rowHeightMode > 0) {
-          self.rowHeightMode = (self.rowHeightMode * newHeight) / oldHeight
+        if (self.rowHeight > 0) {
+          self.rowHeight = (self.rowHeight * newHeight) / oldHeight
         }
         self.resizing = true
         clearTimeout(self.resizeSettleTimer)
@@ -870,7 +874,7 @@ export default function stateModelFactory(
         return {
           canvasWidth: view.width,
           canvasHeight: self.rowsHeight,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
           mismatchRendering: self.mismatchRendering,
@@ -1116,7 +1120,7 @@ export default function stateModelFactory(
         return computeVisibleEmptyLines({
           view,
           rpcDataMap: self.rpcDataMap,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1132,7 +1136,7 @@ export default function stateModelFactory(
         return computeVisibleInsertions({
           view,
           rpcDataMap: self.rpcDataMap,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1149,7 +1153,7 @@ export default function stateModelFactory(
         return computeVisibleDeletions({
           view,
           rpcDataMap: self.rpcDataMap,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1166,7 +1170,7 @@ export default function stateModelFactory(
         return computeVisibleInversions({
           view,
           rpcDataMap: self.rpcDataMap,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1274,7 +1278,7 @@ export default function stateModelFactory(
         return computeVisibleLabels({
           view,
           rpcDataMap: self.rpcDataMap,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
           showAllLetters: self.showAllLetters,
           showAsUpperCase: self.showAsUpperCase,
@@ -1296,7 +1300,7 @@ export default function stateModelFactory(
           view,
           summaryDataMap: self.summaryDataMap,
           rowIndexBySrc: self.rowIndexBySrc,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1316,7 +1320,7 @@ export default function stateModelFactory(
           view,
           framesDataMap: self.framesDataMap,
           rowIndexBySrc: self.rowIndexBySrc,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1340,7 +1344,7 @@ export default function stateModelFactory(
           rpcDataMap: self.rpcDataMap,
           framesDataMap: self.framesDataMap,
           defaultSrc: self.defaultCodonSpecies,
-          rowHeight: self.rowHeight,
+          rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
         })
       },
@@ -1556,19 +1560,6 @@ export default function stateModelFactory(
       // arrangement; stripDefault omits it when empty (the common case).
       const { clusterTree: _clusterTree, ...rest } = snap
       return rest
-    })
-    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-      // Pre-fit-mode sessions stored a bare `rowHeight` property; migrate it to
-      // `rowHeightMode` (a px value = fixed mode).
-      if (
-        snap &&
-        snap.rowHeightMode === undefined &&
-        snap.rowHeight !== undefined
-      ) {
-        const { rowHeight, ...rest } = snap
-        return { ...rest, rowHeightMode: rowHeight }
-      }
-      return snap
     })
 }
 

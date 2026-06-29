@@ -68,9 +68,9 @@ without replacing them.
 
 When the track has a CDS-frames file configured (a UCSC `mafFrames` annotation
 on the display), the menu gains two coding-aware options. **Show CDS frames**
-draws a thin reading-frame-colored strip on each species' row, marking the
-coding exons projected onto that species so the gene structure reads vertically
-across the whole alignment.
+(off by default) draws a thin reading-frame-colored strip on each species' row,
+marking the coding exons projected onto that species so the gene structure reads
+vertically across the whole alignment.
 
 **Codon view (amino-acid changes)** switches the per-sample rows from per-base
 SNP coloring to a per-codon view: every species is translated in the reference
@@ -85,10 +85,10 @@ answers "did the protein change here?" directly, across every species at once.
 Hovering any cell reads out the alignment at that position — the species, its
 base, and the location in that species' own genome, plus the alignment status of
 the neighboring blocks (e.g. a bridged gap and its size). Insertions, deletions,
-and bridged e-line gaps each get their own tooltip. With CDS frames on, the
-hover also shows the gene name and reading frame; in codon view it shows the
-species' codon and amino acid next to the reference's and labels the change
-synonymous or nonsynonymous.
+and bridged e-line gaps each get their own tooltip. When the CDS-frames file is
+loaded (in codon view, or with the strip on), the hover also shows the gene
+name; in codon view it shows the species' codon and amino acid next to the
+reference's and labels the change synonymous or nonsynonymous.
 
 <Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment: over a codon cell it shows the species' codon and amino acid next to the reference's (here GAA → GCC, E → A) and labels the change nonsynonymous, alongside the alignment location and the CDS frame/gene the reading frame came from."/>
 
@@ -97,9 +97,12 @@ synonymous or nonsynonymous.
 The sidebar at the left shows the species labels, drawn as a dendrogram when the
 track is configured with a Newick guide tree. **Show sidebar with tree and
 labels** toggles it, and you can show branch lengths or filter to a subtree by
-clicking an internal node. **Edit row arrangement...** lets you reorder rows,
-and the **Set feature height** submenu offers fit-to-display, normal, compact,
-and manual row heights.
+clicking an internal node. Filtering also prunes the guide tree to just the kept
+species — so even a scattered, hand-picked selection (via **Edit row
+arrangement...**) draws a tree that matches the visible rows rather than the
+full species tree. **Edit row arrangement...** also lets you reorder rows, and
+the **Set feature height** submenu offers fit-to-display, normal, compact, and
+manual row heights.
 
 ## See also
 

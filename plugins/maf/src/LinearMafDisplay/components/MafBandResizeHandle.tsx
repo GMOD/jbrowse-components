@@ -24,7 +24,7 @@ const useStyles = makeStyles()({
  * crosshairs/tooltips — the drag continues after the cursor leaves the thin
  * strip, so hover alone isn't enough.
  *
- * In fit mode (`rowHeightMode === 0`) the band eats into the rows area, so a
+ * In fit mode (`rowHeight === 0`) the band eats into the rows area, so a
  * drag restretches every row each frame — suppress the dense letter overlay for
  * the drag's duration (matches the track-height handle). In fixed mode rowHeight
  * is unchanged, so there's nothing to suppress.
@@ -57,7 +57,7 @@ const MafBandResizeHandle = observer(function MafBandResizeHandle({
       onDragStart={() => {
         setDragging(true)
         onActiveChange(true)
-        if (model.rowHeightMode === 0) {
+        if (model.rowHeight === 0) {
           model.setResizing(true)
         }
       }}

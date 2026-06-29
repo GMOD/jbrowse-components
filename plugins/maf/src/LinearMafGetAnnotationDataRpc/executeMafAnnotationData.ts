@@ -28,12 +28,12 @@ export interface LinearMafGetAnnotationDataResult {
 
 /**
  * Fetch the per-species CDS frame rows (UCSC `mafFrames`) overlapping a region
- * from the display's `annotationAdapter` (typically a BigBedAdapter over
- * `multiz<N>wayFrames.bb`). Each row carries the reference extent, the species
- * (`src`), the reading `frame`, and the gene `name` — enough for the display to
- * draw a frame-colored CDS box on that species' row. The adapter is a generic
- * feature adapter loaded straight through `getAdapter`, so the overlay isn't
- * tied to the MAF adapter type the way the summary sub-adapter is.
+ * from the MAF adapter's `annotationAdapter` sub-adapter (typically a
+ * BigBedAdapter over `multiz<N>wayFrames.bb`). Each row carries the reference
+ * extent, the species (`src`), the reading `frame`, and the gene `name` — enough
+ * for the display to draw a frame-colored CDS box on that species' row. It is a
+ * generic feature adapter loaded straight through `getAdapter`, a sibling of the
+ * `summaryAdapter` sub-adapter.
  */
 export async function executeMafAnnotationData({
   pluginManager,

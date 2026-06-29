@@ -92,18 +92,24 @@ menu to pin the identity plot on at every zoom level instead.
 
 ## Per-species CDS frames (gene structure)
 
-A MAF display can overlay coding structure on every aligned species by reading a
+A MAF track can overlay coding structure on every aligned species by reading a
 UCSC `mafFrames` file — the CDS reading frame of a gene projected through the
 alignment, one record per (species, region). Configure it as an
-`annotationAdapter` on the `LinearMafDisplay` (a feature adapter, typically a
-`BigBedAdapter` over `multiz<N>wayFrames.bb`). Each `mafFrames` row is keyed by
-its `src` species and drawn as a thin strip at the bottom of that species' row,
-colored by reading frame, so the gene's exon/CDS structure reads across the
-whole alignment without hiding the per-base coloring. Toggle it from the track
-menu (**Show CDS frames**), and hover any species row to read the gene name and
-reading frame at that position.
+`annotationAdapter` sub-adapter on the MAF **adapter** (a sibling of
+`summaryAdapter`; a feature adapter, typically a `BigBedAdapter` over
+`multiz<N>wayFrames.bb`). Each `mafFrames` row is keyed by its `src` species and
+drawn as a thin strip at the bottom of that species' row, colored by reading
+frame, so the gene's exon/CDS structure reads across the whole alignment without
+hiding the per-base coloring. It is **off by default** even when an
+`annotationAdapter` is configured — the frame-number coloring is an expert cue —
+so turn it on from the track menu (**Show CDS frames**). Hover any species row
+to read the gene name at that position.
 
 <Figure src="/img/maf_cds_frames.png" caption="The ce11 26-way alignment with the per-species CDS frame overlay: each species row carries a thin reading-frame-colored strip marking the coding exons projected onto that species, so the gene structure reads vertically across the whole alignment. Frame colors are mirrored by strand (the three +-strand frames and three −-strand frames), matching JBrowse's CDS coloring elsewhere."/>
+
+The reference species' own gene structure appears on the reference (top) row
+when the `mafFrames` file carries a record for the reference `src`, so this
+doubles as a reference annotation overlay.
 
 ### Codon view (amino-acid changes)
 
@@ -127,44 +133,7 @@ cell color.
 
 <Figure src="/img/maf_codon_tooltip.png" caption="The codon-view hover tooltip on the ce11 26-way alignment: over a codon cell it shows the species' codon and amino acid next to the reference's (here GAA → GCC, E → A) and labels the change nonsynonymous, alongside the alignment location and the CDS frame/gene the reading frame came from."/>
 
-```json
-{
-  "type": "MafTrack",
-  "trackId": "multiz470way",
-  "name": "Multiz 470-way",
-  "assemblyNames": ["hg38"],
-  "adapter": {
-    "type": "BigMafAdapter",
-    "bigBedLocation": {
-      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470way.bigMaf"
-    },
-    "summaryAdapter": {
-      "type": "BigBedAdapter",
-      "bigBedLocation": {
-        "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
-      }
-    }
-  },
-  "displays": [
-    {
-      "type": "LinearMafDisplay",
-      "displayId": "multiz470way-LinearMafDisplay",
-      "annotationAdapter": {
-        "type": "BigBedAdapter",
-        "bigBedLocation": {
-          "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"
-        }
-      }
-    }
-  ]
-}
-```
-
-The reference species' own gene structure appears on the reference (top) row
-when the `mafFrames` file carries a record for the reference `src`, so this
-doubles as a reference annotation overlay.
-
-### Color by source chromosome
+## Color by source chromosome
 
 **Color by source chromosome** in the track menu replaces the per-base SNP
 coloring with a structural view: each species' alignment blocks are filled by a
@@ -181,7 +150,7 @@ detailed (per-base) view rather than the zoomed-out summary.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species' blocks are colored by their source chromosome/scaffold. The reference (ce11) is a single color across the window, while several species' rows switch color where their aligned blocks come from different source scaffolds — surfacing rearrangements directly. The legend (top right) names each visible source chromosome."/>
 
-### Inversions (strand flips)
+## Inversions (strand flips)
 
 **Show inversions (strand flips)** in the track menu overlays a diagonal hatch
 on any block that aligns **inverted** relative to its own source chromosome's
@@ -197,15 +166,54 @@ per-row identity rendering without replacing them, and needs no extra files
 
 ## A larger example: the human 470-way
 
-These features scale to genome-scale alignments. The UCSC hg38 **470-way multiz**
-(mammals and more) is a `BigMafAdapter` over `multiz470way.bigMaf` with its
-`multiz470waySummary.bb` (zoom-out) and `multiz470wayFrames.bb` (codon view) — the
-same configuration shape as above, just pointed at the UCSC downloads. Because
-the reference is a chromosome-level assembly, the rows read far cleaner than a
-fragmented scaffold-level alignment. The track menu's **Edit row arrangement** /
-subtree filter keeps a focused set of species in view among the hundreds.
+These features scale to genome-scale alignments. The UCSC hg38 **470-way
+multiz** (the Zoonomia mammals and more) is a `BigMafAdapter` over
+`multiz470way.bigMaf` with its `multiz470waySummary.bb` (zoom-out) and
+`multiz470wayFrames.bb` (CDS frames / codon view) — the same three pieces as the
+smaller examples above, just pointed at the UCSC downloads. Because the
+reference is a chromosome-level assembly, the rows read far cleaner than a
+fragmented scaffold-level alignment.
 
-<Figure src="/img/maf_470way_codon.png" caption="Codon view on the UCSC hg38 470-way multiz at GAPDH exon 3, filtered to a representative set of mammals: each species' coding sequence is translated in the human reading frame, so the conserved residues line up and the few amino-acid changes in the more distant species (mouse, opossum) stand out — reading protein-level conservation across mammals at a glance."/>
+```json
+{
+  "type": "MafTrack",
+  "trackId": "multiz470way",
+  "name": "Multiz 470-way",
+  "assemblyNames": ["hg38"],
+  "adapter": {
+    "type": "BigMafAdapter",
+    "bigBedLocation": {
+      "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470way.bigMaf"
+    },
+    "summaryAdapter": {
+      "type": "BigBedAdapter",
+      "bigBedLocation": {
+        "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
+      }
+    },
+    "annotationAdapter": {
+      "type": "BigBedAdapter",
+      "bigBedLocation": {
+        "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"
+      }
+    }
+  }
+}
+```
+
+With all ~470 species drawn at once, the per-row identity heatmap turns the
+whole phylogeny into a conservation picture: coding exons light up as conserved
+bands top-to-bottom while the introns stay divergent.
+
+<Figure src="/img/maf_470way.png" caption="The UCSC hg38 470-way multiz over the GAPDH locus with all ~470 species drawn as thin rows and the per-row identity heatmap pinned on (red = divergent, blue = conserved). The coding exons read as conserved blue columns across the entire phylogeny while the introns stay red — genome-scale conservation at a glance."/>
+
+To read a region in detail, narrow the hundreds of species to a focused set. The
+track menu's **Edit row arrangement** dialog (or clicking an internal node of
+the guide tree) sets a subtree filter; the guide tree then redraws as the pruned
+dendrogram of just the kept species, so the tree always matches the visible rows
+— even for a hand-picked set that isn't a single clade.
+
+<Figure src="/img/maf_470way_codon.png" caption="The hg38 470-way narrowed to ~30 representative mammals (one per major clade, plus opossum and platypus outgroups) in codon view at a conserved GAPDH exon: each species' coding sequence is translated in the human reading frame, so the conserved residues line up and the few amino-acid changes in the more distant lineages stand out. The left sidebar is the pruned ~30-leaf guide tree, not the full 470-species tree."/>
 
 ## See also
 

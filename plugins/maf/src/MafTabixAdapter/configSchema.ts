@@ -65,6 +65,15 @@ const configSchema = ConfigurationSchema(
         locationType: 'UriLocation',
       },
     },
+    /**
+     * #slot
+     */
+    annotationAdapter: {
+      type: 'frozen',
+      description:
+        'optional sub-adapter (typically a BigBedAdapter over a UCSC multiz<N>wayFrames.bb) supplying per-species CDS reading frames for the gene-structure overlay and codon view; null disables it',
+      defaultValue: null,
+    },
   },
   {
     explicitlyTyped: true,

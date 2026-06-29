@@ -41,21 +41,15 @@
             "uri": "ce11.26way.chrI_subset.bed.gz.tbi",
             "locationType": "UriLocation"
           }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearMafDisplay",
-          "displayId": "ce11.26way-LinearMafDisplay-frames",
-          "annotationAdapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "ce11.26way.chrI_subset.frames.bb",
-              "locationType": "UriLocation"
-            }
+        },
+        "annotationAdapter": {
+          "type": "BigBedAdapter",
+          "bigBedLocation": {
+            "uri": "ce11.26way.chrI_subset.frames.bb",
+            "locationType": "UriLocation"
           }
         }
-      ]
+      }
     }
   ]
 }

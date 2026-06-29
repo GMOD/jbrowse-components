@@ -44,20 +44,14 @@
           "bigBedLocation": {
             "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470waySummary.bb"
           }
-        }
-      },
-      "displays": [
-        {
-          "type": "LinearMafDisplay",
-          "displayId": "hg38.multiz470way-LinearMafDisplay",
-          "annotationAdapter": {
-            "type": "BigBedAdapter",
-            "bigBedLocation": {
-              "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"
-            }
+        },
+        "annotationAdapter": {
+          "type": "BigBedAdapter",
+          "bigBedLocation": {
+            "uri": "https://hgdownload.soe.ucsc.edu/goldenPath/hg38/multiz470way/multiz470wayFrames.bb"
           }
         }
-      ]
+      }
     }
   ]
 }

@@ -12,6 +12,7 @@ export {
   buildTree,
   clusterTree,
   parseClusterTree,
+  pruneNewickToLeaves,
 } from './clusterUtils.ts'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export { treeBranchLengthMenuItem } from './treeMenuItems.ts'

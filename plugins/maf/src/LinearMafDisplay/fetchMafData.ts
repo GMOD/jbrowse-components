@@ -11,7 +11,7 @@ import type { FetchContext } from '@jbrowse/plugin-linear-genome-view'
 interface MafFetchSelf extends IAnyStateTreeNode {
   adapterConfig: AnyConfigurationModel
   orderedSampleIds?: string[]
-  annotationsActive: boolean
+  annotationDataActive: boolean
   annotationAdapterConfig: Record<string, unknown> | undefined
   fetchRegions: (
     needed: Needed,
@@ -77,10 +77,10 @@ async function fetchMafRegions<
 
 /**
  * Fetch per-species CDS frame rows (UCSC `mafFrames`) for the buffered regions
- * from the display's `annotationAdapter`, in parallel with the main alignment/
- * summary fetch and under its stop token. No-op when no annotation adapter is
- * configured or the overlay is toggled off, so tracks without frames pay
- * nothing. Stale writes are skipped by the shared `ctx.isStale()` guard.
+ * from the MAF adapter's `annotationAdapter` sub-adapter, in parallel with the
+ * main alignment/summary fetch and under its stop token. No-op when no adapter is
+ * configured or neither the frame strip nor the codon view is on, so tracks
+ * without frames pay nothing. Stale writes are skipped by `ctx.isStale()`.
  *
  * Fails soft: the overlay is auxiliary, so a frames-file error is logged but
  * swallowed rather than rejecting the combined fetch and blanking the alignment.
@@ -91,7 +91,7 @@ async function fetchAnnotationData(
   ctx: FetchContext,
 ) {
   const adapterConfig = self.annotationAdapterConfig
-  if (!self.annotationsActive || !adapterConfig) {
+  if (!self.annotationDataActive || !adapterConfig) {
     return
   }
   const { rpcManager } = getSession(self)

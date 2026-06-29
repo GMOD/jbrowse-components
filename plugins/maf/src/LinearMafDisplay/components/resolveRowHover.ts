@@ -20,7 +20,7 @@ export function resolveMafRowHover(
   }
   const gposFrac = p2.reversed ? p2.end - p2.offset : p2.start + p2.offset
   const rowIndex = Math.floor(
-    (mouseY + model.scrollTop - model.rowsTopOffset) / model.rowHeight,
+    (mouseY + model.scrollTop - model.rowsTopOffset) / model.effectiveRowHeight,
   )
   return model.rowHoverInfo(p2.index, gposFrac, rowIndex, view.bpPerPx)
 }

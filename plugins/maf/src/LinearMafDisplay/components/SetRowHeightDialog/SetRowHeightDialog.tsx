@@ -6,7 +6,7 @@ import { observer } from 'mobx-react'
 
 const SetRowHeightDialog = observer(function (props: {
   model: {
-    rowHeightMode?: number
+    rowHeight?: number
     rowProportion?: number
     setRowHeight: (arg: number) => void
     setRowProportion: (arg: number) => void
@@ -14,11 +14,11 @@ const SetRowHeightDialog = observer(function (props: {
   handleClose: () => void
 }) {
   const { model, handleClose } = props
-  // Seed from rowHeightMode (the raw setting: 0 = fit-to-height) rather than
-  // the resolved `rowHeight` getter, which in fit mode returns the computed
+  // Seed from the raw `rowHeight` property (0 = fit-to-height) rather than the
+  // resolved `effectiveRowHeight` getter, which in fit mode returns the computed
   // fractional autoRowHeight — submitting that would silently pin it.
   const [rowHeight, setRowHeight] = useState<number | undefined>(
-    model.rowHeightMode,
+    model.rowHeight,
   )
   const [rowProportion, setRowProportion] = useState<number | undefined>(
     model.rowProportion,
@@ -43,7 +43,7 @@ const SetRowHeightDialog = observer(function (props: {
         each row
       </Typography>
       <NumberTextField
-        defaultValue={model.rowHeightMode}
+        defaultValue={model.rowHeight}
         helperText="Enter row height (0 = fit to track height)"
         autoFocus
         onValueChange={setRowHeight}
