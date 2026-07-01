@@ -25,20 +25,6 @@ export function calcRegionCombinedOffsets(
 }
 
 /**
- * Lookup key shared between the worker (which builds the index) and the
- * display (which queries it on hover). Keeping the format in one place
- * means a divergence would surface as a type error, not a silent miss.
- */
-export function contactLookupKey(
-  r1: number,
-  r2: number,
-  bin1: number,
-  bin2: number,
-) {
-  return `${r1}|${r2}|${bin1}|${bin2}`
-}
-
-/**
  * Pre-rotation data-x position where each region starts, in the same
  * coordinate space as `positions[]`. Used by hover hit-test to bucket a
  * cursor into the right region pair.

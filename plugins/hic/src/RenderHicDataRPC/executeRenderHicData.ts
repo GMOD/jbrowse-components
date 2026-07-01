@@ -1,9 +1,9 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
+import { rpcResult } from '@jbrowse/core/util/librpc'
 
 import {
   calcRegionCombinedOffsets,
   calcRegionDataXStarts,
-  contactLookupKey,
 } from '../regionOffsets.ts'
 
 import type { HicDataResult, RenderHicDataArgs } from './types.ts'
@@ -46,14 +46,20 @@ export async function executeRenderHicData({
 
   const positions = new Float32Array(numContacts * 2)
   const counts = new Float32Array(numContacts)
-  const lookup: Record<string, number> = {}
+  const contactBin1 = new Uint32Array(numContacts)
+  const contactBin2 = new Uint32Array(numContacts)
+  const contactRegion1 = new Uint16Array(numContacts)
+  const contactRegion2 = new Uint16Array(numContacts)
 
   for (let i = 0; i < numContacts; i++) {
     const { bin1, bin2, counts: c, region1Idx, region2Idx } = features[i]!
     positions[i * 2] = (bin1 + regionCombinedOffsets[region1Idx]!) * w
     positions[i * 2 + 1] = (bin2 + regionCombinedOffsets[region2Idx]!) * w
     counts[i] = c
-    lookup[contactLookupKey(region1Idx, region2Idx, bin1, bin2)] = i
+    contactBin1[i] = bin1
+    contactBin2[i] = bin2
+    contactRegion1[i] = region1Idx
+    contactRegion2[i] = region2Idx
   }
 
   // Sort a Float32Array copy of `counts` once and read both maxScore and the
@@ -65,11 +71,10 @@ export async function executeRenderHicData({
     const sorted = new Float32Array(counts)
     sorted.sort()
     maxScore = sorted[numContacts - 1]!
-    percentile95 =
-      sorted[Math.min(Math.floor(0.95 * (numContacts - 1)), numContacts - 1)]!
+    percentile95 = sorted[Math.floor(0.95 * (numContacts - 1))]!
   }
 
-  return {
+  const result: HicDataResult = {
     positions,
     counts,
     numContacts,
@@ -78,8 +83,20 @@ export async function executeRenderHicData({
     binWidth: w,
     resolution: res,
     regionRefNames: regions.map(r => r.refName),
-    lookup,
+    contactBin1,
+    contactBin2,
+    contactRegion1,
+    contactRegion2,
     regionDataXStarts,
     regionCombinedOffsets,
   }
+  // Move the per-contact buffers zero-copy instead of structured-cloning them.
+  return rpcResult(result, [
+    positions.buffer,
+    counts.buffer,
+    contactBin1.buffer,
+    contactBin2.buffer,
+    contactRegion1.buffer,
+    contactRegion2.buffer,
+  ]) as unknown as HicDataResult
 }

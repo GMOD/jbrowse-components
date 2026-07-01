@@ -16,8 +16,8 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 import { autorun } from 'mobx'
 
-import { contactLookupKey } from '../regionOffsets.ts'
 import { generateColorRamp } from './components/colorRamp.ts'
+import { findContactAt } from './contactLookup.ts'
 import { buildHicTrackMenuItems } from './trackMenuItems.ts'
 
 import type {
@@ -311,36 +311,7 @@ export default function stateModelFactory(
         const dataY = mouseY / scale / self.yScalar
         const ux = (dataX - dataY) / Math.SQRT2
         const uy = (dataX + dataY) / Math.SQRT2
-        // Bucket each axis into a region, then invert
-        // positions[i] = (bin + regionCombinedOffsets[r]) * binWidth.
-        const starts = data.regionDataXStarts
-        const findRegion = (u: number) => {
-          for (let i = starts.length - 2; i >= 0; i--) {
-            if (u >= starts[i]!) {
-              return i
-            }
-          }
-          return 0
-        }
-        const r1 = findRegion(ux)
-        const r2 = findRegion(uy)
-        const bin1 = Math.floor(
-          ux / data.binWidth - data.regionCombinedOffsets[r1]!,
-        )
-        const bin2 = Math.floor(
-          uy / data.binWidth - data.regionCombinedOffsets[r2]!,
-        )
-        const idx = data.lookup[contactLookupKey(r1, r2, bin1, bin2)]
-        if (idx === undefined) {
-          return undefined
-        }
-        return {
-          bin1,
-          bin2,
-          region1Idx: r1,
-          region2Idx: r2,
-          counts: data.counts[idx]!,
-        }
+        return findContactAt(data, ux, uy)
       },
     }))
     .views(self => ({
@@ -523,8 +494,9 @@ export default function stateModelFactory(
     .actions(self => ({
       /**
        * #action
-       * Re-fetches contact matrix for the current viewport. Both the
-       * autorun (in `afterAttach`) and `reload()` invoke this directly.
+       * Re-fetches contact matrix for the current viewport. Driven by the
+       * `afterAttach` autorun, which also re-fires on `reload()` (it tracks
+       * `reloadCounter`).
        */
       async performHicFetch() {
         if (self.isMinimized) {

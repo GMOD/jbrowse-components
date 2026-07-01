@@ -39,12 +39,15 @@ export interface HicDataResult {
    */
   regionRefNames: string[]
   /**
-   * Hover hit-test index. Key = `${r1}|${r2}|${bin1}|${bin2}`, value = index
-   * into `counts` (and `positions`). Every drawn rect is the same size and on
-   * a deterministic grid, so a Map lookup replaces the previous Flatbush
-   * R-tree.
+   * Per-contact grid coordinates, parallel to `counts`/`positions`, used to
+   * build the hover hit-test index (`contactLookup.ts`) lazily on the main
+   * thread. Kept as transferable typed arrays rather than a string-keyed
+   * Record so the index costs nothing to serialize across the worker boundary.
    */
-  lookup: Record<string, number>
+  contactBin1: Uint32Array
+  contactBin2: Uint32Array
+  contactRegion1: Uint16Array
+  contactRegion2: Uint16Array
   /**
    * Pre-rotation data-x position where each region starts, in the same
    * coordinate space as `positions[]` (length regions.length+1). Hover

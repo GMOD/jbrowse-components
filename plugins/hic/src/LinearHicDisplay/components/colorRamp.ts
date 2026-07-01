@@ -1,3 +1,10 @@
+import {
+  lookupColorRamp,
+  makeRampFillStyleLut,
+} from '@jbrowse/render-core/canvas2dUtils'
+
+export { lookupColorRamp }
+
 export type RGBA = readonly [number, number, number, number]
 
 // Single source of truth for each scheme. Used to build the GPU/Canvas2D
@@ -144,13 +151,6 @@ export function getLegendSvgStops(colorScheme: HicColorScheme | undefined) {
     color: rgbaCss(s.rgba),
   }))
 }
-
-import {
-  lookupColorRamp,
-  makeRampFillStyleLut,
-} from '@jbrowse/render-core/canvas2dUtils'
-
-export { lookupColorRamp }
 
 // Per-cell fillStyle LUT for the Canvas2D + SVG hic draw: returns the cached
 // `rgba(...)` string for a normalized value `t`, or undefined where the ramp is
