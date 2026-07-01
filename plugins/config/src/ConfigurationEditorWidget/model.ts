@@ -41,11 +41,12 @@ export default function stateModelFactory(_pluginManager: PluginManager) {
         // reacts to any changes in the target configuration model and persists
         // them back to the session after a short delay via
         // updateTrackConfiguration, which routes admin edits to the jbrowse
-        // config in place and everyone else's to a shareable session-track
-        // override. It keys off trackId, so this widget is only safe to open on
-        // track configs (see editConfiguration, which enforces a trackId).
-        // Non-track configs (assembly/connection) edit the ConfigurationEditor
-        // component directly and mutate live nodes in place.
+        // config in place and everyone else's to a shareable per-track delta
+        // (trackConfigDeltas) against the admin base. It keys off trackId, so
+        // this widget is only safe to open on track configs (see
+        // editConfiguration, which enforces a trackId). Non-track configs
+        // (assembly/connection) have no trackId, so the save is a no-op and the
+        // editor just mutates the live MST node in place.
         addDisposer(
           self,
           autorun(() => {

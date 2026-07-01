@@ -221,6 +221,48 @@ test('an active filter reveals matching advanced slots inline', () => {
   expect(queryByLabelText('basicName')).toBeNull()
 })
 
+test('filtering force-expands an otherwise-collapsed display sub-schema', () => {
+  const TestSchema = ConfigurationSchema('TestThing', {
+    subDisplay: ConfigurationSchema('SubDisplay', {
+      displayId: {
+        type: 'string',
+        defaultValue: 'other-display',
+      },
+      hiddenSlot: {
+        name: 'hiddenSlot',
+        description: 'a slot buried inside an inactive display',
+        type: 'string',
+        defaultValue: 'zzz',
+      },
+    }),
+  })
+
+  const { getByText, getByLabelText } = render(
+    <ThemeProvider theme={createJBrowseTheme()}>
+      <ConfigurationEditor
+        model={{
+          // active display differs from subDisplay's id, so its accordion
+          // starts collapsed
+          expandedDisplayId: 'active-display',
+          target: TestSchema.create(undefined, { pluginManager }),
+        }}
+      />
+    </ThemeProvider>,
+  )
+
+  const summary = () => getByText('subDisplay').closest('button')
+
+  // collapsed by default since its displayId doesn't match expandedDisplayId
+  expect(summary()?.getAttribute('aria-expanded')).toBe('false')
+
+  // a filter matching a slot inside it must reveal the match, not leave it
+  // collapsed
+  fireEvent.change(getByLabelText('Filter options'), {
+    target: { value: 'hidden' },
+  })
+  expect(summary()?.getAttribute('aria-expanded')).toBe('true')
+})
+
 // Removed: PileupTrack schema test — Alignments plugin no longer registers
 // renderers (moved to GPU pipeline), so baseLinearDisplayConfigSchema
 // with only Alignments produces an empty renderer union.

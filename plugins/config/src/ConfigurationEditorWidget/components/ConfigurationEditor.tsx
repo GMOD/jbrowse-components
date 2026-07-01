@@ -160,7 +160,15 @@ const Member = observer(function Member(props: {
     const typeNameChoices = getTypeNamesFromExplicitlyTypedUnion(slotSchema)
     return (
       <Accordion
-        defaultExpanded={displayDefaultExpanded(slot, expandedDisplayId)}
+        // an active filter force-expands the group so a match inside an
+        // otherwise-collapsed (inactive display) sub-schema is actually
+        // visible, not just present in the collapsed DOM. The key flips the
+        // accordion between filtered/unfiltered mounts so the new
+        // defaultExpanded takes effect (Accordion reads it only on mount).
+        key={filter ? 'filtered' : 'unfiltered'}
+        defaultExpanded={
+          filter ? true : displayDefaultExpanded(slot, expandedDisplayId)
+        }
         className={classes.accordion}
       >
         <AccordionSummary
