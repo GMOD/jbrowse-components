@@ -405,7 +405,6 @@ export function guessTrackType(
 
 function generateProblemTrackConf(
   trackName: string,
-  trackUrl: string,
   categories: string[] | undefined,
   label: string,
   description: string,
@@ -428,7 +427,6 @@ export function generateUnsupportedTrackConf(
 ) {
   return generateProblemTrackConf(
     trackName,
-    trackUrl,
     categories,
     'Unsupported',
     `Support not yet implemented for "${trackUrl}"`,
@@ -442,7 +440,6 @@ export function generateUnknownTrackConf(
 ) {
   return generateProblemTrackConf(
     trackName,
-    trackUrl,
     categories,
     'Unknown',
     `Could not determine track type for "${trackUrl}"`,

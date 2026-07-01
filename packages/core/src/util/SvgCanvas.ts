@@ -22,12 +22,15 @@ interface SavedState {
   groupsToClose: number
 }
 
+const XML_ESCAPES: Record<string, string> = {
+  '&': '&amp;',
+  '<': '&lt;',
+  '>': '&gt;',
+  '"': '&quot;',
+}
+
 function escapeXml(s: string) {
-  return s
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-    .replace(/"/g, '&quot;')
+  return s.replace(/[&<>"]/g, c => XML_ESCAPES[c]!)
 }
 
 // Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
@@ -196,7 +199,7 @@ export class SvgCanvas {
   setTransform(
     a: number,
     b: number,
-    c: number,
+    _c: number,
     d: number,
     e: number,
     f: number,

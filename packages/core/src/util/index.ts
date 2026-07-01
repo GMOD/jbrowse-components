@@ -1,21 +1,21 @@
 import type React from 'react'
 
 export { unzip } from '@gmod/bgzf-filehandle'
-import { unzip } from '@gmod/bgzf-filehandle'
 import { flushSync } from 'react-dom'
 import { createRoot } from 'react-dom/client'
 
 import { coarseStripHTML } from './coarseStripHTML.ts'
-import { colord } from './colord.ts'
 import { measureText } from './measureText.ts'
 import { max, toLocale } from './numericUtils.ts'
-import { downloadStatus, updateStatus } from './progress.ts'
+import { shorten } from './stringUtils.ts'
 import { storeBlobLocation } from './tracks.ts'
 import { isUriLocation } from './types/index.ts'
 
 import type { FileLocation } from './types/index.ts'
-import type { BaseOptions } from '../data_adapters/BaseAdapter/index.ts'
-import type { GenericFilehandle } from 'generic-filehandle2'
+
+export * from './stringUtils.ts'
+export * from './svgColorProps.ts'
+export * from './fetchAndMaybeUnzip.ts'
 
 export * from './types/index.ts'
 export * from './pluginStore.ts'
@@ -70,16 +70,6 @@ export function iterMap<T, U>(
     counter += 1
   }
   return results
-}
-
-export function shorten(name: string, max = 70, short = 30) {
-  return name.length > max
-    ? `${name.slice(0, short)}...${name.slice(-short)}`
-    : name
-}
-
-export function shorten2(name: string, max = 70) {
-  return name.length > max ? `${name.slice(0, max)}...` : name
 }
 
 export function stringify(
@@ -272,38 +262,6 @@ export function reorder<T>(
   return next
 }
 
-export function truncateMiddle(str: string, maxLen = 40) {
-  if (str.length <= maxLen) {
-    return str
-  }
-  const half = Math.floor((maxLen - 3) / 2)
-  return `${str.slice(0, half)}...${str.slice(-half)}`
-}
-
-export function stripAlpha(str: string) {
-  return colord(str).alpha(1).toHex()
-}
-
-function svgColorProps(str: string, colorKey: string, opacityKey: string) {
-  if (str) {
-    const c = colord(str)
-    return {
-      [opacityKey]: c.alpha(),
-      [colorKey]: c.alpha(1).toHex(),
-    }
-  } else {
-    return {}
-  }
-}
-
-export function getStrokeProps(str: string) {
-  return svgColorProps(str, 'stroke', 'strokeOpacity')
-}
-
-export function getFillProps(str: string) {
-  return svgColorProps(str, 'fill', 'fillOpacity')
-}
-
 // https://react.dev/reference/react-dom/server/renderToString#removing-rendertostring-from-the-client-code
 export function renderToStaticMarkup(node: React.ReactElement) {
   const div = document.createElement('div')
@@ -312,37 +270,6 @@ export function renderToStaticMarkup(node: React.ReactElement) {
     createRoot(div).render(node)
   })
   return div.innerHTML.replaceAll(/\brgba\((.+?),[^,]+?\)/g, 'rgb($1)')
-}
-
-export function isGzip(buf: Uint8Array) {
-  return buf[0] === 31 && buf[1] === 139 && buf[2] === 8
-}
-
-export async function fetchAndMaybeUnzip(
-  loc: GenericFilehandle,
-  opts: BaseOptions = {},
-) {
-  const { statusCallback = () => {} } = opts
-  const buf = await downloadStatus(
-    'Downloading file',
-    statusCallback,
-    onProgress => loc.readFile({ ...opts, onProgress }) as Promise<Uint8Array>,
-  )
-  return isGzip(buf)
-    ? await updateStatus('Unzipping', statusCallback, () => unzip(buf))
-    : buf
-}
-
-export async function fetchAndMaybeUnzipText(
-  loc: GenericFilehandle,
-  opts?: BaseOptions,
-) {
-  const buffer = await fetchAndMaybeUnzip(loc, opts)
-  // 512MB  max chrome string length is 512MB
-  if (buffer.length > 536_870_888) {
-    throw new Error('Data exceeds maximum string length (512MB)')
-  }
-  return new TextDecoder('utf8', { fatal: true }).decode(buffer)
 }
 
 // MIT https://github.com/inspect-js/is-object
@@ -382,7 +309,6 @@ export * from './linkify.ts'
 export * from './locString.ts'
 export * from './stopToken.ts'
 export * from './tracks.ts'
-export * from './getConfigOverrides.ts'
 export * from './fileHandleStore.ts'
 export { IntervalTree } from './IntervalTree.ts'
 export { useRenderingBackend } from './useRenderingBackend.ts'

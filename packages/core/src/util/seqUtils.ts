@@ -37,27 +37,34 @@ export const complementTable = {
 } as Record<string, string>
 
 export function revcom(str: string) {
-  const revcomped = []
-  for (let i = str.length - 1; i >= 0; i--) {
-    revcomped.push(complementTable[str[i]!] ?? str[i])
+  const n = str.length
+  const arr = new Array<string>(n)
+  for (let i = 0; i < n; i++) {
+    const c = str[n - 1 - i]!
+    arr[i] = complementTable[c] ?? c
   }
-  return revcomped.join('')
+  return arr.join('')
 }
 
 export function reverse(str: string) {
-  const reversed = []
-  for (let i = str.length - 1; i >= 0; i--) {
-    reversed.push(str[i]!)
+  // index loop rather than [...str] spread: sequences can be large and the
+  // spread's code-point iterator is markedly slower than raw UTF-16 access
+  const n = str.length
+  const arr = new Array<string>(n)
+  for (let i = 0; i < n; i++) {
+    arr[i] = str[n - 1 - i]!
   }
-  return reversed.join('')
+  return arr.join('')
 }
 
 export function complement(str: string) {
-  const comp = []
-  for (let i = 0, l = str.length; i < l; i++) {
-    comp.push(complementTable[str[i]!] ?? str[i]!)
+  const n = str.length
+  const arr = new Array<string>(n)
+  for (let i = 0; i < n; i++) {
+    const c = str[i]!
+    arr[i] = complementTable[c] ?? c
   }
-  return comp.join('')
+  return arr.join('')
 }
 
 export type Frame = 1 | 2 | 3 | -1 | -2 | -3

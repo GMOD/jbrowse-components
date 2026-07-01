@@ -4,7 +4,7 @@ export default class CompositeMap<T, U> {
   constructor(private submaps: Map<T, U>[]) {}
 
   has(id: T) {
-    for (const submap of this.submaps.values()) {
+    for (const submap of this.submaps) {
       if (submap.has(id)) {
         return true
       }
@@ -13,7 +13,7 @@ export default class CompositeMap<T, U> {
   }
 
   get(id: T) {
-    for (const submap of this.submaps.values()) {
+    for (const submap of this.submaps) {
       if (submap.has(id)) {
         return submap.get(id)
       }
@@ -21,32 +21,8 @@ export default class CompositeMap<T, U> {
     return undefined
   }
 
-  *values() {
-    const seen = new Set<T>()
-    for (const submap of this.submaps.values()) {
-      for (const [key, value] of submap) {
-        if (!seen.has(key)) {
-          seen.add(key)
-          yield value
-        }
-      }
-    }
-  }
-
-  *keys() {
-    const seen = new Set<T>()
-    for (const submap of this.submaps.values()) {
-      for (const key of submap.keys()) {
-        if (!seen.has(key)) {
-          seen.add(key)
-          yield key
-        }
-      }
-    }
-  }
-
   find(f: (arg0: U) => boolean): U | undefined {
-    for (const submap of this.submaps.values()) {
+    for (const submap of this.submaps) {
       for (const value of submap.values()) {
         if (f(value)) {
           return value
@@ -56,13 +32,9 @@ export default class CompositeMap<T, U> {
     return undefined
   }
 
-  *[Symbol.iterator]() {
-    yield* this.entries()
-  }
-
   *entries() {
     const seen = new Set<T>()
-    for (const submap of this.submaps.values()) {
+    for (const submap of this.submaps) {
       for (const [key, value] of submap) {
         if (!seen.has(key)) {
           seen.add(key)
@@ -70,5 +42,21 @@ export default class CompositeMap<T, U> {
         }
       }
     }
+  }
+
+  *keys() {
+    for (const [key] of this.entries()) {
+      yield key
+    }
+  }
+
+  *values() {
+    for (const [, value] of this.entries()) {
+      yield value
+    }
+  }
+
+  *[Symbol.iterator]() {
+    yield* this.entries()
   }
 }
