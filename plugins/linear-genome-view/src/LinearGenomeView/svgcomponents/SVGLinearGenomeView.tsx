@@ -2,18 +2,11 @@
 
 import type { ReactNode } from 'react'
 
-import { SVGExportRoot, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  getEnv,
-  getSession,
-  max,
-  measureText,
-  renderToStaticMarkup,
-} from '@jbrowse/core/util'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getEnv, getSession, max, measureText } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
-import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
 import SVGGridlines from './SVGGridlines.tsx'
@@ -41,10 +34,7 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
     Wrapper = ({ children }) => children,
   } = opts
   const session = getSession(model)
-  const { allThemes } = session
-
-  const theme = allThemes?.()[themeName]
-  const jbrowseTheme = createJBrowseTheme(theme)
+  const theme = session.getActiveThemeOptions?.(themeName)
   const { width, pinnedTracks, unpinnedTracks, showCytobands } = model
   const visibleTracks = [...pinnedTracks, ...unpinnedTracks].filter(
     t => !t.minimized,
@@ -92,51 +82,51 @@ export async function renderToSvg(model: LGV, opts: ExportSvgOptions) {
   )
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={jbrowseTheme}>
-      <Wrapper>
-        <SVGExportRoot width={w} height={height}>
-          <g transform={`translate(${exportMargin} 0)`}>
-            <g transform={`translate(${trackLabelOffset})`}>
-              <SVGHeader
-                model={model}
-                fontSize={fontSize}
-                rulerHeight={rulerHeight}
-                cytobandHeight={cytobandHeight}
-              />
-            </g>
-            {showGridlines ? (
-              <g transform={`translate(${trackLabelOffset} ${offset})`}>
-                <SVGGridlines model={model} height={tracksHeight} />
-              </g>
-            ) : null}
-            <g transform={`translate(0 ${offset})`}>
-              <SVGTracks
-                textHeight={textHeight}
-                fontSize={fontSize}
-                model={model}
-                displayResults={displayResults}
-                trackLabels={trackLabels}
-                trackLabelOffset={trackLabelOffset}
-                leftBuffer={exportMargin}
-                legendWidth={legendWidth}
-              />
-            </g>
-            <g transform={`translate(${trackLabelOffset} ${offset})`}>
-              <SvgClipRect
-                id={`highlight-clip-${model.id}`}
-                width={width}
-                height={tracksHeight}
-              >
-                <SVGHighlights model={model} height={tracksHeight} />
-                {bookmarkHighlights}
-              </SvgClipRect>
-            </g>
+  return wrapSvgExport({
+    theme,
+    width: w,
+    height,
+    Wrapper,
+    children: (
+      <g transform={`translate(${exportMargin} 0)`}>
+        <g transform={`translate(${trackLabelOffset})`}>
+          <SVGHeader
+            model={model}
+            fontSize={fontSize}
+            rulerHeight={rulerHeight}
+            cytobandHeight={cytobandHeight}
+          />
+        </g>
+        {showGridlines ? (
+          <g transform={`translate(${trackLabelOffset} ${offset})`}>
+            <SVGGridlines model={model} height={tracksHeight} />
           </g>
-        </SVGExportRoot>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+        ) : null}
+        <g transform={`translate(0 ${offset})`}>
+          <SVGTracks
+            textHeight={textHeight}
+            fontSize={fontSize}
+            model={model}
+            displayResults={displayResults}
+            trackLabels={trackLabels}
+            trackLabelOffset={trackLabelOffset}
+            leftBuffer={exportMargin}
+            legendWidth={legendWidth}
+          />
+        </g>
+        <g transform={`translate(${trackLabelOffset} ${offset})`}>
+          <SvgClipRect
+            id={`highlight-clip-${model.id}`}
+            width={width}
+            height={tracksHeight}
+          >
+            <SVGHighlights model={model} height={tracksHeight} />
+            {bookmarkHighlights}
+          </SvgClipRect>
+        </g>
+      </g>
+    ),
+  })
 }
 
 export { default as SVGGridlines } from './SVGGridlines.tsx'

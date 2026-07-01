@@ -1,17 +1,10 @@
 import React from 'react'
 
-import { SVGExportRoot } from '@jbrowse/core/svg/SvgExport'
 import { exportMargin } from '@jbrowse/core/svg/constants'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import {
-  getSession,
-  max,
-  measureText,
-  renderToStaticMarkup,
-} from '@jbrowse/core/util'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getSession, max, measureText } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
 import { totalHeight } from '@jbrowse/plugin-linear-genome-view'
-import { ThemeProvider } from '@mui/material'
 import { when } from 'mobx'
 
 import SVGLinearGenomeView from './SVGLinearGenomeView.tsx'
@@ -42,7 +35,7 @@ export async function renderToSvg(
     themeName = 'default',
   } = opts
   const session = getSession(model)
-  const themeVar = session.allThemes?.()[themeName]
+  const themeVar = session.getActiveThemeOptions?.(themeName)
   const { width, views, levels } = model
 
   // each view is a header (assembly label + ruler) stacked above its tracks
@@ -94,7 +87,6 @@ export async function renderToSvg(
     ) + 40
   const trackLabelOffset = trackLabels === 'left' ? trackLabelMaxLen : 0
   const w = width + trackLabelOffset
-  const theme = createJBrowseTheme(themeVar)
 
   // walk top to bottom, alternating a genome view and the ribbon level beneath
   // it, advancing y by each element's own height so everything abuts with no
@@ -136,13 +128,11 @@ export async function renderToSvg(
   const totalHeightSvg = y + exportMargin
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={theme}>
-      <Wrapper>
-        <SVGExportRoot width={w} height={totalHeightSvg}>
-          {RenderList}
-        </SVGExportRoot>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+  return wrapSvgExport({
+    theme: themeVar,
+    width: w,
+    height: totalHeightSvg,
+    Wrapper,
+    children: RenderList,
+  })
 }

@@ -1,7 +1,6 @@
-import { SVGExportRoot, SvgClipRect } from '@jbrowse/core/svg/SvgExport'
-import { createJBrowseTheme } from '@jbrowse/core/ui'
-import { getEnv, getSession, renderToStaticMarkup } from '@jbrowse/core/util'
-import { ThemeProvider } from '@mui/material'
+import { SvgClipRect } from '@jbrowse/core/svg/SvgExport'
+import { wrapSvgExport } from '@jbrowse/core/svg/wrapSvgExport'
+import { getEnv, getSession } from '@jbrowse/core/util'
 import { when } from 'mobx'
 
 import { HorizontalAxisRaw, VerticalAxisRaw } from '../components/Axes.tsx'
@@ -18,7 +17,7 @@ export async function renderToSvg(
   const { themeName = 'default', Wrapper = ({ children }) => children } = opts
 
   const session = getSession(model)
-  const theme = session.allThemes?.()[themeName]
+  const theme = session.getActiveThemeOptions?.(themeName)
   const { width, borderX, viewWidth, viewHeight, tracks, height } = model
   const displayResults = await Promise.all(
     tracks.map(async track => {
@@ -35,30 +34,32 @@ export async function renderToSvg(
   )
 
   // the xlink namespace is used for rendering <image> tag
-  return renderToStaticMarkup(
-    <ThemeProvider theme={createJBrowseTheme(theme)}>
-      <Wrapper>
-        <SVGExportRoot width={width} height={height}>
-          <VerticalAxisRaw model={model} />
-          <g transform={`translate(${borderX} 0)`}>
-            <DotplotGrid model={model} />
-            {additional}
-            <SvgClipRect
-              id={`clip-ruler-${model.id}`}
-              width={viewWidth}
-              height={viewHeight}
-            >
-              {displayResults.map(({ track, result }) => (
-                /* biome-ignore lint/suspicious/noArrayIndexKey: */
-                <g key={track.configuration.trackId}>{result}</g>
-              ))}
-            </SvgClipRect>
-          </g>
-          <g transform={`translate(${borderX} ${viewHeight})`}>
-            <HorizontalAxisRaw model={model} />
-          </g>
-        </SVGExportRoot>
-      </Wrapper>
-    </ThemeProvider>,
-  )
+  return wrapSvgExport({
+    theme,
+    width,
+    height,
+    Wrapper,
+    children: (
+      <>
+        <VerticalAxisRaw model={model} />
+        <g transform={`translate(${borderX} 0)`}>
+          <DotplotGrid model={model} />
+          {additional}
+          <SvgClipRect
+            id={`clip-ruler-${model.id}`}
+            width={viewWidth}
+            height={viewHeight}
+          >
+            {displayResults.map(({ track, result }) => (
+              /* biome-ignore lint/suspicious/noArrayIndexKey: */
+              <g key={track.configuration.trackId}>{result}</g>
+            ))}
+          </SvgClipRect>
+        </g>
+        <g transform={`translate(${borderX} ${viewHeight})`}>
+          <HorizontalAxisRaw model={model} />
+        </g>
+      </>
+    ),
+  })
 }

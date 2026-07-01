@@ -136,6 +136,9 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void
   allThemes?: () => Record<string, ThemeOptions & { name?: string }>
+  getActiveThemeOptions?: (
+    name?: string,
+  ) => (ThemeOptions & { name?: string }) | undefined
   setSelection: (feature: Feature) => void
   setSession?: (arg: { name: string; [key: string]: unknown }) => void
   clearSelection: () => void

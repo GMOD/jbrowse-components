@@ -57,6 +57,17 @@ export function ThemeManagerSessionMixin(_pluginManager: PluginManager) {
       get theme() {
         return createJBrowseThemeFromArgs(this.themeOptions)
       },
+      /**
+       * #method
+       * Raw `ThemeOptions` for the active theme, or a named override (used by
+       * the SVG-export theme picker). Unlike `theme` (a built, non-serializable
+       * MUI theme), this is the plain options object every view's SVG export
+       * threads into each display's `renderSvg`, which rebuilds the theme via
+       * `createJBrowseTheme` outside React context.
+       */
+      getActiveThemeOptions(name?: string) {
+        return this.allThemes()[name ?? this.themeName]
+      },
     }))
     .actions(self => ({
       /**
