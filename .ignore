@@ -40,3 +40,4 @@ packages/core/src/util/geneticCodes.mito.test.ts
 *.nh
 products/jbrowse-react-linear-genome-view/examples-site/public/panukbPhenotypes.json
 peptidePositioning.ts
+website/scripts/screenshot-specs.ts

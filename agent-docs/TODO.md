@@ -26,12 +26,4 @@ for multivariantdisplay
 On the dotplot, if you're zoomed all the way out and then place your mouse near the edge of the plot and scroll to zoom in, the plot "jumps" so the cursor isn't on the same region anymore. At all other zoom levels, the area under the cursor stays smoothly under it when zooming, it's just from the max zoomed out level, and is much more noticeable when the cursor is near the edge of the plot.
 
 
-## error on maf track
 
-InvalidStateError: CanvasRenderingContext2D.setTransform: Canvas exceeds max size.
-fit to display height by default
-
-
-## more smart breakpointsplitview
-
-only for far apart

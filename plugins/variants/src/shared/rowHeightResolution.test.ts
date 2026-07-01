@@ -8,7 +8,6 @@ function createDisplay() {
   const configSchema = configFactory()
   return stateModelFactory(configSchema).create({
     type: 'LinearMultiSampleVariantDisplay',
-    displayId: 'test',
     configuration: configSchema.create({
       type: 'LinearMultiSampleVariantDisplay',
       displayId: 'test',
