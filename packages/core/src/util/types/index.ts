@@ -180,6 +180,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeTemporaryAssembly?: (arg: string) => void
   sessionConnections?: AnyConfigurationModel[]
   sessionTracks?: AnyConfigurationModel[]
+  trackConfigDeltas?: Record<string, { trackId: string; [key: string]: unknown }>
   connectionInstances?: {
     name: string
     connectionId: string
@@ -227,7 +228,7 @@ export interface SessionWithConfigEditing extends AbstractSessionModel {
     opts?: { expandedDisplayId?: string },
   ): void
   // persist an edited track snapshot (admins → jbrowse config in place, others
-  // → a shareable same-id session-track override)
+  // → a shareable delta in trackConfigDeltas against the same-id base config)
   updateTrackConfiguration(trackConf: {
     trackId: string
     [key: string]: unknown

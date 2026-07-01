@@ -129,16 +129,13 @@ export function BaseWebSessionModel({
 
       /**
        * #method
-       * whether `trackId` is a session-track edit (see updateTrackConfiguration)
-       * shadowing an admin-owned config track of the same trackId, rather than a
-       * standalone user-added session track
+       * whether `trackId` has a non-admin config override (a delta stored in
+       * trackConfigDeltas against an admin-owned config track, see
+       * updateTrackConfiguration), rather than a standalone user-added session
+       * track. Drives the "Reset track settings" menu swap and the edited badge.
        */
       isTrackOverride(trackId: string): boolean {
-        const configTracks = self.jbrowse.tracks as AnyConfigurationModel[]
-        return (
-          self.sessionTracks.some(t => t.trackId === trackId) &&
-          configTracks.some(t => t.trackId === trackId)
-        )
+        return trackId in self.trackConfigDeltas
       },
 
       /**

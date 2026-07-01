@@ -84,7 +84,28 @@ Empirically grounded: `stripDefault` already prunes default slots from
 the base stub → the realistic edit path round-trips `merge(base, diff(base,
 edited)) === edited` exactly.
 
-## What's LEFT — wire the delta into the session
+## ✅ WIRING DONE (2026-07-01)
+
+The delta is now wired into the session end-to-end; **clean-migrate** strategy
+chosen (single mechanism, legacy full-overrides converted on load).
+
+- `SessionTracks.ts`: new frozen `trackConfigDeltas` prop; `tracks` getter merges
+  deltas over base with a per-`(base,delta)` `WeakMap` memo (stable identity →
+  hydration cache stays warm); `updateTrackConfiguration` non-admin branch stores
+  `diffTrackConfig(base, snapshot)` (falls back to in-place `sessionTracks` edit
+  for a user-added track with no base); `resetTrackConfiguration` drops the delta
+  key; `afterAttach` migrates legacy same-id `sessionTracks` overrides → deltas.
+- `BaseWebSession/index.ts`: `isTrackOverride` = `trackId in trackConfigDeltas`.
+- `core/util/types`: `trackConfigDeltas?` added to `AbstractSessionModel`;
+  `BaseTrackModel.canConfigure` recognizes a delta as configurable.
+- Docs: `Session/CLAUDE.md` rewritten for the delta model.
+- Tests: `UpdateTrackConfiguration.test.ts` (10) rewritten for delta storage +
+  admin-field-flow-through + legacy migration; `trackConfigDelta.test.ts` (11)
+  unchanged. `ConfigHydration`/`rootModel`/`product-core` (88) still green.
+
+Original plan retained below for reference.
+
+## What was LEFT — wire the delta into the session
 
 Goal: store a non-admin override as a **delta against the live base config**,
 merged at resolution, so admin updates to untouched fields flow through and

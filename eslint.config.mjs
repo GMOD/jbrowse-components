@@ -24,6 +24,8 @@ export default defineConfig(
       'config/jest',
       'infrastructure',
       'jest.config.js',
+      'products/jbrowse-web/browser-tests/memsticky.ts',
+      'products/jbrowse-web/browser-tests/memprofile.ts',
       'babel.config.cjs',
       'eslint.config.mjs',
       'products/**/webpack.config.js',

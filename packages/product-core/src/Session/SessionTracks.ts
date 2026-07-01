@@ -1,4 +1,5 @@
-import { types } from '@jbrowse/mobx-state-tree'
+import { diffTrackConfig, mergeTrackConfig } from '@jbrowse/core/util'
+import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -10,6 +11,11 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
+export interface PlainTrackConfig {
+  trackId: string
+  [key: string]: unknown
+}
+
 /**
  * #stateModel SessionTracksManagerSessionMixin
  */
@@ -19,27 +25,93 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
     .props({
       /**
        * #property
+       * User-added session tracks (no matching admin config track). A non-admin's
+       * *edits* to an existing config track are stored as deltas
+       * (trackConfigDeltas), not here.
        */
       sessionTracks: types.stripDefault(
         types.array(pluginManager.pluggableConfigSchemaType('track')),
         [],
       ),
-    })
-    .views(self => ({
       /**
-       * #getter
-       * Session tracks come first and shadow any config (jbrowse.tracks) track
-       * with the same trackId, so a non-admin's edits to a config track (stored
-       * as a same-id session override, see updateTrackConfiguration) replace the
-       * original everywhere it's resolved without showing a duplicate.
+       * #property
+       * Per-track config overrides for a non-admin, keyed by trackId, stored as a
+       * *delta* against the admin-owned base config (jbrowse.tracks entry) rather
+       * than a full copy — so a later admin change to an untouched field still
+       * flows through (see trackConfigDelta.ts). Frozen (not a typed track array)
+       * on purpose: a typed create() would fill defaults, erasing the "unset vs
+       * default" distinction the delta merge relies on.
        */
-      get tracks(): AnyConfigurationModel[] {
-        const overridden = new Set(self.sessionTracks.map(t => t.trackId))
-        const configTracks = self.jbrowse.tracks as AnyConfigurationModel[]
-        return [
-          ...self.sessionTracks,
-          ...configTracks.filter(t => !overridden.has(t.trackId)),
-        ]
+      trackConfigDeltas: types.frozen<Record<string, PlainTrackConfig>>({}),
+    })
+    .views(self => {
+      // Memoize merged configs per (base frozen object, delta value) pair so the
+      // tracks getter returns stable object identity across unrelated recomputes.
+      // A fresh merged object each time would rehydrate a new MST node in
+      // TrackConfigurationReference, losing open display state (see CLAUDE.md).
+      // Both keys have stable identity until they actually change: base identity
+      // changes only on a jbrowse.tracks write, a track's delta only when that
+      // track is edited.
+      const mergeCache = new WeakMap<
+        object,
+        { delta: PlainTrackConfig; merged: AnyConfigurationModel }
+      >()
+      return {
+        /**
+         * #getter
+         * User-added session tracks first, then each admin config track with its
+         * delta (trackConfigDeltas) merged over it. A base track without a delta
+         * is returned unchanged by identity to keep the hydration cache warm.
+         */
+        get tracks(): AnyConfigurationModel[] {
+          const deltas = self.trackConfigDeltas
+          const sessionIds = new Set(self.sessionTracks.map(t => t.trackId))
+          const configTracks = self.jbrowse.tracks as PlainTrackConfig[]
+          const merged = configTracks
+            .filter(t => !sessionIds.has(t.trackId))
+            .map(base => {
+              const delta = deltas[base.trackId]
+              if (!delta) {
+                return base as unknown as AnyConfigurationModel
+              }
+              const cached = mergeCache.get(base)
+              if (cached?.delta === delta) {
+                return cached.merged
+              }
+              const mergedTrack = mergeTrackConfig(
+                base,
+                delta,
+              ) as unknown as AnyConfigurationModel
+              mergeCache.set(base, { delta, merged: mergedTrack })
+              return mergedTrack
+            })
+          return [...self.sessionTracks, ...merged]
+        },
+      }
+    })
+    .actions(self => ({
+      afterAttach() {
+        // One-time format upgrade: a legacy session stored a non-admin's edits as
+        // a full-config sessionTracks entry shadowing the same-id admin track.
+        // Convert those to deltas so the whole app uses one override mechanism.
+        // Genuinely-added session tracks (no matching base) are left in place.
+        const configById = new Map(
+          (self.jbrowse.tracks as PlainTrackConfig[]).map(t => [t.trackId, t]),
+        )
+        const legacy = self.sessionTracks.filter(t => configById.has(t.trackId))
+        if (legacy.length > 0) {
+          const deltas = { ...self.trackConfigDeltas }
+          for (const track of legacy) {
+            deltas[track.trackId] = diffTrackConfig(
+              configById.get(track.trackId)!,
+              getSnapshot(track),
+            ) as PlainTrackConfig
+          }
+          self.trackConfigDeltas = deltas
+          for (const track of legacy) {
+            self.sessionTracks.remove(track)
+          }
+        }
       },
     }))
     .actions(self => {
@@ -84,49 +156,54 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
 
         /**
          * #action
-         * Persist edited track config. Admins edit the jbrowse config in place;
-         * everyone else gets a session-track override (same trackId) so the
-         * edits persist with the session and are shared, instead of being a
-         * throwaway in-memory mutation of an admin-owned config track.
+         * Persist an edited track config. Admins edit the jbrowse config in
+         * place; everyone else gets a delta (trackConfigDeltas) against the
+         * admin-owned base — only the changed slots — so the edits persist and
+         * are shared while admin changes to untouched fields still flow through.
+         * A user-added session track (no base) keeps living in sessionTracks.
          */
-        updateTrackConfiguration(trackConf: {
-          trackId: string
-          [key: string]: unknown
-        }) {
+        updateTrackConfiguration(trackConf: PlainTrackConfig) {
           if (self.adminMode) {
             self.jbrowse.updateTrackConf(trackConf)
           } else {
             const { trackId } = trackConf
-            const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
-            // sessionTracks is a typed MST array, so an invalid config throws on
-            // write — surface it as a snackbar rather than crashing the app
-            try {
-              if (idx === -1) {
-                self.sessionTracks.push(trackConf)
-              } else {
-                self.sessionTracks[idx] = trackConf
+            const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
+              t => t.trackId === trackId,
+            )
+            const sessionIdx = self.sessionTracks.findIndex(
+              t => t.trackId === trackId,
+            )
+            if (base) {
+              self.trackConfigDeltas = {
+                ...self.trackConfigDeltas,
+                [trackId]: diffTrackConfig(base, trackConf) as PlainTrackConfig,
               }
-            } catch (e) {
-              self.notifyError(
-                `Track "${trackId}" has an invalid configuration: ${e}`,
-                e,
-              )
+            } else if (sessionIdx !== -1) {
+              // a user-added session track (no admin base): edit it in place. A
+              // typed MST array throws on an invalid config — snackbar it.
+              try {
+                self.sessionTracks[sessionIdx] = trackConf
+              } catch (e) {
+                self.notifyError(
+                  `Track "${trackId}" has an invalid configuration: ${e}`,
+                  e,
+                )
+              }
             }
           }
         },
 
         /**
          * #action
-         * Drop a session-track override (see updateTrackConfiguration) so the
-         * track reverts to its underlying config (jbrowse.tracks) default. Unlike
-         * deleteTrackConf this does not dereference the track from open views —
-         * the same-trackId config track re-resolves in place, so an open track
-         * stays open and simply reverts.
+         * Drop a non-admin's delta (trackConfigDeltas) so the track reverts to
+         * its admin config (jbrowse.tracks) default. Unlike deleteTrackConf this
+         * does not dereference the track from open views — the base config
+         * re-resolves in place, so an open track stays open and simply reverts.
          */
         resetTrackConfiguration(trackId: string) {
-          const idx = self.sessionTracks.findIndex(t => t.trackId === trackId)
-          if (idx !== -1) {
-            self.sessionTracks.splice(idx, 1)
+          if (trackId in self.trackConfigDeltas) {
+            const { [trackId]: _dropped, ...rest } = self.trackConfigDeltas
+            self.trackConfigDeltas = rest
           }
         },
 
