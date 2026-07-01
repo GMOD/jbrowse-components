@@ -74,6 +74,132 @@ and docs.
 <details open>
 <summary>DotplotView - Properties</summary>
 
+#### property: lodMode
+
+Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's
+bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all
+displays render at the same tier and the menu doesn't need to fan out per
+display.
+
+```ts
+// type signature
+type lodMode = IOptionalIType<
+  ISimpleType<'auto' | 'fine' | 'coarse'>,
+  [undefined]
+>
+// code
+lodMode: types.stripDefault(
+  types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
+  'auto',
+)
+```
+
+#### property: lockAspectRatio
+
+When true, hview and vview are kept at the same bpPerPx so the dotplot stays
+square. Wheel zoom already preserves the ratio; box-zoom and other independent
+ops trigger an autorun resync.
+
+```ts
+// type signature
+type lockAspectRatio = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+lockAspectRatio: types.stripDefault(types.boolean, false)
+```
+
+#### property: lineWidth
+
+Screen-space line width (CSS pixels) applied to every dotplot display in this
+view. View-level because the GPU pass renders all displays with one uniform.
+
+```ts
+// type signature
+type lineWidth = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+lineWidth: types.stripDefault(types.number, defaultLineWidth)
+```
+
+#### property: viewTrackConfigs
+
+this represents tracks specific to this view specifically used for read vs ref
+dotplots where this track would not really apply elsewhere
+
+```ts
+// type signature
+type viewTrackConfigs = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
+// code
+viewTrackConfigs: types.stripDefault(
+  types.array(pm.pluggableConfigSchemaType('track')),
+  [],
+)
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```ts
+// type signature
+type init = IType<
+  DotplotViewInit | undefined,
+  DotplotViewInit | undefined,
+  DotplotViewInit | undefined
+>
+// code
+init: types.frozen<DotplotViewInit | undefined>()
+```
+
+#### property: highlight
+
+translucent highlight bands drawn per-axis: vertical when the region's assembly
+matches hview, horizontal when it matches vview
+
+```ts
+// type signature
+type highlight = IOptionalIType<
+  IArrayType<IType<HighlightType, HighlightType, HighlightType>>,
+  [undefined]
+>
+// code
+highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
+```
+
+#### property: highlightsVisible
+
+controls whether view.highlight entries are rendered
+
+```ts
+// type signature
+type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+highlightsVisible: types.stripDefault(types.boolean, true)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`id`](#property-id)                               | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`type`](#property-type)                           | `ISimpleType<"DotplotView">`                                                                                                                                                                                                                                                                                                       |
+| [`height`](#property-height)                       | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`borderSize`](#property-bordersize)               | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`tickSize`](#property-ticksize)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`vtextRotation`](#property-vtextrotation)         | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`htextRotation`](#property-htextrotation)         | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`fontSize`](#property-fontsize)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`trackSelectorType`](#property-trackselectortype) | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`assemblyNames`](#property-assemblynames)         | `IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>`                                                                                                                                                                                                                                                                     |
+| [`drawCigar`](#property-drawcigar)                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                |
+| [`hview`](#property-hview)                         | `IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...` |
+| [`vview`](#property-vview)                         | `IOptionalIType<IModelType<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, _NotCustomized>, ...` |
+| [`tracks`](#property-tracks)                       | `IArrayType<IAnyType>`                                                                                                                                                                                                                                                                                                             |
+
+</details>
+
+<details>
+<summary>DotplotView - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -176,51 +302,6 @@ type drawCigar = IOptionalIType<ISimpleType<boolean>, [undefined]>
 drawCigar: types.stripDefault(types.boolean, true)
 ```
 
-#### property: lodMode
-
-Level-of-detail tier override for PIF adapters. 'auto' uses the adapter's
-bpPerPx threshold; 'fine'/'coarse' force a tier. Stored view-level so all
-displays render at the same tier and the menu doesn't need to fan out per
-display.
-
-```ts
-// type signature
-type lodMode = IOptionalIType<
-  ISimpleType<'auto' | 'fine' | 'coarse'>,
-  [undefined]
->
-// code
-lodMode: types.stripDefault(
-  types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
-  'auto',
-)
-```
-
-#### property: lockAspectRatio
-
-When true, hview and vview are kept at the same bpPerPx so the dotplot stays
-square. Wheel zoom already preserves the ratio; box-zoom and other independent
-ops trigger an autorun resync.
-
-```ts
-// type signature
-type lockAspectRatio = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-lockAspectRatio: types.stripDefault(types.boolean, false)
-```
-
-#### property: lineWidth
-
-Screen-space line width (CSS pixels) applied to every dotplot display in this
-view. View-level because the GPU pass renders all displays with one uniform.
-
-```ts
-// type signature
-type lineWidth = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-lineWidth: types.stripDefault(types.number, defaultLineWidth)
-```
-
 #### property: hview
 
 ```ts
@@ -248,84 +329,10 @@ type tracks = IArrayType<IAnyType>
 tracks: types.array(pm.pluggableMstType('track', 'stateModel'))
 ```
 
-#### property: viewTrackConfigs
-
-this represents tracks specific to this view specifically used for read vs ref
-dotplots where this track would not really apply elsewhere
-
-```ts
-// type signature
-type viewTrackConfigs = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
-// code
-viewTrackConfigs: types.stripDefault(
-  types.array(pm.pluggableConfigSchemaType('track')),
-  [],
-)
-```
-
-#### property: init
-
-used for initializing the view from a session snapshot
-
-```ts
-// type signature
-type init = IType<
-  DotplotViewInit | undefined,
-  DotplotViewInit | undefined,
-  DotplotViewInit | undefined
->
-// code
-init: types.frozen<DotplotViewInit | undefined>()
-```
-
-#### property: highlight
-
-translucent highlight bands drawn per-axis: vertical when the region's assembly
-matches hview, horizontal when it matches vview
-
-```ts
-// type signature
-type highlight = IOptionalIType<
-  IArrayType<IType<HighlightType, HighlightType, HighlightType>>,
-  [undefined]
->
-// code
-highlight: types.stripDefault(types.array(types.frozen<HighlightType>()), [])
-```
-
-#### property: highlightsVisible
-
-controls whether view.highlight entries are rendered
-
-```ts
-// type signature
-type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-highlightsVisible: types.stripDefault(types.boolean, true)
-```
-
 </details>
 
 <details open>
 <summary>DotplotView - Volatiles</summary>
-
-#### volatile: volatileWidth
-
-```ts
-// type signature
-type volatileWidth = number | undefined
-// code
-volatileWidth: undefined as number | undefined
-```
-
-#### volatile: volatileError
-
-```ts
-// type signature
-type volatileError = unknown
-// code
-volatileError: undefined as unknown
-```
 
 #### volatile: cursorMode
 
@@ -339,33 +346,6 @@ type cursorMode = string
 cursorMode: localStorageGetItem(LS_CURSOR_MODE) === 'move'
   ? 'move'
   : 'crosshair'
-```
-
-#### volatile: borderX
-
-```ts
-// type signature
-type borderX = number
-// code
-borderX: 100
-```
-
-#### volatile: borderY
-
-```ts
-// type signature
-type borderY = number
-// code
-borderY: 100
-```
-
-#### volatile: importFormSyntenyTrackSelections
-
-```ts
-// type signature
-type importFormSyntenyTrackSelections = IObservableArray<ImportFormSyntenyTrack>
-// code
-importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
 ```
 
 #### volatile: awaitingAutoDiagonalize
@@ -406,64 +386,71 @@ type diagonalizeStopToken = StopToken | undefined
 diagonalizeStopToken: undefined as StopToken | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                           | Signature                                  |
+| -------------------------------------------------------------------------------- | ------------------------------------------ |
+| [`volatileWidth`](#volatile-volatilewidth)                                       | `number \| undefined`                      |
+| [`volatileError`](#volatile-volatileerror)                                       | `unknown`                                  |
+| [`borderX`](#volatile-borderx)                                                   | `number`                                   |
+| [`borderY`](#volatile-bordery)                                                   | `number`                                   |
+| [`importFormSyntenyTrackSelections`](#volatile-importformsyntenytrackselections) | `IObservableArray<ImportFormSyntenyTrack>` |
+
+</details>
+
+<details>
+<summary>DotplotView - Volatiles (all signatures)</summary>
+
+#### volatile: volatileWidth
+
+```ts
+// type signature
+type volatileWidth = number | undefined
+// code
+volatileWidth: undefined as number | undefined
+```
+
+#### volatile: volatileError
+
+```ts
+// type signature
+type volatileError = unknown
+// code
+volatileError: undefined as unknown
+```
+
+#### volatile: borderX
+
+```ts
+// type signature
+type borderX = number
+// code
+borderX: 100
+```
+
+#### volatile: borderY
+
+```ts
+// type signature
+type borderY = number
+// code
+borderY: 100
+```
+
+#### volatile: importFormSyntenyTrackSelections
+
+```ts
+// type signature
+type importFormSyntenyTrackSelections = IObservableArray<ImportFormSyntenyTrack>
+// code
+importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
+```
+
 </details>
 
 <details open>
 <summary>DotplotView - Getters</summary>
-
-#### getter: width
-
-```ts
-type width = number
-```
-
-#### getter: assemblyErrors
-
-```ts
-type assemblyErrors = string
-```
-
-#### getter: assembliesInitialized
-
-```ts
-type assembliesInitialized = boolean
-```
-
-#### getter: initialized
-
-```ts
-type initialized = boolean
-```
-
-#### getter: hticks
-
-```ts
-type hticks = { type: string; base: number; index: number; refName: string }[]
-```
-
-#### getter: vticks
-
-```ts
-type vticks = { type: string; base: number; index: number; refName: string }[]
-```
-
-#### getter: hTickPositions
-
-```ts
-type hTickPositions = PositionedTick[]
-```
-
-#### getter: vTickPositions
-
-```ts
-type vTickPositions = PositionedTick[]
-```
-
-#### getter: hasSomethingToShow
-
-```ts
-type hasSomethingToShow = boolean
-```
 
 #### getter: showLoading
 
@@ -489,36 +476,6 @@ not ready" case.
 
 ```ts
 type loadingMessage = 'Loading' | undefined
-```
-
-#### getter: viewWidth
-
-```ts
-type viewWidth = number
-```
-
-#### getter: viewHeight
-
-```ts
-type viewHeight = number
-```
-
-#### getter: hblockLabelKeysToHide
-
-```ts
-type hblockLabelKeysToHide = Set<string>
-```
-
-#### getter: vblockLabelKeysToHide
-
-```ts
-type vblockLabelKeysToHide = Set<string>
-```
-
-#### getter: views
-
-```ts
-type views = (ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]
 ```
 
 #### getter: dotplotDisplays
@@ -576,6 +533,116 @@ type dotplotRenderState =
   | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                                                                                                                                                                                                                                                                        |
+| -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`width`](#getter-width)                                 | `number`                                                                                                                                                                                                                                                                                         |
+| [`assemblyErrors`](#getter-assemblyerrors)               | `string`                                                                                                                                                                                                                                                                                         |
+| [`assembliesInitialized`](#getter-assembliesinitialized) | `boolean`                                                                                                                                                                                                                                                                                        |
+| [`initialized`](#getter-initialized)                     | `boolean`                                                                                                                                                                                                                                                                                        |
+| [`hticks`](#getter-hticks)                               | `{ type: string; base: number; index: number; refName: string; }[]`                                                                                                                                                                                                                              |
+| [`vticks`](#getter-vticks)                               | `{ type: string; base: number; index: number; refName: string; }[]`                                                                                                                                                                                                                              |
+| [`hTickPositions`](#getter-htickpositions)               | `PositionedTick[]`                                                                                                                                                                                                                                                                               |
+| [`vTickPositions`](#getter-vtickpositions)               | `PositionedTick[]`                                                                                                                                                                                                                                                                               |
+| [`hasSomethingToShow`](#getter-hassomethingtoshow)       | `boolean`                                                                                                                                                                                                                                                                                        |
+| [`viewWidth`](#getter-viewwidth)                         | `number`                                                                                                                                                                                                                                                                                         |
+| [`viewHeight`](#getter-viewheight)                       | `number`                                                                                                                                                                                                                                                                                         |
+| [`hblockLabelKeysToHide`](#getter-hblocklabelkeystohide) | `Set<string>`                                                                                                                                                                                                                                                                                    |
+| [`vblockLabelKeysToHide`](#getter-vblocklabelkeystohide) | `Set<string>`                                                                                                                                                                                                                                                                                    |
+| [`views`](#getter-views)                                 | `(ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]` |
+| [`error`](#getter-error)                                 | `unknown`                                                                                                                                                                                                                                                                                        |
+
+</details>
+
+<details>
+<summary>DotplotView - Getters (all signatures)</summary>
+
+#### getter: width
+
+```ts
+type width = number
+```
+
+#### getter: assemblyErrors
+
+```ts
+type assemblyErrors = string
+```
+
+#### getter: assembliesInitialized
+
+```ts
+type assembliesInitialized = boolean
+```
+
+#### getter: initialized
+
+```ts
+type initialized = boolean
+```
+
+#### getter: hticks
+
+```ts
+type hticks = { type: string; base: number; index: number; refName: string }[]
+```
+
+#### getter: vticks
+
+```ts
+type vticks = { type: string; base: number; index: number; refName: string }[]
+```
+
+#### getter: hTickPositions
+
+```ts
+type hTickPositions = PositionedTick[]
+```
+
+#### getter: vTickPositions
+
+```ts
+type vTickPositions = PositionedTick[]
+```
+
+#### getter: hasSomethingToShow
+
+```ts
+type hasSomethingToShow = boolean
+```
+
+#### getter: viewWidth
+
+```ts
+type viewWidth = number
+```
+
+#### getter: viewHeight
+
+```ts
+type viewHeight = number
+```
+
+#### getter: hblockLabelKeysToHide
+
+```ts
+type hblockLabelKeysToHide = Set<string>
+```
+
+#### getter: vblockLabelKeysToHide
+
+```ts
+type vblockLabelKeysToHide = Set<string>
+```
+
+#### getter: views
+
+```ts
+type views = (ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }> & ... 10 more ... & IStateTreeNode<...>)[]
+```
+
 #### getter: error
 
 ```ts
@@ -586,12 +653,6 @@ type error = unknown
 
 <details open>
 <summary>DotplotView - Methods</summary>
-
-#### method: renderProps
-
-```ts
-type renderProps = () => { drawCigar: boolean; highResolutionScaling: any }
-```
 
 #### method: getHHighlightCoords
 
@@ -623,6 +684,25 @@ type getVHighlightCoords = (region: {
 }) => { top: number; height: number } | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                                                                                                                                                      |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`renderProps`](#method-renderprops) | `() => { drawCigar: boolean; highResolutionScaling: any; }`                                                                                                                    |
+| [`menuItems`](#method-menuitems)     | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; } \| { ...; })[]` |
+
+</details>
+
+<details>
+<summary>DotplotView - Methods (all signatures)</summary>
+
+#### method: renderProps
+
+```ts
+type renderProps = () => { drawCigar: boolean; highResolutionScaling: any }
+```
+
 #### method: menuItems
 
 ```ts
@@ -633,6 +713,110 @@ type menuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeM
 
 <details open>
 <summary>DotplotView - Actions</summary>
+
+#### action: syncBpPerPx
+
+Equalize hview/vview bpPerPx without recentering. Used by the aspect-lock
+autorun to absorb divergence from box-zoom and similar operations while
+preserving the user's current pan position.
+
+```ts
+type syncBpPerPx = () => void
+```
+
+#### action: clearView
+
+returns to the import form
+
+```ts
+type clearView = () => void
+```
+
+#### action: cancelAutoDiagonalize
+
+Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
+revealing the (undiagonalized) plot.
+
+```ts
+type cancelAutoDiagonalize = () => void
+```
+
+#### action: zoomInToMouseCoords
+
+zooms into clicked and dragged region
+
+```ts
+type zoomInToMouseCoords = (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: calculateBorders
+
+Calculate borders synchronously for a given zoom level
+
+```ts
+type calculateBorders = () => { borderX: number; borderY: number }
+```
+
+#### action: onDotplotView
+
+creates a linear synteny view from the clicked and dragged region
+
+```ts
+type onDotplotView = (mousedown: Coord, mouseup: Coord) => void
+```
+
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setImportFormSyntenyTrack`](#action-setimportformsyntenytrack)   | `(arg: number, val: ImportFormSyntenyTrack) => void`                                                                                                                                                                                                                                |
+| [`startRenderingBackend`](#action-startrenderingbackend)           | `(backend: DotplotRenderingBackend) => void`                                                                                                                                                                                                                                        |
+| [`setCursorMode`](#action-setcursormode)                           | `(mode: CursorMode) => void`                                                                                                                                                                                                                                                        |
+| [`setDrawCigar`](#action-setdrawcigar)                             | `(flag: boolean) => void`                                                                                                                                                                                                                                                           |
+| [`setLodMode`](#action-setlodmode)                                 | `(value: "auto" \| "fine" \| "coarse") => void`                                                                                                                                                                                                                                     |
+| [`setLockAspectRatio`](#action-setlockaspectratio)                 | `(flag: boolean) => void`                                                                                                                                                                                                                                                           |
+| [`setLineWidth`](#action-setlinewidth)                             | `(value: number) => void`                                                                                                                                                                                                                                                           |
+| [`addToHighlights`](#action-addtohighlights)                       | `(highlight: HighlightType) => void`                                                                                                                                                                                                                                                |
+| [`setHighlight`](#action-sethighlight)                             | `(highlight?: HighlightType[] \| undefined) => void`                                                                                                                                                                                                                                |
+| [`removeHighlight`](#action-removehighlight)                       | `(highlight: HighlightType) => void`                                                                                                                                                                                                                                                |
+| [`setHighlightsVisible`](#action-sethighlightsvisible)             | `(arg: boolean) => void`                                                                                                                                                                                                                                                            |
+| [`setBorderX`](#action-setborderx)                                 | `(n: number) => void`                                                                                                                                                                                                                                                               |
+| [`setBorderY`](#action-setbordery)                                 | `(n: number) => void`                                                                                                                                                                                                                                                               |
+| [`setWidth`](#action-setwidth)                                     | `(newWidth: number) => number`                                                                                                                                                                                                                                                      |
+| [`setHeight`](#action-setheight)                                   | `(newHeight: number) => number`                                                                                                                                                                                                                                                     |
+| [`setError`](#action-seterror)                                     | `(e: unknown) => void`                                                                                                                                                                                                                                                              |
+| [`setInit`](#action-setinit)                                       | `(init?: DotplotViewInit \| undefined) => void`                                                                                                                                                                                                                                     |
+| [`setAwaitingAutoDiagonalize`](#action-setawaitingautodiagonalize) | `(arg: boolean) => void`                                                                                                                                                                                                                                                            |
+| [`setDiagonalizeStatus`](#action-setdiagonalizestatus)             | `(arg?: RpcStatus \| undefined) => void`                                                                                                                                                                                                                                            |
+| [`setDiagonalizeStopToken`](#action-setdiagonalizestoptoken)       | `(arg?: StopToken \| undefined) => void`                                                                                                                                                                                                                                            |
+| [`zoomOut`](#action-zoomout)                                       | `() => void`                                                                                                                                                                                                                                                                        |
+| [`zoomIn`](#action-zoomin)                                         | `() => void`                                                                                                                                                                                                                                                                        |
+| [`activateTrackSelector`](#action-activatetrackselector)           | `() => Widget`                                                                                                                                                                                                                                                                      |
+| [`showTrack`](#action-showtrack)                                   | `(trackId: string, initialSnapshot?: any) => any`                                                                                                                                                                                                                                   |
+| [`hideTrack`](#action-hidetrack)                                   | `(trackId: string) => boolean`                                                                                                                                                                                                                                                      |
+| [`toggleTrack`](#action-toggletrack)                               | `(trackId: string) => void`                                                                                                                                                                                                                                                         |
+| [`setAssemblyNames`](#action-setassemblynames)                     | `(target: string, query: string) => void`                                                                                                                                                                                                                                           |
+| [`setViews`](#action-setviews)                                     | `(arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void` |
+| [`getCoords`](#action-getcoords)                                   | `(mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }[] \| undefined`                                                          |
+| [`showAllRegions`](#action-showallregions)                         | `() => void`                                                                                                                                                                                                                                                                        |
+| [`initializeDisplayedRegions`](#action-initializedisplayedregions) | `() => void`                                                                                                                                                                                                                                                                        |
+| [`applySquare`](#action-applysquare)                               | `(ratio: number) => void`                                                                                                                                                                                                                                                           |
+| [`squareView`](#action-squareview)                                 | `() => void`                                                                                                                                                                                                                                                                        |
+| [`squareViewProportional`](#action-squareviewproportional)         | `() => void`                                                                                                                                                                                                                                                                        |
+
+</details>
+
+<details>
+<summary>DotplotView - Actions (all signatures)</summary>
 
 #### action: setImportFormSyntenyTrack
 
@@ -673,16 +857,6 @@ type setLodMode = (value: 'auto' | 'fine' | 'coarse') => void
 type setLockAspectRatio = (flag: boolean) => void
 ```
 
-#### action: syncBpPerPx
-
-Equalize hview/vview bpPerPx without recentering. Used by the aspect-lock
-autorun to absorb divergence from box-zoom and similar operations while
-preserving the user's current pan position.
-
-```ts
-type syncBpPerPx = () => void
-```
-
 #### action: setLineWidth
 
 ```ts
@@ -711,14 +885,6 @@ type removeHighlight = (highlight: HighlightType) => void
 
 ```ts
 type setHighlightsVisible = (arg: boolean) => void
-```
-
-#### action: clearView
-
-returns to the import form
-
-```ts
-type clearView = () => void
 ```
 
 #### action: setBorderX
@@ -773,15 +939,6 @@ type setDiagonalizeStatus = (arg?: RpcStatus | undefined) => void
 
 ```ts
 type setDiagonalizeStopToken = (arg?: StopToken | undefined) => void
-```
-
-#### action: cancelAutoDiagonalize
-
-Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
-revealing the (undiagonalized) plot.
-
-```ts
-type cancelAutoDiagonalize = () => void
 ```
 
 #### action: zoomOut
@@ -853,22 +1010,6 @@ type getCoords = (
   | undefined
 ```
 
-#### action: zoomInToMouseCoords
-
-zooms into clicked and dragged region
-
-```ts
-type zoomInToMouseCoords = (mousedown: Coord, mouseup: Coord) => void
-```
-
-#### action: calculateBorders
-
-Calculate borders synchronously for a given zoom level
-
-```ts
-type calculateBorders = () => { borderX: number; borderY: number }
-```
-
 #### action: showAllRegions
 
 ```ts
@@ -879,22 +1020,6 @@ type showAllRegions = () => void
 
 ```ts
 type initializeDisplayedRegions = () => void
-```
-
-#### action: onDotplotView
-
-creates a linear synteny view from the clicked and dragged region
-
-```ts
-type onDotplotView = (mousedown: Coord, mouseup: Coord) => void
-```
-
-#### action: exportSvg
-
-creates an svg export and save using FileSaver
-
-```ts
-type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### action: applySquare

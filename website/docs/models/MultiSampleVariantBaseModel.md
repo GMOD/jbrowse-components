@@ -198,6 +198,22 @@ and docs.
 <details open>
 <summary>MultiSampleVariantBaseModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                              |
+| -------------------------------------------- | ---------------------------------------------------------------------- |
+| [`type`](#property-type)                     | `ISimpleType<string>`                                                  |
+| [`configuration`](#property-configuration)   | `ITypeUnion<any, any, any>`                                            |
+| [`rowHeight`](#property-rowheight)           | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
+| [`jexlFilters`](#property-jexlfilters)       | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
+| [`lineZoneHeight`](#property-linezoneheight) | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
+
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -254,15 +270,6 @@ lineZoneHeight: types.stripDefault(types.number, 0)
 <details open>
 <summary>MultiSampleVariantBaseModel - Volatiles</summary>
 
-#### volatile: showLegend
-
-```ts
-// type signature
-type showLegend = true
-// code
-showLegend: true
-```
-
 #### volatile: dismissedLegendSections
 
 Ids of legend sections the user has individually closed (e.g. 'genotypes' /
@@ -273,6 +280,47 @@ Ids of legend sections the user has individually closed (e.g. 'genotypes' /
 type dismissedLegendSections = string[]
 // code
 dismissedLegendSections: [] as string[]
+```
+
+#### volatile: cellData
+
+Single source of truth for fetched per-display data. hasPhased, sampleInfo, and
+featuresVolatile are derived from this via getters — fetchNeeded only needs to
+call setCellData(result).
+
+```ts
+// type signature
+type cellData = CellDataResult | undefined
+// code
+cellData: undefined as CellDataResult | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                      |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [`showLegend`](#volatile-showlegend)                           | `true`                                                                         |
+| [`sourcesLoadingStopToken`](#volatile-sourcesloadingstoptoken) | `StopToken \| undefined`                                                       |
+| [`contextMenuFeature`](#volatile-contextmenufeature)           | `Feature \| undefined`                                                         |
+| [`sourcesVolatile`](#volatile-sourcesvolatile)                 | `Source[] \| undefined`                                                        |
+| [`hoveredGenotype`](#volatile-hoveredgenotype)                 | `(Record<string, unknown> & { genotype: string; name: string; }) \| undefined` |
+| [`loadedBpPerPx`](#volatile-loadedbpperpx)                     | `number \| undefined`                                                          |
+| [`reloadCount`](#volatile-reloadcount)                         | `number`                                                                       |
+| [`pendingClusterTree`](#volatile-pendingclustertree)           | `string \| undefined`                                                          |
+
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Volatiles (all signatures)</summary>
+
+#### volatile: showLegend
+
+```ts
+// type signature
+type showLegend = true
+// code
+showLegend: true
 ```
 
 #### volatile: sourcesLoadingStopToken
@@ -311,19 +359,6 @@ type hoveredGenotype =
 // code
 hoveredGenotype: undefined as
   (Record<string, unknown> & { genotype: string; name: string }) | undefined
-```
-
-#### volatile: cellData
-
-Single source of truth for fetched per-display data. hasPhased, sampleInfo, and
-featuresVolatile are derived from this via getters — fetchNeeded only needs to
-call setCellData(result).
-
-```ts
-// type signature
-type cellData = CellDataResult | undefined
-// code
-cellData: undefined as CellDataResult | undefined
 ```
 
 #### volatile: loadedBpPerPx
@@ -375,12 +410,6 @@ lives in the cell-data featureGenotypeMap/featureData.
 type featuresVolatile = Feature[] | undefined
 ```
 
-#### getter: hasPhased
-
-```ts
-type hasPhased = boolean
-```
-
 #### getter: hasSecondaryAlt
 
 Whether any visible site is multiallelic (drives the "Other alt allele" legend
@@ -398,12 +427,6 @@ phased mode).
 
 ```ts
 type hasUnphased = boolean
-```
-
-#### getter: sampleInfo
-
-```ts
-type sampleInfo = Record<string, SampleInfo> | undefined
 ```
 
 #### getter: renderingMode
@@ -424,18 +447,6 @@ grouping.
 type colorBy = string
 ```
 
-#### getter: featureWidgetType
-
-```ts
-type featureWidgetType = { type: string; id: string }
-```
-
-#### getter: fetchSizeLimit
-
-```ts
-type fetchSizeLimit = number
-```
-
 #### getter: minorAlleleFrequencyFilter
 
 Returns the effective minor allele frequency filter, falling back to config
@@ -454,6 +465,139 @@ rebuilds it in the worker with pluginManager.jexl.
 
 ```ts
 type filters = SerializableFilterChain | undefined
+```
+
+#### getter: colorByAttributes
+
+Distinct sample-metadata attributes (from samplesTsv) the user can color rows by
+— every key the sources carry except internal plumbing.
+
+```ts
+type colorByAttributes = string[]
+```
+
+#### getter: sources
+
+sourcesBase expanded for phased rendering when sampleInfo is available. Sources
+already carrying HP (from clustering) pass through unchanged.
+
+```ts
+type sources = ProcessedSource[] | undefined
+```
+
+#### getter: editableSources
+
+Layout-merged, phased-expanded view for the Edit Color/Arrangement dialog. Does
+NOT apply the subtree filter — submitting the dialog persists every row back to
+`layout`, so filtered samples must be present or they would be wiped from layout
+on submit.
+
+```ts
+type editableSources = ProcessedSource[] | undefined
+```
+
+#### getter: genotypeSampleIndex
+
+sampleName -> column index into each feature's interned `genotypeCodes`. Rebuilt
+only when cellData changes. Used by the tooltips to decode a hovered cell's
+genotype (see genotypeCodec.ts).
+
+```ts
+type genotypeSampleIndex = Map<string, number> | undefined
+```
+
+#### getter: availableHeight
+
+Available height for rows (total height minus lineZoneHeight)
+
+```ts
+type availableHeight = number
+```
+
+#### getter: effectiveRowHeight
+
+Resolved per-row height. `rowHeight === 0` means auto-fit (computed from
+availableHeight / nrow); any positive value is a user-pinned height.
+`resizeHeight` scales pinned values proportionally so manual + display-resize
+stay in sync without snap-back fuzziness. Every consumer reads this, never the
+raw `rowHeight` property.
+
+```ts
+type effectiveRowHeight = number
+```
+
+#### getter: hasOverflow
+
+Whether the rows are taller than the viewport, i.e. the display scrolls. Drives
+native-scroll gating in displays that scroll their rows in a native overflow
+container (the plain display); auto-fit mode keeps this false since `rowHeight`
+derives from `availableHeight`.
+
+```ts
+type hasOverflow = boolean
+```
+
+#### getter: scrollableHeight
+
+Max valid `scrollTop`: how far the rows can scroll before the bottom row reaches
+the viewport floor. Zero when the rows fit.
+
+```ts
+type scrollableHeight = number
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`hasPhased`](#getter-hasphased)                       | `boolean`                                                                                                                                                                                                                                                                                    |
+| [`sampleInfo`](#getter-sampleinfo)                     | `Record<string, SampleInfo> \| undefined`                                                                                                                                                                                                                                                    |
+| [`featureWidgetType`](#getter-featurewidgettype)       | `{ type: string; id: string; }`                                                                                                                                                                                                                                                              |
+| [`fetchSizeLimit`](#getter-fetchsizelimit)             | `number`                                                                                                                                                                                                                                                                                     |
+| [`showSidebarLabels`](#getter-showsidebarlabels)       | `boolean`                                                                                                                                                                                                                                                                                    |
+| [`showTree`](#getter-showtree)                         | `boolean`                                                                                                                                                                                                                                                                                    |
+| [`showBranchLength`](#getter-showbranchlength)         | `boolean`                                                                                                                                                                                                                                                                                    |
+| [`referenceDrawingMode`](#getter-referencedrawingmode) | `string`                                                                                                                                                                                                                                                                                     |
+| [`sourcesWithoutLayout`](#getter-sourceswithoutlayout) | `ProcessedSource[] \| undefined`                                                                                                                                                                                                                                                             |
+| [`sourcesBase`](#getter-sourcesbase)                   | `ProcessedSource[] \| undefined`                                                                                                                                                                                                                                                             |
+| [`sourceMap`](#getter-sourcemap)                       | `{ [k: string]: Source; } \| undefined`                                                                                                                                                                                                                                                      |
+| [`nrow`](#getter-nrow)                                 | `number`                                                                                                                                                                                                                                                                                     |
+| [`autoRowHeight`](#getter-autorowheight)               | `number`                                                                                                                                                                                                                                                                                     |
+| [`hierarchy`](#getter-hierarchy)                       | `PositionedHierarchyNode<NewickNode> \| undefined`                                                                                                                                                                                                                                           |
+| [`spatialIndex`](#getter-spatialindex)                 | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined`                                                                                                                                                                                                                           |
+| [`hoveredTooltipSource`](#getter-hoveredtooltipsource) | `{ [x: string]: unknown; genotype: string; name: string; baseUri?: string \| undefined; label?: string \| undefined; labelColor?: string \| undefined; sampleName?: string \| undefined; color?: string \| undefined; group?: string \| undefined; HP?: number \| undefined; } \| undefined` |
+| [`canDisplayLabels`](#getter-candisplaylabels)         | `boolean`                                                                                                                                                                                                                                                                                    |
+| [`totalHeight`](#getter-totalheight)                   | `number`                                                                                                                                                                                                                                                                                     |
+| [`featuresReady`](#getter-featuresready)               | `boolean`                                                                                                                                                                                                                                                                                    |
+
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Getters (all signatures)</summary>
+
+#### getter: hasPhased
+
+```ts
+type hasPhased = boolean
+```
+
+#### getter: sampleInfo
+
+```ts
+type sampleInfo = Record<string, SampleInfo> | undefined
+```
+
+#### getter: featureWidgetType
+
+```ts
+type featureWidgetType = { type: string; id: string }
+```
+
+#### getter: fetchSizeLimit
+
+```ts
+type fetchSizeLimit = number
 ```
 
 #### getter: showSidebarLabels
@@ -480,15 +624,6 @@ type showBranchLength = boolean
 type referenceDrawingMode = string
 ```
 
-#### getter: colorByAttributes
-
-Distinct sample-metadata attributes (from samplesTsv) the user can color rows by
-— every key the sources carry except internal plumbing.
-
-```ts
-type colorByAttributes = string[]
-```
-
 #### getter: sourcesWithoutLayout
 
 ```ts
@@ -501,48 +636,10 @@ type sourcesWithoutLayout = ProcessedSource[] | undefined
 type sourcesBase = ProcessedSource[] | undefined
 ```
 
-#### getter: sources
-
-sourcesBase expanded for phased rendering when sampleInfo is available. Sources
-already carrying HP (from clustering) pass through unchanged.
-
-```ts
-type sources = ProcessedSource[] | undefined
-```
-
-#### getter: editableSources
-
-Layout-merged, phased-expanded view for the Edit Color/Arrangement dialog. Does
-NOT apply the subtree filter — submitting the dialog persists every row back to
-`layout`, so filtered samples must be present or they would be wiped from layout
-on submit.
-
-```ts
-type editableSources = ProcessedSource[] | undefined
-```
-
 #### getter: sourceMap
 
 ```ts
 type sourceMap = { [k: string]: Source } | undefined
-```
-
-#### getter: genotypeSampleIndex
-
-sampleName -> column index into each feature's interned `genotypeCodes`. Rebuilt
-only when cellData changes. Used by the tooltips to decode a hovered cell's
-genotype (see genotypeCodec.ts).
-
-```ts
-type genotypeSampleIndex = Map<string, number> | undefined
-```
-
-#### getter: availableHeight
-
-Available height for rows (total height minus lineZoneHeight)
-
-```ts
-type availableHeight = number
 ```
 
 #### getter: nrow
@@ -555,18 +652,6 @@ type nrow = number
 
 ```ts
 type autoRowHeight = number
-```
-
-#### getter: effectiveRowHeight
-
-Resolved per-row height. `rowHeight === 0` means auto-fit (computed from
-availableHeight / nrow); any positive value is a user-pinned height.
-`resizeHeight` scales pinned values proportionally so manual + display-resize
-stay in sync without snap-back fuzziness. Every consumer reads this, never the
-raw `rowHeight` property.
-
-```ts
-type effectiveRowHeight = number
 ```
 
 #### getter: hierarchy
@@ -613,26 +698,6 @@ type canDisplayLabels = boolean
 type totalHeight = number
 ```
 
-#### getter: hasOverflow
-
-Whether the rows are taller than the viewport, i.e. the display scrolls. Drives
-native-scroll gating in displays that scroll their rows in a native overflow
-container (the plain display); auto-fit mode keeps this false since `rowHeight`
-derives from `availableHeight`.
-
-```ts
-type hasOverflow = boolean
-```
-
-#### getter: scrollableHeight
-
-Max valid `scrollTop`: how far the rows can scroll before the bottom row reaches
-the viewport floor. Zero when the rows fit.
-
-```ts
-type scrollableHeight = number
-```
-
 #### getter: featuresReady
 
 ```ts
@@ -643,6 +708,45 @@ type featuresReady = boolean
 
 <details open>
 <summary>MultiSampleVariantBaseModel - Methods</summary>
+
+#### method: getPortableSettings
+
+Called by BaseTrackModel.replaceDisplay when switching between the regular and
+matrix variant displays. The config-slot settings (colorBy, renderingMode, etc.)
+now live on each display's own config-schema node rather than a display-instance
+override map, so porting them means writing directly into the _target_ display's
+config (via setSlot) rather than spreading them into the new display's instance
+snapshot — hence the `newDisplayId` param. Only genuine display-instance state
+(not config-backed) is returned for the instance-snapshot spread.
+
+```ts
+type getPortableSettings = (newDisplayId?: string | undefined) => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [...]>>) | undefined; clusterTree: string | undefined; treeAreaWidth: number; layout: Source[] & IStateTreeNode<...>; height: number; }
+```
+
+#### method: legendSections
+
+Legend split into independently-closable sections: the genotype/cell coloring
+and (when colorBy is set) the sample-grouping coloring shown on the sidebar row
+labels. Dismissed sections are filtered out.
+
+```ts
+type legendSections = () => LegendSection[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                    |
+| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)                 | `() => { sources: ProcessedSource[] \| undefined; minorAlleleFrequencyFilter: number; filters: SerializableFilterChain \| undefined; renderingMode: string; referenceDrawingMode: string; }` |
+| [`showSubmenuItems`](#method-showsubmenuitems) | `() => MenuItem[]`                                                                                                                                                                           |
+| [`trackMenuItems`](#method-trackmenuitems)     | `() => MenuItem[]`                                                                                                                                                                           |
+| [`contextMenuItems`](#method-contextmenuitems) | `() => MenuItem[]`                                                                                                                                                                           |
+
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Methods (all signatures)</summary>
 
 #### method: rpcProps
 
@@ -674,34 +778,92 @@ type trackMenuItems = () => MenuItem[]
 type contextMenuItems = () => MenuItem[]
 ```
 
-#### method: getPortableSettings
-
-Called by BaseTrackModel.replaceDisplay when switching between the regular and
-matrix variant displays. The config-slot settings (colorBy, renderingMode, etc.)
-now live on each display's own config-schema node rather than a display-instance
-override map, so porting them means writing directly into the _target_ display's
-config (via setSlot) rather than spreading them into the new display's instance
-snapshot — hence the `newDisplayId` param. Only genuine display-instance state
-(not config-backed) is returned for the instance-snapshot spread.
-
-```ts
-type getPortableSettings = (newDisplayId?: string | undefined) => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [...]>>) | undefined; clusterTree: string | undefined; treeAreaWidth: number; layout: Source[] & IStateTreeNode<...>; height: number; }
-```
-
-#### method: legendSections
-
-Legend split into independently-closable sections: the genotype/cell coloring
-and (when colorBy is set) the sample-grouping coloring shown on the sidebar row
-labels. Dismissed sections are filtered out.
-
-```ts
-type legendSections = () => LegendSection[]
-```
-
 </details>
 
 <details open>
 <summary>MultiSampleVariantBaseModel - Actions</summary>
+
+#### action: dismissLegendSection
+
+Close a single legend section (leaving the others visible).
+
+```ts
+type dismissLegendSection = (id: string) => void
+```
+
+#### action: setColorBy
+
+Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' to
+clear the grouping. Persists the colored arrangement as the layout and records
+the choice as a `colorBy` override so it survives a data refetch and serializes
+into the session.
+
+```ts
+type setColorBy = (colorBy: string) => void
+```
+
+#### action: clearLayout
+
+Restore the configured default arrangement — empties the layout and clears the
+cluster tree, then re-applies the `colorBy` palette if one is configured.
+Overrides the mixin's `clearLayout` so the user gets the same starting state
+they had on initial load.
+
+```ts
+type clearLayout = () => void
+```
+
+#### action: setFitToHeight
+
+Toggle auto height mode. When turning off, uses default of 10px per row.
+
+```ts
+type setFitToHeight = () => void
+```
+
+#### action: resizeHeight
+
+Override resizeHeight to scale row heights proportionally when the display is
+vertically resized
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                     | Signature                                                                                      |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------- |
+| [`setCellData`](#action-setcelldata)                                       | `(data: CellDataResult \| undefined) => void`                                                  |
+| [`setContextMenuFeature`](#action-setcontextmenufeature)                   | `(feature?: Feature \| undefined) => void`                                                     |
+| [`setLoadedBpPerPx`](#action-setloadedbpperpx)                             | `(bpPerPx: number \| undefined) => void`                                                       |
+| [`setJexlFilters`](#action-setjexlfilters)                                 | `(f?: string[] \| undefined) => void`                                                          |
+| [`setShowLegend`](#action-setshowlegend)                                   | `(s: boolean) => void`                                                                         |
+| [`selectFeature`](#action-selectfeature)                                   | `(feature: Feature) => void`                                                                   |
+| [`setRowHeight`](#action-setrowheight)                                     | `(arg: number) => void`                                                                        |
+| [`setHoveredGenotype`](#action-sethoveredgenotype)                         | `(arg?: (Record<string, unknown> & { genotype: string; name: string; }) \| undefined) => void` |
+| [`setSourcesLoading`](#action-setsourcesloading)                           | `(token: StopToken) => void`                                                                   |
+| [`setSources`](#action-setsources)                                         | `(sources: Source[]) => void`                                                                  |
+| [`setMafFilter`](#action-setmaffilter)                                     | `(arg: number) => void`                                                                        |
+| [`setShowSidebarLabels`](#action-setshowsidebarlabels)                     | `(arg: boolean) => void`                                                                       |
+| [`setShowTree`](#action-setshowtree)                                       | `(arg: boolean) => void`                                                                       |
+| [`setShowBranchLength`](#action-setshowbranchlength)                       | `(arg: boolean) => void`                                                                       |
+| [`setLayoutAndPendingClusterTree`](#action-setlayoutandpendingclustertree) | `(layout: Source[], tree: string) => void`                                                     |
+| [`setPhasedMode`](#action-setphasedmode)                                   | `(arg: string) => void`                                                                        |
+| [`setReferenceDrawingMode`](#action-setreferencedrawingmode)               | `(arg: string) => void`                                                                        |
+| [`sortByGenotype`](#action-sortbygenotype)                                 | `(featureId: string) => void`                                                                  |
+| [`setScrollTop`](#action-setscrolltop)                                     | `(scrollTop: number) => void`                                                                  |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)             | `() => void`                                                                                   |
+| [`isCacheValid`](#action-iscachevalid)                                     | `(_displayedRegionIndex: number) => boolean`                                                   |
+| [`getByteEstimateConfig`](#action-getbyteestimateconfig)                   | `() => ByteEstimateConfig \| null`                                                             |
+| [`fetchNeeded`](#action-fetchneeded)                                       | `(_needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`              |
+| [`reload`](#action-reload)                                                 | `() => void`                                                                                   |
+
+</details>
+
+<details>
+<summary>MultiSampleVariantBaseModel - Actions (all signatures)</summary>
 
 #### action: setCellData
 
@@ -731,14 +893,6 @@ type setJexlFilters = (f?: string[] | undefined) => void
 
 ```ts
 type setShowLegend = (s: boolean) => void
-```
-
-#### action: dismissLegendSection
-
-Close a single legend section (leaving the others visible).
-
-```ts
-type dismissLegendSection = (id: string) => void
 ```
 
 #### action: selectFeature
@@ -772,28 +926,6 @@ type setSourcesLoading = (token: StopToken) => void
 
 ```ts
 type setSources = (sources: Source[]) => void
-```
-
-#### action: setColorBy
-
-Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' to
-clear the grouping. Persists the colored arrangement as the layout and records
-the choice as a `colorBy` override so it survives a data refetch and serializes
-into the session.
-
-```ts
-type setColorBy = (colorBy: string) => void
-```
-
-#### action: clearLayout
-
-Restore the configured default arrangement — empties the layout and clears the
-cluster tree, then re-applies the `colorBy` palette if one is configured.
-Overrides the mixin's `clearLayout` so the user gets the same starting state
-they had on initial load.
-
-```ts
-type clearLayout = () => void
 ```
 
 #### action: setMafFilter
@@ -830,23 +962,6 @@ type setLayoutAndPendingClusterTree = (layout: Source[], tree: string) => void
 
 ```ts
 type setPhasedMode = (arg: string) => void
-```
-
-#### action: setFitToHeight
-
-Toggle auto height mode. When turning off, uses default of 10px per row.
-
-```ts
-type setFitToHeight = () => void
-```
-
-#### action: resizeHeight
-
-Override resizeHeight to scale row heights proportionally when the display is
-vertically resized
-
-```ts
-type resizeHeight = (distance: number) => number
 ```
 
 #### action: setReferenceDrawingMode

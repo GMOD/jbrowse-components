@@ -48,6 +48,19 @@ and docs.
 <details open>
 <summary>UCSCTrackHubConnection - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                               |
+| ------------------------------------------ | --------------------------------------- |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`             |
+| [`type`](#property-type)                   | `ISimpleType<"UCSCTrackHubConnection">` |
+
+</details>
+
+<details>
+<summary>UCSCTrackHubConnection - Properties (all signatures)</summary>
+
 #### property: configuration
 
 ```ts
@@ -70,6 +83,18 @@ type: types.literal('UCSCTrackHubConnection')
 
 <details open>
 <summary>UCSCTrackHubConnection - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature             |
+| ---------------------------- | --------------------- |
+| [`connect`](#action-connect) | `() => Promise<void>` |
+
+</details>
+
+<details>
+<summary>UCSCTrackHubConnection - Actions (all signatures)</summary>
 
 #### action: connect
 

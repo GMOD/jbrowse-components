@@ -281,6 +281,18 @@ and docs.
 <details open>
 <summary>LinearMultiSampleVariantDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                                        |
+| ------------------------ | ------------------------------------------------ |
+| [`type`](#property-type) | `ISimpleType<"LinearMultiSampleVariantDisplay">` |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -294,6 +306,22 @@ type: types.literal('LinearMultiSampleVariantDisplay')
 
 <details open>
 <summary>LinearMultiSampleVariantDisplay - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`visibleRegions`](#getter-visibleregions)     | `{ refName: string; start: number; end: number; assemblyName: string; reversed: boolean \| undefined; displayedRegionIndex: number; screenStartPx: number; screenEndPx: number; }[]` |
+| [`renderState`](#getter-renderstate)           | `{ canvasWidth: number; canvasHeight: number; rowHeight: number; scrollTop: number; } \| undefined`                                                                                  |
+| [`prefersOffset`](#getter-prefersoffset)       | `boolean`                                                                                                                                                                            |
+| [`perRegionCellMap`](#getter-perregioncellmap) | `Map<number, VariantUploadData>`                                                                                                                                                     |
+| [`flatbushIndices`](#getter-flatbushindices)   | `Map<number, Flatbush>`                                                                                                                                                              |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantDisplay - Getters (all signatures)</summary>
 
 #### getter: visibleRegions
 
@@ -346,6 +374,19 @@ type flatbushIndices = Map<number, Flatbush>
 <details open>
 <summary>LinearMultiSampleVariantDisplay - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                    |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`renderSvg`](#method-rendersvg)               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
+| [`showSubmenuItems`](#method-showsubmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                   |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantDisplay - Methods (all signatures)</summary>
+
 #### method: renderSvg
 
 ```ts
@@ -362,6 +403,18 @@ type showSubmenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Ch
 
 <details open>
 <summary>LinearMultiSampleVariantDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                    |
+| -------------------------------------------------------- | -------------------------------------------- |
+| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: VariantRenderingBackend) => void` |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantDisplay - Actions (all signatures)</summary>
 
 #### action: startRenderingBackend
 

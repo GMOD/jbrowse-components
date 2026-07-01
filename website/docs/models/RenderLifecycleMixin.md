@@ -117,6 +117,43 @@ renderError: undefined
 <details open>
 <summary>RenderLifecycleMixin - Actions</summary>
 
+#### action: setRenderError
+
+set/clear the render-backend error. Called by `useRenderingBackend`: with the
+error when the canvas factory rejects (or context-loss re-init fails), and with
+`undefined` on successful (re)init and on retry.
+
+```ts
+type setRenderError = (error: unknown) => void
+```
+
+#### action: attachRenderingBackend
+
+attach a GPU/Canvas2D backend and install the upload + render autorun pair
+(idempotent — re-calling only swaps the backend)
+
+```ts
+type attachRenderingBackend = <B>(
+  backend: B,
+  cbs: RenderingBackendCallbacks<B>,
+) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature    |
+| ------------------------------------------------------ | ------------ |
+| [`markCanvasDrawn`](#action-markcanvasdrawn)           | `() => void` |
+| [`resetCanvasDrawn`](#action-resetcanvasdrawn)         | `() => void` |
+| [`stopRenderingBackend`](#action-stoprenderingbackend) | `() => void` |
+| [`renderNow`](#action-rendernow)                       | `() => void` |
+
+</details>
+
+<details>
+<summary>RenderLifecycleMixin - Actions (all signatures)</summary>
+
 #### action: markCanvasDrawn
 
 ```ts
@@ -139,28 +176,6 @@ type stopRenderingBackend = () => void
 
 ```ts
 type renderNow = () => void
-```
-
-#### action: setRenderError
-
-set/clear the render-backend error. Called by `useRenderingBackend`: with the
-error when the canvas factory rejects (or context-loss re-init fails), and with
-`undefined` on successful (re)init and on retry.
-
-```ts
-type setRenderError = (error: unknown) => void
-```
-
-#### action: attachRenderingBackend
-
-attach a GPU/Canvas2D backend and install the upload + render autorun pair
-(idempotent — re-calling only swaps the backend)
-
-```ts
-type attachRenderingBackend = <B>(
-  backend: B,
-  cbs: RenderingBackendCallbacks<B>,
-) => void
 ```
 
 </details>

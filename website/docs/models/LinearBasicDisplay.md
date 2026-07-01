@@ -83,7 +83,9 @@ and docs.
 [morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
 [morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
 [morphStartMs](../linearcanvasbasedisplay#volatile-morphstartms),
-[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy)
+[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy),
+[morphScrollFrom](../linearcanvasbasedisplay#volatile-morphscrollfrom),
+[morphScrollDelta](../linearcanvasbasedisplay#volatile-morphscrolldelta)
 
 **Getters:** [conf](../linearcanvasbasedisplay#getter-conf),
 [visibleFeatureDensityPerPx](../linearcanvasbasedisplay#getter-visiblefeaturedensityperpx),
@@ -309,6 +311,18 @@ and docs.
 <details open>
 <summary>LinearBasicDisplay - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                       | Signature |
+| ---------------------------------------------------------------------------- | --------- |
+| [`isoformCollapseNoticeDismissed`](#volatile-isoformcollapsenoticedismissed) | `false`   |
+
+</details>
+
+<details>
+<summary>LinearBasicDisplay - Volatiles (all signatures)</summary>
+
 #### volatile: isoformCollapseNoticeDismissed
 
 ```ts
@@ -322,6 +336,23 @@ isoformCollapseNoticeDismissed: false
 
 <details open>
 <summary>LinearBasicDisplay - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                            |
+| ------------------------------------------------------------------ | ------------------------------------ |
+| [`subfeatureLabels`](#getter-subfeaturelabels)                     | `any`                                |
+| [`geneGlyphMode`](#getter-geneglyphmode)                           | `any`                                |
+| [`displayDirectionalChevrons`](#getter-displaydirectionalchevrons) | `any`                                |
+| [`effectiveGeneGlyphMode`](#getter-effectivegeneglyphmode)         | `"auto" \| "all" \| "longestCoding"` |
+| [`showIsoformCollapseNotice`](#getter-showisoformcollapsenotice)   | `boolean`                            |
+| [`isGeneLike`](#getter-isgenelike)                                 | `boolean`                            |
+
+</details>
+
+<details>
+<summary>LinearBasicDisplay - Getters (all signatures)</summary>
 
 #### getter: subfeatureLabels
 
@@ -363,6 +394,21 @@ type isGeneLike = boolean
 
 <details open>
 <summary>LinearBasicDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                                                                                                                                                                                                                                                                              |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: { geneGlyphMode: "auto" \| "all" \| "longestCoding"; subfeatureLabels: "none" \| "overlay" \| "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: any; colorByCDS: boolean; theme: Serializabl...` |
+| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                                                         |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                                                                                                                                                                                             |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                                                                                                                                        |
+
+</details>
+
+<details>
+<summary>LinearBasicDisplay - Methods (all signatures)</summary>
 
 #### method: rpcProps
 
@@ -407,6 +453,24 @@ type contextMenuItems = () => {
 
 <details open>
 <summary>LinearBasicDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                   | Signature                                                   |
+| ------------------------------------------------------------------------ | ----------------------------------------------------------- |
+| [`setSubfeatureLabels`](#action-setsubfeaturelabels)                     | `(value: "none" \| "overlay" \| "below") => void`           |
+| [`setGeneGlyphMode`](#action-setgeneglyphmode)                           | `(value: "auto" \| "all" \| "longestCoding") => void`       |
+| [`setDisplayMode`](#action-setdisplaymode)                               | `(value: DisplayMode) => void`                              |
+| [`setCompactness`](#action-setcompactness)                               | `(level: "normal" \| "compact" \| "super-compact") => void` |
+| [`setShowOnlyGenes`](#action-setshowonlygenes)                           | `(value: boolean) => void`                                  |
+| [`setDisplayDirectionalChevrons`](#action-setdisplaydirectionalchevrons) | `(value: boolean) => void`                                  |
+| [`dismissIsoformCollapseNotice`](#action-dismissisoformcollapsenotice)   | `() => void`                                                |
+
+</details>
+
+<details>
+<summary>LinearBasicDisplay - Actions (all signatures)</summary>
 
 #### action: setSubfeatureLabels
 

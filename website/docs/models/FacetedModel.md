@@ -24,6 +24,36 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>FacetedModel - Properties</summary>
 
+#### property: hiddenColumns
+
+Column names the user has hidden. Loaded from a config+assembly scoped
+localStorage entry in setTrackConfigurations (once assemblies are known).
+
+```ts
+// type signature
+type hiddenColumns = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+hiddenColumns: types.optional(types.array(types.string), [])
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                                           |
+| -------------------------------------- | --------------------------------------------------- |
+| [`filterText`](#property-filtertext)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`showSparse`](#property-showsparse)   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`showFilters`](#property-showfilters) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`panelWidth`](#property-panelwidth)   | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+
+</details>
+
+<details>
+<summary>FacetedModel - Properties (all signatures)</summary>
+
 #### property: filterText
 
 ```ts
@@ -66,25 +96,38 @@ panelWidth: types.optional(types.number, () =>
 )
 ```
 
-#### property: hiddenColumns
-
-Column names the user has hidden. Loaded from a config+assembly scoped
-localStorage entry in setTrackConfigurations (once assemblies are known).
-
-```ts
-// type signature
-type hiddenColumns = IOptionalIType<
-  IArrayType<ISimpleType<string>>,
-  [undefined]
->
-// code
-hiddenColumns: types.optional(types.array(types.string), [])
-```
-
 </details>
 
 <details open>
 <summary>FacetedModel - Volatiles</summary>
+
+#### volatile: sortField
+
+Field id the grid is sorted by; empty string keeps natural order.
+
+```ts
+// type signature
+type sortField = string
+// code
+sortField: ''
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                                                                                                                                          |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`assemblyNames`](#volatile-assemblynames)             | `string[]`                                                                                                                                                                                         |
+| [`useShoppingCart`](#volatile-useshoppingcart)         | `false`                                                                                                                                                                                            |
+| [`filters`](#volatile-filters)                         | `ObservableMap<string, string[]>`                                                                                                                                                                  |
+| [`sortAscending`](#volatile-sortascending)             | `true`                                                                                                                                                                                             |
+| [`trackConfigurations`](#volatile-trackconfigurations) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
+| [`session`](#volatile-session)                         | `AbstractSessionModel \| undefined`                                                                                                                                                                |
+
+</details>
+
+<details>
+<summary>FacetedModel - Volatiles (all signatures)</summary>
 
 #### volatile: assemblyNames
 
@@ -111,17 +154,6 @@ useShoppingCart: false
 type filters = ObservableMap<string, string[]>
 // code
 filters: observable.map<string, string[]>()
-```
-
-#### volatile: sortField
-
-Field id the grid is sorted by; empty string keeps natural order.
-
-```ts
-// type signature
-type sortField = string
-// code
-sortField: ''
 ```
 
 #### volatile: sortAscending
@@ -173,12 +205,6 @@ Text-filtered rows. Cheap string filtering on already-built allRows.
 type rows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
-#### getter: metadataKeys
-
-```ts
-type metadataKeys = string[]
-```
-
 #### getter: facetFields
 
 Facet field ids in column order (non-metadata first, then `metadata.<key>`);
@@ -187,12 +213,6 @@ showSparse.
 
 ```ts
 type facetFields = string[]
-```
-
-#### getter: fields
-
-```ts
-type fields = string[]
 ```
 
 #### getter: nonMetadataFieldSet
@@ -211,12 +231,6 @@ absent from the list (e.g. newly introduced) defaults to visible.
 
 ```ts
 type visible = Record<string, boolean>
-```
-
-#### getter: filteredRows
-
-```ts
-type filteredRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
 #### getter: facetCategoryCounts
@@ -246,10 +260,63 @@ Faceted rows in display order: filteredRows sorted by the active sort field
 type sortedRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                                                                                                                                                                                                                                                                                 |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`metadataKeys`](#getter-metadatakeys) | `string[]`                                                                                                                                                                                                                                                                                |
+| [`fields`](#getter-fields)             | `string[]`                                                                                                                                                                                                                                                                                |
+| [`filteredRows`](#getter-filteredrows) | `{ readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]` |
+
+</details>
+
+<details>
+<summary>FacetedModel - Getters (all signatures)</summary>
+
+#### getter: metadataKeys
+
+```ts
+type metadataKeys = string[]
+```
+
+#### getter: fields
+
+```ts
+type fields = string[]
+```
+
+#### getter: filteredRows
+
+```ts
+type filteredRows = { readonly id: string; readonly conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; ... 4 more ...; readonly metadata: Record<...>; }[]
+```
+
 </details>
 
 <details open>
 <summary>FacetedModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                     | Signature                                                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setTrackConfigurations`](#action-settrackconfigurations) | `(tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[], session: AbstractSessionModel, assemblyNames: string[]) => void` |
+| [`setFilter`](#action-setfilter)                           | `(key: string, value: string[]) => void`                                                                                                                                                                                                                                     |
+| [`clearFilters`](#action-clearfilters)                     | `() => void`                                                                                                                                                                                                                                                                 |
+| [`setSort`](#action-setsort)                               | `(field: string, ascending: boolean) => void`                                                                                                                                                                                                                                |
+| [`setPanelWidth`](#action-setpanelwidth)                   | `(width: number) => void`                                                                                                                                                                                                                                                    |
+| [`setUseShoppingCart`](#action-setuseshoppingcart)         | `(f: boolean) => void`                                                                                                                                                                                                                                                       |
+| [`setFilterText`](#action-setfiltertext)                   | `(str: string) => void`                                                                                                                                                                                                                                                      |
+| [`setShowSparse`](#action-setshowsparse)                   | `(f: boolean) => void`                                                                                                                                                                                                                                                       |
+| [`setShowFilters`](#action-setshowfilters)                 | `(f: boolean) => void`                                                                                                                                                                                                                                                       |
+| [`setColumnVisible`](#action-setcolumnvisible)             | `(field: string, visible: boolean) => void`                                                                                                                                                                                                                                  |
+
+</details>
+
+<details>
+<summary>FacetedModel - Actions (all signatures)</summary>
 
 #### action: setTrackConfigurations
 

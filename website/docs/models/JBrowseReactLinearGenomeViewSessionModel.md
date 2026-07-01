@@ -156,6 +156,18 @@ and docs.
 <details open>
 <summary>JBrowseReactLinearGenomeViewSessionModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                                                                                                                                                                                                                                                            |
+| ------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`view`](#property-view) | `IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>` |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Properties (all signatures)</summary>
+
 #### property: view
 
 ```ts
@@ -170,6 +182,25 @@ view: pluginManager.getViewType('LinearGenomeView')!
 
 <details open>
 <summary>JBrowseReactLinearGenomeViewSessionModel - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                                                                                   |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`version`](#getter-version)                   | `any`                                                                                                                                                                                                                                                       |
+| [`disableAddTracks`](#getter-disableaddtracks) | `any`                                                                                                                                                                                                                                                       |
+| [`assemblies`](#getter-assemblies)             | `any[]`                                                                                                                                                                                                                                                     |
+| [`assemblyNames`](#getter-assemblynames)       | `any[]`                                                                                                                                                                                                                                                     |
+| [`connections`](#getter-connections)           | `any`                                                                                                                                                                                                                                                       |
+| [`assemblyManager`](#getter-assemblymanager)   | `any`                                                                                                                                                                                                                                                       |
+| [`views`](#getter-views)                       | `(ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>)[]` |
+| [`theme`](#getter-theme)                       | `Theme`                                                                                                                                                                                                                                                     |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Getters (all signatures)</summary>
 
 #### getter: version
 
@@ -224,6 +255,18 @@ type theme = Theme
 <details open>
 <summary>JBrowseReactLinearGenomeViewSessionModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                           |
+| ------------------------------------ | --------------------------------------------------- |
+| [`renderProps`](#method-renderprops) | `() => { theme: any; highResolutionScaling: any; }` |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Methods (all signatures)</summary>
+
 #### method: renderProps
 
 ```ts
@@ -234,6 +277,19 @@ type renderProps = () => { theme: any; highResolutionScaling: any }
 
 <details open>
 <summary>JBrowseReactLinearGenomeViewSessionModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature                                                                                                                                                                                                                                                                 |
+| ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`addView`](#action-addview)       | `(typeName: string, initialState?: any) => ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>` |
+| [`removeView`](#action-removeview) | `() => void`                                                                                                                                                                                                                                                              |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewSessionModel - Actions (all signatures)</summary>
 
 #### action: addView
 

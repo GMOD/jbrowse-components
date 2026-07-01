@@ -100,6 +100,18 @@ init: types.stripDefault(
 <details open>
 <summary>DockviewLayoutMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature   |
+| -------------------------------------- | ----------- |
+| [`pendingMove`](#volatile-pendingmove) | `undefined` |
+
+</details>
+
+<details>
+<summary>DockviewLayoutMixin - Volatiles (all signatures)</summary>
+
 #### volatile: pendingMove
 
 ```ts
@@ -133,7 +145,9 @@ Find the panel containing a view, returning the panel ID, that panel's view-ID
 list, and the view's index within it (or undefined if unassigned)
 
 ```ts
-type getPanelContainingView = (viewId: string) =>
+type getPanelContainingView = (
+  viewId: string,
+) =>
   | {
       panelId: string
       viewIds: IMSTArray<ISimpleType<string>> &

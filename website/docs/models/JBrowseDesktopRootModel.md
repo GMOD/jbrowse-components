@@ -79,6 +79,18 @@ and docs.
 <details open>
 <summary>JBrowseDesktopRootModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                                                                                                                                                                                                                                                                |
+| -------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`jobsManager`](#property-jobsmanager) | `IOptionalIType<IModelType<{}, { running: boolean; statusMessage: string; jobName: string; stopToken: StopToken \| undefined; aborted: boolean; jobsQueue: IObservableArray<TextJobsEntry>; } & { ...; } & { ...; } & { ...; }, _NotCustomized, _NotCustomized>, [...]>` |
+
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Properties (all signatures)</summary>
+
 #### property: jobsManager
 
 ```ts
@@ -92,6 +104,22 @@ jobsManager: types.optional(JobsManager, {})
 
 <details open>
 <summary>JBrowseDesktopRootModel - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                 | Signature                          |
+| ---------------------------------------------------------------------- | ---------------------------------- |
+| [`version`](#volatile-version)                                         | `string`                           |
+| [`adminMode`](#volatile-adminmode)                                     | `true`                             |
+| [`rpcManager`](#volatile-rpcmanager)                                   | `RpcManager`                       |
+| [`openNewSessionCallback`](#volatile-opennewsessioncallback)           | `(_path: string) => Promise<void>` |
+| [`returnToStartScreenCallback`](#volatile-returntostartscreencallback) | `() => void`                       |
+
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Volatiles (all signatures)</summary>
 
 #### volatile: version
 
@@ -150,6 +178,18 @@ returnToStartScreenCallback: () => {
 <details open>
 <summary>JBrowseDesktopRootModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature      |
+| ------------------------ | -------------- |
+| [`menus`](#method-menus) | `() => Menu[]` |
+
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Methods (all signatures)</summary>
+
 #### method: menus
 
 ```ts
@@ -161,12 +201,6 @@ type menus = () => Menu[]
 <details open>
 <summary>JBrowseDesktopRootModel - Actions</summary>
 
-#### action: setOpenNewSessionCallback
-
-```ts
-type setOpenNewSessionCallback = (cb: (arg: string) => Promise<void>) => void
-```
-
 #### action: setReturnToStartScreenCallback
 
 Wired by the Loader to tear down this plugin manager and show the start screen
@@ -174,12 +208,6 @@ Wired by the Loader to tear down this plugin manager and show the start screen
 
 ```ts
 type setReturnToStartScreenCallback = (cb: () => void) => void
-```
-
-#### action: saveSession
-
-```ts
-type saveSession = (val: unknown) => Promise<void>
 ```
 
 #### action: setPluginsUpdated
@@ -190,6 +218,31 @@ session path).
 
 ```ts
 type setPluginsUpdated = () => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                           | Signature                                      |
+| ---------------------------------------------------------------- | ---------------------------------------------- |
+| [`setOpenNewSessionCallback`](#action-setopennewsessioncallback) | `(cb: (arg: string) => Promise<void>) => void` |
+| [`saveSession`](#action-savesession)                             | `(val: unknown) => Promise<void>`              |
+
+</details>
+
+<details>
+<summary>JBrowseDesktopRootModel - Actions (all signatures)</summary>
+
+#### action: setOpenNewSessionCallback
+
+```ts
+type setOpenNewSessionCallback = (cb: (arg: string) => Promise<void>) => void
+```
+
+#### action: saveSession
+
+```ts
+type saveSession = (val: unknown) => Promise<void>
 ```
 
 </details>

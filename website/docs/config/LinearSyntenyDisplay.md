@@ -39,42 +39,9 @@ A `SyntenyTrack` config to paste into `tracks`. The adapter needs the query
 }
 ```
 
-_See the **Slots** section below for all available configuration fields._
-
 ## Overview
 
 ### LinearSyntenyDisplay - State model
 
 This config's runtime API is documented on its
 [state model page](../../models/linearsyntenydisplay).
-
-<details open>
-<summary>LinearSyntenyDisplay - Slots</summary>
-
-#### slot: trackIds
-
-currently unused
-
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-}
-```
-
-#### slot: middle
-
-currently unused
-
-**Type:** `boolean` · **Default:** `true`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: true,
-}
-```
-
-</details>

@@ -209,24 +209,6 @@ and docs.
 <details open>
 <summary>LinearMafDisplay - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'LinearMafDisplay'>
-// code
-type: types.literal('LinearMafDisplay')
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
 #### property: rowHeight
 
 Raw per-row height in px, or `0` for "fit to display height" mode, where rows
@@ -243,51 +225,6 @@ type rowHeight = IOptionalIType<ISimpleType<number>, [undefined]>
 rowHeight: types.stripDefault(types.number, 0)
 ```
 
-#### property: rowProportion
-
-```ts
-// type signature
-type rowProportion = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-rowProportion: types.stripDefault(types.number, DEFAULTS.rowProportion)
-```
-
-#### property: showAllLetters
-
-```ts
-// type signature
-type showAllLetters = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showAllLetters: types.stripDefault(types.boolean, DEFAULTS.showAllLetters)
-```
-
-#### property: mismatchRendering
-
-```ts
-// type signature
-type mismatchRendering = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-mismatchRendering: types.stripDefault(types.boolean, DEFAULTS.mismatchRendering)
-```
-
-#### property: showAsUpperCase
-
-```ts
-// type signature
-type showAsUpperCase = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showAsUpperCase: types.stripDefault(types.boolean, DEFAULTS.showAsUpperCase)
-```
-
-#### property: showTree
-
-```ts
-// type signature
-type showTree = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showTree: types.stripDefault(types.boolean, DEFAULTS.showTree)
-```
-
 #### property: showBranchLength
 
 Position tree nodes by their cluster merge height (dendrogram) rather than
@@ -298,15 +235,6 @@ evenly by topology (cladogram).
 type showBranchLength = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showBranchLength: types.stripDefault(types.boolean, DEFAULTS.showBranchLength)
-```
-
-#### property: showCoverage
-
-```ts
-// type signature
-type showCoverage = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showCoverage: types.stripDefault(types.boolean, DEFAULTS.showCoverage)
 ```
 
 #### property: showAlignments
@@ -321,15 +249,6 @@ type showAlignments = IOptionalIType<ISimpleType<boolean>, [undefined]>
 showAlignments: types.stripDefault(types.boolean, DEFAULTS.showAlignments)
 ```
 
-#### property: coverageHeight
-
-```ts
-// type signature
-type coverageHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-coverageHeight: types.stripDefault(types.number, DEFAULTS.coverageHeight)
-```
-
 #### property: showConservation
 
 Show the conservation band (per-bp percent identity to the reference, computed
@@ -341,18 +260,6 @@ from the aligned species). Off by default. Independent of
 type showConservation = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 showConservation: types.stripDefault(types.boolean, DEFAULTS.showConservation)
-```
-
-#### property: conservationHeight
-
-```ts
-// type signature
-type conservationHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-conservationHeight: types.stripDefault(
-  types.number,
-  DEFAULTS.conservationHeight,
-)
 ```
 
 #### property: rowIdentityMode
@@ -449,19 +356,124 @@ type showInversions = IOptionalIType<ISimpleType<boolean>, [undefined]>
 showInversions: types.stripDefault(types.boolean, DEFAULTS.showInversions)
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                           |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| [`type`](#property-type)                             | `ISimpleType<"LinearMafDisplay">`                   |
+| [`configuration`](#property-configuration)           | `ITypeUnion<any, any, any>`                         |
+| [`rowProportion`](#property-rowproportion)           | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| [`showAllLetters`](#property-showallletters)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`mismatchRendering`](#property-mismatchrendering)   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`showAsUpperCase`](#property-showasuppercase)       | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`showTree`](#property-showtree)                     | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`showCoverage`](#property-showcoverage)             | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`coverageHeight`](#property-coverageheight)         | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| [`conservationHeight`](#property-conservationheight) | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+
+</details>
+
+<details>
+<summary>LinearMafDisplay - Properties (all signatures)</summary>
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<'LinearMafDisplay'>
+// code
+type: types.literal('LinearMafDisplay')
+```
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
+#### property: rowProportion
+
+```ts
+// type signature
+type rowProportion = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+rowProportion: types.stripDefault(types.number, DEFAULTS.rowProportion)
+```
+
+#### property: showAllLetters
+
+```ts
+// type signature
+type showAllLetters = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showAllLetters: types.stripDefault(types.boolean, DEFAULTS.showAllLetters)
+```
+
+#### property: mismatchRendering
+
+```ts
+// type signature
+type mismatchRendering = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+mismatchRendering: types.stripDefault(types.boolean, DEFAULTS.mismatchRendering)
+```
+
+#### property: showAsUpperCase
+
+```ts
+// type signature
+type showAsUpperCase = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showAsUpperCase: types.stripDefault(types.boolean, DEFAULTS.showAsUpperCase)
+```
+
+#### property: showTree
+
+```ts
+// type signature
+type showTree = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showTree: types.stripDefault(types.boolean, DEFAULTS.showTree)
+```
+
+#### property: showCoverage
+
+```ts
+// type signature
+type showCoverage = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showCoverage: types.stripDefault(types.boolean, DEFAULTS.showCoverage)
+```
+
+#### property: coverageHeight
+
+```ts
+// type signature
+type coverageHeight = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+coverageHeight: types.stripDefault(types.number, DEFAULTS.coverageHeight)
+```
+
+#### property: conservationHeight
+
+```ts
+// type signature
+type conservationHeight = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+conservationHeight: types.stripDefault(
+  types.number,
+  DEFAULTS.conservationHeight,
+)
+```
+
 </details>
 
 <details open>
 <summary>LinearMafDisplay - Volatiles</summary>
-
-#### volatile: rpcDataMap
-
-```ts
-// type signature
-type rpcDataMap = ObservableMap<number, MafRegionData>
-// code
-rpcDataMap: observable.map<number, MafRegionData>()
-```
 
 #### volatile: summaryDataMap
 
@@ -488,15 +500,6 @@ the alignment/summary maps so the overlay survives the summary↔detail data swa
 type framesDataMap = ObservableMap<number, MafFrameRecord[]>
 // code
 framesDataMap: observable.map<number, MafFrameRecord[]>()
-```
-
-#### volatile: prefersOffset
-
-```ts
-// type signature
-type prefersOffset = true
-// code
-prefersOffset: true
 ```
 
 #### volatile: sourcesVolatile
@@ -538,6 +541,38 @@ back when the drag settles.
 type resizing = false
 // code
 resizing: false
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                              |
+| -------------------------------------------------- | -------------------------------------- |
+| [`rpcDataMap`](#volatile-rpcdatamap)               | `ObservableMap<number, MafRegionData>` |
+| [`prefersOffset`](#volatile-prefersoffset)         | `true`                                 |
+| [`resizeSettleTimer`](#volatile-resizesettletimer) | `Timeout \| undefined`                 |
+
+</details>
+
+<details>
+<summary>LinearMafDisplay - Volatiles (all signatures)</summary>
+
+#### volatile: rpcDataMap
+
+```ts
+// type signature
+type rpcDataMap = ObservableMap<number, MafRegionData>
+// code
+rpcDataMap: observable.map<number, MafRegionData>()
+```
+
+#### volatile: prefersOffset
+
+```ts
+// type signature
+type prefersOffset = true
+// code
+prefersOffset: true
 ```
 
 #### volatile: resizeSettleTimer
@@ -789,13 +824,6 @@ band is offset separately by the React layer.
 type hierarchy = PositionedHierarchyNode<NewickNode> | undefined
 ```
 
-#### getter: spatialIndex
-
-```ts
-type spatialIndex =
-  { index: Flatbush; nodes: ClusterHierarchyNode[] } | undefined
-```
-
 #### getter: colorPalette
 
 Theme-derived color palette (per-base colors + match/gap/mismatch/
@@ -988,6 +1016,25 @@ Get highlight regions from connected MSA views
 type msaHighlights = MsaHighlight[]
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                                                          |
+| -------------------------------------- | ------------------------------------------------------------------ |
+| [`spatialIndex`](#getter-spatialindex) | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
+
+</details>
+
+<details>
+<summary>LinearMafDisplay - Getters (all signatures)</summary>
+
+#### getter: spatialIndex
+
+```ts
+type spatialIndex =
+  { index: Flatbush; nodes: ClusterHierarchyNode[] } | undefined
+```
+
 </details>
 
 <details open>
@@ -1094,6 +1141,18 @@ type codonHoverInfo = (
 ) => CodonHit | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature          |
+| ------------------------------------------ | ------------------ |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]` |
+
+</details>
+
+<details>
+<summary>LinearMafDisplay - Methods (all signatures)</summary>
+
 #### method: trackMenuItems
 
 ```ts
@@ -1104,6 +1163,127 @@ type trackMenuItems = () => MenuItem[]
 
 <details open>
 <summary>LinearMafDisplay - Actions</summary>
+
+#### action: setSamples
+
+Receive worker-authoritative `samples` + serialized Newick tree. Samples + tree
+are config-derived and identical on every region fetch, so the deepEqual guard
+makes this fire once and skips the redundant frozen-array reassignment (and
+downstream `sources`/instance-buffer recompute) on later scroll/zoom. The active
+`clusterTree` is set from the worker tree only when there's no custom
+arrangement — a reorder has cleared it and must keep it cleared until the user
+clears the layout.
+
+```ts
+type setSamples = ({
+  samples,
+  treeNewick,
+}: {
+  samples: Sample[]
+  treeNewick: string | undefined
+}) => void
+```
+
+#### action: clearLayout
+
+Drop the custom arrangement and restore the worker's guide tree (the base
+`clearLayout` only clears it — the worker tree lives in `treeNewickVolatile`).
+
+```ts
+type clearLayout = () => void
+```
+
+#### action: setFitToHeight
+
+Switch to fit-to-height mode: rows stretch to fill the track height. Seeds the
+`height` config slot from the current content height so toggling on doesn't
+jump, then `rowHeight = 0` makes `effectiveRowHeight` derive from it.
+
+```ts
+type setFitToHeight = () => void
+```
+
+#### action: resizeHeight
+
+Drag-resize. In fit mode the new height drives `autoRowHeight` (rows stretch).
+In fixed mode the pinned `rowHeight` scales proportionally so dragging still
+resizes rows. Mirrors the variants display.
+
+Flips `resizing` for the duration of the drag (cleared a beat after the last
+tick) so the dense letter overlay sits out the frame-by-frame restretch — see
+the `resizing` volatile.
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+#### action: isCacheValid
+
+Force a refetch when the loaded data is the wrong kind for the current zoom:
+crossing the summary↔detail threshold within an already-loaded region wouldn't
+trip the bounds-based coverage check, so the mode is keyed on which map holds
+the region.
+
+```ts
+type isCacheValid = (displayedRegionIndex: number) => boolean
+```
+
+#### action: getByteEstimateConfig
+
+Enable byte-estimate gating: above ~20kb visible, the adapter's MAF-aware byte
+estimate (per-species sequence × span) is checked against `fetchSizeLimit`,
+blocking the detail fetch with a force-load prompt rather than downloading
+hundreds of species' bases at genome scale.
+
+Returns null in summary mode — the summary read is cheap (zoom-reduced BigBed),
+so it must never be blocked by the gate.
+
+```ts
+type getByteEstimateConfig = () => {
+  adapterConfig: any
+  fetchSizeLimit: number
+  userByteSizeLimit: number | undefined
+  visibleBp: number
+} | null
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                                                                                            |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setRowHeight`](#action-setrowheight)                         | `(n: number) => void`                                                                                                                                |
+| [`setResizing`](#action-setresizing)                           | `(arg: boolean) => void`                                                                                                                             |
+| [`setRowProportion`](#action-setrowproportion)                 | `(n: number) => void`                                                                                                                                |
+| [`setShowAllLetters`](#action-setshowallletters)               | `(f: boolean) => void`                                                                                                                               |
+| [`setMismatchRendering`](#action-setmismatchrendering)         | `(f: boolean) => void`                                                                                                                               |
+| [`setShowAsUpperCase`](#action-setshowasuppercase)             | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowTree`](#action-setshowtree)                           | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowBranchLength`](#action-setshowbranchlength)           | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowCoverage`](#action-setshowcoverage)                   | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowAlignments`](#action-setshowalignments)               | `(arg: boolean) => void`                                                                                                                             |
+| [`setCoverageHeight`](#action-setcoverageheight)               | `(arg: number) => void`                                                                                                                              |
+| [`setShowConservation`](#action-setshowconservation)           | `(arg: boolean) => void`                                                                                                                             |
+| [`setRowIdentityMode`](#action-setrowidentitymode)             | `(arg: "none" \| "xyplot" \| "heatmap") => void`                                                                                                     |
+| [`setRowIdentityAutoZoom`](#action-setrowidentityautozoom)     | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowAnnotations`](#action-setshowannotations)             | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowTranslation`](#action-setshowtranslation)             | `(arg: boolean) => void`                                                                                                                             |
+| [`setColorByChromosome`](#action-setcolorbychromosome)         | `(arg: boolean) => void`                                                                                                                             |
+| [`setShowInversions`](#action-setshowinversions)               | `(arg: boolean) => void`                                                                                                                             |
+| [`setConservationHeight`](#action-setconservationheight)       | `(arg: number) => void`                                                                                                                              |
+| [`setRpcData`](#action-setrpcdata)                             | `(regionIndex: number, data: MafRegionData) => void`                                                                                                 |
+| [`setSummaryData`](#action-setsummarydata)                     | `(regionIndex: number, records: MafSummaryRecord[]) => void`                                                                                         |
+| [`setFramesData`](#action-setframesdata)                       | `(regionIndex: number, records: MafFrameRecord[]) => void`                                                                                           |
+| [`clearAlignmentData`](#action-clearalignmentdata)             | `() => void`                                                                                                                                         |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                                                                                         |
+| [`startRenderingBackend`](#action-startrenderingbackend)       | `(backend: MafRenderingBackend) => void`                                                                                                             |
+| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                     |
+| [`renderSvg`](#action-rendersvg)                               | `(opts: ExportSvgDisplayOptions) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<ReactNode> \| AwaitedReactNode>` |
+
+</details>
+
+<details>
+<summary>LinearMafDisplay - Actions (all signatures)</summary>
 
 #### action: setRowHeight
 
@@ -1133,26 +1313,6 @@ type setShowAllLetters = (f: boolean) => void
 
 ```ts
 type setMismatchRendering = (f: boolean) => void
-```
-
-#### action: setSamples
-
-Receive worker-authoritative `samples` + serialized Newick tree. Samples + tree
-are config-derived and identical on every region fetch, so the deepEqual guard
-makes this fire once and skips the redundant frozen-array reassignment (and
-downstream `sources`/instance-buffer recompute) on later scroll/zoom. The active
-`clusterTree` is set from the worker tree only when there's no custom
-arrangement — a reorder has cleared it and must keep it cleared until the user
-clears the layout.
-
-```ts
-type setSamples = ({
-  samples,
-  treeNewick,
-}: {
-  samples: Sample[]
-  treeNewick: string | undefined
-}) => void
 ```
 
 #### action: setShowAsUpperCase
@@ -1239,39 +1399,6 @@ type setShowInversions = (arg: boolean) => void
 type setConservationHeight = (arg: number) => void
 ```
 
-#### action: clearLayout
-
-Drop the custom arrangement and restore the worker's guide tree (the base
-`clearLayout` only clears it — the worker tree lives in `treeNewickVolatile`).
-
-```ts
-type clearLayout = () => void
-```
-
-#### action: setFitToHeight
-
-Switch to fit-to-height mode: rows stretch to fill the track height. Seeds the
-`height` config slot from the current content height so toggling on doesn't
-jump, then `rowHeight = 0` makes `effectiveRowHeight` derive from it.
-
-```ts
-type setFitToHeight = () => void
-```
-
-#### action: resizeHeight
-
-Drag-resize. In fit mode the new height drives `autoRowHeight` (rows stretch).
-In fixed mode the pinned `rowHeight` scales proportionally so dragging still
-resizes rows. Mirrors the variants display.
-
-Flips `resizing` for the duration of the drag (cleared a beat after the last
-tick) so the dense letter overlay sits out the frame-by-frame restretch — see
-the `resizing` volatile.
-
-```ts
-type resizeHeight = (distance: number) => number
-```
-
 #### action: setRpcData
 
 ```ts
@@ -1314,36 +1441,6 @@ type startRenderingBackend = (backend: MafRenderingBackend) => void
 type fetchNeeded = (
   needed: { region: Region; displayedRegionIndex: number }[],
 ) => Promise<void>
-```
-
-#### action: isCacheValid
-
-Force a refetch when the loaded data is the wrong kind for the current zoom:
-crossing the summary↔detail threshold within an already-loaded region wouldn't
-trip the bounds-based coverage check, so the mode is keyed on which map holds
-the region.
-
-```ts
-type isCacheValid = (displayedRegionIndex: number) => boolean
-```
-
-#### action: getByteEstimateConfig
-
-Enable byte-estimate gating: above ~20kb visible, the adapter's MAF-aware byte
-estimate (per-species sequence × span) is checked against `fetchSizeLimit`,
-blocking the detail fetch with a force-load prompt rather than downloading
-hundreds of species' bases at genome scale.
-
-Returns null in summary mode — the summary read is cheap (zoom-reduced BigBed),
-so it must never be blocked by the gate.
-
-```ts
-type getByteEstimateConfig = () => {
-  adapterConfig: any
-  fetchSizeLimit: number
-  userByteSizeLimit: number | undefined
-  visibleBp: number
-} | null
 ```
 
 #### action: renderSvg

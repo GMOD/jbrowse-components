@@ -28,6 +28,23 @@ that multiple displayed tracks could use the same configuration.
 <details open>
 <summary>BaseTrackModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                           |
+| ------------------------------------------ | --------------------------------------------------- |
+| [`id`](#property-id)                       | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`type`](#property-type)                   | `ISimpleType<string>`                               |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                         |
+| [`minimized`](#property-minimized)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`pinned`](#property-pinned)               | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`displays`](#property-displays)           | `IArrayType<IAnyType>`                              |
+
+</details>
+
+<details>
+<summary>BaseTrackModel - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -87,18 +104,44 @@ displays: types.array(pm.pluggableMstType('display', 'stateModel'))
 <details open>
 <summary>BaseTrackModel - Getters</summary>
 
-#### getter: trackId
-
-```ts
-type trackId = string
-```
-
 #### getter: rpcSessionId
 
 determines which webworker to send the track to, currently based on trackId
 
 ```ts
 type rpcSessionId = string
+```
+
+#### getter: activeDisplay
+
+a shown track always has at least one display
+
+```ts
+type activeDisplay = any
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature     |
+| ------------------------------------------------ | ------------- |
+| [`trackId`](#getter-trackid)                     | `string`      |
+| [`name`](#getter-name)                           | `any`         |
+| [`textSearchAdapter`](#getter-textsearchadapter) | `any`         |
+| [`adapterConfig`](#getter-adapterconfig)         | `any`         |
+| [`viewMenuActions`](#getter-viewmenuactions)     | `MenuItem[]`  |
+| [`canConfigure`](#getter-canconfigure)           | `boolean`     |
+| [`adapterType`](#getter-adaptertype)             | `AdapterType` |
+
+</details>
+
+<details>
+<summary>BaseTrackModel - Getters (all signatures)</summary>
+
+#### getter: trackId
+
+```ts
+type trackId = string
 ```
 
 #### getter: name
@@ -117,14 +160,6 @@ type textSearchAdapter = any
 
 ```ts
 type adapterConfig = any
-```
-
-#### getter: activeDisplay
-
-a shown track always has at least one display
-
-```ts
-type activeDisplay = any
 ```
 
 #### getter: viewMenuActions
@@ -150,6 +185,19 @@ type adapterType = AdapterType
 <details open>
 <summary>BaseTrackModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                                |
+| ------------------------------------------------------------------ | ---------------------------------------- |
+| [`saveTrackFileFormatOptions`](#method-savetrackfileformatoptions) | `() => Record<string, FileTypeExporter>` |
+| [`trackMenuItems`](#method-trackmenuitems)                         | `() => MenuItem[]`                       |
+
+</details>
+
+<details>
+<summary>BaseTrackModel - Methods (all signatures)</summary>
+
 #### method: saveTrackFileFormatOptions
 
 ```ts
@@ -166,28 +214,6 @@ type trackMenuItems = () => MenuItem[]
 
 <details open>
 <summary>BaseTrackModel - Actions</summary>
-
-#### action: setPinned
-
-```ts
-type setPinned = (flag: boolean) => void
-```
-
-#### action: setMinimized
-
-```ts
-type setMinimized = (flag: boolean) => void
-```
-
-#### action: replaceDisplay
-
-```ts
-type replaceDisplay = (
-  oldDisplayId: string,
-  newDisplayId: string,
-  initialSnapshot?: any,
-) => void
-```
 
 #### action: afterAttach
 
@@ -211,6 +237,42 @@ Structural comparison settles once the content stops changing.
 
 ```ts
 type afterAttach = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                                     |
+| ------------------------------------------ | ----------------------------------------------------------------------------- |
+| [`setPinned`](#action-setpinned)           | `(flag: boolean) => void`                                                     |
+| [`setMinimized`](#action-setminimized)     | `(flag: boolean) => void`                                                     |
+| [`replaceDisplay`](#action-replacedisplay) | `(oldDisplayId: string, newDisplayId: string, initialSnapshot?: any) => void` |
+
+</details>
+
+<details>
+<summary>BaseTrackModel - Actions (all signatures)</summary>
+
+#### action: setPinned
+
+```ts
+type setPinned = (flag: boolean) => void
+```
+
+#### action: setMinimized
+
+```ts
+type setMinimized = (flag: boolean) => void
+```
+
+#### action: replaceDisplay
+
+```ts
+type replaceDisplay = (
+  oldDisplayId: string,
+  newDisplayId: string,
+  initialSnapshot?: any,
+) => void
 ```
 
 </details>

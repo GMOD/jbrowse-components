@@ -24,6 +24,20 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>BaseInternetAccountModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                          |
+| ------------------------------------------ | -------------------------------------------------- |
+| [`id`](#property-id)                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type)                   | `ISimpleType<string>`                              |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                        |
+
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -55,6 +69,57 @@ configuration: ConfigurationReference(BaseInternetAccountConfig)
 
 <details open>
 <summary>BaseInternetAccountModel - Getters</summary>
+
+#### getter: toggleContents
+
+Can use this to customize what is displayed in fileSelector's toggle box
+
+```ts
+type toggleContents = ReactNode
+```
+
+#### getter: SelectorComponent
+
+Can use this to customize what the fileSelector. It takes a prop called
+`setLocation` that should be used to set a UriLocation
+
+```ts
+type SelectorComponent = AnyReactComponentType | undefined
+```
+
+#### getter: selectorLabel
+
+Can use this to add a label to the UrlChooser. Has no effect if a custom
+SelectorComponent is supplied
+
+```ts
+type selectorLabel = string | undefined
+```
+
+#### getter: tokenKey
+
+The key used to store this internetAccount's token in sessionStorage
+
+```ts
+type tokenKey = string
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature  |
+| ------------------------------------------------ | ---------- |
+| [`name`](#getter-name)                           | `string`   |
+| [`description`](#getter-description)             | `string`   |
+| [`internetAccountId`](#getter-internetaccountid) | `string`   |
+| [`authHeader`](#getter-authheader)               | `string`   |
+| [`tokenType`](#getter-tokentype)                 | `string`   |
+| [`domains`](#getter-domains)                     | `string[]` |
+
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Getters (all signatures)</summary>
 
 #### getter: name
 
@@ -92,40 +157,6 @@ type tokenType = string
 type domains = string[]
 ```
 
-#### getter: toggleContents
-
-Can use this to customize what is displayed in fileSelector's toggle box
-
-```ts
-type toggleContents = ReactNode
-```
-
-#### getter: SelectorComponent
-
-Can use this to customize what the fileSelector. It takes a prop called
-`setLocation` that should be used to set a UriLocation
-
-```ts
-type SelectorComponent = AnyReactComponentType | undefined
-```
-
-#### getter: selectorLabel
-
-Can use this to add a label to the UrlChooser. Has no effect if a custom
-SelectorComponent is supplied
-
-```ts
-type selectorLabel = string | undefined
-```
-
-#### getter: tokenKey
-
-The key used to store this internetAccount's token in sessionStorage
-
-```ts
-type tokenKey = string
-```
-
 </details>
 
 <details open>
@@ -156,24 +187,6 @@ type getTokenFromUser = (
 ) => void
 ```
 
-#### action: storeToken
-
-```ts
-type storeToken = (token: string) => void
-```
-
-#### action: removeToken
-
-```ts
-type removeToken = () => void
-```
-
-#### action: retrieveToken
-
-```ts
-type retrieveToken = () => string | null
-```
-
 #### action: validateToken
 
 This can be used by an internetAccount to validate a token works before it is
@@ -196,19 +209,15 @@ previously cached promise. If token is not available, uses `getTokenFromUser`.
 type getToken = (location?: UriLocation | undefined) => Promise<string>
 ```
 
-#### action: addAuthHeaderToInit
-
-```ts
-type addAuthHeaderToInit = (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
-```
-
 #### action: getPreAuthorizationInformation
 
 Gets the token and returns it along with the information needed to create a new
 internetAccount.
 
 ```ts
-type getPreAuthorizationInformation = (location: UriLocation) => Promise<{
+type getPreAuthorizationInformation = (
+  location: UriLocation,
+) => Promise<{
   internetAccountType: string
   authInfo: { token: string; configuration: any }
 }>
@@ -232,6 +241,45 @@ Gets a filehandle that uses a fetch that adds auth headers
 
 ```ts
 type openLocation = (location: UriLocation) => RemoteFileWithRangeCache
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                                                                                                                                                                                       |
+| ---------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`storeToken`](#action-storetoken)                   | `(token: string) => void`                                                                                                                                                                                       |
+| [`removeToken`](#action-removetoken)                 | `() => void`                                                                                                                                                                                                    |
+| [`retrieveToken`](#action-retrievetoken)             | `() => string \| null`                                                                                                                                                                                          |
+| [`addAuthHeaderToInit`](#action-addauthheadertoinit) | `(init?: RequestInit \| undefined, token?: string \| undefined) => { headers: Headers; body?: BodyInit \| null \| undefined; cache?: RequestCache \| undefined; ... 10 more ...; window?: null \| undefined; }` |
+
+</details>
+
+<details>
+<summary>BaseInternetAccountModel - Actions (all signatures)</summary>
+
+#### action: storeToken
+
+```ts
+type storeToken = (token: string) => void
+```
+
+#### action: removeToken
+
+```ts
+type removeToken = () => void
+```
+
+#### action: retrieveToken
+
+```ts
+type retrieveToken = () => string | null
+```
+
+#### action: addAuthHeaderToInit
+
+```ts
+type addAuthHeaderToInit = (init?: RequestInit | undefined, token?: string | undefined) => { headers: Headers; body?: BodyInit | null | undefined; cache?: RequestCache | undefined; ... 10 more ...; window?: null | undefined; }
 ```
 
 </details>

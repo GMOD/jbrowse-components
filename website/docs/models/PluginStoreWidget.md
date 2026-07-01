@@ -27,6 +27,21 @@ installable plugin list and the view it was opened from.
 <details open>
 <summary>PluginStoreWidget - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                          |
+| ------------------------------------ | -------------------------------------------------- |
+| [`id`](#property-id)                 | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type)             | `ISimpleType<"PluginStoreWidget">`                 |
+| [`filterText`](#property-filtertext) | `string`                                           |
+| [`view`](#property-view)             | `IMaybe<IReferenceType<IAnyType>>`                 |
+
+</details>
+
+<details>
+<summary>PluginStoreWidget - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -67,6 +82,18 @@ view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 
 <details open>
 <summary>PluginStoreWidget - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                   |
+| ---------------------------------------- | --------------------------- |
+| [`setFilterText`](#action-setfiltertext) | `(newText: string) => void` |
+
+</details>
+
+<details>
+<summary>PluginStoreWidget - Actions (all signatures)</summary>
 
 #### action: setFilterText
 

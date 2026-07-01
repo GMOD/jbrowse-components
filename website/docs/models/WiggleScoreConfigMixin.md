@@ -29,6 +29,19 @@ type (e.g. LinearManhattanDisplay) should compose this instead.
 <details open>
 <summary>WiggleScoreConfigMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                           |
+| ------------------------------------------------------ | --------------------------------------------------- |
+| [`resolution`](#property-resolution)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| [`displayCrossHatches`](#property-displaycrosshatches) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Properties (all signatures)</summary>
+
 #### property: resolution
 
 ```ts
@@ -52,6 +65,18 @@ displayCrossHatches: types.stripDefault(types.boolean, false)
 <details open>
 <summary>WiggleScoreConfigMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature             |
+| ------------------------------------------ | --------------------- |
+| [`loadedBpPerPx`](#volatile-loadedbpperpx) | `number \| undefined` |
+
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Volatiles (all signatures)</summary>
+
 #### volatile: loadedBpPerPx
 
 ```ts
@@ -65,6 +90,32 @@ loadedBpPerPx: undefined as number | undefined
 
 <details open>
 <summary>WiggleScoreConfigMixin - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature             |
+| ---------------------------------------------------- | --------------------- |
+| [`scalebarOverlapLeft`](#getter-scalebaroverlapleft) | `number`              |
+| [`posColor`](#getter-poscolor)                       | `string`              |
+| [`negColor`](#getter-negcolor)                       | `string`              |
+| [`bicolorPivot`](#getter-bicolorpivot)               | `number`              |
+| [`scaleType`](#getter-scaletype)                     | `string`              |
+| [`autoscaleType`](#getter-autoscaletype)             | `string`              |
+| [`numStdDev`](#getter-numstddev)                     | `number`              |
+| [`scatterPointSize`](#getter-scatterpointsize)       | `number`              |
+| [`summaryScoreMode`](#getter-summaryscoremode)       | `string`              |
+| [`renderingType`](#getter-renderingtype)             | `string`              |
+| [`minScore`](#getter-minscore)                       | `number`              |
+| [`maxScore`](#getter-maxscore)                       | `number`              |
+| [`minScoreBound`](#getter-minscorebound)             | `number \| undefined` |
+| [`maxScoreBound`](#getter-maxscorebound)             | `number \| undefined` |
+| [`hasResolution`](#getter-hasresolution)             | `boolean`             |
+
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Getters (all signatures)</summary>
 
 #### getter: scalebarOverlapLeft
 
@@ -161,6 +212,35 @@ type hasResolution = boolean
 <details open>
 <summary>WiggleScoreConfigMixin - Actions</summary>
 
+#### action: isCacheValid
+
+Strict zoom equality: see adr-008.
+
+```ts
+type isCacheValid = (_displayedRegionIndex: number) => boolean
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                |
+| ---------------------------------------------------- | ---------------------------------------- |
+| [`toggleCrossHatches`](#action-togglecrosshatches)   | `() => void`                             |
+| [`setResolution`](#action-setresolution)             | `(res: number) => void`                  |
+| [`setLoadedBpPerPx`](#action-setloadedbpperpx)       | `(bpPerPx: number \| undefined) => void` |
+| [`setScaleType`](#action-setscaletype)               | `(scaleType: string) => void`            |
+| [`setColor`](#action-setcolor)                       | `(color?: string \| undefined) => void`  |
+| [`setMinScore`](#action-setminscore)                 | `(val?: number \| undefined) => void`    |
+| [`setMaxScore`](#action-setmaxscore)                 | `(val?: number \| undefined) => void`    |
+| [`setRenderingType`](#action-setrenderingtype)       | `(type: string) => void`                 |
+| [`setSummaryScoreMode`](#action-setsummaryscoremode) | `(val: string) => void`                  |
+| [`setAutoscale`](#action-setautoscale)               | `(val?: string \| undefined) => void`    |
+
+</details>
+
+<details>
+<summary>WiggleScoreConfigMixin - Actions (all signatures)</summary>
+
 #### action: toggleCrossHatches
 
 ```ts
@@ -219,14 +299,6 @@ type setSummaryScoreMode = (val: string) => void
 
 ```ts
 type setAutoscale = (val?: string | undefined) => void
-```
-
-#### action: isCacheValid
-
-Strict zoom equality: see adr-008.
-
-```ts
-type isCacheValid = (_displayedRegionIndex: number) => boolean
 ```
 
 </details>

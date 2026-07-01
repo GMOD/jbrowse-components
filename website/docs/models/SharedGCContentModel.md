@@ -270,6 +270,20 @@ gcModeOverride: types.maybe(types.enumeration('gcMode', ['content', 'skew']))
 <details open>
 <summary>SharedGCContentModel - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature |
+| ------------------------------------ | --------- |
+| [`windowSize`](#getter-windowsize)   | `any`     |
+| [`windowDelta`](#getter-windowdelta) | `any`     |
+| [`gcMode`](#getter-gcmode)           | `any`     |
+
+</details>
+
+<details>
+<summary>SharedGCContentModel - Getters (all signatures)</summary>
+
 #### getter: windowSize
 
 ```ts
@@ -293,6 +307,18 @@ type gcMode = any
 <details open>
 <summary>SharedGCContentModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+
+</details>
+
+<details>
+<summary>SharedGCContentModel - Methods (all signatures)</summary>
+
 #### method: trackMenuItems
 
 ```ts
@@ -303,6 +329,19 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 
 <details open>
 <summary>SharedGCContentModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                              |
+| -------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| [`setGCContentParams`](#action-setgccontentparams) | `({ windowSize, windowDelta, }: { windowSize: number; windowDelta: number; }) => void` |
+| [`setGCMode`](#action-setgcmode)                   | `(mode: "content" \| "skew") => void`                                                  |
+
+</details>
+
+<details>
+<summary>SharedGCContentModel - Actions (all signatures)</summary>
 
 #### action: setGCContentParams
 

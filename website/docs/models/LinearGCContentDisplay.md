@@ -283,6 +283,18 @@ and docs.
 <details open>
 <summary>LinearGCContentDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                               |
+| ------------------------ | --------------------------------------- |
+| [`type`](#property-type) | `ISimpleType<"LinearGCContentDisplay">` |
+
+</details>
+
+<details>
+<summary>LinearGCContentDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -315,6 +327,18 @@ type adapterConfig = {
 
 <details open>
 <summary>LinearGCContentDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature          |
+| ------------------------------------------ | ------------------ |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]` |
+
+</details>
+
+<details>
+<summary>LinearGCContentDisplay - Methods (all signatures)</summary>
 
 #### method: trackMenuItems
 

@@ -193,6 +193,46 @@ and docs.
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Properties</summary>
 
+#### property: rowHeightOverride
+
+Per-display override of the config `rowHeight`: a positive px height pins fixed
+rows, `0` selects auto-fit. `rowHeightSetting` resolves override-or-config; the
+`rowHeight` getter then resolves `0` to the fit-to-height value, so it's never
+undefined.
+
+```ts
+// type signature
+type rowHeightOverride = IMaybe<ISimpleType<number>>
+// code
+rowHeightOverride: types.maybe(types.number)
+```
+
+#### property: showBranchLength
+
+Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
+(cladogram).
+
+```ts
+// type signature
+type showBranchLength = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showBranchLength: types.stripDefault(types.boolean, DEFAULTS.showBranchLength)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                           |
+| ------------------------------------------ | --------------------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearMultiRowFeatureDisplay">`       |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                         |
+| [`showTree`](#property-showtree)           | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>LinearMultiRowFeatureDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -211,20 +251,6 @@ type configuration = ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: rowHeightOverride
-
-Per-display override of the config `rowHeight`: a positive px height pins fixed
-rows, `0` selects auto-fit. `rowHeightSetting` resolves override-or-config; the
-`rowHeight` getter then resolves `0` to the fit-to-height value, so it's never
-undefined.
-
-```ts
-// type signature
-type rowHeightOverride = IMaybe<ISimpleType<number>>
-// code
-rowHeightOverride: types.maybe(types.number)
-```
-
 #### property: showTree
 
 ```ts
@@ -234,22 +260,35 @@ type showTree = IOptionalIType<ISimpleType<boolean>, [undefined]>
 showTree: types.stripDefault(types.boolean, DEFAULTS.showTree)
 ```
 
-#### property: showBranchLength
-
-Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
-(cladogram).
-
-```ts
-// type signature
-type showBranchLength = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showBranchLength: types.stripDefault(types.boolean, DEFAULTS.showBranchLength)
-```
-
 </details>
 
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Volatiles</summary>
+
+#### volatile: hoveredFeature
+
+The feature under the mouse (+ client coords for tooltip placement), or
+undefined when not hovering a block.
+
+```ts
+// type signature
+type hoveredFeature = HoveredFeature | undefined
+// code
+hoveredFeature: undefined as HoveredFeature | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                   |
+| ------------------------------------------ | ------------------------------------------- |
+| [`rpcDataMap`](#volatile-rpcdatamap)       | `ObservableMap<number, MultiRowRegionData>` |
+| [`prefersOffset`](#volatile-prefersoffset) | `true`                                      |
+
+</details>
+
+<details>
+<summary>LinearMultiRowFeatureDisplay - Volatiles (all signatures)</summary>
 
 #### volatile: rpcDataMap
 
@@ -269,18 +308,6 @@ type prefersOffset = true
 prefersOffset: true
 ```
 
-#### volatile: hoveredFeature
-
-The feature under the mouse (+ client coords for tooltip placement), or
-undefined when not hovering a block.
-
-```ts
-// type signature
-type hoveredFeature = HoveredFeature | undefined
-// code
-hoveredFeature: undefined as HoveredFeature | undefined
-```
-
 </details>
 
 <details open>
@@ -293,12 +320,6 @@ direct reads route through here to stay typed
 
 ```ts
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
-```
-
-#### getter: partitionField
-
-```ts
-type partitionField = string
 ```
 
 #### getter: rowOrder
@@ -328,12 +349,6 @@ the per-feature `color`.
 type sampleColorMap = Record<string, string>
 ```
 
-#### getter: rowProportion
-
-```ts
-type rowProportion = number
-```
-
 #### getter: sourcesWithoutLayout
 
 Rows discovered in the loaded data: the distinct partition values across all
@@ -361,12 +376,6 @@ reordering/filtering flows through to the painting.
 
 ```ts
 type sources = MultiRowSource[]
-```
-
-#### getter: rowIndexByValue
-
-```ts
-type rowIndexByValue = Map<string, number>
 ```
 
 #### getter: rowColorsByIndex
@@ -453,19 +462,52 @@ Pixel width reserved on the left for the tree (0 when no tree shows).
 type sidebarOffset = number
 ```
 
-#### getter: spatialIndex
-
-```ts
-type spatialIndex =
-  { index: Flatbush; nodes: ClusterHierarchyNode[] } | undefined
-```
-
 #### getter: renderState
 
 Render state passed to the GPU/Canvas2D backend each frame.
 
 ```ts
 type renderState = MultiRowRenderState | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------ |
+| [`partitionField`](#getter-partitionfield)   | `string`                                                           |
+| [`rowProportion`](#getter-rowproportion)     | `number`                                                           |
+| [`rowIndexByValue`](#getter-rowindexbyvalue) | `Map<string, number>`                                              |
+| [`spatialIndex`](#getter-spatialindex)       | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
+
+</details>
+
+<details>
+<summary>LinearMultiRowFeatureDisplay - Getters (all signatures)</summary>
+
+#### getter: partitionField
+
+```ts
+type partitionField = string
+```
+
+#### getter: rowProportion
+
+```ts
+type rowProportion = number
+```
+
+#### getter: rowIndexByValue
+
+```ts
+type rowIndexByValue = Map<string, number>
+```
+
+#### getter: spatialIndex
+
+```ts
+type spatialIndex =
+  { index: Flatbush; nodes: ClusterHierarchyNode[] } | undefined
 ```
 
 </details>
@@ -493,6 +535,18 @@ off-row, out-of-bounds, or over a gap.
 type featureAt = (mouseX: number, mouseY: number) => MultiRowHit | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature          |
+| ------------------------------------------ | ------------------ |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]` |
+
+</details>
+
+<details>
+<summary>LinearMultiRowFeatureDisplay - Methods (all signatures)</summary>
+
 #### method: trackMenuItems
 
 ```ts
@@ -503,30 +557,6 @@ type trackMenuItems = () => MenuItem[]
 
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Actions</summary>
-
-#### action: setRowHeight
-
-```ts
-type setRowHeight = (n: number) => void
-```
-
-#### action: setShowTree
-
-```ts
-type setShowTree = (f: boolean) => void
-```
-
-#### action: setShowBranchLength
-
-```ts
-type setShowBranchLength = (f: boolean) => void
-```
-
-#### action: setHoveredFeature
-
-```ts
-type setHoveredFeature = (arg?: HoveredFeature | undefined) => void
-```
 
 #### action: selectFeatureById
 
@@ -539,18 +569,6 @@ type selectFeatureById = (
   featureId: string,
   displayedRegionIndex: number,
 ) => void
-```
-
-#### action: setRpcData
-
-```ts
-type setRpcData = (regionIndex: number, data: MultiRowRegionData) => void
-```
-
-#### action: clearDisplaySpecificData
-
-```ts
-type clearDisplaySpecificData = () => void
 ```
 
 #### action: setHeight
@@ -579,6 +597,62 @@ height (so toggling on doesn't jump), then `rowHeightOverride = 0` makes
 
 ```ts
 type setFitToHeight = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                        |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [`setRowHeight`](#action-setrowheight)                         | `(n: number) => void`                                                            |
+| [`setShowTree`](#action-setshowtree)                           | `(f: boolean) => void`                                                           |
+| [`setShowBranchLength`](#action-setshowbranchlength)           | `(f: boolean) => void`                                                           |
+| [`setHoveredFeature`](#action-sethoveredfeature)               | `(arg?: HoveredFeature \| undefined) => void`                                    |
+| [`setRpcData`](#action-setrpcdata)                             | `(regionIndex: number, data: MultiRowRegionData) => void`                        |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                     |
+| [`startRenderingBackend`](#action-startrenderingbackend)       | `(backend: MultiRowRenderingBackend) => void`                                    |
+| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>` |
+| [`renderSvg`](#action-rendersvg)                               | `(opts: ExportSvgDisplayOptions) => Promise<ReactNode>`                          |
+
+</details>
+
+<details>
+<summary>LinearMultiRowFeatureDisplay - Actions (all signatures)</summary>
+
+#### action: setRowHeight
+
+```ts
+type setRowHeight = (n: number) => void
+```
+
+#### action: setShowTree
+
+```ts
+type setShowTree = (f: boolean) => void
+```
+
+#### action: setShowBranchLength
+
+```ts
+type setShowBranchLength = (f: boolean) => void
+```
+
+#### action: setHoveredFeature
+
+```ts
+type setHoveredFeature = (arg?: HoveredFeature | undefined) => void
+```
+
+#### action: setRpcData
+
+```ts
+type setRpcData = (regionIndex: number, data: MultiRowRegionData) => void
+```
+
+#### action: clearDisplaySpecificData
+
+```ts
+type clearDisplaySpecificData = () => void
 ```
 
 #### action: startRenderingBackend

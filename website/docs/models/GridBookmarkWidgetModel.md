@@ -24,6 +24,35 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>GridBookmarkWidgetModel - Properties</summary>
 
+#### property: bookmarks
+
+loaded from localStorage when not present in snapshot; sharedBookmarks from a
+shared URL are merged in via preProcessSnapshot
+
+```ts
+// type signature
+type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
+// code
+bookmarks: types.optional(types.array(LabeledRegionModel), () =>
+        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
+      )
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature                                          |
+| ---------------------------------- | -------------------------------------------------- |
+| [`label`](#property-label)         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`highlight`](#property-highlight) | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`id`](#property-id)               | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type)           | `ISimpleType<"GridBookmarkWidget">`                |
+
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Properties (all signatures)</summary>
+
 #### property: label
 
 ```ts
@@ -60,33 +89,10 @@ type type = ISimpleType<'GridBookmarkWidget'>
 type: types.literal('GridBookmarkWidget')
 ```
 
-#### property: bookmarks
-
-loaded from localStorage when not present in snapshot; sharedBookmarks from a
-shared URL are merged in via preProcessSnapshot
-
-```ts
-// type signature
-type bookmarks = IOptionalIType<IArrayType<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>, [...]>
-// code
-bookmarks: types.optional(types.array(LabeledRegionModel), () =>
-        JSON.parse(localStorageGetItem(localStorageKeyF()) || '[]'),
-      )
-```
-
 </details>
 
 <details open>
 <summary>GridBookmarkWidgetModel - Volatiles</summary>
-
-#### volatile: selectedBookmarks
-
-```ts
-// type signature
-type selectedBookmarks = IExtendedLabeledRegionModel[]
-// code
-selectedBookmarks: [] as IExtendedLabeledRegionModel[]
-```
 
 #### volatile: selectedAssembliesPre
 
@@ -110,10 +116,48 @@ type gridView = string
 gridView: 'bookmarks'
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                       |
+| -------------------------------------------------- | ------------------------------- |
+| [`selectedBookmarks`](#volatile-selectedbookmarks) | `IExtendedLabeledRegionModel[]` |
+
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Volatiles (all signatures)</summary>
+
+#### volatile: selectedBookmarks
+
+```ts
+// type signature
+type selectedBookmarks = IExtendedLabeledRegionModel[]
+// code
+selectedBookmarks: [] as IExtendedLabeledRegionModel[]
+```
+
 </details>
 
 <details open>
 <summary>GridBookmarkWidgetModel - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                                           | Signature                                                                                                                                                                                                                                                                    |
+| ------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`bookmarkAssemblies`](#getter-bookmarkassemblies)                                               | `string[]`                                                                                                                                                                                                                                                                   |
+| [`validAssemblies`](#getter-validassemblies)                                                     | `Set<string>`                                                                                                                                                                                                                                                                |
+| [`areBookmarksHighlightedOnAllOpenViews`](#getter-arebookmarkshighlightedonallopenviews)         | `boolean`                                                                                                                                                                                                                                                                    |
+| [`areBookmarksHighlightLabelsOnAllOpenViews`](#getter-arebookmarkshighlightlabelsonallopenviews) | `boolean`                                                                                                                                                                                                                                                                    |
+| [`bookmarksWithValidAssemblies`](#getter-bookmarkswithvalidassemblies)                           | `(ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>)[]` |
+| [`selectedAssemblies`](#getter-selectedassemblies)                                               | `string[]`                                                                                                                                                                                                                                                                   |
+
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Getters (all signatures)</summary>
 
 #### getter: bookmarkAssemblies
 
@@ -155,6 +199,33 @@ type selectedAssemblies = string[]
 
 <details open>
 <summary>GridBookmarkWidgetModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                           | Signature                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setLabel`](#action-setlabel)                                                   | `(label: string) => void`                                                                                                                                                                                                                                                                           |
+| [`setHighlight`](#action-sethighlight)                                           | `(color: string) => void`                                                                                                                                                                                                                                                                           |
+| [`setSelectedAssemblies`](#action-setselectedassemblies)                         | `(assemblies?: string[] \| undefined) => void`                                                                                                                                                                                                                                                      |
+| [`setGridView`](#action-setgridview)                                             | `(arg: "bookmarks" \| "highlights") => void`                                                                                                                                                                                                                                                        |
+| [`importBookmarks`](#action-importbookmarks)                                     | `(regions: Region[]) => void`                                                                                                                                                                                                                                                                       |
+| [`addBookmark`](#action-addbookmark)                                             | `(region: Region) => void`                                                                                                                                                                                                                                                                          |
+| [`updateBookmarkLabel`](#action-updatebookmarklabel)                             | `(bookmark: IExtendedLabeledRegionModel, label: string) => void`                                                                                                                                                                                                                                    |
+| [`updateBookmarkHighlight`](#action-updatebookmarkhighlight)                     | `(bookmark: IExtendedLabeledRegionModel, color: string) => void`                                                                                                                                                                                                                                    |
+| [`updateBulkBookmarkHighlights`](#action-updatebulkbookmarkhighlights)           | `(color: string) => void`                                                                                                                                                                                                                                                                           |
+| [`setSelectedBookmarks`](#action-setselectedbookmarks)                           | `(bookmarks: IExtendedLabeledRegionModel[]) => void`                                                                                                                                                                                                                                                |
+| [`setBookmarkedRegions`](#action-setbookmarkedregions)                           | `(regions: IMSTArray<IModelType<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>) => void` |
+| [`setBookmarkHighlightsVisible`](#action-setbookmarkhighlightsvisible)           | `(arg: boolean) => void`                                                                                                                                                                                                                                                                            |
+| [`setBookmarkLabelsVisible`](#action-setbookmarklabelsvisible)                   | `(arg: boolean) => void`                                                                                                                                                                                                                                                                            |
+| [`clearBookmarksForLoadedAssemblies`](#action-clearbookmarksforloadedassemblies) | `() => void`                                                                                                                                                                                                                                                                                        |
+| [`clearSelectedBookmarks`](#action-clearselectedbookmarks)                       | `() => void`                                                                                                                                                                                                                                                                                        |
+| [`removeBookmarkObject`](#action-removebookmarkobject)                           | `(arg: ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; reversed: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & { ...; } & { ...; } & IStateTreeNode<...>) => void`             |
+
+</details>
+
+<details>
+<summary>GridBookmarkWidgetModel - Actions (all signatures)</summary>
 
 #### action: setLabel
 

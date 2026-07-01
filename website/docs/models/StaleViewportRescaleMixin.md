@@ -62,6 +62,18 @@ lastDrawnBpPerPx: undefined as number | undefined
 <details open>
 <summary>StaleViewportRescaleMixin - Actions</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                     |
+| ------------------------------------------------------ | --------------------------------------------- |
+| [`setLastDrawnViewport`](#action-setlastdrawnviewport) | `(offsetPx: number, bpPerPx: number) => void` |
+
+</details>
+
+<details>
+<summary>StaleViewportRescaleMixin - Actions (all signatures)</summary>
+
 #### action: setLastDrawnViewport
 
 ```ts

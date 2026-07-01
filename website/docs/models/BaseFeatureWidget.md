@@ -29,6 +29,28 @@ see: formatDetails-\>feature,formatDetails-\>subfeatures
 <details open>
 <summary>BaseFeatureWidget - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`id`](#property-id)                                         | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
+| [`type`](#property-type)                                     | `ISimpleType<"BaseFeatureWidget">`                                                                                                                                                                                                                                                                                                 |
+| [`featureData`](#property-featuredata)                       | `IOptionalIType<IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>, [undefined]>`                                                                                                                                                                                                                                |
+| [`unformattedFeatureData`](#property-unformattedfeaturedata) | `IOptionalIType<IType<MaybeSerializedFeat, MaybeSerializedFeat, MaybeSerializedFeat>, [undefined]>`                                                                                                                                                                                                                                |
+| [`view`](#property-view)                                     | `IMaybe<IReferenceType<IAnyType>>`                                                                                                                                                                                                                                                                                                 |
+| [`track`](#property-track)                                   | `IMaybe<IReferenceType<IAnyType>>`                                                                                                                                                                                                                                                                                                 |
+| [`trackId`](#property-trackid)                               | `IMaybe<ISimpleType<string>>`                                                                                                                                                                                                                                                                                                      |
+| [`trackType`](#property-tracktype)                           | `IMaybe<ISimpleType<string>>`                                                                                                                                                                                                                                                                                                      |
+| [`maxDepth`](#property-maxdepth)                             | `IMaybe<ISimpleType<number>>`                                                                                                                                                                                                                                                                                                      |
+| [`sequenceFeatureDetails`](#property-sequencefeaturedetails) | `IOptionalIType<IModelType<{}, { showCoordinatesSetting: ShowCoordinatesMode; intronBp: number; upDownBp: number; upperCaseCDS: boolean; charactersPerRow: number; } & { setUpDownBp(f: number): void; setIntronBp(f: number): void; setUpperCaseCDS(f: boolean): void; setShowCoordinates(f: ShowCoordinatesMode): void; } & ...` |
+| [`descriptions`](#property-descriptions)                     | `IOptionalIType<IType<Record<string, unknown> \| undefined, Record<string, unknown> \| undefined, Record<string, unknown> \| undefined>, [undefined]>`                                                                                                                                                                             |
+
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -154,6 +176,18 @@ descriptions: types.optional(
 <details open>
 <summary>BaseFeatureWidget - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature   |
+| -------------------------- | ----------- |
+| [`error`](#volatile-error) | `undefined` |
+
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Volatiles (all signatures)</summary>
+
 #### volatile: error
 
 ```ts
@@ -167,6 +201,22 @@ error: undefined
 
 <details open>
 <summary>BaseFeatureWidget - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                             |
+| ---------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| [`setFeatureData`](#action-setfeaturedata)     | `(featureData: SimpleFeatureSerialized) => void`                                                      |
+| [`clearFeatureData`](#action-clearfeaturedata) | `() => void`                                                                                          |
+| [`setFormattedData`](#action-setformatteddata) | `(feat: SimpleFeatureSerialized) => void`                                                             |
+| [`setExtra`](#action-setextra)                 | `(type?: string \| undefined, trackId?: string \| undefined, maxDepth?: number \| undefined) => void` |
+| [`setError`](#action-seterror)                 | `(e: unknown) => void`                                                                                |
+
+</details>
+
+<details>
+<summary>BaseFeatureWidget - Actions (all signatures)</summary>
 
 #### action: setFeatureData
 

@@ -51,6 +51,19 @@ and docs.
 <details open>
 <summary>JBrowse1Connection - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                           |
+| ------------------------------------------ | ----------------------------------- |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`         |
+| [`type`](#property-type)                   | `ISimpleType<"JBrowse1Connection">` |
+
+</details>
+
+<details>
+<summary>JBrowse1Connection - Properties (all signatures)</summary>
+
 #### property: configuration
 
 ```ts
@@ -73,6 +86,18 @@ type: types.literal('JBrowse1Connection')
 
 <details open>
 <summary>JBrowse1Connection - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature             |
+| ---------------------------- | --------------------- |
+| [`connect`](#action-connect) | `() => Promise<void>` |
+
+</details>
+
+<details>
+<summary>JBrowse1Connection - Actions (all signatures)</summary>
 
 #### action: connect
 

@@ -30,6 +30,22 @@ delegations. The root must satisfy .
 <details open>
 <summary>AppSessionMixin - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                                                                                                                                                                                                                                            |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`root`](#getter-root)                       | `AppRootModel`                                                                                                                                                                                                                                                                                                                       |
+| [`version`](#getter-version)                 | `string`                                                                                                                                                                                                                                                                                                                             |
+| [`gitCommit`](#getter-gitcommit)             | `string \| undefined`                                                                                                                                                                                                                                                                                                                |
+| [`history`](#getter-history)                 | `{ canUndo: boolean; canRedo: boolean; undo(): void; redo(): void; } \| undefined`                                                                                                                                                                                                                                                   |
+| [`assemblyManager`](#getter-assemblymanager) | `ModelInstanceTypeProps<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> \| undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotCust...` |
+
+</details>
+
+<details>
+<summary>AppSessionMixin - Getters (all signatures)</summary>
+
 #### getter: root
 
 ```ts
@@ -66,6 +82,19 @@ type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelTyp
 <details open>
 <summary>AppSessionMixin - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                                             |
+| ------------------------------------ | --------------------------------------------------------------------- |
+| [`renderProps`](#method-renderprops) | `() => { theme: SerializableThemeArgs; highResolutionScaling: any; }` |
+| [`menus`](#method-menus)             | `() => Menu[]`                                                        |
+
+</details>
+
+<details>
+<summary>AppSessionMixin - Methods (all signatures)</summary>
+
 #### method: renderProps
 
 ```ts
@@ -85,6 +114,18 @@ type menus = () => Menu[]
 
 <details open>
 <summary>AppSessionMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                       |
+| ------------------------------------------------------ | ------------------------------- |
+| [`renameCurrentSession`](#action-renamecurrentsession) | `(sessionName: string) => void` |
+
+</details>
+
+<details>
+<summary>AppSessionMixin - Actions (all signatures)</summary>
 
 #### action: renameCurrentSession
 

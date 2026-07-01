@@ -48,7 +48,8 @@ and docs.
 [themeOptions](../thememanagersessionmixin#getter-themeoptions),
 [theme](../thememanagersessionmixin#getter-theme)
 
-**Methods:** [allThemes](../thememanagersessionmixin#method-allthemes)
+**Methods:** [allThemes](../thememanagersessionmixin#method-allthemes),
+[getActiveThemeOptions](../thememanagersessionmixin#method-getactivethemeoptions)
 
 **Actions:** [setThemeName](../thememanagersessionmixin#action-setthemename)
 
@@ -255,6 +256,18 @@ and docs.
 <details open>
 <summary>BaseWebSessionModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                                             |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| [`sessionPlugins`](#property-sessionplugins) | `IArrayType<IType<PluginDefinition & { name: string; }, PluginDefinition & { name: string; }, PluginDefinition & { name: string; }>>` |
+
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Properties (all signatures)</summary>
+
 #### property: sessionPlugins
 
 ```ts
@@ -274,6 +287,19 @@ sessionPlugins: types.array(types.frozen<PluginDefinition & { name: string }>())
 
 <details open>
 <summary>BaseWebSessionModel - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature  |
+| -------------------------------------------------------- | ---------- |
+| [`sessionThemeName`](#volatile-sessionthemename)         | `string`   |
+| [`pendingFileHandleIds`](#volatile-pendingfilehandleids) | `string[]` |
+
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Volatiles (all signatures)</summary>
 
 #### volatile: sessionThemeName
 
@@ -298,18 +324,32 @@ pendingFileHandleIds: [] as string[]
 <details open>
 <summary>BaseWebSessionModel - Getters</summary>
 
-#### getter: root
-
-```ts
-type root = AbstractWebRootModel
-```
-
 #### getter: connections
 
 list of config connections and session connections
 
 ```ts
 type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature              |
+| ------------------------------------------------ | ---------------------- |
+| [`root`](#getter-root)                           | `AbstractWebRootModel` |
+| [`shareURL`](#getter-shareurl)                   | `any`                  |
+| [`textSearchManager`](#getter-textsearchmanager) | `TextSearchManager`    |
+
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Getters (all signatures)</summary>
+
+#### getter: root
+
+```ts
+type root = AbstractWebRootModel
 ```
 
 #### getter: shareURL
@@ -362,6 +402,33 @@ type getTrackActions = (config: ModelInstanceTypeProps<Record<string, any>> & { 
 <details open>
 <summary>BaseWebSessionModel - Actions</summary>
 
+#### action: editTrackConfiguration
+
+opens the config editor for a track. Available for any track: edits to a
+non-session (admin-owned) track apply in-memory for the current session even
+when the user lacks rights to persist them.
+
+```ts
+type editTrackConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`addAssemblyConf`](#action-addassemblyconf)                 | `(conf: AnyConfiguration) => void`                                                                                                                                                                                                                                                                                                 |
+| [`addSessionPlugin`](#action-addsessionplugin)               | `(plugin: PluginDefinition & { name: string; }) => void`                                                                                                                                                                                                                                                                           |
+| [`removeSessionPlugin`](#action-removesessionplugin)         | `(pluginDefinition: PluginDefinition) => void`                                                                                                                                                                                                                                                                                     |
+| [`setDefaultSession`](#action-setdefaultsession)             | `() => void`                                                                                                                                                                                                                                                                                                                       |
+| [`setSession`](#action-setsession)                           | `(sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalI...` |
+| [`setPendingFileHandleIds`](#action-setpendingfilehandleids) | `(ids: string[]) => void`                                                                                                                                                                                                                                                                                                          |
+
+</details>
+
+<details>
+<summary>BaseWebSessionModel - Actions (all signatures)</summary>
+
 #### action: addAssemblyConf
 
 ```ts
@@ -390,16 +457,6 @@ type setDefaultSession = () => void
 
 ```ts
 type setSession = (sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<_OverrideProps<_OverrideProps<_OverrideProps<_OverrideProps<Omit<{}, never>, _OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalI...
-```
-
-#### action: editTrackConfiguration
-
-opens the config editor for a track. Available for any track: edits to a
-non-session (admin-owned) track apply in-memory for the current session even
-when the user lacks rights to persist them.
-
-```ts
-type editTrackConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
 ```
 
 #### action: setPendingFileHandleIds

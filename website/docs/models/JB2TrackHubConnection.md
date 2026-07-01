@@ -48,6 +48,19 @@ and docs.
 <details open>
 <summary>JB2TrackHubConnection - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                              |
+| ------------------------------------------ | -------------------------------------- |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`            |
+| [`type`](#property-type)                   | `ISimpleType<"JB2TrackHubConnection">` |
+
+</details>
+
+<details>
+<summary>JB2TrackHubConnection - Properties (all signatures)</summary>
+
 #### property: configuration
 
 ```ts
@@ -70,6 +83,18 @@ type: types.literal('JB2TrackHubConnection')
 
 <details open>
 <summary>JB2TrackHubConnection - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature             |
+| ---------------------------- | --------------------- |
+| [`connect`](#action-connect) | `() => Promise<void>` |
+
+</details>
+
+<details>
+<summary>JB2TrackHubConnection - Actions (all signatures)</summary>
 
 #### action: connect
 

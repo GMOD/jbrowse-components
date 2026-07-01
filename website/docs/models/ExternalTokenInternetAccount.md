@@ -33,6 +33,19 @@ The configuration slots for this model are documented on its
 <details open>
 <summary>ExternalTokenInternetAccount - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`conf`](#getter-conf)                         | `ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>` |
+| [`validateWithHEAD`](#getter-validatewithhead) | `boolean`                                                                                                                                                                                      |
+
+</details>
+
+<details>
+<summary>ExternalTokenInternetAccount - Getters (all signatures)</summary>
+
 #### getter: conf
 
 ```ts
@@ -49,6 +62,19 @@ type validateWithHEAD = boolean
 
 <details open>
 <summary>ExternalTokenInternetAccount - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                    |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| [`getTokenFromUser`](#action-gettokenfromuser) | `(resolve: (token: string) => void, reject: (error: Error) => void) => void` |
+| [`validateToken`](#action-validatetoken)       | `(token: string, location: UriLocation) => Promise<string>`                  |
+
+</details>
+
+<details>
+<summary>ExternalTokenInternetAccount - Actions (all signatures)</summary>
 
 #### action: getTokenFromUser
 

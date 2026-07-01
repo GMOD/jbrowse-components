@@ -187,6 +187,22 @@ and docs.
 <details open>
 <summary>LinearReferenceSequenceDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                           |
+| ---------------------------------------------- | --------------------------------------------------- |
+| [`type`](#property-type)                       | `ISimpleType<"LinearReferenceSequenceDisplay">`     |
+| [`configuration`](#property-configuration)     | `ITypeUnion<any, any, any>`                         |
+| [`showForward`](#property-showforward)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`showReverse`](#property-showreverse)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`showTranslation`](#property-showtranslation) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>LinearReferenceSequenceDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -237,6 +253,18 @@ showTranslation: types.stripDefault(types.boolean, true)
 <details open>
 <summary>LinearReferenceSequenceDisplay - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                   |
+| ---------------------------------------- | ------------------------------------------- |
+| [`sequenceData`](#volatile-sequencedata) | `ObservableMap<number, SequenceRegionData>` |
+
+</details>
+
+<details>
+<summary>LinearReferenceSequenceDisplay - Volatiles (all signatures)</summary>
+
 #### volatile: sequenceData
 
 ```ts
@@ -250,12 +278,6 @@ sequenceData: observable.map<number, SequenceRegionData>()
 
 <details open>
 <summary>LinearReferenceSequenceDisplay - Getters</summary>
-
-#### getter: sequenceType
-
-```ts
-type sequenceType = any
-```
 
 #### getter: colorState
 
@@ -310,18 +332,6 @@ MultiRegionDisplayMixin.svgReadyExtraTerminal.
 type svgReadyExtraTerminal = boolean
 ```
 
-#### getter: numRows
-
-```ts
-type numRows = number
-```
-
-#### getter: sequenceHeight
-
-```ts
-type sequenceHeight = number
-```
-
 #### getter: computedHeight
 
 collapses to 50px when zoomed out (no sequence visible) or before the view
@@ -338,12 +348,6 @@ zoom-aware computed height.
 
 ```ts
 type height = number
-```
-
-#### getter: rowHeight
-
-```ts
-type rowHeight = number
 ```
 
 #### getter: renderState
@@ -365,10 +369,62 @@ loading-overlay visibility derives from this overridden getter.
 type displayPhase = DisplayPhase
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature |
+| ------------------------------------------ | --------- |
+| [`sequenceType`](#getter-sequencetype)     | `any`     |
+| [`numRows`](#getter-numrows)               | `number`  |
+| [`sequenceHeight`](#getter-sequenceheight) | `number`  |
+| [`rowHeight`](#getter-rowheight)           | `number`  |
+
+</details>
+
+<details>
+<summary>LinearReferenceSequenceDisplay - Getters (all signatures)</summary>
+
+#### getter: sequenceType
+
+```ts
+type sequenceType = any
+```
+
+#### getter: numRows
+
+```ts
+type numRows = number
+```
+
+#### getter: sequenceHeight
+
+```ts
+type sequenceHeight = number
+```
+
+#### getter: rowHeight
+
+```ts
+type rowHeight = number
+```
+
 </details>
 
 <details open>
 <summary>LinearReferenceSequenceDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                                                                                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`renderSvg`](#method-rendersvg)           | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<Element>`                                                                                                   |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => ({ label: string; type: string; checked: boolean; onClick: () => void; } \| { label: string; onClick: () => void; type?: undefined; checked?: undefined; })[]` |
+
+</details>
+
+<details>
+<summary>LinearReferenceSequenceDisplay - Methods (all signatures)</summary>
 
 #### method: renderSvg
 
@@ -396,6 +452,42 @@ type trackMenuItems = () => (
 
 <details open>
 <summary>LinearReferenceSequenceDisplay - Actions</summary>
+
+#### action: addGCContentTrack
+
+spins up a standalone GCContentTrack session track that wraps this track's
+sequence adapter (requires the gccontent plugin)
+
+```ts
+type addGCContentTrack = () => void
+```
+
+#### action: startRenderingBackend
+
+Called by `useRenderingBackend` (via DisplayChrome) once the canvas backend is
+created. Streams each fetched region into the backend and draws every frame from
+`renderState`.
+
+```ts
+type startRenderingBackend = (backend: Canvas2DSequenceRenderer) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                        |
+| -------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| [`setSequenceRegion`](#action-setsequenceregion)               | `(idx: number, data: SequenceRegionData) => void`                                |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                     |
+| [`toggleShowForward`](#action-toggleshowforward)               | `() => void`                                                                     |
+| [`toggleShowReverse`](#action-toggleshowreverse)               | `() => void`                                                                     |
+| [`toggleShowTranslation`](#action-toggleshowtranslation)       | `() => void`                                                                     |
+| [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>` |
+
+</details>
+
+<details>
+<summary>LinearReferenceSequenceDisplay - Actions (all signatures)</summary>
 
 #### action: setSequenceRegion
 
@@ -425,25 +517,6 @@ type toggleShowReverse = () => void
 
 ```ts
 type toggleShowTranslation = () => void
-```
-
-#### action: addGCContentTrack
-
-spins up a standalone GCContentTrack session track that wraps this track's
-sequence adapter (requires the gccontent plugin)
-
-```ts
-type addGCContentTrack = () => void
-```
-
-#### action: startRenderingBackend
-
-Called by `useRenderingBackend` (via DisplayChrome) once the canvas backend is
-created. Streams each fetched region into the backend and draws every frame from
-`renderState`.
-
-```ts
-type startRenderingBackend = (backend: Canvas2DSequenceRenderer) => void
 ```
 
 #### action: fetchNeeded

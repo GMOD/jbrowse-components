@@ -63,6 +63,19 @@ and docs.
 <details open>
 <summary>GoogleDriveOAuthInternetAccount - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                        |
+| ------------------------------------------ | ------------------------------------------------ |
+| [`type`](#property-type)                   | `ISimpleType<"GoogleDriveOAuthInternetAccount">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                      |
+
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -94,6 +107,18 @@ The FileSelector icon for Google drive
 type toggleContents = Element
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature |
+| ---------------------------------------- | --------- |
+| [`selectorLabel`](#getter-selectorlabel) | `string`  |
+
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Getters (all signatures)</summary>
+
 #### getter: selectorLabel
 
 ```ts
@@ -104,6 +129,19 @@ type selectorLabel = string
 
 <details open>
 <summary>GoogleDriveOAuthInternetAccount - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                                                                                                                         |
+| -------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
+| [`getFetcher`](#method-getfetcher)     | `(location?: UriLocation \| undefined) => (input: RequestInfo, init?: RequestInitWithMetadata \| undefined) => Promise<Response>` |
+| [`openLocation`](#method-openlocation) | `(location: UriLocation) => GoogleDriveFile`                                                                                      |
+
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Methods (all signatures)</summary>
 
 #### method: getFetcher
 
@@ -126,6 +164,18 @@ type openLocation = (location: UriLocation) => GoogleDriveFile
 
 <details open>
 <summary>GoogleDriveOAuthInternetAccount - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                                   |
+| ---------------------------------------- | ----------------------------------------------------------- |
+| [`validateToken`](#action-validatetoken) | `(token: string, location: UriLocation) => Promise<string>` |
+
+</details>
+
+<details>
+<summary>GoogleDriveOAuthInternetAccount - Actions (all signatures)</summary>
 
 #### action: validateToken
 

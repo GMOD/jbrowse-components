@@ -199,24 +199,6 @@ and docs.
 <details open>
 <summary>LinearManhattanDisplay - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'LinearManhattanDisplay'>
-// code
-type: types.literal('LinearManhattanDisplay')
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
 #### property: indexSnp
 
 Index/lead SNP for LD coloring — a SNP id or `chr:bp` (1-based) string.
@@ -242,10 +224,56 @@ type indexSnpPinned = IOptionalIType<ISimpleType<boolean>, [undefined]>
 indexSnpPinned: types.stripDefault(types.boolean, false)
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                               |
+| ------------------------------------------ | --------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearManhattanDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`             |
+
+</details>
+
+<details>
+<summary>LinearManhattanDisplay - Properties (all signatures)</summary>
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<'LinearManhattanDisplay'>
+// code
+type: types.literal('LinearManhattanDisplay')
+```
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 </details>
 
 <details open>
 <summary>LinearManhattanDisplay - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                   |
+| -------------------------------------------------- | ------------------------------------------- |
+| [`rpcDataMap`](#volatile-rpcdatamap)               | `ObservableMap<number, ManhattanRpcResult>` |
+| [`flatbushes`](#volatile-flatbushes)               | `ObservableMap<number, Flatbush>`           |
+| [`featureUnderMouse`](#volatile-featureundermouse) | `ManhattanHit \| undefined`                 |
+| [`showLdLegend`](#volatile-showldlegend)           | `true`                                      |
+
+</details>
+
+<details>
+<summary>LinearManhattanDisplay - Volatiles (all signatures)</summary>
 
 #### volatile: rpcDataMap
 
@@ -287,26 +315,6 @@ showLdLegend: true
 
 <details open>
 <summary>LinearManhattanDisplay - Getters</summary>
-
-#### getter: DisplayMessageComponent
-
-```ts
-type DisplayMessageComponent = LazyExoticComponent<
-  ({ model }: { model: ManhattanDisplayModel }) => Element
->
-```
-
-#### getter: TooltipComponent
-
-```ts
-type TooltipComponent = ({
-  model,
-  clientMouseCoord,
-}: {
-  model: TooltipModel
-  clientMouseCoord: [number, number]
-}) => Element | null
-```
 
 #### getter: color
 
@@ -402,6 +410,39 @@ analysis, so "found in no loaded region" means missing.
 type indexSnpMissing = boolean
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                                                                         |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------- |
+| [`DisplayMessageComponent`](#getter-displaymessagecomponent) | `LazyExoticComponent<({ model, }: { model: ManhattanDisplayModel; }) => Element>`                                 |
+| [`TooltipComponent`](#getter-tooltipcomponent)               | `({ model, clientMouseCoord, }: { model: TooltipModel; clientMouseCoord: [number, number]; }) => Element \| null` |
+
+</details>
+
+<details>
+<summary>LinearManhattanDisplay - Getters (all signatures)</summary>
+
+#### getter: DisplayMessageComponent
+
+```ts
+type DisplayMessageComponent = LazyExoticComponent<
+  ({ model }: { model: ManhattanDisplayModel }) => Element
+>
+```
+
+#### getter: TooltipComponent
+
+```ts
+type TooltipComponent = ({
+  model,
+  clientMouseCoord,
+}: {
+  model: TooltipModel
+  clientMouseCoord: [number, number]
+}) => Element | null
+```
+
 </details>
 
 <details open>
@@ -455,6 +496,66 @@ open the feature details widget for a clicked point
 type selectFeature = (hit: ManhattanHit) => void
 ```
 
+#### action: colorByLdToHit
+
+right-click "Color by LD to this SNP": switch into LD mode and pin the index on
+the clicked point, so the auto-pick stops tracking the top hit. Keyed by chr:bp
+(1-based) to match the worker's posKey. All mutations happen in one action so
+rpcProps settles once and only a single recolor fetch fires.
+
+```ts
+type colorByLdToHit = (hit: ManhattanHit) => void
+```
+
+#### action: useTopHitAsIndex
+
+release a pinned index back to auto-tracking, seeded at the current top hit (the
+auto-pick autorun then keeps it on the top hit as data loads)
+
+```ts
+type useTopHitAsIndex = () => void
+```
+
+#### action: fetchNeeded
+
+Manhattan features are 1:1 with the underlying SNPs (pre-transformed -log10 p
+values) and don't downsample by zoom, so we never need to refetch on bpPerPx
+change. We intentionally don't call setLoadedBpPerPx — the inherited
+isCacheValid short-circuits to true whenever loadedBpPerPx is undefined, which
+is exactly the behavior we want here.
+
+```ts
+type fetchNeeded = (
+  needed: { region: Region; displayedRegionIndex: number }[],
+) => Promise<void> | undefined
+```
+
+#### action: startRenderingBackend
+
+identity encode — RPC result is the upload payload
+
+```ts
+type startRenderingBackend = (backend: ManhattanRenderingBackend) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                                                                                                    |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`setRpcData`](#action-setrpcdata)                             | `(idx: number, data: ManhattanRpcResult) => void`                                                                                                            |
+| [`setFeatureUnderMouse`](#action-setfeatureundermouse)         | `(hit: ManhattanHit \| undefined) => void`                                                                                                                   |
+| [`setShowLdLegend`](#action-setshowldlegend)                   | `(val: boolean) => void`                                                                                                                                     |
+| [`setColorBy`](#action-setcolorby)                             | `(mode: "normal" \| "ld") => void`                                                                                                                           |
+| [`setIndexSnp`](#action-setindexsnp)                           | `(snp?: string \| undefined) => void`                                                                                                                        |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                                                                                                 |
+| [`renderSvg`](#action-rendersvg)                               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
+
+</details>
+
+<details>
+<summary>LinearManhattanDisplay - Actions (all signatures)</summary>
+
 #### action: setRpcData
 
 ```ts
@@ -485,58 +586,16 @@ type setColorBy = (mode: 'normal' | 'ld') => void
 type setIndexSnp = (snp?: string | undefined) => void
 ```
 
-#### action: colorByLdToHit
-
-right-click "Color by LD to this SNP": switch into LD mode and pin the index on
-the clicked point, so the auto-pick stops tracking the top hit. Keyed by chr:bp
-(1-based) to match the worker's posKey. All mutations happen in one action so
-rpcProps settles once and only a single recolor fetch fires.
-
-```ts
-type colorByLdToHit = (hit: ManhattanHit) => void
-```
-
-#### action: useTopHitAsIndex
-
-release a pinned index back to auto-tracking, seeded at the current top hit (the
-auto-pick autorun then keeps it on the top hit as data loads)
-
-```ts
-type useTopHitAsIndex = () => void
-```
-
 #### action: clearDisplaySpecificData
 
 ```ts
 type clearDisplaySpecificData = () => void
 ```
 
-#### action: fetchNeeded
-
-Manhattan features are 1:1 with the underlying SNPs (pre-transformed -log10 p
-values) and don't downsample by zoom, so we never need to refetch on bpPerPx
-change. We intentionally don't call setLoadedBpPerPx — the inherited
-isCacheValid short-circuits to true whenever loadedBpPerPx is undefined, which
-is exactly the behavior we want here.
-
-```ts
-type fetchNeeded = (
-  needed: { region: Region; displayedRegionIndex: number }[],
-) => Promise<void> | undefined
-```
-
 #### action: renderSvg
 
 ```ts
 type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
-```
-
-#### action: startRenderingBackend
-
-identity encode — RPC result is the upload payload
-
-```ts
-type startRenderingBackend = (backend: ManhattanRenderingBackend) => void
 ```
 
 </details>

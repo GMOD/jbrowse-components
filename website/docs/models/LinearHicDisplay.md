@@ -180,24 +180,6 @@ and docs.
 <details open>
 <summary>LinearHicDisplay - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'LinearHicDisplay'>
-// code
-type: types.literal('LinearHicDisplay')
-```
-
-#### property: configuration
-
-```ts
-// type signature
-type configuration = ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
 #### property: resolutionBias
 
 Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure
@@ -274,10 +256,55 @@ type fitToHeight = IOptionalIType<ISimpleType<boolean>, [undefined]>
 fitToHeight: types.stripDefault(types.boolean, false)
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                         |
+| ------------------------------------------ | --------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearHicDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`       |
+
+</details>
+
+<details>
+<summary>LinearHicDisplay - Properties (all signatures)</summary>
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<'LinearHicDisplay'>
+// code
+type: types.literal('LinearHicDisplay')
+```
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 </details>
 
 <details open>
 <summary>LinearHicDisplay - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature               |
+| -------------------------------------------------------------- | ----------------------- |
+| [`rpcData`](#volatile-rpcdata)                                 | `HicDataResult \| null` |
+| [`availableNormalizations`](#volatile-availablenormalizations) | `string[] \| undefined` |
+| [`availableResolutions`](#volatile-availableresolutions)       | `number[] \| undefined` |
+
+</details>
+
+<details>
+<summary>LinearHicDisplay - Volatiles (all signatures)</summary>
 
 #### volatile: rpcData
 
@@ -321,24 +348,6 @@ for the debounced `afterAttach` fetch instead of exporting an empty matrix.
 type dataLoaded = boolean
 ```
 
-#### getter: colorScheme
-
-```ts
-type colorScheme = 'fall' | 'juicebox' | 'viridis'
-```
-
-#### getter: showLegend
-
-```ts
-type showLegend = boolean
-```
-
-#### getter: colorMaxScore
-
-```ts
-type colorMaxScore = number
-```
-
 #### getter: autoResolutionIdx
 
 Index into `availableResolutions` that pure auto-mode would pick at the current
@@ -350,12 +359,6 @@ going sub-pixel; users who want finer can step the resolution bias down.
 
 ```ts
 type autoResolutionIdx = number
-```
-
-#### getter: yScalar
-
-```ts
-type yScalar = number
 ```
 
 #### getter: effectiveResolutionIdx
@@ -384,16 +387,49 @@ and SVG export. See `computeRenderTransform` for the math.
 type renderTransform = RenderTransform
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                           |
+| ---------------------------------------- | ----------------------------------- |
+| [`colorScheme`](#getter-colorscheme)     | `"fall" \| "juicebox" \| "viridis"` |
+| [`showLegend`](#getter-showlegend)       | `boolean`                           |
+| [`colorMaxScore`](#getter-colormaxscore) | `number`                            |
+| [`yScalar`](#getter-yscalar)             | `number`                            |
+
+</details>
+
+<details>
+<summary>LinearHicDisplay - Getters (all signatures)</summary>
+
+#### getter: colorScheme
+
+```ts
+type colorScheme = 'fall' | 'juicebox' | 'viridis'
+```
+
+#### getter: showLegend
+
+```ts
+type showLegend = boolean
+```
+
+#### getter: colorMaxScore
+
+```ts
+type colorMaxScore = number
+```
+
+#### getter: yScalar
+
+```ts
+type yScalar = number
+```
+
 </details>
 
 <details open>
 <summary>LinearHicDisplay - Methods</summary>
-
-#### method: rpcProps
-
-```ts
-type rpcProps = () => { normalization: string }
-```
 
 #### method: nextResolution
 
@@ -446,6 +482,26 @@ legend will be drawn so the export framework can omit space.
 type svgLegendWidth = () => number
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                               |
+| ------------------------------------------ | ------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)             | `() => { normalization: string; }`                      |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => MenuItem[]`                                      |
+| [`renderSvg`](#method-rendersvg)           | `(opts: ExportSvgDisplayOptions) => Promise<ReactNode>` |
+
+</details>
+
+<details>
+<summary>LinearHicDisplay - Methods (all signatures)</summary>
+
+#### method: rpcProps
+
+```ts
+type rpcProps = () => { normalization: string }
+```
+
 #### method: trackMenuItems
 
 ```ts
@@ -463,12 +519,6 @@ type renderSvg = (opts: ExportSvgDisplayOptions) => Promise<ReactNode>
 <details open>
 <summary>LinearHicDisplay - Actions</summary>
 
-#### action: setRpcData
-
-```ts
-type setRpcData = (data: HicDataResult | null) => void
-```
-
 #### action: startRenderingBackend
 
 Called by the React hook (`useRenderingBackend`) when the HAL resolves. Wires
@@ -476,6 +526,72 @@ the backend into the mixin-owned autorun pair via `attachRenderingBackend`.
 
 ```ts
 type startRenderingBackend = (backend: HicRenderingBackend) => void
+```
+
+#### action: setAvailableNormalizations
+
+Reconcile `activeNormalization` against what the file actually offers. The model
+seeds `activeNormalization='KR'` before `CoreGetInfo` resolves, but not every
+`.hic` carries KR — when it doesn't, fall back to the next-best available scheme
+so the UI selection matches what's rendered (hic-straw silently uses NONE for an
+absent norm otherwise).
+
+```ts
+type setAvailableNormalizations = (f: string[]) => void
+```
+
+#### action: stepResolution
+
+dir = -1 → finer (smaller binsize); dir = +1 → coarser. Re-grounds the bias
+against the _current_ effective index so repeated clicks at a clamped boundary
+don't accumulate stale bias the user can't see — the bias always reflects what's
+actually on screen.
+
+```ts
+type stepResolution = (dir: 1 | -1) => void
+```
+
+#### action: resetResolutionBias
+
+Reset to pure auto-mode: bias 0, binsize follows zoom directly.
+
+```ts
+type resetResolutionBias = () => void
+```
+
+#### action: performHicFetch
+
+Re-fetches contact matrix for the current viewport. Both the autorun (in
+`afterAttach`) and `reload()` invoke this directly.
+
+```ts
+type performHicFetch = () => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                           | Signature                                                      |
+| ---------------------------------------------------------------- | -------------------------------------------------------------- |
+| [`setRpcData`](#action-setrpcdata)                               | `(data: HicDataResult \| null) => void`                        |
+| [`setUseLogScale`](#action-setuselogscale)                       | `(f: boolean) => void`                                         |
+| [`setUseColorPercentile`](#action-setusecolorpercentile)         | `(f: boolean) => void`                                         |
+| [`setShowResolutionControls`](#action-setshowresolutioncontrols) | `(f: boolean) => void`                                         |
+| [`setColorScheme`](#action-setcolorscheme)                       | `(f?: "fall" \| "juicebox" \| "viridis" \| undefined) => void` |
+| [`setActiveNormalization`](#action-setactivenormalization)       | `(f: string) => void`                                          |
+| [`setFitToHeight`](#action-setfittoheight)                       | `(arg: boolean) => void`                                       |
+| [`setShowLegend`](#action-setshowlegend)                         | `(arg: boolean) => void`                                       |
+| [`setAvailableResolutions`](#action-setavailableresolutions)     | `(f: number[]) => void`                                        |
+
+</details>
+
+<details>
+<summary>LinearHicDisplay - Actions (all signatures)</summary>
+
+#### action: setRpcData
+
+```ts
+type setRpcData = (data: HicDataResult | null) => void
 ```
 
 #### action: setUseLogScale
@@ -508,18 +624,6 @@ type setColorScheme = (f?: 'fall' | 'juicebox' | 'viridis' | undefined) => void
 type setActiveNormalization = (f: string) => void
 ```
 
-#### action: setAvailableNormalizations
-
-Reconcile `activeNormalization` against what the file actually offers. The model
-seeds `activeNormalization='KR'` before `CoreGetInfo` resolves, but not every
-`.hic` carries KR — when it doesn't, fall back to the next-best available scheme
-so the UI selection matches what's rendered (hic-straw silently uses NONE for an
-absent norm otherwise).
-
-```ts
-type setAvailableNormalizations = (f: string[]) => void
-```
-
 #### action: setFitToHeight
 
 ```ts
@@ -536,34 +640,6 @@ type setShowLegend = (arg: boolean) => void
 
 ```ts
 type setAvailableResolutions = (f: number[]) => void
-```
-
-#### action: stepResolution
-
-dir = -1 → finer (smaller binsize); dir = +1 → coarser. Re-grounds the bias
-against the _current_ effective index so repeated clicks at a clamped boundary
-don't accumulate stale bias the user can't see — the bias always reflects what's
-actually on screen.
-
-```ts
-type stepResolution = (dir: 1 | -1) => void
-```
-
-#### action: resetResolutionBias
-
-Reset to pure auto-mode: bias 0, binsize follows zoom directly.
-
-```ts
-type resetResolutionBias = () => void
-```
-
-#### action: performHicFetch
-
-Re-fetches contact matrix for the current viewport. Both the autorun (in
-`afterAttach`) and `reload()` invoke this directly.
-
-```ts
-type performHicFetch = () => Promise<void>
 ```
 
 </details>

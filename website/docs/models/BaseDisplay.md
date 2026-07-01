@@ -24,6 +24,20 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>BaseDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                          |
+| ------------------------------------------ | -------------------------------------------------- |
+| [`id`](#property-id)                       | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type)                   | `ISimpleType<string>`                              |
+| [`rpcDriverName`](#property-rpcdrivername) | `IMaybe<ISimpleType<string>>`                      |
+
+</details>
+
+<details>
+<summary>BaseDisplay - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -56,6 +70,19 @@ rpcDriverName: types.maybe(types.string)
 <details open>
 <summary>BaseDisplay - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature             |
+| ------------------------------------------ | --------------------- |
+| [`error`](#volatile-error)                 | `unknown`             |
+| [`statusMessage`](#volatile-statusmessage) | `string \| undefined` |
+
+</details>
+
+<details>
+<summary>BaseDisplay - Volatiles (all signatures)</summary>
+
 #### volatile: error
 
 ```ts
@@ -79,12 +106,6 @@ statusMessage: undefined as string | undefined
 <details open>
 <summary>BaseDisplay - Getters</summary>
 
-#### getter: parentTrack
-
-```ts
-type parentTrack = AbstractTrackModel
-```
-
 #### getter: parentDisplay
 
 Returns the parent display if this display is nested within another display
@@ -94,24 +115,6 @@ Returns the parent display if this display is nested within another display
 type parentDisplay =
   | { type?: string | undefined; effectiveRpcDriverName?: string | undefined }
   | undefined
-```
-
-#### getter: RenderingComponent
-
-```ts
-type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
-```
-
-#### getter: DisplayBlurb
-
-```ts
-type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
-```
-
-#### getter: adapterConfig
-
-```ts
-type adapterConfig = any
 ```
 
 #### getter: isMinimized
@@ -154,6 +157,46 @@ component
 type DisplayMessageComponent = FC<any> | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                                                                                                                                                                                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`parentTrack`](#getter-parenttrack)               | `AbstractTrackModel`                                                                                                                                                                                                                                                                                          |
+| [`RenderingComponent`](#getter-renderingcomponent) | `FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) \| undefined; blockState?: Record<...> \| undefined; }>` |
+| [`DisplayBlurb`](#getter-displayblurb)             | `FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> \| null`                                                                                |
+| [`adapterConfig`](#getter-adapterconfig)           | `any`                                                                                                                                                                                                                                                                                                         |
+| [`viewMenuActions`](#getter-viewmenuactions)       | `MenuItem[]`                                                                                                                                                                                                                                                                                                  |
+
+</details>
+
+<details>
+<summary>BaseDisplay - Getters (all signatures)</summary>
+
+#### getter: parentTrack
+
+```ts
+type parentTrack = AbstractTrackModel
+```
+
+#### getter: RenderingComponent
+
+```ts
+type RenderingComponent = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; onHorizontalScroll?: (() => void) | undefined; blockState?: Record<...> | undefined; }>
+```
+
+#### getter: DisplayBlurb
+
+```ts
+type DisplayBlurb = FC<{ model: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & IStateTreeNode<...>; }> | null
+```
+
+#### getter: adapterConfig
+
+```ts
+type adapterConfig = any
+```
+
 #### getter: viewMenuActions
 
 ```ts
@@ -184,6 +227,19 @@ callbacks
 type renderingProps = () => { displayModel: ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }> & { ...; } & { ...; } & { ...; } & IStateTreeNode<...>; }
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                     | Signature          |
+| ---------------------------------------------------------- | ------------------ |
+| [`trackMenuItems`](#method-trackmenuitems)                 | `() => MenuItem[]` |
+| [`regionCannotBeRendered`](#method-regioncannotberendered) | `() => null`       |
+
+</details>
+
+<details>
+<summary>BaseDisplay - Methods (all signatures)</summary>
+
 #### method: trackMenuItems
 
 ```ts
@@ -201,6 +257,28 @@ type regionCannotBeRendered = () => null
 <details open>
 <summary>BaseDisplay - Actions</summary>
 
+#### action: reload
+
+base display reload does nothing, see specialized displays for details
+
+```ts
+type reload = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                |
+| ---------------------------------------------- | ---------------------------------------- |
+| [`setStatusMessage`](#action-setstatusmessage) | `(arg?: RpcStatus \| undefined) => void` |
+| [`setError`](#action-seterror)                 | `(error?: unknown) => void`              |
+| [`setRpcDriverName`](#action-setrpcdrivername) | `(rpcDriverName: string) => void`        |
+
+</details>
+
+<details>
+<summary>BaseDisplay - Actions (all signatures)</summary>
+
 #### action: setStatusMessage
 
 ```ts
@@ -217,14 +295,6 @@ type setError = (error?: unknown) => void
 
 ```ts
 type setRpcDriverName = (rpcDriverName: string) => void
-```
-
-#### action: reload
-
-base display reload does nothing, see specialized displays for details
-
-```ts
-type reload = () => void
 ```
 
 </details>

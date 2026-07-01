@@ -90,6 +90,20 @@ and docs.
 <details open>
 <summary>ChordVariantDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                          |
+| -------------------------------------------------- | -------------------------------------------------- |
+| [`type`](#property-type)                           | `ISimpleType<"ChordVariantDisplay">`               |
+| [`bezierRadiusRatio`](#property-bezierradiusratio) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
+| [`configuration`](#property-configuration)         | `ITypeUnion<any, any, any>`                        |
+
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -122,6 +136,19 @@ configuration: ConfigurationReference(configSchema)
 <details open>
 <summary>ChordVariantDisplay - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                             |
+| ------------------------------------ | ------------------------------------- |
+| [`features`](#volatile-features)     | `Feature[] \| undefined`              |
+| [`refNameMap`](#volatile-refnamemap) | `Record<string, string> \| undefined` |
+
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Volatiles (all signatures)</summary>
+
 #### volatile: features
 
 ```ts
@@ -144,6 +171,20 @@ refNameMap: undefined as Record<string, string> | undefined
 
 <details open>
 <summary>ChordVariantDisplay - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature               |
+| ------------------------------------------------ | ----------------------- |
+| [`ready`](#getter-ready)                         | `boolean`               |
+| [`blocksForRefs`](#getter-blocksforrefs)         | `Record<string, Block>` |
+| [`selectedFeatureId`](#getter-selectedfeatureid) | `string \| undefined`   |
+
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Getters (all signatures)</summary>
 
 #### getter: ready
 
@@ -168,6 +209,18 @@ type selectedFeatureId = string | undefined
 <details open>
 <summary>ChordVariantDisplay - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                                                                                        |
+| -------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [`renderSvg`](#method-rendersvg) | `(_opts: ExportSvgOptions & { theme?: ThemeOptions \| undefined; }) => Promise<Element \| null>` |
+
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Methods (all signatures)</summary>
+
 #### method: renderSvg
 
 ```ts
@@ -180,6 +233,20 @@ type renderSvg = (
 
 <details open>
 <summary>ChordVariantDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                      |
+| ---------------------------------------- | ---------------------------------------------- |
+| [`onChordClick`](#action-onchordclick)   | `(feature: Feature) => void`                   |
+| [`setFeatures`](#action-setfeatures)     | `(features: Feature[] \| undefined) => void`   |
+| [`setRefNameMap`](#action-setrefnamemap) | `(refNameMap: Record<string, string>) => void` |
+
+</details>
+
+<details>
+<summary>ChordVariantDisplay - Actions (all signatures)</summary>
 
 #### action: onChordClick
 

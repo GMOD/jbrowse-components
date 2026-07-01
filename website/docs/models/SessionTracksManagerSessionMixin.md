@@ -154,12 +154,6 @@ type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slot
 <details open>
 <summary>SessionTracksManagerSessionMixin - Actions</summary>
 
-#### action: addTrackConf
-
-```ts
-type addTrackConf = (trackConf: AnyConfiguration) => any
-```
-
 #### action: updateTrackConfiguration
 
 Persist an edited track config. Admins edit the jbrowse config in place;
@@ -181,6 +175,25 @@ an open track stays open and simply reverts.
 
 ```ts
 type resetTrackConfiguration = (trackId: string) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                                                                                                                                         |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`addTrackConf`](#action-addtrackconf)       | `(trackConf: AnyConfiguration) => any`                                                                                                                                                                                            |
+| [`deleteTrackConf`](#action-deletetrackconf) | `(trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any[] \| undefined` |
+
+</details>
+
+<details>
+<summary>SessionTracksManagerSessionMixin - Actions (all signatures)</summary>
+
+#### action: addTrackConf
+
+```ts
+type addTrackConf = (trackConf: AnyConfiguration) => any
 ```
 
 #### action: deleteTrackConf

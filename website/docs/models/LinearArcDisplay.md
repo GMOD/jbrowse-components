@@ -125,6 +125,31 @@ and docs.
 <details open>
 <summary>LinearArcDisplay - Properties</summary>
 
+#### property: displayModeOverride
+
+explicit display-mode override; the `displayMode` getter resolves it over the
+config `displayMode` slot
+
+```ts
+// type signature
+type displayModeOverride = IMaybe<ISimpleType<string>>
+// code
+displayModeOverride: types.maybe(types.string)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                         |
+| ------------------------------------------ | --------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearArcDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`       |
+
+</details>
+
+<details>
+<summary>LinearArcDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -143,22 +168,23 @@ type configuration = ITypeUnion<any, any, any>
 configuration: ConfigurationReference(configSchema)
 ```
 
-#### property: displayModeOverride
-
-explicit display-mode override; the `displayMode` getter resolves it over the
-config `displayMode` slot
-
-```ts
-// type signature
-type displayModeOverride = IMaybe<ISimpleType<string>>
-// code
-displayModeOverride: types.maybe(types.string)
-```
-
 </details>
 
 <details open>
 <summary>LinearArcDisplay - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                |
+| -------------------------------- | ------------------------ |
+| [`features`](#volatile-features) | `Feature[] \| undefined` |
+| [`loading`](#volatile-loading)   | `false`                  |
+
+</details>
+
+<details>
+<summary>LinearArcDisplay - Volatiles (all signatures)</summary>
 
 #### volatile: features
 
@@ -208,12 +234,6 @@ single-array model lacks.
 type svgReady = boolean
 ```
 
-#### getter: displayMode
-
-```ts
-type displayMode = string
-```
-
 #### getter: arcStyles
 
 per-feature arc styling, evaluated once when features/config change. Kept out of
@@ -241,10 +261,40 @@ returns the id of the globally-selected feature, used to highlight it
 type selectedFeatureId = string | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature |
+| ------------------------------------ | --------- |
+| [`displayMode`](#getter-displaymode) | `string`  |
+
+</details>
+
+<details>
+<summary>LinearArcDisplay - Getters (all signatures)</summary>
+
+#### getter: displayMode
+
+```ts
+type displayMode = string
+```
+
 </details>
 
 <details open>
 <summary>LinearArcDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                                                                                  |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+
+</details>
+
+<details>
+<summary>LinearArcDisplay - Methods (all signatures)</summary>
 
 #### method: trackMenuItems
 
@@ -256,6 +306,22 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 
 <details open>
 <summary>LinearArcDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                             |
+| ------------------------------------------ | --------------------------------------------------------------------- |
+| [`selectFeature`](#action-selectfeature)   | `(feature: Feature) => void`                                          |
+| [`setLoading`](#action-setloading)         | `(flag: boolean) => void`                                             |
+| [`setFeatures`](#action-setfeatures)       | `(f: Feature[]) => void`                                              |
+| [`setDisplayMode`](#action-setdisplaymode) | `(flag: string) => void`                                              |
+| [`renderSvg`](#action-rendersvg)           | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
+
+</details>
+
+<details>
+<summary>LinearArcDisplay - Actions (all signatures)</summary>
 
 #### action: selectFeature
 

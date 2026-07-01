@@ -79,6 +79,18 @@ and docs.
 <details open>
 <summary>JBrowseWebRootModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                     |
+| ------------------------------------ | ----------------------------- |
+| [`configPath`](#property-configpath) | `IMaybe<ISimpleType<string>>` |
+
+</details>
+
+<details>
+<summary>JBrowseWebRootModel - Properties (all signatures)</summary>
+
 #### property: configPath
 
 ```ts
@@ -92,6 +104,25 @@ configPath: types.maybe(types.string)
 
 <details open>
 <summary>JBrowseWebRootModel - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                 | Signature                                                                                       |
+| ---------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------- |
+| [`adminMode`](#volatile-adminmode)                                     | `boolean`                                                                                       |
+| [`sessionDB`](#volatile-sessiondb)                                     | `IDBPDatabase<SessionDB> \| undefined`                                                          |
+| [`version`](#volatile-version)                                         | `string`                                                                                        |
+| [`gitCommit`](#volatile-gitcommit)                                     | `string`                                                                                        |
+| [`pluginsUpdated`](#volatile-pluginsupdated)                           | `false`                                                                                         |
+| [`rpcManager`](#volatile-rpcmanager)                                   | `RpcManager`                                                                                    |
+| [`savedSessionMetadata`](#volatile-savedsessionmetadata)               | `SessionMetadata[] \| undefined`                                                                |
+| [`reloadPluginManagerCallback`](#volatile-reloadpluginmanagercallback) | `(_configSnapshot: Record<string, unknown>, _sessionSnapshot: Record<string, unknown>) => void` |
+
+</details>
+
+<details>
+<summary>JBrowseWebRootModel - Volatiles (all signatures)</summary>
 
 #### volatile: adminMode
 
@@ -181,6 +212,18 @@ reloadPluginManagerCallback: (
 <details open>
 <summary>JBrowseWebRootModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature      |
+| ------------------------ | -------------- |
+| [`menus`](#method-menus) | `() => Menu[]` |
+
+</details>
+
+<details>
+<summary>JBrowseWebRootModel - Methods (all signatures)</summary>
+
 #### method: menus
 
 ```ts
@@ -191,6 +234,27 @@ type menus = () => Menu[]
 
 <details open>
 <summary>JBrowseWebRootModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                     | Signature                                                                                                         |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| [`setSavedSessionMetadata`](#action-setsavedsessionmetadata)               | `(sessions: SessionMetadata[]) => void`                                                                           |
+| [`fetchSessionMetadata`](#action-fetchsessionmetadata)                     | `() => Promise<void>`                                                                                             |
+| [`setSessionDB`](#action-setsessiondb)                                     | `(sessionDB: IDBPDatabase<SessionDB>) => void`                                                                    |
+| [`setPluginsUpdated`](#action-setpluginsupdated)                           | `() => void`                                                                                                      |
+| [`setReloadPluginManagerCallback`](#action-setreloadpluginmanagercallback) | `(callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void` |
+| [`setDefaultSession`](#action-setdefaultsession)                           | `() => void`                                                                                                      |
+| [`activateSession`](#action-activatesession)                               | `(id: string) => Promise<void>`                                                                                   |
+| [`setSavedSessionFavorite`](#action-setsavedsessionfavorite)               | `(id: string, favorite: boolean) => Promise<void>`                                                                |
+| [`deleteSavedSession`](#action-deletesavedsession)                         | `(id: string) => Promise<void>`                                                                                   |
+| [`renameSavedSession`](#action-renamesavedsession)                         | `(id: string, name: string) => Promise<void>`                                                                     |
+
+</details>
+
+<details>
+<summary>JBrowseWebRootModel - Actions (all signatures)</summary>
 
 #### action: setSavedSessionMetadata
 

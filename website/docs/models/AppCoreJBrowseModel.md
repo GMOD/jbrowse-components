@@ -28,6 +28,19 @@ to build on one. Generally found on a property named rootModel.jbrowse
 <details open>
 <summary>AppCoreJBrowseModel - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature    |
+| ---------------------------------------- | ------------ |
+| [`assemblyNames`](#getter-assemblynames) | `string[]`   |
+| [`rpcManager`](#getter-rpcmanager)       | `RpcManager` |
+
+</details>
+
+<details>
+<summary>AppCoreJBrowseModel - Getters (all signatures)</summary>
+
 #### getter: assemblyNames
 
 ```ts
@@ -44,6 +57,40 @@ type rpcManager = RpcManager
 
 <details open>
 <summary>AppCoreJBrowseModel - Actions</summary>
+
+#### action: updateTrackConf
+
+Updates an existing track configuration. Used to sync editable configs back to
+the frozen tracks array.
+
+```ts
+type updateTrackConf = (trackConf: {
+  [key: string]: unknown
+  trackId: string
+}) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                           | Signature                                                                                                                                                                                                                                                                    |
+| ---------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`addAssemblyConf`](#action-addassemblyconf)                     | `(conf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>` |
+| [`removeAssemblyConf`](#action-removeassemblyconf)               | `(assemblyName: string) => void`                                                                                                                                                                                                                                             |
+| [`addTrackConf`](#action-addtrackconf)                           | `(trackConf: { trackId: string; type: string; }) => { [key: string]: unknown; trackId: string; } \| undefined`                                                                                                                                                               |
+| [`addConnectionConf`](#action-addconnectionconf)                 | `(connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`                                                      |
+| [`deleteConnectionConf`](#action-deleteconnectionconf)           | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean`                                                   |
+| [`deleteTrackConf`](#action-deletetrackconf)                     | `(trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| { ...; }) => void`                                            |
+| [`addPlugin`](#action-addplugin)                                 | `(pluginDefinition: PluginDefinition) => void`                                                                                                                                                                                                                               |
+| [`removePlugin`](#action-removeplugin)                           | `(pluginDefinition: PluginDefinition) => void`                                                                                                                                                                                                                               |
+| [`setDefaultSessionConf`](#action-setdefaultsessionconf)         | `(sessionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void`                                                        |
+| [`addInternetAccountConf`](#action-addinternetaccountconf)       | `(internetAccountConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`                                                 |
+| [`deleteInternetAccountConf`](#action-deleteinternetaccountconf) | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean`                                                   |
+
+</details>
+
+<details>
+<summary>AppCoreJBrowseModel - Actions (all signatures)</summary>
 
 #### action: addAssemblyConf
 
@@ -82,18 +129,6 @@ type deleteConnectionConf = (configuration: ModelInstanceTypeProps<Record<string
 
 ```ts
 type deleteTrackConf = (trackConf: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }) => void
-```
-
-#### action: updateTrackConf
-
-Updates an existing track configuration. Used to sync editable configs back to
-the frozen tracks array.
-
-```ts
-type updateTrackConf = (trackConf: {
-  [key: string]: unknown
-  trackId: string
-}) => void
 ```
 
 #### action: addPlugin

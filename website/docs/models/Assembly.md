@@ -24,6 +24,18 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>Assembly - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                          |
+| ------------------------------------------ | ---------------------------------- |
+| [`configuration`](#property-configuration) | `IMaybe<IReferenceType<IAnyType>>` |
+
+</details>
+
+<details>
+<summary>Assembly - Properties (all signatures)</summary>
+
 #### property: configuration
 
 ```ts
@@ -37,6 +49,71 @@ configuration: types.safeReference(assemblyConfigType)
 
 <details open>
 <summary>Assembly - Volatiles</summary>
+
+#### volatile: canonicalToSeqAdapterRefNames
+
+Maps canonical refName -> sequence adapter refName (in FASTA). These may differ
+when refNameAliases with override:true remap names.
+
+```ts
+// type signature
+type canonicalToSeqAdapterRefNames = Record<string, string> | undefined
+// code
+canonicalToSeqAdapterRefNames: undefined as Record<string, string> | undefined
+```
+
+#### volatile: loadedGeneticCodes
+
+refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with
+(and overridden by) the inline `geneticCodes` config slot
+
+```ts
+// type signature
+type loadedGeneticCodes = Record<string, number> | undefined
+// code
+loadedGeneticCodes: undefined as Record<string, number> | undefined
+```
+
+#### volatile: lowerCaseRefNameAliases
+
+Precomputed in loadPre to avoid expensive synchronous computation when MobX
+triggers the autorun after setLoaded
+
+```ts
+// type signature
+type lowerCaseRefNameAliases = RefNameAliases | undefined
+// code
+lowerCaseRefNameAliases: undefined as RefNameAliases | undefined
+```
+
+#### volatile: allRefNamesWithLowerCase
+
+Precomputed in loadPre to avoid expensive synchronous computation when MobX
+triggers the autorun after setLoaded
+
+```ts
+// type signature
+type allRefNamesWithLowerCase = Set<string> | undefined
+// code
+allRefNamesWithLowerCase: undefined as Set<string> | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                   |
+| ---------------------------------------------- | ------------------------------------------- |
+| [`error`](#volatile-error)                     | `unknown`                                   |
+| [`loadingP`](#volatile-loadingp)               | `Promise<void> \| undefined`                |
+| [`adapterLoads`](#volatile-adapterloads)       | `QuickLRU<string, Promise<RefNameAliases>>` |
+| [`volatileRegions`](#volatile-volatileregions) | `BasicRegion[] \| undefined`                |
+| [`refNameAliases`](#volatile-refnamealiases)   | `RefNameAliases \| undefined`               |
+| [`cytobands`](#volatile-cytobands)             | `Feature[] \| undefined`                    |
+
+</details>
+
+<details>
+<summary>Assembly - Volatiles (all signatures)</summary>
 
 #### volatile: error
 
@@ -85,18 +162,6 @@ type refNameAliases = RefNameAliases | undefined
 refNameAliases: undefined as RefNameAliases | undefined
 ```
 
-#### volatile: canonicalToSeqAdapterRefNames
-
-Maps canonical refName -> sequence adapter refName (in FASTA). These may differ
-when refNameAliases with override:true remap names.
-
-```ts
-// type signature
-type canonicalToSeqAdapterRefNames = Record<string, string> | undefined
-// code
-canonicalToSeqAdapterRefNames: undefined as Record<string, string> | undefined
-```
-
 #### volatile: cytobands
 
 ```ts
@@ -106,46 +171,50 @@ type cytobands = Feature[] | undefined
 cytobands: undefined as Feature[] | undefined
 ```
 
-#### volatile: loadedGeneticCodes
-
-refName -> NCBI genetic-code id loaded from `geneticCodesLocation`; merged with
-(and overridden by) the inline `geneticCodes` config slot
-
-```ts
-// type signature
-type loadedGeneticCodes = Record<string, number> | undefined
-// code
-loadedGeneticCodes: undefined as Record<string, number> | undefined
-```
-
-#### volatile: lowerCaseRefNameAliases
-
-Precomputed in loadPre to avoid expensive synchronous computation when MobX
-triggers the autorun after setLoaded
-
-```ts
-// type signature
-type lowerCaseRefNameAliases = RefNameAliases | undefined
-// code
-lowerCaseRefNameAliases: undefined as RefNameAliases | undefined
-```
-
-#### volatile: allRefNamesWithLowerCase
-
-Precomputed in loadPre to avoid expensive synchronous computation when MobX
-triggers the autorun after setLoaded
-
-```ts
-// type signature
-type allRefNamesWithLowerCase = Set<string> | undefined
-// code
-allRefNamesWithLowerCase: undefined as Set<string> | undefined
-```
-
 </details>
 
 <details open>
 <summary>Assembly - Getters</summary>
+
+#### getter: allRefNames
+
+note: lowerCaseRefNameAliases not included here: this allows the list of
+refnames to be just the "normal casing", but things like getCanonicalRefName can
+resolve a lower-case name if needed
+
+```ts
+type allRefNames = string[] | undefined
+```
+
+#### getter: refNameToIndex
+
+memoized refName -> first region index, so getRefNameColor is O(1) instead of an
+O(n) indexOf per call (matters for assemblies with many contigs rendered in
+overview scalebars/rulers)
+
+```ts
+type refNameToIndex = Map<string, number> | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                    |
+| ---------------------------------------- | ---------------------------- |
+| [`name`](#getter-name)                   | `string`                     |
+| [`aliases`](#getter-aliases)             | `string[]`                   |
+| [`displayName`](#getter-displayname)     | `string`                     |
+| [`refNameColors`](#getter-refnamecolors) | `string[]`                   |
+| [`allAliases`](#getter-allaliases)       | `string[]`                   |
+| [`initialized`](#getter-initialized)     | `boolean`                    |
+| [`regions`](#getter-regions)             | `BasicRegion[] \| undefined` |
+| [`rpcManager`](#getter-rpcmanager)       | `RpcManager`                 |
+| [`refNames`](#getter-refnames)           | `string[] \| undefined`      |
+
+</details>
+
+<details>
+<summary>Assembly - Getters (all signatures)</summary>
 
 #### getter: name
 
@@ -189,16 +258,6 @@ type initialized = boolean
 type regions = BasicRegion[] | undefined
 ```
 
-#### getter: allRefNames
-
-note: lowerCaseRefNameAliases not included here: this allows the list of
-refnames to be just the "normal casing", but things like getCanonicalRefName can
-resolve a lower-case name if needed
-
-```ts
-type allRefNames = string[] | undefined
-```
-
 #### getter: rpcManager
 
 ```ts
@@ -211,32 +270,10 @@ type rpcManager = RpcManager
 type refNames = string[] | undefined
 ```
 
-#### getter: refNameToIndex
-
-memoized refName -> first region index, so getRefNameColor is O(1) instead of an
-O(n) indexOf per call (matters for assemblies with many contigs rendered in
-overview scalebars/rulers)
-
-```ts
-type refNameToIndex = Map<string, number> | undefined
-```
-
 </details>
 
 <details open>
 <summary>Assembly - Methods</summary>
-
-#### method: getConf
-
-```ts
-type getConf = (arg: string) => any
-```
-
-#### method: hasName
-
-```ts
-type hasName = (name: string) => boolean
-```
 
 #### method: getCanonicalRefName
 
@@ -247,12 +284,6 @@ getSeqAdapterRefName().
 
 ```ts
 type getCanonicalRefName = (refName: string) => string
-```
-
-#### method: getRefNameColor
-
-```ts
-type getRefNameColor = (refName: string) => string | undefined
 ```
 
 #### method: getGeneticCodeId
@@ -283,12 +314,6 @@ getCanonicalRefName() for details.
 type getCanonicalRefName2 = (refName: string) => string
 ```
 
-#### method: isValidRefName
-
-```ts
-type isValidRefName = (refName: string) => boolean
-```
-
 #### method: getRefNameMapForAdapter
 
 get Map of `canonical-name -> adapter-specific-name`, memoized per adapter
@@ -299,6 +324,45 @@ type getRefNameMapForAdapter = (
   adapterConf: AdapterConf,
   options: BaseOptions,
 ) => Promise<RefNameAliases>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                  |
+| -------------------------------------------- | ------------------------------------------ |
+| [`getConf`](#method-getconf)                 | `(arg: string) => any`                     |
+| [`hasName`](#method-hasname)                 | `(name: string) => boolean`                |
+| [`getRefNameColor`](#method-getrefnamecolor) | `(refName: string) => string \| undefined` |
+| [`isValidRefName`](#method-isvalidrefname)   | `(refName: string) => boolean`             |
+
+</details>
+
+<details>
+<summary>Assembly - Methods (all signatures)</summary>
+
+#### method: getConf
+
+```ts
+type getConf = (arg: string) => any
+```
+
+#### method: hasName
+
+```ts
+type hasName = (name: string) => boolean
+```
+
+#### method: getRefNameColor
+
+```ts
+type getRefNameColor = (refName: string) => string | undefined
+```
+
+#### method: isValidRefName
+
+```ts
+type isValidRefName = (refName: string) => boolean
 ```
 
 </details>
@@ -327,6 +391,21 @@ type setLoaded = ({
   geneticCodes: Record<string, number>
 }) => void
 ```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                  |
+| ------------------------------------ | ------------------------------------------ |
+| [`setError`](#action-seterror)       | `(e: unknown) => void`                     |
+| [`setLoadingP`](#action-setloadingp) | `(p?: Promise<void> \| undefined) => void` |
+| [`loadPre`](#action-loadpre)         | `() => Promise<void>`                      |
+| [`load`](#action-load)               | `() => Promise<void>`                      |
+
+</details>
+
+<details>
+<summary>Assembly - Actions (all signatures)</summary>
 
 #### action: setError
 

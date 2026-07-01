@@ -28,6 +28,18 @@ react-app omits it (its root has no session database).
 <details open>
 <summary>WebSessionManagementMixin - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                        |
+| ------------------------------------------------------ | -------------------------------- |
+| [`savedSessionMetadata`](#getter-savedsessionmetadata) | `SessionMetadata[] \| undefined` |
+
+</details>
+
+<details>
+<summary>WebSessionManagementMixin - Getters (all signatures)</summary>
+
 #### getter: savedSessionMetadata
 
 ```ts
@@ -38,6 +50,21 @@ type savedSessionMetadata = SessionMetadata[] | undefined
 
 <details open>
 <summary>WebSessionManagementMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                          |
+| ------------------------------------------------------------ | -------------------------------------------------- |
+| [`deleteSavedSession`](#action-deletesavedsession)           | `(id: string) => Promise<void>`                    |
+| [`setSavedSessionFavorite`](#action-setsavedsessionfavorite) | `(id: string, favorite: boolean) => Promise<void>` |
+| [`renameSavedSession`](#action-renamesavedsession)           | `(id: string, name: string) => Promise<void>`      |
+| [`activateSession`](#action-activatesession)                 | `(id: string) => Promise<void>`                    |
+
+</details>
+
+<details>
+<summary>WebSessionManagementMixin - Actions (all signatures)</summary>
 
 #### action: deleteSavedSession
 

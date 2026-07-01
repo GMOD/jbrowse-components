@@ -75,6 +75,20 @@ and docs.
 <details open>
 <summary>JBrowseReactAppRootModel - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature    |
+| -------------------------------------------- | ------------ |
+| [`version`](#volatile-version)               | `string`     |
+| [`pluginsUpdated`](#volatile-pluginsupdated) | `false`      |
+| [`rpcManager`](#volatile-rpcmanager)         | `RpcManager` |
+
+</details>
+
+<details>
+<summary>JBrowseReactAppRootModel - Volatiles (all signatures)</summary>
+
 #### volatile: version
 
 ```ts
@@ -113,6 +127,18 @@ rpcManager: new RpcManager(pluginManager, self.jbrowse.configuration.rpc, {
 <details open>
 <summary>JBrowseReactAppRootModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature      |
+| ------------------------ | -------------- |
+| [`menus`](#method-menus) | `() => Menu[]` |
+
+</details>
+
+<details>
+<summary>JBrowseReactAppRootModel - Methods (all signatures)</summary>
+
 #### method: menus
 
 ```ts
@@ -124,12 +150,6 @@ type menus = () => Menu[]
 <details open>
 <summary>JBrowseReactAppRootModel - Actions</summary>
 
-#### action: setPluginsUpdated
-
-```ts
-type setPluginsUpdated = () => void
-```
-
 #### action: setDefaultSession
 
 BaseRootModel's setDefaultSession reuses defaultSession's literal name;
@@ -137,6 +157,24 @@ react-app instead timestamps it so multiple "new sessions" don't collide.
 
 ```ts
 type setDefaultSession = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature    |
+| ------------------------------------------------ | ------------ |
+| [`setPluginsUpdated`](#action-setpluginsupdated) | `() => void` |
+
+</details>
+
+<details>
+<summary>JBrowseReactAppRootModel - Actions (all signatures)</summary>
+
+#### action: setPluginsUpdated
+
+```ts
+type setPluginsUpdated = () => void
 ```
 
 </details>

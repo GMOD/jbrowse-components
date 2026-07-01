@@ -29,6 +29,19 @@ The configuration slots for this model are documented on its
 <details open>
 <summary>HTTPBasicInternetAccount - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                 |
+| ------------------------------------------ | ----------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"HTTPBasicInternetAccount">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`               |
+
+</details>
+
+<details>
+<summary>HTTPBasicInternetAccount - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -52,6 +65,19 @@ configuration: ConfigurationReference(configSchema)
 <details open>
 <summary>HTTPBasicInternetAccount - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`conf`](#getter-conf)                         | `ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>` |
+| [`validateWithHEAD`](#getter-validatewithhead) | `boolean`                                                                                                                                                                                      |
+
+</details>
+
+<details>
+<summary>HTTPBasicInternetAccount - Getters (all signatures)</summary>
+
 #### getter: conf
 
 ```ts
@@ -68,6 +94,19 @@ type validateWithHEAD = boolean
 
 <details open>
 <summary>HTTPBasicInternetAccount - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                    |
+| ---------------------------------------------- | ---------------------------------------------------------------------------- |
+| [`getTokenFromUser`](#action-gettokenfromuser) | `(resolve: (token: string) => void, reject: (error: Error) => void) => void` |
+| [`validateToken`](#action-validatetoken)       | `(token: string, location: UriLocation) => Promise<string>`                  |
+
+</details>
+
+<details>
+<summary>HTTPBasicInternetAccount - Actions (all signatures)</summary>
 
 #### action: getTokenFromUser
 

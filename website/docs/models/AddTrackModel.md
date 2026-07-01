@@ -24,6 +24,20 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>AddTrackModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                                          |
+| ------------------------ | -------------------------------------------------- |
+| [`id`](#property-id)     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type) | `ISimpleType<"AddTrackWidget">`                    |
+| [`view`](#property-view) | `IMaybe<IReferenceType<IAnyType>>`                 |
+
+</details>
+
+<details>
+<summary>AddTrackModel - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -55,6 +69,39 @@ view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 
 <details open>
 <summary>AddTrackModel - Getters</summary>
+
+#### getter: adapterHintNotConfigurable
+
+Returns true if the user selected an adapter from the dropdown but the extension
+point couldn't build a config for it
+
+```ts
+type adapterHintNotConfigurable = boolean
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                                                                                                                                                                                                                                                           |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`trackAdapter`](#getter-trackadapter)             | `AdapterConfig \| undefined`                                                                                                                                                                                                                                                                                        |
+| [`trackName`](#getter-trackname)                   | `string`                                                                                                                                                                                                                                                                                                            |
+| [`uris`](#getter-uris)                             | `(string \| undefined)[]`                                                                                                                                                                                                                                                                                           |
+| [`isFtp`](#getter-isftp)                           | `boolean`                                                                                                                                                                                                                                                                                                           |
+| [`isRelativeTrackUrl`](#getter-isrelativetrackurl) | `boolean`                                                                                                                                                                                                                                                                                                           |
+| [`isRelativeIndexUrl`](#getter-isrelativeindexurl) | `boolean`                                                                                                                                                                                                                                                                                                           |
+| [`isRelativeUrl`](#getter-isrelativeurl)           | `boolean`                                                                                                                                                                                                                                                                                                           |
+| [`wrongProtocol`](#getter-wrongprotocol)           | `boolean`                                                                                                                                                                                                                                                                                                           |
+| [`unsupported`](#getter-unsupported)               | `boolean`                                                                                                                                                                                                                                                                                                           |
+| [`assembly`](#getter-assembly)                     | `any`                                                                                                                                                                                                                                                                                                               |
+| [`trackAdapterType`](#getter-trackadaptertype)     | `string \| undefined`                                                                                                                                                                                                                                                                                               |
+| [`trackType`](#getter-tracktype)                   | `string`                                                                                                                                                                                                                                                                                                            |
+| [`warningMessage`](#getter-warningmessage)         | `"" \| "Warning: JBrowse cannot access files using the ftp protocol" \| "Warning: one or more of your files do not provide the protocol e.g.\n https://, please provide an absolute URL unless you are sure a\n relative URL is intended." \| "Warning: You entered a http:// resources but we cannot access HT...` |
+
+</details>
+
+<details>
+<summary>AddTrackModel - Getters (all signatures)</summary>
 
 #### getter: trackAdapter
 
@@ -110,15 +157,6 @@ type wrongProtocol = boolean
 type unsupported = boolean
 ```
 
-#### getter: adapterHintNotConfigurable
-
-Returns true if the user selected an adapter from the dropdown but the extension
-point couldn't build a config for it
-
-```ts
-type adapterHintNotConfigurable = boolean
-```
-
 #### getter: assembly
 
 ```ts
@@ -148,6 +186,18 @@ type warningMessage = "" | "Warning: JBrowse cannot access files using the ftp p
 <details open>
 <summary>AddTrackModel - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                   |
+| ------------------------------------------ | ----------------------------------------------------------- |
+| [`getTrackConfig`](#method-gettrackconfig) | `(timestamp: number) => { [x: string]: ...; } \| undefined` |
+
+</details>
+
+<details>
+<summary>AddTrackModel - Methods (all signatures)</summary>
+
 #### method: getTrackConfig
 
 ```ts
@@ -158,6 +208,27 @@ type getTrackConfig = (timestamp: number) => { [x: string]: ...; } | undefined
 
 <details open>
 <summary>AddTrackModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                |
+| ---------------------------------------------------- | ---------------------------------------- |
+| [`setMixinData`](#action-setmixindata)               | `(arg: Record<string, unknown>) => void` |
+| [`setAdapterHint`](#action-setadapterhint)           | `(obj: string) => void`                  |
+| [`setTextIndexingConf`](#action-settextindexingconf) | `(conf: IndexingAttr) => void`           |
+| [`setTextIndexTrack`](#action-settextindextrack)     | `(flag: boolean) => void`                |
+| [`setTrackData`](#action-settrackdata)               | `(obj: FileLocation) => void`            |
+| [`setIndexTrackData`](#action-setindextrackdata)     | `(obj: FileLocation) => void`            |
+| [`setAssembly`](#action-setassembly)                 | `(str: string) => void`                  |
+| [`setTrackName`](#action-settrackname)               | `(str: string) => void`                  |
+| [`setTrackType`](#action-settracktype)               | `(str: string) => void`                  |
+| [`clearData`](#action-cleardata)                     | `() => void`                             |
+
+</details>
+
+<details>
+<summary>AddTrackModel - Actions (all signatures)</summary>
 
 #### action: setMixinData
 

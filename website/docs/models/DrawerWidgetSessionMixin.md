@@ -24,6 +24,22 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>DrawerWidgetSessionMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                 |
+| -------------------------------------------- | ------------------------------------------------------------------------- |
+| [`drawerPosition`](#property-drawerposition) | `IOptionalIType<ISimpleType<string>, [undefined]>`                        |
+| [`drawerWidth`](#property-drawerwidth)       | `IOptionalIType<ISimpleType<number>, [undefined]>`                        |
+| [`widgets`](#property-widgets)               | `IOptionalIType<IMapType<IAnyType>, [undefined]>`                         |
+| [`activeWidgets`](#property-activewidgets)   | `IOptionalIType<IMapType<IMaybe<IReferenceType<IAnyType>>>, [undefined]>` |
+| [`minimized`](#property-minimized)           | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                       |
+
+</details>
+
+<details>
+<summary>DrawerWidgetSessionMixin - Properties (all signatures)</summary>
+
 #### property: drawerPosition
 
 ```ts
@@ -86,6 +102,18 @@ minimized: types.stripDefault(types.boolean, false)
 <details open>
 <summary>DrawerWidgetSessionMixin - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature |
+| ---------------------------------------- | --------- |
+| [`visibleWidget`](#getter-visiblewidget) | `any`     |
+
+</details>
+
+<details>
+<summary>DrawerWidgetSessionMixin - Getters (all signatures)</summary>
+
 #### getter: visibleWidget
 
 ```ts
@@ -96,6 +124,35 @@ type visibleWidget = any
 
 <details open>
 <summary>DrawerWidgetSessionMixin - Actions</summary>
+
+#### action: editConfiguration
+
+opens a configuration editor to configure the given thing, and sets the current
+task to be configuring it
+
+```ts
+type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                   |
+| ------------------------------------------------------ | --------------------------------------------------------------------------- |
+| [`setDrawerPosition`](#action-setdrawerposition)       | `(arg: string) => void`                                                     |
+| [`updateDrawerWidth`](#action-updatedrawerwidth)       | `(drawerWidth: number) => number`                                           |
+| [`resizeDrawer`](#action-resizedrawer)                 | `(distance: number) => number`                                              |
+| [`addWidget`](#action-addwidget)                       | `(typeName: string, id: string, initialState?: any, conf?: unknown) => any` |
+| [`showWidget`](#action-showwidget)                     | `(widget: any) => void`                                                     |
+| [`hideWidget`](#action-hidewidget)                     | `(widget: any) => void`                                                     |
+| [`minimizeWidgetDrawer`](#action-minimizewidgetdrawer) | `() => void`                                                                |
+| [`showWidgetDrawer`](#action-showwidgetdrawer)         | `() => void`                                                                |
+| [`hideAllWidgets`](#action-hideallwidgets)             | `() => void`                                                                |
+
+</details>
+
+<details>
+<summary>DrawerWidgetSessionMixin - Actions (all signatures)</summary>
 
 #### action: setDrawerPosition
 
@@ -154,15 +211,6 @@ type showWidgetDrawer = () => void
 
 ```ts
 type hideAllWidgets = () => void
-```
-
-#### action: editConfiguration
-
-opens a configuration editor to configure the given thing, and sets the current
-task to be configuring it
-
-```ts
-type editConfiguration = (configuration: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) | { ...; }, opts?: { ...; } | undefined) => void
 ```
 
 </details>

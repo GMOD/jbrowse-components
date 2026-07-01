@@ -63,6 +63,19 @@ and docs.
 <details open>
 <summary>DropboxOAuthInternetAccount - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                    |
+| ------------------------------------------ | -------------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"DropboxOAuthInternetAccount">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                  |
+
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -94,6 +107,18 @@ The FileSelector icon for Dropbox
 type toggleContents = Element
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature |
+| ---------------------------------------- | --------- |
+| [`selectorLabel`](#getter-selectorlabel) | `string`  |
+
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Getters (all signatures)</summary>
+
 #### getter: selectorLabel
 
 ```ts
@@ -104,6 +129,18 @@ type selectorLabel = string
 
 <details open>
 <summary>DropboxOAuthInternetAccount - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature                                                                                                             |
+| ---------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| [`getFetcher`](#method-getfetcher) | `(location?: UriLocation \| undefined) => (input: RequestInfo, init?: RequestInit \| undefined) => Promise<Response>` |
+
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Methods (all signatures)</summary>
 
 #### method: getFetcher
 
@@ -117,6 +154,18 @@ type getFetcher = (
 
 <details open>
 <summary>DropboxOAuthInternetAccount - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                                   |
+| ---------------------------------------- | ----------------------------------------------------------- |
+| [`validateToken`](#action-validatetoken) | `(token: string, location: UriLocation) => Promise<string>` |
+
+</details>
+
+<details>
+<summary>DropboxOAuthInternetAccount - Actions (all signatures)</summary>
 
 #### action: validateToken
 

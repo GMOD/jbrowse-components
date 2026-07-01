@@ -88,12 +88,6 @@ and docs.
 <details open>
 <summary>TracksManagerSessionMixin - Getters</summary>
 
-#### getter: tracks
-
-```ts
-type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
-```
-
 #### getter: getTracksById
 
 Map of trackId → config for all tracks, assemblies, and connections. Frozen
@@ -114,16 +108,28 @@ Recomputes only when dependencies change.
 type tracksById = Record<string, ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature                                                                                                                                                                                          |
+| -------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`tracks`](#getter-tracks) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
+
+</details>
+
+<details>
+<summary>TracksManagerSessionMixin - Getters (all signatures)</summary>
+
+#### getter: tracks
+
+```ts
+type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
 </details>
 
 <details open>
 <summary>TracksManagerSessionMixin - Actions</summary>
-
-#### action: addTrackConf
-
-```ts
-type addTrackConf = (trackConf: AnyConfiguration) => any
-```
 
 #### action: updateTrackConfiguration
 
@@ -136,6 +142,25 @@ type updateTrackConfiguration = (trackConf: {
   [key: string]: unknown
   trackId: string
 }) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                                                                                                                          |
+| -------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`addTrackConf`](#action-addtrackconf)       | `(trackConf: AnyConfiguration) => any`                                                                                                                                                                             |
+| [`deleteTrackConf`](#action-deletetrackconf) | `(trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any` |
+
+</details>
+
+<details>
+<summary>TracksManagerSessionMixin - Actions (all signatures)</summary>
+
+#### action: addTrackConf
+
+```ts
+type addTrackConf = (trackConf: AnyConfiguration) => any
 ```
 
 #### action: deleteTrackConf

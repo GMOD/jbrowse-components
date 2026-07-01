@@ -46,6 +46,31 @@ and docs.
 <details open>
 <summary>BaseSessionModel - Properties</summary>
 
+#### property: focusedViewId
+
+used to keep track of which view is in focus
+
+```ts
+// type signature
+type focusedViewId = IMaybe<ISimpleType<string>>
+// code
+focusedViewId: types.maybe(types.string)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature                                          |
+| ---------------------------- | -------------------------------------------------- |
+| [`id`](#property-id)         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`name`](#property-name)     | `ISimpleType<string>`                              |
+| [`margin`](#property-margin) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>BaseSessionModel - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -71,17 +96,6 @@ name: types.string
 type margin = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 margin: types.stripDefault(types.number, 0)
-```
-
-#### property: focusedViewId
-
-used to keep track of which view is in focus
-
-```ts
-// type signature
-type focusedViewId = IMaybe<ISimpleType<string>>
-// code
-focusedViewId: types.maybe(types.string)
 ```
 
 </details>
@@ -113,15 +127,6 @@ type hovered = unknown
 hovered: undefined as unknown
 ```
 
-#### volatile: queueOfDialogs
-
-```ts
-// type signature
-type queueOfDialogs = [DialogComponentType, Record<string, unknown>][]
-// code
-queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
-```
-
 #### volatile: preferencesOverrides
 
 runtime user-preference overrides keyed by preference id, resolved by
@@ -137,10 +142,68 @@ type preferencesOverrides = Record<string, unknown>
 preferencesOverrides: {} as Record<string, unknown>
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                          |
+| -------------------------------------------- | -------------------------------------------------- |
+| [`queueOfDialogs`](#volatile-queueofdialogs) | `[DialogComponentType, Record<string, unknown>][]` |
+
+</details>
+
+<details>
+<summary>BaseSessionModel - Volatiles (all signatures)</summary>
+
+#### volatile: queueOfDialogs
+
+```ts
+// type signature
+type queueOfDialogs = [DialogComponentType, Record<string, unknown>][]
+// code
+queueOfDialogs: [] as [DialogComponentType, Record<string, unknown>][]
+```
+
 </details>
 
 <details open>
 <summary>BaseSessionModel - Getters</summary>
+
+#### getter: animationMode
+
+resolved feature-layout animation mode (never undefined)
+
+```ts
+type animationMode = AnimationMode
+```
+
+#### getter: scrollZoom
+
+resolved scroll-to-zoom preference. Global and personal (never shared in a
+session snapshot); every wheel-zoom view reads this single value.
+
+```ts
+type scrollZoom = boolean
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                                                                                                                                                                          |
+| ------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`root`](#getter-root)                           | `TypeOrStateTreeNodeToStateTreeNode<ROOT_MODEL_TYPE>`                                                                                                                                              |
+| [`jbrowse`](#getter-jbrowse)                     | `any`                                                                                                                                                                                              |
+| [`rpcManager`](#getter-rpcmanager)               | `RpcManager`                                                                                                                                                                                       |
+| [`configuration`](#getter-configuration)         | `Instance<JB_CONFIG_SCHEMA>`                                                                                                                                                                       |
+| [`adminMode`](#getter-adminmode)                 | `boolean`                                                                                                                                                                                          |
+| [`textSearchManager`](#getter-textsearchmanager) | `TextSearchManager`                                                                                                                                                                                |
+| [`assemblies`](#getter-assemblies)               | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
+| [`DialogComponent`](#getter-dialogcomponent)     | `DialogComponentType`                                                                                                                                                                              |
+| [`DialogProps`](#getter-dialogprops)             | `Record<string, unknown>`                                                                                                                                                                          |
+
+</details>
+
+<details>
+<summary>BaseSessionModel - Getters (all signatures)</summary>
 
 #### getter: root
 
@@ -196,23 +259,6 @@ type DialogComponent = DialogComponentType
 type DialogProps = Record<string, unknown>
 ```
 
-#### getter: animationMode
-
-resolved feature-layout animation mode (never undefined)
-
-```ts
-type animationMode = AnimationMode
-```
-
-#### getter: scrollZoom
-
-resolved scroll-to-zoom preference. Global and personal (never shared in a
-session snapshot); every wheel-zoom view reads this single value.
-
-```ts
-type scrollZoom = boolean
-```
-
 </details>
 
 <details open>
@@ -250,12 +296,6 @@ clears the global selection
 type clearSelection = () => void
 ```
 
-#### action: setHovered
-
-```ts
-type setHovered = (thing: unknown) => void
-```
-
 #### action: setPreferenceOverride
 
 set a runtime user-preference override (see `getPreference`). Mutates volatile
@@ -271,6 +311,28 @@ set the global scroll-to-zoom preference (see the `scrollZoom` getter)
 
 ```ts
 type setScrollZoom = (flag: boolean) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                              |
+| -------------------------------------------------- | -------------------------------------- |
+| [`setHovered`](#action-sethovered)                 | `(thing: unknown) => void`             |
+| [`setName`](#action-setname)                       | `(str: string) => void`                |
+| [`setFocusedViewId`](#action-setfocusedviewid)     | `(viewId: string) => void`             |
+| [`removeActiveDialog`](#action-removeactivedialog) | `() => void`                           |
+| [`queueDialog`](#action-queuedialog)               | `(doneCallback: DoneCallback) => void` |
+
+</details>
+
+<details>
+<summary>BaseSessionModel - Actions (all signatures)</summary>
+
+#### action: setHovered
+
+```ts
+type setHovered = (thing: unknown) => void
 ```
 
 #### action: setName

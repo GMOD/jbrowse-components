@@ -43,6 +43,39 @@ and docs.
 <details open>
 <summary>SpreadsheetView - Properties</summary>
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```ts
+// type signature
+type init = IType<
+  SpreadsheetViewInit | undefined,
+  SpreadsheetViewInit | undefined,
+  SpreadsheetViewInit | undefined
+>
+// code
+init: types.frozen<SpreadsheetViewInit | undefined>()
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                           | Signature                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`type`](#property-type)                                         | `ISimpleType<"SpreadsheetView">`                                                                                                                                                                                                                                                                                                      |
+| [`offsetPx`](#property-offsetpx)                                 | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                    |
+| [`height`](#property-height)                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                    |
+| [`hideVerticalResizeHandle`](#property-hideverticalresizehandle) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                   |
+| [`hideFilterControls`](#property-hidefiltercontrols)             | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                   |
+| [`importWizard`](#property-importwizard)                         | `IOptionalIType<IModelType<{ fileType: IOptionalIType<ISimpleType<"VCF" \| "BED" \| "BEDPE" \| "STAR-Fusion">, [undefined]>; selectedAssemblyName: IMaybe<ISimpleType<string>>; cachedFileLocation: IType<...>; }, { ...; } & ... 2 more ... & { ...; }, _NotCustomized, _NotCustomized>, [...]>`                                     |
+| [`spreadsheet`](#property-spreadsheet)                           | `IMaybe<IModelType<{ rowSet: IType<RowSet \| undefined, RowSet \| undefined, RowSet \| undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }, { ...; } & ... 3 more ... & { ...; }, _NotCustomi...` |
+
+</details>
+
+<details>
+<summary>SpreadsheetView - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -111,25 +144,22 @@ type spreadsheet = IMaybe<IModelType<{ rowSet: IType<RowSet | undefined, RowSet 
 spreadsheet: types.maybe(Spreadsheet())
 ```
 
-#### property: init
-
-used for initializing the view from a session snapshot
-
-```ts
-// type signature
-type init = IType<
-  SpreadsheetViewInit | undefined,
-  SpreadsheetViewInit | undefined,
-  SpreadsheetViewInit | undefined
->
-// code
-init: types.frozen<SpreadsheetViewInit | undefined>()
-```
-
 </details>
 
 <details open>
 <summary>SpreadsheetView - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature |
+| -------------------------- | --------- |
+| [`width`](#volatile-width) | `number`  |
+
+</details>
+
+<details>
+<summary>SpreadsheetView - Volatiles (all signatures)</summary>
 
 #### volatile: width
 
@@ -145,6 +175,18 @@ width: 400
 <details open>
 <summary>SpreadsheetView - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                         | Signature |
+| ------------------------------ | --------- |
+| [`assembly`](#getter-assembly) | `any`     |
+
+</details>
+
+<details>
+<summary>SpreadsheetView - Getters (all signatures)</summary>
+
 #### getter: assembly
 
 ```ts
@@ -155,6 +197,18 @@ type assembly = any
 
 <details open>
 <summary>SpreadsheetView - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                                                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [`menuItems`](#method-menuitems) | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]` |
+
+</details>
+
+<details>
+<summary>SpreadsheetView - Methods (all signatures)</summary>
 
 #### method: menuItems
 
@@ -170,6 +224,50 @@ type menuItems = () => {
 
 <details open>
 <summary>SpreadsheetView - Actions</summary>
+
+#### action: displaySpreadsheet
+
+load a new spreadsheet and set our mode to display it
+
+```ts
+type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }>> | undefined) =>...
+```
+
+#### action: loadSpreadsheet
+
+the single load funnel: fetch+parse via the import wizard, then display the
+result. Every entry point (declarative init, cached reload, the import form's
+Open button) routes through here so the view stays the sole owner of
+displaySpreadsheet
+
+```ts
+type loadSpreadsheet = (assemblyName: string) => Promise<void>
+```
+
+#### action: applyInit
+
+apply a declarative init (from addView / sv-inspector): point the import wizard
+at the file and load it
+
+```ts
+type applyInit = (init: SpreadsheetViewInit) => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                                           |
+| -------------------------------------- | --------------------------------------------------- |
+| [`setWidth`](#action-setwidth)         | `(newWidth: number) => number`                      |
+| [`setHeight`](#action-setheight)       | `(newHeight: number) => number`                     |
+| [`resizeHeight`](#action-resizeheight) | `(distance: number) => number`                      |
+| [`resizeWidth`](#action-resizewidth)   | `(distance: number) => number`                      |
+| [`setInit`](#action-setinit)           | `(init?: SpreadsheetViewInit \| undefined) => void` |
+
+</details>
+
+<details>
+<summary>SpreadsheetView - Actions (all signatures)</summary>
 
 #### action: setWidth
 
@@ -195,38 +293,10 @@ type resizeHeight = (distance: number) => number
 type resizeWidth = (distance: number) => number
 ```
 
-#### action: displaySpreadsheet
-
-load a new spreadsheet and set our mode to display it
-
-```ts
-type displaySpreadsheet = (spreadsheet?: ModelCreationType<ExtractCFromProps<{ rowSet: IType<RowSet | undefined, RowSet | undefined, RowSet | undefined>; columns: IType<{ name: string; }[], { name: string; }[], { name: string; }[]>; assemblyName: IMaybe<...>; visibleColumns: IOptionalIType<...>; svTypeFilter: IMaybe<...>; }>> | undefined) =>...
-```
-
 #### action: setInit
 
 ```ts
 type setInit = (init?: SpreadsheetViewInit | undefined) => void
-```
-
-#### action: loadSpreadsheet
-
-the single load funnel: fetch+parse via the import wizard, then display the
-result. Every entry point (declarative init, cached reload, the import form's
-Open button) routes through here so the view stays the sole owner of
-displaySpreadsheet
-
-```ts
-type loadSpreadsheet = (assemblyName: string) => Promise<void>
-```
-
-#### action: applyInit
-
-apply a declarative init (from addView / sv-inspector): point the import wizard
-at the file and load it
-
-```ts
-type applyInit = (init: SpreadsheetViewInit) => Promise<void>
 ```
 
 </details>

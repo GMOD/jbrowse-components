@@ -49,6 +49,18 @@ type getReferringMultiple = (
 <details open>
 <summary>ReferenceManagementSessionMixin - Actions</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                                                                                                                                                                                                                 |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`removeReferring`](#action-removereferring) | `(referring: ReferringNode[], track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, callbacks: (() => void)[], dereferenceTypeCount: Record<...>) => void` |
+
+</details>
+
+<details>
+<summary>ReferenceManagementSessionMixin - Actions (all signatures)</summary>
+
 #### action: removeReferring
 
 ```ts

@@ -31,6 +31,18 @@ unset.
 <details open>
 <summary>TrackHeightMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature |
+| ---------------------------------- | --------- |
+| [`scrollTop`](#volatile-scrolltop) | `number`  |
+
+</details>
+
+<details>
+<summary>TrackHeightMixin - Volatiles (all signatures)</summary>
+
 #### volatile: scrollTop
 
 ```ts
@@ -45,6 +57,18 @@ scrollTop: 0
 <details open>
 <summary>TrackHeightMixin - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature |
+| -------------------------- | --------- |
+| [`height`](#getter-height) | `number`  |
+
+</details>
+
+<details>
+<summary>TrackHeightMixin - Getters (all signatures)</summary>
+
 #### getter: height
 
 ```ts
@@ -55,6 +79,20 @@ type height = number
 
 <details open>
 <summary>TrackHeightMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                           |
+| -------------------------------------- | ----------------------------------- |
+| [`setScrollTop`](#action-setscrolltop) | `(scrollTop: number) => void`       |
+| [`setHeight`](#action-setheight)       | `(displayHeight: number) => number` |
+| [`resizeHeight`](#action-resizeheight) | `(distance: number) => number`      |
+
+</details>
+
+<details>
+<summary>TrackHeightMixin - Actions (all signatures)</summary>
 
 #### action: setScrollTop
 

@@ -190,7 +190,7 @@ and docs.
 [trackMenuItems](../linearalignmentsdisplay#method-trackmenuitems),
 [contextMenuItems](../linearalignmentsdisplay#method-contextmenuitems)
 
-**Actions:**
+**Actions:** [afterAttach](../linearalignmentsdisplay#action-afterattach),
 [clearMouseoverState](../linearalignmentsdisplay#action-clearmouseoverstate),
 [setError](../linearalignmentsdisplay#action-seterror),
 [setRegionTooLarge](../linearalignmentsdisplay#action-setregiontoolarge),
@@ -395,6 +395,19 @@ and docs.
 <details open>
 <summary>LGVSyntenyDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                          |
+| ------------------------------------------ | ---------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LGVSyntenyDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`        |
+
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -418,6 +431,18 @@ configuration: ConfigurationReference(schema)
 <details open>
 <summary>LGVSyntenyDisplay - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                       |
+| ------------------------------------------------ | ------------------------------- |
+| [`featureWidgetType`](#getter-featurewidgettype) | `{ type: string; id: string; }` |
+
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Getters (all signatures)</summary>
+
 #### getter: featureWidgetType
 
 ```ts
@@ -428,6 +453,19 @@ type featureWidgetType = { type: string; id: string }
 
 <details open>
 <summary>LGVSyntenyDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                      |
+| ---------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`contextMenuItems`](#method-contextmenuitems) | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; } \| { label: string; onClick: () => void; icon?: undefined; })[]` |
+| [`trackMenuItems`](#method-trackmenuitems)     | `() => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } \| { ...; } \| { ...; })[]`                     |
+
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Methods (all signatures)</summary>
 
 #### method: contextMenuItems
 
@@ -454,6 +492,18 @@ type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: Overridable
 
 <details open>
 <summary>LGVSyntenyDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                    |
+| ---------------------------------------- | ---------------------------- |
+| [`selectFeature`](#action-selectfeature) | `(feature: Feature) => void` |
+
+</details>
+
+<details>
+<summary>LGVSyntenyDisplay - Actions (all signatures)</summary>
 
 #### action: selectFeature
 

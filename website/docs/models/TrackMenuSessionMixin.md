@@ -28,6 +28,18 @@ no track-editing actions to offer.
 <details open>
 <summary>TrackMenuSessionMixin - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`getTrackActionMenuItems`](#method-gettrackactionmenuitems) | `({ effectiveConfig, extraTrackActions, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] \| undefined; v...` |
+
+</details>
+
+<details>
+<summary>TrackMenuSessionMixin - Methods (all signatures)</summary>
+
 #### method: getTrackActionMenuItems
 
 ```ts

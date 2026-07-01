@@ -24,15 +24,6 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>BaseViewModel - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
 #### property: displayName
 
 displayName is displayed in the header of the view, or assembly names being used
@@ -43,6 +34,28 @@ if none is specified
 type displayName = IMaybe<ISimpleType<string>>
 // code
 displayName: types.maybe(types.string)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature                                           |
+| ---------------------------------- | --------------------------------------------------- |
+| [`id`](#property-id)               | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`minimized`](#property-minimized) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>BaseViewModel - Properties (all signatures)</summary>
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
 ```
 
 #### property: minimized
@@ -59,6 +72,18 @@ minimized: types.stripDefault(types.boolean, false)
 <details open>
 <summary>BaseViewModel - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature |
+| -------------------------- | --------- |
+| [`width`](#volatile-width) | `number`  |
+
+</details>
+
+<details>
+<summary>BaseViewModel - Volatiles (all signatures)</summary>
+
 #### volatile: width
 
 ```ts
@@ -73,6 +98,18 @@ width: 800
 <details open>
 <summary>BaseViewModel - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature          |
+| -------------------------------- | ------------------ |
+| [`menuItems`](#getter-menuitems) | `() => MenuItem[]` |
+
+</details>
+
+<details>
+<summary>BaseViewModel - Getters (all signatures)</summary>
+
 #### getter: menuItems
 
 ```ts
@@ -83,12 +120,6 @@ type menuItems = () => MenuItem[]
 
 <details open>
 <summary>BaseViewModel - Actions</summary>
-
-#### action: setDisplayName
-
-```ts
-type setDisplayName = (name: string) => void
-```
 
 #### action: setWidth
 
@@ -102,6 +133,25 @@ how wide they are to properly draw genomic regions
 
 ```ts
 type setWidth = (newWidth: number) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                 |
+| ------------------------------------------ | ------------------------- |
+| [`setDisplayName`](#action-setdisplayname) | `(name: string) => void`  |
+| [`setMinimized`](#action-setminimized)     | `(flag: boolean) => void` |
+
+</details>
+
+<details>
+<summary>BaseViewModel - Actions (all signatures)</summary>
+
+#### action: setDisplayName
+
+```ts
+type setDisplayName = (name: string) => void
 ```
 
 #### action: setMinimized

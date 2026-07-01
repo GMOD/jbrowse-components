@@ -72,7 +72,8 @@ and docs.
 [themeOptions](../thememanagersessionmixin#getter-themeoptions),
 [theme](../thememanagersessionmixin#getter-theme)
 
-**Methods:** [allThemes](../thememanagersessionmixin#method-allthemes)
+**Methods:** [allThemes](../thememanagersessionmixin#method-allthemes),
+[getActiveThemeOptions](../thememanagersessionmixin#method-getactivethemeoptions)
 
 **Actions:** [setThemeName](../thememanagersessionmixin#action-setthemename)
 

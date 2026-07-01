@@ -77,7 +77,9 @@ and docs.
 [morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
 [morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
 [morphStartMs](../linearcanvasbasedisplay#volatile-morphstartms),
-[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy)
+[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy),
+[morphScrollFrom](../linearcanvasbasedisplay#volatile-morphscrollfrom),
+[morphScrollDelta](../linearcanvasbasedisplay#volatile-morphscrolldelta)
 
 **Getters:** [conf](../linearcanvasbasedisplay#getter-conf),
 [visibleFeatureDensityPerPx](../linearcanvasbasedisplay#getter-visiblefeaturedensityperpx),
@@ -303,6 +305,18 @@ and docs.
 <details open>
 <summary>LinearVariantDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                             |
+| ------------------------ | ------------------------------------- |
+| [`type`](#property-type) | `ISimpleType<"LinearVariantDisplay">` |
+
+</details>
+
+<details>
+<summary>LinearVariantDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -317,6 +331,18 @@ type: types.literal('LinearVariantDisplay')
 <details open>
 <summary>LinearVariantDisplay - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                       |
+| ------------------------------------------------ | ------------------------------- |
+| [`featureWidgetType`](#getter-featurewidgettype) | `{ type: string; id: string; }` |
+
+</details>
+
+<details>
+<summary>LinearVariantDisplay - Getters (all signatures)</summary>
+
 #### getter: featureWidgetType
 
 ```ts
@@ -327,6 +353,18 @@ type featureWidgetType = { type: string; id: string }
 
 <details open>
 <summary>LinearVariantDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                                                          |
+| ---------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| [`colorBySubMenuItems`](#method-colorbysubmenuitems) | `() => { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]` |
+
+</details>
+
+<details>
+<summary>LinearVariantDisplay - Methods (all signatures)</summary>
 
 #### method: colorBySubMenuItems
 

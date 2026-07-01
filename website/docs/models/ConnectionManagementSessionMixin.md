@@ -24,6 +24,18 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>ConnectionManagementSessionMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                           |
+| ------------------------------------------------------ | --------------------------------------------------- |
+| [`connectionInstances`](#property-connectioninstances) | `IOptionalIType<IArrayType<IAnyType>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>ConnectionManagementSessionMixin - Properties (all signatures)</summary>
+
 #### property: connectionInstances
 
 ```ts
@@ -41,6 +53,18 @@ connectionInstances: types.stripDefault(
 <details open>
 <summary>ConnectionManagementSessionMixin - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                                                                                                                                                                          |
+| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`connections`](#getter-connections) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
+
+</details>
+
+<details>
+<summary>ConnectionManagementSessionMixin - Getters (all signatures)</summary>
+
 #### getter: connections
 
 ```ts
@@ -51,6 +75,23 @@ type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema
 
 <details open>
 <summary>ConnectionManagementSessionMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`makeConnection`](#action-makeconnection)                     | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any` |
+| [`prepareToBreakConnection`](#action-preparetobreakconnection) | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => [...] \| undefined`         |
+| [`breakConnection`](#action-breakconnection)                   | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void`                       |
+| [`deleteConnection`](#action-deleteconnection)                 | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`                        |
+| [`addConnectionConf`](#action-addconnectionconf)               | `(connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`                       |
+| [`clearConnections`](#action-clearconnections)                 | `() => void`                                                                                                                                                                                                                                  |
+
+</details>
+
+<details>
+<summary>ConnectionManagementSessionMixin - Actions (all signatures)</summary>
 
 #### action: makeConnection
 

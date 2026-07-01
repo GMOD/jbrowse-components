@@ -24,6 +24,19 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>BaseConnectionModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                   |
+| ------------------------------------------ | --------------------------- |
+| [`tracks`](#property-tracks)               | `IArrayType<IAnyModelType>` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>` |
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Properties (all signatures)</summary>
+
 #### property: tracks
 
 ```ts
@@ -56,6 +69,18 @@ source of truth; connection names are not guaranteed unique)
 type connectionId = string
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                 | Signature |
+| ---------------------- | --------- |
+| [`name`](#getter-name) | `string`  |
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Getters (all signatures)</summary>
+
 #### getter: name
 
 ```ts
@@ -66,6 +91,22 @@ type name = string
 
 <details open>
 <summary>BaseConnectionModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                                                                                                                                                                                      |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`connect`](#action-connect)             | `(_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void` |
+| [`addTrackConf`](#action-addtrackconf)   | `(trackConf: TrackConf) => any`                                                                                                                                                                                |
+| [`addTrackConfs`](#action-addtrackconfs) | `(trackConfs: TrackConf[]) => void`                                                                                                                                                                            |
+| [`setTrackConfs`](#action-settrackconfs) | `(trackConfs: TrackConf[]) => void`                                                                                                                                                                            |
+| [`clear`](#action-clear)                 | `() => void`                                                                                                                                                                                                   |
+
+</details>
+
+<details>
+<summary>BaseConnectionModel - Actions (all signatures)</summary>
 
 #### action: connect
 

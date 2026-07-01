@@ -43,6 +43,42 @@ and docs.
 <details open>
 <summary>BreakpointSplitView - Properties</summary>
 
+#### property: init
+
+declarative child panels (loc/assembly/tracks) resolved into `views` once the
+view has a width; used for initializing from a session snapshot. Transient —
+stripped by postProcessSnapshot.
+
+```ts
+// type signature
+type init = IType<
+  BreakpointSplitViewInitView[] | undefined,
+  BreakpointSplitViewInitView[] | undefined,
+  BreakpointSplitViewInitView[] | undefined
+>
+// code
+init: types.frozen<BreakpointSplitViewInitView[] | undefined>()
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                                                                                                                                                                                                                                                        |
+| ---------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`type`](#property-type)                             | `ISimpleType<"BreakpointSplitView">`                                                                                                                                                                                                                                             |
+| [`height`](#property-height)                         | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                               |
+| [`trackSelectorType`](#property-trackselectortype)   | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                               |
+| [`showIntraviewLinks`](#property-showintraviewlinks) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                              |
+| [`linkViews`](#property-linkviews)                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                              |
+| [`interactiveOverlay`](#property-interactiveoverlay) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                              |
+| [`showHeader`](#property-showheader)                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                              |
+| [`views`](#property-views)                           | `IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>` |
+
+</details>
+
+<details>
+<summary>BreakpointSplitView - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -118,27 +154,23 @@ views: types.array(
         )
 ```
 
-#### property: init
-
-declarative child panels (loc/assembly/tracks) resolved into `views` once the
-view has a width; used for initializing from a session snapshot. Transient —
-stripped by postProcessSnapshot.
-
-```ts
-// type signature
-type init = IType<
-  BreakpointSplitViewInitView[] | undefined,
-  BreakpointSplitViewInitView[] | undefined,
-  BreakpointSplitViewInitView[] | undefined
->
-// code
-init: types.frozen<BreakpointSplitViewInitView[] | undefined>()
-```
-
 </details>
 
 <details open>
 <summary>BreakpointSplitView - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature |
+| -------------------------------------------------------- | --------- |
+| [`width`](#volatile-width)                               | `number`  |
+| [`matchedTrackFeatures`](#volatile-matchedtrackfeatures) | `{}`      |
+
+</details>
+
+<details>
+<summary>BreakpointSplitView - Volatiles (all signatures)</summary>
 
 #### volatile: width
 
@@ -164,6 +196,44 @@ matchedTrackFeatures: {
 <details open>
 <summary>BreakpointSplitView - Getters</summary>
 
+#### getter: matchedTracks
+
+Find all track ids that match across multiple views, or return just the single
+view's track if only a single row is used
+
+```ts
+type matchedTracks =
+  | (IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>)
+  | { configuration: { trackId: string } }[]
+```
+
+#### getter: overlayMatches
+
+Zero-arg cached getter: classifies each matched track, pairs its features, looks
+up layout rectangles, and returns a Map keyed by trackId. Mobx caches this
+across renders and only invalidates when the underlying feature or layout reads
+change — so horizontal/vertical scrolling and track resizing do NOT trigger
+re-pairing or re-lookup.
+
+```ts
+type overlayMatches = Map<string, OverlayMatch>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                                                                                                                                                                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`hasSomethingToShow`](#getter-hassomethingtoshow) | `boolean`                                                                                                                                                                                                                                                          |
+| [`initialized`](#getter-initialized)               | `boolean`                                                                                                                                                                                                                                                          |
+| [`showImportForm`](#getter-showimportform)         | `boolean`                                                                                                                                                                                                                                                          |
+| [`assembly`](#getter-assembly)                     | `(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> \| undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 12 more ... & IStateTreeNode<...>) \| undefined` |
+
+</details>
+
+<details>
+<summary>BreakpointSplitView - Getters (all signatures)</summary>
+
 #### getter: hasSomethingToShow
 
 ```ts
@@ -186,29 +256,6 @@ type showImportForm = boolean
 
 ```ts
 type assembly = (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> | undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
-```
-
-#### getter: matchedTracks
-
-Find all track ids that match across multiple views, or return just the single
-view's track if only a single row is used
-
-```ts
-type matchedTracks =
-  | (IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>)
-  | { configuration: { trackId: string } }[]
-```
-
-#### getter: overlayMatches
-
-Zero-arg cached getter: classifies each matched track, pairs its features, looks
-up layout rectangles, and returns a Map keyed by trackId. Mobx caches this
-across renders and only invalidates when the underlying feature or layout reads
-change — so horizontal/vertical scrolling and track resizing do NOT trigger
-re-pairing or re-lookup.
-
-```ts
-type overlayMatches = Map<string, OverlayMatch>
 ```
 
 </details>
@@ -261,6 +308,20 @@ type getTrackOverlayData = (
 }
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`getMatchedFeaturesInLayout`](#method-getmatchedfeaturesinlayout) | `(trackConfigId: string, features: Feature[][]) => { feature: Feature; layout: LayoutRecord; level: number; clipLengthAtStartOfRead: number; }[][]`                                                                                                                                 |
+| [`menuItems`](#method-menuitems)                                   | `() => ({ label: string; subMenu: MenuItem[]; } \| { label: string; onClick: () => void; icon?: undefined; subMenu?: undefined; } \| { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { ...; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]` |
+| [`rubberBandMenuItems`](#method-rubberbandmenuitems)               | `() => { label: string; onClick: () => void; }[]`                                                                                                                                                                                                                                   |
+
+</details>
+
+<details>
+<summary>BreakpointSplitView - Methods (all signatures)</summary>
+
 #### method: getMatchedFeaturesInLayout
 
 ```ts
@@ -291,6 +352,27 @@ type rubberBandMenuItems = () => { label: string; onClick: () => void }[]
 
 <details open>
 <summary>BreakpointSplitView - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                     |
+| ------------------------------------------------------------ | ------------------------------------------------------------- |
+| [`setWidth`](#action-setwidth)                               | `(newWidth: number) => void`                                  |
+| [`setInteractiveOverlay`](#action-setinteractiveoverlay)     | `(arg: boolean) => void`                                      |
+| [`setShowIntraviewLinks`](#action-setshowintraviewlinks)     | `(arg: boolean) => void`                                      |
+| [`setLinkViews`](#action-setlinkviews)                       | `(arg: boolean) => void`                                      |
+| [`setShowHeader`](#action-setshowheader)                     | `(arg: boolean) => void`                                      |
+| [`setMatchedTrackFeatures`](#action-setmatchedtrackfeatures) | `(obj: Record<string, Feature[][]>) => void`                  |
+| [`reverseViewOrder`](#action-reversevieworder)               | `() => void`                                                  |
+| [`squareView`](#action-squareview)                           | `() => void`                                                  |
+| [`setInit`](#action-setinit)                                 | `(init?: BreakpointSplitViewInitView[] \| undefined) => void` |
+| [`setViews`](#action-setviews)                               | `(viewInits: BreakpointSplitViewInitView[]) => void`          |
+
+</details>
+
+<details>
+<summary>BreakpointSplitView - Actions (all signatures)</summary>
 
 #### action: setWidth
 

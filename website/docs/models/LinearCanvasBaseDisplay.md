@@ -166,15 +166,6 @@ and docs.
 <details open>
 <summary>LinearCanvasBaseDisplay - Properties</summary>
 
-#### property: configuration
-
-```ts
-// type signature
-type configuration = ITypeUnion<any, any, any>
-// code
-configuration: ConfigurationReference(configSchema)
-```
-
 #### property: jexlFiltersSetting
 
 Runtime "Filter by..." override. When set (even to an empty list) it replaces
@@ -189,10 +180,59 @@ type jexlFiltersSetting = IMaybe<IArrayType<ISimpleType<string>>>
 jexlFiltersSetting: types.maybe(types.array(types.string))
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                   |
+| ------------------------------------------ | --------------------------- |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>` |
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Properties (all signatures)</summary>
+
+#### property: configuration
+
+```ts
+// type signature
+type configuration = ITypeUnion<any, any, any>
+// code
+configuration: ConfigurationReference(configSchema)
+```
+
 </details>
 
 <details open>
 <summary>LinearCanvasBaseDisplay - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                                                                                                      |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------- |
+| [`rpcDataMap`](#volatile-rpcdatamap)                               | `ObservableMap<number, LoadedFeatureData>`                                                                     |
+| [`densityStatsPerRegion`](#volatile-densitystatsperregion)         | `ObservableMap<number, RegionDensityStats>`                                                                    |
+| [`featureIdUnderMouse`](#volatile-featureidundermouse)             | `string \| null`                                                                                               |
+| [`subfeatureIdUnderMouse`](#volatile-subfeatureidundermouse)       | `string \| null`                                                                                               |
+| [`mouseoverExtraInformation`](#volatile-mouseoverextrainformation) | `string \| undefined`                                                                                          |
+| [`contextMenuFeature`](#volatile-contextmenufeature)               | `Feature \| undefined`                                                                                         |
+| [`contextMenuInfo`](#volatile-contextmenuinfo)                     | `{ item: FlatbushItem; displayedRegionIndex: number; } \| undefined`                                           |
+| [`userFeatureDensityLimit`](#volatile-userfeaturedensitylimit)     | `number \| undefined`                                                                                          |
+| [`byteEstimateVisibleBp`](#volatile-byteestimatevisiblebp)         | `number \| undefined`                                                                                          |
+| [`heightBeforeExpand`](#volatile-heightbeforeexpand)               | `number \| undefined`                                                                                          |
+| [`incrementalLayout`](#volatile-incrementallayout)                 | `(rpcDataMap: ReadonlyMap<number, FeatureDataResult>, inputs: LayoutInputs) => Map<number, FeatureDataResult>` |
+| [`morphFromTops`](#volatile-morphfromtops)                         | `Map<string, number> \| undefined`                                                                             |
+| [`morphProgress`](#volatile-morphprogress)                         | `number`                                                                                                       |
+| [`morphStartMs`](#volatile-morphstartms)                           | `number`                                                                                                       |
+| [`morphFromMaxY`](#volatile-morphfrommaxy)                         | `number`                                                                                                       |
+| [`morphScrollFrom`](#volatile-morphscrollfrom)                     | `number`                                                                                                       |
+| [`morphScrollDelta`](#volatile-morphscrolldelta)                   | `number`                                                                                                       |
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Volatiles (all signatures)</summary>
 
 #### volatile: rpcDataMap
 
@@ -334,6 +374,24 @@ type morphFromMaxY = number
 morphFromMaxY: 0
 ```
 
+#### volatile: morphScrollFrom
+
+```ts
+// type signature
+type morphScrollFrom = number
+// code
+morphScrollFrom: 0
+```
+
+#### volatile: morphScrollDelta
+
+```ts
+// type signature
+type morphScrollDelta = number
+// code
+morphScrollDelta: 0
+```
+
 </details>
 
 <details open>
@@ -348,6 +406,70 @@ the config typed off the concrete schema; `ConfigurationReference` erases
 ```ts
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
+
+#### getter: estimatedVisibleBytes
+
+The cached byte estimate scaled from the span it was measured over
+(`byteEstimateVisibleBp`) to the currently visible span. The estimate is roughly
+proportional to span, so scaling makes it a pure function of the current view —
+mirroring densityTooLarge. Crucially it self-releases on zoom-in: without
+scaling, a large zoomed-out estimate stays above the limit forever and gates
+refetch (FetchVisibleRegions won't re-estimate while regionTooLarge holds) — a
+permanently stuck banner.
+
+```ts
+type estimatedVisibleBytes = number | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                                                         |
+| ------------------------------------------------------------------ | ----------------------------------------------------------------- |
+| [`visibleFeatureDensityPerPx`](#getter-visiblefeaturedensityperpx) | `number`                                                          |
+| [`renderState`](#getter-renderstate)                               | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
+| [`DisplayMessageComponent`](#getter-displaymessagecomponent)       | `LazyExoticComponent<({ model }: Props) => Element>`              |
+| [`showTooltipsEnabled`](#getter-showtooltipsenabled)               | `boolean`                                                         |
+| [`showLegend`](#getter-showlegend)                                 | `boolean`                                                         |
+| [`maxHeight`](#getter-maxheight)                                   | `any`                                                             |
+| [`autoHeight`](#getter-autoheight)                                 | `any`                                                             |
+| [`displayMode`](#getter-displaymode)                               | `any`                                                             |
+| [`showLabelsMode`](#getter-showlabelsmode)                         | `any`                                                             |
+| [`showLabels`](#getter-showlabels)                                 | `boolean`                                                         |
+| [`showDescriptions`](#getter-showdescriptions)                     | `any`                                                             |
+| [`showOutline`](#getter-showoutline)                               | `boolean`                                                         |
+| [`featureColor`](#getter-featurecolor)                             | `any`                                                             |
+| [`utrColor`](#getter-utrcolor)                                     | `any`                                                             |
+| [`colorByMode`](#getter-colorbymode)                               | `"strand" \| "attribute" \| "solid"`                              |
+| [`colorByAttribute`](#getter-colorbyattribute)                     | `string`                                                          |
+| [`effectiveShowDescriptions`](#getter-effectiveshowdescriptions)   | `any`                                                             |
+| [`selectedFeatureId`](#getter-selectedfeatureid)                   | `string \| undefined`                                             |
+| [`maxFeatureDensity`](#getter-maxfeaturedensity)                   | `any`                                                             |
+| [`colorByCDS`](#getter-colorbycds)                                 | `boolean`                                                         |
+| [`sequenceAdapter`](#getter-sequenceadapter)                       | `any`                                                             |
+| [`regionKeys`](#getter-regionkeys)                                 | `Map<number, string>`                                             |
+| [`reversedRegions`](#getter-reversedregions)                       | `Set<number>`                                                     |
+| [`featureWidgetType`](#getter-featurewidgettype)                   | `{ type: string; id: string; }`                                   |
+| [`densityTooLarge`](#getter-densitytoolarge)                       | `boolean`                                                         |
+| [`tooLargeStatus`](#getter-toolargestatus)                         | `RegionTooLargeStatus`                                            |
+| [`regionTooLarge`](#getter-regiontoolarge)                         | `boolean`                                                         |
+| [`regionTooLargeReason`](#getter-regiontoolargereason)             | `string`                                                          |
+| [`laidOutDataMap`](#getter-laidoutdatamap)                         | `Map<number, FeatureDataResult>`                                  |
+| [`renderDataMap`](#getter-renderdatamap)                           | `Map<number, FeatureDataResult>`                                  |
+| [`maxY`](#getter-maxy)                                             | `number`                                                          |
+| [`hasOverflow`](#getter-hasoverflow)                               | `boolean`                                                         |
+| [`fitHeight`](#getter-fitheight)                                   | `number`                                                          |
+| [`featureIdIndex`](#getter-featureidindex)                         | `Map<string, FlatbushItem>`                                       |
+| [`subfeatureIdIndex`](#getter-subfeatureidindex)                   | `Map<string, SubfeatureInfo>`                                     |
+| [`hoveredFeature`](#getter-hoveredfeature)                         | `FlatbushItem \| null`                                            |
+| [`hoveredSubfeature`](#getter-hoveredsubfeature)                   | `SubfeatureInfo \| null`                                          |
+| [`featureItemMap`](#getter-featureitemmap)                         | `Map<string, FeatureItemEntry>`                                   |
+| [`flatbushIndexes`](#getter-flatbushindexes)                       | `Map<number, FlatbushRegionIndexes>`                              |
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Getters (all signatures)</summary>
 
 #### getter: visibleFeatureDensityPerPx
 
@@ -499,20 +621,6 @@ type reversedRegions = Set<number>
 type featureWidgetType = { type: string; id: string }
 ```
 
-#### getter: estimatedVisibleBytes
-
-The cached byte estimate scaled from the span it was measured over
-(`byteEstimateVisibleBp`) to the currently visible span. The estimate is roughly
-proportional to span, so scaling makes it a pure function of the current view —
-mirroring densityTooLarge. Crucially it self-releases on zoom-in: without
-scaling, a large zoomed-out estimate stays above the limit forever and gates
-refetch (FetchVisibleRegions won't re-estimate while regionTooLarge holds) — a
-permanently stuck banner.
-
-```ts
-type estimatedVisibleBytes = number | undefined
-```
-
 #### getter: densityTooLarge
 
 ```ts
@@ -608,12 +716,6 @@ type flatbushIndexes = Map<number, FlatbushRegionIndexes>
 <details open>
 <summary>LinearCanvasBaseDisplay - Methods</summary>
 
-#### method: observedMaxDensity
-
-```ts
-type observedMaxDensity = (bpPerPx: number) => number
-```
-
 #### method: activeFilters
 
 The filters actually applied, as `jexl:`-prefixed expressions. The runtime
@@ -624,6 +726,64 @@ existing config filters show up and are editable).
 
 ```ts
 type activeFilters = () => string[]
+```
+
+#### method: colorBySubMenuItems
+
+The "Color by..." radio choices (solid/strand/attribute). Split out so
+subclasses can reuse them while assembling their own color menu.
+
+```ts
+type colorBySubMenuItems = () => {
+  label: string
+  type: 'radio'
+  checked: boolean
+  onClick: () => void
+}[]
+```
+
+#### method: colorMenuItems
+
+Color-related track menu entries: a single "Color by..." entry whose "Solid
+color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
+override to drop the gene-oriented UTR picker.
+
+```ts
+type colorMenuItems = () => {
+  label: string
+  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
+  subMenu: {
+    label: string
+    type: 'radio'
+    checked: boolean
+    onClick: () => void
+  }[]
+}[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                                                                                                                                                                 |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`observedMaxDensity`](#method-observedmaxdensity)     | `(bpPerPx: number) => number`                                                                                                                                                                                             |
+| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; theme: SerializableThemeArgs \| undefined; }`                                                                                         |
+| [`getFeatureById`](#method-getfeaturebyid)             | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                        |
+| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                  |
+| [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                              |
+| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                            |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                           |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]` |
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Methods (all signatures)</summary>
+
+#### method: observedMaxDensity
+
+```ts
+type observedMaxDensity = (bpPerPx: number) => number
 ```
 
 #### method: rpcProps
@@ -684,39 +844,6 @@ type contextMenuItems = () => {
 }[]
 ```
 
-#### method: colorBySubMenuItems
-
-The "Color by..." radio choices (solid/strand/attribute). Split out so
-subclasses can reuse them while assembling their own color menu.
-
-```ts
-type colorBySubMenuItems = () => {
-  label: string
-  type: 'radio'
-  checked: boolean
-  onClick: () => void
-}[]
-```
-
-#### method: colorMenuItems
-
-Color-related track menu entries: a single "Color by..." entry whose "Solid
-color..." choice opens the solid+UTR color picker. Subclasses (e.g. variants)
-override to drop the gene-oriented UTR picker.
-
-```ts
-type colorMenuItems = () => {
-  label: string
-  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
-  subMenu: {
-    label: string
-    type: 'radio'
-    checked: boolean
-    onClick: () => void
-  }[]
-}[]
-```
-
 #### method: trackMenuItems
 
 ```ts
@@ -728,10 +855,91 @@ type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIcon
 <details open>
 <summary>LinearCanvasBaseDisplay - Actions</summary>
 
+#### action: setJexlFilters
+
+Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
+undefined to clear it and fall back to the config `jexlFilters` slot.
+
+```ts
+type setJexlFilters = (filters?: string[] | undefined) => void
+```
+
+#### action: setFeatureDensityStats
+
+Records the span the byte estimate was measured at so `estimatedVisibleBytes`
+can scale it to the current view (see `byteEstimateVisibleBp`).
+
+```ts
+type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
+```
+
+#### action: resizeHeight
+
+A manual drag-resize means the user wants a fixed height; turn off auto-fit
+first, otherwise the CanvasAutoHeight autorun snaps the height back on the next
+layout change and the drag appears to do nothing.
+
+```ts
+type resizeHeight = (distance: number) => number
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                               | Signature                                                                                                        |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| [`beginYMorph`](#action-beginymorph)                                 | `(fromTops: Map<string, number>, fromMaxY: number, scrollFrom: number, scrollDelta: number) => void`             |
+| [`setMorphProgress`](#action-setmorphprogress)                       | `(t: number) => void`                                                                                            |
+| [`endYMorph`](#action-endymorph)                                     | `() => void`                                                                                                     |
+| [`expandToFit`](#action-expandtofit)                                 | `() => void`                                                                                                     |
+| [`collapseFromExpand`](#action-collapsefromexpand)                   | `() => void`                                                                                                     |
+| [`clearHeightBeforeExpand`](#action-clearheightbeforeexpand)         | `() => void`                                                                                                     |
+| [`setRpcData`](#action-setrpcdata)                                   | `(displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void`         |
+| [`setDensityStats`](#action-setdensitystats)                         | `(displayedRegionIndex: number, stats: RegionDensityStats) => void`                                              |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)       | `() => void`                                                                                                     |
+| [`pruneRpcDataMapToVisible`](#action-prunerpcdatamaptovisible)       | `(visibleDisplayedRegionIndices: Set<number>) => void`                                                           |
+| [`startRenderingBackend`](#action-startrenderingbackend)             | `(backend: CanvasFeatureRenderingBackend) => void`                                                               |
+| [`setFeatureDensityStatsLimit`](#action-setfeaturedensitystatslimit) | `(stats?: { bytes?: number \| undefined; fetchSizeLimit?: number \| undefined; } \| undefined) => void`          |
+| [`setHover`](#action-sethover)                                       | `(featureId: string \| null, subfeatureId: string \| null, tooltip: string \| undefined) => void`                |
+| [`clearHover`](#action-clearhover)                                   | `() => void`                                                                                                     |
+| [`setContextMenuFeature`](#action-setcontextmenufeature)             | `(feature?: Feature \| undefined) => void`                                                                       |
+| [`setContextMenuInfo`](#action-setcontextmenuinfo)                   | `(info?: { item: FlatbushItem; displayedRegionIndex: number; } \| undefined) => void`                            |
+| [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                     |
+| [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                     |
+| [`setShowLabels`](#action-setshowlabels)                             | `(value: "auto" \| "off" \| "on") => void`                                                                       |
+| [`setAutoHeight`](#action-setautoheight)                             | `(value: boolean) => void`                                                                                       |
+| [`setShowDescriptions`](#action-setshowdescriptions)                 | `(value: boolean) => void`                                                                                       |
+| [`setShowOutline`](#action-setshowoutline)                           | `(value: boolean) => void`                                                                                       |
+| [`setFeatureColor`](#action-setfeaturecolor)                         | `(color?: string \| undefined) => void`                                                                          |
+| [`setUtrColor`](#action-setutrcolor)                                 | `(color?: string \| undefined) => void`                                                                          |
+| [`showContextMenuForFeature`](#action-showcontextmenuforfeature)     | `(featureInfo: FlatbushItem, displayedRegionIndex: number) => void`                                              |
+| [`openSetColorDialog`](#action-opensetcolordialog)                   | `(showUtrColor?: any) => void`                                                                                   |
+| [`openColorByAttributeDialog`](#action-opencolorbyattributedialog)   | `() => void`                                                                                                     |
+| [`openFilterDialog`](#action-openfilterdialog)                       | `() => void`                                                                                                     |
+| [`fetchFullFeature`](#action-fetchfullfeature)                       | `(featureId: string, displayedRegionIndex: number) => Promise<SimpleFeature \| undefined>`                       |
+| [`selectFeatureById`](#action-selectfeaturebyid)                     | `(featureInfo: FlatbushItem, subfeatureInfo: SubfeatureInfo \| undefined, displayedRegionIndex: number) => void` |
+| [`isCacheValid`](#action-iscachevalid)                               | `(displayedRegionIndex: number) => boolean`                                                                      |
+| [`byteSizeLimit`](#action-bytesizelimit)                             | `() => number \| undefined`                                                                                      |
+| [`selectFullFeature`](#action-selectfullfeature)                     | `(featureId: string, displayedRegionIndex: number) => void`                                                      |
+| [`reload`](#action-reload)                                           | `() => Promise<void>`                                                                                            |
+| [`fetchNeeded`](#action-fetchneeded)                                 | `(needed: { region: Region; displayedRegionIndex: number; }[]) => void`                                          |
+| [`clearStaleDensityState`](#action-clearstaledensitystate)           | `() => void`                                                                                                     |
+| [`afterAttach`](#action-afterattach)                                 | `() => void`                                                                                                     |
+
+</details>
+
+<details>
+<summary>LinearCanvasBaseDisplay - Actions (all signatures)</summary>
+
 #### action: beginYMorph
 
 ```ts
-type beginYMorph = (fromTops: Map<string, number>, fromMaxY: number) => void
+type beginYMorph = (
+  fromTops: Map<string, number>,
+  fromMaxY: number,
+  scrollFrom: number,
+  scrollDelta: number,
+) => void
 ```
 
 #### action: setMorphProgress
@@ -874,15 +1082,6 @@ type setAutoHeight = (value: boolean) => void
 type setShowDescriptions = (value: boolean) => void
 ```
 
-#### action: setJexlFilters
-
-Sets the runtime filter override (already-`jexl:`-prefixed expressions). Pass
-undefined to clear it and fall back to the config `jexlFilters` slot.
-
-```ts
-type setJexlFilters = (filters?: string[] | undefined) => void
-```
-
 #### action: setShowOutline
 
 ```ts
@@ -982,29 +1181,10 @@ type fetchNeeded = (
 ) => void
 ```
 
-#### action: setFeatureDensityStats
-
-Records the span the byte estimate was measured at so `estimatedVisibleBytes`
-can scale it to the current view (see `byteEstimateVisibleBp`).
-
-```ts
-type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
-```
-
 #### action: clearStaleDensityState
 
 ```ts
 type clearStaleDensityState = () => void
-```
-
-#### action: resizeHeight
-
-A manual drag-resize means the user wants a fixed height; turn off auto-fit
-first, otherwise the CanvasAutoHeight autorun snaps the height back on the next
-layout change and the drag appears to do nothing.
-
-```ts
-type resizeHeight = (distance: number) => number
 ```
 
 #### action: afterAttach

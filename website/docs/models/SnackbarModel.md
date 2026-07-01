@@ -24,15 +24,6 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>SnackbarModel - Volatiles</summary>
 
-#### volatile: snackbarMessages
-
-```ts
-// type signature
-type snackbarMessages = IObservableArray<SnackbarMessage>
-// code
-snackbarMessages: observable.array<SnackbarMessage>()
-```
-
 #### volatile: errorDialog
 
 the error currently shown in the stack-trace dialog. Kept off the dialog queue
@@ -46,10 +37,43 @@ type errorDialog = ErrorDialogState | undefined
 errorDialog: undefined as ErrorDialogState | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                           |
+| ------------------------------------------------ | ----------------------------------- |
+| [`snackbarMessages`](#volatile-snackbarmessages) | `IObservableArray<SnackbarMessage>` |
+
+</details>
+
+<details>
+<summary>SnackbarModel - Volatiles (all signatures)</summary>
+
+#### volatile: snackbarMessages
+
+```ts
+// type signature
+type snackbarMessages = IObservableArray<SnackbarMessage>
+// code
+snackbarMessages: observable.array<SnackbarMessage>()
+```
+
 </details>
 
 <details open>
 <summary>SnackbarModel - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                      |
+| -------------------------------------------------- | ------------------------------ |
+| [`snackbarMessageSet`](#getter-snackbarmessageset) | `Map<string, SnackbarMessage>` |
+
+</details>
+
+<details>
+<summary>SnackbarModel - Getters (all signatures)</summary>
 
 #### getter: snackbarMessageSet
 
@@ -61,6 +85,23 @@ type snackbarMessageSet = Map<string, SnackbarMessage>
 
 <details open>
 <summary>SnackbarModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                                                                                               |
+| -------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------- |
+| [`notify`](#action-notify)                               | `(message: string, level?: NotificationLevel \| undefined, action?: SnackAction \| SnackAction[] \| undefined) => void` |
+| [`notifyError`](#action-notifyerror)                     | `(errorMessage: string, error?: unknown, extra?: unknown, action?: SnackAction \| undefined) => void`                   |
+| [`setErrorDialog`](#action-seterrordialog)               | `(state: ErrorDialogState \| undefined) => void`                                                                        |
+| [`pushSnackbarMessage`](#action-pushsnackbarmessage)     | `(message: string, level?: NotificationLevel \| undefined, actions?: SnackAction[] \| undefined) => void`               |
+| [`popSnackbarMessage`](#action-popsnackbarmessage)       | `() => SnackbarMessage \| undefined`                                                                                    |
+| [`removeSnackbarMessage`](#action-removesnackbarmessage) | `(message: string) => void`                                                                                             |
+
+</details>
+
+<details>
+<summary>SnackbarModel - Actions (all signatures)</summary>
 
 #### action: notify
 

@@ -74,15 +74,6 @@ and docs.
 <details open>
 <summary>LinearGenomeView - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
 #### property: type
 
 this is a string instead of the const literal 'LinearGenomeView' to reduce some
@@ -143,45 +134,6 @@ array of currently displayed tracks state models instances
 type tracks = IArrayType<IAnyType>
 // code
 tracks: types.array(pluginManager.pluggableMstType('track', 'stateModel'))
-```
-
-#### property: hideHeader
-
-```ts
-// type signature
-type hideHeader = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-hideHeader: types.stripDefault(types.boolean, false)
-```
-
-#### property: hideHeaderOverview
-
-```ts
-// type signature
-type hideHeaderOverview = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-hideHeaderOverview: types.stripDefault(types.boolean, false)
-```
-
-#### property: hideNoTracksActive
-
-```ts
-// type signature
-type hideNoTracksActive = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-hideNoTracksActive: types.stripDefault(types.boolean, false)
-```
-
-#### property: trackSelectorType
-
-```ts
-// type signature
-type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-trackSelectorType: types.stripDefault(
-  types.enumeration(['hierarchical']),
-  'hierarchical',
-)
 ```
 
 #### property: showCenterLine
@@ -338,10 +290,109 @@ type init = IType<
 init: types.frozen<InitState | undefined>()
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                           |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| [`id`](#property-id)                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`hideHeader`](#property-hideheader)                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`hideHeaderOverview`](#property-hideheaderoverview) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`hideNoTracksActive`](#property-hidenotracksactive) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`trackSelectorType`](#property-trackselectortype)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+
+</details>
+
+<details>
+<summary>LinearGenomeView - Properties (all signatures)</summary>
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
+```
+
+#### property: hideHeader
+
+```ts
+// type signature
+type hideHeader = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+hideHeader: types.stripDefault(types.boolean, false)
+```
+
+#### property: hideHeaderOverview
+
+```ts
+// type signature
+type hideHeaderOverview = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+hideHeaderOverview: types.stripDefault(types.boolean, false)
+```
+
+#### property: hideNoTracksActive
+
+```ts
+// type signature
+type hideNoTracksActive = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+hideNoTracksActive: types.stripDefault(types.boolean, false)
+```
+
+#### property: trackSelectorType
+
+```ts
+// type signature
+type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+trackSelectorType: types.stripDefault(
+  types.enumeration(['hierarchical']),
+  'hierarchical',
+)
+```
+
 </details>
 
 <details open>
 <summary>LinearGenomeView - Volatiles</summary>
+
+#### volatile: volatileGuides
+
+temporary vertical guides that can be set by displays (e.g., LD display hover)
+
+```ts
+// type signature
+type volatileGuides = VolatileGuide[]
+// code
+volatileGuides: [] as VolatileGuide[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                 | Signature                        |
+| ---------------------------------------------------------------------- | -------------------------------- |
+| [`volatileWidth`](#volatile-volatilewidth)                             | `number \| undefined`            |
+| [`minimumBlockWidth`](#volatile-minimumblockwidth)                     | `number`                         |
+| [`draggingTrackId`](#volatile-draggingtrackid)                         | `string \| undefined`            |
+| [`lastTrackDragY`](#volatile-lasttrackdragy)                           | `number \| undefined`            |
+| [`volatileError`](#volatile-volatileerror)                             | `unknown`                        |
+| [`trackRefs`](#volatile-trackrefs)                                     | `Record<string, HTMLDivElement>` |
+| [`coarseDynamicBlocks`](#volatile-coarsedynamicblocks)                 | `ContentBlock[]`                 |
+| [`coarseTotalBp`](#volatile-coarsetotalbp)                             | `number`                         |
+| [`coarseBpPerPx`](#volatile-coarsebpperpx)                             | `number`                         |
+| [`leftOffset`](#volatile-leftoffset)                                   | `BpOffset \| undefined`          |
+| [`rightOffset`](#volatile-rightoffset)                                 | `BpOffset \| undefined`          |
+| [`isScalebarRefNameMenuOpen`](#volatile-isscalebarrefnamemenuopen)     | `false`                          |
+| [`scalebarRefNameClickPending`](#volatile-scalebarrefnameclickpending) | `false`                          |
+
+</details>
+
+<details>
+<summary>LinearGenomeView - Volatiles (all signatures)</summary>
 
 #### volatile: volatileWidth
 
@@ -460,17 +511,6 @@ type scalebarRefNameClickPending = false
 scalebarRefNameClickPending: false
 ```
 
-#### volatile: volatileGuides
-
-temporary vertical guides that can be set by displays (e.g., LD display hover)
-
-```ts
-// type signature
-type volatileGuides = VolatileGuide[]
-// code
-volatileGuides: [] as VolatileGuide[]
-```
-
 </details>
 
 <details open>
@@ -485,18 +525,6 @@ toggling it in any view applies everywhere
 type scrollZoom = boolean
 ```
 
-#### getter: pinnedTracks
-
-```ts
-type pinnedTracks = any[]
-```
-
-#### getter: unpinnedTracks
-
-```ts
-type unpinnedTracks = any[]
-```
-
 #### getter: trackLabels
 
 the effective track labels setting, resolving the stored `trackLabelsOverride`
@@ -506,30 +534,12 @@ against the LinearGenomeViewPlugin config default
 type trackLabels = any
 ```
 
-#### getter: width
-
-```ts
-type width = number
-```
-
 #### getter: trackWidthPx
 
 width minus track outline borders (1px each side when shown)
 
 ```ts
 type trackWidthPx = number
-```
-
-#### getter: assemblyNames
-
-```ts
-type assemblyNames = string[]
-```
-
-#### getter: assemblyDisplayNames
-
-```ts
-type assemblyDisplayNames = string[]
 ```
 
 #### getter: isTopLevelView
@@ -548,6 +558,267 @@ it
 
 ```ts
 type stickyViewHeaders = boolean
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```ts
+type showLoading = boolean
+```
+
+#### getter: showImportForm
+
+Whether to show the import form
+
+```ts
+type showImportForm = boolean
+```
+
+#### getter: cytobandOffset
+
+the cytoband is displayed to the right of the chromosome name, and that offset
+is calculated manually with this method
+
+```ts
+type cytobandOffset = number
+```
+
+#### getter: overviewLayout
+
+geometry of the overview scalebar — derived from displayedRegions, width, and
+cytobandOffset so it stays cached by MobX
+
+```ts
+type overviewLayout = ViewLayout
+```
+
+#### getter: overviewScale
+
+bp-per-px scale used by overview tick labels
+
+```ts
+type overviewScale = number
+```
+
+#### getter: staticBlocks
+
+static blocks are an important concept jbrowse uses to avoid re-rendering when
+you scroll to the side. when you horizontally scroll to the right, old blocks to
+the left may be removed, and new blocks may be instantiated on the right. tracks
+may use the static blocks to render their data for the region represented by the
+block
+
+```ts
+type staticBlocks = BlockSet
+```
+
+#### getter: dynamicBlocks
+
+dynamic blocks represent the exact coordinates of the currently visible genome
+regions on the screen. they are similar to static blocks, but static blocks can
+go offscreen while dynamic blocks represent exactly what is on screen
+
+```ts
+type dynamicBlocks = BlockSet
+```
+
+#### getter: overviewBlocks
+
+all overview scalebar blocks (content + elided), laid out on the overviewLayout.
+memoized so the scalebar doesn't recompute it per render
+
+```ts
+type overviewBlocks = BaseBlock[]
+```
+
+#### getter: overviewContentBlocksPxSpan
+
+leading/trailing pixel span of the visible content blocks projected onto the
+overviewLayout — the geometry shared by the overview's "you are here" rectangle
+and polygon
+
+```ts
+type overviewContentBlocksPxSpan =
+  { leftPx: number; rightPx: number } | undefined
+```
+
+#### getter: scalebarRegionEndPx
+
+Max right-edge pixel position for each displayedRegionIndex, derived from
+staticBlocks geometry. staticBlocks caches a stable reference when only offsetPx
+changes, so this getter is also stable during normal scroll — avoiding a Map
+rebuild every frame. Used by ScalebarRefNameLabels to clip chromosome name
+labels.
+
+```ts
+type scalebarRegionEndPx = Map<number, number>
+```
+
+#### getter: gridlineTicks
+
+Gridline tick positions (x relative to the staticBlocks frame), derived from
+staticBlocks + bpPerPx. Computed once and shared by every Gridlines instance
+(scalebar, main view, each pinned track) rather than recomputing the makeTicks
+loop per component.
+
+```ts
+type gridlineTicks = { x: number; major: boolean }[]
+```
+
+#### getter: totalWidthPx
+
+Integer-rounded sum of all visible block widths. Slightly less than view.width
+when the genome ends before the right edge; use view.width for SVG clip rects
+(display boundary) and this for paint canvas sizing (actual content width).
+
+```ts
+type totalWidthPx = number
+```
+
+#### getter: totalWidthPxWithoutBorders
+
+Like totalWidthPx but excluding inter-region boundary blocks. Used when column
+layout divides the canvas width by feature count.
+
+```ts
+type totalWidthPxWithoutBorders = number
+```
+
+#### getter: roundedDynamicBlocks
+
+rounded dynamic blocks are dynamic blocks without fractions of bp
+
+```ts
+type roundedDynamicBlocks = { start: number; end: number; type: "ContentBlock"; assemblyName: string; refName: string; key: string; offsetPx: number; widthPx: number; reversed?: boolean | undefined; displayedRegionIndex?: number | undefined; isLeftEndOfDisplayedRegion?: boolean | undefined; isRightEndOfDisplayedRegion?: boolean | undefined; va...
+```
+
+#### getter: visibleRegions
+
+Returns the currently visible content blocks with screen pixel positions and
+displayedRegionIndex guaranteed. Used by WebGL displays for per-region data
+fetching and rendering.
+
+```ts
+type visibleRegions = {
+  refName: string
+  start: number
+  end: number
+  assemblyName: string
+  reversed: boolean | undefined
+  displayedRegionIndex: number
+  screenStartPx: number
+  screenEndPx: number
+}[]
+```
+
+#### getter: bufferedVisibleRegions
+
+visibleRegions expanded by a half-screen buffer on each side, clamped to
+displayedRegion bounds, with integer-rounded coordinates. Use this when fetching
+data that should extend slightly beyond the viewport for smooth scrolling.
+
+```ts
+type bufferedVisibleRegions = {
+  region: { refName: string; start: number; end: number; assemblyName: string }
+  displayedRegionIndex: number
+}[]
+```
+
+#### getter: visibleLocStrings
+
+a single "combo-locstring" representing all the regions visible on the screen
+
+```ts
+type visibleLocStrings = string
+```
+
+#### getter: coarseVisibleLocStrings
+
+same as visibleLocStrings, but only updated every 500ms
+
+```ts
+type coarseVisibleLocStrings = string
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                   | Signature                                                                                                                                                                          |
+| ------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`pinnedTracks`](#getter-pinnedtracks)                                   | `any[]`                                                                                                                                                                            |
+| [`unpinnedTracks`](#getter-unpinnedtracks)                               | `any[]`                                                                                                                                                                            |
+| [`width`](#getter-width)                                                 | `number`                                                                                                                                                                           |
+| [`assemblyNames`](#getter-assemblynames)                                 | `string[]`                                                                                                                                                                         |
+| [`assemblyDisplayNames`](#getter-assemblydisplaynames)                   | `string[]`                                                                                                                                                                         |
+| [`rubberbandTop`](#getter-rubberbandtop)                                 | `number`                                                                                                                                                                           |
+| [`pinnedTracksTop`](#getter-pinnedtrackstop)                             | `number`                                                                                                                                                                           |
+| [`assembliesNotFound`](#getter-assembliesnotfound)                       | `string \| undefined`                                                                                                                                                              |
+| [`assemblyErrors`](#getter-assemblyerrors)                               | `string`                                                                                                                                                                           |
+| [`assembliesInitialized`](#getter-assembliesinitialized)                 | `boolean`                                                                                                                                                                          |
+| [`initialized`](#getter-initialized)                                     | `boolean`                                                                                                                                                                          |
+| [`hasDisplayedRegions`](#getter-hasdisplayedregions)                     | `boolean`                                                                                                                                                                          |
+| [`loadingMessage`](#getter-loadingmessage)                               | `"Loading" \| undefined`                                                                                                                                                           |
+| [`hasSomethingToShow`](#getter-hassomethingtoshow)                       | `boolean`                                                                                                                                                                          |
+| [`scalebarHeight`](#getter-scalebarheight)                               | `number`                                                                                                                                                                           |
+| [`headerHeight`](#getter-headerheight)                                   | `number`                                                                                                                                                                           |
+| [`trackHeights`](#getter-trackheights)                                   | `number`                                                                                                                                                                           |
+| [`trackHeightsWithResizeHandles`](#getter-trackheightswithresizehandles) | `number`                                                                                                                                                                           |
+| [`height`](#getter-height)                                               | `number`                                                                                                                                                                           |
+| [`totalBp`](#getter-totalbp)                                             | `number`                                                                                                                                                                           |
+| [`maxBpPerPx`](#getter-maxbpperpx)                                       | `number`                                                                                                                                                                           |
+| [`minBpPerPx`](#getter-minbpperpx)                                       | `number`                                                                                                                                                                           |
+| [`error`](#getter-error)                                                 | `unknown`                                                                                                                                                                          |
+| [`maxOffset`](#getter-maxoffset)                                         | `number`                                                                                                                                                                           |
+| [`minOffset`](#getter-minoffset)                                         | `number`                                                                                                                                                                           |
+| [`displayedRegionsTotalPx`](#getter-displayedregionstotalpx)             | `number`                                                                                                                                                                           |
+| [`trackMap`](#getter-trackmap)                                           | `Map<any, any>`                                                                                                                                                                    |
+| [`trackTypeActions`](#getter-tracktypeactions)                           | `Map<string, MenuItem[]>`                                                                                                                                                          |
+| [`canShowCytobands`](#getter-canshowcytobands)                           | `boolean`                                                                                                                                                                          |
+| [`showCytobands`](#getter-showcytobands)                                 | `boolean`                                                                                                                                                                          |
+| [`anyCytobandsExist`](#getter-anycytobandsexist)                         | `boolean`                                                                                                                                                                          |
+| [`isTrackSelectorOpen`](#getter-istrackselectoropen)                     | `boolean`                                                                                                                                                                          |
+| [`visibleBp`](#getter-visiblebp)                                         | `number`                                                                                                                                                                           |
+| [`coarseTotalBpDisplayStr`](#getter-coarsetotalbpdisplaystr)             | `string`                                                                                                                                                                           |
+| [`effectiveBpPerPx`](#getter-effectivebpperpx)                           | `number`                                                                                                                                                                           |
+| [`effectiveTotalBp`](#getter-effectivetotalbp)                           | `number`                                                                                                                                                                           |
+| [`effectiveTotalBpDisplayStr`](#getter-effectivetotalbpdisplaystr)       | `string`                                                                                                                                                                           |
+| [`centerLineInfo`](#getter-centerlineinfo)                               | `{ coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; } \| undefined` |
+
+</details>
+
+<details>
+<summary>LinearGenomeView - Getters (all signatures)</summary>
+
+#### getter: pinnedTracks
+
+```ts
+type pinnedTracks = any[]
+```
+
+#### getter: unpinnedTracks
+
+```ts
+type unpinnedTracks = any[]
+```
+
+#### getter: width
+
+```ts
+type width = number
+```
+
+#### getter: assemblyNames
+
+```ts
+type assemblyNames = string[]
+```
+
+#### getter: assemblyDisplayNames
+
+```ts
+type assemblyDisplayNames = string[]
 ```
 
 #### getter: rubberbandTop
@@ -602,22 +873,6 @@ type loadingMessage = 'Loading' | undefined
 
 ```ts
 type hasSomethingToShow = boolean
-```
-
-#### getter: showLoading
-
-Whether to show a loading indicator instead of the import form or view
-
-```ts
-type showLoading = boolean
-```
-
-#### getter: showImportForm
-
-Whether to show the import form
-
-```ts
-type showImportForm = boolean
 ```
 
 #### getter: scalebarHeight
@@ -722,182 +977,16 @@ type showCytobands = boolean
 type anyCytobandsExist = boolean
 ```
 
-#### getter: cytobandOffset
-
-the cytoband is displayed to the right of the chromosome name, and that offset
-is calculated manually with this method
-
-```ts
-type cytobandOffset = number
-```
-
 #### getter: isTrackSelectorOpen
 
 ```ts
 type isTrackSelectorOpen = boolean
 ```
 
-#### getter: overviewLayout
-
-geometry of the overview scalebar — derived from displayedRegions, width, and
-cytobandOffset so it stays cached by MobX
-
-```ts
-type overviewLayout = ViewLayout
-```
-
-#### getter: overviewScale
-
-bp-per-px scale used by overview tick labels
-
-```ts
-type overviewScale = number
-```
-
-#### getter: staticBlocks
-
-static blocks are an important concept jbrowse uses to avoid re-rendering when
-you scroll to the side. when you horizontally scroll to the right, old blocks to
-the left may be removed, and new blocks may be instantiated on the right. tracks
-may use the static blocks to render their data for the region represented by the
-block
-
-```ts
-type staticBlocks = BlockSet
-```
-
-#### getter: dynamicBlocks
-
-dynamic blocks represent the exact coordinates of the currently visible genome
-regions on the screen. they are similar to static blocks, but static blocks can
-go offscreen while dynamic blocks represent exactly what is on screen
-
-```ts
-type dynamicBlocks = BlockSet
-```
-
-#### getter: overviewBlocks
-
-all overview scalebar blocks (content + elided), laid out on the overviewLayout.
-memoized so the scalebar doesn't recompute it per render
-
-```ts
-type overviewBlocks = BaseBlock[]
-```
-
-#### getter: overviewContentBlocksPxSpan
-
-leading/trailing pixel span of the visible content blocks projected onto the
-overviewLayout — the geometry shared by the overview's "you are here" rectangle
-and polygon
-
-```ts
-type overviewContentBlocksPxSpan =
-  { leftPx: number; rightPx: number } | undefined
-```
-
-#### getter: scalebarRegionEndPx
-
-Max right-edge pixel position for each displayedRegionIndex, derived from
-staticBlocks geometry. staticBlocks caches a stable reference when only offsetPx
-changes, so this getter is also stable during normal scroll — avoiding a Map
-rebuild every frame. Used by ScalebarRefNameLabels to clip chromosome name
-labels.
-
-```ts
-type scalebarRegionEndPx = Map<number, number>
-```
-
-#### getter: gridlineTicks
-
-Gridline tick positions (x relative to the staticBlocks frame), derived from
-staticBlocks + bpPerPx. Computed once and shared by every Gridlines instance
-(scalebar, main view, each pinned track) rather than recomputing the makeTicks
-loop per component.
-
-```ts
-type gridlineTicks = { x: number; major: boolean }[]
-```
-
-#### getter: totalWidthPx
-
-Integer-rounded sum of all visible block widths. Slightly less than view.width
-when the genome ends before the right edge; use view.width for SVG clip rects
-(display boundary) and this for paint canvas sizing (actual content width).
-
-```ts
-type totalWidthPx = number
-```
-
-#### getter: totalWidthPxWithoutBorders
-
-Like totalWidthPx but excluding inter-region boundary blocks. Used when column
-layout divides the canvas width by feature count.
-
-```ts
-type totalWidthPxWithoutBorders = number
-```
-
 #### getter: visibleBp
 
 ```ts
 type visibleBp = number
-```
-
-#### getter: roundedDynamicBlocks
-
-rounded dynamic blocks are dynamic blocks without fractions of bp
-
-```ts
-type roundedDynamicBlocks = { start: number; end: number; type: "ContentBlock"; assemblyName: string; refName: string; key: string; offsetPx: number; widthPx: number; reversed?: boolean | undefined; displayedRegionIndex?: number | undefined; isLeftEndOfDisplayedRegion?: boolean | undefined; isRightEndOfDisplayedRegion?: boolean | undefined; va...
-```
-
-#### getter: visibleRegions
-
-Returns the currently visible content blocks with screen pixel positions and
-displayedRegionIndex guaranteed. Used by WebGL displays for per-region data
-fetching and rendering.
-
-```ts
-type visibleRegions = {
-  refName: string
-  start: number
-  end: number
-  assemblyName: string
-  reversed: boolean | undefined
-  displayedRegionIndex: number
-  screenStartPx: number
-  screenEndPx: number
-}[]
-```
-
-#### getter: bufferedVisibleRegions
-
-visibleRegions expanded by a half-screen buffer on each side, clamped to
-displayedRegion bounds, with integer-rounded coordinates. Use this when fetching
-data that should extend slightly beyond the viewport for smooth scrolling.
-
-```ts
-type bufferedVisibleRegions = {
-  region: { refName: string; start: number; end: number; assemblyName: string }
-  displayedRegionIndex: number
-}[]
-```
-
-#### getter: visibleLocStrings
-
-a single "combo-locstring" representing all the regions visible on the screen
-
-```ts
-type visibleLocStrings = string
-```
-
-#### getter: coarseVisibleLocStrings
-
-same as visibleLocStrings, but only updated every 500ms
-
-```ts
-type coarseVisibleLocStrings = string
 ```
 
 #### getter: coarseTotalBpDisplayStr
@@ -947,22 +1036,13 @@ type centerLineInfo =
 <details open>
 <summary>LinearGenomeView - Methods</summary>
 
-#### method: scalebarDisplayPrefix
+#### method: trackHeight
+
+rendered height of a single track, collapsing to a fixed height when minimized.
+Shared by trackHeights and getTrackYOffset so the two can't disagree.
 
 ```ts
-type scalebarDisplayPrefix = () => string
-```
-
-#### method: MiniControlsComponent
-
-```ts
-type MiniControlsComponent = () => FC<any>
-```
-
-#### method: HeaderComponent
-
-```ts
-type HeaderComponent = () => FC<any>
+type trackHeight = (track: any) => any
 ```
 
 #### method: getTrackYOffset
@@ -974,28 +1054,6 @@ renders with. Returns `undefined` if the track is not present in the view.
 
 ```ts
 type getTrackYOffset = (trackId: string) => number | undefined
-```
-
-#### method: renderProps
-
-```ts
-type renderProps = () => { bpPerPx: number; colorByCDS: boolean }
-```
-
-#### method: searchScope
-
-```ts
-type searchScope = (assemblyName: string) => {
-  assemblyName: string
-  includeAggregateIndexes: boolean
-  tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>
-}
-```
-
-#### method: getTrack
-
-```ts
-type getTrack = (id: string) => any
 ```
 
 #### method: getActiveDisplayId
@@ -1034,26 +1092,6 @@ return the view menu items
 
 ```ts
 type menuItems = () => MenuItem[]
-```
-
-#### method: rubberBandMenuItems
-
-```ts
-type rubberBandMenuItems = () => MenuItem[]
-```
-
-#### method: bpToPx
-
-```ts
-type bpToPx = ({
-  refName,
-  coord,
-  displayedRegionIndex,
-}: {
-  refName: string
-  coord: number
-  displayedRegionIndex?: number | undefined
-}) => { index: number; offsetPx: number } | undefined
 ```
 
 #### method: getHighlightCoords
@@ -1099,6 +1137,96 @@ type centerAt = (
 ) => void
 ```
 
+#### method: highlightMenuItems
+
+returns menu items for a highlight context menu. plugins can extend this via
+Core-extendPluggableElement to add their own items
+
+```ts
+type highlightMenuItems = (_highlight: HighlightType) => MenuItem[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                                                                                                                             |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`scalebarDisplayPrefix`](#method-scalebardisplayprefix)       | `() => string`                                                                                                                                                                        |
+| [`MiniControlsComponent`](#method-minicontrolscomponent)       | `() => FC<any>`                                                                                                                                                                       |
+| [`HeaderComponent`](#method-headercomponent)                   | `() => FC<any>`                                                                                                                                                                       |
+| [`renderProps`](#method-renderprops)                           | `() => { bpPerPx: number; colorByCDS: boolean; }`                                                                                                                                     |
+| [`searchScope`](#method-searchscope)                           | `(assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }`                           |
+| [`getTrack`](#method-gettrack)                                 | `(id: string) => any`                                                                                                                                                                 |
+| [`rubberBandMenuItems`](#method-rubberbandmenuitems)           | `() => MenuItem[]`                                                                                                                                                                    |
+| [`bpToPx`](#method-bptopx)                                     | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => { index: number; offsetPx: number; } \| undefined`   |
+| [`pxToBp`](#method-pxtobp)                                     | `(px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }` |
+| [`rubberbandClickMenuItems`](#method-rubberbandclickmenuitems) | `(clickOffset: BpOffset) => MenuItem[]`                                                                                                                                               |
+
+</details>
+
+<details>
+<summary>LinearGenomeView - Methods (all signatures)</summary>
+
+#### method: scalebarDisplayPrefix
+
+```ts
+type scalebarDisplayPrefix = () => string
+```
+
+#### method: MiniControlsComponent
+
+```ts
+type MiniControlsComponent = () => FC<any>
+```
+
+#### method: HeaderComponent
+
+```ts
+type HeaderComponent = () => FC<any>
+```
+
+#### method: renderProps
+
+```ts
+type renderProps = () => { bpPerPx: number; colorByCDS: boolean }
+```
+
+#### method: searchScope
+
+```ts
+type searchScope = (assemblyName: string) => {
+  assemblyName: string
+  includeAggregateIndexes: boolean
+  tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>
+}
+```
+
+#### method: getTrack
+
+```ts
+type getTrack = (id: string) => any
+```
+
+#### method: rubberBandMenuItems
+
+```ts
+type rubberBandMenuItems = () => MenuItem[]
+```
+
+#### method: bpToPx
+
+```ts
+type bpToPx = ({
+  refName,
+  coord,
+  displayedRegionIndex,
+}: {
+  refName: string
+  coord: number
+  displayedRegionIndex?: number | undefined
+}) => { index: number; offsetPx: number } | undefined
+```
+
 #### method: pxToBp
 
 ```ts
@@ -1121,19 +1249,198 @@ type pxToBp = (px: number) => {
 type rubberbandClickMenuItems = (clickOffset: BpOffset) => MenuItem[]
 ```
 
-#### method: highlightMenuItems
-
-returns menu items for a highlight context menu. plugins can extend this via
-Core-extendPluggableElement to add their own items
-
-```ts
-type highlightMenuItems = (_highlight: HighlightType) => MenuItem[]
-```
-
 </details>
 
 <details open>
 <summary>LinearGenomeView - Actions</summary>
+
+#### action: setVolatileGuides
+
+set temporary vertical guides (e.g., for LD display hover)
+
+```ts
+type setVolatileGuides = (guides: VolatileGuide[]) => void
+```
+
+#### action: setOffsets
+
+sets offsets of rubberband, used in the get sequence dialog can call
+view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute the
+selected regions from the offsets
+
+```ts
+type setOffsets = (
+  left?: BpOffset | undefined,
+  right?: BpOffset | undefined,
+) => void
+```
+
+#### action: onTrackDragOver
+
+called while dragging a track over the track at `targetId`; reorders once the
+cursor has moved far enough (see shouldSwapTracks) to avoid jitter when a short
+track is dragged over a tall one
+
+```ts
+type onTrackDragOver = (targetId: string, currentY: number) => void
+```
+
+#### action: clearView
+
+this "clears the view" and makes the view return to the import form
+
+```ts
+type clearView = () => void
+```
+
+#### action: slide
+
+perform animated slide
+
+```ts
+type slide = (viewWidths: number) => void
+```
+
+#### action: zoom
+
+perform animated zoom
+
+```ts
+type zoom = (targetBpPerPx: number) => void
+```
+
+#### action: moveTo
+
+offset is the base-pair-offset in the displayed region, index is the index of
+the displayed region in the linear genome view
+
+```ts
+type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
+```
+
+#### action: navToLocString
+
+Navigate to the given locstring, will change displayed regions if needed, and
+wait for assemblies to be initialized
+
+```ts
+type navToLocString = (
+  input: string,
+  optAssemblyName?: string | undefined,
+  grow?: number | undefined,
+) => Promise<void>
+```
+
+#### action: navToLocations
+
+Similar to `navToLocString`, but accepts a list of parsed location objects
+instead of a locstring. Will try to perform `setDisplayedRegions` if changing
+regions
+
+```ts
+type navToLocations = (
+  regions: ParsedLocString[],
+  assemblyName?: string | undefined,
+  grow?: number | undefined,
+) => Promise<void>
+```
+
+#### action: navTo
+
+Navigate to a location based on its refName and optionally start, end, and
+assemblyName. Will not try to change displayed regions, use `navToLocations`
+instead. Only navigates to a location if it is entirely within a
+displayedRegion. Navigates to the first matching location encountered.
+
+Throws an error if navigation was unsuccessful
+
+```ts
+type navTo = (query: NavLocation, grow?: number | undefined) => void
+```
+
+#### action: navToMultiple
+
+Navigate to a location based on its refName and optionally start, end, and
+assemblyName. Will not try to change displayed regions, use navToLocations
+instead. Only navigates to a location if it is entirely within a
+displayedRegion. Navigates to the first matching location encountered.
+
+Throws an error if navigation was unsuccessful
+
+```ts
+type navToMultiple = (
+  locations: NavLocation[],
+  grow?: number | undefined,
+) => void
+```
+
+#### action: navToLocation
+
+Similar to `navToLocString`, but accepts a parsed location object instead of a
+locstring. Will try to perform `setDisplayedRegions` if changing regions
+
+```ts
+type navToLocation = (
+  parsedLocString: ParsedLocString,
+  assemblyName?: string | undefined,
+  grow?: number | undefined,
+) => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                     | Signature                                                                                        |
+| -------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------ |
+| [`setShowTrackOutlines`](#action-setshowtrackoutlines)                     | `(arg: boolean) => void`                                                                         |
+| [`setScrollZoom`](#action-setscrollzoom)                                   | `(flag: boolean) => void`                                                                        |
+| [`setColorByCDS`](#action-setcolorbycds)                                   | `(flag: boolean) => void`                                                                        |
+| [`setShowCytobands`](#action-setshowcytobands)                             | `(flag: boolean) => void`                                                                        |
+| [`setWidth`](#action-setwidth)                                             | `(newWidth: number) => void`                                                                     |
+| [`setError`](#action-seterror)                                             | `(error: unknown) => void`                                                                       |
+| [`setIsScalebarRefNameMenuOpen`](#action-setisscalebarrefnamemenuopen)     | `(isOpen: boolean) => void`                                                                      |
+| [`setScalebarRefNameClickPending`](#action-setscalebarrefnameclickpending) | `(pending: boolean) => void`                                                                     |
+| [`setHideHeader`](#action-sethideheader)                                   | `(b: boolean) => void`                                                                           |
+| [`setHideHeaderOverview`](#action-sethideheaderoverview)                   | `(b: boolean) => void`                                                                           |
+| [`setScalebarOnly`](#action-setscalebaronly)                               | `(b: boolean) => void`                                                                           |
+| [`setHideNoTracksActive`](#action-sethidenotracksactive)                   | `(b: boolean) => void`                                                                           |
+| [`setShowGridlines`](#action-setshowgridlines)                             | `(b: boolean) => void`                                                                           |
+| [`addToHighlights`](#action-addtohighlights)                               | `(highlight: HighlightType) => void`                                                             |
+| [`setHighlight`](#action-sethighlight)                                     | `(highlight?: HighlightType[] \| undefined) => void`                                             |
+| [`removeHighlight`](#action-removehighlight)                               | `(highlight: HighlightType) => void`                                                             |
+| [`updateHighlight`](#action-updatehighlight)                               | `(old: HighlightType, updates: Partial<HighlightType>) => void`                                  |
+| [`setHighlightsVisible`](#action-sethighlightsvisible)                     | `(arg: boolean) => void`                                                                         |
+| [`setLabelsVisible`](#action-setlabelsvisible)                             | `(arg: boolean) => void`                                                                         |
+| [`scrollTo`](#action-scrollto)                                             | `(offsetPx: number) => number`                                                                   |
+| [`zoomTo`](#action-zoomto)                                                 | `(bpPerPx: number, offset?: any) => number`                                                      |
+| [`setSearchResults`](#action-setsearchresults)                             | `(searchResults: BaseResult[], searchQuery: string, assemblyName?: string \| undefined) => void` |
+| [`setNewView`](#action-setnewview)                                         | `(bpPerPx: number, offsetPx: number) => void`                                                    |
+| [`horizontallyFlip`](#action-horizontallyflip)                             | `() => void`                                                                                     |
+| [`showTrack`](#action-showtrack)                                           | `(trackId: string, initialSnapshot?: any, displayInitialSnapshot?: any) => any`                  |
+| [`hideTrack`](#action-hidetrack)                                           | `(trackId: string) => boolean`                                                                   |
+| [`moveTrackDown`](#action-movetrackdown)                                   | `(id: string) => void`                                                                           |
+| [`moveTrackUp`](#action-movetrackup)                                       | `(id: string) => void`                                                                           |
+| [`moveTrackToTop`](#action-movetracktotop)                                 | `(id: string) => void`                                                                           |
+| [`moveTrackToBottom`](#action-movetracktobottom)                           | `(id: string) => void`                                                                           |
+| [`moveTrack`](#action-movetrack)                                           | `(movingId: string, targetId: string) => void`                                                   |
+| [`toggleTrack`](#action-toggletrack)                                       | `(trackId: string) => boolean`                                                                   |
+| [`setTrackLabels`](#action-settracklabels)                                 | `(setting: "offset" \| "hidden" \| "overlapping") => void`                                       |
+| [`setShowCenterLine`](#action-setshowcenterline)                           | `(b: boolean) => void`                                                                           |
+| [`setDisplayedRegions`](#action-setdisplayedregions)                       | `(regions: Region[]) => void`                                                                    |
+| [`activateTrackSelector`](#action-activatetrackselector)                   | `() => Widget`                                                                                   |
+| [`toggleTrackSelector`](#action-toggletrackselector)                       | `() => Widget`                                                                                   |
+| [`horizontalScroll`](#action-horizontalscroll)                             | `(distance: number) => number`                                                                   |
+| [`showAllRegions`](#action-showallregions)                                 | `() => void`                                                                                     |
+| [`showAllRegionsInAssembly`](#action-showallregionsinassembly)             | `(assemblyName?: string \| undefined) => void`                                                   |
+| [`setDraggingTrackId`](#action-setdraggingtrackid)                         | `(idx?: string \| undefined) => void`                                                            |
+| [`setLastTrackDragY`](#action-setlasttrackdragy)                           | `(y: number) => void`                                                                            |
+| [`setInit`](#action-setinit)                                               | `(arg?: InitState \| undefined) => void`                                                         |
+| [`setCoarseDynamicBlocks`](#action-setcoarsedynamicblocks)                 | `(blocks: BlockSet, bpPerPx: number) => void`                                                    |
+
+</details>
+
+<details>
+<summary>LinearGenomeView - Actions (all signatures)</summary>
 
 #### action: setShowTrackOutlines
 
@@ -1252,14 +1559,6 @@ type setHighlightsVisible = (arg: boolean) => void
 type setLabelsVisible = (arg: boolean) => void
 ```
 
-#### action: setVolatileGuides
-
-set temporary vertical guides (e.g., for LD display hover)
-
-```ts
-type setVolatileGuides = (guides: VolatileGuide[]) => void
-```
-
 #### action: scrollTo
 
 ```ts
@@ -1270,19 +1569,6 @@ type scrollTo = (offsetPx: number) => number
 
 ```ts
 type zoomTo = (bpPerPx: number, offset?: any) => number
-```
-
-#### action: setOffsets
-
-sets offsets of rubberband, used in the get sequence dialog can call
-view.getSelectedRegions(view.leftOffset,view.rightOffset) to compute the
-selected regions from the offsets
-
-```ts
-type setOffsets = (
-  left?: BpOffset | undefined,
-  right?: BpOffset | undefined,
-) => void
 ```
 
 #### action: setSearchResults
@@ -1419,128 +1705,16 @@ type setDraggingTrackId = (idx?: string | undefined) => void
 type setLastTrackDragY = (y: number) => void
 ```
 
-#### action: onTrackDragOver
-
-called while dragging a track over the track at `targetId`; reorders once the
-cursor has moved far enough (see shouldSwapTracks) to avoid jitter when a short
-track is dragged over a tall one
-
-```ts
-type onTrackDragOver = (targetId: string, currentY: number) => void
-```
-
-#### action: clearView
-
-this "clears the view" and makes the view return to the import form
-
-```ts
-type clearView = () => void
-```
-
 #### action: setInit
 
 ```ts
 type setInit = (arg?: InitState | undefined) => void
 ```
 
-#### action: slide
-
-perform animated slide
-
-```ts
-type slide = (viewWidths: number) => void
-```
-
-#### action: zoom
-
-perform animated zoom
-
-```ts
-type zoom = (targetBpPerPx: number) => void
-```
-
 #### action: setCoarseDynamicBlocks
 
 ```ts
 type setCoarseDynamicBlocks = (blocks: BlockSet, bpPerPx: number) => void
-```
-
-#### action: moveTo
-
-offset is the base-pair-offset in the displayed region, index is the index of
-the displayed region in the linear genome view
-
-```ts
-type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
-```
-
-#### action: navToLocString
-
-Navigate to the given locstring, will change displayed regions if needed, and
-wait for assemblies to be initialized
-
-```ts
-type navToLocString = (
-  input: string,
-  optAssemblyName?: string | undefined,
-  grow?: number | undefined,
-) => Promise<void>
-```
-
-#### action: navToLocations
-
-Similar to `navToLocString`, but accepts a list of parsed location objects
-instead of a locstring. Will try to perform `setDisplayedRegions` if changing
-regions
-
-```ts
-type navToLocations = (
-  regions: ParsedLocString[],
-  assemblyName?: string | undefined,
-  grow?: number | undefined,
-) => Promise<void>
-```
-
-#### action: navTo
-
-Navigate to a location based on its refName and optionally start, end, and
-assemblyName. Will not try to change displayed regions, use `navToLocations`
-instead. Only navigates to a location if it is entirely within a
-displayedRegion. Navigates to the first matching location encountered.
-
-Throws an error if navigation was unsuccessful
-
-```ts
-type navTo = (query: NavLocation, grow?: number | undefined) => void
-```
-
-#### action: navToMultiple
-
-Navigate to a location based on its refName and optionally start, end, and
-assemblyName. Will not try to change displayed regions, use navToLocations
-instead. Only navigates to a location if it is entirely within a
-displayedRegion. Navigates to the first matching location encountered.
-
-Throws an error if navigation was unsuccessful
-
-```ts
-type navToMultiple = (
-  locations: NavLocation[],
-  grow?: number | undefined,
-) => void
-```
-
-#### action: navToLocation
-
-Similar to `navToLocString`, but accepts a parsed location object instead of a
-locstring. Will try to perform `setDisplayedRegions` if changing regions
-
-```ts
-type navToLocation = (
-  parsedLocString: ParsedLocString,
-  assemblyName?: string | undefined,
-  grow?: number | undefined,
-) => Promise<void>
 ```
 
 </details>

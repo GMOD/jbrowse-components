@@ -28,6 +28,21 @@ used while drawing the tree.
 <details open>
 <summary>TreeSidebarMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                                                              |
+| ------------------------------------------ | ---------------------------------------------------------------------- |
+| [`layout`](#property-layout)               | `IOptionalIType<IType<S[], S[], S[]>, [undefined]>`                    |
+| [`clusterTree`](#property-clustertree)     | `IOptionalIType<IMaybe<ISimpleType<string>>, [undefined]>`             |
+| [`treeAreaWidth`](#property-treeareawidth) | `IOptionalIType<ISimpleType<number>, [undefined]>`                     |
+| [`subtreeFilter`](#property-subtreefilter) | `IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>TreeSidebarMixin - Properties (all signatures)</summary>
+
 #### property: layout
 
 ```ts
@@ -75,6 +90,20 @@ subtreeFilter: types.stripDefault(
 <details open>
 <summary>TreeSidebarMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                      |
+| ---------------------------------------------- | ------------------------------ |
+| [`hoveredTreeNode`](#volatile-hoveredtreenode) | `HoveredTreeNode \| undefined` |
+| [`treeCanvas`](#volatile-treecanvas)           | `HTMLCanvasElement \| null`    |
+| [`mouseoverCanvas`](#volatile-mouseovercanvas) | `HTMLCanvasElement \| null`    |
+
+</details>
+
+<details>
+<summary>TreeSidebarMixin - Volatiles (all signatures)</summary>
+
 #### volatile: hoveredTreeNode
 
 ```ts
@@ -107,6 +136,20 @@ mouseoverCanvas: null as HTMLCanvasElement | null
 <details open>
 <summary>TreeSidebarMixin - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                |
+| ------------------------------------------------------ | ---------------------------------------- |
+| [`parsedTree`](#getter-parsedtree)                     | `HierarchyNode<NewickNode> \| undefined` |
+| [`root`](#getter-root)                                 | `HierarchyNode<NewickNode> \| undefined` |
+| [`treeHasBranchLengths`](#getter-treehasbranchlengths) | `boolean`                                |
+
+</details>
+
+<details>
+<summary>TreeSidebarMixin - Getters (all signatures)</summary>
+
 #### getter: parsedTree
 
 ```ts
@@ -130,6 +173,18 @@ type treeHasBranchLengths = boolean
 <details open>
 <summary>TreeSidebarMixin - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                |
+| ---------------------------------------- | ------------------------ |
+| [`willClearTree`](#method-willcleartree) | `(next: S[]) => boolean` |
+
+</details>
+
+<details>
+<summary>TreeSidebarMixin - Methods (all signatures)</summary>
+
 #### method: willClearTree
 
 ```ts
@@ -140,6 +195,26 @@ type willClearTree = (next: S[]) => boolean
 
 <details open>
 <summary>TreeSidebarMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                           |
+| ------------------------------------------------------------ | --------------------------------------------------- |
+| [`setLayout`](#action-setlayout)                             | `(layout: S[]) => void`                             |
+| [`clearLayout`](#action-clearlayout)                         | `() => void`                                        |
+| [`setClusterTree`](#action-setclustertree)                   | `(tree?: string \| undefined) => void`              |
+| [`setLayoutAndClusterTree`](#action-setlayoutandclustertree) | `(layout: S[], tree?: string \| undefined) => void` |
+| [`setTreeAreaWidth`](#action-settreeareawidth)               | `(width: number) => void`                           |
+| [`setSubtreeFilter`](#action-setsubtreefilter)               | `(names?: string[] \| undefined) => void`           |
+| [`setHoveredTreeNode`](#action-sethoveredtreenode)           | `(node?: HoveredTreeNode \| undefined) => void`     |
+| [`setTreeCanvasRef`](#action-settreecanvasref)               | `(ref: HTMLCanvasElement \| null) => void`          |
+| [`setMouseoverCanvasRef`](#action-setmouseovercanvasref)     | `(ref: HTMLCanvasElement \| null) => void`          |
+
+</details>
+
+<details>
+<summary>TreeSidebarMixin - Actions (all signatures)</summary>
 
 #### action: setLayout
 

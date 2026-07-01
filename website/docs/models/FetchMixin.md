@@ -161,18 +161,6 @@ type makeRegionStatusCallback = (key: number) => (status: RpcStatus) => void
 <details open>
 <summary>FetchMixin - Actions</summary>
 
-#### action: setError
-
-```ts
-type setError = (error?: unknown) => void
-```
-
-#### action: setStatusMessage
-
-```ts
-type setStatusMessage = (status?: RpcStatus | undefined) => void
-```
-
 #### action: resetStatus
 
 Drop the active stop token and clear all status bookkeeping. Shared by both
@@ -225,6 +213,31 @@ others are stored in `error` if not stale.
 
 ```ts
 type runFetch = (work: (ctx: FetchContext) => Promise<void>) => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                   |
+| ---------------------------------------------- | ------------------------------------------- |
+| [`setError`](#action-seterror)                 | `(error?: unknown) => void`                 |
+| [`setStatusMessage`](#action-setstatusmessage) | `(status?: RpcStatus \| undefined) => void` |
+
+</details>
+
+<details>
+<summary>FetchMixin - Actions (all signatures)</summary>
+
+#### action: setError
+
+```ts
+type setError = (error?: unknown) => void
+```
+
+#### action: setStatusMessage
+
+```ts
+type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
 
 </details>

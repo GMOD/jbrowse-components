@@ -281,6 +281,19 @@ and docs.
 <details open>
 <summary>LinearMultiSampleVariantMatrixDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                              |
+| -------------------------------------------- | ------------------------------------------------------ |
+| [`type`](#property-type)                     | `ISimpleType<"LinearMultiSampleVariantMatrixDisplay">` |
+| [`lineZoneHeight`](#property-linezoneheight) | `IOptionalIType<ISimpleType<number>, [undefined]>`     |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantMatrixDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -304,18 +317,6 @@ lineZoneHeight: types.stripDefault(types.number, 20)
 <details open>
 <summary>LinearMultiSampleVariantMatrixDisplay - Getters</summary>
 
-#### getter: blockType
-
-```ts
-type blockType = string
-```
-
-#### getter: prefersOffset
-
-```ts
-type prefersOffset = boolean
-```
-
 #### getter: renderState
 
 Per-frame render state for the GPU backend — the autorun reads this every time
@@ -333,10 +334,47 @@ type renderState =
   | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature |
+| ---------------------------------------- | --------- |
+| [`blockType`](#getter-blocktype)         | `string`  |
+| [`prefersOffset`](#getter-prefersoffset) | `boolean` |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantMatrixDisplay - Getters (all signatures)</summary>
+
+#### getter: blockType
+
+```ts
+type blockType = string
+```
+
+#### getter: prefersOffset
+
+```ts
+type prefersOffset = boolean
+```
+
 </details>
 
 <details open>
 <summary>LinearMultiSampleVariantMatrixDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                                                                                                                                                    |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`renderSvg`](#method-rendersvg) | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantMatrixDisplay - Methods (all signatures)</summary>
 
 #### method: renderSvg
 
@@ -348,6 +386,19 @@ type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactEl
 
 <details open>
 <summary>LinearMultiSampleVariantMatrixDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                          |
+| -------------------------------------------------------- | -------------------------------------------------- |
+| [`setLineZoneHeight`](#action-setlinezoneheight)         | `(n: number) => number`                            |
+| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: VariantMatrixRenderingBackend) => void` |
+
+</details>
+
+<details>
+<summary>LinearMultiSampleVariantMatrixDisplay - Actions (all signatures)</summary>
 
 #### action: setLineZoneHeight
 

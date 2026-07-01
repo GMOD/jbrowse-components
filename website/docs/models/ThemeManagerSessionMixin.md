@@ -24,6 +24,18 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>ThemeManagerSessionMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature |
+| ------------------------------------------------ | --------- |
+| [`sessionThemeName`](#volatile-sessionthemename) | `string`  |
+
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Volatiles (all signatures)</summary>
+
 #### volatile: sessionThemeName
 
 ```ts
@@ -37,6 +49,20 @@ sessionThemeName: localStorageGetItem('themeName') ?? 'default'
 
 <details open>
 <summary>ThemeManagerSessionMixin - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature               |
+| -------------------------------------- | ----------------------- |
+| [`themeName`](#getter-themename)       | `string`                |
+| [`themeOptions`](#getter-themeoptions) | `SerializableThemeArgs` |
+| [`theme`](#getter-theme)               | `Theme`                 |
+
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Getters (all signatures)</summary>
 
 #### getter: themeName
 
@@ -61,6 +87,32 @@ type theme = Theme
 <details open>
 <summary>ThemeManagerSessionMixin - Methods</summary>
 
+#### method: getActiveThemeOptions
+
+Raw `ThemeOptions` for the active theme, or a named override (used by the
+SVG-export theme picker). Unlike `theme` (a built, non-serializable MUI theme),
+this is the plain options object every view's SVG export threads into each
+display's `renderSvg`, which rebuilds the theme via `createJBrowseTheme` outside
+React context.
+
+```ts
+type getActiveThemeOptions = (
+  name?: any,
+) => ThemeOptions & { name?: string | undefined }
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature        |
+| -------------------------------- | ---------------- |
+| [`allThemes`](#method-allthemes) | `() => ThemeMap` |
+
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Methods (all signatures)</summary>
+
 #### method: allThemes
 
 ```ts
@@ -71,6 +123,18 @@ type allThemes = () => ThemeMap
 
 <details open>
 <summary>ThemeManagerSessionMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature                |
+| -------------------------------------- | ------------------------ |
+| [`setThemeName`](#action-setthemename) | `(name: string) => void` |
+
+</details>
+
+<details>
+<summary>ThemeManagerSessionMixin - Actions (all signatures)</summary>
 
 #### action: setThemeName
 

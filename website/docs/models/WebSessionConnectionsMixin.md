@@ -45,6 +45,18 @@ and docs.
 <details open>
 <summary>WebSessionConnectionsMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                                |
+| ---------------------------------------------------- | -------------------------------------------------------- |
+| [`sessionConnections`](#property-sessionconnections) | `IOptionalIType<IArrayType<IAnyModelType>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>WebSessionConnectionsMixin - Properties (all signatures)</summary>
+
 #### property: sessionConnections
 
 ```ts
@@ -61,6 +73,19 @@ sessionConnections: types.stripDefault(
 
 <details open>
 <summary>WebSessionConnectionsMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                                                                                                                                                                                               |
+| ------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`addConnectionConf`](#action-addconnectionconf) | `(connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any` |
+| [`deleteConnection`](#action-deleteconnection)   | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`  |
+
+</details>
+
+<details>
+<summary>WebSessionConnectionsMixin - Actions (all signatures)</summary>
 
 #### action: addConnectionConf
 

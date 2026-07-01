@@ -48,6 +48,38 @@ and docs.
 <details open>
 <summary>SvInspectorView - Properties</summary>
 
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```ts
+// type signature
+type init = IType<
+  SvInspectorViewInit | undefined,
+  SvInspectorViewInit | undefined,
+  SvInspectorViewInit | undefined
+>
+// code
+init: types.frozen<SvInspectorViewInit | undefined>()
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                                           | Signature                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`id`](#property-id)                                                                             | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                       |
+| [`type`](#property-type)                                                                         | `ISimpleType<"SvInspectorView">`                                                                                                                                                                                                                                                                         |
+| [`height`](#property-height)                                                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                       |
+| [`onlyDisplayRelevantRegionsInCircularView`](#property-onlydisplayrelevantregionsincircularview) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                      |
+| [`spreadsheetView`](#property-spreadsheetview)                                                   | `IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, { ...; } \| { ...; }>, [...]>`   |
+| [`circularView`](#property-circularview)                                                         | `IOptionalIType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 8 more ... & { ...; }, _NotCustomized, ModelSnapshotType<...>>, [...]>` |
+
+</details>
+
+<details>
+<summary>SvInspectorView - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -120,25 +152,25 @@ circularView: types.optional(CircularModel, () =>
         )
 ```
 
-#### property: init
-
-used for initializing the view from a session snapshot
-
-```ts
-// type signature
-type init = IType<
-  SvInspectorViewInit | undefined,
-  SvInspectorViewInit | undefined,
-  SvInspectorViewInit | undefined
->
-// code
-init: types.frozen<SvInspectorViewInit | undefined>()
-```
-
 </details>
 
 <details open>
 <summary>SvInspectorView - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                     | Signature           |
+| -------------------------------------------------------------------------- | ------------------- |
+| [`width`](#volatile-width)                                                 | `number`            |
+| [`SpreadsheetViewReactComponent`](#volatile-spreadsheetviewreactcomponent) | `ViewComponentType` |
+| [`CircularViewReactComponent`](#volatile-circularviewreactcomponent)       | `ViewComponentType` |
+| [`circularViewOptionsBarHeight`](#volatile-circularviewoptionsbarheight)   | `number`            |
+
+</details>
+
+<details>
+<summary>SvInspectorView - Volatiles (all signatures)</summary>
 
 #### volatile: width
 
@@ -180,6 +212,26 @@ circularViewOptionsBarHeight: 52
 
 <details open>
 <summary>SvInspectorView - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                             | Signature                                                                                                                                                                                                                                                          |
+| ---------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`assemblyName`](#getter-assemblyname)                                             | `string \| undefined`                                                                                                                                                                                                                                              |
+| [`showCircularView`](#getter-showcircularview)                                     | `boolean`                                                                                                                                                                                                                                                          |
+| [`features`](#getter-features)                                                     | `SimpleFeatureSerialized[]`                                                                                                                                                                                                                                        |
+| [`featuresAdapterConfigSnapshot`](#getter-featuresadapterconfigsnapshot)           | `{ type: string; features: SimpleFeatureSerialized[]; }`                                                                                                                                                                                                           |
+| [`featureRefNames`](#getter-featurerefnames)                                       | `string[]`                                                                                                                                                                                                                                                         |
+| [`currentAssembly`](#getter-currentassembly)                                       | `(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<void> \| undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 12 more ... & IStateTreeNode<...>) \| undefined` |
+| [`canonicalFeatureRefNameSet`](#getter-canonicalfeaturerefnameset)                 | `Set<string>`                                                                                                                                                                                                                                                      |
+| [`variantTrackId`](#getter-varianttrackid)                                         | `string`                                                                                                                                                                                                                                                           |
+| [`featuresCircularTrackConfiguration`](#getter-featurescirculartrackconfiguration) | `{ type: string; trackId: string; name: string; adapter: { type: string; features: SimpleFeatureSerialized[]; }; assemblyNames: string[]; displays: { type: string; displayId: string; onChordClick: string; renderer: { ...; }; }[]; }`                           |
+
+</details>
+
+<details>
+<summary>SvInspectorView - Getters (all signatures)</summary>
 
 #### getter: assemblyName
 
@@ -243,6 +295,18 @@ type featuresCircularTrackConfiguration = { type: string; trackId: string; name:
 <details open>
 <summary>SvInspectorView - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                                                                                                                       |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [`menuItems`](#method-menuitems) | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]` |
+
+</details>
+
+<details>
+<summary>SvInspectorView - Methods (all signatures)</summary>
+
 #### method: menuItems
 
 ```ts
@@ -257,6 +321,22 @@ type menuItems = () => {
 
 <details open>
 <summary>SvInspectorView - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                                               | Signature                                           |
+| ---------------------------------------------------------------------------------------------------- | --------------------------------------------------- |
+| [`setWidth`](#action-setwidth)                                                                       | `(newWidth: number) => void`                        |
+| [`setHeight`](#action-setheight)                                                                     | `(newHeight: number) => number`                     |
+| [`setOnlyDisplayRelevantRegionsInCircularView`](#action-setonlydisplayrelevantregionsincircularview) | `(val: boolean) => void`                            |
+| [`setInit`](#action-setinit)                                                                         | `(init?: SvInspectorViewInit \| undefined) => void` |
+| [`resizeHeight`](#action-resizeheight)                                                               | `(distance: number) => number`                      |
+
+</details>
+
+<details>
+<summary>SvInspectorView - Actions (all signatures)</summary>
 
 #### action: setWidth
 

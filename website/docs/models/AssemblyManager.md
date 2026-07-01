@@ -41,6 +41,29 @@ assemblies: types.array(assemblyFactory(conf, pm))
 <details open>
 <summary>AssemblyManager - Getters</summary>
 
+#### getter: assemblyList
+
+combined jbrowse.assemblies, session.sessionAssemblies, and
+session.temporaryAssemblies
+
+```ts
+type assemblyList = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                                                                                                                                                                                                                                          |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`assemblyNameMap`](#getter-assemblynamemap)     | `Record<string, ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; loadingP: Promise<...> \| undefined; ... 7 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 12 more ... & IStateTreeNode<...>>` |
+| [`assemblyNamesList`](#getter-assemblynameslist) | `any[]`                                                                                                                                                                                                                                                            |
+| [`rpcManager`](#getter-rpcmanager)               | `RpcManager`                                                                                                                                                                                                                                                       |
+
+</details>
+
+<details>
+<summary>AssemblyManager - Getters (all signatures)</summary>
+
 #### getter: assemblyNameMap
 
 ```ts
@@ -53,15 +76,6 @@ type assemblyNameMap = Record<string, ModelInstanceTypeProps<{ configuration: IM
 type assemblyNamesList = any[]
 ```
 
-#### getter: assemblyList
-
-combined jbrowse.assemblies, session.sessionAssemblies, and
-session.temporaryAssemblies
-
-```ts
-type assemblyList = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
-```
-
 #### getter: rpcManager
 
 ```ts
@@ -72,6 +86,31 @@ type rpcManager = RpcManager
 
 <details open>
 <summary>AssemblyManager - Methods</summary>
+
+#### method: waitForAssembly
+
+use this method instead of assemblyManager.get(assemblyName) to get an assembly
+with regions loaded
+
+```ts
+type waitForAssembly = (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 12 more ... & IStateTreeNode<...>) | undefined>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                                                                                                                                                                                                                                         |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`getCanonicalAssemblyName`](#method-getcanonicalassemblyname) | `(asmName: string) => string`                                                                                                                                                                                                                     |
+| [`getDisplayName`](#method-getdisplayname)                     | `(asmName: string) => string`                                                                                                                                                                                                                     |
+| [`get`](#method-get)                                           | `(asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 8 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 12 more ... & IStateTreeNode<...>) \| undefined` |
+| [`getRefNameMapForAdapter`](#method-getrefnamemapforadapter)   | `(adapterConf: AdapterConf, assemblyName: string \| undefined, opts: AssemblyBaseOpts) => Promise<RefNameAliases>`                                                                                                                                |
+| [`isValidRefName`](#method-isvalidrefname)                     | `(refName: string, assemblyName: string) => boolean`                                                                                                                                                                                              |
+
+</details>
+
+<details>
+<summary>AssemblyManager - Methods (all signatures)</summary>
 
 #### method: getCanonicalAssemblyName
 
@@ -89,15 +128,6 @@ type getDisplayName = (asmName: string) => string
 
 ```ts
 type get = (asmName: string) => (ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { error: unknown; ... 8 more ...; allRefNamesWithLowerCase: Set<...> | undefined; } & ... 12 more ... & IStateTreeNode<...>) | undefined
-```
-
-#### method: waitForAssembly
-
-use this method instead of assemblyManager.get(assemblyName) to get an assembly
-with regions loaded
-
-```ts
-type waitForAssembly = (assemblyName: string) => Promise<(ModelInstanceTypeProps<{ configuration: IMaybe<IReferenceType<IAnyType>>; }> & { ...; } & ... 12 more ... & IStateTreeNode<...>) | undefined>
 ```
 
 #### method: getRefNameMapForAdapter

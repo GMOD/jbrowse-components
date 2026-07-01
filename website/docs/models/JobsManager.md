@@ -27,6 +27,44 @@ status message, plus the list of queued indexing jobs.
 <details open>
 <summary>JobsManager - Volatiles</summary>
 
+#### volatile: stopToken
+
+stop token for the currently running RPC indexing job, used to cancel
+
+```ts
+// type signature
+type stopToken = StopToken | undefined
+// code
+stopToken: undefined as StopToken | undefined
+```
+
+#### volatile: aborted
+
+set when the user cancels, so the catch block reports a cancellation rather than
+an error
+
+```ts
+// type signature
+type aborted = false
+// code
+aborted: false
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                         |
+| ------------------------------------------ | --------------------------------- |
+| [`running`](#volatile-running)             | `false`                           |
+| [`statusMessage`](#volatile-statusmessage) | `string`                          |
+| [`jobName`](#volatile-jobname)             | `string`                          |
+| [`jobsQueue`](#volatile-jobsqueue)         | `IObservableArray<TextJobsEntry>` |
+
+</details>
+
+<details>
+<summary>JobsManager - Volatiles (all signatures)</summary>
+
 #### volatile: running
 
 ```ts
@@ -54,29 +92,6 @@ type jobName = string
 jobName: ''
 ```
 
-#### volatile: stopToken
-
-stop token for the currently running RPC indexing job, used to cancel
-
-```ts
-// type signature
-type stopToken = StopToken | undefined
-// code
-stopToken: undefined as StopToken | undefined
-```
-
-#### volatile: aborted
-
-set when the user cancels, so the catch block reports a cancellation rather than
-an error
-
-```ts
-// type signature
-type aborted = false
-// code
-aborted: false
-```
-
 #### volatile: jobsQueue
 
 ```ts
@@ -90,6 +105,21 @@ jobsQueue: observable.array<TextJobsEntry>([])
 
 <details open>
 <summary>JobsManager - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                               | Signature                            |
+| -------------------------------------------------------------------- | ------------------------------------ |
+| [`rpcManager`](#getter-rpcmanager)                                   | `RpcManager`                         |
+| [`tracks`](#getter-tracks)                                           | `Track[]`                            |
+| [`session`](#getter-session)                                         | `SessionWithDrawerWidgets`           |
+| [`aggregateTextSearchAdapters`](#getter-aggregatetextsearchadapters) | `{ textSearchAdapterId: string; }[]` |
+
+</details>
+
+<details>
+<summary>JobsManager - Getters (all signatures)</summary>
 
 #### getter: rpcManager
 
@@ -120,6 +150,18 @@ type aggregateTextSearchAdapters = { textSearchAdapterId: string }[]
 <details open>
 <summary>JobsManager - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`getJobStatusWidget`](#method-getjobstatuswidget) | `() => ModelInstanceTypeProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<"JobsListWidget">; jobs: IArrayType<IModelType<{ name: ISimpleType<string>; }, { ...; } & { ...; }, _NotCustomized, _NotCustomized>>; finished: IArrayType<...>; queued: IArrayType<...>; aborted: IArrayType<...>; }>...` |
+
+</details>
+
+<details>
+<summary>JobsManager - Methods (all signatures)</summary>
+
 #### method: getJobStatusWidget
 
 ```ts
@@ -130,6 +172,39 @@ type getJobStatusWidget = () => ModelInstanceTypeProps<{ id: IOptionalIType<ISim
 
 <details open>
 <summary>JobsManager - Actions</summary>
+
+#### action: abortJob
+
+cancel the currently running indexing job; the RPC throws 'aborted', handled in
+runIndexingJob's catch
+
+```ts
+type abortJob = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                                                                                                                                                                        |
+| ------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setRunning`](#action-setrunning)                                 | `(running: boolean) => void`                                                                                                                                                     |
+| [`setJobName`](#action-setjobname)                                 | `(name: string) => void`                                                                                                                                                         |
+| [`setStopToken`](#action-setstoptoken)                             | `(token?: StopToken \| undefined) => void`                                                                                                                                       |
+| [`reportStatus`](#action-reportstatus)                             | `(arg: string) => void`                                                                                                                                                          |
+| [`setWidgetStatus`](#action-setwidgetstatus)                       | `() => void`                                                                                                                                                                     |
+| [`setStatusMessage`](#action-setstatusmessage)                     | `(arg: string) => void`                                                                                                                                                          |
+| [`queueJob`](#action-queuejob)                                     | `(props: TextJobsEntry) => void`                                                                                                                                                 |
+| [`dequeueJob`](#action-dequeuejob)                                 | `() => TextJobsEntry \| undefined`                                                                                                                                               |
+| [`clear`](#action-clear)                                           | `() => void`                                                                                                                                                                     |
+| [`runIndexingJob`](#action-runindexingjob)                         | `(entry: TextJobsEntry) => Promise<void>`                                                                                                                                        |
+| [`runJob`](#action-runjob)                                         | `() => Promise<void>`                                                                                                                                                            |
+| [`addTrackTextSearchConf`](#action-addtracktextsearchconf)         | `({ trackId, assemblies, attributes, exclude, outLocation, }: { trackId: string; assemblies: string[]; attributes: string[]; exclude: string[]; outLocation: string; }) => void` |
+| [`addAggregateTextSearchConf`](#action-addaggregatetextsearchconf) | `({ trackIds, assemblyName, outLocation, }: { trackIds: string[]; assemblyName: string; outLocation: string; }) => void`                                                         |
+
+</details>
+
+<details>
+<summary>JobsManager - Actions (all signatures)</summary>
 
 #### action: setRunning
 
@@ -147,15 +222,6 @@ type setJobName = (name: string) => void
 
 ```ts
 type setStopToken = (token?: StopToken | undefined) => void
-```
-
-#### action: abortJob
-
-cancel the currently running indexing job; the RPC throws 'aborted', handled in
-runIndexingJob's catch
-
-```ts
-type abortJob = () => void
 ```
 
 #### action: reportStatus

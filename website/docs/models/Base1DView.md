@@ -27,6 +27,22 @@ dotplot use this
 <details open>
 <summary>Base1DView - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                          |
+| -------------------------------------------------- | ------------------------------------------------------------------ |
+| [`id`](#property-id)                               | `IOptionalIType<ISimpleType<string>, [undefined]>`                 |
+| [`displayedRegions`](#property-displayedregions)   | `IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>` |
+| [`bpPerPx`](#property-bpperpx)                     | `number`                                                           |
+| [`offsetPx`](#property-offsetpx)                   | `number`                                                           |
+| [`minimumBlockWidth`](#property-minimumblockwidth) | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+
+</details>
+
+<details>
+<summary>Base1DView - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -80,6 +96,19 @@ minimumBlockWidth: types.stripDefault(types.number, 0)
 <details open>
 <summary>Base1DView - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                |
+| ------------------------------------------ | ------------------------ |
+| [`features`](#volatile-features)           | `Feature[] \| undefined` |
+| [`volatileWidth`](#volatile-volatilewidth) | `number`                 |
+
+</details>
+
+<details>
+<summary>Base1DView - Volatiles (all signatures)</summary>
+
 #### volatile: features
 
 ```ts
@@ -102,6 +131,26 @@ volatileWidth: 0
 
 <details open>
 <summary>Base1DView - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature  |
+| ------------------------------------------------------------ | ---------- |
+| [`width`](#getter-width)                                     | `number`   |
+| [`assemblyNames`](#getter-assemblynames)                     | `string[]` |
+| [`displayedRegionsTotalPx`](#getter-displayedregionstotalpx) | `number`   |
+| [`maxOffset`](#getter-maxoffset)                             | `number`   |
+| [`minOffset`](#getter-minoffset)                             | `number`   |
+| [`totalBp`](#getter-totalbp)                                 | `number`   |
+| [`dynamicBlocks`](#getter-dynamicblocks)                     | `BlockSet` |
+| [`staticBlocks`](#getter-staticblocks)                       | `BlockSet` |
+| [`currBp`](#getter-currbp)                                   | `number`   |
+
+</details>
+
+<details>
+<summary>Base1DView - Getters (all signatures)</summary>
 
 #### getter: width
 
@@ -162,6 +211,19 @@ type currBp = number
 <details open>
 <summary>Base1DView - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature                                                                                                                                                                             |
+| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`pxToBp`](#method-pxtobp) | `(px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }` |
+| [`bpToPx`](#method-bptopx) | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => number \| undefined`                                 |
+
+</details>
+
+<details>
+<summary>Base1DView - Methods (all signatures)</summary>
+
 #### method: pxToBp
 
 ```ts
@@ -197,6 +259,52 @@ type bpToPx = ({
 <details open>
 <summary>Base1DView - Actions</summary>
 
+#### action: showAllRegions
+
+this makes a zoomed out view that shows all displayedRegions that makes the
+overview bar square with the scale bar
+
+```ts
+type showAllRegions = () => void
+```
+
+#### action: scroll
+
+note: the scroll is clamped to keep the view on the main screen
+
+```ts
+type scroll = (distance: number) => number
+```
+
+#### action: moveTo
+
+offset is the base-pair-offset in the displayed region, index is the index of
+the displayed region in the linear genome view
+
+```ts
+type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                                                             |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| [`setDisplayedRegions`](#action-setdisplayedregions) | `(regions: Region[]) => void`                                                         |
+| [`setBpPerPx`](#action-setbpperpx)                   | `(val: number) => void`                                                               |
+| [`setVolatileWidth`](#action-setvolatilewidth)       | `(width: number) => void`                                                             |
+| [`setFeatures`](#action-setfeatures)                 | `(features: Feature[]) => void`                                                       |
+| [`zoomOut`](#action-zoomout)                         | `() => void`                                                                          |
+| [`zoomIn`](#action-zoomin)                           | `() => void`                                                                          |
+| [`zoomTo`](#action-zoomto)                           | `(bpPerPx: number, offset?: any) => number`                                           |
+| [`scrollTo`](#action-scrollto)                       | `(offsetPx: number) => number`                                                        |
+| [`centerAt`](#action-centerat)                       | `(coord: number, refName: string \| undefined, displayedRegionIndex: number) => void` |
+
+</details>
+
+<details>
+<summary>Base1DView - Actions (all signatures)</summary>
+
 #### action: setDisplayedRegions
 
 ```ts
@@ -219,15 +327,6 @@ type setVolatileWidth = (width: number) => void
 
 ```ts
 type setFeatures = (features: Feature[]) => void
-```
-
-#### action: showAllRegions
-
-this makes a zoomed out view that shows all displayedRegions that makes the
-overview bar square with the scale bar
-
-```ts
-type showAllRegions = () => void
 ```
 
 #### action: zoomOut
@@ -262,23 +361,6 @@ type centerAt = (
   refName: string | undefined,
   displayedRegionIndex: number,
 ) => void
-```
-
-#### action: scroll
-
-note: the scroll is clamped to keep the view on the main screen
-
-```ts
-type scroll = (distance: number) => number
-```
-
-#### action: moveTo
-
-offset is the base-pair-offset in the displayed region, index is the index of
-the displayed region in the linear genome view
-
-```ts
-type moveTo = (start?: BpOffset | undefined, end?: BpOffset | undefined) => void
 ```
 
 </details>

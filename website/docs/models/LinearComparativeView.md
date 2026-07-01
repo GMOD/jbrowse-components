@@ -43,15 +43,6 @@ and docs.
 <details open>
 <summary>LinearComparativeView - Properties</summary>
 
-#### property: id
-
-```ts
-// type signature
-type id = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-id: ElementId
-```
-
 #### property: type
 
 Abstract base: never registered or instantiated standalone, always composed into
@@ -64,6 +55,62 @@ assignable to this base type.
 type type = ISimpleType<string>
 // code
 type: types.string
+```
+
+#### property: views
+
+N genome rows, with N-1 synteny `levels` between adjacent pairs. The
+views/levels invariant is maintained by reconcileLevels().
+
+```ts
+// type signature
+type views = IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
+// code
+views: types.array(
+          pluginManager.getViewType('LinearGenomeView')
+            .stateModel as LinearGenomeViewStateModel,
+        )
+```
+
+#### property: viewTrackConfigs
+
+this represents tracks specific to this view specifically used for read vs ref
+dotplots where this track would not really apply elsewhere
+
+```ts
+// type signature
+type viewTrackConfigs = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
+// code
+viewTrackConfigs: types.stripDefault(
+  types.array(pluginManager.pluggableConfigSchemaType('track')),
+  [],
+)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                           |
+| ---------------------------------------------------- | --------------------------------------------------- |
+| [`id`](#property-id)                                 | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`trackSelectorType`](#property-trackselectortype)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`showIntraviewLinks`](#property-showintraviewlinks) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`linkViews`](#property-linkviews)                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`interactiveOverlay`](#property-interactiveoverlay) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`levels`](#property-levels)                         | `IArrayType<IAnyModelType>`                         |
+
+</details>
+
+<details>
+<summary>LinearComparativeView - Properties (all signatures)</summary>
+
+#### property: id
+
+```ts
+// type signature
+type id = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+id: ElementId
 ```
 
 #### property: trackSelectorType
@@ -111,40 +158,22 @@ type levels = IArrayType<IAnyModelType>
 levels: types.array(LinearSyntenyViewHelper)
 ```
 
-#### property: views
-
-N genome rows, with N-1 synteny `levels` between adjacent pairs. The
-views/levels invariant is maintained by reconcileLevels().
-
-```ts
-// type signature
-type views = IArrayType<IModelType<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; } & ... 17 more ... & { ...; }, _NotCustomized, { ...; }>>
-// code
-views: types.array(
-          pluginManager.getViewType('LinearGenomeView')
-            .stateModel as LinearGenomeViewStateModel,
-        )
-```
-
-#### property: viewTrackConfigs
-
-this represents tracks specific to this view specifically used for read vs ref
-dotplots where this track would not really apply elsewhere
-
-```ts
-// type signature
-type viewTrackConfigs = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
-// code
-viewTrackConfigs: types.stripDefault(
-  types.array(pluginManager.pluggableConfigSchemaType('track')),
-  [],
-)
-```
-
 </details>
 
 <details open>
 <summary>LinearComparativeView - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature             |
+| -------------------------- | --------------------- |
+| [`width`](#volatile-width) | `number \| undefined` |
+
+</details>
+
+<details>
+<summary>LinearComparativeView - Volatiles (all signatures)</summary>
 
 #### volatile: width
 
@@ -169,6 +198,20 @@ toggling it in any view applies everywhere
 type scrollZoom = boolean
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                   |
+| ---------------------------------------- | --------------------------- |
+| [`initialized`](#getter-initialized)     | `boolean`                   |
+| [`refNames`](#getter-refnames)           | `(string \| undefined)[][]` |
+| [`assemblyNames`](#getter-assemblynames) | `string[]`                  |
+
+</details>
+
+<details>
+<summary>LinearComparativeView - Getters (all signatures)</summary>
+
 #### getter: initialized
 
 ```ts
@@ -192,12 +235,6 @@ type assemblyNames = string[]
 <details open>
 <summary>LinearComparativeView - Methods</summary>
 
-#### method: isViewCompact
-
-```ts
-type isViewCompact = (idx: number) => boolean
-```
-
 #### method: headerMenuItems
 
 includes a subset of view menu options because the full list is a little
@@ -214,6 +251,26 @@ view-specific toggle options
 
 ```ts
 type showMenuItems = () => MenuItem[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                         |
+| ---------------------------------------------------- | ------------------------------------------------- |
+| [`isViewCompact`](#method-isviewcompact)             | `(idx: number) => boolean`                        |
+| [`menuItems`](#method-menuitems)                     | `() => MenuItem[]`                                |
+| [`rubberBandMenuItems`](#method-rubberbandmenuitems) | `() => { label: string; onClick: () => void; }[]` |
+
+</details>
+
+<details>
+<summary>LinearComparativeView - Methods (all signatures)</summary>
+
+#### method: isViewCompact
+
+```ts
+type isViewCompact = (idx: number) => boolean
 ```
 
 #### method: menuItems
@@ -244,24 +301,6 @@ views/levels invariant.
 type reconcileLevels = () => void
 ```
 
-#### action: setWidth
-
-```ts
-type setWidth = (newWidth: number) => void
-```
-
-#### action: setViews
-
-```ts
-type setViews = (views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>>>[]) => void
-```
-
-#### action: removeView
-
-```ts
-type removeView = (view: ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>) => void
-```
-
 #### action: addView
 
 Push a new genome row. The new trailing level starts with no synteny tracks.
@@ -279,6 +318,66 @@ both happen at the end of the chain.
 
 ```ts
 type removeLastRow = () => void
+```
+
+#### action: appendRow
+
+Append an assembly to the bottom of the stack and optionally show a synteny
+track on the new level connecting it to the previous bottom row. A synteny
+dataset is an edge between two adjacent assemblies, so rows are only ever added
+at the chain's end.
+
+The new row is created with a LinearGenomeView `init` — its own afterAttach
+autorun loads the assembly regions and navigates (whole genome, or `loc` when
+given), so we don't reimplement that imperatively here.
+
+```ts
+type appendRow = ({
+  assembly,
+  loc,
+  syntenyTrackId,
+}: {
+  assembly: string
+  loc?: string | undefined
+  syntenyTrackId?: string | undefined
+}) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                                                                                                                                                                                                                    |
+| -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setWidth`](#action-setwidth)                           | `(newWidth: number) => void`                                                                                                                                                                                                                 |
+| [`setViews`](#action-setviews)                           | `(views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>>>[]) => void` |
+| [`setLinkViews`](#action-setlinkviews)                   | `(arg: boolean) => void`                                                                                                                                                                                                                     |
+| [`setScrollZoom`](#action-setscrollzoom)                 | `(arg: boolean) => void`                                                                                                                                                                                                                     |
+| [`activateTrackSelector`](#action-activatetrackselector) | `(level: number) => Widget`                                                                                                                                                                                                                  |
+| [`toggleTrack`](#action-toggletrack)                     | `(trackId: string, level?: any) => void`                                                                                                                                                                                                     |
+| [`showTrack`](#action-showtrack)                         | `(trackId: string, level?: any, initialSnapshot?: any) => void`                                                                                                                                                                              |
+| [`hideTrack`](#action-hidetrack)                         | `(trackId: string, level?: any) => void`                                                                                                                                                                                                     |
+| [`squareView`](#action-squareview)                       | `() => void`                                                                                                                                                                                                                                 |
+| [`clearView`](#action-clearview)                         | `() => void`                                                                                                                                                                                                                                 |
+| [`toggleCompactView`](#action-togglecompactview)         | `(idx: number) => void`                                                                                                                                                                                                                      |
+| [`compactAllViews`](#action-compactallviews)             | `() => void`                                                                                                                                                                                                                                 |
+| [`expandAllViews`](#action-expandallviews)               | `() => void`                                                                                                                                                                                                                                 |
+| [`autoScaleLevelHeights`](#action-autoscalelevelheights) | `() => void`                                                                                                                                                                                                                                 |
+
+</details>
+
+<details>
+<summary>LinearComparativeView - Actions (all signatures)</summary>
+
+#### action: setWidth
+
+```ts
+type setWidth = (newWidth: number) => void
+```
+
+#### action: setViews
+
+```ts
+type setViews = (views: ModelCreationType<ExtractCFromProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<...>, [...]>; }, { ...; }>>>[]) => void
 ```
 
 #### action: setLinkViews
@@ -351,29 +450,6 @@ type expandAllViews = () => void
 
 ```ts
 type autoScaleLevelHeights = () => void
-```
-
-#### action: appendRow
-
-Append an assembly to the bottom of the stack and optionally show a synteny
-track on the new level connecting it to the previous bottom row. A synteny
-dataset is an edge between two adjacent assemblies, so rows are only ever added
-at the chain's end.
-
-The new row is created with a LinearGenomeView `init` — its own afterAttach
-autorun loads the assembly regions and navigates (whole genome, or `loc` when
-given), so we don't reimplement that imperatively here.
-
-```ts
-type appendRow = ({
-  assembly,
-  loc,
-  syntenyTrackId,
-}: {
-  assembly: string
-  loc?: string | undefined
-  syntenyTrackId?: string | undefined
-}) => void
 ```
 
 </details>

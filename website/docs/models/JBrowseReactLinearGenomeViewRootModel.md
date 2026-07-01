@@ -24,6 +24,23 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>JBrowseReactLinearGenomeViewRootModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                                                                                                                                                                                                                                                                                                            |
+| ------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`config`](#property-config)                     | `IModelType<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>; ... 5 more ...`   |
+| [`session`](#property-session)                   | `IModelType<_OverrideProps<Omit<_OverrideProps<Omit<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<ISimpleType<number>, [...]>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ...; }>, never>, _OverrideProps<...>>, never...`   |
+| [`assemblyManager`](#property-assemblymanager)   | `IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> \| undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...` |
+| [`disableAddTracks`](#property-disableaddtracks) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                  |
+| [`drawerViewHeight`](#property-drawerviewheight) | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                   |
+| [`internetAccounts`](#property-internetaccounts) | `IArrayType<IAnyType>`                                                                                                                                                                                                                                                                                                               |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Properties (all signatures)</summary>
+
 #### property: config
 
 ```ts
@@ -85,6 +102,22 @@ internetAccounts: types.array(
 <details open>
 <summary>JBrowseReactLinearGenomeViewRootModel - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature           |
+| -------------------------------------------------- | ------------------- |
+| [`error`](#volatile-error)                         | `unknown`           |
+| [`rpcManager`](#volatile-rpcmanager)               | `RpcManager`        |
+| [`textSearchManager`](#volatile-textsearchmanager) | `TextSearchManager` |
+| [`adminMode`](#volatile-adminmode)                 | `false`             |
+| [`version`](#volatile-version)                     | `string`            |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Volatiles (all signatures)</summary>
+
 #### volatile: error
 
 ```ts
@@ -141,6 +174,18 @@ version
 <details open>
 <summary>JBrowseReactLinearGenomeViewRootModel - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature                                                                                                                                                                                                                                                                                                                          |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`jbrowse`](#getter-jbrowse) | `ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{ rpc: ConfigurationSchemaType<{ defaultDriver: { type: string; description: string; defaultValue: string; advanced: true; }; workerCount: { type: string; description: string; defaultValue: number; advanced: true; }; }, ConfigurationSchemaOptions<...>>;...` |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Getters (all signatures)</summary>
+
 #### getter: jbrowse
 
 ```ts
@@ -151,6 +196,22 @@ type jbrowse = ModelInstanceTypeProps<{ configuration: ConfigurationSchemaType<{
 
 <details open>
 <summary>JBrowseReactLinearGenomeViewRootModel - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                     | Signature                                                                                                                                                                                                                                                                                                                          |
+| -------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setSession`](#action-setsession)                                         | `(sessionSnapshot: ModelCreationType<ExtractCFromProps<_OverrideProps<Omit<_OverrideProps<Omit<_OverrideProps<_OverrideProps<Omit<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; name: ISimpleType<string>; margin: IOptionalIType<ISimpleType<number>, [...]>; focusedViewId: IMaybe<...>; }, never>, { ...; }>, { ....` |
+| [`renameCurrentSession`](#action-renamecurrentsession)                     | `(sessionName: string) => void`                                                                                                                                                                                                                                                                                                    |
+| [`setError`](#action-seterror)                                             | `(error: unknown) => void`                                                                                                                                                                                                                                                                                                         |
+| [`addInternetAccount`](#action-addinternetaccount)                         | `(acct: any) => void`                                                                                                                                                                                                                                                                                                              |
+| [`findAppropriateInternetAccount`](#action-findappropriateinternetaccount) | `(location: UriLocation) => any`                                                                                                                                                                                                                                                                                                   |
+
+</details>
+
+<details>
+<summary>JBrowseReactLinearGenomeViewRootModel - Actions (all signatures)</summary>
 
 #### action: setSession
 

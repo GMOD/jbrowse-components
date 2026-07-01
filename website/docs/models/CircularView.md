@@ -58,15 +58,6 @@ and docs.
 <details open>
 <summary>CircularView - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'CircularView'>
-// code
-type: types.literal('CircularView')
-```
-
 #### property: offsetRadians
 
 similar to offsetPx in linear genome view
@@ -76,6 +67,55 @@ similar to offsetPx in linear genome view
 type offsetRadians = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 offsetRadians: types.stripDefault(types.number, defaultOffsetRadians)
+```
+
+#### property: init
+
+used for initializing the view from a session snapshot
+
+```ts
+// type signature
+type init = IType<
+  CircularViewInit | undefined,
+  CircularViewInit | undefined,
+  CircularViewInit | undefined
+>
+// code
+init: types.frozen<CircularViewInit | undefined>()
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                           | Signature                                                          |
+| ---------------------------------------------------------------- | ------------------------------------------------------------------ |
+| [`type`](#property-type)                                         | `ISimpleType<"CircularView">`                                      |
+| [`bpPerPx`](#property-bpperpx)                                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`tracks`](#property-tracks)                                     | `IArrayType<IAnyType>`                                             |
+| [`hideVerticalResizeHandle`](#property-hideverticalresizehandle) | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                |
+| [`hideTrackSelectorButton`](#property-hidetrackselectorbutton)   | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                |
+| [`disableImportForm`](#property-disableimportform)               | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                |
+| [`height`](#property-height)                                     | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`displayedRegions`](#property-displayedregions)                 | `IOptionalIType<IType<Region[], Region[], Region[]>, [undefined]>` |
+| [`minimumRadiusPx`](#property-minimumradiuspx)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`spacingPx`](#property-spacingpx)                               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`paddingPx`](#property-paddingpx)                               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`minVisibleWidth`](#property-minvisiblewidth)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`minimumBlockWidth`](#property-minimumblockwidth)               | `IOptionalIType<ISimpleType<number>, [undefined]>`                 |
+| [`trackSelectorType`](#property-trackselectortype)               | `IOptionalIType<ISimpleType<string>, [undefined]>`                 |
+
+</details>
+
+<details>
+<summary>CircularView - Properties (all signatures)</summary>
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<'CircularView'>
+// code
+type: types.literal('CircularView')
 ```
 
 #### property: bpPerPx
@@ -201,25 +241,25 @@ type trackSelectorType = IOptionalIType<ISimpleType<string>, [undefined]>
 trackSelectorType: types.stripDefault(types.string, 'hierarchical')
 ```
 
-#### property: init
-
-used for initializing the view from a session snapshot
-
-```ts
-// type signature
-type init = IType<
-  CircularViewInit | undefined,
-  CircularViewInit | undefined,
-  CircularViewInit | undefined
->
-// code
-init: types.frozen<CircularViewInit | undefined>()
-```
-
 </details>
 
 <details open>
 <summary>CircularView - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature             |
+| ------------------------------------------ | --------------------- |
+| [`volatileWidth`](#volatile-volatilewidth) | `number \| undefined` |
+| [`volatileError`](#volatile-volatileerror) | `unknown`             |
+| [`panX`](#volatile-panx)                   | `number`              |
+| [`panY`](#volatile-pany)                   | `number`              |
+
+</details>
+
+<details>
+<summary>CircularView - Volatiles (all signatures)</summary>
 
 #### volatile: volatileWidth
 
@@ -261,6 +301,77 @@ panY: 0
 
 <details open>
 <summary>CircularView - Getters</summary>
+
+#### getter: figureSize
+
+figure is always square, so width === height
+
+```ts
+type figureSize = number
+```
+
+#### getter: elidedRegions
+
+this is displayedRegions, post-processed to elide regions that are too small to
+see reasonably
+
+```ts
+type elidedRegions = SliceRegion[]
+```
+
+#### getter: showLoading
+
+Whether to show a loading indicator instead of the import form or view
+
+```ts
+type showLoading = boolean
+```
+
+#### getter: showView
+
+Whether the view is fully initialized and ready to display
+
+```ts
+type showView = boolean
+```
+
+#### getter: showImportForm
+
+Whether to show the import form (when not ready to display and import form is
+enabled, or when there's an error)
+
+```ts
+type showImportForm = boolean
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                             |
+| -------------------------------------------------- | ----------------------------------------------------- |
+| [`width`](#getter-width)                           | `number`                                              |
+| [`visibleSection`](#getter-visiblesection)         | `{ rho: [number, number]; theta: [number, number]; }` |
+| [`circumferencePx`](#getter-circumferencepx)       | `number`                                              |
+| [`radiusPx`](#getter-radiuspx)                     | `number`                                              |
+| [`bpPerRadian`](#getter-bpperradian)               | `number`                                              |
+| [`centerXY`](#getter-centerxy)                     | `[number, number]`                                    |
+| [`totalBp`](#getter-totalbp)                       | `number`                                              |
+| [`maximumRadiusPx`](#getter-maximumradiuspx)       | `number`                                              |
+| [`maxBpPerPx`](#getter-maxbpperpx)                 | `number`                                              |
+| [`minBpPerPx`](#getter-minbpperpx)                 | `number`                                              |
+| [`atMaxBpPerPx`](#getter-atmaxbpperpx)             | `boolean`                                             |
+| [`atMinBpPerPx`](#getter-atminbpperpx)             | `boolean`                                             |
+| [`assemblyNames`](#getter-assemblynames)           | `string[]`                                            |
+| [`initialized`](#getter-initialized)               | `boolean`                                             |
+| [`assemblyErrors`](#getter-assemblyerrors)         | `string`                                              |
+| [`error`](#getter-error)                           | `unknown`                                             |
+| [`hasSomethingToShow`](#getter-hassomethingtoshow) | `boolean`                                             |
+| [`staticSlices`](#getter-staticslices)             | `Slice[]`                                             |
+
+</details>
+
+<details>
+<summary>CircularView - Getters (all signatures)</summary>
 
 #### getter: width
 
@@ -334,23 +445,6 @@ type atMaxBpPerPx = boolean
 type atMinBpPerPx = boolean
 ```
 
-#### getter: figureSize
-
-figure is always square, so width === height
-
-```ts
-type figureSize = number
-```
-
-#### getter: elidedRegions
-
-this is displayedRegions, post-processed to elide regions that are too small to
-see reasonably
-
-```ts
-type elidedRegions = SliceRegion[]
-```
-
 #### getter: assemblyNames
 
 ```ts
@@ -381,31 +475,6 @@ type error = unknown
 type hasSomethingToShow = boolean
 ```
 
-#### getter: showLoading
-
-Whether to show a loading indicator instead of the import form or view
-
-```ts
-type showLoading = boolean
-```
-
-#### getter: showView
-
-Whether the view is fully initialized and ready to display
-
-```ts
-type showView = boolean
-```
-
-#### getter: showImportForm
-
-Whether to show the import form (when not ready to display and import form is
-enabled, or when there's an error)
-
-```ts
-type showImportForm = boolean
-```
-
 #### getter: staticSlices
 
 ```ts
@@ -429,6 +498,62 @@ type menuItems = () => MenuItem[]
 
 <details open>
 <summary>CircularView - Actions</summary>
+
+#### action: resetView
+
+reset rotation, pan, and zoom back to the default fit-to-window view
+
+```ts
+type resetView = () => void
+```
+
+#### action: zoomToPoint
+
+zoom toward/away from a specific angle on the circle, keeping the genome
+position at that angle visually fixed under the cursor
+
+```ts
+type zoomToPoint = (newBpPerPx: number, cursorAngle: number) => void
+```
+
+#### action: exportSvg
+
+creates an svg export and save using FileSaver
+
+```ts
+type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                 | Signature                                                                |
+| ---------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| [`fitToWindow`](#action-fittowindow)                                   | `() => void`                                                             |
+| [`setWidth`](#action-setwidth)                                         | `(newWidth: number) => number`                                           |
+| [`setHeight`](#action-setheight)                                       | `(newHeight: number) => number`                                          |
+| [`rotateClockwiseButton`](#action-rotateclockwisebutton)               | `() => void`                                                             |
+| [`rotateCounterClockwiseButton`](#action-rotatecounterclockwisebutton) | `() => void`                                                             |
+| [`rotate`](#action-rotate)                                             | `(delta: number) => void`                                                |
+| [`zoomInButton`](#action-zoominbutton)                                 | `() => void`                                                             |
+| [`zoomOutButton`](#action-zoomoutbutton)                               | `() => void`                                                             |
+| [`setBpPerPx`](#action-setbpperpx)                                     | `(newVal: number) => void`                                               |
+| [`setDisplayedRegions`](#action-setdisplayedregions)                   | `(regions: Region[]) => void`                                            |
+| [`activateTrackSelector`](#action-activatetrackselector)               | `() => Widget \| undefined`                                              |
+| [`toggleTrack`](#action-toggletrack)                                   | `(trackId: string) => boolean`                                           |
+| [`setError`](#action-seterror)                                         | `(error: unknown) => void`                                               |
+| [`setInit`](#action-setinit)                                           | `(init?: CircularViewInit \| undefined) => void`                         |
+| [`showTrack`](#action-showtrack)                                       | `(trackId: string, initialSnapshot?: any) => any`                        |
+| [`addTrackConf`](#action-addtrackconf)                                 | `(configuration: Record<string, unknown>, initialSnapshot?: any) => any` |
+| [`hideTrack`](#action-hidetrack)                                       | `(trackId: string) => boolean`                                           |
+| [`openExportDialog`](#action-openexportdialog)                         | `() => void`                                                             |
+| [`resizeHeight`](#action-resizeheight)                                 | `(distance: number) => number`                                           |
+| [`resizeWidth`](#action-resizewidth)                                   | `(distance: number) => number`                                           |
+
+</details>
+
+<details>
+<summary>CircularView - Actions (all signatures)</summary>
 
 #### action: fitToWindow
 
@@ -466,14 +591,6 @@ type rotateCounterClockwiseButton = () => void
 type rotate = (delta: number) => void
 ```
 
-#### action: resetView
-
-reset rotation, pan, and zoom back to the default fit-to-window view
-
-```ts
-type resetView = () => void
-```
-
 #### action: zoomInButton
 
 ```ts
@@ -490,15 +607,6 @@ type zoomOutButton = () => void
 
 ```ts
 type setBpPerPx = (newVal: number) => void
-```
-
-#### action: zoomToPoint
-
-zoom toward/away from a specific angle on the circle, keeping the genome
-position at that angle visually fixed under the cursor
-
-```ts
-type zoomToPoint = (newBpPerPx: number, cursorAngle: number) => void
 ```
 
 #### action: setDisplayedRegions
@@ -556,14 +664,6 @@ type hideTrack = (trackId: string) => boolean
 
 ```ts
 type openExportDialog = () => void
-```
-
-#### action: exportSvg
-
-creates an svg export and save using FileSaver
-
-```ts
-type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 ```
 
 #### action: resizeHeight

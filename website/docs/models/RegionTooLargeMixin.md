@@ -50,6 +50,20 @@ userByteSizeLimit: types.maybe(types.number)
 <details open>
 <summary>RegionTooLargeMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                             | Signature                          |
+| ------------------------------------------------------------------ | ---------------------------------- |
+| [`regionTooLargeState`](#volatile-regiontoolargestate)             | `false`                            |
+| [`regionTooLargeReasonState`](#volatile-regiontoolargereasonstate) | `string`                           |
+| [`featureDensityStats`](#volatile-featuredensitystats)             | `FeatureDensityStats \| undefined` |
+
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Volatiles (all signatures)</summary>
+
 #### volatile: regionTooLargeState
 
 ```ts
@@ -81,6 +95,19 @@ featureDensityStats: undefined as FeatureDensityStats | undefined
 
 <details open>
 <summary>RegionTooLargeMixin - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature |
+| ------------------------------------------------------ | --------- |
+| [`regionTooLarge`](#getter-regiontoolarge)             | `boolean` |
+| [`regionTooLargeReason`](#getter-regiontoolargereason) | `string`  |
+
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Getters (all signatures)</summary>
 
 #### getter: regionTooLarge
 
@@ -115,6 +142,41 @@ type regionCannotBeRenderedText = (
 <details open>
 <summary>RegionTooLargeMixin - Actions</summary>
 
+#### action: setFeatureDensityStatsLimit
+
+force-load: raise the byte limit past the current request and clear the
+too-large banner
+
+```ts
+type setFeatureDensityStatsLimit = (
+  stats?: FeatureDensityStats | undefined,
+) => void
+```
+
+#### action: forceLoad
+
+Raises the byte limit past the current density stats and triggers a reload. The
+display chrome calls this via TooLargeMessage's force-load button; concrete
+display models override reload() to do the actual refetch.
+
+```ts
+type forceLoad = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                     | Signature                                              |
+| ---------------------------------------------------------- | ------------------------------------------------------ |
+| [`setRegionTooLarge`](#action-setregiontoolarge)           | `(val: boolean, reason?: string \| undefined) => void` |
+| [`setFeatureDensityStats`](#action-setfeaturedensitystats) | `(stats?: FeatureDensityStats \| undefined) => void`   |
+| [`reload`](#action-reload)                                 | `() => void`                                           |
+
+</details>
+
+<details>
+<summary>RegionTooLargeMixin - Actions (all signatures)</summary>
+
 #### action: setRegionTooLarge
 
 ```ts
@@ -127,31 +189,10 @@ type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
 type setFeatureDensityStats = (stats?: FeatureDensityStats | undefined) => void
 ```
 
-#### action: setFeatureDensityStatsLimit
-
-force-load: raise the byte limit past the current request and clear the
-too-large banner
-
-```ts
-type setFeatureDensityStatsLimit = (
-  stats?: FeatureDensityStats | undefined,
-) => void
-```
-
 #### action: reload
 
 ```ts
 type reload = () => void
-```
-
-#### action: forceLoad
-
-Raises the byte limit past the current density stats and triggers a reload. The
-display chrome calls this via TooLargeMessage's force-load button; concrete
-display models override reload() to do the actual refetch.
-
-```ts
-type forceLoad = () => void
 ```
 
 </details>

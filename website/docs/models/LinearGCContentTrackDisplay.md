@@ -286,6 +286,18 @@ and docs.
 <details open>
 <summary>LinearGCContentTrackDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                                    |
+| ------------------------ | -------------------------------------------- |
+| [`type`](#property-type) | `ISimpleType<"LinearGCContentTrackDisplay">` |
+
+</details>
+
+<details>
+<summary>LinearGCContentTrackDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts

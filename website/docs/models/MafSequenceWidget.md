@@ -27,6 +27,23 @@ connected view's regions, with per-row hover highlight state.
 <details open>
 <summary>MafSequenceWidget - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                                                                                                                                                             |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`id`](#property-id)                           | `ISimpleType<string>`                                                                                                                                                                                                                                                                                                                 |
+| [`type`](#property-type)                       | `ISimpleType<"MafSequenceWidget">`                                                                                                                                                                                                                                                                                                    |
+| [`adapterConfig`](#property-adapterconfig)     | `IType<(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| null \| undefined, (ModelInstanceTypeProps<...> & ... 1 more ... & IStateTreeNode<...>) \| undefined, (ModelInstanceType...` |
+| [`samples`](#property-samples)                 | `IType<Sample[] \| null \| undefined, Sample[] \| undefined, Sample[] \| undefined>`                                                                                                                                                                                                                                                  |
+| [`regions`](#property-regions)                 | `IType<{ refName: string; start: number; end: number; assemblyName: string; }[] \| null \| undefined, { refName: string; start: number; end: number; assemblyName: string; }[] \| undefined, { refName: string; start: number; end: number; assemblyName: string; }[] \| undefined>`                                                  |
+| [`connectedViewId`](#property-connectedviewid) | `IMaybe<ISimpleType<string>>`                                                                                                                                                                                                                                                                                                         |
+
+</details>
+
+<details>
+<summary>MafSequenceWidget - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -106,6 +123,18 @@ connectedViewId: types.maybe(types.string)
 <details open>
 <summary>MafSequenceWidget - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                     |
+| -------------------------------------------- | ----------------------------- |
+| [`hoverHighlight`](#volatile-hoverhighlight) | `HoverHighlight \| undefined` |
+
+</details>
+
+<details>
+<summary>MafSequenceWidget - Volatiles (all signatures)</summary>
+
 #### volatile: hoverHighlight
 
 ```ts
@@ -119,6 +148,18 @@ hoverHighlight: undefined as HoverHighlight | undefined
 
 <details open>
 <summary>MafSequenceWidget - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                          |
+| ------------------------------------------------ | -------------------------------------------------- |
+| [`setHoverHighlight`](#action-sethoverhighlight) | `(highlight: HoverHighlight \| undefined) => void` |
+
+</details>
+
+<details>
+<summary>MafSequenceWidget - Actions (all signatures)</summary>
 
 #### action: setHoverHighlight
 

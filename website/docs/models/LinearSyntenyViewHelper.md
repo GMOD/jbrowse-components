@@ -47,6 +47,22 @@ and docs.
 <details open>
 <summary>LinearSyntenyViewHelper - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature                                          |
+| ---------------------------- | -------------------------------------------------- |
+| [`id`](#property-id)         | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type)     | `string`                                           |
+| [`tracks`](#property-tracks) | `IArrayType<IAnyType>`                             |
+| [`height`](#property-height) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
+| [`level`](#property-level)   | `ISimpleType<number>`                              |
+
+</details>
+
+<details>
+<summary>LinearSyntenyViewHelper - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -107,30 +123,12 @@ onto one canvas.
 type gpuRenderingBackend = SyntenyRenderingBackend | undefined
 ```
 
-#### getter: parentView
-
-```ts
-type parentView = ParentViewDuck
-```
-
-#### getter: assemblyNames
-
-```ts
-type assemblyNames = string[]
-```
-
 #### getter: linearSyntenyDisplays
 
 All synteny displays under this level's tracks.
 
 ```ts
 type linearSyntenyDisplays = (ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>)[]
-```
-
-#### getter: numFeats
-
-```ts
-type numFeats = number
 ```
 
 #### getter: settled
@@ -170,10 +168,58 @@ Reverse lookup key → display, used to dispatch pick results.
 type displaysByKey = Map<number, ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; type: ISimpleType<string>; rpcDriverName: IMaybe<ISimpleType<string>>; }, { ...; }>> & ... 9 more ... & IStateTreeNode<...>>
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature        |
+| ---------------------------------------- | ---------------- |
+| [`parentView`](#getter-parentview)       | `ParentViewDuck` |
+| [`assemblyNames`](#getter-assemblynames) | `string[]`       |
+| [`numFeats`](#getter-numfeats)           | `number`         |
+
+</details>
+
+<details>
+<summary>LinearSyntenyViewHelper - Getters (all signatures)</summary>
+
+#### getter: parentView
+
+```ts
+type parentView = ParentViewDuck
+```
+
+#### getter: assemblyNames
+
+```ts
+type assemblyNames = string[]
+```
+
+#### getter: numFeats
+
+```ts
+type numFeats = number
+```
+
 </details>
 
 <details open>
 <summary>LinearSyntenyViewHelper - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                         |
+| -------------------------------------------------------- | ------------------------------------------------- |
+| [`setHeight`](#action-setheight)                         | `(n: number) => void`                             |
+| [`showTrack`](#action-showtrack)                         | `(trackId: string, initialSnapshot?: any) => any` |
+| [`hideTrack`](#action-hidetrack)                         | `(trackId: string) => boolean`                    |
+| [`toggleTrack`](#action-toggletrack)                     | `(trackId: string) => void`                       |
+| [`startRenderingBackend`](#action-startrenderingbackend) | `(backend: SyntenyRenderingBackend) => void`      |
+
+</details>
+
+<details>
+<summary>LinearSyntenyViewHelper - Actions (all signatures)</summary>
 
 #### action: setHeight
 

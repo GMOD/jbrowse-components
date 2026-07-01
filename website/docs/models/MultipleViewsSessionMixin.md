@@ -102,6 +102,32 @@ and docs.
 <details open>
 <summary>MultipleViewsSessionMixin - Properties</summary>
 
+#### property: useWorkspaces
+
+enables the dockview-based tabbed/tiled workspace layout
+
+```ts
+// type signature
+type useWorkspaces = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+useWorkspaces: types.optional(types.boolean, () =>
+  localStorageGetBoolean('useWorkspaces', false),
+)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                           |
+| -------------------------------------------------- | --------------------------------------------------- |
+| [`views`](#property-views)                         | `IArrayType<IAnyType>`                              |
+| [`stickyViewHeaders`](#property-stickyviewheaders) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>MultipleViewsSessionMixin - Properties (all signatures)</summary>
+
 #### property: views
 
 ```ts
@@ -122,23 +148,29 @@ stickyViewHeaders: types.optional(types.boolean, () =>
 )
 ```
 
-#### property: useWorkspaces
-
-enables the dockview-based tabbed/tiled workspace layout
-
-```ts
-// type signature
-type useWorkspaces = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-useWorkspaces: types.optional(types.boolean, () =>
-  localStorageGetBoolean('useWorkspaces', false),
-)
-```
-
 </details>
 
 <details open>
 <summary>MultipleViewsSessionMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                       |
+| ------------------------------------------------------ | ----------------------------------------------- |
+| [`moveViewDown`](#action-moveviewdown)                 | `(id: string) => void`                          |
+| [`moveViewUp`](#action-moveviewup)                     | `(id: string) => void`                          |
+| [`moveViewToTop`](#action-moveviewtotop)               | `(id: string) => void`                          |
+| [`moveViewToBottom`](#action-moveviewtobottom)         | `(id: string) => void`                          |
+| [`addView`](#action-addview)                           | `(typeName: string, initialState?: any) => any` |
+| [`removeView`](#action-removeview)                     | `(view: IBaseViewModel) => void`                |
+| [`setStickyViewHeaders`](#action-setstickyviewheaders) | `(sticky: boolean) => void`                     |
+| [`setUseWorkspaces`](#action-setuseworkspaces)         | `(useWorkspaces: boolean) => void`              |
+
+</details>
+
+<details>
+<summary>MultipleViewsSessionMixin - Actions (all signatures)</summary>
 
 #### action: moveViewDown
 

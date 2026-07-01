@@ -124,6 +124,19 @@ and docs.
 <details open>
 <summary>LinearPairedArcDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                               |
+| ------------------------------------------ | --------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearPairedArcDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`             |
+
+</details>
+
+<details>
+<summary>LinearPairedArcDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -146,6 +159,19 @@ configuration: ConfigurationReference(configSchema)
 
 <details open>
 <summary>LinearPairedArcDisplay - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                |
+| -------------------------------- | ------------------------ |
+| [`features`](#volatile-features) | `Feature[] \| undefined` |
+| [`loading`](#volatile-loading)   | `false`                  |
+
+</details>
+
+<details>
+<summary>LinearPairedArcDisplay - Volatiles (all signatures)</summary>
 
 #### volatile: features
 
@@ -228,6 +254,21 @@ type arcStyles =
 
 <details open>
 <summary>LinearPairedArcDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                                             |
+| ---------------------------------------- | --------------------------------------------------------------------- |
+| [`selectFeature`](#action-selectfeature) | `(feature: Feature) => void`                                          |
+| [`setLoading`](#action-setloading)       | `(flag: boolean) => void`                                             |
+| [`setFeatures`](#action-setfeatures)     | `(f: Feature[]) => void`                                              |
+| [`renderSvg`](#action-rendersvg)         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
+
+</details>
+
+<details>
+<summary>LinearPairedArcDisplay - Actions (all signatures)</summary>
 
 #### action: selectFeature
 

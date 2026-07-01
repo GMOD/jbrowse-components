@@ -71,6 +71,18 @@ and docs.
 <details open>
 <summary>WiggleCommonMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                 |
+| ------------------------------------ | ----------------------------------------- |
+| [`rpcDataMap`](#volatile-rpcdatamap) | `ObservableMap<number, WiggleDataResult>` |
+
+</details>
+
+<details>
+<summary>WiggleCommonMixin - Volatiles (all signatures)</summary>
+
 #### volatile: rpcDataMap
 
 ```ts
@@ -84,6 +96,19 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 
 <details open>
 <summary>WiggleCommonMixin - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                       |
+| ------------------------------------------------ | ------------------------------- |
+| [`visibleScoreRange`](#getter-visiblescorerange) | `[number, number] \| undefined` |
+| [`domain`](#getter-domain)                       | `[number, number] \| undefined` |
+
+</details>
+
+<details>
+<summary>WiggleCommonMixin - Getters (all signatures)</summary>
 
 #### getter: visibleScoreRange
 
@@ -101,6 +126,18 @@ type domain = [number, number] | undefined
 
 <details open>
 <summary>WiggleCommonMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature    |
+| -------------------------------------------------------------- | ------------ |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void` |
+
+</details>
+
+<details>
+<summary>WiggleCommonMixin - Actions (all signatures)</summary>
 
 #### action: clearDisplaySpecificData
 

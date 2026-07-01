@@ -24,6 +24,18 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>InternetAccountsMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature              |
+| ------------------------------------------------ | ---------------------- |
+| [`internetAccounts`](#property-internetaccounts) | `IArrayType<IAnyType>` |
+
+</details>
+
+<details>
+<summary>InternetAccountsMixin - Properties (all signatures)</summary>
+
 #### property: internetAccounts
 
 ```ts
@@ -39,6 +51,20 @@ internetAccounts: types.array(
 
 <details open>
 <summary>InternetAccountsMixin - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                     | Signature                                                                                                                                                                                                                                             |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`initializeInternetAccount`](#action-initializeinternetaccount)           | `(internetAccountConfig: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any` |
+| [`createEphemeralInternetAccount`](#action-createephemeralinternetaccount) | `(internetAccountId: string, initialSnapshot: Record<string, unknown>, url: string) => any`                                                                                                                                                           |
+| [`findAppropriateInternetAccount`](#action-findappropriateinternetaccount) | `(location: UriLocation) => any`                                                                                                                                                                                                                      |
+
+</details>
+
+<details>
+<summary>InternetAccountsMixin - Actions (all signatures)</summary>
 
 #### action: initializeInternetAccount
 

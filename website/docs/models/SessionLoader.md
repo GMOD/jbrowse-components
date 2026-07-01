@@ -28,6 +28,48 @@ loading/error state the app shell renders around.
 <details open>
 <summary>SessionLoader - Properties</summary>
 
+#### property: sessionSource
+
+the single resolved session, also the HMR/reload restore vehicle (preset to a
+`snapshot` variant when rebuilding from a live session)
+
+```ts
+// type signature
+type sessionSource = IType<
+  SessionSource | null | undefined,
+  SessionSource | undefined,
+  SessionSource | undefined
+>
+// code
+sessionSource: types.frozen<SessionSource | undefined>(undefined)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                                                |
+| ------------------------------------------------ | ------------------------------------------------------------------------ |
+| [`configPath`](#property-configpath)             | `IMaybe<ISimpleType<string>>`                                            |
+| [`sessionQuery`](#property-sessionquery)         | `IMaybe<ISimpleType<string>>`                                            |
+| [`password`](#property-password)                 | `IMaybe<ISimpleType<string>>`                                            |
+| [`adminKey`](#property-adminkey)                 | `IMaybe<ISimpleType<string>>`                                            |
+| [`loc`](#property-loc)                           | `IMaybe<ISimpleType<string>>`                                            |
+| [`sessionTracks`](#property-sessiontracks)       | `IMaybe<ISimpleType<string>>`                                            |
+| [`assembly`](#property-assembly)                 | `IMaybe<ISimpleType<string>>`                                            |
+| [`tracks`](#property-tracks)                     | `IMaybe<ISimpleType<string>>`                                            |
+| [`tracklist`](#property-tracklist)               | `IMaybe<ISimpleType<boolean>>`                                           |
+| [`highlight`](#property-highlight)               | `IMaybe<ISimpleType<string>>`                                            |
+| [`nav`](#property-nav)                           | `IMaybe<ISimpleType<boolean>>`                                           |
+| [`sessionName`](#property-sessionname)           | `IMaybe<ISimpleType<string>>`                                            |
+| [`initialTimestamp`](#property-initialtimestamp) | `ISimpleType<number>`                                                    |
+| [`hubURL`](#property-huburl)                     | `IMaybe<IArrayType<ISimpleType<string>>>`                                |
+| [`configSnapshot`](#property-configsnapshot)     | `IType<Snap \| null \| undefined, Snap \| undefined, Snap \| undefined>` |
+
+</details>
+
+<details>
+<summary>SessionLoader - Properties (all signatures)</summary>
+
 #### property: configPath
 
 ```ts
@@ -167,26 +209,41 @@ type configSnapshot = IType<
 configSnapshot: types.frozen<Snap | undefined>(undefined)
 ```
 
-#### property: sessionSource
-
-the single resolved session, also the HMR/reload restore vehicle (preset to a
-`snapshot` variant when rebuilding from a live session)
-
-```ts
-// type signature
-type sessionSource = IType<
-  SessionSource | null | undefined,
-  SessionSource | undefined,
-  SessionSource | undefined
->
-// code
-sessionSource: types.frozen<SessionSource | undefined>(undefined)
-```
-
 </details>
 
 <details open>
 <summary>SessionLoader - Volatiles</summary>
+
+#### volatile: initializeStarted
+
+guards initialize() to run exactly once per loader, even across the
+activate/deactivate/activate cycle StrictMode drives on mount. Not reset by
+deactivate (unlike buildAutorunDisposer) so a remount never refetches.
+
+```ts
+// type signature
+type initializeStarted = false
+// code
+initializeStarted: false
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                         |
+| -------------------------------------------------------- | --------------------------------- |
+| [`sessionTriaged`](#volatile-sessiontriaged)             | `SessionTriagedInfo \| undefined` |
+| [`runtimePlugins`](#volatile-runtimeplugins)             | `PluginRecord[] \| undefined`     |
+| [`sessionPlugins`](#volatile-sessionplugins)             | `PluginRecord[] \| undefined`     |
+| [`configError`](#volatile-configerror)                   | `unknown`                         |
+| [`pluginManager`](#volatile-pluginmanager)               | `PluginManager \| undefined`      |
+| [`pluginManagerError`](#volatile-pluginmanagererror)     | `unknown`                         |
+| [`buildAutorunDisposer`](#volatile-buildautorundisposer) | `(() => void) \| undefined`       |
+
+</details>
+
+<details>
+<summary>SessionLoader - Volatiles (all signatures)</summary>
 
 #### volatile: sessionTriaged
 
@@ -251,19 +308,6 @@ type buildAutorunDisposer = (() => void) | undefined
 buildAutorunDisposer: undefined as (() => void) | undefined
 ```
 
-#### volatile: initializeStarted
-
-guards initialize() to run exactly once per loader, even across the
-activate/deactivate/activate cycle StrictMode drives on mount. Not reset by
-deactivate (unlike buildAutorunDisposer) so a remount never refetches.
-
-```ts
-// type signature
-type initializeStarted = false
-// code
-initializeStarted: false
-```
-
 </details>
 
 <details open>
@@ -279,6 +323,51 @@ stripped by stripPrefix()
 type sessionQueryType = string | undefined
 ```
 
+#### getter: extendDefaultSession
+
+reads the opt-in config.json flag that makes URL params layer onto the
+configured defaultSession instead of replacing it
+
+```ts
+type extendDefaultSession = boolean
+```
+
+#### getter: defaultSessionViewInit
+
+URL-derived init (loc/tracks/highlight/...) applied onto the defaultSession's
+first view when `extendDefaultSession` is enabled, otherwise undefined
+
+```ts
+type defaultSessionViewInit =
+  | {
+      loc: string | undefined
+      assembly: string | undefined
+      tracks: string[] | undefined
+      tracklist: boolean | undefined
+      nav: boolean | undefined
+      highlight: string[] | undefined
+    }
+  | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                   |
+| ---------------------------------------------------- | --------------------------- |
+| [`isHubSession`](#getter-ishubsession)               | `boolean`                   |
+| [`isJb1StyleSession`](#getter-isjb1stylesession)     | `boolean`                   |
+| [`pluginsLoaded`](#getter-pluginsloaded)             | `boolean`                   |
+| [`isSessionLoaded`](#getter-issessionloaded)         | `boolean`                   |
+| [`sessionTracksParsed`](#getter-sessiontracksparsed) | `Record<string, unknown>[]` |
+| [`resolvedConfigPath`](#getter-resolvedconfigpath)   | `string`                    |
+| [`ready`](#getter-ready)                             | `boolean`                   |
+
+</details>
+
+<details>
+<summary>SessionLoader - Getters (all signatures)</summary>
+
 #### getter: isHubSession
 
 ```ts
@@ -289,15 +378,6 @@ type isHubSession = boolean
 
 ```ts
 type isJb1StyleSession = boolean
-```
-
-#### getter: extendDefaultSession
-
-reads the opt-in config.json flag that makes URL params layer onto the
-configured defaultSession instead of replacing it
-
-```ts
-type extendDefaultSession = boolean
 ```
 
 #### getter: pluginsLoaded
@@ -330,52 +410,10 @@ type resolvedConfigPath = string
 type ready = boolean
 ```
 
-#### getter: defaultSessionViewInit
-
-URL-derived init (loc/tracks/highlight/...) applied onto the defaultSession's
-first view when `extendDefaultSession` is enabled, otherwise undefined
-
-```ts
-type defaultSessionViewInit =
-  | {
-      loc: string | undefined
-      assembly: string | undefined
-      tracks: string[] | undefined
-      tracklist: boolean | undefined
-      nav: boolean | undefined
-      highlight: string[] | undefined
-    }
-  | undefined
-```
-
 </details>
 
 <details open>
 <summary>SessionLoader - Actions</summary>
-
-#### action: setConfigError
-
-```ts
-type setConfigError = (error: unknown) => void
-```
-
-#### action: setRuntimePlugins
-
-```ts
-type setRuntimePlugins = (plugins: PluginRecord[]) => void
-```
-
-#### action: setSessionPlugins
-
-```ts
-type setSessionPlugins = (plugins: PluginRecord[]) => void
-```
-
-#### action: setConfigSnapshot
-
-```ts
-type setConfigSnapshot = (snap: Snap) => void
-```
 
 #### action: setConfigAndPlugins
 
@@ -385,12 +423,6 @@ the rootModel with `jbrowse: undefined`).
 
 ```ts
 type setConfigAndPlugins = (snap: Snap, plugins: PluginRecord[]) => void
-```
-
-#### action: setSessionTriaged
-
-```ts
-type setSessionTriaged = (args?: SessionTriagedInfo | undefined) => void
 ```
 
 #### action: setSessionSource
@@ -432,21 +464,6 @@ type loadConfigAndPlugins = (
 ) => Promise<void>
 ```
 
-#### action: loadSession
-
-```ts
-type loadSession = (
-  snap: { sessionPlugins?: PluginDefinition[] | undefined; id: string },
-  userAcceptedConfirmation?: boolean | undefined,
-) => Promise<void>
-```
-
-#### action: fetchConfig
-
-```ts
-type fetchConfig = () => Promise<void>
-```
-
 #### action: loadImportedSession
 
 Loads a session that arrived from OUTSIDE this browser's local storage (a share
@@ -481,6 +498,121 @@ tabs would autosave over the same slot and fight.
 
 ```ts
 type fetchLocalSession = () => Promise<void>
+```
+
+#### action: applyTriagedConfig
+
+Commits a config snapshot that was surfaced via triage: loads its plugins with a
+fresh id, clears the (config) triage, then resolves the session. Session loading
+is deferred to here — `initialize` skips it while a config triage is pending —
+so the session resolves against the committed config and an untrusted session
+can't clobber the still-pending config triage (which would otherwise leave the
+config uncommitted and `ready` stuck). loadSessionByType may itself surface a
+new (session) triage.
+
+```ts
+type applyTriagedConfig = (snap: Snap) => Promise<void>
+```
+
+#### action: initialize
+
+A config error short-circuits session loading: the try/catch sits at this level
+so loadSessionByType is skipped on config failure.
+
+```ts
+type initialize = () => Promise<void>
+```
+
+#### action: activate
+
+Attaches a React host: kicks off the one-time config/session load and starts an
+autorun that fires `buildPluginManager` once `ready` flips true. Idempotent — a
+second call while already activated is a no-op, and the load only ever runs once
+(see initializeStarted). Loading lives here rather than in afterCreate so model
+construction stays side-effect-free and safe under StrictMode's double-invoked
+useState initializer.
+
+```ts
+type activate = (reloadCallback: ReloadPluginManagerCallback) => void
+```
+
+#### action: deactivate
+
+Detaches the React host: stops the build autorun and disposes the rootModel.
+
+```ts
+type deactivate = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                                                                                                     |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setConfigError`](#action-setconfigerror)                   | `(error: unknown) => void`                                                                                                                    |
+| [`setRuntimePlugins`](#action-setruntimeplugins)             | `(plugins: PluginRecord[]) => void`                                                                                                           |
+| [`setSessionPlugins`](#action-setsessionplugins)             | `(plugins: PluginRecord[]) => void`                                                                                                           |
+| [`setConfigSnapshot`](#action-setconfigsnapshot)             | `(snap: Snap) => void`                                                                                                                        |
+| [`setSessionTriaged`](#action-setsessiontriaged)             | `(args?: SessionTriagedInfo \| undefined) => void`                                                                                            |
+| [`loadSession`](#action-loadsession)                         | `(snap: { sessionPlugins?: PluginDefinition[] \| undefined; id: string; }, userAcceptedConfirmation?: boolean \| undefined) => Promise<void>` |
+| [`fetchConfig`](#action-fetchconfig)                         | `() => Promise<void>`                                                                                                                         |
+| [`fetchSharedSession`](#action-fetchsharedsession)           | `() => Promise<void>`                                                                                                                         |
+| [`decodeEncodedUrlSession`](#action-decodeencodedurlsession) | `() => Promise<void>`                                                                                                                         |
+| [`decodeJsonUrlSession`](#action-decodejsonurlsession)       | `() => Promise<void>`                                                                                                                         |
+| [`decodeSessionSpec`](#action-decodesessionspec)             | `() => void`                                                                                                                                  |
+| [`decodeJb1StyleSession`](#action-decodejb1stylesession)     | `() => void`                                                                                                                                  |
+| [`decodeHubSpec`](#action-decodehubspec)                     | `() => void`                                                                                                                                  |
+| [`loadSessionByType`](#action-loadsessionbytype)             | `() => Promise<void>`                                                                                                                         |
+| [`loadConfig`](#action-loadconfig)                           | `() => Promise<void>`                                                                                                                         |
+
+</details>
+
+<details>
+<summary>SessionLoader - Actions (all signatures)</summary>
+
+#### action: setConfigError
+
+```ts
+type setConfigError = (error: unknown) => void
+```
+
+#### action: setRuntimePlugins
+
+```ts
+type setRuntimePlugins = (plugins: PluginRecord[]) => void
+```
+
+#### action: setSessionPlugins
+
+```ts
+type setSessionPlugins = (plugins: PluginRecord[]) => void
+```
+
+#### action: setConfigSnapshot
+
+```ts
+type setConfigSnapshot = (snap: Snap) => void
+```
+
+#### action: setSessionTriaged
+
+```ts
+type setSessionTriaged = (args?: SessionTriagedInfo | undefined) => void
+```
+
+#### action: loadSession
+
+```ts
+type loadSession = (
+  snap: { sessionPlugins?: PluginDefinition[] | undefined; id: string },
+  userAcceptedConfirmation?: boolean | undefined,
+) => Promise<void>
+```
+
+#### action: fetchConfig
+
+```ts
+type fetchConfig = () => Promise<void>
 ```
 
 #### action: fetchSharedSession
@@ -529,50 +661,6 @@ type loadSessionByType = () => Promise<void>
 
 ```ts
 type loadConfig = () => Promise<void>
-```
-
-#### action: applyTriagedConfig
-
-Commits a config snapshot that was surfaced via triage: loads its plugins with a
-fresh id, clears the (config) triage, then resolves the session. Session loading
-is deferred to here — `initialize` skips it while a config triage is pending —
-so the session resolves against the committed config and an untrusted session
-can't clobber the still-pending config triage (which would otherwise leave the
-config uncommitted and `ready` stuck). loadSessionByType may itself surface a
-new (session) triage.
-
-```ts
-type applyTriagedConfig = (snap: Snap) => Promise<void>
-```
-
-#### action: initialize
-
-A config error short-circuits session loading: the try/catch sits at this level
-so loadSessionByType is skipped on config failure.
-
-```ts
-type initialize = () => Promise<void>
-```
-
-#### action: activate
-
-Attaches a React host: kicks off the one-time config/session load and starts an
-autorun that fires `buildPluginManager` once `ready` flips true. Idempotent — a
-second call while already activated is a no-op, and the load only ever runs once
-(see initializeStarted). Loading lives here rather than in afterCreate so model
-construction stays side-effect-free and safe under StrictMode's double-invoked
-useState initializer.
-
-```ts
-type activate = (reloadCallback: ReloadPluginManagerCallback) => void
-```
-
-#### action: deactivate
-
-Detaches the React host: stops the build autorun and disposes the rootModel.
-
-```ts
-type deactivate = () => void
 ```
 
 </details>

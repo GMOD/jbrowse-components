@@ -24,6 +24,18 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>Job - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature             |
+| ------------------------ | --------------------- |
+| [`name`](#property-name) | `ISimpleType<string>` |
+
+</details>
+
+<details>
+<summary>Job - Properties (all signatures)</summary>
+
 #### property: name
 
 ```ts
@@ -37,6 +49,19 @@ name: types.string
 
 <details open>
 <summary>Job - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature             |
+| ------------------------------------------ | --------------------- |
+| [`statusMessage`](#volatile-statusmessage) | `string \| undefined` |
+| [`progressPct`](#volatile-progresspct)     | `number`              |
+
+</details>
+
+<details>
+<summary>Job - Volatiles (all signatures)</summary>
 
 #### volatile: statusMessage
 
@@ -60,6 +85,20 @@ progressPct: 0
 
 <details open>
 <summary>Job - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                 |
+| ------------------------------------------------ | ----------------------------------------- |
+| [`setCancelCallback`](#action-setcancelcallback) | `(cancelCallback: () => void) => void`    |
+| [`setStatusMessage`](#action-setstatusmessage)   | `(message?: string \| undefined) => void` |
+| [`setProgressPct`](#action-setprogresspct)       | `(pct: number) => void`                   |
+
+</details>
+
+<details>
+<summary>Job - Actions (all signatures)</summary>
 
 #### action: setCancelCallback
 

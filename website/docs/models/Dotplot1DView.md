@@ -35,6 +35,21 @@ this uses padding=false and elision=false
 type dynamicBlocks = BlockSet
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature |
+| ---------------------------------- | --------- |
+| [`maxBpPerPx`](#getter-maxbpperpx) | `number`  |
+| [`minBpPerPx`](#getter-minbpperpx) | `number`  |
+| [`maxOffset`](#getter-maxoffset)   | `number`  |
+| [`minOffset`](#getter-minoffset)   | `number`  |
+
+</details>
+
+<details>
+<summary>Dotplot1DView - Getters (all signatures)</summary>
+
 #### getter: maxBpPerPx
 
 ```ts
@@ -63,6 +78,18 @@ type minOffset = number
 
 <details open>
 <summary>Dotplot1DView - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                     | Signature    |
+| -------------------------- | ------------ |
+| [`center`](#action-center) | `() => void` |
+
+</details>
+
+<details>
+<summary>Dotplot1DView - Actions (all signatures)</summary>
 
 #### action: center
 

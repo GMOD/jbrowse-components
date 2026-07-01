@@ -49,6 +49,19 @@ type session = IMaybe<IAnyType>
 session: types.maybe(sessionModelType)
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                                                                                                                                                                                                                                                                                                                            |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`sessionPath`](#property-sessionpath)         | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                   |
+| [`assemblyManager`](#property-assemblymanager) | `IOptionalIType<IModelType<{ assemblies: IArrayType<IModelType<{ configuration: IMaybe<IReferenceType<IAnyType>>; }, { error: unknown; loadingP: Promise<void> \| undefined; adapterLoads: QuickLRU<...>; ... 6 more ...; allRefNamesWithLowerCase: Set<...> \| undefined; } & ... 11 more ... & { ...; }, _NotCustomized, _NotC...` |
+
+</details>
+
+<details>
+<summary>BaseRootModel - Properties (all signatures)</summary>
+
 #### property: sessionPath
 
 ```ts
@@ -74,6 +87,22 @@ assemblyManager: types.optional(
 
 <details open>
 <summary>BaseRootModel - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature           |
+| -------------------------------------------------- | ------------------- |
+| [`rpcManager`](#volatile-rpcmanager)               | `RpcManager`        |
+| [`adminMode`](#volatile-adminmode)                 | `false`             |
+| [`error`](#volatile-error)                         | `unknown`           |
+| [`textSearchManager`](#volatile-textsearchmanager) | `TextSearchManager` |
+| [`pluginManager`](#volatile-pluginmanager)         | `PluginManager`     |
+
+</details>
+
+<details>
+<summary>BaseRootModel - Volatiles (all signatures)</summary>
 
 #### volatile: rpcManager
 
@@ -125,12 +154,6 @@ pluginManager
 <details open>
 <summary>BaseRootModel - Actions</summary>
 
-#### action: setError
-
-```ts
-type setError = (error: unknown) => void
-```
-
 #### action: setSession
 
 Sets the active session. Remaps any legacy display type names (e.g.
@@ -142,6 +165,27 @@ restored.
 
 ```ts
 type setSession = (sessionSnapshot?: any) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                   |
+| ------------------------------------------------------ | --------------------------- |
+| [`setError`](#action-seterror)                         | `(error: unknown) => void`  |
+| [`setDefaultSession`](#action-setdefaultsession)       | `() => void`                |
+| [`setSessionPath`](#action-setsessionpath)             | `(path: string) => void`    |
+| [`renameCurrentSession`](#action-renamecurrentsession) | `(newName: string) => void` |
+
+</details>
+
+<details>
+<summary>BaseRootModel - Actions (all signatures)</summary>
+
+#### action: setError
+
+```ts
+type setError = (error: unknown) => void
 ```
 
 #### action: setDefaultSession

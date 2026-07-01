@@ -29,6 +29,19 @@ The configuration slots for this model are documented on its
 <details open>
 <summary>OAuthInternetAccount - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                             |
+| ------------------------------------------ | ------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"OAuthInternetAccount">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`           |
+
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -62,6 +75,35 @@ per-slot types and slot-name validation.
 ```ts
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
+
+#### getter: state
+
+OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
+
+Can override or extend if dynamic state is needed.
+
+```ts
+type state = string
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature           |
+| ---------------------------------------------- | ------------------- |
+| [`codeVerifierPKCE`](#getter-codeverifierpkce) | `string`            |
+| [`authEndpoint`](#getter-authendpoint)         | `string`            |
+| [`tokenEndpoint`](#getter-tokenendpoint)       | `string`            |
+| [`needsPKCE`](#getter-needspkce)               | `boolean`           |
+| [`clientId`](#getter-clientid)                 | `string`            |
+| [`scopes`](#getter-scopes)                     | `string`            |
+| [`responseType`](#getter-responsetype)         | `"code" \| "token"` |
+| [`refreshTokenKey`](#getter-refreshtokenkey)   | `string`            |
+
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Getters (all signatures)</summary>
 
 #### getter: codeVerifierPKCE
 
@@ -99,16 +141,6 @@ type clientId = string
 type scopes = string
 ```
 
-#### getter: state
-
-OAuth state parameter: https://www.rfc-editor.org/rfc/rfc6749#section-4.1.1
-
-Can override or extend if dynamic state is needed.
-
-```ts
-type state = string
-```
-
 #### getter: responseType
 
 ```ts
@@ -126,6 +158,18 @@ type refreshTokenKey = string
 <details open>
 <summary>OAuthInternetAccount - Methods</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature              |
+| ------------------------------------------------------ | ---------------------- |
+| [`retrieveRefreshToken`](#method-retrieverefreshtoken) | `() => string \| null` |
+
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Methods (all signatures)</summary>
+
 #### method: retrieveRefreshToken
 
 ```ts
@@ -136,6 +180,34 @@ type retrieveRefreshToken = () => string | null
 
 <details open>
 <summary>OAuthInternetAccount - Actions</summary>
+
+#### action: getTokenViaAuthFlow
+
+Opens the provider's auth page and returns a promise for the resulting token.
+For Electron, drives the flow directly via IPC; for web, opens a popup and waits
+for the redirect message.
+
+```ts
+type getTokenViaAuthFlow = () => Promise<string>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                               | Signature                                                                                                        |
+| ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------- |
+| [`storeRefreshToken`](#action-storerefreshtoken)                                     | `(refreshToken: string) => void`                                                                                 |
+| [`removeRefreshToken`](#action-removerefreshtoken)                                   | `() => void`                                                                                                     |
+| [`exchangeAuthorizationForAccessToken`](#action-exchangeauthorizationforaccesstoken) | `(code: string, redirectUri: string) => Promise<string>`                                                         |
+| [`exchangeRefreshForAccessToken`](#action-exchangerefreshforaccesstoken)             | `(refreshToken: string) => Promise<string>`                                                                      |
+| [`getTokenFromUser`](#action-gettokenfromuser)                                       | `(resolve: (token: string) => void, reject: (error: Error) => void) => Promise<void>`                            |
+| [`validateToken`](#action-validatetoken)                                             | `(token: string, location: UriLocation) => Promise<string>`                                                      |
+| [`getFetcher`](#action-getfetcher)                                                   | `(loc?: UriLocation \| undefined) => (input: RequestInfo, init?: RequestInit \| undefined) => Promise<Response>` |
+
+</details>
+
+<details>
+<summary>OAuthInternetAccount - Actions (all signatures)</summary>
 
 #### action: storeRefreshToken
 
@@ -162,16 +234,6 @@ type exchangeAuthorizationForAccessToken = (
 
 ```ts
 type exchangeRefreshForAccessToken = (refreshToken: string) => Promise<string>
-```
-
-#### action: getTokenViaAuthFlow
-
-Opens the provider's auth page and returns a promise for the resulting token.
-For Electron, drives the flow directly via IPC; for web, opens a popup and waits
-for the redirect message.
-
-```ts
-type getTokenViaAuthFlow = () => Promise<string>
 ```
 
 #### action: getTokenFromUser

@@ -142,6 +142,18 @@ and docs.
 <details open>
 <summary>JBrowseReactCircularGenomeViewSessionModel - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature       |
+| ------------------------ | --------------- |
+| [`view`](#property-view) | `IAnyModelType` |
+
+</details>
+
+<details>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Properties (all signatures)</summary>
+
 #### property: view
 
 ```ts
@@ -155,6 +167,24 @@ view: pluginManager.getViewType('CircularView').stateModel
 
 <details open>
 <summary>JBrowseReactCircularGenomeViewSessionModel - Getters</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature |
+| -------------------------------------------- | --------- |
+| [`version`](#getter-version)                 | `any`     |
+| [`assemblies`](#getter-assemblies)           | `any[]`   |
+| [`assemblyNames`](#getter-assemblynames)     | `any[]`   |
+| [`connections`](#getter-connections)         | `any`     |
+| [`assemblyManager`](#getter-assemblymanager) | `any`     |
+| [`views`](#getter-views)                     | `any[]`   |
+| [`theme`](#getter-theme)                     | `Theme`   |
+
+</details>
+
+<details>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Getters (all signatures)</summary>
 
 #### getter: version
 
@@ -202,6 +232,18 @@ type theme = Theme
 
 <details open>
 <summary>JBrowseReactCircularGenomeViewSessionModel - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature                                           |
+| ------------------------------------ | --------------------------------------------------- |
+| [`renderProps`](#method-renderprops) | `() => { theme: any; highResolutionScaling: any; }` |
+
+</details>
+
+<details>
+<summary>JBrowseReactCircularGenomeViewSessionModel - Methods (all signatures)</summary>
 
 #### method: renderProps
 

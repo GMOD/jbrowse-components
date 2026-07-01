@@ -24,6 +24,18 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>RootAppMenuMixin - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature      |
+| ---------------------------------------------------- | -------------- |
+| [`mutableMenuActions`](#volatile-mutablemenuactions) | `MenuAction[]` |
+
+</details>
+
+<details>
+<summary>RootAppMenuMixin - Volatiles (all signatures)</summary>
+
 #### volatile: mutableMenuActions
 
 ```ts
@@ -37,12 +49,6 @@ mutableMenuActions: [] as MenuAction[]
 
 <details open>
 <summary>RootAppMenuMixin - Actions</summary>
-
-#### action: setMenus
-
-```ts
-type setMenus = (newMenus: Menu[]) => void
-```
 
 #### action: appendMenu
 
@@ -98,6 +104,24 @@ type insertInSubMenu = (
   menuItem: MenuItem,
   position: number,
 ) => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                         | Signature                    |
+| ------------------------------ | ---------------------------- |
+| [`setMenus`](#action-setmenus) | `(newMenus: Menu[]) => void` |
+
+</details>
+
+<details>
+<summary>RootAppMenuMixin - Actions (all signatures)</summary>
+
+#### action: setMenus
+
+```ts
+type setMenus = (newMenus: Menu[]) => void
 ```
 
 </details>

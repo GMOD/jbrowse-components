@@ -54,6 +54,19 @@ and docs.
 <details open>
 <summary>VariantFeatureWidget - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                             |
+| ---------------------------------------- | ------------------------------------- |
+| [`type`](#property-type)                 | `ISimpleType<"VariantFeatureWidget">` |
+| [`descriptions`](#property-descriptions) | `IType<any, any, any>`                |
+
+</details>
+
+<details>
+<summary>VariantFeatureWidget - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts

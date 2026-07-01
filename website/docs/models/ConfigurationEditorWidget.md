@@ -27,6 +27,19 @@ configuration and debounce-saves edits back to the session.
 <details open>
 <summary>ConfigurationEditorWidget - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                   | Signature                                          |
+| ------------------------ | -------------------------------------------------- |
+| [`id`](#property-id)     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
+| [`type`](#property-type) | `ISimpleType<"ConfigurationEditorWidget">`         |
+
+</details>
+
+<details>
+<summary>ConfigurationEditorWidget - Properties (all signatures)</summary>
+
 #### property: id
 
 ```ts
@@ -50,6 +63,19 @@ type: types.literal('ConfigurationEditorWidget')
 <details open>
 <summary>ConfigurationEditorWidget - Volatiles</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                                                                                                                                                                                     |
+| -------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`target`](#volatile-target)                       | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined` |
+| [`expandedDisplayId`](#volatile-expandeddisplayid) | `string \| undefined`                                                                                                                                                                                         |
+
+</details>
+
+<details>
+<summary>ConfigurationEditorWidget - Volatiles (all signatures)</summary>
+
 #### volatile: target
 
 ```ts
@@ -72,6 +98,19 @@ expandedDisplayId: undefined as string | undefined
 
 <details open>
 <summary>ConfigurationEditorWidget - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                                                                                                                                                                          |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`setTarget`](#action-settarget)                       | `(newTarget: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined) => void` |
+| [`setExpandedDisplayId`](#action-setexpandeddisplayid) | `(displayId: string \| undefined) => void`                                                                                                                                                                                         |
+
+</details>
+
+<details>
+<summary>ConfigurationEditorWidget - Actions (all signatures)</summary>
 
 #### action: setTarget
 

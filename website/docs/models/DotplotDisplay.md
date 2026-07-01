@@ -64,6 +64,32 @@ and docs.
 <details open>
 <summary>DotplotDisplay - Properties</summary>
 
+#### property: colorBy
+
+color by setting that overrides the config setting
+
+```ts
+// type signature
+type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+colorBy: types.optional(types.string, 'default')
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                               | Signature                                          |
+| ---------------------------------------------------- | -------------------------------------------------- |
+| [`type`](#property-type)                             | `ISimpleType<"DotplotDisplay">`                    |
+| [`configuration`](#property-configuration)           | `ITypeUnion<any, any, any>`                        |
+| [`alpha`](#property-alpha)                           | `IOptionalIType<ISimpleType<number>, [undefined]>` |
+| [`minAlignmentLength`](#property-minalignmentlength) | `IOptionalIType<ISimpleType<number>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>DotplotDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -80,17 +106,6 @@ type: types.literal('DotplotDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: colorBy
-
-color by setting that overrides the config setting
-
-```ts
-// type signature
-type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-colorBy: types.optional(types.string, 'default')
 ```
 
 #### property: alpha
@@ -140,15 +155,6 @@ type geometry = DotplotGeometryData | undefined
 geometry: undefined as DotplotGeometryData | undefined
 ```
 
-#### volatile: fetchStopToken
-
-```ts
-// type signature
-type fetchStopToken = StopToken | undefined
-// code
-fetchStopToken: undefined as StopToken | undefined
-```
-
 #### volatile: statusProgress
 
 determinate progress fraction [0,1] for the current status, or undefined when
@@ -160,6 +166,29 @@ inherited from BaseDisplay.
 type statusProgress = number | undefined
 // code
 statusProgress: undefined as number | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                                |
+| -------------------------------------------------- | ---------------------------------------- |
+| [`fetchStopToken`](#volatile-fetchstoptoken)       | `StopToken \| undefined`                 |
+| [`fetchWarnings`](#volatile-fetchwarnings)         | `{ message: string; effect: string; }[]` |
+| [`assembliesSwapped`](#volatile-assembliesswapped) | `false`                                  |
+
+</details>
+
+<details>
+<summary>DotplotDisplay - Volatiles (all signatures)</summary>
+
+#### volatile: fetchStopToken
+
+```ts
+// type signature
+type fetchStopToken = StopToken | undefined
+// code
+fetchStopToken: undefined as StopToken | undefined
 ```
 
 #### volatile: fetchWarnings
@@ -185,6 +214,27 @@ assembliesSwapped: false
 <details open>
 <summary>DotplotDisplay - Getters</summary>
 
+#### getter: warnings
+
+Per-render fetch warnings, plus the load-time reversed-assembly hint.
+
+```ts
+type warnings = { message: string; effect: string }[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                 | Signature |
+| -------------------------------------- | --------- |
+| [`isLoading`](#getter-isloading)       | `boolean` |
+| [`isRefetching`](#getter-isrefetching) | `boolean` |
+
+</details>
+
+<details>
+<summary>DotplotDisplay - Getters (all signatures)</summary>
+
 #### getter: isLoading
 
 ```ts
@@ -197,18 +247,22 @@ type isLoading = boolean
 type isRefetching = boolean
 ```
 
-#### getter: warnings
-
-Per-render fetch warnings, plus the load-time reversed-assembly hint.
-
-```ts
-type warnings = { message: string; effect: string }[]
-```
-
 </details>
 
 <details open>
 <summary>DotplotDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                           | Signature                                                                                                                                                                    |
+| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`renderSvg`](#method-rendersvg) | `(opts: ExportSvgOptions & { theme?: ThemeOptions \| undefined; }) => Promise<string \| number \| bigint \| boolean \| Iterable<ReactNode> \| Element \| null \| undefined>` |
+
+</details>
+
+<details>
+<summary>DotplotDisplay - Methods (all signatures)</summary>
 
 #### method: renderSvg
 
@@ -241,6 +295,26 @@ the dotplot loading overlay can show a bar.
 ```ts
 type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                   | Signature                                             |
+| -------------------------------------------------------- | ----------------------------------------------------- |
+| [`setLoading`](#action-setloading)                       | `(stopToken: StopToken) => void`                      |
+| [`setRpcData`](#action-setrpcdata)                       | `(data: DotplotRpcData) => void`                      |
+| [`setWarnings`](#action-setwarnings)                     | `(w: { message: string; effect: string; }[]) => void` |
+| [`setAssembliesSwapped`](#action-setassembliesswapped)   | `(arg: boolean) => void`                              |
+| [`setGeometry`](#action-setgeometry)                     | `(data: DotplotGeometryData \| undefined) => void`    |
+| [`setError`](#action-seterror)                           | `(error: unknown) => void`                            |
+| [`setAlpha`](#action-setalpha)                           | `(value: number) => void`                             |
+| [`setMinAlignmentLength`](#action-setminalignmentlength) | `(value: number) => void`                             |
+| [`setColorBy`](#action-setcolorby)                       | `(value: SyntenyColorBy) => void`                     |
+
+</details>
+
+<details>
+<summary>DotplotDisplay - Actions (all signatures)</summary>
 
 #### action: setLoading
 

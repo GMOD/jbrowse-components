@@ -70,7 +70,6 @@ and docs.
 **Actions:** [reconcileLevels](../linearcomparativeview#action-reconcilelevels),
 [setWidth](../linearcomparativeview#action-setwidth),
 [setViews](../linearcomparativeview#action-setviews),
-[removeView](../linearcomparativeview#action-removeview),
 [addView](../linearcomparativeview#action-addview),
 [removeLastRow](../linearcomparativeview#action-removelastrow),
 [setLinkViews](../linearcomparativeview#action-setlinkviews),
@@ -104,45 +103,6 @@ and docs.
 <details open>
 <summary>LinearSyntenyView - Properties</summary>
 
-#### property: type
-
-```ts
-// type signature
-type type = ISimpleType<'LinearSyntenyView'>
-// code
-type: types.literal('LinearSyntenyView')
-```
-
-#### property: cigarMode
-
-```ts
-// type signature
-type cigarMode = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-cigarMode: types.stripDefault(
-  types.enumeration(['off', 'matches', 'full']),
-  'full',
-)
-```
-
-#### property: drawCurves
-
-```ts
-// type signature
-type drawCurves = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-drawCurves: types.stripDefault(types.boolean, false)
-```
-
-#### property: drawLocationMarkers
-
-```ts
-// type signature
-type drawLocationMarkers = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-drawLocationMarkers: types.stripDefault(types.boolean, false)
-```
-
 #### property: overdrawPx
 
 pixels beyond the visible viewport edge that synteny lines are still drawn
@@ -152,15 +112,6 @@ pixels beyond the visible viewport edge that synteny lines are still drawn
 type overdrawPx = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 overdrawPx: types.stripDefault(types.number, DEFAULT_OVERDRAW_PX)
-```
-
-#### property: alpha
-
-```ts
-// type signature
-type alpha = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-alpha: types.stripDefault(types.number, 0.2)
 ```
 
 #### property: minAlignmentLength
@@ -193,15 +144,6 @@ lodMode: types.stripDefault(
   types.enumeration('LodMode', ['auto', 'fine', 'coarse']),
   'auto',
 )
-```
-
-#### property: colorBy
-
-```ts
-// type signature
-type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-colorBy: types.stripDefault(types.string, 'default')
 ```
 
 #### property: opacityByIdentity
@@ -261,19 +203,84 @@ type init = IType<
 init: types.frozen<LinearSyntenyViewInit | undefined>()
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                           |
+| ------------------------------------------------------ | --------------------------------------------------- |
+| [`type`](#property-type)                               | `ISimpleType<"LinearSyntenyView">`                  |
+| [`cigarMode`](#property-cigarmode)                     | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+| [`drawCurves`](#property-drawcurves)                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`drawLocationMarkers`](#property-drawlocationmarkers) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| [`alpha`](#property-alpha)                             | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| [`colorBy`](#property-colorby)                         | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
+
+</details>
+
+<details>
+<summary>LinearSyntenyView - Properties (all signatures)</summary>
+
+#### property: type
+
+```ts
+// type signature
+type type = ISimpleType<'LinearSyntenyView'>
+// code
+type: types.literal('LinearSyntenyView')
+```
+
+#### property: cigarMode
+
+```ts
+// type signature
+type cigarMode = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+cigarMode: types.stripDefault(
+  types.enumeration(['off', 'matches', 'full']),
+  'full',
+)
+```
+
+#### property: drawCurves
+
+```ts
+// type signature
+type drawCurves = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+drawCurves: types.stripDefault(types.boolean, false)
+```
+
+#### property: drawLocationMarkers
+
+```ts
+// type signature
+type drawLocationMarkers = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+drawLocationMarkers: types.stripDefault(types.boolean, false)
+```
+
+#### property: alpha
+
+```ts
+// type signature
+type alpha = IOptionalIType<ISimpleType<number>, [undefined]>
+// code
+alpha: types.stripDefault(types.number, 0.2)
+```
+
+#### property: colorBy
+
+```ts
+// type signature
+type colorBy = IOptionalIType<ISimpleType<string>, [undefined]>
+// code
+colorBy: types.stripDefault(types.string, 'default')
+```
+
 </details>
 
 <details open>
 <summary>LinearSyntenyView - Volatiles</summary>
-
-#### volatile: importFormSyntenyTrackSelections
-
-```ts
-// type signature
-type importFormSyntenyTrackSelections = IObservableArray<ImportFormSyntenyTrack>
-// code
-importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
-```
 
 #### volatile: awaitingAutoDiagonalize
 
@@ -312,28 +319,31 @@ type diagonalizeStopToken = StopToken | undefined
 diagonalizeStopToken: undefined as StopToken | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                           | Signature                                  |
+| -------------------------------------------------------------------------------- | ------------------------------------------ |
+| [`importFormSyntenyTrackSelections`](#volatile-importformsyntenytrackselections) | `IObservableArray<ImportFormSyntenyTrack>` |
+
+</details>
+
+<details>
+<summary>LinearSyntenyView - Volatiles (all signatures)</summary>
+
+#### volatile: importFormSyntenyTrackSelections
+
+```ts
+// type signature
+type importFormSyntenyTrackSelections = IObservableArray<ImportFormSyntenyTrack>
+// code
+importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
+```
+
 </details>
 
 <details open>
 <summary>LinearSyntenyView - Getters</summary>
-
-#### getter: hasSomethingToShow
-
-```ts
-type hasSomethingToShow = boolean
-```
-
-#### getter: drawCIGAR
-
-```ts
-type drawCIGAR = boolean
-```
-
-#### getter: drawCIGARMatchesOnly
-
-```ts
-type drawCIGARMatchesOnly = boolean
-```
 
 #### getter: hasLodCapableAdapter
 
@@ -382,16 +392,42 @@ Whether to show the import form
 type showImportForm = boolean
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature |
+| ------------------------------------------------------ | --------- |
+| [`hasSomethingToShow`](#getter-hassomethingtoshow)     | `boolean` |
+| [`drawCIGAR`](#getter-drawcigar)                       | `boolean` |
+| [`drawCIGARMatchesOnly`](#getter-drawcigarmatchesonly) | `boolean` |
+
+</details>
+
+<details>
+<summary>LinearSyntenyView - Getters (all signatures)</summary>
+
+#### getter: hasSomethingToShow
+
+```ts
+type hasSomethingToShow = boolean
+```
+
+#### getter: drawCIGAR
+
+```ts
+type drawCIGAR = boolean
+```
+
+#### getter: drawCIGARMatchesOnly
+
+```ts
+type drawCIGARMatchesOnly = boolean
+```
+
 </details>
 
 <details open>
 <summary>LinearSyntenyView - Methods</summary>
-
-#### method: showMenuItems
-
-```ts
-type showMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
-```
 
 #### method: headerMenuItems
 
@@ -400,6 +436,25 @@ overwhelming
 
 ```ts
 type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                                                                                                  |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
+| [`showMenuItems`](#method-showmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+| [`menuItems`](#method-menuitems)         | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+
+</details>
+
+<details>
+<summary>LinearSyntenyView - Methods (all signatures)</summary>
+
+#### method: showMenuItems
+
+```ts
+type showMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
 ```
 
 #### method: menuItems
@@ -412,6 +467,45 @@ type menuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxM
 
 <details open>
 <summary>LinearSyntenyView - Actions</summary>
+
+#### action: cancelAutoDiagonalize
+
+Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
+revealing the (undiagonalized) view.
+
+```ts
+type cancelAutoDiagonalize = () => void
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                                 | Signature                                             |
+| ---------------------------------------------------------------------- | ----------------------------------------------------- |
+| [`importFormRemoveRow`](#action-importformremoverow)                   | `(idx: number) => void`                               |
+| [`clearImportFormSyntenyTracks`](#action-clearimportformsyntenytracks) | `() => void`                                          |
+| [`setImportFormSyntenyTrack`](#action-setimportformsyntenytrack)       | `(arg: number, val: ImportFormSyntenyTrack) => void`  |
+| [`setDrawCurves`](#action-setdrawcurves)                               | `(arg: boolean) => void`                              |
+| [`setCigarMode`](#action-setcigarmode)                                 | `(arg: "off" \| "matches" \| "full") => void`         |
+| [`setDrawLocationMarkers`](#action-setdrawlocationmarkers)             | `(arg: boolean) => void`                              |
+| [`setOverdrawPx`](#action-setoverdrawpx)                               | `(arg: number) => void`                               |
+| [`setAlpha`](#action-setalpha)                                         | `(arg: number) => void`                               |
+| [`setMinAlignmentLength`](#action-setminalignmentlength)               | `(arg: number) => void`                               |
+| [`setLodMode`](#action-setlodmode)                                     | `(arg: "auto" \| "fine" \| "coarse") => void`         |
+| [`setColorBy`](#action-setcolorby)                                     | `(arg: SyntenyColorBy) => void`                       |
+| [`setOpacityByIdentity`](#action-setopacitybyidentity)                 | `(arg: boolean) => void`                              |
+| [`setFadeThinAlignments`](#action-setfadethinalignments)               | `(arg: boolean) => void`                              |
+| [`showAllRegions`](#action-showallregions)                             | `() => void`                                          |
+| [`setInit`](#action-setinit)                                           | `(init?: LinearSyntenyViewInit \| undefined) => void` |
+| [`setAwaitingAutoDiagonalize`](#action-setawaitingautodiagonalize)     | `(arg: boolean) => void`                              |
+| [`setDiagonalizeStatus`](#action-setdiagonalizestatus)                 | `(arg?: RpcStatus \| undefined) => void`              |
+| [`setDiagonalizeStopToken`](#action-setdiagonalizestoptoken)           | `(arg?: StopToken \| undefined) => void`              |
+| [`exportSvg`](#action-exportsvg)                                       | `(opts: ExportSvgOptions) => Promise<void>`           |
+
+</details>
+
+<details>
+<summary>LinearSyntenyView - Actions (all signatures)</summary>
 
 #### action: importFormRemoveRow
 
@@ -522,15 +616,6 @@ type setDiagonalizeStatus = (arg?: RpcStatus | undefined) => void
 
 ```ts
 type setDiagonalizeStopToken = (arg?: StopToken | undefined) => void
-```
-
-#### action: cancelAutoDiagonalize
-
-Abort an in-flight auto-diagonalize; the runner's finally clears the wait flag,
-revealing the (undiagonalized) view.
-
-```ts
-type cancelAutoDiagonalize = () => void
 ```
 
 #### action: exportSvg

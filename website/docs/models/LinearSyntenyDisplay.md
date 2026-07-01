@@ -96,6 +96,19 @@ and docs.
 <details open>
 <summary>LinearSyntenyDisplay - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                     | Signature                             |
+| ------------------------------------------ | ------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearSyntenyDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`           |
+
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Properties (all signatures)</summary>
+
 #### property: type
 
 ```ts
@@ -119,15 +132,6 @@ configuration: ConfigurationReference(configSchema)
 <details open>
 <summary>LinearSyntenyDisplay - Volatiles</summary>
 
-#### volatile: featureData
-
-```ts
-// type signature
-type featureData = SyntenyFeatureData | undefined
-// code
-featureData: undefined as SyntenyFeatureData | undefined
-```
-
 #### volatile: instanceData
 
 Raw GPU-instance geometry produced by the RPC. The view observes this on every
@@ -139,6 +143,45 @@ display and uploads it to the shared backend keyed by `displayKey`. Clearing it
 type instanceData = SyntenyGeometry | undefined
 // code
 instanceData: undefined as SyntenyGeometry | undefined
+```
+
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate
+
+```ts
+// type signature
+type statusProgress = number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                         |
+| -------------------------------------------------- | --------------------------------- |
+| [`featureData`](#volatile-featuredata)             | `SyntenyFeatureData \| undefined` |
+| [`hoveredFeatureIdx`](#volatile-hoveredfeatureidx) | `number`                          |
+| [`clickedFeatureIdx`](#volatile-clickedfeatureidx) | `number`                          |
+| [`contextMenuAnchor`](#volatile-contextmenuanchor) | `ClickCoord \| undefined`         |
+| [`fetching`](#volatile-fetching)                   | `false`                           |
+| [`statusMessage`](#volatile-statusmessage)         | `string \| undefined`             |
+| [`assembliesSwapped`](#volatile-assembliesswapped) | `false`                           |
+
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Volatiles (all signatures)</summary>
+
+#### volatile: featureData
+
+```ts
+// type signature
+type featureData = SyntenyFeatureData | undefined
+// code
+featureData: undefined as SyntenyFeatureData | undefined
 ```
 
 #### volatile: hoveredFeatureIdx
@@ -186,18 +229,6 @@ type statusMessage = string | undefined
 statusMessage: undefined as string | undefined
 ```
 
-#### volatile: statusProgress
-
-determinate progress fraction [0,1] for the current status, or undefined when
-the in-flight phase is indeterminate
-
-```ts
-// type signature
-type statusProgress = number | undefined
-// code
-statusProgress: undefined as number | undefined
-```
-
 #### volatile: assembliesSwapped
 
 ```ts
@@ -212,48 +243,12 @@ assembliesSwapped: false
 <details open>
 <summary>LinearSyntenyDisplay - Getters</summary>
 
-#### getter: parentHelper
-
-```ts
-type parentHelper = { height: number; level: number }
-```
-
-#### getter: level
-
-```ts
-type level = number
-```
-
 #### getter: displayKey
 
 Stable backend key under the view-shared backend.
 
 ```ts
 type displayKey = number
-```
-
-#### getter: height
-
-```ts
-type height = number
-```
-
-#### getter: adapterConfig
-
-```ts
-type adapterConfig = any
-```
-
-#### getter: trackIds
-
-```ts
-type trackIds = string[]
-```
-
-#### getter: numFeats
-
-```ts
-type numFeats = number
 ```
 
 #### getter: warnings
@@ -297,58 +292,6 @@ every viewport change.
 type refetching = boolean
 ```
 
-#### getter: view
-
-```ts
-type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
-```
-
-#### getter: colorSchemeConfig
-
-```ts
-type colorSchemeConfig = {
-  cigarColors: {
-    I: string
-    N: string
-    D: string
-    X: string
-    M: string
-    '=': string
-  }
-}
-```
-
-#### getter: colorMapWithAlpha
-
-```ts
-type colorMapWithAlpha = {
-  I: string
-  N: string
-  D: string
-  X: string
-  M: string
-  '=': string
-}
-```
-
-#### getter: posColorWithAlpha
-
-```ts
-type posColorWithAlpha = string
-```
-
-#### getter: negColorWithAlpha
-
-```ts
-type negColorWithAlpha = string
-```
-
-#### getter: queryColorWithAlphaMap
-
-```ts
-type queryColorWithAlphaMap = (queryName: string) => string
-```
-
 #### getter: computedColors
 
 Main-thread-computed per-instance colors. Recomputes whenever colorBy,
@@ -370,10 +313,15 @@ round-trip.
 type renderInstanceData = { colors: Uint32Array<ArrayBuffer>; bp1Hi: Float32Array<ArrayBufferLike>; bp1Lo: Float32Array<ArrayBufferLike>; ... 9 more ...; instanceCount: number; } | undefined
 ```
 
-#### getter: tooltipText
+#### getter: connectedViews
+
+The two adjacent genome views this level draws between, or undefined until both
+are initialized with regions. A level draws between an adjacent pair, so both
+render and fetch depend only on those two views, not the whole stack. Single
+source of truth for that gate.
 
 ```ts
-type tooltipText = string
+type connectedViews = { v0: ModelInstanceTypeProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<...>; }, { ...; }>> & ... 19 more ... & IStateTreeNode<...>; v1: ModelInstanceTypeProps<...> & ... 19 more ... & IStateTreeNode<...>; } | undefined
 ```
 
 #### getter: renderParams
@@ -400,10 +348,82 @@ type renderParams =
   | undefined
 ```
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                   | Signature                                                                                                                                                                                                                                                                         |
+| ---------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`parentHelper`](#getter-parenthelper)   | `{ height: number; level: number; }`                                                                                                                                                                                                                                              |
+| [`level`](#getter-level)                 | `number`                                                                                                                                                                                                                                                                          |
+| [`height`](#getter-height)               | `number`                                                                                                                                                                                                                                                                          |
+| [`adapterConfig`](#getter-adapterconfig) | `any`                                                                                                                                                                                                                                                                             |
+| [`numFeats`](#getter-numfeats)           | `number`                                                                                                                                                                                                                                                                          |
+| [`view`](#getter-view)                   | `ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>` |
+| [`tooltipText`](#getter-tooltiptext)     | `string`                                                                                                                                                                                                                                                                          |
+
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Getters (all signatures)</summary>
+
+#### getter: parentHelper
+
+```ts
+type parentHelper = { height: number; level: number }
+```
+
+#### getter: level
+
+```ts
+type level = number
+```
+
+#### getter: height
+
+```ts
+type height = number
+```
+
+#### getter: adapterConfig
+
+```ts
+type adapterConfig = any
+```
+
+#### getter: numFeats
+
+```ts
+type numFeats = number
+```
+
+#### getter: view
+
+```ts
+type view = ModelInstanceTypeProps<_OverrideProps<_OverrideProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayName: IMaybe<ISimpleType<string>>; minimized: IOptionalIType<ISimpleType<boolean>, [...]>; }, { ...; }>, { ...; }>> & ... 17 more ... & IStateTreeNode<...>
+```
+
+#### getter: tooltipText
+
+```ts
+type tooltipText = string
+```
+
 </details>
 
 <details open>
 <summary>LinearSyntenyDisplay - Methods</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                             | Signature                                 |
+| ---------------------------------- | ----------------------------------------- |
+| [`getFeature`](#method-getfeature) | `(index: number) => FeatPos \| undefined` |
+
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Methods (all signatures)</summary>
 
 #### method: getFeature
 
@@ -427,6 +447,24 @@ type setRpcData = (
   instanceData: SyntenyGeometry | undefined,
 ) => void
 ```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                   |
+| ------------------------------------------------------ | ------------------------------------------- |
+| [`setStatusMessage`](#action-setstatusmessage)         | `(status?: RpcStatus \| undefined) => void` |
+| [`setFetching`](#action-setfetching)                   | `(arg: boolean) => void`                    |
+| [`setAssembliesSwapped`](#action-setassembliesswapped) | `(arg: boolean) => void`                    |
+| [`setHoveredFeatureIdx`](#action-sethoveredfeatureidx) | `(idx: number) => void`                     |
+| [`setClickedFeatureIdx`](#action-setclickedfeatureidx) | `(idx: number) => void`                     |
+| [`openContextMenu`](#action-opencontextmenu)           | `(anchor: ClickCoord) => void`              |
+| [`closeContextMenu`](#action-closecontextmenu)         | `() => void`                                |
+
+</details>
+
+<details>
+<summary>LinearSyntenyDisplay - Actions (all signatures)</summary>
 
 #### action: setStatusMessage
 

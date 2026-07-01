@@ -27,6 +27,19 @@ and exposes canUndo/canRedo with undo/redo actions.
 <details open>
 <summary>TimeTraveller - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                               | Signature |
+| ------------------------------------ | --------- |
+| [`undoIdx`](#property-undoidx)       | `number`  |
+| [`targetPath`](#property-targetpath) | `string`  |
+
+</details>
+
+<details>
+<summary>TimeTraveller - Properties (all signatures)</summary>
+
 #### property: undoIdx
 
 ```ts
@@ -49,6 +62,19 @@ targetPath: ''
 
 <details open>
 <summary>TimeTraveller - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature   |
+| ---------------------------------------------- | ----------- |
+| [`history`](#volatile-history)                 | `unknown[]` |
+| [`notTrackingUndo`](#volatile-nottrackingundo) | `false`     |
+
+</details>
+
+<details>
+<summary>TimeTraveller - Volatiles (all signatures)</summary>
 
 #### volatile: history
 
@@ -73,6 +99,19 @@ notTrackingUndo: false
 <details open>
 <summary>TimeTraveller - Getters</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                       | Signature |
+| ---------------------------- | --------- |
+| [`canUndo`](#getter-canundo) | `boolean` |
+| [`canRedo`](#getter-canredo) | `boolean` |
+
+</details>
+
+<details>
+<summary>TimeTraveller - Getters (all signatures)</summary>
+
 #### getter: canUndo
 
 ```ts
@@ -89,6 +128,23 @@ type canRedo = boolean
 
 <details open>
 <summary>TimeTraveller - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                             | Signature                     |
+| -------------------------------------------------- | ----------------------------- |
+| [`stopTrackingUndo`](#action-stoptrackingundo)     | `() => void`                  |
+| [`resumeTrackingUndo`](#action-resumetrackingundo) | `() => void`                  |
+| [`addUndoState`](#action-addundostate)             | `(snapshot: unknown) => void` |
+| [`initialize`](#action-initialize)                 | `() => void`                  |
+| [`undo`](#action-undo)                             | `() => void`                  |
+| [`redo`](#action-redo)                             | `() => void`                  |
+
+</details>
+
+<details>
+<summary>TimeTraveller - Actions (all signatures)</summary>
 
 #### action: stopTrackingUndo
 

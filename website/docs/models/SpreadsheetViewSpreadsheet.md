@@ -24,6 +24,33 @@ reference the markdown files in our repo of the checked out git tag
 <details open>
 <summary>SpreadsheetViewSpreadsheet - Properties</summary>
 
+#### property: svTypeFilter
+
+selected value of the SVTYPE quick-filter dropdown (undefined = show all);
+applied to the INFO.SVTYPE column when the imported data has one
+
+```ts
+// type signature
+type svTypeFilter = IMaybe<ISimpleType<string>>
+// code
+svTypeFilter: types.maybe(types.string)
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                       |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| [`rowSet`](#property-rowset)                 | `IType<RowSet \| undefined, RowSet \| undefined, RowSet \| undefined>`                                          |
+| [`columns`](#property-columns)               | `IType<{ name: string; }[], { name: string; }[], { name: string; }[]>`                                          |
+| [`assemblyName`](#property-assemblyname)     | `IMaybe<ISimpleType<string>>`                                                                                   |
+| [`visibleColumns`](#property-visiblecolumns) | `IOptionalIType<IType<Record<string, boolean>, Record<string, boolean>, Record<string, boolean>>, [undefined]>` |
+
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Properties (all signatures)</summary>
+
 #### property: rowSet
 
 ```ts
@@ -67,22 +94,22 @@ type visibleColumns = IOptionalIType<
 visibleColumns: types.optional(types.frozen<Record<string, boolean>>(), {})
 ```
 
-#### property: svTypeFilter
-
-selected value of the SVTYPE quick-filter dropdown (undefined = show all);
-applied to the INFO.SVTYPE column when the imported data has one
-
-```ts
-// type signature
-type svTypeFilter = IMaybe<ISimpleType<string>>
-// code
-svTypeFilter: types.maybe(types.string)
-```
-
 </details>
 
 <details open>
 <summary>SpreadsheetViewSpreadsheet - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                         | Signature                              |
+| ---------------------------------------------- | -------------------------------------- |
+| [`visibleRowFlags`](#volatile-visiblerowflags) | `Record<number, boolean> \| undefined` |
+
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Volatiles (all signatures)</summary>
 
 #### volatile: visibleRowFlags
 
@@ -97,6 +124,39 @@ visibleRowFlags: undefined as Record<number, boolean> | undefined
 
 <details open>
 <summary>SpreadsheetViewSpreadsheet - Getters</summary>
+
+#### getter: svTypeColumnField
+
+the SVTYPE column field name, present only for structural-variant VCFs (drives
+whether the SV-type quick-filter dropdown is shown)
+
+```ts
+type svTypeColumnField = string | undefined
+```
+
+#### getter: svTypeOptions
+
+the distinct SVTYPE values present in the data, sorted, for the quick-filter
+dropdown options
+
+```ts
+type svTypeOptions = string[]
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                       | Signature                                                                                                                                                                                                                                                                                                         |
+| -------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rows`](#getter-rows)                       | `GridRow[] \| undefined`                                                                                                                                                                                                                                                                                          |
+| [`initialized`](#getter-initialized)         | `boolean`                                                                                                                                                                                                                                                                                                         |
+| [`dataGridColumns`](#getter-datagridcolumns) | `({ field: string; width: number; type: "number" \| undefined; } \| { field: string; width: number; renderCell: ({ row }: GridRenderCellParams<any, any, any, GridTreeNodeWithRender>) => Element \| "N/A"; type?: undefined; valueGetter?: undefined; valueFormatter?: undefined; } \| { ...; })[] \| undefined` |
+| [`visibleRows`](#getter-visiblerows)         | `GridRow[] \| undefined`                                                                                                                                                                                                                                                                                          |
+
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Getters (all signatures)</summary>
 
 #### getter: rows
 
@@ -122,28 +182,24 @@ type dataGridColumns = ({ field: string; width: number; type: "number" | undefin
 type visibleRows = GridRow[] | undefined
 ```
 
-#### getter: svTypeColumnField
-
-the SVTYPE column field name, present only for structural-variant VCFs (drives
-whether the SV-type quick-filter dropdown is shown)
-
-```ts
-type svTypeColumnField = string | undefined
-```
-
-#### getter: svTypeOptions
-
-the distinct SVTYPE values present in the data, sorted, for the quick-filter
-dropdown options
-
-```ts
-type svTypeOptions = string[]
-```
-
 </details>
 
 <details open>
 <summary>SpreadsheetViewSpreadsheet - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                           | Signature                                              |
+| ------------------------------------------------ | ------------------------------------------------------ |
+| [`setVisibleRows`](#action-setvisiblerows)       | `(arg?: Record<number, boolean> \| undefined) => void` |
+| [`setSvTypeFilter`](#action-setsvtypefilter)     | `(arg?: string \| undefined) => void`                  |
+| [`setVisibleColumns`](#action-setvisiblecolumns) | `(arg: Record<string, boolean>) => void`               |
+
+</details>
+
+<details>
+<summary>SpreadsheetViewSpreadsheet - Actions (all signatures)</summary>
 
 #### action: setVisibleRows
 

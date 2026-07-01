@@ -27,6 +27,19 @@ Adds `sessionAssemblies` (admin-aware, persisted-with-session assemblies) and
 <details open>
 <summary>AssembliesMixin - Properties</summary>
 
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                 | Signature                                                                                                                                                                                                                                                                                                                          |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`sessionAssemblies`](#property-sessionassemblies)     | `IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...` |
+| [`temporaryAssemblies`](#property-temporaryassemblies) | `IOptionalIType<IArrayType<ConfigurationSchemaType<{ aliases: { type: string; defaultValue: never[]; description: string; }; sequence: AnyConfigurationSchemaType; refNameColors: { type: string; defaultValue: never[]; description: string; }; ... 4 more ...; displayName: { ...; }; }, ConfigurationSchemaOptions<...>>>, ...` |
+
+</details>
+
+<details>
+<summary>AssembliesMixin - Properties (all signatures)</summary>
+
 #### property: sessionAssemblies
 
 ```ts
@@ -78,6 +91,30 @@ type assemblyNames = string[]
 <details open>
 <summary>AssembliesMixin - Actions</summary>
 
+#### action: addTemporaryAssembly
+
+used for read vs ref type assemblies.
+
+```ts
+type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
+```
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                       | Signature                                                                                                                                                                                                                  |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`addSessionAssembly`](#action-addsessionassembly)           | `(conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>` |
+| [`addAssembly`](#action-addassembly)                         | `(conf: AnyConfiguration) => void`                                                                                                                                                                                         |
+| [`removeAssembly`](#action-removeassembly)                   | `(name: string) => void`                                                                                                                                                                                                   |
+| [`removeSessionAssembly`](#action-removesessionassembly)     | `(assemblyName: string) => void`                                                                                                                                                                                           |
+| [`removeTemporaryAssembly`](#action-removetemporaryassembly) | `(name: string) => void`                                                                                                                                                                                                   |
+
+</details>
+
+<details>
+<summary>AssembliesMixin - Actions (all signatures)</summary>
+
 #### action: addSessionAssembly
 
 ```ts
@@ -100,14 +137,6 @@ type removeAssembly = (name: string) => void
 
 ```ts
 type removeSessionAssembly = (assemblyName: string) => void
-```
-
-#### action: addTemporaryAssembly
-
-used for read vs ref type assemblies.
-
-```ts
-type addTemporaryAssembly = (conf: AnyConfiguration) => ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
 ```
 
 #### action: removeTemporaryAssembly
