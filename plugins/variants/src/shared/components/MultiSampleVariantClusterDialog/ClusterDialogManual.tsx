@@ -14,6 +14,11 @@ import {
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
+  generateClusterRScript,
+  matrixToTsv,
+  parseClusterOrder,
+} from '@jbrowse/tree-sidebar'
+import {
   Button,
   DialogActions,
   DialogContent,
@@ -78,23 +83,8 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
     },
   )
 
-  const results = ret
-    ? String.raw`inputMatrix<-matrix(c(${Object.values(ret)
-        .map(val => val.join(','))
-        .join(',\n')}
-),nrow=${Object.values(ret).length},byrow=TRUE)
-rownames(inputMatrix)<-c(${Object.keys(ret)
-        .map(key => `'${key}'`)
-        .join(',')})
-resultClusters<-hclust(dist(inputMatrix), method='${clusterMethod}')
-cat(resultClusters$order,sep='\n')`
-    : undefined
-
-  const resultsTsv = ret
-    ? Object.entries(ret)
-        .map(([key, val]) => [key, ...val].join('\t'))
-        .join('\n')
-    : undefined
+  const results = ret ? generateClusterRScript(ret, clusterMethod) : undefined
+  const resultsTsv = ret ? matrixToTsv(ret) : undefined
 
   return (
     <>
@@ -232,11 +222,7 @@ cat(resultClusters$order,sep='\n')`
             if (sourcesWithoutLayout) {
               try {
                 model.setLayout(
-                  paste
-                    .split('\n')
-                    .map(t => t.trim())
-                    .filter(f => !!f)
-                    .map(r => +r)
+                  parseClusterOrder(paste)
                     .map(idx => {
                       const ret = sourcesWithoutLayout[idx - 1]
                       if (!ret) {

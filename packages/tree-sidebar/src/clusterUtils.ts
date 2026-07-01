@@ -144,6 +144,17 @@ export function parseClusterTree(newick: string, subtreeFilter?: string[]) {
   return applySubtreeFilter(buildTree(newick), subtreeFilter)
 }
 
+// Parse pasted R hclust output (a sequence of 1-based row indices, one per
+// line, with possible blank/whitespace lines) into a numeric array. Callers map
+// these 1-based indices into their source list.
+export function parseClusterOrder(paste: string): number[] {
+  return paste
+    .split('\n')
+    .map(t => t.trim())
+    .filter(f => !!f)
+    .map(r => +r)
+}
+
 export function buildClusteredLayout<S extends { name: string }>(
   baseSources: S[],
   existingLayout: S[],

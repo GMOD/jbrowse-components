@@ -11,9 +11,12 @@ export {
   buildClusteredLayout,
   buildTree,
   clusterTree,
+  parseClusterOrder,
   parseClusterTree,
   pruneNewickToLeaves,
 } from './clusterUtils.ts'
+export { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
+export { default as ClusterModeSelector } from './ClusterModeSelector.tsx'
 export { TreeSidebarMixin } from './TreeSidebarMixin.ts'
 export { treeBranchLengthMenuItem } from './treeMenuItems.ts'
 export {
