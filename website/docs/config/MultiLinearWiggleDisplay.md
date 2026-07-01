@@ -73,6 +73,11 @@ shorthand `displayDefaults: { key: value }` is equivalent to the full
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
+### MultiLinearWiggleDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/multilinearwiggledisplay).
+
 <details open>
 <summary>MultiLinearWiggleDisplay - Slots</summary>
 
@@ -131,6 +136,63 @@ subtracks together in one shared plot.
 {
   "type": "MultiLinearWiggleDisplay",
   "defaultRendering": "multixyplot"
+}
+```
+
+#### slot: minimalTicks
+
+Draw only the min/max Y-axis ticks
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw only the min/max Y-axis ticks',
+  advanced: true,
+}
+```
+
+#### slot: showTree
+
+Show the subtrack clustering tree in the sidebar
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Show the subtrack clustering tree in the sidebar',
+}
+```
+
+#### slot: showBranchLength
+
+Draw the clustering tree with branch lengths
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw the clustering tree with branch lengths',
+}
+```
+
+#### slot: showRowSeparators
+
+Draw separator lines between subtrack rows
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw separator lines between subtrack rows',
 }
 ```
 

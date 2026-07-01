@@ -69,7 +69,9 @@ on its display type(s):
 - [ChordVariantDisplay](../chordvariantdisplay)
   ([state model](../../models/chordvariantdisplay))
 - [LinearMultiSampleVariantDisplay](../linearmultisamplevariantdisplay)
+  ([state model](../../models/linearmultisamplevariantdisplay))
 - [LinearMultiSampleVariantMatrixDisplay](../linearmultisamplevariantmatrixdisplay)
+  ([state model](../../models/linearmultisamplevariantmatrixdisplay))
 - [LinearVariantDisplay](../linearvariantdisplay)
   ([state model](../../models/linearvariantdisplay))
 

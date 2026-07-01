@@ -89,8 +89,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -230,17 +228,6 @@ and docs.
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
-
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
 <summary>LinearWiggleDisplay - Properties</summary>

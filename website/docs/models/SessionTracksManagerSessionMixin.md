@@ -100,6 +100,10 @@ and docs.
 
 #### property: sessionTracks
 
+User-added session tracks (no matching admin config track). A non-admin's
+_edits_ to an existing config track are stored as deltas (trackConfigDeltas),
+not here.
+
 ```ts
 // type signature
 type sessionTracks = IOptionalIType<IArrayType<IAnyModelType>, [undefined]>
@@ -110,6 +114,26 @@ sessionTracks: types.stripDefault(
 )
 ```
 
+#### property: trackConfigDeltas
+
+Per-track config overrides for a non-admin, keyed by trackId, stored as a
+_delta_ against the admin-owned base config (jbrowse.tracks entry) rather than a
+full copy — so a later admin change to an untouched field still flows through
+(see trackConfigDelta.ts). Frozen (not a typed track array) on purpose: a typed
+create() would fill defaults, erasing the "unset vs default" distinction the
+delta merge relies on.
+
+```ts
+// type signature
+type trackConfigDeltas = IType<
+  Record<string, PlainTrackConfig> | null | undefined,
+  Record<string, PlainTrackConfig>,
+  Record<string, PlainTrackConfig>
+>
+// code
+trackConfigDeltas: types.frozen<Record<string, PlainTrackConfig>>({})
+```
+
 </details>
 
 <details open>
@@ -117,10 +141,9 @@ sessionTracks: types.stripDefault(
 
 #### getter: tracks
 
-Session tracks come first and shadow any config (jbrowse.tracks) track with the
-same trackId, so a non-admin's edits to a config track (stored as a same-id
-session override, see updateTrackConfiguration) replace the original everywhere
-it's resolved without showing a duplicate.
+User-added session tracks first, then each admin config track with its delta
+(trackConfigDeltas) merged over it. A base track without a delta is returned
+unchanged by identity to keep the hydration cache warm.
 
 ```ts
 type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
@@ -139,25 +162,22 @@ type addTrackConf = (trackConf: AnyConfiguration) => any
 
 #### action: updateTrackConfiguration
 
-Persist edited track config. Admins edit the jbrowse config in place; everyone
-else gets a session-track override (same trackId) so the edits persist with the
-session and are shared, instead of being a throwaway in-memory mutation of an
-admin-owned config track.
+Persist an edited track config. Admins edit the jbrowse config in place;
+everyone else gets a delta (trackConfigDeltas) against the admin-owned base —
+only the changed slots — so the edits persist and are shared while admin changes
+to untouched fields still flow through. A user-added session track (no base)
+keeps living in sessionTracks.
 
 ```ts
-type updateTrackConfiguration = (trackConf: {
-  [key: string]: unknown
-  trackId: string
-}) => void
+type updateTrackConfiguration = (trackConf: PlainTrackConfig) => void
 ```
 
 #### action: resetTrackConfiguration
 
-Drop a session-track override (see updateTrackConfiguration) so the track
-reverts to its underlying config (jbrowse.tracks) default. Unlike
-deleteTrackConf this does not dereference the track from open views — the
-same-trackId config track re-resolves in place, so an open track stays open and
-simply reverts.
+Drop a non-admin's delta (trackConfigDeltas) so the track reverts to its admin
+config (jbrowse.tracks) default. Unlike deleteTrackConf this does not
+dereference the track from open views — the base config re-resolves in place, so
+an open track stays open and simply reverts.
 
 ```ts
 type resetTrackConfiguration = (trackId: string) => void

@@ -70,8 +70,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -164,17 +162,6 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
-
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
 <summary>LinearCanvasBaseDisplay - Properties</summary>
@@ -356,8 +343,7 @@ morphFromMaxY: 0
 
 the config typed off the concrete schema; `ConfigurationReference` erases
 `self.configuration` to `any`, so direct reads route through this to stay typed
-(same move as `BaseAdapter<CONF>`). The override-aware reads use
-`getConfWithOverride` instead.
+(same move as `BaseAdapter<CONF>`).
 
 ```ts
 type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>
@@ -402,25 +388,25 @@ type showLegend = boolean
 #### getter: maxHeight
 
 ```ts
-type maxHeight = number
+type maxHeight = any
 ```
 
 #### getter: autoHeight
 
 ```ts
-type autoHeight = boolean
+type autoHeight = any
 ```
 
 #### getter: displayMode
 
 ```ts
-type displayMode = 'normal' | 'compact' | 'superCompact'
+type displayMode = any
 ```
 
 #### getter: showLabelsMode
 
 ```ts
-type showLabelsMode = 'auto' | 'off' | 'on'
+type showLabelsMode = any
 ```
 
 #### getter: showLabels
@@ -432,7 +418,7 @@ type showLabels = boolean
 #### getter: showDescriptions
 
 ```ts
-type showDescriptions = boolean
+type showDescriptions = any
 ```
 
 #### getter: showOutline
@@ -444,13 +430,13 @@ type showOutline = boolean
 #### getter: featureColor
 
 ```ts
-type featureColor = string
+type featureColor = any
 ```
 
 #### getter: utrColor
 
 ```ts
-type utrColor = string
+type utrColor = any
 ```
 
 #### getter: colorByMode
@@ -468,7 +454,7 @@ type colorByAttribute = string
 #### getter: effectiveShowDescriptions
 
 ```ts
-type effectiveShowDescriptions = boolean
+type effectiveShowDescriptions = any
 ```
 
 #### getter: selectedFeatureId
@@ -480,7 +466,7 @@ type selectedFeatureId = string | undefined
 #### getter: maxFeatureDensity
 
 ```ts
-type maxFeatureDensity = number | undefined
+type maxFeatureDensity = any
 ```
 
 #### getter: colorByCDS
@@ -645,7 +631,7 @@ type activeFilters = () => string[]
 ```ts
 type rpcProps = () => {
   displayConfig: DisplayConfig
-  maxFeatureDensity: number | undefined
+  maxFeatureDensity: any
   colorByCDS: boolean
   theme: SerializableThemeArgs | undefined
 }
@@ -684,7 +670,7 @@ type showSubmenuMenuItems = () => (
         onClick: () => void
       }[]
     }
-  | { label: string; type: 'checkbox'; checked: boolean; onClick: () => void }
+  | { label: string; type: 'checkbox'; checked: any; onClick: () => void }
 )[]
 ```
 

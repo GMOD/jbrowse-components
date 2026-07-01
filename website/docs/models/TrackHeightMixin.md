@@ -21,26 +21,12 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-<details open>
-<summary>TrackHeightMixin - Properties</summary>
-
-#### property: heightOverride
-
-the explicitly-set display height (e.g. from a drag-resize); the `height` getter
-resolves this over the config `height` slot. Named with the `Override` suffix to
-match the override convention used elsewhere (`configOverrides`, `setOverride`);
-the bare `height` name belongs to the resolving getter.
-
-```ts
-// type signature
-type heightOverride = IMaybe<ISimpleType<number>>
-// code
-heightOverride: types.maybe(
-  types.refinement('displayHeight', types.number, n => n >= MIN_DISPLAY_HEIGHT),
-)
-```
-
-</details>
+The display height is stored directly on the `height` config slot (drag-resize
+writes it via `setSlot`), so it survives a track being unticked and reticked —
+the config node outlives the ephemeral display instance. Displays with an
+auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`) and
+override the `height` getter to fall back to their computed content height when
+unset.
 
 <details open>
 <summary>TrackHeightMixin - Volatiles</summary>

@@ -68,17 +68,6 @@ and docs.
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
-
 <details open>
 <summary>WiggleCommonMixin - Volatiles</summary>
 

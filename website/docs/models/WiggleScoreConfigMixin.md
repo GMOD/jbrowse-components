@@ -26,22 +26,6 @@ include rpcDataMap or autoscale domain computation — those live in
 WiggleCommonMixin, which composes this. Displays that own their own rpcDataMap
 type (e.g. LinearManhattanDisplay) should compose this instead.
 
-## Inherited members
-
-Available on this model via composition. Follow each link for full signatures
-and docs.
-
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
-
 <details open>
 <summary>WiggleScoreConfigMixin - Properties</summary>
 

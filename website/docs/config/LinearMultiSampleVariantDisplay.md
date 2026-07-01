@@ -77,6 +77,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearMultiSampleVariantDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearmultisamplevariantdisplay).
+
 <details open>
 <summary>LinearMultiSampleVariantDisplay - Slots</summary>
 

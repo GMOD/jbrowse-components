@@ -143,7 +143,8 @@ and docs.
 ### Available via [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
 
 **Properties:**
-[sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks)
+[sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks),
+[trackConfigDeltas](../sessiontracksmanagersessionmixin#property-trackconfigdeltas)
 
 **Getters:** [tracks](../sessiontracksmanagersessionmixin#getter-tracks)
 
@@ -339,9 +340,10 @@ type canEditTrack = (trackId: string) => boolean
 
 #### method: isTrackOverride
 
-whether `trackId` is a session-track edit (see updateTrackConfiguration)
-shadowing an admin-owned config track of the same trackId, rather than a
-standalone user-added session track
+whether `trackId` has a non-admin config override (a delta stored in
+trackConfigDeltas against an admin-owned config track, see
+updateTrackConfiguration), rather than a standalone user-added session track.
+Drives the "Reset track settings" menu swap and the edited badge.
 
 ```ts
 type isTrackOverride = (trackId: string) => boolean

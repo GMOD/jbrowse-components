@@ -70,8 +70,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -164,6 +162,33 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
+
+### Available via [TreeSidebarMixin](../treesidebarmixin)
+
+**Properties:** [layout](../treesidebarmixin#property-layout),
+[clusterTree](../treesidebarmixin#property-clustertree),
+[treeAreaWidth](../treesidebarmixin#property-treeareawidth),
+[subtreeFilter](../treesidebarmixin#property-subtreefilter)
+
+**Volatiles:** [hoveredTreeNode](../treesidebarmixin#volatile-hoveredtreenode),
+[treeCanvas](../treesidebarmixin#volatile-treecanvas),
+[mouseoverCanvas](../treesidebarmixin#volatile-mouseovercanvas)
+
+**Getters:** [parsedTree](../treesidebarmixin#getter-parsedtree),
+[root](../treesidebarmixin#getter-root),
+[treeHasBranchLengths](../treesidebarmixin#getter-treehasbranchlengths)
+
+**Methods:** [willClearTree](../treesidebarmixin#method-willcleartree)
+
+**Actions:** [setLayout](../treesidebarmixin#action-setlayout),
+[clearLayout](../treesidebarmixin#action-clearlayout),
+[setClusterTree](../treesidebarmixin#action-setclustertree),
+[setLayoutAndClusterTree](../treesidebarmixin#action-setlayoutandclustertree),
+[setTreeAreaWidth](../treesidebarmixin#action-settreeareawidth),
+[setSubtreeFilter](../treesidebarmixin#action-setsubtreefilter),
+[setHoveredTreeNode](../treesidebarmixin#action-sethoveredtreenode),
+[setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
+[setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Properties</summary>
@@ -366,8 +391,8 @@ type nrow = number
 
 #### getter: fitTargetHeight
 
-The track height that auto-fit mode divides among rows: the dragged
-`heightOverride` (TrackHeightMixin) or the config `height` default.
+The track height that auto-fit mode divides among rows: the `height` config slot
+(its default, or a drag-resized value written to it).
 
 ```ts
 type fitTargetHeight = number
@@ -548,9 +573,9 @@ type resizeHeight = (distance: number) => number
 
 #### action: setFitToHeight
 
-Switch to auto-fit: seed `heightOverride` from the current content height (so
-toggling on doesn't jump), then `rowHeightOverride = 0` makes `rowHeight` derive
-from it.
+Switch to auto-fit: seed the `height` config slot from the current content
+height (so toggling on doesn't jump), then `rowHeightOverride = 0` makes
+`rowHeight` derive from it.
 
 ```ts
 type setFitToHeight = () => void

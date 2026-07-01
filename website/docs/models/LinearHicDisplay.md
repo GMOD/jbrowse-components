@@ -88,8 +88,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -178,17 +176,6 @@ and docs.
 
 **Actions:**
 [setLastDrawnViewport](../staleviewportrescalemixin#action-setlastdrawnviewport)
-
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
 <summary>LinearHicDisplay - Properties</summary>
@@ -337,13 +324,13 @@ type dataLoaded = boolean
 #### getter: colorScheme
 
 ```ts
-type colorScheme = 'fall' | 'juicebox' | 'viridis' | undefined
+type colorScheme = 'fall' | 'juicebox' | 'viridis'
 ```
 
 #### getter: showLegend
 
 ```ts
-type showLegend = boolean | undefined
+type showLegend = boolean
 ```
 
 #### getter: colorMaxScore

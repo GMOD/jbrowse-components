@@ -19,6 +19,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### JBrowse1Connection - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/jbrowse1connection).
+
 <details open>
 <summary>JBrowse1Connection - Slots</summary>
 

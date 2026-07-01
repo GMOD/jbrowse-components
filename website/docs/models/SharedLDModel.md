@@ -60,8 +60,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -151,17 +149,6 @@ and docs.
 **Actions:**
 [setLastDrawnViewport](../staleviewportrescalemixin#action-setlastdrawnviewport)
 
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
-
 <details open>
 <summary>SharedLDModel - Properties</summary>
 
@@ -202,97 +189,97 @@ type prefersOffset = boolean
 #### getter: minorAlleleFrequencyFilter
 
 ```ts
-type minorAlleleFrequencyFilter = number
+type minorAlleleFrequencyFilter = any
 ```
 
 #### getter: lengthCutoffFilter
 
 ```ts
-type lengthCutoffFilter = number
+type lengthCutoffFilter = any
 ```
 
 #### getter: lineZoneHeight
 
 ```ts
-type lineZoneHeight = number
+type lineZoneHeight = any
 ```
 
 #### getter: ldMetric
 
 ```ts
-type ldMetric = 'r2' | 'dprime'
+type ldMetric = any
 ```
 
 #### getter: showLegend
 
 ```ts
-type showLegend = boolean
+type showLegend = any
 ```
 
 #### getter: showLDTriangle
 
 ```ts
-type showLDTriangle = boolean
+type showLDTriangle = any
 ```
 
 #### getter: showRecombination
 
 ```ts
-type showRecombination = boolean
+type showRecombination = any
 ```
 
 #### getter: recombinationZoneHeight
 
 ```ts
-type recombinationZoneHeight = number
+type recombinationZoneHeight = any
 ```
 
 #### getter: fitToHeight
 
 ```ts
-type fitToHeight = boolean
+type fitToHeight = any
 ```
 
 #### getter: hweFilterThreshold
 
 ```ts
-type hweFilterThreshold = number
+type hweFilterThreshold = any
 ```
 
 #### getter: callRateFilter
 
 ```ts
-type callRateFilter = number
+type callRateFilter = any
 ```
 
 #### getter: showVerticalGuides
 
 ```ts
-type showVerticalGuides = boolean
+type showVerticalGuides = any
 ```
 
 #### getter: showLabels
 
 ```ts
-type showLabels = boolean
+type showLabels = any
 ```
 
 #### getter: tickHeight
 
 ```ts
-type tickHeight = number
+type tickHeight = any
 ```
 
 #### getter: useGenomicPositions
 
 ```ts
-type useGenomicPositions = boolean
+type useGenomicPositions = any
 ```
 
 #### getter: signedLD
 
 ```ts
-type signedLD = boolean
+type signedLD = any
 ```
 
 #### getter: jexlFilters
@@ -342,7 +329,7 @@ recombination scale). The hit-test subtracts this from mouseY before reversing
 the render transform.
 
 ```ts
-type effectiveLineZoneHeight = number
+type effectiveLineZoneHeight = any
 ```
 
 #### getter: ldCanvasHeight
@@ -403,14 +390,14 @@ type renderState =
 
 ```ts
 type rpcProps = () => {
-  ldMetric: 'r2' | 'dprime'
-  minorAlleleFrequencyFilter: number
-  lengthCutoffFilter: number
-  hweFilterThreshold: number
-  callRateFilter: number
+  ldMetric: any
+  minorAlleleFrequencyFilter: any
+  lengthCutoffFilter: any
+  hweFilterThreshold: any
+  callRateFilter: any
   jexlFilters: string[]
-  signedLD: boolean
-  useGenomicPositions: boolean
+  signedLD: any
+  useGenomicPositions: any
 }
 ```
 

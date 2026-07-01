@@ -77,6 +77,11 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
+### LinearMultiSampleVariantMatrixDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearmultisamplevariantmatrixdisplay).
+
 <details open>
 <summary>LinearMultiSampleVariantMatrixDisplay - Slots</summary>
 

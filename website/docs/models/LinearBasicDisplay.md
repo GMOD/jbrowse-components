@@ -213,8 +213,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -308,17 +306,6 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
-
 <details open>
 <summary>LinearBasicDisplay - Volatiles</summary>
 
@@ -339,19 +326,19 @@ isoformCollapseNoticeDismissed: false
 #### getter: subfeatureLabels
 
 ```ts
-type subfeatureLabels = 'none' | 'overlay' | 'below'
+type subfeatureLabels = any
 ```
 
 #### getter: geneGlyphMode
 
 ```ts
-type geneGlyphMode = 'auto' | 'all' | 'longestCoding'
+type geneGlyphMode = any
 ```
 
 #### getter: displayDirectionalChevrons
 
 ```ts
-type displayDirectionalChevrons = boolean
+type displayDirectionalChevrons = any
 ```
 
 #### getter: effectiveGeneGlyphMode
@@ -380,7 +367,7 @@ type isGeneLike = boolean
 #### method: rpcProps
 
 ```ts
-type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: number | undefined; colorByCDS: boolean; the...
+type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: any; colorByCDS: boolean; theme: Serializabl...
 ```
 
 #### method: showSubmenuMenuItems
@@ -396,7 +383,7 @@ type showSubmenuMenuItems = () => (
         onClick: () => void
       }[]
     }
-  | { label: string; type: 'checkbox'; checked: boolean; onClick: () => void }
+  | { label: string; type: 'checkbox'; checked: any; onClick: () => void }
 )[]
 ```
 

@@ -19,6 +19,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
+### ExternalTokenInternetAccount - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/externaltokeninternetaccount).
+
 <details open>
 <summary>ExternalTokenInternetAccount - Slots</summary>
 

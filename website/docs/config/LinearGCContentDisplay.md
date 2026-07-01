@@ -131,6 +131,21 @@ Color for the wiggle bars (when not using bicolor mode)
 }
 ```
 
+#### slot: minimalTicks
+
+Draw only the min/max Y-axis ticks
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw only the min/max Y-axis ticks',
+  advanced: true,
+}
+```
+
 #### slot: summaryScoreMode
 
 choose whether to use max/min/average or whiskers which combines all three into

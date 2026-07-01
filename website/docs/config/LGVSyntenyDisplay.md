@@ -53,6 +53,27 @@ _See the **Slots** section below for all available configuration fields._
 This config's runtime API is documented on its
 [state model page](../../models/lgvsyntenydisplay).
 
+<details open>
+<summary>LGVSyntenyDisplay - Slots</summary>
+
+#### slot: colorBy
+
+Synteny reads are strand-colored by default (vs the base alignments display's
+`normal`); overrides the inherited `colorBy` slot's default.
+
+**Type:** `frozen`
+
+```js
+{
+  type: 'frozen',
+  defaultValue: { type: 'strand' },
+  description: 'Color scheme for synteny reads',
+  advanced: true,
+}
+```
+
+</details>
+
 ## Inherited config slots
 
 Slots available on this config via its base configuration(s), shown in full so
@@ -270,6 +291,406 @@ Number of standard deviations for localsd autoscale
   defaultValue: 3,
   description: 'Number of standard deviations for localsd autoscale',
   advanced: true,
+}
+```
+
+#### slot: mismatchAlpha
+
+Fade mismatches by base quality
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Fade mismatches by base quality',
+}
+```
+
+#### slot: showLowFreqMismatches
+
+Show low-frequency mismatches (below the SNP-calling threshold) in the coverage
+track
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description:
+    'Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track',
+}
+```
+
+#### slot: showLegend
+
+Show the color-scheme legend overlay
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Show the color-scheme legend overlay',
+}
+```
+
+#### slot: sortedBy
+
+Sort reads at a genomic position, e.g. by base, strand, or a tag (null =
+unsorted)
+
+**Type:** `frozen`
+
+```js
+{
+  type: 'frozen',
+  defaultValue: null,
+  description:
+    'Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)',
+  advanced: true,
+}
+```
+
+#### slot: showOutline
+
+null = auto: outline is drawn only in chain/linked-read modes. Set true/false to
+force it on or off regardless of mode.
+
+**Type:** `frozen`
+
+```js
+{
+  type: 'frozen',
+  defaultValue: null,
+  description: 'Draw an outline around each read (null = auto by mode)',
+  advanced: true,
+}
+```
+
+#### slot: linkedReads
+
+Linked-read (barcode-chain) layout mode
+
+**Type:** `stringEnum` · **Default:** `'off'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('LinkedReadsMode', ['off', 'normal']),
+  defaultValue: 'off',
+  description: 'Linked-read (barcode-chain) layout mode',
+}
+```
+
+#### slot: showBezierConnections
+
+Draw paired-read connection curves over the pileup
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw paired-read connection curves over the pileup',
+}
+```
+
+#### slot: showCoverage
+
+Draw the coverage histogram band
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw the coverage histogram band',
+}
+```
+
+#### slot: showPileup
+
+Draw the stacked-read pileup band
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw the stacked-read pileup band',
+}
+```
+
+#### slot: coverageHeight
+
+Height of the coverage band in pixels
+
+**Type:** `number` · **Default:** `45`
+
+```js
+{
+  type: 'number',
+  defaultValue: 45,
+  description: 'Height of the coverage band in pixels',
+}
+```
+
+#### slot: showMismatches
+
+Draw per-base mismatches on reads
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw per-base mismatches on reads',
+}
+```
+
+#### slot: showInterbaseIndicators
+
+Draw interbase insertion/deletion indicators
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw interbase insertion/deletion indicators',
+}
+```
+
+#### slot: drawSingletons
+
+Draw reads whose mate is unmapped
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw reads whose mate is unmapped',
+}
+```
+
+#### slot: drawProperPairs
+
+Draw properly-paired reads
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw properly-paired reads',
+}
+```
+
+#### slot: flipStrandLongReadChains
+
+Flip strand coloring for reverse long-read chains
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Flip strand coloring for reverse long-read chains',
+}
+```
+
+#### slot: colorSupplementaryChains
+
+Paint paired supplementary chains a flat supplementary color
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description:
+    'Paint paired supplementary chains a flat supplementary color',
+}
+```
+
+#### slot: drawInter
+
+Draw inter-chromosomal read-connection arcs
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw inter-chromosomal read-connection arcs',
+}
+```
+
+#### slot: drawLongRange
+
+Draw long-range read-connection arcs
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw long-range read-connection arcs',
+}
+```
+
+#### slot: arcColorByType
+
+How to color read-connection arcs
+
+**Type:** `stringEnum` · **Default:** `'insertSizeAndOrientation'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('ArcColorByType', [
+    'insertSizeAndOrientation',
+    'insertSize',
+    'orientation',
+  ]),
+  defaultValue: 'insertSizeAndOrientation',
+  description: 'How to color read-connection arcs',
+}
+```
+
+#### slot: readConnections
+
+Read-connection rendering mode (mate pairs + split reads)
+
+**Type:** `stringEnum` · **Default:** `'off'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('ReadConnectionsMode', [
+    'off',
+    'arc',
+    'samplot',
+  ]),
+  defaultValue: 'off',
+  description:
+    'Read-connection rendering mode (mate pairs + split reads)',
+}
+```
+
+#### slot: readConnectionsDown
+
+Draw read connections below the coverage band
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw read connections below the coverage band',
+}
+```
+
+#### slot: showSashimiArcs
+
+Draw sashimi (splice-junction) arcs
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Draw sashimi (splice-junction) arcs',
+}
+```
+
+#### slot: sashimiArcsMode
+
+Sashimi junction-arc placement
+
+**Type:** `stringEnum` · **Default:** `'up'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('SashimiArcsMode', ['up', 'down', 'auto']),
+  defaultValue: 'up',
+  description: 'Sashimi junction-arc placement',
+}
+```
+
+#### slot: minSashimiScore
+
+Hide sashimi arcs with fewer than this many supporting reads
+
+**Type:** `number` · **Default:** `0`
+
+```js
+{
+  type: 'number',
+  defaultValue: 0,
+  description:
+    'Hide sashimi arcs with fewer than this many supporting reads',
+}
+```
+
+#### slot: sashimiArcsHeight
+
+Height of the sashimi-arc band in pixels
+
+**Type:** `number` · **Default:** `40`
+
+```js
+{
+  type: 'number',
+  defaultValue: 40,
+  description: 'Height of the sashimi-arc band in pixels',
+}
+```
+
+#### slot: readConnectionsHeight
+
+Height of the read-connection band in pixels
+
+**Type:** `number` · **Default:** `40`
+
+```js
+{
+  type: 'number',
+  defaultValue: 40,
+  description: 'Height of the read-connection band in pixels',
+}
+```
+
+#### slot: showSoftClipping
+
+Draw soft-clipped read portions
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw soft-clipped read portions',
 }
 ```
 

@@ -21,8 +21,8 @@ reference the markdown files in our repo of the checked out git tag
 
 admin/embedder defaults for user-facing preferences, found on the root config as
 `configuration.preferences`. Individual users override these at runtime
-(persisted to localStorage) via the session `getPreference` reader; this mirrors
-the display-level `ConfigOverrideMixin` override pattern at app scope.
+(persisted to localStorage) via the session `getPreference` reader; a runtime
+override map layered over config defaults, at app scope.
 
 <details open>
 <summary>PreferencesConfigSchema - Slots</summary>

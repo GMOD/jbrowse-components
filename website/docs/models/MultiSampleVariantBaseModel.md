@@ -22,12 +22,9 @@ reference the markdown files in our repo of the checked out git tag
 ## Example usage
 
 `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots
-(see `SharedVariantConfigSchema`) read at runtime through `getConfWithOverride`
-— they are NOT plain MST properties. How you preset one depends on whether
-you're writing a track _config_ or a display _instance_ snapshot:
-
-In a track's `displays` array (config schema), set the slot directly to change
-the default:
+(see `SharedVariantConfigSchema`) read at runtime through `getConf` and written
+through `self.configuration.setSlot` — they are NOT plain MST properties. Set
+them in a track's `displays` array to change the default:
 
 ```js
 displays: [
@@ -37,16 +34,6 @@ displays: [
     renderingMode: 'phased',
   },
 ]
-```
-
-In a display _instance_ snapshot (a session / `displaySnapshot`), set it flat —
-exactly what a saved session serializes:
-
-```js
-{
-  type: 'LinearMultiSampleVariantMatrixDisplay',
-  renderingMode: 'phased',
-}
 ```
 
 ## Overview
@@ -87,8 +74,6 @@ and docs.
 [reload](../basedisplay#action-reload)
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
-
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
 
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
@@ -183,16 +168,32 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-### Available via [ConfigOverrideMixin](../configoverridemixin)
+### Available via [TreeSidebarMixin](../treesidebarmixin)
 
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
+**Properties:** [layout](../treesidebarmixin#property-layout),
+[clusterTree](../treesidebarmixin#property-clustertree),
+[treeAreaWidth](../treesidebarmixin#property-treeareawidth),
+[subtreeFilter](../treesidebarmixin#property-subtreefilter)
 
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
+**Volatiles:** [hoveredTreeNode](../treesidebarmixin#volatile-hoveredtreenode),
+[treeCanvas](../treesidebarmixin#volatile-treecanvas),
+[mouseoverCanvas](../treesidebarmixin#volatile-mouseovercanvas)
 
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
+**Getters:** [parsedTree](../treesidebarmixin#getter-parsedtree),
+[root](../treesidebarmixin#getter-root),
+[treeHasBranchLengths](../treesidebarmixin#getter-treehasbranchlengths)
+
+**Methods:** [willClearTree](../treesidebarmixin#method-willcleartree)
+
+**Actions:** [setLayout](../treesidebarmixin#action-setlayout),
+[clearLayout](../treesidebarmixin#action-clearlayout),
+[setClusterTree](../treesidebarmixin#action-setclustertree),
+[setLayoutAndClusterTree](../treesidebarmixin#action-setlayoutandclustertree),
+[setTreeAreaWidth](../treesidebarmixin#action-settreeareawidth),
+[setSubtreeFilter](../treesidebarmixin#action-setsubtreefilter),
+[setHoveredTreeNode](../treesidebarmixin#action-sethoveredtreenode),
+[setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
+[setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
 <details open>
 <summary>MultiSampleVariantBaseModel - Properties</summary>
@@ -675,8 +676,16 @@ type contextMenuItems = () => MenuItem[]
 
 #### method: getPortableSettings
 
+Called by BaseTrackModel.replaceDisplay when switching between the regular and
+matrix variant displays. The config-slot settings (colorBy, renderingMode, etc.)
+now live on each display's own config-schema node rather than a display-instance
+override map, so porting them means writing directly into the _target_ display's
+config (via setSlot) rather than spreading them into the new display's instance
+snapshot — hence the `newDisplayId` param. Only genuine display-instance state
+(not config-backed) is returned for the instance-snapshot spread.
+
 ```ts
-type getPortableSettings = () => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [undefined]>>) | undefined; ... 5 more ...; $__mstStateTreeNodeType__?: [...] | ... 1 more ... | undefined; }
+type getPortableSettings = (newDisplayId?: string | undefined) => { jexlFilters: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<IMaybe<IArrayType<ISimpleType<string>>>, [...]>>) | undefined; clusterTree: string | undefined; treeAreaWidth: number; layout: Source[] & IStateTreeNode<...>; height: number; }
 ```
 
 #### method: legendSections

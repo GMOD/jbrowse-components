@@ -86,8 +86,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -180,6 +178,33 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
+
+### Available via [TreeSidebarMixin](../treesidebarmixin)
+
+**Properties:** [layout](../treesidebarmixin#property-layout),
+[clusterTree](../treesidebarmixin#property-clustertree),
+[treeAreaWidth](../treesidebarmixin#property-treeareawidth),
+[subtreeFilter](../treesidebarmixin#property-subtreefilter)
+
+**Volatiles:** [hoveredTreeNode](../treesidebarmixin#volatile-hoveredtreenode),
+[treeCanvas](../treesidebarmixin#volatile-treecanvas),
+[mouseoverCanvas](../treesidebarmixin#volatile-mouseovercanvas)
+
+**Getters:** [parsedTree](../treesidebarmixin#getter-parsedtree),
+[root](../treesidebarmixin#getter-root),
+[treeHasBranchLengths](../treesidebarmixin#getter-treehasbranchlengths)
+
+**Methods:** [willClearTree](../treesidebarmixin#method-willcleartree)
+
+**Actions:** [setLayout](../treesidebarmixin#action-setlayout),
+[clearLayout](../treesidebarmixin#action-clearlayout),
+[setClusterTree](../treesidebarmixin#action-setclustertree),
+[setLayoutAndClusterTree](../treesidebarmixin#action-setlayoutandclustertree),
+[setTreeAreaWidth](../treesidebarmixin#action-settreeareawidth),
+[setSubtreeFilter](../treesidebarmixin#action-setsubtreefilter),
+[setHoveredTreeNode](../treesidebarmixin#action-sethoveredtreenode),
+[setTreeCanvasRef](../treesidebarmixin#action-settreecanvasref),
+[setMouseoverCanvasRef](../treesidebarmixin#action-setmouseovercanvasref)
 
 <details open>
 <summary>LinearMafDisplay - Properties</summary>
@@ -693,10 +718,10 @@ type maxRowsHeight = number
 #### getter: fitTargetHeight
 
 The track height that fit-to-height mode divides among rows. Once the user
-drags, that `heightOverride` (TrackHeightMixin) wins; before any drag we size to
-show every row at the default px height, so a typical alignment looks exactly
-like fixed mode. Huge alignments are bounded by the `rowHeight` cap, not here,
-so this needs no cap of its own.
+drags, the explicit `height` config slot wins; before any drag we size to show
+every row at the default px height, so a typical alignment looks exactly like
+fixed mode. Huge alignments are bounded by the `rowHeight` cap, not here, so
+this needs no cap of its own.
 
 ```ts
 type fitTargetHeight = number
@@ -1225,9 +1250,9 @@ type clearLayout = () => void
 
 #### action: setFitToHeight
 
-Switch to fit-to-height mode: rows stretch to fill the track height. Seeds
-`heightOverride` from the current content height so toggling on doesn't jump,
-then `rowHeight = 0` makes `effectiveRowHeight` derive from it.
+Switch to fit-to-height mode: rows stretch to fill the track height. Seeds the
+`height` config slot from the current content height so toggling on doesn't
+jump, then `rowHeight = 0` makes `effectiveRowHeight` derive from it.
 
 ```ts
 type setFitToHeight = () => void

@@ -68,6 +68,11 @@ _See the **Slots** section below for all available configuration fields._
 
 configuration for the Manhattan plot display used by GWAS tracks
 
+### LinearManhattanDisplay - State model
+
+This config's runtime API is documented on its
+[state model page](../../models/linearmanhattandisplay).
+
 <details open>
 <summary>LinearManhattanDisplay - Slots</summary>
 

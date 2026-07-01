@@ -43,9 +43,31 @@ A complete `ReferenceSequenceTrack` config to paste into `tracks` (an assembly's
 }
 ```
 
+_See the **Slots** section below for all available configuration fields._
+
 ## Overview
 
 ### LinearReferenceSequenceDisplay - State model
 
 This config's runtime API is documented on its
 [state model page](../../models/linearreferencesequencedisplay).
+
+<details open>
+<summary>LinearReferenceSequenceDisplay - Slots</summary>
+
+#### slot: height
+
+explicit display height (e.g. from a drag-resize); unset means auto-fit to the
+zoom-aware computed height. See the model's `height` getter.
+
+**Type:** `maybeNumber`
+
+```js
+{
+  type: 'maybeNumber',
+  description: 'display height in pixels; unset auto-fits to the sequence',
+  defaultValue: undefined,
+}
+```
+
+</details>

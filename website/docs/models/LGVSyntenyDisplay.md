@@ -64,29 +64,7 @@ and docs.
 ### Available via [LinearAlignmentsDisplay](../linearalignmentsdisplay)
 
 **Properties:** [type](../linearalignmentsdisplay#property-type),
-[configuration](../linearalignmentsdisplay#property-configuration),
-[linkedReads](../linearalignmentsdisplay#property-linkedreads),
-[showBezierConnections](../linearalignmentsdisplay#property-showbezierconnections),
-[showCoverage](../linearalignmentsdisplay#property-showcoverage),
-[showPileup](../linearalignmentsdisplay#property-showpileup),
-[coverageHeight](../linearalignmentsdisplay#property-coverageheight),
-[showMismatches](../linearalignmentsdisplay#property-showmismatches),
-[showInterbaseIndicators](../linearalignmentsdisplay#property-showinterbaseindicators),
-[drawSingletons](../linearalignmentsdisplay#property-drawsingletons),
-[drawProperPairs](../linearalignmentsdisplay#property-drawproperpairs),
-[flipStrandLongReadChains](../linearalignmentsdisplay#property-flipstrandlongreadchains),
-[colorSupplementaryChains](../linearalignmentsdisplay#property-colorsupplementarychains),
-[drawInter](../linearalignmentsdisplay#property-drawinter),
-[drawLongRange](../linearalignmentsdisplay#property-drawlongrange),
-[arcColorByType](../linearalignmentsdisplay#property-arccolorbytype),
-[readConnections](../linearalignmentsdisplay#property-readconnections),
-[readConnectionsDown](../linearalignmentsdisplay#property-readconnectionsdown),
-[showSashimiArcs](../linearalignmentsdisplay#property-showsashimiarcs),
-[sashimiArcsMode](../linearalignmentsdisplay#property-sashimiarcsmode),
-[minSashimiScore](../linearalignmentsdisplay#property-minsashimiscore),
-[sashimiArcsHeight](../linearalignmentsdisplay#property-sashimiarcsheight),
-[readConnectionsHeight](../linearalignmentsdisplay#property-readconnectionsheight),
-[showSoftClipping](../linearalignmentsdisplay#property-showsoftclipping)
+[configuration](../linearalignmentsdisplay#property-configuration)
 
 **Volatiles:**
 [featureIdUnderMouse](../linearalignmentsdisplay#volatile-featureidundermouse),
@@ -108,7 +86,29 @@ and docs.
 [overCigarItem](../linearalignmentsdisplay#volatile-overcigaritem),
 [hoverCoverageBand](../linearalignmentsdisplay#volatile-hovercoverageband)
 
-**Getters:** [isChainMode](../linearalignmentsdisplay#getter-ischainmode),
+**Getters:** [linkedReads](../linearalignmentsdisplay#getter-linkedreads),
+[showBezierConnections](../linearalignmentsdisplay#getter-showbezierconnections),
+[showCoverage](../linearalignmentsdisplay#getter-showcoverage),
+[showPileup](../linearalignmentsdisplay#getter-showpileup),
+[coverageHeight](../linearalignmentsdisplay#getter-coverageheight),
+[showMismatches](../linearalignmentsdisplay#getter-showmismatches),
+[showInterbaseIndicators](../linearalignmentsdisplay#getter-showinterbaseindicators),
+[drawSingletons](../linearalignmentsdisplay#getter-drawsingletons),
+[drawProperPairs](../linearalignmentsdisplay#getter-drawproperpairs),
+[flipStrandLongReadChains](../linearalignmentsdisplay#getter-flipstrandlongreadchains),
+[colorSupplementaryChains](../linearalignmentsdisplay#getter-colorsupplementarychains),
+[drawInter](../linearalignmentsdisplay#getter-drawinter),
+[drawLongRange](../linearalignmentsdisplay#getter-drawlongrange),
+[arcColorByType](../linearalignmentsdisplay#getter-arccolorbytype),
+[readConnections](../linearalignmentsdisplay#getter-readconnections),
+[readConnectionsDown](../linearalignmentsdisplay#getter-readconnectionsdown),
+[showSashimiArcs](../linearalignmentsdisplay#getter-showsashimiarcs),
+[sashimiArcsMode](../linearalignmentsdisplay#getter-sashimiarcsmode),
+[minSashimiScore](../linearalignmentsdisplay#getter-minsashimiscore),
+[sashimiArcsHeight](../linearalignmentsdisplay#getter-sashimiarcsheight),
+[readConnectionsHeight](../linearalignmentsdisplay#getter-readconnectionsheight),
+[showSoftClipping](../linearalignmentsdisplay#getter-showsoftclipping),
+[isChainMode](../linearalignmentsdisplay#getter-ischainmode),
 [showLinkedReadLines](../linearalignmentsdisplay#getter-showlinkedreadlines),
 [scaleType](../linearalignmentsdisplay#getter-scaletype),
 [autoscaleType](../linearalignmentsdisplay#getter-autoscaletype),
@@ -299,8 +299,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -393,17 +391,6 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
-
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
 
 <details open>
 <summary>LGVSyntenyDisplay - Properties</summary>

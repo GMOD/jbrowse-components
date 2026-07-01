@@ -49,6 +49,7 @@ A track is just a container; the actual rendering behavior and config slots live
 on its display type(s):
 
 - [LinearManhattanDisplay](../linearmanhattandisplay)
+  ([state model](../../models/linearmanhattandisplay))
 
 ## Inherited config slots
 

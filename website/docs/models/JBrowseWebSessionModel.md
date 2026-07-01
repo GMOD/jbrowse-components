@@ -167,7 +167,8 @@ and docs.
 ### Available via [SessionTracksManagerSessionMixin](../sessiontracksmanagersessionmixin)
 
 **Properties:**
-[sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks)
+[sessionTracks](../sessiontracksmanagersessionmixin#property-sessiontracks),
+[trackConfigDeltas](../sessiontracksmanagersessionmixin#property-trackconfigdeltas)
 
 **Getters:** [tracks](../sessiontracksmanagersessionmixin#getter-tracks)
 

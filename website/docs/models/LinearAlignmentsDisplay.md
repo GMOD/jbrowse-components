@@ -130,8 +130,6 @@ and docs.
 
 ### Available via [TrackHeightMixin](../trackheightmixin)
 
-**Properties:** [heightOverride](../trackheightmixin#property-heightoverride)
-
 **Volatiles:** [scrollTop](../trackheightmixin#volatile-scrolltop)
 
 **Getters:** [height](../trackheightmixin#getter-height)
@@ -225,17 +223,6 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
-### Available via [ConfigOverrideMixin](../configoverridemixin)
-
-**Properties:**
-[configOverrides](../configoverridemixin#property-configoverrides)
-
-**Methods:** [getOverride](../configoverridemixin#method-getoverride),
-[getConfWithOverride](../configoverridemixin#method-getconfwithoverride)
-
-**Actions:** [setOverride](../configoverridemixin#action-setoverride),
-[clearOverride](../configoverridemixin#action-clearoverride)
-
 <details open>
 <summary>LinearAlignmentsDisplay - Properties</summary>
 
@@ -255,249 +242,6 @@ type: types.literal('LinearAlignmentsDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: linkedReads
-
-```ts
-// type signature
-type linkedReads = IOptionalIType<ISimpleType<LinkedReadsMode>, [undefined]>
-// code
-linkedReads: types.stripDefault(
-  types.enumeration<LinkedReadsMode>('LinkedReadsMode', ['off', 'normal']),
-  'off',
-)
-```
-
-#### property: showBezierConnections
-
-Draw paired-read connection curves (bezier overlay + GPU straight lines for
-normal pairs). Orthogonal to `linkedReads` layout, so curves work over an
-ordinary pileup or chain layout.
-
-```ts
-// type signature
-type showBezierConnections = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showBezierConnections: types.stripDefault(types.boolean, false)
-```
-
-#### property: showCoverage
-
-```ts
-// type signature
-type showCoverage = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showCoverage: types.stripDefault(types.boolean, true)
-```
-
-#### property: showPileup
-
-Draw the stacked-read pileup band. Turn off to keep only the coverage histogram
-and read-connection arcs (the pileup band collapses to zero height), e.g. an
-arcs-only structural-variant view.
-
-```ts
-// type signature
-type showPileup = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showPileup: types.stripDefault(types.boolean, true)
-```
-
-#### property: coverageHeight
-
-```ts
-// type signature
-type coverageHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-coverageHeight: types.stripDefault(types.number, 45)
-```
-
-#### property: showMismatches
-
-```ts
-// type signature
-type showMismatches = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showMismatches: types.stripDefault(types.boolean, true)
-```
-
-#### property: showInterbaseIndicators
-
-```ts
-// type signature
-type showInterbaseIndicators = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showInterbaseIndicators: types.stripDefault(types.boolean, true)
-```
-
-#### property: drawSingletons
-
-```ts
-// type signature
-type drawSingletons = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-drawSingletons: types.stripDefault(types.boolean, true)
-```
-
-#### property: drawProperPairs
-
-```ts
-// type signature
-type drawProperPairs = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-drawProperPairs: types.stripDefault(types.boolean, true)
-```
-
-#### property: flipStrandLongReadChains
-
-```ts
-// type signature
-type flipStrandLongReadChains = IOptionalIType<
-  ISimpleType<boolean>,
-  [undefined]
->
-// code
-flipStrandLongReadChains: types.stripDefault(types.boolean, true)
-```
-
-#### property: colorSupplementaryChains
-
-Opt-in legacy behavior: paint paired supplementary chains a flat supplementary
-color instead of keeping their pair-orientation color.
-
-```ts
-// type signature
-type colorSupplementaryChains = IOptionalIType<
-  ISimpleType<boolean>,
-  [undefined]
->
-// code
-colorSupplementaryChains: types.stripDefault(types.boolean, false)
-```
-
-#### property: drawInter
-
-```ts
-// type signature
-type drawInter = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-drawInter: types.stripDefault(types.boolean, true)
-```
-
-#### property: drawLongRange
-
-```ts
-// type signature
-type drawLongRange = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-drawLongRange: types.stripDefault(types.boolean, true)
-```
-
-#### property: arcColorByType
-
-```ts
-// type signature
-type arcColorByType = IOptionalIType<ISimpleType<ArcColorByType>, [undefined]>
-// code
-arcColorByType: types.stripDefault(arcColorByTypes, 'insertSizeAndOrientation')
-```
-
-#### property: readConnections
-
-read-connection rendering mode (mate pairs + split reads), orthogonal to
-direction
-
-```ts
-// type signature
-type readConnections = IOptionalIType<
-  ISimpleType<ReadConnectionsMode>,
-  [undefined]
->
-// code
-readConnections: types.stripDefault(
-  types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
-    'off',
-    'arc',
-    'samplot',
-  ]),
-  'off',
-)
-```
-
-#### property: readConnectionsDown
-
-draw read connections below the coverage band instead of over it
-
-```ts
-// type signature
-type readConnectionsDown = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-readConnectionsDown: types.stripDefault(types.boolean, false)
-```
-
-#### property: showSashimiArcs
-
-```ts
-// type signature
-type showSashimiArcs = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showSashimiArcs: types.stripDefault(types.boolean, true)
-```
-
-#### property: sashimiArcsMode
-
-sashimi junction-arc placement, decoupled from the paired-end arc direction:
-'up' over coverage, 'down' in a reserved strip below it, 'auto' splits arcs both
-ways to minimize overlap
-
-```ts
-// type signature
-type sashimiArcsMode = IOptionalIType<ISimpleType<SashimiArcsMode>, [undefined]>
-// code
-sashimiArcsMode: types.stripDefault(
-  types.enumeration<SashimiArcsMode>('SashimiArcsMode', ['up', 'down', 'auto']),
-  'up',
-)
-```
-
-#### property: minSashimiScore
-
-hide sashimi junction arcs with fewer than this many supporting reads (0 shows
-all)
-
-```ts
-// type signature
-type minSashimiScore = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-minSashimiScore: types.stripDefault(types.number, 0)
-```
-
-#### property: sashimiArcsHeight
-
-```ts
-// type signature
-type sashimiArcsHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-sashimiArcsHeight: types.stripDefault(types.number, 40)
-```
-
-#### property: readConnectionsHeight
-
-```ts
-// type signature
-type readConnectionsHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-readConnectionsHeight: types.stripDefault(types.number, 40)
-```
-
-#### property: showSoftClipping
-
-```ts
-// type signature
-type showSoftClipping = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showSoftClipping: types.stripDefault(types.boolean, false)
 ```
 
 </details>
@@ -692,6 +436,138 @@ hoverCoverageBand: undefined as
 <details open>
 <summary>LinearAlignmentsDisplay - Getters</summary>
 
+#### getter: linkedReads
+
+```ts
+type linkedReads = LinkedReadsMode
+```
+
+#### getter: showBezierConnections
+
+```ts
+type showBezierConnections = boolean
+```
+
+#### getter: showCoverage
+
+```ts
+type showCoverage = boolean
+```
+
+#### getter: showPileup
+
+```ts
+type showPileup = boolean
+```
+
+#### getter: coverageHeight
+
+```ts
+type coverageHeight = number
+```
+
+#### getter: showMismatches
+
+```ts
+type showMismatches = boolean
+```
+
+#### getter: showInterbaseIndicators
+
+```ts
+type showInterbaseIndicators = boolean
+```
+
+#### getter: drawSingletons
+
+```ts
+type drawSingletons = boolean
+```
+
+#### getter: drawProperPairs
+
+```ts
+type drawProperPairs = boolean
+```
+
+#### getter: flipStrandLongReadChains
+
+```ts
+type flipStrandLongReadChains = boolean
+```
+
+#### getter: colorSupplementaryChains
+
+```ts
+type colorSupplementaryChains = boolean
+```
+
+#### getter: drawInter
+
+```ts
+type drawInter = boolean
+```
+
+#### getter: drawLongRange
+
+```ts
+type drawLongRange = boolean
+```
+
+#### getter: arcColorByType
+
+```ts
+type arcColorByType = ArcColorByType
+```
+
+#### getter: readConnections
+
+```ts
+type readConnections = ReadConnectionsMode
+```
+
+#### getter: readConnectionsDown
+
+```ts
+type readConnectionsDown = boolean
+```
+
+#### getter: showSashimiArcs
+
+```ts
+type showSashimiArcs = boolean
+```
+
+#### getter: sashimiArcsMode
+
+```ts
+type sashimiArcsMode = SashimiArcsMode
+```
+
+#### getter: minSashimiScore
+
+```ts
+type minSashimiScore = number
+```
+
+#### getter: sashimiArcsHeight
+
+```ts
+type sashimiArcsHeight = number
+```
+
+#### getter: readConnectionsHeight
+
+```ts
+type readConnectionsHeight = number
+```
+
+#### getter: showSoftClipping
+
+```ts
+type showSoftClipping = boolean
+```
+
 #### getter: isChainMode
 
 ```ts
@@ -712,43 +588,43 @@ type showLinkedReadLines = boolean
 #### getter: scaleType
 
 ```ts
-type scaleType = 'linear' | 'log'
+type scaleType = any
 ```
 
 #### getter: autoscaleType
 
 ```ts
-type autoscaleType = 'local' | 'localsd'
+type autoscaleType = any
 ```
 
 #### getter: minScore
 
 ```ts
-type minScore = number
+type minScore = any
 ```
 
 #### getter: maxScore
 
 ```ts
-type maxScore = number
+type maxScore = any
 ```
 
 #### getter: minScoreBound
 
 ```ts
-type minScoreBound = number | undefined
+type minScoreBound = any
 ```
 
 #### getter: maxScoreBound
 
 ```ts
-type maxScoreBound = number | undefined
+type maxScoreBound = any
 ```
 
 #### getter: numStdDev
 
 ```ts
-type numStdDev = number
+type numStdDev = any
 ```
 
 #### getter: featureWidgetType
@@ -804,19 +680,19 @@ type filterBy = FilterBy
 #### getter: featureHeight
 
 ```ts
-type featureHeight = number
+type featureHeight = any
 ```
 
 #### getter: featureSpacing
 
 ```ts
-type featureSpacing = number
+type featureSpacing = any
 ```
 
 #### getter: maxHeight
 
 ```ts
-type maxHeight = number
+type maxHeight = any
 ```
 
 #### getter: showSashimiLabels
@@ -825,7 +701,7 @@ Whether to draw the supporting-read count on each sashimi arc (config slot
 `showSashimiLabels`, overridable from the track menu).
 
 ```ts
-type showSashimiLabels = boolean
+type showSashimiLabels = any
 ```
 
 #### getter: chainIdMap
@@ -849,7 +725,7 @@ type showLowFreqMismatches = boolean
 #### getter: showLegend
 
 ```ts
-type showLegend = boolean
+type showLegend = any
 ```
 
 #### getter: sortedBy
@@ -1084,7 +960,7 @@ type readIdIndexMap = Map<
 #### getter: readConnectionsLineWidth
 
 ```ts
-type readConnectionsLineWidth = number
+type readConnectionsLineWidth = any
 ```
 
 #### getter: belowCoverageBands
@@ -1214,7 +1090,7 @@ type scalebarOverlapLeft = number
 #### getter: showOutline
 
 ```ts
-type showOutline = boolean
+type showOutline = any
 ```
 
 #### getter: visibleLabels
@@ -1249,7 +1125,7 @@ type sortTag = string | undefined
 #### getter: renderState
 
 ```ts
-type renderState = { scrollTop: number; colorScheme: number; featureHeight: number; featureSpacing: number; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 25 more ...; arcsYDomainBp: number | undefined; } | undefined
+type renderState = { scrollTop: number; colorScheme: number; featureHeight: any; featureSpacing: any; showCoverage: boolean; coverageHeight: number; coverageYOffset: number; coverageMaxDepth: number | undefined; ... 25 more ...; arcsYDomainBp: number | undefined; } | undefined
 ```
 
 #### getter: arcsYDomainBp
@@ -1872,7 +1748,7 @@ type setContextMenuFeatureById = (featureId: string) => Promise<void>
 ```ts
 type getByteEstimateConfig = () => {
   adapterConfig: any
-  fetchSizeLimit: number
+  fetchSizeLimit: any
   userByteSizeLimit: number | undefined
   visibleBp: number
 }

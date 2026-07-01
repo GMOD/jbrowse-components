@@ -75,6 +75,39 @@ default height for the Hi-C track
 }
 ```
 
+#### slot: colorScheme
+
+color ramp used to render contact intensity
+
+**Type:** `stringEnum` · **Default:** `'juicebox'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('HicColorScheme', [
+    'fall',
+    'juicebox',
+    'viridis',
+  ]),
+  defaultValue: 'juicebox',
+  description: 'color ramp used to render contact intensity',
+}
+```
+
+#### slot: showLegend
+
+show the color scale legend
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'show the color scale legend',
+}
+```
+
 </details>
 
 ## Inherited config slots
