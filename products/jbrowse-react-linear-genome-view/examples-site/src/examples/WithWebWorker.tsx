@@ -47,9 +47,9 @@ export default function App() {
       assembly,
       tracks,
       location: 'ctgA:1105..1221',
-      configuration: {
-        rpc: { defaultDriver: 'WebWorkerRpcDriver' },
-      },
+      // supplying makeWorkerInstance is enough — the RPC default driver
+      // switches to WebWorkerRpcDriver automatically (no defaultDriver config
+      // needed)
       makeWorkerInstance: () => new RpcWorker(),
     })
     s.session.view.showTrack('volvox_gff3')

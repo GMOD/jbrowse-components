@@ -37,7 +37,9 @@ available — add
 [`@fontsource/roboto`](https://www.npmjs.com/package/@fontsource/roboto) to pull
 it in.
 
-For working examples, see https://jbrowse.org/jb2/docs/embedded_components/
+For the full embedding guide, see
+https://jbrowse.org/jb2/docs/embedded_components/ — and browse the live example
+gallery at https://jbrowse.org/storybook/lgv/
 
 ## Previous package
 
