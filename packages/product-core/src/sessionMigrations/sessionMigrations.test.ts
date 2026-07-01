@@ -183,6 +183,37 @@ describe('migrateSessionSnapshot', () => {
     expect(display.type).toBe('LinearAlignmentsDisplay')
   })
 
+  test('migrates trackConfigDeltas display types', () => {
+    const snap = {
+      name: 'test',
+      views: [],
+      trackConfigDeltas: {
+        track1: {
+          trackId: 'track1',
+          displays: [{ type: 'LinearPileupDisplay', displayId: 'track1-d1' }],
+        },
+      },
+    }
+    const result = migrateSessionSnapshot(snap)
+    const display = (result.trackConfigDeltas as any).track1.displays[0]
+    expect(display.type).toBe('LinearAlignmentsDisplay')
+  })
+
+  test('leaves a trackConfigDeltas entry without a stale display type untouched', () => {
+    const snap = {
+      name: 'test',
+      views: [],
+      trackConfigDeltas: {
+        track1: {
+          trackId: 'track1',
+          displays: [{ displayId: 'track1-d1', height: 321 }],
+        },
+      },
+    }
+    // no stale types anywhere → identity returned (no needless churn)
+    expect(migrateSessionSnapshot(snap)).toBe(snap)
+  })
+
   test('handles snapshot with no views', () => {
     const snap = { name: 'empty' }
     expect(migrateSessionSnapshot(snap)).toBe(snap)

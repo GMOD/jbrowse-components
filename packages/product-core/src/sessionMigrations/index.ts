@@ -130,6 +130,29 @@ export function migrateSessionSnapshot(
     }
   }
 
+  // trackConfigDeltas is a `trackId → partial track config` map (see
+  // SessionTracks.ts). A delta carries a `displays` array like a track, so run
+  // each through the same track migrator; migrateTrackSnapshot is a no-op for a
+  // delta that carries no stale display type.
+  const deltas = snapshot.trackConfigDeltas as
+    | Record<string, unknown>
+    | undefined
+  if (deltas && typeof deltas === 'object') {
+    let deltasChanged = false
+    const newDeltas: Record<string, unknown> = {}
+    for (const [trackId, delta] of Object.entries(deltas)) {
+      const migrated = migrateTrackSnapshot(delta)
+      if (migrated !== delta) {
+        deltasChanged = true
+      }
+      newDeltas[trackId] = migrated
+    }
+    if (deltasChanged) {
+      changed = true
+      result.trackConfigDeltas = newDeltas
+    }
+  }
+
   return changed ? result : snapshot
 }
 

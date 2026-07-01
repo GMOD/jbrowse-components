@@ -76,13 +76,17 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
       trackConfigDeltas: types.frozen<Record<string, PlainTrackConfig>>({}),
     })
     .views(self => {
-      // Memoize merged configs per (base frozen object, delta value) pair so the
-      // tracks getter returns stable object identity across unrelated recomputes.
-      // A fresh merged object each time would rehydrate a new MST node in
+      // Memoize merged configs per (base object, delta value) pair so the tracks
+      // getter returns stable object identity across unrelated recomputes. A
+      // fresh merged object each time would rehydrate a new MST node in
       // TrackConfigurationReference, losing open display state (see CLAUDE.md).
-      // Both keys have stable identity until they actually change: base identity
-      // changes only on a jbrowse.tracks write, a track's delta only when that
-      // track is edited.
+      // Both keys have stable identity until they actually change: a track's
+      // delta only when that track is edited, and the base only on a
+      // jbrowse.tracks write. This relies on a base config never mutating in
+      // place: app-core's frozen array replaces the entry (new identity) on
+      // updateTrackConf, and product-core's MST-node bases have no edit path at
+      // all (no updateTrackConf; embedded sessions are adminMode:false). If an
+      // in-place base edit is ever added, key this cache on base content too.
       const mergeCache = new WeakMap<
         object,
         { delta: PlainTrackConfig; merged: AnyConfigurationModel }
