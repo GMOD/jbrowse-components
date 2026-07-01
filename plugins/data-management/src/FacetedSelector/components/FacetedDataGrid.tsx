@@ -72,16 +72,11 @@ const FacetedDataGrid = observer(function FacetedDataGrid({
 
   const parentRef = useRef<HTMLDivElement>(null)
   useSearchHighlight(parentRef, filterText, 'jbrowse-faceted-search')
-  const { items, totalSize } = useVirtualRows(
+  const { items, leadingGap, trailingGap } = useVirtualRows(
     parentRef,
     sortedRows.length,
     ROW_HEIGHT,
   )
-
-  const leadingGap = items[0]?.start ?? 0
-  const trailingGap = items.length
-    ? totalSize - items.at(-1)!.start - ROW_HEIGHT
-    : 0
 
   return (
     <div ref={parentRef} className={classes.root}>

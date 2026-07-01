@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 /**
  * Minimal fixed-height row virtualization. Tracks the scroll container's
  * scrollTop/clientHeight and returns the slice of row indices to render plus
- * the total scrollable height.
+ * the spacer heights that offset that window from the top/bottom.
  */
 export function useVirtualRows(
   parentRef: React.RefObject<HTMLDivElement | null>,
@@ -47,7 +47,6 @@ export function useVirtualRows(
   }, [count, parentRef])
 
   const { scrollTop, clientHeight } = scrollState
-  const totalSize = count * rowHeight
   // clamp to count so a stale (too-large) scrollTop from a shrunk list can't
   // push the window past the end and render nothing before the reset effect runs
   const startIdx = Math.min(
@@ -64,5 +63,9 @@ export function useVirtualRows(
     items.push({ index: i, start: i * rowHeight })
   }
 
-  return { items, totalSize }
+  return {
+    items,
+    leadingGap: startIdx * rowHeight,
+    trailingGap: (count - endIdx) * rowHeight,
+  }
 }
