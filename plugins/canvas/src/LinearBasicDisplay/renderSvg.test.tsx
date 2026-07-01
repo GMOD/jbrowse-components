@@ -107,9 +107,18 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
 }
 
 describe('renderSvg', () => {
-  it('returns null when laidOutDataMap is empty', async () => {
+  // Universal SvgChrome: export always returns the chrome frame, even with no
+  // data — the empty body renders no features but the wrapper is present.
+  it('returns the chrome wrapper with no features when laidOutDataMap is empty', async () => {
     const result = await renderSvg(makeModel({ laidOutDataMap: new Map() }))
-    expect(result).toBeNull()
+    expect(result).not.toBeNull()
+    const html = renderToString(
+      <svg width={800} height={100} viewBox="0 0 800 100">
+        {result as React.ReactElement}
+      </svg>,
+    )
+    extractAndWriteSvg(html, 'empty-map.svg')
+    expect(html).toMatchSnapshot()
   })
 
   it('returns an error element when model.error is set', async () => {

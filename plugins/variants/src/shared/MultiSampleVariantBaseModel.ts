@@ -277,31 +277,11 @@ export default function MultiSampleVariantBaseModelF(
           lineZoneHeight: types.stripDefault(types.number, 0),
         }),
       )
-      // Migration boundary: input is a legacy snapshot whose shape predates
-      // the current model, output must match the current ModelCreationType.
-      // MST can't express that bidirectional reshape, so `any` is the honest
-      // type here — narrowing with `as` casts would just relocate the escape
-      // hatch.
-      .preProcessSnapshot((snap: any) => {
-        if (!snap) {
-          return snap
-        }
-
-        // Strip properties from old BaseLinearDisplay snapshots, plus
-        // lengthCutoffFilter (removed — length filtering is now done with
-        // general jexl filters, e.g. `jexl:get(feature,'end')-get(feature,'start')<N`).
-        const {
-          blockState,
-          showLegend,
-          showTooltips,
-          lengthCutoffFilter,
-          ...cleaned
-        } = snap
-        // legacy display-instance height props (`height`/`heightPreConfig`/
-        // `heightOverride`) are dropped by MST as unknown keys; the display
-        // height now lives on the `height` config slot.
-        return cleaned
-      })
+      // Legacy props from old BaseLinearDisplay snapshots (blockState,
+      // showTooltips, the removed lengthCutoffFilter, display-instance
+      // height/heightOverride) need no handling — MST drops unknown snapshot
+      // keys, and length filtering is now a general jexl filter
+      // (`jexl:get(feature,'end')-get(feature,'start')<N`).
       .volatile(() => ({
         /**
          * #volatile
