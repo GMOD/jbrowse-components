@@ -1,4 +1,6 @@
 import {
+  CIGAR_H,
+  CIGAR_S,
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
@@ -128,6 +130,20 @@ export default class CramSlightlyLazyFeature implements Feature {
     )
   }
 
+  // start-clip length in read coordinates, read straight off NUMERIC_CIGAR so
+  // the render path never builds/caches the full CIGAR string. Equivalent to
+  // getClip(CIGAR, strand) since CIGAR is just NUMERIC_CIGAR serialized.
+  get clipLengthAtStartOfRead() {
+    const cigar = this.NUMERIC_CIGAR
+    const len = cigar.length
+    if (len === 0) {
+      return 0
+    }
+    const packed = this.strand === -1 ? cigar[len - 1]! : cigar[0]!
+    const op = packed & 0xf
+    return op === CIGAR_S || op === CIGAR_H ? packed >> 4 : 0
+  }
+
   // generate a CIGAR string from NUMERIC_CIGAR
   get CIGAR() {
     const numeric = this.NUMERIC_CIGAR
@@ -193,6 +209,8 @@ export default class CramSlightlyLazyFeature implements Feature {
         return this.next_segment_position
       case 'template_length':
         return this.template_length
+      case 'clipLengthAtStartOfRead':
+        return this.clipLengthAtStartOfRead
       default:
         return this.fields[field]
     }

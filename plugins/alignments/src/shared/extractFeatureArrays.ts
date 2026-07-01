@@ -91,8 +91,16 @@ export function extractFeatureArrays<T extends FeatureData>(
     suppAlignments.push(
       ((tags?.SA ?? feature.get('SA')) as string | undefined) ?? '',
     )
-    const cigar = feature.get('CIGAR') as string | undefined
-    clipAtStart.push(cigar ? getClip(cigar, strand) : 0)
+    const isMismatch = isMismatchFeature(feature)
+    // clipAtStart: BAM/CRAM read the start clip straight off NUMERIC_CIGAR
+    // (clipLengthAtStartOfRead), avoiding a full per-read CIGAR string build (and
+    // for CRAM, its retention in the feature LRU). Synteny features carry only a
+    // CIGAR string, so parse that instead.
+    clipAtStart.push(
+      isMismatch
+        ? (feature.get('clipLengthAtStartOfRead') as number)
+        : getClip((feature.get('CIGAR') as string | undefined) ?? '', strand),
+    )
 
     if (isTagColorMode) {
       tagColorValues.push(extractFeatureTagValue(feature, colorBy.tag!))
@@ -106,7 +114,7 @@ export function extractFeatureArrays<T extends FeatureData>(
     // extraction off it directly rather than allocating a Mismatch[] per read.
     // Synteny features (LGVSyntenyDisplay reuses this path) have no such method,
     // so skip them — otherwise the call throws and fails the whole RPC.
-    if (isMismatchFeature(feature)) {
+    if (isMismatch) {
       extractCigarFeatures(
         feature,
         readIndex,

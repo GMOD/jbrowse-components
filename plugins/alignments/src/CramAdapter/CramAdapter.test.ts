@@ -1,3 +1,4 @@
+import { getClip } from '@jbrowse/cigar-utils'
 import PluginManager from '@jbrowse/core/PluginManager'
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'
@@ -83,4 +84,23 @@ test('test usage of cramSlightlyLazyFeature toJSON (used in the widget)', async 
   expect(f.end).toBe(102)
   // don't pass the mismatches to the frontend
   expect(f.mismatches).toEqual(undefined)
+})
+
+test('clipLengthAtStartOfRead matches getClip(CIGAR) for every record', async () => {
+  const adapter = makeAdapter('../../test_data/volvox-sorted.cram')
+  adapter.setSequenceAdapterConfig(sequenceAdapterConfig)
+
+  const features = adapter.getFeatures({
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 0,
+    end: 20000,
+  })
+  const featuresArray = await firstValueFrom(features.pipe(toArray()))
+  expect(featuresArray.length).toBeGreaterThan(0)
+  for (const feature of featuresArray) {
+    const cigar = feature.get('CIGAR') as string
+    const strand = feature.get('strand')!
+    expect(feature.get('clipLengthAtStartOfRead')).toBe(getClip(cigar, strand))
+  }
 })
