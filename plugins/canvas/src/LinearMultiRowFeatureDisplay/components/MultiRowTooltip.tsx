@@ -1,3 +1,4 @@
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
@@ -14,7 +15,11 @@ const MultiRowTooltip = observer(function MultiRowTooltip({
       clientPoint={{ x: hoveredFeature.clientX, y: hoveredFeature.clientY }}
     >
       <div>{hoveredFeature.row}</div>
-      {hoveredFeature.name ? <div>{hoveredFeature.name}</div> : null}
+      {hoveredFeature.name ? (
+        <div>
+          <SanitizedHTML html={hoveredFeature.name} />
+        </div>
+      ) : null}
       <div>
         {hoveredFeature.refName}:{hoveredFeature.start + 1}..
         {hoveredFeature.end}

@@ -1,3 +1,4 @@
+import { SanitizedHTML } from '@jbrowse/core/ui'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { observer } from 'mobx-react'
 
@@ -14,7 +15,9 @@ const FeatureTooltip = observer(function FeatureTooltip({
     <BaseTooltip
       clientPoint={{ x: clientMouseCoord[0] + 15, y: clientMouseCoord[1] }}
     >
-      <div>{info}</div>
+      <div>
+        <SanitizedHTML html={info} />
+      </div>
     </BaseTooltip>
   ) : null
 })
