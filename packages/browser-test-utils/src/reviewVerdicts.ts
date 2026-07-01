@@ -1,5 +1,5 @@
-import crypto from 'crypto'
-import fs from 'fs'
+import crypto from 'node:crypto'
+import fs from 'node:fs'
 
 // A review verdict for one snapshot/screenshot, recorded by the interactive
 // review tools (website screenshot review and jbrowse-web browser-test review)

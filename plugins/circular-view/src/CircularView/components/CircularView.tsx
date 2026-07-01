@@ -113,7 +113,7 @@ const CircularViewLoaded = observer(function CircularViewLoaded({
       const [cx, cy] = model.centerXY
       const dx = event.clientX - rect.left - cx - model.panX
       const dy = event.clientY - rect.top - cy - model.panY
-      const distFromCenter = Math.sqrt(dx * dx + dy * dy)
+      const distFromCenter = Math.hypot(dx, dy)
       if (distFromCenter > model.radiusPx + model.paddingPx) {
         return
       }

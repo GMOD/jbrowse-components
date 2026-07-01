@@ -25,11 +25,11 @@ import type { GridColDef } from '@mui/x-data-grid'
 
 type ColumnDisplayMode = 'all' | 'gtOnly' | 'gtAndGenotype'
 
-const columnDisplayModes: readonly ColumnDisplayMode[] = [
+const columnDisplayModes: ReadonlySet<ColumnDisplayMode> = new Set([
   'all',
   'gtOnly',
   'gtAndGenotype',
-]
+])
 
 const gtOnlyFields = new Set(['sample', 'GT'])
 const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
@@ -48,7 +48,7 @@ export default function VariantSampleGrid({
       'all',
     )
   // guard against a stale/corrupt stored value
-  const columnDisplayMode = columnDisplayModes.includes(storedColumnDisplayMode)
+  const columnDisplayMode = columnDisplayModes.has(storedColumnDisplayMode)
     ? storedColumnDisplayMode
     : 'all'
   const [showFilters, setShowFilters] = useLocalStorage(

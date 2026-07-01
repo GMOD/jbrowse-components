@@ -8,6 +8,7 @@ exports[`export session with alignments and gff tracks 1`] = `
     },
     "id": "test-id-0",
     "sessionPlugins": [],
+    "trackConfigDeltas": {},
     "views": [
       {
         "bpPerPx": 0.5,

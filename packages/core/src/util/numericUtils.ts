@@ -77,7 +77,7 @@ export function polarToCartesian(rho: number, theta: number) {
 }
 
 export function cartesianToPolar(x: number, y: number) {
-  const rho = Math.sqrt(x * x + y * y)
+  const rho = Math.hypot(x, y)
   const theta = Math.atan(y / x)
   return [rho, theta] as [number, number]
 }

@@ -1,7 +1,7 @@
-import fs from 'fs'
-import os from 'os'
-import path from 'path'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import cors from 'cors'
 import express, { json, static as serveStatic } from 'express'
@@ -16,7 +16,7 @@ import {
 import { debug, printHelp } from '../../utils.ts'
 
 import type { Request, Response } from 'express'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 
 export async function run(args?: string[]) {
   const options = {

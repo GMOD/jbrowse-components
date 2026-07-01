@@ -200,18 +200,8 @@ function stateModelFactory(pluginManager: PluginManager) {
        */
       setViews(views: SnapshotIn<LinearGenomeViewModel>[]) {
         self.views = cast(views)
-        const levels = []
-        for (let i = 0; i < views.length - 1; i++) {
-          levels.push({ level: i })
-        }
-        self.levels = cast(levels)
-      },
-
-      /**
-       * #action
-       */
-      removeView(view: LinearGenomeViewModel) {
-        self.views.remove(view)
+        self.levels = cast([])
+        self.reconcileLevels()
       },
 
       /**

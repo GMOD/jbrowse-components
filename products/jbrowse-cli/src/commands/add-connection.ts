@@ -1,5 +1,5 @@
-import path from 'path'
-import { parseArgs } from 'util'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import {
   debug,

@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { app, dialog } from 'electron'
 import contextMenu from 'electron-context-menu'

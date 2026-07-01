@@ -80,6 +80,16 @@ function configSchemaF(pluginManager: PluginManager) {
         description: 'Color scheme for synteny reads',
         advanced: true,
       },
+      /**
+       * #slot
+       * Synteny reads hide the coverage histogram by default; overrides the
+       * inherited base alignments display's `showCoverage` default of `true`.
+       */
+      showCoverage: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw the coverage histogram band',
+      },
     },
     {
       /**

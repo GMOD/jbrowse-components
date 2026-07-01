@@ -137,6 +137,33 @@ density but not rows by relatedness. Don't chase native N-way blocks as the prim
 the pairwise N−1 model is the right call for a browser (independently fetchable/zoomable,
 degrades gracefully when one alignment is missing).
 
+**`syntenyGroupId` for cross-row block identity (not N-way geometry).** Synteny features are
+strictly pairwise today: one `mate` (`{start,end,refName,assemblyName}`) per feature, and no
+shared block/anchor id anywhere in `comparative-adapters` or `synteny-core` (PAFAdapter's
+`uniqueId` is just the row index). Add an optional adapter-provided `syntenyGroupId`
+(block/anchor id) *alongside* `mate` — not replacing it — and you get the real multi-way value
+without touching the pairwise geometry the linear layout needs anyway: consistent color per
+block across every row it touches (`colorBy: group`, hash the id in `syntenyColors.ts`,
+main-thread recolor with no RPC), hover-one-highlight-the-block across rows, and "present in
+all N" filtering. MCScan `.anchors` and MAF already carry block structure to populate it; PAF
+(independent lines) leaves it undefined. This is the cheap 80% and is consistent with "don't
+make N-way blocks the primitive" above — it's an identity *overlay*, not a new render unit.
+
+What the id does **not** do on its own: draw a literal ribbon that skips a row (a block present
+in A and C but rearranged out of B). Grouping links the identity, and the transitive A→B→C case
+is already visible through the middle row, so this only matters when you have a genuine A–C
+alignment record with no B intermediary. A real non-adjacent edge then needs two more pieces:
+(a) the renderer connecting same-group segments by row order rather than via a fixed adjacent
+`mate`, and (b) a level/connection that can reference two non-adjacent view indices.
+Encouragingly the geometry is already generic over an arbitrary view *pair* —
+`buildSyntenyGeometry`/`executeSyntenyFeaturesAndPositions` take two `SyntenyViewSnap`s
+(`bpPerPx0/1`, `viewOff0/1`); adjacency is purely a wiring convention (`views[level]` /
+`views[level+1]` in `LinearSyntenyDisplay/afterAttach.ts` and the `connectedViews` getter). So
+non-adjacent ribbons are a level-model + z-ordering change, not a geometry rewrite — but a
+separate, larger step. The id is the prerequisite, not the whole feature. Start with MCScan
+(already block-structured) for populating the field. See `all-vs-all-paf-multiway-plan.md` and
+`SYNTENY_BLOCK_IMPORT.md`.
+
 **Cue-style read-pair + depth matrix.** [PopicLab/cue](https://github.com/PopicLab/cue)
 builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
 this be shown as a triangular heatmap (like `plugins/hic`) or in dotplot?

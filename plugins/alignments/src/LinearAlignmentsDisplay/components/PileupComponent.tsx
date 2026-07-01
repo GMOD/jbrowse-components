@@ -1,15 +1,10 @@
-import { useEffect, useMemo } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
 import { ResizeHandle, VerticalScrollbar } from '@jbrowse/core/ui'
-import {
-  createScrollLatch,
-  getContainingView,
-  normalizeWheelDelta,
-} from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
+import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { FloatingLegend } from '@jbrowse/plugin-linear-genome-view'
 import { YScaleBar } from '@jbrowse/wiggle-core'
 import { observer } from 'mobx-react'
@@ -80,32 +75,20 @@ const PileupBody = observer(function PileupBody({
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
-  const latch = useMemo(() => createScrollLatch(), [])
 
-  const handleWheel = useEventCallback((e: WheelEvent) => {
+  useVirtualScrollWheel(canvas, (e, applyScroll) => {
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
       return
     }
-    const { scrollableHeight, pileupViewportHeight, scrollTop } = model
-    if (scrollableHeight <= 0) {
-      return
-    }
-    const dy = normalizeWheelDelta(e.deltaY, e.deltaMode, pileupViewportHeight)
-    const next = latch.scroll(e, scrollTop, dy, scrollableHeight)
+    const next = applyScroll(e, {
+      scrollTop: model.scrollTop,
+      viewportHeight: model.pileupViewportHeight,
+      scrollableHeight: model.scrollableHeight,
+    })
     if (next !== null) {
       model.setScrollTop(next)
     }
   })
-
-  useEffect(() => {
-    if (!canvas) {
-      return
-    }
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
-    }
-  }, [canvas, handleWheel])
 
   if (!width) {
     return null

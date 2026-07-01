@@ -67,16 +67,21 @@ opposite strand keys differently than the primary — so a chain spanning region
 whose far end is a strand-flipped supplement can land in two sections. Both are
 accepted limitations of per-region partitioning, not bugs to fix.
 
-## Known limitation: `computeMultiRegionLayout`
+## `computeMultiRegionLayout` sort/softclip: same-refName only
 
-`computeMultiRegionLayout` (in `sortLayout.ts`) currently ignores both
-`sortedBy` and `showSoftClipping` — neither softclip-expanded read extents nor
-the custom sort at `sortedBy.pos` is applied when more than one region is
-fetched. The single-region paths (`computeLayout` / `computeSortedLayout`) do
-honor both. This is a real gap in multi-region pileup views; fixing requires
-deciding which region's sortPos applies and propagating expansions across region
-boundaries, so it has not been done. Don't assume the multi-region path matches
-the single-region path.
+`computeMultiRegionLayout` (in `sortLayout.ts`) honors `showSoftClipping`
+everywhere (soft-clip extents are unioned per featureId across the regions a
+read spans) but applies `sortedBy` **only when every displayed region shares one
+refName** — the collapse-introns case (a transcript's exons), where reads live
+on a single coordinate axis so the localized sort at `sortedBy.pos` can't
+false-match a same-numbered position on another chromosome. It needs the region
+bounds to do this, threaded in as `regions` (from `model.loadedRegions`, mirrors
+the arcs `regionInfos` path) → `buildLaidOutPileupMap` → here.
+
+Mixed-refName multi-region views (e.g. "view mate" jumping to another
+chromosome) keep plain dedup order for the sort — the sort is skipped rather
+than risk a cross-chromosome false-match. Not a fundamental limit, just unbuilt:
+it would need a per-refName-segmented placement axis.
 
 ## `showSoftClipping` belongs in `rpcProps`
 

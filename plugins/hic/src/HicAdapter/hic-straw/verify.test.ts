@@ -1,5 +1,5 @@
-import { fstatSync, openSync, readSync } from 'fs'
-import path from 'path'
+import { fstatSync, openSync, readSync } from 'node:fs'
+import path from 'node:path'
 
 import HicStraw from './index.ts'
 

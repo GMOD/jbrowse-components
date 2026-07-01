@@ -278,7 +278,10 @@ export function buildSyntenyGeometry({
           (botMax < emitLeft || botMin > emitRight)
 
         if (!offScreen) {
-          const isIndel = [CIGAR_I, CIGAR_D, CIGAR_N].includes(resolvedOp)
+          const isIndel =
+            resolvedOp === CIGAR_I ||
+            resolvedOp === CIGAR_D ||
+            resolvedOp === CIGAR_N
           // Only emit indel quads; match segments are covered by the base
           // block. drawCIGARMatchesOnly suppresses indels entirely.
           if (isIndel && !drawCIGARMatchesOnly) {

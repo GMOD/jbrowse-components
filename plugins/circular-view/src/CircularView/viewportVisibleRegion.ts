@@ -27,7 +27,7 @@ function cartesianToTheta(x: number, y: number) {
 }
 
 export function cartesianToPolar(x: number, y: number) {
-  const rho = Math.sqrt(x * x + y * y)
+  const rho = Math.hypot(x, y)
   if (rho === 0) {
     return [0, 0] as const
   }
@@ -64,7 +64,7 @@ export function viewportVisibleSection(
     ] as const
     let maxRho = Number.NEGATIVE_INFINITY
     for (const [x, y] of vertices) {
-      const rho = Math.sqrt(x * x + y * y)
+      const rho = Math.hypot(x, y)
       if (rho > maxRho) {
         maxRho = rho
       }

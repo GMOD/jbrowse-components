@@ -66,6 +66,7 @@
     "./svg/SvgExport": "./src/svg/SvgExport.tsx",
     "./svg/constants": "./src/svg/constants.ts",
     "./svg/svgReady": "./src/svg/svgReady.ts",
+    "./svg/wrapSvgExport": "./src/svg/wrapSvgExport.tsx",
     "./ui": "./src/ui/index.ts",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
@@ -146,7 +147,8 @@
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts",
-    "./util/useScrollTopSync": "./src/util/useScrollTopSync.ts"
+    "./util/useScrollTopSync": "./src/util/useScrollTopSync.ts",
+    "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts"
   },
   "files": [
     "esm"
@@ -168,7 +170,7 @@
     "@floating-ui/react": "^0.27.19",
     "@gmod/bgzf-filehandle": "^6.2.0",
     "@jbrowse/jexl": "^3.0.2",
-    "@jbrowse/mobx-state-tree": "^5.11.1",
+    "@jbrowse/mobx-state-tree": "^5.11.2",
     "@jbrowse/quick-lru": "^7.3.5",
     "@jbrowse/render-core": "workspace:^",
     "@leeoniya/ufuzzy": "^1.0.19",
@@ -381,6 +383,10 @@
       "./svg/svgReady": {
         "types": "./esm/svg/svgReady.d.ts",
         "import": "./esm/svg/svgReady.js"
+      },
+      "./svg/wrapSvgExport": {
+        "types": "./esm/svg/wrapSvgExport.d.ts",
+        "import": "./esm/svg/wrapSvgExport.js"
       },
       "./ui": {
         "types": "./esm/ui/index.d.ts",
@@ -705,6 +711,10 @@
       "./util/useScrollTopSync": {
         "types": "./esm/util/useScrollTopSync.d.ts",
         "import": "./esm/util/useScrollTopSync.js"
+      },
+      "./util/useVirtualScrollWheel": {
+        "types": "./esm/util/useVirtualScrollWheel.d.ts",
+        "import": "./esm/util/useVirtualScrollWheel.js"
       }
     },
     "typesVersions": {
@@ -846,6 +856,9 @@
         ],
         "svg/svgReady": [
           "esm/svg/svgReady.d.ts"
+        ],
+        "svg/wrapSvgExport": [
+          "esm/svg/wrapSvgExport.d.ts"
         ],
         "ui": [
           "esm/ui/index.d.ts"
@@ -1089,6 +1102,9 @@
         ],
         "util/useScrollTopSync": [
           "esm/util/useScrollTopSync.d.ts"
+        ],
+        "util/useVirtualScrollWheel": [
+          "esm/util/useVirtualScrollWheel.d.ts"
         ]
       }
     }

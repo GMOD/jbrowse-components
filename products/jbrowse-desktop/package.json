@@ -52,7 +52,7 @@
     "@gmod/faidx": "^2.0.0",
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.11.1",
+    "@jbrowse/mobx-state-tree": "^5.11.2",
     "@jbrowse/plugin-alignments": "workspace:^",
     "@jbrowse/plugin-arc": "workspace:^",
     "@jbrowse/plugin-authentication": "workspace:^",
@@ -107,7 +107,7 @@
     "@types/selenium-webdriver": "^4.35.6",
     "cross-env": "^10.1.0",
     "electron": "^43.0.0",
-    "electron-chromedriver": "^42.5.1",
+    "electron-chromedriver": "^42.5.2",
     "esbuild": "^0.28.1",
     "selenium-webdriver": "^4.45.0"
   },

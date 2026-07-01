@@ -34,7 +34,7 @@
   "dependencies": {
     "@jbrowse/app-core": "workspace:^",
     "@jbrowse/core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.11.1",
+    "@jbrowse/mobx-state-tree": "^5.11.2",
     "@jbrowse/product-core": "workspace:^",
     "@mui/material": "^9.1.2",
     "mobx": "^6.16.1"

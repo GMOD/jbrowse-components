@@ -1,6 +1,6 @@
-import { promises as fsPromises } from 'fs'
-import path from 'path'
-import zlib from 'zlib'
+import { promises as fsPromises } from 'node:fs'
+import path from 'node:path'
+import zlib from 'node:zlib'
 
 import fetch from './cliFetch.ts'
 

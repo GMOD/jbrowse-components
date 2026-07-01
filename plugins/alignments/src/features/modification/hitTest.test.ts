@@ -212,6 +212,7 @@ describe('modification probability round-trip', () => {
   })
 
   it('low probability mods are never fully transparent (0.1 floor)', () => {
+    // eslint-disable-next-line unicorn/no-constant-zero-expression -- 0*0 mirrors the p*p+0.1 alpha formula at p=0
     const a = Math.round(Math.min(1, 0 * 0 + 0.1) * 255) & 0xff
     expect(a / 255).toBeGreaterThan(0)
   })

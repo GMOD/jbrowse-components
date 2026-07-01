@@ -12,11 +12,11 @@
 //   node browser-tests/bundle-size-by-version.ts --all           # every version
 //   node browser-tests/bundle-size-by-version.ts --versions v4.3.0,v3.0.0
 //   node browser-tests/bundle-size-by-version.ts --min v2.0.0    # floor
-import { execFileSync } from 'child_process'
-import { existsSync, readFileSync, statSync, writeFileSync } from 'fs'
-import { createServer } from 'http'
-import { extname, join, normalize } from 'path'
-import { gzipSync } from 'zlib'
+import { execFileSync } from 'node:child_process'
+import { existsSync, readFileSync, statSync, writeFileSync } from 'node:fs'
+import { createServer } from 'node:http'
+import { extname, join, normalize } from 'node:path'
+import { gzipSync } from 'node:zlib'
 
 import { BASE_CHROME_ARGS } from '@jbrowse/browser-test-utils'
 import { launch } from 'puppeteer'

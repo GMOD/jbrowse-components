@@ -1,7 +1,4 @@
-import { useEffect, useMemo } from 'react'
-
-import { createScrollLatch, normalizeWheelDelta } from '@jbrowse/core/util'
-import { useEventCallback } from '@jbrowse/core/util/useEventCallback'
+import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 
 import { applyRowResizeWheel } from './applyRowResizeWheel.ts'
 
@@ -26,10 +23,7 @@ export function useVariantVirtualScroll({
   nrow: number
   setRowHeight: (n: number) => void
 }) {
-  const scrollableHeight = Math.max(0, totalHeight - viewportHeight)
-  const latch = useMemo(() => createScrollLatch(), [])
-
-  const handleWheel = useEventCallback((e: WheelEvent) => {
+  useVirtualScrollWheel(canvas, (e, applyScroll) => {
     if (e.shiftKey) {
       applyRowResizeWheel(e, canvas!, {
         rowHeight,
@@ -39,27 +33,15 @@ export function useVariantVirtualScroll({
         setRowHeight,
         setScrollTop,
       })
-    } else if (
-      !scrollZoom &&
-      !e.ctrlKey &&
-      !e.metaKey &&
-      scrollableHeight > 0
-    ) {
-      const dy = normalizeWheelDelta(e.deltaY, e.deltaMode, viewportHeight)
-      const next = latch.scroll(e, scrollTop, dy, scrollableHeight)
+    } else if (!scrollZoom && !e.ctrlKey && !e.metaKey) {
+      const next = applyScroll(e, {
+        scrollTop,
+        viewportHeight,
+        scrollableHeight: Math.max(0, totalHeight - viewportHeight),
+      })
       if (next !== null) {
         setScrollTop(next)
       }
     }
   })
-
-  useEffect(() => {
-    if (!canvas) {
-      return
-    }
-    canvas.addEventListener('wheel', handleWheel, { passive: false })
-    return () => {
-      canvas.removeEventListener('wheel', handleWheel)
-    }
-  }, [canvas, handleWheel])
 }

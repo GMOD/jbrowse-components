@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import HttpMap from './HttpMap.ts'
 import first from '../../test_data/names/0.json' with { type: 'json' }

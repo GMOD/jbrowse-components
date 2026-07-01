@@ -1,7 +1,7 @@
-import { execSync } from 'child_process'
-import { mkdtempSync, rmSync, writeFileSync } from 'fs'
-import os from 'os'
-import path from 'path'
+import { execSync } from 'node:child_process'
+import { mkdtempSync, rmSync, writeFileSync } from 'node:fs'
+import os from 'node:os'
+import path from 'node:path'
 
 import { WGSL_SOURCE as ldGenomicShader } from './LDDisplay/components/shaders/ldGenomic.generated.ts'
 import { WGSL_SOURCE as ldUniformShader } from './LDDisplay/components/shaders/ldUniform.generated.ts'

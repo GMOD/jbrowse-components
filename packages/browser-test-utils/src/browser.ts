@@ -1,4 +1,4 @@
-import fs from 'fs'
+import fs from 'node:fs'
 
 // Chrome flags both harnesses launch with. Backend-specific flags
 // (--disable-gpu, --enable-unsafe-swiftshader, --disable-popup-blocking) are

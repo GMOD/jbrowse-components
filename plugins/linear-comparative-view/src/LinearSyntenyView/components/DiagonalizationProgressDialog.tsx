@@ -69,7 +69,7 @@ const DiagonalizationProgressDialog = observer(
         cancelled = true
         stopStopToken(stopToken)
       }
-    }, [model, handleClose])
+    }, [model])
 
     return (
       <Dialog open title="Re-order chromosomes" onClose={handleClose}>

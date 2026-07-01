@@ -1,6 +1,6 @@
-import fs from 'fs'
-import path from 'path'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import {
   downloadRelease,
@@ -111,9 +111,10 @@ export async function run(args: string[]) {
 
   if (clean) {
     fs.rmSync(path.join(argsPath, 'static'), { recursive: true, force: true })
-    for (const f of fs
+    const workerFiles = fs
       .readdirSync(argsPath)
-      .filter(f => f.includes('worker.js'))) {
+      .filter(f => f.includes('worker.js'))
+    for (const f of workerFiles) {
       fs.unlinkSync(path.join(argsPath, f))
     }
   }

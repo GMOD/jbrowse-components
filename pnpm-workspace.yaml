@@ -24,3 +24,4 @@ minimumReleaseAgeExclude:
   - 'electron'
   - 'generic-filehandle2'
   - '@jbrowse/mobx-state-tree'
+  - 'eslint-plugin-unicorn'

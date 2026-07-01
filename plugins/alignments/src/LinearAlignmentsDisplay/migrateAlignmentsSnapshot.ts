@@ -1,9 +1,9 @@
-const OLD_DISPLAY_TYPES = [
+const OLD_DISPLAY_TYPES = new Set([
   'LinearPileupDisplay',
   'LinearReadArcsDisplay',
   'LinearReadCloudDisplay',
   'LinearSNPCoverageDisplay',
-]
+])
 
 /**
  * Migrate old alignments display snapshots to the unified
@@ -23,7 +23,7 @@ export function migrateAlignmentsSnapshot(
 ) {
   return snap &&
     typeof snap.type === 'string' &&
-    OLD_DISPLAY_TYPES.includes(snap.type)
+    OLD_DISPLAY_TYPES.has(snap.type)
     ? { ...snap, type: 'LinearAlignmentsDisplay' }
     : snap
 }

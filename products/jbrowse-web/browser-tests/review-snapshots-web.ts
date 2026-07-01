@@ -1,8 +1,8 @@
 /* eslint-disable no-console */
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import http from 'node:http'
+import path from 'node:path'
+import { parseArgs } from 'node:util'
 
 import {
   BACKENDS,

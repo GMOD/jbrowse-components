@@ -30,21 +30,14 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
           return
         }
         // A synteny level draws between two adjacent genome views; this display
-        // only depends on those two, not the whole stack.
+        // only depends on those two, not the whole stack. connectedViews is the
+        // shared gate (same one renderParams uses).
         const view = getContainingView(self) as LinearSyntenyViewModel
-        const level = self.level
-        const queryView = view.views[level]
-        const targetView = view.views[level + 1]
-        if (
-          !view.initialized ||
-          !queryView?.initialized ||
-          !targetView?.initialized ||
-          queryView.displayedRegions.length === 0 ||
-          targetView.displayedRegions.length === 0
-        ) {
+        const connected = self.connectedViews
+        if (!connected) {
           return
         }
-        const connectedViews = [queryView, targetView]
+        const connectedViews = [connected.v0, connected.v1]
 
         // Tracked deps that SHOULD trigger refetch when changed:
         //   - displayedRegions (per view) — region set drives cumBp output

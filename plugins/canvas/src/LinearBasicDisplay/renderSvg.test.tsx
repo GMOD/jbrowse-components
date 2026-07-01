@@ -1,7 +1,7 @@
 import React from 'react'
 
-import { mkdirSync, writeFileSync } from 'fs'
-import path from 'path'
+import { mkdirSync, writeFileSync } from 'node:fs'
+import path from 'node:path'
 
 import { renderToString } from 'react-dom/server'
 

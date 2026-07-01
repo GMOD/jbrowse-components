@@ -204,9 +204,8 @@ function assemblyManagerFactory(conf: IAnyType, pm: PluginManager) {
                 // filter() returns a new plain array, so removing from
                 // self.assemblies in the loop below does not skip elements
                 // (removeAssembly splices the live observable array)
-                for (const asm of self.assemblies.filter(
-                  a => !a.configuration,
-                )) {
+                const orphaned = self.assemblies.filter(a => !a.configuration)
+                for (const asm of orphaned) {
                   this.removeAssembly(asm)
                 }
                 for (const conf of assemblyConfs) {

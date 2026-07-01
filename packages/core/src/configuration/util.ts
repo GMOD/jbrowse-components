@@ -288,16 +288,9 @@ export function isConfigurationSchemaType(
       t => isConfigurationSchemaType(t) || t.name === 'undefined',
     )
   } else if (
-    isOptionalType(thing) &&
+    (isOptionalType(thing) || isArrayType(thing) || isMapType(thing)) &&
     isConfigurationSchemaType(getSubType(thing))
   ) {
-    return true
-  } else if (
-    isArrayType(thing) &&
-    isConfigurationSchemaType(getSubType(thing))
-  ) {
-    return true
-  } else if (isMapType(thing) && isConfigurationSchemaType(getSubType(thing))) {
     return true
   } else {
     return false

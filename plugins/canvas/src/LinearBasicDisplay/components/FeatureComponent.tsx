@@ -362,8 +362,10 @@ const FeatureBody = observer(function FeatureBody({
     const rect = e.currentTarget.getBoundingClientRect()
     const mouseX = e.clientX - rect.left
     const mouseY = e.clientY - rect.top
-    const scrollTop = scrollContainerRef.current?.scrollTop ?? 0
-    const yPos = mouseY + scrollTop
+    // model.scrollTop, not the live DOM scrollTop: the canvas paints at
+    // model.scrollTop (renderState.scrollY) and the DOM->model sync lags one
+    // frame, so hit-testing the DOM value can miss by a frame mid-scroll
+    const yPos = mouseY + model.scrollTop
     return performMultiRegionHitDetection(
       model.laidOutDataMap,
       model.flatbushIndexes,

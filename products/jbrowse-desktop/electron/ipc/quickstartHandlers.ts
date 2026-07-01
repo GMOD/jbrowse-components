@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { LEGACY_QUICKSTARTS } from '../fileSystemInit.ts'
 import { getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'

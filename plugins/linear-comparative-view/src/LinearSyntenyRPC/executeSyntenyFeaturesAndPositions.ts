@@ -20,10 +20,27 @@ import type {
   BaseFeatureDataAdapter,
   BaseOptions,
 } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Region, StatusCallback } from '@jbrowse/core/util'
+import type { Feature, Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
 const EMPTY_CIGAR = new Uint32Array(0)
+
+interface SyntenyMate {
+  start: number
+  end: number
+  refName: string
+  assemblyName: string
+}
+
+// Synteny-specific feature fields. Feature.get returns `unknown` for these
+// non-standard keys, so the cast is centralized in one typed accessor rather
+// than repeated (and previously diverging) at each call site.
+function getMate(f: Feature) {
+  return f.get('mate') as SyntenyMate
+}
+function getOptionalNumber(f: Feature, key: string) {
+  return (f.get(key) as number | undefined) ?? -1
+}
 
 export interface SyntenyViewSnap {
   bpPerPx: number
@@ -105,7 +122,7 @@ export async function executeSyntenyFeaturesAndPositions({
   // feature's keys once (O(n)) rather than via repeated getters in the O(n log
   // n) comparator.
   const decorated = deduped.map(f => {
-    const mate = f.get('mate') as { refName: string; start: number }
+    const mate = getMate(f)
     const start = f.get('start')
     return {
       f,
@@ -174,12 +191,7 @@ export async function executeSyntenyFeaturesAndPositions({
   let validCount = 0
   for (const f of features) {
     checkStopToken2(stopTokenChecker)
-    const mate = f.get('mate') as {
-      start: number
-      end: number
-      refName: string
-      assemblyName: string
-    }
+    const mate = getMate(f)
     const refName = f.get('refName')
     const mateRefName = mate.refName
     // Whole-genome PAF at low zoom: most features are on refNames not in the
@@ -233,14 +245,10 @@ export async function executeSyntenyFeaturesAndPositions({
     startsArray[validCount] = start
     endsArray[validCount] = end
 
-    const identity = f.get('identity') as number | undefined
-    identitiesArray[validCount] = identity ?? -1
-    mappingQualsArray[validCount] =
-      (f.get('mappingQual') as number | undefined) ?? -1
-    meanScoresArray[validCount] =
-      (f.get('meanScore') as number | undefined) ?? -1
-    meanIdentitiesArray[validCount] =
-      (f.get('meanIdentity') as number | undefined) ?? -1
+    identitiesArray[validCount] = getOptionalNumber(f, 'identity')
+    mappingQualsArray[validCount] = getOptionalNumber(f, 'mappingQual')
+    meanScoresArray[validCount] = getOptionalNumber(f, 'meanScore')
+    meanIdentitiesArray[validCount] = getOptionalNumber(f, 'meanIdentity')
 
     mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end

@@ -1,5 +1,5 @@
-import { spawn } from 'child_process'
-import { parseArgs } from 'util'
+import { spawn } from 'node:child_process'
+import { parseArgs } from 'node:util'
 
 import { fileSync } from 'tmp'
 
@@ -7,7 +7,7 @@ import { printHelp } from '../../utils.ts'
 import { waitForProcessClose } from '../process-utils.ts'
 import { validateFileArgument, validateRequiredCommands } from './validators.ts'
 
-import type { ChildProcess } from 'child_process'
+import type { ChildProcess } from 'node:child_process'
 
 export interface SortConfig {
   description: string

@@ -61,7 +61,7 @@ export function filterSessionInPlace(
       const map = node as MSTMap
       const childType = getChildType(map)
       const isRef = isReferenceType(childType)
-      for (const key of [...map.keys()]) {
+      for (const key of map.keys()) {
         if (!walkChildOrDrop(() => map.get(key), childType, isRef, dropped)) {
           map.delete(key)
         }

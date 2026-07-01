@@ -6,6 +6,7 @@ import { overlayReadTagColors } from './readTagColors.ts'
 import { buildLaidOutPileupMap } from '../RenderAlignmentDataRPC/sortLayout.ts'
 
 import type { GroupId } from './groupedDataMaps.ts'
+import type { RegionBounds } from '../RenderAlignmentDataRPC/sortLayout.ts'
 import type { PileupDataResult } from '../RenderAlignmentDataRPC/types.ts'
 import type { ColorBy, SortedBy } from '../shared/types.ts'
 
@@ -24,6 +25,7 @@ export function buildLaidOutByGroup({
   isChainMode,
   sortedBy,
   showSoftClipping,
+  regions,
   maxRows,
   maxRowsOverrides,
   showLinkedReadLines,
@@ -38,6 +40,9 @@ export function buildLaidOutByGroup({
   isChainMode: boolean
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean
+  // Region bounds by displayed-region index, so multi-region layout can locate
+  // the sort position's region and detect the single-refName case.
+  regions: ReadonlyMap<number, RegionBounds>
   maxRows: number
   // Per-group row caps (from per-group height drags); a key falls back to the
   // display-wide `maxRows` when absent.
@@ -56,6 +61,7 @@ export function buildLaidOutByGroup({
           dataMap,
           sortedBy,
           showSoftClipping,
+          regions,
           maxRows: cap,
         })
     const withLines = showLinkedReadLines ? attachLinkedReadLines(base) : base

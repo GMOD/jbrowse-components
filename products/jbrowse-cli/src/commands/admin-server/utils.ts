@@ -1,12 +1,12 @@
-import crypto from 'crypto'
-import fs from 'fs'
-import path from 'path'
+import crypto from 'node:crypto'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { debug, resolveConfigPath, writeJsonFile } from '../../utils.ts'
 import { createDefaultConfig } from '../add-assembly/utils.ts'
 
 import type { Express, Request, Response } from 'express'
-import type http from 'http'
+import type http from 'node:http'
 
 interface ServerRef {
   current: http.Server | null

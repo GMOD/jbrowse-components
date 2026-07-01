@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { isURL } from '../../types/common.ts'
 import { parseCommaSeparatedString } from '../../utils.ts'

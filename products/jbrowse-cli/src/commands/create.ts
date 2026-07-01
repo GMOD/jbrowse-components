@@ -1,5 +1,5 @@
-import fs from 'fs'
-import { parseArgs } from 'util'
+import fs from 'node:fs'
+import { parseArgs } from 'node:util'
 
 import {
   downloadRelease,

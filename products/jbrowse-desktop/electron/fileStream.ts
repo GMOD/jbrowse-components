@@ -1,5 +1,5 @@
-import fs from 'fs'
-import { Readable } from 'stream'
+import fs from 'node:fs'
+import { Readable } from 'node:stream'
 
 export async function getFileStream(
   location: { uri: string } | { localPath: string },

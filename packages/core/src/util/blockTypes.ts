@@ -93,10 +93,14 @@ export class BlockSet {
   }
 
   map<T, U = this>(func: Func<T>, thisarg?: U) {
+    // deliberately mirrors Array#map's (callback, thisArg) signature
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
     return this.blocks.map(func, thisarg)
   }
 
   forEach<T, U = this>(func: Func<T>, thisarg?: U) {
+    // deliberately mirrors Array#forEach's (callback, thisArg) signature
+    // eslint-disable-next-line unicorn/no-array-method-this-argument
     this.blocks.forEach(func, thisarg)
   }
 

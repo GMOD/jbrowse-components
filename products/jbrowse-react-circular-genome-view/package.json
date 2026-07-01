@@ -39,7 +39,7 @@
     "@emotion/styled": "^11.14.1",
     "@jbrowse/core": "workspace:^",
     "@jbrowse/embedded-core": "workspace:^",
-    "@jbrowse/mobx-state-tree": "^5.11.1",
+    "@jbrowse/mobx-state-tree": "^5.11.2",
     "@jbrowse/plugin-authentication": "workspace:^",
     "@jbrowse/plugin-circular-view": "workspace:^",
     "@jbrowse/plugin-config": "workspace:^",

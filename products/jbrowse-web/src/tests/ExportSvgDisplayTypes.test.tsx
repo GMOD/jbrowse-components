@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 import { saveAs } from '@jbrowse/core/util'
 import { fireEvent } from '@testing-library/react'

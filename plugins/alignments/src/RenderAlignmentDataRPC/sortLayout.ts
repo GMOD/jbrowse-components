@@ -450,35 +450,105 @@ export function computeSortedLayout(
   return { readYs, maxY: rows.length, truncated }
 }
 
+// Region bounds a multi-region layout needs to locate the sort position's
+// region and detect whether all regions share one refName.
+export interface RegionBounds {
+  refName: string
+  start: number
+  end: number
+}
+
 /**
  * Compute layout across multiple regions, deduplicating reads that span
  * region boundaries by featureId. Returns rowMap<featureId, row> for
  * distributing rows back to each region's readYs array.
+ *
+ * `showSoftClipping` expands each read's extent by its soft clips (unioned
+ * across the regions it appears in). `sortedBy` applies the localized sort at
+ * `sortedBy.pos` — but only when every region shares one refName (the
+ * collapse-introns case), where reads live on a single coordinate axis so the
+ * sort can't false-match a same-numbered position on another chromosome.
+ * Mixed-refName multi-region views keep plain dedup order.
  */
-export function computeMultiRegionLayout(
-  entries: [number, PileupDataResult][],
+export function computeMultiRegionLayout({
+  entries,
+  regions,
+  sortedBy,
+  showSoftClipping,
   maxRows = Number.POSITIVE_INFINITY,
-) {
-  const seen = new Set<string>()
-  const reads: { id: string; start: number; end: number }[] = []
+}: {
+  entries: [number, PileupDataResult][]
+  regions?: ReadonlyMap<number, RegionBounds>
+  sortedBy?: SortedBy
+  showSoftClipping?: boolean
+  maxRows?: number
+}) {
+  // Union extent per read (keyed by featureId) across every region it appears
+  // in, including soft-clip expansion. A read spanning a boundary is clamped to
+  // each region, so the union is its full on-screen extent. `orderedIds` keeps
+  // first-seen (≈ genomic) order for the default placement.
+  const extents = new Map<string, { start: number; end: number }>()
+  const orderedIds: string[] = []
   for (const [, data] of entries) {
+    const exp = showSoftClipping ? buildSoftclipExpansions(data) : undefined
     for (let i = 0; i < data.readIds.length; i++) {
       const id = data.readIds[i]!
-      if (!seen.has(id)) {
-        seen.add(id)
-        reads.push({
-          id,
-          start: data.readPositions[i * 2]!,
-          end: data.readPositions[i * 2 + 1]!,
-        })
+      const { start, end } = readExtent(data, i, exp)
+      const cur = extents.get(id)
+      if (cur) {
+        if (start < cur.start) {
+          cur.start = start
+        }
+        if (end > cur.end) {
+          cur.end = end
+        }
+      } else {
+        extents.set(id, { start, end })
+        orderedIds.push(id)
       }
+    }
+  }
+
+  const refNames = regions
+    ? [...new Set(entries.map(([idx]) => regions.get(idx)?.refName))]
+    : []
+  const commonRefName = refNames.length === 1 ? refNames[0] : undefined
+
+  let placementOrder = orderedIds
+  if (sortedBy && regions && commonRefName === sortedBy.refName) {
+    const sortPos = sortedBy.pos
+    // The region — and thus the data arrays — containing the sort position.
+    const sortEntry = entries.find(([idx]) => {
+      const r = regions.get(idx)
+      return r !== undefined && r.start <= sortPos && r.end > sortPos
+    })
+    if (sortEntry) {
+      const [, sData] = sortEntry
+      const overlapping: number[] = []
+      for (let i = 0; i < sData.readIds.length; i++) {
+        const start = sData.readPositions[i * 2]!
+        const end = sData.readPositions[i * 2 + 1]!
+        if (start <= sortPos && end > sortPos) {
+          overlapping.push(i)
+        }
+      }
+      sortOverlappingByIndex(overlapping, sData, sortedBy, sData.sortTagValues)
+      // Sorted overlapping reads first (each gets its own row — they all collide
+      // at sortPos), then the rest in dedup order fills gaps around them.
+      const overlappingIds = overlapping.map(i => sData.readIds[i]!)
+      const overlappingSet = new Set(overlappingIds)
+      placementOrder = [
+        ...overlappingIds,
+        ...orderedIds.filter(id => !overlappingSet.has(id)),
+      ]
     }
   }
 
   const rowMap = new Map<string, number>()
   const rows: number[][] = []
   let truncated = false
-  for (const { id, start, end } of reads) {
+  for (const id of placementOrder) {
+    const { start, end } = extents.get(id)!
     const y = placeRectCapped(rows, start, end, maxRows)
     rowMap.set(id, y)
     truncated = truncated || y === maxRows
@@ -572,11 +642,13 @@ export function buildLaidOutPileupMap({
   dataMap,
   sortedBy,
   showSoftClipping,
+  regions,
   maxRows = Number.POSITIVE_INFINITY,
 }: {
   dataMap: ReadonlyMap<number, PileupDataResult>
   sortedBy: SortedBy | undefined
   showSoftClipping: boolean | undefined
+  regions?: ReadonlyMap<number, RegionBounds>
   maxRows?: number
 }): Map<number, PileupDataResult> {
   const out = new Map<number, PileupDataResult>()
@@ -598,10 +670,13 @@ export function buildLaidOutPileupMap({
       : computeLayout(data, showSoftClipping, maxRows)
     out.set(idx, cloneWithLayout(data, readYs, maxY, truncated))
   } else {
-    const { rowMap, maxY, truncated } = computeMultiRegionLayout(
-      withReads,
+    const { rowMap, maxY, truncated } = computeMultiRegionLayout({
+      entries: withReads,
+      regions,
+      sortedBy,
+      showSoftClipping,
       maxRows,
-    )
+    })
     for (const [idx, data] of withReads) {
       const numReads = data.readIds.length
       const readYs = new Uint16Array(numReads)

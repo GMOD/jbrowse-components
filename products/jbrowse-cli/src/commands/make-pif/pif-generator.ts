@@ -1,14 +1,14 @@
-import { spawn } from 'child_process'
-import { createReadStream } from 'fs'
-import path from 'path'
-import { Transform } from 'stream'
-import { pipeline } from 'stream/promises'
-import { createGunzip } from 'zlib'
+import { spawn } from 'node:child_process'
+import { createReadStream } from 'node:fs'
+import path from 'node:path'
+import { Transform } from 'node:stream'
+import { pipeline } from 'node:stream/promises'
+import { createGunzip } from 'node:zlib'
 
 import { flipCigar, swapIndelCigar } from './cigar-utils.ts'
 import { splitCigarOnLargeGaps } from './structural-summary.ts'
 
-import type { Writable } from 'stream'
+import type { Writable } from 'node:stream'
 
 // Default split gap (bp) for the coarse tier. A row is broken into multiple
 // coarse pieces wherever a CIGAR insertion/deletion is at least this long, so

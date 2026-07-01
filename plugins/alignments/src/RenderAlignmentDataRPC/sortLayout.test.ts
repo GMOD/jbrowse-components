@@ -21,8 +21,11 @@ function makePileupData(opts: {
   regionStart: number
   reads: Read[]
   sortPos?: number
+  // Distinguishes reads across regions in multi-region tests; the same prefix+i
+  // in two regions is treated as one boundary-spanning read (dedup by id).
+  idPrefix?: string
 }): PileupDataResult {
-  const { reads, sortPos } = opts
+  const { reads, sortPos, idPrefix = 'id' } = opts
   const numReads = reads.length
   const hasAnyTagValue = reads.some(r => r.tagValue !== undefined)
   const sortTagValues = hasAnyTagValue
@@ -35,8 +38,8 @@ function makePileupData(opts: {
   for (const [i, r] of reads.entries()) {
     readPositions[i * 2] = r.start
     readPositions[i * 2 + 1] = r.end
-    readIds.push(`id${i}`)
-    readNames.push(`id${i}`)
+    readIds.push(`${idPrefix}${i}`)
+    readNames.push(`${idPrefix}${i}`)
   }
 
   const mismatchEntries: { readIdx: number; pos: number; base: number }[] = []
@@ -734,12 +737,138 @@ describe('computeMultiRegionLayout', () => {
       regionStart: 300,
       reads: [{ start: 350, end: 400 }],
     })
-    const { rowMap, maxY } = computeMultiRegionLayout([
-      [0, r1],
-      [1, r2],
-    ])
+    const { rowMap, maxY } = computeMultiRegionLayout({
+      entries: [
+        [0, r1],
+        [1, r2],
+      ],
+    })
     // Both reads have the same featureId 'id0' so the second collapses
     expect(rowMap.size).toBe(1)
     expect(maxY).toBe(1)
+  })
+
+  const chr1 = (start: number, end: number) => ({
+    refName: 'chr1',
+    start,
+    end,
+  })
+
+  test('sorts reads at the sort position when all regions share a refName', () => {
+    // exon-1 region has an unrelated read; exon-2 region has three reads
+    // overlapping the sort position with bases T/A/C (collapse-introns case).
+    const exon1 = makePileupData({
+      regionStart: 0,
+      reads: [{ start: 10, end: 50 }],
+    })
+    const exon2 = makePileupData({
+      regionStart: 200,
+      sortPos: 250,
+      idPrefix: 'b',
+      reads: [
+        { start: 240, end: 260, baseAtSortPos: 'T' },
+        { start: 245, end: 265, baseAtSortPos: 'A' },
+        { start: 248, end: 268, baseAtSortPos: 'C' },
+      ],
+    })
+    const { rowMap } = computeMultiRegionLayout({
+      entries: [
+        [0, exon1],
+        [1, exon2],
+      ],
+      regions: new Map([
+        [0, chr1(0, 100)],
+        [1, chr1(200, 300)],
+      ]),
+      sortedBy: {
+        type: 'basePair',
+        pos: 250,
+        refName: 'chr1',
+        assemblyName: 'a',
+      },
+    })
+    // ascending base order A < C < T, each on its own row (all collide at 250)
+    expect(rowMap.get('b1')).toBeLessThan(rowMap.get('b2')!)
+    expect(rowMap.get('b2')).toBeLessThan(rowMap.get('b0')!)
+  })
+
+  test('expands read extents by soft clips across regions', () => {
+    const exon1 = makePileupData({
+      regionStart: 0,
+      reads: [{ start: 10, end: 20 }],
+    })
+    // b1's left soft clip expands it to [220,290], overlapping b0 [235,245];
+    // without expansion the two sit 35bp apart and share a row.
+    const exon2 = () =>
+      makePileupData({
+        regionStart: 200,
+        idPrefix: 'b',
+        reads: [
+          { start: 235, end: 245 },
+          { start: 280, end: 290, softclip: { pos: 280, length: 60 } },
+        ],
+      })
+    const regions = new Map([
+      [0, chr1(0, 100)],
+      [1, chr1(200, 300)],
+    ])
+    const off = computeMultiRegionLayout({
+      entries: [
+        [0, exon1],
+        [1, exon2()],
+      ],
+      regions,
+    })
+    const on = computeMultiRegionLayout({
+      entries: [
+        [0, exon1],
+        [1, exon2()],
+      ],
+      regions,
+      showSoftClipping: true,
+    })
+    expect(off.rowMap.get('b0')).toBe(off.rowMap.get('b1'))
+    expect(on.rowMap.get('b0')).not.toBe(on.rowMap.get('b1'))
+  })
+
+  test('does not sort when regions span different refNames', () => {
+    const args = (sortedBy?: SortedBy) =>
+      computeMultiRegionLayout({
+        entries: [
+          [
+            0,
+            makePileupData({
+              regionStart: 0,
+              sortPos: 50,
+              reads: [
+                { start: 40, end: 60, baseAtSortPos: 'T' },
+                { start: 45, end: 65, baseAtSortPos: 'A' },
+              ],
+            }),
+          ],
+          [
+            1,
+            makePileupData({
+              regionStart: 200,
+              idPrefix: 'b',
+              reads: [{ start: 240, end: 260 }],
+            }),
+          ],
+        ],
+        regions: new Map([
+          [0, { refName: 'chr1', start: 0, end: 100 }],
+          [1, { refName: 'chr2', start: 200, end: 300 }],
+        ]),
+        sortedBy,
+      })
+    // mixed refNames → sort is skipped, so layout matches the unsorted result
+    const sorted = args({
+      type: 'basePair',
+      pos: 50,
+      refName: 'chr1',
+      assemblyName: 'a',
+    })
+    const unsorted = args(undefined)
+    expect([...sorted.rowMap]).toEqual([...unsorted.rowMap])
   })
 })

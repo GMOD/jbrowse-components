@@ -11,14 +11,14 @@ import {
   startDocumentDrag,
   useAbortableRef,
 } from './alignmentComponentUtils.ts'
-import { findSectionAtY } from './findSectionAtY.ts'
-import { performHitTest } from './hitTestPipeline.ts'
 import {
   openCigarWidget,
   openCoverageWidget,
   openIndicatorWidget,
   openModificationWidget,
 } from './detailWidgets.ts'
+import { findSectionAtY } from './findSectionAtY.ts'
+import { performHitTest } from './hitTestPipeline.ts'
 import {
   formatCigarTooltip,
   formatCoverageTooltip,

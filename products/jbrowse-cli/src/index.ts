@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 
-import { parseArgs } from 'util'
+import { parseArgs } from 'node:util'
 
 // Command imports
 import { run as addAssemblyRun } from './commands/add-assembly/index.ts'

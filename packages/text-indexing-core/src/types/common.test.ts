@@ -2,10 +2,10 @@
  * @jest-environment node
  */
 
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
-import { Readable } from 'stream'
+import fs from 'node:fs'
+import http from 'node:http'
+import path from 'node:path'
+import { Readable } from 'node:stream'
 
 import {
   getLocalOrRemoteStream,

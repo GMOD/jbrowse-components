@@ -1,7 +1,7 @@
-import { readFileSync, realpathSync, rmSync } from 'fs'
-import { mkdir, mkdtemp, open } from 'fs/promises'
-import os from 'os'
-import path from 'path'
+import { readFileSync, realpathSync, rmSync } from 'node:fs'
+import { mkdir, mkdtemp, open } from 'node:fs/promises'
+import os from 'node:os'
+import path from 'node:path'
 
 import { main as nativeMain } from './index.ts'
 

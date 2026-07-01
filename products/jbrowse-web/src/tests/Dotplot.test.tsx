@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import dotplotSessionFlipAxes from './dotplot_inverted_flipaxes.json' with { type: 'json' }
 import dotplotSession from './dotplot_inverted_test.json' with { type: 'json' }

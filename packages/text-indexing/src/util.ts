@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { isSupportedIndexingAdapter } from '@jbrowse/core/util'
 import { sanitizeForFilename } from '@jbrowse/text-indexing-core'

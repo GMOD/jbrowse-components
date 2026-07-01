@@ -1,5 +1,5 @@
-import { spawnSync } from 'child_process'
-import fs from 'fs'
+import { spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 
 import { fileSync } from 'tmp'
 

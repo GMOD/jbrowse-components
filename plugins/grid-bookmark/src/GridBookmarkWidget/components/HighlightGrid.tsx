@@ -86,13 +86,15 @@ const HighlightGrid = observer(function HighlightGrid({
         count={selectedIds.size}
         color={rows.find(r => selectedIds.has(r.id))?.color}
         onDelete={() => {
-          for (const r of rows.filter(r => selectedIds.has(r.id))) {
+          const selectedRows = rows.filter(r => selectedIds.has(r.id))
+          for (const r of selectedRows) {
             r.view.removeHighlight(r.highlight)
           }
           setSelectedIds(new Set())
         }}
         onRecolor={color => {
-          for (const r of rows.filter(r => selectedIds.has(r.id))) {
+          const selectedRows = rows.filter(r => selectedIds.has(r.id))
+          for (const r of selectedRows) {
             r.view.updateHighlight(r.highlight, { color })
           }
         }}

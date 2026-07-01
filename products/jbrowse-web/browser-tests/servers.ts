@@ -1,7 +1,7 @@
 /* eslint-disable no-console */
-import crypto from 'crypto'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import crypto from 'node:crypto'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import OAuthServer from '@node-oauth/express-oauth-server'
 import cors from 'cors'
@@ -22,7 +22,7 @@ import type {
   Token,
 } from '@node-oauth/oauth2-server'
 import type { Request } from 'express'
-import type http from 'http'
+import type http from 'node:http'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const defaultDataPath = path.resolve(__dirname, '../test_data/volvox')

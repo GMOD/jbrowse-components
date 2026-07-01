@@ -2,8 +2,8 @@
  * @jest-environment node
  */
 
-import fs, { mkdirSync } from 'fs'
-import path from 'path'
+import fs, { mkdirSync } from 'node:fs'
+import path from 'node:path'
 
 import { mockFetch, runCommand, runInTmpDir } from '../testUtil.ts'
 

@@ -1,8 +1,10 @@
 import { ActionLink } from '@jbrowse/core/ui'
-import { SimpleFeature, getSession, toLocale } from '@jbrowse/core/util'
+import { getSession, toLocale } from '@jbrowse/core/util'
 import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
+
+import { buildPairedEndMateFeature } from '../shared/mateFeature.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
@@ -16,7 +18,7 @@ const LaunchPairedEndBreakpointSplitViewPanel = observer(
     feature: AlignmentFeatureSerialized
   }) {
     const session = getSession(model)
-    const { uniqueId, refName, start, end, strand, next_ref, next_pos, id } =
+    const { uniqueId, refName, start, end, strand, next_ref, next_pos } =
       feature
     const assemblyName = getAssemblyName(model.view)
     return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
@@ -28,19 +30,14 @@ const LaunchPairedEndBreakpointSplitViewPanel = observer(
               session,
               view: model.view,
               assemblyName,
-              feature: new SimpleFeature({
+              feature: buildPairedEndMateFeature({
                 uniqueId,
                 refName,
                 start,
                 end,
                 strand,
-                mate: {
-                  uniqueId: `${id}-mate`,
-                  refName: next_ref,
-                  start: next_pos,
-                  end: next_pos + 1,
-                  strand,
-                },
+                nextRef: next_ref,
+                nextPos: next_pos,
               }),
             })
           }}

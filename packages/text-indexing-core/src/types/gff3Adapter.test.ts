@@ -2,9 +2,9 @@
  * @jest-environment node
  */
 
-import fs from 'fs'
-import http from 'http'
-import path from 'path'
+import fs from 'node:fs'
+import http from 'node:http'
+import path from 'node:path'
 
 import { indexGff3 } from './gff3Adapter.ts'
 

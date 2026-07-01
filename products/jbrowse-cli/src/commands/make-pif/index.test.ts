@@ -2,9 +2,9 @@
  * @jest-environment node
  */
 
-import fs from 'fs'
-import path from 'path'
-import { gunzipSync } from 'zlib'
+import fs from 'node:fs'
+import path from 'node:path'
+import { gunzipSync } from 'node:zlib'
 
 import { runCommand, runInTmpDir } from '../../testUtil.ts'
 

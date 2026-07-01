@@ -1,4 +1,4 @@
-import http from 'http'
+import http from 'node:http'
 
 import puppeteer from 'puppeteer'
 import handler from 'serve-handler'

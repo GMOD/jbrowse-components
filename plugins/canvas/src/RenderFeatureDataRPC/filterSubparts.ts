@@ -48,7 +48,8 @@ function makeUTRs(parent: Feature, subs: Feature[]) {
   // Snapshot the exons before pushing: appending to `subparts` while iterating
   // it would otherwise visit the synthesized UTRs (they're skipped only because
   // they aren't exons — a fragile invariant to lean on).
-  for (const sub of subparts.filter(isExon)) {
+  const exons = subparts.filter(isExon)
+  for (const sub of exons) {
     const exonStart = sub.get('start')
     const exonEnd = sub.get('end')
     if (exonStart < codeStart) {

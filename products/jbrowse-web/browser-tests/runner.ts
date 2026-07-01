@@ -1,9 +1,9 @@
 /* eslint-disable no-console */
-import { execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath, pathToFileURL } from 'url'
-import { parseArgs } from 'util'
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath, pathToFileURL } from 'node:url'
+import { parseArgs } from 'node:util'
 
 import {
   BASE_CHROME_ARGS,
@@ -17,7 +17,7 @@ import { startBasicAuthServer, startOAuthServer } from './servers.ts'
 import { snapshotConfig } from './snapshot.ts'
 
 import type { TestCase, TestSuite } from './types.ts'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Browser } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))

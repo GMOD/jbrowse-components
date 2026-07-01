@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { LocalFile } from 'generic-filehandle2'
 import { firstValueFrom } from 'rxjs'

@@ -82,6 +82,7 @@ describe('packCoverageBinsCanvas2D', () => {
       expect(u32[off + FIELD.position]).toBe(100 + i)
       expect(f32[off + FIELD.bandBottom]).toBe(0)
     }
+    // eslint-disable-next-line unicorn/no-constant-zero-expression -- row 0, kept parallel to row 2 below
     expect(f32[0 * STRIDE_F32 + FIELD.bandTop]).toBe(7)
     expect(f32[2 * STRIDE_F32 + FIELD.bandTop]).toBe(3)
   })

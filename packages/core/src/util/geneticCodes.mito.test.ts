@@ -1,6 +1,6 @@
-import { readFileSync } from 'fs'
-import { join } from 'path'
-import { gunzipSync } from 'zlib'
+import { readFileSync } from 'node:fs'
+import { join } from 'node:path'
+import { gunzipSync } from 'node:zlib'
 
 import { convertCodingSequenceToPeptides } from './convertCodingSequenceToPeptides.ts'
 import { getGeneticCode, parseTranslTable } from './geneticCodes.ts'

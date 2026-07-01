@@ -68,9 +68,15 @@ export default function VerticalScrollbar({
       viewportHeight * (viewportHeight / contentHeight),
     ),
   )
-  const thumbTop =
-    (scrollTop / scrollableHeight) * (viewportHeight - thumbHeight)
   const usableTrack = viewportHeight - thumbHeight
+  // clamp so a scrollTop past scrollableHeight (virtual-scroll displays don't
+  // self-correct like a native overflow container) can't draw the thumb below
+  // the track
+  const thumbTop = clamp(
+    (scrollTop / scrollableHeight) * usableTrack,
+    0,
+    usableTrack,
+  )
 
   function handleMouseDown(e: React.MouseEvent) {
     // stopPropagation so the drag doesn't also pan the view; no preventDefault

@@ -6,7 +6,6 @@ import {
   statusMessageText,
 } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
-import { applyAlpha, colorSchemes, getQueryColor } from '@jbrowse/synteny-core'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
 import { computeSyntenyColors } from '../LinearSyntenyRPC/syntenyColors.ts'
@@ -18,7 +17,7 @@ import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
-import type { ColorScheme, SyntenyColorBy } from '@jbrowse/synteny-core'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 export interface SyntenyFeatureData {
   strands: Int8Array
@@ -243,12 +242,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       /**
        * #getter
        */
-      get trackIds() {
-        return getConf(self, 'trackIds') as string[]
-      },
-      /**
-       * #getter
-       */
       get numFeats() {
         return self.featureData?.featureIds.length ?? 0
       },
@@ -302,56 +295,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
        */
       get view() {
         return getContainingView(self) as LinearSyntenyViewModel
-      },
-      /**
-       * #getter
-       */
-      get colorSchemeConfig() {
-        const key = this.view.colorBy
-        return key in colorSchemes
-          ? colorSchemes[key as ColorScheme]
-          : colorSchemes.default
-      },
-      /**
-       * #getter
-       */
-      get colorMapWithAlpha() {
-        const alpha = this.view.alpha
-        const activeColorMap = this.colorSchemeConfig.cigarColors
-        return {
-          I: applyAlpha(activeColorMap.I, alpha),
-          N: applyAlpha(activeColorMap.N, alpha),
-          D: applyAlpha(activeColorMap.D, alpha),
-          X: applyAlpha(activeColorMap.X, alpha),
-          M: applyAlpha(activeColorMap.M, alpha),
-          '=': applyAlpha(activeColorMap['='], alpha),
-        }
-      },
-      /**
-       * #getter
-       */
-      get posColorWithAlpha() {
-        return applyAlpha('red', this.view.alpha)
-      },
-      /**
-       * #getter
-       */
-      get negColorWithAlpha() {
-        return applyAlpha('blue', this.view.alpha)
-      },
-      /**
-       * #getter
-       */
-      get queryColorWithAlphaMap() {
-        const alpha = this.view.alpha
-        const cache = new Map<string, string>()
-        return (queryName: string) => {
-          if (!cache.has(queryName)) {
-            const color = getQueryColor(queryName)
-            cache.set(queryName, applyAlpha(color, alpha))
-          }
-          return cache.get(queryName)!
-        }
       },
       getFeature(index: number) {
         const { featureData, instanceData } = self
@@ -414,30 +357,35 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       },
       /**
        * #getter
+       * The two adjacent genome views this level draws between, or undefined
+       * until both are initialized with regions. A level draws between an
+       * adjacent pair, so both render and fetch depend only on those two views,
+       * not the whole stack. Single source of truth for that gate.
+       */
+      get connectedViews() {
+        const { views } = this.view
+        const v0 = views[this.level]
+        const v1 = views[this.level + 1]
+        return this.view.initialized &&
+          v0?.initialized &&
+          v1?.initialized &&
+          v0.displayedRegions.length > 0 &&
+          v1.displayedRegions.length > 0
+          ? { v0, v1 }
+          : undefined
+      },
+      /**
+       * #getter
        * Per-track render params consumed by the view's aggregator. The view
        * substitutes yTop before handing this to the backend.
        */
       get renderParams() {
-        if (self.isMinimized) {
+        const connected = this.connectedViews
+        if (self.isMinimized || !connected) {
           return undefined
         }
         const view = this.view
-        if (!view.initialized) {
-          return undefined
-        }
-        // A level draws between two adjacent views; depend only on those two
-        // (matching the fetch autorun), not the whole stack.
-        const level = this.level
-        const v0 = view.views[level]
-        const v1 = view.views[level + 1]
-        if (
-          !v0?.initialized ||
-          !v1?.initialized ||
-          v0.displayedRegions.length === 0 ||
-          v1.displayedRegions.length === 0
-        ) {
-          return undefined
-        }
+        const { v0, v1 } = connected
         const { hoveredFeatureIdx, clickedFeatureIdx } = self
         return {
           yTop: 0,

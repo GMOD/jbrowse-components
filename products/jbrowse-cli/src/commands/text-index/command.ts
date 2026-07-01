@@ -1,4 +1,4 @@
-import { parseArgs } from 'util'
+import { parseArgs } from 'node:util'
 
 import { aggregateIndex, indexFileList, perTrackIndex } from './index.ts'
 import { printHelp } from '../../utils.ts'

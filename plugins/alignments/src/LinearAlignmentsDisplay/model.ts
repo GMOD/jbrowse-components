@@ -22,7 +22,9 @@ import {
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
+import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
+import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
@@ -71,9 +73,11 @@ import {
   buildSectionRenders,
   computeStackedSections,
 } from './sectionLayout.ts'
+import { viewMateRegionInCurrentView } from './viewMateRegion.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
 import { COLOR_SCHEMES, isModificationScheme } from '../shared/colorSchemes.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
+import { buildPairedEndMateFeature, getMateFields } from '../shared/mateFeature.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
@@ -923,6 +927,7 @@ export default function stateModelFactory(
             isChainMode: self.isChainMode,
             sortedBy: this.sortedBy,
             showSoftClipping: self.showSoftClipping,
+            regions: self.loadedRegions,
             maxRows: defaultMaxRows,
             maxRowsOverrides,
             showLinkedReadLines: self.showLinkedReadLines,
@@ -2573,6 +2578,40 @@ export default function stateModelFactory(
           }
 
           if (feat) {
+            const mateFields = getMateFields(feat)
+            if (mateFields) {
+              items.push({
+                label: 'View mate',
+                icon: CompareArrowsIcon,
+                type: 'subMenu',
+                subMenu: [
+                  {
+                    label: 'Split current view to show mate',
+                    onClick: () => {
+                      viewMateRegionInCurrentView({
+                        view: getContainingView(self) as LGV,
+                        feature: feat,
+                      })
+                    },
+                  },
+                  {
+                    label: 'Open breakpoint split view',
+                    onClick: () => {
+                      const view = getContainingView(self) as LGV
+                      const assemblyName = view.assemblyNames[0]
+                      if (assemblyName) {
+                        launchBreakpointSplitView({
+                          session: getSession(self),
+                          view,
+                          assemblyName,
+                          feature: buildPairedEndMateFeature(mateFields),
+                        })
+                      }
+                    },
+                  },
+                ],
+              })
+            }
             items.push(
               {
                 label: 'Open feature details',

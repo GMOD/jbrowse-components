@@ -1,4 +1,4 @@
-import path from 'path'
+import path from 'node:path'
 
 import { testAlignmentModificationsDisplay } from './testAlignmentModificationsDisplay.tsx'
 import { doBeforeEach, setup } from './util.tsx'
