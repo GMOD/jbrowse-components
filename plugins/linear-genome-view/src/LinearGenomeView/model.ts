@@ -232,11 +232,14 @@ function openTrackSelectorWidget(
  *         assembly: 'hg38',
  *         loc: 'chr1:1,000,000-1,100,000',
  *         tracks: ['genes', 'alignments'],
+ *         colorByCDS: true,
  *       },
  *     },
  *   ],
  * }
  * ```
+ * Other `init` fields: `tracklist`, `nav`, `highlight`, `showCenterLine`,
+ * `trackLabels` — see the `init` property below for the full list.
  * At runtime the same model is driven imperatively — every property and action
  * below is reachable on `viewState.session.views[0]`:
  * ```js

@@ -125,9 +125,12 @@ export interface ExportSvgOptions {
  *   init: {
  *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *     tracks: ['hg38_vs_mm10.paf'],
+ *     colorBy: 'query',
  *   },
  * }
  * ```
+ * Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
+ * `loc` on each `views` entry — see the `init` property below.
  */
 export default function stateModelFactory(pm: PluginManager) {
   return (

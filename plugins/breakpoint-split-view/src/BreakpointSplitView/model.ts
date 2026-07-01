@@ -60,6 +60,8 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
  *   ],
  * }
  * ```
+ * Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to
+ * set per-panel display options (e.g. a shorter alignments height).
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400

@@ -48,9 +48,12 @@ const AddRowDialog = lazy(() => import('./components/AddRowDialog.tsx'))
  *   init: {
  *     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
  *     tracks: ['hg38_vs_mm10.paf'],
+ *     drawCurves: true,
  *   },
  * }
  * ```
+ * Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
+ * `autoDiagonalize` — see the `init` property below.
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
@@ -380,6 +383,15 @@ export default function stateModelFactory(pluginManager: PluginManager) {
       const superHeaderMenuItems = self.headerMenuItems
       const superShowMenuItems = self.showMenuItems
       const superMenuItems = self.menuItems
+      function openExportSvgDialog() {
+        getSession(self).queueDialog(handleClose => [
+          ExportSvgDialog,
+          {
+            model: self,
+            handleClose,
+          },
+        ])
+      }
       return {
         /**
          * #method
@@ -572,14 +584,8 @@ export default function stateModelFactory(pluginManager: PluginManager) {
             {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
-              onClick: (): void => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
+              onClick: () => {
+                openExportSvgDialog()
               },
             },
           ]
@@ -594,13 +600,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
               label: 'Export SVG',
               icon: PhotoCameraIcon,
               onClick: () => {
-                getSession(self).queueDialog(handleClose => [
-                  ExportSvgDialog,
-                  {
-                    model: self,
-                    handleClose,
-                  },
-                ])
+                openExportSvgDialog()
               },
             },
           ]
