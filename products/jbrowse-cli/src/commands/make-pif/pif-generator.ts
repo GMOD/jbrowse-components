@@ -135,7 +135,7 @@ export async function createPIF(
   const transform = makePifTransform(coarseSplitGap)
   if (filename) {
     const source = createReadStream(filename)
-    await (/.b?gz$/.exec(filename)
+    await (/.b?gz$/.test(filename)
       ? pipeline(source, createGunzip(), transform, stream)
       : pipeline(source, transform, stream))
   } else {
@@ -158,5 +158,7 @@ export function getOutputFilename(
   file: string | undefined,
   out?: string,
 ): string {
-  return out || `${path.basename(file || 'output', '.paf')}.pif.gz`
+  // strip .paf or .paf.gz so a gzipped input doesn't yield input.paf.gz.pif.gz
+  const base = path.basename(file || 'output').replace(/\.paf(\.gz)?$/i, '')
+  return out || `${base}.pif.gz`
 }

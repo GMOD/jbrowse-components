@@ -55,7 +55,8 @@ export async function loadFiles({
   subDir?: string
   force?: boolean
 }) {
-  if (mode) {
+  // inPlace references files where they sit, so it needs no destination dir
+  if (mode && mode !== 'inPlace') {
     if (subDir) {
       fs.mkdirSync(path.join(destDir, subDir), { recursive: true })
     }

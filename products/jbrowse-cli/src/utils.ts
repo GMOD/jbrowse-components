@@ -258,6 +258,12 @@ export async function extractZip(archive: Buffer, destPath: string) {
 
 async function writeZipEntry(destPath: string, name: string, data: Buffer) {
   const outPath = path.join(destPath, name)
+  // guard against zip-slip: a crafted entry name (e.g. ../../etc/foo) must not
+  // let path.join escape destPath, since --url accepts arbitrary archives
+  const rel = path.relative(destPath, outPath)
+  if (rel.startsWith('..') || path.isAbsolute(rel)) {
+    throw new Error(`Corrupt ZIP: entry escapes destination directory: ${name}`)
+  }
   await fsPromises.mkdir(path.dirname(outPath), { recursive: true })
   await fsPromises.writeFile(outPath, data)
 }
@@ -276,9 +282,9 @@ function findEndOfCentralDirectory(archive: Buffer) {
 function wrapText(text: string, width: number, indent: string) {
   // Normalize: join single \n into spaces, preserve \n\n as paragraph breaks
   const normalized = text
-    .replace(/\n\n/g, '\0')
-    .replace(/\n/g, ' ')
-    .replace(/\0/g, '\n\n')
+    .replaceAll('\n\n', '\0')
+    .replaceAll('\n', ' ')
+    .replaceAll('\u{0}', '\n\n')
   const lines = []
   for (const line of normalized.split('\n')) {
     if (line.length <= width) {
