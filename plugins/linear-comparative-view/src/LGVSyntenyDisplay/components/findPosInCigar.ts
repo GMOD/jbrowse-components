@@ -14,10 +14,18 @@ import {
 //   startX) and the corresponding distance on the query/mate axis.
 //
 // Used by navToSynteny to translate a user-visible region into the matching
-// mate region via CIGAR walk. Note: insertions encountered before reaching
-// `startX` advance the mate but are NOT consumed at exactly featX === startX
-// (the loop breaks first); this is intentional so a region boundary doesn't
-// "absorb" a leading insertion on the next iteration's lookup.
+// mate region via CIGAR walk.
+//
+// Insertion-at-the-boundary rule: an insertion is zero-width on the feature
+// axis, so a feature-offset that lands exactly on one maps ambiguously to
+// either the mate position before or after it. We break that tie the half-open
+// `[start, end)` way — the loop stops once featX reaches startX, before an
+// insertion sitting at startX is seen, so it is NOT consumed. Mapping a
+// region's start therefore keeps a leading insertion (start lands to its
+// left); mapping its end drops a trailing insertion (end lands to its left).
+// Adjacent regions thus never double-count or drop a boundary insertion.
+// navToSynteny pads both ends by windowSize regardless, so this sub-insertion
+// precision is immaterial in practice.
 //
 // Only M/=/X/I/D ops are recognized — H/S/P/N are silently skipped, which is
 // correct for the BAM/PAF supplementary-alignment CIGARs this is fed (clips

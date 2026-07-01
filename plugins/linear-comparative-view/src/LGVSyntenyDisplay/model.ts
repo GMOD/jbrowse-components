@@ -5,7 +5,6 @@ import {
   getContainingTrack,
   getContainingView,
   getSession,
-  openFeatureWidget,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
@@ -20,7 +19,6 @@ import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import { findVisibleBlockForFeature } from './components/util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewDialog = lazy(
@@ -78,21 +76,16 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
       // showCoverage defaults to false for synteny via the config-slot override
       // in configSchemaF (the base alignments display defaults it to true).
       .views(() => ({
+        /**
+         * #getter
+         * synteny features open the SyntenyFeatureWidget; the inherited
+         * `selectFeature` action reads this getter, so no override is needed.
+         */
         get featureWidgetType() {
           return {
             type: 'SyntenyFeatureWidget',
             id: 'syntenyFeature',
           }
-        },
-      }))
-      .actions(self => ({
-        /**
-         * #action
-         */
-        selectFeature(feature: Feature) {
-          openFeatureWidget(self, feature.toJSON(), {
-            widget: self.featureWidgetType,
-          })
         },
       }))
       .views(self => ({
@@ -132,12 +125,17 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
                   label: 'Copy info to clipboard',
                   icon: ContentCopyIcon,
                   onClick: async () => {
-                    const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
                     const session = getSession(self)
-                    const { default: copy } =
-                      await import('@jbrowse/core/util/copyToClipboard')
-                    copy(JSON.stringify(rest, null, 4))
-                    session.notify('Copied to clipboard', 'success')
+                    try {
+                      const { uniqueId: _uniqueId, ...rest } = feature.toJSON()
+                      const { default: copy } =
+                        await import('@jbrowse/core/util/copyToClipboard')
+                      copy(JSON.stringify(rest, null, 4))
+                      session.notify('Copied to clipboard', 'success')
+                    } catch (e) {
+                      console.error(e)
+                      session.notifyError(`${e}`, e)
+                    }
                   },
                 },
               ]

@@ -20,9 +20,9 @@ describe('findPosInCigar', () => {
   })
 
   it('insertions at the exact breakpoint are NOT consumed', () => {
-    // featX hits startX=100 after the first 100=, the loop breaks before
-    // the 10I is seen — leading insertions on the next region lookup are
-    // skipped, but that's the documented contract.
+    // featX hits startX=100 after the first 100=, the loop breaks before the
+    // 10I is seen. Half-open `[start, end)` tie-break: a boundary insertion
+    // belongs to the region whose START it is, not the one whose END it is.
     expect(findPosInCigar(parseCigar2('100=10I100='), 100)).toEqual([100, 100])
   })
 
