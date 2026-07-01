@@ -26,6 +26,13 @@ export interface PlainTrackConfig {
 // (embedded react views), whose `tracks` is a types.array of MST config nodes.
 // Normalize the base to a plain snapshot so the delta math is correct for both;
 // a plain object passes through untouched.
+//
+// The two casts are load-bearing, don't "simplify" them: our MST fork types
+// `isStateTreeNode`'s parameter as a state-tree node (not `unknown`), so `base`
+// (a plain interface) must widen through `unknown` to be passed, and
+// `getSnapshot` of that returns `unknown`. eslint's type service and `tsgo`
+// disagree on which assertions are redundant here; this exact form is the one
+// both accept.
 function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
   const node = base as unknown
   return isStateTreeNode(node) ? (getSnapshot(node) as PlainTrackConfig) : base

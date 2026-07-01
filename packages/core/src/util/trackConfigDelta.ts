@@ -22,6 +22,15 @@
  * `displays` is merged by `displayId` so an edit to one display doesn't pin the
  * others. Nested config objects (e.g. `adapter`) recurse. Any other array (value
  * arrays like `jexlFilters`, `assemblyNames`) is replaced wholesale when changed.
+ *
+ * Subtlety worth not "optimizing": when the base has NO `displays` array but the
+ * edited snapshot does (common — a track config that omits displays gets a stub
+ * per compatible display type injected by `baseTrackConfig.preProcessSnapshot`
+ * when it hydrates), the whole edited array lands in the delta, including
+ * seemingly content-free `{type, displayId}` stubs. Do not strip those stubs to
+ * shrink the delta: the array order defines the default display (`displays[0]`),
+ * and re-injection on the next hydrate would append them in a different order,
+ * silently changing which display opens by default.
  */
 
 type Json =
