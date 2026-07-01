@@ -33,6 +33,16 @@ export const sharedVariantConfigSlots = {
     type: 'string',
     defaultValue: '',
   },
+  // 'draw'/'skip' toggle for reference alleles, settable independent of
+  // showReferenceAlleles (the admin-config-only starting default). No
+  // fallback derivation at read time — preProcessSnapshot below seeds this
+  // from showReferenceAlleles once, the first time a config lacking it is
+  // hydrated, so from then on this slot alone is the single source of truth.
+  referenceDrawingMode: {
+    type: 'stringEnum',
+    model: types.enumeration('ReferenceDrawingMode', ['draw', 'skip']),
+    defaultValue: 'skip',
+  },
 }
 
 /**
@@ -53,6 +63,14 @@ export default function sharedVariantConfigFactory() {
        */
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,
+      preProcessSnapshot: (snap: Record<string, unknown>) =>
+        snap.referenceDrawingMode === undefined &&
+        snap.showReferenceAlleles !== undefined
+          ? {
+              ...snap,
+              referenceDrawingMode: snap.showReferenceAlleles ? 'draw' : 'skip',
+            }
+          : snap,
     },
   )
 }

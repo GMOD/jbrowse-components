@@ -33,6 +33,21 @@ export interface ConfigSlotDefinition {
   type: string
   /** default value of the slot */
   defaultValue: unknown
+  /**
+   * make the slot nullable: its value may be `undefined` ("unset") in addition
+   * to the declared `type`, and `defaultValue` may then be `undefined`. Use this
+   * ONLY when a consumer must distinguish "not explicitly set" (fall back to a
+   * computed/auto value) from an explicit value AND the value space has no
+   * natural in-band sentinel — e.g. a drag-resized track `height`, where every
+   * number is a legitimate height so no magic number can mean "unset".
+   *
+   * Prefer an in-band sentinel when the type already carries meaningful special
+   * values: a `color` slot uses `''` for "no color" and a named theme-derived
+   * constant for "follow the theme" (see THEME_DERIVED_COLOR), which keeps a
+   * concrete string flowing to every consumer (GPU packing, jexl, the editor)
+   * rather than forcing each to defend against `undefined`.
+   */
+  maybe?: boolean
   /** parameter names of the function callback */
   contextVariable?: string[]
   /**
@@ -56,20 +71,25 @@ export default function ConfigSlot({
   model,
   type,
   defaultValue,
+  maybe,
 }: ConfigSlotDefinition) {
   if (!type) {
     throw new Error('type name required')
   }
-  const valueModel = model ?? typeModels[type]
-  if (!valueModel) {
+  const baseModel = model ?? typeModels[type]
+  if (!baseModel) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
     )
   }
-  if (defaultValue === undefined) {
+  // a `maybe` slot may default to `undefined` (the "unset" state); every other
+  // slot must declare a concrete default so a missing one is caught as an
+  // authoring mistake.
+  if (defaultValue === undefined && !maybe) {
     throw new Error("no 'defaultValue' provided")
   }
 
+  const valueModel = maybe ? types.maybe(baseModel) : baseModel
   return types.stripDefault(
     types.union(JexlStringType, valueModel),
     defaultValue,

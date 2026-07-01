@@ -9,10 +9,7 @@ import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
 import type { LinearHicDisplayModel } from '@jbrowse/plugin-hic'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { LinearVariantDisplayModel } from '@jbrowse/plugin-variants'
-import type {
-  WiggleScoreConfigKey,
-  linearWiggleDisplayModelFactory,
-} from '@jbrowse/plugin-wiggle'
+import type { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
 type WiggleDisplayModel = Instance<
   ReturnType<typeof linearWiggleDisplayModelFactory>
@@ -57,11 +54,10 @@ const ALIGNMENTS_COMPACTNESS = {
 }
 
 // Settings initialized via the display snapshot passed to `view.showTrack`.
-// These are plain MST properties and config-override keys, which both serialize
-// flat into the snapshot. `height` is normalized to `heightOverride` by
-// TrackHeightMixin's preProcessSnapshot. SnapshotIn can't be derived from these
-// deeply-composed (`_OverrideProps`) models, so the accepted keys are
-// enumerated here.
+// Keys that are config slots (`height`, `color`, `sortedBy`, …) are routed by
+// `showTrackGeneric` onto the display's config; any remaining plain MST props
+// stay on the display instance. SnapshotIn can't be derived from these
+// deeply-composed models, so the accepted keys are enumerated here.
 interface DisplaySnapshot {
   // common
   height?: number
@@ -112,20 +108,20 @@ interface DisplaySnapshot {
 // existence, not snapshot-input validity or value type — value types are pinned
 // by the interface above.
 // Valid keys = every member of the display Instance types (MST props + resolved
-// getters) plus the wiggle config-override key list. The latter is the
-// authoritative source for keys whose resolved getter is named differently from
-// the config key (`autoscale`→`autoscaleType`, `defaultRendering`→
-// `renderingType`), which `keyof` the instance therefore misses — and unlike a
-// hand allow-list it also catches a config-key rename. `height` resolves fine —
-// it's the getter, and its snapshot value is migrated to `heightOverride` by
-// TrackHeightMixin's preProcessSnapshot.
+// getters) plus the wiggle config slots whose snapshot name diverges from any
+// instance member: `autoscale`/`defaultRendering` resolve through
+// divergently-named getters (`autoscaleType`/`renderingType`), and
+// `color`/`useBicolor` are config-slot-only with no getter — `showTrackGeneric`
+// routes all four onto the config, so `keyof` the instance misses them. `height`
+// resolves fine — it's the getter.
+type WiggleConfigSlotKey = 'autoscale' | 'defaultRendering' | 'color' | 'useBicolor'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
   | keyof LinearVariantDisplayModel
   | keyof LinearHicDisplayModel
   | keyof WiggleDisplayModel
-  | WiggleScoreConfigKey
+  | WiggleConfigSlotKey
 
 type AssertNever<T extends never> = T
 export type UnknownSnapshotKeys = Exclude<keyof DisplaySnapshot, DisplayKeys>

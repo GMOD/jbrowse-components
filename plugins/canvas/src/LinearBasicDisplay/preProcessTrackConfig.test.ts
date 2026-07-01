@@ -7,6 +7,11 @@ interface DisplaySnapshot {
   type?: string
   geneGlyphMode?: string
   showLabels?: unknown
+  color?: string
+  connectorColor?: string
+  utrColor?: string
+  outlineColor?: string
+  renderer?: Record<string, unknown>
 }
 interface TrackConfigSnapshot {
   type?: string
@@ -59,4 +64,44 @@ test('leaves non-canvas displays untouched', () => {
     displays: [{ type: 'SomeOtherDisplay', geneGlyphMode: 'longest' }],
   })
   expect(out.displays![0]!.geneGlyphMode).toBe('longest')
+})
+
+// v4.3.0 stored feature colors in the config under legacy color1/color2/color3/
+// outline names — the sole path to preserve an old track's colors now.
+test('renames legacy color1/color2/color3/outline config slots', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        // @ts-expect-error legacy names not on DisplaySnapshot
+        color1: 'green',
+        color2: 'gray',
+        color3: 'lightblue',
+        outline: 'black',
+      },
+    ],
+  })
+  expect(out.displays![0]).toMatchObject({
+    color: 'green',
+    connectorColor: 'gray',
+    utrColor: 'lightblue',
+    outlineColor: 'black',
+  })
+})
+
+// Pre-GPU-rewrite configs nested style slots under a `renderer` sub-config that
+// no longer exists; they lift onto the display and the renderer key is dropped.
+test('lifts style slots out of the old renderer sub-config', () => {
+  const out = evaluate({
+    type: 'FeatureTrack',
+    displays: [
+      {
+        type: 'LinearBasicDisplay',
+        renderer: { type: 'SvgFeatureRenderer', color1: 'red' },
+      },
+    ],
+  })
+  expect(out.displays![0]!.color).toBe('red')
+  expect(out.displays![0]!.renderer).toBeUndefined()
 })

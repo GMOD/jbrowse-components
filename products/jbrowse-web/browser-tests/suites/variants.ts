@@ -23,7 +23,7 @@ const overflowingMultiSampleSpec = {
           displaySnapshot: {
             type: 'LinearMultiSampleVariantDisplay',
             rowHeight: 8,
-            heightOverride: 200,
+            height: 200,
           },
         },
       ],

@@ -2,6 +2,7 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -63,7 +64,7 @@ export function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleScoreConfigMixin(['colorBy', 'minimalTicks']),
+      WiggleScoreConfigMixin(),
       types.model({
         type: types.literal('LinearManhattanDisplay'),
         /**
@@ -114,7 +115,7 @@ export function stateModelFactory(
        * resolved point color (config slot value or its override)
        */
       get color(): string {
-        return self.getConfWithOverride('color')
+        return getConf(self, 'color')
       },
       /**
        * #getter
@@ -122,7 +123,7 @@ export function stateModelFactory(
        * index SNP
        */
       get colorBy(): 'normal' | 'ld' {
-        return self.getConfWithOverride('colorBy')
+        return getConf(self, 'colorBy')
       },
       /**
        * #getter
@@ -181,7 +182,7 @@ export function stateModelFactory(
           height: self.height,
           domain: self.domain,
           scaleType: 'linear',
-          minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
+          minimalTicks: getConf(self, 'minimalTicks'),
         })
       },
       /**
@@ -315,7 +316,7 @@ export function stateModelFactory(
        * #action
        */
       setColorBy(mode: 'normal' | 'ld') {
-        self.setOverride('colorBy', mode)
+        self.configuration.setSlot('colorBy', mode)
       },
       /**
        * #action
@@ -332,7 +333,7 @@ export function stateModelFactory(
        * fetch fires.
        */
       colorByLdToHit(hit: ManhattanHit) {
-        self.setOverride('colorBy', 'ld')
+        self.configuration.setSlot('colorBy', 'ld')
         self.indexSnp = `${hit.refName}:${hit.start + 1}`
         self.indexSnpPinned = true
       },

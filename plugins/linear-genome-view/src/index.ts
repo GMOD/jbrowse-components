@@ -78,7 +78,6 @@ export type {
 export {
   BaseLinearDisplayComponent,
   BlockMsg,
-  ConfigOverrideMixin,
   DisplayChrome,
   DisplayErrorBar,
   DisplayLoadingOverlay,
@@ -100,7 +99,6 @@ export {
   fetchAllRegions,
   fetchEachRegion,
   getDisplayStr,
-  migrateOldSettingSnapshots,
   onDisplayedRegionsChange,
   resolveByteLimit,
 } from './BaseLinearDisplay/index.ts'

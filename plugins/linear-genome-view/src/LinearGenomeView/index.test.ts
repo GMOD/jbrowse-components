@@ -65,8 +65,8 @@ function initialize() {
   stubManager.addDisplayType(() => {
     const configSchema = ConfigurationSchema(
       'LinearBareDisplay',
-      {},
-      { explicitlyTyped: true },
+      { height: { type: 'number', defaultValue: 100 } },
+      { explicitIdentifier: 'displayId', explicitlyTyped: true },
     )
     return new DisplayType({
       name: 'LinearBareDisplay',
@@ -1376,8 +1376,8 @@ describe('TrackInit with display configuration', () => {
     stubManager.addDisplayType(() => {
       const configSchema = ConfigurationSchema(
         'LinearBareDisplay',
-        {},
-        { explicitlyTyped: true },
+        { height: { type: 'number', defaultValue: 100 } },
+        { explicitIdentifier: 'displayId', explicitlyTyped: true },
       )
       return new DisplayType({
         name: 'LinearBareDisplay',

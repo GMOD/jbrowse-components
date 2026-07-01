@@ -6,6 +6,7 @@ import {
 } from '@jbrowse/alignments-core'
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -704,14 +705,14 @@ export default function stateModelFactory(
       /**
        * #getter
        * The track height that fit-to-height mode divides among rows. Once the
-       * user drags, that `heightOverride` (TrackHeightMixin) wins; before any
+       * user drags, the explicit `height` config slot wins; before any
        * drag we size to show every row at the default px height, so a typical
        * alignment looks exactly like fixed mode. Huge alignments are bounded by
        * the `rowHeight` cap, not here, so this needs no cap of its own.
        */
       get fitTargetHeight(): number {
         return (
-          self.heightOverride ??
+          (getConf(self, 'height') as number | undefined) ??
           self.nrow * DEFAULTS.rowHeight + self.rowsTopOffset
         )
       },
@@ -803,14 +804,17 @@ export default function stateModelFactory(
       /**
        * #action
        * Switch to fit-to-height mode: rows stretch to fill the track height.
-       * Seeds `heightOverride` from the current content height so toggling on
+       * Seeds the `height` config slot from the current content height so toggling on
        * doesn't jump, then `rowHeight = 0` makes `effectiveRowHeight` derive
        * from it.
        */
       setFitToHeight() {
         // Seed from the current content height so toggling on never jumps,
-        // even if a prior fixed-mode drag left a stale heightOverride.
-        self.heightOverride = Math.max(self.height, minDisplayHeight)
+        // even if a prior fixed-mode drag left a stale explicit height.
+        self.configuration.setSlot(
+          'height',
+          Math.max(self.height, minDisplayHeight),
+        )
         self.rowHeight = 0
         self.scrollTop = 0
       },
@@ -827,7 +831,7 @@ export default function stateModelFactory(
       resizeHeight(distance: number) {
         const oldHeight = self.height
         const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
-        self.heightOverride = newHeight
+        self.configuration.setSlot('height', newHeight)
         if (self.rowHeight > 0) {
           self.rowHeight = (self.rowHeight * newHeight) / oldHeight
         }

@@ -1,9 +1,10 @@
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
 import {
   SimpleFeature,
   clamp,
+  getContainingTrack,
   getContainingView,
   getSession,
   openFeatureWidget,
@@ -13,10 +14,8 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
-  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
-  migrateOldSettingSnapshots,
 } from '@jbrowse/plugin-linear-genome-view'
 import {
   TreeSidebarMixin,
@@ -74,6 +73,20 @@ export function maybeApplyColorByPalette(
   )
   return undefined
 }
+
+type SetSlotFn = (slotName: string, value: unknown) => void
+
+// Config slots ported onto the *other* variant display's config when the
+// user switches display type via the track menu (see getPortableSettings).
+const PORTABLE_CONFIG_KEYS = [
+  'renderingMode',
+  'minorAlleleFrequencyFilter',
+  'showSidebarLabels',
+  'showTree',
+  'showBranchLength',
+  'referenceDrawingMode',
+  'colorBy',
+] as const
 
 // Sample-metadata keys that aren't user-facing grouping attributes — internal
 // row plumbing (identity, haplotype index, rendering color/label). Everything
@@ -217,13 +230,9 @@ function getGenotypeMapForFeature(
  *
  * #example
  * `renderingMode`, `colorBy`, and `minorAlleleFrequencyFilter` are config slots
- * (see `SharedVariantConfigSchema`) read at runtime through
- * `getConfWithOverride` — they are NOT plain MST properties. How you preset one
- * depends on whether you're writing a track *config* or a display *instance*
- * snapshot:
- *
- * In a track's `displays` array (config schema), set the slot directly to
- * change the default:
+ * (see `SharedVariantConfigSchema`) read at runtime through `getConf` and
+ * written through `self.configuration.setSlot` — they are NOT plain MST
+ * properties. Set them in a track's `displays` array to change the default:
  * ```js
  * displays: [
  *   {
@@ -232,15 +241,6 @@ function getGenotypeMapForFeature(
  *     renderingMode: 'phased',
  *   },
  * ]
- * ```
- *
- * In a display *instance* snapshot (a session / `displaySnapshot`), set it
- * flat — exactly what a saved session serializes:
- * ```js
- * {
- *   type: 'LinearMultiSampleVariantMatrixDisplay',
- *   renderingMode: 'phased',
- * }
  * ```
  */
 export default function MultiSampleVariantBaseModelF(
@@ -262,17 +262,6 @@ export default function MultiSampleVariantBaseModelF(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin([
-          'renderingMode',
-          'fetchSizeLimit',
-          'minorAlleleFrequencyFilter',
-          'showSidebarLabels',
-          'showTree',
-          'showBranchLength',
-          'referenceDrawingMode',
-          'showReferenceAlleles',
-          'colorBy',
-        ]),
         TreeSidebarMixin<Source>(),
         types.model({
           type: types.string,
@@ -308,9 +297,10 @@ export default function MultiSampleVariantBaseModelF(
           lengthCutoffFilter,
           ...cleaned
         } = snap
-        // height/heightPreConfig → heightOverride is handled centrally by
-        // TrackHeightMixin's migration, so it passes through untouched here.
-        return migrateOldSettingSnapshots(cleaned)
+        // legacy display-instance height props (`height`/`heightPreConfig`/
+        // `heightOverride`) are dropped by MST as unknown keys; the display
+        // height now lives on the `height` config slot.
+        return cleaned
       })
       .volatile(() => ({
         /**
@@ -434,7 +424,7 @@ export default function MultiSampleVariantBaseModelF(
          * Returns the effective rendering mode, falling back to config
          */
         get renderingMode(): string {
-          return self.getConfWithOverride('renderingMode')
+          return getConf(self, 'renderingMode')
         },
 
         /**
@@ -444,7 +434,7 @@ export default function MultiSampleVariantBaseModelF(
          * section; '' means no grouping.
          */
         get colorBy(): string {
-          return self.getConfWithOverride('colorBy')
+          return getConf(self, 'colorBy')
         },
 
         get featureWidgetType() {
@@ -452,9 +442,7 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         get fetchSizeLimit(): number {
-          return (
-            self.userByteSizeLimit ?? self.getConfWithOverride('fetchSizeLimit')
-          )
+          return self.userByteSizeLimit ?? getConf(self, 'fetchSizeLimit')
         },
       }))
       .actions(self => ({
@@ -552,7 +540,7 @@ export default function MultiSampleVariantBaseModelF(
          * data refetch and serializes into the session.
          */
         setColorBy(colorBy: string) {
-          self.setOverride('colorBy', colorBy)
+          self.configuration.setSlot('colorBy', colorBy)
           const sources = self.sourcesVolatile
           if (sources) {
             const colored = maybeApplyColorByPalette(colorBy, sources)
@@ -578,16 +566,16 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setMafFilter(arg: number) {
-          self.setOverride('minorAlleleFrequencyFilter', arg)
+          self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
         },
         setShowSidebarLabels(arg: boolean) {
-          self.setOverride('showSidebarLabels', arg)
+          self.configuration.setSlot('showSidebarLabels', arg)
         },
         setShowTree(arg: boolean) {
-          self.setOverride('showTree', arg)
+          self.configuration.setSlot('showTree', arg)
         },
         setShowBranchLength(arg: boolean) {
-          self.setOverride('showBranchLength', arg)
+          self.configuration.setSlot('showBranchLength', arg)
         },
         // Sets `layout` and stashes the cluster tree as pending — the tree
         // only applies once the matching cellData arrives, see `setCellData`.
@@ -606,7 +594,7 @@ export default function MultiSampleVariantBaseModelF(
             self.layout = []
             self.clusterTree = undefined
           }
-          self.setOverride('renderingMode', arg)
+          self.configuration.setSlot('renderingMode', arg)
         },
         /**
          * #action
@@ -624,7 +612,7 @@ export default function MultiSampleVariantBaseModelF(
         resizeHeight(distance: number) {
           const oldHeight = self.height
           const newHeight = Math.max(self.height + distance, 20)
-          self.heightOverride = newHeight
+          self.configuration.setSlot('height', newHeight)
           if (self.rowHeight > 0) {
             self.rowHeight = self.rowHeight * (newHeight / oldHeight)
           }
@@ -634,7 +622,7 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         setReferenceDrawingMode(arg: string) {
-          self.setOverride('referenceDrawingMode', arg)
+          self.configuration.setSlot('referenceDrawingMode', arg)
         },
       }))
       .views(self => ({
@@ -643,7 +631,7 @@ export default function MultiSampleVariantBaseModelF(
          * Returns the effective minor allele frequency filter, falling back to config
          */
         get minorAlleleFrequencyFilter(): number {
-          return self.getConfWithOverride('minorAlleleFrequencyFilter')
+          return getConf(self, 'minorAlleleFrequencyFilter')
         },
 
         /**
@@ -661,22 +649,19 @@ export default function MultiSampleVariantBaseModelF(
         },
 
         get showSidebarLabels(): boolean {
-          return self.getConfWithOverride('showSidebarLabels')
+          return getConf(self, 'showSidebarLabels')
         },
 
         get showTree(): boolean {
-          return self.getConfWithOverride('showTree')
+          return getConf(self, 'showTree')
         },
 
         get showBranchLength(): boolean {
-          return self.getConfWithOverride('showBranchLength')
+          return getConf(self, 'showBranchLength')
         },
 
         get referenceDrawingMode(): string {
-          return (
-            self.getOverride<string>('referenceDrawingMode') ??
-            (self.getConfWithOverride('showReferenceAlleles') ? 'draw' : 'skip')
-          )
+          return getConf(self, 'referenceDrawingMode')
         },
 
         /**
@@ -961,10 +946,28 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #method
+         * Called by BaseTrackModel.replaceDisplay when switching between the
+         * regular and matrix variant displays. The config-slot settings
+         * (colorBy, renderingMode, etc.) now live on each display's own
+         * config-schema node rather than a display-instance override map, so
+         * porting them means writing directly into the *target* display's
+         * config (via setSlot) rather than spreading them into the new
+         * display's instance snapshot — hence the `newDisplayId` param. Only
+         * genuine display-instance state (not config-backed) is returned for
+         * the instance-snapshot spread.
          */
-        getPortableSettings() {
+        getPortableSettings(newDisplayId?: string) {
+          if (newDisplayId) {
+            const displays = getContainingTrack(self).configuration
+              .displays as { displayId: string; setSlot: SetSlotFn }[]
+            const target = displays.find(d => d.displayId === newDisplayId)
+            if (target) {
+              for (const key of PORTABLE_CONFIG_KEYS) {
+                target.setSlot(key, getConf(self, key))
+              }
+            }
+          }
           return {
-            ...self.configOverrides,
             jexlFilters: self.jexlFilters,
             clusterTree: self.clusterTree,
             treeAreaWidth: self.treeAreaWidth,
@@ -1028,7 +1031,7 @@ export default function MultiSampleVariantBaseModelF(
           }
           return {
             adapterConfig: self.adapterConfig,
-            fetchSizeLimit: self.getConfWithOverride('fetchSizeLimit'),
+            fetchSizeLimit: getConf(self, 'fetchSizeLimit'),
             userByteSizeLimit: self.userByteSizeLimit,
             visibleBp: view.visibleBp,
           }

@@ -195,6 +195,242 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         description: 'Number of standard deviations for localsd autoscale',
         advanced: true,
       },
+      /**
+       * #slot
+       */
+      mismatchAlpha: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Fade mismatches by base quality',
+      },
+      /**
+       * #slot
+       */
+      showLowFreqMismatches: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'Show low-frequency mismatches (below the SNP-calling threshold) in the coverage track',
+      },
+      /**
+       * #slot
+       */
+      showLegend: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Show the color-scheme legend overlay',
+      },
+      /**
+       * #slot
+       */
+      sortedBy: {
+        type: 'frozen',
+        defaultValue: null,
+        description:
+          'Sort reads at a genomic position, e.g. by base, strand, or a tag (null = unsorted)',
+        advanced: true,
+      },
+      /**
+       * #slot
+       * null = auto: outline is drawn only in chain/linked-read modes. Set
+       * true/false to force it on or off regardless of mode.
+       */
+      showOutline: {
+        type: 'frozen',
+        defaultValue: null,
+        description: 'Draw an outline around each read (null = auto by mode)',
+        advanced: true,
+      },
+      /**
+       * #slot
+       */
+      linkedReads: {
+        type: 'stringEnum',
+        model: types.enumeration('LinkedReadsMode', ['off', 'normal']),
+        defaultValue: 'off',
+        description: 'Linked-read (barcode-chain) layout mode',
+      },
+      /**
+       * #slot
+       */
+      showBezierConnections: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw paired-read connection curves over the pileup',
+      },
+      /**
+       * #slot
+       */
+      showCoverage: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw the coverage histogram band',
+      },
+      /**
+       * #slot
+       */
+      showPileup: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw the stacked-read pileup band',
+      },
+      /**
+       * #slot
+       */
+      coverageHeight: {
+        type: 'number',
+        defaultValue: 45,
+        description: 'Height of the coverage band in pixels',
+      },
+      /**
+       * #slot
+       */
+      showMismatches: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw per-base mismatches on reads',
+      },
+      /**
+       * #slot
+       */
+      showInterbaseIndicators: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw interbase insertion/deletion indicators',
+      },
+      /**
+       * #slot
+       */
+      drawSingletons: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw reads whose mate is unmapped',
+      },
+      /**
+       * #slot
+       */
+      drawProperPairs: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw properly-paired reads',
+      },
+      /**
+       * #slot
+       */
+      flipStrandLongReadChains: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Flip strand coloring for reverse long-read chains',
+      },
+      /**
+       * #slot
+       */
+      colorSupplementaryChains: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'Paint paired supplementary chains a flat supplementary color',
+      },
+      /**
+       * #slot
+       */
+      drawInter: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw inter-chromosomal read-connection arcs',
+      },
+      /**
+       * #slot
+       */
+      drawLongRange: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw long-range read-connection arcs',
+      },
+      /**
+       * #slot
+       */
+      arcColorByType: {
+        type: 'stringEnum',
+        model: types.enumeration('ArcColorByType', [
+          'insertSizeAndOrientation',
+          'insertSize',
+          'orientation',
+        ]),
+        defaultValue: 'insertSizeAndOrientation',
+        description: 'How to color read-connection arcs',
+      },
+      /**
+       * #slot
+       */
+      readConnections: {
+        type: 'stringEnum',
+        model: types.enumeration('ReadConnectionsMode', [
+          'off',
+          'arc',
+          'samplot',
+        ]),
+        defaultValue: 'off',
+        description: 'Read-connection rendering mode (mate pairs + split reads)',
+      },
+      /**
+       * #slot
+       */
+      readConnectionsDown: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw read connections below the coverage band',
+      },
+      /**
+       * #slot
+       */
+      showSashimiArcs: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'Draw sashimi (splice-junction) arcs',
+      },
+      /**
+       * #slot
+       */
+      sashimiArcsMode: {
+        type: 'stringEnum',
+        model: types.enumeration('SashimiArcsMode', ['up', 'down', 'auto']),
+        defaultValue: 'up',
+        description: 'Sashimi junction-arc placement',
+      },
+      /**
+       * #slot
+       */
+      minSashimiScore: {
+        type: 'number',
+        defaultValue: 0,
+        description:
+          'Hide sashimi arcs with fewer than this many supporting reads',
+      },
+      /**
+       * #slot
+       */
+      sashimiArcsHeight: {
+        type: 'number',
+        defaultValue: 40,
+        description: 'Height of the sashimi-arc band in pixels',
+      },
+      /**
+       * #slot
+       */
+      readConnectionsHeight: {
+        type: 'number',
+        defaultValue: 40,
+        description: 'Height of the read-connection band in pixels',
+      },
+      /**
+       * #slot
+       */
+      showSoftClipping: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw soft-clipped read portions',
+      },
     },
     {
       /**

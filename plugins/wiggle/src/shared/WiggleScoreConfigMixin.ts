@@ -6,33 +6,20 @@ import {
   measureText,
 } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
-import { ConfigOverrideMixin } from '@jbrowse/plugin-linear-genome-view'
 
+import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-const WIGGLE_SCORE_CONFIG_KEYS = [
-  'posColor',
-  'negColor',
-  'bicolorPivot',
-  'scaleType',
-  'autoscale',
-  'numStdDev',
-  'scatterPointSize',
-  'summaryScoreMode',
-  'defaultRendering',
-  'minScore',
-  'maxScore',
-  'color',
-  'useBicolor',
-] as const
-
-/**
- * The wiggle-family config-override keys (the names that appear flat in a
- * display snapshot). Several resolve through divergently-named getters
- * (`autoscale`→`autoscaleType`, `defaultRendering`→`renderingType`), so this
- * list — not `keyof` the instance — is the authoritative set of valid keys.
- */
-export type WiggleScoreConfigKey = (typeof WIGGLE_SCORE_CONFIG_KEYS)[number]
+// The mixin composes onto a display that supplies `configuration`, but that
+// prop is declared by the concrete display, not here, so `self` isn't typed
+// with it. This is the shared read/write handle: `getConf` for reads,
+// `configuration.setSlot` for writes. Mirrors TrackHeightMixin's cast idiom.
+interface ConfNode {
+  configuration: AnyConfigurationModel & {
+    setSlot: (slotName: string, value: unknown) => void
+  }
+}
+const confNode = (self: unknown) => self as ConfNode
 
 /**
  * #stateModel WiggleScoreConfigMixin
@@ -43,22 +30,18 @@ export type WiggleScoreConfigKey = (typeof WIGGLE_SCORE_CONFIG_KEYS)[number]
  * WiggleCommonMixin, which composes this. Displays that own their own
  * rpcDataMap type (e.g. LinearManhattanDisplay) should compose this instead.
  */
-export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
+export function WiggleScoreConfigMixin() {
   return types
-    .compose(
-      'WiggleScoreConfigMixin',
-      ConfigOverrideMixin([...WIGGLE_SCORE_CONFIG_KEYS, ...extraKeys]),
-      types.model({
-        /**
-         * #property
-         */
-        resolution: types.stripDefault(types.number, 1),
-        /**
-         * #property
-         */
-        displayCrossHatches: types.stripDefault(types.boolean, false),
-      }),
-    )
+    .model('WiggleScoreConfigMixin', {
+      /**
+       * #property
+       */
+      resolution: types.stripDefault(types.number, 1),
+      /**
+       * #property
+       */
+      displayCrossHatches: types.stripDefault(types.boolean, false),
+    })
     .volatile(() => ({
       /**
        * #volatile
@@ -81,80 +64,80 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
        * #getter
        */
       get posColor(): string {
-        return self.getConfWithOverride('posColor')
+        return getConf(confNode(self), 'posColor')
       },
       /**
        * #getter
        */
       get negColor(): string {
-        return self.getConfWithOverride('negColor')
+        return getConf(confNode(self), 'negColor')
       },
       /**
        * #getter
        */
       get bicolorPivot(): number {
-        return self.getConfWithOverride('bicolorPivot')
+        return getConf(confNode(self), 'bicolorPivot')
       },
       /**
        * #getter
        */
       get scaleType(): string {
-        return self.getConfWithOverride('scaleType')
+        return getConf(confNode(self), 'scaleType')
       },
       /**
        * #getter
        */
       get autoscaleType(): string {
-        return self.getConfWithOverride('autoscale')
+        return getConf(confNode(self), 'autoscale')
       },
       /**
        * #getter
        */
       get numStdDev(): number {
-        return self.getConfWithOverride('numStdDev')
+        return getConf(confNode(self), 'numStdDev')
       },
       /**
        * #getter
        */
       get scatterPointSize(): number {
-        return self.getConfWithOverride('scatterPointSize')
+        return getConf(confNode(self), 'scatterPointSize')
       },
       /**
        * #getter
        */
       get summaryScoreMode(): string {
-        return self.getConfWithOverride('summaryScoreMode')
+        return getConf(confNode(self), 'summaryScoreMode')
       },
       /**
        * #getter
        */
       get renderingType(): string {
-        return self.getConfWithOverride('defaultRendering')
+        return getConf(confNode(self), 'defaultRendering')
       },
       /**
        * #getter
        */
       get minScore(): number {
-        return self.getConfWithOverride('minScore')
+        return getConf(confNode(self), 'minScore')
       },
       /**
        * #getter
        */
       get maxScore(): number {
-        return self.getConfWithOverride('maxScore')
+        return getConf(confNode(self), 'maxScore')
       },
       /**
        * #getter
        */
       get minScoreBound(): number | undefined {
-        const val: number = self.getConfWithOverride('minScore')
+        const val: number = getConf(confNode(self), 'minScore')
         return val === Number.MIN_VALUE ? undefined : val
       },
       /**
        * #getter
        */
       get maxScoreBound(): number | undefined {
-        const val: number = self.getConfWithOverride('maxScore')
+        const val: number = getConf(confNode(self), 'maxScore')
         return val === Number.MAX_VALUE ? undefined : val
       },
     }))
@@ -181,43 +164,43 @@ export function WiggleScoreConfigMixin(extraKeys: string[] = []) {
        * #action
        */
       setScaleType(scaleType: string) {
-        self.setOverride('scaleType', scaleType)
+        confNode(self).configuration.setSlot('scaleType', scaleType)
       },
       /**
        * #action
        */
       setColor(color?: string) {
-        self.setOverride('color', color)
+        confNode(self).configuration.setSlot('color', color)
       },
       /**
        * #action
        */
       setMinScore(val?: number) {
-        self.setOverride('minScore', val)
+        confNode(self).configuration.setSlot('minScore', val)
       },
       /**
        * #action
        */
       setMaxScore(val?: number) {
-        self.setOverride('maxScore', val)
+        confNode(self).configuration.setSlot('maxScore', val)
       },
       /**
        * #action
        */
       setRenderingType(type: string) {
-        self.setOverride('defaultRendering', type)
+        confNode(self).configuration.setSlot('defaultRendering', type)
       },
       /**
        * #action
        */
       setSummaryScoreMode(val: string) {
-        self.setOverride('summaryScoreMode', val)
+        confNode(self).configuration.setSlot('summaryScoreMode', val)
       },
       /**
        * #action
        */
       setAutoscale(val?: string) {
-        self.setOverride('autoscale', val)
+        confNode(self).configuration.setSlot('autoscale', val)
       },
       /**
        * #action

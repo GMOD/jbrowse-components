@@ -14,7 +14,20 @@ export default function configSchemaF(pluginManager: PluginManager) {
   // the display. The display only carries the show/hide toggles.
   return ConfigurationSchema(
     'LinearMafDisplay',
-    {},
+    {
+      /**
+       * #slot
+       * Override the base `height` slot as a nullable (`maybe`) number: unset
+       * means fit rows to their content height, an explicit value is a
+       * drag-resized track height. See the model's `fitTargetHeight` getter.
+       */
+      height: {
+        type: 'number',
+        maybe: true,
+        description: 'display height in pixels; unset fits rows to content',
+        defaultValue: undefined,
+      },
+    },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
       explicitlyTyped: true,

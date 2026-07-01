@@ -75,8 +75,8 @@ export function BaseSessionModel<
        * runtime user-preference overrides keyed by preference id, resolved by
        * `getPreference` against the `configuration.preferences` admin defaults.
        * Empty here (config-only); products that let users edit preferences load
-       * and persist these via localStorage. Mirrors the display-level
-       * `ConfigOverrideMixin`, kept off the snapshot since prefs are local UI.
+       * and persist these via localStorage. A runtime override map layered over
+       * config defaults, kept off the snapshot since prefs are local UI.
        */
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       preferencesOverrides: {} as Record<string, unknown>,

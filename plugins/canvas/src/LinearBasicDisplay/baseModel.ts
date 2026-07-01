@@ -18,7 +18,6 @@ import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
-  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
   autorunOnReadyView,
@@ -47,7 +46,6 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { createIncrementalLayout } from './layout.ts'
-import { migrateBasicSnapshot } from './migrateBasicSnapshot.ts'
 import {
   canMorph,
   captureFeatureTops,
@@ -164,22 +162,6 @@ export default function baseStateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin<LinearBasicDisplayConfigModel>([
-          'maxHeight',
-          'autoHeight',
-          'displayMode',
-          'showLabels',
-          'maxLabelFeatureDensity',
-          'showDescriptions',
-          'outlineColor',
-          'maxFeatureScreenDensity',
-          'color',
-          'utrColor',
-          'connectorColor',
-          'subfeatureLabels',
-          'geneGlyphMode',
-          'displayDirectionalChevrons',
-        ]),
         types.model({
           /**
            * #property
@@ -194,9 +176,6 @@ export default function baseStateModelFactory(
            */
           jexlFiltersSetting: types.maybe(types.array(types.string)),
         }),
-      )
-      .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-        migrateBasicSnapshot(snap),
       )
       .volatile(() => ({
         /**
@@ -282,8 +261,7 @@ export default function baseStateModelFactory(
          * #getter
          * the config typed off the concrete schema; `ConfigurationReference`
          * erases `self.configuration` to `any`, so direct reads route through
-         * this to stay typed (same move as `BaseAdapter<CONF>`). The
-         * override-aware reads use `getConfWithOverride` instead.
+         * this to stay typed (same move as `BaseAdapter<CONF>`).
          */
         get conf(): LinearBasicDisplayConfigModel {
           return self.configuration
@@ -358,28 +336,28 @@ export default function baseStateModelFactory(
          * #getter
          */
         get maxHeight() {
-          return self.getConfWithOverride('maxHeight')
+          return getConf(self, 'maxHeight')
         },
 
         /**
          * #getter
          */
         get autoHeight() {
-          return self.getConfWithOverride('autoHeight')
+          return getConf(self, 'autoHeight')
         },
 
         /**
          * #getter
          */
         get displayMode() {
-          return self.getConfWithOverride('displayMode')
+          return getConf(self, 'displayMode')
         },
 
         /**
          * #getter
          */
         get showLabelsMode() {
-          return self.getConfWithOverride('showLabels')
+          return getConf(self, 'showLabels')
         },
 
         /**
@@ -400,7 +378,7 @@ export default function baseStateModelFactory(
           }
           return (
             self.visibleFeatureDensityPerPx <=
-            self.getConfWithOverride('maxLabelFeatureDensity')
+            getConf(self, 'maxLabelFeatureDensity')
           )
         },
 
@@ -408,29 +386,28 @@ export default function baseStateModelFactory(
          * #getter
          */
         get showDescriptions() {
-          return self.getConfWithOverride('showDescriptions')
+          return getConf(self, 'showDescriptions')
         },
 
         /**
          * #getter
          */
         get showOutline() {
-          return !!self.getConfWithOverride('outlineColor')
+          return !!getConf(self, 'outlineColor')
         },
 
         /**
          * #getter
          */
-        // Solid color for the picker swatch. Reflects the runtime override
-        // only, falling back to the default color constant when there's no
-        // override or the override is a jexl expression (per-feature coloring —
-        // jexl strings aren't valid CSS colors). The config `color` slot is
-        // intentionally not read here: it may itself be a jexl callback, and
-        // evaluating it without a feature would throw.
+        // Solid color for the picker swatch. Reads the raw config `color`
+        // slot value directly (self.conf.color, not getConf) so an unset or
+        // jexl-expression color doesn't get evaluated without a feature —
+        // jexl strings aren't valid CSS colors anyway, so they fall back to
+        // the default swatch same as unset.
         get featureColor() {
-          const override = self.getOverride<string>('color')
-          return override !== undefined && !override.startsWith('jexl:')
-            ? override
+          const raw = self.conf.color
+          return raw !== undefined && !raw.startsWith('jexl:')
+            ? raw
             : FEATURE_COLOR_DEFAULT
         },
 
@@ -438,7 +415,7 @@ export default function baseStateModelFactory(
          * #getter
          */
         get utrColor() {
-          return self.getConfWithOverride('utrColor')
+          return getConf(self, 'utrColor')
         },
 
         /**
@@ -446,14 +423,15 @@ export default function baseStateModelFactory(
          */
         // Which "Color by..." choice is active, so the track menu can show a
         // radio checkmark. 'strand' is the exact built-in jexl; any other jexl
-        // override is a per-attribute expression; anything else (no override or
-        // a solid color) reads as the default solid mode.
+        // value is a per-attribute expression; anything else (a solid color)
+        // reads as the default solid mode. Reads the raw slot value (not
+        // getConf) — same jexl-without-a-feature hazard as featureColor.
         get colorByMode(): 'strand' | 'attribute' | 'solid' {
-          const override = self.getOverride<string>('color')
-          if (override === STRAND_COLOR_JEXL) {
+          const raw = self.conf.color
+          if (raw === STRAND_COLOR_JEXL) {
             return 'strand'
           }
-          return override?.startsWith('jexl:') ? 'attribute' : 'solid'
+          return raw?.startsWith('jexl:') ? 'attribute' : 'solid'
         },
 
         /**
@@ -466,8 +444,8 @@ export default function baseStateModelFactory(
           if (this.colorByMode !== 'attribute') {
             return ''
           }
-          const override = self.getOverride<string>('color') ?? ''
-          return /get\(feature,'([^']+)'\)/.exec(override)?.[1] ?? ''
+          const raw = self.conf.color ?? ''
+          return /get\(feature,'([^']+)'\)/.exec(raw)?.[1] ?? ''
         },
 
         /**
@@ -506,8 +484,7 @@ export default function baseStateModelFactory(
             return undefined
           }
           return (
-            self.userFeatureDensityLimit ??
-            self.getConfWithOverride('maxFeatureScreenDensity')
+            self.userFeatureDensityLimit ?? getConf(self, 'maxFeatureScreenDensity')
           )
         },
 
@@ -606,10 +583,7 @@ export default function baseStateModelFactory(
             showDescriptions: _d,
             displayMode: _dm,
             ...rest
-          } = {
-            ...getConfSnapshot(self.configuration),
-            ...self.configOverrides,
-          }
+          } = getConfSnapshot(self.configuration)
           return {
             // jexlFilters carries the effective runtime filters (mirrors the
             // effectiveGeneGlyphMode substitution in the concrete model); reading
@@ -1156,14 +1130,14 @@ export default function baseStateModelFactory(
          * #action
          */
         setShowLabels(value: ShowLabelsMode) {
-          self.setOverride('showLabels', value)
+          self.configuration.setSlot('showLabels', value)
         },
 
         /**
          * #action
          */
         setAutoHeight(value: boolean) {
-          self.setOverride('autoHeight', value)
+          self.configuration.setSlot('autoHeight', value)
           if (value) {
             // The manual expand/restore state is meaningless once auto-fit
             // drives the height; drop it so a later disable doesn't surface a
@@ -1176,7 +1150,7 @@ export default function baseStateModelFactory(
          * #action
          */
         setShowDescriptions(value: boolean) {
-          self.setOverride('showDescriptions', value)
+          self.configuration.setSlot('showDescriptions', value)
         },
 
         /**
@@ -1195,24 +1169,27 @@ export default function baseStateModelFactory(
         setShowOutline(value: boolean) {
           // THEME_DERIVED_COLOR sentinel: the worker resolves it to a
           // theme-appropriate outline so it stays visible on dark tracks too.
-          self.setOverride('outlineColor', value ? THEME_DERIVED_COLOR : '')
+          self.configuration.setSlot(
+            'outlineColor',
+            value ? THEME_DERIVED_COLOR : '',
+          )
         },
 
         /**
          * #action
          */
-        // undefined clears the override (restores the config default, which may
-        // be a per-feature jexl color); a string sets a solid color for all
+        // undefined resets to the slot's config default (which may be a
+        // per-feature jexl color); a string sets a solid color for all
         // features. Flows to the worker via rpcProps -> displayConfig.color.
         setFeatureColor(color?: string) {
-          self.setOverride('color', color)
+          self.configuration.setSlot('color', color)
         },
 
         /**
          * #action
          */
         setUtrColor(color?: string) {
-          self.setOverride('utrColor', color)
+          self.configuration.setSlot('utrColor', color)
         },
 
         /**

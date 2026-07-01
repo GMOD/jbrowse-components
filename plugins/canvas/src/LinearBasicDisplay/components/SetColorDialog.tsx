@@ -4,8 +4,8 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // Simple solid-color picker for canvas feature displays. The headline "make
-// this track blue" case sets color1; UTR color (color3) is exposed for
-// gene/transcript tracks. Per-feature jexl coloring still lives in the config.
+// this track blue" case sets `color`; UTR color is exposed for gene/transcript
+// tracks. Per-feature jexl coloring still lives in the config.
 const SetColorDialog = observer(function SetColorDialog({
   model,
   handleClose,

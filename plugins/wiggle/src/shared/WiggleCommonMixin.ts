@@ -16,8 +16,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
  * that own a different rpcDataMap type should compose WiggleScoreConfigMixin
  * directly instead.
  */
-export function WiggleCommonMixin(extraKeys: string[] = []) {
-  return WiggleScoreConfigMixin(extraKeys)
+export function WiggleCommonMixin() {
+  return WiggleScoreConfigMixin()
     .volatile(() => ({
       /**
        * #volatile

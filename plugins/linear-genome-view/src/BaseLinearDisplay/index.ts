@@ -11,10 +11,6 @@ export { default as DisplayChrome } from './components/DisplayChrome.tsx'
 export type { ChromeModel } from './components/DisplayChrome.tsx'
 export { default as DisplayErrorBar } from './components/DisplayErrorBar.tsx'
 export { default as DisplayLoadingOverlay } from './components/DisplayLoadingOverlay.tsx'
-export {
-  default as ConfigOverrideMixin,
-  migrateOldSettingSnapshots,
-} from './models/ConfigOverrideMixin.ts'
 export { default as TrackHeightMixin } from './models/TrackHeightMixin.tsx'
 export { MIN_DISPLAY_HEIGHT } from './models/const.ts'
 

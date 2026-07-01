@@ -132,6 +132,39 @@ export default ConfigurationSchema(
       defaultValue: 'multirowxy',
       description: 'Default rendering type',
     },
+    /**
+     * #slot
+     */
+    minimalTicks: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw only the min/max Y-axis ticks',
+      advanced: true,
+    },
+    /**
+     * #slot
+     */
+    showTree: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'Show the subtrack clustering tree in the sidebar',
+    },
+    /**
+     * #slot
+     */
+    showBranchLength: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw the clustering tree with branch lengths',
+    },
+    /**
+     * #slot
+     */
+    showRowSeparators: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw separator lines between subtrack rows',
+    },
   },
   {
     explicitlyTyped: true,

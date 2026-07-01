@@ -46,8 +46,11 @@ function renameLegacyColorKeys(
   return result
 }
 
-// Back-compat for the display *config* snapshot (vs migrateBasicSnapshot below,
-// which handles the display *state model* snapshot). Does three things:
+// Back-compat for the display *config* snapshot. This is where every legacy
+// feature-display setting now lands: v4.3.0 stored colors/labels/glyph mode in
+// the config (the `renderer` sub-config), so migrating them here is sufficient.
+// (Old per-display-instance track-menu tweaks — `trackShowLabels` etc. — are
+// simply ignored on load; they revert to the config value.) Does three things:
 //   - lifts color/label/glyph settings out of the old `renderer` sub-config
 //     that the GPU rewrite removed
 //   - renames the legacy color1/color2/color3/outline slots to
@@ -67,74 +70,4 @@ export function migrateBasicConfigSnapshot(snap: Record<string, unknown>) {
     result.displayMode = normalizeDisplayMode(result.displayMode)
   }
   return result
-}
-
-// Migrate legacy snapshot shapes: strip removed fields and promote old
-// per-property `track<Setting>` values to flat config keys.
-// (height/heightPreConfig → heightOverride is handled centrally by
-// TrackHeightMixin's migration, so height passes through here.)
-export function migrateBasicSnapshot(
-  snap: Record<string, unknown> | undefined,
-) {
-  if (!snap) {
-    return snap
-  }
-  const {
-    blockState,
-    showLegend,
-    showTooltips,
-    // userBpPerPxLimit was from FeatureDensityMixin, which canvas no longer
-    // composes; strip it so MST doesn't see an unknown property.
-    userBpPerPxLimit,
-    trackShowLabels,
-    trackShowDescriptions,
-    trackSubfeatureLabels,
-    trackGeneGlyphMode,
-    trackDisplayMode,
-    trackDisplayDirectionalChevrons,
-    // Color set via a state-model snapshot (e.g. a URL `displaySnapshot` or a
-    // session) lands here, not on the config schema, so route it into the
-    // override map. Accept both the new names and the legacy color1/2/3; new
-    // wins.
-    color,
-    color1,
-    color2,
-    color3,
-    connectorColor,
-    utrColor,
-    outline,
-    outlineColor,
-    ...rest
-  } = snap
-
-  const migrated: Record<string, unknown> = {}
-  const set = (key: string, val: unknown) => {
-    if (val !== undefined) {
-      migrated[key] = val
-    }
-  }
-
-  set('color', color ?? color1)
-  set('connectorColor', connectorColor ?? color2)
-  set('utrColor', utrColor ?? color3)
-  set('outlineColor', outlineColor ?? outline)
-  // conversion functions must only be called when the value is present
-  if (trackShowLabels !== undefined) {
-    set('showLabels', legacyShowLabelsToMode(trackShowLabels))
-  }
-  set('showDescriptions', trackShowDescriptions)
-  set('subfeatureLabels', trackSubfeatureLabels)
-  if (trackGeneGlyphMode !== undefined) {
-    set('geneGlyphMode', legacyGeneGlyphMode(trackGeneGlyphMode))
-  }
-  set('displayMode', trackDisplayMode)
-  set('displayDirectionalChevrons', trackDisplayDirectionalChevrons)
-
-  // `rest` carries a flat displayMode override (ConfigOverrideMixin serializes
-  // it flat); normalize removed enum values it may still hold.
-  if (rest.displayMode !== undefined) {
-    rest.displayMode = normalizeDisplayMode(rest.displayMode)
-  }
-
-  return { ...rest, ...migrated }
 }

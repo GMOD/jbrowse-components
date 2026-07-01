@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 import { baseLinearDisplayConfigSchema } from '@jbrowse/plugin-linear-genome-view'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -49,6 +50,27 @@ const HicTrackConfigFactory = () => {
         type: 'number',
         defaultValue: 300,
         description: 'default height for the Hi-C track',
+      },
+      /**
+       * #slot
+       */
+      colorScheme: {
+        type: 'stringEnum',
+        model: types.enumeration('HicColorScheme', [
+          'fall',
+          'juicebox',
+          'viridis',
+        ]),
+        defaultValue: 'juicebox',
+        description: 'color ramp used to render contact intensity',
+      },
+      /**
+       * #slot
+       */
+      showLegend: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'show the color scale legend',
       },
     },
     {

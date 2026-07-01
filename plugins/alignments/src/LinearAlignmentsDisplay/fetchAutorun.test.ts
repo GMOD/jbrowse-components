@@ -835,7 +835,7 @@ describe('FetchVisibleRegions autorun', () => {
 
     const callsBefore = mockRpcCall.mock.calls.length
     // Non-tag sort types relayout in place from existing data.
-    display.setOverride('sortedBy', {
+    display.configuration.setSlot('sortedBy', {
       type: 'Start Location',
       pos: 5000,
       refName: 'ctgA',
@@ -858,7 +858,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setOverride('sortedBy', {
+    display.configuration.setSlot('sortedBy', {
       type: 'tag',
       pos: 5000,
       refName: 'ctgA',
@@ -878,7 +878,7 @@ describe('FetchVisibleRegions autorun', () => {
     mockRpcCall.mockResolvedValue(makeEmptyGroupedData())
     const { display } = createDisplay()
 
-    display.setOverride('sortedBy', {
+    display.configuration.setSlot('sortedBy', {
       type: 'tag',
       pos: 5000,
       refName: 'ctgA',
@@ -894,7 +894,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Moving the sort position within the same tag sort re-runs main-
     // thread layout via laidOutPileupMap; the worker data (per-read tag
     // values) is unchanged.
-    display.setOverride('sortedBy', {
+    display.configuration.setSlot('sortedBy', {
       type: 'tag',
       pos: 6000,
       refName: 'ctgA',

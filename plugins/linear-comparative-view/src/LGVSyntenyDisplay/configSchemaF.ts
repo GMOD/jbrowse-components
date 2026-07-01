@@ -69,6 +69,17 @@ function configSchemaF(pluginManager: PluginManager) {
         type: 'string',
         defaultValue: 'jexl:lgvSyntenyTooltip(feature)',
       },
+      /**
+       * #slot
+       * Synteny reads are strand-colored by default (vs the base alignments
+       * display's `normal`); overrides the inherited `colorBy` slot's default.
+       */
+      colorBy: {
+        type: 'frozen',
+        defaultValue: { type: 'strand' },
+        description: 'Color scheme for synteny reads',
+        advanced: true,
+      },
     },
     {
       /**

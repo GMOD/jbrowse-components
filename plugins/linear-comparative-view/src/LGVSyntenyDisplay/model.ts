@@ -21,7 +21,6 @@ import { findVisibleBlockForFeature } from './components/util.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Feature } from '@jbrowse/core/util'
-import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const LaunchSyntenyViewDialog = lazy(
@@ -100,12 +99,6 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           openFeatureWidget(self, feature.toJSON(), {
             widget: self.featureWidgetType,
           })
-        },
-        afterCreate() {
-          const alignSelf = self as unknown as LinearAlignmentsDisplayModel
-          if (!alignSelf.getOverride('colorBy')) {
-            alignSelf.setColorScheme({ type: 'strand' })
-          }
         },
       }))
       .views(self => ({

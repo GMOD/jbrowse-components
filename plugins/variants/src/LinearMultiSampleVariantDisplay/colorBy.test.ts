@@ -3,9 +3,9 @@ import { readConfObject } from '@jbrowse/core/configuration'
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
-// Runtime "Color samples by" wiring: setColorBy records a colorBy override and
-// recolors the sample rows (persisted as `layout`); colorByAttributes lists the
-// samplesTsv metadata keys the user can group by.
+// Runtime "Color samples by" wiring: setColorBy writes colorBy directly onto
+// the display's config and recolors the sample rows (persisted as `layout`);
+// colorByAttributes lists the samplesTsv metadata keys the user can group by.
 describe('multi-sample variant colorBy', () => {
   const sources = [
     { name: 'HG001', population: 'EUR', sex: 'M' },
@@ -31,13 +31,13 @@ describe('multi-sample variant colorBy', () => {
     )
   })
 
-  it('colors rows by attribute and records the override', () => {
+  it('colors rows by attribute and writes it onto the config', () => {
     const model = makeModel()
     model.setSources(sources)
     model.setColorBy('population')
 
     expect(model.colorBy).toBe('population')
-    expect(readConfObject(model.configuration, 'colorBy')).toBe('')
+    expect(readConfObject(model.configuration, 'colorBy')).toBe('population')
     // same population => same color, different => different
     const byName = Object.fromEntries(model.layout.map(s => [s.name, s.color]))
     expect(byName.HG001).toBe(byName.HG003)

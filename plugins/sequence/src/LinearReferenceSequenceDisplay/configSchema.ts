@@ -30,6 +30,18 @@ import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
 export const configSchema = ConfigurationSchema(
   'LinearReferenceSequenceDisplay',
-  {},
+  {
+    /**
+     * #slot
+     * explicit display height (e.g. from a drag-resize); unset means auto-fit to
+     * the zoom-aware computed height. See the model's `height` getter.
+     */
+    height: {
+      type: 'number',
+      maybe: true,
+      description: 'display height in pixels; unset auto-fits to the sequence',
+      defaultValue: undefined,
+    },
+  },
   { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )

@@ -19,7 +19,6 @@ import {
 } from '@jbrowse/core/util'
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  ConfigOverrideMixin,
   MultiRegionDisplayMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
@@ -80,7 +79,6 @@ import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
 import type { ReadColorCategory } from './colorUtils.ts'
-import type { LinearAlignmentsDisplayConfigModel } from './configSchema.ts'
 import type {
   LinkedReadsMode,
   ReadConnectionsMode,
@@ -122,12 +120,6 @@ import type {
 type LGV = LinearGenomeViewModel
 
 export type { ArcColorByType } from '../shared/types'
-
-const arcColorByTypes = types.enumeration<ArcColorByType>('ArcColorByType', [
-  'insertSizeAndOrientation',
-  'insertSize',
-  'orientation',
-])
 
 export {
   getInsertionType,
@@ -305,40 +297,12 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
-        ConfigOverrideMixin<
-          LinearAlignmentsDisplayConfigModel,
-          // override-only keys (read via getOverride, no config-slot fallback)
-          | 'mismatchAlpha'
-          | 'showLowFreqMismatches'
-          | 'showLegend'
-          | 'sortedBy'
-          | 'showOutline'
-        >([
-          'scaleType',
-          'autoscale',
-          'minScore',
-          'maxScore',
-          'numStdDev',
-          'colorBy',
-          'filterBy',
-          'featureHeight',
-          'featureSpacing',
-          'maxHeight',
-          'mismatchAlpha',
-          'showLowFreqMismatches',
-          'showLegend',
-          'sortedBy',
-          'groupBy',
-          'readConnectionsLineWidth',
-          'showSashimiLabels',
-          'showOutline',
-        ]),
-        // Settings split two ways (see CLAUDE.md §"Settings: storage +
-        // invalidation tiers"): "display options" (colorBy, filterBy, sortedBy,
-        // showOutline, …) are config overrides so a config default can be added
-        // later with no code change; the plain MST fields below are the
+        // Track-menu settings are config slots (read via getConf, written via
+        // configuration.setSlot) so an edit survives hide/retick and a config
+        // default can be set declaratively. The plain MST fields below are the
         // remaining toggles. Each setting also has a refetch/relayout/render
-        // blast radius documented there.
+        // blast radius documented in CLAUDE.md §"Settings: storage +
+        // invalidation tiers".
         types.model({
           /**
            * #property
@@ -348,138 +312,104 @@ export default function stateModelFactory(
            * #property
            */
           configuration: ConfigurationReference(configSchema),
-          /**
-           * #property
-           */
-          linkedReads: types.stripDefault(
-            types.enumeration<LinkedReadsMode>('LinkedReadsMode', [
-              'off',
-              'normal',
-            ]),
-            'off',
-          ),
-          /**
-           * #property
-           * Draw paired-read connection curves (bezier overlay + GPU
-           * straight lines for normal pairs). Orthogonal to `linkedReads`
-           * layout, so curves work over an ordinary pileup or chain layout.
-           */
-          showBezierConnections: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           */
-          showCoverage: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           * Draw the stacked-read pileup band. Turn off to keep only the
-           * coverage histogram and read-connection arcs (the pileup band
-           * collapses to zero height), e.g. an arcs-only structural-variant view.
-           */
-          showPileup: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          coverageHeight: types.stripDefault(types.number, 45),
-          /**
-           * #property
-           */
-          showMismatches: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          showInterbaseIndicators: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          drawSingletons: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          drawProperPairs: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          flipStrandLongReadChains: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           * Opt-in legacy behavior: paint paired supplementary chains a flat
-           * supplementary color instead of keeping their pair-orientation color.
-           */
-          colorSupplementaryChains: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           */
-          drawInter: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          drawLongRange: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           */
-          arcColorByType: types.stripDefault(
-            arcColorByTypes,
-            'insertSizeAndOrientation',
-          ),
-          /**
-           * #property
-           * read-connection rendering mode (mate pairs + split reads),
-           * orthogonal to direction
-           */
-          readConnections: types.stripDefault(
-            types.enumeration<ReadConnectionsMode>('ReadConnectionsMode', [
-              'off',
-              'arc',
-              'samplot',
-            ]),
-            'off',
-          ),
-          /**
-           * #property
-           * draw read connections below the coverage band instead of over it
-           */
-          readConnectionsDown: types.stripDefault(types.boolean, false),
-          /**
-           * #property
-           */
-          showSashimiArcs: types.stripDefault(types.boolean, true),
-          /**
-           * #property
-           * sashimi junction-arc placement, decoupled from the paired-end arc
-           * direction: 'up' over coverage, 'down' in a reserved strip below it,
-           * 'auto' splits arcs both ways to minimize overlap
-           */
-          sashimiArcsMode: types.stripDefault(
-            types.enumeration<SashimiArcsMode>('SashimiArcsMode', [
-              'up',
-              'down',
-              'auto',
-            ]),
-            'up',
-          ),
-          /**
-           * #property
-           * hide sashimi junction arcs with fewer than this many supporting
-           * reads (0 shows all)
-           */
-          minSashimiScore: types.stripDefault(types.number, 0),
-          /**
-           * #property
-           */
-          sashimiArcsHeight: types.stripDefault(types.number, 40),
-          /**
-           * #property
-           */
-          readConnectionsHeight: types.stripDefault(types.number, 40),
-          /**
-           * #property
-           */
-          showSoftClipping: types.stripDefault(types.boolean, false),
         }),
       )
       .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
         migrateAlignmentsSnapshot(snap),
       )
+      // Track-menu toggles resolved from config slots (thin getters keep every
+      // read site as `self.x`; setters write via configuration.setSlot). Config
+      // slots persist across hide/retick (#5591), unlike the old MST props.
+      .views(self => ({
+        /** #getter */
+        get linkedReads(): LinkedReadsMode {
+          return getConf(self, 'linkedReads')
+        },
+        /** #getter */
+        get showBezierConnections(): boolean {
+          return getConf(self, 'showBezierConnections')
+        },
+        /** #getter */
+        get showCoverage(): boolean {
+          return getConf(self, 'showCoverage')
+        },
+        /** #getter */
+        get showPileup(): boolean {
+          return getConf(self, 'showPileup')
+        },
+        /** #getter */
+        get coverageHeight(): number {
+          return getConf(self, 'coverageHeight')
+        },
+        /** #getter */
+        get showMismatches(): boolean {
+          return getConf(self, 'showMismatches')
+        },
+        /** #getter */
+        get showInterbaseIndicators(): boolean {
+          return getConf(self, 'showInterbaseIndicators')
+        },
+        /** #getter */
+        get drawSingletons(): boolean {
+          return getConf(self, 'drawSingletons')
+        },
+        /** #getter */
+        get drawProperPairs(): boolean {
+          return getConf(self, 'drawProperPairs')
+        },
+        /** #getter */
+        get flipStrandLongReadChains(): boolean {
+          return getConf(self, 'flipStrandLongReadChains')
+        },
+        /** #getter */
+        get colorSupplementaryChains(): boolean {
+          return getConf(self, 'colorSupplementaryChains')
+        },
+        /** #getter */
+        get drawInter(): boolean {
+          return getConf(self, 'drawInter')
+        },
+        /** #getter */
+        get drawLongRange(): boolean {
+          return getConf(self, 'drawLongRange')
+        },
+        /** #getter */
+        get arcColorByType(): ArcColorByType {
+          return getConf(self, 'arcColorByType')
+        },
+        /** #getter */
+        get readConnections(): ReadConnectionsMode {
+          return getConf(self, 'readConnections')
+        },
+        /** #getter */
+        get readConnectionsDown(): boolean {
+          return getConf(self, 'readConnectionsDown')
+        },
+        /** #getter */
+        get showSashimiArcs(): boolean {
+          return getConf(self, 'showSashimiArcs')
+        },
+        /** #getter */
+        get sashimiArcsMode(): SashimiArcsMode {
+          return getConf(self, 'sashimiArcsMode')
+        },
+        /** #getter */
+        get minSashimiScore(): number {
+          return getConf(self, 'minSashimiScore')
+        },
+        /** #getter */
+        get sashimiArcsHeight(): number {
+          return getConf(self, 'sashimiArcsHeight')
+        },
+        /** #getter */
+        get readConnectionsHeight(): number {
+          return getConf(self, 'readConnectionsHeight')
+        },
+        /** #getter */
+        get showSoftClipping(): boolean {
+          return getConf(self, 'showSoftClipping')
+        },
+      }))
       .volatile(() => {
         // typed local so the empty record isn't inferred as `{}` (a type assertion
         // here gets stripped by no-unnecessary-type-assertion)
@@ -614,45 +544,45 @@ export default function stateModelFactory(
          * #getter
          */
         get scaleType() {
-          return self.getConfWithOverride('scaleType')
+          return getConf(self,'scaleType')
         },
         /**
          * #getter
          */
         get autoscaleType() {
-          return self.getConfWithOverride('autoscale')
+          return getConf(self,'autoscale')
         },
         /**
          * #getter
          */
         get minScore() {
-          return self.getConfWithOverride('minScore')
+          return getConf(self,'minScore')
         },
         /**
          * #getter
          */
         get maxScore() {
-          return self.getConfWithOverride('maxScore')
+          return getConf(self,'maxScore')
         },
         /**
          * #getter
          */
         get minScoreBound() {
-          const v = self.getConfWithOverride('minScore')
+          const v = getConf(self,'minScore')
           return v !== Number.MIN_VALUE ? v : undefined
         },
         /**
          * #getter
          */
         get maxScoreBound() {
-          const v = self.getConfWithOverride('maxScore')
+          const v = getConf(self,'maxScore')
           return v !== Number.MAX_VALUE ? v : undefined
         },
         /**
          * #getter
          */
         get numStdDev() {
-          return self.getConfWithOverride('numStdDev')
+          return getConf(self,'numStdDev')
         },
       }))
       .views(self => ({
@@ -695,35 +625,35 @@ export default function stateModelFactory(
          * #getter
          */
         get colorBy(): ColorBy {
-          return self.getConfWithOverride('colorBy')
+          return getConf(self,'colorBy')
         },
 
         /**
          * #getter
          */
         get filterBy(): FilterBy {
-          return self.getConfWithOverride('filterBy')
+          return getConf(self,'filterBy')
         },
 
         /**
          * #getter
          */
         get featureHeight() {
-          return self.getConfWithOverride('featureHeight')
+          return getConf(self,'featureHeight')
         },
 
         /**
          * #getter
          */
         get featureSpacing() {
-          return self.getConfWithOverride('featureSpacing')
+          return getConf(self,'featureSpacing')
         },
 
         /**
          * #getter
          */
         get maxHeight() {
-          return self.getConfWithOverride('maxHeight')
+          return getConf(self,'maxHeight')
         },
 
         /**
@@ -732,7 +662,7 @@ export default function stateModelFactory(
          * (config slot `showSashimiLabels`, overridable from the track menu).
          */
         get showSashimiLabels() {
-          return self.getConfWithOverride('showSashimiLabels')
+          return getConf(self,'showSashimiLabels')
         },
 
         /**
@@ -746,14 +676,14 @@ export default function stateModelFactory(
          * #getter
          */
         get mismatchAlpha() {
-          return !!self.getOverride<boolean>('mismatchAlpha')
+          return !!getConf(self,'mismatchAlpha')
         },
 
         /**
          * #getter
          */
         get showLowFreqMismatches() {
-          return !!self.getOverride<boolean>('showLowFreqMismatches')
+          return !!getConf(self,'showLowFreqMismatches')
         },
 
         /**
@@ -764,14 +694,14 @@ export default function stateModelFactory(
           // color scheme (including modifications) and shown only on demand via
           // the "Show legend" track-menu item, rather than eagerly covering the
           // top of every alignments track.
-          return self.getOverride<boolean>('showLegend') ?? false
+          return getConf(self,'showLegend') ?? false
         },
 
         /**
          * #getter
          */
-        get sortedBy() {
-          return self.getOverride<SortedBy>('sortedBy')
+        get sortedBy(): SortedBy | undefined {
+          return getConf(self, 'sortedBy') ?? undefined
         },
 
         /**
@@ -782,7 +712,7 @@ export default function stateModelFactory(
          * one fetch into N sections.
          */
         get groupBy(): GroupBy | undefined {
-          return self.getConfWithOverride('groupBy') ?? undefined
+          return getConf(self,'groupBy') ?? undefined
         },
 
         /**
@@ -1196,7 +1126,7 @@ export default function stateModelFactory(
          * #getter
          */
         get readConnectionsLineWidth() {
-          return self.getConfWithOverride('readConnectionsLineWidth')
+          return getConf(self,'readConnectionsLineWidth')
         },
 
         /**
@@ -1403,7 +1333,7 @@ export default function stateModelFactory(
          * #getter
          */
         get showOutline() {
-          return self.getOverride<boolean>('showOutline') ?? self.isChainMode
+          return getConf(self,'showOutline') ?? self.isChainMode
         },
 
         /**
@@ -1702,12 +1632,12 @@ export default function stateModelFactory(
           }
         }
         function setShowSashimiArcs(show: boolean) {
-          self.showSashimiArcs = show
+          self.configuration.setSlot('showSashimiArcs', show)
           // Sashimi only renders over the coverage band, so making it visible
           // requires coverage. Keep this invariant here, not in the menu
           // handler, so it holds for every caller.
           if (show) {
-            self.showCoverage = true
+            self.configuration.setSlot('showCoverage', true)
           }
         }
         // Clamp the Y scroll back inside the (possibly shrunken) content after a
@@ -1825,11 +1755,11 @@ export default function stateModelFactory(
            * #action
            */
           setColorScheme(colorBy: ColorBy) {
-            const current = self.getOverride<ColorBy>('colorBy')
+            const current = getConf(self,'colorBy')
             if (colorBy.type !== 'tag' || colorBy.tag !== current?.tag) {
               self.colorTagMap = {}
             }
-            self.setOverride('colorBy', colorBy)
+            self.configuration.setSlot('colorBy', colorBy)
           },
 
           /**
@@ -1852,30 +1782,30 @@ export default function stateModelFactory(
            * #action
            */
           setFilterBy(filterBy: FilterBy) {
-            self.setOverride('filterBy', filterBy)
+            self.configuration.setSlot('filterBy', filterBy)
           },
 
           /**
            * #action
            */
           setShowOutline(show: boolean | undefined) {
-            self.setOverride('showOutline', show)
+            self.configuration.setSlot('showOutline', show)
           },
 
           /**
            * #action
            */
           toggleSoftClipping() {
-            self.showSoftClipping = !self.showSoftClipping
+            self.configuration.setSlot('showSoftClipping', !self.showSoftClipping)
           },
 
           /**
            * #action
            */
           toggleMismatchAlpha() {
-            self.setOverride(
+            self.configuration.setSlot(
               'mismatchAlpha',
-              !self.getOverride<boolean>('mismatchAlpha'),
+              !getConf(self,'mismatchAlpha'),
             )
           },
 
@@ -1883,7 +1813,7 @@ export default function stateModelFactory(
            * #action
            */
           toggleShowLowFreqMismatches() {
-            self.setOverride(
+            self.configuration.setSlot(
               'showLowFreqMismatches',
               !self.showLowFreqMismatches,
             )
@@ -1900,7 +1830,7 @@ export default function stateModelFactory(
             // it and produce a sensible layout without a center line.
             const needsPos = type !== 'position' && type !== 'strand'
             if (centerLineInfo && centerLineInfo.offset >= 0) {
-              self.setOverride('sortedBy', {
+              self.configuration.setSlot('sortedBy', {
                 type,
                 pos: Math.round(centerLineInfo.offset),
                 refName: centerLineInfo.refName,
@@ -1915,7 +1845,7 @@ export default function stateModelFactory(
             } else {
               const assemblyName = view.assemblyNames[0]
               if (assemblyName) {
-                self.setOverride('sortedBy', {
+                self.configuration.setSlot('sortedBy', {
                   type,
                   pos: -1,
                   refName: '',
@@ -1933,7 +1863,7 @@ export default function stateModelFactory(
             const view = getContainingView(self) as LGV
             const assemblyName = view.assemblyNames[0]
             if (assemblyName) {
-              self.setOverride('sortedBy', {
+              self.configuration.setSlot('sortedBy', {
                 type,
                 pos,
                 refName,
@@ -1951,7 +1881,7 @@ export default function stateModelFactory(
            * #action
            */
           clearSortedBy() {
-            self.clearOverride('sortedBy')
+            self.configuration.setSlot('sortedBy', null)
           },
 
           /**
@@ -1964,7 +1894,7 @@ export default function stateModelFactory(
            * `groupBy` default rather than falling back to it.
            */
           setGroupBy(groupBy?: GroupBy) {
-            self.setOverride('groupBy', groupBy ?? null)
+            self.configuration.setSlot('groupBy', groupBy ?? null)
             self.collapsedGroups.clear()
             self.groupMaxHeightOverrides.clear()
             self.scrollTop = 0
@@ -2036,35 +1966,35 @@ export default function stateModelFactory(
            * #action
            */
           setScaleType(val: string) {
-            self.setOverride('scaleType', val)
+            self.configuration.setSlot('scaleType', val)
           },
 
           /**
            * #action
            */
           setAutoscale(val?: string) {
-            self.setOverride('autoscale', val)
+            self.configuration.setSlot('autoscale', val)
           },
 
           /**
            * #action
            */
           setMinScore(val?: number) {
-            self.setOverride('minScore', val)
+            self.configuration.setSlot('minScore', val)
           },
 
           /**
            * #action
            */
           setMaxScore(val?: number) {
-            self.setOverride('maxScore', val)
+            self.configuration.setSlot('maxScore', val)
           },
 
           /**
            * #action
            */
           setFeatureHeight(height?: number) {
-            self.setOverride('featureHeight', height)
+            self.configuration.setSlot('featureHeight', height)
             self.scrollTop = 0
           },
 
@@ -2072,7 +2002,7 @@ export default function stateModelFactory(
            * #action
            */
           setFeatureSpacing(spacing?: number) {
-            self.setOverride('featureSpacing', spacing)
+            self.configuration.setSlot('featureSpacing', spacing)
             self.scrollTop = 0
           },
 
@@ -2080,7 +2010,7 @@ export default function stateModelFactory(
            * #action
            */
           setMaxHeight(height?: number) {
-            self.setOverride('maxHeight', height)
+            self.configuration.setSlot('maxHeight', height)
             self.scrollTop = 0
           },
 
@@ -2090,8 +2020,8 @@ export default function stateModelFactory(
            */
           setCompactness(level: CompactnessLevel) {
             const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
-            self.setOverride('featureHeight', featureHeight)
-            self.setOverride('featureSpacing', featureSpacing)
+            self.configuration.setSlot('featureHeight', featureHeight)
+            self.configuration.setSlot('featureSpacing', featureSpacing)
             self.scrollTop = 0
           },
 
@@ -2104,7 +2034,7 @@ export default function stateModelFactory(
            * #action
            */
           setReadConnections(mode: ReadConnectionsMode) {
-            self.readConnections = mode
+            self.configuration.setSlot('readConnections', mode)
           },
 
           /**
@@ -2114,140 +2044,140 @@ export default function stateModelFactory(
           // arcs and sashimi arcs. Single source of truth — there is no
           // per-feature direction to keep in sync.
           setReadConnectionsDown(down: boolean) {
-            self.readConnectionsDown = down
+            self.configuration.setSlot('readConnectionsDown', down)
           },
 
           /**
            * #action
            */
           setShowCoverage(show: boolean) {
-            self.showCoverage = show
+            self.configuration.setSlot('showCoverage', show)
           },
 
           /**
            * #action
            */
           setShowPileup(show: boolean) {
-            self.showPileup = show
+            self.configuration.setSlot('showPileup', show)
           },
 
           /**
            * #action
            */
           setCoverageHeight(height: number) {
-            self.coverageHeight = Math.max(MIN_BAND_HEIGHT, height)
+            self.configuration.setSlot('coverageHeight', Math.max(MIN_BAND_HEIGHT, height))
           },
 
           /**
            * #action
            */
           setReadConnectionsHeight(height: number) {
-            self.readConnectionsHeight = Math.max(MIN_BAND_HEIGHT, height)
+            self.configuration.setSlot('readConnectionsHeight', Math.max(MIN_BAND_HEIGHT, height))
           },
 
           /**
            * #action
            */
           setSashimiArcsHeight(height: number) {
-            self.sashimiArcsHeight = Math.max(MIN_BAND_HEIGHT, height)
+            self.configuration.setSlot('sashimiArcsHeight', Math.max(MIN_BAND_HEIGHT, height))
           },
 
           /**
            * #action
            */
           setMinSashimiScore(score: number) {
-            self.minSashimiScore = score
+            self.configuration.setSlot('minSashimiScore', score)
           },
 
           /**
            * #action
            */
           setSashimiArcsMode(mode: SashimiArcsMode) {
-            self.sashimiArcsMode = mode
+            self.configuration.setSlot('sashimiArcsMode', mode)
           },
 
           /**
            * #action
            */
           setShowSashimiLabels(show: boolean) {
-            self.setOverride('showSashimiLabels', show)
+            self.configuration.setSlot('showSashimiLabels', show)
           },
 
           /**
            * #action
            */
           setReadConnectionsLineWidth(width: number) {
-            self.setOverride('readConnectionsLineWidth', width)
+            self.configuration.setSlot('readConnectionsLineWidth', width)
           },
 
           /**
            * #action
            */
           setDrawInter(draw: boolean) {
-            self.drawInter = draw
+            self.configuration.setSlot('drawInter', draw)
           },
 
           /**
            * #action
            */
           setDrawLongRange(draw: boolean) {
-            self.drawLongRange = draw
+            self.configuration.setSlot('drawLongRange', draw)
           },
 
           /**
            * #action
            */
           setColorByType(type: ArcColorByType) {
-            self.arcColorByType = type
+            self.configuration.setSlot('arcColorByType', type)
           },
 
           /**
            * #action
            */
           setShowMismatches(show: boolean) {
-            self.showMismatches = show
+            self.configuration.setSlot('showMismatches', show)
           },
 
           /**
            * #action
            */
           setShowLegend(show: boolean | undefined) {
-            self.setOverride('showLegend', show)
+            self.configuration.setSlot('showLegend', show)
           },
 
           /**
            * #action
            */
           setDrawSingletons(flag: boolean) {
-            self.drawSingletons = flag
+            self.configuration.setSlot('drawSingletons', flag)
           },
 
           /**
            * #action
            */
           setDrawProperPairs(flag: boolean) {
-            self.drawProperPairs = flag
+            self.configuration.setSlot('drawProperPairs', flag)
           },
 
           /**
            * #action
            */
           setShowInterbaseIndicators(show: boolean) {
-            self.showInterbaseIndicators = show
+            self.configuration.setSlot('showInterbaseIndicators', show)
           },
 
           /**
            * #action
            */
           setFlipStrandLongReadChains(flag: boolean) {
-            self.flipStrandLongReadChains = flag
+            self.configuration.setSlot('flipStrandLongReadChains', flag)
           },
 
           /**
            * #action
            */
           setColorSupplementaryChains(flag: boolean) {
-            self.colorSupplementaryChains = flag
+            self.configuration.setSlot('colorSupplementaryChains', flag)
           },
 
           /**
@@ -2255,7 +2185,7 @@ export default function stateModelFactory(
            */
           setLinkedReads(mode: LinkedReadsMode) {
             const prev = self.linkedReads
-            self.linkedReads = mode
+            self.configuration.setSlot('linkedReads', mode)
             // Forget chain hover/selection when leaving 'normal' mode. This is
             // now a product choice (selection doesn't survive a mode change),
             // not a render-safety mechanism — `renderState` already gates chain
@@ -2268,9 +2198,9 @@ export default function stateModelFactory(
             if ((prev === 'off') !== (mode === 'off')) {
               clearMouseoverState()
               if (mode === 'off') {
-                self.setOverride('colorBy', { type: 'normal' })
+                self.configuration.setSlot('colorBy', { type: 'normal' })
               } else {
-                self.setOverride('colorBy', {
+                self.configuration.setSlot('colorBy', {
                   type: 'insertSizeAndOrientation',
                 })
               }
@@ -2285,7 +2215,7 @@ export default function stateModelFactory(
            * `rpcProps` — toggling it never refetches.
            */
           setShowBezierConnections(flag: boolean) {
-            self.showBezierConnections = flag
+            self.configuration.setSlot('showBezierConnections', flag)
           },
 
           /**
@@ -2480,7 +2410,7 @@ export default function stateModelFactory(
             const view = getContainingView(self) as LGV
             return {
               adapterConfig: self.adapterConfig,
-              fetchSizeLimit: self.getConfWithOverride('fetchSizeLimit'),
+              fetchSizeLimit: getConf(self,'fetchSizeLimit'),
               userByteSizeLimit: self.userByteSizeLimit,
               visibleBp: view.visibleBp,
             }

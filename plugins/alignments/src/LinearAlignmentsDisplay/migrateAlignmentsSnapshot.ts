@@ -1,270 +1,29 @@
+const OLD_DISPLAY_TYPES = [
+  'LinearPileupDisplay',
+  'LinearReadArcsDisplay',
+  'LinearReadCloudDisplay',
+  'LinearSNPCoverageDisplay',
+]
+
 /**
- * Migrates old alignments display snapshot properties to the current
- * LinearAlignmentsDisplay format.
+ * Migrate old alignments display snapshots to the unified
+ * LinearAlignmentsDisplay.
  *
- * Handles:
- *   - LinearPileupDisplay → LinearAlignmentsDisplay type remap
- *   - LinearReadArcsDisplay → LinearAlignmentsDisplay type remap
- *   - LinearReadCloudDisplay → LinearAlignmentsDisplay type remap
- *   - LinearSNPCoverageDisplay → LinearAlignmentsDisplay type remap + property migration
- *   - Old nested PileupDisplay/SNPCoverageDisplay sub-display format
- *   - renderingMode → linkedReads enum
- *   - showReadCloud → linkedReads enum
- *   - showLinkedReads + showLinkedReadsAsBeziers booleans → linkedReads enum
- *   - linkedReads 'bezier' → linkedReads 'off' + showBezierConnections overlay
- *   - showArcs + pairedArcsDown booleans → pairedArcs enum
- *   - pairedArcs enum → readConnections mode + readConnectionsDown direction
- *   - legacy sashimiArcsDown boolean dropped (sashimi placement is now its own
- *     `sashimiArcsMode` enum, default 'auto'; old sessions adopt that default)
- *   - arcsHeight → readConnectionsHeight
- *   - Individual override properties → flat config keys
- *   - lineWidth / lineWidthSetting → readConnectionsLineWidth
- *   - sortedBy / sortedBySetting → sortedBy
- *   - Strips removed properties: blockState, showTooltips
+ * v4.3.0 shipped four separate display types (LinearPileupDisplay /
+ * LinearReadArcsDisplay / LinearReadCloudDisplay / LinearSNPCoverageDisplay)
+ * that are now one LinearAlignmentsDisplay, so the only live remap is the
+ * `type`. Every old per-display track-menu setting became a config slot (stored
+ * under `configuration`, not on the display node), so its legacy top-level
+ * snapshot key is silently ignored by MST — old display-instance values revert
+ * to the config default. Real display props (`configuration`,
+ * `userByteSizeLimit`, `displayId`) pass through untouched.
  */
-export function migrateAlignmentsSnapshot(
-  snap: Record<string, unknown>,
-): Record<string, unknown>
-export function migrateAlignmentsSnapshot(
-  snap: Record<string, unknown> | undefined,
-): Record<string, unknown> | undefined
 export function migrateAlignmentsSnapshot(
   snap: Record<string, unknown> | undefined,
 ) {
-  if (!snap) {
-    return snap
-  }
-
-  // Strip properties from old BaseLinearDisplayNoFeatureDensity snapshots.
-  // userByteSizeLimit is kept — it persists the user's force-load threshold
-  // via RegionTooLargeMixin so it survives session restore.
-  const { blockState, showTooltips, ...cleaned } = snap
-  let result = cleaned
-
-  // height/heightPreConfig → heightOverride is handled centrally by
-  // TrackHeightMixin's migration, so it's left untouched here.
-
-  // arcsHeight → readConnectionsHeight (the read-connections band height,
-  // renamed when the band stopped being arc-specific)
-  if (
-    result.arcsHeight !== undefined &&
-    result.readConnectionsHeight === undefined
-  ) {
-    const { arcsHeight, ...rest } = result
-    result = { ...rest, readConnectionsHeight: arcsHeight }
-  }
-
-  // Remap old display types to LinearAlignmentsDisplay
-  if (
-    [
-      'LinearPileupDisplay',
-      'LinearReadArcsDisplay',
-      'LinearReadCloudDisplay',
-    ].includes(result.type as string)
-  ) {
-    result = { ...result, type: 'LinearAlignmentsDisplay' }
-  }
-
-  // Migrate old renderingMode to new boolean toggles
-  if (result.renderingMode) {
-    const { renderingMode, ...rest } = result
-    const linked = renderingMode === 'linkedRead' || renderingMode === 'cloud'
-    result = {
-      ...rest,
-      showLinkedReads: linked,
-      colorBySetting: linked
-        ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
-        : rest.colorBySetting,
-    }
-  }
-
-  // Strip removed showReadCloud property from old snapshots
-  if (result.showReadCloud !== undefined) {
-    const { showReadCloud, ...rest } = result
-    const linked = result.showLinkedReads === true || showReadCloud === true
-    result = {
-      ...rest,
-      showLinkedReads: linked,
-      colorBySetting: linked
-        ? (rest.colorBySetting ?? { type: 'insertSizeAndOrientation' })
-        : rest.colorBySetting,
-    }
-  }
-
-  // Migrate old nested PileupDisplay/SNPCoverageDisplay sub-display format
-  // from v1.x LinearAlignmentsDisplay sessions
-  if (result.PileupDisplay || result.SNPCoverageDisplay) {
-    const { PileupDisplay, SNPCoverageDisplay, snpCovHeight, ...rest } = result
-    const pileup = (PileupDisplay ?? {}) as Record<string, unknown>
-    // Released nested-format sessions stored the inner pileup settings under the
-    // `*Setting` names (`colorBySetting`/`filterBySetting`); only the very first
-    // builds used the bare `colorBy`/`filterBy`. Read both so the pileup's
-    // coloring survives. featureHeight/noSpacing/userByteSizeLimit are lifted
-    // out of the sub-display too (the rest of the pipeline folds them into the
-    // flat override keys) — otherwise the dense methylation pileup view is lost.
-    result = {
-      ...rest,
-      showSoftClipping: pileup.showSoftClipping ?? false,
-      featureHeight: pileup.featureHeight,
-      noSpacing: pileup.noSpacing,
-      userByteSizeLimit: pileup.userByteSizeLimit ?? rest.userByteSizeLimit,
-      colorBySetting: pileup.colorBySetting ?? pileup.colorBy,
-      filterBySetting: pileup.filterBySetting ?? pileup.filterBy,
-      coverageHeight: snpCovHeight ?? 45,
-    }
-  }
-
-  // Migrate LinearSNPCoverageDisplay snapshots to LinearAlignmentsDisplay
-  if (result.type === 'LinearSNPCoverageDisplay') {
-    const {
-      type,
-      showArcs,
-      // minArcScore filtered skip/junction features by read support on the old
-      // SNPCoverage display — the same concept as minSashimiScore here.
-      minArcScore,
-      showInterbaseCounts,
-      showInterbaseIndicators,
-      colorBySetting,
-      filterBySetting,
-      // jexlFilters: dropped — the alignments display has no jexl-filter
-      // path (FilterBy is flag/tag/readName only), so the old SNPCoverage
-      // field had no effect and is discarded on migration.
-      jexlFilters: _jexlFilters,
-      ...rest
-    } = result
-
-    result = {
-      ...rest,
-      type: 'LinearAlignmentsDisplay',
-      showSashimiArcs: showArcs ?? true,
-      minSashimiScore: minArcScore ?? 0,
-      showInterbaseIndicators: showInterbaseIndicators ?? true,
-      showCoverage: true,
-      showPileup: true,
-      coverageHeight: 45,
-      showMismatches: true,
-      colorBySetting,
-      filterBySetting,
-    }
-  }
-
-  // Fold paired boolean toggles into single enum fields
-  result = migrateBooleanPairsToEnum(result)
-
-  // arcColorByType: 'samplot' → pairedArcs: 'samplot' (samplot is now a
-  // read-connections mode rather than a color scheme).
-  if (result.arcColorByType === 'samplot') {
-    result = {
-      ...result,
-      arcColorByType: 'insertSizeAndOrientation',
-      pairedArcs: 'samplot',
-    }
-  }
-
-  // Split the pairedArcs enum into orthogonal mode + direction fields
-  result = migrateReadConnections(result)
-
-  return migrateOverrideProperties(result)
-}
-
-// pairedArcs ('off'|'up'|'down'|'samplot') conflated render mode with
-// direction. Split into readConnections ('off'|'arc'|'samplot') and the
-// orthogonal readConnectionsDown boolean.
-function migrateReadConnections(snap: Record<string, unknown>) {
-  const { pairedArcs, ...rest } = snap
-  if (pairedArcs === undefined) {
-    return snap
-  }
-  return {
-    ...rest,
-    readConnections:
-      pairedArcs === 'off' || pairedArcs === 'samplot' ? pairedArcs : 'arc',
-    readConnectionsDown: pairedArcs === 'down',
-  }
-}
-
-function migrateBooleanPairsToEnum(snap: Record<string, unknown>) {
-  const {
-    showLinkedReads,
-    showLinkedReadsAsBeziers,
-    showArcs,
-    pairedArcsDown,
-    // Sashimi placement is now its own `sashimiArcsMode` enum (default 'auto'),
-    // so the legacy boolean is dropped and old sessions adopt the default.
-    // `showSashimiArcs` is already the current field name and flows through.
-    sashimiArcsDown: _sashimiArcsDown,
-    ...rest
-  } = snap
-
-  const result: Record<string, unknown> = { ...rest }
-
-  if (showLinkedReads !== undefined || showLinkedReadsAsBeziers !== undefined) {
-    result.linkedReads = showLinkedReads
-      ? showLinkedReadsAsBeziers
-        ? 'bezier'
-        : 'normal'
-      : 'off'
-  }
-
-  // 'bezier' is no longer a `linkedReads` layout mode — it became the
-  // orthogonal `showBezierConnections` overlay. Remap stored/derived 'bezier'
-  // to the ideal pileup + curves look. Runs for enum-era snapshots too.
-  if (result.linkedReads === 'bezier') {
-    result.linkedReads = 'off'
-    result.showBezierConnections = true
-  }
-
-  if (showArcs !== undefined || pairedArcsDown !== undefined) {
-    result.pairedArcs = showArcs ? (pairedArcsDown ? 'down' : 'up') : 'off'
-  }
-
-  return result
-}
-
-function migrateOverrideProperties(snap: Record<string, unknown>) {
-  const {
-    colorBySetting,
-    filterBySetting,
-    featureHeight,
-    featureSpacing,
-    // released displays used bare `lineWidth`/`sortedBy`; a later naming added
-    // the `*Setting` suffix. Accept both (suffixed wins) → the new override.
-    lineWidth,
-    lineWidthSetting,
-    noSpacing,
-    showOutline,
-    mismatchAlpha,
-    showLegend,
-    sortedBy,
-    sortedBySetting,
-    trackMaxHeight,
-    ...rest
-  } = snap
-
-  const overrides: Record<string, unknown> = {}
-  const set = (key: string, val: unknown) => {
-    if (val !== undefined) {
-      overrides[key] = val
-    }
-  }
-
-  set('colorBy', colorBySetting)
-  set('filterBy', filterBySetting)
-  set('featureHeight', featureHeight)
-  set('readConnectionsLineWidth', lineWidthSetting ?? lineWidth)
-  // featureSpacing override directly maps; legacy noSpacing boolean folds
-  // into it (true → 0, false → 2 to preserve the pre-unification render).
-  // featureSpacing wins if both are present in an in-flight session.
-  if (featureSpacing !== undefined) {
-    overrides.featureSpacing = featureSpacing
-  } else if (noSpacing !== undefined) {
-    overrides.featureSpacing = noSpacing ? 0 : 2
-  }
-  set('showOutline', showOutline)
-  set('mismatchAlpha', mismatchAlpha)
-  set('showLegend', showLegend)
-  set('sortedBy', sortedBySetting ?? sortedBy)
-  set('maxHeight', trackMaxHeight)
-
-  return { ...rest, ...overrides }
+  return snap &&
+    typeof snap.type === 'string' &&
+    OLD_DISPLAY_TYPES.includes(snap.type)
+    ? { ...snap, type: 'LinearAlignmentsDisplay' }
+    : snap
 }

@@ -226,7 +226,7 @@ describe('LinearWiggleDisplay SettingsInvalidate autorun', () => {
     })
 
     const callsBefore = mockRpcCall.mock.calls.length
-    display.setOverride('bicolorPivot', 5)
+    display.configuration.setSlot('bicolorPivot', 5)
     jest.advanceTimersByTime(400)
     await jest.runAllTimersAsync()
 

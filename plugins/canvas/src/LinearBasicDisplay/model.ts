@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -71,15 +72,15 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get subfeatureLabels() {
-        return self.getConfWithOverride('subfeatureLabels')
+        return getConf(self, 'subfeatureLabels')
       },
 
       get geneGlyphMode() {
-        return self.getConfWithOverride('geneGlyphMode')
+        return getConf(self, 'geneGlyphMode')
       },
 
       get displayDirectionalChevrons() {
-        return self.getConfWithOverride('displayDirectionalChevrons')
+        return getConf(self, 'displayDirectionalChevrons')
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -126,19 +127,19 @@ export default function stateModelFactory(
     })
     .actions(self => ({
       setSubfeatureLabels(value: DisplayConfig['subfeatureLabels']) {
-        self.setOverride('subfeatureLabels', value)
+        self.configuration.setSlot('subfeatureLabels', value)
       },
 
       setGeneGlyphMode(value: DisplayConfig['geneGlyphMode']) {
-        self.setOverride('geneGlyphMode', value)
+        self.configuration.setSlot('geneGlyphMode', value)
       },
 
       setDisplayMode(value: DisplayMode) {
-        self.setOverride('displayMode', value)
+        self.configuration.setSlot('displayMode', value)
       },
 
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
-        self.setOverride(
+        self.configuration.setSlot(
           'displayMode',
           level === 'super-compact' ? 'superCompact' : level,
         )
@@ -149,7 +150,7 @@ export default function stateModelFactory(
       },
 
       setDisplayDirectionalChevrons(value: boolean) {
-        self.setOverride('displayDirectionalChevrons', value)
+        self.configuration.setSlot('displayDirectionalChevrons', value)
       },
 
       dismissIsoformCollapseNotice() {

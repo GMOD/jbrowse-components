@@ -10,13 +10,13 @@ const NumberEditor = observer(function NumberEditor({
 }: {
   slot: {
     name?: string
-    value: number
+    value: number | undefined
     description?: string
     set: (val: number) => void
   }
   integer?: boolean
 }) {
-  const [val, setVal] = useState(String(slot.value))
+  const [val, setVal] = useState(slot.value === undefined ? '' : String(slot.value))
   return (
     <ConfigurationTextField
       label={slot.name}

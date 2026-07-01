@@ -1,9 +1,14 @@
 import type React from 'react'
 
-import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
+import {
+  getParent,
+  getSnapshot,
+  hasParent,
+  isAlive,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
-import { getEffectiveTrackConfig } from '../../util/getConfigOverrides.ts'
 import {
   getContainingTrack,
   getContainingView,
@@ -136,10 +141,13 @@ function stateModelFactory() {
 
       /**
        * #getter
+       * The track's config as currently resolved (config-schema mutations
+       * from quick track-menu actions and the Settings dialog both write
+       * directly into this same node, so there's nothing left to merge here —
+       * this is just the live snapshot).
        */
       get effectiveTrackConfig() {
-        const track = getContainingTrack(self)
-        return getEffectiveTrackConfig(track.configuration, self)
+        return getSnapshot(getContainingTrack(self).configuration)
       },
     }))
     .views(self => ({

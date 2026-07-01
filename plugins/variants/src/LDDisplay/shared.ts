@@ -10,13 +10,11 @@ import {
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
-  ConfigOverrideMixin,
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
   bytesTooLargeReason,
   computeRenderTransform,
-  migrateOldSettingSnapshots,
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
@@ -27,7 +25,6 @@ import { PRECOMPUTED_LD_ADAPTERS } from '../RenderLDDataRPC/types.ts'
 import AddFiltersDialog from '../shared/components/AddFiltersDialog.tsx'
 import LDFilterDialog from '../shared/components/LDFilterDialog.tsx'
 
-import type { LDDisplayConfigModel } from './SharedLDConfigSchema.ts'
 import type { LDDataResult, LDFlatbushItem } from '../RenderLDDataRPC/types.ts'
 import type { FilterStats, LDMetric, LDSnp } from '../VariantRPC/getLDMatrix.ts'
 import type { LDRenderingBackend } from './components/ldRenderingBackendTypes.ts'
@@ -68,35 +65,10 @@ export default function sharedModelFactory(
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
-      ConfigOverrideMixin<LDDisplayConfigModel>([
-        'lineZoneHeight',
-        'minorAlleleFrequencyFilter',
-        'lengthCutoffFilter',
-        'ldMetric',
-        'showLegend',
-        'showLDTriangle',
-        'showRecombination',
-        'recombinationZoneHeight',
-        'fitToHeight',
-        'hweFilterThreshold',
-        'callRateFilter',
-        'showVerticalGuides',
-        'showLabels',
-        'tickHeight',
-        'useGenomicPositions',
-        'signedLD',
-        'jexlFilters',
-      ]),
       types.model({
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .preProcessSnapshot((snap: any) => {
-      if (!snap) {
-        return snap
-      }
-      return migrateOldSettingSnapshots(snap)
-    })
     .volatile(() => ({
       /**
        * #volatile
@@ -108,55 +80,55 @@ export default function sharedModelFactory(
         self.rpcData = data
       },
       setLineZoneHeight(n: number) {
-        self.setOverride('lineZoneHeight', Math.max(0, n))
+        self.configuration.setSlot('lineZoneHeight', Math.max(0, n))
       },
       setMafFilter(arg: number) {
-        self.setOverride('minorAlleleFrequencyFilter', arg)
+        self.configuration.setSlot('minorAlleleFrequencyFilter', arg)
       },
       setLengthCutoffFilter(arg: number) {
-        self.setOverride('lengthCutoffFilter', arg)
+        self.configuration.setSlot('lengthCutoffFilter', arg)
       },
       setLDMetric(metric: LDMetric) {
-        self.setOverride('ldMetric', metric)
+        self.configuration.setSlot('ldMetric', metric)
       },
       setShowLegend(show: boolean) {
-        self.setOverride('showLegend', show)
+        self.configuration.setSlot('showLegend', show)
       },
       setShowLDTriangle(show: boolean) {
-        self.setOverride('showLDTriangle', show)
+        self.configuration.setSlot('showLDTriangle', show)
       },
       setShowRecombination(show: boolean) {
-        self.setOverride('showRecombination', show)
+        self.configuration.setSlot('showRecombination', show)
       },
       setRecombinationZoneHeight(n: number) {
-        self.setOverride('recombinationZoneHeight', Math.max(20, n))
+        self.configuration.setSlot('recombinationZoneHeight', Math.max(20, n))
       },
       setFitToHeight(value: boolean) {
-        self.setOverride('fitToHeight', value)
+        self.configuration.setSlot('fitToHeight', value)
       },
       setHweFilter(threshold: number) {
-        self.setOverride('hweFilterThreshold', threshold)
+        self.configuration.setSlot('hweFilterThreshold', threshold)
       },
       setCallRateFilter(threshold: number) {
-        self.setOverride('callRateFilter', threshold)
+        self.configuration.setSlot('callRateFilter', threshold)
       },
       setShowVerticalGuides(show: boolean) {
-        self.setOverride('showVerticalGuides', show)
+        self.configuration.setSlot('showVerticalGuides', show)
       },
       setShowLabels(show: boolean) {
-        self.setOverride('showLabels', show)
+        self.configuration.setSlot('showLabels', show)
       },
       setTickHeight(height: number) {
-        self.setOverride('tickHeight', Math.max(0, height))
+        self.configuration.setSlot('tickHeight', Math.max(0, height))
       },
       setUseGenomicPositions(value: boolean) {
-        self.setOverride('useGenomicPositions', value)
+        self.configuration.setSlot('useGenomicPositions', value)
       },
       setSignedLD(value: boolean) {
-        self.setOverride('signedLD', value)
+        self.configuration.setSlot('signedLD', value)
       },
       setJexlFilters(filters: string[] | undefined) {
-        self.setOverride('jexlFilters', filters)
+        self.configuration.setSlot('jexlFilters', filters)
       },
     }))
     .views(self => ({
@@ -167,56 +139,56 @@ export default function sharedModelFactory(
         return true
       },
       get minorAlleleFrequencyFilter() {
-        return self.getConfWithOverride('minorAlleleFrequencyFilter')
+        return getConf(self,'minorAlleleFrequencyFilter')
       },
       get lengthCutoffFilter() {
-        return self.getConfWithOverride('lengthCutoffFilter')
+        return getConf(self,'lengthCutoffFilter')
       },
       get lineZoneHeight() {
-        return self.getConfWithOverride('lineZoneHeight')
+        return getConf(self,'lineZoneHeight')
       },
       get ldMetric() {
-        return self.getConfWithOverride('ldMetric')
+        return getConf(self,'ldMetric')
       },
       get showLegend() {
-        return self.getConfWithOverride('showLegend')
+        return getConf(self,'showLegend')
       },
       get showLDTriangle() {
-        return self.getConfWithOverride('showLDTriangle')
+        return getConf(self,'showLDTriangle')
       },
       get showRecombination() {
-        return self.getConfWithOverride('showRecombination')
+        return getConf(self,'showRecombination')
       },
       get recombinationZoneHeight() {
-        return self.getConfWithOverride('recombinationZoneHeight')
+        return getConf(self,'recombinationZoneHeight')
       },
       get fitToHeight() {
-        return self.getConfWithOverride('fitToHeight')
+        return getConf(self,'fitToHeight')
       },
       get hweFilterThreshold() {
-        return self.getConfWithOverride('hweFilterThreshold')
+        return getConf(self,'hweFilterThreshold')
       },
       get callRateFilter() {
-        return self.getConfWithOverride('callRateFilter')
+        return getConf(self,'callRateFilter')
       },
       get showVerticalGuides() {
-        return self.getConfWithOverride('showVerticalGuides')
+        return getConf(self,'showVerticalGuides')
       },
       get showLabels() {
-        return self.getConfWithOverride('showLabels')
+        return getConf(self,'showLabels')
       },
       get tickHeight() {
-        return self.getConfWithOverride('tickHeight')
+        return getConf(self,'tickHeight')
       },
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useGenomicPositions() {
-        return self.getConfWithOverride('useGenomicPositions')
+        return getConf(self,'useGenomicPositions')
       },
       get signedLD() {
-        return self.getConfWithOverride('signedLD')
+        return getConf(self,'signedLD')
       },
       get jexlFilters(): string[] {
-        return self.getConfWithOverride('jexlFilters')
+        return getConf(self,'jexlFilters')
       },
       /**
        * #getter

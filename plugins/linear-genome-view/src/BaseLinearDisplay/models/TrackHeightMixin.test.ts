@@ -1,57 +1,46 @@
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import TrackHeightMixin from './TrackHeightMixin.tsx'
 
-import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
+const configSchema = ConfigurationSchema('TestHeight', {
+  height: { type: 'number', defaultValue: 100 },
+})
 
-// Minimal model: TrackHeightMixin's height getter only reads `configuration`
-// when no override is set, so these back-compat cases (which always set an
-// override) don't need a real config.
+// The height now lives on the `height` config slot, so the test model needs a
+// real configuration node with that slot for the getter/setters to resolve.
 const TestModel = types.compose(
   'TestHeight',
   TrackHeightMixin(),
-  types.model({ type: types.literal('test') }),
+  types.model({
+    type: types.literal('test'),
+    configuration: configSchema,
+  }),
 )
 
-// legacy snapshots carry `height`/`heightPreConfig`, which the runtime
-// preProcessSnapshot accepts but the static creation type does not
-type Legacy = SnapshotIn<typeof TestModel> & {
-  height?: number
-  heightPreConfig?: number
-}
-const create = (snap: Legacy) => TestModel.create(snap)
+const create = () =>
+  TestModel.create({ type: 'test', configuration: { height: 100 } })
 
-test('legacy heightPreConfig snapshot migrates to heightOverride', () => {
-  const m = create({ type: 'test', heightPreConfig: 300 })
-  expect(m.heightOverride).toBe(300)
-  expect(m.height).toBe(300)
-  expect(getSnapshot(m)).not.toHaveProperty('heightPreConfig')
+test('height resolves to the config slot default', () => {
+  expect(create().height).toBe(100)
 })
 
-test('legacy bare height snapshot migrates to heightOverride', () => {
-  const m = create({ type: 'test', height: 250 })
-  expect(m.heightOverride).toBe(250)
+test('setHeight writes the config height slot', () => {
+  const m = create()
+  m.setHeight(220)
+  expect(m.height).toBe(220)
+  expect(m.configuration.height).toBe(220)
+})
+
+test('resizeHeight adjusts the config height slot', () => {
+  const m = create()
+  m.setHeight(220)
+  m.resizeHeight(30)
   expect(m.height).toBe(250)
 })
 
-test('current heightOverride snapshot is preserved', () => {
-  const m = create({ type: 'test', heightOverride: 180 })
-  expect(m.heightOverride).toBe(180)
-})
-
-test('heightOverride wins over a stale legacy height', () => {
-  const m = create({
-    type: 'test',
-    height: 999,
-    heightOverride: 180,
-  })
-  expect(m.heightOverride).toBe(180)
-})
-
-test('setHeight and resizeHeight write heightOverride', () => {
-  const m = TestModel.create({ type: 'test', heightOverride: 100 })
-  m.setHeight(220)
-  expect(m.heightOverride).toBe(220)
-  m.resizeHeight(30)
-  expect(m.heightOverride).toBe(250)
+test('setHeight clamps to the minimum display height', () => {
+  const m = create()
+  m.setHeight(5)
+  expect(m.height).toBe(20)
 })

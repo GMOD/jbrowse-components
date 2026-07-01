@@ -12,7 +12,7 @@ import {
   verifyPermission,
 } from './fileHandleStore.ts'
 import { getEnv, getSession, objectHash } from './mstUtils.ts'
-import { readConfObject } from '../configuration/index.ts'
+import { isConfigurationSlot, readConfObject } from '../configuration/index.ts'
 
 import type {
   BlobLocation,
@@ -557,6 +557,22 @@ export function showTrackGeneric(
       ],
     })
     self.tracks.push(track)
+
+    // Display settings (height, color, …) are config slots now, not display
+    // instance props — passed in the display snapshot they'd be dropped as
+    // unknown MST keys. Route the ones that are real slots onto the persistent
+    // display config so they take effect and survive hide/retick (#5591). Runs
+    // after the push so the display's config reference can resolve.
+    const display = track.displays[0] as
+      | { configuration: AnyConfigurationModel }
+      | undefined
+    if (display) {
+      for (const [key, value] of Object.entries(displayInitialSnapshot)) {
+        if (key !== 'type' && isConfigurationSlot(display.configuration, key)) {
+          display.configuration.setSlot(key, value)
+        }
+      }
+    }
     return track
   } catch (e) {
     session.notifyError(`${e}`, e)

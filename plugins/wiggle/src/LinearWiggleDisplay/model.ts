@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
@@ -25,7 +25,6 @@ import PaletteIcon from '@mui/icons-material/Palette'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
-import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
   makeRenderState,
   wiggleFeatureWidgetData,
@@ -96,7 +95,7 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleCommonMixin(['minimalTicks']),
+      WiggleCommonMixin(),
       types.model({
         /**
          * #property
@@ -108,7 +107,6 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .preProcessSnapshot(makeWigglePreProcessSnapshot())
     .volatile(() => ({
       /**
        * #volatile
@@ -127,7 +125,7 @@ export default function stateModelFactory(
        * #getter
        */
       get color(): string {
-        return self.getConfWithOverride('color')
+        return getConf(self, 'color')
       },
 
       /**
@@ -135,7 +133,7 @@ export default function stateModelFactory(
        */
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useBicolor(): boolean {
-        return self.getConfWithOverride('useBicolor')
+        return getConf(self, 'useBicolor')
       },
 
       /**
@@ -154,7 +152,7 @@ export default function stateModelFactory(
           height: self.height,
           domain: self.domain,
           scaleType: self.scaleType,
-          minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
+          minimalTicks: getConf(self, 'minimalTicks'),
         })
       },
 
@@ -230,21 +228,21 @@ export default function stateModelFactory(
        * #action
        */
       setUseBicolor(val?: boolean) {
-        self.setOverride('useBicolor', val)
+        self.configuration.setSlot('useBicolor', val)
       },
 
       /**
        * #action
        */
       setPosColor(color?: string) {
-        self.setOverride('posColor', color)
+        self.configuration.setSlot('posColor', color)
       },
 
       /**
        * #action
        */
       setNegColor(color?: string) {
-        self.setOverride('negColor', color)
+        self.configuration.setSlot('negColor', color)
       },
 
       /**

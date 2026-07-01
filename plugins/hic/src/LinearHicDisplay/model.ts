@@ -1,6 +1,6 @@
 import type React from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
 import {
   getContainingView,
@@ -9,7 +9,6 @@ import {
 } from '@jbrowse/core/util'
 import { addDisposer, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
-  ConfigOverrideMixin,
   GlobalDataDisplayMixin,
   StaleViewportRescaleMixin,
   TrackHeightMixin,
@@ -27,7 +26,6 @@ import type {
 } from '../RenderHicDataRPC/types.ts'
 import type { HicColorScheme } from './components/colorRamp.ts'
 import type { HicRenderingBackend } from './components/hicRenderingBackendTypes.ts'
-import type { HicTrackConfig } from './configSchema.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -72,10 +70,6 @@ export default function stateModelFactory(
       TrackHeightMixin(),
       GlobalDataDisplayMixin(),
       StaleViewportRescaleMixin(),
-      ConfigOverrideMixin<HicTrackConfig, 'colorScheme' | 'showLegend'>([
-        'colorScheme',
-        'showLegend',
-      ]),
       types.model({
         /**
          * #property
@@ -168,11 +162,11 @@ export default function stateModelFactory(
       get dataLoaded(): boolean {
         return self.rpcData !== null
       },
-      get colorScheme(): HicColorScheme | undefined {
-        return self.getOverride<HicColorScheme>('colorScheme')
+      get colorScheme(): HicColorScheme {
+        return getConf(self, 'colorScheme')
       },
-      get showLegend(): boolean | undefined {
-        return self.getOverride<boolean>('showLegend')
+      get showLegend(): boolean {
+        return getConf(self, 'showLegend')
       },
       get colorMaxScore() {
         const data = self.rpcData
@@ -436,7 +430,7 @@ export default function stateModelFactory(
        * #action
        */
       setColorScheme(f?: HicColorScheme) {
-        self.setOverride('colorScheme', f)
+        self.configuration.setSlot('colorScheme', f)
       },
       /**
        * #action
@@ -471,7 +465,7 @@ export default function stateModelFactory(
        * #action
        */
       setShowLegend(arg: boolean) {
-        self.setOverride('showLegend', arg)
+        self.configuration.setSlot('showLegend', arg)
       },
       /**
        * #action

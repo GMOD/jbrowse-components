@@ -93,6 +93,15 @@ export default ConfigurationSchema(
     /**
      * #slot
      */
+    minimalTicks: {
+      type: 'boolean',
+      defaultValue: false,
+      description: 'Draw only the min/max Y-axis ticks',
+      advanced: true,
+    },
+    /**
+     * #slot
+     */
     summaryScoreMode: {
       type: 'stringEnum',
       model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),

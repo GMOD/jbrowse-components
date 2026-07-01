@@ -1,7 +1,8 @@
 import { lazy } from 'react'
 
-import { types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, types } from '@jbrowse/mobx-state-tree'
 import Save from '@mui/icons-material/Save'
+import { reaction } from 'mobx'
 
 import { stringifyBED } from './saveTrackFileTypes/bed.ts'
 import { stringifyGBK } from './saveTrackFileTypes/genbank.ts'
@@ -203,6 +204,41 @@ export function createBaseTrackModel(
           configuration: newDisplayId,
         }
       },
+
+      /**
+       * #action
+       * Persist any config-schema mutation (quick track-menu edits calling
+       * `setSlot` directly, or the full Settings dialog) back to the session,
+       * debounced, mirroring ConfigurationEditorWidget's own save. `reaction`
+       * (not `autorun`) on purpose: `self.configuration` is defined
+       * immediately on attach, unlike ConfigurationEditorWidget's `target`
+       * (which starts undefined), so an autorun's guaranteed first run would
+       * otherwise schedule a spurious flush for every track ever shown, even
+       * completely untouched ones — `reaction` only fires on an actual change.
+       */
+      afterAttach() {
+        let timeout: ReturnType<typeof setTimeout> | undefined
+        addDisposer(
+          self,
+          reaction(
+            () => getSnapshot(self.configuration),
+            snapshot => {
+              clearTimeout(timeout)
+              timeout = setTimeout(() => {
+                const session = getSession(self)
+                if (isSessionModelWithConfigEditing(session)) {
+                  session.updateTrackConfiguration(
+                    snapshot as { trackId: string; [key: string]: unknown },
+                  )
+                }
+              }, 400)
+            },
+          ),
+        )
+        addDisposer(self, () => {
+          clearTimeout(timeout)
+        })
+      },
     }))
     .views(() => ({
       /**
@@ -275,7 +311,9 @@ export function createBaseTrackModel(
                           self.replaceDisplay(
                             shownId,
                             d.displayId,
-                            self.displays[0].getPortableSettings?.() ?? {},
+                            self.displays[0].getPortableSettings?.(
+                              d.displayId,
+                            ) ?? {},
                           )
                         }
                       },

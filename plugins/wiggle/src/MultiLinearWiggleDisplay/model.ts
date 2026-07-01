@@ -1,6 +1,6 @@
 import { lazy } from 'react'
 
-import { ConfigurationReference } from '@jbrowse/core/configuration'
+import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   getContainingView,
@@ -34,7 +34,6 @@ import VisibilityIcon from '@mui/icons-material/Visibility'
 import { buildEditableSources, buildSources } from './sourcesLogic.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
-import { makeWigglePreProcessSnapshot } from '../shared/makeWigglePreProcessSnapshot.ts'
 import {
   getRowHeight,
   isOverlayMode,
@@ -81,19 +80,13 @@ export default function stateModelFactory(
       BaseDisplay,
       TrackHeightMixin(),
       MultiRegionDisplayMixin(),
-      WiggleCommonMixin([
-        'minimalTicks',
-        'showTree',
-        'showBranchLength',
-        'showRowSeparators',
-      ]),
+      WiggleCommonMixin(),
       TreeSidebarMixin<Source>(),
       types.model({
         type: types.literal('MultiLinearWiggleDisplay'),
         configuration: ConfigurationReference(configSchema),
       }),
     )
-    .preProcessSnapshot(makeWigglePreProcessSnapshot({ multiWiggle: true }))
     .volatile(() => ({
       sourcesVolatile: [] as SourceInfo[],
       featureUnderMouse: undefined as WiggleFeatureUnderMouse | undefined,
@@ -154,7 +147,7 @@ export default function stateModelFactory(
           height: self.rowHeight,
           domain: self.domain,
           scaleType: self.scaleType,
-          minimalTicks: self.getOverride<boolean>('minimalTicks') ?? false,
+          minimalTicks: getConf(self, 'minimalTicks'),
           offset: 0,
         })
       },
@@ -204,15 +197,15 @@ export default function stateModelFactory(
     }))
     .views(self => ({
       get showTree() {
-        return self.getOverride<boolean>('showTree') ?? true
+        return getConf(self, 'showTree')
       },
 
       get showBranchLength() {
-        return self.getOverride<boolean>('showBranchLength') ?? false
+        return getConf(self, 'showBranchLength')
       },
 
       get showRowSeparators() {
-        return self.getOverride<boolean>('showRowSeparators') ?? false
+        return getConf(self, 'showRowSeparators')
       },
 
       /**
@@ -288,15 +281,15 @@ export default function stateModelFactory(
         },
 
         setShowTree(arg: boolean) {
-          self.setOverride('showTree', arg)
+          self.configuration.setSlot('showTree', arg)
         },
 
         setShowBranchLength(arg: boolean) {
-          self.setOverride('showBranchLength', arg)
+          self.configuration.setSlot('showBranchLength', arg)
         },
 
         setShowRowSeparators(arg: boolean) {
-          self.setOverride('showRowSeparators', arg)
+          self.configuration.setSlot('showRowSeparators', arg)
         },
 
         setFeatureUnderMouse(feat?: typeof self.featureUnderMouse) {

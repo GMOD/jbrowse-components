@@ -254,11 +254,11 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * The track height that auto-fit mode divides among rows: the dragged
-       * `heightOverride` (TrackHeightMixin) or the config `height` default.
+       * The track height that auto-fit mode divides among rows: the `height`
+       * config slot (its default, or a drag-resized value written to it).
        */
       get fitTargetHeight(): number {
-        return self.heightOverride ?? readConfObject(self.conf, 'height')
+        return readConfObject(self.conf, 'height')
       },
       /**
        * #getter
@@ -491,7 +491,10 @@ export default function stateModelFactory(
        */
       setHeight(newHeight: number) {
         if (self.rowHeightSetting === 0) {
-          self.heightOverride = Math.max(newHeight, MIN_DISPLAY_HEIGHT)
+          self.configuration.setSlot(
+            'height',
+            Math.max(newHeight, MIN_DISPLAY_HEIGHT),
+          )
         } else {
           self.rowHeightOverride = Math.max(1, newHeight / self.nrow)
         }
@@ -509,12 +512,15 @@ export default function stateModelFactory(
       },
       /**
        * #action
-       * Switch to auto-fit: seed `heightOverride` from the current content height
-       * (so toggling on doesn't jump), then `rowHeightOverride = 0` makes
-       * `rowHeight` derive from it.
+       * Switch to auto-fit: seed the `height` config slot from the current
+       * content height (so toggling on doesn't jump), then `rowHeightOverride = 0`
+       * makes `rowHeight` derive from it.
        */
       setFitToHeight() {
-        self.heightOverride = Math.max(self.height, MIN_DISPLAY_HEIGHT)
+        self.configuration.setSlot(
+          'height',
+          Math.max(self.height, MIN_DISPLAY_HEIGHT),
+        )
         self.rowHeightOverride = 0
         self.scrollTop = 0
       },
