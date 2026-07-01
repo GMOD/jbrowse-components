@@ -171,6 +171,7 @@ export function useAlignmentsBase(
       model.clearMouseoverState()
       model.setContextMenuCoord([e.clientX, e.clientY])
       model.setContextMenuRefName(resolved?.refName)
+      model.setContextMenuRpcData(resolved?.rpcData)
       model.setContextMenuCigarHit(
         result.type === 'cigar' ? result.hit : undefined,
       )

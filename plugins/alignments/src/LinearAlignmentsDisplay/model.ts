@@ -38,7 +38,10 @@ import {
 } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { openCigarWidget } from './components/detailWidgets.ts'
+import {
+  openCigarWidget,
+  openIndicatorWidget,
+} from './components/detailWidgets.ts'
 import { ColorScheme } from './constants.ts'
 import {
   anyRegionTruncated,
@@ -221,6 +224,18 @@ export function maxRowsFor(maxHeight: number, rowHeight: number) {
 function colorSchemeIndexFor(type: ColorSchemeType) {
   return ColorScheme[COLOR_SCHEMES[type].shaderScheme]
 }
+
+// Color schemes that only carry meaning for paired-end data. Toggling "view as
+// pairs" auto-switches between plain and pairing coloring for these, but leaves
+// an explicit non-pairing choice (tag, methylation, base quality, ...) alone.
+const PAIRING_COLOR_SCHEMES = new Set<ColorSchemeType>([
+  'insertSize',
+  'insertSizeGradient',
+  'insertSizeAndOrientation',
+  'pairOrientation',
+  'firstOfPairStrand',
+  'stranded',
+])
 
 // Material UI 200-tone palette for color-by-tag values. The first value
 // hit gets index 0, the eleventh wraps to index 0 again.
@@ -447,6 +462,13 @@ export default function stateModelFactory(
            * #volatile
            */
           contextMenuRefName: undefined as string | undefined,
+          /**
+           * #volatile
+           * Block-level worker result under a right-click, so the
+           * indicator/coverage context-menu detail items can open the aggregate
+           * widget (mirrors the left-click path in useAlignmentsBase).
+           */
+          contextMenuRpcData: undefined as PileupDataResult | undefined,
           /**
            * #volatile
            */
@@ -2214,9 +2236,17 @@ export default function stateModelFactory(
             }
             if ((prev === 'off') !== (mode === 'off')) {
               clearMouseoverState()
+              const currentType = self.colorBy.type
               if (mode === 'off') {
-                self.configuration.setSlot('colorBy', { type: 'normal' })
-              } else {
+                // Leaving pairs: pairing-only schemes no longer have meaning, so
+                // fall back to plain coloring — but preserve any explicit
+                // non-pairing choice (tag, methylation, base quality, ...).
+                if (PAIRING_COLOR_SCHEMES.has(currentType)) {
+                  self.configuration.setSlot('colorBy', { type: 'normal' })
+                }
+              } else if (currentType === 'normal') {
+                // Entering pairs: nudge the plain default to the SV-signal
+                // scheme, but don't clobber a scheme the user explicitly picked.
                 self.configuration.setSlot('colorBy', {
                   type: 'insertSizeAndOrientation',
                 })
@@ -2316,6 +2346,7 @@ export default function stateModelFactory(
             self.contextMenuFeature = undefined
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
+            self.contextMenuRpcData = undefined
           },
 
           /**
@@ -2323,6 +2354,13 @@ export default function stateModelFactory(
            */
           setContextMenuRefName(refName?: string) {
             self.contextMenuRefName = refName
+          },
+
+          /**
+           * #action
+           */
+          setContextMenuRpcData(data?: PileupDataResult) {
+            self.contextMenuRpcData = data
           },
 
           /**
@@ -2556,12 +2594,15 @@ export default function stateModelFactory(
           }
 
           if (indicatorHit) {
+            const typeLabel =
+              CIGAR_TYPE_LABELS[indicatorHit.indicatorType] ??
+              indicatorHit.indicatorType
             items.push({
-              label: 'Interbase',
+              label: `Coverage ${typeLabel}`,
               type: 'subMenu',
               subMenu: [
                 {
-                  label: `Sort by ${indicatorHit.indicatorType} at position`,
+                  label: `Sort by ${typeLabel.toLowerCase()} at position`,
                   icon: SwapVertIcon,
                   onClick: () => {
                     if (self.contextMenuRefName) {
@@ -2569,6 +2610,20 @@ export default function stateModelFactory(
                         indicatorHit.indicatorType,
                         indicatorHit.position,
                         self.contextMenuRefName,
+                      )
+                    }
+                  },
+                },
+                {
+                  label: `Open ${typeLabel.toLowerCase()} details`,
+                  icon: MenuOpenIcon,
+                  onClick: () => {
+                    if (self.contextMenuRefName) {
+                      openIndicatorWidget(
+                        self,
+                        indicatorHit,
+                        self.contextMenuRefName,
+                        self.contextMenuRpcData,
                       )
                     }
                   },
