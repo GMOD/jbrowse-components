@@ -1,30 +1,52 @@
+import { buildExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { aboutTrackMenuItem } from './TrackMenu.ts'
+import { aboutTrackMenuItem, trackListMenuItems } from './TrackMenu.ts'
 
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { TrackActionView } from '@jbrowse/core/util/types'
+import type { AbstractSessionModel, TrackActionView } from '@jbrowse/core/util/types'
 
 /**
  * #stateModel TrackMenuSessionMixin
  *
- * The minimal in-view track-label menu (just "About track" plus any
- * plugin-contributed extra actions) used by the embedded react views, which
- * have no track-editing actions to offer.
+ * The minimal track menus used by the embedded react views, which have no
+ * track-editing actions to offer: just "About track" plus any plugin-contributed
+ * items (`Core-extraTrackMenuItems`). Mirrors the shape of the full
+ * `TrackMenuItemsSessionMixin` so both menu surfaces stay consistent across
+ * products, minus the Settings/Copy/Delete actions.
  */
-export function TrackMenuSessionMixin(_pluginManager: PluginManager) {
+export function TrackMenuSessionMixin(pluginManager: PluginManager) {
   return types.model('TrackMenuSessionMixin', {}).views(s => {
     const self = s as typeof s & BaseSession
     return {
       /**
        * #method
+       * flattened menu items for use in hierarchical track selector
+       */
+      getTrackListMenuItems(
+        config: AnyConfigurationModel,
+        view?: TrackActionView,
+      ): MenuItem[] {
+        return [
+          ...trackListMenuItems(self, config, []),
+          ...buildExtraTrackMenuItems(pluginManager, {
+            session: self as unknown as AbstractSessionModel,
+            config,
+            view,
+          }),
+        ]
+      },
+      /**
+       * #method
        */
       getTrackActionMenuItems({
+        config,
         effectiveConfig,
         extraTrackActions,
+        view,
       }: {
         config: AnyConfigurationModel
         effectiveConfig: Record<string, unknown>
@@ -32,8 +54,16 @@ export function TrackMenuSessionMixin(_pluginManager: PluginManager) {
         view?: TrackActionView
       }): MenuItem[] {
         return [
-          aboutTrackMenuItem(self, effectiveConfig),
+          // priority mirrors the full TrackMenuItemsSessionMixin so "About
+          // track" sorts to the top of the in-view label menu consistently
+          // across embedded and full products
+          { ...aboutTrackMenuItem(self, effectiveConfig), priority: 1002 },
           ...(extraTrackActions ?? []),
+          ...buildExtraTrackMenuItems(pluginManager, {
+            session: self as unknown as AbstractSessionModel,
+            config,
+            view,
+          }),
         ]
       },
     }

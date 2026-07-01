@@ -266,7 +266,16 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
           self,
           effectiveConfig,
           self.getTrackActions(config, view),
-          extraTrackActions,
+          [
+            ...(extraTrackActions ?? []),
+            // same plugin-contributed items the hierarchical selector shows, so
+            // Core-extraTrackMenuItems reaches both menus consistently
+            ...buildExtraTrackMenuItems(pluginManager, {
+              session: self as unknown as AbstractSessionModel,
+              config,
+              view,
+            }),
+          ],
         )
       },
     }

@@ -131,6 +131,28 @@ test('hierarchical track selector menu offers "Add GC content track" on refseq',
   )
 })
 
+test('in-view track menu offers "Add GC content track" on refseq', () => {
+  const session = makeSession([
+    { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
+  ])
+  const refseqConf =
+    session.assemblyManager.get('volvox')!.configuration.sequence
+  const items = session.getTrackActionMenuItems({
+    config: refseqConf,
+    effectiveConfig: {},
+    view: session.views[0],
+  })
+  const trackActions = items.find(
+    item => 'label' in item && item.label === 'Track actions',
+  )
+  const subMenu = trackActions && 'subMenu' in trackActions ? trackActions.subMenu : []
+  expect(
+    subMenu.some(
+      item => 'label' in item && item.label === 'Add GC content track',
+    ),
+  ).toBe(true)
+})
+
 test('standalone GCContentTrack display does not double-wrap its adapter', () => {
   const session = makeSession([
     { id: 'display1', type: 'LinearReferenceSequenceDisplay' },
