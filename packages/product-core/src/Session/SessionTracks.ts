@@ -1,5 +1,9 @@
 import { diffTrackConfig, mergeTrackConfig } from '@jbrowse/core/util'
-import { getSnapshot, types } from '@jbrowse/mobx-state-tree'
+import {
+  getSnapshot,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -14,6 +18,18 @@ import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 export interface PlainTrackConfig {
   trackId: string
   [key: string]: unknown
+}
+
+// diffTrackConfig/mergeTrackConfig operate on plain config snapshots. This
+// mixin is composed over two jbrowse config models: app-core's (web/desktop),
+// whose `tracks` is a types.frozen array of plain objects, and product-core's
+// (embedded react views), whose `tracks` is a types.array of MST config nodes.
+// Normalize the base to a plain snapshot so the delta math is correct for both;
+// a plain object passes through untouched.
+function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
+  return isStateTreeNode(base as unknown)
+    ? (getSnapshot(base as unknown))
+    : base
 }
 
 /**
@@ -79,7 +95,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                 return cached.merged
               }
               const mergedTrack = mergeTrackConfig(
-                base,
+                toPlainConfig(base),
                 delta,
               ) as unknown as AnyConfigurationModel
               mergeCache.set(base, { delta, merged: mergedTrack })
@@ -103,7 +119,7 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
           const deltas = { ...self.trackConfigDeltas }
           for (const track of legacy) {
             deltas[track.trackId] = diffTrackConfig(
-              configById.get(track.trackId)!,
+              toPlainConfig(configById.get(track.trackId)!),
               getSnapshot(track),
             ) as PlainTrackConfig
           }
@@ -176,7 +192,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
             if (base) {
               self.trackConfigDeltas = {
                 ...self.trackConfigDeltas,
-                [trackId]: diffTrackConfig(base, trackConf) as PlainTrackConfig,
+                [trackId]: diffTrackConfig(
+                  toPlainConfig(base),
+                  trackConf,
+                ) as PlainTrackConfig,
               }
             } else if (sessionIdx !== -1) {
               // a user-added session track (no admin base): edit it in place. A
@@ -190,6 +209,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                 )
               }
             }
+            // else: a track with neither an admin base nor a sessionTracks entry
+            // (e.g. a connection-provided track). There's no base to diff against
+            // and it isn't a user-added track, so no delta is persisted; the edit
+            // still applies in-memory to the resolved config for this session.
           }
         },
 
