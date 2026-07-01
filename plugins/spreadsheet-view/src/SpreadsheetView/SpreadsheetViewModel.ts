@@ -22,6 +22,21 @@ const defaultHeight = 440
 /**
  * #stateModel SpreadsheetView
  * #category view
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. The `init` shorthand loads a
+ * tabular file (VCF/BED/CSV/etc) straight into the grid, skipping the import
+ * form; `assembly` is used to resolve genomic coordinates in the rows:
+ * ```js
+ * {
+ *   type: 'SpreadsheetView',
+ *   init: {
+ *     assembly: 'hg38',
+ *     uri: 'https://example.com/variants.vcf.gz',
+ *     fileType: 'VCF',
+ *   },
+ * }
+ * ```
  */
 
 export default function stateModelFactory() {

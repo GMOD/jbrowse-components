@@ -45,6 +45,21 @@ const ExportSvgDialog = lazy(() => import('./components/ExportSvgDialog.tsx'))
 
 /**
  * #stateModel BreakpointSplitView
+ * #category view
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. `init` is an array — one entry
+ * per stacked panel — each declaring the `assembly`, a `loc`, and the `tracks`
+ * to show. The two panels flank a structural-variant breakpoint:
+ * ```js
+ * {
+ *   type: 'BreakpointSplitView',
+ *   init: [
+ *     { assembly: 'hg38', loc: 'chr1:1,000,000-1,100,000', tracks: ['alignments'] },
+ *     { assembly: 'hg38', loc: 'chr5:2,000,000-2,100,000', tracks: ['alignments'] },
+ *   ],
+ * }
+ * ```
  */
 export default function stateModelFactory(pluginManager: PluginManager) {
   const defaultHeight = 400

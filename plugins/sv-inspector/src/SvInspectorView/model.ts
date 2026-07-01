@@ -23,6 +23,21 @@ interface SvInspectorViewInit {
  * does not extend, but is a combination of a
  * - [SpreadsheetView](../spreadsheetview)
  * - [CircularView](../circularview)
+ *
+ * #example
+ * Hand-authored under `defaultSession.views`. The `init` shorthand loads a
+ * structural-variant file into the spreadsheet and mirrors the rows as arcs in
+ * the paired circular view; `assembly` resolves coordinates for both:
+ * ```js
+ * {
+ *   type: 'SvInspectorView',
+ *   init: {
+ *     assembly: 'hg38',
+ *     uri: 'https://example.com/sv.vcf.gz',
+ *     fileType: 'VCF',
+ *   },
+ * }
+ * ```
  */
 function SvInspectorViewF(pluginManager: PluginManager) {
   const SpreadsheetViewType = pluginManager.getViewType('SpreadsheetView')
