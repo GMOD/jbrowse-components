@@ -5,7 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
 import SashimiArcLabel from './SashimiArcLabel.tsx'
-import { openSashimiWidget } from './openFeatureWidget.ts'
+import { openSashimiWidget } from './detailWidgets.ts'
 import { computeSashimiArcsFromModel, sashimiArcKey } from './sashimiArcs.ts'
 import { bandScreenTop } from './sectionScreen.ts'
 import { formatSashimiTooltip } from './tooltipUtils.ts'

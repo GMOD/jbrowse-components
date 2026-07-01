@@ -1,4 +1,4 @@
-import { openFeatureWidget as showWidget } from '@jbrowse/core/util'
+import { openFeatureWidget } from '@jbrowse/core/util'
 
 import { CIGAR_TYPE_LABELS } from './alignmentComponentUtils.ts'
 import { getTooltipBin, pct } from './tooltipUtils.ts'
@@ -45,7 +45,7 @@ export function openIndicatorWidget(
     }
   }
 
-  showWidget(model, featureData)
+  openFeatureWidget(model, featureData)
 }
 
 export function openCoverageWidget(
@@ -90,7 +90,7 @@ export function openCoverageWidget(
     }
   }
 
-  showWidget(model, featureData)
+  openFeatureWidget(model, featureData)
 }
 
 export function openSashimiWidget(
@@ -103,7 +103,7 @@ export function openSashimiWidget(
     strand: number
   },
 ) {
-  showWidget(model, {
+  openFeatureWidget(model, {
     uniqueId: `sashimi-${arc.refName}-${arc.start}-${arc.end}`,
     type: 'skip',
     refName: arc.refName,
@@ -137,7 +137,7 @@ export function openModificationWidget(
   if (snpBase) {
     featureData.snpBase = snpBase
   }
-  showWidget(model, featureData)
+  openFeatureWidget(model, featureData)
 }
 
 export function openCigarWidget(
@@ -167,5 +167,5 @@ export function openCigarWidget(
     featureData.length = cigarHit.length
   }
 
-  showWidget(model, featureData)
+  openFeatureWidget(model, featureData)
 }

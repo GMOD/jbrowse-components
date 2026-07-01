@@ -36,7 +36,7 @@ import {
 } from './components/alignmentComponentUtils.ts'
 import { computeHighlightBoxes } from './components/computeHighlightBoxes.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
-import { openCigarWidget } from './components/openFeatureWidget.ts'
+import { openCigarWidget } from './components/detailWidgets.ts'
 import { ColorScheme } from './constants.ts'
 import {
   anyRegionTruncated,

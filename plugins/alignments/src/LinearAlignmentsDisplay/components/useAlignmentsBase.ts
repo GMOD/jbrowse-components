@@ -18,7 +18,7 @@ import {
   openCoverageWidget,
   openIndicatorWidget,
   openModificationWidget,
-} from './openFeatureWidget.ts'
+} from './detailWidgets.ts'
 import {
   formatCigarTooltip,
   formatCoverageTooltip,
