@@ -4,16 +4,16 @@
 
 Adding a track-menu setting? Decide two things.
 
-**Storage:** every track-menu display option is a **config slot**. Add a slot
-to `configSchema.ts`, read it with a thin `get key() { return getConf(self,
-'key') }` view, and write it with `self.configuration.setSlot('key', value)`.
-This survives hide/retick (fixes #5591 — the slot lives on the persistent track
-config, not the ephemeral display node) and lets a config default be set
-declaratively. Don't add plain MST props for display options anymore — the
-former MST-prop toggles (`linkedReads`, `showCoverage`, `showPileup`,
-`readConnections`, `showSoftClipping`, the sashimi/arc settings, …) were all
-promoted to slots. Reserve plain MST props / volatiles for genuinely
-per-instance transient state (hover, selection, scroll).
+**Storage:** every track-menu display option is a **config slot**. Add a slot to
+`configSchema.ts`, read it with a thin
+`get key() { return getConf(self, 'key') }` view, and write it with
+`self.configuration.setSlot('key', value)`. This survives hide/retick (fixes
+#5591 — the slot lives on the persistent track config, not the ephemeral display
+node) and lets a config default be set declaratively. Don't add plain MST props
+for display options anymore — the former MST-prop toggles (`linkedReads`,
+`showCoverage`, `showPileup`, `readConnections`, `showSoftClipping`, the
+sashimi/arc settings, …) were all promoted to slots. Reserve plain MST props /
+volatiles for genuinely per-instance transient state (hover, selection, scroll).
 
 **Blast radius:** which getter reads it decides what it invalidates. Tiers 2–4
 are auto-wired by MobX; **tier 1 is manual** because the worker boundary defeats

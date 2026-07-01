@@ -16,7 +16,9 @@ const NumberEditor = observer(function NumberEditor({
   }
   integer?: boolean
 }) {
-  const [val, setVal] = useState(slot.value === undefined ? '' : String(slot.value))
+  const [val, setVal] = useState(
+    slot.value === undefined ? '' : String(slot.value),
+  )
   return (
     <ConfigurationTextField
       label={slot.name}

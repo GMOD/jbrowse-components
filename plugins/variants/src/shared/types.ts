@@ -29,6 +29,10 @@ interface VariantFeatureBase {
   name: string
   description: string
   length: number
+  // SO term(s) for the variant (e.g. 'breakend', 'deletion', 'inversion').
+  // Carried through so a feature clicked from a multi-sample display opens the
+  // widget with its SV / breakend navigation panels, which key off `type`.
+  type: string
 }
 
 // Worker-internal shape produced by the cell computations: per-feature

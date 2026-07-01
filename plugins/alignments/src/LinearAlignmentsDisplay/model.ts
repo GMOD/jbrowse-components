@@ -544,45 +544,45 @@ export default function stateModelFactory(
          * #getter
          */
         get scaleType() {
-          return getConf(self,'scaleType')
+          return getConf(self, 'scaleType')
         },
         /**
          * #getter
          */
         get autoscaleType() {
-          return getConf(self,'autoscale')
+          return getConf(self, 'autoscale')
         },
         /**
          * #getter
          */
         get minScore() {
-          return getConf(self,'minScore')
+          return getConf(self, 'minScore')
         },
         /**
          * #getter
          */
         get maxScore() {
-          return getConf(self,'maxScore')
+          return getConf(self, 'maxScore')
         },
         /**
          * #getter
          */
         get minScoreBound() {
-          const v = getConf(self,'minScore')
+          const v = getConf(self, 'minScore')
           return v !== Number.MIN_VALUE ? v : undefined
         },
         /**
          * #getter
          */
         get maxScoreBound() {
-          const v = getConf(self,'maxScore')
+          const v = getConf(self, 'maxScore')
           return v !== Number.MAX_VALUE ? v : undefined
         },
         /**
          * #getter
          */
         get numStdDev() {
-          return getConf(self,'numStdDev')
+          return getConf(self, 'numStdDev')
         },
       }))
       .views(self => ({
@@ -625,35 +625,35 @@ export default function stateModelFactory(
          * #getter
          */
         get colorBy(): ColorBy {
-          return getConf(self,'colorBy')
+          return getConf(self, 'colorBy')
         },
 
         /**
          * #getter
          */
         get filterBy(): FilterBy {
-          return getConf(self,'filterBy')
+          return getConf(self, 'filterBy')
         },
 
         /**
          * #getter
          */
         get featureHeight() {
-          return getConf(self,'featureHeight')
+          return getConf(self, 'featureHeight')
         },
 
         /**
          * #getter
          */
         get featureSpacing() {
-          return getConf(self,'featureSpacing')
+          return getConf(self, 'featureSpacing')
         },
 
         /**
          * #getter
          */
         get maxHeight() {
-          return getConf(self,'maxHeight')
+          return getConf(self, 'maxHeight')
         },
 
         /**
@@ -662,7 +662,7 @@ export default function stateModelFactory(
          * (config slot `showSashimiLabels`, overridable from the track menu).
          */
         get showSashimiLabels() {
-          return getConf(self,'showSashimiLabels')
+          return getConf(self, 'showSashimiLabels')
         },
 
         /**
@@ -676,14 +676,14 @@ export default function stateModelFactory(
          * #getter
          */
         get mismatchAlpha() {
-          return !!getConf(self,'mismatchAlpha')
+          return !!getConf(self, 'mismatchAlpha')
         },
 
         /**
          * #getter
          */
         get showLowFreqMismatches() {
-          return !!getConf(self,'showLowFreqMismatches')
+          return !!getConf(self, 'showLowFreqMismatches')
         },
 
         /**
@@ -694,7 +694,7 @@ export default function stateModelFactory(
           // color scheme (including modifications) and shown only on demand via
           // the "Show legend" track-menu item, rather than eagerly covering the
           // top of every alignments track.
-          return getConf(self,'showLegend') ?? false
+          return getConf(self, 'showLegend') ?? false
         },
 
         /**
@@ -712,7 +712,7 @@ export default function stateModelFactory(
          * one fetch into N sections.
          */
         get groupBy(): GroupBy | undefined {
-          return getConf(self,'groupBy') ?? undefined
+          return getConf(self, 'groupBy') ?? undefined
         },
 
         /**
@@ -1126,7 +1126,7 @@ export default function stateModelFactory(
          * #getter
          */
         get readConnectionsLineWidth() {
-          return getConf(self,'readConnectionsLineWidth')
+          return getConf(self, 'readConnectionsLineWidth')
         },
 
         /**
@@ -1333,7 +1333,7 @@ export default function stateModelFactory(
          * #getter
          */
         get showOutline() {
-          return getConf(self,'showOutline') ?? self.isChainMode
+          return getConf(self, 'showOutline') ?? self.isChainMode
         },
 
         /**
@@ -1755,7 +1755,7 @@ export default function stateModelFactory(
            * #action
            */
           setColorScheme(colorBy: ColorBy) {
-            const current = getConf(self,'colorBy')
+            const current = getConf(self, 'colorBy')
             if (colorBy.type !== 'tag' || colorBy.tag !== current?.tag) {
               self.colorTagMap = {}
             }
@@ -1796,7 +1796,10 @@ export default function stateModelFactory(
            * #action
            */
           toggleSoftClipping() {
-            self.configuration.setSlot('showSoftClipping', !self.showSoftClipping)
+            self.configuration.setSlot(
+              'showSoftClipping',
+              !self.showSoftClipping,
+            )
           },
 
           /**
@@ -1805,7 +1808,7 @@ export default function stateModelFactory(
           toggleMismatchAlpha() {
             self.configuration.setSlot(
               'mismatchAlpha',
-              !getConf(self,'mismatchAlpha'),
+              !getConf(self, 'mismatchAlpha'),
             )
           },
 
@@ -2065,21 +2068,30 @@ export default function stateModelFactory(
            * #action
            */
           setCoverageHeight(height: number) {
-            self.configuration.setSlot('coverageHeight', Math.max(MIN_BAND_HEIGHT, height))
+            self.configuration.setSlot(
+              'coverageHeight',
+              Math.max(MIN_BAND_HEIGHT, height),
+            )
           },
 
           /**
            * #action
            */
           setReadConnectionsHeight(height: number) {
-            self.configuration.setSlot('readConnectionsHeight', Math.max(MIN_BAND_HEIGHT, height))
+            self.configuration.setSlot(
+              'readConnectionsHeight',
+              Math.max(MIN_BAND_HEIGHT, height),
+            )
           },
 
           /**
            * #action
            */
           setSashimiArcsHeight(height: number) {
-            self.configuration.setSlot('sashimiArcsHeight', Math.max(MIN_BAND_HEIGHT, height))
+            self.configuration.setSlot(
+              'sashimiArcsHeight',
+              Math.max(MIN_BAND_HEIGHT, height),
+            )
           },
 
           /**
@@ -2410,7 +2422,7 @@ export default function stateModelFactory(
             const view = getContainingView(self) as LGV
             return {
               adapterConfig: self.adapterConfig,
-              fetchSizeLimit: getConf(self,'fetchSizeLimit'),
+              fetchSizeLimit: getConf(self, 'fetchSizeLimit'),
               userByteSizeLimit: self.userByteSizeLimit,
               visibleBp: view.visibleBp,
             }

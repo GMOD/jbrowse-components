@@ -15,6 +15,11 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * #stateModel LinearMultiSampleVariantDisplay
+ * Multi-sample variant display drawing one genotype row per sample, with a
+ * per-cell feature widget on click.
+ */
 export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
   return (
     types
@@ -80,9 +85,9 @@ export function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         get prefersOffset() {
           return true
         },
-        // Map view of perRegionCellData for renderBlocks. Object.entries every
-        // render is cheap (typical view shows 1-3 regions); MobX caches the
-        // computed so only cellData changes invalidate it.
+        // Map view of perRegionCellData for renderBlocks. Rebuilding the map is
+        // cheap (typical view shows 1-3 regions); MobX caches the computed so
+        // only cellData changes invalidate it.
         get perRegionCellMap() {
           const { cellData } = self
           const out = new Map<number, VariantUploadData>()

@@ -11,6 +11,11 @@ import type {
   LinearGenomeViewModel,
 } from '@jbrowse/plugin-linear-genome-view'
 
+/**
+ * #stateModel LinearMultiSampleVariantMatrixDisplay
+ * Multi-sample variant display rendering genotypes as a compact sample-by-site
+ * matrix, with subpixel column alpha-scaling for anti-aliased parity.
+ */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {

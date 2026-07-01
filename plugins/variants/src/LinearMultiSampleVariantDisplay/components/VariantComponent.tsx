@@ -5,6 +5,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
+import { computeVariantHitQuery } from './variantHitTest.ts'
 import { buildVariantHit } from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
@@ -81,27 +82,13 @@ function getFeatureUnderMouse(
     return undefined
   }
 
-  const blockWidth = region.screenEndPx - region.screenStartPx
-  const regionLengthBp = region.end - region.start
-  const bpPerPx = regionLengthBp / blockWidth
-
-  const frac = (mouseX - region.screenStartPx) / blockWidth
-  const genomicPos = region.reversed
-    ? region.end - frac * regionLengthBp
-    : region.start + frac * regionLengthBp
-
-  // Rows under 1px draw 1px tall, so sub-pixel rows stack under one cursor
-  // pixel. Query the band of rows whose 1px-min box overlaps the cursor (a
-  // single Y-point misses sparse rows with no cell under the column), then pick
-  // the shortest feature so a small variant atop a large one stays selectable.
-  // 1px-min mirrors max(u.rowHeight, 1.0) in shaders/variant.slang +
-  // Canvas2DVariantRenderer.ts.
-  const drawnRowHeight = Math.max(model.effectiveRowHeight, 1)
-  const rowLo =
-    (mouseY - drawnRowHeight + model.scrollTop) / model.effectiveRowHeight
-  const rowHi = (mouseY + 1 + model.scrollTop) / model.effectiveRowHeight
-
-  const bpPadding = 5 * bpPerPx
+  const { genomicPos, rowLo, rowHi, bpPadding } = computeVariantHitQuery(
+    region,
+    mouseX,
+    mouseY,
+    model.scrollTop,
+    model.effectiveRowHeight,
+  )
   const hits = flatbushIndex.search(
     genomicPos - bpPadding,
     rowLo,
@@ -109,6 +96,8 @@ function getFeatureUnderMouse(
     rowHi,
   )
 
+  // Pick the shortest feature so a small variant atop a large one stays
+  // selectable.
   let bestIdx = -1
   let bestLen = Infinity
   for (const idx of hits) {

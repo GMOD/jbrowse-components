@@ -121,6 +121,34 @@ test('track menu offers Reset for an override, Delete otherwise', () => {
   expect(labelsAfter).not.toContain('Delete track')
 })
 
+test('a live setSlot edit persists exactly once and does not loop (admin)', () => {
+  // Regression: BaseTrackModel's debounced save watches the re-resolving
+  // `self.configuration` reference. Admin `updateTrackConf` replaces the frozen
+  // jbrowse.tracks entry and rehydrates a new MST node on every write, so a
+  // referential-equality reaction would re-fire forever. Structural comparison
+  // must settle it.
+  jest.useFakeTimers()
+  try {
+    const { rootModel } = getPluginManager(undefined, true)
+
+    const session = rootModel.session
+    session.views[0].showTrack(TRACK_ID)
+    const track = session.views[0].tracks.find(
+      (t: any) => t.configuration.trackId === TRACK_ID,
+    )
+    const spy = jest.spyOn(session.jbrowse, 'updateTrackConf')
+
+    track.configuration.setSlot('name', 'Edited name')
+    for (let i = 0; i < 20; i++) {
+      jest.advanceTimersByTime(500)
+    }
+
+    expect(spy).toHaveBeenCalledTimes(1)
+  } finally {
+    jest.useRealTimers()
+  }
+})
+
 test('reset discards the override and reverts an open track in place', () => {
   const { rootModel } = getPluginManager(undefined, false)
   const session = rootModel.session as unknown as TestSession

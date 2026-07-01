@@ -1,11 +1,6 @@
 import Flatbush from '@jbrowse/core/util/flatbush'
 
-import {
-  SHAPE_RECT,
-  SHAPE_TRI_DOWN,
-  SHAPE_TRI_LEFT,
-  SHAPE_TRI_RIGHT,
-} from './variantShape.ts'
+import { SHAPE_RECT, SHAPE_TRI_DOWN, SHAPE_TRI_LEFT } from './variantShape.ts'
 import { BLACK_ABGR, REFERENCE_COLOR } from '../../shared/constants.ts'
 import { getAlleleColor } from '../../shared/drawAlleleCount.ts'
 import {
@@ -40,9 +35,12 @@ export interface VariantCellData {
   featureIdList: string[]
 }
 
-function getShapeType(featureType: string, featureStrand?: number) {
+function getShapeType(featureType: string) {
+  // An inversion is symmetric — it's either inverted or not, there's no
+  // meaningful left/right orientation — so it gets a single glyph (VCF never
+  // sets a strand on variant records anyway).
   if (featureType === 'inversion') {
-    return featureStrand === 1 ? SHAPE_TRI_RIGHT : SHAPE_TRI_LEFT
+    return SHAPE_TRI_LEFT
   }
   if (featureType === 'insertion') {
     return SHAPE_TRI_DOWN
@@ -58,7 +56,13 @@ function getInsertionRenderEnd(
 ) {
   let maxLen = end - start
   for (const a of alt) {
-    maxLen = Math.max(maxLen, a.length)
+    // Symbolic alts (<INS>, <INS:ME>, …) carry no sequence, so their string
+    // length is meaningless — a symbolic insertion's span comes from SVLEN
+    // below (or stays a point/line when absent). Only literal-sequence alts
+    // contribute their length.
+    if (!a.startsWith('<')) {
+      maxLen = Math.max(maxLen, a.length)
+    }
   }
   const info = feature.get('INFO') as Record<string, unknown[]> | undefined
   if (Array.isArray(info?.SVLEN)) {
@@ -137,9 +141,8 @@ export function computeVariantCells({
     const start = feature.get('start')
     const end = feature.get('end')
     const featureType = feature.get('type')! || ''
-    const featureStrand = feature.get('strand')
     const bpLen = end - start
-    const shape = getShapeType(featureType, featureStrand)
+    const shape = getShapeType(featureType)
     const alt = feature.get('ALT') as string[]
     const ref = feature.get('REF') as string
     const featureName = feature.get('name')!
@@ -251,6 +254,7 @@ export function computeVariantCells({
       name: featureName,
       description,
       length: bpLen,
+      type: featureType,
       genotypes: renderedGenotypes,
     }
     featureIdList.push(featureId)

@@ -54,6 +54,11 @@ const LinearManhattanDisplayComponent = lazy(
   () => import('./components/LinearManhattanDisplayComponent.tsx'),
 )
 
+/**
+ * #stateModel LinearManhattanDisplay
+ * GWAS Manhattan-plot display drawing -log10 p-values as a scored scatter along
+ * the genome, with a feature widget on click.
+ */
 export function stateModelFactory(
   _pluginManager: PluginManager,
   configSchema: AnyConfigurationSchemaType,

@@ -484,7 +484,8 @@ export default function baseStateModelFactory(
             return undefined
           }
           return (
-            self.userFeatureDensityLimit ?? getConf(self, 'maxFeatureScreenDensity')
+            self.userFeatureDensityLimit ??
+            getConf(self, 'maxFeatureScreenDensity')
           )
         },
 

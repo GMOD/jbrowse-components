@@ -101,4 +101,28 @@ describe('computeVariantCells insertion hit bounds', () => {
     expect(result.cellPositions[0]).toBe(100)
     expect(result.cellPositions[1]).toBe(350)
   })
+
+  test('symbolic insertion without SVLEN stays a point (ignores <INS> string length)', () => {
+    const feature = makeFeature({
+      genotypes: { S1: '1' },
+      ALT: ['<INS>'],
+      REF: 'A',
+      INFO: {},
+      name: 'ins3',
+      description: '',
+      type: 'insertion',
+      start: 100,
+      end: 101,
+    })
+    const result = computeVariantCells({
+      mafs: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'allele',
+      referenceDrawingMode: 'skip',
+      genotypesCache: new Map(),
+    })
+    expect(result.cellPositions[0]).toBe(100)
+    // end-start (1bp), not the length of the literal "<INS>" string (5)
+    expect(result.cellPositions[1]).toBe(101)
+  })
 })

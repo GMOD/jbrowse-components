@@ -564,8 +564,7 @@ export function showTrackGeneric(
     // display config so they take effect and survive hide/retick (#5591). Runs
     // after the push so the display's config reference can resolve.
     const display = track.displays[0] as
-      | { configuration: AnyConfigurationModel }
-      | undefined
+      { configuration: AnyConfigurationModel } | undefined
     if (display) {
       for (const [key, value] of Object.entries(displayInitialSnapshot)) {
         if (key !== 'type' && isConfigurationSlot(display.configuration, key)) {

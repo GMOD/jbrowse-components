@@ -24,6 +24,8 @@ export function enrichFeatureFromClick(
             REF: featureInfo.ref,
             ALT: featureInfo.alt,
             description: featureInfo.description,
+            // type drives the widget's breakend / SV navigation panels
+            type: featureInfo.type,
           }
         : {}),
       clickedSample: clickResult.sampleName,

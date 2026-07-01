@@ -91,6 +91,7 @@ function internFeatureGenotypes(
     name: info.name,
     description: info.description,
     length: info.length,
+    type: info.type,
     genotypeCodes,
   }
 }

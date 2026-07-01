@@ -139,56 +139,56 @@ export default function sharedModelFactory(
         return true
       },
       get minorAlleleFrequencyFilter() {
-        return getConf(self,'minorAlleleFrequencyFilter')
+        return getConf(self, 'minorAlleleFrequencyFilter')
       },
       get lengthCutoffFilter() {
-        return getConf(self,'lengthCutoffFilter')
+        return getConf(self, 'lengthCutoffFilter')
       },
       get lineZoneHeight() {
-        return getConf(self,'lineZoneHeight')
+        return getConf(self, 'lineZoneHeight')
       },
       get ldMetric() {
-        return getConf(self,'ldMetric')
+        return getConf(self, 'ldMetric')
       },
       get showLegend() {
-        return getConf(self,'showLegend')
+        return getConf(self, 'showLegend')
       },
       get showLDTriangle() {
-        return getConf(self,'showLDTriangle')
+        return getConf(self, 'showLDTriangle')
       },
       get showRecombination() {
-        return getConf(self,'showRecombination')
+        return getConf(self, 'showRecombination')
       },
       get recombinationZoneHeight() {
-        return getConf(self,'recombinationZoneHeight')
+        return getConf(self, 'recombinationZoneHeight')
       },
       get fitToHeight() {
-        return getConf(self,'fitToHeight')
+        return getConf(self, 'fitToHeight')
       },
       get hweFilterThreshold() {
-        return getConf(self,'hweFilterThreshold')
+        return getConf(self, 'hweFilterThreshold')
       },
       get callRateFilter() {
-        return getConf(self,'callRateFilter')
+        return getConf(self, 'callRateFilter')
       },
       get showVerticalGuides() {
-        return getConf(self,'showVerticalGuides')
+        return getConf(self, 'showVerticalGuides')
       },
       get showLabels() {
-        return getConf(self,'showLabels')
+        return getConf(self, 'showLabels')
       },
       get tickHeight() {
-        return getConf(self,'tickHeight')
+        return getConf(self, 'tickHeight')
       },
       // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
       get useGenomicPositions() {
-        return getConf(self,'useGenomicPositions')
+        return getConf(self, 'useGenomicPositions')
       },
       get signedLD() {
-        return getConf(self,'signedLD')
+        return getConf(self, 'signedLD')
       },
       get jexlFilters(): string[] {
-        return getConf(self,'jexlFilters')
+        return getConf(self, 'jexlFilters')
       },
       /**
        * #getter

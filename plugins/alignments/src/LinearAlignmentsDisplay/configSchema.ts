@@ -371,7 +371,8 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
           'samplot',
         ]),
         defaultValue: 'off',
-        description: 'Read-connection rendering mode (mate pairs + split reads)',
+        description:
+          'Read-connection rendering mode (mate pairs + split reads)',
       },
       /**
        * #slot

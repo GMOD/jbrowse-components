@@ -71,6 +71,11 @@ const WiggleClusterDialog = lazy(
   () => import('./components/WiggleClusterDialog/WiggleClusterDialog.tsx'),
 )
 
+/**
+ * #stateModel MultiLinearWiggleDisplay
+ * Wiggle display overlaying/stacking multiple quantitative subtracks in one
+ * area, with optional clustering and a tree sidebar.
+ */
 export default function stateModelFactory(
   configSchema: AnyConfigurationSchemaType,
 ) {

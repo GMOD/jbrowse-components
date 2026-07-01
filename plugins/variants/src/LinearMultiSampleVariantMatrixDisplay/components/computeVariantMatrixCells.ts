@@ -26,6 +26,7 @@ function makeFeatureData(
     name: feature.get('name')!,
     description: feature.get('description') as string,
     length: feature.get('end') - feature.get('start'),
+    type: feature.get('type') ?? '',
     featureId,
     genotypes,
   }

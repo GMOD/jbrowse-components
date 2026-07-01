@@ -114,7 +114,8 @@ interface DisplaySnapshot {
 // `color`/`useBicolor` are config-slot-only with no getter — `showTrackGeneric`
 // routes all four onto the config, so `keyof` the instance misses them. `height`
 // resolves fine — it's the getter.
-type WiggleConfigSlotKey = 'autoscale' | 'defaultRendering' | 'color' | 'useBicolor'
+type WiggleConfigSlotKey =
+  'autoscale' | 'defaultRendering' | 'color' | 'useBicolor'
 type DisplayKeys =
   | keyof LinearAlignmentsDisplayModel
   | keyof LinearBasicDisplayModel
