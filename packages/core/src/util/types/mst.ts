@@ -80,7 +80,7 @@ const FileLocationUnion = types.union(
 
 // pre-locationType legacy snapshots stored only the discriminating field (uri,
 // localPath, blob, handleId) with no locationType tag
-interface LegacyFileLocation {
+export interface LegacyFileLocation {
   locationType?: undefined
   uri?: string
   localPath?: string
