@@ -2,7 +2,6 @@ import type React from 'react'
 
 import {
   getParent,
-  getSnapshot,
   hasParent,
   isAlive,
   types,
@@ -137,17 +136,6 @@ function stateModelFactory() {
           return self.parentDisplay.effectiveRpcDriverName
         }
         return getConf(self.parentTrack, 'rpcDriverName')
-      },
-
-      /**
-       * #getter
-       * The track's config as currently resolved (config-schema mutations
-       * from quick track-menu actions and the Settings dialog both write
-       * directly into this same node, so there's nothing left to merge here —
-       * this is just the live snapshot).
-       */
-      get effectiveTrackConfig() {
-        return getSnapshot(getContainingTrack(self).configuration)
       },
     }))
     .views(self => ({

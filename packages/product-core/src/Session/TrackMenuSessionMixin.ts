@@ -1,13 +1,16 @@
-import { buildExtraTrackMenuItems } from '@jbrowse/core/ui/buildExtraTrackMenuItems'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { aboutTrackMenuItem, trackListMenuItems } from './TrackMenu.ts'
+import {
+  aboutTrackMenuItem,
+  pluginExtraTrackItems,
+  trackListMenuItems,
+} from './TrackMenu.ts'
 
 import type { BaseSession } from './BaseSession.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, TrackActionView } from '@jbrowse/core/util/types'
+import type { TrackActionView } from '@jbrowse/core/util/types'
 
 /**
  * #stateModel TrackMenuSessionMixin
@@ -32,11 +35,7 @@ export function TrackMenuSessionMixin(pluginManager: PluginManager) {
       ): MenuItem[] {
         return [
           ...trackListMenuItems(self, config, []),
-          ...buildExtraTrackMenuItems(pluginManager, {
-            session: self as unknown as AbstractSessionModel,
-            config,
-            view,
-          }),
+          ...pluginExtraTrackItems(pluginManager, self, config, view),
         ]
       },
       /**
@@ -44,26 +43,17 @@ export function TrackMenuSessionMixin(pluginManager: PluginManager) {
        */
       getTrackActionMenuItems({
         config,
-        effectiveConfig,
-        extraTrackActions,
         view,
       }: {
         config: AnyConfigurationModel
-        effectiveConfig: Record<string, unknown>
-        extraTrackActions?: MenuItem[]
         view?: TrackActionView
       }): MenuItem[] {
         return [
           // priority mirrors the full TrackMenuItemsSessionMixin so "About
           // track" sorts to the top of the in-view label menu consistently
           // across embedded and full products
-          { ...aboutTrackMenuItem(self, effectiveConfig), priority: 1002 },
-          ...(extraTrackActions ?? []),
-          ...buildExtraTrackMenuItems(pluginManager, {
-            session: self as unknown as AbstractSessionModel,
-            config,
-            view,
-          }),
+          { ...aboutTrackMenuItem(self, config), priority: 1002 },
+          ...pluginExtraTrackItems(pluginManager, self, config, view),
         ]
       },
     }

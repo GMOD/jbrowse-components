@@ -159,8 +159,6 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   gitCommit?: string
   getTrackActionMenuItems?: (arg: {
     config: AnyConfigurationModel
-    effectiveConfig: Record<string, unknown>
-    extraTrackActions?: MenuItem[]
     view?: TrackActionView
   }) => MenuItem[]
   getTrackActions?: (

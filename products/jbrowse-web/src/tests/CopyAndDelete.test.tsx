@@ -76,7 +76,6 @@ test('copy and delete reference sequence track disabled', () => {
 
     const trackMenuItems = session.getTrackActionMenuItems!({
       config: trackConf,
-      effectiveConfig: trackConf,
     })
     const trackActionsSubMenu = trackMenuItems.find(
       item => 'label' in item && item.label === 'Track actions',

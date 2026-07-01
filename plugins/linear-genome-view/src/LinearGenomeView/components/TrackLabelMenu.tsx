@@ -1,4 +1,3 @@
-import { SAVE_TRACK_DATA_LABEL } from '@jbrowse/core/pluggableElementTypes/models'
 import CascadingMenuButton from '@jbrowse/core/ui/CascadingMenuButton'
 import { getContainingView, getSession } from '@jbrowse/core/util'
 import KeyboardArrowDownIcon from '@mui/icons-material/KeyboardArrowDown'
@@ -23,20 +22,10 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
     const { isTopLevelView } = view
 
     const trackMenuItems = track.trackMenuItems()
-    const saveTrackData = trackMenuItems.find(
-      item => 'label' in item && item.label === SAVE_TRACK_DATA_LABEL,
-    )
-    const remainingTrackMenuItems = trackMenuItems.filter(
-      item => !('label' in item) || item.label !== SAVE_TRACK_DATA_LABEL,
-    )
-
-    const effectiveConfig = track.activeDisplay.effectiveTrackConfig
 
     const sessionItems =
       session.getTrackActionMenuItems?.({
         config: trackConf,
-        effectiveConfig,
-        extraTrackActions: saveTrackData ? [saveTrackData] : [],
         view,
       }) ?? []
 
@@ -101,7 +90,8 @@ function TrackLabelMenu({ track }: { track: BaseTrackModel }) {
         ],
       },
       ...sessionItems,
-      ...remainingTrackMenuItems,
+      track.saveTrackDataMenuItem,
+      ...trackMenuItems,
     ].sort((a, b) => (b.priority ?? 0) - (a.priority ?? 0))
   }
 

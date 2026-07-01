@@ -139,7 +139,6 @@ test('in-view track menu offers "Add GC content track" on refseq', () => {
     session.assemblyManager.get('volvox')!.configuration.sequence
   const items = session.getTrackActionMenuItems({
     config: refseqConf,
-    effectiveConfig: {},
     view: session.views[0],
   })
   const trackActions = items.find(

@@ -4,9 +4,8 @@ import { getPluginManager } from './util.tsx'
 
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
-// Documents the serialized shape of display configs that
-// BaseDisplayModel.effectiveTrackConfig and the BaseTrackModel persistence
-// reaction rely on. A track's displays are injected by
+// Documents the serialized shape of display configs that the BaseTrackModel
+// persistence reaction relies on. A track's displays are injected by
 // baseTrackConfig.preProcessSnapshot with a unique displayId (a
 // types.identifier), so they never serialize to `{}` and always retain type +
 // displayId — even when every other slot is default.

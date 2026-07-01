@@ -170,6 +170,24 @@ export function aboutTrackMenuItem(
 }
 
 /**
+ * plugin-contributed per-track items (`Core-extraTrackMenuItems`), surfaced in
+ * both the hierarchical selector and the in-view label menu so plugins reach
+ * every track menu consistently
+ */
+export function pluginExtraTrackItems(
+  pluginManager: PluginManager,
+  session: SessionWithDialog,
+  config: AnyConfigurationModel,
+  view?: TrackActionView,
+): MenuItem[] {
+  return buildExtraTrackMenuItems(pluginManager, {
+    session: session as unknown as AbstractSessionModel,
+    config,
+    view,
+  })
+}
+
+/**
  * flattened track menu (About + raw actions) for the hierarchical track selector
  */
 export function trackListMenuItems(
@@ -182,25 +200,23 @@ export function trackListMenuItems(
 
 /**
  * track menu with an "About track" item and a "Track actions" submenu, for the
- * in-view track label menu. `aboutConfig` is the config shown in the About
- * dialog (the active display's effective config)
+ * in-view track label menu
  */
 export function trackActionMenuItems(
   session: SessionWithDialog,
-  aboutConfig: TrackConfig,
+  config: TrackConfig,
   actions: MenuItem[],
-  extraTrackActions?: MenuItem[],
 ): MenuItem[] {
   return [
     {
-      ...aboutTrackMenuItem(session, aboutConfig),
+      ...aboutTrackMenuItem(session, config),
       priority: 1002,
     },
     {
       type: 'subMenu' as const,
       label: 'Track actions',
       priority: 1001,
-      subMenu: [...actions, ...(extraTrackActions ?? [])],
+      subMenu: actions,
     },
     { type: 'divider' as const },
   ]
@@ -240,11 +256,7 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
             config,
             self.getTrackActions(config, view),
           ),
-          ...buildExtraTrackMenuItems(pluginManager, {
-            session: self as unknown as AbstractSessionModel,
-            config,
-            view,
-          }),
+          ...pluginExtraTrackItems(pluginManager, self, config, view),
         ]
       },
       /**
@@ -253,30 +265,15 @@ export function TrackMenuItemsSessionMixin(pluginManager: PluginManager) {
        */
       getTrackActionMenuItems({
         config,
-        effectiveConfig,
-        extraTrackActions,
         view,
       }: {
         config: BaseTrackConfig
-        effectiveConfig: Record<string, unknown>
-        extraTrackActions?: MenuItem[]
         view?: TrackActionView
       }): MenuItem[] {
-        return trackActionMenuItems(
-          self,
-          effectiveConfig,
-          self.getTrackActions(config, view),
-          [
-            ...(extraTrackActions ?? []),
-            // same plugin-contributed items the hierarchical selector shows, so
-            // Core-extraTrackMenuItems reaches both menus consistently
-            ...buildExtraTrackMenuItems(pluginManager, {
-              session: self as unknown as AbstractSessionModel,
-              config,
-              view,
-            }),
-          ],
-        )
+        return trackActionMenuItems(self, config, [
+          ...self.getTrackActions(config, view),
+          ...pluginExtraTrackItems(pluginManager, self, config, view),
+        ])
       },
     }
   })
