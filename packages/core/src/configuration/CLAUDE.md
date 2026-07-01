@@ -26,10 +26,22 @@ The biggest piece of subtlety. Read this before changing any of:
 `jbrowse.tracks` is `types.frozen` (plain JS objects) because holding 10k+
 tracks as MST instances is prohibitive. Track configs hydrate to MST nodes
 **lazily** on first reference access, inside `TrackConfigurationReference.get()`
-via `frozenTrackCache` (a `WeakMap<frozenObj, MstNode>` in
-`configurationSchema.ts`): same frozen object → same MST node (identity-stable);
-`updateTrackConf` replacing the entry drops the WeakMap entry so the next access
-rehydrates; never-opened tracks never hydrate.
+via `pluginManager.trackConfigHydrationCache` (nested
+`WeakMap<schemaType, WeakMap<frozenObj, MstNode>>`, field defined on
+`PluginManager`, consumed from `configurationSchema.ts`): same frozen object →
+same MST node (identity-stable); `updateTrackConf` replacing the entry drops
+the WeakMap entry so the next access rehydrates; never-opened tracks never
+hydrate.
+
+The cache isn't a micro-optimization — it's load-bearing. MST's custom
+reference `getValue` has no memoization of its own, so every read of
+`track.configuration` anywhere re-invokes `get()`; without the cache, every
+read would fabricate a fresh, non-identical MST node. It lives on
+`PluginManager` (not a module-level singleton) so two independent
+`PluginManager` instances in one JS realm can never hand back a node hydrated
+with the wrong instance's env, even if they're fed the identical frozen object
+by reference. See ADR-031 for the full reasoning and the rejected
+module-singleton alternative.
 
 ### Invalid configs (lazy hydration can throw)
 

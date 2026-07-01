@@ -263,6 +263,22 @@ export default class PluginManager {
 
   extensionPoints = new Map<string, ExtensionPointCallback[]>()
 
+  /**
+   * Lazy-hydration cache for `TrackConfigurationReference`/
+   * `DisplayConfigurationReference` (configuration/configurationSchema.ts).
+   * `jbrowse.tracks` is `types.frozen` for large-tracklist performance, so a
+   * track config is a plain JS object until first referenced; hydrating it
+   * into an MST node is deferred to that read. MST's custom-reference
+   * `getValue` has no memoization of its own — it reruns on every property
+   * access — so without this cache, every read of `track.configuration` would
+   * fabricate a fresh, non-identical MST node. Keyed by schemaType (each track
+   * type's config schema is rebuilt fresh per PluginManager instance, see
+   * addTrackType) then by the frozen object itself, so a cache hit can only
+   * ever come from this same PluginManager instance and this same track type.
+   * See ADR-031.
+   */
+  trackConfigHydrationCache = new WeakMap<object, WeakMap<object, unknown>>()
+
   constructor(initialPlugins: (Plugin | PluginLoadRecord)[] = []) {
     // add the core plugin
     this.addPlugin({

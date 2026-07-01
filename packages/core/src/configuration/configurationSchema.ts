@@ -23,6 +23,7 @@ import { ElementId } from '../util/types/mst.ts'
 
 import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationSchemaType } from './types.ts'
+import type PluginManager from '../PluginManager.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
 export type {
@@ -58,6 +59,19 @@ export interface ConfigurationSchemaOptions<
   ) => Record<string, unknown>
 }
 
+// Options merged from a baseConfiguration are a shallow `{...base, ...child}`
+// spread, not a composition — if both sides define the same hook, the child's
+// silently replaces the base's instead of extending it. Checked eagerly here
+// (at schema-construction time, i.e. plugin registration) so that mistake
+// fails loud immediately rather than shipping a track/display that quietly
+// lost some of its base behavior.
+const OVERRIDABLE_HOOK_KEYS = [
+  'actions',
+  'views',
+  'extend',
+  'preProcessSnapshot',
+] as const satisfies readonly (keyof ConfigurationSchemaOptions<any, any>)[]
+
 function preprocessConfigurationSchemaArguments(
   modelName: string,
   inputSchemaDefinition: ConfigurationSchemaDefinition,
@@ -77,6 +91,16 @@ function preprocessConfigurationSchemaArguments(
     ? getConfigurationSchemaMetadata(inputOptions.baseConfiguration)
     : undefined
   if (baseMeta) {
+    const clobberedHooks = OVERRIDABLE_HOOK_KEYS.filter(
+      key => baseMeta.options[key] && inputOptions[key],
+    )
+    if (clobberedHooks.length) {
+      throw new Error(
+        `${modelName} and its baseConfiguration both define ${clobberedHooks.join(', ')} — ` +
+          `${modelName}'s would silently replace the base's instead of composing. ` +
+          `Rename one, or fold the base's ${clobberedHooks.join(', ')} into ${modelName}'s directly.`,
+      )
+    }
     schemaDefinition = {
       ...baseMeta.definition,
       ...schemaDefinition,
@@ -161,13 +185,22 @@ function makeConfigurationSchemaModel<
     }
   }
 
-  // isConfigurationSchemaType walks union/optional/array/map types recursively;
-  // computing the sub-schema key set once at schema construction makes
-  // setSubschema's membership check a Set.has lookup.
+  // isConfigurationSchemaType walks union/optional/array/map types recursively,
+  // so it also matches an array/map *of* sub-schemas — but setSubschema below
+  // replaces a single sub-schema node with `.create(data)`, which throws a
+  // confusing MST validation error if pointed at an array/map-typed slot
+  // instead of the friendly "is not a subschema" message. Excluding those here
+  // makes the membership check double as the "is this a single-sub-schema
+  // slot" guard setSubschema actually needs.
   const subSchemaKeys = new Set(
-    Object.keys(modelDefinition).filter(k =>
-      isConfigurationSchemaType(modelDefinition[k]),
-    ),
+    Object.keys(modelDefinition).filter(k => {
+      const type = modelDefinition[k]
+      return (
+        isConfigurationSchemaType(type) &&
+        !isArrayType(type) &&
+        !isMapType(type)
+      )
+    }),
   )
 
   let completeModel = types
@@ -258,12 +291,25 @@ export function ConfigurationSchema<
   ) as AnyConfigurationSchemaType
 }
 
-// Lazy hydration cache for frozen track configs. jbrowse.tracks is
-// types.frozen (plain objects) for large-tracklist performance; this WeakMap
-// converts each frozen object to an MST node on first reference access.
-// Keyed by the frozen object itself, so the entry is GC'd when updateTrackConf
-// replaces the snapshot and nothing else holds the old reference.
-const frozenTrackCache = new WeakMap<object, unknown>()
+// The hydration cache lives on the PluginManager instance (see
+// trackConfigHydrationCache's doc comment there and ADR-031), not as a
+// module-level singleton: it must never hand a track resolved on one
+// PluginManager instance a node built with another instance's env, and
+// scoping it to the instance rules that out structurally rather than by
+// convention. Nested a second level by schemaType, since one PluginManager
+// registers a distinct schemaType per track type.
+function frozenTrackHydrationCache(
+  pluginManager: PluginManager,
+  schemaType: IAnyType,
+) {
+  const byType = pluginManager.trackConfigHydrationCache
+  let cache = byType.get(schemaType)
+  if (!cache) {
+    cache = new WeakMap()
+    byType.set(schemaType, cache)
+  }
+  return cache
+}
 
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
@@ -300,12 +346,14 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
         throw new Error(`Could not resolve trackId "${id}"`)
       }
       if (!isStateTreeNode(ret)) {
-        const cached = frozenTrackCache.get(ret)
+        const env = getEnv<{ pluginManager: PluginManager }>(parent)
+        const cache = frozenTrackHydrationCache(env.pluginManager, schemaType)
+        const cached = cache.get(ret)
         if (cached) {
           ret = cached
         } else {
-          const model = schemaType.create(ret, getEnv(parent))
-          frozenTrackCache.set(ret, model)
+          const model = schemaType.create(ret, env)
+          cache.set(ret, model)
           ret = model
         }
       }

@@ -1,4 +1,9 @@
-import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
+import {
+  getSnapshot,
+  getType,
+  isStateTreeNode,
+  types,
+} from '@jbrowse/mobx-state-tree'
 
 import { getConf, readConfObject } from './index.ts'
 import PluginManager from '../PluginManager.ts'
@@ -141,6 +146,57 @@ describe('configuration schemas', () => {
     // let options: GetOptions<typeof schema>
     // let baseConf: GetBase<typeof schema>
     // let slot: ConfigurationSlotName<typeof schema>
+  })
+
+  describe('baseConfiguration hook composition', () => {
+    // The options merge in preprocessConfigurationSchemaArguments is a shallow
+    // `{...base, ...child}` spread: a child that redefines the same hook the
+    // base already defines would silently replace it rather than compose.
+    // Caught eagerly at schema-construction time instead of shipping that.
+    test.each(['actions', 'views', 'extend', 'preProcessSnapshot'] as const)(
+      'throws when both base and child define %s',
+      hook => {
+        const base = ConfigurationSchema(
+          'HookBase',
+          { x: { type: 'number', defaultValue: 1 } },
+          { [hook]: (self: unknown) => (hook === 'extend' ? {} : self) },
+        )
+        expect(() =>
+          ConfigurationSchema(
+            'HookChild',
+            {},
+            {
+              baseConfiguration: base,
+              [hook]: (self: unknown) => (hook === 'extend' ? {} : self),
+            },
+          ),
+        ).toThrow(new RegExp(`HookChild and its baseConfiguration.*${hook}`))
+      },
+    )
+
+    test('does not throw when base and child define different hooks', () => {
+      const base = ConfigurationSchema(
+        'DistinctHookBase',
+        { x: { type: 'number', defaultValue: 1 } },
+        { actions: () => ({ baseAction: () => 'base' }) },
+      )
+      const child = ConfigurationSchema(
+        'DistinctHookChild',
+        {},
+        {
+          baseConfiguration: base,
+          views: () => ({ childView: () => 'child' }),
+        },
+      )
+      const node = child.create(undefined, { pluginManager }) as unknown as {
+        baseAction: () => string
+        childView: () => string
+      }
+      // both the base's action and the child's view are present — proof the
+      // merge composes across different hook keys, only same-key overlap throws
+      expect(node.baseAction()).toBe('base')
+      expect(node.childView()).toBe('child')
+    })
   })
 
   test('can snapshot a simple schema', () => {
@@ -344,6 +400,61 @@ describe('configuration schemas', () => {
       'Not instantiated',
     )
     expect(readConfObject(tester, ['index', 'indexType'])).toBe('TBI')
+  })
+})
+
+describe('setSubschema', () => {
+  test('replaces a direct sub-schema slot', () => {
+    const schema = ConfigurationSchema('WithSub', {
+      sub: ConfigurationSchema('Sub', {
+        x: { type: 'number', defaultValue: 1 },
+      }),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    node.setSubschema('sub', { x: 5 })
+    expect(readConfObject(node, ['sub', 'x'])).toBe(5)
+  })
+
+  test('throws a friendly error for a non-subschema slot', () => {
+    const schema = ConfigurationSchema('WithScalar', {
+      count: { type: 'integer', defaultValue: 1 },
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() => node.setSubschema('count', {})).toThrow(
+      /count is not a subschema, cannot replace/,
+    )
+  })
+
+  test('throws the same friendly error for a collection (array) of sub-schemas, not an MST validation error', () => {
+    // isConfigurationSchemaType recognizes an array-of-schema slot as a schema
+    // type too, but setSubschema's `.create(data)` call assumes a single
+    // sub-schema snapshot. Without excluding collections from the membership
+    // check, this throws a confusing "not assignable" MST error instead.
+    const schema = ConfigurationSchema('WithCollection', {
+      items: types.array(
+        ConfigurationSchema('Item', {
+          x: { type: 'number', defaultValue: 1 },
+        }),
+      ),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() => node.setSubschema('items', { x: 2 })).toThrow(
+      /items is not a subschema, cannot replace/,
+    )
+  })
+
+  test('throws the same friendly error for a collection (map) of sub-schemas', () => {
+    const schema = ConfigurationSchema('WithMapCollection', {
+      items: types.map(
+        ConfigurationSchema('MapItem', {
+          x: { type: 'number', defaultValue: 1 },
+        }),
+      ),
+    })
+    const node = schema.create(undefined, { pluginManager })
+    expect(() => node.setSubschema('items', { x: 2 })).toThrow(
+      /items is not a subschema, cannot replace/,
+    )
   })
 })
 
@@ -562,6 +673,70 @@ describe('ConfigurationReference', () => {
       const after = session.holder.ref
       expect(after).not.toBe(before)
       expect(readConfObject(after, 'name')).toBe('updated')
+    })
+
+    test('the same frozen object hydrates independently per schemaType (no cross-instance collision)', () => {
+      // Regression: the hydration cache used to be a bare module-level WeakMap
+      // keyed by the frozen object alone. Two schemas built by two separate
+      // buildFrozenTrackEnv() calls sharing one frozen track object used to
+      // collide on that shared identity.
+      const { Session: SessionA } = buildFrozenTrackEnv()
+      const { Session: SessionB } = buildFrozenTrackEnv()
+
+      const sharedFrozenTrack = { trackId: 'shared', name: 'orig' }
+
+      const sessionA = SessionA.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager },
+      )
+      const sessionB = SessionB.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager },
+      )
+
+      const resolvedA = sessionA.holder.ref
+      const resolvedB = sessionB.holder.ref
+
+      // Pre-fix, sessionB's lookup would hit the cache entry sessionA's access
+      // just created (keyed on the frozen object alone) and hand back sessionA's
+      // node verbatim, even though buildFrozenTrackEnv gave each session its
+      // own distinct schemaType.
+      expect(resolvedA).not.toBe(resolvedB)
+      expect(getType(resolvedA)).not.toBe(getType(resolvedB))
+    })
+
+    test('two independent PluginManager instances never share a hydration cache entry', () => {
+      // The realistic version of the collision above: two independent
+      // PluginManager instances (e.g. two createViewState() calls on one page)
+      // that happen to be handed the identical frozen track object — the
+      // schemaType each one builds for "TestFrozenTrack" differs even though
+      // the model name is the same string, but the cache lives on
+      // pluginManager.trackConfigHydrationCache, so isolation holds
+      // structurally rather than depending on that.
+      const pluginManagerA = new PluginManager([]).createPluggableElements()
+      pluginManagerA.configure()
+      const pluginManagerB = new PluginManager([]).createPluggableElements()
+      pluginManagerB.configure()
+
+      const { Session } = buildFrozenTrackEnv()
+      const sharedFrozenTrack = { trackId: 'shared', name: 'orig' }
+
+      const sessionA = Session.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager: pluginManagerA },
+      )
+      const sessionB = Session.create(
+        { _tracks: [sharedFrozenTrack], holder: { ref: 'shared' } },
+        { pluginManager: pluginManagerB },
+      )
+
+      const resolvedA = sessionA.holder.ref
+      const resolvedB = sessionB.holder.ref
+
+      expect(resolvedA).not.toBe(resolvedB)
+      expect(pluginManagerA.trackConfigHydrationCache).not.toBe(
+        pluginManagerB.trackConfigHydrationCache,
+      )
     })
   })
 
