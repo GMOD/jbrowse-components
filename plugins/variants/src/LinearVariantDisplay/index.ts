@@ -1,6 +1,6 @@
 import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
-import { BaseLinearDisplayComponent } from '@jbrowse/plugin-linear-genome-view'
 
+import LinearVariantDisplayComponent from './components/LinearVariantDisplayComponent.tsx'
 import configSchemaF from './configSchema.ts'
 import stateModelFactory from './model.ts'
 
@@ -18,7 +18,7 @@ export default function LinearVariantDisplayF(pluginManager: PluginManager) {
       stateModel: stateModelFactory(configSchema),
       trackType: 'VariantTrack',
       viewType: 'LinearGenomeView',
-      ReactComponent: BaseLinearDisplayComponent,
+      ReactComponent: LinearVariantDisplayComponent,
     })
   })
 }

@@ -39,7 +39,10 @@ function AnnotationPanel({
   regex: RegExp
 }) {
   const desc = descriptions?.INFO?.[fieldKey]?.Description
-  const fields = desc?.match(regex)?.[1]?.split('|') ?? []
+  // SnpEff/VEP write the field list with padding (e.g. "annotations: 'Allele |
+  // Annotation | ...'") while the per-variant data uses bare pipes, so trim
+  // each header field to line the DataGrid columns up with the values.
+  const fields = desc?.match(regex)?.[1]?.split('|').map(f => f.trim()) ?? []
   const data = feature.INFO?.[fieldKey] ?? []
   return (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />
@@ -130,14 +133,14 @@ const FeatDefined = observer(function FeatDefined({
           descriptions={descriptions}
           fieldKey="CSQ"
           title="Variant CSQ field"
-          regex={/Format: (.*)/}
+          regex={/Format:\s*(.*)/}
         />
         <AnnotationPanel
           feature={rest}
           descriptions={descriptions}
           fieldKey="ANN"
           title="Variant ANN field"
-          regex={/Functional annotations:'(.*)'$/}
+          regex={/Functional annotations:\s*'(.*)'/}
         />
         <LaunchBreakendWidgetArea model={model} feat={feat} />
       </Suspense>

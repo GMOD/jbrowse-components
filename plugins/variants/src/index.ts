@@ -19,6 +19,11 @@ import ExtensionPointsF from './VcfExtensionPoints/index.ts'
 import VcfTabixAdapterF from './VcfTabixAdapter/index.ts'
 import { calculateAlleleCounts } from './shared/alleleCounts.ts'
 import { calculateMinorAlleleFrequency } from './shared/minorAlleleFrequencyUtils.ts'
+import {
+  getVariantConsequence,
+  getVariantImpact,
+  getVariantImpactColor,
+} from './shared/variantConsequence.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { Feature } from '@jbrowse/core/util'
@@ -68,6 +73,14 @@ export default class VariantsPlugin extends Plugin {
       const alleleCounts = calculateAlleleCounts(genotypes)
       return calculateMinorAlleleFrequency(alleleCounts)
     })
+
+    // Variant-consequence helpers, reading SnpEff ANN / VEP CSQ. `impact` and
+    // `consequence` return strings for custom color-by-attribute expressions
+    // (e.g. jexl:randomColor(consequence(feature))); `impactColor` powers the
+    // one-click "Color by consequence impact" menu item.
+    jexl.addFunction('impact', getVariantImpact)
+    jexl.addFunction('consequence', getVariantConsequence)
+    jexl.addFunction('impactColor', getVariantImpactColor)
   }
 }
 

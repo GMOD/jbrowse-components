@@ -2,9 +2,15 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
+import { IMPACT_TIERS } from '../shared/variantConsequence.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
+
+// The `color` slot value that colors each variant by its most severe SnpEff/VEP
+// impact tier (see the `impactColor` jexl function in the plugin's configure()).
+const CONSEQUENCE_IMPACT_JEXL = 'jexl:impactColor(feature)'
 
 /**
  * #stateModel LinearVariantDisplay
@@ -42,6 +48,20 @@ export default function stateModelFactory(
        */
       type: types.literal('LinearVariantDisplay'),
     })
+    .volatile(() => ({
+      /**
+       * #volatile
+       */
+      impactLegendDismissed: false,
+    }))
+    .actions(self => ({
+      /**
+       * #action
+       */
+      setImpactLegendDismissed(arg: boolean) {
+        self.impactLegendDismissed = arg
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -49,12 +69,35 @@ export default function stateModelFactory(
       get featureWidgetType() {
         return VARIANT_FEATURE_WIDGET
       },
+      /**
+       * #getter
+       */
+      // True when features are colored by their most severe consequence impact.
+      get colorsByConsequenceImpact() {
+        return self.conf.color === CONSEQUENCE_IMPACT_JEXL
+      },
+      /**
+       * #getter
+       */
+      // Legend rows for the impact color key (one per tier).
+      get impactLegendItems(): LegendItem[] {
+        return IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier }))
+      },
+      /**
+       * #getter
+       */
+      // Show the floating impact legend while that coloring is active, unless
+      // the user dismissed it.
+      get showImpactLegend() {
+        return this.colorsByConsequenceImpact && !self.impactLegendDismissed
+      },
 
       /**
        * #method
        */
       // Variants have no UTRs and no strand, so drop the base's "Strand" radio
-      // and open the solid-color dialog without the gene-oriented UTR row. The
+      // and open the solid-color dialog without the gene-oriented UTR row. Add a
+      // one-click "consequence impact" choice (SnpEff ANN / VEP CSQ). The
       // inherited colorMenuItems() wraps these in the same "Color by..." entry.
       colorBySubMenuItems() {
         return [
@@ -67,9 +110,20 @@ export default function stateModelFactory(
             },
           },
           {
+            label: 'Consequence impact',
+            type: 'radio' as const,
+            checked: this.colorsByConsequenceImpact,
+            onClick: () => {
+              self.setImpactLegendDismissed(false)
+              self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+            },
+          },
+          {
             label: 'Attribute...',
             type: 'radio' as const,
-            checked: self.colorByMode === 'attribute',
+            checked:
+              self.colorByMode === 'attribute' &&
+              !this.colorsByConsequenceImpact,
             onClick: () => {
               self.openColorByAttributeDialog()
             },
