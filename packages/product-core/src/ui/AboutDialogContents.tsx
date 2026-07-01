@@ -42,10 +42,7 @@ const hideFields = ['displays', 'baseUri', 'refNames', 'formatAbout']
 const AboutDialogContents = observer(function AboutDialogContents({
   config,
   session,
-}: {
-  config: AnyConfigurationModel | Record<string, unknown>
-  session: AbstractSessionModel
-}) {
+}: AboutPanelProps) {
   const conf = isStateTreeNode(config) ? getSnapshot(config) : config
   const { classes } = useStyles()
   const [showRefNames, setShowRefNames] = useState(false)

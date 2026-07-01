@@ -23,19 +23,21 @@ export function readConf<T = unknown>(
   slotPath?: string | string[],
   args: Record<string, unknown> = {},
 ): T {
+  const path = slotPath
+    ? typeof slotPath === 'string'
+      ? [slotPath]
+      : slotPath
+    : undefined
   if (isStateTreeNode(config)) {
-    if (!slotPath) {
-      return getSnapshot(config) as unknown as T
-    }
-    const path = typeof slotPath === 'string' ? [slotPath] : slotPath
-    return readConfObject(config, path, args) as T
+    return (
+      path ? readConfObject(config, path, args) : getSnapshot(config)
+    ) as unknown as T
   }
-  if (!slotPath) {
+  if (!path) {
     return config as unknown as T
   }
-  const keys = typeof slotPath === 'string' ? [slotPath] : slotPath
   let result: unknown = config
-  for (const key of keys) {
+  for (const key of path) {
     result = (result as Record<string, unknown> | undefined)?.[key]
   }
   if (typeof result === 'string' && result.startsWith('jexl:')) {
