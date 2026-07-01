@@ -3,7 +3,7 @@ import { lazy } from 'react'
 import { getSession } from '@jbrowse/core/util'
 import Palette from '@mui/icons-material/Palette'
 
-import { radioItems, radioModeMenuItem } from './menuHelpers.ts'
+import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { radioColorOptions } from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
@@ -48,6 +48,15 @@ interface ColorByMenuOptions {
   arcColor?: {
     current: ArcColorByType
     setColor: (type: ArcColorByType) => void
+  }
+  // Supplementary/split-read coloring modifiers. These color how chained
+  // supplementary alignments are drawn, so they belong with the color scheme
+  // rather than in the "Show..." visibility menu.
+  supplementaryColoring?: {
+    flipStrandLongReadChains: boolean
+    setFlipStrandLongReadChains: (flag: boolean) => void
+    colorSupplementaryChains: boolean
+    setColorSupplementaryChains: (flag: boolean) => void
   }
 }
 
@@ -310,7 +319,12 @@ export function getColorByMenuItem(
   model: ColorByModel & Partial<ModificationsModel>,
   options: ColorByMenuOptions = {},
 ) {
-  const { includeTagOption = false, colorOptions, arcColor } = options
+  const {
+    includeTagOption = false,
+    colorOptions,
+    arcColor,
+    supplementaryColoring,
+  } = options
 
   const colorRadio = ({ label, type }: ColorOption): MenuItem => ({
     label,
@@ -376,6 +390,34 @@ export function getColorByMenuItem(
       ]
     : []
 
+  const supplementaryItem: MenuItem[] = supplementaryColoring
+    ? [
+        {
+          label: 'Supplementary / split reads',
+          subMenu: [
+            checkboxItem(
+              'Color supplementary alignments by primary strand',
+              supplementaryColoring.flipStrandLongReadChains,
+              () => {
+                supplementaryColoring.setFlipStrandLongReadChains(
+                  !supplementaryColoring.flipStrandLongReadChains,
+                )
+              },
+            ),
+            checkboxItem(
+              'Color supplementary chains orange',
+              supplementaryColoring.colorSupplementaryChains,
+              () => {
+                supplementaryColoring.setColorSupplementaryChains(
+                  !supplementaryColoring.colorSupplementaryChains,
+                )
+              },
+            ),
+          ],
+        },
+      ]
+    : []
+
   return {
     label: 'Color by...',
     type: 'subMenu' as const,
@@ -386,6 +428,7 @@ export function getColorByMenuItem(
       ...pairedEndItem,
       ...modItems,
       ...arcColorItem,
+      ...supplementaryItem,
     ],
   }
 }

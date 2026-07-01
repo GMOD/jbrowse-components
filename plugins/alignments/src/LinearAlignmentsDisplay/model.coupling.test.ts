@@ -145,3 +145,47 @@ describe('alignments display cross-feature coupling', () => {
     expect(display.readConnectionsDown).toBe(false)
   })
 })
+
+// Toggling "view as pairs" auto-switches coloring for the common case but must
+// not stomp on a color scheme the user picked deliberately (regression guard —
+// the auto-switch previously overwrote colorBy unconditionally).
+describe('setLinkedReads color scheme preservation', () => {
+  test('entering pairs nudges the plain default to insert-size-and-orientation', () => {
+    const display = createDisplay()
+    expect(display.colorBy.type).toBe('normal')
+
+    display.setLinkedReads('normal')
+    expect(display.linkedReads).toBe('normal')
+    expect(display.colorBy.type).toBe('insertSizeAndOrientation')
+  })
+
+  test('entering pairs preserves an explicit non-pairing color scheme', () => {
+    const display = createDisplay()
+    display.setColorScheme({ type: 'tag', tag: 'HP' })
+
+    display.setLinkedReads('normal')
+    expect(display.colorBy.type).toBe('tag')
+    expect(display.colorBy.tag).toBe('HP')
+  })
+
+  test('leaving pairs reverts a pairing-specific scheme to normal', () => {
+    const display = createDisplay()
+    display.setLinkedReads('normal')
+    expect(display.colorBy.type).toBe('insertSizeAndOrientation')
+
+    display.setLinkedReads('off')
+    expect(display.linkedReads).toBe('off')
+    expect(display.colorBy.type).toBe('normal')
+  })
+
+  test('leaving pairs preserves an explicit non-pairing color scheme', () => {
+    const display = createDisplay()
+    display.setLinkedReads('normal')
+    display.setColorScheme({ type: 'tag', tag: 'HP' })
+
+    display.setLinkedReads('off')
+    expect(display.linkedReads).toBe('off')
+    expect(display.colorBy.type).toBe('tag')
+    expect(display.colorBy.tag).toBe('HP')
+  })
+})

@@ -2533,6 +2533,16 @@ export default function stateModelFactory(
                       },
                     }
                   : undefined,
+              supplementaryColoring: {
+                flipStrandLongReadChains: self.flipStrandLongReadChains,
+                setFlipStrandLongReadChains: (flag: boolean) => {
+                  self.setFlipStrandLongReadChains(flag)
+                },
+                colorSupplementaryChains: self.colorSupplementaryChains,
+                setColorSupplementaryChains: (flag: boolean) => {
+                  self.setColorSupplementaryChains(flag)
+                },
+              },
             }),
             getSortByMenuItem(self),
             getFiltersMenuItem(self),
