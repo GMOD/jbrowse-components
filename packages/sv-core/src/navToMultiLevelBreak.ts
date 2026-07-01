@@ -55,7 +55,7 @@ export async function navToMultiLevelBreak({
           type: 'LinearGenomeView',
           hideHeader: true,
           tracks: stripTrackIds(
-            mirror ? [...viewTracks].reverse() : viewTracks,
+            mirror === true ? [...viewTracks].reverse() : viewTracks,
           ),
         },
       ],

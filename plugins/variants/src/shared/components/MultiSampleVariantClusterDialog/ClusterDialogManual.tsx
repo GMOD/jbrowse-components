@@ -222,14 +222,13 @@ const ClusterDialogManuals = observer(function ClusterDialogManuals({
             if (sourcesWithoutLayout) {
               try {
                 model.setLayout(
-                  parseClusterOrder(paste)
-                    .map(idx => {
-                      const ret = sourcesWithoutLayout[idx - 1]
-                      if (!ret) {
-                        throw new Error(`out of bounds at ${idx}`)
-                      }
-                      return ret
-                    }),
+                  parseClusterOrder(paste).map(idx => {
+                    const ret = sourcesWithoutLayout[idx - 1]
+                    if (!ret) {
+                      throw new Error(`out of bounds at ${idx}`)
+                    }
+                    return ret
+                  }),
                 )
               } catch (e) {
                 console.error(e)

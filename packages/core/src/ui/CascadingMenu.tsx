@@ -31,7 +31,7 @@ export type { MenuItemsGetter } from './MenuTypes.ts'
 // labels that can't be slugified
 function makeTestId(kind: string, label: React.ReactNode) {
   return typeof label === 'string'
-    ? `cascading-${kind}-${label.toLowerCase().replace(/\s+/g, '_')}`
+    ? `cascading-${kind}-${label.toLowerCase().replaceAll(/\s+/g, '_')}`
     : undefined
 }
 

@@ -23,10 +23,12 @@ type SPARQLBinding = Record<string, SPARQLEntry>
 // replaces the `string-template` dependency
 const templateRegex = /\{([0-9a-zA-Z_]+)\}/g
 function fillTemplate(template: string, data: Record<string, string | number>) {
-  return template.replace(templateRegex, (match, key: string, index: number) =>
-    template[index - 1] === '{' && template[index + match.length] === '}'
-      ? key
-      : `${data[key] ?? ''}`,
+  return template.replaceAll(
+    templateRegex,
+    (match, key: string, index: number) =>
+      template[index - 1] === '{' && template[index + match.length] === '}'
+        ? key
+        : `${data[key] ?? ''}`,
   )
 }
 

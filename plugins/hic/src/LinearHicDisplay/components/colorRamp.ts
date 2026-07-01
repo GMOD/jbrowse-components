@@ -47,9 +47,9 @@ function viridisRgbaFromHex(): RGBA[] {
   for (let i = 0; i < 256; i++) {
     const hex = VIRIDIS_HEX_SPEC.slice(i * 6, i * 6 + 6)
     out.push([
-      parseInt(hex.slice(0, 2), 16),
-      parseInt(hex.slice(2, 4), 16),
-      parseInt(hex.slice(4, 6), 16),
+      Number.parseInt(hex.slice(0, 2), 16),
+      Number.parseInt(hex.slice(2, 4), 16),
+      Number.parseInt(hex.slice(4, 6), 16),
       255,
     ])
   }

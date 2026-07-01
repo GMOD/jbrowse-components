@@ -1,10 +1,10 @@
-import { execFile, execFileSync } from 'child_process'
-import fs from 'fs'
-import http from 'http'
-import os from 'os'
-import path from 'path'
-import { fileURLToPath } from 'url'
-import { parseArgs, promisify } from 'util'
+import { execFile, execFileSync } from 'node:child_process'
+import fs from 'node:fs'
+import http from 'node:http'
+import os from 'node:os'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { parseArgs, promisify } from 'node:util'
 
 import {
   BASE_CHROME_ARGS,
@@ -49,7 +49,7 @@ import type {
   ScreenshotAction,
   ScreenshotSpec,
 } from './screenshot-specs.ts'
-import type { Server } from 'http'
+import type { Server } from 'node:http'
 import type { Page } from 'puppeteer'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -176,7 +176,7 @@ async function assertViewsRendered(page: Page, name: string) {
         const body = c.lastElementChild
         return !body || body.childElementCount === 0
       })
-      .map(c => c.getAttribute('data-testid') ?? '?'),
+      .map(c => c.dataset.testid ?? '?'),
   )
   if (emptyViews.length > 0) {
     await debugDump(page, name)
@@ -189,9 +189,9 @@ async function debugDump(page: Page, name: string) {
     .evaluate(() => document.body.innerText.substring(0, 800))
     .catch(() => '')
   console.error(
-    `    [${name}] debug text: ${bodyText.replace(/\s+/g, ' ').trim()}`,
+    `    [${name}] debug text: ${bodyText.replaceAll(/\s+/g, ' ').trim()}`,
   )
-  const debugPath = path.join(outDir, `debug_${name.replace(/\//g, '_')}.png`)
+  const debugPath = path.join(outDir, `debug_${name.replaceAll('/', '_')}.png`)
   await page
     .screenshot()
     .then(png => {
@@ -292,7 +292,7 @@ async function shoot(
       style.id = id
       style.textContent =
         '*,*::before,*::after{transition:none !important;animation:none !important;}'
-      document.head.appendChild(style)
+      document.head.append(style)
     }
   })
   if (spec.hideTooltip) {
@@ -428,7 +428,7 @@ async function captureEmbeddedToTemp(
     await waitForDisplaysDone(page, spec.settleMs ?? DEFAULT_SETTLE_MS)
     await waitForRasterize(page)
 
-    const safeSpecName = spec.name.replace(/\//g, '_')
+    const safeSpecName = spec.name.replaceAll('/', '_')
     const renderPath = path.join(
       os.tmpdir(),
       `jb-final-${process.pid}-${safeSpecName}${suffix}.png`,
@@ -482,7 +482,7 @@ async function renderSpecToTemp(
   await runActions(page, spec.name, spec.actions)
   await assertViewsRendered(page, spec.name)
 
-  const safeSpecName = spec.name.replace(/\//g, '_')
+  const safeSpecName = spec.name.replaceAll('/', '_')
   const renderPath = path.join(
     os.tmpdir(),
     `jb-final-${process.pid}-${safeSpecName}${suffix}.png`,
@@ -542,7 +542,7 @@ async function captureSpec(
 // involved, so this bypasses the puppeteer pipeline entirely. `suffix` keeps
 // the two captures of a --check run from colliding on the same temp path.
 async function renderCliSpecToTemp(spec: CliSpec, suffix = '') {
-  const safeSpecName = spec.name.replace(/\//g, '_')
+  const safeSpecName = spec.name.replaceAll('/', '_')
   const renderPath = path.join(
     os.tmpdir(),
     `jb-img-${process.pid}-${safeSpecName}${suffix}.png`,
@@ -806,7 +806,7 @@ async function main() {
     printReport(
       `FAILURE SUMMARY (${failures.length})`,
       failures.map(
-        ({ name, error }) => `\n• ${name}\n  ${error.replace(/\n/g, '\n  ')}`,
+        ({ name, error }) => `\n• ${name}\n  ${error.replaceAll('\n', '\n  ')}`,
       ),
     )
     process.exit(1)

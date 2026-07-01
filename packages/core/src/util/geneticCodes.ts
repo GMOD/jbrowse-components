@@ -310,7 +310,7 @@ export function parseTranslExcept(value: unknown): TranslExcept[] {
     // to the end of an attacker-controlled string from every `(pos:` it
     // finds, which would otherwise be quadratic in input length.
     [...v.matchAll(/\(pos:(.{0,500}?),aa:(\w+)\)/g)].flatMap(m => {
-      const loc = m[1]!.replace(/[A-Za-z_][\w.]*:/g, '')
+      const loc = m[1]!.replaceAll(/[A-Za-z_][\w.]*:/g, '')
       const range = /(\d+)(?:\.\.(\d+))?/.exec(loc)
       const rawAa = m[2]!
       // The override is spliced into the protein string as-is, so it must be

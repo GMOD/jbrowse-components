@@ -144,7 +144,8 @@ test('in-view track menu offers "Add GC content track" on refseq', () => {
   const trackActions = items.find(
     item => 'label' in item && item.label === 'Track actions',
   )
-  const subMenu = trackActions && 'subMenu' in trackActions ? trackActions.subMenu : []
+  const subMenu =
+    trackActions && 'subMenu' in trackActions ? trackActions.subMenu : []
   expect(
     subMenu.some(
       item => 'label' in item && item.label === 'Add GC content track',

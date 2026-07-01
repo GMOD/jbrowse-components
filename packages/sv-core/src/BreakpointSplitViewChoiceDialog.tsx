@@ -76,9 +76,10 @@ const BreakpointSplitViewChoiceDialog = observer(
         try {
           await (isSplitLevel
             ? navToMultiLevelBreak({
-                stableViewId: stableViewId
-                  ? `${stableViewId}_multilevel`
-                  : undefined,
+                stableViewId:
+                  stableViewId !== undefined
+                    ? `${stableViewId}_multilevel`
+                    : undefined,
                 session,
                 tracks,
                 mirror,
@@ -91,9 +92,10 @@ const BreakpointSplitViewChoiceDialog = observer(
                 assemblyName,
                 focusOnBreakends,
                 session,
-                stableViewId: stableViewId
-                  ? `${stableViewId}_singlelevel`
-                  : undefined,
+                stableViewId:
+                  stableViewId !== undefined
+                    ? `${stableViewId}_singlelevel`
+                    : undefined,
                 tracks,
                 windowSize: +windowSize || 0,
               }))

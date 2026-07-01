@@ -7,7 +7,9 @@ test('basic mean/sd', () => {
 })
 
 test('identical values give zero sd (no NaN from float cancellation)', () => {
-  const { avg, sd, upper, lower } = getInsertSizeStats(new Array(1000).fill(500))
+  const { avg, sd, upper, lower } = getInsertSizeStats(
+    new Array(1000).fill(500),
+  )
   expect(avg).toBe(500)
   expect(sd).toBe(0)
   expect(upper).toBe(500)

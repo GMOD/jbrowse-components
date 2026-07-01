@@ -1,4 +1,7 @@
-import type { HicContactItem, HicDataResult } from '../RenderHicDataRPC/types.ts'
+import type {
+  HicContactItem,
+  HicDataResult,
+} from '../RenderHicDataRPC/types.ts'
 
 /**
  * Grid-cell key for the hover index: `${r1}|${r2}|${bin1}|${bin2}`. Built on the
@@ -21,8 +24,13 @@ function getContactLookup(data: HicDataResult) {
   if (cached) {
     return cached
   }
-  const { numContacts, contactBin1, contactBin2, contactRegion1, contactRegion2 } =
-    data
+  const {
+    numContacts,
+    contactBin1,
+    contactBin2,
+    contactRegion1,
+    contactRegion2,
+  } = data
   const map = new Map<string, number>()
   for (let i = 0; i < numContacts; i++) {
     map.set(

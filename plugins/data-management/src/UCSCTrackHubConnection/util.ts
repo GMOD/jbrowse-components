@@ -24,7 +24,7 @@ export async function fetchTrackDbFile(trackDbLoc: FileLocation) {
 // local path <-> file:// url so that relative paths and `..` segments resolve
 // through the same new URL() machinery used for remote hubs
 function localPathToFileUrl(localPath: string) {
-  const p = localPath.replace(/\\/g, '/')
+  const p = localPath.replaceAll('\\', '/')
   return `file://${p.startsWith('/') ? '' : '/'}${p}`
 }
 

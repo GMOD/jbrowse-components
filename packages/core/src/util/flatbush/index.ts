@@ -110,7 +110,7 @@ export default class Flatbush {
     data?: ArrayBuffer,
     byteOffset = 0,
   ) {
-    if (isNaN(numItems) || numItems <= 0) {
+    if (Number.isNaN(numItems) || numItems <= 0) {
       throw new Error(`Unexpected numItems value: ${numItems}.`)
     }
 

@@ -66,13 +66,13 @@ pair orientations are not supported. The table below assumes `fr`:
 
 <!-- COLOR_TABLE alignments-pair-orientation START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#d3d3d3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#d3d3d3"></span> | LR (→ ←, normal proper pair) | `#d3d3d3` | Concordant |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0099bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0099bb"></span> | RL (← →, mates point away from each other) | `#0099bb` | Abnormal orientation |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#4d9a4d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#4d9a4d"></span> | LL (→ →, both mates forward strand) | `#4d9a4d` | Abnormal orientation |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#5555bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#5555bb"></span> | RR (← ←, both mates reverse strand) | `#5555bb` | Abnormal orientation |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Inter-chromosomal | `#6e4b3a` | Mate maps to a different chromosome; colored distinctly rather than by orientation |
+| Color                                                                                                                                                                       | Name                                       | Value     | Description                                                                        |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------ | --------- | ---------------------------------------------------------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#d3d3d3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#d3d3d3"></span> | LR (→ ←, normal proper pair)               | `#d3d3d3` | Concordant                                                                         |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0099bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0099bb"></span> | RL (← →, mates point away from each other) | `#0099bb` | Abnormal orientation                                                               |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#4d9a4d;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#4d9a4d"></span> | LL (→ →, both mates forward strand)        | `#4d9a4d` | Abnormal orientation                                                               |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#5555bb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#5555bb"></span> | RR (← ←, both mates reverse strand)        | `#5555bb` | Abnormal orientation                                                               |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Inter-chromosomal                          | `#6e4b3a` | Mate maps to a different chromosome; colored distinctly rather than by orientation |
 
 <!-- COLOR_TABLE alignments-pair-orientation END -->
 
@@ -91,11 +91,11 @@ menu), the Insert size option uses threshold-based coloring:
 
 <!-- COLOR_TABLE alignments-insert-size START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Mate on a different chromosome | `#6e4b3a` | Suggests an inter-chromosomal event |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | Insert larger than expected | `#ff0000` | Suggests a deletion spanning the pair |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | Insert smaller than expected | `#ffc0cb` | Suggests an insertion between the pair |
+| Color                                                                                                                                                                       | Name                           | Value     | Description                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------ | --------- | -------------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#6e4b3a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#6e4b3a"></span> | Mate on a different chromosome | `#6e4b3a` | Suggests an inter-chromosomal event    |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | Insert larger than expected    | `#ff0000` | Suggests a deletion spanning the pair  |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | Insert smaller than expected   | `#ffc0cb` | Suggests an insertion between the pair |
 
 <!-- COLOR_TABLE alignments-insert-size END -->
 

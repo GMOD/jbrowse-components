@@ -345,6 +345,7 @@ export default class HicFile {
                 const x = rec.bin1
                 const y = rec.bin2
                 const nvnv = normVector1[x - nvX1]! * normVector2[y - nvY1]!
+                // eslint-disable-next-line unicorn/prefer-number-properties -- vendored hic-straw, keep upstream form
                 if (nvnv !== 0 && !isNaN(nvnv)) {
                   contactRecords.push(
                     new ContactRecord(x, y, rec.counts / nvnv),
@@ -476,6 +477,7 @@ export default class HicFile {
             const bin2 = binYOffset + row
             if (useFloatContact) {
               const counts = parser.getFloat()
+              // eslint-disable-next-line unicorn/prefer-number-properties -- vendored hic-straw, keep upstream form
               if (!isNaN(counts)) {
                 records.push(new ContactRecord(bin1, bin2, counts))
               }

@@ -4,8 +4,8 @@ import {
   mkdirSync,
   readFileSync,
   writeFileSync,
-} from 'fs'
-import { join } from 'path'
+} from 'node:fs'
+import { join } from 'node:path'
 
 import { format, resolveConfig } from 'prettier'
 
@@ -47,7 +47,7 @@ const title = 'Static image export (@jbrowse/img)'
 // them at GitHub. Absolute (http), anchor (#), and root (/) links
 // are left alone. GitHub redirects /blob/ to /tree/ for directories.
 function rewriteRelativeLinks(md: string) {
-  return md.replace(/\]\(([^)]+)\)/g, (match, target: string) => {
+  return md.replaceAll(/\]\(([^)]+)\)/g, (match, target: string) => {
     const isAbsolute = /^(https?:|mailto:|#|\/)/.test(target)
     return isAbsolute ? match : `](${githubBase}/${target})`
   })
@@ -57,7 +57,7 @@ function rewriteRelativeLinks(md: string) {
 // filenames so they can be copied/verified alongside the doc.
 function rewriteImages(md: string) {
   const names = new Set<string>()
-  const out = md.replace(rawImgRe, (_match, name: string) => {
+  const out = md.replaceAll(rawImgRe, (_match, name: string) => {
     names.add(name)
     return `${localImgUrl}${name}`
   })
@@ -82,7 +82,7 @@ function injectHelp(md: string) {
 // remark-figure), so convert the README's plain markdown images into <Figure>s
 // — the image alt text becomes the figcaption.
 function imagesToFigures(md: string) {
-  return md.replace(
+  return md.replaceAll(
     /!\[([^\]]*)\]\(([^)]+)\)/g,
     (_match, alt: string, src: string) =>
       `<Figure src="${src}" caption="${alt}" />`,

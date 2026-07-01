@@ -1,5 +1,5 @@
-import { execFileSync, spawnSync } from 'child_process'
-import fs from 'fs'
+import { execFileSync, spawnSync } from 'node:child_process'
+import fs from 'node:fs'
 
 // A regen re-renders every spec, but an unchanged spec re-renders byte-for-byte
 // identical (rendering is deterministic). Writing them all back would churn the

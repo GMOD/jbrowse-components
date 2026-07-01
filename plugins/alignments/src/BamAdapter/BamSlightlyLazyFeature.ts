@@ -1,9 +1,5 @@
 import { BamRecord } from '@gmod/bam'
-import {
-  CIGAR_H,
-  CIGAR_S,
-  forEachMismatchNumeric,
-} from '@jbrowse/cigar-utils'
+import { CIGAR_H, CIGAR_S, forEachMismatchNumeric } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { decodeSeq } from '../shared/decodeSeq.ts'

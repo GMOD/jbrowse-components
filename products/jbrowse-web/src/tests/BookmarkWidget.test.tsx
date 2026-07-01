@@ -199,8 +199,8 @@ test('Toggle highlight visibility across all views', async () => {
     assemblyName: 'volvox',
   })
 
-  const highlight = (await findAllByTestId('BookmarkIcon'))[0]
-  const highlight2 = (await findAllByTestId('BookmarkIcon'))[1]
+  const [highlight] = await findAllByTestId('BookmarkIcon')
+  const [, highlight2] = await findAllByTestId('BookmarkIcon')
 
   expect(highlight).toBeDefined()
   expect(highlight2).toBeDefined()

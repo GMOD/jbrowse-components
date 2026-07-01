@@ -255,4 +255,3 @@ test('editing a slot back to its base value clears the delta (implicit reset)', 
   expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
   expect(session.isTrackOverride(TRACK_ID)).toBe(false)
 })
-

@@ -19,8 +19,8 @@
 //       x+=hmtx[g][0]
 //   print(f['head'].unitsPerEm, x, ''.join(parts))
 //   PY
-import path from 'path'
-import { fileURLToPath } from 'url'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 import sharp from 'sharp'
 

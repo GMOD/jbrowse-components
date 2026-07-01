@@ -30,10 +30,10 @@ export function parseSvAlt(
       joinDirection?: number // for BND arrow rendering: -1=left, 1=right
     }
   | undefined {
-  const bnd = alt ? parseBreakend(alt) : undefined
+  const bnd = alt !== undefined ? parseBreakend(alt) : undefined
   const refName = feature.get('refName')
 
-  if (alt && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
+  if (alt !== undefined && SV_SYMBOLIC_ALLELES.some(a => alt.startsWith(a))) {
     const info = feature.get('INFO') as
       Record<string, (string | number)[]> | undefined
     const matePos = info?.END?.[0] as number | undefined
@@ -44,9 +44,14 @@ export function parseSvAlt(
       mateRefName: (info?.CHR2?.[0] as string | undefined) ?? refName,
       matePos,
     }
-  } else if (bnd?.MatePosition) {
+  } else if (bnd?.MatePosition !== undefined) {
     const [mateRefName, matePosStr] = bnd.MatePosition.split(':')
-    if (!mateRefName || !matePosStr) {
+    if (
+      mateRefName === undefined ||
+      mateRefName === '' ||
+      matePosStr === undefined ||
+      matePosStr === ''
+    ) {
       return undefined
     }
     return {
@@ -73,7 +78,7 @@ export function getBreakendCoveringRegions({
   const startPos = feature.get('start')
   const refName = feature.get('refName')
   const alt = (feature.get('ALT') as string[] | undefined)?.[0]
-  const f = (ref: string) => assembly.getCanonicalRefName(ref) || ref
+  const f = (ref: string) => assembly.getCanonicalRefName(ref) ?? ref
 
   const parsed = parseSvAlt(feature, alt)
   if (parsed) {
@@ -83,7 +88,7 @@ export function getBreakendCoveringRegions({
       mateRefName: f(parsed.mateRefName),
       matePos: parsed.matePos - 1, // convert to 0-based
     }
-  } else if (feature.get('mate')) {
+  } else if (feature.get('mate') !== undefined) {
     const mate = feature.get('mate') as {
       strand: number
       start: number
@@ -148,7 +153,15 @@ export async function getBreakendAssemblyRegions({
 }
 
 export function makeTitle(f: Feature) {
-  return `${f.get('name') || f.get('id') || 'breakend'} split detail`
+  const name = f.get('name')
+  const id = f.get('id')
+  const label =
+    name !== undefined && name !== ''
+      ? name
+      : id !== undefined && id !== ''
+        ? id
+        : 'breakend'
+  return `${label} split detail`
 }
 
 // Read the mate destination from a VCF translocation INFO record. CHR2/END
@@ -171,9 +184,10 @@ export function readTranslocationMate(info: {
 
 export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
   try {
-    return !!getEnv(getSession(model)).pluginManager.getViewType(
-      'BreakpointSplitView',
-    )
+    // getViewType throws if the view type isn't registered; reaching the next
+    // line means it exists.
+    getEnv(getSession(model)).pluginManager.getViewType('BreakpointSplitView')
+    return true
   } catch {
     return false
   }
@@ -182,6 +196,7 @@ export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
 export function navToLoc(locString: string, model: IAnyStateTreeNode) {
   const session = getSession(model)
   const { view } = model
+  // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (view) {
     view.navToLocString(locString).catch((e: unknown) => {
       console.error(e)

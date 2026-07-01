@@ -45,7 +45,7 @@ export function parseBases(
     for (let i = 0; i < tokens.length; i += 2) {
       const base = tokens[i]!
       const count = parseInt(tokens[i + 1]!, 10)
-      if (!isNaN(count) && base.length === 1) {
+      if (!Number.isNaN(count) && base.length === 1) {
         parts.push(base.repeat(count))
       }
     }
@@ -164,7 +164,7 @@ export function finalizeBlock(
       const col = columns[i]!
       const charCode = col.charCodeAt(j)
       // Use dash if character doesn't exist (NaN from charCodeAt)
-      const code = isNaN(charCode) ? DASH : charCode
+      const code = Number.isNaN(charCode) ? DASH : charCode
       buffer[i] = code
       if (code !== DASH) {
         length++

@@ -30,7 +30,7 @@ const XML_ESCAPES: Record<string, string> = {
 }
 
 function escapeXml(s: string) {
-  return s.replace(/[&<>"]/g, c => XML_ESCAPES[c]!)
+  return s.replaceAll(/[&<>"]/g, c => XML_ESCAPES[c]!)
 }
 
 // Parse CSS font shorthand like "10px sans-serif" or "bold 12px monospace"
@@ -99,7 +99,7 @@ export class SvgCanvas {
     const s = `${style}`
     const m = /^rgba\((\d+),(\d+),(\d+),([\d.]+)\)$/.exec(s)
     if (m) {
-      const a = parseFloat(m[4]!)
+      const a = Number.parseFloat(m[4]!)
       const base = `${name}="rgb(${m[1]},${m[2]},${m[3]})"`
       return a < 1 ? `${base} ${name}-opacity="${a}"` : base
     }

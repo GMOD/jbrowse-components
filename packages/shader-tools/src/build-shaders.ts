@@ -151,9 +151,9 @@ function parseVertsPerInstance(source: string) {
   const evalExpr = (raw: string): number => {
     // Strip Slang's `u` / `U` integer suffix first so `1u` doesn't leave a
     // stray `u` that the identifier pass would fail to resolve.
-    const stripped = raw.replace(/(\d+)[uU]\b/g, '$1')
+    const stripped = raw.replaceAll(/(\d+)[uU]\b/g, '$1')
     // Replace identifier references with their resolved numeric values.
-    const cleaned = stripped.replace(/[A-Za-z_]\w*/g, name => {
+    const cleaned = stripped.replaceAll(/[A-Za-z_]\w*/g, name => {
       if (evaluating.has(name)) {
         throw new Error(`circular static-const reference: ${name}`)
       }
@@ -200,7 +200,7 @@ function parseExportedConsts(
   for (let m = constRe.exec(source); m; m = constRe.exec(source)) {
     const name = m[1]!
     if (names.has(name)) {
-      result[name] = parseFloat(m[2]!.trim())
+      result[name] = Number.parseFloat(m[2]!.trim())
     }
   }
   return Object.keys(result).length ? result : undefined

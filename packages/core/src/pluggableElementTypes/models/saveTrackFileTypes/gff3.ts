@@ -42,7 +42,7 @@ const gff3Escapes: Record<string, string> = {
 }
 
 function encodeGFF3Value(str: string): string {
-  return str.replace(/[%;=&,\t\n\r]/g, c => gff3Escapes[c]!)
+  return str.replaceAll(/[%;=&,\t\n\r]/g, c => gff3Escapes[c]!)
 }
 
 function fmt(obj: unknown): string | undefined {

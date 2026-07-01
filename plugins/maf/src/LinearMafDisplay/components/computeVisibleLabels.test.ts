@@ -10,7 +10,7 @@ function regionData(refSeq: string, alignment: string): MafRegionData {
     blocks: [
       {
         startBp: 100,
-        endBp: 100 + refSeq.replace(/-/g, '').length,
+        endBp: 100 + refSeq.replaceAll('-', '').length,
         refSeqBytes: enc.encode(refSeq),
         rows: [{ rowIndex: 0, alignmentBytes: enc.encode(alignment) }],
         empties: [],

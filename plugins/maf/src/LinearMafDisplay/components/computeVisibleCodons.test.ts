@@ -127,7 +127,7 @@ function regionData(refSeq: string, rows: string[]): MafRegionData {
     blocks: [
       {
         startBp: 100,
-        endBp: 100 + refSeq.replace(/-/g, '').length,
+        endBp: 100 + refSeq.replaceAll('-', '').length,
         refSeqBytes: b(refSeq),
         rows: rows.map((alignment, rowIndex) => ({
           rowIndex,

@@ -2,7 +2,13 @@ import { SimpleFeature } from '@jbrowse/core/util'
 
 import { buildPairedEndMateFeature, getMateFields } from './mateFeature.ts'
 
-function feat(data: Record<string, unknown>) {
+function feat(
+  data: Record<string, unknown> & {
+    start: number
+    end: number
+    refName: string
+  },
+) {
   return new SimpleFeature({ uniqueId: 'r1', ...data })
 }
 

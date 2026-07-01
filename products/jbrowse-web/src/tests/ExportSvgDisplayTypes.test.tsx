@@ -45,7 +45,7 @@ const canvasFactory = nodeCreateCanvas as unknown as (
 function normalizeSvg(svg: string) {
   const seen = new Map<string, string>()
   let n = 0
-  return svg.replace(/-[A-Za-z0-9_-]{10}(?=["|)])/g, m => {
+  return svg.replaceAll(/-[A-Za-z0-9_-]{10}(?=["|)])/g, m => {
     if (!seen.has(m)) {
       seen.set(m, `-stable${++n}`)
     }

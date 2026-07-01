@@ -70,7 +70,7 @@ const htmlEscapes: Record<string, string> = {
   "'": '&#39;',
 }
 function escapeHTML(str: string) {
-  return str.replace(/[&<>"']/g, c => htmlEscapes[c]!)
+  return str.replaceAll(/[&<>"']/g, c => htmlEscapes[c]!)
 }
 
 function needsSanitization(str: string) {

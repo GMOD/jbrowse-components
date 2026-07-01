@@ -1,5 +1,5 @@
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
 
 const root = path.resolve(import.meta.dirname, '..')
 
@@ -78,7 +78,7 @@ function processFile(filePath: string): { file: string; changes: number } {
   let changes = 0
 
   // Process static imports/exports
-  content = content.replace(
+  content = content.replaceAll(
     /(?<keyword>import|export)(?<middle>[\s\S]*?from\s*)['"](?<importPath>\.\.?\/[^'"]+)['"]/g,
     (match, keyword, middle, importPath) => {
       // Skip if already has extension or is a package import
@@ -96,7 +96,7 @@ function processFile(filePath: string): { file: string; changes: number } {
   )
 
   // Process dynamic imports
-  content = content.replace(
+  content = content.replaceAll(
     /(?<keyword>import)\s*\(\s*['"](?<importPath>\.\.?\/[^'"]+)['"]\s*\)/g,
     (match, keyword, importPath) => {
       if (/\.[a-z]+$/i.test(importPath)) {

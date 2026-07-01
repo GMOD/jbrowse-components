@@ -36,7 +36,7 @@ function block(
   const enc = new TextEncoder()
   return {
     startBp,
-    endBp: startBp + ref.replace(/-/g, '').length,
+    endBp: startBp + ref.replaceAll('-', '').length,
     refSeqBytes: enc.encode(ref),
     rows: rows.map(([rowIndex, seq]) => ({
       rowIndex,

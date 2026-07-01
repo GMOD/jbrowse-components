@@ -15,7 +15,7 @@ function block(
 ): MafBlock {
   return {
     startBp,
-    endBp: startBp + refSeq.replace(/-/g, '').length,
+    endBp: startBp + refSeq.replaceAll('-', '').length,
     refSeqBytes: enc.encode(refSeq),
     rows,
     empties: [],

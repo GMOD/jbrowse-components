@@ -43,7 +43,7 @@ function fmt(obj: unknown): string | undefined {
 // Free-text qualifiers are wrapped in double quotes; literal quotes inside the
 // value are escaped by doubling them, per the GenBank spec.
 function qualifier(key: string, value: string) {
-  return `${QUALIFIER_INDENT}/${key}="${value.replace(/"/g, '""')}"`
+  return `${QUALIFIER_INDENT}/${key}="${value.replaceAll('"', '""')}"`
 }
 
 function loc(f: Feature, minPos: number) {
@@ -201,7 +201,7 @@ function formatHeader({
   length: number
 }) {
   return [
-    formatLocus(region.replace(/[^\w.]/g, '_'), length),
+    formatLocus(region.replaceAll(/[^\w.]/g, '_'), length),
     `DEFINITION  ${region} from ${assemblyName}.`,
     `ACCESSION   ${refName}`,
     `VERSION     ${refName}`,

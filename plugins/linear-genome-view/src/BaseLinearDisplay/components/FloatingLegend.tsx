@@ -102,6 +102,7 @@ const LegendItemList = observer(function LegendItemList({
   return (
     <>
       {shown.map((item, i) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key
         <div key={`${item.label}-${i}`} className={classes.item}>
           <div
             className={classes.colorBox}

@@ -31,7 +31,7 @@ export function readConf<T = unknown>(
   if (isStateTreeNode(config)) {
     return (
       path ? readConfObject(config, path, args) : getSnapshot(config)
-    ) as unknown as T
+    ) as T
   }
   if (!path) {
     return config as unknown as T

@@ -215,9 +215,7 @@ Gets the token and returns it along with the information needed to create a new
 internetAccount.
 
 ```ts
-type getPreAuthorizationInformation = (
-  location: UriLocation,
-) => Promise<{
+type getPreAuthorizationInformation = (location: UriLocation) => Promise<{
   internetAccountType: string
   authInfo: { token: string; configuration: any }
 }>

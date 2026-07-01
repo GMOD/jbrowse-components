@@ -100,7 +100,7 @@ export async function navToSingleLevelBreak({
   tracks?: Track[]
   focusOnBreakends?: boolean
 }) {
-  const { snap, coverage } = await (focusOnBreakends
+  const { snap, coverage } = await (focusOnBreakends === true
     ? singleLevelFocusedSnapshotFromBreakendFeature({
         feature,
         assemblyName,
@@ -133,7 +133,7 @@ export async function navToSingleLevelBreak({
   const lgv = view.views[0]!
   await when(() => lgv.initialized)
 
-  if (focusOnBreakends) {
+  if (focusOnBreakends === true) {
     // zoom to show the breakpoints with windowSize padding, centered between
     // them (matches navToMultiLevelBreak: windowSize bp on each side across the
     // view width)

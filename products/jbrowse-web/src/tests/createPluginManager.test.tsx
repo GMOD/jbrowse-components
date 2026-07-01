@@ -15,7 +15,7 @@ global.nodeImage = Image
 global.nodeCreateCanvas = createCanvas
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  if (/plugin-store/.exec(`${url}`)) {
+  if (`${url}`.includes('plugin-store')) {
     return new Response(JSON.stringify({ plugins: [] }))
   }
   if (`${url}`.includes('jb2=true')) {

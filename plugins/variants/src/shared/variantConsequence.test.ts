@@ -7,7 +7,13 @@ import {
 } from './variantConsequence.ts'
 
 function feat(INFO: Record<string, unknown>) {
-  return new SimpleFeature({ uniqueId: 'x', refName: 'ctgA', start: 0, end: 1, INFO })
+  return new SimpleFeature({
+    uniqueId: 'x',
+    refName: 'ctgA',
+    start: 0,
+    end: 1,
+    INFO,
+  })
 }
 
 // SnpEff ANN: Allele|Annotation|Annotation_Impact|...
@@ -39,7 +45,9 @@ describe('variant consequence helpers', () => {
   })
 
   it('takes the first of &-joined consequences', () => {
-    const f = snpEff(['A|missense_variant&splice_region_variant|MODERATE|GENE1'])
+    const f = snpEff([
+      'A|missense_variant&splice_region_variant|MODERATE|GENE1',
+    ])
     expect(getVariantConsequence(f)).toBe('missense_variant')
   })
 

@@ -8,8 +8,8 @@
 // for a reader to reach a live, interactive view.
 //
 // Run with: node --experimental-strip-types scripts/audit-figures.ts
-import { readFileSync, readdirSync, statSync, writeFileSync } from 'fs'
-import { join, relative } from 'path'
+import { readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs'
+import { join, relative } from 'node:path'
 
 import { screenshotLiveUrls, screenshotSpecNames } from './screenshot-specs.ts'
 

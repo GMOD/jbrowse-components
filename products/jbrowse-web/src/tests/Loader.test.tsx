@@ -20,7 +20,7 @@ const getFile = (url: string) =>
 const delay = { timeout: 20000 }
 
 jest.spyOn(global, 'fetch').mockImplementation(async (url, args) => {
-  if (/plugin-store/.exec(`${url}`)) {
+  if (`${url}`.includes('plugin-store')) {
     return new Response(
       JSON.stringify({
         plugins: [

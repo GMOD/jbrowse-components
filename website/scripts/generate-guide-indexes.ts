@@ -1,5 +1,5 @@
-import { readFileSync, readdirSync, writeFileSync } from 'fs'
-import { join } from 'path'
+import { readFileSync, readdirSync, writeFileSync } from 'node:fs'
+import { join } from 'node:path'
 
 const docsDir = join(import.meta.dirname, '..', 'docs')
 const check = process.argv.includes('--check')
@@ -61,7 +61,8 @@ function parseFrontmatter(content: string) {
 
 function collectEntries(dir: string, urlDir: string): Map<string, Entry[]> {
   const map = new Map<string, Entry[]>()
-  for (const file of readdirSync(dir).filter(f => f.endsWith('.md'))) {
+  const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
+  for (const file of mdFiles) {
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
     if (!fm.guide_category || !fm.description) {
@@ -87,7 +88,8 @@ function checkMissingFrontmatter(
   label: string,
 ): { file: string; missing: string[] }[] {
   const problems: { file: string; missing: string[] }[] = []
-  for (const file of readdirSync(dir).filter(f => f.endsWith('.md'))) {
+  const mdFiles = readdirSync(dir).filter(f => f.endsWith('.md'))
+  for (const file of mdFiles) {
     const content = readFileSync(join(dir, file), 'utf8')
     const fm = parseFrontmatter(content)
     const missing = []

@@ -108,12 +108,12 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
       const arrowPath = document.createElementNS(NS, 'path')
       arrowPath.setAttribute('d', `M0,0 L${ARROW_LEN},3 L0,6 Z`)
       arrowPath.setAttribute('fill', '#e3242b')
-      marker.appendChild(arrowPath)
-      defs.appendChild(marker)
-      svg.appendChild(defs)
+      marker.append(arrowPath)
+      defs.append(marker)
+      svg.append(defs)
       // append the overlay now (before drawing) so text getBBox() resolves for
       // the optional background pill below
-      document.body.appendChild(svg)
+      document.body.append(svg)
       for (const a of resolved) {
         const color = a.color ?? '#e3242b'
         const cx = a.x
@@ -144,7 +144,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           line.setAttribute('marker-end', 'url(#arrowhead)')
           // recolor the shared arrowhead to match the last arrow's stroke
           arrowPath.setAttribute('fill', color)
-          svg.appendChild(line)
+          svg.append(line)
         } else if (a.type === 'box') {
           const rect = document.createElementNS(NS, 'rect')
           rect.setAttribute('x', String(cx))
@@ -160,7 +160,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           }
           rect.setAttribute('stroke', color)
           rect.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
-          svg.appendChild(rect)
+          svg.append(rect)
         } else if (a.type === 'circle') {
           const radius = a.radius ?? 16
           const circle = document.createElementNS(NS, 'circle')
@@ -171,7 +171,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           circle.setAttribute('stroke-width', String(a.strokeWidth ?? 5))
           // filled badge when it carries a label, hollow ring otherwise
           circle.setAttribute('fill', a.text ? color : 'none')
-          svg.appendChild(circle)
+          svg.append(circle)
           if (a.text) {
             const text = document.createElementNS(NS, 'text')
             text.setAttribute('x', String(cx))
@@ -183,7 +183,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
             text.setAttribute('font-size', String(a.fontSize ?? 18))
             text.setAttribute('font-weight', '700')
             text.textContent = a.text
-            svg.appendChild(text)
+            svg.append(text)
           }
         } else if (a.type === 'text' && a.text) {
           // Uniform callout style: white pill, red border, black text, larger
@@ -198,9 +198,9 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
             t.setAttribute('font-size', String(fontSize))
             t.setAttribute('font-weight', fontWeight)
             t.textContent = s
-            svg.appendChild(t)
+            svg.append(t)
             const w = t.getBBox().width
-            svg.removeChild(t)
+            t.remove()
             return w
           }
           const lines: string[] = []
@@ -230,9 +230,9 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
             tspan.setAttribute('x', String(cx))
             tspan.setAttribute('dy', i === 0 ? '0' : String(lineHeight))
             tspan.textContent = ln
-            text.appendChild(tspan)
+            text.append(tspan)
           })
-          svg.appendChild(text)
+          svg.append(text)
           const bbox = text.getBBox()
           const padX = 10
           const padY = 7
@@ -245,7 +245,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           rect.setAttribute('fill', '#fff')
           rect.setAttribute('stroke', a.color ?? '#e3242b')
           rect.setAttribute('stroke-width', '3')
-          svg.insertBefore(rect, text)
+          text.before(rect)
         }
       }
     },

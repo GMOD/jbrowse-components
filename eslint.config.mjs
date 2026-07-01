@@ -91,6 +91,11 @@ export default defineConfig(
       'website/.prettierrc.mjs',
       'website/astro.config.mjs',
       'products/*/examples-site/astro.config.mjs',
+      // examples-site Astro apps are standalone demos excluded from the root
+      // tsconfig; their TS frontmatter isn't parsed by the type-aware pipeline,
+      // so lint them via their own tooling, not here.
+      'products/*/examples-site/**/*.astro',
+      'products/examples-site-shared/**/*.astro',
       'docs',
       'benchmarks',
       'auth_test_utils',
@@ -103,6 +108,9 @@ export default defineConfig(
   },
   {
     languageOptions: {
+      globals: {
+        ...globals.browser,
+      },
       parserOptions: {
         project: ['./tsconfig.json'],
         tsconfigRootDir: import.meta.dirname,
@@ -161,6 +169,10 @@ export default defineConfig(
       'unicorn/numeric-separators-style': 'off', // 2051 — purely cosmetic churn
       'unicorn/no-this-outside-of-class': 'off', // 351 — conflicts with MST `self` patterns
 
+      // Conflicts with baseline-js `available: 'widely'`: Uint8Array
+      // toBase64()/fromBase64() aren't widely-available baseline yet.
+      'unicorn/prefer-uint8array-base64': 'off',
+
       // === Conflicts with repo conventions (nest / ternaries over early return) ===
       'unicorn/prefer-early-return': 'off', // 74 — we prefer nesting over early return
       'unicorn/no-useless-else': 'off', // 93 — pushes early-return de-nesting
@@ -189,7 +201,8 @@ export default defineConfig(
       'unicorn/prefer-iterator-to-array': 'off', // 57
       'unicorn/no-top-level-assignment-in-function': 'off', // 57
       'unicorn/no-computed-property-existence-check': 'off', // 55
-      'unicorn/no-await-expression-member': 'off', // 55
+      'unicorn/no-await-expression-member': 'off', // 55 — mostly NOT auto-fixable, churn is largely test files
+      'unicorn/no-unsafe-property-key': 'off', // 4 — legacy dynamic string-key access; proper fix needs type-level work
       'unicorn/prefer-continue': 'off', // 53
       'unicorn/no-return-array-push': 'off', // 53
       'unicorn/prefer-number-coercion': 'off', // 53
@@ -197,12 +210,10 @@ export default defineConfig(
       'unicorn/consistent-class-member-order': 'off', // 52
       'unicorn/no-global-object-property-assignment': 'off', // 43
       'unicorn/prefer-switch': 'off', // 41
-      'unicorn/prefer-string-replace-all': 'off', // 41
       'unicorn/prefer-global-number-constants': 'off', // 41
       'unicorn/no-array-callback-reference': 'off', // 37
       'unicorn/no-declarations-before-early-exit': 'off', // 31
       'unicorn/consistent-compound-words': 'off', // 28
-      'unicorn/prefer-number-properties': 'off', // 28
       'unicorn/no-new-array': 'off', // 27
       'unicorn/no-unreadable-for-of-expression': 'off', // 25
       'unicorn/prefer-at': 'off', // 23
@@ -228,7 +239,6 @@ export default defineConfig(
       'unicorn/prefer-type-error': 'off', // 9
       'unicorn/prefer-object-iterable-methods': 'off', // 9
       'unicorn/no-for-each': 'off', // 9
-      'unicorn/prefer-regexp-test': 'off', // 9
       'unicorn/prefer-ternary': 'off', // 8
       'unicorn/prefer-add-event-listener-options': 'off', // 8
       'unicorn/text-encoding-identifier-case': 'off', // 8
@@ -241,11 +251,9 @@ export default defineConfig(
       'unicorn/prefer-else-if': 'off', // 6
       'unicorn/prefer-response-static-json': 'off', // 6
       'unicorn/prefer-string-raw': 'off', // 6
-      'unicorn/no-optional-chaining-on-undeclared-variable': 'off', // 5
       'unicorn/prefer-split-limit': 'off', // 5
       'unicorn/prefer-set-methods': 'off', // 5
       'unicorn/no-subtraction-comparison': 'off', // 4
-      'unicorn/no-unsafe-property-key': 'off', // 4
       'unicorn/prefer-logical-operator-over-ternary': 'off', // 4
       'unicorn/prefer-single-call': 'off', // 4
       'unicorn/prefer-iterator-helpers': 'off', // 4
@@ -258,7 +266,6 @@ export default defineConfig(
       'unicorn/no-array-reduce': 'off', // 3
       'unicorn/consistent-json-file-read': 'off', // 3
       'unicorn/no-object-as-default-parameter': 'off', // 3
-      'unicorn/no-incorrect-template-string-interpolation': 'off', // 3
       'unicorn/consistent-existence-index-check': 'off', // 3
       'unicorn/no-unnecessary-global-this': 'off', // 2
       'unicorn/prefer-unary-minus': 'off', // 2
@@ -484,6 +491,16 @@ export default defineConfig(
       'no-console': 'off',
     },
   },
+  // Incremental rollout of strict-boolean-expressions: we want conditions to be
+  // explicit (no implicit coercion of nullable strings/numbers/booleans or
+  // `any`). The rule is opt-in per-package as each is cleaned up; expand the
+  // glob as more packages are made compliant. packages/sv-core is the first.
+  {
+    files: ['packages/sv-core/src/**/*.{ts,tsx}'],
+    rules: {
+      '@typescript-eslint/strict-boolean-expressions': 'error',
+    },
+  },
   // Catch jest.mock/unmock calls that reach into another package's src/.
   // no-restricted-imports only covers import statements, not call expressions.
   {
@@ -600,11 +617,25 @@ export default defineConfig(
     files: ['**/*.astro', '**/*.astro/*.js', '**/*.astro/*.ts'],
     languageOptions: {
       parserOptions: {
+        // astro-eslint-parser needs the TS parser to read TypeScript
+        // frontmatter (interface/`!`/etc.); the astro recommended preset
+        // doesn't set this, so frontmatter would otherwise parse as plain JS.
+        parser: tseslint.parser,
         project: null,
       },
     },
     rules: {
       ...tseslint.configs.disableTypeChecked.rules,
+      // consistent-type-imports/exports need type information but aren't part
+      // of tseslint's disableTypeChecked set, so with `project: null` above
+      // they throw ("rule requires type information") and abort the whole lint
+      // run on any .astro file. Turn them off here explicitly.
+      '@typescript-eslint/consistent-type-imports': 'off',
+      '@typescript-eslint/consistent-type-exports': 'off',
+      // Astro injects client-script variables via `<script define:vars={{…}}>`,
+      // which ESLint's scope analysis can't see, so no-undef false-positives on
+      // them. TypeScript/astro handle real undefined-variable checks.
+      'no-undef': 'off',
       // `{list.map(x => <div>)}` in an .astro template compiles to static
       // HTML, not a React reconciliation tree, so there's no virtual-DOM key
       // to provide — this rule only makes sense for actual React JSX.

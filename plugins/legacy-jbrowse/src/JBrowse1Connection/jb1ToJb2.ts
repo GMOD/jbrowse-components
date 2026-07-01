@@ -422,7 +422,7 @@ export async function createRefSeqsAdapter(
   }
 
   if (refSeqs.url) {
-    if (/.fai$/.exec(refSeqs.url)) {
+    if (/.fai$/.test(refSeqs.url)) {
       return {
         type: 'IndexedFastaAdapter',
         fastaLocation: {
@@ -435,16 +435,16 @@ export async function createRefSeqsAdapter(
         },
       }
     }
-    if (/.2bit$/.exec(refSeqs.url)) {
+    if (/.2bit$/.test(refSeqs.url)) {
       return {
         type: 'TwoBitAdapter',
         twoBitLocation: { uri: refSeqs.url, locationType: 'UriLocation' },
       }
     }
-    if (/.fa$/.exec(refSeqs.url)) {
+    if (/.fa$/.test(refSeqs.url)) {
       throw new Error('Unindexed FASTA adapter not available')
     }
-    if (/.sizes/.exec(refSeqs.url)) {
+    if (/.sizes/.test(refSeqs.url)) {
       throw new Error('chromosome SIZES adapter not available')
     }
     const refSeqsJson = await openLocation({

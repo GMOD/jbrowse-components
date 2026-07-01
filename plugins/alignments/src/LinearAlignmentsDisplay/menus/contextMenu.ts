@@ -5,7 +5,10 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
-import { buildPairedEndMateFeature, getMateFields } from '../../shared/mateFeature.ts'
+import {
+  buildPairedEndMateFeature,
+  getMateFields,
+} from '../../shared/mateFeature.ts'
 import { CIGAR_TYPE_LABELS } from '../components/alignmentComponentUtils.ts'
 import {
   openCigarWidget,
@@ -170,9 +173,8 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
           const session = getSession(self)
           try {
             const { uniqueId, ...rest } = feat.toJSON()
-            const { default: copy } = await import(
-              '@jbrowse/core/util/copyToClipboard'
-            )
+            const { default: copy } =
+              await import('@jbrowse/core/util/copyToClipboard')
             copy(JSON.stringify(rest, null, 4))
             session.notify('Copied to clipboard', 'success')
           } catch (e) {

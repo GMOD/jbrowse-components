@@ -232,17 +232,16 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
                 )
 
                 model.setLayout(
-                  parseClusterOrder(paste)
-                    .map(idx => {
-                      const sourceItem = sourcesWithoutLayout[idx - 1]
-                      if (!sourceItem) {
-                        throw new Error(`out of bounds at ${idx}`)
-                      }
-                      return {
-                        ...sourceItem,
-                        ...sourcesByName[sourceItem.name],
-                      }
-                    }),
+                  parseClusterOrder(paste).map(idx => {
+                    const sourceItem = sourcesWithoutLayout[idx - 1]
+                    if (!sourceItem) {
+                      throw new Error(`out of bounds at ${idx}`)
+                    }
+                    return {
+                      ...sourceItem,
+                      ...sourcesByName[sourceItem.name],
+                    }
+                  }),
                 )
               } catch (e) {
                 console.error(e)

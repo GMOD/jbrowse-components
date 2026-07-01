@@ -1,9 +1,5 @@
 import { diffTrackConfig, mergeTrackConfig } from '@jbrowse/core/util'
-import {
-  getSnapshot,
-  isStateTreeNode,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
 import { TracksManagerSessionMixin } from './Tracks.ts'
@@ -268,7 +264,10 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
          */
         resetTrackConfiguration(trackId: string) {
           if (trackId in self.trackConfigDeltas) {
-            self.trackConfigDeltas = withoutDelta(self.trackConfigDeltas, trackId)
+            self.trackConfigDeltas = withoutDelta(
+              self.trackConfigDeltas,
+              trackId,
+            )
           }
         },
 

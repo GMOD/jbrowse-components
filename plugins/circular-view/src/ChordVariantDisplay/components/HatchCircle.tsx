@@ -19,7 +19,7 @@ const HatchCircle = observer(function HatchCircle({
 }) {
   const theme = useTheme()
   const uniqueId = useId()
-  const patternId = `hatch${uniqueId.replace(/:/g, '')}`
+  const patternId = `hatch${uniqueId.replaceAll(':', '')}`
   return (
     <g>
       <defs>

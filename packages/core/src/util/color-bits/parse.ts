@@ -27,7 +27,7 @@ const PATTERN = (() => {
       ${SEPARATOR_THEN_VALUE}?
       ${SEPARATOR_THEN_VALUE}?
       ${SEPARATOR}*
-    \)`.replace(/\s/g, ''),
+    \)`.replaceAll(/\s/g, ''),
   )
 })()
 
@@ -270,9 +270,9 @@ export function parseColor(color: string): Color {
  */
 function parseColorChannel(channel: string) {
   if (channel.charCodeAt(channel.length - 1) === PERCENT) {
-    return Math.round((parseFloat(channel) / 100) * 255)
+    return Math.round((Number.parseFloat(channel) / 100) * 255)
   }
-  return Math.round(parseFloat(channel))
+  return Math.round(Number.parseFloat(channel))
 }
 
 /**
@@ -294,9 +294,9 @@ function parseAlphaValue(channel: string) {
     return 0
   }
   if (channel.charCodeAt(channel.length - 1) === PERCENT) {
-    return parseFloat(channel) / 100
+    return Number.parseFloat(channel) / 100
   }
-  return parseFloat(channel)
+  return Number.parseFloat(channel)
 }
 
 /**
@@ -329,7 +329,7 @@ function parseAngle(angle: string) {
       factor = 360
     }
   }
-  return parseFloat(angle) / factor
+  return Number.parseFloat(angle) / factor
 }
 
 /**
@@ -340,7 +340,7 @@ function parsePercentage(value: string) {
   if (value.charCodeAt(0) === N) {
     return 0
   }
-  return parseFloat(value) / 100
+  return Number.parseFloat(value) / 100
 }
 
 /**
@@ -352,9 +352,9 @@ function parsePercentageOrValue(value: string) {
     return 0
   }
   if (value.charCodeAt(value.length - 1) === PERCENT) {
-    return parseFloat(value) / 100
+    return Number.parseFloat(value) / 100
   }
-  return parseFloat(value)
+  return Number.parseFloat(value)
 }
 
 /**
@@ -366,9 +366,9 @@ function parsePercentageFor(value: string, range: number) {
     return 0
   }
   if (value.charCodeAt(value.length - 1) === PERCENT) {
-    return (parseFloat(value) / 100) * range
+    return (Number.parseFloat(value) / 100) * range
   }
-  return parseFloat(value)
+  return Number.parseFloat(value)
 }
 
 // HSL functions

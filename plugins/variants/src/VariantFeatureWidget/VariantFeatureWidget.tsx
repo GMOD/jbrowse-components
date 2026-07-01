@@ -42,7 +42,11 @@ function AnnotationPanel({
   // SnpEff/VEP write the field list with padding (e.g. "annotations: 'Allele |
   // Annotation | ...'") while the per-variant data uses bare pipes, so trim
   // each header field to line the DataGrid columns up with the values.
-  const fields = desc?.match(regex)?.[1]?.split('|').map(f => f.trim()) ?? []
+  const fields =
+    desc
+      ?.match(regex)?.[1]
+      ?.split('|')
+      .map(f => f.trim()) ?? []
   const data = feature.INFO?.[fieldKey] ?? []
   return (
     <VariantConsequenceDataGrid fields={fields} data={data} title={title} />

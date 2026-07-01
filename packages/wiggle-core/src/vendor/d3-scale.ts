@@ -114,7 +114,7 @@ function bisectRight(a: number[], x: number, lo = 0, hi = a.length): number {
 
 function normalize(a: number, b: number) {
   b -= a = +a
-  return b ? (x: number) => (x - a) / b : () => (isNaN(b) ? NaN : 0.5)
+  return b ? (x: number) => (x - a) / b : () => (Number.isNaN(b) ? NaN : 0.5)
 }
 
 function interpolateNum(a: number, b: number) {
@@ -271,7 +271,7 @@ function logp(base: number) {
 
 function powp(base: number) {
   return base === 10
-    ? (x: number) => (isFinite(x) ? +`1e${x}` : Math.max(x, 0))
+    ? (x: number) => (Number.isFinite(x) ? +`1e${x}` : Math.max(x, 0))
     : base === Math.E
       ? Math.exp
       : (x: number) => Math.pow(base, x)

@@ -63,11 +63,11 @@ import {
 
 <!-- COLOR_TABLE theme-methylation START -->
 
-| Color | Name | Value | Description |
-| --- | --- | --- | --- |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | methylated5mC | `#ff0000` | 5-methylcytosine, methylated |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0000ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0000ff"></span> | unmethylated5mC | `#0000ff` | 5-methylcytosine, unmethylated |
-| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | methylated5hmC | `#ffc0cb` | 5-hydroxymethylcytosine, methylated |
+| Color                                                                                                                                                                       | Name             | Value     | Description                           |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------- | --------- | ------------------------------------- |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ff0000;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ff0000"></span> | methylated5mC    | `#ff0000` | 5-methylcytosine, methylated          |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#0000ff;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#0000ff"></span> | unmethylated5mC  | `#0000ff` | 5-methylcytosine, unmethylated        |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#ffc0cb;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#ffc0cb"></span> | methylated5hmC   | `#ffc0cb` | 5-hydroxymethylcytosine, methylated   |
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#800080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#800080"></span> | unmethylated5hmC | `#800080` | 5-hydroxymethylcytosine, unmethylated |
 
 <!-- COLOR_TABLE theme-methylation END -->

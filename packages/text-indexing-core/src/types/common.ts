@@ -87,7 +87,7 @@ export async function getLocalOrRemoteStream({
 }
 
 export function createReadlineInterface(stream: Readable, inLocation: string) {
-  const inputStream = /.b?gz$/.exec(inLocation)
+  const inputStream = /.b?gz$/.test(inLocation)
     ? stream.pipe(createGunzip())
     : stream
   return readline.createInterface({ input: inputStream })
@@ -166,7 +166,7 @@ export function guessAdapterFromFileName(filePath: string): Track {
 
 // replaces characters invalid in Windows filenames: \ / : * ? " < > |
 export function sanitizeForFilename(name: string) {
-  return name.replace(/[\\/:*?"<>|]/g, '_')
+  return name.replaceAll(/[\\/:*?"<>|]/g, '_')
 }
 
 export function generateMeta({

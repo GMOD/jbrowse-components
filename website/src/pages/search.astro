@@ -156,7 +156,7 @@ const q = Astro.url.searchParams.get('q') ?? ''
     syncUrl(query)
     if (!query.trim()) {
       lastResults = []
-      resultsList.innerHTML = ''
+      resultsList.replaceChildren()
       countEl.textContent = ''
       return
     }

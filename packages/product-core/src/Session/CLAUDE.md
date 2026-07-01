@@ -10,7 +10,7 @@ Tracks come from two places, combined by the `#getter tracks` in
 - `sessionTracks` — a typed MST array of **user-added** tracks (no matching
   admin base). Persisted and shared with the session.
 - `trackConfigDeltas` — a `types.frozen` map `trackId → partial config`. A
-  non-admin's **edits to an admin config track** are stored here as a *delta*
+  non-admin's **edits to an admin config track** are stored here as a _delta_
   against the base, keyed by trackId.
 
 `tracks` lists `sessionTracks` first, then every `jbrowse.tracks` base entry
@@ -23,8 +23,8 @@ is returned **unchanged by identity** so the config hydration cache stays warm
 
 The delta records only the slots the user changed. Everything else resolves from
 the live base, so a later admin change to an **untouched** field (e.g. a
-corrected adapter URL) still flows through — a full same-id shadow would mask it.
-See `packages/core/src/util/trackConfigDelta.ts` (`diffTrackConfig` /
+corrected adapter URL) still flows through — a full same-id shadow would mask
+it. See `packages/core/src/util/trackConfigDelta.ts` (`diffTrackConfig` /
 `mergeTrackConfig`) for the merge rules (displays by `displayId`, nested configs
 recurse, value arrays replace wholesale, no deletion tombstones).
 
@@ -42,12 +42,12 @@ persist through `#action updateTrackConfiguration(snapshot)`:
   `sessionTracks` entry), it's updated in place there instead.
 
 Because the delta is recomputed against the base each save, a save that nets no
-change (`diffTrackConfig` returns only the self-identifying `trackId`) is **not**
-stored — and editing a slot back to its base value drops the delta entirely
-(implicit reset). This keeps `isTrackOverride` / the "edited" badge honest. The
-base is snapshotted first (`toPlainConfig`) so the diff/merge work whether
-`jbrowse.tracks` holds `types.frozen` plain objects (app-core, web/desktop) or
-live MST config nodes (product-core, embedded react views).
+change (`diffTrackConfig` returns only the self-identifying `trackId`) is
+**not** stored — and editing a slot back to its base value drops the delta
+entirely (implicit reset). This keeps `isTrackOverride` / the "edited" badge
+honest. The base is snapshotted first (`toPlainConfig`) so the diff/merge work
+whether `jbrowse.tracks` holds `types.frozen` plain objects (app-core,
+web/desktop) or live MST config nodes (product-core, embedded react views).
 
 ### Reset (not delete)
 
@@ -68,8 +68,9 @@ hierarchical selector (`TrackLabel.tsx`).
 Older sessions stored a non-admin's edits as a full same-id `sessionTracks`
 entry shadowing the admin track. `SessionTracks.ts`'s `afterAttach` performs a
 one-time upgrade on load: any `sessionTracks` entry whose id matches a
-`jbrowse.tracks` base is `diffTrackConfig`'d into `trackConfigDeltas` and removed
-from `sessionTracks`. Genuinely-added session tracks (no base) are left alone.
+`jbrowse.tracks` base is `diffTrackConfig`'d into `trackConfigDeltas` and
+removed from `sessionTracks`. Genuinely-added session tracks (no base) are left
+alone.
 
 ### Why Settings is always enabled
 

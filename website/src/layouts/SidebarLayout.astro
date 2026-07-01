@@ -29,7 +29,7 @@ const { title, description, toggleLabel, navLabel } = Astro.props
 </BaseLayout>
 
 <script>
-  const sidebar = document.querySelector<HTMLElement>('.sidebar')
+  const sidebar = document.querySelector('.sidebar') as HTMLElement | null
   // ancestor <details> are already server-rendered open (containsSlug / year
   // match); just center the active link in the scroll viewport
   const active = sidebar?.querySelector('a[aria-current="page"]')

@@ -14,9 +14,9 @@ function hexToRGB(hex: string): RGB {
   const h = hex.replace('#', '')
   const full = h.length < 6 ? h[0]! + h[0]! + h[1]! + h[1]! + h[2]! + h[2]! : h
   return [
-    parseInt(full.slice(0, 2), 16),
-    parseInt(full.slice(2, 4), 16),
-    parseInt(full.slice(4, 6), 16),
+    Number.parseInt(full.slice(0, 2), 16),
+    Number.parseInt(full.slice(2, 4), 16),
+    Number.parseInt(full.slice(4, 6), 16),
   ]
 }
 

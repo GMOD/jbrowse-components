@@ -23,7 +23,13 @@ const assembly = {
     adapter: {
       type: 'FromConfigSequenceAdapter',
       features: [
-        { refName: 'ctgA', uniqueId: 'firstId', start: 0, end: 10, seq: 'cattgttgcg' },
+        {
+          refName: 'ctgA',
+          uniqueId: 'firstId',
+          start: 0,
+          end: 10,
+          seq: 'cattgttgcg',
+        },
       ],
     },
   },
@@ -37,16 +43,23 @@ const track = {
   name: 'Original name',
   assemblyNames: ['volvox'],
   adapter: { type: 'FromConfigAdapter', features: [] },
-  displays: [{ type: 'LinearBasicDisplay', displayId: DISPLAY_ID, height: 100 }],
+  displays: [
+    { type: 'LinearBasicDisplay', displayId: DISPLAY_ID, height: 100 },
+  ],
 }
 
 interface DeltaSession {
   tracks: AnyConfigurationModel[]
   trackConfigDeltas: Record<string, { trackId: string; [key: string]: unknown }>
-  updateTrackConfiguration: (snap: { trackId: string; [k: string]: unknown }) => void
+  updateTrackConfiguration: (snap: {
+    trackId: string
+    [k: string]: unknown
+  }) => void
 }
 
-interface DisplaysHolder { displays: { displayId: string; height?: number }[] }
+interface DisplaysHolder {
+  displays: { displayId: string; height?: number }[]
+}
 
 test('a non-admin edit over an MST-node config base merges cleanly (no leaked live nodes)', () => {
   const state = createViewState({ assembly, tracks: [track] })
@@ -103,9 +116,9 @@ test('a display-slot edit is a per-display delta, merges by displayId, no leaked
   const resolved = session.tracks.find(t => t.trackId === TRACK_ID)!
   const merged = resolved as unknown as DisplaysHolder
   expect(merged.displays).toHaveLength(baseDisplayCount)
-  expect(
-    merged.displays.find(d => d.displayId === DISPLAY_ID)!.height,
-  ).toBe(321)
+  expect(merged.displays.find(d => d.displayId === DISPLAY_ID)!.height).toBe(
+    321,
+  )
   for (const d of merged.displays) {
     expect(isStateTreeNode(d)).toBe(false)
   }

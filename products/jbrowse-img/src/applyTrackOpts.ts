@@ -268,7 +268,7 @@ function applyModifier(
         }
       } else if (val1 && hasFeatureSize) {
         const n = +val1
-        if (isNaN(n)) {
+        if (Number.isNaN(n)) {
           throw new Error(
             `Invalid featureHeight "${val1}". Use normal, compact, super-compact, or a number.`,
           )

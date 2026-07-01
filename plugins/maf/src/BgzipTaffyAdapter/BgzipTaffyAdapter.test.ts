@@ -528,7 +528,7 @@ describe('blockToFeature', () => {
     strand: 1,
     sequenceLength: 1000,
     bases,
-    length: bases.replace(/-/g, '').length,
+    length: bases.replaceAll('-', '').length,
   })
 
   test('no sampleFilter — all rows included, simple dot-split', () => {

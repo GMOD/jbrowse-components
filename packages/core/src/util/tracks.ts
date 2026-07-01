@@ -337,7 +337,7 @@ export type TrackTypeGuesser = (
 
 // Handles both forward slashes and Windows backslashes in file:// URLs
 function filenameFromPath(path: string) {
-  return path.replace(/\\/g, '/').split('/').at(-1) ?? ''
+  return path.replaceAll('\\', '/').split('/').at(-1) ?? ''
 }
 
 export function getFileName(track: FileLocation) {

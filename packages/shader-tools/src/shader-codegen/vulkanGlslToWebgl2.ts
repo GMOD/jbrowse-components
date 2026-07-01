@@ -82,22 +82,25 @@ export function vulkanGlslToWebgl2(
     /^#extension\s+GL_ARB_shader_draw_parameters\s*:\s*require\s*\n/m,
     '',
   )
-  out = out.replace(/^layout\(row_major\)\s*(uniform|buffer);\s*\n/gm, '')
-  out = out.replace(/^layout\(binding\s*=\s*\d+\)\s*\n/gm, '')
-  out = out.replace(/gl_VertexIndex\s*-\s*gl_BaseVertex/g, 'gl_VertexID')
-  out = out.replace(/gl_InstanceIndex\s*-\s*gl_BaseInstance/g, 'gl_InstanceID')
-  out = out.replace(/\bgl_VertexIndex\b/g, 'gl_VertexID')
-  out = out.replace(/\bgl_InstanceIndex\b/g, 'gl_InstanceID')
+  out = out.replaceAll(/^layout\(row_major\)\s*(uniform|buffer);\s*\n/gm, '')
+  out = out.replaceAll(/^layout\(binding\s*=\s*\d+\)\s*\n/gm, '')
+  out = out.replaceAll(/gl_VertexIndex\s*-\s*gl_BaseVertex/g, 'gl_VertexID')
+  out = out.replaceAll(
+    /gl_InstanceIndex\s*-\s*gl_BaseInstance/g,
+    'gl_InstanceID',
+  )
+  out = out.replaceAll(/\bgl_VertexIndex\b/g, 'gl_VertexID')
+  out = out.replaceAll(/\bgl_InstanceIndex\b/g, 'gl_InstanceID')
 
   out =
     stage === 'vertex'
-      ? out.replace(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ')
-      : out.replace(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
+      ? out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nout\s/g, 'out ')
+      : out.replaceAll(/layout\(location\s*=\s*\d+\)\s*\nin\s/g, 'in ')
 
   // GLSL 4.20+ / HLSL brace initializers aren't legal in GLSL ES 3.00 — rewrite
   // `Struct_0 v = { a, b, c };` to `Struct_0 v = Struct_0(a, b, c);`. Slang
   // emits these when a function takes a local struct by value.
-  out = out.replace(
+  out = out.replaceAll(
     /\b(\w+_\d+)\s+(\w+)\s*=\s*\{\s*([^}]*?)\s*\}\s*;/g,
     (_, type, name, fields) => `${type} ${name} = ${type}(${fields.trim()});`,
   )

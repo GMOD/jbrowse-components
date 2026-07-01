@@ -3,7 +3,7 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import NoConfigMessage from './NoConfigMessage.tsx'
 
 export default function LoaderErrorBanner({ error }: { error: unknown }) {
-  return /HTTP 404 fetching config.json/.exec(`${error}`) ? (
+  return /HTTP 404 fetching config.json/.test(`${error}`) ? (
     <div>
       <h1>It worked!</h1>
       <p

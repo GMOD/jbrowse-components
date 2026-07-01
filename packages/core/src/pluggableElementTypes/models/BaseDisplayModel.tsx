@@ -1,11 +1,6 @@
 import type React from 'react'
 
-import {
-  getParent,
-  hasParent,
-  isAlive,
-  types,
-} from '@jbrowse/mobx-state-tree'
+import { getParent, hasParent, isAlive, types } from '@jbrowse/mobx-state-tree'
 
 import { getConf } from '../../configuration/index.ts'
 import {

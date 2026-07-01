@@ -2,10 +2,7 @@ import { generateClusterRScript, matrixToTsv } from './clusterRScript.ts'
 import { parseClusterOrder } from './clusterUtils.ts'
 
 test('generateClusterRScript builds an hclust script', () => {
-  const script = generateClusterRScript(
-    { a: [1, 2], b: [3, 4] },
-    'complete',
-  )
+  const script = generateClusterRScript({ a: [1, 2], b: [3, 4] }, 'complete')
   expect(script).toContain('inputMatrix<-matrix(c(1,2,\n3,4')
   expect(script).toContain('nrow=2,byrow=TRUE')
   expect(script).toContain("rownames(inputMatrix)<-c('a','b')")

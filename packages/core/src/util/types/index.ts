@@ -181,7 +181,10 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   removeTemporaryAssembly?: (arg: string) => void
   sessionConnections?: AnyConfigurationModel[]
   sessionTracks?: AnyConfigurationModel[]
-  trackConfigDeltas?: Record<string, { trackId: string; [key: string]: unknown }>
+  trackConfigDeltas?: Record<
+    string,
+    { trackId: string; [key: string]: unknown }
+  >
   connectionInstances?: {
     name: string
     connectionId: string

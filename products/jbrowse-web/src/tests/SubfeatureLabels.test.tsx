@@ -21,11 +21,10 @@ const opts = [{}, delay]
 
 test('toggle subfeature labels and verify eden.1 label appears', async () => {
   const user = userEvent.setup()
-  const { view, findAllByTestId } = await createView()
+  const { view } = await createView()
 
   await view.navToLocString('ctgA:907..15,319')
   await user.click(await screen.findByTestId(hts('gff3tabix_genes'), ...opts))
-  await findAllByTestId(/^display-.*-done$/, ...opts)
 
   await user.click(await screen.findByTestId('track_menu_icon', ...opts))
   await user.click(await screen.findByText('Show...', ...opts))
@@ -33,6 +32,9 @@ test('toggle subfeature labels and verify eden.1 label appears', async () => {
 
   await screen.findByText('EDEN.1', ...opts)
 
-  const displays = await findAllByTestId(/^display-.*-done$/, ...opts)
-  expectCanvasMatch(findCanvasIn(displays[0]!))
+  const display = await screen.findByTestId(
+    'display-gff3tabix_genes-LinearBasicDisplay-done',
+    ...opts,
+  )
+  expectCanvasMatch(findCanvasIn(display))
 }, 50000)
