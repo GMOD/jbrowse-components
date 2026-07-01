@@ -226,3 +226,33 @@ test('reset discards the delta and reverts an open track in place', () => {
   expect(openTrack()).toBeDefined()
   expect(readConfObject(openTrack().configuration, 'name')).toBe(originalName)
 })
+
+test('a save identical to the base stores no delta (no spurious override)', () => {
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
+
+  // a save with no net change (e.g. opening then closing the config editor)
+  // must not register an override — otherwise the row gets a bogus "edited"
+  // badge and the menu swaps Delete for Reset with nothing overridden
+  session.updateTrackConfiguration({ ...base })
+
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+  expect(session.isTrackOverride(TRACK_ID)).toBe(false)
+})
+
+test('editing a slot back to its base value clears the delta (implicit reset)', () => {
+  const { rootModel } = getPluginManager(undefined, false)
+  const session = rootModel.session as unknown as TestSession
+  const base = session.jbrowse.tracks.find(t => t.trackId === TRACK_ID)!
+
+  session.updateTrackConfiguration(editedSnapshot(session))
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeDefined()
+
+  // the delta is recomputed against the base each save, so reverting the slot
+  // yields an empty delta and drops the override entirely
+  session.updateTrackConfiguration({ ...base })
+  expect(session.trackConfigDeltas[TRACK_ID]).toBeUndefined()
+  expect(session.isTrackOverride(TRACK_ID)).toBe(false)
+})
+
