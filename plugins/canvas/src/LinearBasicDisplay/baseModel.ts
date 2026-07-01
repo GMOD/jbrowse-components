@@ -32,7 +32,7 @@ import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-import { autorun, observable, toJS } from 'mobx'
+import { autorun, observable, toJS, untracked } from 'mobx'
 
 import {
   fetchCanvasFeatureDetails,
@@ -50,6 +50,7 @@ import {
   canMorph,
   captureFeatureTops,
   easeInOutCubic,
+  focusScrollDelta,
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
@@ -255,6 +256,12 @@ export default function baseStateModelFactory(
         // Height of the layout being animated away from; `maxY` holds at the
         // taller of this and the destination during a morph (anti-clip).
         morphFromMaxY: 0,
+        // Scroll-follow so the focused feature stays put through a repack:
+        // `scrollTop` eases from `morphScrollFrom` by `morphScrollDelta` (the
+        // anchor feature's row shift) in lockstep with the Y morph. Zero when
+        // there's nothing to pin. See focusScrollDelta.
+        morphScrollFrom: 0,
+        morphScrollDelta: 0,
       }))
       .views(self => ({
         /**
@@ -738,9 +745,16 @@ export default function baseStateModelFactory(
         // clock that advances `morphProgress` lives in FeatureComponent (it
         // observes `morphFromTops`). Morphs (300ms) finish before the next
         // layout change (coarseBpPerPx is debounced 500ms), so no retarget.
-        beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
+        beginYMorph(
+          fromTops: Map<string, number>,
+          fromMaxY: number,
+          scrollFrom: number,
+          scrollDelta: number,
+        ) {
           self.morphFromTops = fromTops
           self.morphFromMaxY = fromMaxY
+          self.morphScrollFrom = scrollFrom
+          self.morphScrollDelta = scrollDelta
           self.morphStartMs = morphClockMs()
           self.morphProgress = 0
         },
@@ -749,6 +763,14 @@ export default function baseStateModelFactory(
          */
         setMorphProgress(t: number) {
           self.morphProgress = Math.min(1, Math.max(0, t))
+          // Ease scrollTop by the same eased factor the rows use, so the anchor
+          // feature holds its screen position while the rest morph around it.
+          if (self.morphScrollDelta !== 0) {
+            self.setScrollTop(
+              self.morphScrollFrom +
+                self.morphScrollDelta * easeInOutCubic(self.morphProgress),
+            )
+          }
         },
         /**
          * #action
@@ -756,6 +778,7 @@ export default function baseStateModelFactory(
         endYMorph() {
           self.morphFromTops = undefined
           self.morphProgress = 1
+          self.morphScrollDelta = 0
         },
       }))
       .views(self => ({
@@ -1636,12 +1659,38 @@ export default function baseStateModelFactory(
                   return
                 }
                 const fromTops = captureFeatureTops(from)
-                if (
-                  scaleUnchanged &&
-                  morphAllowed(getSession(self).animationMode) &&
-                  canMorph(fromTops, current)
-                ) {
-                  self.beginYMorph(fromTops, maxBottom(from))
+                // Only a same-scale repack (a zoom step) has comparable rows to
+                // pin against; a mode/label change rescales every row, so let it
+                // snap without scroll-follow.
+                if (scaleUnchanged) {
+                  // scrollTop/height are viewport state, not layout inputs —
+                  // read untracked so writing scrollTop back below can't
+                  // re-trigger this layout autorun.
+                  const { scrollTop, viewportCenterY } = untracked(() => ({
+                    scrollTop: self.scrollTop,
+                    viewportCenterY: self.scrollTop + self.height / 2,
+                  }))
+                  const scrollDelta = focusScrollDelta(
+                    fromTops,
+                    captureFeatureTops(current),
+                    viewportCenterY,
+                  )
+                  if (
+                    morphAllowed(getSession(self).animationMode) &&
+                    canMorph(fromTops, current)
+                  ) {
+                    self.beginYMorph(
+                      fromTops,
+                      maxBottom(from),
+                      scrollTop,
+                      scrollDelta,
+                    )
+                  } else {
+                    // Dense view or reduced motion: snap, but still keep the
+                    // focused gene in place with an instant scroll shift.
+                    self.endYMorph()
+                    self.setScrollTop(scrollTop + scrollDelta)
+                  }
                 } else {
                   self.endYMorph()
                 }

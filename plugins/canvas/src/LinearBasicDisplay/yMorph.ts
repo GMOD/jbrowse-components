@@ -43,27 +43,59 @@ export function captureFeatureTops(
   return out
 }
 
-// Whether anything is worth animating: at least one feature in `target` was
-// present in `fromTops`, and the view isn't so dense the per-frame re-upload
-// would cost more than the animation is worth.
+// Whether anything is worth animating: at least one feature shared with
+// `fromTops` actually changed row (a shared-but-unmoved feature would make
+// `interpolateYData` a no-op, so a stable-seeded repack that kept every feature
+// in place shouldn't burn a 300ms rAF loop re-deriving identical frames), and
+// the view isn't so dense the per-frame re-upload costs more than it's worth.
 export function canMorph(
   fromTops: FeatureTops,
   target: ReadonlyMap<number, FeatureDataResult>,
 ) {
   let rectCount = 0
-  let overlaps = false
+  let moved = false
   for (const data of target.values()) {
     rectCount += data.rectYs.length
-    if (!overlaps) {
+    if (!moved) {
       for (const item of data.flatbushItems) {
-        if (fromTops.has(item.featureId)) {
-          overlaps = true
+        const prevTop = fromTops.get(item.featureId)
+        if (prevTop !== undefined && prevTop !== item.topPx) {
+          moved = true
           break
         }
       }
     }
   }
-  return overlaps && rectCount <= MORPH_MAX_RECTS
+  return moved && rectCount <= MORPH_MAX_RECTS
+}
+
+// How far scrollTop must move to keep the "focused" feature pinned to the same
+// screen Y across a repack. Vertical scrolling of these tracks is awkward (wheel
+// is overloaded for zoom), so a gene the user zoomed in on must not slide out of
+// view when the layout re-packs it onto a different row. The anchor is the
+// feature nearest the viewport center that exists in both layouts; the delta is
+// how far its row moved (newTop - oldTop). Shifting scrollTop by this keeps its
+// on-screen position fixed. Returns 0 when no feature is shared (nothing to
+// pin) or the anchor didn't move. Used both to ease scrollTop in lockstep with
+// a morph and to compensate an un-animated snap.
+export function focusScrollDelta(
+  fromTops: FeatureTops,
+  newTops: FeatureTops,
+  viewportCenterY: number,
+) {
+  let bestDelta = 0
+  let bestDist = Number.POSITIVE_INFINITY
+  for (const [id, oldTop] of fromTops) {
+    const newTop = newTops.get(id)
+    if (newTop !== undefined) {
+      const dist = Math.abs(oldTop - viewportCenterY)
+      if (dist < bestDist) {
+        bestDist = dist
+        bestDelta = newTop - oldTop
+      }
+    }
+  }
+  return bestDelta
 }
 
 // Shift each primitive's Y by `rem` of its feature's (oldTop - newTop) delta.
