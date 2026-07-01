@@ -1,23 +1,17 @@
 import { BamRecord } from '@gmod/bam'
 import {
-  CHAR_FROM_CODE,
   CIGAR_H,
   CIGAR_S,
-  DELETION_TYPE,
-  HARDCLIP_TYPE,
-  INSERTION_TYPE,
-  MISMATCH_TYPE,
-  SKIP_TYPE,
-  SOFTCLIP_TYPE,
   forEachMismatchNumeric,
 } from '@jbrowse/cigar-utils'
 
+import { collectMismatches } from '../shared/collectMismatches.ts'
 import { decodeSeq } from '../shared/decodeSeq.ts'
 import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type BamAdapter from './BamAdapter.ts'
-import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export default class BamSlightlyLazyFeature
@@ -43,51 +37,7 @@ export default class BamSlightlyLazyFeature
   // computing mismatches array up front was faster, so this is no longer the
   // primary way mismatches are used
   get mismatches() {
-    const mismatches: Mismatch[] = []
-    this.forEachMismatch(
-      (type, start, length, base, qual, altbase, cliplen) => {
-        if (type === MISMATCH_TYPE) {
-          mismatches.push({
-            type: 'mismatch',
-            start,
-            length,
-            base,
-            qual: qual !== undefined && qual >= 0 ? qual : undefined,
-            altbase:
-              altbase !== undefined && altbase > 0
-                ? CHAR_FROM_CODE[altbase]
-                : undefined,
-          })
-        } else if (type === INSERTION_TYPE) {
-          mismatches.push({
-            type: 'insertion',
-            start,
-            length,
-            insertlen: cliplen!,
-            insertedBases: base,
-          })
-        } else if (type === SOFTCLIP_TYPE) {
-          mismatches.push({
-            type: 'softclip',
-            start,
-            length,
-            cliplen: cliplen!,
-          })
-        } else if (type === HARDCLIP_TYPE) {
-          mismatches.push({
-            type: 'hardclip',
-            start,
-            length,
-            cliplen: cliplen!,
-          })
-        } else if (type === DELETION_TYPE) {
-          mismatches.push({ type: 'deletion', start, length })
-        } else if (type === SKIP_TYPE) {
-          mismatches.push({ type: 'skip', start, length })
-        }
-      },
-    )
-    return mismatches
+    return collectMismatches(this)
   }
 
   forEachMismatch(callback: MismatchCallback) {

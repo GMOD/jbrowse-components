@@ -1,5 +1,4 @@
 import {
-  CHAR_FROM_CODE,
   DELETION_TYPE,
   HARDCLIP_TYPE,
   INSERTION_TYPE,
@@ -9,19 +8,18 @@ import {
 } from '@jbrowse/cigar-utils'
 
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
+import { collectMismatches } from '../shared/collectMismatches.ts'
 import { getPairOrientation } from '../shared/pairOrientation.ts'
 import { cacheGetter, convertTagsToPlainArrays } from '../shared/util.ts'
 
 import type CramAdapter from './CramAdapter.ts'
 import type { CramRecord } from '@gmod/cram'
-import type { Mismatch, MismatchCallback } from '@jbrowse/cigar-utils'
+import type { MismatchCallback } from '@jbrowse/cigar-utils'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 
-// Module-level constant for CIGAR code conversion (avoids recreation on each call)
-// Maps packed CIGAR op codes to ASCII: M=77, I=73, D=68, N=78, S=83, H=72, P=80, ==61, X=88
-const NUMERIC_CIGAR_CODES = new Uint8Array([
-  77, 73, 68, 78, 83, 72, 80, 61, 88, 63, 63, 63, 63, 63, 63, 63,
-])
+// Packed CIGAR op index (packed & 0xf) to op char, indices per BAM spec:
+// M=0 I=1 D=2 N=3 S=4 H=5 P=6 ==7 X=8
+const CIGAR_CHARS = 'MIDNSHP=X'
 
 export default class CramSlightlyLazyFeature implements Feature {
   private record: CramRecord
@@ -103,10 +101,6 @@ export default class CramSlightlyLazyFeature implements Feature {
       : undefined
   }
 
-  get is_paired() {
-    return !!this.record.mate
-  }
-
   get next_pos() {
     if (this.record.mate) {
       return this.record.mate.alignmentStart - 1
@@ -125,7 +119,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     return this.record.getReadBases()
   }
 
-  // generate packed NUMERIC_CIGAR as Uint32Array
+  // packed CIGAR array, each entry (length << 4) | opIndex
   get NUMERIC_CIGAR() {
     return readFeaturesToNumericCIGAR(
       this.record.readFeatures,
@@ -140,9 +134,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     let result = ''
     for (let i = 0, l = numeric.length; i < l; i++) {
       const packed = numeric[i]!
-      const length = packed >> 4
-      const opCode = NUMERIC_CIGAR_CODES[packed & 0xf]!
-      result += length + CHAR_FROM_CODE[opCode]!
+      result += (packed >> 4) + CIGAR_CHARS[packed & 0xf]!
     }
     return result
   }
@@ -215,51 +207,7 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   get mismatches() {
-    const mismatches: Mismatch[] = []
-    this.forEachMismatch(
-      (type, start, length, base, qual, altbase, cliplen) => {
-        if (type === MISMATCH_TYPE) {
-          mismatches.push({
-            type: 'mismatch',
-            start,
-            length,
-            base,
-            qual: qual !== undefined && qual >= 0 ? qual : undefined,
-            altbase:
-              altbase !== undefined && altbase > 0
-                ? CHAR_FROM_CODE[altbase]
-                : undefined,
-          })
-        } else if (type === INSERTION_TYPE) {
-          mismatches.push({
-            type: 'insertion',
-            start,
-            length,
-            insertlen: cliplen!,
-            insertedBases: base,
-          })
-        } else if (type === SOFTCLIP_TYPE) {
-          mismatches.push({
-            type: 'softclip',
-            start,
-            length,
-            cliplen: cliplen!,
-          })
-        } else if (type === HARDCLIP_TYPE) {
-          mismatches.push({
-            type: 'hardclip',
-            start,
-            length,
-            cliplen: cliplen!,
-          })
-        } else if (type === DELETION_TYPE) {
-          mismatches.push({ type: 'deletion', start, length })
-        } else if (type === SKIP_TYPE) {
-          mismatches.push({ type: 'skip', start, length })
-        }
-      },
-    )
-    return mismatches
+    return collectMismatches(this)
   }
 
   forEachMismatch(callback: MismatchCallback) {
