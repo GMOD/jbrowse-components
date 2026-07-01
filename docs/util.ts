@@ -1122,10 +1122,36 @@ export function collapsible(
   summary: string,
   ...parts: (string | false | 0 | undefined)[]
 ) {
+  return detailsBlock(summary, true, ...parts)
+}
+
+// Collapsed (folded-by-default) sibling of collapsible, for content that should
+// be present for completeness but stay out of the way — e.g. the full signatures
+// of undocumented plumbing members, which a compact table links down into.
+// Fragment navigation to a heading inside auto-expands the <details> in modern
+// browsers, so the anchor links still land (same behavior memberLine relies on).
+export function collapsibleClosed(
+  summary: string,
+  ...parts: (string | false | 0 | undefined)[]
+) {
+  return detailsBlock(summary, false, ...parts)
+}
+
+function detailsBlock(
+  summary: string,
+  open: boolean,
+  ...parts: (string | false | 0 | undefined)[]
+) {
   const body = section(...parts)
   return body
-    ? `<details open>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
+    ? `<details${open ? ' open' : ''}>\n<summary>${summary}</summary>\n\n${body}\n\n</details>`
     : ''
+}
+
+// Flatten a possibly-multiline type signature to one line and escape the pipes
+// in union types so it survives inside a markdown table cell.
+export function tableCellSignature(signature: string) {
+  return signature.replace(/\s+/g, ' ').trim().replace(/\|/g, '\\|')
 }
 
 // Renders authored #example blocks under a consistent heading. Empty when none

@@ -4,6 +4,7 @@ import slugify from 'slugify'
 
 import {
   collapsible,
+  collapsibleClosed,
   collectTransitive,
   docPage,
   exampleSection,
@@ -15,6 +16,7 @@ import {
   section,
   stripComposedBlock,
   suffixCategory,
+  tableCellSignature,
   typeAliasBlock,
   typeAndCodeBlock,
   assertSingleHeader,
@@ -289,6 +291,47 @@ reference the markdown files in our repo of the checked out git tag`,
   })
 }
 
+// A member is "documented" — worth rendering in full and up front — when its
+// author wrote prose or an #example for it. Everything else is plumbing (bare
+// setters, internal accessors) that the structural pass recovered only so the
+// API surface stays complete; those get compacted into a table below.
+function isDocumented(m: Member) {
+  return Boolean(m.docs.trim()) || m.examples.length > 0
+}
+
+// One full member entry: heading, prose, code/type block, and any #example.
+function memberEntry(
+  kind: string,
+  m: Member,
+  renderBody: (m: Member) => string,
+) {
+  return section(
+    `#### ${kind}: ${m.name}`,
+    m.docs,
+    renderBody(m),
+    exampleSection(m.examples, '**Example:**'),
+  )
+}
+
+// Compact, scannable index of the undocumented plumbing members: one row each,
+// name linking down to the full signature in the folded sibling block (anchor
+// mirrors the github-slugger id Astro derives for `#### <kind>: <name>`).
+function plumbingTable(kind: string, members: Member[]) {
+  return members.length
+    ? section(
+        '**Other members** (undocumented — signatures only, expand below for full detail):',
+        [
+          '| Member | Signature |',
+          '| --- | --- |',
+          ...members.map(
+            m =>
+              `| [\`${m.name}\`](#${kind}-${m.name.toLowerCase()}) | \`${tableCellSignature(m.signature)}\` |`,
+          ),
+        ].join('\n'),
+      )
+    : ''
+}
+
 function memberSection(
   modelName: string,
   label: string,
@@ -296,19 +339,26 @@ function memberSection(
   renderBody: (m: Member) => string,
 ) {
   const kind = memberKind(label)
-  return members.length
-    ? collapsible(
-        `${modelName} - ${label}`,
-        ...members.map(m =>
-          section(
-            `#### ${kind}: ${m.name}`,
-            m.docs,
-            renderBody(m),
-            exampleSection(m.examples, '**Example:**'),
-          ),
-        ),
-      )
-    : ''
+  if (!members.length) {
+    return ''
+  }
+  const documented = members.filter(isDocumented)
+  const plumbing = members.filter(m => !isDocumented(m))
+  return section(
+    collapsible(
+      `${modelName} - ${label}`,
+      ...documented.map(m => memberEntry(kind, m, renderBody)),
+      plumbingTable(kind, plumbing),
+    ),
+    // Full detail for the plumbing lives here, folded away; the table above
+    // links into it and fragment navigation auto-expands the block.
+    plumbing.length
+      ? collapsibleClosed(
+          `${modelName} - ${label} (all signatures)`,
+          ...plumbing.map(m => memberEntry(kind, m, renderBody)),
+        )
+      : '',
+  )
 }
 
 export async function writeModelDocs(

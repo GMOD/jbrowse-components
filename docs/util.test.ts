@@ -1,6 +1,7 @@
 import {
   categoryLabel,
   collapsible,
+  collapsibleClosed,
   collectTransitive,
   exampleSection,
   overviewSection,
@@ -10,6 +11,7 @@ import {
   section,
   stripComposedBlock,
   stripPropertyName,
+  tableCellSignature,
 } from './util.ts'
 
 describe('parseTaggedComment', () => {
@@ -142,6 +144,23 @@ describe('section / overviewSection', () => {
       '<details open>\n<summary>Title</summary>\n\n#### a\n\n#### b\n\n</details>',
     )
     expect(collapsible('Title', '', false, undefined)).toBe('')
+  })
+
+  test('collapsibleClosed omits the open attribute', () => {
+    expect(collapsibleClosed('Title', 'body')).toBe(
+      '<details>\n<summary>Title</summary>\n\nbody\n\n</details>',
+    )
+    expect(collapsibleClosed('Title', '', false)).toBe('')
+  })
+})
+
+describe('tableCellSignature', () => {
+  test('flattens whitespace and escapes union-type pipes so it survives a table cell', () => {
+    expect(
+      tableCellSignature(
+        '(val: boolean,\n  reason?: string | undefined) => void',
+      ),
+    ).toBe('(val: boolean, reason?: string \\| undefined) => void')
   })
 })
 
