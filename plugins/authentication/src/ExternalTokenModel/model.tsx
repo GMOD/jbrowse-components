@@ -24,6 +24,12 @@ interface RootWithSession {
   session: AbstractSessionModel
 }
 
+/**
+ * #stateModel ExternalTokenInternetAccount
+ * Internet account that authenticates requests with a user-supplied external
+ * token, prompting for the token via a dialog and optionally validating it with
+ * a HEAD request.
+ */
 const stateModelFactory = (
   configSchema: ExternalTokenInternetAccountConfigModel,
 ) => {

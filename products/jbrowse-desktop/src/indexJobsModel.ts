@@ -50,6 +50,11 @@ function formatBytes(bytes: number) {
   return `${i === 0 ? n : n.toFixed(1)} ${units[i]}`
 }
 
+/**
+ * #stateModel JobsManager
+ * Desktop text-indexing job queue: tracks the running job with its progress and
+ * status message, plus the list of queued indexing jobs.
+ */
 export default function jobsModelFactory(_pluginManager: PluginManager) {
   return types
     .model('JobsManager', {})

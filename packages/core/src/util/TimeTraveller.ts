@@ -12,6 +12,11 @@ import type { IAnyStateTreeNode, IDisposer } from '@jbrowse/mobx-state-tree'
 
 const MAX_HISTORY_LENGTH = 20
 
+/**
+ * #stateModel TimeTraveller
+ * Undo/redo history for a target state-tree node: records snapshots as it
+ * changes and exposes canUndo/canRedo with undo/redo actions.
+ */
 const TimeTraveller = types
   .model('TimeTraveller', {
     undoIdx: -1,

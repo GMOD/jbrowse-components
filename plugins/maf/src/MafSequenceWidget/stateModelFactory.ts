@@ -11,6 +11,11 @@ export interface HoverHighlight {
   assemblyName: string
 }
 
+/**
+ * #stateModel MafSequenceWidget
+ * Widget showing multiple-alignment (MAF) sequence for a set of samples over the
+ * connected view's regions, with per-row hover highlight state.
+ */
 export function stateModelFactory() {
   return types
     .model('MafSequenceWidget', {

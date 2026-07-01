@@ -25,6 +25,11 @@ interface ParentViewDuck {
   overdrawPx: number
 }
 
+/**
+ * #stateModel LinearSyntenyViewHelper
+ * Holds one level of a linear synteny comparison: its track list, height and
+ * level index, composed with the shared rendering-lifecycle state.
+ */
 export function linearSyntenyViewHelperModelFactory(
   pluginManager: PluginManager,
 ) {

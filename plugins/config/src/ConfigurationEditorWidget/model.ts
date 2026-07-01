@@ -7,6 +7,11 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { SessionWithConfigEditing } from '@jbrowse/core/util'
 
+/**
+ * #stateModel ConfigurationEditorWidget
+ * Widget for editing a config model's slots in a form: holds the target
+ * configuration and debounce-saves edits back to the session.
+ */
 export default function stateModelFactory(_pluginManager: PluginManager) {
   return types
     .model('ConfigurationEditorWidget', {

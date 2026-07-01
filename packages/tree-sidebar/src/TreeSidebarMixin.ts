@@ -5,6 +5,12 @@ import { maxNodeHeight } from './hierarchy.ts'
 
 import type { HoveredTreeNode } from './types.ts'
 
+/**
+ * #stateModel TreeSidebarMixin
+ * Adds a dendrogram sidebar to a display: stores the leaf layout, newick cluster
+ * tree, sidebar width and subtree filter, plus the hover/canvas volatile state
+ * used while drawing the tree.
+ */
 export function TreeSidebarMixin<
   S extends { name: string } = { name: string },
 >() {

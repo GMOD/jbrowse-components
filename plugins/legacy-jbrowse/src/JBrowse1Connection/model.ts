@@ -9,6 +9,11 @@ import { isTrack } from './util.ts'
 import type { Track } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 
+/**
+ * #stateModel JBrowse1Connection
+ * Connection that imports tracks from a legacy JBrowse 1 data directory,
+ * composed on the base connection model.
+ */
 export default function stateModelFactory(pluginManager: PluginManager) {
   return types
     .compose(

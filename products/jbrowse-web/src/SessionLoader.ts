@@ -27,6 +27,12 @@ type ReloadPluginManagerCallback = (
   sessionSnapshot: Snap,
 ) => void
 
+/**
+ * #stateModel SessionLoader
+ * Bootstraps a jbrowse-web session from URL params: resolves the config plus the
+ * shared/local session sources, builds the plugin manager, and exposes the
+ * loading/error state the app shell renders around.
+ */
 const SessionLoader = types
   .model('SessionLoader', {
     /**
