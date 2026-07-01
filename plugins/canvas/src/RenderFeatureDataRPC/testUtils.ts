@@ -1,3 +1,5 @@
+import { THEME_DERIVED_COLOR } from './renderConfig.ts'
+
 import type { DisplayConfig } from './renderConfig.ts'
 
 export function mockDisplayConfig(
@@ -15,7 +17,7 @@ export function mockDisplayConfig(
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
     jexlFilters: [],
     color: 'goldenrod',
-    connectorColor: '#f0f',
+    connectorColor: THEME_DERIVED_COLOR,
     utrColor: '#357089',
     outlineColor: '',
     labels: {

@@ -135,6 +135,7 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   stringArrayMap: StringArrayMapEditor,
   numberMap: NumberMapEditor,
   number: NumberEditor,
+  maybeNumber: NumberEditor,
   integer: IntegerEditor,
   color: ColorEditor,
   stringEnum: StringEnumEditor,

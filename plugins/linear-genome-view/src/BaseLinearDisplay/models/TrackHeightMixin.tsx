@@ -12,9 +12,9 @@ import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
  * The display height is stored directly on the `height` config slot (drag-resize
  * writes it via `setSlot`), so it survives a track being unticked and reticked —
  * the config node outlives the ephemeral display instance. Displays with an
- * auto-fit mode declare `height` as a nullable (`maybe`) number slot (default
- * `undefined`) and override the `height` getter to fall back to their computed
- * content height when unset.
+ * auto-fit mode declare `height` as a `maybeNumber` slot (default `undefined`)
+ * and override the `height` getter to fall back to their computed content
+ * height when unset.
  */
 export default function TrackHeightMixin<
   TConf extends { configuration: AnyConfigurationModel } = {

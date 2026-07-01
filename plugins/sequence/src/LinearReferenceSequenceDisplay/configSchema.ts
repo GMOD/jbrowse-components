@@ -37,8 +37,7 @@ export const configSchema = ConfigurationSchema(
      * the zoom-aware computed height. See the model's `height` getter.
      */
     height: {
-      type: 'number',
-      maybe: true,
+      type: 'maybeNumber',
       description: 'display height in pixels; unset auto-fits to the sequence',
       defaultValue: undefined,
     },

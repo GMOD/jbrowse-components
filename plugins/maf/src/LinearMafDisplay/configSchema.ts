@@ -17,13 +17,12 @@ export default function configSchemaF(pluginManager: PluginManager) {
     {
       /**
        * #slot
-       * Override the base `height` slot as a nullable (`maybe`) number: unset
-       * means fit rows to their content height, an explicit value is a
-       * drag-resized track height. See the model's `fitTargetHeight` getter.
+       * Override the base `height` slot as a `maybeNumber`: unset means fit rows
+       * to their content height, an explicit value is a drag-resized track
+       * height. See the model's `fitTargetHeight` getter.
        */
       height: {
-        type: 'number',
-        maybe: true,
+        type: 'maybeNumber',
         description: 'display height in pixels; unset fits rows to content',
         defaultValue: undefined,
       },

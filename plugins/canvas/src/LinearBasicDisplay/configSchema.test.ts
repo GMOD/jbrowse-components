@@ -2,6 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { isCallbackValue, readConfObject } from '@jbrowse/core/configuration'
 
 import configSchemaFactory from './configSchema.ts'
+import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 
 function createPluginManager() {
   const pm = new PluginManager([])
@@ -20,7 +21,7 @@ describe('LinearBasicDisplay configSchema', () => {
       { pluginManager: pm },
     )
     expect(readConfObject(config, 'color')).toBe('goldenrod')
-    expect(readConfObject(config, 'connectorColor')).toBe('#f0f')
+    expect(readConfObject(config, 'connectorColor')).toBe(THEME_DERIVED_COLOR)
     expect(readConfObject(config, 'utrColor')).toBe('#357089')
     expect(readConfObject(config, 'featureHeight')).toBe(10)
     expect(readConfObject(config, 'displayMode')).toBe('normal')
