@@ -101,8 +101,8 @@ const LegendItemList = observer(function LegendItemList({
   const hiddenCount = items.length - maxItems
   return (
     <>
-      {shown.map(item => (
-        <div key={item.label} className={classes.item}>
+      {shown.map((item, i) => (
+        <div key={`${item.label}-${i}`} className={classes.item}>
           <div
             className={classes.colorBox}
             style={{ backgroundColor: item.color }}

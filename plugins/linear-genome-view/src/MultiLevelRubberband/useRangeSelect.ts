@@ -79,6 +79,9 @@ export function useRangeSelect(
   function mouseDown(event: React.MouseEvent<HTMLDivElement>) {
     event.preventDefault()
     event.stopPropagation()
+    // clear any leftover menu/selection so a fresh drag isn't blocked by a
+    // stale anchorPosition keeping mouseDragging false
+    setAnchorPosition(undefined)
     const relativeX = getRelativeX(event, ref.current)
     setStartX(relativeX)
     setCurrentX(relativeX)

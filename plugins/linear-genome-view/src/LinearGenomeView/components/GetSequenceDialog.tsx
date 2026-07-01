@@ -75,7 +75,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           if (chunkSeq.length !== chunkEnd - chunkStart + 1) {
             throw new Error(
               `${loc} returned ${toLocale(chunkSeq.length)} bases, but should have returned ${toLocale(
-                chunkEnd - chunkStart,
+                chunkEnd - chunkStart + 1,
               )}`,
             )
           }

@@ -192,6 +192,30 @@ function resolveNavEndpoint({
 }
 
 /**
+ * Add (or reuse) the hierarchical track-selector widget for this view. Throws
+ * for a non-hierarchical selector type or a session without widget support —
+ * matching the single error both callers previously raised inline. Returns the
+ * widget alongside the (narrowed) session so callers can show/hide it.
+ */
+function openTrackSelectorWidget(
+  self: IAnyStateTreeNode & { trackSelectorType: string },
+) {
+  const session = getSession(self)
+  if (
+    self.trackSelectorType === 'hierarchical' &&
+    isSessionModelWithWidgets(session)
+  ) {
+    const selector = session.addWidget(
+      'HierarchicalTrackSelectorWidget',
+      'hierarchicalTrackSelector',
+      { view: self },
+    )
+    return { session, selector }
+  }
+  throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+}
+
+/**
  * #stateModel LinearGenomeView
  * #category view
  *
@@ -688,14 +712,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
       },
 
       /**
+       * #method
+       * rendered height of a single track, collapsing to a fixed height when
+       * minimized. Shared by trackHeights and getTrackYOffset so the two can't
+       * disagree.
+       */
+      trackHeight(track: (typeof self.tracks)[number]) {
+        return track.minimized
+          ? MINIMIZED_TRACK_HEIGHT
+          : track.displays[0].height
+      },
+
+      /**
        * #getter
        */
       get trackHeights() {
-        return sum(
-          self.tracks.map(t =>
-            t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height,
-          ),
-        )
+        return sum(self.tracks.map(t => this.trackHeight(t)))
       },
 
       /**
@@ -733,9 +765,7 @@ export function stateModelFactory(pluginManager: PluginManager) {
           if (t.configuration.trackId === trackId) {
             return y
           }
-          y +=
-            (t.minimized ? MINIMIZED_TRACK_HEIGHT : t.displays[0].height) +
-            RESIZE_HANDLE_HEIGHT
+          y += this.trackHeight(t) + RESIZE_HANDLE_HEIGHT
         }
         return undefined
       },
@@ -1223,42 +1253,22 @@ export function stateModelFactory(pluginManager: PluginManager) {
        * #action
        */
       activateTrackSelector() {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-            session.showWidget(selector)
-            return selector
-          }
-        }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+        const { session, selector } = openTrackSelectorWidget(self)
+        session.showWidget(selector)
+        return selector
       },
 
       /**
        * #action
        */
       toggleTrackSelector() {
-        if (self.trackSelectorType === 'hierarchical') {
-          const session = getSession(self)
-          if (isSessionModelWithWidgets(session)) {
-            const selector = session.addWidget(
-              'HierarchicalTrackSelectorWidget',
-              'hierarchicalTrackSelector',
-              { view: self },
-            )
-            if (session.activeWidgets.has(selector.id) && !session.minimized) {
-              session.hideWidget(selector)
-            } else {
-              session.showWidget(selector)
-            }
-            return selector
-          }
+        const { session, selector } = openTrackSelectorWidget(self)
+        if (session.activeWidgets.has(selector.id) && !session.minimized) {
+          session.hideWidget(selector)
+        } else {
+          session.showWidget(selector)
         }
-        throw new Error(`invalid track selector type ${self.trackSelectorType}`)
+        return selector
       },
 
       /**
@@ -1333,22 +1343,21 @@ export function stateModelFactory(pluginManager: PluginManager) {
       showAllRegionsInAssembly(assemblyName?: string) {
         const session = getSession(self)
         const { assemblyManager } = session
-        if (!assemblyName) {
-          const names = new Set(self.displayedRegions.map(r => r.assemblyName))
-          if (names.size > 1) {
-            session.notify(
-              `Can't perform operation with multiple assemblies currently`,
-            )
-            return
+        const names = new Set(self.displayedRegions.map(r => r.assemblyName))
+        if (!assemblyName && names.size > 1) {
+          session.notify(
+            `Can't perform operation with multiple assemblies currently`,
+          )
+        } else {
+          const resolvedName = assemblyName ?? [...names][0]
+          const regions = resolvedName
+            ? assemblyManager.get(resolvedName)?.regions
+            : undefined
+          if (regions) {
+            this.setDisplayedRegions(regions)
+            this.showAllRegions()
           }
-          ;[assemblyName] = [...names]
         }
-        const regions = assemblyManager.get(assemblyName!)?.regions
-        if (!regions) {
-          return
-        }
-        this.setDisplayedRegions(regions)
-        this.showAllRegions()
       },
 
       /**

@@ -26,7 +26,6 @@ const useStyles = makeStyles()({
     position: 'relative',
     height: 4,
   },
-  trackLabel: {},
   trackLabelOffset: {
     position: 'relative',
     display: 'inline-block',
@@ -67,10 +66,7 @@ const TrackContainer = observer(function TrackContainer({
         <Gridlines model={model} offset={showTrackOutlines ? 1 : 0} />
       ) : null}
       {model.trackLabels !== 'hidden' ? (
-        <TrackLabel
-          track={track}
-          className={cx(classes.trackLabel, trackLabelStyle)}
-        />
+        <TrackLabel track={track} className={trackLabelStyle} />
       ) : null}
       <ErrorBoundary FallbackComponent={e => <ErrorBanner error={e.error} />}>
         <TrackRenderingContainer model={model} track={track} />
