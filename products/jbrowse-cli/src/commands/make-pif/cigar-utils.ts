@@ -22,5 +22,5 @@ export function flipCigar(cigar: string): string {
 }
 
 export function swapIndelCigar(cigar: string): string {
-  return cigar.replace(/[DI]/g, op => (op === 'D' ? 'I' : 'D'))
+  return cigar.replaceAll(/[DI]/g, op => (op === 'D' ? 'I' : 'D'))
 }

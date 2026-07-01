@@ -76,6 +76,7 @@ export async function indexDriver({
         : trackId => {
             const progressBar = new SingleBar(
               {
+                // eslint-disable-next-line unicorn/no-incorrect-template-string-interpolation -- {bar}/{percentage}/{eta} are cli-progress format tokens, not JS interpolation
                 format: `{bar} ${trackId} {percentage}% | ETA: {eta}s`,
                 etaBuffer: 2000,
               },
