@@ -72,7 +72,10 @@ function defaultParser(fields: string[], splitLine: string[]): BedData {
   const obj: Record<string, string> = {}
   for (const [i, element] of splitLine.entries()) {
     const field = fields[i]
-    if (field) {
+    // '.' is BED's "missing" marker; skip it so this path matches @gmod/bed's
+    // parseLine (which leaves such columns unset) instead of storing a literal
+    // '.' that later coerces to NaN
+    if (field && element !== '.') {
       obj[field] = element
     }
   }
@@ -216,11 +219,8 @@ export function featureData({
     ...rest
   } = data
   const strand = parseStrand(strandRaw)
-  const score = scoreColumn
-    ? Number(data[scoreColumn])
-    : scoreRaw !== undefined
-      ? Number(scoreRaw)
-      : undefined
+  const rawScore = scoreColumn ? data[scoreColumn] : scoreRaw
+  const score = rawScore === undefined ? undefined : Number(rawScore)
 
   const repeat = parseRepeatMaskerDescription(rest.description)
   if (repeat) {

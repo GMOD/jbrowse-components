@@ -215,6 +215,20 @@ describe('featureData', () => {
     expect(phases).toEqual([0, 1])
   })
 
+  it('treats a "." score as missing (undefined) rather than NaN', () => {
+    const result = featureData({
+      splitLine: ['chr1', '1000', '2000', 'feat1', '.', '+'],
+      refName: 'chr1',
+      start: 1000,
+      end: 2000,
+      parser: new BED(),
+      uniqueId: 'test-dot',
+      scoreColumn: '',
+      names: ['chrom', 'chromStart', 'chromEnd', 'name', 'score', 'strand'],
+    })
+    expect(result.score).toBeUndefined()
+  })
+
   it('preserves extra fields when strand is 0 (unstranded, not treated as gene)', () => {
     const result = featureData({
       splitLine: [
