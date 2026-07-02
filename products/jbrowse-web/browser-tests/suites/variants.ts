@@ -1,6 +1,5 @@
 import {
   assertOverlayScrollLockedToCanvas,
-  delay,
   findByTestId,
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -78,30 +77,6 @@ const suite: TestSuite = {
       },
     },
 
-    // Same guard for the OTHER native-overflow GPU display: the multi-sample
-    // hover-highlight cell (a separate component using the same primitive).
-    {
-      name: 'multi-sample hover highlight stays locked to the canvas during scroll',
-      fn: async page => {
-        await navigateWithSessionSpec(page, overflowingMultiSampleSpec)
-        await findByTestId(page, 'variant-display-done')
-        await waitForDataLoaded(page)
-        // hover a cell so the highlight overlay renders
-        const box = await page.evaluate(() => {
-          const c = document.querySelector('[data-testid="variant_canvas"]')!
-          const r = c.getBoundingClientRect()
-          return { x: r.x + r.width / 2, y: r.y + 60 }
-        })
-        await page.mouse.move(box.x, box.y)
-        await delay(500)
-        await assertOverlayScrollLockedToCanvas(
-          page,
-          '[data-testid="variant_canvas"]',
-          'div[style*="rgba(255, 255, 255"]',
-        )
-      },
-    },
-
     lgvSnapshotTest({
       name: 'assembly aliases VCF track',
       snapshot: 'variants-assembly-aliases',
@@ -109,16 +84,20 @@ const suite: TestSuite = {
       tracks: ['volvox_filtered_vcf_assembly_alias'],
     }),
 
-    // The plain multi-sample variant display scrolls in its own native
-    // overflow container (sticky canvas), and the outer TrackRenderingContainer
-    // must NOT be a scroll port — otherwise both render a scrollbar. See the
-    // "no pinned top band -> native scroll" rule in VariantComponent.tsx.
+    // The multi-sample display uses VIRTUAL scroll (fixed absolute canvas +
+    // VerticalScrollbar overlay, everything positioned from model.scrollTop), so
+    // the GPU cells and DOM hover highlight share one scroll source and can't
+    // tear apart. Guarding the structure keeps it from regressing to a native
+    // overflow container (the second coordinate space that caused the tearing),
+    // and the outer TrackRenderingContainer must not itself be a scroll port.
     {
-      name: 'multi-sample variant scrolls natively without a second scrollbar',
+      name: 'multi-sample variant scrolls virtually (no native scroll container)',
       fn: async page => {
         await navigateWithSessionSpec(page, overflowingMultiSampleSpec)
         await findByTestId(page, 'variant-display-done')
         await waitForDataLoaded(page)
+        // an overflowing display renders the draggable VerticalScrollbar overlay
+        await findByTestId(page, 'vertical-scrollbar')
 
         const checks = await page.evaluate(() => {
           const css = (el: Element, p: string) =>
@@ -129,23 +108,27 @@ const suite: TestSuite = {
           const canvas = document.querySelector(
             '[data-testid="variant_canvas"]',
           )
-          const scrollContainer = canvas?.parentElement?.parentElement ?? null
+          // no ancestor between the canvas and the outer container may be a
+          // native overflow scroll port — that's the tearing coordinate space
+          let nativeScroller = false
+          let el = canvas?.parentElement ?? null
+          while (el && el !== outer) {
+            if (/auto|scroll/.test(css(el, 'overflow-y'))) {
+              nativeScroller = true
+              break
+            }
+            el = el.parentElement
+          }
           return {
             outerOverflowY: outer ? css(outer, 'overflow-y') : null,
             outerOverflows: outer
               ? outer.scrollHeight > outer.clientHeight
               : null,
             canvasPosition: canvas ? css(canvas, 'position') : null,
-            innerOverflowY: scrollContainer
-              ? css(scrollContainer, 'overflow-y')
-              : null,
-            innerOverflows: scrollContainer
-              ? scrollContainer.scrollHeight > scrollContainer.clientHeight
-              : null,
+            nativeScroller,
           }
         })
 
-        // outer container is not a scroll port (a spurious second scrollbar)
         if (checks.outerOverflowY !== 'hidden') {
           throw new Error(
             `outer TrackRenderingContainer overflow-y expected 'hidden', got '${checks.outerOverflowY}'`,
@@ -156,20 +139,14 @@ const suite: TestSuite = {
             'outer TrackRenderingContainer is overflowing — spurious native scrollbar',
           )
         }
-        // the display owns one native scroll container with a sticky canvas
-        if (checks.canvasPosition !== 'sticky') {
+        if (checks.canvasPosition !== 'absolute') {
           throw new Error(
-            `variant canvas position expected 'sticky', got '${checks.canvasPosition}'`,
+            `variant canvas position expected 'absolute' (virtual scroll), got '${checks.canvasPosition}'`,
           )
         }
-        if (checks.innerOverflowY !== 'auto') {
+        if (checks.nativeScroller) {
           throw new Error(
-            `variant scroll container overflow-y expected 'auto', got '${checks.innerOverflowY}'`,
-          )
-        }
-        if (!checks.innerOverflows) {
-          throw new Error(
-            'variant scroll container is not overflowing — the pinned rowHeight should exceed the viewport',
+            'found a native overflow scroll container — display regressed to native scroll (tearing risk)',
           )
         }
       },

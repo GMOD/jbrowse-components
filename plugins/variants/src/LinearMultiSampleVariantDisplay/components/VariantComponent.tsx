@@ -1,8 +1,7 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
+import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
@@ -12,7 +11,7 @@ import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
 import { useVariantCanvasInteraction } from '../../shared/hooks/useVariantCanvasInteraction.tsx'
-import { useVariantNativeScroll } from '../../shared/useVariantNativeScroll.ts'
+import { useVariantVirtualScroll } from '../../shared/useVariantVirtualScroll.ts'
 
 import type { VariantTooltipFields } from '../../shared/buildVariantHit.ts'
 import type { VariantFeatureInfo } from '../../shared/types.ts'
@@ -20,26 +19,6 @@ import type { LinearMultiSampleVariantDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
-
-const useStyles = makeStyles()({
-  // sticky-canvas + tall-spacer native scroll, mirroring the canvas feature
-  // display (FeatureComponent.tsx): the content div grows to totalHeight and
-  // scrolls natively while the canvas stays pinned and redraws at scrollTop
-  scrollContainer: {
-    position: 'absolute',
-    inset: 0,
-    overflowX: 'hidden',
-  },
-  content: {
-    position: 'relative',
-    minHeight: '100%',
-  },
-  canvas: {
-    display: 'block',
-    position: 'sticky',
-    top: 0,
-  },
-})
 
 interface HoveredCell {
   rowIndex: number
@@ -175,9 +154,13 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const px2 = toX(cell.genomicEnd)
   const left = Math.min(px1, px2)
   const right = Math.max(px1, px2)
-  // raw row coords: the enclosing ScrollLockedOverlay applies the -scrollTop
-  // shift (tracking model.scrollTop like the GPU), so no subtraction here
-  const top = cell.rowIndex * model.effectiveRowHeight
+  // Screen Y from model.scrollTop — the same value the GPU cells draw at, so
+  // the highlight can't diverge from its cell (virtual scroll: one scroll
+  // source). Cull when the row is fully outside the viewport.
+  const top = cell.rowIndex * model.effectiveRowHeight - model.scrollTop
+  if (top + model.effectiveRowHeight < 0 || top > model.availableHeight) {
+    return null
+  }
   return (
     <div
       style={{
@@ -196,23 +179,36 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
 })
 
 // The per-sample variant canvas + scrollbar + hit-test wiring. DisplayChrome
-// (owned by the outer VariantDisplayComponent) owns the GPU
-// backend and the terminal states, handing the live canvas down here.
+// (owned by the outer VariantDisplayComponent) owns the GPU backend and the
+// terminal states, handing the live canvas down here. Scroll is virtual (fixed
+// canvas + VerticalScrollbar overlay, everything positioned from
+// model.scrollTop) — no native overflow container, so the GPU cells and the DOM
+// hover highlight share one scroll source and can never tear apart.
 const VariantBody = observer(function VariantBody({
   model,
   canvasRef,
+  canvas,
 }: {
   model: LinearMultiSampleVariantDisplayModel
   canvasRef: (node: HTMLCanvasElement | null) => void
+  canvas: HTMLCanvasElement | null
 }) {
   const [hoveredCell, setHoveredCell] = useState<HoveredCell>()
-  const { classes } = useStyles()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
 
   const view = getContainingView(model) as LGV
   const width = view.trackWidthPx
 
-  useVariantNativeScroll(scrollContainerRef, model, view)
+  useVariantVirtualScroll({
+    canvas,
+    scrollTop: model.scrollTop,
+    setScrollTop: model.setScrollTop,
+    totalHeight: model.totalHeight,
+    viewportHeight: model.availableHeight,
+    scrollZoom: view.scrollZoom,
+    rowHeight: model.effectiveRowHeight,
+    nrow: model.nrow,
+    setRowHeight: model.setRowHeight,
+  })
 
   const { canvasHandlers, contextMenuNode } =
     useVariantCanvasInteraction<VariantHit>({
@@ -237,42 +233,31 @@ const VariantBody = observer(function VariantBody({
 
   return (
     <>
-      <div
-        ref={scrollContainerRef}
-        className={classes.scrollContainer}
-        style={{ overflowY: model.hasOverflow ? 'auto' : 'hidden' }}
-      >
-        <div
-          className={classes.content}
-          style={{ height: model.hasOverflow ? model.totalHeight : '100%' }}
-        >
-          <canvas
-            data-testid="variant_canvas"
-            ref={canvasRef}
-            className={classes.canvas}
-            style={{
-              width,
-              height: model.availableHeight,
-              backgroundColor:
-                model.referenceDrawingMode === 'skip'
-                  ? REFERENCE_COLOR
-                  : undefined,
-            }}
-            {...canvasHandlers}
-          />
-          {hoveredCell ? (
-            <ScrollLockedOverlay
-              scrollTop={model.scrollTop}
-              viewportHeight={model.availableHeight}
-              contentHeight={
-                model.hasOverflow ? model.totalHeight : model.availableHeight
-              }
-            >
-              <HoveredCellHighlight cell={hoveredCell} model={model} />
-            </ScrollLockedOverlay>
-          ) : null}
-        </div>
-      </div>
+      <canvas
+        data-testid="variant_canvas"
+        ref={canvasRef}
+        style={{
+          width,
+          height: model.availableHeight,
+          position: 'absolute',
+          left: 0,
+          top: 0,
+          backgroundColor:
+            model.referenceDrawingMode === 'skip' ? REFERENCE_COLOR : undefined,
+        }}
+        {...canvasHandlers}
+      />
+      {hoveredCell ? (
+        <HoveredCellHighlight cell={hoveredCell} model={model} />
+      ) : null}
+      <VerticalScrollbar
+        scrollTop={model.scrollTop}
+        setScrollTop={n => {
+          model.setScrollTop(n)
+        }}
+        viewportHeight={model.availableHeight}
+        contentHeight={model.totalHeight}
+      />
       {contextMenuNode}
     </>
   )

@@ -31,9 +31,9 @@ const VariantDisplayComponent = observer(
         onMouseMove={handleMouseMove}
         onMouseLeave={handleMouseLeave}
       >
-        {({ canvasRef }) => (
+        {({ canvasRef, canvas }) => (
           <>
-            <VariantBody model={model} canvasRef={canvasRef} />
+            <VariantBody model={model} canvasRef={canvasRef} canvas={canvas} />
             <LegendOverlay model={model} />
             <TreeSidebar model={model} />
             {mouseState ? (

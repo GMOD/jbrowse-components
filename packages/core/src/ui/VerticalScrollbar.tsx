@@ -112,6 +112,7 @@ export default function VerticalScrollbar({
 
   return (
     <div
+      data-testid="vertical-scrollbar"
       className={classes.track}
       style={{ top, height: viewportHeight }}
       onMouseDown={handleMouseDown}
