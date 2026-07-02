@@ -17,8 +17,9 @@ The release blog post is also syndicated as an RSS feed at
 <https://jbrowse.org/jb2/rss.xml> (auto-discoverable; linked from the blog).
 
 Announcements to Bluesky, Mastodon (`@usejbrowse@genomic.social`), and the email
-newsletter are sent by the **Announce release** GitHub Actions workflow — run it
-manually _after_ the GitHub release is published:
+newsletter are sent by the **Announce release** GitHub Actions workflow, which
+runs on a GitHub runner using the repo secrets — so no local credentials are
+needed. Run it manually _after_ the GitHub release is published:
 
 - Actions → **Announce release** → **Run workflow**, or from the CLI:
 
@@ -40,11 +41,11 @@ It reads the newest release blog post, links to the GitHub release, and emails
 the human-written summary (the part before `## Downloads`) rather than the full
 changelog. Each channel is skipped if its credentials aren't configured.
 
-The same logic runs locally as `pnpm announce -- --dry-run` (or `--tag vX.Y.Z`),
-reading `BLUESKY_IDENTIFIER`/`BLUESKY_APP_PASSWORD`,
-`MASTODON_ACCESS_TOKEN`/`MASTODON_INSTANCE`, and `NEWSLETTER_LAMBDA` from the
-environment. Newsletter sending needs AWS credentials with `lambda:InvokeFunction`
-on `jbrowse-newsletter-send` (see `infrastructure/newsletter/`).
+Credentials live only in the repo's GitHub Actions secrets (`BLUESKY_IDENTIFIER`,
+`BLUESKY_APP_PASSWORD`, `MASTODON_ACCESS_TOKEN`, plus the AWS creds used to invoke
+`jbrowse-newsletter-send`; see `infrastructure/newsletter/`). To eyeball the
+rendered post/email without any credentials, `pnpm announce -- --dry-run` prints
+them locally and skips every channel.
 
 ## Update Embedded Demos
 
