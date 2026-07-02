@@ -1,4 +1,5 @@
-Pass an `onChange` callback to `createViewState` to be notified on every
+Pass an `onChange` callback to `createViewState` (alongside the `config` from
+the [basic example](../basic-example/)) to be notified on every
 [MST](https://mobx-state-tree.js.org/) patch. It receives the forward patch and
 its inverse, so you can persist the session, build an undo/redo stack, or sync
 external UI:

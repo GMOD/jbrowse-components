@@ -1,4 +1,5 @@
-Theme the app via `configuration.theme` in the config object, following
+Theme the app via `configuration.theme` in the same
+[config object](../basic-example/) passed to `createViewState`, following
 [MUI theme palette](https://mui.com/material-ui/customization/theming/)
 conventions. Setting `palette.mode` to `'dark'` switches the whole app to the
 built-in dark theme:
