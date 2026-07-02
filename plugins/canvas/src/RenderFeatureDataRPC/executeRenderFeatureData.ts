@@ -138,7 +138,6 @@ export async function executeRenderFeatureData({
           )({
             feature,
             config: displayConfig,
-            jexl: pluginManager.jexl,
           }),
         )
       }

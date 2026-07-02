@@ -114,7 +114,6 @@ describe('applyLabelDimensions', () => {
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isNested: true,
         isTranscriptChild: true,
       })
       expect(layout.totalLayoutHeight).toBe(10 + LABEL_FONT_SIZE)
@@ -125,7 +124,6 @@ describe('applyLabelDimensions', () => {
       applyLabelDimensions(layout, {
         feature: createMockFeature('', 'transcript-fallback-id'),
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isNested: true,
         isTranscriptChild: true,
       })
       expect(layout.totalLayoutHeight).toBe(10 + LABEL_FONT_SIZE)
@@ -136,7 +134,6 @@ describe('applyLabelDimensions', () => {
       applyLabelDimensions(layout, {
         feature: createMockFeature('', ''),
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isNested: true,
         isTranscriptChild: true,
       })
       expect(layout.totalLayoutHeight).toBe(10)
@@ -149,7 +146,6 @@ describe('applyLabelDimensions', () => {
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
         config: mockDisplayConfig({ subfeatureLabels: 'overlay' }),
-        isNested: true,
         isTranscriptChild: true,
       })
       expect(layout.totalLayoutHeight).toBe(10)
@@ -162,7 +158,6 @@ describe('applyLabelDimensions', () => {
       applyLabelDimensions(layout, {
         feature: createMockFeature('NM_001234'),
         config: mockDisplayConfig({ subfeatureLabels: 'none' }),
-        isNested: true,
         isTranscriptChild: true,
       })
       expect(layout.totalLayoutHeight).toBe(10)
@@ -175,7 +170,6 @@ describe('applyLabelDimensions', () => {
       applyLabelDimensions(layout, {
         feature: createMockFeature('exon-1'),
         config: mockDisplayConfig({ subfeatureLabels: 'below' }),
-        isNested: true,
         isTranscriptChild: false,
       })
       expect(layout.totalLayoutHeight).toBe(10)

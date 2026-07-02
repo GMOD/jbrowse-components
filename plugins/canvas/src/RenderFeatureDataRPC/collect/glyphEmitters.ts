@@ -1,7 +1,11 @@
 import { cssColorToABGR as colorToUint32 } from '@jbrowse/core/util/colorBits'
 
 import { createFeatureFloatingLabels } from '../floatingLabels.ts'
-import { getFeatureName, readFeatureLabels } from '../labelUtils.ts'
+import {
+  getFeatureName,
+  readFeatureLabels,
+  readFeatureName,
+} from '../labelUtils.ts'
 import { featureType } from '../util.ts'
 import {
   emitCodonRects,
@@ -223,6 +227,10 @@ function processMatureProteinLayout(
   const byCdsSegment = aminoAcidsByFeature(rootFeature, ctx)
   const aminoAcids = byCdsSegment && [...byCdsSegment.values()].flat()
 
+  // loop-invariant: the owning CDS's config-jexl name, resolved once for all
+  // cleavage products rather than per child
+  const cdsLabel = readFeatureName(ctx.config, cdsFeature, ctx.jexl)
+
   for (const [i, childLayout] of layout.children.entries()) {
     const childFeature = childLayout.feature
     const topPx = baseTopPx + childLayout.y
@@ -258,7 +266,7 @@ function processMatureProteinLayout(
     // `product` attribute (mature peptides carry no `name`); falls back to the
     // plain name/id
     const childLabel =
-      readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
+      readFeatureName(ctx.config, childFeature, ctx.jexl) ??
       getFeatureName(childFeature)
     // viral polyproteins (e.g. SARS-CoV-2 ORF1a/ORF1ab) share cleavage products:
     // the same mature peptide (nsp1-nsp10) is a child of both polyprotein CDS
@@ -267,7 +275,6 @@ function processMatureProteinLayout(
     // its bare id), append it so the two rows read as distinct ("nsp1 (ORF1a
     // polyprotein)" vs "nsp1 (ORF1ab polyprotein)") instead of looking like a
     // duplicate/bug.
-    const cdsLabel = readFeatureLabels(ctx.config, cdsFeature, ctx.jexl).name
     const displayLabel =
       cdsLabel && cdsLabel !== childLabel && cdsLabel !== cdsFeature.id()
         ? `${childLabel} (${cdsLabel})`
@@ -357,7 +364,7 @@ function processRepeatRegionLayout(
     )
 
     const displayLabel =
-      readFeatureLabels(ctx.config, childFeature, ctx.jexl).name ??
+      readFeatureName(ctx.config, childFeature, ctx.jexl) ??
       getFeatureName(childFeature)
     collector.subfeatureInfos.push({
       kind: 'subfeature',

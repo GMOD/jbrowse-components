@@ -82,9 +82,7 @@ export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {
     applyLabelDimensions(childLayout, {
       feature: child,
       config,
-      isNested: true,
       isTranscriptChild: isChildTranscript,
-      jexl: args.jexl,
     })
 
     childLayout.y = currentYPx

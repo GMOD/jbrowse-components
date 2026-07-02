@@ -24,67 +24,68 @@ export function getFeatureName(feature: Feature): string | undefined {
   return toLabelString(feature.get('name')) ?? toLabelString(feature.get('id'))
 }
 
-// Reads the config-jexl name/description for a top-level feature. The
-// labels.name/labels.description defaults ARE jexl, so a plugin-registered jexl
-// function only resolves when the worker pluginManager's jexl instance is
-// passed (same contract as the `mouseover` slot).
-// Returns undefined for empty/falsy values so callers can use simple truthiness.
+// Reads a single config-jexl label slot. The labels.name/labels.description
+// defaults ARE jexl, so a plugin-registered jexl function only resolves when
+// the worker pluginManager's jexl instance is passed (same contract as the
+// `mouseover` slot). Returns undefined for empty/falsy values so callers can
+// use simple truthiness.
+function readFeatureLabel(
+  config: DisplayConfig,
+  feature: Feature,
+  which: 'name' | 'description',
+  jexl?: JexlInstance,
+) {
+  return toLabelString(
+    readConfigValueSafe<unknown>(
+      config,
+      ['labels', which],
+      feature,
+      jexl,
+      undefined,
+    ),
+  )
+}
+
+// Config-jexl name only. Subfeature label paths (mature-protein regions, repeat
+// subparts) render a single name line, so evaluating the description slot too
+// would waste a jexl eval per feature.
+export function readFeatureName(
+  config: DisplayConfig,
+  feature: Feature,
+  jexl?: JexlInstance,
+) {
+  return readFeatureLabel(config, feature, 'name', jexl)
+}
+
 export function readFeatureLabels(
   config: DisplayConfig,
   feature: Feature,
   jexl?: JexlInstance,
 ): { name: string | undefined; description: string | undefined } {
   return {
-    name: toLabelString(
-      readConfigValueSafe<unknown>(
-        config,
-        ['labels', 'name'],
-        feature,
-        jexl,
-        undefined,
-      ),
-    ),
-    description: toLabelString(
-      readConfigValueSafe<unknown>(
-        config,
-        ['labels', 'description'],
-        feature,
-        jexl,
-        undefined,
-      ),
-    ),
+    name: readFeatureLabel(config, feature, 'name', jexl),
+    description: readFeatureLabel(config, feature, 'description', jexl),
   }
 }
 
+// Reserves a label row under a transcript child in `below` mode so stacking
+// accounts for the floating name drawn beneath it. Only the transcript-child
+// path reserves height (top-level and overlay labels float without reserving);
+// the name is the feature's own name/id, never a config-jexl slot, so this pass
+// stays jexl-free.
 export function applyLabelDimensions(
   layout: FeatureLayout,
   args: {
     feature: Feature
     config: DisplayConfig
-    isNested: boolean
     isTranscriptChild: boolean
-    jexl?: JexlInstance
   },
 ) {
-  const { feature, config, isNested, isTranscriptChild, jexl } = args
-  const { subfeatureLabels } = config
-  const showSubfeatureLabels = subfeatureLabels !== 'none'
-
-  if (!isNested || (isTranscriptChild && showSubfeatureLabels)) {
-    const { name: configName, description: configDescription } =
-      isTranscriptChild
-        ? { name: undefined, description: undefined }
-        : readFeatureLabels(config, feature, jexl)
-    const name = isTranscriptChild
-      ? truncateLabel(getFeatureName(feature) ?? '')
-      : (configName ?? '')
-    const description = configDescription ?? ''
-    const labelCount =
-      (hasVisibleText(name) ? 1 : 0) + (hasVisibleText(description) ? 1 : 0)
-
-    const isOverlayMode = isTranscriptChild && subfeatureLabels === 'overlay'
-    if (!isOverlayMode && labelCount > 0) {
-      layout.totalLayoutHeight = layout.height + labelCount * LABEL_FONT_SIZE
+  const { feature, config, isTranscriptChild } = args
+  if (isTranscriptChild && config.subfeatureLabels === 'below') {
+    const name = truncateLabel(getFeatureName(feature) ?? '')
+    if (hasVisibleText(name)) {
+      layout.totalLayoutHeight = layout.height + LABEL_FONT_SIZE
     }
   }
 }
