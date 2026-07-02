@@ -4,11 +4,19 @@ import { serializeStyles } from '@emotion/serialize'
 import { getRegisteredStyles, insertStyles } from '@emotion/utils'
 
 import { classnames } from './tools/classnames.ts'
-import { matchCSSObject } from './types.ts'
 
-import type { CSSObject, Css, Cx } from './types.ts'
+import type { Css, Cx } from './types.ts'
 import type { EmotionCache } from '@emotion/cache'
 import type { RegisteredCache } from '@emotion/serialize'
+
+// NOTE: upstream tss-react wraps `cx`/`css` in a workaround (issue #27) that
+// re-wraps combined classes' media-query rules in `&&` for specificity. We
+// intentionally omit it: no `cx()` call in this codebase combines an
+// `@media`-bearing class with another (the only `@media (hover: none)` rules
+// are applied as standalone classNames), so the workaround never changed any
+// output while costing a per-render WeakMap walk in every multi-arg `cx()` and
+// an unbounded per-cache Map. If you ever `cx()` together a class containing a
+// media query, re-introduce it from upstream.
 
 export const { createCssAndCx } = (() => {
   function merge(registered: RegisteredCache, css: Css, className: string) {
@@ -33,38 +41,10 @@ export const { createCssAndCx } = (() => {
     const css: Css = (...args) => {
       const serialized = serializeStyles(args, cache.registered)
       insertStyles(cache, serialized, false)
-      const className = `${cache.key}-${serialized.name}`
-
-      scope: {
-        const arg = args[0]
-
-        if (!matchCSSObject(arg)) {
-          break scope
-        }
-
-        increaseSpecificityToTakePrecedenceOverMediaQueries.saveClassNameCSSObjectMapping(
-          cache,
-          className,
-          arg,
-        )
-      }
-
-      return className
+      return `${cache.key}-${serialized.name}`
     }
 
-    const cx: Cx = (...args) => {
-      const className = classnames(args)
-
-      const feat27FixedClassnames =
-        increaseSpecificityToTakePrecedenceOverMediaQueries.fixClassName(
-          cache,
-          className,
-          css,
-        )
-
-      return merge(cache.registered, css, feat27FixedClassnames)
-      // return merge(cache.registered, css, className);
-    }
+    const cx: Cx = (...args) => merge(cache.registered, css, classnames(args))
 
     return { css, cx }
   }
@@ -85,81 +65,3 @@ export function createUseCssAndCx(params: { useCache: () => EmotionCache }) {
 
   return { useCssAndCx }
 }
-
-// https://github.com/garronej/tss-react/issues/27
-const increaseSpecificityToTakePrecedenceOverMediaQueries = (() => {
-  const cssObjectMapByCache = new WeakMap<
-    EmotionCache,
-    Map<string, CSSObject>
-  >()
-
-  return {
-    saveClassNameCSSObjectMapping: (
-      cache: EmotionCache,
-      className: string,
-      cssObject: CSSObject,
-    ) => {
-      let cssObjectMap = cssObjectMapByCache.get(cache)
-
-      if (cssObjectMap === undefined) {
-        cssObjectMap = new Map()
-        cssObjectMapByCache.set(cache, cssObjectMap)
-      }
-
-      cssObjectMap.set(className, cssObject)
-    },
-    fixClassName: (() => {
-      function fix(
-        classNameCSSObjects: [string /* className*/, CSSObject | undefined][],
-      ): (string | CSSObject)[] {
-        let isThereAnyMediaQueriesInPreviousClasses = false
-
-        return classNameCSSObjects.map(([className, cssObject]) => {
-          if (cssObject === undefined) {
-            return className
-          }
-
-          let out: string | CSSObject
-
-          if (!isThereAnyMediaQueriesInPreviousClasses) {
-            out = className
-
-            for (const key in cssObject) {
-              if (key.startsWith('@media')) {
-                isThereAnyMediaQueriesInPreviousClasses = true
-                break
-              }
-            }
-          } else {
-            out = {
-              '&&': cssObject,
-            }
-          }
-
-          return out
-        })
-      }
-
-      return (cache: EmotionCache, className: string, css: Css): string => {
-        // Fast path: single class with no spaces
-        if (!className.includes(' ')) {
-          return className
-        }
-
-        const cssObjectMap = cssObjectMapByCache.get(cache)
-
-        return classnames(
-          fix(
-            className
-              .split(' ')
-              .map(className => [className, cssObjectMap?.get(className)]),
-          ).map(classNameOrCSSObject =>
-            typeof classNameOrCSSObject === 'string'
-              ? classNameOrCSSObject
-              : css(classNameOrCSSObject),
-          ),
-        )
-      }
-    })(),
-  }
-})()
