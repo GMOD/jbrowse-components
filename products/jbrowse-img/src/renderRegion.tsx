@@ -33,9 +33,9 @@ function createModel(data: Config) {
   })
   // The interactive app routes failures (a bad track config, an assembly that
   // won't load, an RPC error) to session.notifyError, which only pushes a
-  // snackbar — invisible in this headless tool, so errors would otherwise be
-  // silently swallowed and surface as a blank render. Echo error notifications
-  // to stderr so the real cause is reported.
+  // snackbar — invisible in this headless tool. Echo error notifications to
+  // stderr so the real cause is reported. The same session errors are also made
+  // fatal (see firstSessionError / whenViewReady / renderRegion).
   const { session } = model
   const reported = new Set<string>()
   addDisposer(
@@ -67,19 +67,59 @@ interface ModeContext {
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
 
-// A comparative/circular view sets `initialized` true as soon as it has regions
-// to show, but its frozen `init` snapshot is consumed a moment later by an async
-// autorun (which awaits assemblies, navigates each sub-view, and attaches
-// tracks). The SVG only has content once that autorun has run to completion and
-// cleared `init`.
-function whenViewReady(view: { initialized: boolean; init?: unknown }) {
-  return when(() => view.initialized && !view.init)
+// The single "errors lifted up to the session" channel. Failures anywhere in
+// the render — a bad track config, an assembly that won't load, an RPC error, a
+// self-init view's init autorun — are reported via session.notifyError, which
+// lands here as an error-level snackbar. Reading this (instead of reaching into
+// each view's per-display error state) is how a headless export detects that the
+// SVG is incomplete. The array is per-model, so there's no cross-render bleed.
+interface SessionErrors {
+  snackbarMessages: { message: string; level?: string }[]
 }
+
+function firstSessionError(session: SessionErrors) {
+  return session.snackbarMessages.find(m => m.level === 'error')?.message
+}
+
+function throwOnSessionError(session: SessionErrors) {
+  const message = firstSessionError(session)
+  if (message !== undefined) {
+    throw new Error(message)
+  }
+}
+
+// Backstop for a view whose init autorun never completes AND never reports an
+// error (a promise inside it that neither resolves nor rejects). Generous
+// because init only awaits assembly load + navigation + track attach — the
+// feature-data fetch happens later in renderToSvg — so a legitimate render
+// clears `init` well under this, while a true hang no longer runs forever.
+const INIT_TIMEOUT_MS = 120_000
 
 interface InitView {
   setWidth: (n: number) => void
   initialized: boolean
   init?: unknown
+}
+
+// A comparative/circular view sets `initialized` true as soon as it has regions
+// to show, but its frozen `init` snapshot is consumed a moment later by an async
+// autorun (which awaits assemblies, navigates each sub-view, and attaches
+// tracks). The SVG only has content once that autorun has cleared `init`. On
+// failure the dotplot/synteny autorun deliberately KEEPS `init` set (interactive
+// recovery) but reports the error to the session, so waiting on `!init` alone
+// would hang — also resolve on a session error, which is then rethrown.
+async function whenViewReady(view: InitView, session: SessionErrors) {
+  await when(
+    () => (view.initialized && !view.init) || firstSessionError(session) !== undefined,
+    { timeout: INIT_TIMEOUT_MS },
+  ).catch(() => {
+    // swallow the timeout rejection; the checks below turn an unresolved init
+    // into a descriptive error
+  })
+  throwOnSessionError(session)
+  if (view.init) {
+    throw new Error(`view did not initialize within ${INIT_TIMEOUT_MS / 1000}s`)
+  }
 }
 
 // Shared lifecycle for the self-initializing views (dotplot/synteny/circular):
@@ -93,7 +133,7 @@ async function addInitView<T extends InitView>(
 ) {
   const view = ctx.model.session.addView(viewType, { init }) as T
   view.setWidth(ctx.width)
-  await whenViewReady(view)
+  await whenViewReady(view, ctx.model.session)
   return view
 }
 
@@ -121,7 +161,12 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
       // showAllRegionsInAssembly reads assemblyManager.get(name).regions
       // synchronously and no-ops if the assembly hasn't loaded yet, so wait for
       // it first (navToLocString does this internally for the single-loc case).
-      await session.assemblyManager.waitForAssembly(name)
+      const asm = await session.assemblyManager.waitForAssembly(name)
+      if (!asm) {
+        throw new Error(
+          `assembly "${name}" failed to load (check --fasta/--assembly/--config inputs)`,
+        )
+      }
       view.showAllRegionsInAssembly(name)
     } else {
       await view.navToLocString(loc, name)
@@ -292,13 +337,18 @@ export async function renderRegion(opts: Opts) {
   // view type, falling back to the default linear view
   const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
   try {
-    return await modeRenderers[mode]({
+    const result = await modeRenderers[mode]({
       model,
       data,
       opts,
       width: opts.width ?? 1500,
       spec,
     })
+    // a failure reported to the session after the view was ready (e.g. a track
+    // config error surfaced during render) means the SVG is incomplete — fail
+    // rather than emit a silently-broken image
+    throwOnSessionError(model.session)
+    return result
   } finally {
     destroy(model)
   }

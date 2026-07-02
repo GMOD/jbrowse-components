@@ -80,6 +80,24 @@ test('comparative mode without a second assembly throws', async () => {
   )
 })
 
+// A self-init view (synteny) keeps its `init` snapshot on failure for
+// interactive recovery, so waiting on `!init` alone would hang headlessly. The
+// init error is exposed as observable view state, which renderRegion rethrows —
+// so a bad assembly fails fast with the real cause instead of hanging.
+test('synteny with an unreadable assembly rejects instead of hanging', async () => {
+  await assert.rejects(
+    renderRegion({
+      mode: 'synteny',
+      argv: [
+        ['fasta', ['/nonexistent/a.fa']],
+        ['paf', ['/nonexistent/x.paf']],
+        ['fasta', ['/nonexistent/b.fa']],
+      ],
+    }),
+    /ENOENT|no such file/,
+  )
+})
+
 // N-way synteny is driven by a --config (assemblies + synteny tracks) plus a
 // session-spec JSON, the same shape documented in urlparams.md. Mode is derived
 // from the spec's view type when no subcommand is given.
