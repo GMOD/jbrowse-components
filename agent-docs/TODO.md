@@ -75,3 +75,5 @@ None of these block trying the current slice for feel. If I were to pick one to 
 ## consider removing rxjs
 
 ## audit foreachnumeric
+
+## undo hide this feature
