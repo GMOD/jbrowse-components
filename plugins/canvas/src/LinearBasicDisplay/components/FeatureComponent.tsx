@@ -56,6 +56,8 @@ export interface LinearBasicDisplayModel {
   error: unknown
   maxY: number
   hasOverflow: boolean
+  contentHeight: number
+  scrollableHeight: number
   canExpand: boolean
   heightBeforeExpand: number | undefined
   autoHeight: boolean
@@ -284,7 +286,7 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
     <ScrollLockedOverlay
       scrollTop={model.scrollTop}
       viewportHeight={model.height}
-      contentHeight={model.hasOverflow ? model.maxY : model.height}
+      contentHeight={model.contentHeight}
     >
       {children}
     </ScrollLockedOverlay>
@@ -366,7 +368,7 @@ const FeatureBody = observer(function FeatureBody({
     const next = applyScroll(e, {
       scrollTop: model.scrollTop,
       viewportHeight: model.height,
-      scrollableHeight: Math.max(0, model.maxY - model.height),
+      scrollableHeight: model.scrollableHeight,
     })
     if (next !== null) {
       model.setScrollTop(next)
@@ -523,7 +525,7 @@ const FeatureBody = observer(function FeatureBody({
           model.setScrollTop(n)
         }}
         viewportHeight={model.height}
-        contentHeight={model.maxY}
+        contentHeight={model.contentHeight}
       />
 
       <BottomRightIndicators hasOverflow={model.hasOverflow}>

@@ -301,13 +301,6 @@ export default function baseStateModelFactory(
         // Height of the layout being animated away from; `maxY` holds at the
         // taller of this and the destination during a morph (anti-clip).
         morphFromMaxY: 0,
-        // `scrollTop` eases from `morphScrollFrom` by `morphScrollDelta` in
-        // lockstep with the Y morph. Feature-follow on zoom is disabled, so this
-        // is normally 0 (scrollTop is left where the user put it); it goes
-        // nonzero only to clamp scrollTop back into range when a repack shrinks
-        // the content below the current scroll position.
-        morphScrollFrom: 0,
-        morphScrollDelta: 0,
       }))
       .views(self => ({
         /**
@@ -818,16 +811,9 @@ export default function baseStateModelFactory(
         // clock that advances `morphProgress` lives in FeatureComponent (it
         // observes `morphFromTops`). Morphs (300ms) finish before the next
         // layout change (coarseBpPerPx is debounced 500ms), so no retarget.
-        beginYMorph(
-          fromTops: Map<string, number>,
-          fromMaxY: number,
-          scrollFrom: number,
-          scrollDelta: number,
-        ) {
+        beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
           self.morphFromTops = fromTops
           self.morphFromMaxY = fromMaxY
-          self.morphScrollFrom = scrollFrom
-          self.morphScrollDelta = scrollDelta
           self.morphStartMs = morphClockMs()
           self.morphProgress = 0
         },
@@ -836,14 +822,6 @@ export default function baseStateModelFactory(
          */
         setMorphProgress(t: number) {
           self.morphProgress = Math.min(1, Math.max(0, t))
-          // Ease scrollTop by the same eased factor the rows use, so the anchor
-          // feature holds its screen position while the rest morph around it.
-          if (self.morphScrollDelta !== 0) {
-            self.setScrollTop(
-              self.morphScrollFrom +
-                self.morphScrollDelta * easeInOutCubic(self.morphProgress),
-            )
-          }
         },
         /**
          * #action
@@ -851,7 +829,6 @@ export default function baseStateModelFactory(
         endYMorph() {
           self.morphFromTops = undefined
           self.morphProgress = 1
-          self.morphScrollDelta = 0
         },
       }))
       .views(self => ({
@@ -874,6 +851,25 @@ export default function baseStateModelFactory(
          */
         get hasOverflow() {
           return this.maxY > self.height
+        },
+
+        /**
+         * #getter
+         */
+        // Coordinate-space height of the virtual-scroll content: the laid-out
+        // content (maxY) but never less than the viewport, so overlays and the
+        // scrollbar share one definition (was `hasOverflow ? maxY : height`).
+        get contentHeight() {
+          return Math.max(this.maxY, self.height)
+        },
+
+        /**
+         * #getter
+         */
+        // How far the content can scroll: 0 when it fits. Single source for the
+        // wheel handler and any scroll clamp.
+        get scrollableHeight() {
+          return Math.max(0, this.maxY - self.height)
         },
 
         /**
@@ -1865,31 +1861,24 @@ export default function baseStateModelFactory(
                     scrollTop: self.scrollTop,
                     height: self.height,
                   }))
-                  // Feature-follow on zoom is intentionally disabled: leave
-                  // scrollTop where the user put it rather than chasing the
-                  // viewport-centered feature to its new row. Only clamp to the
-                  // new layout's scrollable range so a re-pack that shrinks the
-                  // content (e.g. zoom-in de-stacking rows) can't strand the
-                  // viewport past the content bottom. Both morph endpoints stay
-                  // in range, so every eased frame between them does too.
+                  // Feature-follow on zoom is disabled, so scrollTop is left
+                  // where the user put it — the only reason it moves on a repack
+                  // is to clamp back into range when the new layout is shorter
+                  // (e.g. zoom-in de-stacking rows) so the viewport can't strand
+                  // past the content bottom. Apply that clamp instantly (it's a
+                  // small correction, not the eased feature-follow it replaced).
                   const maxScroll = Math.max(0, maxBottom(current) - height)
-                  const target = Math.min(scrollTop, maxScroll)
-                  const scrollDelta = target - scrollTop
+                  if (scrollTop > maxScroll) {
+                    self.setScrollTop(maxScroll)
+                  }
+                  // The row morph still animates features to their new rows.
                   if (
                     morphAllowed(getSession(self).animationMode) &&
                     canMorph(fromTops, current)
                   ) {
-                    self.beginYMorph(
-                      fromTops,
-                      maxBottom(from),
-                      scrollTop,
-                      scrollDelta,
-                    )
+                    self.beginYMorph(fromTops, maxBottom(from))
                   } else {
-                    // Dense view or reduced motion: snap, but still keep the
-                    // focused gene in place with an instant scroll shift.
                     self.endYMorph()
-                    self.setScrollTop(target)
                   }
                 } else {
                   self.endYMorph()
