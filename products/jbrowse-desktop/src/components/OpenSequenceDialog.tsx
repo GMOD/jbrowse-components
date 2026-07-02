@@ -12,8 +12,9 @@ import {
   Button,
   DialogActions,
   DialogContent,
-  Link,
   Paper,
+  ToggleButton,
+  ToggleButtonGroup,
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -27,7 +28,7 @@ import type {
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-type Mode = 'wizard' | 'manual'
+type Mode = 'drop' | 'urls' | 'guided'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -41,6 +42,9 @@ const useStyles = makeStyles()(theme => ({
     padding: theme.spacing(2),
     margin: theme.spacing(2),
   },
+  toggle: {
+    marginBottom: theme.spacing(2),
+  },
 }))
 
 const OpenSequenceDialog = observer(function OpenSequenceDialog({
@@ -53,7 +57,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
-  const [mode, setMode] = useState<Mode>('wizard')
+  const [mode, setMode] = useState<Mode>('drop')
 
   const formReady = !!form.assemblyName && formHasSequence(form)
   const totalToOpen = assemblyConfs.length + (formReady ? 1 : 0)
@@ -146,38 +150,41 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         {error ? <ErrorMessage error={error} /> : null}
 
         <Paper className={classes.paper}>
-          {mode === 'wizard' ? (
-            <OpenSequenceWizard
+          <ToggleButtonGroup
+            className={classes.toggle}
+            exclusive
+            size="small"
+            value={mode}
+            onChange={(_event, value: Mode | null) => {
+              if (value) {
+                setMode(value)
+              }
+            }}
+          >
+            <ToggleButton value="drop">Drop files</ToggleButton>
+            <ToggleButton value="urls">Paste URLs</ToggleButton>
+            <ToggleButton value="guided">Guided wizard</ToggleButton>
+          </ToggleButtonGroup>
+
+          {mode === 'guided' ? (
+            <GuidedForm
               form={form}
               setForm={setForm}
               loading={loading}
               onStageAnother={() => {
                 void addAnotherAssembly()
               }}
-              onManual={() => {
-                setMode('manual')
-              }}
             />
           ) : (
-            <>
-              <Link
-                component="button"
-                type="button"
-                onClick={() => {
-                  setMode('wizard')
-                }}
-              >
-                ← Back to guided drop
-              </Link>
-              <GuidedForm
-                form={form}
-                setForm={setForm}
-                loading={loading}
-                onStageAnother={() => {
-                  void addAnotherAssembly()
-                }}
-              />
-            </>
+            <OpenSequenceWizard
+              inputMode={mode}
+              form={form}
+              setForm={setForm}
+              loading={loading}
+              onStageAnother={() => {
+                void addAnotherAssembly()
+              }}
+            />
           )}
         </Paper>
       </DialogContent>

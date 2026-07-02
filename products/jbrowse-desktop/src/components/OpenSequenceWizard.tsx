@@ -15,7 +15,6 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Alert,
   Button,
-  Link,
   Step,
   StepContent,
   StepLabel,
@@ -120,23 +119,22 @@ function MissingIndexInputs({
 }
 
 const OpenSequenceWizard = observer(function OpenSequenceWizard({
+  inputMode,
   form,
   setForm,
   loading,
   onStageAnother,
-  onManual,
 }: {
+  inputMode: 'drop' | 'urls'
   form: FormState
   setForm: (update: (prev: FormState) => FormState) => void
   loading: string
   onStageAnother: () => void
-  onManual: () => void
 }) {
   const { classes } = useStyles()
   const [activeStep, setActiveStep] = useState(0)
   const [dropped, setDropped] = useState<FileLocation[]>([])
   const [urls, setUrls] = useState('')
-  const [showUrls, setShowUrls] = useState(false)
   const [showMore, setShowMore] = useState(false)
   const [nameTouched, setNameTouched] = useState(false)
 
@@ -168,18 +166,49 @@ const OpenSequenceWizard = observer(function OpenSequenceWizard({
       <Step>
         <StepLabel>Add genome files</StepLabel>
         <StepContent>
-          <Typography variant="body2" gutterBottom>
-            Drop a sequence file (FASTA, .fa.gz, or .2bit) plus any index files.
-            We fill in the rest.
-          </Typography>
-          <FileDropZone
-            message="Drop your genome file here, or click to browse"
-            onDrop={files => {
-              const next = [...dropped, ...files.map(f => fileToLocation(f))]
-              setDropped(next)
-              reclassify(next, urls)
-            }}
-          />
+          {inputMode === 'drop' ? (
+            <>
+              <Typography variant="body2" gutterBottom>
+                Drop a sequence file (FASTA, .fa.gz, or .2bit) plus any index
+                files.
+              </Typography>
+              <FileDropZone
+                message="Drop your genome file here, or click to browse"
+                onDrop={files => {
+                  const next = [
+                    ...dropped,
+                    ...files.map(f => fileToLocation(f)),
+                  ]
+                  setDropped(next)
+                  reclassify(next, urls)
+                }}
+              />
+            </>
+          ) : (
+            <>
+              <Typography variant="body2" gutterBottom>
+                Paste URLs to a sequence file (FASTA, .fa.gz, or .2bit) plus any
+                index files, one per line. We fill in the rest.
+              </Typography>
+              <TextField
+                variant="outlined"
+                placeholder={[
+                  'https://example.com/hg38.fa.gz',
+                  'https://example.com/hg38.fa.gz.fai',
+                  'https://example.com/hg38.fa.gz.gzi',
+                ].join('\n')}
+                multiline
+                rows={5}
+                fullWidth
+                value={urls}
+                onChange={event => {
+                  const { value } = event.target
+                  setUrls(value)
+                  reclassify(dropped, value)
+                }}
+              />
+            </>
+          )}
 
           {detectedFiles(form).length ? (
             <div className={classes.section}>
@@ -193,37 +222,6 @@ const OpenSequenceWizard = observer(function OpenSequenceWizard({
             </Alert>
           ) : null}
 
-          {showUrls ? (
-            <TextField
-              className={classes.section}
-              label="Paste file URLs (one per line)"
-              placeholder={
-                'https://example.com/hg38.fa.gz\nhttps://example.com/hg38.fa.gz.fai'
-              }
-              multiline
-              minRows={3}
-              fullWidth
-              value={urls}
-              onChange={event => {
-                const { value } = event.target
-                setUrls(value)
-                reclassify(dropped, value)
-              }}
-            />
-          ) : (
-            <Typography variant="body2" className={classes.section}>
-              <Link
-                component="button"
-                type="button"
-                onClick={() => {
-                  setShowUrls(true)
-                }}
-              >
-                ...or paste file URLs
-              </Link>
-            </Typography>
-          )}
-
           <div className={classes.actions}>
             <Button
               variant="contained"
@@ -236,18 +234,6 @@ const OpenSequenceWizard = observer(function OpenSequenceWizard({
             >
               Next
             </Button>
-            <Typography variant="caption" component="span">
-              or{' '}
-              <Link
-                component="button"
-                type="button"
-                onClick={() => {
-                  onManual()
-                }}
-              >
-                enter files manually
-              </Link>
-            </Typography>
           </div>
         </StepContent>
       </Step>
