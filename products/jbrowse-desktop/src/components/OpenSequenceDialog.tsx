@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
+import AddGenomePane from '@jbrowse/core/ui/AddGenomePane'
 import {
   buildAssemblyConf,
   clearFormFields,
@@ -8,18 +9,9 @@ import {
   initialFormState,
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import {
-  Button,
-  DialogActions,
-  DialogContent,
-  Paper,
-  ToggleButton,
-  ToggleButtonGroup,
-} from '@mui/material'
+import { Button, DialogActions, DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import GuidedForm from './GuidedForm.tsx'
-import OpenSequenceWizard from './OpenSequenceWizard.tsx'
 import StagedAssemblies from './StagedAssemblies.tsx'
 
 import type {
@@ -28,8 +20,6 @@ import type {
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import type { FileLocation } from '@jbrowse/core/util/types'
 
-type Mode = 'drop' | 'urls' | 'guided'
-
 const { ipcRenderer } = window.require('electron')
 
 const useStyles = makeStyles()(theme => ({
@@ -37,13 +27,6 @@ const useStyles = makeStyles()(theme => ({
     background: theme.palette.grey[300],
     margin: theme.spacing(2),
     padding: theme.spacing(2),
-  },
-  paper: {
-    padding: theme.spacing(2),
-    margin: theme.spacing(2),
-  },
-  toggle: {
-    marginBottom: theme.spacing(2),
   },
 }))
 
@@ -57,7 +40,6 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
-  const [mode, setMode] = useState<Mode>('drop')
 
   const formReady = !!form.assemblyName && formHasSequence(form)
   const totalToOpen = assemblyConfs.length + (formReady ? 1 : 0)
@@ -131,7 +113,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           await onClose()
         }
       }}
-      title="Open genome(s)"
+      title="Open a genome"
     >
       <DialogContent>
         {assemblyConfs.length ? (
@@ -143,50 +125,20 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
           />
         ) : null}
 
+        <AddGenomePane
+          form={form}
+          setForm={setForm}
+          loading={loading}
+          onStageAnother={() => {
+            void addAnotherAssembly()
+          }}
+        />
+
         {loading ? (
           <LoadingEllipses className={classes.message} message={loading} />
         ) : null}
 
         {error ? <ErrorMessage error={error} /> : null}
-
-        <Paper className={classes.paper}>
-          <ToggleButtonGroup
-            className={classes.toggle}
-            exclusive
-            size="small"
-            value={mode}
-            onChange={(_event, value: Mode | null) => {
-              if (value) {
-                setMode(value)
-              }
-            }}
-          >
-            <ToggleButton value="drop">Drop files</ToggleButton>
-            <ToggleButton value="urls">Paste URLs</ToggleButton>
-            <ToggleButton value="guided">Guided wizard</ToggleButton>
-          </ToggleButtonGroup>
-
-          {mode === 'guided' ? (
-            <GuidedForm
-              form={form}
-              setForm={setForm}
-              loading={loading}
-              onStageAnother={() => {
-                void addAnotherAssembly()
-              }}
-            />
-          ) : (
-            <OpenSequenceWizard
-              inputMode={mode}
-              form={form}
-              setForm={setForm}
-              loading={loading}
-              onStageAnother={() => {
-                void addAnotherAssembly()
-              }}
-            />
-          )}
-        </Paper>
       </DialogContent>
       <DialogActions>
         <Button

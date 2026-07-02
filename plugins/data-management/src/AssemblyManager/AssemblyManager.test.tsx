@@ -1,4 +1,5 @@
-import { fireEvent, render } from '@testing-library/react'
+import '@testing-library/jest-dom'
+import { fireEvent, render, waitFor } from '@testing-library/react'
 
 import AssemblyManager from './AssemblyManager.tsx'
 
@@ -59,8 +60,8 @@ test('opens up the Add Assembly Form when clicked', async () => {
   expect(await findByText('Submit')).toBeTruthy()
 })
 
-test('calls addAssemblyConf from the Add Assembly form', () => {
-  const { getByText, getByTestId } = render(
+test('adds an assembly from a pasted URL (auto-detected)', async () => {
+  const { getByText, getByRole, getByTestId } = render(
     <AssemblyManager
       // @ts-expect-error
       session={mockRootModel.session}
@@ -70,19 +71,21 @@ test('calls addAssemblyConf from the Add Assembly form', () => {
   )
   fireEvent.click(getByText('Add new assembly'))
 
-  // enter a new assembly and submtest
-  fireEvent.change(getByTestId('assembly-name'), {
-    target: {
-      value: 'ce11',
-    },
+  // paste a FASTA url; the pane auto-detects the format and assembly name
+  fireEvent.click(getByText('Open from a URL'))
+  fireEvent.change(getByRole('textbox'), {
+    target: { value: 'https://example.com/ce11.fa' },
   })
-  fireEvent.click(getByText('Submit'))
+  expect(getByTestId('assembly-name')).toHaveValue('ce11')
 
-  expect(mockRootModel.session.addAssembly).toHaveBeenCalledTimes(1)
+  fireEvent.click(getByText('Submit'))
+  await waitFor(() => {
+    expect(mockRootModel.session.addAssembly).toHaveBeenCalledTimes(1)
+  })
 })
 
-test("prompts the user for a name when adding assembly if they don't", () => {
-  const { getByText } = render(
+test('Submit is disabled until a sequence is provided', () => {
+  const { getByText, getByRole } = render(
     <AssemblyManager
       // @ts-expect-error
       session={mockRootModel.session}
@@ -91,10 +94,7 @@ test("prompts the user for a name when adding assembly if they don't", () => {
     />,
   )
   fireEvent.click(getByText('Add new assembly'))
-  fireEvent.click(getByText('Submit'))
-  expect(mockRootModel.session.notify).toHaveBeenCalledWith(
-    "Can't create an assembly without a name",
-  )
+  expect(getByRole('button', { name: 'Submit' })).toBeDisabled()
 })
 
 test('deletes an assembly when delete button clicked', () => {

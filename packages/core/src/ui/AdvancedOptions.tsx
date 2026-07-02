@@ -1,13 +1,15 @@
-import { FileSelector } from '@jbrowse/core/ui'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import type { FormState } from '@jbrowse/core/util/assemblyConfigUtils'
-import type { FileLocation } from '@jbrowse/core/util/types'
+import FileSelector from './FileSelector/FileSelector.tsx'
+
+import type { FormState } from '../util/assemblyConfigUtils.ts'
+import type { FileLocation } from '../util/types/index.ts'
 
 // Display name plus the optional refName-aliases and cytobands files. Shared by
-// the guided form and the wizard's confirm step; kept behind an expander in both
-// so it never adds to the up-front load.
+// every add-assembly surface (desktop Open genome dialog, in-app Assembly
+// manager) behind a "More options" expander so it never adds to the up-front
+// load.
 const AdvancedOptions = observer(function AdvancedOptions({
   form,
   setForm,

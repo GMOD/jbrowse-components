@@ -68,6 +68,7 @@
     "./svg/svgReady": "./src/svg/svgReady.ts",
     "./svg/wrapSvgExport": "./src/svg/wrapSvgExport.tsx",
     "./ui": "./src/ui/index.ts",
+    "./ui/AddGenomePane": "./src/ui/AddGenomePane.tsx",
     "./ui/AppLogo": "./src/ui/AppLogo.tsx",
     "./ui/BaseTooltip": "./src/ui/BaseTooltip.tsx",
     "./ui/CascadingMenuButton": "./src/ui/CascadingMenuButton.tsx",
@@ -89,7 +90,6 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/RubberbandTooltip": "./src/ui/RubberbandTooltip.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
-    "./ui/SequenceAdapterInputs": "./src/ui/SequenceAdapterInputs.tsx",
     "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
@@ -149,7 +149,6 @@
     "./util/useEventCallback": "./src/util/useEventCallback.ts",
     "./util/useMeasure": "./src/util/useMeasure.ts",
     "./util/useRenderingBackend": "./src/util/useRenderingBackend.ts",
-    "./util/useScrollTopSync": "./src/util/useScrollTopSync.ts",
     "./util/useVirtualScrollWheel": "./src/util/useVirtualScrollWheel.ts"
   },
   "files": [
@@ -394,6 +393,10 @@
         "types": "./esm/ui/index.d.ts",
         "import": "./esm/ui/index.js"
       },
+      "./ui/AddGenomePane": {
+        "types": "./esm/ui/AddGenomePane.d.ts",
+        "import": "./esm/ui/AddGenomePane.js"
+      },
       "./ui/AppLogo": {
         "types": "./esm/ui/AppLogo.d.ts",
         "import": "./esm/ui/AppLogo.js"
@@ -477,10 +480,6 @@
       "./ui/SanitizedHTML": {
         "types": "./esm/ui/SanitizedHTML.d.ts",
         "import": "./esm/ui/SanitizedHTML.js"
-      },
-      "./ui/SequenceAdapterInputs": {
-        "types": "./esm/ui/SequenceAdapterInputs.d.ts",
-        "import": "./esm/ui/SequenceAdapterInputs.js"
       },
       "./ui/ShareLinkField": {
         "types": "./esm/ui/ShareLinkField.d.ts",
@@ -718,10 +717,6 @@
         "types": "./esm/util/useRenderingBackend.d.ts",
         "import": "./esm/util/useRenderingBackend.js"
       },
-      "./util/useScrollTopSync": {
-        "types": "./esm/util/useScrollTopSync.d.ts",
-        "import": "./esm/util/useScrollTopSync.js"
-      },
       "./util/useVirtualScrollWheel": {
         "types": "./esm/util/useVirtualScrollWheel.d.ts",
         "import": "./esm/util/useVirtualScrollWheel.js"
@@ -873,6 +868,9 @@
         "ui": [
           "esm/ui/index.d.ts"
         ],
+        "ui/AddGenomePane": [
+          "esm/ui/AddGenomePane.d.ts"
+        ],
         "ui/AppLogo": [
           "esm/ui/AppLogo.d.ts"
         ],
@@ -935,9 +933,6 @@
         ],
         "ui/SanitizedHTML": [
           "esm/ui/SanitizedHTML.d.ts"
-        ],
-        "ui/SequenceAdapterInputs": [
-          "esm/ui/SequenceAdapterInputs.d.ts"
         ],
         "ui/ShareLinkField": [
           "esm/ui/ShareLinkField.d.ts"
@@ -1115,9 +1110,6 @@
         ],
         "util/useRenderingBackend": [
           "esm/util/useRenderingBackend.d.ts"
-        ],
-        "util/useScrollTopSync": [
-          "esm/util/useScrollTopSync.d.ts"
         ],
         "util/useVirtualScrollWheel": [
           "esm/util/useVirtualScrollWheel.d.ts"
