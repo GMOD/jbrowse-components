@@ -6,12 +6,12 @@ import { autorun } from 'mobx'
 import { createPluginManager } from './createPluginManager.ts'
 import {
   buildJb1SessionSpec,
+  buildLgvInit,
   fetchRemoteConfig,
   getSessionQueryType,
   loadPluginRecords,
   readSessionFromIDB,
   readSessionFromStorage,
-  splitHighlights,
   stripPrefix,
 } from './sessionLoaderHelpers.ts'
 import { readSessionFromDynamo } from './sessionSharing.ts'
@@ -102,39 +102,44 @@ const SessionLoader = types
      */
     sessionSource: types.frozen<SessionSource | undefined>(undefined),
   })
-  .volatile(() => ({
+  .volatile<{
+    sessionTriaged: SessionTriagedInfo | undefined
+    runtimePlugins: PluginRecord[] | undefined
+    sessionPlugins: PluginRecord[] | undefined
+    configError: unknown
+    pluginManager: PluginManager | undefined
+    pluginManagerError: unknown
+    buildAutorunDisposer: (() => void) | undefined
+    initializeStarted: boolean
+  }>(() => ({
     /**
      * #volatile
      */
-    sessionTriaged: undefined as SessionTriagedInfo | undefined,
+    sessionTriaged: undefined,
     /**
      * #volatile
      */
-    runtimePlugins: undefined as PluginRecord[] | undefined,
+    runtimePlugins: undefined,
     /**
      * #volatile
      */
-    sessionPlugins: undefined as PluginRecord[] | undefined,
+    sessionPlugins: undefined,
     /**
      * #volatile
      */
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    configError: undefined as unknown,
+    configError: undefined,
     /**
      * #volatile
      */
-    pluginManager: undefined as PluginManager | undefined,
+    pluginManager: undefined,
     /**
      * #volatile
      */
-
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    pluginManagerError: undefined as unknown,
+    pluginManagerError: undefined,
     /**
      * #volatile
      */
-    buildAutorunDisposer: undefined as (() => void) | undefined,
+    buildAutorunDisposer: undefined,
     /**
      * #volatile
      * guards initialize() to run exactly once per loader, even across the
@@ -223,16 +228,14 @@ const SessionLoader = types
      */
     get defaultSessionViewInit() {
       return self.extendDefaultSession && self.isJb1StyleSession
-        ? {
+        ? buildLgvInit({
             loc: self.loc,
             assembly: self.assembly,
-            tracks: self.tracks?.split(','),
+            tracks: self.tracks,
             tracklist: self.tracklist,
             nav: self.nav,
-            highlight: self.highlight
-              ? splitHighlights(self.highlight)
-              : undefined,
-          }
+            highlight: self.highlight,
+          })
         : undefined
     },
   }))
@@ -254,12 +257,6 @@ const SessionLoader = types
      */
     setSessionPlugins(plugins: PluginRecord[]) {
       self.sessionPlugins = plugins
-    },
-    /**
-     * #action
-     */
-    setConfigSnapshot(snap: Snap) {
-      self.configSnapshot = snap
     },
     /**
      * #action

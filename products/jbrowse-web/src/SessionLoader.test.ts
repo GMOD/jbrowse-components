@@ -260,15 +260,6 @@ describe('SessionLoader', () => {
       expect(loader.sessionSource).toEqual({ type: 'snapshot', snapshot })
     })
 
-    it('setConfigSnapshot updates configSnapshot', () => {
-      const loader = SessionLoader.create({
-        initialTimestamp: Date.now(),
-      })
-      const snap = { assemblies: [{ name: 'test' }] }
-      loader.setConfigSnapshot(snap)
-      expect(loader.configSnapshot).toEqual(snap)
-    })
-
     it('setConfigError updates configError', () => {
       const loader = SessionLoader.create({
         initialTimestamp: Date.now(),

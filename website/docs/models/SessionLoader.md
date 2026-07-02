@@ -230,15 +230,15 @@ initializeStarted: false
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                   | Signature                         |
-| -------------------------------------------------------- | --------------------------------- |
-| [`sessionTriaged`](#volatile-sessiontriaged)             | `SessionTriagedInfo \| undefined` |
-| [`runtimePlugins`](#volatile-runtimeplugins)             | `PluginRecord[] \| undefined`     |
-| [`sessionPlugins`](#volatile-sessionplugins)             | `PluginRecord[] \| undefined`     |
-| [`configError`](#volatile-configerror)                   | `unknown`                         |
-| [`pluginManager`](#volatile-pluginmanager)               | `PluginManager \| undefined`      |
-| [`pluginManagerError`](#volatile-pluginmanagererror)     | `unknown`                         |
-| [`buildAutorunDisposer`](#volatile-buildautorundisposer) | `(() => void) \| undefined`       |
+| Member                                                   | Signature   |
+| -------------------------------------------------------- | ----------- |
+| [`sessionTriaged`](#volatile-sessiontriaged)             | `undefined` |
+| [`runtimePlugins`](#volatile-runtimeplugins)             | `undefined` |
+| [`sessionPlugins`](#volatile-sessionplugins)             | `undefined` |
+| [`configError`](#volatile-configerror)                   | `undefined` |
+| [`pluginManager`](#volatile-pluginmanager)               | `undefined` |
+| [`pluginManagerError`](#volatile-pluginmanagererror)     | `undefined` |
+| [`buildAutorunDisposer`](#volatile-buildautorundisposer) | `undefined` |
 
 </details>
 
@@ -249,63 +249,63 @@ detail):
 
 ```ts
 // type signature
-type sessionTriaged = SessionTriagedInfo | undefined
+type sessionTriaged = undefined
 // code
-sessionTriaged: undefined as SessionTriagedInfo | undefined
+sessionTriaged: undefined
 ```
 
 #### volatile: runtimePlugins
 
 ```ts
 // type signature
-type runtimePlugins = PluginRecord[] | undefined
+type runtimePlugins = undefined
 // code
-runtimePlugins: undefined as PluginRecord[] | undefined
+runtimePlugins: undefined
 ```
 
 #### volatile: sessionPlugins
 
 ```ts
 // type signature
-type sessionPlugins = PluginRecord[] | undefined
+type sessionPlugins = undefined
 // code
-sessionPlugins: undefined as PluginRecord[] | undefined
+sessionPlugins: undefined
 ```
 
 #### volatile: configError
 
 ```ts
 // type signature
-type configError = unknown
+type configError = undefined
 // code
-configError: undefined as unknown
+configError: undefined
 ```
 
 #### volatile: pluginManager
 
 ```ts
 // type signature
-type pluginManager = PluginManager | undefined
+type pluginManager = undefined
 // code
-pluginManager: undefined as PluginManager | undefined
+pluginManager: undefined
 ```
 
 #### volatile: pluginManagerError
 
 ```ts
 // type signature
-type pluginManagerError = unknown
+type pluginManagerError = undefined
 // code
-pluginManagerError: undefined as unknown
+pluginManagerError: undefined
 ```
 
 #### volatile: buildAutorunDisposer
 
 ```ts
 // type signature
-type buildAutorunDisposer = (() => void) | undefined
+type buildAutorunDisposer = undefined
 // code
-buildAutorunDisposer: undefined as (() => void) | undefined
+buildAutorunDisposer: undefined
 ```
 
 </details>
@@ -552,7 +552,6 @@ detail):
 | [`setConfigError`](#action-setconfigerror)                   | `(error: unknown) => void`                                                                                                                    |
 | [`setRuntimePlugins`](#action-setruntimeplugins)             | `(plugins: PluginRecord[]) => void`                                                                                                           |
 | [`setSessionPlugins`](#action-setsessionplugins)             | `(plugins: PluginRecord[]) => void`                                                                                                           |
-| [`setConfigSnapshot`](#action-setconfigsnapshot)             | `(snap: Snap) => void`                                                                                                                        |
 | [`setSessionTriaged`](#action-setsessiontriaged)             | `(args?: SessionTriagedInfo \| undefined) => void`                                                                                            |
 | [`loadSession`](#action-loadsession)                         | `(snap: { sessionPlugins?: PluginDefinition[] \| undefined; id: string; }, userAcceptedConfirmation?: boolean \| undefined) => Promise<void>` |
 | [`fetchConfig`](#action-fetchconfig)                         | `() => Promise<void>`                                                                                                                         |
@@ -586,12 +585,6 @@ type setRuntimePlugins = (plugins: PluginRecord[]) => void
 
 ```ts
 type setSessionPlugins = (plugins: PluginRecord[]) => void
-```
-
-#### action: setConfigSnapshot
-
-```ts
-type setConfigSnapshot = (snap: Snap) => void
 ```
 
 #### action: setSessionTriaged
