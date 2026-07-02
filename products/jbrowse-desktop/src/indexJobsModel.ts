@@ -246,14 +246,18 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
           indexType,
         } = toJS(entry.indexingParams)
         const rpcManager = self.rpcManager
-        const trackConfigs = findTrackConfigsToIndex(self.tracks, trackIds).map(
-          c => structuredClone(toJS(c)),
-        )
         const stopToken = createStopToken()
         this.setStopToken(stopToken)
         try {
           this.setRunning(true)
           this.setJobName(entry.name)
+          // resolve configs inside the try: a since-deleted track makes
+          // findTrackConfigsToIndex throw, and doing it here dequeues the job in
+          // the catch rather than looping the autorun on the stuck queue entry
+          const trackConfigs = findTrackConfigsToIndex(
+            self.tracks,
+            trackIds,
+          ).map(c => toJS(c))
           const userData = await ipcRenderer.invoke('userData')
           const outLocation = path.join(
             userData,
@@ -333,7 +337,9 @@ export default function jobsModelFactory(_pluginManager: PluginManager) {
               {
                 name: 'Retry',
                 onClick: () => {
-                  this.queueJob(entry)
+                  // re-queue a plain snapshot; `entry` was detached from the
+                  // observable queue by dequeueJob below
+                  this.queueJob(toJS(entry))
                 },
               },
             )

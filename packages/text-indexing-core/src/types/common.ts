@@ -87,7 +87,7 @@ export async function getLocalOrRemoteStream({
 }
 
 export function createReadlineInterface(stream: Readable, inLocation: string) {
-  const inputStream = /.b?gz$/.test(inLocation)
+  const inputStream = /\.b?gz$/i.test(inLocation)
     ? stream.pipe(createGunzip())
     : stream
   return readline.createInterface({ input: inputStream })
