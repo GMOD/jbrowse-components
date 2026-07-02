@@ -12,7 +12,7 @@ const useStyles = makeStyles()(theme => ({
     marginLeft: theme.spacing(4),
   },
   selected: {
-    color: theme.palette.primary.main,
+    backgroundColor: theme.palette.action.selected,
   },
 }))
 
@@ -25,6 +25,7 @@ const HeaderTrackSelectorButton = observer(function HeaderTrackSelectorButton({
   const { isTrackSelectorOpen } = model
   return (
     <IconButton
+      color={isTrackSelectorOpen ? 'primary' : 'default'}
       onClick={() => {
         model.toggleTrackSelector()
       }}

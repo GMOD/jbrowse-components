@@ -407,6 +407,19 @@ function darkModeContrastOverride(
   }
 }
 
+// midnight primary is nearly invisible as an icon color on the dark header/
+// toolbars, so swap color="primary" icons and icon buttons to a text color in
+// dark mode. Targets the colorPrimary slot only, leaving default/secondary/
+// error icons untouched.
+function darkModePrimaryIconOverride() {
+  return {
+    colorPrimary: ({ theme }: { theme: Theme }) =>
+      theme.palette.mode === 'dark'
+        ? { color: theme.palette.text.primary }
+        : undefined,
+  }
+}
+
 export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
   const themeP: ThemeOptions = {
     // palette is merged in via the final deepmerge(themeP, theme) below
@@ -463,6 +476,10 @@ export function createJBrowseBaseTheme(theme?: ThemeOptions): ThemeOptions {
         defaultProps: {
           size: 'small' as const,
         },
+        styleOverrides: darkModePrimaryIconOverride(),
+      },
+      MuiSvgIcon: {
+        styleOverrides: darkModePrimaryIconOverride(),
       },
       MuiInputBase: {
         defaultProps: {
