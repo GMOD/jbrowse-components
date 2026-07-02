@@ -11,7 +11,7 @@ import { observer } from 'mobx-react'
 import BreakpointTooltip from './BreakpointTooltip.tsx'
 
 import type { BreakpointViewModel } from '../model.ts'
-import type { OverlayMatch } from '../types.ts'
+import type { LayoutRecord, OverlayMatch } from '../types.ts'
 import type { Assembly } from '@jbrowse/core/assemblyManager/assembly'
 import type { Feature } from '@jbrowse/core/util'
 
@@ -250,17 +250,31 @@ export function isLevelPairMinimized(
   return !!(tracks[level1]?.minimized || tracks[level2]?.minimized)
 }
 
+export interface ResolvedPair {
+  f1: Feature
+  f2: Feature
+  level1: number
+  level2: number
+  c1: LayoutRecord
+  c2: LayoutRecord
+  f1ref: string
+  f2ref: string
+}
+
 // Walks each layoutMatch chunk's adjacent feature pairs, skipping minimized
-// level pairs, unresolvable canonical refs, and off-view coordinates. Yields
-// the resolved screen coords so simple variant overlays (paired/breakend) only
-// describe the path they draw.
-export function* canonicalPairs({
+// level pairs and unresolvable canonical refs. Yields the feature/layout/ref
+// data so callers can pick their own endpoint (variant overlays use the LEFT
+// edge; AlignmentConnections uses the strand-aware 3'/5' read edges), rather
+// than duplicating the walk.
+export function* resolvedPairs({
   match,
   assembly,
   tracks,
-  getX,
-  getY,
-}: VariantOverlayContext) {
+}: {
+  match: Pick<OverlayMatch, 'layoutMatches'>
+  assembly: Assembly
+  tracks: VariantOverlayContext['tracks']
+}): Generator<ResolvedPair> {
   for (const chunk of match.layoutMatches) {
     for (let i = 0; i < chunk.length - 1; i++) {
       const { layout: c1, feature: f1, level: level1 } = chunk[i]!
@@ -273,25 +287,35 @@ export function* canonicalPairs({
         f1.get('refName'),
         f2.get('refName'),
       )
-      if (!refs) {
-        continue
+      if (refs) {
+        yield { f1, f2, level1, level2, c1, c2, ...refs }
       }
-      const x1 = getX(level1, refs.f1ref, c1[LEFT])
-      const x2 = getX(level2, refs.f2ref, c2[LEFT])
-      if (x1 == null || x2 == null) {
-        continue
-      }
-      yield {
-        f1,
-        f2,
-        level1,
-        level2,
-        x1,
-        x2,
-        y1: getY(level1, c1),
-        y2: getY(level2, c2),
-        tooltip: buildPairTooltip(f1, f2),
-      }
+    }
+  }
+}
+
+// LEFT-edge screen coords for simple variant overlays (paired/breakend), also
+// dropping off-view coordinates so callers only describe the path they draw.
+export function* canonicalPairs(ctx: VariantOverlayContext) {
+  const { getX, getY } = ctx
+  for (const { f1, f2, level1, level2, c1, c2, f1ref, f2ref } of resolvedPairs(
+    ctx,
+  )) {
+    const x1 = getX(level1, f1ref, c1[LEFT])
+    const x2 = getX(level2, f2ref, c2[LEFT])
+    if (x1 == null || x2 == null) {
+      continue
+    }
+    yield {
+      f1,
+      f2,
+      level1,
+      level2,
+      x1,
+      x2,
+      y1: getY(level1, c1),
+      y2: getY(level2, c2),
+      tooltip: buildPairTooltip(f1, f2),
     }
   }
 }

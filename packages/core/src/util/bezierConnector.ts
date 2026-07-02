@@ -15,6 +15,14 @@
 const MIN_HANDLE_PX = 15
 const HANDLE_FACTOR = 0.3
 
+// Vertical bow applied to a connection whose two endpoints share (or nearly
+// share) a row — e.g. a chain whose split segments are all laid out on one
+// pileup row. Without it the horizontal-only handles collapse the cubic to a
+// flat, invisible line lying on the row; the bow lifts the control points so
+// the curve arcs into a visible hump. Fades to zero as the endpoints' rows
+// separate, since a cross-row curve already has vertical extent.
+const MAX_BOW_PX = 30
+
 export function bezierConnectorHandlePx(x1: number, x2: number) {
   return Math.max(MIN_HANDLE_PX, Math.abs(x2 - x1) * HANDLE_FACTOR)
 }
@@ -61,5 +69,9 @@ export function bezierConnectorPath({
 }) {
   const dx1 = handlePx * tangentSign(s1, false, reversed1)
   const dx2 = handlePx * tangentSign(s2, leadingEnd2, reversed2)
-  return `M ${x1} ${y1} C ${x1 + dx1} ${cy1} ${x2 + dx2} ${cy2} ${x2} ${y2}`
+  // A caller that overrides the control-point Y (the abnormal same-level dip)
+  // owns its own shape, so only bow the default same-row case (see MAX_BOW_PX).
+  const overridden = cy1 !== y1 || cy2 !== y2
+  const bow = overridden ? 0 : Math.max(0, MAX_BOW_PX - Math.abs(y2 - y1))
+  return `M ${x1} ${y1} C ${x1 + dx1} ${cy1 - bow} ${x2 + dx2} ${cy2 - bow} ${x2} ${y2}`
 }

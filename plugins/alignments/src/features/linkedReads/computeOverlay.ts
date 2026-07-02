@@ -10,8 +10,9 @@ import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/pa
 import type { ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
-// The control points sit at the endpoints' own Y, so the curve stays within the
-// [min, max] Y band — no apex to extend the bounds.
+// Cull by endpoint Y. A same-row connection is bowed up by a small fixed apex
+// (see bezierConnector), so a curve whose endpoints sit just off-screen can peek
+// in; the apex is tiny relative to the band, so testing the endpoints is enough.
 function arcIsVisible(sy1: number, sy2: number, viewportBottom: number) {
   return Math.min(sy1, sy2) < viewportBottom && Math.max(sy1, sy2) > 0
 }
