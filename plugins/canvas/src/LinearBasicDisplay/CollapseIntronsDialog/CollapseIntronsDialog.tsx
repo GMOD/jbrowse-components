@@ -53,9 +53,9 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   const [showAll, setShowAll] = useState(false)
   // default to flipping for a minus-strand gene so it reads 5'->3'
   const [flip, setFlip] = useState(transcripts[0]?.get('strand') === -1)
-  // opt-in: when checked, the resulting view's track is isolated to this gene
-  // so it isn't cluttered by other features overlapping the same locus
-  const [soloOnly, setSoloOnly] = useState(false)
+  // default on: isolate the resulting view's track to this gene so it isn't
+  // cluttered by other features overlapping the same locus
+  const [soloOnly, setSoloOnly] = useState(true)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )

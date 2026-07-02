@@ -1373,14 +1373,13 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          // one clean transcript per gene so the PTEN glyph + label is tidy,
-          // and a jexl filter drops the neighboring KLLN fragment so only PTEN
-          // shows — doubling as a demo of the display's feature-filtering slot
+          // one clean transcript per gene so the PTEN glyph + label is tidy.
+          // The collapse-introns dialog's "Show only this feature" (on by
+          // default) isolates the reshaped view to PTEN, dropping the
+          // neighboring KLLN fragment — no jexl filter needed.
           displaySnapshot: {
             type: 'LinearBasicDisplay',
             geneGlyphMode: 'longestCoding',
-            // config slot stores raw jexl (deferred eval prepends `jexl:`)
-            jexlFilters: ["get(feature,'name')=='PTEN'"],
           },
         },
         {
@@ -1406,8 +1405,7 @@ export const specs: ScreenshotSpec[] = [
     actions: [
       // `readyText: 'NCBI RefSeq'` matches the track *name*, which appears before
       // the remote GFF finishes loading — so wait for the PTEN label itself to
-      // render (the jexlFilter also proves out here: only PTEN passes, so this is
-      // the sole gene label) before acting on it.
+      // render before acting on it.
       { type: 'waitForText', text: 'PTEN' },
       // right-click the gene's floating-label DOM element (not a raw pixel) —
       // robust and exercises the label's real context-menu affordance
