@@ -1,8 +1,9 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react'
+import React, { useCallback, useEffect, useState } from 'react'
 
-import { Menu } from '@jbrowse/core/ui'
+import { Menu, VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { useVirtualScrollWheel } from '@jbrowse/core/util/useVirtualScrollWheel'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
@@ -20,7 +21,6 @@ import {
   useFloatingLabels,
   useHighlightOverlays,
 } from './useOverlayElements.tsx'
-import { useScrollSync } from './useScrollSync.ts'
 import { MORPH_DURATION_MS } from '../yMorph.ts'
 
 import type { CanvasFeatureRenderingBackend } from './canvasFeatureRenderingBackendTypes.ts'
@@ -132,19 +132,16 @@ const useStyles = makeStyles()({
     // selectable text there shows an I-beam and a drag hijacks the mouseover
     userSelect: 'none',
   },
-  scrollContainer: {
-    position: 'absolute',
-    inset: 0,
-    overflowX: 'hidden',
-  },
-  content: {
-    position: 'relative',
-    minHeight: '100%',
-  },
+  // Fixed viewport canvas: the GPU paints the visible window at
+  // `inst.y - scrollY` (scrollY = model.scrollTop). Scroll is virtual (a
+  // VerticalScrollbar overlay + wheel handler drive model.scrollTop), so the
+  // canvas never moves and the overlays derive their Y from the same scrollTop
+  // — no native overflow container, no compositor/main-thread scroll tearing.
   canvas: {
     display: 'block',
-    position: 'sticky',
+    position: 'absolute',
     top: 0,
+    left: 0,
   },
   overlay: {
     position: 'absolute',
@@ -289,7 +286,9 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
       className={classes.root}
       style={{ height: model.height }}
     >
-      {({ canvasRef }) => <FeatureBody model={model} canvasRef={canvasRef} />}
+      {({ canvasRef, canvas }) => (
+        <FeatureBody model={model} canvasRef={canvasRef} canvas={canvas} />
+      )}
     </DisplayChrome>
   )
 })
@@ -297,14 +296,17 @@ const FeatureComponent = observer(function FeatureComponent({ model }: Props) {
 const FeatureBody = observer(function FeatureBody({
   model,
   canvasRef,
-}: Props & { canvasRef: (node: HTMLCanvasElement | null) => void }) {
+  canvas,
+}: Props & {
+  canvasRef: (node: HTMLCanvasElement | null) => void
+  canvas: HTMLCanvasElement | null
+}) {
   // false positive: omitting <[number,number]> widens to number[] — known tuple issue
   // https://github.com/typescript-eslint/typescript-eslint/issues/9529
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
-  const scrollContainerRef = useRef<HTMLDivElement>(null)
   const { classes } = useStyles()
 
   const view = getContainingView(model) as LGV
@@ -330,11 +332,28 @@ const FeatureBody = observer(function FeatureBody({
   )
 
   // The model owns the upload/render autorun and the GPU backend lifecycle —
-  // see startRenderingBackend / stopRenderingBackend / renderNow on the
-  // base canvas display model. scrollTop lives on the model (via
-  // TrackHeightMixin); the scroll handler below writes DOM scrollTop into
-  // the model so the autorun picks it up as part of `renderState`.
-  useScrollSync(scrollContainerRef, model, view)
+  // see startRenderingBackend / stopRenderingBackend / renderNow on the base
+  // canvas display model. scrollTop lives on the model (TrackHeightMixin) and
+  // feeds `renderState.scrollY`. Virtual scroll: this wheel handler writes
+  // model.scrollTop directly (no native overflow container), so the GPU canvas
+  // and the DOM overlays both key off it. Mirrors the alignments pileup gesture:
+  // under scrollZoom a plain wheel zooms the view (return, let it bubble) while
+  // shift+wheel still scrolls the rows; the latch (inside applyScroll) owns
+  // preventDefault but never stopPropagation, so a diagonal wheel still bubbles
+  // its horizontal component to the LGV for panning.
+  useVirtualScrollWheel(canvas, (e, applyScroll) => {
+    if ((view.scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
+      return
+    }
+    const next = applyScroll(e, {
+      scrollTop: model.scrollTop,
+      viewportHeight: model.height,
+      scrollableHeight: Math.max(0, model.maxY - model.height),
+    })
+    if (next !== null) {
+      model.setScrollTop(next)
+    }
+  })
 
   // rAF clock for the feature-Y transition. The model decides when to morph
   // (sets morphFromTops); this advances morphProgress 0->1 over
@@ -458,43 +477,41 @@ const FeatureBody = observer(function FeatureBody({
 
   return (
     <>
-      <div
-        ref={scrollContainerRef}
-        className={classes.scrollContainer}
-        style={{ overflowY: model.hasOverflow ? 'auto' : 'hidden' }}
-      >
-        <div
-          className={classes.content}
-          style={{ height: model.hasOverflow ? model.maxY : '100%' }}
-        >
-          <canvas
-            ref={canvasRef}
-            onMouseMove={handleMouseMove}
-            onMouseLeave={() => {
-              handleMouseLeave()
-            }}
-            onClick={() => {
-              handleClick()
-            }}
-            onContextMenu={handleContextMenu}
-            className={classes.canvas}
-            style={{
-              width,
-              height,
-              cursor: model.hoveredFeature ? 'pointer' : 'default',
-            }}
-          />
+      <canvas
+        ref={canvasRef}
+        onMouseMove={handleMouseMove}
+        onMouseLeave={() => {
+          handleMouseLeave()
+        }}
+        onClick={() => {
+          handleClick()
+        }}
+        onContextMenu={handleContextMenu}
+        className={classes.canvas}
+        style={{
+          width,
+          height,
+          cursor: model.hoveredFeature ? 'pointer' : 'default',
+        }}
+      />
 
-          <OverlayScrollLayer model={model}>
-            <Overlays
-              model={model}
-              view={view}
-              openContextMenu={openContextMenu}
-              onLabelMouseOver={onLabelMouseOver}
-            />
-          </OverlayScrollLayer>
-        </div>
-      </div>
+      <OverlayScrollLayer model={model}>
+        <Overlays
+          model={model}
+          view={view}
+          openContextMenu={openContextMenu}
+          onLabelMouseOver={onLabelMouseOver}
+        />
+      </OverlayScrollLayer>
+
+      <VerticalScrollbar
+        scrollTop={model.scrollTop}
+        setScrollTop={n => {
+          model.setScrollTop(n)
+        }}
+        viewportHeight={model.height}
+        contentHeight={model.maxY}
+      />
 
       <BottomRightIndicators hasOverflow={model.hasOverflow}>
         <IsoformCollapseNotice

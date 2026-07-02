@@ -361,66 +361,69 @@ export async function setupWorkspacesViaMoveToTab(page: Page) {
   await waitForWorkspacesReady(page)
 }
 
-// Regression guard for GPU/DOM scroll tearing (ScrollLockedOverlay). A display
-// that scrolls a position:sticky GPU canvas in a native overflow container has
-// two scroll spaces: the DOM's compositor scrollTop and the main-thread
-// model.scrollTop the canvas paints from. A DOM overlay that rides native
-// scroll tears away from its glyphs when the main thread trails the compositor.
-// We simulate that lag deterministically (headless scrolls synchronously so it
-// can't reproduce the race on its own) by no-op'ing requestAnimationFrame — the
-// DOM->model rAF sync then never fires, so model.scrollTop stays 0 — then
-// scrolling the native container: the sticky canvas must not move, and the
-// overlay must stay locked to it. Before the fix the overlay moved by -scroll.
-export async function assertOverlayScrollLockedToCanvas(
+// Regression guard for GPU/DOM scroll tearing. The canvas GPU displays scroll
+// VIRTUALLY: a fixed (position:absolute) canvas painting from model.scrollTop, a
+// VerticalScrollbar overlay, and DOM overlays translated by the same
+// model.scrollTop — so the glyphs and their overlays share one scroll source and
+// can't tear apart. The failure mode this guards against is regressing to a
+// native overflow container (a second, compositor-driven scroll space): assert
+// the canvas is absolutely positioned, no ancestor up to the outer container is
+// a native scroll port, and the outer TrackRenderingContainer isn't itself a
+// scroll port (a spurious second scrollbar). Callers wait for the
+// vertical-scrollbar test-id first to confirm the display actually overflows.
+export async function assertVirtualScrollStructure(
   page: Page,
   canvasSelector: string,
-  overlaySelector: string,
 ) {
-  const res = await page.evaluate(
-    (canvasSel: string, overlaySel: string) => {
-      const canvas = document.querySelector(canvasSel)
-      let el = canvas?.parentElement ?? null
-      while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) {
-        el = el.parentElement
+  const checks = await page.evaluate((canvasSel: string) => {
+    const css = (el: Element, p: string) =>
+      getComputedStyle(el).getPropertyValue(p)
+    const outer = document.querySelector(
+      '[data-testid^="trackRenderingContainer"]',
+    )
+    const canvas = document.querySelector(canvasSel)
+    let nativeScroller = false
+    let el = canvas?.parentElement ?? null
+    while (el && el !== outer) {
+      if (/auto|scroll/.test(css(el, 'overflow-y'))) {
+        nativeScroller = true
+        break
       }
-      const overlay = document.querySelector(overlaySel)
-      if (!el || !canvas || !overlay) {
-        return { setupFailed: true as const }
-      }
-      const overlayBefore = overlay.getBoundingClientRect().top
-      const canvasBefore = canvas.getBoundingClientRect().top
-      const origRaf = window.requestAnimationFrame
-      window.requestAnimationFrame = () => 0
-      el.scrollTop = 60
-      const overlayMoved = overlay.getBoundingClientRect().top - overlayBefore
-      const canvasMoved = canvas.getBoundingClientRect().top - canvasBefore
-      window.requestAnimationFrame = origRaf
-      el.scrollTop = 0
-      return {
-        overflow: el.scrollHeight - el.clientHeight,
-        overlayMoved,
-        canvasMoved,
-      }
-    },
-    canvasSelector,
-    overlaySelector,
-  )
-  if (res.setupFailed) {
+      el = el.parentElement
+    }
+    return {
+      hasCanvas: !!canvas,
+      hasOuter: !!outer,
+      outerOverflowY: outer ? css(outer, 'overflow-y') : null,
+      outerOverflows: outer ? outer.scrollHeight > outer.clientHeight : null,
+      canvasPosition: canvas ? css(canvas, 'position') : null,
+      nativeScroller,
+    }
+  }, canvasSelector)
+
+  if (!checks.hasCanvas || !checks.hasOuter) {
     throw new Error(
-      `could not locate scroll container / canvas (${canvasSelector}) / overlay (${overlaySelector})`,
+      `missing canvas (${canvasSelector}) or trackRenderingContainer`,
     )
   }
-  if (res.overflow < 60) {
+  if (checks.outerOverflowY !== 'hidden') {
     throw new Error(
-      `display did not overflow enough to scroll (${res.overflow}px)`,
+      `outer TrackRenderingContainer overflow-y expected 'hidden', got '${checks.outerOverflowY}'`,
     )
   }
-  if (Math.abs(res.canvasMoved) > 1) {
-    throw new Error(`sticky canvas moved ${res.canvasMoved}px (expected 0)`)
-  }
-  if (Math.abs(res.overlayMoved) > 1) {
+  if (checks.outerOverflows) {
     throw new Error(
-      `overlay tore from the canvas: moved ${res.overlayMoved}px (expected ~0) — it is riding native scroll instead of model.scrollTop`,
+      'outer TrackRenderingContainer is overflowing — spurious native scrollbar',
+    )
+  }
+  if (checks.canvasPosition !== 'absolute') {
+    throw new Error(
+      `canvas position expected 'absolute' (virtual scroll), got '${checks.canvasPosition}'`,
+    )
+  }
+  if (checks.nativeScroller) {
+    throw new Error(
+      'found a native overflow scroll container — display regressed to native scroll (tearing risk)',
     )
   }
 }
