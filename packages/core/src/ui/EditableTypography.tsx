@@ -14,8 +14,6 @@ type EditableTypographyClassKey =
   'input' | 'inputBase' | 'inputRoot' | 'inputFocused'
 
 const useStyles = makeStyles()(theme => ({
-  input: {},
-  inputBase: {},
   typography: {
     top: 6,
     left: 2,
@@ -41,12 +39,15 @@ interface Props {
 }
 
 function EditableTypography(props: Props) {
-  const { value, setValue, variant, ref, classes: _classes, ...other } = props
+  const { value, setValue, variant, ref, classes: overrides, ...other } = props
   const [ref2, { width }] = useMeasure()
   const [editedValue, setEditedValue] = useState<string>()
   const inputRef = useRef<HTMLInputElement>(null)
+  // set by Escape so the synchronous blur() it triggers discards the edit;
+  // onBlur's editedValue closure is still the typed value at that point
+  const cancelRef = useRef(false)
 
-  const { classes } = useStyles(props, { props })
+  const { classes, cx } = useStyles()
   const theme = useTheme()
 
   const val = editedValue ?? value
@@ -65,7 +66,7 @@ function EditableTypography(props: Props) {
       </div>
       <InputBase
         inputRef={inputRef}
-        className={classes.inputBase}
+        className={overrides?.inputBase}
         slotProps={{
           input: {
             style: {
@@ -77,9 +78,9 @@ function EditableTypography(props: Props) {
           },
         }}
         classes={{
-          input: classes.input,
-          root: classes.inputRoot,
-          focused: classes.inputFocused,
+          input: overrides?.input,
+          root: cx(classes.inputRoot, overrides?.inputRoot),
+          focused: cx(classes.inputFocused, overrides?.inputFocused),
         }}
         value={val}
         onChange={event => {
@@ -89,12 +90,14 @@ function EditableTypography(props: Props) {
           if (event.key === 'Enter') {
             inputRef.current?.blur()
           } else if (event.key === 'Escape') {
-            setEditedValue(undefined)
+            cancelRef.current = true
             inputRef.current?.blur()
           }
         }}
         onBlur={() => {
-          if (editedValue !== undefined) {
+          if (cancelRef.current) {
+            cancelRef.current = false
+          } else if (editedValue !== undefined) {
             setValue(editedValue)
           }
           setEditedValue(undefined)
