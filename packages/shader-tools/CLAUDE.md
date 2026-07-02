@@ -2,8 +2,8 @@
 
 The Slang → WGSL/GLSL + typed-TS shader **codegen** (`pnpm gen:shaders`). This
 is a **dev/build tool**, not runtime code — nothing in the app imports it; it is
-invoked by the root `gen:shaders` script and CI's
-`gen:shaders && git diff --exit-code` staleness check.
+invoked by the root `gen:shaders` script and by the lint job's "Check generated
+shaders are up to date" step (`gen:shaders` then `git diff` on `*.generated.ts`).
 
 ## Files
 
@@ -13,8 +13,19 @@ invoked by the root `gen:shaders` script and CI's
   next to each `.slang`. Also the package `bin` (`jbrowse-build-shaders`).
 - `src/shader-codegen/codegen.ts` — pure transforms: reflection JSON + shader
   strings → the typed `.generated.ts` module (stride, field offsets, typed
-  packer, `GL_ATTRIBUTES`).
+  packer, `GL_ATTRIBUTES`). Unit-tested in `codegen.test.ts`.
 - `src/shader-codegen/vulkanGlslToWebgl2.ts` — Vulkan-GLSL → WebGL2-GLSL fixups.
+  Unit-tested in `vulkanGlslToWebgl2.test.ts`.
+
+## Validators
+
+`naga` (WGSL) and `glslangValidator` (GLSL-ES) are **optional**: they don't
+affect the generated output (that's driven entirely by the pinned `slangc` +
+the codegen), only whether a malformed shader is caught at build time. Unlike
+`slangc` they aren't auto-fetched, so the driver probes for each and skips it
+with a one-line warning if absent — a contributor can always regenerate without
+them. CI installs `glslang-tools` so GLSL validation runs there; set
+`NAGA=''`/`GLSLANG=''` to force-skip locally.
 
 ## Invariants
 

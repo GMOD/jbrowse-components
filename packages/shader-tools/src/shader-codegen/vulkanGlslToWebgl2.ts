@@ -4,8 +4,6 @@
 // from an input struct parameter `P` become `P_<field>_0`. This module
 // normalises both.
 
-import { readFileSync, writeFileSync } from 'node:fs'
-
 function renameUniformBlock(
   source: string,
   mangled: string,
@@ -127,29 +125,4 @@ export function vulkanGlslToWebgl2(
   }
 
   return out
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  const [, , input, output, stageArg, ...rest] = process.argv
-  if (!input || !output || (stageArg !== 'vertex' && stageArg !== 'fragment')) {
-    console.error(
-      'usage: vulkanGlslToWebgl2.ts <in> <out> <vertex|fragment> [--block <name>] [--attr <prefix> <f1,f2,...>]',
-    )
-    process.exit(1)
-  }
-  const renames: RenameOptions = {}
-  for (let i = 0; i < rest.length; i++) {
-    if (rest[i] === '--block' && rest[i + 1]) {
-      renames.uniformBlockName = rest[i + 1]
-      i++
-    } else if (rest[i] === '--attr' && rest[i + 1] && rest[i + 2]) {
-      renames.attributes = {
-        prefix: rest[i + 1]!,
-        fieldNames: rest[i + 2]!.split(','),
-      }
-      i += 2
-    }
-  }
-  const src = readFileSync(input, 'utf8')
-  writeFileSync(output, vulkanGlslToWebgl2(src, stageArg, renames))
 }

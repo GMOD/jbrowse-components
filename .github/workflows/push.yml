@@ -106,7 +106,7 @@ jobs:
       - name: Install system dependencies
         run: |
           sudo apt-get update
-          sudo apt-get -y install libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev
+          sudo apt-get -y install libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev glslang-tools
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
         with:
           persist-credentials: false
@@ -146,6 +146,19 @@ jobs:
             echo "Error: generated docs are out of date!"
             echo "Run 'pnpm autogen' and commit the changes."
             git diff --stat website/docs/config website/docs/models website/docs/api
+            exit 1
+          fi
+      - name: Check generated shaders are up to date
+        # slangc is auto-fetched + version-pinned by the build script, so the
+        # generated output is deterministic; glslang-tools (installed above)
+        # validates the GLSL-ES fallback. A stale *.generated.ts (hand-edited,
+        # or a .slang changed without running gen:shaders) fails the diff.
+        run: |
+          pnpm gen:shaders
+          if ! git diff --quiet -- '**/*.generated.ts'; then
+            echo "Error: generated shaders are out of date!"
+            echo "Run 'pnpm gen:shaders' and commit the changes."
+            git diff --stat -- '**/*.generated.ts'
             exit 1
           fi
       - name: Lint codebase

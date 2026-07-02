@@ -48,8 +48,33 @@ const REPO_ROOT = path.resolve(
 
 const SLANG_VERSION = 'v2026.5.2'
 const SLANGC_CACHE = `${REPO_ROOT}/.cache/slangc/bin/slangc`
-const NAGA = process.env.NAGA ?? 'naga'
-const GLSLANG = process.env.GLSLANG ?? 'glslangValidator'
+
+// `naga` (WGSL) and `glslangValidator` (GLSL-ES) are optional validators: they
+// don't affect the generated output (that's driven entirely by the pinned
+// slangc + the codegen), only whether we catch a bad shader at build time.
+// Unlike slangc they aren't auto-fetched, so probe for them once and skip with
+// a one-line warning if absent — a contributor can always regenerate; CI
+// installs both so validation still runs there. Set NAGA=''/GLSLANG='' to
+// silence the warning and force-skip.
+function resolveValidator(bin: string, label: string) {
+  if (!bin) {
+    return undefined
+  }
+  const probe = spawnSync(bin, ['--version'], { stdio: 'ignore' })
+  if (probe.error) {
+    console.warn(
+      `  warn: ${label} not found (${bin}); skipping ${label} shader ` +
+        `validation. Install it to validate generated shaders locally.`,
+    )
+    return undefined
+  }
+  return bin
+}
+const NAGA = resolveValidator(process.env.NAGA ?? 'naga', 'naga')
+const GLSLANG = resolveValidator(
+  process.env.GLSLANG ?? 'glslangValidator',
+  'glslangValidator',
+)
 // Shaders live alongside their plugin, but shared modules (hpmath, etc.) live
 // in render-core so any shader can `import hpmath;`.
 const SHARED_INCLUDE = path.resolve(
@@ -457,8 +482,14 @@ function compileOne(slangPath: string) {
       const processedFragOut = path.join(tmp, `${base}.frag.es.glsl`)
       writeFileSync(processedVertOut, glslVertex)
       writeFileSync(processedFragOut, glslFragment)
-      execFileSync(GLSLANG, ['-S', 'vert', processedVertOut], { stdio: 'pipe' })
-      execFileSync(GLSLANG, ['-S', 'frag', processedFragOut], { stdio: 'pipe' })
+      if (GLSLANG) {
+        execFileSync(GLSLANG, ['-S', 'vert', processedVertOut], {
+          stdio: 'pipe',
+        })
+        execFileSync(GLSLANG, ['-S', 'frag', processedFragOut], {
+          stdio: 'pipe',
+        })
+      }
     }
 
     const codegenInputs = {

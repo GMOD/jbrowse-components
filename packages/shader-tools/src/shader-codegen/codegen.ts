@@ -1,4 +1,3 @@
-/* eslint-disable no-console */
 // Generates `${base}.generated.ts` from Slang's reflection JSON plus the
 // compiled WGSL / GLSL outputs. The generated file is the single source of
 // truth for:
@@ -16,8 +15,6 @@
 // packing automatically. The FIELD_OFFSET_F32 constants remain exported for
 // callers that pack multiple sources into one buffer (wiggle, synteny) and so
 // can't use the single-array-per-field shape.
-
-import { readFileSync, writeFileSync } from 'node:fs'
 
 interface ScalarType {
   kind: 'scalar'
@@ -502,48 +499,4 @@ export function emitLayoutOnly(
   }
 
   return lines.join('\n')
-}
-
-function runCli() {
-  const [
-    ,
-    ,
-    reflectionPath,
-    wgslPath,
-    glslVertexPath,
-    glslFragmentPath,
-    outPath,
-  ] = process.argv
-  if (!reflectionPath || !outPath) {
-    console.error(
-      'usage: codegen.ts <reflection.json> [wgsl|-] [glslVertex|-] [glslFragment|-] <out.ts>',
-    )
-    process.exit(1)
-  }
-  const reflection = JSON.parse(
-    readFileSync(reflectionPath, 'utf8'),
-  ) as Reflection
-  const wgsl =
-    wgslPath && wgslPath !== '-' ? readFileSync(wgslPath, 'utf8') : undefined
-  const glslVertex =
-    glslVertexPath && glslVertexPath !== '-'
-      ? readFileSync(glslVertexPath, 'utf8')
-      : undefined
-  const glslFragment =
-    glslFragmentPath && glslFragmentPath !== '-'
-      ? readFileSync(glslFragmentPath, 'utf8')
-      : undefined
-
-  const baseName = reflectionPath
-    .replace(/\.reflection\.json$/, '')
-    .replace(/.*\//, '')
-  const codegenInputs = { baseName, reflection, wgsl, glslVertex, glslFragment }
-  writeFileSync(outPath, emitShaderStrings(codegenInputs))
-  const ifacePath = outPath.replace(/\.generated\.ts$/, '.iface.generated.ts')
-  writeFileSync(ifacePath, emitInterface(codegenInputs))
-  console.log(`wrote ${outPath} + ${ifacePath}`)
-}
-
-if (import.meta.url === `file://${process.argv[1]}`) {
-  runCli()
 }
