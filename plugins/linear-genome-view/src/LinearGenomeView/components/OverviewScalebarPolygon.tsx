@@ -1,5 +1,4 @@
 import { getFillProps, getStrokeProps } from '@jbrowse/core/util'
-import { getContentBlocksPxSpan } from '@jbrowse/core/util/Base1DUtils'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -7,60 +6,61 @@ import { HEADER_BAR_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
+
+interface Span {
+  leftPx: number
+  rightPx: number
+}
+
+/** Project a span into another pixel space: each end becomes px * scale + translatePx. */
+function transformSpan(span: Span, scale: number, translatePx: number): Span {
+  return {
+    leftPx: span.leftPx * scale + translatePx,
+    rightPx: span.rightPx * scale + translatePx,
+  }
+}
 
 /**
- * SVG points for a trapezoid whose top and bottom edges are horizontal, wound
- * as a single non-self-intersecting loop (bottom-left → bottom-right →
- * top-right → top-left).
+ * SVG points for a trapezoid with horizontal top and bottom edges, wound as a
+ * single non-self-intersecting loop (bottom-left → bottom-right → top-right →
+ * top-left).
  */
-function trapezoidPoints({
-  topLeft,
-  topRight,
-  bottomLeft,
-  bottomRight,
-  height,
-}: {
-  topLeft: number
-  topRight: number
-  bottomLeft: number
-  bottomRight: number
-  height: number
-}) {
+function trapezoidPoints(top: Span, bottom: Span, height: number) {
   return [
-    [bottomLeft, height],
-    [bottomRight, height],
-    [topRight, 0],
-    [topLeft, 0],
+    [bottom.leftPx, height],
+    [bottom.rightPx, height],
+    [top.rightPx, 0],
+    [top.leftPx, 0],
   ]
     .map(([x, y]) => `${x},${y}`)
     .join(' ')
 }
 
 /**
- * On-screen pixel span of the leftmost-to-rightmost content in `layout`.
- * getContentBlocksPxSpan measures from the layout's own origin, so subtracting
- * layout.offsetPx yields on-screen pixels (the overview layout has offsetPx=0
- * and is unaffected; the scrolled main view is shifted by its offset).
+ * Absolute pixel extent (measured from the layout origin) of the region blocks
+ * — content and elided — but not the blank inter-region padding at the ends.
+ * Since dynamic blocks only pad at the ends, the region blocks are contiguous,
+ * so the first block's left edge to the last block's right edge is the full
+ * extent. Uses block pixel geometry rather than projecting genomic coordinates
+ * because coalesced elided blocks have their coordinates zeroed out.
  */
-function contentBlocksScreenSpan(
-  layout: ViewLayout,
-  contentBlocks: ContentBlock[],
-) {
-  const span = getContentBlocksPxSpan(layout, contentBlocks)
-  return span
-    ? {
-        leftPx: span.leftPx - layout.offsetPx,
-        rightPx: span.rightPx - layout.offsetPx,
-      }
+function regionBlocksPxExtent(blocks: BaseBlock[]): Span | undefined {
+  const regions = blocks.filter(
+    b => b.type === 'ContentBlock' || b.type === 'ElidedBlock',
+  )
+  const first = regions.at(0)
+  const last = regions.at(-1)
+  return first && last
+    ? { leftPx: first.offsetPx, rightPx: last.offsetPx + last.widthPx }
     : undefined
 }
 
 /**
- * The "you are here" connector: a trapezoid joining the visible content's span
- * in the overview (top edge) to that same content's span in the main view
- * (bottom edge). Both edges are projections of the same content blocks, so the
- * two ends always describe the same genomic extent.
+ * The "you are here" connector: a trapezoid joining the visible region's extent
+ * in the overview (top edge) to that same extent in the main view (bottom
+ * edge). Both edges come from one pixel extent, so they always describe the
+ * same regions — including elided ones.
  *
  * @param overviewOffsetPx - pixels the overview is shifted right of the main
  * view's origin. In the interactive view the overview clears the chromosome-
@@ -77,20 +77,19 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
 }) {
   const theme = useTheme()
   const polygonColor = theme.palette.tertiary.light
-  const { contentBlocks } = model.dynamicBlocks
-  const top = contentBlocksScreenSpan(overview, contentBlocks)
-  const bottom = contentBlocksScreenSpan(model, contentBlocks)
-  if (!top || !bottom) {
+  const { offsetPx, bpPerPx, dynamicBlocks } = model
+  const extent = regionBlocksPxExtent(dynamicBlocks.blocks)
+  if (!extent) {
     return null
   }
 
-  const points = trapezoidPoints({
-    topLeft: top.leftPx + overviewOffsetPx,
-    topRight: top.rightPx + overviewOffsetPx,
-    bottomLeft: bottom.leftPx,
-    bottomRight: bottom.rightPx,
-    height: HEADER_BAR_HEIGHT,
-  })
+  // the main view and overview lay out the same regions from cumulative-bp 0,
+  // so a main-view pixel maps to the (more zoomed-out) overview by the bpPerPx
+  // ratio; the bottom edge is the same extent in main-view space, shifted by
+  // the scroll offset
+  const top = transformSpan(extent, bpPerPx / overview.bpPerPx, overviewOffsetPx)
+  const bottom = transformSpan(extent, 1, -offsetPx)
+  const points = trapezoidPoints(top, bottom, HEADER_BAR_HEIGHT)
 
   return (
     <polygon
