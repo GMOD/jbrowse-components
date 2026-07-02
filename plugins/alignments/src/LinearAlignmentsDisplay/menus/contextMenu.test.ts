@@ -164,3 +164,26 @@ test('no clear item without an active read/tag filter', () => {
   const filter = findSubMenu(run(model), 'Filter')
   expect(filter.map(i => i.label)).not.toContain('Clear read/tag filters')
 })
+
+test('copy submenu offers name, sequence, and info when both are present', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC', seq: 'ACGTACGT' }),
+  })
+  const copy = findSubMenu(run(model), 'Copy')
+  expect(copy.map(i => i.label)).toEqual([
+    'Copy read name',
+    'Copy read sequence',
+    'Copy info to clipboard',
+  ])
+})
+
+test('copy submenu omits read sequence when the feature has no seq', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC' }),
+  })
+  const copy = findSubMenu(run(model), 'Copy')
+  expect(copy.map(i => i.label)).toEqual([
+    'Copy read name',
+    'Copy info to clipboard',
+  ])
+})

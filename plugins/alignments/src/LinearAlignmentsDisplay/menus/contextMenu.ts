@@ -49,6 +49,22 @@ function getReadTag(feat: Feature, tag: string): string | undefined {
   return val === undefined ? undefined : String(val)
 }
 
+// Copy plain text (read name, sequence, feature JSON) with a success/error
+// snackbar. The clipboard util is dynamically imported so it stays out of the
+// initial bundle. Runs only on menu click, off the already-fetched feature — no
+// RPC.
+async function copyText(self: ContextMenuModel, text: string, what: string) {
+  const session = getSession(self)
+  try {
+    const { default: copy } = await import('@jbrowse/core/util/copyToClipboard')
+    copy(text)
+    session.notify(`Copied ${what} to clipboard`, 'success')
+  } catch (e) {
+    console.error(e)
+    session.notifyError(`${e}`, e)
+  }
+}
+
 // Right-click menu over the pileup: sort/details for the CIGAR op or coverage
 // indicator under the cursor, plus mate-view and feature-detail actions for the
 // read itself. Split out of the model to mirror trackMenuItems (menus/index.ts).
@@ -231,6 +247,32 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         subMenu: filterSubMenu,
       })
     }
+    const seq = feat.get('seq')
+    const copySubMenu: MenuItem[] = []
+    if (readName) {
+      copySubMenu.push({
+        label: 'Copy read name',
+        onClick: () => {
+          void copyText(self, String(readName), 'read name')
+        },
+      })
+    }
+    if (seq) {
+      copySubMenu.push({
+        label: 'Copy read sequence',
+        subLabel: 'raw read bases, e.g. to paste into BLAT/BLAST',
+        onClick: () => {
+          void copyText(self, String(seq), 'read sequence')
+        },
+      })
+    }
+    copySubMenu.push({
+      label: 'Copy info to clipboard',
+      onClick: () => {
+        const { uniqueId, ...rest } = feat.toJSON()
+        void copyText(self, JSON.stringify(rest, null, 4), 'feature info')
+      },
+    })
     items.push(
       {
         label: 'Open feature details',
@@ -240,21 +282,10 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         },
       },
       {
-        label: 'Copy info to clipboard',
+        label: 'Copy',
         icon: ContentCopyIcon,
-        onClick: async () => {
-          const session = getSession(self)
-          try {
-            const { uniqueId, ...rest } = feat.toJSON()
-            const { default: copy } =
-              await import('@jbrowse/core/util/copyToClipboard')
-            copy(JSON.stringify(rest, null, 4))
-            session.notify('Copied to clipboard', 'success')
-          } catch (e) {
-            console.error(e)
-            session.notifyError(`${e}`, e)
-          }
-        },
+        type: 'subMenu',
+        subMenu: copySubMenu,
       },
     )
   }
