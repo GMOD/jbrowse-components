@@ -183,9 +183,11 @@ Bin the genome, take mean depth per bin per sample with mosdepth,
 median-normalize each sample to 1, then take log2 of the ratio:
 
 ```bash
-# fixed 10kb windows, no per-base output (-n); -f gives the reference for CRAM
-mosdepth -t8 -n -b 10000 -f $REF HG008-N $NORMAL
-mosdepth -t8 -n -b 10000 -f $REF HG008-T $TUMOR
+# fixed 500bp windows, no per-base output (-n); -f gives the reference for CRAM.
+# 500bp is safe at this coverage (35x normal / 116x tumor) — adjacent-bin log2
+# noise stays low (median |Δ|≈0.04); drop to a coarser -b if your depth is lower
+mosdepth -t8 -n -b 500 -f $REF HG008-N $NORMAL
+mosdepth -t8 -n -b 500 -f $REF HG008-T $TUMOR
 # -> HG008-{N,T}.regions.bed.gz : chrom  start  end  meandepth
 
 python3 - <<'PY'
@@ -515,10 +517,10 @@ ratio goes to ~0 (log2 → −∞, here clipped at the −2 axis limit). A singl
 a larger single-copy-loss arm, so it appears as a deeper focal notch punched
 into an already-reduced baseline.
 
-The whole-genome log2 ratio above is built from 10 kb bins, which is coarse next
-to a ~20 kb event — it shows the drop but not the deletion's exact edges. For
-that, drop down to **true per-base coverage** over just this locus: slice the
-tumor BAM to the region of interest
+The whole-genome log2 ratio above is built from 500 bp bins, but even that is
+coarse next to a ~20 kb event's exact edges — it shows the drop but not the
+precise breakpoints. For that, drop down to **true per-base coverage** over just
+this locus: slice the tumor BAM to the region of interest
 (`samtools view -b $TUMOR chr9:21,800,000-22,200,000`), index the slice, and run
 plain `mosdepth` on it with no `-b`/`-n` flags (that's the per-base mode — cheap
 here because the slice is tiny, whereas per-base mode on the whole genome would
@@ -538,7 +540,7 @@ Plotted with the default line/area rendering, this resolves the deletion's
 boundaries almost exactly: depth drops from ~65x to precisely 0 right at
 `chr9:21,952,497-21,972,343`, matching the benchmark call almost to the base.
 
-<Figure caption="CDKN2A on chr9: NCBI RefSeq genes (top), true per-base tumor coverage (second), the whole-genome log2 ratio for scale/context (third), and the benchmark CNV calls (bottom). The benchmark SV_75 call is a focal homozygous deletion (copy number 0); per-base coverage drops from ~65x to precisely 0 across the deletion's exact boundaries, while the coarser 10kb-binned log2 ratio shows the same drop with less precision. This homozygous-vs-heterozygous distinction tells a complete two-hit suppressor knockout from a single allelic loss." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+<Figure caption="CDKN2A on chr9: NCBI RefSeq genes (top), true per-base tumor coverage (second), the whole-genome log2 ratio for scale/context (third), and the benchmark CNV calls (bottom). The benchmark SV_75 call is a focal homozygous deletion (copy number 0); per-base coverage drops from ~65x to precisely 0 across the deletion's exact boundaries, while the 500bp-binned log2 ratio shows the same drop with less precision. This homozygous-vs-heterozygous distinction tells a complete two-hit suppressor knockout from a single allelic loss." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 

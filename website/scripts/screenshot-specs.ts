@@ -3633,7 +3633,7 @@ export const specs: ScreenshotSpec[] = [
   // copy) loss: depth drops to the floor (both parental copies gone), whereas
   // a het loss only halves depth. The deletion is punched into a larger
   // single-copy-loss arm (CN=1), so it shows as a deeper focal dip. True
-  // per-base tumor coverage (mosdepth on a targeted BAM slice, not the 10kb-
+  // per-base tumor coverage (mosdepth on a targeted BAM slice, not the 500bp-
   // binned log2 ratio) resolves the ~20kb event's boundaries almost exactly:
   // depth drops from ~65x to precisely 0 at chr9:21,952,497-21,972,343. Shown
   // over NCBI RefSeq genes (CDKN2A context), the coarser log2 ratio for scale
@@ -3666,8 +3666,8 @@ export const specs: ScreenshotSpec[] = [
         {
           // true per-base depth from mosdepth on a targeted BAM slice around
           // CDKN2A (not genome-wide — see WAKHAN-PIPELINE.md step 5) — fine
-          // enough to resolve the ~20kb deletion's boundaries, unlike the
-          // 10kb-binned log2 ratio below
+          // enough to resolve the ~20kb deletion's boundaries, sharper than the
+          // 500bp-binned log2 ratio below
           type: 'QuantitativeTrack',
           trackId: 'hg008_t_coverage_finescale',
           name: 'HG008-T fine-scale coverage (per-base)',
@@ -3895,6 +3895,10 @@ export const specs: ScreenshotSpec[] = [
                 minScore: -2,
                 maxScore: 2,
                 height: 140,
+                // request bigwig bins 10x finer than screen resolution so the
+                // 500bp-binned log2 signal resolves at this 3.5Mb window rather
+                // than being served as a coarse bigwig zoom level
+                resolution: 10,
               },
             },
             {
@@ -3972,6 +3976,9 @@ export const specs: ScreenshotSpec[] = [
                 minScore: -2,
                 maxScore: 2,
                 height: 140,
+                // pull finer bigwig bins than the default zoom level so the
+                // 500bp-binned log2 signal shows across this whole-chr18 view
+                resolution: 10,
               },
             },
             {
