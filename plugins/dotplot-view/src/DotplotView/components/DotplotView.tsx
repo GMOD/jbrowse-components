@@ -118,10 +118,9 @@ const DotplotView = observer(function DotplotView({
   model: DotplotViewModel
 }) {
   const {
-    initialized,
     showLoading,
     awaitingAutoDiagonalize,
-    error,
+    showImportForm,
     loadingMessage,
   } = model
   if (awaitingAutoDiagonalize) {
@@ -135,7 +134,7 @@ const DotplotView = observer(function DotplotView({
     )
   } else if (showLoading) {
     return <LoadingEllipses variant="h6" message={loadingMessage} />
-  } else if (!initialized || error) {
+  } else if (showImportForm) {
     return <ImportForm model={model} />
   } else {
     return <DotplotViewInternal model={model} />

@@ -386,6 +386,16 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
+         * Whether to show the import form
+         */
+        get showImportForm() {
+          return (
+            !this.hasSomethingToShow ||
+            !!(self.volatileError ?? self.assemblyErrors)
+          )
+        },
+        /**
+         * #getter
          * Whether to show a loading indicator instead of the import form or view
          */
         get showLoading() {
