@@ -11,7 +11,11 @@ import { addDisposer, types } from '@jbrowse/mobx-state-tree'
 import deepmerge from 'deepmerge'
 import { reaction } from 'mobx'
 
-import { isBlockedHttpUrl, isFtpUrl, isRelativeUrl } from './urlWarnings.ts'
+import {
+  isBlockedHttpUrl,
+  isFtpUrl,
+  isRelativeUrl as isRelativeUrlString,
+} from './urlWarnings.ts'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -26,16 +30,21 @@ export interface IndexingAttr {
   exclude: string[]
 }
 
-const defaultVolatileState = {
-  trackData: undefined as FileLocation | undefined,
-  indexTrackData: undefined as FileLocation | undefined,
-  altAssemblyName: '',
-  altTrackName: '',
-  altTrackType: '',
-  adapterHint: '',
-  textIndexTrack: true,
-  textIndexingConf: undefined as IndexingAttr | undefined,
-  mixinData: {} as Record<string, unknown>,
+// A factory (not a shared const) so each model instance — and each clearData
+// call — gets its own fresh mixinData object rather than aliasing one shared
+// reference.
+function createVolatileState() {
+  return {
+    trackData: undefined as FileLocation | undefined,
+    indexTrackData: undefined as FileLocation | undefined,
+    altAssemblyName: '',
+    altTrackName: '',
+    altTrackType: '',
+    adapterHint: '',
+    textIndexTrack: true,
+    textIndexingConf: undefined as IndexingAttr | undefined,
+    mixinData: {} as Record<string, unknown>,
+  }
 }
 
 /**
@@ -60,7 +69,7 @@ export default function f(pluginManager: PluginManager) {
         pluginManager.pluggableMstType('view', 'stateModel'),
       ),
     })
-    .volatile(() => ({ ...defaultVolatileState }))
+    .volatile(() => createVolatileState())
     .actions(self => ({
       /**
        * #action
@@ -124,7 +133,7 @@ export default function f(pluginManager: PluginManager) {
        * #action
        */
       clearData() {
-        Object.assign(self, { ...defaultVolatileState, mixinData: {} })
+        Object.assign(self, createVolatileState())
       },
     }))
     .actions(self => ({
@@ -186,14 +195,14 @@ export default function f(pluginManager: PluginManager) {
        */
       get isRelativeTrackUrl() {
         const uri = getUri(self.trackData)
-        return uri ? isRelativeUrl(uri) : false
+        return uri ? isRelativeUrlString(uri) : false
       },
       /**
        * #getter
        */
       get isRelativeIndexUrl() {
         const uri = getUri(self.indexTrackData)
-        return uri ? isRelativeUrl(uri) : false
+        return uri ? isRelativeUrlString(uri) : false
       },
       /**
        * #getter
