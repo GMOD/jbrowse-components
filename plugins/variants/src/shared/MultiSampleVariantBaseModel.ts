@@ -9,7 +9,6 @@ import {
   getSession,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { stopStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -43,7 +42,6 @@ import type {
 } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature, Region, RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type {
   ByteEstimateConfig,
@@ -296,10 +294,6 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #volatile
          */
-        sourcesLoadingStopToken: undefined as StopToken | undefined,
-        /**
-         * #volatile
-         */
         contextMenuFeature: undefined as Feature | undefined,
         /**
          * #volatile
@@ -485,15 +479,6 @@ export default function MultiSampleVariantBaseModelF(
           arg?: Record<string, unknown> & { genotype: string; name: string },
         ) {
           self.hoveredGenotype = arg
-        },
-        /**
-         * #action
-         */
-        setSourcesLoading(token: StopToken) {
-          if (self.sourcesLoadingStopToken) {
-            stopStopToken(self.sourcesLoadingStopToken)
-          }
-          self.sourcesLoadingStopToken = token
         },
         /**
          * #action

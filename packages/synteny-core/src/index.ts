@@ -6,8 +6,12 @@ export {
   detectDisplayAssembliesSwapped,
 } from './detectSwappedAssemblies.ts'
 export { visitCigarRenderedSegments } from './cigarBpVisitor.ts'
-export { createStopTokenRotation } from './createStopTokenRotation.ts'
-export type { ActiveFetch } from './createStopTokenRotation.ts'
+// Promoted to core (depends only on core); re-exported here so the
+// comparative-view consumers keep importing it from @jbrowse/synteny-core.
+export {
+  type ActiveFetch,
+  createStopTokenRotation,
+} from '@jbrowse/core/util'
 export { renameRegionsForAdapter } from './renameRegionsForAdapter.ts'
 export {
   applyAlpha,

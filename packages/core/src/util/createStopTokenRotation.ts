@@ -1,8 +1,9 @@
-import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 
-import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import { createStopToken, stopStopToken } from './stopToken.ts'
+
+import type { RpcStatus } from './progress.ts'
+import type { StopToken } from './stopToken.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 interface StatusReporter {
@@ -28,19 +29,19 @@ export interface ActiveFetch {
 }
 
 /**
- * Stop-token rotation for comparative-view displays (dotplot, synteny) whose
- * fetch runs in a bare `autorun` rather than through `FetchMixin.runFetch` —
- * they don't compose the LGV fetch mixins, so they can't reuse it. Each
+ * Latest-wins stop-token rotation for a fetch that runs in a bare `autorun`
+ * rather than through `FetchMixin.runFetch` (which welds the same mechanics to
+ * `fetchGeneration`, so it's only for viewport-driven LGV fetches). Each
  * `begin()` aborts the prior fetch's token and returns a fresh one plus an
- * `isCurrent()` guard. It owns ONLY the token mechanics; each display keeps its
- * own loading/error/commit side-effects in its autorun (dotplot stores the
- * token as its loading indicator, synteny clears status in a `finally`), which
- * is why this is a primitive, not a full `runFetch`.
+ * `isCurrent()` guard that captures this run's token — gate every post-await
+ * write on it and a superseded or torn-down fetch can never clobber fresher
+ * data. The guard is the return value, so a caller can't forget to compare a
+ * token by hand.
  *
- * This is the closure-based analog of `FetchMixin`'s `activeStopToken` rotation
- * + staleness epoch, and replaces the skeleton that was previously duplicated
- * by hand (flagged with a `// SYNC:` comment) across the two displays'
- * `afterAttach.ts`.
+ * Owns ONLY the token mechanics; the caller keeps its own loading/error/commit
+ * side-effects in its autorun. Used by any bare-autorun fetch not composing the
+ * LGV fetch mixins: the comparative-view displays (dotplot, synteny) and the
+ * multi-sample-variant sources fetch.
  */
 export function createStopTokenRotation(
   self: IAnyStateTreeNode & StatusReporter,

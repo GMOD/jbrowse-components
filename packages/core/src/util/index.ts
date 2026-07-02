@@ -304,6 +304,10 @@ export {
   svgHtmlToPngBlob,
 } from '../svg/saveSvgAsImage.ts'
 export { makeAbortableReaction } from './makeAbortableReaction.ts'
+export {
+  type ActiveFetch,
+  createStopTokenRotation,
+} from './createStopTokenRotation.ts'
 export * from './aborting.ts'
 export * from './linkify.ts'
 export * from './locString.ts'

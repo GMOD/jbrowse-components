@@ -1,6 +1,9 @@
-import { getContainingView, getSession } from '@jbrowse/core/util'
+import {
+  createStopTokenRotation,
+  getContainingView,
+  getSession,
+} from '@jbrowse/core/util'
 import { isAbortException } from '@jbrowse/core/util/aborting'
-import { createStopToken } from '@jbrowse/core/util/stopToken'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, isAlive } from '@jbrowse/mobx-state-tree'
 import { autorun } from 'mobx'
@@ -8,19 +11,25 @@ import { autorun } from 'mobx'
 import type { Source } from './types.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { StopToken } from '@jbrowse/core/util/stopToken'
+import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-export function getMultiSampleVariantSourcesAutorun(self: {
-  configuration: AnyConfigurationModel
-  adapterConfig: AnyConfigurationModel
-  isMinimized: boolean
-  reloadCount: number
-  setSourcesLoading: (aborter: StopToken) => void
-  setError: (error?: unknown) => void
-  setStatusMessage: (status?: RpcStatus) => void
-  setSources: (sources: Source[]) => void
-}) {
+export function getMultiSampleVariantSourcesAutorun(
+  self: IAnyStateTreeNode & {
+    adapterConfig: AnyConfigurationModel
+    isMinimized: boolean
+    reloadCount: number
+    setError: (error?: unknown) => void
+    setStatusMessage: (status?: RpcStatus) => void
+    setSources: (sources: Source[]) => void
+  },
+) {
+  // Owns this fetch's stop-token rotation + latest-wins guard so a superseded
+  // run (reloadCount bump, adapterConfig change) can't clobber fresher sources.
+  const rotation = createStopTokenRotation(self)
+  addDisposer(self, () => {
+    rotation.dispose()
+  })
   addDisposer(
     self,
     autorun(
@@ -37,23 +46,13 @@ export function getMultiSampleVariantSourcesAutorun(self: {
           }
           const { rpcManager } = getSession(self)
           const { adapterConfig } = self
-          const stopToken = createStopToken()
-          self.setSourcesLoading(stopToken)
-          const sessionId = getRpcSessionId(self)
+          const { stopToken, isCurrent, statusCallback } = rotation.begin()
           const sources = await rpcManager.call(
-            sessionId,
+            getRpcSessionId(self),
             'MultiSampleVariantGetSources',
-            {
-              adapterConfig,
-              stopToken,
-              statusCallback: (status: RpcStatus) => {
-                if (isAlive(self)) {
-                  self.setStatusMessage(status)
-                }
-              },
-            },
+            { adapterConfig, stopToken, statusCallback },
           )
-          if (isAlive(self)) {
+          if (isCurrent()) {
             self.setSources(sources)
           }
         } catch (e) {
