@@ -10,6 +10,39 @@ function median(sorted: number[]) {
   return n % 2 === 1 ? sorted[mid]! : (sorted[mid - 1]! + sorted[mid]!) / 2
 }
 
+// Median of |x − med| over an already-sorted array, in O(n) with no second
+// allocation+sort. Walking outward from the median, deviations grow
+// monotonically: the values below med (indices high→low) and those at/above med
+// (indices low→high) form two ascending runs, so merging them and stopping at
+// the middle yields the same value as sorting |x − med| — but ~2x cheaper at the
+// high coverage where this matters (the naive form sorts twice). Matches
+// `median()` semantics exactly (odd → middle element; even → mean of the two).
+function medianAbsDevFromSorted(sorted: number[], med: number) {
+  const n = sorted.length
+  let lo = 0
+  while (lo < n && sorted[lo]! < med) {
+    lo++
+  }
+  let i = lo - 1 // below-med run, walking toward index 0 (ascending deviation)
+  let j = lo // at/above-med run, walking toward n-1 (ascending deviation)
+  const target = n >> 1
+  let prev = 0
+  let cur = 0
+  for (let k = 0; k <= target; k++) {
+    prev = cur
+    const leftDev = i >= 0 ? med - sorted[i]! : Infinity
+    const rightDev = j < n ? sorted[j]! - med : Infinity
+    if (leftDev <= rightDev) {
+      cur = leftDev
+      i--
+    } else {
+      cur = rightDev
+      j++
+    }
+  }
+  return n % 2 === 1 ? cur : (prev + cur) / 2
+}
+
 export function getInsertSizeStats(filtered: number[]) {
   const len = filtered.length
   const avg = sum(filtered) / len
@@ -37,8 +70,7 @@ export function getInsertSizeStats(filtered: number[]) {
   // back to the mean/sd estimate there.
   const sorted = [...filtered].sort((a, b) => a - b)
   const med = median(sorted)
-  const deviations = filtered.map(x => Math.abs(x - med)).sort((a, b) => a - b)
-  const mad = median(deviations)
+  const mad = medianAbsDevFromSorted(sorted, med)
   const center = mad > 0 ? med : avg
   const spread = mad > 0 ? 3 * MAD_TO_SD * mad : 3 * sd
   const upper = center + spread

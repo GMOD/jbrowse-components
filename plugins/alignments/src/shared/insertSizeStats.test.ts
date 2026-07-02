@@ -1,5 +1,49 @@
 import { getInsertSizeStats } from './insertSizeStats.ts'
 
+// Reference implementation of the exact quantity the O(n) MAD merge replaces:
+// median of |x − median(x)| via a straight sort. Kept local to the test so the
+// production path can't accidentally satisfy the equivalence check by sharing
+// code with it.
+function referenceStats(filtered: number[]) {
+  const n = filtered.length
+  const avg = filtered.reduce((a, b) => a + b, 0) / n
+  let sumSqDiff = 0
+  for (const x of filtered) {
+    sumSqDiff += (x - avg) ** 2
+  }
+  const sd = Math.sqrt(sumSqDiff / n)
+  const med = (arr: number[]) => {
+    const s = [...arr].sort((a, b) => a - b)
+    const mid = s.length >> 1
+    return s.length % 2 === 1 ? s[mid]! : (s[mid - 1]! + s[mid]!) / 2
+  }
+  const m = med(filtered)
+  const mad = med(filtered.map(x => Math.abs(x - m)))
+  const center = mad > 0 ? m : avg
+  const spread = mad > 0 ? 3 * 1.4826 * mad : 3 * sd
+  return { upper: center + spread, lower: Math.max(0, center - spread), avg, sd }
+}
+
+test('randomized: O(n) MAD merge matches the naive double-sort exactly', () => {
+  let seed = 12345
+  const rng = () => {
+    seed = (seed * 1103515245 + 12345) & 0x7fffffff
+    return seed / 0x7fffffff
+  }
+  for (let trial = 0; trial < 500; trial++) {
+    const len = 1 + Math.floor(rng() * 60)
+    const values = Array.from({ length: len }, () =>
+      Math.floor(rng() * 2000),
+    )
+    const got = getInsertSizeStats(values)
+    const ref = referenceStats(values)
+    expect(got.avg).toBeCloseTo(ref.avg, 9)
+    expect(got.sd).toBeCloseTo(ref.sd, 9)
+    expect(got.upper).toBeCloseTo(ref.upper, 9)
+    expect(got.lower).toBeCloseTo(ref.lower, 9)
+  }
+})
+
 test('basic mean/sd', () => {
   const { avg, sd } = getInsertSizeStats([2, 4, 4, 4, 5, 5, 7, 9])
   expect(avg).toBe(5)
