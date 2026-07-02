@@ -5,6 +5,7 @@ import { LoadingEllipses, createJBrowseTheme } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { EmbeddedViewContainer } from '@jbrowse/embedded-core'
+import { drawerGridTemplateColumns } from '@jbrowse/product-core'
 import { ScopedCssBaseline, ThemeProvider } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -52,32 +53,26 @@ const JBrowseLinearGenomeView = observer(function JBrowseLinearGenomeView({
   const drawerSession = session as SessionWithDrawerWidgets
   const { drawerPosition, drawerWidth, minimized, visibleWidget } =
     drawerSession
-  const drawerViewHeight = viewState.drawerViewHeight
-  const drawerVisible = visibleWidget && !minimized
+  const drawerVisible = Boolean(visibleWidget) && !minimized
+  const gridTemplateColumns = drawerGridTemplateColumns({
+    drawerVisible,
+    drawerPosition,
+    drawerWidth,
+  })
 
-  const drawerCol = drawerVisible ? `${drawerWidth}px` : undefined
-  const viewCol = '1fr'
-  const gridColumns =
-    drawerPosition === 'left'
-      ? [drawerCol, viewCol]
-          .filter((c): c is string => c !== undefined)
-          .join(' ')
-      : [viewCol, drawerCol]
-          .filter((c): c is string => c !== undefined)
-          .join(' ')
+  // The view is normally content-height so it can be embedded in a page that
+  // grows with it. Only when a drawer opens do we clamp to drawerViewHeight
+  // (default 100vh), giving the drawer's `overflowY: auto` a definite height to
+  // scroll within.
+  const style = drawerVisible
+    ? { gridTemplateColumns, height: viewState.drawerViewHeight }
+    : { gridTemplateColumns }
 
   return (
     <ThemeProvider theme={theme}>
       <div className={classes.avoidParentStyle}>
         <ScopedCssBaseline>
-          <div
-            className={classes.root}
-            style={
-              drawerVisible
-                ? { gridTemplateColumns: gridColumns, height: drawerViewHeight }
-                : { gridTemplateColumns: gridColumns }
-            }
-          >
+          <div className={classes.root} style={style}>
             {drawerPosition === 'left' && drawerVisible ? (
               <Suspense fallback={null}>
                 <DrawerWidget session={session} />

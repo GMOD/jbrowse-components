@@ -2,6 +2,7 @@ import { Suspense, lazy } from 'react'
 
 import Snackbar from '@jbrowse/core/ui/Snackbar'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { drawerGridTemplateColumns } from '@jbrowse/product-core'
 import { AppBar } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -43,14 +44,12 @@ const App = observer(function App(props: Props) {
   const { session } = props
   const { classes } = useStyles()
   const { minimized, visibleWidget, drawerWidth, drawerPosition } = session
-  const drawerVisible = visibleWidget && !minimized
-  const main = '[main] minmax(0, 1fr)'
-  const drawer = `[drawer] ${drawerWidth}px`
-  const gridTemplateColumns = drawerVisible
-    ? drawerPosition === 'right'
-      ? `${main} ${drawer}`
-      : `${drawer} ${main}`
-    : main
+  const drawerVisible = Boolean(visibleWidget) && !minimized
+  const gridTemplateColumns = drawerGridTemplateColumns({
+    drawerVisible,
+    drawerPosition,
+    drawerWidth,
+  })
 
   // one element placed into either the left or right grid column by DOM order
   // (the drawer isn't self-positioning, so it must be rendered on the matching
