@@ -3,7 +3,7 @@ import { memo } from 'react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
-import { INTERNAL_SOURCE_KEYS } from '../constants.ts'
+import { getTooltipRows } from './getTooltipRows.ts'
 
 const useStyles = makeStyles()({
   table: {
@@ -40,16 +40,20 @@ const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   source: {
     color?: string
     name?: string
+    label?: string
     [key: string]: unknown
   }
   x: number
   y: number
 }) {
   const { classes } = useStyles()
+  // Prefer the friendly display override, matching the sidebar legend
+  // (label ?? name); `name` is the stable hit-test identity.
+  const heading = source.label ?? source.name
 
   return (
     <BaseTooltip clientPoint={{ x, y }}>
-      {source.name ? (
+      {heading ? (
         <div className={classes.header}>
           {source.color ? (
             <div
@@ -57,19 +61,17 @@ const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
               style={{ backgroundColor: source.color }}
             />
           ) : null}
-          <b>{source.name}</b>
+          <b>{heading}</b>
         </div>
       ) : null}
       <table className={classes.table}>
         <tbody>
-          {Object.entries(source).map(([key, value]) =>
-            !INTERNAL_SOURCE_KEYS.has(key) && value !== undefined ? (
-              <tr key={key}>
-                <td className={classes.keyCell}>{key}</td>
-                <td className={classes.valueCell}>{String(value)}</td>
-              </tr>
-            ) : null,
-          )}
+          {getTooltipRows(source).map(({ key, label, value }) => (
+            <tr key={key}>
+              <td className={classes.keyCell}>{label}</td>
+              <td className={classes.valueCell}>{value}</td>
+            </tr>
+          ))}
         </tbody>
       </table>
     </BaseTooltip>
