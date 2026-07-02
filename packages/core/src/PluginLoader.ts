@@ -119,11 +119,12 @@ export type PluginDefinition =
 // registers the same elements (and wins, since core plugins register first), and
 // skipping the external copy avoids a redundant network fetch plus a flurry of
 // "already registered" console warnings. Matched on the config-level `name`
-// (the external plugin's, e.g. "MafViewer"), not the core class name. Apply only
-// in products whose core bundle actually vendors these — not globally — so CLI
-// indexing, @jbrowse/img, and react-circular (which don't bundle them) still load
-// the external plugin.
-export const vendoredPluginNames = new Set(['MafViewer'])
+// (the external plugin's UMD-global name, e.g. "MafViewer"/"GWAS"), not the core
+// class name. Apply only in products whose core bundle actually vendors these —
+// not globally — so CLI indexing, @jbrowse/img, and react-circular (which don't
+// bundle them) still load the external plugin. Also drives the plugin store,
+// which hides these so a user can't install a colliding second copy.
+export const vendoredPluginNames = new Set(['MafViewer', 'GWAS'])
 
 export function dropVendoredPlugins(defs: PluginDefinition[]) {
   return defs.filter(

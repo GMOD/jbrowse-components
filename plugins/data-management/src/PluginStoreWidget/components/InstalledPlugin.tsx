@@ -189,7 +189,10 @@ const InstalledPlugin = observer(function InstalledPlugin({
         <LockedPluginIconButton />
       )}
       <Typography className={classes.name}>
-        {plugin.name}
+        {/* prefer the store's display name (the UMD global, e.g. "GWAS") over
+        the runtime Plugin class name (e.g. "GWASPlugin") so it matches the
+        available-plugins list */}
+        {storeEntry?.name ?? plugin.name}
         {plugin.version ? ` (v${plugin.version})` : ''}
       </Typography>
       {update && updatable && definition ? (

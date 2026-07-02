@@ -115,9 +115,10 @@ describe('installedVersionFromUrl', () => {
     expect(installedVersionFromUrl(url, undefined)).toBeUndefined()
   })
 
-  it('returns undefined for a pre-versioning unversioned url', () => {
-    // legacy layout has the umd path, not a version, after the package name;
-    // that segment fails to compare as a version so no update is offered
+  it('reads the raw segment after the package name for a pre-versioning url', () => {
+    // legacy layout has the umd path, not a version, after the package name; the
+    // extracted 'dist' segment is harmless because it fails to compare as a
+    // semver version downstream (getPluginUpdate), so no update is ever offered
     const u = `https://jbrowse.org/plugins/${pkg}/dist/x.umd.min.js`
     expect(installedVersionFromUrl(u, pkg)).toBe('dist')
   })
