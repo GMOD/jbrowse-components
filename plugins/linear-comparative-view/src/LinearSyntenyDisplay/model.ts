@@ -68,6 +68,14 @@ export interface FeatPos {
   identity?: number
 }
 
+// The worker sizes its viewport cull in px at fetch time, so zooming out by
+// ~2x can leave features missing beyond the previous cull window. Bucketing
+// bpPerPx on log2 lets the fetch autorun refire once per half-decade of zoom
+// instead of on every settled zoom.
+function bucketBpPerPx(bpPerPx: number) {
+  return Math.floor(Math.log2(Math.max(bpPerPx, 1)))
+}
+
 function getFeatureAtIndex(data: SyntenyFeatureData, i: number): FeatPos {
   const identity = data.identities[i]!
   return {
@@ -372,6 +380,19 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           v0.displayedRegions.length > 0 &&
           v1.displayedRegions.length > 0
           ? { v0, v1 }
+          : undefined
+      },
+      /**
+       * #getter
+       * Stable key over the log2 zoom bucket of both connected views. The
+       * fetch autorun tracks this (a computed compares its string output)
+       * instead of raw bpPerPx, so it only refetches when zoom crosses a
+       * half-decade rather than on every settled zoom within a bucket.
+       */
+      get bpPerPxBucketKey() {
+        const connected = this.connectedViews
+        return connected
+          ? `${bucketBpPerPx(connected.v0.bpPerPx)}_${bucketBpPerPx(connected.v1.bpPerPx)}`
           : undefined
       },
       /**

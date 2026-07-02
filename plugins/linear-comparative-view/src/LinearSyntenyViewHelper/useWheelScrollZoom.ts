@@ -51,13 +51,15 @@ export function useWheelScrollZoom(
       return undefined
     }
     let scrollTimer: ReturnType<typeof setTimeout> | undefined
+    let scrollRaf: number | undefined
+    let zoomRaf: number | undefined
 
     function flushHorizontalScroll() {
       if (scrollScheduledRef.current) {
         return
       }
       scrollScheduledRef.current = true
-      requestAnimationFrame(() => {
+      scrollRaf = requestAnimationFrame(() => {
         transaction(() => {
           for (const v of parentView.views) {
             v.horizontalScroll(scrollAccumXRef.current)
@@ -73,7 +75,7 @@ export function useWheelScrollZoom(
         return
       }
       zoomScheduledRef.current = true
-      requestAnimationFrame(now => {
+      zoomRaf = requestAnimationFrame(now => {
         const elapsed = wheelFrameElapsedMs(now, lastRafTimeRef.current)
         lastRafTimeRef.current = now
         const d = zoomAccumRef.current
@@ -125,6 +127,17 @@ export function useWheelScrollZoom(
     return () => {
       canvas.removeEventListener('wheel', onWheel)
       clearTimeout(scrollTimer)
+      // Cancel pending frames so a callback can't fire against a detached view
+      // after unmount or a parentView swap. Reset the scheduled flags too, since
+      // the refs outlive the effect.
+      if (scrollRaf !== undefined) {
+        cancelAnimationFrame(scrollRaf)
+      }
+      if (zoomRaf !== undefined) {
+        cancelAnimationFrame(zoomRaf)
+      }
+      scrollScheduledRef.current = false
+      zoomScheduledRef.current = false
     }
   }, [canvas, parentView])
 

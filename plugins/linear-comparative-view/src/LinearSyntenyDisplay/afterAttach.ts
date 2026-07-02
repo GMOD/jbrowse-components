@@ -42,18 +42,19 @@ export function doAfterAttach(self: LinearSyntenyDisplayModel) {
         // Tracked deps that SHOULD trigger refetch when changed:
         //   - displayedRegions (per view) — region set drives cumBp output
         //   - adapterConfig and CIGAR drawing options
-        //   - a log2 bucket of bpPerPx (per view) — the worker's viewport
-        //     cull is sized in px at fetch-time, so zooming out by ~2x
-        //     leaves features missing beyond the previous cull window.
-        //     Bucketing on log2 avoids refetching on smooth scroll-zoom
-        //     bursts within the same half-decade.
+        //   - bpPerPxBucketKey — the log2 zoom bucket of both views. The
+        //     worker's viewport cull is sized in px at fetch-time, so zooming
+        //     out by ~2x leaves features missing beyond the previous cull
+        //     window. The bucket is a computed getter (compares its string
+        //     output), so tracking it here refetches once per half-decade
+        //     rather than on every settled zoom within a bucket.
         // Not tracked: raw `bpPerPx`, `offsetPx`, `width`,
         // `minimumBlockWidth`. Scroll moves are
         // absorbed by the worker's 50% px buffer.
         for (const v of connectedViews) {
           void v.displayedRegions
-          void Math.floor(Math.log2(Math.max(v.bpPerPx, 1)))
         }
+        void self.bpPerPxBucketKey
         const adapterConfig = self.adapterConfig
         const {
           drawCIGAR,

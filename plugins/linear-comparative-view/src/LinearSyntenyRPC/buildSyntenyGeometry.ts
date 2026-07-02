@@ -47,6 +47,12 @@ export type SyntenyInstanceData = SyntenyGeometry & { colors: Uint32Array }
 // it will actually be visited here.
 export const MIN_CIGAR_PX_WIDTH = 8
 
+// Off-screen px kept on each side so panning reveals ribbons without a refetch.
+// executeSyntenyFeaturesAndPositions culls whole features first, so its cull
+// buffer must be >= this or it would silently drop features this stage wants to
+// emit geometry for (defeating the pan buffer on views narrower than 2*this).
+export const PAN_BUFFER_PX = 2000
+
 export function buildSyntenyGeometry({
   p11_cumBp,
   p12_cumBp,
@@ -84,9 +90,8 @@ export function buildSyntenyGeometry({
 }): SyntenyGeometry {
   const featureCount = p11_cumBp.length
 
-  const panBufferPx = 2000
-  const emitLeft = -panBufferPx
-  const emitRight = viewWidth + panBufferPx
+  const emitLeft = -PAN_BUFFER_PX
+  const emitRight = viewWidth + PAN_BUFFER_PX
   const bpPerPxInv0 = 1 / bpPerPx0
   const bpPerPxInv1 = 1 / bpPerPx1
 

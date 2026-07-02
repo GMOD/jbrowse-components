@@ -3,6 +3,7 @@ import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import {
   cmpStr,
   createProgressReporter,
+  dedupe,
   updateStatus,
 } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -11,6 +12,7 @@ import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import {
   MIN_CIGAR_PX_WIDTH,
+  PAN_BUFFER_PX,
   buildSyntenyGeometry,
 } from './buildSyntenyGeometry.ts'
 
@@ -103,15 +105,7 @@ export async function executeSyntenyFeaturesAndPositions({
       statusCallback,
     },
   )
-  const seen = new Set<string>()
-  const deduped = allFeatures.filter(f => {
-    const id = f.id()
-    if (seen.has(id)) {
-      return false
-    }
-    seen.add(id)
-    return true
-  })
+  const deduped = dedupe(allFeatures, f => f.id())
   // Emit a deterministic total order so the worker's output never depends on
   // the adapter's block-arrival order (which varies run-to-run as concurrent
   // region fetches resolve). Length stays the primary key — small→large so big
@@ -119,17 +113,22 @@ export async function executeSyntenyFeaturesAndPositions({
   // the standalone ribbon-plot script) — but ties now break on position/mate/id
   // instead of arrival order. This stabilizes alpha compositing of equal-length
   // overlapping ribbons, the feature-index→featureId mapping (click/hover
-  // identity), and downstream diagonalize. Decorate-sort-undecorate reads each
-  // feature's keys once (O(n)) rather than via repeated getters in the O(n log
-  // n) comparator.
+  // identity), and downstream diagonalize. Decorate-sort reads each feature's
+  // keys once (O(n)) rather than via repeated getters in the O(n log n)
+  // comparator; the decorated records are also what the main loop below
+  // iterates, so refName/start/end/strand/mate aren't re-fetched per feature.
   const decorated = deduped.map(f => {
     const mate = getMate(f)
     const start = f.get('start')
+    const end = f.get('end')
     return {
       f,
-      len: f.get('end') - start,
+      len: end - start,
       refName: f.get('refName'),
       start,
+      end,
+      strand: f.get('strand')!,
+      mate,
       mateRefName: mate.refName,
       mateStart: mate.start,
       id: f.id(),
@@ -144,12 +143,11 @@ export async function executeSyntenyFeaturesAndPositions({
       a.mateStart - b.mateStart ||
       cmpStr(a.id, b.id),
   )
-  const features = decorated.map(d => d.f)
 
   const v1Index = buildBpRegionIndex(v1)
   const v2Index = buildBpRegionIndex(v2)
 
-  const count = features.length
+  const count = decorated.length
   // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,
   // held in Float64 (exact to 2^53) — unbounded by uint32; a 16 Gbp assembly is
   // fine. See agent-docs/ARCHITECTURE.md "Genome-size limits".
@@ -188,7 +186,10 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2Offset = v2.offsetPx
   const bpPerPxInv1 = 1 / v1.bpPerPx
   const bpPerPxInv2 = 1 / v2.bpPerPx
-  const bufferPx = viewWidth * 0.5
+  // At least PAN_BUFFER_PX so this whole-feature cull never drops a feature
+  // buildSyntenyGeometry would emit geometry for; the 50%-of-width term keeps a
+  // larger pan buffer on wide views.
+  const bufferPx = Math.max(viewWidth * 0.5, PAN_BUFFER_PX)
   const offScreenLeftBound = -bufferPx
   const offScreenRightBound = viewWidth + bufferPx
 
@@ -205,11 +206,9 @@ export async function executeSyntenyFeaturesAndPositions({
     stopTokenCheck: stopTokenChecker,
   })
   let validCount = 0
-  for (const f of features) {
+  for (const d of decorated) {
     report()
-    const mate = getMate(f)
-    const refName = f.get('refName')
-    const mateRefName = mate.refName
+    const { f, id, refName, start, end, strand, mate, mateRefName } = d
     // Whole-genome PAF at low zoom: most features are on refNames not in the
     // displayed regions of one or both views. Skip before any bpToCumBp
     // arithmetic.
@@ -217,9 +216,6 @@ export async function executeSyntenyFeaturesAndPositions({
       continue
     }
 
-    const strand = f.get('strand')!
-    const start = f.get('start')
-    const end = f.get('end')
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
@@ -269,7 +265,7 @@ export async function executeSyntenyFeaturesAndPositions({
     mateStartsArray[validCount] = mate.start
     mateEndsArray[validCount] = mate.end
 
-    featureIds.push(f.id())
+    featureIds.push(id)
     names.push(f.get('name') ?? '')
     refNames.push(refName)
     assemblyNames.push((f.get('assemblyName') as string | undefined) ?? '')

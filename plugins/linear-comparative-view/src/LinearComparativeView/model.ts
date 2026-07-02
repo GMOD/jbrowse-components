@@ -65,10 +65,6 @@ function stateModelFactory(pluginManager: PluginManager) {
         /**
          * #property
          */
-        interactiveOverlay: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         */
         levels: types.array(LinearSyntenyViewHelper),
         /**
          * #property
@@ -117,15 +113,6 @@ function stateModelFactory(pluginManager: PluginManager) {
           self.views.length > 0 &&
           self.views.every(view => view.initialized)
         )
-      },
-
-      /**
-       * #getter
-       */
-      get refNames() {
-        return self.views.map(v => [
-          ...new Set(v.staticBlocks.map(m => m.refName)),
-        ])
       },
 
       /**
