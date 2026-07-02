@@ -150,6 +150,26 @@ export function tickLabelWidth(label: string) {
   return measureText(label, 11) + 4
 }
 
+/** Font size of the bold overview-scalebar refName label, drawn at the left
+ * edge of its block. */
+export const REF_NAME_LABEL_FONT_SIZE = 11
+
+/** Left inset of the overview refName label within its block. */
+const REF_NAME_LABEL_INSET_PX = 3
+
+/**
+ * Horizontal space the overview refName label occupies at a block's left edge.
+ * Overview tick labels use this to avoid drawing underneath the refName, which
+ * otherwise collide when zoomed far out (ticks bunch up near the block start).
+ */
+export function overviewRefNameLabelWidth(refName: string) {
+  return (
+    REF_NAME_LABEL_INSET_PX +
+    measureText(refName, REF_NAME_LABEL_FONT_SIZE) +
+    REF_NAME_LABEL_INSET_PX
+  )
+}
+
 /**
  * makeTicks plus each tick's pixel x within its block, accounting for reversed
  * regions. Single source of the tick→px formula shared by gridlines, the

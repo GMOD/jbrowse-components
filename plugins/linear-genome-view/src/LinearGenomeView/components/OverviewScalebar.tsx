@@ -12,7 +12,11 @@ import OverviewScalebarPolygon from './OverviewScalebarPolygon.tsx'
 import OverviewScalebarTickLabels from './OverviewScalebarTickLabels.tsx'
 import { elidedBlockStyles, getCytobands } from './util.ts'
 import { HEADER_BAR_HEIGHT, HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
-import { getBlockRefName, showRefNameLabels } from '../util.ts'
+import {
+  REF_NAME_LABEL_FONT_SIZE,
+  getBlockRefName,
+  showRefNameLabels,
+} from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ViewLayout } from '@jbrowse/core/util/Base1DUtils'
@@ -56,6 +60,7 @@ const useStyles = makeStyles()(theme => ({
   scalebarRefName: {
     position: 'absolute',
     top: 0,
+    fontSize: REF_NAME_LABEL_FONT_SIZE,
     fontWeight: 'bold',
     pointerEvents: 'none',
     zIndex: 100,
@@ -171,6 +176,7 @@ const OverviewBox = observer(function OverviewBox({
         model={model}
         block={block}
         refNameColor={refNameColor}
+        showRefName={showRefName}
       />
     </div>
   )

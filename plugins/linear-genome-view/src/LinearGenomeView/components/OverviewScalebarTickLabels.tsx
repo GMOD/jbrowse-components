@@ -4,7 +4,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { HEADER_OVERVIEW_HEIGHT } from '../consts.ts'
-import { makeOverviewTicks } from '../util.ts'
+import { makeOverviewTicks, overviewRefNameLabelWidth } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -25,29 +25,37 @@ const OverviewScalebarTickLabels = observer(
     block,
     model,
     refNameColor,
+    showRefName,
   }: {
     model: LinearGenomeViewModel
     block: ContentBlock
     refNameColor: string | undefined
+    showRefName: boolean
   }) {
     const { classes } = useStyles()
-    const { start, end, reversed } = block
+    const { start, end, reversed, refName } = block
     const { overviewLayout } = model
     const { bpPerPx } = overviewLayout
     const ticks = makeOverviewTicks(start, end, bpPerPx, reversed)
-    return ticks.map(({ genomicCoord, offsetPx }) => (
-      <Typography
-        key={genomicCoord}
-        className={classes.scalebarLabel}
-        variant="body2"
-        style={{
-          transform: `translateX(${offsetPx}px)`,
-          color: refNameColor,
-        }}
-      >
-        {getTickDisplayStr(genomicCoord, bpPerPx)}
-      </Typography>
-    ))
+
+    // skip ticks that would collide with the bold refName label pinned at the
+    // block's left edge
+    const reservedPx = showRefName ? overviewRefNameLabelWidth(refName) : 0
+    return ticks
+      .filter(({ offsetPx }) => offsetPx >= reservedPx)
+      .map(({ genomicCoord, offsetPx }) => (
+        <Typography
+          key={genomicCoord}
+          className={classes.scalebarLabel}
+          variant="body2"
+          style={{
+            transform: `translateX(${offsetPx}px)`,
+            color: refNameColor,
+          }}
+        >
+          {getTickDisplayStr(genomicCoord, bpPerPx)}
+        </Typography>
+      ))
   },
 )
 
