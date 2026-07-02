@@ -20,11 +20,11 @@ export interface LabelMetrics {
   textWidth: number
 }
 
-// Centers the label over its feature, falling back to left-align when the
-// label is wider than the feature. Clamps the left edge to keep the label
-// from spilling off the left side of the screen or past the feature's right
-// edge. Same math drives the DOM overlay (useOverlayElements) and the SVG
-// export (renderSvg), so any tweak here is reflected on both paths.
+// Left-aligns the label to its feature's left edge, clamping so it neither
+// spills off the left of the screen nor slides past the feature's right edge.
+// A label wider than the feature pins to the feature's left edge unclamped.
+// Same math drives the DOM overlay (useOverlayElements) and the SVG export
+// (renderSvg), so any tweak here is reflected on both paths.
 export function computeLabelPosition(
   label: LabelMetrics,
   padding: number,
