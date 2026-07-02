@@ -1,5 +1,5 @@
 import { getClip } from '@jbrowse/cigar-utils'
-import { detectSimplexModifications } from '@jbrowse/modifications-utils'
+import { detectSimplexModifications, getTag } from '@jbrowse/modifications-utils'
 
 import {
   extractCigarFeatures,
@@ -89,10 +89,7 @@ export function extractFeatureArrays<T extends FeatureData>(
 
     nextPositions.push((feature.get('next_pos') as number | undefined) ?? 0)
     nextRefs.push((feature.get('next_ref') as string | undefined) ?? '')
-    const tags = feature.get('tags') as Record<string, unknown> | undefined
-    suppAlignments.push(
-      ((tags?.SA ?? feature.get('SA')) as string | undefined) ?? '',
-    )
+    suppAlignments.push((getTag(feature, 'SA') as string | undefined) ?? '')
     const isMismatch = isMismatchFeature(feature)
     // clipAtStart: BAM/CRAM read the start clip straight off NUMERIC_CIGAR
     // (clipLengthAtStartOfRead), avoiding a full per-read CIGAR string build (and
