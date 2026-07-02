@@ -62,3 +62,5 @@ export function getFaiPath(paths: AppPaths, name: string) {
 export function stringify(obj: unknown) {
   return JSON.stringify(obj, null, 2)
 }
+
+export const ENCODING = 'utf8'

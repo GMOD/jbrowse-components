@@ -2,13 +2,12 @@ import fs from 'node:fs'
 import path from 'node:path'
 
 import { LEGACY_QUICKSTARTS } from '../fileSystemInit.ts'
-import { getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
+import { ENCODING, getDeletedMarkerPath, getQuickstartPath } from '../paths.ts'
 import { ipcHandle } from './channels.ts'
 
 import type { AppPaths } from '../paths.ts'
 
 const { readFile, copyFile, readdir, rename, unlink, writeFile } = fs.promises
-const ENCODING = 'utf8'
 
 async function readQuickstart(quickstartPath: string): Promise<unknown> {
   try {

@@ -1,10 +1,14 @@
 import fs from 'node:fs'
 
-import { getDeletedMarkerPath, getQuickstartPath, stringify } from './paths.ts'
+import {
+  ENCODING,
+  getDeletedMarkerPath,
+  getQuickstartPath,
+  stringify,
+} from './paths.ts'
 
 import type { AppPaths } from './paths.ts'
 
-const ENCODING = 'utf8'
 export const LEGACY_QUICKSTARTS = ['hg19', 'hg38', 'mm10']
 
 /**
@@ -65,8 +69,10 @@ export async function cleanupLegacyQuickstarts(paths: AppPaths) {
  * Initializes the file system: creates directories and sets up initial files
  */
 export async function initializeFileSystem(paths: AppPaths) {
+  // Directories first: cleanupLegacyQuickstarts writes gravestones into
+  // quickstartDir, so it must not race the mkdir that creates it
+  await ensureDirectoriesExist(paths)
   await Promise.all([
-    ensureDirectoriesExist(paths),
     initializeRecentSessionsFile(paths),
     cleanupLegacyQuickstarts(paths),
   ])

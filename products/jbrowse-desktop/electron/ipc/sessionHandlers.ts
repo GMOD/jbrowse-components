@@ -3,7 +3,7 @@ import path from 'node:path'
 
 import { shell } from 'electron'
 
-import { getThumbnailPath, stringify } from '../paths.ts'
+import { ENCODING, getThumbnailPath, stringify } from '../paths.ts'
 import { logError } from '../util.ts'
 import { ipcHandle } from './channels.ts'
 
@@ -11,14 +11,18 @@ import type { AppPaths } from '../paths.ts'
 import type { RecentSession, SessionSnap } from './channels.ts'
 
 const { unlink, readFile, writeFile } = fs.promises
-const ENCODING = 'utf8'
 const THUMBNAIL_WIDTH = 500
 
 async function readRecentSessions(
   recentSessionsPath: string,
 ): Promise<RecentSession[]> {
   try {
-    return JSON.parse(await readFile(recentSessionsPath, ENCODING))
+    const parsed: unknown = JSON.parse(
+      await readFile(recentSessionsPath, ENCODING),
+    )
+    // A corrupt file that parses to a non-array (e.g. {}) must still yield the
+    // empty-list contract; downstream .filter/.findIndex assume an array
+    return Array.isArray(parsed) ? (parsed as RecentSession[]) : []
   } catch (e) {
     console.error(
       `Failed to load recent sessions file ${recentSessionsPath}: ${e}`,
@@ -111,8 +115,12 @@ export function registerSessionHandlers(
   })
 
   ipcHandle('saveSession', async (_, sessionPath, snap) => {
-    const page = await getMainWindow()?.capturePage()
-    const png = page?.resize({ width: THUMBNAIL_WIDTH }).toDataURL()
+    // Thumbnail capture is cosmetic; a capturePage rejection must never abort
+    // the session write (the 1s autosave would otherwise error every tick)
+    const png = await getMainWindow()
+      ?.capturePage()
+      .then(page => page.resize({ width: THUMBNAIL_WIDTH }).toDataURL())
+      .catch(logError)
     const entry: RecentSession = {
       path: sessionPath,
       updated: Date.now(),

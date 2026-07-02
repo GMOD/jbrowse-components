@@ -61,17 +61,16 @@ export function setupAutoUpdater(
   })
 
   autoUpdater.on('update-not-available', async () => {
-    if (!manualCheckActive || process.env.CI) {
-      manualCheckActive = false
-      return
-    }
+    const wasManual = manualCheckActive
     manualCheckActive = false
-    await dialog.showMessageBox({
-      type: 'info',
-      title: 'Up to date',
-      message: 'You are on the latest version.',
-      buttons: ['OK'],
-    })
+    if (wasManual && !process.env.CI) {
+      await dialog.showMessageBox({
+        type: 'info',
+        title: 'Up to date',
+        message: 'You are on the latest version.',
+        buttons: ['OK'],
+      })
+    }
   })
 
   autoUpdater.on('update-available', async () => {
