@@ -1404,6 +1404,11 @@ export const specs: ScreenshotSpec[] = [
     // allow more drift before re-committing the PNG
     diffThreshold: 0.03,
     actions: [
+      // `readyText: 'NCBI RefSeq'` matches the track *name*, which appears before
+      // the remote GFF finishes loading — so wait for the PTEN label itself to
+      // render (the jexlFilter also proves out here: only PTEN passes, so this is
+      // the sole gene label) before acting on it.
+      { type: 'waitForText', text: 'PTEN' },
       // right-click the gene's floating-label DOM element (not a raw pixel) —
       // robust and exercises the label's real context-menu affordance
       { type: 'rightclick', text: 'PTEN' },
@@ -6582,6 +6587,12 @@ export const specs: ScreenshotSpec[] = [
     // species stand out. With the tree-pruning fix the guide tree on the left is
     // the pruned ~30-leaf dendrogram (not the full 470-species tree). Chromosome-
     // level human reference reads far cleaner than a fragmented scaffold MAF.
+    //
+    // The conservation band on top is in codon mode (`conservationMode: 'codon'`):
+    // each bar is the fraction of species whose *amino acid* matches the human
+    // reference, so synonymous (silent) 3rd-position changes read as conserved and
+    // the profile tracks protein-level constraint rather than nucleotide drift —
+    // exactly the metric a coding alignment calls for.
     mode: 'url',
     name: 'maf_470way_codon',
     url: lgvSession(HG38_470WAY, {
@@ -6596,6 +6607,8 @@ export const specs: ScreenshotSpec[] = [
             type: 'LinearMafDisplay',
             heightOverride: 560,
             showTranslation: true,
+            showConservation: true,
+            conservationMode: 'codon',
             subtreeFilter: HG38_470WAY_30,
           },
         },

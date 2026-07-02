@@ -842,8 +842,8 @@
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "bad",
-    "note": "it might be worth trying to snapshot one more gene. this one has a fragment of 'klln' gene that is kind of distracting. alternatively, filtering to just show pten might be a good exercise of our system to do filtering",
+    "status": "good",
+    "note": "DONE: jexlFilter get(feature,'name')=='PTEN' (+ geneGlyphMode longestCoding) drops the neighboring KLLN + RPL11P3 features so only PTEN shows — doubles as a feature-filtering demo (reviewer's suggestion). Root cause the filtered figure wasn't regenerating: readyText 'NCBI RefSeq' matches the track name, which renders before the remote GFF loads, so the rightclick raced the PTEN label. Added an explicit waitForText 'PTEN' before the rightclick; regenerated + verified KLLN is gone.",
     "reviewedAt": "2026-07-02T02:59:24.381Z",
     "hash": "2c9378664cfe4ff2af69b1fce54085711da9ae36"
   },
@@ -1130,8 +1130,8 @@
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
-    "status": "bad",
-    "note": "we could consider making the 'conservation' track show codon level conservation instead of per-base conservation",
+    "status": "good",
+    "note": "DONE: implemented per-codon (amino-acid) conservation as a new conservation-band mode (conservationMode: 'base'|'codon'). Codon mode shows, per reference codon, the fraction of aligned species whose translated amino acid matches the human reference, so synonymous 3rd-position changes read as conserved and the band tracks protein-level constraint. Added showConservation + conservationMode:'codon' to this figure; band renders as 'Conservation (aa identity)'. Reuses the existing codon enumeration (computeCodonConservation in computeVisibleCodons.ts); unit-tested; menu radio 'Conservation resolution' appears when an annotationAdapter is configured. Regenerated + verified.",
     "reviewedAt": "2026-07-02T02:02:56.806Z",
     "hash": "6b7ac43f6196448d2686820070b08b5cd4cef074"
   },
@@ -1187,8 +1187,14 @@
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
     "status": "good",
-    "note": "",
+    "note": "Re-verified against current code: the codon tooltip now resolves at chrI:2,999,285 and shows an interesting nonsynonymous change (caeJap4, gene CJA38734, codon GAA->GCC, amino acid E->A, nonsynonymous) rather than the bare 'Ref:' fallback the earlier review saw. Regenerated + verified.",
     "reviewedAt": "2026-07-02T02:59:32.306Z",
     "hash": "8d10e7e5ee9be8fbc9b13fb20dd42a8155f28ebd"
+  },
+  "gc_content": {
+    "name": "gc_content",
+    "status": "bad",
+    "note": "can we make this screenshot on a real genome like h.pylori or something to show actual interesting skew biology like replication origin",
+    "reviewedAt": "2026-07-02T00:00:00.000Z"
   }
 }
