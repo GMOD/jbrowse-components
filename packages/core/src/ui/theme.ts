@@ -5,6 +5,7 @@ import deepmerge from 'deepmerge'
 import type {
   PaletteColor,
   PaletteColorOptions,
+  PaletteOptions,
   Theme,
   ThemeOptions,
 } from '@mui/material/styles'
@@ -676,31 +677,53 @@ export function createJBrowseTheme(
   return theme
 }
 
+// palette color entries that take a bare '#rrggbb' main and need augmenting into
+// full light/dark/contrastText PaletteColors
+const augmentableColorKeys = [
+  'primary',
+  'secondary',
+  'tertiary',
+  'quaternary',
+  'highlight',
+  'textHighlight',
+] as const
+
+const baseKeys = ['A', 'C', 'G', 'T', 'N'] as const
+
+// augment one entry, accepting either the `{ color }` wrapper MUI's augmentColor
+// expects or a bare PaletteColorOptions
+function augmentColorOption(option: PaletteColorOptions): PaletteColor {
+  return 'color' in option
+    ? refTheme.palette.augmentColor(option as PaletteAugmentColorOptions)
+    : augment(option)
+}
+
 // MUI by default allows strings like '#f00' for primary and secondary and
 // augments them to have light and dark variants but not for anything else, so
-// we augment them here
+// we augment them here. `bases` is augmented per-key too, so a config theme that
+// overrides only a base's `main` still gets a consistent contrastText rather
+// than inheriting the default green/blue/etc. shades it replaced (or undefined).
 function augmentThemeColors(theme: ThemeOptions = {}) {
-  const augmentedPalette: Record<string, PaletteColor> = Object.create(null)
-  for (const entry of [
-    'primary',
-    'secondary',
-    'tertiary',
-    'quaternary',
-    'highlight',
-    'textHighlight',
-  ] as const) {
-    const paletteEntry = theme.palette?.[entry]
-    if (paletteEntry) {
-      augmentedPalette[entry] =
-        'color' in paletteEntry
-          ? refTheme.palette.augmentColor(
-              paletteEntry as PaletteAugmentColorOptions,
-            )
-          : augment(paletteEntry)
+  const overlay: PaletteOptions = {}
+  for (const key of augmentableColorKeys) {
+    const entry = theme.palette?.[key]
+    if (entry) {
+      overlay[key] = augmentColorOption(entry)
     }
   }
-  return Object.keys(augmentedPalette).length > 0
-    ? deepmerge(theme, { palette: augmentedPalette })
+  const basesEntry = theme.palette?.bases
+  if (basesEntry) {
+    const bases: PaletteOptions['bases'] = {}
+    for (const key of baseKeys) {
+      const entry = basesEntry[key]
+      if (entry) {
+        bases[key] = augmentColorOption(entry)
+      }
+    }
+    overlay.bases = bases
+  }
+  return Object.keys(overlay).length > 0
+    ? deepmerge(theme, { palette: overlay })
     : theme
 }
 

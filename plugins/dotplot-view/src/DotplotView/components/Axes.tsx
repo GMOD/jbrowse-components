@@ -5,7 +5,7 @@ import { observer } from 'mobx-react'
 
 import { tickLabel } from './util.ts'
 
-import type { PositionedTick } from './util.ts'
+import type { Tick } from './util.ts'
 import type { DotplotViewModel } from '../model.ts'
 
 const useStyles = makeStyles()(() => ({
@@ -24,8 +24,18 @@ const useStyles = makeStyles()(() => ({
 }))
 
 // Tick lines are 4px (minor) or 6px (major) long in the cross-axis direction.
-function tickLen(t: PositionedTick) {
-  return t.tick.type === 'major' ? 6 : 4
+function tickLen(tick: Tick) {
+  return tick.type === 'major' ? 6 : 4
+}
+
+// hue for axis text (fill) and tick lines (stroke); both are the primary text
+// color, shared by the horizontal and vertical axes.
+function useAxisColors() {
+  const theme = useTheme()
+  return {
+    fill: getFillProps(theme.palette.text.primary),
+    stroke: getStrokeProps(theme.palette.text.primary),
+  }
 }
 
 export const HorizontalAxis = observer(function HorizontalAxis({
@@ -52,9 +62,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.hblockLabelKeysToHide
   const ticks = model.hTickPositions
-  const theme = useTheme()
-  const fill = getFillProps(theme.palette.text.primary)
-  const stroke = getStrokeProps(theme.palette.text.primary)
+  const { fill, stroke } = useAxisColors()
 
   return (
     <>
@@ -85,7 +93,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
               x1={x}
               x2={x}
               y1={0}
-              y2={tickLen({ tick, alongPx: x })}
+              y2={tickLen(tick)}
               strokeWidth={1}
               {...stroke}
             />
@@ -143,9 +151,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
   const ticks = model.vTickPositions
-  const theme = useTheme()
-  const fill = getFillProps(theme.palette.text.primary)
-  const stroke = getStrokeProps(theme.palette.text.primary)
+  const { fill, stroke } = useAxisColors()
 
   // Vertical axis is flipped: block offsetPx grows upward visually, so we map
   // alongPx (downward-natural) to viewHeight - alongPx.
@@ -171,7 +177,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
         })}
       {ticks.map(({ tick, alongPx }, idx) => {
         const y = viewHeight - alongPx
-        const len = tickLen({ tick, alongPx })
+        const len = tickLen(tick)
         return (
           // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
           <g key={`${tick.refName}-${tick.base}-${idx}`}>

@@ -82,6 +82,36 @@ test('allows modifying a prop override', () => {
   )
 })
 
+test('augments a custom base color (default theme) with light/dark/contrastText', () => {
+  const theme = createJBrowseTheme({
+    palette: { bases: { A: { main: '#123456' } } },
+  })
+  const { A, C } = theme.palette.bases
+  expect(A.main).toEqual('#123456')
+  expect(A.light).toBeTruthy()
+  expect(A.dark).toBeTruthy()
+  // contrastText recomputed from the new main, not spliced from default green
+  expect(A.contrastText).toBeTruthy()
+  // an unspecified base keeps its default augmented value
+  expect(C.contrastText).toBeTruthy()
+})
+
+test('augments a custom base color for a config-defined named theme', () => {
+  const theme = createJBrowseTheme(
+    {},
+    {
+      myTheme: {
+        name: 'My Theme',
+        palette: { bases: { A: { main: '#123456' } } },
+      },
+    },
+    'myTheme',
+  )
+  const { A } = theme.palette.bases
+  expect(A.main).toEqual('#123456')
+  expect(A.contrastText).toBeTruthy()
+})
+
 test('default theme has coverage color', () => {
   const theme = createJBrowseTheme()
   expect(theme.palette.coverage).toBeDefined()

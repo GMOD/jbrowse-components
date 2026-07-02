@@ -177,7 +177,6 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
   const { classes } = useStyles()
   const { name, id } = item
   const stats = model.folderCategoryStats.get(id)
-  const hasActiveSubtracks = (stats?.active ?? 0) > 0
   const { setMenuOpen, guard } = useMenuGuardedClick()
 
   return (
@@ -193,7 +192,7 @@ const FolderCategoryLabel = observer(function FolderCategoryLabel({
       <span data-testid={`htsCategory-${name}`}>
         <SanitizedHTML html={name} />
       </span>
-      {hasActiveSubtracks && stats ? (
+      {stats && stats.active > 0 ? (
         <span className={classes.countBadge}>
           ({stats.active}/{stats.total})
         </span>

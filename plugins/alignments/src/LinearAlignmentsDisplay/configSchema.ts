@@ -428,9 +428,11 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSoftClipping: {
-        type: 'boolean',
-        defaultValue: false,
-        description: 'Draw soft-clipped read portions',
+        type: 'frozen',
+        defaultValue: null,
+        description:
+          'Draw soft-clipped read portions. null = follow the session-wide default for alignments tracks (off when none is set); true/false pin this track regardless of that default',
+        advanced: true,
       },
     },
     {

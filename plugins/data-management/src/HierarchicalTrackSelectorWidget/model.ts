@@ -704,12 +704,12 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
                 if (stc) {
                   self.setFolderCategories(stc)
                 } else {
-                  for (const elt of getConf(session, [
-                    'hierarchical',
-                    'defaultFolderCategories',
-                  ])) {
-                    self.toggleFolderCategory(`Tracks-${elt}`)
-                  }
+                  self.setFolderCategories(
+                    getConf(session, [
+                      'hierarchical',
+                      'defaultFolderCategories',
+                    ]).map((elt: string) => `Tracks-${elt}`),
+                  )
                 }
               }
             },

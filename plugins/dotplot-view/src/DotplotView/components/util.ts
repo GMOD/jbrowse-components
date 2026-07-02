@@ -12,7 +12,7 @@ import type { Dotplot1DViewModel } from '../model.ts'
 import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 export interface Tick {
-  type: string
+  type: 'major' | 'minor'
   base: number
   index: number
   refName: string
@@ -136,7 +136,7 @@ export function makeTicks(
   emitMajor = true,
   emitMinor = true,
 ) {
-  const ticks = []
+  const ticks: Tick[] = []
   const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
   for (const { start, end, refName } of regions) {

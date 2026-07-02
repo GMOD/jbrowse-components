@@ -129,6 +129,114 @@ export function showRefNameLabels<T>(
 }
 
 /**
+ * Index of the block carrying the "sticky" refName label pinned to the left
+ * edge: the rightmost content block whose left edge has scrolled off the left of
+ * the viewport, or the first content block when none have.
+ */
+export function stickyBlockIndex(blocks: BaseBlock[], offsetPx: number) {
+  let idx = blocks.findIndex(b => b.type === 'ContentBlock')
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i]!
+    if (block.type === 'ContentBlock' && block.offsetPx < offsetPx) {
+      idx = i
+    }
+  }
+  return idx
+}
+
+export interface ScalebarRefNameLabel {
+  key: string
+  refName: string
+  displayedRegionIndex: number
+  transform: number
+  maxWidth: number | undefined
+  paddingLeft: number
+  text: string
+}
+
+/**
+ * translateX and maxWidth for one refName label, or undefined when the space
+ * before the region ends is too narrow (<20px) to be worth a label (e.g. a tiny
+ * collapsed-intron region). Sticky labels start at the viewport's left edge;
+ * others start at their block's left edge.
+ */
+function refLabelLayout(
+  block: ContentBlock,
+  displayedRegionIndex: number,
+  offsetPx: number,
+  regionEndPx: Map<number, number>,
+  sticky: boolean,
+) {
+  const regionEnd = regionEndPx.get(displayedRegionIndex)
+  const labelStartPx = sticky ? offsetPx : block.offsetPx
+  const maxWidth =
+    regionEnd === undefined ? undefined : regionEnd - labelStartPx - 2
+  if (maxWidth !== undefined && maxWidth < 20) {
+    return undefined
+  }
+  const transform = sticky
+    ? Math.max(0, -offsetPx)
+    : block.offsetPx - offsetPx - 1
+  return { transform, maxWidth }
+}
+
+/**
+ * Builds the refName labels drawn along the scalebar as plain data (no JSX): one
+ * label per run of same-refName regions (deduped so collapsed introns don't
+ * repeat the name) plus a "sticky" label pinned to the left edge naming the
+ * refName under the viewport's left border. `prefix` (an assembly name, synteny
+ * only) folds into the sticky label as "prefix:refName"; showPrefixFallback
+ * flags that it must instead be drawn standalone because no sticky label carried
+ * it (e.g. the leftmost region was too narrow to label).
+ */
+export function getScalebarRefNameLabels({
+  blocks,
+  offsetPx,
+  regionEndPx,
+  prefix,
+}: {
+  blocks: BaseBlock[]
+  offsetPx: number
+  regionEndPx: Map<number, number>
+  prefix: string
+}) {
+  const stickyIdx = stickyBlockIndex(blocks, offsetPx)
+  const isRunStart = showRefNameLabels(blocks, getBlockRefName)
+  const labels: ScalebarRefNameLabel[] = []
+  let stickyHasPrefix = false
+
+  for (let i = 0; i < blocks.length; i++) {
+    const block = blocks[i]!
+    const sticky = i === stickyIdx
+    const show = sticky || (!!block.isLeftEndOfDisplayedRegion && isRunStart[i]!)
+    if (
+      block.type !== 'ContentBlock' ||
+      block.displayedRegionIndex === undefined ||
+      !show
+    ) {
+      continue
+    }
+    const idx = block.displayedRegionIndex
+    const layout = refLabelLayout(block, idx, offsetPx, regionEndPx, sticky)
+    if (!layout) {
+      continue
+    }
+    const withPrefix = sticky && prefix !== ''
+    stickyHasPrefix ||= withPrefix
+    labels.push({
+      key: block.key,
+      refName: block.refName,
+      displayedRegionIndex: idx,
+      transform: layout.transform,
+      maxWidth: layout.maxWidth,
+      paddingLeft: sticky ? 0 : 1,
+      text: withPrefix ? `${prefix}:${block.refName}` : block.refName,
+    })
+  }
+  return { labels, showPrefixFallback: prefix !== '' && !stickyHasPrefix }
+}
+
+/**
  * Whether a label occupying [leftPx, leftPx + labelWidth] fits within a block
  * of the given pixel width, used to skip tick labels that would be clipped at a
  * region edge (common with small collapsed-intron regions).

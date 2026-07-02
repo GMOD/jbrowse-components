@@ -4,10 +4,9 @@ import { Menu } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
-import { getBlockRefName, showRefNameLabels } from '../util.ts'
+import { getScalebarRefNameLabels } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
-import type { ContentBlock } from '@jbrowse/core/util/blockTypes'
 
 type LGV = LinearGenomeViewModel
 
@@ -55,15 +54,12 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const prefix = model.scalebarDisplayPrefix()
   const regionEndPx = model.scalebarRegionEndPx
 
-  // Sticky label: rightmost content block whose left edge is within/before the
+  // Sticky label: rightmost content block whose left edge is left of the
   // viewport. Falls back to the first content block if none are left of viewport.
-  let stickyBlockIdx = -1
+  let stickyBlockIdx = blocks.findIndex(b => b.type === 'ContentBlock')
   for (let i = 0; i < blocks.length; i++) {
     const b = blocks[i]!
-    if (
-      b.type === 'ContentBlock' &&
-      (stickyBlockIdx === -1 || b.offsetPx < offsetPx)
-    ) {
+    if (b.type === 'ContentBlock' && b.offsetPx < offsetPx) {
       stickyBlockIdx = i
     }
   }

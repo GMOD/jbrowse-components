@@ -103,7 +103,12 @@ import type {
 } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  Feature,
+  Region,
+  TrackConfigChange,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -413,8 +418,52 @@ export default function stateModelFactory(
           return getConf(self, 'readConnectionsHeight')
         },
         /** #getter */
+        // A concrete true/false in the config pins this track; the null schema
+        // default means inherit the user's session-wide default for this display
+        // type (see setDisplayTypeDefault), falling back to off when none is set.
+        // Mirrors the canvas displayMode sentinel resolution.
         get showSoftClipping(): boolean {
-          return getConf(self, 'showSoftClipping')
+          const configured: unknown = getConf(self, 'showSoftClipping')
+          if (typeof configured === 'boolean') {
+            return configured
+          }
+          const sessionDefault = getSession(self).getDisplayTypeDefault?.(
+            self.type,
+            'showSoftClipping',
+          )
+          return typeof sessionDefault === 'boolean' ? sessionDefault : false
+        },
+
+        /** #getter */
+        // true when the resolved soft-clipping already equals the session-wide
+        // default for this display type (drives the "make default" checkbox)
+        get isShowSoftClippingDefault(): boolean {
+          return (
+            getSession(self).getDisplayTypeDefault?.(
+              self.type,
+              'showSoftClipping',
+            ) === self.showSoftClipping
+          )
+        },
+
+        /** #getter */
+        // true when this track pins soft clipping rather than inheriting (null);
+        // gates the "Follow default" item so it only shows when there's a pin
+        get isShowSoftClippingPinned(): boolean {
+          return typeof getConf(self, 'showSoftClipping') === 'boolean'
+        },
+
+        /** #method */
+        // Effective config difference caused by a session-wide soft-clipping
+        // default (distinct from per-track edits) — reported only for an
+        // un-pinned track whose inherited value differs from the off fallback,
+        // so it can't fire on the schema default alone. Drives the selector
+        // "affected by a session default" badge.
+        sessionDefaultChanges(): TrackConfigChange[] {
+          const configured: unknown = getConf(self, 'showSoftClipping')
+          return typeof configured === 'boolean' || !self.showSoftClipping
+            ? []
+            : [{ path: ['showSoftClipping'], from: false, to: true }]
         },
       }))
       .volatile(() => {
