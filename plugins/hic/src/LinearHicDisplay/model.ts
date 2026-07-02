@@ -124,9 +124,32 @@ export default function stateModelFactory(
       },
       /**
        * #getter
+       * The user's persisted normalization choice. May name a scheme the current
+       * `.hic` file doesn't actually offer — `activeNormalization` resolves that.
+       */
+      get selectedNormalization(): string {
+        return getConf(self, 'selectedNormalization')
+      },
+      /**
+       * #getter
+       * The normalization actually used, resolved against what the file offers
+       * (`availableNormalizations`). Falls back to the next-best available scheme
+       * when the selection is absent (hic-straw silently uses NONE otherwise).
+       * A pure getter, so opening a file that lacks the selected scheme never
+       * writes a config delta / marks the track edited — only an explicit user
+       * pick (setActiveNormalization) does.
        */
       get activeNormalization(): string {
-        return getConf(self, 'activeNormalization')
+        const avail = self.availableNormalizations
+        const selected = this.selectedNormalization
+        if (!avail || avail.includes(selected)) {
+          return selected
+        }
+        return (
+          ['KR', 'SCALE', 'VC_SQRT', 'VC'].find(n => avail.includes(n)) ??
+          avail[0] ??
+          'NONE'
+        )
       },
       /**
        * #getter
@@ -389,28 +412,23 @@ export default function stateModelFactory(
       },
       /**
        * #action
+       * Persist the user's explicit normalization pick. Resolution against what
+       * the file offers happens in the `activeNormalization` getter, so this
+       * only fires on a real user choice.
        */
       setActiveNormalization(f: string) {
-        self.configuration.setSlot('activeNormalization', f)
+        self.configuration.setSlot('selectedNormalization', f)
       },
       /**
        * #action
-       * Reconcile `activeNormalization` against what the file actually offers.
-       * The model seeds `activeNormalization='KR'` before `CoreGetInfo`
-       * resolves, but not every `.hic` carries KR — when it doesn't, fall back
-       * to the next-best available scheme so the UI selection matches what's
-       * rendered (hic-straw silently uses NONE for an absent norm otherwise).
+       * Record what the `.hic` file offers. Resolution lives in the
+       * `activeNormalization` getter (which falls back off this list when the
+       * user's `selectedNormalization` isn't available), so this doesn't write
+       * the selection — opening a file that lacks the selected scheme never
+       * marks the track edited.
        */
       setAvailableNormalizations(f: string[]) {
         self.availableNormalizations = f
-        if (!f.includes(self.activeNormalization)) {
-          self.configuration.setSlot(
-            'activeNormalization',
-            ['KR', 'SCALE', 'VC_SQRT', 'VC'].find(n => f.includes(n)) ??
-              f[0] ??
-              'NONE',
-          )
-        }
       },
       /**
        * #action

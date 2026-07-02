@@ -111,13 +111,14 @@ const HicTrackConfigFactory = () => {
       },
       /**
        * #slot
-       * Active matrix normalization scheme (e.g. KR, SCALE, VC, NONE),
-       * reconciled at runtime against what the `.hic` file actually provides.
+       * The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC,
+       * NONE). Resolved at runtime against what the `.hic` file actually
+       * provides — see the model's `activeNormalization` getter.
        */
-      activeNormalization: {
+      selectedNormalization: {
         type: 'string',
         defaultValue: 'KR',
-        description: 'matrix normalization scheme',
+        description: 'preferred matrix normalization scheme',
       },
       /**
        * #slot
