@@ -100,11 +100,11 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     config: 'test_data/gwas/locuszoom_ld.json',
-    label: 'GWAS LocusZoom LD (GIANT BMI, FTO locus)',
+    label: 'GWAS LD (GIANT BMI, FTO locus)',
   },
   {
     href: '?config=test_data/sars-cov2/config.json&session=spec-{"views":[{"assembly":"Wuhan-Hu-1","loc":"NC_045512.2:266-21555","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_genes_with_mature_peptides"]}]}',
-    label: 'SARS-CoV2 polyprotein (ORF1ab mature peptides)',
+    label: 'SARS-CoV2 polyprotein (ORF1ab peptides)',
   },
   {
     config: 'test_data/enterovirus_d/config.json',
@@ -112,17 +112,15 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     config: 'test_data/maize_te/config.json',
-    label:
-      'Maize EDTA transposable elements (intact LTR retrotransposon subparts)',
+    label: 'Maize transposable elements (LTR subparts)',
   },
   {
     config: 'test_data/human_mito/config.json',
-    label: 'Human mitochondrion (transl_table=2 + transl_except polyA stops)',
+    label: 'Human mitochondrion (transl_table=2, polyA stops)',
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"3:49358083-49358183","type":"LinearGenomeView","colorByCDS":true,"tracks":["ncbi_refseq_109_hg38_latest"]}]}',
-    label:
-      'Human GPX1 selenoprotein (UGA→selenocysteine readthrough in translation)',
+    label: 'GPX1 selenoprotein (UGA→Sec readthrough)',
   },
   {
     config: 'test_data/arabidopsis_methylation/config.json',
@@ -142,13 +140,19 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["broad_chromhmm_multirow_hg19"]}]}',
-    label:
-      'ChromHMM chromatin-state painting (9 ENCODE cell types, β-globin locus)',
+    label: 'ChromHMM states (9 ENCODE cell types, β-globin)',
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"11:5200000-5400000","type":"LinearGenomeView","tracks":["roadmap_chromhmm_multirow_hg19"]}]}',
-    label:
-      'ChromHMM chromatin-state painting (Roadmap, 127 epigenomes, auto-fit)',
+    label: 'ChromHMM states (Roadmap, 127 epigenomes)',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"11:2153000-2172000","type":"LinearGenomeView","tracks":["catlas_scatac_celltypes_hg38"]}]}',
+    label: 'Single-cell ATAC by cell type (CATlas, INS locus)',
+  },
+  {
+    href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:16900000-16920000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t","hg002_dipcall_hap1_t2t","hg002_dipcall_hap2_t2t"]}]}',
+    label: 'HG002 diploid assembly (dipcall hap1+hap2 + variant calls vs GRCh38)',
   },
 ]
 
@@ -221,7 +225,7 @@ export const syntenyConfigs: readonly SampleLink[] = [
 export const demoSessions: readonly SampleLink[] = [
   {
     href: '?config=test_data/config_demo.json&session=share-oTyYRpz9fN&password=fYAbt',
-    label: 'Human instance with HG002 insertion shown',
+    label: 'HG002 insertion',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-pjaAq1hNxB&password=Z9teR',
@@ -233,7 +237,7 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/breakpoint/config.json&session=share-xeUuLRakik&password=vh0ca',
-    label: 'Breakpoint split view demo (multi-hop)',
+    label: 'Breakpoint split view (multi-hop)',
   },
   {
     href: '?config=test_data/config_dotplot.json&session=share-zw51jIwuXb&password=i8WqY',
@@ -245,12 +249,12 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=https://jbrowse.org/genomes/GRCh38/1000genomes/config_1000genomes.json&session=share-SUK-mntGyB&password=eQF0F',
-    label: '1000 genomes extended trio demo',
+    label: '1000 genomes trio',
   },
 
   {
     href: '?config=test_data/config_demo.json&session=share-Pw7kOjagSF&password=e0SuE',
-    label: 'ENCODE Multi-bigwig example',
+    label: 'ENCODE multi-bigwig',
   },
   {
     href: '?config=test_data/config_demo.json&session=share-7skGDzEmMi&password=NGzLX',
@@ -262,7 +266,7 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=share-ofjI26CNas&password=ohqlR',
-    label: 'Inversion example (linked reads mode)',
+    label: 'Inversion (linked reads mode)',
   },
   {
     href: '?config=https://jbrowse.org/demos/plant_synteny_demo/config2.json&session=share-pARmvLazem&password=ZPOwE',
@@ -282,7 +286,7 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","type":"CircularView","tracks":["volvox_sv_test"]}]}',
-    label: 'Circular genome view (volvox SVs as chords)',
+    label: 'Circular view (volvox SVs as chords)',
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg19","loc":"17:1-83257441","type":"LinearGenomeView","tracks":["hic"]}]}',
@@ -290,7 +294,7 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_gwas.json&session=spec-{"views":[{"assembly":"hg19","loc":"2:191790000-192120000","type":"LinearGenomeView","tracks":["sle_gwas_ld"]}]}',
-    label: 'GWAS LocusZoom-style LD coloring',
+    label: 'GWAS LD coloring',
   },
   {
     href: '?config=test_data/volvox/config.json&session=spec-{"views":[{"assembly":"volvox","loc":"ctgA:1-50000","type":"LinearGenomeView","tracks":["volvox_bedpe"]}]}',
@@ -302,7 +306,7 @@ export const demoSessions: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"15:23615000-23680000","type":"LinearGenomeView","tracks":[{"trackId":"HG002_WGS_fiberseq.MAGEL2_2","displaySnapshot":{"type":"LinearAlignmentsDisplay","colorBy":{"type":"modifications"}}}]}]}',
-    label: 'Fiber-seq (5mC/6mA on single molecules, MAGEL2)',
+    label: 'Fiber-seq (5mC/6mA, MAGEL2)',
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"17:43000000-43200000","type":"LinearGenomeView","tracks":["NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted"]}]}',
@@ -313,7 +317,7 @@ export const demoSessions: readonly SampleLink[] = [
 export const galleryDemos: readonly SampleLink[] = [
   {
     href: '?config=test_data%2Fconfig_dotplot.json&session=share-r4sMB3bHh5&password=C9jCa',
-    label: 'Dotplot grape vs peach genome',
+    label: 'Dotplot grape vs peach',
   },
   {
     href: '?config=test_data%2Fconfig_dotplot.json&session=share-4MjF5YGM_G&password=rByjt',
@@ -333,7 +337,7 @@ export const galleryDemos: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-6pkcSXlbFL&password=ER28C',
-    label: 'Horizontally flipped demo',
+    label: 'Horizontally flipped',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-AcZSrC_yOb&password=e7b64',
@@ -341,7 +345,7 @@ export const galleryDemos: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-Swq8pJTX0z&password=yM41l',
-    label: 'SKBR3 using breakpoint split view',
+    label: 'SKBR3 breakpoint split view',
   },
   {
     href: '?config=test_data%2Fconfig_demo.json&session=share-psOr2x2efp&password=bErZE',

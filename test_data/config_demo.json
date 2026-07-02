@@ -4260,6 +4260,170 @@
     },
     {
       "type": "MultiQuantitativeTrack",
+      "trackId": "catlas_scatac_celltypes_hg38",
+      "name": "Single-cell ATAC accessibility by cell type (CATlas, Zhang et al 2021)",
+      "category": ["Single cell", "Chromatin accessibility"],
+      "assemblyNames": ["hg38"],
+      "adapter": {
+        "type": "MultiWiggleAdapter",
+        "subadapters": [
+          {
+            "type": "BigWigAdapter",
+            "name": "Alpha (glucagon)",
+            "group": "Pancreatic islet",
+            "color": "#e6194b",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Alpha_1.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Beta (insulin)",
+            "group": "Pancreatic islet",
+            "color": "#f58231",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Beta_1.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Delta/Gamma",
+            "group": "Pancreatic islet",
+            "color": "#ffb000",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Delta%2BGamma.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Acinar",
+            "group": "Pancreatic exocrine",
+            "color": "#d9a05b",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Acinar.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Ductal",
+            "group": "Pancreatic exocrine",
+            "color": "#b15928",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Ductal.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD8 T cell",
+            "group": "Immune",
+            "color": "#4363d8",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/T_Lymphocyte_1_CD8%2B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "CD4 T cell",
+            "group": "Immune",
+            "color": "#4682b4",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/T_lymphocyte_2_CD4%2B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "NK T cell",
+            "group": "Immune",
+            "color": "#17becf",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Natural_Killer_T.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Macrophage",
+            "group": "Immune",
+            "color": "#1f78b4",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Macrophage_General.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Plasma B cell",
+            "group": "Immune",
+            "color": "#2166ac",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Plasma_B.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Astrocyte",
+            "group": "Brain",
+            "color": "#3cb44b",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Astrocyte_1.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Oligodendrocyte",
+            "group": "Brain",
+            "color": "#33a02c",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Oligodendrocyte.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Hepatocyte",
+            "group": "Other tissues",
+            "color": "#911eb4",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Hepatocyte.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Cardiomyocyte (atrial)",
+            "group": "Other tissues",
+            "color": "#a6761d",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/A_Cardiomyocyte.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Adipocyte",
+            "group": "Other tissues",
+            "color": "#e377c2",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Adipocyte.bw"
+            }
+          },
+          {
+            "type": "BigWigAdapter",
+            "name": "Enterocyte",
+            "group": "Other tissues",
+            "color": "#8c564b",
+            "bigWigLocation": {
+              "uri": "https://decoder-genetics.wustl.edu/catlasv1/humanenhancer/data/bw/Enterocyte.bw"
+            }
+          }
+        ]
+      },
+      "displays": [
+        {
+          "type": "MultiLinearWiggleDisplay",
+          "displayId": "catlas_scatac_celltypes_hg38-MultiLinearWiggleDisplay",
+          "defaultRendering": "multirowxy",
+          "height": 500
+        }
+      ]
+    },
+    {
+      "type": "MultiQuantitativeTrack",
       "trackId": "microarray_multi_groups",
       "name": "MultiWig (groups)",
       "category": ["ENCODE bigWigs"],
@@ -4909,6 +5073,35 @@
     },
     {
       "type": "VariantTrack",
+      "trackId": "1000g_chr1_snpeff_consequence",
+      "name": "1000 Genomes phase 3 chr1 (colored by consequence impact)",
+      "category": ["1000 Genomes"],
+      "metadata": {
+        "description": "Real 1000 Genomes phase 3 chr1:155,000,000-155,050,000 genotypes (2,504 samples), annotated with real SnpEff 5.4c against the real Ensembl GRCh37.75 database (not synthetic). See test_data/1000g_snpeff_chr1/README.md for provenance."
+      },
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "1000g_snpeff_chr1/ALL.chr1.phase3.155M.snpeff.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "1000g_snpeff_chr1/ALL.chr1.phase3.155M.snpeff.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "1000g_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
+          "featureColor": "jexl:impactColor(feature)"
+        }
+      ],
+      "assemblyNames": ["hg19"]
+    },
+    {
+      "type": "VariantTrack",
       "trackId": "HG02024_VN049_KHVTrio.chr1.vcf",
       "name": "HG02024_VN049_KHVTrio.chr1.vcf",
       "category": ["1000 Genomes"],
@@ -5279,6 +5472,35 @@
         }
       },
       "category": ["1000 Genomes", "HGSVC"],
+      "assemblyNames": ["hg38"]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hgsvc_sv_chr1_snpeff_consequence",
+      "name": "HGSVC structural variants, chr1 (colored by consequence impact)",
+      "category": ["1000 Genomes", "HGSVC"],
+      "metadata": {
+        "description": "Real HGSVC chr1 structural variants (74 real sample/haplotype columns), annotated with real SnpEff 5.4c against the real Ensembl GRCh38.99 database (not synthetic). See test_data/hgsvc_sv_snpeff/README.md for provenance."
+      },
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "hgsvc_sv_snpeff/HGSVC2024v1.0_GRCh38_sv_chr1.snpeff.vcf.gz"
+        },
+        "index": {
+          "location": {
+            "uri": "hgsvc_sv_snpeff/HGSVC2024v1.0_GRCh38_sv_chr1.snpeff.vcf.gz.tbi"
+          },
+          "indexType": "TBI"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearMultiSampleVariantDisplay",
+          "displayId": "hgsvc_sv_chr1_snpeff_consequence-LinearMultiSampleVariantDisplay",
+          "featureColor": "jexl:impactColor(feature)"
+        }
+      ],
       "assemblyNames": ["hg38"]
     },
     {
