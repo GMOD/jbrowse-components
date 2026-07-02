@@ -4,6 +4,7 @@ export type { BaseExportSvgOptions } from './BaseExportSvgDialog.tsx'
 export { useExportSvgPreference } from './useExportSvgPreference.ts'
 export { LogoFull, Logomark } from './Logo.tsx'
 export { default as AssemblySelector } from './AssemblySelector.tsx'
+export { useAssemblySelection } from './useAssemblySelection.ts'
 export {
   RefNameAutocompleteEndAdornment,
   default as RefNameAutocomplete,

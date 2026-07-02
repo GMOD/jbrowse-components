@@ -1,6 +1,8 @@
-import { useState } from 'react'
-
-import { AssemblySelector, ErrorBanner } from '@jbrowse/core/ui'
+import {
+  AssemblySelector,
+  ErrorBanner,
+  useAssemblySelection,
+} from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, Container, Grid } from '@mui/material'
@@ -21,27 +23,18 @@ const ImportForm = observer(function ImportForm({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const { error } = model
-  const { assemblyNames, assemblyManager } = session
-  const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0] ?? '')
-  const assembly = assemblyManager.get(selectedAsm)
-  const assemblyError = assemblyNames.length
-    ? assembly?.error
-    : 'No configured assemblies'
-  const regions = assembly?.regions ?? []
-  const err = assemblyError || error
+  const {
+    selectedAssemblyName,
+    setSelectedAssemblyName,
+    assemblyError,
+    regions,
+  } = useAssemblySelection(session)
+
+  const displayError = assemblyError ?? model.error
 
   return (
     <Container className={classes.importFormContainer}>
-      {err ? (
-        <Grid
-          container
-          spacing={1}
-          sx={{ justifyContent: 'center', alignItems: 'center' }}
-        >
-          <ErrorBanner error={err} />
-        </Grid>
-      ) : null}
+      {displayError ? <ErrorBanner error={displayError} /> : null}
       <Grid
         container
         spacing={1}
@@ -50,22 +43,21 @@ const ImportForm = observer(function ImportForm({
         <AssemblySelector
           onChange={val => {
             model.setError(undefined)
-            setSelectedAsm(val)
+            setSelectedAssemblyName(val)
           }}
           session={session}
-          selected={selectedAsm}
+          selected={selectedAssemblyName}
         />
         <Button
-          disabled={!regions.length}
+          disabled={!regions?.length}
           onClick={() => {
             model.setError(undefined)
-            model.setDisplayedRegions(regions)
+            model.setDisplayedRegions(regions ?? [])
           }}
           variant="contained"
           color="primary"
         >
-          {/* if there's an error, it's not actively loading  so just display open */}
-          {regions.length || err ? 'Open' : 'Loading...'}
+          {regions || displayError ? 'Open' : 'Loading...'}
         </Button>
       </Grid>
     </Container>
