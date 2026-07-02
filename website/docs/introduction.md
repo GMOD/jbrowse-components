@@ -50,6 +50,8 @@ Not ready to install anything? Browse [live demos](/demos/), the
   population-level SVs, trio inspection, and chromosomal inversions
 - [Protein structures and MSAs](/docs/tutorials/protein_structure) — 3D
   structures and multiple sequence alignments linked to genomic variants
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm) — many-cell-type
+  segmentations in one multi-row feature track
 - [Applying display settings](/docs/tutorials/display_settings) — set track
   display settings via config.json, URL, or embedded session
 

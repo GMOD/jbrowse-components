@@ -11,6 +11,7 @@ title: User guide
 
 - [Alignments track](/docs/user_guides/alignments_track) - Learn how to show BAM and CRAM files
 - [Feature sequence panel](/docs/user_guides/feature_sequence) - Sequence extraction for selected features
+- [GC content track](/docs/user_guides/gc_content_track) - Compute GC content or GC skew directly from a reference sequence
 - [Gene track](/docs/user_guides/gene_track) - Transcript display modes, collapsing introns, color by CDS reading frame, peptide lettering, and mature peptides on gene/transcript tracks
 - [GWAS / Manhattan track](/docs/user_guides/gwas_track) - Visualize genome-wide association study results as an interactive Manhattan plot
 - [Hi-C track](/docs/user_guides/hic_track) - Contact matrix display
@@ -36,6 +37,7 @@ title: User guide
 ## Tutorials
 
 - [Phased trio analysis](/docs/tutorials/analyze_trio) - Examine inheritance patterns and variant phasing in a trio dataset
+- [ChromHMM chromatin states](/docs/tutorials/chromhmm) - Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
 - [Applying display settings](/docs/tutorials/display_settings) - Set track display settings via config.json, URL, or embedded session
 - [Embedding JBrowse](/docs/tutorials/embed_linear_genome_view) - Embed the linear genome view component in a custom web page
 - [DNA methylation](/docs/tutorials/methylation) - Per-read and aggregate methylation from ONT and modkit

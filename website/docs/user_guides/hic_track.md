@@ -37,6 +37,13 @@ Key features to interpret:
 JBrowse automatically selects a resolution that fits the current view width.
 Zoom in to increase resolution; zoom out to see larger-scale organization.
 
+For explicit control, enable **Show resolution controls** from the track menu.
+This overlays finer/coarser resolution buttons on the track that step through
+the binning levels stored in the `.hic` file; the buttons disable themselves at
+the finest and coarsest levels available. Stepping applies a persistent offset
+from the auto-selected level, so the resolution still tracks your zoom — just
+shifted one or more steps finer or coarser than the default.
+
 The color scale is configurable via the track's configuration — see
 [the Hi-C track config guide](/docs/config_guides/hic_track/) for available
 options.

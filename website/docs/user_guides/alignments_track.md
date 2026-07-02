@@ -16,6 +16,11 @@ In the coverage row, a bar that is part red means that fraction of reads carry a
 mismatch (e.g. a `T` where the reference has an `A`) at that position. In the
 pileup, the same mismatches appear as colored ticks on the otherwise-grey reads.
 
+The track menu's **Show coverage** and **Show pileup** toggles turn either panel
+off independently — dropping the pileup leaves a compact coverage-only track
+(handy for surveying depth across many samples), while dropping the coverage row
+reclaims that vertical space for the reads.
+
 ## Sorting reads
 
 The quickest way to sort is to **right-click a mismatch (or any base) in the
@@ -42,6 +47,21 @@ The track menu's **Color by...** offers several schemes.
 | <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#8F8FD8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#8F8FD8"></span> | Reverse strand | `#8F8FD8` | Read maps to the reverse strand |
 
 <!-- COLOR_TABLE alignments-strand END -->
+
+### Read quality and bases
+
+Three schemes surface per-read or per-base signal directly on the pileup:
+
+- **Mapping quality** shades each read by its MAPQ, so poorly-mapped reads
+  (often in repeats or segmental duplications) fade out and confidently-placed
+  reads stay solid.
+- **Per-base quality** colors every base by its Phred score on a
+  red→yellow→green ramp — low-quality bases run red, high-quality bases green —
+  which is the quickest way to tell a real variant from a run of low-confidence
+  base calls.
+- **Per-base lettering** draws every aligned base in its nucleotide color, not
+  just the mismatches, turning the whole pileup into a colored base grid at
+  base-pair resolution.
 
 ### Modifications and methylation
 
