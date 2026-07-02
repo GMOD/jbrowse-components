@@ -187,6 +187,29 @@ describe('canvas display displayMode resolution', () => {
     expect(display.sessionDefaultChanges()).toEqual([])
   })
 
+  it('resetDisplayMode un-pins a track so it follows the default again', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    display.setDisplayMode('normal')
+    expect(display.isDisplayModePinned).toBe(true)
+    expect(display.displayMode).toBe('normal')
+
+    display.resetDisplayMode()
+    expect(display.isDisplayModePinned).toBe(false)
+    // back to inheriting the compact session default
+    expect(display.displayMode).toBe('compact')
+    expect(display.sessionDefaultChanges()).toEqual([
+      { path: ['displayMode'], from: 'normal', to: 'compact' },
+    ])
+  })
+
+  it('an un-pinned track reports isDisplayModePinned false', () => {
+    const { display } = createDisplay()
+    expect(display.isDisplayModePinned).toBe(false)
+    const { display: pinned } = createDisplay('compact')
+    expect(pinned.isDisplayModePinned).toBe(true)
+  })
+
   it('ignores a session default that is not a valid display mode', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(

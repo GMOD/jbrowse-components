@@ -107,6 +107,13 @@ export default function stateModelFactory(
         )
       },
 
+      // true when this track pins an explicit height rather than inheriting via
+      // the 'default' sentinel; gates the "Follow default height" reset item so
+      // it only appears when there's a pin to undo.
+      get isDisplayModePinned() {
+        return getConf(self, 'displayMode') !== 'default'
+      },
+
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
         if (this.geneGlyphMode === 'auto') {
           // coarseBpPerPx (debounced) so crossing the threshold during a zoom
@@ -160,6 +167,12 @@ export default function stateModelFactory(
 
       setDisplayMode(value: DisplayMode) {
         self.configuration.setSlot('displayMode', value)
+      },
+
+      // Revert to the 'default' (inherit) value so the track follows the
+      // session-wide type default again, undoing an explicit height pin.
+      resetDisplayMode() {
+        self.configuration.setSlot('displayMode', 'default')
       },
 
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
@@ -276,6 +289,18 @@ export default function stateModelFactory(
                     self.toggleDisplayModeDefault()
                   },
                 },
+                // only offered when a pin exists to undo, so un-pinned tracks
+                // don't carry a redundant reset
+                ...(self.isDisplayModePinned
+                  ? [
+                      {
+                        label: 'Follow default height',
+                        onClick: () => {
+                          self.resetDisplayMode()
+                        },
+                      },
+                    ]
+                  : []),
               ],
             },
           ]
