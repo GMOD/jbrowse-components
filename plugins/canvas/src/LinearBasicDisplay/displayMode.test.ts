@@ -1,0 +1,233 @@
+import PluginManager from '@jbrowse/core/PluginManager'
+import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import DisplayType from '@jbrowse/core/pluggableElementTypes/DisplayType'
+import TrackType from '@jbrowse/core/pluggableElementTypes/TrackType'
+import {
+  createBaseTrackConfig,
+  createBaseTrackModel,
+} from '@jbrowse/core/pluggableElementTypes/models'
+import { types } from '@jbrowse/mobx-state-tree'
+import {
+  BaseLinearDisplayComponent,
+  linearGenomeViewStateModelFactory as LinearGenomeViewModelFactory,
+} from '@jbrowse/plugin-linear-genome-view'
+
+import configSchemaFactory from './configSchema.ts'
+import stateModelFactory from './model.ts'
+
+import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
+// Boots a real LinearBasicDisplay (canvas) inside an LGV so the `displayMode`
+// resolution getter and the `isDisplayModeDefault`/`toggleDisplayModeDefault`
+// promotion actions run against the actual MST model. The test Session backs
+// getDisplayTypeDefault/setDisplayTypeDefault with the same nested-object store
+// BaseSession uses (that store is round-trip-tested separately in
+// sessionModelFactory.test.ts); here we exercise how the display *reads* it.
+// Mirrors the harness in expandToFit.test.ts.
+function createDisplay(configDisplayMode?: DisplayMode) {
+  const pluginManager = new PluginManager()
+  const configSchema = configSchemaFactory(pluginManager)
+
+  pluginManager.addTrackType(() => {
+    const trackConfigSchema = ConfigurationSchema(
+      'FeatureTrack',
+      {},
+      {
+        baseConfiguration: createBaseTrackConfig(pluginManager),
+        explicitIdentifier: 'trackId',
+      },
+    )
+    return new TrackType({
+      name: 'FeatureTrack',
+      configSchema: trackConfigSchema,
+      stateModel: createBaseTrackModel(
+        pluginManager,
+        'FeatureTrack',
+        trackConfigSchema,
+      ),
+    })
+  })
+
+  pluginManager.addDisplayType(() => {
+    return new DisplayType({
+      name: 'LinearBasicDisplay',
+      configSchema,
+      stateModel: stateModelFactory(configSchema),
+      trackType: 'FeatureTrack',
+      viewType: 'LinearGenomeView',
+      ReactComponent: BaseLinearDisplayComponent,
+    })
+  })
+
+  pluginManager.createPluggableElements()
+  pluginManager.configure()
+
+  const LinearGenomeModel = LinearGenomeViewModelFactory(pluginManager)
+  const trackConfigSchema = pluginManager.pluggableConfigSchemaType('track')
+  const trackConfig = trackConfigSchema.create(
+    {
+      type: 'FeatureTrack',
+      trackId: 'test_track',
+      assemblyNames: ['volvox'],
+      displays: [
+        configDisplayMode
+          ? { type: 'LinearBasicDisplay', displayId: 'd1', displayMode: configDisplayMode }
+          : { type: 'LinearBasicDisplay', displayId: 'd1' },
+      ],
+    },
+    { pluginManager },
+  )
+
+  const Session = types
+    .model({
+      name: 'testSession',
+      view: types.maybe(LinearGenomeModel),
+      configuration: types.map(types.frozen()),
+      // Same shape as BaseSession's preferencesOverrides.displayTypeDefaults:
+      // displayType -> slot -> value. Reassigned wholesale on set so the
+      // display's getter tracks it reactively.
+      displayTypeDefaults: types.frozen<
+        Record<string, Record<string, unknown>>
+      >({}),
+    })
+    .volatile(() => ({
+      rpcManager: { call: jest.fn() },
+      assemblyManager: { get: () => undefined },
+    }))
+    .views(self => ({
+      get tracksById() {
+        return { test_track: trackConfig }
+      },
+      get themeOptions() {
+        return undefined
+      },
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        return self.displayTypeDefaults[displayType]?.[slot]
+      },
+    }))
+    .actions(self => ({
+      setView(view: Instance<typeof LinearGenomeModel>) {
+        self.view = view
+        return view
+      },
+      setDisplayTypeDefault(
+        displayType: string,
+        slot: string,
+        value: unknown,
+      ) {
+        const forType = { ...self.displayTypeDefaults[displayType] }
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        self.displayTypeDefaults = {
+          ...self.displayTypeDefaults,
+          [displayType]: forType,
+        }
+      },
+    }))
+
+  const session = Session.create({ configuration: {} }, { pluginManager })
+  const view = session.setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [
+        {
+          type: 'FeatureTrack',
+          configuration: 'test_track',
+          displays: [{ type: 'LinearBasicDisplay', configuration: 'd1' }],
+        },
+      ],
+    }),
+  )
+  view.setWidth(800)
+  view.setDisplayedRegions([
+    { assemblyName: 'volvox', start: 0, end: 10_000, refName: 'ctgA' },
+  ])
+  return { session, display: view.tracks[0]!.displays[0]! }
+}
+
+describe('canvas display displayMode resolution', () => {
+  it('returns the config default (normal) when no session default is set', () => {
+    const { display } = createDisplay()
+    expect(display.displayMode).toBe('normal')
+    expect(display.isDisplayModeDefault).toBe(false)
+  })
+
+  it('falls back to the session-wide default when config is the schema default', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    // config displayMode is still the schema default 'normal', so the promoted
+    // session default reaches this track without editing its config
+    expect(display.displayMode).toBe('compact')
+    expect(display.isDisplayModeDefault).toBe(true)
+  })
+
+  it('lets an explicit non-normal config win over the session default', () => {
+    const { session, display } = createDisplay('superCompact')
+    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    // an explicit per-track choice is never overridden by the session default
+    expect(display.displayMode).toBe('superCompact')
+    expect(display.isDisplayModeDefault).toBe(false)
+  })
+
+  it('ignores a session default that is not a valid display mode', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'nonsense',
+    )
+    expect(display.displayMode).toBe('normal')
+  })
+
+  it('ignores a default promoted for a different display type', () => {
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearArcDisplay', 'displayMode', 'compact')
+    expect(display.displayMode).toBe('normal')
+  })
+
+  it('reacts to the session default changing after creation', () => {
+    const { session, display } = createDisplay()
+    expect(display.displayMode).toBe('normal')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'superCompact',
+    )
+    expect(display.displayMode).toBe('superCompact')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      undefined,
+    )
+    expect(display.displayMode).toBe('normal')
+  })
+
+  describe('toggleDisplayModeDefault', () => {
+    it('promotes the current mode to the session default', () => {
+      const { session, display } = createDisplay('compact')
+      expect(display.isDisplayModeDefault).toBe(false)
+
+      display.toggleDisplayModeDefault()
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBe('compact')
+      expect(display.isDisplayModeDefault).toBe(true)
+    })
+
+    it('clears the session default when the mode is already the default', () => {
+      const { session, display } = createDisplay('compact')
+      display.toggleDisplayModeDefault()
+      expect(display.isDisplayModeDefault).toBe(true)
+
+      display.toggleDisplayModeDefault()
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBeUndefined()
+      expect(display.isDisplayModeDefault).toBe(false)
+    })
+  })
+})

@@ -24,10 +24,19 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { Region } from '@jbrowse/core/util'
 
-const displayModeLabels: Record<DisplayMode, string> = {
-  normal: 'Normal',
-  compact: 'Compact',
-  superCompact: 'Super-compact',
+// Single source for the "Set feature height" radio options and the
+// "Use ... by default" checkbox label, so a fourth mode can't drift between
+// the two.
+const displayModeOptions: { value: DisplayMode; label: string }[] = [
+  { value: 'normal', label: 'Normal' },
+  { value: 'compact', label: 'Compact' },
+  { value: 'superCompact', label: 'Super-compact' },
+]
+
+// Label for a mode; the fallback is unreachable (every DisplayMode is listed
+// above) but keeps the lookup total without a non-null assertion.
+function displayModeLabel(mode: DisplayMode) {
+  return displayModeOptions.find(o => o.value === mode)?.label ?? mode
 }
 
 /**
@@ -253,18 +262,14 @@ export default function stateModelFactory(
                 ...radioSubMenu(
                   'Set feature height',
                   self.displayMode,
-                  [
-                    { value: 'normal', label: 'Normal' },
-                    { value: 'compact', label: 'Compact' },
-                    { value: 'superCompact', label: 'Super-compact' },
-                  ],
+                  displayModeOptions,
                   value => {
                     self.setDisplayMode(value)
                   },
                 ).subMenu,
                 { type: 'divider' as const },
                 {
-                  label: `Use "${displayModeLabels[self.displayMode]}" by default for all tracks like this`,
+                  label: `Use "${displayModeLabel(self.displayMode)}" by default for all tracks like this`,
                   type: 'checkbox' as const,
                   checked: self.isDisplayModeDefault,
                   onClick: () => {
