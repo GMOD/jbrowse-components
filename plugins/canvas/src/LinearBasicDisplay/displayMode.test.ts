@@ -173,6 +173,20 @@ describe('canvas display displayMode resolution', () => {
     expect(display.isDisplayModeDefault).toBe(false)
   })
 
+  it('lets an explicit Normal pin override a compact session default', () => {
+    // the sentinel-ambiguity regression: on a track inheriting a compact
+    // default, choosing Normal must actually show normal, not silently re-resolve
+    // back to compact (the dead radio option)
+    const { session, display } = createDisplay()
+    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    expect(display.displayMode).toBe('compact')
+
+    display.setDisplayMode('normal')
+    expect(display.displayMode).toBe('normal')
+    // now an explicit pin, so it no longer reads as affected by the default
+    expect(display.sessionDefaultChanges()).toEqual([])
+  })
+
   it('ignores a session default that is not a valid display mode', () => {
     const { session, display } = createDisplay()
     session.setDisplayTypeDefault(

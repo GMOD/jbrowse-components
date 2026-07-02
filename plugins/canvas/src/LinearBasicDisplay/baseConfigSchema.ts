@@ -123,12 +123,14 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       displayMode: {
         type: 'stringEnum',
         model: types.enumeration('displayMode', [
+          'default',
           'normal',
           'compact',
           'superCompact',
         ]),
-        description: 'Feature height preset (normal/compact/super-compact)',
-        defaultValue: 'normal',
+        description:
+          "Feature height preset. 'default' inherits the session-wide default for this display type (falling back to normal); normal/compact/superCompact pin an explicit height",
+        defaultValue: 'default',
       },
       /**
        * #slot

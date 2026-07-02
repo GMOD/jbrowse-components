@@ -70,6 +70,7 @@ import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type {
   DisplayConfig,
   DisplayMode,
+  DisplayModeConfig,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -389,18 +390,21 @@ export default function baseStateModelFactory(
          * #getter
          */
         get displayMode(): DisplayMode {
-          const configured: DisplayMode = getConf(self, 'displayMode')
+          const configured: DisplayModeConfig = getConf(self, 'displayMode')
+          // An explicit height pin (one of the three concrete modes) always
+          // wins — so choosing 'normal' overrides a compact session default
+          // rather than being read as "inherit". The 'default' value (the schema
+          // default) means inherit: fall back to the user's session-wide type
+          // default, or plain 'normal' when none is set. An un-pinned track thus
+          // picks up a promoted default with no config delta / "edited" badge.
+          if (isDisplayMode(configured)) {
+            return configured
+          }
           const sessionDefault = getSession(self).getDisplayTypeDefault?.(
             self.type,
             'displayMode',
           )
-          // An explicit per-track choice (differs from the 'normal' schema
-          // default) always wins; otherwise fall back to the user's session-wide
-          // type default so a promoted default reaches newly-opened tracks
-          // without editing their config — no delta, no "edited" badge.
-          return configured === 'normal' && isDisplayMode(sessionDefault)
-            ? sessionDefault
-            : configured
+          return isDisplayMode(sessionDefault) ? sessionDefault : 'normal'
         },
 
         /**
@@ -408,16 +412,16 @@ export default function baseStateModelFactory(
          */
         // Effective config differences caused by a session-wide
         // displayTypeDefault (see the displayMode resolution above) — distinct
-        // from per-track config edits (trackConfigDeltas). Reads the live
-        // resolved value against the configured one, so it can never drift from
-        // the getter that owns the resolution. Empty when they agree. Drives the
-        // "affected by a session default" badge in the track selector.
+        // from per-track config edits (trackConfigDeltas). Reports a change only
+        // for an un-pinned ('default') track whose inherited height differs from
+        // the plain 'normal' fallback, so it can't fire on the schema default
+        // alone. Drives the "affected by a session default" badge.
         sessionDefaultChanges(): TrackConfigChange[] {
-          const configured: DisplayMode = getConf(self, 'displayMode')
+          const configured: DisplayModeConfig = getConf(self, 'displayMode')
           const resolved = this.displayMode
-          return configured === resolved
+          return isDisplayMode(configured) || resolved === 'normal'
             ? []
-            : [{ path: ['displayMode'], from: configured, to: resolved }]
+            : [{ path: ['displayMode'], from: 'normal', to: resolved }]
         },
 
         /**

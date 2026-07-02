@@ -51,11 +51,21 @@ export function resolveThemeColor(value: string, fallback: string) {
   return value === THEME_DERIVED_COLOR ? fallback : value
 }
 
+// The three concrete height presets. This is the RESOLVED mode — what layout
+// and the worker consume; `self.displayMode` always returns one of these.
 export type DisplayMode = 'normal' | 'compact' | 'superCompact'
 
 export function isDisplayMode(value: unknown): value is DisplayMode {
   return value === 'normal' || value === 'compact' || value === 'superCompact'
 }
+
+// The config-slot value. Adds the 'default' sentinel (the schema default)
+// meaning "inherit the session-wide type default, else normal" — so a concrete
+// mode like 'normal' can be an explicit pin that overrides a compact default,
+// instead of doubling as the inherit signal. Only the resolution getter and
+// sessionDefaultChanges read this; everything downstream sees a resolved
+// DisplayMode.
+export type DisplayModeConfig = DisplayMode | 'default'
 
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on
 // any property is a type error rather than silently typing as `unknown`. The
