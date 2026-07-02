@@ -25,6 +25,13 @@ export class MockHal implements GpuHal {
     this.calls.push({ method, args })
   }
 
+  errorHandler: ((error: Error) => void) | null = null
+
+  setErrorHandler(handler: (error: Error) => void) {
+    this.errorHandler = handler
+    this.record('setErrorHandler')
+  }
+
   resize(width: number, height: number) {
     this.record('resize', width, height)
   }

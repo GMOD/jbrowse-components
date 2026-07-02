@@ -9,6 +9,7 @@ import {
   createVertexBuffer,
   glToGpuVertexFormat,
 } from '../webgpuUtils.ts'
+import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
 import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
@@ -245,6 +246,8 @@ export class WebGPUHal implements GpuHal {
   // both fire).
   private disposed = false
 
+  private oom = new OomReporter('WebGPUHal')
+
   private constructor(
     device: GPUDevice,
     canvas: HTMLCanvasElement,
@@ -332,6 +335,13 @@ export class WebGPUHal implements GpuHal {
     this.msaaTexture?.destroy()
     this.msaaTexture = null
     this.msaaView = null
+    const maxDim = this.device.limits.maxTextureDimension2D
+    if (width > maxDim || height > maxDim) {
+      this.oom.report(
+        `canvas ${width}x${height} exceeds device maxTextureDimension2D ${maxDim} — reduce view height or devicePixelRatio`,
+      )
+      return
+    }
     if (MSAA_SAMPLE_COUNT > 1 && width > 0 && height > 0) {
       this.msaaTexture = this.device.createTexture({
         size: [width, height],
@@ -343,6 +353,10 @@ export class WebGPUHal implements GpuHal {
     }
   }
 
+  setErrorHandler(handler: (error: Error) => void) {
+    this.oom.setHandler(handler)
+  }
+
   uploadBuffer(
     regionKey: number,
     passId: string,
@@ -351,6 +365,13 @@ export class WebGPUHal implements GpuHal {
   ) {
     this.regions.deleteBuffer(regionKey, passId)
     if (count === 0) {
+      return
+    }
+    const { maxBufferSize } = this.device.limits
+    if (data.byteLength > maxBufferSize) {
+      this.oom.report(
+        `vertex buffer ${data.byteLength} bytes exceeds device maxBufferSize ${maxBufferSize} — region not rendered`,
+      )
       return
     }
     const dataBuffer = createVertexBuffer(this.device, data)
@@ -446,6 +467,13 @@ export class WebGPUHal implements GpuHal {
     const desc = this.descriptors.get(passId)
     const tb = desc?.textures?.[0]
     if (!tb) {
+      return
+    }
+    const maxDim = this.device.limits.maxTextureDimension2D
+    if (width > maxDim || height > maxDim) {
+      this.oom.report(
+        `texture ${width}x${height} exceeds device maxTextureDimension2D ${maxDim} — region not rendered`,
+      )
       return
     }
     const existing = this.passTextures.get(passId)
@@ -618,10 +646,11 @@ export class WebGPUHal implements GpuHal {
     // Pop the error scopes pushed in beginFrame (after the early-return guard).
     void this.device.popErrorScope().then(err => {
       if (err) {
-        console.error(
-          '[WebGPUHal] endFrame: OUT-OF-MEMORY error after submit, slot=',
-          slotAtSubmit,
-          err.message,
+        // Genuine VRAM exhaustion during the frame (distinct from the proactive
+        // over-limit checks in uploadBuffer/uploadTexture). Surface to the
+        // display, not just the console — the view is too large for this GPU.
+        this.oom.report(
+          `endFrame: out-of-memory after submit (slot=${slotAtSubmit}): ${err.message}`,
         )
       }
     })

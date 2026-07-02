@@ -67,7 +67,14 @@ export interface RenderLifecycleModel<RenderingBackendType> {
  * actions/fields are all the hook touches.
  */
 export function useRenderingBackend<
-  RenderingBackendType extends { dispose(): void },
+  RenderingBackendType extends {
+    dispose(): void
+    // Optional: the shared GPU/Canvas2D backend bases provide it (forwarding to
+    // the HAL's OOM reporter), but standalone backends (dotplot, synteny) that
+    // implement their interface directly need not — they simply forgo OOM->
+    // renderError routing until they opt in.
+    setErrorHandler?: (handler: (error: Error) => void) => void
+  },
 >(
   factory: (canvas: HTMLCanvasElement) => Promise<RenderingBackendType>,
   model: RenderLifecycleModel<RenderingBackendType>,
@@ -180,6 +187,15 @@ export function useRenderingBackend<
           } else {
             backend = r
             rendererRef.current = r
+            // Route HAL out-of-memory / over-device-limit allocation failures to
+            // renderError so an over-large view shows an error overlay (with a
+            // manual Retry) instead of a silently-blank canvas. Not gated on
+            // contextLostRef, so it never auto-retries — an OOM recurs on retry.
+            r.setErrorHandler?.(e => {
+              if (nodeAlive(model)) {
+                model.setRenderError(e)
+              }
+            })
             // init produced a backend: clear the context-loss scoping flag so a
             // later non-GPU error isn't mistaken for a context loss. The attempt
             // counter is deliberately NOT reset here — a context that resolves

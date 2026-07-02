@@ -101,5 +101,13 @@ export interface GpuHal {
   setViewport(x: number, y: number, w: number, h: number): void
   clearViewport(): void
 
+  // Register a handler for out-of-memory / over-device-limit allocation
+  // failures (a buffer past `maxBufferSize`, a texture past
+  // `maxTextureDimension2D`, or a frame that exhausts VRAM). The display routes
+  // it to `renderError` so the user sees an error instead of a silently-blank
+  // region. Validation errors (programming bugs) are NOT routed here — they
+  // stay on the console.
+  setErrorHandler(handler: (error: Error) => void): void
+
   dispose(): void
 }

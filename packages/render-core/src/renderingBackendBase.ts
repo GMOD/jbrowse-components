@@ -16,6 +16,12 @@ export abstract class GpuRenderingBackendBase {
     this.uniformData = new ArrayBuffer(uniformByteSize)
   }
 
+  // Forward OOM / over-limit allocation failures from the HAL to the display's
+  // renderError. Wired by useRenderingBackend once the backend is live.
+  setErrorHandler(handler: (error: Error) => void): void {
+    this.hal.setErrorHandler(handler)
+  }
+
   dispose(): void {
     this.hal.dispose()
   }
@@ -42,6 +48,11 @@ export abstract class Canvas2DRenderingBackendBase {
     this.canvas = canvas
     this.ctx = ctx
   }
+
+  // Canvas2D allocates no GPU resources, so there is no OOM channel to forward.
+  // Present for symmetry with the GPU base so useRenderingBackend can wire both
+  // uniformly.
+  setErrorHandler(_handler: (error: Error) => void): void {}
 
   dispose(): void {}
 }

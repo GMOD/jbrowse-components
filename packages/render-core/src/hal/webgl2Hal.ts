@@ -1,4 +1,5 @@
 import { syncCanvasSize } from '../canvas2dUtils.ts'
+import { OomReporter } from './oomReporter.ts'
 import { RegionRegistry } from './regionRegistry.ts'
 
 import type { BlendState, GpuHal, PassDescriptor } from './types.ts'
@@ -168,6 +169,8 @@ export class WebGL2Hal implements GpuHal {
   private contextLostListener: ((e: Event) => void) | null = null
   private contextRestoredListener: (() => void) | null = null
 
+  private oom = new OomReporter('WebGL2Hal')
+
   private checkGlError(label: string) {
     if (!this.debug) {
       return
@@ -299,6 +302,10 @@ export class WebGL2Hal implements GpuHal {
     syncCanvasSize(this.canvas, width, height)
   }
 
+  setErrorHandler(handler: (error: Error) => void) {
+    this.oom.setHandler(handler)
+  }
+
   uploadBuffer(
     regionKey: number,
     passId: string,
@@ -310,6 +317,10 @@ export class WebGL2Hal implements GpuHal {
     if (count === 0) {
       return
     }
+    // No proactive size check: WebGL2 exposes no max-buffer-size limit, and an
+    // over-large bufferData loses the context in Chrome (handled by
+    // useRenderingBackend's context-loss recovery) or throws RangeError in
+    // Firefox — neither is a getError() case worth a per-upload sync flush.
     const vbo = gl.createBuffer()
     gl.bindBuffer(gl.ARRAY_BUFFER, vbo)
     gl.bufferData(gl.ARRAY_BUFFER, data, gl.STATIC_DRAW)
@@ -354,6 +365,13 @@ export class WebGL2Hal implements GpuHal {
     const ts = pass.textureState
     const tb = pass.descriptor.textures?.[0]
     if (!tb) {
+      return
+    }
+    const maxDim = Number(gl.getParameter(gl.MAX_TEXTURE_SIZE))
+    if (width > maxDim || height > maxDim) {
+      this.oom.report(
+        `texture ${width}x${height} exceeds GL_MAX_TEXTURE_SIZE ${maxDim} — region not rendered`,
+      )
       return
     }
     if (ts.texture) {
