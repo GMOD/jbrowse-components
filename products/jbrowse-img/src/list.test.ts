@@ -14,7 +14,11 @@ test('formatAssemblies lists names sorted with organism/description', () => {
 })
 
 const tracks: Track[] = [
-  { trackId: 'hg19-ncbiRefSeqCurated', name: 'NCBI RefSeq Curated', type: 'FeatureTrack' },
+  {
+    trackId: 'hg19-ncbiRefSeqCurated',
+    name: 'NCBI RefSeq Curated',
+    type: 'FeatureTrack',
+  },
   { trackId: 'hg19-clinvarMain', name: 'ClinVar Main', type: 'FeatureTrack' },
 ]
 

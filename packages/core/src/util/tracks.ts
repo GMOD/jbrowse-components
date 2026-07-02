@@ -448,8 +448,7 @@ export function generateUnknownTrackConf(
 
 export function getTrackName(
   conf:
-    | AnyConfigurationModel
-    | { name?: string; type?: string; trackId?: string },
+    AnyConfigurationModel | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)

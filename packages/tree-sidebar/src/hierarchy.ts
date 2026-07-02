@@ -189,7 +189,10 @@ export function eachAfter<T>(
 export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
   const rootHeight = node.height
   function visit(n: HierarchyNode<T>) {
-    n.y = insetY(rootHeight === 0 ? 1 : (rootHeight - n.height) / rootHeight, sizeY)
+    n.y = insetY(
+      rootHeight === 0 ? 1 : (rootHeight - n.height) / rootHeight,
+      sizeY,
+    )
     if (n.children) {
       for (const child of n.children) {
         visit(child)

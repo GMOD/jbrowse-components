@@ -40,7 +40,11 @@ export default function ImportFormSyntenyChoiceRadioGroup({
           control={<Radio />}
           label="Existing track"
         />
-        <FormControlLabel value="custom" control={<Radio />} label="New track" />
+        <FormControlLabel
+          value="custom"
+          control={<Radio />}
+          label="New track"
+        />
         {customOptions.map(opt => (
           <FormControlLabel
             key={opt.value}

@@ -41,11 +41,12 @@ It reads the newest release blog post, links to the GitHub release, and emails
 the human-written summary (the part before `## Downloads`) rather than the full
 changelog. Each channel is skipped if its credentials aren't configured.
 
-Credentials live only in the repo's GitHub Actions secrets (`BLUESKY_IDENTIFIER`,
-`BLUESKY_APP_PASSWORD`, `MASTODON_ACCESS_TOKEN`, plus the AWS creds used to invoke
-`jbrowse-newsletter-send`; see `infrastructure/newsletter/`). To eyeball the
-rendered post/email without any credentials, `pnpm announce -- --dry-run` prints
-them locally and skips every channel.
+Credentials live only in the repo's GitHub Actions secrets
+(`BLUESKY_IDENTIFIER`, `BLUESKY_APP_PASSWORD`, `MASTODON_ACCESS_TOKEN`, plus the
+AWS creds used to invoke `jbrowse-newsletter-send`; see
+`infrastructure/newsletter/`). To eyeball the rendered post/email without any
+credentials, `pnpm announce -- --dry-run` prints them locally and skips every
+channel.
 
 ## Update Embedded Demos
 

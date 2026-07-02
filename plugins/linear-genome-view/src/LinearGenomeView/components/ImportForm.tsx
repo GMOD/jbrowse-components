@@ -71,7 +71,8 @@ const LinearGenomeViewImportForm = observer(
                 if (value && selectedAsm) {
                   try {
                     await navigateToSelectedOption({
-                      option: selectedOption ?? new BaseResult({ label: value }),
+                      option:
+                        selectedOption ?? new BaseResult({ label: value }),
                       model,
                       assemblyName: selectedAsm,
                     })

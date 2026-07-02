@@ -168,7 +168,9 @@ describe('pxToBp', () => {
   })
 
   it('coord0 tracks coord on reversed regions', () => {
-    const self = makeSnap([{ refName: 'ctgA', start: 0, end: 1000, reversed: true }])
+    const self = makeSnap([
+      { refName: 'ctgA', start: 0, end: 1000, reversed: true },
+    ])
     const result = pxToBp(self, 300)
     expect(result.coord0).toBe(result.coord - 1)
   })

@@ -88,7 +88,11 @@ export function resolveTrackId(
   const looseMatches = tracks.filter(t => {
     const id = t.trackId.toLowerCase()
     const unprefixed = id.startsWith(prefix) ? id.slice(prefix.length) : id
-    return id === target || unprefixed === target || trackName(t).toLowerCase() === target
+    return (
+      id === target ||
+      unprefixed === target ||
+      trackName(t).toLowerCase() === target
+    )
   })
 
   const resolved = ids.has(input)

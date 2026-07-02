@@ -166,7 +166,9 @@ const ImportWizard = observer(function ImportWizard({
         </div>
         <div>
           <Button
-            disabled={!selectedAssembly || !isReadyToOpen || Boolean(err) || loading}
+            disabled={
+              !selectedAssembly || !isReadyToOpen || Boolean(err) || loading
+            }
             variant="contained"
             data-testid="open_spreadsheet"
             color="primary"

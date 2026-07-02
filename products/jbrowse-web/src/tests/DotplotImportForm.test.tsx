@@ -14,8 +14,7 @@ afterEach(() => {
 })
 
 test('open tracklist file', async () => {
-  const { session, findByTestId, findByRole, findByText } =
-    await createView()
+  const { session, findByTestId, findByRole, findByText } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
@@ -33,8 +32,7 @@ test('open tracklist file', async () => {
 }, 50000)
 
 test('open local paf', async () => {
-  const { session, findByTestId, findByRole, findByText } =
-    await createView()
+  const { session, findByTestId, findByRole, findByText } = await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
@@ -60,13 +58,8 @@ test('open local paf', async () => {
 }, 50000)
 
 test('open local pif', async () => {
-  const {
-    session,
-    findByTestId,
-    findByRole,
-    findAllByTestId,
-    findByText,
-  } = await createView()
+  const { session, findByTestId, findByRole, findAllByTestId, findByText } =
+    await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))

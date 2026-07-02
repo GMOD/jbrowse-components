@@ -24,7 +24,9 @@ test('case-insensitive id and display-name matching', () => {
   expect(resolveTrackId(tracks, 'NCBIREFSEQCURATED', 'hg19')).toBe(
     'hg19-ncbiRefSeqCurated',
   )
-  expect(resolveTrackId(tracks, 'clinvar main', 'hg19')).toBe('hg19-clinvarMain')
+  expect(resolveTrackId(tracks, 'clinvar main', 'hg19')).toBe(
+    'hg19-clinvarMain',
+  )
 })
 
 test('a miss throws with substring suggestions', () => {

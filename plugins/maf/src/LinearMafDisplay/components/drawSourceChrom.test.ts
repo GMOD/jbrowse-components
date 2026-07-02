@@ -67,7 +67,14 @@ describe('perRowChromRanks', () => {
     const { ranks } = perRowChromRanks([
       region([
         // row 0: mostly chrX; row 1: mostly chrY with a little chrX
-        { startBp: 0, endBp: 100, rows: [[0, 'chrX'], [1, 'chrY']] },
+        {
+          startBp: 0,
+          endBp: 100,
+          rows: [
+            [0, 'chrX'],
+            [1, 'chrY'],
+          ],
+        },
         { startBp: 200, endBp: 260, rows: [[1, 'chrY']] },
         { startBp: 300, endBp: 310, rows: [[1, 'chrX']] },
       ]),

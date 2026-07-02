@@ -301,7 +301,8 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
       }),
     },
     {
-      preProcessSnapshot: s2 => preprocessTrackConfigSnapshot(pluginManager, s2),
+      preProcessSnapshot: s2 =>
+        preprocessTrackConfigSnapshot(pluginManager, s2),
       /**
        * #identifier
        */

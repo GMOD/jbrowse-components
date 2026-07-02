@@ -8,7 +8,6 @@ wire it up yourself via the MobX state tree: wrap a sibling component in
 `observer` (the [observe visible regions](../with-observe-visible-regions/)
 example shows this pattern), read one view's `bpPerPx`/`offsetPx`, and call the
 matching actions on the other. Both `viewState` objects are ordinary state-tree
-nodes, so
-anything one view exposes can be mirrored onto another — see the
+nodes, so anything one view exposes can be mirrored onto another — see the
 [LinearGenomeView state model docs](https://jbrowse.org/jb2/docs/models/lineargenomeview/)
 for every property to read and action to call.

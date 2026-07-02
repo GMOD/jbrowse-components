@@ -37,7 +37,11 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
 
         const contentHeight = height - lineZoneHeight
-        const ctx = getPreparedCanvas2D(treeCanvas, treeAreaWidth, contentHeight)
+        const ctx = getPreparedCanvas2D(
+          treeCanvas,
+          treeAreaWidth,
+          contentHeight,
+        )
         if (!ctx) {
           return
         }
@@ -88,7 +92,11 @@ export function setupTreeDrawingAutorun(self: TreeDrawingModel) {
         }
         const viewWidth = view.width
         const contentHeight = height - lineZoneHeight
-        const ctx = getPreparedCanvas2D(mouseoverCanvas, viewWidth, contentHeight)
+        const ctx = getPreparedCanvas2D(
+          mouseoverCanvas,
+          viewWidth,
+          contentHeight,
+        )
         if (!ctx) {
           return
         }

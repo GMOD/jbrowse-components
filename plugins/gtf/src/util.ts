@@ -92,7 +92,10 @@ function parseGtfAttributes(attrString: string) {
       const sp = trimmed.indexOf(' ')
       if (sp !== -1) {
         const key = trimmed.slice(0, sp)
-        const value = trimmed.slice(sp + 1).trim().replaceAll(/^"|"$/g, '')
+        const value = trimmed
+          .slice(sp + 1)
+          .trim()
+          .replaceAll(/^"|"$/g, '')
         if (value.length > 0) {
           ;(attrs[key] ??= []).push(value)
         }

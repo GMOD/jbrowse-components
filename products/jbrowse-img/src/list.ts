@@ -52,7 +52,8 @@ export function formatTracks(hub: string, tracks: Track[], filter?: string) {
     : tracks
   const pad = Math.min(60, Math.max(0, ...matched.map(t => t.trackId.length)))
   const lines = matched.map(
-    t => `  ${t.trackId.padEnd(pad)}  ${trackType(t).padEnd(18)}  ${trackName(t)}`,
+    t =>
+      `  ${t.trackId.padEnd(pad)}  ${trackType(t).padEnd(18)}  ${trackName(t)}`,
   )
   const count = filter
     ? `${matched.length} of ${tracks.length} matching "${filter}"`

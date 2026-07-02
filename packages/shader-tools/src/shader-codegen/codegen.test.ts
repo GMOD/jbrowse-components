@@ -1,8 +1,4 @@
-import {
-  emitInterface,
-  emitLayoutOnly,
-  emitShaderStrings,
-} from './codegen.ts'
+import { emitInterface, emitLayoutOnly, emitShaderStrings } from './codegen.ts'
 
 // Reflection mirrors slangc's external JSON, which the codegen itself reads
 // through casts (its declared types are deliberately partial). Name the

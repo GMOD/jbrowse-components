@@ -22,7 +22,9 @@
       "adapter": {
         "type": "Gff3TabixAdapter",
         "gffGzLocation": { "localPath": "volvox/volvox.sort.gff3.gz" },
-        "index": { "location": { "localPath": "volvox/volvox.sort.gff3.gz.tbi" } }
+        "index": {
+          "location": { "localPath": "volvox/volvox.sort.gff3.gz.tbi" }
+        }
       }
     },
     {
@@ -32,7 +34,9 @@
       "assemblyNames": ["volvox"],
       "adapter": {
         "type": "BigWigAdapter",
-        "bigWigLocation": { "localPath": "volvox/volvox-sorted.bam.coverage.bw" }
+        "bigWigLocation": {
+          "localPath": "volvox/volvox-sorted.bam.coverage.bw"
+        }
       }
     }
   ]

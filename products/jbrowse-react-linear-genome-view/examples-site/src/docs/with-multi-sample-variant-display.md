@@ -14,10 +14,10 @@ adapter: {
 
 Set `colorBy` on the display **configuration** (not a session
 [`displaySnapshot`](../with-init-advanced/) — `colorBy` is a config slot, read
-once when sources load) and list
-`LinearMultiSampleVariantDisplay` first in the track's `displays` array. A track
-opens its first configured display by default, so opening it by `trackId` shows
-the multi-sample display with `colorBy` already applied:
+once when sources load) and list `LinearMultiSampleVariantDisplay` first in the
+track's `displays` array. A track opens its first configured display by default,
+so opening it by `trackId` shows the multi-sample display with `colorBy` already
+applied:
 
 ```js
 displays: [

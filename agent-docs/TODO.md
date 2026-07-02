@@ -31,6 +31,8 @@ On the dotplot, if you're zoomed all the way out and then place your mouse near 
 - multi-wiggle trackMenuItems() (~93 lines) — same pattern, direct hic/maf precedent. Caveat: needs a couple of internal interfaces exported across packages (WithResolution), so slightly more plumbing.
 - Small genuinely-pure transforms — alignments colorLegendCategories / buildCoverageBlocks, variant colorByAttributes. These are the cleanest demonstrations of the lever (plain args in, plain data out, zero self) but small (~15 lines each).
 
+## many variants, turns into collapsed, looks like solid block, but is not. any way to convey this? should we not collapse by default maybe?
+
 ## sv
 
 Now let's regenerate these two new screenshots and remove the stale chr5 link plus replace the KRAS/SMAD4 prose links with real Figures.

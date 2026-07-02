@@ -54,7 +54,7 @@ test('resolveCellColor and resolveCellPacked agree across every branch', () => {
 
 test('reference insertion (ref dash) is skipped in both resolvers', () => {
   expect(resolveCellColor(byte('-'), byte('A'), cfg)).toBeUndefined()
-  expect(resolveCellPacked(byte('-'), byte('A'), packMafCellColorConfig(cfg))).toBe(
-    RESOLVE_PACKED_SKIP,
-  )
+  expect(
+    resolveCellPacked(byte('-'), byte('A'), packMafCellColorConfig(cfg)),
+  ).toBe(RESOLVE_PACKED_SKIP)
 })

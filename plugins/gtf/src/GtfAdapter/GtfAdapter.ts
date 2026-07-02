@@ -92,10 +92,8 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
           // the interval tree already holds fully-built features, so redispatch
           // only to pull in sibling transcripts of an aggregated gene that fall
           // outside the view; widen by 500kb to catch distant ones
-          const { minStart, maxEnd, hasAnyAggregateField } = getRedispatchBounds(
-            feats,
-            aggregateField,
-          )
+          const { minStart, maxEnd, hasAnyAggregateField } =
+            getRedispatchBounds(feats, aggregateField)
           if (
             hasAnyAggregateField &&
             (maxEnd > query.end || minStart < query.start)

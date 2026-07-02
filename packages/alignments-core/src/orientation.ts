@@ -47,9 +47,5 @@ export function splitInversion(
   s1: number,
   s2: number,
 ): SplitInversion | undefined {
-  return s1 === -1 && s2 === 1
-    ? 'rf'
-    : s1 === 1 && s2 === -1
-      ? 'fr'
-      : undefined
+  return s1 === -1 && s2 === 1 ? 'rf' : s1 === 1 && s2 === -1 ? 'fr' : undefined
 }

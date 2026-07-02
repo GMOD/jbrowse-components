@@ -57,7 +57,7 @@ if (!idMatch) {
   throw new Error(`unexpected blog filename: ${newest}`)
 }
 const [, y, m, d, slug] = idMatch
-const tag = tagArg ?? (/v\d+\.\d+\.\d+/.exec(slug)?.[0] ?? '')
+const tag = tagArg ?? /v\d+\.\d+\.\d+/.exec(slug)?.[0] ?? ''
 if (!tag) {
   throw new Error(`could not determine release tag from ${newest}; pass --tag`)
 }

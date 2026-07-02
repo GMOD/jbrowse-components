@@ -8,7 +8,13 @@ import {
   initialFormState,
 } from '@jbrowse/core/util/assemblyConfigUtils'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogActions, DialogContent, Link, Paper } from '@mui/material'
+import {
+  Button,
+  DialogActions,
+  DialogContent,
+  Link,
+  Paper,
+} from '@mui/material'
 import { observer } from 'mobx-react'
 
 import GuidedForm from './GuidedForm.tsx'

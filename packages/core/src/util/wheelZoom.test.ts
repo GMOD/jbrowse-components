@@ -94,7 +94,9 @@ describe('wheelZoomAccum', () => {
   })
 
   test('scroll zoom uses the fixed divisor', () => {
-    expect(wheelZoomAccum(10, false)).toBeCloseTo(10 / SCROLL_ZOOM_FACTOR_DIVISOR)
+    expect(wheelZoomAccum(10, false)).toBeCloseTo(
+      10 / SCROLL_ZOOM_FACTOR_DIVISOR,
+    )
     expect(wheelZoomAccum(200, false)).toBeCloseTo(
       200 / SCROLL_ZOOM_FACTOR_DIVISOR,
     )

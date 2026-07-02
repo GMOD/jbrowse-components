@@ -1,4 +1,7 @@
-import { bezierConnectorHandlePx, bezierConnectorPath } from './bezierConnector.ts'
+import {
+  bezierConnectorHandlePx,
+  bezierConnectorPath,
+} from './bezierConnector.ts'
 
 // Parse the two cubic control-point Ys out of an "M .. C cx1 cy1 cx2 cy2 x y" path.
 function controlYs(path: string) {

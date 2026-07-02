@@ -99,7 +99,7 @@ test('uses an explicit transcript line as the container for its children', () =>
     'ctgA\ttest\texon\t400\t500\t.\t+\t.\tgene_id "g1"; transcript_id "t1";',
     'ctgA\ttest\tgene\t100\t500\t.\t+\t.\tgene_id "g1";',
   ]
-  const features = parse(gtf.join("\n"))
+  const features = parse(gtf.join('\n'))
   const transcript = features.find(f => f.featureType === 'transcript')
   expect(transcript!.child_features).toHaveLength(2)
   // the gene line has no transcript_id, so it stays a standalone top-level feature

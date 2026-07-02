@@ -8,8 +8,8 @@ embed carries at once:
 - **1000 Genomes variant calls** (VCF+tabix)
 - **phyloP100way conservation** as a quantitative (BigWig) track
 
-Every file is fetched directly over HTTP range requests from public buckets —
-no server-side component is required. The `defaultSession` opens a linear genome
+Every file is fetched directly over HTTP range requests from public buckets — no
+server-side component is required. The `defaultSession` opens a linear genome
 view at a locus on chromosome 1 with the exome and conservation tracks showing.
 
 This is the same `createViewState({ config })` flow as the

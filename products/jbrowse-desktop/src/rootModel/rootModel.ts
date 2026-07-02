@@ -234,62 +234,64 @@ export default function rootModelFactory({
                     label: 'Session',
                     icon: DescriptionIcon,
                     subMenu: [
-                  {
-                    label: 'Open session...',
-                    icon: OpenIcon,
-                    onClick: async () => {
-                      try {
-                        const path = await ipcRenderer.invoke('promptOpenFile')
-                        if (path) {
-                          await self.openNewSessionCallback(path)
-                        }
-                      } catch (e) {
-                        console.error(e)
-                        self.session?.notifyError(`${e}`, e)
-                      }
-                    },
-                  },
-                  {
-                    label: 'Save session as...',
-                    icon: SaveAsIcon,
-                    onClick: async () => {
-                      try {
-                        const filePath = await ipcRenderer.invoke(
-                          'promptSessionSaveAs',
-                        )
-                        if (filePath) {
-                          self.setSessionPath(filePath)
-                          await self.saveSession(getSaveSession(self))
-                        }
-                      } catch (e) {
-                        console.error(e)
-                        self.session?.notifyError(`${e}`, e)
-                      }
-                    },
-                  },
-                  {
-                    label: 'Export session to web...',
-                    icon: PublicIcon,
-                    onClick: () => {
-                      const session = self.session as BaseSession | undefined
-                      if (session) {
-                        session.queueDialog(doneCallback => [
-                          ExportToWebDialog,
-                          {
-                            snapshot: getSaveSession(self),
-                            shareURL: readConfObject(
-                              self.jbrowse.configuration,
-                              'shareURL',
-                            ),
-                            session,
-                            handleClose: () => {
-                              doneCallback()
-                            },
-                          },
-                        ])
-                      }
-                    },
-                  },
+                      {
+                        label: 'Open session...',
+                        icon: OpenIcon,
+                        onClick: async () => {
+                          try {
+                            const path =
+                              await ipcRenderer.invoke('promptOpenFile')
+                            if (path) {
+                              await self.openNewSessionCallback(path)
+                            }
+                          } catch (e) {
+                            console.error(e)
+                            self.session?.notifyError(`${e}`, e)
+                          }
+                        },
+                      },
+                      {
+                        label: 'Save session as...',
+                        icon: SaveAsIcon,
+                        onClick: async () => {
+                          try {
+                            const filePath = await ipcRenderer.invoke(
+                              'promptSessionSaveAs',
+                            )
+                            if (filePath) {
+                              self.setSessionPath(filePath)
+                              await self.saveSession(getSaveSession(self))
+                            }
+                          } catch (e) {
+                            console.error(e)
+                            self.session?.notifyError(`${e}`, e)
+                          }
+                        },
+                      },
+                      {
+                        label: 'Export session to web...',
+                        icon: PublicIcon,
+                        onClick: () => {
+                          const session = self.session as
+                            BaseSession | undefined
+                          if (session) {
+                            session.queueDialog(doneCallback => [
+                              ExportToWebDialog,
+                              {
+                                snapshot: getSaveSession(self),
+                                shareURL: readConfObject(
+                                  self.jbrowse.configuration,
+                                  'shareURL',
+                                ),
+                                session,
+                                handleClose: () => {
+                                  doneCallback()
+                                },
+                              },
+                            ])
+                          }
+                        },
+                      },
                     ],
                   },
                   openConnectionMenuItem(),
