@@ -4,13 +4,16 @@ import type { SimpleFeatureSerialized } from '@jbrowse/core/util'
 
 export type Strand = '+' | '-' | '.' | '?'
 export interface FeatureLoc {
-  [key: string]: unknown
   start: number
   end: number
   strand: Strand
   seq_name: string
+  featureType?: string | null
+  source?: string | null
+  score?: number | null
+  frame?: string | null
   child_features?: FeatureLoc[][]
-  attributes: Record<string, unknown[]>
+  attributes: Record<string, string[]>
 }
 
 const strandMap = { '+': 1, '-': -1, '.': 0, '?': undefined } as const
@@ -32,14 +35,13 @@ export function featureData(
   data: FeatureLoc,
   id?: string,
 ): Record<string, unknown> {
-  // process attributes: lowercase keys, suffix clashes with reserved fields,
-  // strip GTF double-quotes from every value, unwrap single-element arrays
+  // lowercase keys, suffix clashes with reserved fields, unwrap single-element
+  // arrays (quotes were already stripped at parse time)
   const processedAttrs = Object.fromEntries(
     Object.entries(data.attributes).map(([a, vals]) => {
       const lower = a.toLowerCase()
       const key = reservedFields.has(lower) ? `${lower}2` : lower
-      const dequoted = vals.map(v => String(v).replaceAll(/^"|"$/g, ''))
-      return [key, dequoted.length === 1 ? dequoted[0] : dequoted] as const
+      return [key, vals.length === 1 ? vals[0] : vals] as const
     }),
   )
 
@@ -58,8 +60,8 @@ export function featureData(
     start: data.start - 1,
     end: data.end,
     strand: strandMap[data.strand],
-    score: data.score === null ? undefined : data.score,
-    phase: data.frame !== null ? Number(data.frame) : undefined,
+    score: data.score ?? undefined,
+    phase: data.frame ? Number(data.frame) : undefined,
     ...processedAttrs,
     ...(subfeatures !== undefined && { subfeatures }),
     ...(processedAttrs.transcript_id && { name: processedAttrs.transcript_id }),
@@ -79,8 +81,8 @@ function nullIfDot(s: string | undefined) {
  * Parse the GTF 9th column (`gene_id "X"; transcript_id "Y";`). Each `key
  * "value"` entry contributes one value; GTF expresses multiple values per key
  * via repeated keys (`tag "A"; tag "B"`), not comma separation, so the value is
- * taken whole (a comma inside it, e.g. `note "a, b"`, stays intact). Values keep
- * their surrounding quotes here; quote stripping happens in featureData.
+ * taken whole (a comma inside it, e.g. `note "a, b"`, stays intact). Surrounding
+ * double-quotes are stripped here.
  */
 function parseGtfAttributes(attrString: string) {
   const attrs: Record<string, string[]> = {}
@@ -90,7 +92,7 @@ function parseGtfAttributes(attrString: string) {
       const sp = trimmed.indexOf(' ')
       if (sp !== -1) {
         const key = trimmed.slice(0, sp)
-        const value = trimmed.slice(sp + 1).trim()
+        const value = trimmed.slice(sp + 1).trim().replaceAll(/^"|"$/g, '')
         if (value.length > 0) {
           ;(attrs[key] ??= []).push(value)
         }
@@ -116,16 +118,12 @@ function parseGtfLine(line: string): FeatureLoc {
   }
 }
 
-function unquote(value: unknown) {
-  return typeof value === 'string' ? value.replaceAll(/^"|"$/g, '') : undefined
-}
-
 // a transcript with no explicit line carries only the gene/transcript-level
 // attributes needed for grouping and display, not its children's exon fields
 const SYNTHESIZED_TRANSCRIPT_ATTRS = ['gene_id', 'transcript_id', 'gene_name']
 
 function synthesizeTranscript(child: FeatureLoc): FeatureLoc {
-  const attributes: Record<string, unknown[]> = {}
+  const attributes: Record<string, string[]> = {}
   for (const key of SYNTHESIZED_TRANSCRIPT_ATTRS) {
     const value = child.attributes[key]
     if (value) {
@@ -146,54 +144,97 @@ function synthesizeTranscript(child: FeatureLoc): FeatureLoc {
   }
 }
 
+/** A raw GTF feature line; callers may extend it with their own identity. */
+export interface GtfLineRecord {
+  line: string
+}
+
 /**
- * Parse GTF text into top-level features. Lines sharing a `transcript_id` are
- * grouped under a transcript feature (synthesized if the file has no explicit
- * `transcript` line, per the Cufflinks/StringTie convention); the transcript is
- * spanned to cover its children. Lines without a `transcript_id` (e.g. a `gene`
- * line) pass through as standalone features.
+ * A top-level parsed feature paired with the record it came from. The parser
+ * stamps no identity onto the feature; callers that need a stable per-feature
+ * id (e.g. a tabix byte offset) read it off their own `record`. Mirrors
+ * gff-nostream's `ParsedRecord`.
  */
-export function parseGtf(input: string): FeatureLoc[] {
-  const topLevel: FeatureLoc[] = []
-  const byTranscript = new Map<string, FeatureLoc>()
-  for (const rawLine of input.split('\n')) {
+export interface ParsedGtfRecord<R extends GtfLineRecord = GtfLineRecord> {
+  feature: FeatureLoc
+  record: R
+}
+
+/**
+ * Parse an array of records wrapping raw GTF lines into top-level features.
+ * Lines sharing a `transcript_id` are grouped under a transcript feature
+ * (synthesized if the file has no explicit `transcript` line, per the
+ * Cufflinks/StringTie convention); the transcript is spanned to cover its
+ * children. Lines without a `transcript_id` (e.g. a `gene` line) pass through
+ * as standalone features. Each top-level feature is returned paired with the
+ * record that defined it (the explicit line, or a synthesized transcript's
+ * first child), so callers can attach a stable id.
+ */
+export function parseGtf<R extends GtfLineRecord>(
+  records: readonly R[],
+): ParsedGtfRecord<R>[] {
+  const topLevel: ParsedGtfRecord<R>[] = []
+  const byTranscript = new Map<string, ParsedGtfRecord<R>>()
+  for (const record of records) {
     // tabix-read lines retain the trailing \r of CRLF files (unlike the
     // plaintext path, which trims it); left in, it corrupts the final
     // attribute value, e.g. transcript_id "t1"\r
-    const line = rawLine.endsWith('\r') ? rawLine.slice(0, -1) : rawLine
+    const line = record.line.endsWith('\r')
+      ? record.line.slice(0, -1)
+      : record.line
     if (line.length > 0 && !line.startsWith('#')) {
-      const feat = parseGtfLine(line)
-      const transcriptId = unquote(feat.attributes.transcript_id?.[0])
+      const feature = parseGtfLine(line)
+      const transcriptId = feature.attributes.transcript_id?.[0]
       if (transcriptId === undefined) {
-        topLevel.push(feat)
-      } else if (feat.featureType === 'transcript') {
+        topLevel.push({ feature, record })
+      } else if (feature.featureType === 'transcript') {
         const existing = byTranscript.get(transcriptId)
         if (existing) {
           // explicit transcript line seen after its children: keep the
           // collected children, but use the explicit line as the container
-          feat.child_features = existing.child_features
-          feat.start = Math.min(feat.start, existing.start)
-          feat.end = Math.max(feat.end, existing.end)
-          topLevel[topLevel.indexOf(existing)] = feat
+          feature.child_features = existing.feature.child_features
+          feature.start = Math.min(feature.start, existing.feature.start)
+          feature.end = Math.max(feature.end, existing.feature.end)
+          existing.feature = feature
+          existing.record = record
         } else {
-          feat.child_features = []
-          topLevel.push(feat)
+          feature.child_features = []
+          const parsed = { feature, record }
+          topLevel.push(parsed)
+          byTranscript.set(transcriptId, parsed)
         }
-        byTranscript.set(transcriptId, feat)
       } else {
         let transcript = byTranscript.get(transcriptId)
         if (!transcript) {
-          transcript = synthesizeTranscript(feat)
+          transcript = { feature: synthesizeTranscript(feature), record }
           topLevel.push(transcript)
           byTranscript.set(transcriptId, transcript)
         }
-        transcript.child_features!.push([feat])
-        transcript.start = Math.min(transcript.start, feat.start)
-        transcript.end = Math.max(transcript.end, feat.end)
+        transcript.feature.child_features!.push([feature])
+        transcript.feature.start = Math.min(
+          transcript.feature.start,
+          feature.start,
+        )
+        transcript.feature.end = Math.max(transcript.feature.end, feature.end)
       }
     }
   }
   return topLevel
+}
+
+/**
+ * Parse GTF records and serialize each top-level feature. Shared by the
+ * plain-text and tabix adapters, which differ only in how they source records
+ * and derive the uniqueId (parse index vs. tabix byte offset).
+ */
+export function parseGtfToFeatures<R extends GtfLineRecord>(
+  records: readonly R[],
+  makeUniqueId: (record: R, index: number) => string,
+): SimpleFeatureSerialized[] {
+  return parseGtf(records).map(
+    ({ feature, record }, i) =>
+      featureData(feature, makeUniqueId(record, i)) as SimpleFeatureSerialized,
+  )
 }
 
 /** Read the feature type (column 3) from a raw GTF line without a full split. */
@@ -234,7 +275,10 @@ export function aggregateGtfFeatures({
       const aggr = feat[aggregateField]
       if (typeof aggr === 'string' && aggr.length > 0) {
         ;(parentAggregation[aggr] ??= []).push(feat)
-      } else {
+      } else if (doesIntersect2(feat.start, feat.end, regionStart, regionEnd)) {
+        // passthrough features (no aggregate field) must be clipped to the
+        // original query too, else a redispatch's expanded fetch leaks features
+        // outside the view (aggregated genes are already intersection-checked)
         out.push(feat)
       }
     }

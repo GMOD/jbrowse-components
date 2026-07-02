@@ -9,6 +9,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
 import { parseRecords } from 'gff-nostream'
 
+import type { Gff3AdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
@@ -16,7 +17,7 @@ import type { GffFeature } from 'gff-nostream'
 
 type Gff3Feature = GffFeature & { uniqueId: string }
 
-export default class Gff3Adapter extends BaseFeatureDataAdapter {
+export default class Gff3Adapter extends BaseFeatureDataAdapter<Gff3AdapterConfig> {
   private gffFeatures?: ReturnType<Gff3Adapter['loadDataP']>
 
   private async loadDataP(opts?: BaseOptions) {

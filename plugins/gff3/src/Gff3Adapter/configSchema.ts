@@ -1,5 +1,7 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 
+import type { Instance } from '@jbrowse/mobx-state-tree'
+
 /**
  * #config Gff3Adapter
  * #category adapter
@@ -61,5 +63,7 @@ const Gff3Adapter = ConfigurationSchema(
     preProcessSnapshot: normalizeSnapshot,
   },
 )
+
+export type Gff3AdapterConfig = Instance<typeof Gff3Adapter>
 
 export default Gff3Adapter

@@ -7,13 +7,12 @@ import {
 } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { aggregateGtfFeatures, featureData, parseGtf } from '../util.ts'
+import { aggregateGtfFeatures, parseGtfToFeatures } from '../util.ts'
 
 import type { GtfAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
-import type { Observer } from 'rxjs'
 
 function getRedispatchBounds(
   feats: SimpleFeatureSerialized[],
@@ -52,12 +51,9 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
     const intervalTreeMap = makeFeatureIntervalTreeMap<SimpleFeatureSerialized>(
       linesByRef,
       (lines, refName) =>
-        parseGtf(lines.join('\n')).map(
-          (f, i) =>
-            featureData(
-              f,
-              `${this.id}-${refName}-${i}`,
-            ) as SimpleFeatureSerialized,
+        parseGtfToFeatures(
+          lines.map(line => ({ line })),
+          (_record, i) => `${this.id}-${refName}-${i}`,
         ),
       'Parsing GTF data',
     )
@@ -86,75 +82,42 @@ export default class GtfAdapter extends BaseFeatureDataAdapter<GtfAdapterConfig>
   public getFeatures(query: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       try {
-        await this.getFeaturesHelper({
-          query,
-          opts,
-          observer,
-          allowRedispatch: true,
-        })
+        const aggregateField = this.getConf('aggregateField')
+        const { intervalTreeMap } = await this.loadData(opts)
+        const tree = intervalTreeMap[query.refName]
+        if (tree) {
+          const search = tree(opts.statusCallback)
+          let feats = search.search([query.start, query.end])
+
+          // the interval tree already holds fully-built features, so redispatch
+          // only to pull in sibling transcripts of an aggregated gene that fall
+          // outside the view; widen by 500kb to catch distant ones
+          const { minStart, maxEnd, hasAnyAggregateField } = getRedispatchBounds(
+            feats,
+            aggregateField,
+          )
+          if (
+            hasAnyAggregateField &&
+            (maxEnd > query.end || minStart < query.start)
+          ) {
+            feats = search.search([minStart - 500_000, maxEnd + 500_000])
+          }
+
+          const aggregated = aggregateGtfFeatures({
+            feats,
+            aggregateField,
+            refName: query.refName,
+            regionStart: query.start,
+            regionEnd: query.end,
+          })
+          for (const feat of aggregated) {
+            observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
+          }
+        }
+        observer.complete()
       } catch (e) {
         observer.error(e)
       }
     }, opts.stopToken)
-  }
-
-  private async getFeaturesHelper({
-    query,
-    opts,
-    observer,
-    allowRedispatch,
-    originalQuery = query,
-  }: {
-    query: Region
-    opts: BaseOptions
-    observer: Observer<Feature>
-    allowRedispatch: boolean
-    originalQuery?: Region
-  }) {
-    const aggregateField = this.getConf('aggregateField')
-    const { start, end, refName } = query
-    const { intervalTreeMap } = await this.loadData(opts)
-    const tree = intervalTreeMap[refName]
-    if (tree) {
-      const feats = tree(opts.statusCallback).search([start, end])
-
-      if (allowRedispatch && feats.length) {
-        const { minStart, maxEnd, hasAnyAggregateField } = getRedispatchBounds(
-          feats,
-          aggregateField,
-        )
-        if (
-          hasAnyAggregateField &&
-          (maxEnd > query.end || minStart < query.start)
-        ) {
-          await this.getFeaturesHelper({
-            query: {
-              ...query,
-              // re-query with 500kb added onto start and end, in order to catch
-              // gene subfeatures that may not overlap your view
-              start: minStart - 500_000,
-              end: maxEnd + 500_000,
-            },
-            opts,
-            observer,
-            allowRedispatch: false,
-            originalQuery: query,
-          })
-          return
-        }
-      }
-
-      const aggregated = aggregateGtfFeatures({
-        feats,
-        aggregateField,
-        refName: query.refName,
-        regionStart: originalQuery.start,
-        regionEnd: originalQuery.end,
-      })
-      for (const feat of aggregated) {
-        observer.next(new SimpleFeature({ id: feat.uniqueId, data: feat }))
-      }
-    }
-    observer.complete()
   }
 }

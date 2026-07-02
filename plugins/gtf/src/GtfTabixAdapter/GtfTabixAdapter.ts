@@ -8,17 +8,21 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import {
   aggregateGtfFeatures,
   extractType,
-  featureData,
-  parseGtf,
+  parseGtfToFeatures,
 } from '../util.ts'
 
+import type { GtfLineRecord } from '../util.ts'
 import type { GtfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, SimpleFeatureSerialized } from '@jbrowse/core/util'
+import type { Feature } from '@jbrowse/core/util'
 import type { Region } from '@jbrowse/core/util/types'
 
-interface GtfLine {
-  line: string
+// The parser only reads `line`; the extra fields are ours. `offset` (the tabix
+// byte offset) mints a stable per-feature id that survives redispatch and
+// panning, and start/end/type feed the redispatch calculation that runs before
+// any line is parsed.
+interface GtfLine extends GtfLineRecord {
+  offset: number
   start: number
   end: number
   type: string
@@ -102,12 +106,9 @@ export default class GtfTabixAdapter extends BaseFeatureDataAdapter<GtfTabixAdap
           lines = await fetchLines({ ...query, ...redispatch })
         }
 
-        const feats = parseGtf(lines.map(l => l.line).join('\n')).map(
-          (f, i) =>
-            featureData(
-              f,
-              `${this.id}-${query.refName}-${i}`,
-            ) as SimpleFeatureSerialized,
+        const feats = parseGtfToFeatures(
+          lines,
+          record => `${this.id}-offset-${record.offset}`,
         )
         const aggregated = aggregateGtfFeatures({
           feats,
@@ -134,8 +135,14 @@ function readLines(gtf: TabixIndexedFile, query: Region, opts: BaseOptions) {
     opts.statusCallback,
     onProgress =>
       gtf.getLines(query.refName, query.start, query.end, {
-        lineCallback: (line, _fo, start, end) => {
-          lines.push({ line, start, end, type: extractType(line) })
+        lineCallback: (line, fileOffset, start, end) => {
+          lines.push({
+            line,
+            offset: fileOffset,
+            start,
+            end,
+            type: extractType(line),
+          })
         },
         onProgress,
       }),

@@ -48,3 +48,21 @@ test('redispatches off the spanning transcript line to recover the whole gene', 
   expect(exons.length).toBe(8)
   expect(cds.length).toBe(8)
 })
+
+test('mints stable feature ids across different query windows', async () => {
+  const adapter = makeAdapter()
+  const geneIdFor = async (start: number, end: number) => {
+    const features = adapter.getFeatures({
+      refName: 'GeneScaffold_10',
+      start,
+      end,
+      assemblyName: 'volvox',
+    })
+    const arr = await firstValueFrom(features.pipe(toArray()))
+    return arr[0]!.id()
+  }
+  // two different windows over the same gene must resolve to the same id (the
+  // id is derived from the tabix byte offset, not the per-query parse index),
+  // so a feature stays selected while panning
+  expect(await geneIdFor(40000, 40100)).toBe(await geneIdFor(41000, 41100))
+})
