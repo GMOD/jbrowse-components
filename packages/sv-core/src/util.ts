@@ -193,12 +193,16 @@ export function hasBreakpointSplitView(model: IAnyStateTreeNode) {
   }
 }
 
-export function navToLoc(locString: string, model: IAnyStateTreeNode) {
+export function navToLoc(
+  locString: string,
+  model: IAnyStateTreeNode,
+  grow?: number,
+) {
   const session = getSession(model)
   const { view } = model
   // eslint-disable-next-line @typescript-eslint/strict-boolean-expressions
   if (view) {
-    view.navToLocString(locString).catch((e: unknown) => {
+    view.navToLocString(locString, undefined, grow).catch((e: unknown) => {
       console.error(e)
       session.notify(`${e}`)
     })

@@ -44,7 +44,7 @@ const LaunchSvPanel = observer(function LaunchSvPanel({
         <li>
           <ActionLink
             onClick={() => {
-              navToLoc(locString, model)
+              navToLoc(locString, model, 0.2)
             }}
           >
             Zoom to variant in linear view
