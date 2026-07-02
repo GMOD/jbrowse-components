@@ -1,0 +1,26 @@
+{
+  "name": "jbrowse-blat-proxy",
+  "version": "1.0.0",
+  "license": "Apache-2.0",
+  "description": "AWS Lambda that proxies BLAT queries to UCSC hgBlat with a server-side apiKey and CORS",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "prebuild": "pnpm run clean",
+    "clean": "rimraf dist",
+    "build": "esbuild src/index.ts --bundle --platform=node --target=node20 --format=esm --outfile=dist/index.mjs",
+    "test": "vitest run",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.162",
+    "@types/node": "^24.13.2",
+    "esbuild": "^0.27.7",
+    "rimraf": "^6.1.3",
+    "typescript": "^5.9.3",
+    "vitest": "^4.1.9"
+  },
+  "pnpm": {
+    "onlyBuiltDependencies": ["esbuild"]
+  }
+}

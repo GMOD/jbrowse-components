@@ -1,5 +1,6 @@
 import { useState } from 'react'
 
+import { getConf } from '@jbrowse/core/configuration'
 import { AssemblySelector, Dialog } from '@jbrowse/core/ui'
 import { isElectron, isSessionWithAddTracks } from '@jbrowse/core/util'
 import {
@@ -49,9 +50,22 @@ const BlatDialog = observer(function BlatDialog({
   handleClose: () => void
 }) {
   const { assemblyNames } = session
+
+  // jb2hubs stamps the UCSC BLAT db on the assembly's sequence.metadata; prefer
+  // that explicit value, falling back to the static alias map for assemblies
+  // whose configs predate the stamp
+  function resolveBlatDb(name: string) {
+    const assembly = session.assemblyManager.get(name)
+    const stamped: string | undefined = assembly
+      ? getConf(assembly, ['sequence', 'metadata', 'blatDb'])
+      : undefined
+    return stamped ? stamped : assemblyToUcscDb(name)
+  }
+
   const [assembly, setAssembly] = useState(assemblyNames[0] ?? '')
-  const [db, setDb] = useState(() => assemblyToUcscDb(assemblyNames[0] ?? ''))
+  const [db, setDb] = useState(() => resolveBlatDb(assemblyNames[0] ?? ''))
   const [urlBase, setUrlBase] = useState(DEFAULT_BLAT_URL)
+  const [apiKey, setApiKey] = useState('')
   const [seq, setSeq] = useState('')
   const [loading, setLoading] = useState(false)
   const [challenged, setChallenged] = useState(false)
@@ -60,20 +74,21 @@ const BlatDialog = observer(function BlatDialog({
   const cleanSeq = stripFasta(seq)
   const tooShort = cleanSeq.length < MINIMUM_BLAT_LENGTH
 
-  // desktop routes through the main process so a solved-challenge cookie
-  // attaches first-party; web uses a direct fetch
+  // desktop routes through the main process to bypass renderer CORS (so a
+  // direct hgBlat call with the user's apiKey works without a proxy); web uses
+  // a direct fetch, which needs the server URL to be a CORS-enabled proxy
   async function fetchFeatures() {
     if (isElectron) {
       const { ok, status, text } = await desktopBlatFetch({
         url: urlBase,
-        body: buildBlatBody({ db, seq: cleanSeq }),
+        body: buildBlatBody({ db, seq: cleanSeq, apiKey }),
       })
       if (!ok) {
         throw new Error(`BLAT request failed (${status})`)
       }
       return parseBlatResponse(text)
     }
-    return runBlat({ db, seq: cleanSeq, urlBase })
+    return runBlat({ db, seq: cleanSeq, urlBase, apiKey })
   }
 
   function addResultTrack(features: SimpleFeatureSerialized[]) {
@@ -156,7 +171,7 @@ const BlatDialog = observer(function BlatDialog({
           selected={assembly}
           onChange={arg => {
             setAssembly(arg)
-            setDb(assemblyToUcscDb(arg))
+            setDb(resolveBlatDb(arg))
           }}
         />
         <TextField
@@ -173,7 +188,15 @@ const BlatDialog = observer(function BlatDialog({
           onChange={event => {
             setUrlBase(event.target.value)
           }}
-          helperText="Point at a mirror or self-hosted server if the default is unavailable"
+          helperText="Point at a mirror or self-hosted proxy if the default is unavailable"
+        />
+        <TextField
+          label="UCSC apiKey (optional)"
+          value={apiKey}
+          onChange={event => {
+            setApiKey(event.target.value)
+          }}
+          helperText="Bypasses the UCSC CAPTCHA. Generate one at a UCSC Genome Browser account → Hub Development → API key. Not needed when the server URL is a proxy that injects a key."
         />
         <TextField
           label="Sequence"
@@ -190,9 +213,9 @@ const BlatDialog = observer(function BlatDialog({
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {challenged ? (
           <Typography>
-            The UCSC BLAT server requires solving a CAPTCHA. Click "Solve
-            CAPTCHA", complete it in the window that opens, and the search will
-            retry automatically.
+            The UCSC BLAT server requires solving a CAPTCHA. Either paste a UCSC
+            apiKey above to avoid it, or click "Solve CAPTCHA", complete it in
+            the window that opens, and the search will retry automatically.
           </Typography>
         ) : null}
       </DialogContent>

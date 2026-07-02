@@ -1,7 +1,9 @@
 // Bridge to the jbrowse-desktop main process. BLAT requests are routed through
-// the main process so the cf_clearance cookie from a solved Cloudflare Turnstile
-// challenge (held in the default session) attaches as a first-party request,
-// which cross-origin renderer fetches can't reliably do.
+// the main process for two reasons: the renderer is CORS-bound like a browser
+// (so a direct cross-origin hgBlat call fails), and the cf_clearance cookie
+// from a solved Cloudflare Turnstile challenge (held in the default session)
+// attaches first-party there. A user-supplied apiKey avoids the challenge; the
+// solve-window path is the fallback when there's no key.
 
 interface IpcRenderer {
   invoke(channel: string, ...args: unknown[]): Promise<unknown>

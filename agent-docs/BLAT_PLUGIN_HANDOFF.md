@@ -6,8 +6,25 @@ sequence and get results as a track — for **main UCSC genomes** and **GenArk
 hubs**.
 
 Status date: 2026-07-02. Branch: `webgl-poc`. Shared worktree — scope commits to
-explicit pathspecs (see [[shared-worktree-commit-scope]]); nothing here is
-committed yet.
+explicit pathspecs (see [[shared-worktree-commit-scope]]).
+
+**The plugin work IS committed** (in the "Updates"/"Format" commits — the earlier
+"nothing committed yet" note is obsolete).
+
+### Decisions locked (2026-07-02)
+- **Stays in the monorepo** (`plugins/blat/`), NOT moved to a standalone
+  `jbrowse-plugin-blat` in `~/src/jb2plugins/`. Rationale: external plugins
+  diverge quickly. Being in the monorepo it can still build into both products.
+- **Bundled in jbrowse-desktop only**, NOT jbrowse-web by default (web's
+  cold-load bundle is size-sensitive; BLAT is niche). Web support, if wanted
+  later, would come via the plugin store or explicit config, not corePlugins.
+- **apiKey layered ON TOP of the CAPTCHA solver — solver KEPT.** UCSC's `apiKey`
+  bypasses the Turnstile (per UCSC docs). But we have no key and no proxy yet, so
+  the electron CAPTCHA-solve window stays as the working fallback; the apiKey is
+  the preferred path when a key is supplied. Don't remove the solver until the
+  apiKey path is verified working end-to-end.
+- **apiKey delivery = proxy default + desktop own-key override** (see
+  Architecture below).
 
 ## TL;DR of what's known (don't re-derive)
 
@@ -47,43 +64,69 @@ committed yet.
   does the stitch. Practical impl = ship/shell `gfClient`, or run our own proxy
   that does.
 
-## What's already built (uncommitted, in this worktree)
+## Architecture: how the apiKey/CAPTCHA problem is solved
 
-New plugin `plugins/blat/`:
-- `src/blatQuery.ts` — `buildBlatBody`, `parseBlatResponse` (detects the
-  Turnstile HTML → throws `BlatChallengeError`), `pslToFeatures` (21-col PSL →
-  features w/ per-block subfeatures + % identity), `runBlat` (web fetch path),
-  `DEFAULT_BLAT_URL`, `MINIMUM_BLAT_LENGTH`.
-- `src/blatQuery.test.ts` — 3 tests over a real hgBlat JSON fixture. `pnpm test
-  plugins/blat` is green.
+UCSC **removed open programmatic BLAT access in 2025 due to bot abuse**; the
+Cloudflare Turnstile is what a keyless request hits. UCSC ships the intended
+escape hatch: **an `apiKey` bypasses the CAPTCHA on the CGIs including hgBlat.**
+- Get one: log into a UCSC Genome Browser account → **Hub Development** page →
+  API key section at the bottom → generate. Primary `genome.ucsc.edu` only.
+- Use it: append `&apiKey=YOUR_KEY` to the request (we add it to the POST body).
+- BLAT rate limit stays **1 hit / 15 s, 5000 / day** even with a key.
+
+Three paths, in preference order:
+- **Desktop CAPTCHA solve-window (WORKS TODAY, no key needed):** on
+  `BlatChallengeError` the dialog offers "Solve CAPTCHA"; `createChallengeWindow`
+  opens the BLAT host, the solved `cf_clearance` cookie lands in the default
+  session, and the follow-up `blatFetch` (`credentials:'include'`) carries it.
+  This is the current working desktop path and stays until apiKey is proven.
+- **Desktop own-key override:** the user pastes their own apiKey; desktop POSTs
+  straight to hgBlat through the `blatFetch` bridge (electron `net.fetch` is not
+  CORS-bound). No proxy, no CAPTCHA — testable the moment someone has a key.
+- **Proxy (the only web-viable path):** a CORS-enabled server (jbrowse.org
+  infra, like igv.org's `blatUCSC.php`) holds ONE shared apiKey and injects it.
+  A browser fetch straight to genome.ucsc.edu is CORS-blocked regardless of key,
+  so web *must* go through this. **NOT yet built.**
+
+Trade-off: the shared proxy key shares one 5000/day + 1-per-15s budget across
+all users; the desktop own-key override is the pressure valve.
+
+## What's built (committed, in `plugins/blat/`)
+
+- `src/blatQuery.ts` — `buildBlatBody({db,seq,apiKey})`, `parseBlatResponse`
+  (Turnstile HTML → `BlatChallengeError`; other HTML → readable error),
+  `pslToFeatures` (21-col PSL → features w/ per-block subfeatures + % identity),
+  `runBlat({db,seq,urlBase,apiKey})`, `DEFAULT_BLAT_URL`, `MINIMUM_BLAT_LENGTH`.
+- `src/blatQuery.test.ts` — 3 tests over a real hgBlat JSON fixture, green.
 - `src/BlatDialog.tsx` — Tools-menu dialog: assembly picker, UCSC db (via
-  `ucscDbMap`), editable server URL, sequence paste; adds results as a
-  `FeatureTrack` w/ `FromConfigAdapter` and `showTrack`s it. On
-  `BlatChallengeError` shows an electron-only "Solve CAPTCHA" button.
-- `src/desktopBlat.ts` — renderer→main bridge (`window.require('electron')`):
-  `desktopBlatFetch`, `openBlatChallenge`.
-- `src/ucscDbMap.ts` — tiny static alias map (GRCh38→hg38 etc.); **placeholder,
-  to be replaced by real assembly-metadata wiring** (see Task 1).
+  `ucscDbMap`), editable server URL, **optional apiKey field**, sequence paste;
+  adds results as a `FeatureTrack` w/ `FromConfigAdapter` and `showTrack`s it.
+  Desktop routes through `desktopBlatFetch` (CORS bypass), web uses `runBlat`.
+  On `BlatChallengeError` shows the electron-only "Solve CAPTCHA" fallback.
+- `src/desktopBlat.ts` — renderer→main bridge: `desktopBlatFetch` +
+  `openBlatChallenge` (the CAPTCHA-solve fallback).
+- `src/ucscDbMap.ts` — tiny static alias map (GRCh38→hg38 etc.); identity
+  default already covers name===db and bare GenArk accessions. `metadata.blatDb`
+  wiring (Task 1) is optional polish, not required for the common case.
 - `src/index.ts` — registers Tools → "BLAT search…".
-- `package.json`, `tsconfig.build.esm.json`.
 
-Desktop wiring (all uncommitted):
-- `products/jbrowse-desktop/src/corePlugins.ts` — imports+registers `Blat`.
-- `products/jbrowse-desktop/package.json` — adds `@jbrowse/plugin-blat` dep.
-- `electron/window.ts` — `createChallengeWindow(url)`: opens the BLAT host in a
-  BrowserWindow (shared default-session cookie jar), polls for `cf_clearance`,
-  auto-closes on success; resolves false if user closes first.
-- `electron/ipc/channels.ts` — new channels `openBlatChallenge(url)→boolean`,
-  `blatFetch(url,body)→{ok,status,text}`.
-- `electron/ipc/blatHandlers.ts` (new) — `registerBlatHandlers`: `blatFetch`
-  does `net.fetch` with `credentials:'include'` on the default session (so a
-  solved-challenge cookie attaches first-party — renderer cross-origin fetch
-  can't reliably send it due to SameSite); `openBlatChallenge` → challenge window.
+Desktop wiring (committed):
+- `products/jbrowse-desktop/src/corePlugins.ts` + `package.json` — registers
+  `Blat` / `@jbrowse/plugin-blat` dep. **Desktop only** — deliberately NOT added
+  to jbrowse-web corePlugins (bundle size; BLAT is niche).
+- `electron/ipc/channels.ts` + `blatHandlers.ts` — two channels:
+  `blatFetch(url,body)` (main-process `net.fetch` POST, `credentials:'include'`
+  so a solved cookie attaches, bypasses renderer CORS) and
+  `openBlatChallenge(url)` → `createChallengeWindow`.
+- `electron/window.ts` — `createChallengeWindow`: opens the BLAT host, polls for
+  `cf_clearance`, auto-closes on success.
 - `electron/electron.ts` — calls `registerBlatHandlers()`.
 
-Build state: plugin `tsgo --build` clean, electron `tsgo -p electron/tsconfig.json`
-clean, `node scripts/buildElectronMain.ts` bundles (4 blat markers present),
-eslint --fix clean.
+The apiKey field is **additive**: nothing from the CAPTCHA-solve path was
+removed. Only the earlier jbrowse-web corePlugins registration was reverted.
+
+Build state: plugin `tsgo --build` clean, electron `tsgo -p
+electron/tsconfig.json` clean, `pnpm test plugins/blat` green, eslint clean.
 
 ### pnpm gotcha (already worked around, may recur)
 `pnpm install` no-op'd ("Already up to date") and did NOT create the
@@ -96,53 +139,57 @@ desktop→plugin symlink or `@mui/icons-material` link. Created manually mirrori
 A clean checkout + real `pnpm install` should regenerate these; the lockfile was
 not updated.
 
-## NOT verified end-to-end (needs a human)
+## Verification status
 
-The whole thing type/builds but nobody has driven it in a running desktop app:
-1. Does the "Solve CAPTCHA" flow actually let the follow-up `net.fetch` through?
-   (i.e. does the solved cf_clearance cookie attach as expected. If UCSC's cookie
-   isn't named `cf_clearance`, `createChallengeWindow`'s poll needs that name;
-   the close-based retry still works regardless.)
-2. Does the Tools menu item appear and the track render?
-Run: `cd products/jbrowse-desktop && pnpm start` (or the project `run` skill),
-open an hg38 session, Tools → BLAT search, paste a ~150bp human sequence.
+- **Desktop CAPTCHA solve path (the working one):** manually exercised — user
+  solves the Turnstile window and BLAT returns results. This is the current
+  shipping behavior; keep it.
+- **apiKey path — NOT verified.** That `hgBlat?...&apiKey=KEY&output=json`
+  returns JSON (not Turnstile HTML) is from UCSC docs, not yet reproduced —
+  nobody on the project has a key. Verify with the curl in Step 1 before relying
+  on it. Everything type/builds and unit-tests pass.
 
 ## Remaining work (proposed order)
 
-### Task 1 — wire main-UCSC genomes to the genome picker (small, do first)
-- **jb2hubs** (`~/src/jb2hubs`): in `ucsc2jbrowse` config generation, emit a
-  per-assembly BLAT hint. Simplest: `assembly.metadata.blatDb = <name>` (for
-  UCSC golden-path it's just the assembly name). Optionally a
-  `assembly.metadata.blatServer` override.
-- **plugin**: replace the `ucscDbMap` lookup in `BlatDialog` with
-  `getConf(assembly, ['metadata','blatDb'])` (fall back to `assembly.name`);
-  disable/hide BLAT when there's no resolvable db. Assembly is reachable via
-  `session.assemblyManager.get(assemblyName)`.
-- "Available genomes" data flows through
-  `products/jbrowse-desktop/src/components/StartScreen/availableGenomes/useGenomesData.ts`
-  (fetches jb2hubs JSON; `Entry` has `accession` GCF_/GCA_ + `jbrowseConfig` URL).
+### Step 1 — get a UCSC apiKey and verify the assumption (unblocks apiKey path)
+Nobody on the project has a key yet. Acquire: UCSC Genome Browser account →
+**My Data / Hub Development** page → API key section → generate. Then:
+```
+curl -s 'https://genome.ucsc.edu/cgi-bin/hgBlat' \
+  --data-urlencode 'userSeq=<~150bp human seq>' \
+  --data-urlencode 'type=DNA' --data-urlencode 'db=hg38' \
+  --data-urlencode 'output=json' --data-urlencode 'apiKey=YOUR_KEY'
+```
+JSON back = apiKey/proxy design is locked; paste the key into the dialog's
+apiKey field and the desktop own-key path works with no CAPTCHA. Turnstile HTML
+back = rethink; the CAPTCHA solve-window fallback still works meanwhile.
 
-### Task 2 — reliability of the CAPTCHA problem (decide approach)
-Two options; pick one:
-- (a) Keep the in-app "Solve CAPTCHA" window (already built) — verify it works
-  (see above). Zero infra.
-- (b) Host our own blat proxy (like igv.org's) on jbrowse.org/jb2hubs infra —
-  server-side handles CAPTCHA + could also shell `gfClient` for GenArk (Task 3).
-  Cleaner UX, needs infra + is the natural home for GenArk too.
+### Step 2 — deploy the BLAT proxy (unlocks web + keyless desktop)
+**Scaffolded: `aws/blat-proxy/`** (AWS SAM Lambda, mirrors jb2hubs'
+`aws/config-merger`). It's a transparent proxy: `POST /blat` takes the exact
+form-encoded hgBlat body the plugin already sends, forces `apiKey` (from the
+`UCSC_API_KEY` env var / SAM `UcscApiKey` param) + `output=json`, relays JSON,
+adds `Access-Control-Allow-Origin: *`. Pure logic (`src/proxy.ts`) is unit-tested
+(`pnpm test`, 5 green); `pnpm build` bundles to `dist/index.mjs`; `pnpm typecheck`
+clean. Deploy: `UCSC_API_KEY=... ./deploy.sh` (needs SAM CLI + a key from Step 1).
+Then point the plugin's "BLAT server URL" field (or `DEFAULT_BLAT_URL`) at the
+`BlatProxyApiUrl` stack output. Web can't work without this (browser→UCSC is
+CORS-blocked regardless of key).
+- **STILL TODO in the proxy:** rate limiting. UCSC caps 1/15s + 5000/day and the
+  proxy uses ONE shared key — add a DynamoDB token-bucket or short-TTL response
+  cache before broad rollout. See its README. The desktop own-key path is the
+  pressure valve meanwhile.
 
-### Task 3 — GenArk via dynamic gfServer (desktop-only, the real prize)
-- **jb2hubs**: harvest each genark `hub.txt` `blat`/`transBlat`/`isPcr` line
-  (host, port, `dynamic`, genomeDataDir) into the assembly config metadata.
-  hub.txt lives at
-  `https://hgdownload.soe.ucsc.edu/hubs/<GCA|GCF>/nnn/nnn/nnn/<acc>/hub.txt`.
-- **desktop**: add an IPC path that runs the query against `dynablat-01:4040`.
-  Practical impl = bundle/detect `gfClient` and shell:
-  `gfClient -t=dna -q=dna -genome=<acc> -genomeDataDir=<dir> dynablat-01.soe.ucsc.edu 4040 <query.fa> <out.psl>`
-  then parse the PSL with the existing `pslToFeatures`. (Reimplementing the
-  gfServer wire protocol + alignment stitch in Node is possible but large — not
-  recommended first.)
-- The plugin picks web-hgBlat vs gfServer per assembly based on which hint the
-  config carries.
+### Optional polish — jb2hubs `metadata.blatDb` hint
+Not required (assembly `name` already equals the UCSC db, and hgBlat resolves
+bare GenArk accessions). If wanted: emit `assembly.metadata.blatDb` in
+`ucsc2jbrowse` config generation and read it in `BlatDialog` via
+`getConf(assembly,['metadata','blatDb'])`, falling back to `assembly.name`.
+
+### Dropped — GenArk via dynamic gfServer (was Task 3)
+UNNECESSARY: the web CGI resolves bare GenArk accessions statelessly (confirmed
+2026-07-02), so one hgBlat path serves main UCSC + GenArk. The desktop-only
+`dynablat-01:4040` / `gfClient` socket work is not needed.
 
 ## Key source references
 - IGV (java, model): `~/src/vendor/igv/src/main/java/org/igv/util/blat/BlatClient.java`

@@ -4,8 +4,6 @@
 const aliases: Record<string, string> = {
   GRCh38: 'hg38',
   GRCh37: 'hg19',
-  hg38: 'hg38',
-  hg19: 'hg19',
   GRCm39: 'mm39',
   GRCm38: 'mm10',
   'T2T-CHM13v2.0': 'hs1',

@@ -74,17 +74,33 @@ export function pslToFeatures(
 
 export const MINIMUM_BLAT_LENGTH = 20
 
-export function buildBlatBody({ db, seq }: { db: string; seq: string }) {
-  return new URLSearchParams({
+export function buildBlatBody({
+  db,
+  seq,
+  apiKey,
+}: {
+  db: string
+  seq: string
+  apiKey?: string
+}) {
+  const params = new URLSearchParams({
     userSeq: seq,
     type: 'DNA',
     db,
     output: 'json',
-  }).toString()
+  })
+  // UCSC removed open programmatic BLAT access in 2025; an account apiKey
+  // (Genome Browser account → Hub Development → API key) bypasses the
+  // Cloudflare Turnstile that otherwise fronts hgBlat
+  if (apiKey) {
+    params.set('apiKey', apiKey)
+  }
+  return params.toString()
 }
 
 // thrown when the server returns its CAPTCHA challenge page instead of results
-// — the caller surfaces a "solve challenge" affordance for this case
+// — the caller surfaces a "solve challenge" affordance for this case (and, when
+// available, an apiKey avoids the challenge entirely)
 export class BlatChallengeError extends Error {
   name = 'BlatChallengeError'
 }
@@ -96,7 +112,9 @@ export function parseBlatResponse(text: string): SimpleFeatureSerialized[] {
   if (text.trimStart().startsWith('<')) {
     if (/turnstile|challenge|captcha|cf-/i.test(text)) {
       throw new BlatChallengeError(
-        'The BLAT server returned a CAPTCHA challenge instead of results.',
+        'The BLAT server returned a CAPTCHA challenge instead of results. ' +
+          'Solve it in the window, or supply a UCSC apiKey (Genome Browser ' +
+          'account → Hub Development → API key) to avoid it.',
       )
     }
     throw new Error(
@@ -113,15 +131,17 @@ export async function runBlat({
   db,
   seq,
   urlBase = DEFAULT_BLAT_URL,
+  apiKey,
 }: {
   db: string
   seq: string
   urlBase?: string
+  apiKey?: string
 }) {
   const response = await fetch(urlBase, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: buildBlatBody({ db, seq }),
+    body: buildBlatBody({ db, seq, apiKey }),
   })
   if (!response.ok) {
     throw new Error(
