@@ -1,4 +1,14 @@
-import { makeBlockTicks, makeOverviewTicks, makeTicks } from './util.ts'
+import {
+  makeContentBlock,
+  makeInterRegionPaddingBlock,
+} from '@jbrowse/core/util/blockTypes'
+
+import {
+  groupContiguousBlocks,
+  makeBlockTicks,
+  makeOverviewTicks,
+  makeTicks,
+} from './util.ts'
 
 // bpPerPx=5000 → chooseGridPitch gives majorPitch=1_000_000
 const SCALE = 5000
@@ -94,5 +104,56 @@ describe('makeBlockTicks', () => {
   test('emitMinor=false keeps only major ticks', () => {
     const result = makeBlockTicks({ start: 0, end: 50 }, 1, true, false)
     expect(result.map(t => t.type)).toEqual(['major'])
+  })
+})
+
+describe('groupContiguousBlocks', () => {
+  const block = (
+    displayedRegionIndex: number,
+    start: number,
+    end: number,
+    offsetPx: number,
+    reversed = false,
+  ) =>
+    makeContentBlock({
+      key: `${start}`,
+      assemblyName: 'volvox',
+      refName: 'ctgA',
+      start,
+      end,
+      reversed,
+      offsetPx,
+      widthPx: end - start,
+      displayedRegionIndex,
+    })
+
+  test('merges a regions ~800px chunks into one run', () => {
+    const runs = groupContiguousBlocks([
+      block(0, 0, 800, 0),
+      block(0, 800, 1600, 800),
+    ])
+    expect(runs).toEqual([
+      { offsetPx: 0, widthPx: 1600, start: 0, end: 1600, reversed: false },
+    ])
+  })
+
+  test('a new region starts a new run (no separator block between them)', () => {
+    const runs = groupContiguousBlocks([
+      block(0, 0, 800, 0),
+      block(1, 0, 500, 800),
+    ])
+    expect(runs).toEqual([
+      { offsetPx: 0, widthPx: 800, start: 0, end: 800, reversed: false },
+      { offsetPx: 800, widthPx: 500, start: 0, end: 500, reversed: false },
+    ])
+  })
+
+  test('an elided/padding block breaks a run', () => {
+    const runs = groupContiguousBlocks([
+      block(0, 0, 800, 0),
+      makeInterRegionPaddingBlock({ key: 'pad', widthPx: 3, offsetPx: 800 }),
+      block(0, 800, 1600, 803),
+    ])
+    expect(runs).toHaveLength(2)
   })
 })

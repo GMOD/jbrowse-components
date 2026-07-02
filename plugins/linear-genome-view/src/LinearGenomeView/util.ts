@@ -171,6 +171,52 @@ export function overviewRefNameLabelWidth(refName: string) {
 }
 
 /**
+ * A maximal run of adjacent staticBlocks that belong to one contiguous
+ * displayed region. staticBlocks chop a region into ~800px chunks; merging them
+ * back means a coordinate label sitting on an internal chunk boundary is no
+ * longer clipped away by both neighbors (only genuine region edges clip).
+ */
+export interface BlockRun {
+  offsetPx: number
+  widthPx: number
+  start: number
+  end: number
+  reversed: boolean
+}
+
+export function groupContiguousBlocks(blocks: BaseBlock[]) {
+  const runs: BlockRun[] = []
+  let current: BlockRun | undefined
+  let currentRegionIndex: number | undefined
+  for (const block of blocks) {
+    if (block.type === 'ContentBlock') {
+      if (
+        current !== undefined &&
+        currentRegionIndex === block.displayedRegionIndex
+      ) {
+        current.widthPx += block.widthPx
+        current.start = Math.min(current.start, block.start)
+        current.end = Math.max(current.end, block.end)
+      } else {
+        current = {
+          offsetPx: block.offsetPx,
+          widthPx: block.widthPx,
+          start: block.start,
+          end: block.end,
+          reversed: !!block.reversed,
+        }
+        currentRegionIndex = block.displayedRegionIndex
+        runs.push(current)
+      }
+    } else {
+      current = undefined
+      currentRegionIndex = undefined
+    }
+  }
+  return runs
+}
+
+/**
  * makeTicks plus each tick's pixel x within its block, accounting for reversed
  * regions. Single source of the tick→px formula shared by gridlines, the
  * scalebar coordinate labels, and SVG export so their positions can't drift.

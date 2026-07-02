@@ -9,6 +9,7 @@ import {
   clamp,
   getBpDisplayStr,
   getSession,
+  getTickDisplayStr,
   isSessionModelWithWidgets,
   localStorageGetBoolean,
   localStorageGetItem,
@@ -63,7 +64,10 @@ import {
   calculateVisibleLocStrings,
   expandRegion,
   generateLocations,
+  groupContiguousBlocks,
+  labelFitsInBlock,
   makeBlockTicks,
+  tickLabelWidth,
 } from './util.ts'
 
 import type {
@@ -1717,6 +1721,30 @@ export function stateModelFactory(pluginManager: PluginManager) {
             }
           }
           return ticks
+        },
+        /**
+         * Scalebar coordinate labels (x in the staticBlocks frame + display
+         * text). Sibling of gridlineTicks sharing the same makeBlockTicks
+         * formula, so labels line up exactly with their gridlines. staticBlocks
+         * chop a region into ~800px chunks; groupContiguousBlocks merges them
+         * back per region so a label on an internal chunk boundary isn't clipped
+         * away by both neighbors — only genuine region edges clip a label.
+         */
+        get scalebarLabels() {
+          const { bpPerPx } = self
+          const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
+          const labels: { x: number; label: string; key: string }[] = []
+          for (const run of groupContiguousBlocks(blocks)) {
+            const runLeft = run.offsetPx - firstBlockOffset
+            for (const { base, x } of makeBlockTicks(run, bpPerPx, true, false)) {
+              const label = getTickDisplayStr(base + 1, bpPerPx)
+              const w = tickLabelWidth(label)
+              if (labelFitsInBlock(x - w / 2, w, run.widthPx)) {
+                labels.push({ x: runLeft + x, label, key: `${run.offsetPx}-${base}` })
+              }
+            }
+          }
+          return labels
         },
         /**
          * #getter
