@@ -1,3 +1,5 @@
+import { parseStrand } from './parseStrand.ts'
+
 export interface ParsedAssemblyName {
   assemblyName: string
   chr: string
@@ -119,7 +121,7 @@ export function parseMafTabixEntry(
     assemblyName: parsed.assemblyName,
     chr: parsed.chr,
     start: parseInt(startStr, 10),
-    strand: strandStr === '-' ? -1 : 1,
+    strand: parseStrand(strandStr),
     srcSize: srcSizeStr === undefined ? undefined : parseInt(srcSizeStr, 10),
     seq,
   }

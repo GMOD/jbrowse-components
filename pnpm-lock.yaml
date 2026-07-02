@@ -837,6 +837,9 @@ importers:
       '@gmod/vcf':
         specifier: ^7.0.9
         version: 7.0.9
+      '@jbrowse/alignments-core':
+        specifier: workspace:^
+        version: link:../../packages/alignments-core
       '@jbrowse/cigar-utils':
         specifier: workspace:^
         version: link:../../packages/cigar-utils

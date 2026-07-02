@@ -31,7 +31,11 @@ import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import PaletteIcon from '@mui/icons-material/Palette'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
-import { buildEditableSources, buildSources } from './sourcesLogic.ts'
+import {
+  buildEditableSources,
+  buildSources,
+  withSourceAlias,
+} from './sourcesLogic.ts'
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
 import {
@@ -114,7 +118,7 @@ export default function stateModelFactory(
       // cluster RPC reads `name` and `buildClusteredLayout` maps order
       // indices into this list.
       get sourcesWithoutLayout(): Source[] {
-        return self.sourcesVolatile.map(s => ({ ...s, source: s.name }))
+        return self.sourcesVolatile.map(withSourceAlias)
       },
 
       get editableSources(): Source[] {

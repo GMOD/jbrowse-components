@@ -53,8 +53,8 @@
     "name": "alignments/read_cloud",
     "status": "good",
     "note": "Implemented: each samplot pair now draws as two colored squares (insert-size/orientation color) at the read positions joined by a black connector line — the classic samplot look (new arcMarker GPU pass + arc.slang flat line black + drawCanvas.ts). Load hang was stale (refactor landed). Regenerated.",
-    "reviewedAt": "2026-06-26T00:00:00.000Z",
-    "hash": "28857d35edff67b3ebf13d2b9099b0131da44711"
+    "reviewedAt": "2026-07-02T02:58:39.021Z",
+    "hash": "5432e571f224e7f24b36fe442419d08df674f15b"
   },
   "dotplot": {
     "name": "dotplot",
@@ -110,8 +110,8 @@
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-26T02:29:38.638Z",
-    "hash": "aee5f6e7698da12fc4e1ba9c49500789568220a2"
+    "reviewedAt": "2026-07-02T02:58:41.587Z",
+    "hash": "0bb333910e337b46305effd9f5a8e397e7fa6a19"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -147,8 +147,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-23T04:46:40.465Z",
-    "hash": "98a46212bebb7026e94afc892df5486dd463dee2"
+    "reviewedAt": "2026-07-02T02:59:34.684Z",
+    "hash": "1f846c0ffb88d127dd3a2f72687c9d46be3f9af6"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -178,8 +178,8 @@
     "name": "sv_cgiab/translocation_sv_inspector_view",
     "status": "good",
     "note": "boxed the SV_20 grid row (chr3:139,976,414, the chr3<->chr13 CHROMOPLEXY translocation that translocation_breakpoint_split drills into) instead of the chord itself: confirmed via React-fiber feature lookup that the matching chord is data-testid chord-vcf-19, but its 1px stroke has no reliable on-screen anchor for hover/box (geometry does not map cleanly through the circular view screen transform); the grid row carries the same identity in readable text and is the dependable anchor. Added a hover action (text match) first since the row is mounted in the DataGrid virtualization buffer but scrolled out of the visible viewport; Puppeteer auto-scrolls on hover.",
-    "reviewedAt": "2026-06-24T18:59:15.000Z",
-    "hash": "f86b232f01810b252f8b9c1bfdc3a0286cd03978"
+    "reviewedAt": "2026-07-02T02:59:45.866Z",
+    "hash": "9ca151fdb39fcfe2223a31bf236ad15e78fcd775"
   },
   "sv_cgiab/cnv_show_all_regions": {
     "name": "sv_cgiab/cnv_show_all_regions",
@@ -191,8 +191,8 @@
     "name": "sv_cgiab/deletion_linear_view",
     "status": "good",
     "note": "RESOLVED: already sorted by base at the deletion center (sortedBy 122836434 + center line); reviewer note was an optional enhancement.",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
-    "hash": "c910e7571d4c492d34b7fc93e13fa63c8df6d102"
+    "reviewedAt": "2026-07-02T02:59:43.870Z",
+    "hash": "a85ebc6001543e1e92ed7bc06527ecf386ed45e9"
   },
   "sv_cgiab/cnv_with_bed_track": {
     "name": "sv_cgiab/cnv_with_bed_track",
@@ -222,8 +222,8 @@
     "name": "about_track",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-24T17:20:30.586Z",
-    "hash": "0a55eaf829d3edad3b329e28939a03289b7d02c9"
+    "reviewedAt": "2026-07-02T02:58:34.311Z",
+    "hash": "9f97331230365cda6fa7b19aca64c5b2ba7fbc9f"
   },
   "add_hg38_assembly": {
     "name": "add_hg38_assembly",
@@ -247,8 +247,8 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-24T11:47:29.014Z",
-    "hash": "b7f1743916ca0f91a386172eee6e770f1ae04c84"
+    "reviewedAt": "2026-07-02T02:58:29.317Z",
+    "hash": "db37657ca0e52e448bf87fefe16e89a8c19279ef"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
@@ -387,8 +387,8 @@
     "name": "add_track_tracklist",
     "status": "good",
     "note": "Reduced viewport to 1000x600 (was default 1500x800) in both stages per reviewer.",
-    "reviewedAt": "2026-06-26T00:00:00.000Z",
-    "hash": "dbb33cea0394bf21894aec1c170842a75cce9a39"
+    "reviewedAt": "2026-07-02T02:58:31.474Z",
+    "hash": "7e87a277183102d663d882983e8e36ebcc42a9d1"
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
@@ -503,8 +503,8 @@
     "name": "rnaseq/longread_isoseq",
     "status": "good",
     "note": "FIXED: switched to super-compact (featureHeight 1) so all isoforms stack in view.",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
-    "hash": "4676f76e3411b13f13c7f3bc02852f550541d704"
+    "reviewedAt": "2026-07-02T02:59:41.836Z",
+    "hash": "c8ef3dbc58995f636979e18b6be812a9c634454e"
   },
   "rnaseq/overview": {
     "name": "rnaseq/overview",
@@ -715,7 +715,7 @@
   "sv_cgiab/cnv_multi_bigwig": {
     "name": "sv_cgiab/cnv_multi_bigwig",
     "status": "bad",
-    "note": "Figure renders correctly. Underlying indexcov bigWigs are per-sample median-normalized so normal vs tumor share no common CNV baseline. Wrote a data-gen recipe (website/scripts/cnv-data-recipe.md) for a log2(tumor/normal) ratio track + optional BAF track; requires the source CRAMs and re-upload to the jbrowse.org/demos/cgiab bucket, so left bad pending data regeneration.",
+    "note": "Figure renders correctly. Underlying indexcov bigWigs are per-sample median-normalized so normal vs tumor share no common CNV baseline. Wrote a data-gen recipe (website/scripts/cnv-data-recipe.md) for a log2(tumor/normal) ratio track + optional BAF track; requires the source CRAMs and re-upload to the jbrowse.org/demos/cgiab bucket, so left bad pending data regeneration. DATA-REGEN: preferred path is to run Wakhan (KolmogorovLab haplotype-specific CNV caller) on the HG008 tumor phased BAM instead of the custom mosdepth/bcftools recipe — it emits fine coverage + haplotype-specific copy number + phased (already-folded) BAF in one run; convert to bigWig/BED, upload to s3://jbrowse.org/demos/cgiab/. See cnv-data-recipe.md.",
     "reviewedAt": "2026-06-25T18:20:55.261Z",
     "hash": "8c8b321353885f8aad692f264e9c4fb86a71e2d2"
   },
@@ -837,8 +837,8 @@
     "name": "alignments/haplotype",
     "status": "good",
     "note": "DONE in prior session: zoomed to 1:63,005,000-63,008,000 with groupBy/colorBy HP, plus companion alignments/haplotype_groupby figure; verdict was stale.",
-    "reviewedAt": "2026-06-23T04:43:41.624Z",
-    "hash": "6a5d8f5a05c0062d414fd0253dea8db73a4f2300"
+    "reviewedAt": "2026-07-02T02:58:36.869Z",
+    "hash": "4650422207c98a34d7862bf8fd5b3652bd599bae"
   },
   "alignments/modifications2": {
     "name": "alignments/modifications2",
@@ -849,10 +849,10 @@
   },
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
-    "status": "good",
-    "note": "current figure correctly shows collapse-introns + sashimi arcs over PTEN exons, not a defect. Reviewer's extra-screenshot idea (sashimi auto top/bottom toggle, zoomed-in variant) logged as a future enhancement, not actioned here.",
-    "reviewedAt": "2026-06-24T18:30:57.000Z",
-    "hash": "dc8e64a1b2439122e95228d48416ffb04d3b87e9"
+    "status": "bad",
+    "note": "it might be worth trying to snapshot one more gene. this one has a fragment of 'klln' gene that is kind of distracting. alternatively, filtering to just show pten might be a good exercise of our system to do filtering",
+    "reviewedAt": "2026-07-02T02:59:24.381Z",
+    "hash": "2c9378664cfe4ff2af69b1fce54085711da9ae36"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -1077,8 +1077,8 @@
     "name": "protein/connected",
     "status": "good",
     "note": "switched the demoed domain from DNA binding (1146px, residues 102-292, wider than the alignment tracks own 649px scrollable viewport) to the Oligomerization region (UniProt Region 325-358, 192px) which fits entirely within the panel with no edge clipping. Combined with the scroll action centering fix: tooltip fully on-screen, selection outline precisely aligned with the highlighted alignment columns (verified by close crop), structure + genome highlights all consistent.",
-    "reviewedAt": "2026-06-24T19:35:21.000Z",
-    "hash": "d5e55d2219955573014c129bd748ceb562f7d775"
+    "reviewedAt": "2026-07-02T02:59:37.175Z",
+    "hash": "a5b503bc2ef1c35e97f448d0dfd22eba088abac5"
   },
   "sv_cgiab/translocation_open_from_track": {
     "name": "sv_cgiab/translocation_open_from_track",
@@ -1103,8 +1103,99 @@
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
     "status": "bad",
-    "note": "this screenshot is not very interesting, its mostly grey. we may way to show human 1000 genomes data or something",
-    "reviewedAt": "2026-06-28T16:57:58.928Z",
+    "note": "Not a locus swap. Tested: jb2export static SSR renders the per-sample genotype MATRIX empty for the 1000G phase3 callset even with data loaded locally and rows at 1px (volvox works via a simpler path) -> needs a jb2export matrix-render fix. And real pop data is ref-dominant (grey); the compelling view is colorBy:population, needing adapter samplesTsv -> a small jb2export CLI feature (samplesTsv: modifier). Both noted in the spec comment. Reverted to volvox.",
+    "reviewedAt": "2026-07-02T02:52:42.000Z",
     "hash": "8c31fbe844e19685b6a0316a108b9a57eecc5454"
+  },
+  "chromhmm": {
+    "name": "chromhmm",
+    "status": "good",
+    "note": "Wrote docs/tutorials/chromhmm.md (how the multirow-bigBed ChromHMM config is built: combine per-cell-type BEDs with a cellType column -> bed9+1 bigBed -> LinearMultiRowFeatureDisplay partitionField/color(itemRgb jexl)/rowOrder). Linked from introduction.md. Screenshot itself renders fine.",
+    "reviewedAt": "2026-07-02T02:52:42.000Z",
+    "hash": "3c369b0e629f42dd7559bda7eec8c89c694be23c"
+  },
+  "jbrowse-img/alignments_snpcov": {
+    "name": "jbrowse-img/alignments_snpcov",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-02T02:01:36.063Z",
+    "hash": "8fd1726b9d23c87ae52eef15d01c55dc0fd7b667"
+  },
+  "jbrowse-img/hic": {
+    "name": "jbrowse-img/hic",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-02T02:01:37.808Z",
+    "hash": "532ff4d924bd18e5b14451e308384019d048bb54"
+  },
+  "maf_470way": {
+    "name": "maf_470way",
+    "status": "good",
+    "note": "FIXED end-to-end: (1) the blank-heatmap regression (overlay canvases used raw rowHeight=0 in fit mode instead of effectiveRowHeight); (2) shortened the track (heightOverride 1080->560, rows sub-pixel but the conserved/divergent texture still reads and it is no longer a full-screen wall); (3) added MafIdentityLegend (top-right) naming the ramp red=Divergent / blue=Conserved. Regenerated + verified.",
+    "reviewedAt": "2026-07-02T03:23:30.000Z",
+    "hash": "8f9b718036e29d722d3332c033cfd0e3fb17b84d"
+  },
+  "maf_470way_codon": {
+    "name": "maf_470way_codon",
+    "status": "bad",
+    "note": "we could consider making the 'conservation' track show codon level conservation instead of per-base conservation",
+    "reviewedAt": "2026-07-02T02:02:56.806Z",
+    "hash": "6b7ac43f6196448d2686820070b08b5cd4cef074"
+  },
+  "maf_cds_frames": {
+    "name": "maf_cds_frames",
+    "status": "bad",
+    "note": "what are the red and blue bars below the alignment, are these showing inversions? or cds frame? i dont really care about cds frames",
+    "reviewedAt": "2026-07-02T02:03:58.978Z",
+    "hash": "b1dd13c5df9fe26d250891985881c5aedd377ce5"
+  },
+  "maf_color_by_chromosome": {
+    "name": "maf_color_by_chromosome",
+    "status": "good",
+    "note": "Reworked from a global name->hue rainbow to a PER-ROW rank scheme (perRowChromRanks + SOURCE_CHROM_PALETTE in drawSourceChrom.ts): within each species row, source chromosomes are ranked by coverage and colored by rank, so every row main chromosome shares the primary blue and only blocks from a different source chromosome take an accent (orange/crimson) — rearrangements pop, no rainbow. Legend is now rank-based (Main/2nd/3rd source). Applies to canvas + SVG export; docs (user+config guides) updated; maf tests green (299).",
+    "reviewedAt": "2026-07-02T03:33:41.000Z",
+    "hash": "17f8cc352746d6b0771fd0d466ec6ebad16ce06e"
+  },
+  "maf_inversions": {
+    "name": "maf_inversions",
+    "status": "bad",
+    "note": "too hard to see inversions. we might want a specialized 'structure only' view or something easier to see that focuses on structure if it matters. also the \"top level\" of the tree sidebar is offscreen by ~1px to the left.",
+    "reviewedAt": "2026-07-02T02:06:21.344Z",
+    "hash": "cdc05dced7b6661fb9534132a19d88f50246e50b"
+  },
+  "sv_cgiab/cnv_log2_baf": {
+    "name": "sv_cgiab/cnv_log2_baf",
+    "status": "bad",
+    "note": "Whiskers come from summaryScoreMode defaulting to whiskers (min/avg/max bands); the BAF track omits summaryScoreMode. Switching to avg would collapse LOH bins (mix of 0/1) to ~0.5 and destroy the split the caption describes. A clean no-whisker BAF needs a FOLDED bigwig (|BAF-0.5| or minor-allele fraction) so one avg point per bin carries LOH -> data regen (recipe in cnv-data-recipe.md). DATA-REGEN: preferred path is to run Wakhan (KolmogorovLab haplotype-specific CNV caller) on the HG008 tumor phased BAM instead of the custom mosdepth/bcftools recipe — it emits fine coverage + haplotype-specific copy number + phased (already-folded) BAF in one run; convert to bigWig/BED, upload to s3://jbrowse.org/demos/cgiab/. See cnv-data-recipe.md.",
+    "reviewedAt": "2026-07-02T02:52:42.000Z",
+    "hash": "700e066cd5d124212b8dc0480731781f0713a5ff"
+  },
+  "sv_cgiab/cnv_log2ratio_genome": {
+    "name": "sv_cgiab/cnv_log2ratio_genome",
+    "status": "bad",
+    "note": "Adding a BAF panel + no whiskers has the same blocker as cnv_log2_baf: raw BAF at genome scale needs whiskers to show LOH, so a whisker-free BAF needs a folded BAF bigwig regenerated (recipe in cnv-data-recipe.md). Log2 ratio panel itself is fine. DATA-REGEN: preferred path is to run Wakhan (KolmogorovLab haplotype-specific CNV caller) on the HG008 tumor phased BAM instead of the custom mosdepth/bcftools recipe — it emits fine coverage + haplotype-specific copy number + phased (already-folded) BAF in one run; convert to bigWig/BED, upload to s3://jbrowse.org/demos/cgiab/. See cnv-data-recipe.md.",
+    "reviewedAt": "2026-07-02T02:52:42.000Z",
+    "hash": "408b254b22b07908b5cb8b8eee58c5529038bcc7"
+  },
+  "sv_cgiab/driver_cdkn2a_deletion": {
+    "name": "sv_cgiab/driver_cdkn2a_deletion",
+    "status": "bad",
+    "note": "the coverage bins are too large to show fine scale deletion. we need per base coverage data DATA-REGEN: preferred path is to run Wakhan (KolmogorovLab haplotype-specific CNV caller) on the HG008 tumor phased BAM instead of the custom mosdepth/bcftools recipe — it emits fine coverage + haplotype-specific copy number + phased (already-folded) BAF in one run; convert to bigWig/BED, upload to s3://jbrowse.org/demos/cgiab/. See cnv-data-recipe.md.",
+    "reviewedAt": "2026-07-02T02:07:46.506Z",
+    "hash": "a20bb5f1cfb9036fb0de5444a4b2e062bbdda995"
+  },
+  "sv_cgiab/driver_chr17_loh": {
+    "name": "sv_cgiab/driver_chr17_loh",
+    "status": "good",
+    "note": "FIXED: the CNV calls track now labels each region CN <total> (<hap1>|<hap2>) via a labels.name jexl reading the BED copy-number columns (total_copy_number/hap1_copy_number/hap2_copy_number named by the file #-header), instead of the opaque CNA_## id. The haplotype split also makes LOH explicit — 17p reads CN 1 (1|0), copy-neutral 17q reads CN 2 (2|0). Added as a new sessionTrack (hg008_cnv_calls) so the shared config track is untouched.",
+    "reviewedAt": "2026-07-02T04:14:04.846Z",
+    "hash": "898029b8144439be9b94d5c634555c1cf08a1e97"
+  },
+  "maf_codon_tooltip": {
+    "name": "maf_codon_tooltip",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-02T02:59:32.306Z",
+    "hash": "8d10e7e5ee9be8fbc9b13fb20dd42a8155f28ebd"
   }
 }

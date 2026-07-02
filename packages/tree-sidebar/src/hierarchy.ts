@@ -1,6 +1,12 @@
 // stroke for tree branch lines, shared by the canvas and SVG draw paths
 export const TREE_STROKE = '#0008'
 
+// Left inset (CSS px) for the root branch line. The root sits at the smallest y
+// (leftmost node in the left-to-right dendrogram); at y=0 its 1px-wide vertical
+// stroke is centered on the canvas edge, so half of it is clipped off. Nudging
+// the whole y-domain right by a pixel keeps the root line fully on-screen.
+export const TREE_LEFT_PAD = 1
+
 export interface HierarchyNode<T> {
   data: T
   children: HierarchyNode<T>[] | null
@@ -183,8 +189,7 @@ export function eachAfter<T>(
 export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
   const rootHeight = node.height
   function visit(n: HierarchyNode<T>) {
-    n.y =
-      rootHeight === 0 ? sizeY : ((rootHeight - n.height) / rootHeight) * sizeY
+    n.y = insetY(rootHeight === 0 ? 1 : (rootHeight - n.height) / rootHeight, sizeY)
     if (n.children) {
       for (const child of n.children) {
         visit(child)
@@ -192,6 +197,12 @@ export function assignDepthY<T>(node: HierarchyNode<T>, sizeY: number) {
     }
   }
   visit(node)
+}
+
+// Maps a 0..1 fraction (0 = root, 1 = leaf) onto the tree's horizontal band,
+// left-inset by TREE_LEFT_PAD so the root branch stroke isn't clipped.
+function insetY(fraction: number, sizeY: number) {
+  return TREE_LEFT_PAD + fraction * (sizeY - TREE_LEFT_PAD)
 }
 
 // Largest merge height in the subtree. For an hclust dendrogram the `length`
@@ -222,7 +233,7 @@ export function assignBranchLengthY<T extends { length?: number }>(
   const max = maxNodeHeight(node)
   function visit(n: HierarchyNode<T>) {
     const h = n.data.length ?? 0
-    n.y = max === 0 ? sizeY : (1 - h / max) * sizeY
+    n.y = insetY(max === 0 ? 1 : 1 - h / max, sizeY)
     if (n.children) {
       for (const child of n.children) {
         visit(child)

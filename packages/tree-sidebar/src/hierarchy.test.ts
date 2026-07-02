@@ -130,11 +130,12 @@ test('clusterLayout handles a single leaf without dividing by zero', () => {
 test('assignDepthY positions by depth-to-leaf, aligning leaves at the edge', () => {
   const root = hierarchy(sample(), childrenOf)
   assignDepthY(root, 100)
-  // root at 0; leaf A and leaf C both reach the right edge despite A being
-  // shallower (depth 1 vs 2) — they share depth-to-leaf 0
-  expect(root.y).toBe(0)
+  // root sits at the left inset (TREE_LEFT_PAD) so its stroke isn't clipped;
+  // leaf A and leaf C both reach the right edge despite A being shallower
+  // (depth 1 vs 2) — they share depth-to-leaf 0
+  expect(root.y).toBe(1)
   expect(root.children![0]!.y).toBe(100)
-  expect(root.children![1]!.y).toBe(50)
+  expect(root.children![1]!.y).toBe(50.5)
   expect(root.children![1]!.children![0]!.y).toBe(100)
 })
 
@@ -163,19 +164,19 @@ test('maxNodeHeight returns the largest merge height', () => {
 test('assignBranchLengthY positions nodes by absolute merge height', () => {
   const root = hierarchy(dendro(), childrenOf)
   assignBranchLengthY(root, 100)
-  // root (max height) at 0, all leaves (height 0) at the right edge, the inner
-  // cluster at its merge height fraction (1 - 0.5/2)
-  expect(root.y).toBe(0)
+  // root (max height) at the left inset, all leaves (height 0) at the right
+  // edge, the inner cluster at its merge height fraction (1 - 0.5/2)
+  expect(root.y).toBe(1)
   expect(root.children![0]!.y).toBe(100)
-  expect(root.children![1]!.y).toBe(75)
+  expect(root.children![1]!.y).toBe(75.25)
   expect(root.children![1]!.children![0]!.y).toBe(100)
 })
 
 test('clusterLayout uses branch-length layout when enabled', () => {
   const root = hierarchy(dendro(), childrenOf)
   clusterLayout(root, 30, 100, true)
-  expect(root.y).toBe(0)
-  expect(root.children![1]!.y).toBe(75)
+  expect(root.y).toBe(1)
+  expect(root.children![1]!.y).toBe(75.25)
 })
 
 test('clusterLayout falls back to cladogram when no merge heights exist', () => {

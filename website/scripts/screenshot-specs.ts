@@ -1373,10 +1373,14 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'ncbi_refseq_109_hg38_latest',
-          // one clean transcript per gene so the PTEN glyph + label is tidy
+          // one clean transcript per gene so the PTEN glyph + label is tidy,
+          // and a jexl filter drops the neighboring KLLN fragment so only PTEN
+          // shows — doubling as a demo of the display's feature-filtering slot
           displaySnapshot: {
             type: 'LinearBasicDisplay',
             geneGlyphMode: 'longestCoding',
+            // config slot stores raw jexl (deferred eval prepends `jexl:`)
+            jexlFilters: ["get(feature,'name')=='PTEN'"],
           },
         },
         {
@@ -3837,6 +3841,34 @@ export const specs: ScreenshotSpec[] = [
             },
           },
         },
+        {
+          // Re-declare the CNV calls track with a label that reads out the
+          // actual copy number + haplotype split instead of the opaque "CNA_21"
+          // id (reviewer). The BED carries total/hap1/hap2 copy-number columns
+          // (its `#`-header names them), so a labels.name jexl surfaces them —
+          // and the haplotype split makes the LOH explicit: a "CN 2 (2|0)"
+          // region is copy-neutral LOH (both copies from one haplotype).
+          type: 'FeatureTrack',
+          trackId: 'hg008_cnv_calls',
+          name: 'HG008-T somatic CNV calls (copy number)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BedAdapter',
+            bedLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed',
+              locationType: 'UriLocation',
+            },
+          },
+          displays: [
+            {
+              type: 'LinearBasicDisplay',
+              displayId: 'hg008_cnv_calls-LinearBasicDisplay',
+              labels: {
+                name: "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'",
+              },
+            },
+          ],
+        },
       ],
       views: [
         {
@@ -3868,7 +3900,7 @@ export const specs: ScreenshotSpec[] = [
                 height: 140,
               },
             },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+            'hg008_cnv_calls',
           ],
         },
       ],

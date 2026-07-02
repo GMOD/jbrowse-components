@@ -10,6 +10,8 @@
  * 'G' - gap substring: add variable-length gap from substring
  */
 
+import { parseStrand } from '../util/parseStrand.ts'
+
 interface RowInsert {
   type: 'i'
   row: number
@@ -84,7 +86,7 @@ export function parseRowInstructions(meta: string) {
         row: +ret[i++]!,
         sequenceName: ret[i++]!,
         start: +ret[i++]!,
-        strand: ret[i++] === '-' ? -1 : 1,
+        strand: parseStrand(ret[i++]),
         sequenceLength: +ret[i++]!,
       })
     } else if (type === 'd') {

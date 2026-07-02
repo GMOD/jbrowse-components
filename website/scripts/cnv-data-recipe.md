@@ -1,4 +1,33 @@
-# CNV data-gen recipe — `sv_cgiab/cnv_multi_bigwig`
+# CNV data-gen recipe — cgiab somatic CNV demo tracks
+
+> **Preferred: run [Wakhan](https://github.com/KolmogorovLab/Wakhan) rather than
+> the hand-rolled pipeline below.** Wakhan is the Kolmogorov Lab
+> haplotype-specific CNV caller for long reads; it takes the phased tumor BAM
+> (phased against the germline hets) + reference and emits, in one validated run,
+> exactly what all four blocked cgiab CNV figures need:
+>
+> - per-bin (and fine-scale) **coverage** — fixes `driver_cdkn2a_deletion`
+>   ("bins too large to show the fine-scale deletion").
+> - **haplotype-specific coverage / copy number** — this is the same
+>   `total_copy_number / hap1_copy_number / hap2_copy_number` signal the CNV
+>   calls BED already carries (the `CN t (h1|h2)` labels in `driver_chr17_loh`),
+>   so its segments drop straight into a labeled `FeatureTrack`.
+> - **phased BAF** (per-haplotype allele fraction) — a clean, already-folded LOH
+>   signal, so `cnv_log2_baf` / `cnv_log2ratio_genome` no longer need the
+>   folded-bigWig hack below and can plot one avg point per bin (no whiskers).
+> - a common tumor/normal-anchored **log2 ratio**, replacing the two
+>   independently median-normalized indexcov bigWigs in `cnv_multi_bigwig`.
+>
+> Convert Wakhan's coverage/BAF outputs to bigWig (`bedGraphToBigWig`) and its
+> copy-number segments to a BED with the `total/hap1/hap2` columns, upload to
+> `s3://jbrowse.org/demos/cgiab/`, then wire into the specs (§3). Running it needs
+> the HG008 tumor phased BAM + `GRCh38_GIABv3.fa` on a box with Wakhan installed —
+> a heavy job, not runnable inline in the screenshot sandbox.
+>
+> The manual mosdepth/bcftools workflow below is kept only as a fallback for when
+> Wakhan isn't available.
+
+---
 
 Why this exists: the figure currently plots two **indexcov** bigWigs
 (`HG008-N_indexcov.bw`, `HG008-T_indexcov.bw`). indexcov normalizes each sample

@@ -105,6 +105,15 @@ test('clamps to region bounds — bases outside [regionStart, regionEnd) are ign
   expect(r.startPos).toBe(102)
 })
 
+test('clamps insertions to region bounds — a run closing before regionStart is dropped', () => {
+  // Block overhangs the left edge: col0 ref is '-' (insertion) closing at
+  // refPos=100, before regionStart=102. Depths clamp it, so insertions must too
+  // (else the interbase consumer indexes position-regionStart negatively).
+  const blocks: MafBlock[] = [block(100, '-ACGT', [row(0, 'GACGT')])]
+  const r = computeMafCoverage(blocks, 102, 105)
+  expect(r.insertions).toEqual([])
+})
+
 // row 0 is the reference (its sequence equals refSeq); refRowIndex=0 excludes
 // its trivial self-match from identity.
 test('identity excludes the reference row from numerator and denominator', () => {

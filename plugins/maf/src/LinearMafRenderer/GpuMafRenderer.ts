@@ -65,6 +65,10 @@ export class GpuMafRenderer extends GpuPerRegionRenderingBackend<
     this.uniformF32[U.bpRangeX + 1] = bpLo
     this.uniformF32[U.bpRangeX + 2] = bpLen
     this.uniformF32[U.canvasHeight] = state.canvasHeight
+    // Device px (not CSS) on purpose: viewportWidth feeds only the shader's
+    // `minClipW = 2/viewportWidth` X-axis floor, giving a crisp 1-device-px
+    // minimum cell width, matching GpuMultiRowRenderer. (Wiggle uses CSS px for
+    // a chunkier 3-CSS-px bar floor.) It never interacts with canvasHeight.
     this.uniformF32[U.viewportWidth] = clip.pxW
     this.uniformF32[U.zero] = 0
     this.uniformF32[U.rowHeight] = state.rowHeight

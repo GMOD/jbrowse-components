@@ -7,7 +7,7 @@ import {
   getRowTop,
   isOverlayMode,
   isScatterMode,
-  makeWhiskersSourceData,
+  makeWhiskersLayers,
   renderingTypeToInt,
 } from './wiggleComponentUtils.ts'
 
@@ -90,7 +90,7 @@ describe('getRowTop', () => {
   })
 })
 
-describe('makeWhiskersSourceData', () => {
+describe('makeWhiskersLayers', () => {
   const positions = new Uint32Array([0, 10, 10, 20])
   const scores = new Float32Array([5, 8])
   const minScores = new Float32Array([2, 4])
@@ -116,35 +116,47 @@ describe('makeWhiskersSourceData', () => {
   }
 
   test('returns 3 layers (max, avg, min) when summary data present', () => {
-    const result = makeWhiskersSourceData(summaryData, color, false, false, 3)
+    const result = makeWhiskersLayers({
+      data: summaryData,
+      color,
+      isDensityMode: false,
+      isScatter: false,
+    })
     expect(result).toHaveLength(3)
     expect(result[0]!.featureScores).toBe(maxScores)
     expect(result[1]!.featureScores).toBe(scores)
     expect(result[2]!.featureScores).toBe(minScores)
-    expect(result[0]!.rowIndex).toBe(3)
   })
 
   test('returns single layer when no summary variation', () => {
-    const result = makeWhiskersSourceData(noSummaryData, color, false, false, 0)
+    const result = makeWhiskersLayers({
+      data: noSummaryData,
+      color,
+      isDensityMode: false,
+      isScatter: false,
+    })
     expect(result).toHaveLength(1)
   })
 
   test('returns single layer in density mode', () => {
-    const result = makeWhiskersSourceData(summaryData, color, true, false, 0)
+    const result = makeWhiskersLayers({
+      data: summaryData,
+      color,
+      isDensityMode: true,
+      isScatter: false,
+    })
     expect(result).toHaveLength(1)
   })
 
   test('reverses order in scatter mode', () => {
-    const result = makeWhiskersSourceData(summaryData, color, false, true, 0)
+    const result = makeWhiskersLayers({
+      data: summaryData,
+      color,
+      isDensityMode: false,
+      isScatter: true,
+    })
     expect(result).toHaveLength(3)
     expect(result[0]!.featureScores).toBe(minScores)
     expect(result[2]!.featureScores).toBe(maxScores)
-  })
-
-  test('all layers share the same rowIndex', () => {
-    const result = makeWhiskersSourceData(summaryData, color, false, false, 5)
-    for (const layer of result) {
-      expect(layer.rowIndex).toBe(5)
-    }
   })
 })

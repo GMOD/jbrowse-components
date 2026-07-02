@@ -23,6 +23,7 @@ import {
   workspacesMenuItem,
 } from '@jbrowse/product-core'
 import AppsIcon from '@mui/icons-material/Apps'
+import DescriptionIcon from '@mui/icons-material/Description'
 import OpenIcon from '@mui/icons-material/FolderOpen'
 import MeetingRoomIcon from '@mui/icons-material/MeetingRoom'
 import PublicIcon from '@mui/icons-material/Public'
@@ -198,6 +199,42 @@ export default function rootModelFactory({
                 label: 'File',
                 menuItems: [
                   {
+                    label: 'Open genome...',
+                    icon: DNA,
+                    onClick: () => {
+                      if (self.session) {
+                        const session = self.session as BaseSession
+                        session.queueDialog(doneCallback => [
+                          OpenSequenceDialog,
+                          {
+                            model: self,
+                            onClose: (confs?: AnyConfigurationModel[]) => {
+                              try {
+                                if (confs) {
+                                  for (const conf of confs) {
+                                    self.jbrowse.addAssemblyConf(conf)
+                                  }
+                                }
+                              } catch (e) {
+                                console.error(e)
+                                self.session?.notifyError(`${e}`, e)
+                              }
+                              doneCallback()
+                            },
+                          },
+                        ])
+                      }
+                    },
+                  },
+                  openTrackMenuItem(),
+                  {
+                    type: 'divider',
+                  },
+                  {
+                    label: 'Session',
+                    icon: DescriptionIcon,
+                    subMenu: [
+                  {
                     label: 'Open session...',
                     icon: OpenIcon,
                     onClick: async () => {
@@ -253,38 +290,8 @@ export default function rootModelFactory({
                       }
                     },
                   },
-                  {
-                    type: 'divider',
+                    ],
                   },
-                  {
-                    label: 'Open assembly...',
-                    icon: DNA,
-                    onClick: () => {
-                      if (self.session) {
-                        const session = self.session as BaseSession
-                        session.queueDialog(doneCallback => [
-                          OpenSequenceDialog,
-                          {
-                            model: self,
-                            onClose: (confs?: AnyConfigurationModel[]) => {
-                              try {
-                                if (confs) {
-                                  for (const conf of confs) {
-                                    self.jbrowse.addAssemblyConf(conf)
-                                  }
-                                }
-                              } catch (e) {
-                                console.error(e)
-                                self.session?.notifyError(`${e}`, e)
-                              }
-                              doneCallback()
-                            },
-                          },
-                        ])
-                      }
-                    },
-                  },
-                  openTrackMenuItem(),
                   openConnectionMenuItem(),
                   {
                     type: 'divider',

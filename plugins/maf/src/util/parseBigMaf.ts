@@ -1,4 +1,5 @@
 import { toMafStatus } from './mafStatus.ts'
+import { parseStrand } from './parseStrand.ts'
 
 import type { ParsedAssemblyName } from './parseAssemblyName.ts'
 import type { AlignmentRecord, EmptyRecord } from '../types.ts'
@@ -12,8 +13,6 @@ export interface ParsedMafStanza {
 }
 
 type Resolver = (organismChr: string) => ParsedAssemblyName | undefined
-
-const strandOf = (s: string | undefined) => (s === '-' ? -1 : 1)
 
 /**
  * Parse one bigMaf stanza (the ';'-joined `mafBlock` field) into aligned rows
@@ -43,7 +42,7 @@ export function parseBigMafStanza(
           chr: parsed.chr,
           start: parseInt(parts[2]!, 10),
           seq: sequence,
-          strand: strandOf(parts[4]),
+          strand: parseStrand(parts[4]),
           srcSize: parseInt(parts[5]!, 10),
         }
         lastAlignmentAssembly = parsed.assemblyName
@@ -52,7 +51,9 @@ export function parseBigMafStanza(
       }
     } else if (type === 'i') {
       // i src leftStatus leftCount rightStatus rightCount — attaches to the
-      // immediately preceding s line.
+      // immediately preceding s line. Relies on the UCSC MAF invariant that an
+      // `i` line directly follows its `s` line: `e`/`q` lines don't reset
+      // `lastAlignmentAssembly`, so a reordered stanza would misattach context.
       const rec = lastAlignmentAssembly
         ? alignments[lastAlignmentAssembly]
         : undefined
@@ -75,7 +76,7 @@ export function parseBigMafStanza(
           chr: parsed.chr,
           start: parseInt(parts[2]!, 10),
           size: parseInt(parts[3]!, 10),
-          strand: strandOf(parts[4]),
+          strand: parseStrand(parts[4]),
           srcSize: parseInt(parts[5]!, 10),
           status,
         }

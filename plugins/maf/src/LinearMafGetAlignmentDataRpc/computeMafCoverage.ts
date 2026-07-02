@@ -59,8 +59,15 @@ export function computeMafCoverage(
   const pendingInsLen = new Map<number, number>()
 
   const flushPending = (position: number) => {
-    for (const [, len] of pendingInsLen) {
-      insertions.push({ position, length: len })
+    // Clamp to the region like depths/mismatches: a block overhanging the left
+    // edge can close an insertion run at a refPos before `regionStart`, which
+    // the interbase consumer would index at a negative offset. Pending state is
+    // cleared regardless so it never leaks into the next closing column.
+    const idx = position - regionStart
+    if (idx >= 0 && idx < length) {
+      for (const [, len] of pendingInsLen) {
+        insertions.push({ position, length: len })
+      }
     }
     pendingInsLen.clear()
   }

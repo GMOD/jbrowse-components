@@ -7,6 +7,27 @@ function paletteColor(index: number) {
   return overlayColors[index % overlayColors.length]!
 }
 
+// Treat raw adapter metadata as a Source by setting its `source` alias equal to
+// `name` (see Source docs: name===source is the invariant callers rely on).
+export function withSourceAlias(s: SourceInfo): EditableSource {
+  return { ...s, source: s.name }
+}
+
+// Synthesized color for a source with no explicit color. Priority mirrors the
+// buildSources doc-comment: group-derived color, then the overlay index palette
+// (overlay mode only), then undefined so the renderer falls back to its default.
+function synthesizeColor(
+  s: Source,
+  index: number,
+  isOverlay: boolean,
+  groupColors: Map<string, string>,
+) {
+  if (s.group !== undefined) {
+    return groupColors.get(s.group)
+  }
+  return isOverlay ? paletteColor(index) : undefined
+}
+
 // Build a group→color map in first-appearance order so every source in the
 // same group shares a palette entry regardless of display mode. Empty when no
 // source has a group.
@@ -36,7 +57,7 @@ export function buildEditableSources(
   layout: Source[],
 ): EditableSource[] {
   if (!layout.length) {
-    return sourcesVolatile.map(s => ({ ...s, source: s.name }))
+    return sourcesVolatile.map(withSourceAlias)
   }
   const adapterByName = new Map(sourcesVolatile.map(s => [s.name, s]))
   const laidOut = layout.flatMap(s => {
@@ -46,7 +67,7 @@ export function buildEditableSources(
   const inLayout = new Set(layout.map(s => s.name))
   const appended = sourcesVolatile
     .filter(s => !inLayout.has(s.name))
-    .map(s => ({ ...s, source: s.name }))
+    .map(withSourceAlias)
   return [...laidOut, ...appended]
 }
 
@@ -68,12 +89,6 @@ export function buildSources(
   const groupColors = buildGroupColors(base)
   return base.map((s, i) => ({
     ...s,
-    color:
-      s.color ??
-      (s.group !== undefined
-        ? groupColors.get(s.group)
-        : isOverlay
-          ? paletteColor(i)
-          : undefined),
+    color: s.color ?? synthesizeColor(s, i, isOverlay, groupColors),
   }))
 }

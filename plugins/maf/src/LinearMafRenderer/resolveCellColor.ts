@@ -43,29 +43,75 @@ export interface MafCellColorConfig {
   mismatchRendering: boolean
 }
 
+/**
+ * The single branch cascade behind both color resolvers, returning a category
+ * rather than a representation. Both `resolveCellColor` (CSS strings) and
+ * `resolveCellPacked` (ABGR ints) map this to their leaf value, so the decision
+ * tree lives in exactly one place and the two paths can never silently diverge
+ * (which would produce GPU-vs-Canvas2D pixel mismatches). `Base` means "look up
+ * the aligned base's own color"; the caller still holds `alnByte`.
+ */
+export const CellCategory = {
+  Skip: 0, // reference insertion — drawn separately
+  Gap: 1,
+  Match: 2,
+  ShowAllNoMismatch: 3,
+  MismatchOff: 4,
+  Base: 5,
+} as const
+type CellCategory = (typeof CellCategory)[keyof typeof CellCategory]
+
+export function classifyCell(
+  refByte: number,
+  alnByte: number,
+  showAllLetters: boolean,
+  mismatchRendering: boolean,
+): CellCategory {
+  let category: CellCategory = CellCategory.Base
+  if (refByte === DASH) {
+    category = CellCategory.Skip
+  } else if (alnByte === DASH || alnByte === SPACE) {
+    category = CellCategory.Gap
+  } else {
+    const isMatch = (refByte | LOWER_BIT) === (alnByte | LOWER_BIT)
+    if (isMatch && !showAllLetters) {
+      category = CellCategory.Match
+    } else if (isMatch && !mismatchRendering) {
+      category = CellCategory.ShowAllNoMismatch
+    } else if (!isMatch && !mismatchRendering) {
+      category = CellCategory.MismatchOff
+    }
+  }
+  return category
+}
+
 export function resolveCellColor(
   refByte: number,
   alnByte: number,
   cfg: MafCellColorConfig,
 ): string | undefined {
-  if (refByte === DASH) {
-    return undefined // reference insertion — drawn separately
+  const category = classifyCell(
+    refByte,
+    alnByte,
+    cfg.showAllLetters,
+    cfg.mismatchRendering,
+  )
+  let color: string | undefined
+  if (category === CellCategory.Skip) {
+    color = undefined
+  } else if (category === CellCategory.Gap) {
+    color = cfg.gapColor
+  } else if (category === CellCategory.Match) {
+    color = cfg.matchColor
+  } else if (category === CellCategory.ShowAllNoMismatch) {
+    color = SHOW_ALL_NO_MISMATCH_FALLBACK
+  } else if (category === CellCategory.MismatchOff) {
+    color = cfg.mismatchOffColor
+  } else {
+    const base = String.fromCharCode(alnByte | LOWER_BIT)
+    color = cfg.colorForBase[base] ?? cfg.unknownBaseColor
   }
-  if (alnByte === DASH || alnByte === SPACE) {
-    return cfg.gapColor
-  }
-  const isMatch = (refByte | LOWER_BIT) === (alnByte | LOWER_BIT)
-  if (isMatch && !cfg.showAllLetters) {
-    return cfg.matchColor
-  }
-  if (isMatch && !cfg.mismatchRendering) {
-    return SHOW_ALL_NO_MISMATCH_FALLBACK
-  }
-  if (!isMatch && !cfg.mismatchRendering) {
-    return cfg.mismatchOffColor
-  }
-  const base = String.fromCharCode(alnByte | LOWER_BIT)
-  return cfg.colorForBase[base] ?? cfg.unknownBaseColor
+  return color
 }
 
 /**
@@ -121,21 +167,23 @@ export function resolveCellPacked(
   alnByte: number,
   cfg: MafCellPackedConfig,
 ): number {
-  if (refByte === DASH) {
-    return RESOLVE_PACKED_SKIP // reference insertion — drawn separately
+  const category = classifyCell(
+    refByte,
+    alnByte,
+    cfg.showAllLetters,
+    cfg.mismatchRendering,
+  )
+  let packed = RESOLVE_PACKED_SKIP
+  if (category === CellCategory.Gap) {
+    packed = cfg.gap
+  } else if (category === CellCategory.Match) {
+    packed = cfg.match
+  } else if (category === CellCategory.ShowAllNoMismatch) {
+    packed = cfg.showAllNoMismatchFallback
+  } else if (category === CellCategory.MismatchOff) {
+    packed = cfg.mismatchOff
+  } else if (category === CellCategory.Base) {
+    packed = cfg.packedByLowerByte[(alnByte | LOWER_BIT) & 0x7f]!
   }
-  if (alnByte === DASH || alnByte === SPACE) {
-    return cfg.gap
-  }
-  const isMatch = (refByte | LOWER_BIT) === (alnByte | LOWER_BIT)
-  if (isMatch && !cfg.showAllLetters) {
-    return cfg.match
-  }
-  if (isMatch && !cfg.mismatchRendering) {
-    return cfg.showAllNoMismatchFallback
-  }
-  if (!isMatch && !cfg.mismatchRendering) {
-    return cfg.mismatchOff
-  }
-  return cfg.packedByLowerByte[(alnByte | LOWER_BIT) & 0x7f]!
+  return packed
 }

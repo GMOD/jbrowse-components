@@ -67,3 +67,13 @@ re-scan.
 Move split to `buildSourceRenderData` on the main thread; put `bicolorPivot`
 in `gpuProps`. Implemented as a branch, reverted: O(total cached features)
 main-thread work per region arrival unacceptable at realistic data volumes.
+
+## Corollary: per-source color does not collapse the pos/neg split
+
+Because the split is worker-side and unconditional, a multi-wiggle source's
+per-row color (`buildSourceRenderData`) only recolors the **positive** side in
+row mode; the negative side keeps the shared `negColor`. This is deliberate —
+signed data stays a readable pos/neg bicolor plot. Overlay mode is the one
+exception: it reuses the pos color for neg so overlapping sources read as one
+color. This has been proposed as a "bug" and rejected repeatedly; do not change
+row-mode neg coloring to follow the per-source color.

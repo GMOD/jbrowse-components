@@ -78,46 +78,51 @@ export function renderingTypeToInt(type: string): WiggleRenderingType {
   return result
 }
 
-export function makeWhiskersSourceData(
-  data: FeatureArrays,
-  color: [number, number, number],
-  isDensityMode: boolean,
-  isScatter: boolean,
-  rowIndex: number,
-): SourceRenderData[] {
-  const singleSource = [
-    {
-      featurePositions: data.featurePositions,
-      featureScores: data.featureScores,
-      numFeatures: data.numFeatures,
-      color,
-      rowIndex,
-    },
-  ]
-  if (isDensityMode || !data.hasSummaryScores) {
-    return singleSource
+// A source's contribution to the render, before it's placed in a row. Same
+// shape as SourceRenderData minus rowIndex, which buildSourceRenderData assigns
+// once so row-placement lives in a single spot.
+export type WiggleLayer = Omit<SourceRenderData, 'rowIndex'>
+
+// The min/avg/max whisker layers for one source. Collapses to just the avg
+// layer in density mode or when the data carries no summary variation. Scatter
+// draws points back-to-front, so its layer order is reversed.
+export function makeWhiskersLayers({
+  data,
+  color,
+  isDensityMode,
+  isScatter,
+}: {
+  data: FeatureArrays
+  color: [number, number, number]
+  isDensityMode: boolean
+  isScatter: boolean
+}): WiggleLayer[] {
+  const { featurePositions, numFeatures } = data
+  const avg = {
+    featurePositions,
+    featureScores: data.featureScores,
+    numFeatures,
+    color,
   }
-  const sources = [
-    {
-      featurePositions: data.featurePositions,
-      featureScores: data.featureMaxScores,
-      numFeatures: data.numFeatures,
-      color: lightenColor(color, 0.4),
-      rowIndex,
-    },
-    ...singleSource,
-    {
-      featurePositions: data.featurePositions,
-      featureScores: data.featureMinScores,
-      numFeatures: data.numFeatures,
-      color: darkenColor(color, 0.4),
-      rowIndex,
-    },
-  ]
-  if (isScatter) {
-    sources.reverse()
-  }
-  return sources
+  const layers =
+    isDensityMode || !data.hasSummaryScores
+      ? [avg]
+      : [
+          {
+            featurePositions,
+            featureScores: data.featureMaxScores,
+            numFeatures,
+            color: lightenColor(color, 0.4),
+          },
+          avg,
+          {
+            featurePositions,
+            featureScores: data.featureMinScores,
+            numFeatures,
+            color: darkenColor(color, 0.4),
+          },
+        ]
+  return isScatter ? layers.reverse() : layers
 }
 
 // Binary search for the feature at a given base-pair offset.

@@ -39,7 +39,7 @@ export function drawSequenceGrid({
   ctx.textBaseline = 'top'
 
   for (let rowIdx = startRow; rowIdx < endRow; rowIdx++) {
-    const seq = sequences[rowIdx] || ''
+    const seq = sequences[rowIdx] ?? ''
     const y = (rowIdx - startRow) * ROW_HEIGHT
 
     for (let colIdx = startCol; colIdx < endCol; colIdx++) {
