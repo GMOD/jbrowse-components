@@ -162,6 +162,7 @@ export function computeLaidOutData(
       showDescriptions,
       reversedRegions,
       pinnedFeatureIds,
+      heightMultiplier,
       prevYByFeatureId,
     )
     for (const [, data] of regions) {
@@ -340,11 +341,22 @@ function packRef(
   // Feature ids pinned to the top: sorted ahead of everything so they win the
   // lowest rows in their bp range.
   pinnedFeatureIds: ReadonlySet<string>,
+  // compact/superCompact scale factor (1 in normal mode). Applied to the
+  // inter-row padding so the layout tightens with the feature body, not just
+  // the feature height.
+  heightMultiplier: number,
   // Each feature's y (px) in the previous layout, if any. Used only to order
   // insertion, not to force a row — see the sort below.
   prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
-  const layout = new GranularRectLayout({ displayMode: 'normal' })
+  // GranularRectLayout quantizes rows to pitchY (default 10px), so tops snap to
+  // a 10px grid and compact/superCompact features can't pack below one grid
+  // cell. Shrink the grid with the mode so the row spacing tightens too — else
+  // the scaled feature height alone leaves 10px rows.
+  const layout = new GranularRectLayout({
+    displayMode: 'normal',
+    pitchY: Math.max(1, Math.round(10 * heightMultiplier)),
+  })
   const layoutMap = new Map<string, number>()
   const layoutHeights = new Map<string, number>()
 
@@ -408,7 +420,10 @@ function packRef(
         }
         continue
       }
-      let height = item.featureHeightPx + LAYOUT_Y_PADDING
+      // featureHeightPx is already compact-scaled (see applyHeightScale); scale
+      // the row padding to match so rows pack tightly. Label heights are left
+      // unscaled since label text renders at a fixed font size.
+      let height = item.featureHeightPx + LAYOUT_Y_PADDING * heightMultiplier
       const labelInfo = labelInfoByFeatureId.get(item.featureId)
       if (showLabels && labelInfo?.hasName) {
         height += LABEL_FONT_SIZE
