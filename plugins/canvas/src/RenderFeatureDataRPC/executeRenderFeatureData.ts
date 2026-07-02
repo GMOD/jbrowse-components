@@ -8,6 +8,11 @@ import {
 } from '@jbrowse/core/util/stopToken'
 
 import { collectRenderData } from './collectRenderData.ts'
+import {
+  featuresPerPx,
+  samplePreFetchDensity,
+  tooManyFeaturesResult,
+} from './densityGate.ts'
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { findGlyph } from './glyphs/findGlyph.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
@@ -77,6 +82,26 @@ export async function executeRenderFeatureData({
     }
   }
 
+  // Stage 1.5 (cheap): estimate feature density from a small sample before
+  // downloading the whole region. Only runs when maxFeatureDensity is set — the
+  // model leaves it undefined below AUTO_FORCE_LOAD_BP and when force-loaded, so
+  // small/forced renders skip it. The post-fetch count below is the backstop.
+  if (maxFeatureDensity !== undefined) {
+    const tooLarge = await samplePreFetchDensity({
+      dataAdapter,
+      region,
+      bpPerPx: requestedBpPerPx,
+      maxFeatureDensity,
+      bytes,
+      stopToken,
+      statusCallback,
+      stopTokenCheck,
+    })
+    if (tooLarge) {
+      return tooLarge
+    }
+  }
+
   // pass statusCallback + stopToken so the adapter's own determinate download/
   // processing progress reaches the display (overriding the "Fetching features"
   // fallback label) and so a long fetch is interruptible mid-flight, not just at
@@ -113,14 +138,9 @@ export async function executeRenderFeatureData({
   }
 
   if (maxFeatureDensity !== undefined) {
-    const regionWidthPx = (region.end - region.start) / requestedBpPerPx
-    const featureDensity = features.size / regionWidthPx
+    const featureDensity = featuresPerPx(features.size, region, requestedBpPerPx)
     if (featureDensity > maxFeatureDensity) {
-      return {
-        regionTooLarge: true,
-        featureCount: features.size,
-        bytes,
-      }
+      return tooManyFeaturesResult(features.size, bytes)
     }
   }
 
