@@ -662,6 +662,19 @@ loop per component.
 type gridlineTicks = { x: number; major: boolean }[]
 ```
 
+#### getter: scalebarLabels
+
+Scalebar coordinate labels (x in the staticBlocks frame + display text). Sibling
+of gridlineTicks sharing the same makeBlockTicks formula, so labels line up
+exactly with their gridlines. staticBlocks chop a region into ~800px chunks;
+groupContiguousBlocks merges them back per region so a label on an internal
+chunk boundary isn't clipped away by both neighbors — only genuine region edges
+clip a label.
+
+```ts
+type scalebarLabels = { x: number; label: string; key: string }[]
+```
+
 #### getter: totalWidthPx
 
 Integer-rounded sum of all visible block widths. Slightly less than view.width

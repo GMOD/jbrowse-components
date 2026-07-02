@@ -4,14 +4,14 @@ Real human variant calls with real SnpEff-predicted consequences, for the
 multi-sample variant "color cells by consequence impact" feature
 (`plugins/variants`, `jexl:impactColor(feature)`). Unlike the volvox demo data
 (synthetic `ANN` values injected by `test_data/volvox/annotate_variants.mjs`),
-every annotation here comes from actually running SnpEff on real genotypes —
-no hand-crafted impact tiers.
+every annotation here comes from actually running SnpEff on real genotypes — no
+hand-crafted impact tiers.
 
 ## Source
 
-- Genotypes: 1000 Genomes phase 3 chr1, `1:155,000,000-155,050,000` (hg19/GRCh37),
-  2,504 real samples, fetched by tabix range query — no full-chromosome download
-  needed:
+- Genotypes: 1000 Genomes phase 3 chr1, `1:155,000,000-155,050,000`
+  (hg19/GRCh37), 2,504 real samples, fetched by tabix range query — no
+  full-chromosome download needed:
   `https://ftp-trace.ncbi.nlm.nih.gov/1000genomes/ftp/release/20130502/ALL.chr1.phase3_shapeit2_mvncall_integrated_v5a.20130502.genotypes.vcf.gz`
 - This locus (DCST2/DCST1/ADAM15 on 1q21.3) is the same one already used by the
   `variants/population_1000genomes` screenshot spec, and has several real

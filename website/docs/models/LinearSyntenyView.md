@@ -53,7 +53,6 @@ and docs.
 [trackSelectorType](../linearcomparativeview#property-trackselectortype),
 [showIntraviewLinks](../linearcomparativeview#property-showintraviewlinks),
 [linkViews](../linearcomparativeview#property-linkviews),
-[interactiveOverlay](../linearcomparativeview#property-interactiveoverlay),
 [levels](../linearcomparativeview#property-levels),
 [views](../linearcomparativeview#property-views),
 [viewTrackConfigs](../linearcomparativeview#property-viewtrackconfigs)
@@ -62,7 +61,6 @@ and docs.
 
 **Getters:** [scrollZoom](../linearcomparativeview#getter-scrollzoom),
 [initialized](../linearcomparativeview#getter-initialized),
-[refNames](../linearcomparativeview#getter-refnames),
 [assemblyNames](../linearcomparativeview#getter-assemblynames)
 
 **Methods:** [isViewCompact](../linearcomparativeview#method-isviewcompact),

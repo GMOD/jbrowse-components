@@ -60,13 +60,15 @@ and docs.
 [animationMode](../basesessionmodel#getter-animationmode),
 [scrollZoom](../basesessionmodel#getter-scrollzoom)
 
-**Methods:** [getPreference](../basesessionmodel#method-getpreference)
+**Methods:** [getPreference](../basesessionmodel#method-getpreference),
+[getDisplayTypeDefault](../basesessionmodel#method-getdisplaytypedefault)
 
 **Actions:** [setSelection](../basesessionmodel#action-setselection),
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
 [setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
 [setScrollZoom](../basesessionmodel#action-setscrollzoom),
+[setDisplayTypeDefault](../basesessionmodel#action-setdisplaytypedefault),
 [setName](../basesessionmodel#action-setname),
 [setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
 [removeActiveDialog](../basesessionmodel#action-removeactivedialog),
@@ -147,6 +149,21 @@ unchanged by identity to keep the hydration cache warm.
 
 ```ts
 type tracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
+```
+
+</details>
+
+<details open>
+<summary>SessionTracksManagerSessionMixin - Methods</summary>
+
+#### method: getTrackConfigChanges
+
+The overridden slots for `trackId` (empty when it has no delta): each changed
+setting's path, its base/default value and the edited value. Drives the "view
+changes" dialog opened from the edited badge.
+
+```ts
+type getTrackConfigChanges = (trackId: string) => TrackConfigChange[]
 ```
 
 </details>

@@ -124,7 +124,9 @@ const suite: TestSuite = {
           const session = (
             window as unknown as {
               JBrowseSession: {
-                views: { tracks: { displays: { colorBy: string; sources?: Src[] }[] }[] }[]
+                views: {
+                  tracks: { displays: { colorBy: string; sources?: Src[] }[] }[]
+                }[]
               }
             }
           ).JBrowseSession
@@ -139,7 +141,9 @@ const suite: TestSuite = {
           }
         })
         if (info.colorBy !== 'population') {
-          throw new Error(`expected colorBy 'population', got '${info.colorBy}'`)
+          throw new Error(
+            `expected colorBy 'population', got '${info.colorBy}'`,
+          )
         }
         if (info.sources.length === 0) {
           throw new Error('no sample sources loaded from samplesTsv')
@@ -163,7 +167,9 @@ const suite: TestSuite = {
           colorByPop.set(s.population!, s.color!)
         }
         if (new Set(colorByPop.values()).size < 2) {
-          throw new Error('expected multiple populations to get distinct colors')
+          throw new Error(
+            'expected multiple populations to get distinct colors',
+          )
         }
       },
     },

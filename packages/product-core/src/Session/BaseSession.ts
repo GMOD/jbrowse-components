@@ -242,7 +242,9 @@ export function BaseSessionModel<
         const all = self.preferencesOverrides.displayTypeDefaults
         const map: Record<string, unknown> = isRecord(all) ? { ...all } : {}
         const prev = map[displayType]
-        const forType: Record<string, unknown> = isRecord(prev) ? { ...prev } : {}
+        const forType: Record<string, unknown> = isRecord(prev)
+          ? { ...prev }
+          : {}
         if (value === undefined) {
           delete forType[slot]
         } else {

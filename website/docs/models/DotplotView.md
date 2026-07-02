@@ -456,6 +456,14 @@ importFormSyntenyTrackSelections: observable.array<ImportFormSyntenyTrack>()
 <details open>
 <summary>DotplotView - Getters</summary>
 
+#### getter: showImportForm
+
+Whether to show the import form
+
+```ts
+type showImportForm = boolean
+```
+
 #### getter: showLoading
 
 Whether to show a loading indicator instead of the import form or view

@@ -22,7 +22,10 @@ import {
 import { desktopBlatFetch, openBlatChallenge } from './desktopBlat.ts'
 import { assemblyToUcscDb } from './ucscDbMap.ts'
 
-import type { AbstractSessionModel, SimpleFeatureSerialized  } from '@jbrowse/core/util'
+import type {
+  AbstractSessionModel,
+  SimpleFeatureSerialized,
+} from '@jbrowse/core/util'
 
 interface ViewWithTracks {
   type: string

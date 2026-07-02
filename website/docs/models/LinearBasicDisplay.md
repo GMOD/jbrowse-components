@@ -314,6 +314,7 @@ and docs.
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
+[stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -356,6 +357,7 @@ detail):
 | [`subfeatureLabels`](#getter-subfeaturelabels)                     | `any`                                |
 | [`geneGlyphMode`](#getter-geneglyphmode)                           | `any`                                |
 | [`displayDirectionalChevrons`](#getter-displaydirectionalchevrons) | `any`                                |
+| [`isDisplayModeDefault`](#getter-isdisplaymodedefault)             | `boolean`                            |
 | [`effectiveGeneGlyphMode`](#getter-effectivegeneglyphmode)         | `"auto" \| "all" \| "longestCoding"` |
 | [`showIsoformCollapseNotice`](#getter-showisoformcollapsenotice)   | `boolean`                            |
 | [`isGeneLike`](#getter-isgenelike)                                 | `boolean`                            |
@@ -381,6 +383,12 @@ type geneGlyphMode = any
 
 ```ts
 type displayDirectionalChevrons = any
+```
+
+#### getter: isDisplayModeDefault
+
+```ts
+type isDisplayModeDefault = boolean
 ```
 
 #### getter: effectiveGeneGlyphMode
@@ -414,7 +422,7 @@ detail):
 | [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: { geneGlyphMode: "auto" \| "all" \| "longestCoding"; subfeatureLabels: "none" \| "overlay" \| "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; ... 5 more ...; theme: SerializableThemeArgs \| undefined; }` |
 | [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                           |
 | [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                                                                                                                                                               |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                                                                                                          |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                                                                                       |
 
 </details>
 
@@ -453,11 +461,7 @@ type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | Chec
 #### method: contextMenuItems
 
 ```ts
-type contextMenuItems = () => {
-  label: string
-  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
-  onClick: () => void
-}[]
+type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
 ```
 
 </details>
@@ -474,6 +478,7 @@ detail):
 | [`setGeneGlyphMode`](#action-setgeneglyphmode)                           | `(value: "auto" \| "all" \| "longestCoding") => void`       |
 | [`setDisplayMode`](#action-setdisplaymode)                               | `(value: DisplayMode) => void`                              |
 | [`setCompactness`](#action-setcompactness)                               | `(level: "normal" \| "compact" \| "super-compact") => void` |
+| [`toggleDisplayModeDefault`](#action-toggledisplaymodedefault)           | `() => void`                                                |
 | [`setShowOnlyGenes`](#action-setshowonlygenes)                           | `(value: boolean) => void`                                  |
 | [`setDisplayDirectionalChevrons`](#action-setdisplaydirectionalchevrons) | `(value: boolean) => void`                                  |
 | [`dismissIsoformCollapseNotice`](#action-dismissisoformcollapsenotice)   | `() => void`                                                |
@@ -505,6 +510,12 @@ type setDisplayMode = (value: DisplayMode) => void
 
 ```ts
 type setCompactness = (level: 'normal' | 'compact' | 'super-compact') => void
+```
+
+#### action: toggleDisplayModeDefault
+
+```ts
+type toggleDisplayModeDefault = () => void
 ```
 
 #### action: setShowOnlyGenes

@@ -481,7 +481,15 @@ export function computeSNPCoverage(
     if (position >= regionStart) {
       let entry = snpByPosition.get(position)
       if (!entry) {
-        entry = { position, depth: depthAt(position), a: 0, c: 0, g: 0, t: 0, n: 0 }
+        entry = {
+          position,
+          depth: depthAt(position),
+          a: 0,
+          c: 0,
+          g: 0,
+          t: 0,
+          n: 0,
+        }
         snpByPosition.set(position, entry)
       }
       // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate

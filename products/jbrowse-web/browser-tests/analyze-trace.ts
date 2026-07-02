@@ -2,8 +2,8 @@
 // Aggregate the v8 CPU sampler from a profile-ultradeep.ts trace into per-thread
 // self-time, resolving minified frames through build/static/js/*.js.map.
 import fs from 'node:fs'
-import path from 'node:path'
 import { createRequire } from 'node:module'
+import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 import { buildPath } from './server.ts'
@@ -28,7 +28,11 @@ const events: any[] = Array.isArray(raw) ? raw : raw.traceEvents
 
 const byTid = new Map<
   number,
-  { nodes: Map<number, { callFrame: Frame }>; samples: number[]; deltas: number[] }
+  {
+    nodes: Map<number, { callFrame: Frame }>
+    samples: number[]
+    deltas: number[]
+  }
 >()
 for (const e of events) {
   if (e.name !== 'ProfileChunk' && e.name !== 'Profile') {

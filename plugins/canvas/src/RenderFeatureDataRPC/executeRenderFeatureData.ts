@@ -138,7 +138,11 @@ export async function executeRenderFeatureData({
   }
 
   if (maxFeatureDensity !== undefined) {
-    const featureDensity = featuresPerPx(features.size, region, requestedBpPerPx)
+    const featureDensity = featuresPerPx(
+      features.size,
+      region,
+      requestedBpPerPx,
+    )
     if (featureDensity > maxFeatureDensity) {
       return tooManyFeaturesResult(features.size, bytes)
     }

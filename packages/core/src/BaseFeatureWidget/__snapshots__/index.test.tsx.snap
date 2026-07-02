@@ -28,7 +28,7 @@ exports[`open up a widget 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -132,13 +132,13 @@ exports[`open up a widget 1`] = `
                   </button>
                 </div>
                 <button
-                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                   tabindex="0"
                   type="button"
                 >
                   <svg
                     aria-hidden="true"
-                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                     data-testid="HelpIcon"
                     focusable="false"
                     viewBox="0 0 24 24"

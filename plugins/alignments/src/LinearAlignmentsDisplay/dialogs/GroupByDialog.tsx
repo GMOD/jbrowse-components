@@ -143,7 +143,8 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   const [colorByTag, setColorByTag] = useState(() => {
     const { colorBy } = model
     return (
-      colorBy.type !== 'tag' || isColoringByTag(colorBy, model.groupBy?.tag ?? '')
+      colorBy.type !== 'tag' ||
+      isColoringByTag(colorBy, model.groupBy?.tag ?? '')
     )
   })
 

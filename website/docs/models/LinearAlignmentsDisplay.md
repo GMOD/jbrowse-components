@@ -217,6 +217,7 @@ and docs.
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
+[stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -424,7 +425,9 @@ contextMenuRefName: undefined as string | undefined
 // type signature
 type rpcDataMap = ObservableMap<number, GroupedAlignmentsResult>
 // code
-rpcDataMap: observable.map<number, GroupedAlignmentsResult>()
+rpcDataMap: observable.map<number, GroupedAlignmentsResult>(undefined, {
+  deep: false,
+})
 ```
 
 #### volatile: highlightedChainIds
@@ -704,6 +707,23 @@ type renderSections = {
   coverageTop: number
   coverageHeight: number
   pileupHeight: number
+}[]
+```
+
+#### getter: bezierPairSections
+
+Scroll/pan-invariant half of the bezier connection overlay: the linked pairs of
+each section, resolved once per relayout. The read grouping + connection
+resolution (`enumerateBezierPairs`) is the allocation-heavy step; memoizing it
+here (this getter never reads `scrollTop`) keeps a scroll frame down to the
+cheap per-pair screen projection in `computePileupBezierArcsFromModel`. Empty
+when the overlay is off.
+
+```ts
+type bezierPairSections = {
+  topOffset: number
+  pileupHeight: number
+  pairs: LinkedPair[]
 }[]
 ```
 
@@ -1316,6 +1336,16 @@ the section label.
 
 ```ts
 type isGroupTruncated = (key: string) => boolean
+```
+
+#### method: chainIdsForRead
+
+Chain IDs sharing a QNAME with the read at `index` in `rpcData`. Empty when the
+read isn't part of a chain. Shared by hover-highlight and click-select so the
+two paths can't drift.
+
+```ts
+type chainIdsForRead = (rpcData: PileupDataResult, index: number) => string[]
 ```
 
 #### method: trackMenuItems

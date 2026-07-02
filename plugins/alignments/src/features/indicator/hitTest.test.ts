@@ -9,7 +9,9 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 const COV_HEIGHT = 90
 const DOMAIN_MAX = 20
 
-function makeRpcData(overrides: Partial<PileupDataResult> = {}): PileupDataResult {
+function makeRpcData(
+  overrides: Partial<PileupDataResult> = {},
+): PileupDataResult {
   return {
     indicatorPositions: new Uint32Array(),
     indicatorColorTypes: new Uint8Array(),
@@ -53,7 +55,16 @@ describe('hitTestInterbase histogram bars', () => {
   it('misses below the bar bottom (that area stays a coverage hit)', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(1005, 0.5, 60, rpcData, true, false, COV_HEIGHT, DOMAIN_MAX),
+      hitTestInterbase(
+        1005,
+        0.5,
+        60,
+        rpcData,
+        true,
+        false,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
     ).toBeUndefined()
   })
 
@@ -61,29 +72,64 @@ describe('hitTestInterbase histogram bars', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     // bpPerPx=0.5, tolerance = 0.5*3 = 1.5bp; 1005 is 3bp away from 1008.
     expect(
-      hitTestInterbase(1008, 0.5, 30, rpcData, true, false, COV_HEIGHT, DOMAIN_MAX),
+      hitTestInterbase(
+        1008,
+        0.5,
+        30,
+        rpcData,
+        true,
+        false,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
     ).toBeUndefined()
   })
 
   it('does not require showInterbaseIndicators (bars draw with coverage)', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(1005, 0.5, 30, rpcData, true, false, COV_HEIGHT, DOMAIN_MAX)
-        ?.position,
+      hitTestInterbase(
+        1005,
+        0.5,
+        30,
+        rpcData,
+        true,
+        false,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      )?.position,
     ).toBe(1005)
   })
 
   it('skips bars when the coverage domain has not resolved yet', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(1005, 0.5, 30, rpcData, true, false, COV_HEIGHT, undefined),
+      hitTestInterbase(
+        1005,
+        0.5,
+        30,
+        rpcData,
+        true,
+        false,
+        COV_HEIGHT,
+        undefined,
+      ),
     ).toBeUndefined()
   })
 
   it('returns undefined when coverage is hidden', () => {
     const rpcData = makeRpcData(oneBarAt1005)
     expect(
-      hitTestInterbase(1005, 0.5, 30, rpcData, false, false, COV_HEIGHT, DOMAIN_MAX),
+      hitTestInterbase(
+        1005,
+        0.5,
+        30,
+        rpcData,
+        false,
+        false,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
     ).toBeUndefined()
   })
 
@@ -97,8 +143,16 @@ describe('hitTestInterbase histogram bars', () => {
       interbaseMaxCount: 20,
     })
     expect(
-      hitTestInterbase(1005, 0.5, 30, rpcData, true, false, COV_HEIGHT, DOMAIN_MAX)
-        ?.indicatorType,
+      hitTestInterbase(
+        1005,
+        0.5,
+        30,
+        rpcData,
+        true,
+        false,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      )?.indicatorType,
     ).toBe('softclip')
   })
 })
@@ -110,7 +164,16 @@ describe('hitTestInterbase indicator triangles', () => {
       indicatorColorTypes: new Uint8Array([3]),
     })
     expect(
-      hitTestInterbase(1005, 0.5, 3, rpcData, true, true, COV_HEIGHT, DOMAIN_MAX),
+      hitTestInterbase(
+        1005,
+        0.5,
+        3,
+        rpcData,
+        true,
+        true,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
     ).toEqual({
       type: 'indicator',
       position: 1005,
@@ -124,7 +187,16 @@ describe('hitTestInterbase indicator triangles', () => {
       indicatorColorTypes: new Uint8Array([3]),
     })
     expect(
-      hitTestInterbase(1005, 0.5, 3, rpcData, true, false, COV_HEIGHT, DOMAIN_MAX),
+      hitTestInterbase(
+        1005,
+        0.5,
+        3,
+        rpcData,
+        true,
+        false,
+        COV_HEIGHT,
+        DOMAIN_MAX,
+      ),
     ).toBeUndefined()
   })
 })

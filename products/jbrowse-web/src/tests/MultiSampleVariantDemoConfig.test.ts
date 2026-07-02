@@ -22,7 +22,9 @@ function makePluginManager() {
 function hydrate(snap: Record<string, unknown>) {
   const pluginManager = makePluginManager()
   const { configSchema } = pluginManager.getTrackType(snap.type as string)
-  return configSchema.create(snap, { pluginManager }) as AnyConfigurationModel & {
+  return configSchema.create(snap, {
+    pluginManager,
+  }) as AnyConfigurationModel & {
     displays: AnyConfigurationModel[]
     adapter: AnyConfigurationModel
   }
@@ -134,9 +136,7 @@ test('old MultiLinearVariantDisplay instance resolves on session restore', () =>
               type: 'VariantTrack',
               configuration: 'cohort',
               // old, pre-rename type string as an old saved session would store
-              displays: [
-                { id: 'display1', type: 'MultiLinearVariantDisplay' },
-              ],
+              displays: [{ id: 'display1', type: 'MultiLinearVariantDisplay' }],
             },
           ],
         },

@@ -30,13 +30,13 @@ the box
 
 BED column to read as the Manhattan plot score
 
-**Type:** `string` · **Default:** `'neg_log_pvalue'`
+**Type:** `string`
 
 ```js
 {
   type: 'string',
   description: 'BED column to read as the Manhattan plot score',
-  defaultValue: 'neg_log_pvalue',
+  defaultValue: DEFAULT_SCORE_COLUMN,
 }
 ```
 

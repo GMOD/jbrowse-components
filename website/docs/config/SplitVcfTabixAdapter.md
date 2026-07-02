@@ -50,11 +50,12 @@ object like `{chr1:{uri:'url to index'}}`
 
 #### slot: indexType
 
-**Type:** `string` · **Default:** `'TBI'`
+**Type:** `stringEnum` · **Default:** `'TBI'`
 
 ```js
 {
-  type: 'string',
+  model: types.enumeration('IndexType', ['TBI', 'CSI']),
+  type: 'stringEnum',
   defaultValue: 'TBI',
 }
 ```

@@ -10,7 +10,8 @@ interface IpcRenderer {
 // window.require('electron') is the desktop preload bridge; typed narrowly here
 // rather than polluting the global Window type from a plugin
 function getIpcRenderer() {
-  const req = (window as unknown as { require?: (m: string) => unknown }).require
+  const req = (window as unknown as { require?: (m: string) => unknown })
+    .require
   if (!req) {
     throw new Error('electron ipcRenderer unavailable')
   }

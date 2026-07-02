@@ -175,6 +175,7 @@ and docs.
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
+[stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -375,10 +376,10 @@ type gpuProps = () => {
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                                                                                                  |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)             | `() => { useBicolor: boolean; bicolorPivot: number; resolution: number; }`                                                 |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+| Member                                     | Signature                                                                                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)             | `() => { useBicolor: boolean; bicolorPivot: number; resolution: number; }`                                                             |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; } \| { ...; })[]` |
 
 </details>
 
@@ -398,7 +399,7 @@ type rpcProps = () => {
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
 ```
 
 </details>

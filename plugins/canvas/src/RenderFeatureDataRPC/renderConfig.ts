@@ -54,9 +54,7 @@ export function resolveThemeColor(value: string, fallback: string) {
 export type DisplayMode = 'normal' | 'compact' | 'superCompact'
 
 export function isDisplayMode(value: unknown): value is DisplayMode {
-  return (
-    value === 'normal' || value === 'compact' || value === 'superCompact'
-  )
+  return value === 'normal' || value === 'compact' || value === 'superCompact'
 }
 
 // Fully-enumerated — no `[key: string]: unknown` index signature, so a typo on

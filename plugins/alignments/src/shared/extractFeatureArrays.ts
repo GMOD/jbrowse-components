@@ -1,5 +1,8 @@
 import { getClip } from '@jbrowse/cigar-utils'
-import { detectSimplexModifications, getTag } from '@jbrowse/modifications-utils'
+import {
+  detectSimplexModifications,
+  getTag,
+} from '@jbrowse/modifications-utils'
 
 import {
   extractCigarFeatures,

@@ -214,6 +214,10 @@ test('flatten ignores content-free display stubs (only type/displayId)', () => {
     ],
   }
   expect(flattenTrackConfigDelta(noDisplayBase, delta)).toEqual([
-    { path: ['displays', 'LinearBasicDisplay', 'height'], from: undefined, to: 200 },
+    {
+      path: ['displays', 'LinearBasicDisplay', 'height'],
+      from: undefined,
+      to: 200,
+    },
   ])
 })

@@ -29,13 +29,13 @@ exports[`renders with the available plugins 1`] = `
         >
           <button
             aria-label="Clear filter plugins"
-            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+            class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
             tabindex="0"
             type="button"
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
               data-testid="ClearIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -75,7 +75,7 @@ exports[`renders with the available plugins 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -116,14 +116,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -149,14 +149,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -182,14 +182,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -215,14 +215,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -248,14 +248,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -281,14 +281,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -314,14 +314,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -347,14 +347,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -380,14 +380,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -413,14 +413,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -446,14 +446,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -479,14 +479,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -512,14 +512,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -545,14 +545,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -578,14 +578,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -611,14 +611,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -644,14 +644,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -677,14 +677,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -710,14 +710,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -743,14 +743,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -776,14 +776,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -809,14 +809,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -842,14 +842,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -875,14 +875,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -908,14 +908,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -941,14 +941,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -974,14 +974,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -1007,14 +1007,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -1040,14 +1040,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -1073,14 +1073,14 @@ exports[`renders with the available plugins 1`] = `
                       data-mui-internal-clone-element="true"
                     >
                       <button
-                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                        class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                         disabled=""
                         tabindex="-1"
                         type="button"
                       >
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="LockIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -1131,7 +1131,7 @@ exports[`renders with the available plugins 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
               data-testid="ExpandMoreIcon"
               focusable="false"
               viewBox="0 0 24 24"
@@ -1176,7 +1176,7 @@ exports[`renders with the available plugins 1`] = `
                        
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1qmn684-MuiSvgIcon-root"
                         data-testid="OpenInNewIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -1192,7 +1192,7 @@ exports[`renders with the available plugins 1`] = `
                   >
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-dw1or6-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-uov849-MuiSvgIcon-root"
                       data-testid="PersonIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -1231,7 +1231,7 @@ exports[`renders with the available plugins 1`] = `
                     >
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                         data-testid="AddIcon"
                         focusable="false"
                         viewBox="0 0 24 24"

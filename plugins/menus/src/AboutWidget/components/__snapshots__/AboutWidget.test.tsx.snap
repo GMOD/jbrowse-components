@@ -30,7 +30,7 @@ exports[`<AboutWidget /> renders 1`] = `
          
         <svg
           aria-hidden="true"
-          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1qmn684-MuiSvgIcon-root"
           data-testid="OpenInNewIcon"
           focusable="false"
           viewBox="0 0 24 24"
@@ -80,7 +80,7 @@ exports[`<AboutWidget /> renders 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
                 data-testid="ExpandMoreIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -149,7 +149,7 @@ exports[`<AboutWidget /> renders 1`] = `
             >
               <svg
                 aria-hidden="true"
-                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
                 data-testid="ExpandMoreIcon"
                 focusable="false"
                 viewBox="0 0 24 24"
@@ -195,7 +195,7 @@ exports[`<AboutWidget /> renders 1`] = `
                          
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1qmn684-MuiSvgIcon-root"
                           data-testid="OpenInNewIcon"
                           focusable="false"
                           viewBox="0 0 24 24"

@@ -19,7 +19,7 @@ exports[`renders 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-19iamhn-MuiSvgIcon-root-MuiStepIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root Mui-active css-720wso-MuiSvgIcon-root-MuiStepIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >
@@ -100,7 +100,7 @@ exports[`renders 1`] = `
                       />
                       <svg
                         aria-hidden="true"
-                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon css-1n8g1bv-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
+                        class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiSelect-icon css-cqj5fg-MuiSvgIcon-root-MuiNativeSelect-root-MuiSelect-icon"
                         data-testid="ArrowDropDownIcon"
                         focusable="false"
                         viewBox="0 0 24 24"
@@ -136,7 +136,7 @@ exports[`renders 1`] = `
                          
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1qmn684-MuiSvgIcon-root"
                           data-testid="OpenInNewIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -192,7 +192,7 @@ exports[`renders 1`] = `
           >
             <svg
               aria-hidden="true"
-              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-19iamhn-MuiSvgIcon-root-MuiStepIcon-root"
+              class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium MuiStepIcon-root css-720wso-MuiSvgIcon-root-MuiStepIcon-root"
               focusable="false"
               viewBox="0 0 24 24"
             >

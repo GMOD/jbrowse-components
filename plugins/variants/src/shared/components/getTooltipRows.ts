@@ -29,7 +29,11 @@ export function getTooltipRows(source: Record<string, unknown>): TooltipRow[] {
     shown.add(key)
     const value = source[key]
     if (value !== undefined && value !== '') {
-      rows.push({ key, label: VARIANT_FIELD_LABELS[key]!, value: String(value) })
+      rows.push({
+        key,
+        label: VARIANT_FIELD_LABELS[key]!,
+        value: String(value),
+      })
     }
   }
   for (const key in source) {

@@ -71,3 +71,7 @@ A few more things worth flagging, roughly in priority order:
 5. Scaling reminder (reinforces the layer point): set/getDisplayTypeDefault(type, slot, value) is generic over slot, but the resolution is hand-written per-slot in a getter. Add height or heightOverride next and you're writing a second sentinel getter with the same leak. That's the concrete cost of keeping resolution in the display; the tracks-getter merge pays for itself the moment there's a second slot.
 
 None of these block trying the current slice for feel. If I were to pick one to do now regardless of the layer decision, it's #1 — lock the current behavior with a test so the eventual move is safe.
+
+## consider removing rxjs
+
+## audit foreachnumeric

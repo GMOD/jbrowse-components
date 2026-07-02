@@ -96,7 +96,6 @@ detail):
 | [`trackSelectorType`](#property-trackselectortype)   | `IOptionalIType<ISimpleType<string>, [undefined]>`  |
 | [`showIntraviewLinks`](#property-showintraviewlinks) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | [`linkViews`](#property-linkviews)                   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`interactiveOverlay`](#property-interactiveoverlay) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
 | [`levels`](#property-levels)                         | `IArrayType<IAnyModelType>`                         |
 
 </details>
@@ -138,15 +137,6 @@ showIntraviewLinks: types.stripDefault(types.boolean, true)
 type linkViews = IOptionalIType<ISimpleType<boolean>, [undefined]>
 // code
 linkViews: types.stripDefault(types.boolean, false)
-```
-
-#### property: interactiveOverlay
-
-```ts
-// type signature
-type interactiveOverlay = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-interactiveOverlay: types.stripDefault(types.boolean, false)
 ```
 
 #### property: levels
@@ -201,11 +191,10 @@ type scrollZoom = boolean
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                   | Signature                   |
-| ---------------------------------------- | --------------------------- |
-| [`initialized`](#getter-initialized)     | `boolean`                   |
-| [`refNames`](#getter-refnames)           | `(string \| undefined)[][]` |
-| [`assemblyNames`](#getter-assemblynames) | `string[]`                  |
+| Member                                   | Signature  |
+| ---------------------------------------- | ---------- |
+| [`initialized`](#getter-initialized)     | `boolean`  |
+| [`assemblyNames`](#getter-assemblynames) | `string[]` |
 
 </details>
 
@@ -216,12 +205,6 @@ detail):
 
 ```ts
 type initialized = boolean
-```
-
-#### getter: refNames
-
-```ts
-type refNames = (string | undefined)[][]
 ```
 
 #### getter: assemblyNames

@@ -136,7 +136,9 @@ test('haplotype/read-group tag filters read HP/RG off the feature', () => {
   })
   const filter = findSubMenu(run(model), 'Filter')
   filter.find(i => i.label === 'Filter for this haplotype (HP:1)')!.onClick()
-  filter.find(i => i.label === 'Filter for this read group (RG:lib1)')!.onClick()
+  filter
+    .find(i => i.label === 'Filter for this read group (RG:lib1)')!
+    .onClick()
   expect(model.filterCalls).toEqual([
     { flagInclude: 0, flagExclude: 1540, tagFilter: { tag: 'HP', value: '1' } },
     {

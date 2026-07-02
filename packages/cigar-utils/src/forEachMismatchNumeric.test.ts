@@ -456,7 +456,9 @@ describe('forEachMismatchNumeric', () => {
         const windowed = walk(lo, hi)
         // ranged ops (D/N) overlap the window; point ops fall inside it
         const expected = all.filter(m =>
-          m.length > 1 ? m.start < hi && m.start + m.length > lo : m.start >= lo && m.start < hi,
+          m.length > 1
+            ? m.start < hi && m.start + m.length > lo
+            : m.start >= lo && m.start < hi,
         )
         expect(windowed).toEqual(expected)
       }

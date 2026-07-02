@@ -66,7 +66,9 @@ async function main() {
     .then(() => {
       doneMs = Date.now() - t0
     })
-    .catch(() => console.log('WARN: pileup-display-done not seen'))
+    .catch(() => {
+      console.log('WARN: pileup-display-done not seen')
+    })
   await new Promise(r => setTimeout(r, 1500))
 
   await page.tracing.stop()

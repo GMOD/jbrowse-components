@@ -46,7 +46,10 @@ function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
 // display stubs to yield `{trackId, displays: [...stubs]}` — nonzero keys but no
 // changed slot. flattenTrackConfigDelta (which drops identity keys and empty
 // display stubs) is the honest test of whether any real setting changed.
-function deltaHasChanges(base: PlainTrackConfig, delta: PlainTrackConfig): boolean {
+function deltaHasChanges(
+  base: PlainTrackConfig,
+  delta: PlainTrackConfig,
+): boolean {
   return flattenTrackConfigDelta(base, delta).length > 0
 }
 

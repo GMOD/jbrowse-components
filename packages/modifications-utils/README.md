@@ -44,6 +44,18 @@ scaled to 0..1.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
 
+### getTag
+
+Read a single tag by name, using the feature's targeted tag accessor when it has
+one (BAM) and the full tags object otherwise (CRAM/synteny).
+
+```js
+// type signature
+(feature: Feature, tag: string) => unknown
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
+
 ### getTagAlt
 
 Read a tag by its canonical name, falling back to a lowercase-suffixed alias

@@ -9,9 +9,8 @@ function makeAdapter() {
     configSchema.create({
       vcfGzLocationMap: {
         ctgA: {
-          localPath: require.resolve(
-            '../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz',
-          ),
+          localPath:
+            require.resolve('../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz'),
           locationType: 'LocalPathLocation',
         },
       },
@@ -19,9 +18,8 @@ function makeAdapter() {
       // the uri), so point at it explicitly
       indexLocationMap: {
         ctgA: {
-          localPath: require.resolve(
-            '../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz.tbi',
-          ),
+          localPath:
+            require.resolve('../VcfTabixAdapter/test_data/volvox.filtered.vcf.gz.tbi'),
           locationType: 'LocalPathLocation',
         },
       },
@@ -56,7 +54,9 @@ test('getExportData round-trips header plus overlapping variant lines', async ()
   expect(lines.some(l => l.startsWith('##fileformat'))).toBe(true)
 
   const dataLines = lines.filter(l => l && !l.startsWith('#'))
-  const feats = await firstValueFrom(adapter.getFeatures(region).pipe(toArray()))
+  const feats = await firstValueFrom(
+    adapter.getFeatures(region).pipe(toArray()),
+  )
   expect(dataLines.length).toBe(feats.length)
 
   // non-vcf formats aren't supported

@@ -50,13 +50,15 @@ and docs.
 [animationMode](../basesessionmodel#getter-animationmode),
 [scrollZoom](../basesessionmodel#getter-scrollzoom)
 
-**Methods:** [getPreference](../basesessionmodel#method-getpreference)
+**Methods:** [getPreference](../basesessionmodel#method-getpreference),
+[getDisplayTypeDefault](../basesessionmodel#method-getdisplaytypedefault)
 
 **Actions:** [setSelection](../basesessionmodel#action-setselection),
 [clearSelection](../basesessionmodel#action-clearselection),
 [setHovered](../basesessionmodel#action-sethovered),
 [setPreferenceOverride](../basesessionmodel#action-setpreferenceoverride),
 [setScrollZoom](../basesessionmodel#action-setscrollzoom),
+[setDisplayTypeDefault](../basesessionmodel#action-setdisplaytypedefault),
 [setName](../basesessionmodel#action-setname),
 [setFocusedViewId](../basesessionmodel#action-setfocusedviewid),
 [removeActiveDialog](../basesessionmodel#action-removeactivedialog),
@@ -131,6 +133,9 @@ and docs.
 [trackConfigDeltas](../sessiontracksmanagersessionmixin#property-trackconfigdeltas)
 
 **Getters:** [tracks](../sessiontracksmanagersessionmixin#getter-tracks)
+
+**Methods:**
+[getTrackConfigChanges](../sessiontracksmanagersessionmixin#method-gettrackconfigchanges)
 
 **Actions:**
 [addTrackConf](../sessiontracksmanagersessionmixin#action-addtrackconf),

@@ -162,6 +162,7 @@ and docs.
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
+[stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -448,7 +449,11 @@ type colorBy = string
 #### getter: featureColor
 
 Optional per-variant cell color (jexl string or CSS color) applied to
-alt-carrying cells; '' means default genotype coloring.
+alt-carrying cells; '' means default genotype coloring. Reads the raw config
+value directly (not `getConf`, which evaluates a `jexl:...` string immediately
+with no `feature` bound) — this crosses the RPC boundary as-is and is evaluated
+once per feature in the worker (see `makeFeatureColor` in
+`executeVariantCellData.ts`).
 
 ```ts
 type featureColor = string
@@ -856,6 +861,7 @@ detail):
 | [`setCellData`](#action-setcelldata)                                       | `(data: CellDataResult \| undefined) => void`                                                  |
 | [`setContextMenuFeature`](#action-setcontextmenufeature)                   | `(feature?: Feature \| undefined) => void`                                                     |
 | [`setLoadedBpPerPx`](#action-setloadedbpperpx)                             | `(bpPerPx: number \| undefined) => void`                                                       |
+| [`fetchMetadataDescriptions`](#action-fetchmetadatadescriptions)           | `() => Promise<unknown>`                                                                       |
 | [`setJexlFilters`](#action-setjexlfilters)                                 | `(f?: string[] \| undefined) => void`                                                          |
 | [`setShowLegend`](#action-setshowlegend)                                   | `(s: boolean) => void`                                                                         |
 | [`selectFeature`](#action-selectfeature)                                   | `(feature: Feature) => void`                                                                   |
@@ -898,6 +904,12 @@ type setContextMenuFeature = (feature?: Feature | undefined) => void
 
 ```ts
 type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
+```
+
+#### action: fetchMetadataDescriptions
+
+```ts
+type fetchMetadataDescriptions = () => Promise<unknown>
 ```
 
 #### action: setJexlFilters

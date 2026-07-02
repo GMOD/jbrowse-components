@@ -12,10 +12,7 @@ interface BlatJsonResponse {
 // PSL packs the per-block coordinates as comma-separated lists with a trailing
 // comma, e.g. "31,101,13,"
 function parseCommaList(value: string | number) {
-  return String(value)
-    .split(',')
-    .filter(Boolean)
-    .map(Number)
+  return String(value).split(',').filter(Boolean).map(Number)
 }
 
 function pslRowToFeature(
@@ -68,7 +65,9 @@ function pslRowToFeature(
   }
 }
 
-export function pslToFeatures(data: BlatJsonResponse): SimpleFeatureSerialized[] {
+export function pslToFeatures(
+  data: BlatJsonResponse,
+): SimpleFeatureSerialized[] {
   const col = Object.fromEntries(data.fields.map((f, i) => [f, i]))
   return data.blat.map((row, i) => pslRowToFeature(row, col, i))
 }

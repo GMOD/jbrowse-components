@@ -170,6 +170,16 @@ cancel paths and runFetch's cleanup.
 type resetStatus = () => void
 ```
 
+#### action: stopActiveFetch
+
+Abort the in-flight fetch (if any) and clear its status. The shared preamble of
+both cancel paths; the difference between them is only what they do to
+`fetchCanceled` / `fetchGeneration` afterward.
+
+```ts
+type stopActiveFetch = () => void
+```
+
 #### action: setRegionStatus
 
 Record one concurrent operation's latest status (keyed) and recompute the shared

@@ -36,8 +36,8 @@ test('getTag falls back to tags object when getTag is absent', () => {
 test('getTagAlt prefers canonical name, falls back to alias', () => {
   expect(getTagAlt(taggedFeature({ MM: 'a' }), 'MM', 'Mm')).toBe('a')
   expect(getTagAlt(taggedFeature({ Mm: 'b' }), 'MM', 'Mm')).toBe('b')
-  expect(getTagAlt(tagsOnlyFeature({ Ml: new Uint8Array([1]) }), 'ML', 'Ml')).toEqual(
-    new Uint8Array([1]),
-  )
+  expect(
+    getTagAlt(tagsOnlyFeature({ Ml: new Uint8Array([1]) }), 'ML', 'Ml'),
+  ).toEqual(new Uint8Array([1]))
   expect(getTagAlt(taggedFeature({}), 'MM', 'Mm')).toBeUndefined()
 })

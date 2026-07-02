@@ -157,6 +157,7 @@ and docs.
 **Actions:** [setError](../fetchmixin#action-seterror),
 [setStatusMessage](../fetchmixin#action-setstatusmessage),
 [resetStatus](../fetchmixin#action-resetstatus),
+[stopActiveFetch](../fetchmixin#action-stopactivefetch),
 [setRegionStatus](../fetchmixin#action-setregionstatus),
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
@@ -466,7 +467,7 @@ detail):
 | [`DisplayMessageComponent`](#getter-displaymessagecomponent)       | `LazyExoticComponent<({ model }: Props) => Element>`              |
 | [`maxHeight`](#getter-maxheight)                                   | `any`                                                             |
 | [`autoHeight`](#getter-autoheight)                                 | `any`                                                             |
-| [`displayMode`](#getter-displaymode)                               | `any`                                                             |
+| [`displayMode`](#getter-displaymode)                               | `DisplayMode`                                                     |
 | [`showLabelsMode`](#getter-showlabelsmode)                         | `any`                                                             |
 | [`showLabels`](#getter-showlabels)                                 | `boolean`                                                         |
 | [`showDescriptions`](#getter-showdescriptions)                     | `any`                                                             |
@@ -549,7 +550,7 @@ type autoHeight = any
 #### getter: displayMode
 
 ```ts
-type displayMode = any
+type displayMode = DisplayMode
 ```
 
 #### getter: showLabelsMode
@@ -835,8 +836,8 @@ detail):
 | [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                       |
 | [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                   |
 | [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                 |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                                                |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; } \| { ...; })[]`          |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                             |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]`                      |
 
 </details>
 
@@ -895,17 +896,13 @@ type showSubmenuMenuItems = () => (
 #### method: contextMenuItems
 
 ```ts
-type contextMenuItems = () => {
-  label: string
-  icon: OverridableComponent<SvgIconTypeMap<{}, 'svg'>> & { muiName: string }
-  onClick: () => void
-}[]
+type contextMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } | { ...; })[]
 ```
 
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; } | { ...; })[]
+type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; })[]
 ```
 
 </details>

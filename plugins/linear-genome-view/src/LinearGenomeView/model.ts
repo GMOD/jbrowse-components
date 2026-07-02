@@ -1736,11 +1736,20 @@ export function stateModelFactory(pluginManager: PluginManager) {
           const labels: { x: number; label: string; key: string }[] = []
           for (const run of groupContiguousBlocks(blocks)) {
             const runLeft = run.offsetPx - firstBlockOffset
-            for (const { base, x } of makeBlockTicks(run, bpPerPx, true, false)) {
+            for (const { base, x } of makeBlockTicks(
+              run,
+              bpPerPx,
+              true,
+              false,
+            )) {
               const label = getTickDisplayStr(base + 1, bpPerPx)
               const w = tickLabelWidth(label)
               if (labelFitsInBlock(x - w / 2, w, run.widthPx)) {
-                labels.push({ x: runLeft + x, label, key: `${run.offsetPx}-${base}` })
+                labels.push({
+                  x: runLeft + x,
+                  label,
+                  key: `${run.offsetPx}-${base}`,
+                })
               }
             }
           }

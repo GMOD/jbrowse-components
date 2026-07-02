@@ -51,19 +51,22 @@ export async function streamVcfFeatures(
   const { refName, start, end } = query
   // downloadStatus shows the label and clears when done; the onProgress it hands
   // back upgrades the in-between status to a determinate bar as blocks download
-  await downloadStatus('Downloading variants', opts.statusCallback, onProgress =>
-    vcf.getLines(refName, start, end, {
-      lineCallback: (line, fileOffset) => {
-        observer.next(
-          new VcfFeature({
-            variant: parser.parseLine(line),
-            parser,
-            id: `${idPrefix}-vcf-${fileOffset}`,
-          }),
-        )
-      },
-      onProgress,
-    }),
+  await downloadStatus(
+    'Downloading variants',
+    opts.statusCallback,
+    onProgress =>
+      vcf.getLines(refName, start, end, {
+        lineCallback: (line, fileOffset) => {
+          observer.next(
+            new VcfFeature({
+              variant: parser.parseLine(line),
+              parser,
+              id: `${idPrefix}-vcf-${fileOffset}`,
+            }),
+          )
+        },
+        onProgress,
+      }),
   )
   observer.complete()
 }

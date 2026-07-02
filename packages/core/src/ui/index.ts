@@ -23,10 +23,7 @@ export { default as FileSelector } from './FileSelector/FileSelector.tsx'
 export { default as FileDropZone } from './FileDropZone.tsx'
 export { default as LoadingEllipses } from './LoadingEllipses.tsx'
 export { default as NumberTextField } from './NumberTextField.tsx'
-export {
-  default as TagTextField,
-  type TagQuickPick,
-} from './TagTextField.tsx'
+export { type TagQuickPick, default as TagTextField } from './TagTextField.tsx'
 export { default as MonospaceTextField } from './MonospaceTextField.tsx'
 export { default as ShareLinkField } from './ShareLinkField.tsx'
 export { default as SingleSlider } from './SingleSlider.tsx'

@@ -224,7 +224,10 @@ type svgReady = boolean
 
 per-arc styling and endpoint pairs (one per ALT), evaluated once when
 features/config change. Keeps the color jexl and makeFeaturePair (which runs
-parseSvAlt) out of the per-pan render loop.
+parseSvAlt) out of the per-pan render loop. Deduped on a canonical endpoint-pair
+key: a paired feature is emitted from both endpoints and reciprocal BNDs arrive
+as two records, so the same arc otherwise draws twice whenever both endpoints
+are in the fetched regions.
 
 ```ts
 type arcStyles =

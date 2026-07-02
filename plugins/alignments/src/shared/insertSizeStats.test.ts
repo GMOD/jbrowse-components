@@ -21,7 +21,12 @@ function referenceStats(filtered: number[]) {
   const mad = med(filtered.map(x => Math.abs(x - m)))
   const center = mad > 0 ? m : avg
   const spread = mad > 0 ? 3 * 1.4826 * mad : 3 * sd
-  return { upper: center + spread, lower: Math.max(0, center - spread), avg, sd }
+  return {
+    upper: center + spread,
+    lower: Math.max(0, center - spread),
+    avg,
+    sd,
+  }
 }
 
 test('randomized: O(n) MAD merge matches the naive double-sort exactly', () => {
@@ -32,9 +37,7 @@ test('randomized: O(n) MAD merge matches the naive double-sort exactly', () => {
   }
   for (let trial = 0; trial < 500; trial++) {
     const len = 1 + Math.floor(rng() * 60)
-    const values = Array.from({ length: len }, () =>
-      Math.floor(rng() * 2000),
-    )
+    const values = Array.from({ length: len }, () => Math.floor(rng() * 2000))
     const got = getInsertSizeStats(values)
     const ref = referenceStats(values)
     expect(got.avg).toBeCloseTo(ref.avg, 9)

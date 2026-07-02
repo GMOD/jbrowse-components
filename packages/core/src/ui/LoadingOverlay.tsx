@@ -118,7 +118,10 @@ export default function LoadingOverlay({
   // anti-flash: only render after the load has run long enough to be worth
   // signaling, so fast loads show nothing at all. `immediate` bypasses this for
   // initial loads, where nothing is on screen to flash over yet.
-  const shownAfterDelay = useDelayedFlag(!!isVisible && !immediate, flashDelayMs)
+  const shownAfterDelay = useDelayedFlag(
+    !!isVisible && !immediate,
+    flashDelayMs,
+  )
   const shown = isVisible && (immediate || shownAfterDelay)
 
   // only offer cancel after the overlay has been continuously visible for a few

@@ -137,7 +137,9 @@ function partitionRegion(
 test('cross-region strand: reverse-only early region does not stack above forward', () => {
   // Region 0 has only reverse reads, so the worker emits ['-']; region 1 has
   // both and emits ['+','-']. A first-seen merge would leave reverse first.
-  const region0 = partitionRegion([feat('a', { flags: 16 })], { type: 'strand' })
+  const region0 = partitionRegion([feat('a', { flags: 16 })], {
+    type: 'strand',
+  })
   const region1 = partitionRegion(
     [feat('b', { flags: 0 }), feat('c', { flags: 16 })],
     { type: 'strand' },

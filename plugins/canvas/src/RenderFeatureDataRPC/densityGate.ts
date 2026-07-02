@@ -52,7 +52,9 @@ export function densityTooLargeResult(
   maxFeatureDensity: number,
   bytes: number | undefined,
 ): RenderFeatureDataResult | undefined {
-  const featureCount = Math.round(featureDensityPerBp * (region.end - region.start))
+  const featureCount = Math.round(
+    featureDensityPerBp * (region.end - region.start),
+  )
   return Number.isFinite(featureCount) &&
     featuresPerPx(featureCount, region, bpPerPx) > maxFeatureDensity
     ? tooManyFeaturesResult(featureCount, bytes)

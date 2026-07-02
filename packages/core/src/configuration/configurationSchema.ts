@@ -306,8 +306,7 @@ function frozenTrackHydrationCache(
 function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
   return types.union(
     {
-      dispatcher: snapshot =>
-        typeof snapshot === 'string' ? ref : schemaType,
+      dispatcher: snapshot => (typeof snapshot === 'string' ? ref : schemaType),
     },
     ref,
     schemaType,

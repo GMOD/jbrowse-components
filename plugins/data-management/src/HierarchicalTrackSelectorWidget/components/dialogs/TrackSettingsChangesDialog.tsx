@@ -41,80 +41,89 @@ function formatValue(value: unknown): string {
       : JSON.stringify(value)
 }
 
-const TrackSettingsChangesDialog = observer(function TrackSettingsChangesDialog({
-  changes,
-  trackName,
-  onReset,
-  handleClose,
-}: {
-  changes: TrackConfigChange[]
-  trackName: string
-  onReset?: () => void
-  handleClose: () => void
-}) {
-  const { classes } = useStyles()
-  return (
-    <Dialog
-      open
-      onClose={() => { handleClose() }}
-      title={`Changes to "${trackName}"`}
-      maxWidth="md"
-    >
-      <DialogContent className={classes.content}>
-        {changes.length ? (
-          <>
-            <DialogContentText>
-              These settings differ from the track's default configuration.
-            </DialogContentText>
-            <Table size="small">
-              <TableHead>
-                <TableRow>
-                  <TableCell>Setting</TableCell>
-                  <TableCell>Default</TableCell>
-                  <TableCell>Current</TableCell>
-                </TableRow>
-              </TableHead>
-              <TableBody>
-                {changes.map(change => (
-                  <TableRow key={change.path.join('.')}>
-                    <TableCell className={classes.path}>
-                      {change.path.join(' › ')}
-                    </TableCell>
-                    <TableCell
-                      className={`${classes.value} ${classes.defaultCell}`}
-                    >
-                      {formatValue(change.from)}
-                    </TableCell>
-                    <TableCell className={classes.value}>
-                      {formatValue(change.to)}
-                    </TableCell>
+const TrackSettingsChangesDialog = observer(
+  function TrackSettingsChangesDialog({
+    changes,
+    trackName,
+    onReset,
+    handleClose,
+  }: {
+    changes: TrackConfigChange[]
+    trackName: string
+    onReset?: () => void
+    handleClose: () => void
+  }) {
+    const { classes } = useStyles()
+    return (
+      <Dialog
+        open
+        onClose={() => {
+          handleClose()
+        }}
+        title={`Changes to "${trackName}"`}
+        maxWidth="md"
+      >
+        <DialogContent className={classes.content}>
+          {changes.length ? (
+            <>
+              <DialogContentText>
+                These settings differ from the track's default configuration.
+              </DialogContentText>
+              <Table size="small">
+                <TableHead>
+                  <TableRow>
+                    <TableCell>Setting</TableCell>
+                    <TableCell>Default</TableCell>
+                    <TableCell>Current</TableCell>
                   </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </>
-        ) : (
-          <Typography>This track has no setting changes.</Typography>
-        )}
-      </DialogContent>
-      <DialogActions>
-        {changes.length && onReset ? (
+                </TableHead>
+                <TableBody>
+                  {changes.map(change => (
+                    <TableRow key={change.path.join('.')}>
+                      <TableCell className={classes.path}>
+                        {change.path.join(' › ')}
+                      </TableCell>
+                      <TableCell
+                        className={`${classes.value} ${classes.defaultCell}`}
+                      >
+                        {formatValue(change.from)}
+                      </TableCell>
+                      <TableCell className={classes.value}>
+                        {formatValue(change.to)}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </>
+          ) : (
+            <Typography>This track has no setting changes.</Typography>
+          )}
+        </DialogContent>
+        <DialogActions>
+          {changes.length && onReset ? (
+            <Button
+              color="secondary"
+              onClick={() => {
+                onReset()
+                handleClose()
+              }}
+            >
+              Reset to default
+            </Button>
+          ) : null}
           <Button
-            color="secondary"
+            variant="contained"
             onClick={() => {
-              onReset()
               handleClose()
             }}
           >
-            Reset to default
+            Close
           </Button>
-        ) : null}
-        <Button variant="contained" onClick={() => { handleClose() }}>
-          Close
-        </Button>
-      </DialogActions>
-    </Dialog>
-  )
-})
+        </DialogActions>
+      </Dialog>
+    )
+  },
+)
 
 export default TrackSettingsChangesDialog

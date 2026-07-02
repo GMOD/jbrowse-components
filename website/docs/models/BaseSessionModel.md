@@ -274,6 +274,15 @@ map is empty unless the product loads it (web/desktop).
 type getPreference = (key: string) => unknown
 ```
 
+#### method: getDisplayTypeDefault
+
+resolved value of a per-display-type slot default the user promoted (see
+`setDisplayTypeDefault`); undefined when nothing was promoted.
+
+```ts
+type getDisplayTypeDefault = (displayType: string, slot: string) => unknown
+```
+
 </details>
 
 <details open>
@@ -311,6 +320,20 @@ set the global scroll-to-zoom preference (see the `scrollZoom` getter)
 
 ```ts
 type setScrollZoom = (flag: boolean) => void
+```
+
+#### action: setDisplayTypeDefault
+
+promote (or, with `value` undefined, clear) a per-display-type slot default.
+Stored under `preferencesOverrides.displayTypeDefaults` so the
+PreferencesSessionMixin persists it to localStorage like other prefs.
+
+```ts
+type setDisplayTypeDefault = (
+  displayType: string,
+  slot: string,
+  value: unknown,
+) => void
 ```
 
 **Other members** (undocumented — signatures only, expand below for full

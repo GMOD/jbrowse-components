@@ -1,7 +1,7 @@
 # HGSVC chr1 structural variants, real SnpEff consequence annotations
 
-Real human structural variants (deletions/insertions from long-read
-phased assemblies) with real SnpEff-predicted consequences — the SV analog of
+Real human structural variants (deletions/insertions from long-read phased
+assemblies) with real SnpEff-predicted consequences — the SV analog of
 `test_data/1000g_snpeff_chr1` (which does SNVs). Same feature under test:
 `plugins/variants` multi-sample "color cells by consequence impact"
 (`jexl:impactColor(feature)`), but exercising SnpEff's SV-specific consequence
@@ -18,23 +18,23 @@ Consortium, GRCh38 coordinates:
 `['1000 Genomes', 'HGSVC']` category, undated 6.4MB, whole file downloaded then
 sliced to chr1 — small enough not to need range-fetching).
 
-Only whole chr1 is kept here (12,530 records, 1.2MB compressed) — SnpEff needs
-a real annotation pass over the file, and shipping the whole chromosome (rather
+Only whole chr1 is kept here (12,530 records, 1.2MB compressed) — SnpEff needs a
+real annotation pass over the file, and shipping the whole chromosome (rather
 than a hand-picked window) leaves room to explore other loci later.
 
-Note: the *other* real 1000 Genomes SV callset already in this repo
-(`ALL.wgs.mergedSV.v8.20130502.svs.genotypes.GRCh38.vcf`, phase 3 "integrated
-SV map") turned out to be unusable for this — it's almost entirely encoded
-with the old `<CN0>/<CN2>/<CN3>...` copy-number symbolic-allele notation, which
-SnpEff 5.4c doesn't parse (`Unsupported structural variant type '<CN2>'`).
-HGSVC uses the standard `<DEL>`/`<INS>` + `SVTYPE=` notation SnpEff expects, so
-it was used instead.
+Note: the _other_ real 1000 Genomes SV callset already in this repo
+(`ALL.wgs.mergedSV.v8.20130502.svs.genotypes.GRCh38.vcf`, phase 3 "integrated SV
+map") turned out to be unusable for this — it's almost entirely encoded with the
+old `<CN0>/<CN2>/<CN3>...` copy-number symbolic-allele notation, which SnpEff
+5.4c doesn't parse (`Unsupported structural variant type '<CN2>'`). HGSVC uses
+the standard `<DEL>`/`<INS>` + `SVTYPE=` notation SnpEff expects, so it was used
+instead.
 
 ## Annotation
 
-Real SnpEff 5.4c (bioconda `snpeff-5.4.0c-hdfd78af_0`) against the real
-Ensembl GRCh38.99 database — see `test_data/1000g_snpeff_chr1/README.md` for
-the SnpEff-jar-via-bioconda setup, identical here except the database:
+Real SnpEff 5.4c (bioconda `snpeff-5.4.0c-hdfd78af_0`) against the real Ensembl
+GRCh38.99 database — see `test_data/1000g_snpeff_chr1/README.md` for the
+SnpEff-jar-via-bioconda setup, identical here except the database:
 
 ```sh
 curl -sL -o GRCh38.99.zip "https://snpeff-public.s3.amazonaws.com/databases/v5_0/snpEff_v5_0_GRCh38.99.zip"

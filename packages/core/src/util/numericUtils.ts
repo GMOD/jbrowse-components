@@ -14,7 +14,7 @@ export function minmax(a: number, b: number) {
 
 // Index iteration so these accept both arrays and typed arrays (e.g.
 // Float32Array) without requiring Iterable.
-/* eslint-disable @typescript-eslint/prefer-for-of */
+
 export function max(arr: ArrayLike<number>, init = Number.NEGATIVE_INFINITY) {
   let max = init
   for (let i = 0; i < arr.length; i++) {
@@ -38,7 +38,6 @@ export function sum(arr: ArrayLike<number>) {
   }
   return sum
 }
-/* eslint-enable @typescript-eslint/prefer-for-of */
 
 export function avg(arr: ArrayLike<number>) {
   return sum(arr) / arr.length

@@ -31,7 +31,7 @@ exports[`renders all the different types of built-in slots 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -86,7 +86,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                     </span>
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1qmn684-MuiSvgIcon-root"
                       data-testid="SearchIcon"
                       focusable="false"
                       viewBox="0 0 24 24"
@@ -271,13 +271,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                           >
                             <button
-                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                               tabindex="0"
                               type="button"
                             >
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                 data-testid="DeleteIcon"
                                 focusable="false"
                                 viewBox="0 0 24 24"
@@ -311,13 +311,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                           >
                             <button
-                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                              class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                               tabindex="0"
                               type="button"
                             >
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                 data-testid="DeleteIcon"
                                 focusable="false"
                                 viewBox="0 0 24 24"
@@ -352,7 +352,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                           >
                             <button
-                              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                              class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                               data-testid="stringArrayAdd-stringArrayTest"
                               disabled=""
                               tabindex="-1"
@@ -360,7 +360,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                             >
                               <svg
                                 aria-hidden="true"
-                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                 data-testid="AddIcon"
                                 focusable="false"
                                 viewBox="0 0 24 24"
@@ -414,13 +414,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                         class="MuiCardHeader-action css-116l9hl-MuiCardHeader-action"
                       >
                         <button
-                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                          class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                           tabindex="0"
                           type="button"
                         >
                           <svg
                             aria-hidden="true"
-                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                             data-testid="DeleteIcon"
                             focusable="false"
                             viewBox="0 0 24 24"
@@ -458,13 +458,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                               >
                                 <button
-                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                                   tabindex="0"
                                   type="button"
                                 >
                                   <svg
                                     aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                     data-testid="DeleteIcon"
                                     focusable="false"
                                     viewBox="0 0 24 24"
@@ -498,13 +498,13 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                               >
                                 <button
-                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                                  class="MuiButtonBase-root MuiIconButton-root MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                                   tabindex="0"
                                   type="button"
                                 >
                                   <svg
                                     aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                     data-testid="DeleteIcon"
                                     focusable="false"
                                     viewBox="0 0 24 24"
@@ -539,7 +539,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                               >
                                 <button
-                                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                                  class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                                   data-testid="stringArrayAdd-"
                                   disabled=""
                                   tabindex="-1"
@@ -547,7 +547,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                                 >
                                   <svg
                                     aria-hidden="true"
-                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                    class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                     data-testid="AddIcon"
                                     focusable="false"
                                     viewBox="0 0 24 24"
@@ -597,14 +597,14 @@ exports[`renders all the different types of built-in slots 1`] = `
                               class="MuiInputAdornment-root MuiInputAdornment-positionEnd MuiInputAdornment-standard MuiInputAdornment-sizeSmall css-elo8k2-MuiInputAdornment-root"
                             >
                               <button
-                                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-ofe2qs-MuiButtonBase-root-MuiIconButton-root"
+                                class="MuiButtonBase-root Mui-disabled MuiIconButton-root Mui-disabled MuiIconButton-sizeSmall css-1j0eqfr-MuiButtonBase-root-MuiIconButton-root"
                                 disabled=""
                                 tabindex="-1"
                                 type="button"
                               >
                                 <svg
                                   aria-hidden="true"
-                                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                                  class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                                   data-testid="AddIcon"
                                   focusable="false"
                                   viewBox="0 0 24 24"
@@ -778,7 +778,7 @@ exports[`renders all the different types of built-in slots 1`] = `
                         />
                         <svg
                           aria-hidden="true"
-                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-14500qs-MuiSvgIcon-root"
+                          class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-6tzto2-MuiSvgIcon-root"
                           data-testid="CheckBoxIcon"
                           focusable="false"
                           viewBox="0 0 24 24"
@@ -843,7 +843,7 @@ exports[`renders with just the required model elements 1`] = `
         >
           <svg
             aria-hidden="true"
-            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-ctmwhn-MuiSvgIcon-root"
+            class="MuiSvgIcon-root MuiSvgIcon-fontSizeMedium css-1s5lhg9-MuiSvgIcon-root"
             data-testid="ExpandMoreIcon"
             focusable="false"
             viewBox="0 0 24 24"
@@ -898,7 +898,7 @@ exports[`renders with just the required model elements 1`] = `
                     </span>
                     <svg
                       aria-hidden="true"
-                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1rk9zli-MuiSvgIcon-root"
+                      class="MuiSvgIcon-root MuiSvgIcon-fontSizeSmall css-1qmn684-MuiSvgIcon-root"
                       data-testid="SearchIcon"
                       focusable="false"
                       viewBox="0 0 24 24"

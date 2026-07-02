@@ -250,7 +250,12 @@ describe('contextMenuFieldsForHit', () => {
   // regression: a modification hit used to fall through to the native browser
   // menu; it must expose the read's feature id (and the base's cigar hit).
   it('a modification hit exposes the underlying read feature id', () => {
-    const cigar = { type: 'mismatch', index: 0, position: 7, base: 'A' } as const
+    const cigar = {
+      type: 'mismatch',
+      index: 0,
+      position: 7,
+      base: 'A',
+    } as const
     const fields = contextMenuFieldsForHit({
       type: 'modification',
       hit: { position: 7, modType: 'm', probability: 0.9, color: '#f00' },

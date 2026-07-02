@@ -55,7 +55,9 @@ describe('densityTooLargeResult', () => {
 
   it('allows a region below the limit (returns undefined)', () => {
     // 0.001/bp over 1Mb = 1000 features; at 1bpPerPx = 1Mpx -> 0.001/px < 1
-    expect(densityTooLargeResult(0.001, region, 1, 1, undefined)).toBeUndefined()
+    expect(
+      densityTooLargeResult(0.001, region, 1, 1, undefined),
+    ).toBeUndefined()
   })
 
   it('does not block exactly at the boundary (strictly greater)', () => {
@@ -78,7 +80,13 @@ describe('densityTooLargeResult', () => {
     // Infinity means "could not estimate": defer to the full fetch rather than
     // emitting Infinity, which JSON would serialize to null and slip the gate.
     expect(
-      densityTooLargeResult(Number.POSITIVE_INFINITY, region, 1000, 1, undefined),
+      densityTooLargeResult(
+        Number.POSITIVE_INFINITY,
+        region,
+        1000,
+        1,
+        undefined,
+      ),
     ).toBeUndefined()
   })
 })

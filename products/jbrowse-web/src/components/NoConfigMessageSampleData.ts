@@ -152,7 +152,8 @@ export const recentConfigs: readonly SampleLink[] = [
   },
   {
     href: '?config=test_data/config_demo.json&session=spec-{"views":[{"assembly":"hg38","loc":"1:16900000-16920000","type":"LinearGenomeView","tracks":["hg002_dipcall_dip_vcf_t2t","hg002_dipcall_hap1_t2t","hg002_dipcall_hap2_t2t"]}]}',
-    label: 'HG002 diploid assembly (dipcall hap1+hap2 + variant calls vs GRCh38)',
+    label:
+      'HG002 diploid assembly (dipcall hap1+hap2 + variant calls vs GRCh38)',
   },
 ]
 
