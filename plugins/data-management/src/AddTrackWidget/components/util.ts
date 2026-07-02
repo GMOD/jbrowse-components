@@ -14,3 +14,15 @@ export function categorizeAdapters(adaptersList: AdapterType[]) {
     adapter => adapter.adapterMetadata?.category ?? 'Default',
   )
 }
+
+/**
+ * Whether the view currently displays any of the track's assemblies, i.e. the
+ * track can be shown here after adding it. Shared by the single-track and
+ * paste-JSON submit paths so both decide "show vs. warn" the same way.
+ */
+export function viewDisplaysAssembly(
+  view: { assemblyNames?: readonly string[] } | undefined,
+  assemblyNames: readonly (string | undefined)[] | undefined,
+) {
+  return !!view?.assemblyNames?.some(a => assemblyNames?.includes(a))
+}

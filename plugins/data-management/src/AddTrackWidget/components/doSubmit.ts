@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util'
 import { getRoot } from '@jbrowse/mobx-state-tree'
 
-import { defaultIndexingConf } from './util.ts'
+import { defaultIndexingConf, viewDisplaysAssembly } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -19,9 +19,11 @@ interface RootWithJobsManager {
 
 function doTextIndexTrack({
   trackId,
+  timestamp,
   model,
 }: {
   trackId: string
+  timestamp: number
   model: AddTrackModel
 }) {
   const { textIndexingConf, assembly } = model
@@ -34,7 +36,7 @@ function doTextIndexTrack({
       tracks: [trackId],
       indexType: 'perTrack',
       name: trackId,
-      timestamp: new Date().toISOString(),
+      timestamp: new Date(timestamp).toISOString(),
     },
     // jobs are keyed by name; trackId is unique so two tracks sharing a
     // display name won't collide
@@ -45,15 +47,16 @@ function doTextIndexTrack({
 export function doSubmit({ model }: { model: AddTrackModel }) {
   const { textIndexTrack, trackAdapter, view } = model
   const session = getSession(model)
-  const trackConfig = model.getTrackConfig(Date.now())
+  const timestamp = Date.now()
+  const trackConfig = model.getTrackConfig(timestamp)
 
   if (!isSessionWithAddTracks(session)) {
     throw new Error("Can't add tracks to this session")
   } else if (trackConfig && trackAdapter) {
-    const { trackId } = trackConfig
+    const trackId = String(trackConfig.trackId)
     session.addTrackConf(trackConfig)
-    if (view?.assemblyNames?.includes(model.assembly)) {
-      view.showTrack(trackId)
+    if (viewDisplaysAssembly(view, [model.assembly])) {
+      view?.showTrack?.(trackId)
     } else {
       // The track was added to the session but can't be shown here because its
       // assembly isn't open in this view (common when the assembly dropdown is
@@ -72,7 +75,8 @@ export function doSubmit({ model }: { model: AddTrackModel }) {
     ) {
       doTextIndexTrack({
         model,
-        trackId: String(trackId),
+        trackId,
+        timestamp,
       })
     }
     model.clearData()

@@ -6,6 +6,7 @@ import {
 import { transaction } from 'mobx'
 
 import { parseTrackConfigs } from './parseTrackConfigs.ts'
+import { viewDisplaysAssembly } from './util.ts'
 
 import type { AddTrackModel } from '../model.ts'
 
@@ -32,7 +33,6 @@ export function doPasteConfigSubmit({
       )
     }
     const { view } = model
-    const viewAsms = view?.assemblyNames as string[] | undefined
     const notShown: string[] = []
     transaction(() => {
       for (const conf of confs) {
@@ -40,7 +40,7 @@ export function doPasteConfigSubmit({
         // already surfaced as an error snackbar; don't show or warn about a
         // track that wasn't added.
         if (session.addTrackConf(conf)) {
-          if (viewAsms?.some(asm => conf.assemblyNames?.includes(asm))) {
+          if (viewDisplaysAssembly(view, conf.assemblyNames)) {
             view?.showTrack?.(conf.trackId)
           } else {
             notShown.push(conf.name ?? conf.trackId)
