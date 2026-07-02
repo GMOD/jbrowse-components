@@ -647,3 +647,35 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
   expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 2)))).toBeGreaterThan(0)
   expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 1)))).toBe(0)
 })
+
+test('re-pack orders by prior y so a top feature keeps its low row', () => {
+  // A and B overlap in x, so one stacks on the other. A sorts first by x, so a
+  // fresh (unprimed) layout gives A the top row. Priming B as the prior top
+  // feature flips the insertion order so B claims the top row instead — proving
+  // a feature that was near the top keeps its low row across a re-pack.
+  const mk = () =>
+    makeFeatureData({
+      features: [
+        { featureId: 'A', startBp: 1000, endBp: 2000, height: 20 },
+        { featureId: 'B', startBp: 1500, endBp: 2500, height: 20 },
+      ],
+    })
+  const keys = new Map([[0, 'v:ctgA']])
+  const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
+    r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
+
+  const fresh = computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, 1))
+  expect(topOf(fresh, 'A')).toBe(0)
+  expect(topOf(fresh, 'B')).toBeGreaterThan(0)
+
+  const primed = computeLaidOutData(
+    new Map([[0, mk()]]),
+    incInputs(keys, 1),
+    new Map([
+      ['B', 0],
+      ['A', 100],
+    ]),
+  )
+  expect(topOf(primed, 'B')).toBe(0)
+  expect(topOf(primed, 'A')).toBeGreaterThan(0)
+})

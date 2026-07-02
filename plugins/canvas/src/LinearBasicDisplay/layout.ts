@@ -109,6 +109,9 @@ function applyHeightScale(data: FeatureDataResult, multiplier: number) {
 export function computeLaidOutData(
   rpcDataMap: ReadonlyMap<number, FeatureDataResult>,
   inputs: LayoutInputs,
+  // Feature id -> y (px) from the previous layout, used only to order insertion
+  // so top features keep their rows across a re-pack (see packRef).
+  prevYByFeatureId?: ReadonlyMap<string, number>,
 ): Map<number, FeatureDataResult> {
   const {
     bpPerPx,
@@ -154,6 +157,7 @@ export function computeLaidOutData(
       showLabels,
       showDescriptions,
       reversedRegions,
+      prevYByFeatureId,
     )
     for (const [, data] of regions) {
       applyLayoutToRegion(data, layoutMap, layoutHeights)
@@ -248,7 +252,13 @@ export function createIncrementalLayout() {
         // `members` all share one key, so the pure pass lays out exactly this
         // group; passing the full `regionKeys`/`reversedRegions` is fine since
         // it only reads the keys of regions present in `members`.
-        const output = computeLaidOutData(members, inputs)
+        // Order this group's re-pack by each feature's row in the prior output
+        // so top features keep their rows across a zoom (see packRef).
+        const output = computeLaidOutData(
+          members,
+          inputs,
+          prev && prevYByFeatureId(prev.output),
+        )
         const reversed = new Set<number>()
         for (const idx of members.keys()) {
           if (reversedRegions.has(idx)) {
@@ -275,6 +285,23 @@ export function createIncrementalLayout() {
   }
 }
 
+// Collect each feature's laid-out top (px) from a prior group output, to prime
+// the next re-pack's insertion order. Overflowed features (OFFSCREEN_Y, a large
+// negative) are skipped so they don't sort ahead of on-screen features.
+function prevYByFeatureId(
+  output: ReadonlyMap<number, FeatureDataResult>,
+): Map<string, number> {
+  const out = new Map<string, number>()
+  for (const data of output.values()) {
+    for (const item of data.flatbushItems) {
+      if (item.topPx >= 0) {
+        out.set(item.featureId, item.topPx)
+      }
+    }
+  }
+  return out
+}
+
 function cloneMutableFields(raw: FeatureDataResult) {
   const floatingLabelsData: Record<string, FeatureLabelData> = {}
   for (const [k, v] of Object.entries(raw.floatingLabelsData)) {
@@ -299,6 +326,9 @@ function packRef(
   showLabels: boolean,
   showDescriptions: boolean,
   reversedRegions: ReadonlySet<number>,
+  // Each feature's y (px) in the previous layout, if any. Used only to order
+  // insertion, not to force a row — see the sort below.
+  prevYByFeatureId?: ReadonlyMap<string, number>,
 ) {
   const layout = new GranularRectLayout({ displayMode: 'normal' })
   const layoutMap = new Map<string, number>()
@@ -406,9 +436,28 @@ function packRef(
     }
   }
 
-  const sorted = [...allFeatures.entries()].sort(
-    ([, a], [, b]) => a.layoutStartBp - b.layoutStartBp,
-  )
+  // Insertion order = priority for the low rows in greedy first-fit. Features
+  // that sat near the top of the previous layout are inserted first so they
+  // keep those low rows across a zoom re-pack (when label overhang shifts the
+  // x-sort and would otherwise reshuffle who wins a contested row); features
+  // new to this layout are inserted last so they fill gaps without displacing
+  // an existing top feature. This only reorders insertion — every feature still
+  // lands on its compact first-fit row, so nothing is pushed below where it
+  // would pack on its own. Ties fall back to layoutStartBp for determinism.
+  const sorted = [...allFeatures.entries()].sort(([idA, a], [idB, b]) => {
+    const ya = prevYByFeatureId?.get(idA)
+    const yb = prevYByFeatureId?.get(idB)
+    if (ya !== undefined && yb !== undefined && ya !== yb) {
+      return ya - yb
+    }
+    if (ya !== undefined && yb === undefined) {
+      return -1
+    }
+    if (ya === undefined && yb !== undefined) {
+      return 1
+    }
+    return a.layoutStartBp - b.layoutStartBp
+  })
   let overflowCount = 0
   let firstOverflowSample: {
     id: string
