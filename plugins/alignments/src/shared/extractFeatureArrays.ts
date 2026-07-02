@@ -26,7 +26,7 @@ import type {
 } from './webglRpcTypes.ts'
 import type { PerBaseLetterEntry } from '../features/perBaseLetter/types.ts'
 import type { PerBaseQualityEntry } from '../features/perBaseQuality/types.ts'
-import type { Feature, Region } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter, Region } from '@jbrowse/core/util'
 import type { ModificationType } from '@jbrowse/modifications-utils'
 
 interface ExtractOpts {
@@ -43,6 +43,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   featuresArray: Feature[],
   buildFeatureData: (feature: Feature) => T,
   opts: ExtractOpts,
+  report?: ProgressReporter,
 ) {
   const { colorBy, showSoftClipping, region, sortTag } = opts
   const { regionSequence, regionSequenceStart } = opts
@@ -79,6 +80,7 @@ export function extractFeatureArrays<T extends FeatureData>(
   // returned `features` array and the per-read TypedArrays (buildBaseReadArrays),
   // so every primitive carries that integer instead of the string feature id.
   for (let readIndex = 0; readIndex < featuresArray.length; readIndex++) {
+    report?.()
     const feature = featuresArray[readIndex]!
     const featureStart = feature.get('start')
     const strand = feature.get('strand')!

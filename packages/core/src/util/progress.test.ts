@@ -25,11 +25,66 @@ describe('createProgressReporter', () => {
       },
       throttleMs: 0,
     })
-    // first call emits at current 0 (passes the bitmask gate); subsequent
-    // calls advance but are gated out until the next mask boundary
+    // throttleMs 0 so every call emits: the counter auto-increments from 0
     report()
     report()
-    expect(seen[0]).toBe(0)
+    expect(seen).toEqual([0, 1])
+  })
+
+  it('emits on a slow, low-count phase (time-gated, not call-count-gated)', () => {
+    // Regression: a phase with far fewer items than any call-count window but
+    // heavy per-item work (e.g. a multi-sample VCF region: a few hundred sites,
+    // thousands of samples each) must still tick the bar. An earlier bitmask
+    // only consulted the clock every 1024 calls, so such a phase emitted only
+    // the initial tick and the bar froze at 0%. Advance the clock past
+    // throttleMs on each call and assert every call emits.
+    const seen: number[] = []
+    let now = 1_000_000
+    const spy = jest.spyOn(Date, 'now').mockImplementation(() => now)
+    try {
+      const report = createProgressReporter({
+        label: 'Computing variant cells',
+        total: 5,
+        statusCallback: s => {
+          if (typeof s === 'object') {
+            seen.push(s.current)
+          }
+        },
+        throttleMs: 100,
+      })
+      for (let i = 0; i < 5; i++) {
+        now += 200 // heavy per-item work: 200ms elapses each iteration
+        report(i)
+      }
+    } finally {
+      spy.mockRestore()
+    }
+    expect(seen).toEqual([0, 1, 2, 3, 4])
+  })
+
+  it('throttles emits within throttleMs even across many calls', () => {
+    // The time gate is the rate limiter: many rapid calls at the same clock
+    // value collapse to a single emit.
+    const seen: number[] = []
+    const spy = jest.spyOn(Date, 'now').mockImplementation(() => 1_000_000)
+    try {
+      const report = createProgressReporter({
+        label: 'x',
+        total: 100,
+        statusCallback: s => {
+          if (typeof s === 'object') {
+            seen.push(s.current)
+          }
+        },
+        throttleMs: 100,
+      })
+      for (let i = 0; i < 50; i++) {
+        report(i)
+      }
+    } finally {
+      spy.mockRestore()
+    }
+    expect(seen).toEqual([0])
   })
 
   it('honors an explicit current over the internal counter', () => {
@@ -48,7 +103,7 @@ describe('createProgressReporter', () => {
     expect(seen).toEqual([0])
   })
 
-  it('emits for a sparse explicit current (gates on call count, not value)', () => {
+  it('honors a sparse explicit current (e.g. a running byte offset)', () => {
     const seen: number[] = []
     const report = createProgressReporter({
       label: 'x',
@@ -60,7 +115,6 @@ describe('createProgressReporter', () => {
       },
       throttleMs: 0,
     })
-    // 37 is not a 1024-multiple; a value-based gate would never fire
     report(37)
     expect(seen).toEqual([37])
   })
@@ -210,8 +264,7 @@ describe('withProgress', () => {
       },
     )
     expect(result).toBe('done')
-    // the kickoff report(0) emits (passes the bitmask gate at current 0); the
-    // final emit is the clear
+    // the kickoff report(0) emits at current 0; the final emit is the clear
     expect(seen[0]).toEqual({ message: 'Processing', current: 0, total: 4 })
     expect(seen.at(-1)).toBe('')
   })

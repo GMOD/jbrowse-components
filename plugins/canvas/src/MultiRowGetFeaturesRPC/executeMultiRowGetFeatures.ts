@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { updateStatus } from '@jbrowse/core/util'
+import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
@@ -47,6 +47,12 @@ export async function executeMultiRowGetFeatures({
     partitionField,
     colorConfig,
     jexl: pluginManager.jexl,
+    report: createProgressReporter({
+      label: 'Processing features',
+      total: features.length,
+      statusCallback,
+      stopTokenCheck,
+    }),
   })
   return rpcResult(result, [
     result.featureStarts.buffer,

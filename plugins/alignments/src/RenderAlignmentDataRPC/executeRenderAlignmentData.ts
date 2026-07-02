@@ -1,4 +1,9 @@
-import { dedupe, groupBy, updateStatus } from '@jbrowse/core/util'
+import {
+  createProgressReporter,
+  dedupe,
+  groupBy,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 import { detectSimplexModifications } from '@jbrowse/modifications-utils'
@@ -419,12 +424,26 @@ export async function executeRenderAlignmentData({
   // Extract per group, then resolve simplex modifications across ALL groups —
   // simplex-ness is a protocol property of the whole dataset, so a per-group
   // answer would color the same modification differently between sections.
+  // One reporter shared across all groups: report() owns the running counter,
+  // so per-group extractions accumulate into a single 0→total bar over every
+  // read (deep pileups are O(reads)-heavy in extractFeatureArrays).
+  const extractReport = createProgressReporter({
+    label: 'Processing alignments',
+    total: inputFeatures.length,
+    statusCallback,
+    stopTokenCheck,
+  })
   const extractions = await updateStatus(
     'Processing alignments',
     statusCallback,
     async () =>
       featureGroups.map(g =>
-        extractFeatureArrays(g.features, buildFeatureData, extractOpts),
+        extractFeatureArrays(
+          g.features,
+          buildFeatureData,
+          extractOpts,
+          extractReport,
+        ),
       ),
   )
   const seenModTypes = new Map(extractions.flatMap(e => [...e.seenModTypes]))

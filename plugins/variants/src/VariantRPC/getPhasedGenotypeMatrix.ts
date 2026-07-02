@@ -1,6 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 
@@ -57,13 +56,21 @@ export async function getPhasedGenotypeMatrix({
     maxPloidy: sampleInfo[s.name]?.maxPloidy ?? 2,
   }))
 
+  const rawFeatures = await updateStatus(
+    'Loading features',
+    statusCallback,
+    () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
+  )
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     filterChain: filters,
-    report: createProgressReporter({ stopTokenCheck }),
-    features: await updateStatus('Loading features', statusCallback, () =>
-      dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
-    ),
+    features: rawFeatures,
+    report: createProgressReporter({
+      label: 'Filtering variants',
+      total: rawFeatures.length,
+      statusCallback,
+      stopTokenCheck,
+    }),
   })
 
   // Pre-size each haplotype row to mafs.length and assign by feature index.
@@ -81,6 +88,12 @@ export async function getPhasedGenotypeMatrix({
     return arrs
   })
 
+  const report = createProgressReporter({
+    label: 'Building genotype matrix',
+    total: numFeatures,
+    statusCallback,
+    stopTokenCheck,
+  })
   for (let f = 0; f < numFeatures; f++) {
     const feature = mafs[f]!.feature
     const genotypes = feature.get('genotypes') as Record<string, string>
@@ -101,7 +114,7 @@ export async function getPhasedGenotypeMatrix({
         }
       }
     }
-    checkStopToken2(stopTokenCheck)
+    report(f)
   }
   return rows
 }

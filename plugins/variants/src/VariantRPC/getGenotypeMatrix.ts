@@ -1,6 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
-import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
 import { classifyGenotypeDosage } from '../shared/parseGenotypeDosage.ts'
@@ -65,13 +64,21 @@ export async function getGenotypeMatrix({
     key: s.sampleName ?? s.name,
   }))
 
+  const rawFeatures = await updateStatus(
+    'Loading features',
+    statusCallback,
+    () => dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
+  )
   const mafs = getFeaturesThatPassMinorAlleleFrequencyFilter({
     minorAlleleFrequencyFilter,
     filterChain: filters,
-    report: createProgressReporter({ stopTokenCheck }),
-    features: await updateStatus('Loading features', statusCallback, () =>
-      dataAdapter.getFeaturesInMultipleRegionsArray(regions, args),
-    ),
+    features: rawFeatures,
+    report: createProgressReporter({
+      label: 'Filtering variants',
+      total: rawFeatures.length,
+      statusCallback,
+      stopTokenCheck,
+    }),
   })
 
   // Pre-size each row to mafs.length and assign by feature index — eliminates
@@ -110,6 +117,12 @@ export async function getGenotypeMatrix({
     return idx
   })
 
+  const report = createProgressReporter({
+    label: 'Building genotype matrix',
+    total: numFeatures,
+    statusCallback,
+    stopTokenCheck,
+  })
   for (let f = 0; f < numFeatures; f++) {
     const feature = mafs[f]!.feature
     if (hasProcessGenotypes(feature) && samplesLen > 0) {
@@ -130,7 +143,7 @@ export async function getGenotypeMatrix({
         rowArrays[k]![f] = classifyGenotypeDosage(genotypes[resolved[k]!.key]!)
       }
     }
-    checkStopToken2(stopTokenCheck)
+    report(f)
   }
   return rows
 }

@@ -2,7 +2,7 @@ import { readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
 import type { MultiRowGetFeaturesResult } from './rpcTypes.ts'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Resolve the (possibly jexl) `color` slot to a CSS string for one feature,
@@ -36,11 +36,13 @@ export function packMultiRowFeatures({
   partitionField,
   colorConfig,
   jexl,
+  report,
 }: {
   features: Feature[]
   partitionField: string
   colorConfig: string
   jexl?: JexlInstance
+  report?: ProgressReporter
 }): MultiRowGetFeaturesResult {
   const n = features.length
   const featureStarts = new Uint32Array(n)
@@ -54,6 +56,7 @@ export function packMultiRowFeatures({
   const colorCfg = { color: colorConfig }
 
   for (let i = 0; i < n; i++) {
+    report?.(i)
     const feature = features[i]!
     featureStarts[i] = feature.get('start')
     featureEnds[i] = feature.get('end')

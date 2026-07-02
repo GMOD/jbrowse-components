@@ -1,5 +1,5 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { updateStatus } from '@jbrowse/core/util'
+import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import Flatbush from '@jbrowse/core/util/flatbush'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
@@ -16,7 +16,7 @@ import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 
 // Pure reducer: features → ManhattanRpcResult. Extracted so it can be unit-
 // tested without the RPC/adapter/jexl plumbing.
@@ -24,6 +24,7 @@ export function buildManhattanResult(
   features: Feature[],
   evalColor: (f: Feature) => number,
   evalR2?: (f: Feature) => number,
+  report?: ProgressReporter,
 ): ManhattanRpcResult {
   const n = features.length
   const positions = new Uint32Array(n)
@@ -36,6 +37,7 @@ export function buildManhattanResult(
   let scoreMax = -Infinity
 
   for (let i = 0; i < n; i++) {
+    report?.(i)
     const f = features[i]!
     // Uint32Array assignment coerces via ToUint32 (handles full 32-bit bp
     // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
@@ -136,7 +138,17 @@ export async function executeGetManhattanData({
     evalColor = makeColorEvaluator(color, pluginManager.jexl)
   }
 
-  const result = buildManhattanResult(features, evalColor, evalR2)
+  const result = buildManhattanResult(
+    features,
+    evalColor,
+    evalR2,
+    createProgressReporter({
+      label: 'Processing GWAS features',
+      total: features.length,
+      statusCallback,
+      stopTokenCheck,
+    }),
+  )
   result.indexFound = indexFound
 
   const transferables: Transferable[] = [

@@ -1,9 +1,8 @@
 import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { cmpStr, updateStatus } from '@jbrowse/core/util'
+import { cmpStr, createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
-  checkStopToken2,
   createStopTokenChecker,
 } from '@jbrowse/core/util/stopToken'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
@@ -149,13 +148,19 @@ export async function executeSyntenyFeaturesAndPositions({
   const v2Index = buildBpRegionIndex(v2)
 
   const count = features.length
-  // cumBp (bpBefore + bpOffset, no padding) fits in Float64 — max 3Gbp.
+  // cumBp (bpBefore + bpOffset, no padding) is whole-assembly cumulative-bp,
+  // held in Float64 (exact to 2^53) — unbounded by uint32; a 16 Gbp assembly is
+  // fine. See agent-docs/ARCHITECTURE.md "Genome-size limits".
   const p11Array = new Float64Array(count)
   const p12Array = new Float64Array(count)
   const p21Array = new Float64Array(count)
   const p22Array = new Float64Array(count)
   const strandsArray = new Int8Array(count)
-  // bp coordinates fit in uint32 (max 4.3 Gbp).
+  // These are chromosome-LOCAL feature/mate coords (not cumulative), so they
+  // fit in uint32 as long as no single reference sequence exceeds 2^32 = 4.29
+  // Gbp — an assumption we accept (see agent-docs/ARCHITECTURE.md "Genome-size
+  // limits"). Used for the feature-detail panel and the min-length cull; the
+  // drawn positions use the Float64 cumBp arrays above, not these.
   const startsArray = new Uint32Array(count)
   const endsArray = new Uint32Array(count)
   const mateStartsArray = new Uint32Array(count)
@@ -188,9 +193,18 @@ export async function executeSyntenyFeaturesAndPositions({
   const v1RefNames = v1Index.entries
   const v2RefNames = v2Index.entries
   const stopTokenChecker = createStopTokenChecker(stopToken)
+  // report() runs the throttled stop-token check itself, so it replaces the
+  // per-feature checkStopToken2 while also advancing the bar over whole-genome
+  // PAF (potentially millions of features).
+  const report = createProgressReporter({
+    label: 'Computing synteny positions',
+    total: count,
+    statusCallback,
+    stopTokenCheck: stopTokenChecker,
+  })
   let validCount = 0
   for (const f of features) {
-    checkStopToken2(stopTokenChecker)
+    report()
     const mate = getMate(f)
     const refName = f.get('refName')
     const mateRefName = mate.refName

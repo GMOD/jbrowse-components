@@ -1,6 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
-import { updateStatus } from '@jbrowse/core/util'
+import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -457,8 +457,17 @@ function computeLDMatrixCPU(
   packedHaplotypes: PackedHaplotypes[],
   encodedGenotypes: Int8Array[],
   stopTokenCheck: StopTokenChecker,
+  statusCallback?: StatusCallback,
 ): Float32Array {
   const vals = new Float32Array((n * (n - 1)) / 2)
+  // Report once per row (n rows): report() also runs the throttled stop-token
+  // check, so cancellation stays responsive without a per-pair check.
+  const report = createProgressReporter({
+    label: 'Computing LD values',
+    total: n,
+    statusCallback,
+    stopTokenCheck,
+  })
   let idx = 0
   for (let i = 1; i < n; i++) {
     for (let j = 0; j < i; j++) {
@@ -470,8 +479,8 @@ function computeLDMatrixCPU(
           )
         : calculateLDStats(encodedGenotypes[i]!, encodedGenotypes[j]!, signedLD)
       vals[idx++] = ldMetric === 'dprime' ? stats.dprime : stats.r2
-      checkStopToken2(stopTokenCheck)
     }
+    report(i)
   }
   return vals
 }
@@ -702,6 +711,7 @@ export async function getLDMatrix({
       packedHaplotypes,
       encodedGenotypes,
       stopTokenCheck,
+      statusCallback,
     ),
   )
 

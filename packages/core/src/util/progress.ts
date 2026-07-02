@@ -161,11 +161,6 @@ export function aggregateStatus(
  */
 export type ProgressReporter = (current?: number) => void
 
-// How often the status branch is allowed to read the clock, as a power-of-two
-// mask (every 1024 calls). The throttleMs is the real rate limit; this just
-// avoids a Date.now() on every iteration of a tight loop.
-const EMIT_CHECK_MASK = 0x3ff
-
 /**
  * The single per-iteration callback for long synchronous worker loops. The
  * returned `report(current)` is called once per outer-loop iteration and does
@@ -183,13 +178,17 @@ const EMIT_CHECK_MASK = 0x3ff
  * checkStopToken2} directly in a loop), so a loop has exactly one inner
  * callback whether or not it drives the progress UI.
  *
- * Cheap enough to call on *every* iteration of a tight loop: cancellation is
- * gated inside {@link checkStopToken2} (a counter modulo, not a syscall) and
- * the status branch gates its `Date.now()` behind the same kind of counter, so
- * the per-call cost is an increment and a compare — no clock read or emit on
- * the vast majority of calls. Keep the loop a plain `for`; just call `report()`
- * once per item (it owns the counter) — or `report(n)` to report an explicit
- * position.
+ * Emission is gated purely on wall-clock time (`throttleMs`), not a call
+ * counter. Every caller invokes `report()` at the outer loop granularity — once
+ * per feature/record, never per cell — so reading the clock each call is
+ * negligible next to the per-item work, and the time gate alone caps emits at
+ * ~1/throttleMs. An earlier call-count mask (only read the clock every 1024
+ * calls) froze the bar at 0% for any phase with fewer items than the mask but
+ * heavy per-item work — e.g. a multi-sample VCF region with a few hundred sites
+ * but thousands of samples each never reached 1024 `report()` calls, so it only
+ * ever emitted the initial tick. Keep the loop a plain `for`; just call
+ * `report()` once per item (it owns the counter) — or `report(n)` to report an
+ * explicit position.
  *
  * Reuses {@link createStopTokenChecker}, matching the cancellation convention
  * already used across the variant/alignments/gwas RPC paths.
@@ -212,20 +211,10 @@ export function createProgressReporter({
   const checker = stopTokenCheck ?? createStopTokenChecker(stopToken)
   let lastReport = 0
   let count = 0
-  let calls = 0
   return (current = count) => {
     count = current + 1
     checkStopToken2(checker)
-    // Only consult the clock every (EMIT_CHECK_MASK + 1) calls; the bitmask
-    // keeps the common path a single integer compare so this is safe to call
-    // per-iteration in a hot loop without a Date.now() each time. Gate on the
-    // call counter, not `current`, so an explicit `report(n)` with a sparse
-    // running offset (e.g. byte positions) still ticks the clock.
-    if (
-      statusCallback !== undefined &&
-      total !== undefined &&
-      (calls++ & EMIT_CHECK_MASK) === 0
-    ) {
+    if (statusCallback !== undefined && total !== undefined) {
       const now = Date.now()
       if (now - lastReport >= throttleMs) {
         lastReport = now
