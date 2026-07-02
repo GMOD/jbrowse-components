@@ -103,7 +103,6 @@ export interface LinearBasicDisplayModel {
     item: FlatbushItem
     displayedRegionIndex: number
   }) => void
-  setContextMenuFeature: (feature?: Feature) => void
   fetchFullFeature: (
     featureId: string,
     displayedRegionIndex: number,
@@ -289,23 +288,17 @@ const FeatureBody = observer(function FeatureBody({
   const height = model.height
 
   const openContextMenu = useCallback(
-    async (
+    (
       feature: FlatbushItem,
       displayedRegionIndex: number,
       clientX: number,
       clientY: number,
     ) => {
-      // Set contextMenuInfo synchronously so hover guards below can see it
-      // during the async fetch window (before contextMenuCoord is set).
+      // contextMenuInfo (set here) is all the menu needs — it carries
+      // featureId/startBp/endBp/type synchronously, and each item that needs
+      // the full feature re-fetches it on click. Opening the menu immediately
+      // avoids gating the right-click on an RPC round-trip.
       model.showContextMenuForFeature(feature, displayedRegionIndex)
-      const fullFeature = await model.fetchFullFeature(
-        feature.featureId,
-        displayedRegionIndex,
-      )
-      if (!isAlive(model)) {
-        return
-      }
-      model.setContextMenuFeature(fullFeature ?? undefined)
       setContextMenuCoord([clientX, clientY])
     },
     [model],
@@ -414,7 +407,7 @@ const FeatureBody = observer(function FeatureBody({
       e.preventDefault()
       const entry = model.featureItemMap.get(hoveredFeature.featureId)
       if (entry) {
-        void openContextMenu(
+        openContextMenu(
           hoveredFeature,
           entry.vr.displayedRegionIndex,
           e.clientX,

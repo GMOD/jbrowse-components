@@ -207,10 +207,6 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
-        contextMenuFeature: undefined as Feature | undefined,
-        /**
-         * #volatile
-         */
         contextMenuInfo: undefined as
           { item: FlatbushItem; displayedRegionIndex: number } | undefined,
         /**
@@ -323,20 +319,6 @@ export default function baseStateModelFactory(
          */
         get DisplayMessageComponent() {
           return FeatureComponent
-        },
-
-        /**
-         * #getter
-         */
-        get showTooltipsEnabled() {
-          return false
-        },
-
-        /**
-         * #getter
-         */
-        get showLegend() {
-          return false
         },
 
         /**
@@ -1116,21 +1098,11 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        setContextMenuFeature(feature?: Feature) {
-          self.contextMenuFeature = feature
-        },
-
-        /**
-         * #action
-         */
         setContextMenuInfo(info?: {
           item: FlatbushItem
           displayedRegionIndex: number
         }) {
           self.contextMenuInfo = info
-          if (!info) {
-            self.contextMenuFeature = undefined
-          }
         },
       }))
       .actions(self => ({
