@@ -15,11 +15,12 @@ import featureGlyphUniforms;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_RECT_WIDTH_PX = 2.0;
-// Sub-pixel features get widened to MIN_RECT_WIDTH_PX; at that point they'd fuse
-// into one flat block (e.g. a dense variant track collapsing to solid orange).
-// Drawing them semi-transparent lets the standard src-alpha blend accumulate
-// where features overlap, so density reads as opacity/texture instead of a flat
-// fill. Alpha ramps from this floor up to 1 as the real width reaches the clamp.
+// Collapsed features (narrower than MIN_RECT_WIDTH_PX, so they get widened by
+// the clamp and abut their neighbors) fuse into one flat block (e.g. a dense
+// variant track collapsing to solid orange). Drawing only those semi-transparent
+// lets the standard src-alpha blend accumulate where features overlap, so
+// density reads as opacity/texture instead of a flat fill. Non-collapsed
+// features stay fully opaque.
 static const float MIN_DENSITY_ALPHA = 0.5;
 
 struct RectInstance {
@@ -71,7 +72,7 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;
   float heightPx = abs(yBotPx - yTopPx);
 
-  float densityAlpha = clamp(realWidthPx / MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA, 1.0);
+  float densityAlpha = realWidthPx < MIN_RECT_WIDTH_PX ? MIN_DENSITY_ALPHA : 1.0;
 
   VsOut o;
   o.position   = float4(sx, sy, 0.0, 1.0);
