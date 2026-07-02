@@ -1,23 +1,20 @@
+import { pairDirection } from '@jbrowse/alignments-core'
+
 import type { ChainFeatureData, FeatureData } from './webglRpcTypes.ts'
+import type { PairDirection } from '@jbrowse/alignments-core'
 import type { Feature } from '@jbrowse/core/util'
 
+// GPU-uniform encoding of the shared PairDirection categories (0 = unknown).
+const PAIR_DIRECTION_NUM: Record<PairDirection, number> = {
+  LR: 1,
+  RL: 2,
+  RR: 3,
+  LL: 4,
+}
+
 function pairOrientationToNum(pairOrientation: string | undefined) {
-  switch (pairOrientation) {
-    case 'F1R2':
-    case 'F2R1':
-      return 1
-    case 'R1F2':
-    case 'R2F1':
-      return 2
-    case 'F1F2':
-    case 'F2F1':
-      return 4
-    case 'R1R2':
-    case 'R2R1':
-      return 3
-    default:
-      return 0
-  }
+  const dir = pairDirection(pairOrientation)
+  return dir ? PAIR_DIRECTION_NUM[dir] : 0
 }
 
 export function buildBaseFeatureData(feature: Feature): FeatureData {

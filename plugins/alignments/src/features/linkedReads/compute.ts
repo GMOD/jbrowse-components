@@ -1,3 +1,5 @@
+import { splitInversion } from '@jbrowse/alignments-core'
+
 import {
   connectionEndpoints,
   readGroupConnections,
@@ -43,13 +45,10 @@ function pairedColorType(orientNum: number) {
     : LINKED_READ_COLOR_PAIR_UNKNOWN
 }
 
-// Same strand → simple deletion. Opposite strands → inversion. Classifies pair
-// orientation into GPU palette indices; BreakpointSplitView's getOrientationColor
-// makes the equivalent call for MUI theme colors. Kept separate on purpose — the
-// strand signature is shared but the output vocabularies (palette index vs theme
-// color) are medium-specific; keep these two in sync.
+// Co-linear (same strand) → simple deletion; strand-flip → inversion. Maps the
+// shared splitInversion category to this path's GPU palette indices.
 export function splitColorType(s1: number, s2: number) {
-  return s1 === s2
+  return splitInversion(s1, s2) === undefined
     ? LINKED_READ_COLOR_SPLIT_NORMAL
     : LINKED_READ_COLOR_SPLIT_INV
 }

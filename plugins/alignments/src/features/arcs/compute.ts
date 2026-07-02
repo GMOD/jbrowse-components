@@ -2,6 +2,7 @@ import {
   SAM_FLAG_MATE_REVERSE,
   SAM_FLAG_MATE_UNMAPPED,
   SAM_FLAG_PAIRED,
+  splitInversion,
 } from '@jbrowse/alignments-core'
 import {
   featurizeSA,
@@ -93,12 +94,12 @@ const COLOR_PAIR_RL = 6
 const COLOR_UNPAIRED_FR = 4
 const COLOR_UNPAIRED_RF = 7
 
-// Strand signature mirrors BreakpointSplitView's getLongReadOrientation, but
-// emits GPU palette indices rather than theme colors — keep the two in sync.
+// Maps the shared split-inversion category to this path's GPU palette indices.
 function unpairedOrientationColor(p1Strand: number, p2Strand: number) {
-  return p1Strand === -1 && p2Strand === 1
+  const inv = splitInversion(p1Strand, p2Strand)
+  return inv === 'rf'
     ? COLOR_UNPAIRED_RF
-    : p1Strand === 1 && p2Strand === -1
+    : inv === 'fr'
       ? COLOR_UNPAIRED_FR
       : COLOR_DEFAULT
 }

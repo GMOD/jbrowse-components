@@ -44,6 +44,12 @@ export type {
 export { buildReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
 export type { ReadVsRefTemporaryAssembly } from './buildReadVsRefTemporaryAssembly.ts'
 export { getTag } from './getTag.ts'
+export {
+  isAbnormalPairDirection,
+  pairDirection,
+  splitInversion,
+} from './orientation.ts'
+export type { PairDirection, SplitInversion } from './orientation.ts'
 export { InstanceBuilder } from './InstanceBuilder.ts'
 export {
   SAM_FLAG_DUPLICATE,
