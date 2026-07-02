@@ -402,4 +402,69 @@ describe('forEachMismatchNumeric', () => {
       })
     })
   })
+
+  describe('viewport windowing', () => {
+    // A read with mismatches, an insertion, a deletion and a skip spread across
+    // reference offsets. Windowing must emit exactly the events whose reference
+    // position falls in [windowLo, windowHi) — identical to walking the whole
+    // read and filtering afterwards.
+    const cigar = '5M2I5M3D5M4N5M'
+    // ref (lowercase) vs seq: introduce point mismatches at roffset 2 and 22
+    const seq = 'AAGAACCAAAAAAAAAAAGAAA'
+    const ref = 'aaaaaaaaaaaaaaaaaaaaaaaaaaa'
+
+    function walk(windowLo?: number, windowHi?: number) {
+      const out: { type: number; start: number; length: number }[] = []
+      forEachMismatchNumeric(
+        encodeCigar(cigar),
+        encodeSeq(seq),
+        seq.length,
+        undefined,
+        undefined,
+        ref,
+        (type, start, length) => {
+          out.push({ type, start, length })
+        },
+        0,
+        windowLo,
+        windowHi,
+      )
+      return out
+    }
+
+    test('default (no window) walks whole read', () => {
+      const all = walk()
+      // mismatch@2, insertion@5, deletion@10(len3), skip@18(len4), mismatch@21
+      expect(all.map(m => m.type)).toEqual([
+        MISMATCH_TYPE,
+        INSERTION_TYPE,
+        DELETION_TYPE,
+        SKIP_TYPE,
+        MISMATCH_TYPE,
+      ])
+    })
+
+    test('windowed output equals full walk filtered to the window', () => {
+      const all = walk()
+      for (const [lo, hi] of [
+        [0, 5],
+        [3, 12],
+        [10, 20],
+        [21, 30],
+        [6, 6],
+      ] as const) {
+        const windowed = walk(lo, hi)
+        // ranged ops (D/N) overlap the window; point ops fall inside it
+        const expected = all.filter(m =>
+          m.length > 1 ? m.start < hi && m.start + m.length > lo : m.start >= lo && m.start < hi,
+        )
+        expect(windowed).toEqual(expected)
+      }
+    })
+
+    test('window fully left/right of all events emits nothing', () => {
+      expect(walk(-100, -50)).toEqual([])
+      expect(walk(1000, 2000)).toEqual([])
+    })
+  })
 })

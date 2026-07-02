@@ -117,6 +117,9 @@ export function extractFeatureArrays<T extends FeatureData>(
     // Synteny features (LGVSyntenyDisplay reuses this path) have no such method,
     // so skip them — otherwise the call throws and fails the whole RPC.
     if (isMismatch) {
+      // Clip CIGAR extraction to the visible region. For reads far larger than
+      // the viewport (whole-chromosome assembly contigs) this skips walking the
+      // off-screen bulk of the CIGAR entirely.
       extractCigarFeatures(
         feature,
         readIndex,
@@ -124,6 +127,8 @@ export function extractFeatureArrays<T extends FeatureData>(
         strand,
         cigarOutput,
         showSoftClipping,
+        region.start,
+        region.end,
       )
     }
 

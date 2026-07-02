@@ -1082,6 +1082,85 @@
     },
     {
       "type": "AlignmentsTrack",
+      "trackId": "hg002_dipcall_hap1_t2t",
+      "name": "HG002 dipcall hap1 (T2T-Q100 assembly vs GRCh38)",
+      "description": "Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
+      "assemblyNames": ["hg38"],
+      "category": ["Assembly alignments"],
+      "adapter": {
+        "type": "BamAdapter",
+        "fetchSizeLimit": 300000000,
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap1.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "hg002_dipcall_hap1_t2t-LinearAlignmentsDisplay",
+          "showCoverage": false
+        }
+      ]
+    },
+    {
+      "type": "AlignmentsTrack",
+      "trackId": "hg002_dipcall_hap2_t2t",
+      "name": "HG002 dipcall hap2 (T2T-Q100 assembly vs GRCh38)",
+      "description": "Whole de novo assembly contigs aligned to GRCh38; single BAM records span entire chromosomes. Source: GIAB AshkenazimTrio dipcall_output",
+      "assemblyNames": ["hg38"],
+      "category": ["Assembly alignments"],
+      "adapter": {
+        "type": "BamAdapter",
+        "fetchSizeLimit": 300000000,
+        "bamLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap2.bam",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.hap2.bam.bai",
+            "locationType": "UriLocation"
+          }
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearAlignmentsDisplay",
+          "displayId": "hg002_dipcall_hap2_t2t-LinearAlignmentsDisplay",
+          "showCoverage": false
+        }
+      ]
+    },
+    {
+      "type": "VariantTrack",
+      "trackId": "hg002_dipcall_dip_vcf_t2t",
+      "name": "HG002 dipcall variant calls (T2T-Q100 assembly vs GRCh38)",
+      "description": "Diploid small + structural variant calls derived from the hap1/hap2 assembly-to-GRCh38 alignments. Source: GIAB AshkenazimTrio dipcall_output",
+      "assemblyNames": ["hg38"],
+      "category": ["Assembly alignments"],
+      "adapter": {
+        "type": "VcfTabixAdapter",
+        "vcfGzLocation": {
+          "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.dip.vcf.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/release/AshkenazimTrio/HG002_NA24385_son/v5.0q/dipcall_output/GRCh38_HG2-T2TQ100-V1.1_dipcall-z2k.dip.vcf.gz.tbi",
+            "locationType": "UriLocation"
+          }
+        }
+      }
+    },
+    {
+      "type": "AlignmentsTrack",
       "trackId": "amplicon_alignments",
       "name": "Amplicon alignments (chr3:178,916,000-178,918,000)",
       "description": "Source https://github.com/umich-brcf-bioinf/Connor/tree/master/examples",

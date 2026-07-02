@@ -228,7 +228,14 @@ export default class CramSlightlyLazyFeature implements Feature {
     return collectMismatches(this)
   }
 
-  forEachMismatch(callback: MismatchCallback) {
+  // windowStart/windowEnd (genomic) clip emissions to the viewport, matching
+  // BamSlightlyLazyFeature. refPos below is already read-relative, so the window
+  // is converted to that space once.
+  forEachMismatch(
+    callback: MismatchCallback,
+    windowStart?: number,
+    windowEnd?: number,
+  ) {
     const readFeatures = this.record.readFeatures
     if (!readFeatures) {
       return
@@ -238,6 +245,12 @@ export default class CramSlightlyLazyFeature implements Feature {
     const qual = this.qualRaw
     const hasQual = !!qual
     const len = readFeatures.length
+    const wLo =
+      windowStart === undefined
+        ? Number.NEGATIVE_INFINITY
+        : windowStart - featStart
+    const wHi =
+      windowEnd === undefined ? Number.POSITIVE_INFINITY : windowEnd - featStart
 
     let refPos = 0
     let lastPos = featStart
@@ -251,44 +264,59 @@ export default class CramSlightlyLazyFeature implements Feature {
 
       // Flush accumulated single-base insertions
       if (sublen && insertedBasesLen > 0) {
-        callback(
-          INSERTION_TYPE,
-          refPos,
-          0,
-          insertedBases,
-          -1,
-          0,
-          insertedBasesLen,
-        )
+        if (refPos >= wLo && refPos < wHi) {
+          callback(
+            INSERTION_TYPE,
+            refPos,
+            0,
+            insertedBases,
+            -1,
+            0,
+            insertedBasesLen,
+          )
+        }
         insertedBases = ''
         insertedBasesLen = 0
       }
       refPos = rf.refPos - 1 - featStart
 
       const { code } = rf
+      const inWindow = refPos < wHi && refPos + 1 > wLo
 
       if (code === 'X') {
-        const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
-        callback(
-          MISMATCH_TYPE,
-          refPos,
-          1,
-          rf.sub ?? 'N',
-          hasQual ? qual[rf.pos - 1]! : -1,
-          refCharCode,
-          0,
-        )
+        if (inWindow) {
+          const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
+          callback(
+            MISMATCH_TYPE,
+            refPos,
+            1,
+            rf.sub ?? 'N',
+            hasQual ? qual[rf.pos - 1]! : -1,
+            refCharCode,
+            0,
+          )
+        }
       } else if (code === 'I') {
-        callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
+        if (inWindow) {
+          callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
+        }
       } else if (code === 'N') {
-        callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
+        if (refPos < wHi && refPos + rf.data > wLo) {
+          callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
+        }
       } else if (code === 'S') {
-        const dataLen = rf.data.length
-        callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+        if (inWindow) {
+          const dataLen = rf.data.length
+          callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
+        }
       } else if (code === 'H') {
-        callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
+        if (inWindow) {
+          callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
+        }
       } else if (code === 'D') {
-        callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
+        if (refPos < wHi && refPos + rf.data > wLo) {
+          callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
+        }
       } else if (code === 'i') {
         insertedBases += rf.data
         insertedBasesLen++
@@ -296,7 +324,7 @@ export default class CramSlightlyLazyFeature implements Feature {
     }
 
     // Flush any remaining accumulated insertions
-    if (insertedBasesLen > 0) {
+    if (insertedBasesLen > 0 && refPos >= wLo && refPos < wHi) {
       callback(
         INSERTION_TYPE,
         refPos,

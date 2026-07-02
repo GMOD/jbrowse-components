@@ -25,7 +25,11 @@ import type { Feature } from '@jbrowse/core/util'
 // Alignment features (BAM/CRAM) expose a zero-alloc mismatch iterator on top of
 // the base Feature interface.
 export interface MismatchFeature extends Feature {
-  forEachMismatch: (callback: MismatchCallback) => void
+  forEachMismatch: (
+    callback: MismatchCallback,
+    windowStart?: number,
+    windowEnd?: number,
+  ) => void
 }
 
 // Only BAM/CRAM features carry per-base mismatch/CIGAR detail. Other features
@@ -60,6 +64,8 @@ export function extractCigarFeatures(
   strand: number,
   output: CigarEmitOutput,
   showSoftClipping: boolean,
+  windowStart?: number,
+  windowEnd?: number,
 ) {
   feature.forEachMismatch(
     (type, start, length, base, qual, altbase, cliplen) => {
@@ -117,5 +123,7 @@ export function extractCigarFeatures(
         emitHardclip(start, cliplen!, readIndex, featureStart, output.hardclips)
       }
     },
+    windowStart,
+    windowEnd,
   )
 }

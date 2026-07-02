@@ -36,7 +36,14 @@ export default class BamSlightlyLazyFeature
     return collectMismatches(this)
   }
 
-  forEachMismatch(callback: MismatchCallback) {
+  // windowStart/windowEnd are genomic reference coords of the viewport; the
+  // walk skips CIGAR ops outside them so a chromosome-spanning contig only
+  // processes its visible slice. Converted to read-relative roffset here.
+  forEachMismatch(
+    callback: MismatchCallback,
+    windowStart?: number,
+    windowEnd?: number,
+  ) {
     forEachMismatchNumeric(
       this.NUMERIC_CIGAR,
       this.NUMERIC_SEQ,
@@ -46,6 +53,8 @@ export default class BamSlightlyLazyFeature
       this.ref,
       callback,
       this.refOffset,
+      windowStart === undefined ? undefined : windowStart - this.start,
+      windowEnd === undefined ? undefined : windowEnd - this.start,
     )
   }
 

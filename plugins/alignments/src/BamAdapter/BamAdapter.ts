@@ -157,8 +157,18 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
 
       const { readName, tagFilter } = filterBy ?? {}
       // only reads lacking an MD tag need the reference; defer loading the
-      // sequence adapter (and the fetch) until we know at least one does
-      const span = seqFetchSpan(records)
+      // sequence adapter (and the fetch) until we know at least one does.
+      // Clip to the viewport: a whole-chromosome assembly contig spans the
+      // entire ref, but only the visible slice is ever compared (the mismatch
+      // walk is windowed to [region.start, region.end]), so fetching the whole
+      // chromosome sequence per pan is pure waste.
+      const recordSpan = seqFetchSpan(records)
+      const span = recordSpan
+        ? {
+            start: Math.max(recordSpan.start, start),
+            end: Math.min(recordSpan.end, end),
+          }
+        : null
       const sequenceAdapter = span ? await this.getSequenceAdapter() : undefined
       const regionSeq =
         sequenceAdapter && span
