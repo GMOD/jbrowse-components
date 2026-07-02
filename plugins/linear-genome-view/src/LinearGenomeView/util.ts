@@ -1,6 +1,7 @@
 import {
   UnknownRefNameError,
   assembleLocString,
+  measureText,
   parseLocString,
 } from '@jbrowse/core/util'
 import { chooseGridPitch } from '@jbrowse/core/util/chooseGridPitch'
@@ -42,10 +43,10 @@ export function expandRegion(
 export function makeOverviewTicks(
   start: number,
   end: number,
-  overviewScale: number,
+  bpPerPx: number,
   reversed = false,
 ) {
-  const { majorPitch } = chooseGridPitch(overviewScale, 120, 15)
+  const { majorPitch } = chooseGridPitch(bpPerPx, 120, 15)
   const firstTick = reversed
     ? Math.floor((end - 1) / majorPitch) * majorPitch
     : Math.ceil((start + 1) / majorPitch) * majorPitch
@@ -57,8 +58,8 @@ export function makeOverviewTicks(
       ? firstTick - i * majorPitch
       : firstTick + i * majorPitch
     const offsetPx = reversed
-      ? (end - genomicCoord) / overviewScale
-      : (genomicCoord - start) / overviewScale
+      ? (end - genomicCoord) / bpPerPx
+      : (genomicCoord - start) / bpPerPx
     return { genomicCoord, offsetPx }
   })
 }
@@ -85,7 +86,6 @@ export function makeTicks(
   maxBase += Math.abs(20 * bpPerPx) + 1
 
   const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
-  let index = 0
   const ticks = []
   for (
     let base = Math.floor(minBase / iterPitch) * iterPitch;
@@ -93,11 +93,9 @@ export function makeTicks(
     base += iterPitch
   ) {
     if (emitMinor && base % (gridPitch.majorPitch * 2)) {
-      ticks.push({ type: 'minor', base: base - 1, index })
-      index++
+      ticks.push({ type: 'minor', base: base - 1 })
     } else if (emitMajor && !(base % (gridPitch.majorPitch * 2))) {
-      ticks.push({ type: 'major', base: base - 1, index })
-      index++
+      ticks.push({ type: 'major', base: base - 1 })
     }
   }
   return ticks
@@ -141,6 +139,15 @@ export function labelFitsInBlock(
   widthPx: number,
 ) {
   return leftPx >= 0 && leftPx + labelWidth <= widthPx
+}
+
+/**
+ * On-screen width of a coordinate tick label: the 11px text plus 2px of
+ * horizontal padding on each side. Single-sourced so the HTML scalebar and the
+ * SVG export agree on when a label is too wide to fit inside its block.
+ */
+export function tickLabelWidth(label: string) {
+  return measureText(label, 11) + 4
 }
 
 /**

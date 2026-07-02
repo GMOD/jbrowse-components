@@ -32,8 +32,9 @@ const OverviewScalebarTickLabels = observer(
   }) {
     const { classes } = useStyles()
     const { start, end, reversed } = block
-    const { overviewScale, overviewLayout } = model
-    const ticks = makeOverviewTicks(start, end, overviewScale, reversed)
+    const { overviewLayout } = model
+    const { bpPerPx } = overviewLayout
+    const ticks = makeOverviewTicks(start, end, bpPerPx, reversed)
     return ticks.map(({ genomicCoord, offsetPx }) => (
       <Typography
         key={genomicCoord}
@@ -44,7 +45,7 @@ const OverviewScalebarTickLabels = observer(
           color: refNameColor,
         }}
       >
-        {getTickDisplayStr(genomicCoord, overviewLayout.bpPerPx)}
+        {getTickDisplayStr(genomicCoord, bpPerPx)}
       </Typography>
     ))
   },

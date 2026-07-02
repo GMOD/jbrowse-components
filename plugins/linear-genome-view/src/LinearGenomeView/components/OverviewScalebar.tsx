@@ -108,7 +108,7 @@ const OverviewBox = observer(function OverviewBox({
   const assembly = assemblyManager.get(assemblyName)
   const refNameColor = assembly?.getRefNameColor(refName)
 
-  const cytobands = showCytobands ? getCytobands(assembly, block.refName) : []
+  const cytobands = showCytobands ? getCytobands(assembly, refName) : []
   const canDisplayCytobands = cytobands.length > 0
 
   if (canDisplayCytobands) {
@@ -278,7 +278,11 @@ const OverviewScalebar = observer(function OverviewScalebar({
       />
       <div className={classes.overview}>
         <svg height={HEADER_BAR_HEIGHT} className={classes.overviewSvg}>
-          <OverviewScalebarPolygon model={model} overview={overview} />
+          <OverviewScalebarPolygon
+            model={model}
+            overview={overview}
+            overviewOffsetPx={model.cytobandOffset}
+          />
         </svg>
         {children}
       </div>

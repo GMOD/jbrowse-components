@@ -1,7 +1,12 @@
-import { getTickDisplayStr, measureText, stripAlpha } from '@jbrowse/core/util'
+import { getTickDisplayStr, stripAlpha } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 
-import { labelFitsInBlock, makeBlockTicks, showRefNameLabels } from '../util.ts'
+import {
+  labelFitsInBlock,
+  makeBlockTicks,
+  showRefNameLabels,
+  tickLabelWidth,
+} from '../util.ts'
 import BlockClipGroup from './BlockClipGroup.tsx'
 import SVGRegionSeparators from './SVGRegionSeparators.tsx'
 
@@ -49,7 +54,7 @@ function Ruler({
             .filter(({ type }) => type === 'major')
             .map(({ base, x }) => {
               const label = getTickDisplayStr(base + 1, bpPerPx)
-              const labelWidth = measureText(label, 11) + 4
+              const labelWidth = tickLabelWidth(label)
               return labelFitsInBlock(x - 3, labelWidth, widthPx) ? (
                 <text
                   key={`label-${base}`}

@@ -1,9 +1,9 @@
-import { getTickDisplayStr, measureText } from '@jbrowse/core/util'
+import { getTickDisplayStr } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
 import { elidedBlockStyles } from './util.ts'
-import { labelFitsInBlock, makeBlockTicks } from '../util.ts'
+import { labelFitsInBlock, makeBlockTicks, tickLabelWidth } from '../util.ts'
 
 import type { LinearGenomeViewModel } from '../index.ts'
 import type { BaseBlock, ContentBlock } from '@jbrowse/core/util/blockTypes'
@@ -66,10 +66,9 @@ const ContentBlockTicks = observer(function ContentBlockTicks({
       so reusing nodes by base keeps their text stable (no repaint) during zoom */}
       {ticks.map(({ base, x }) => {
         const label = getTickDisplayStr(base + 1, bpPerPx)
-        // label is centered on the tick (+4 for the tickLabel padding); skip it
-        // when it would be partially clipped by the block edge (common with
-        // small collapsed-intron regions)
-        const labelWidth = measureText(label, 11) + 4
+        // label is centered on the tick; skip it when it would be partially
+        // clipped by the block edge (common with small collapsed-intron regions)
+        const labelWidth = tickLabelWidth(label)
         return labelFitsInBlock(x - labelWidth / 2, labelWidth, widthPx) ? (
           <div
             key={base}
