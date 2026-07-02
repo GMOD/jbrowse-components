@@ -1561,13 +1561,6 @@ export function stateModelFactory(pluginManager: PluginManager) {
           minimumBlockWidth: self.minimumBlockWidth,
         })
       },
-      /**
-       * #getter
-       * bp-per-px scale used by overview tick labels
-       */
-      get overviewScale() {
-        return self.totalBp / (self.width - self.cytobandOffset)
-      },
     }))
     .views(self => {
       let currentlyCalculatedStaticBlocks: BlockSet | undefined
