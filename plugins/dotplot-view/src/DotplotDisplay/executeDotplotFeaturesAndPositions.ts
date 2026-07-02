@@ -84,27 +84,30 @@ export async function executeDotplotFeaturesAndPositions({
   const hIndex = buildBpRegionIndex(hViewSnap)
   const vIndex = buildBpRegionIndex(vViewSnap)
 
-  // Two-pass strategy avoids over-allocation: first pass walks features and
-  // gathers valid (refName-resolved + position-mappable) ones into a working
-  // list; second pass writes into tightly-sized typed arrays. Keeps the result
-  // free of trailing dead slots and means we never need .subarray().
-  interface ValidFeature {
-    p11Cum: number
-    p12Cum: number
-    p21Cum: number
-    p22Cum: number
-    strand: number
-    start: number
-    end: number
-    identity: number
-    meanScore: number
-    meanIdentity: number
-    mappingQual: number
-    refName: string
-    mateRefName: string
-    cigar: number[]
-  }
-  const valid: ValidFeature[] = []
+  // Single pass into over-allocated typed arrays (upper-bounded by the deduped
+  // feature count), then subarray(0, n) to the valid count. Skipped features
+  // (unmapped refName or unmappable position) leave no dead slots because the
+  // write cursor only advances on a valid feature. The subarray'd buffers are
+  // transferred whole — a zero-copy ownership move, so the trailing slack costs
+  // nothing at the RPC boundary. refNames/mateRefNames/parsedCigars are pushed
+  // (structured-cloned, not transferred) so they stay exactly n long.
+  const count = features.length
+  const p11 = new Float64Array(count)
+  const p12 = new Float64Array(count)
+  const p21 = new Float64Array(count)
+  const p22 = new Float64Array(count)
+  const strands = new Int8Array(count)
+  const starts = new Uint32Array(count)
+  const ends = new Uint32Array(count)
+  const identities = new Float32Array(count)
+  const meanScores = new Float32Array(count)
+  const meanIdentities = new Float32Array(count)
+  const mappingQuals = new Float32Array(count)
+  const refNames: string[] = []
+  const mateRefNames: string[] = []
+  const parsedCigars: number[][] = []
+
+  let n = 0
   let skippedFeatureCount = 0
   for (const f of features) {
     const mate = f.get('mate') as FeatureMate
@@ -124,73 +127,54 @@ export async function executeDotplotFeaturesAndPositions({
     const f1s = strand === -1 ? end : start
     const f1e = strand === -1 ? start : end
 
-    const p11 = bpToCumBp(hIndex, refName, f1s)
-    const p12 = bpToCumBp(hIndex, refName, f1e)
-    const p21 = bpToCumBp(vIndex, mateRefName, mate.start)
-    const p22 = bpToCumBp(vIndex, mateRefName, mate.end)
+    const c11 = bpToCumBp(hIndex, refName, f1s)
+    const c12 = bpToCumBp(hIndex, refName, f1e)
+    const c21 = bpToCumBp(vIndex, mateRefName, mate.start)
+    const c22 = bpToCumBp(vIndex, mateRefName, mate.end)
     if (
-      p11 === undefined ||
-      p12 === undefined ||
-      p21 === undefined ||
-      p22 === undefined
+      c11 === undefined ||
+      c12 === undefined ||
+      c21 === undefined ||
+      c22 === undefined
     ) {
       skippedFeatureCount++
       continue
     }
 
-    valid.push({
-      p11Cum: p11,
-      p12Cum: p12,
-      p21Cum: p21,
-      p22Cum: p22,
-      strand,
-      start,
-      end,
-      identity: (f.get('identity') as number | undefined) ?? -1,
-      meanScore: (f.get('meanScore') as number | undefined) ?? -1,
-      meanIdentity: (f.get('meanIdentity') as number | undefined) ?? -1,
-      mappingQual: (f.get('mappingQual') as number | undefined) ?? -1,
-      refName,
-      mateRefName,
-      cigar: parseCigar2((f.get('CIGAR') as string | undefined) ?? ''),
-    })
+    p11[n] = c11
+    p12[n] = c12
+    p21[n] = c21
+    p22[n] = c22
+    strands[n] = strand
+    starts[n] = start
+    ends[n] = end
+    identities[n] = (f.get('identity') as number | undefined) ?? -1
+    meanScores[n] = (f.get('meanScore') as number | undefined) ?? -1
+    meanIdentities[n] = (f.get('meanIdentity') as number | undefined) ?? -1
+    mappingQuals[n] = (f.get('mappingQual') as number | undefined) ?? -1
+    refNames.push(refName)
+    mateRefNames.push(mateRefName)
+    parsedCigars.push(parseCigar2((f.get('CIGAR') as string | undefined) ?? ''))
+    n++
   }
 
-  const n = valid.length
   const result: DotplotFeaturesAndPositionsResult = {
-    p11: new Float64Array(n),
-    p12: new Float64Array(n),
-    p21: new Float64Array(n),
-    p22: new Float64Array(n),
-    strands: new Int8Array(n),
-    starts: new Uint32Array(n),
-    ends: new Uint32Array(n),
-    identities: new Float32Array(n),
-    meanScores: new Float32Array(n),
-    meanIdentities: new Float32Array(n),
-    mappingQuals: new Float32Array(n),
-    refNames: new Array<string>(n),
-    mateRefNames: new Array<string>(n),
-    parsedCigars: new Array<number[]>(n),
-    totalFeatureCount: features.length,
+    p11: p11.subarray(0, n),
+    p12: p12.subarray(0, n),
+    p21: p21.subarray(0, n),
+    p22: p22.subarray(0, n),
+    strands: strands.subarray(0, n),
+    starts: starts.subarray(0, n),
+    ends: ends.subarray(0, n),
+    identities: identities.subarray(0, n),
+    meanScores: meanScores.subarray(0, n),
+    meanIdentities: meanIdentities.subarray(0, n),
+    mappingQuals: mappingQuals.subarray(0, n),
+    refNames,
+    mateRefNames,
+    parsedCigars,
+    totalFeatureCount: count,
     skippedFeatureCount,
-  }
-  for (let i = 0; i < n; i++) {
-    const v = valid[i]!
-    result.p11[i] = v.p11Cum
-    result.p12[i] = v.p12Cum
-    result.p21[i] = v.p21Cum
-    result.p22[i] = v.p22Cum
-    result.strands[i] = v.strand
-    result.starts[i] = v.start
-    result.ends[i] = v.end
-    result.identities[i] = v.identity
-    result.meanScores[i] = v.meanScore
-    result.meanIdentities[i] = v.meanIdentity
-    result.mappingQuals[i] = v.mappingQual
-    result.refNames[i] = v.refName
-    result.mateRefNames[i] = v.mateRefName
-    result.parsedCigars[i] = v.cigar
   }
 
   return rpcResult(result, [
