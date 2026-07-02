@@ -95,7 +95,10 @@ const suite: TestSuite = {
         await waitForDataLoaded(page)
         // an overflowing display renders the draggable VerticalScrollbar overlay
         await findByTestId(page, 'vertical-scrollbar')
-        await assertVirtualScrollStructure(page, '[data-testid="variant_canvas"]')
+        await assertVirtualScrollStructure(
+          page,
+          '[data-testid="variant_canvas"]',
+        )
       },
     },
   ],

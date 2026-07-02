@@ -395,7 +395,6 @@ export async function assertVirtualScrollStructure(
       hasCanvas: !!canvas,
       hasOuter: !!outer,
       outerOverflowY: outer ? css(outer, 'overflow-y') : null,
-      outerOverflows: outer ? outer.scrollHeight > outer.clientHeight : null,
       canvasPosition: canvas ? css(canvas, 'position') : null,
       nativeScroller,
     }
@@ -406,14 +405,14 @@ export async function assertVirtualScrollStructure(
       `missing canvas (${canvasSelector}) or trackRenderingContainer`,
     )
   }
+  // The outer container must clip (overflow hidden) rather than be a scroll
+  // port — that's what prevents a spurious second scrollbar. (Not asserting
+  // scrollHeight===clientHeight: absolutely-positioned chrome like the
+  // expand-indicator can extend a few px past a very short track and get
+  // harmlessly clipped here; with overflow hidden no scrollbar renders anyway.)
   if (checks.outerOverflowY !== 'hidden') {
     throw new Error(
       `outer TrackRenderingContainer overflow-y expected 'hidden', got '${checks.outerOverflowY}'`,
-    )
-  }
-  if (checks.outerOverflows) {
-    throw new Error(
-      'outer TrackRenderingContainer is overflowing — spurious native scrollbar',
     )
   }
   if (checks.canvasPosition !== 'absolute') {
