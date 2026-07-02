@@ -186,6 +186,14 @@ export interface TrackConfigChange {
 // display (diffValue re-stamps displayId, and a display present only in the delta
 // carries type/displayId whole). None reflect a setting the user changed, so they
 // are skipped when listing changes — a display stub with only these emits nothing.
+//
+// CAVEAT: this skip is by key name at EVERY nesting depth, not just on displays.
+// So a `type` change on a nested config (e.g. swapping `adapter.type` or a
+// renderer type) is intentionally omitted from the change list too. That's an
+// accepted tradeoff — such edits are rare and structural, and suppressing the
+// noisy display stubs (the actual bug this fixes) is worth it. If a nested-type
+// edit ever needs to surface, scope the skip to display-array elements instead
+// of matching the bare key name here.
 const IDENTITY_KEYS = new Set(['trackId', 'displayId', 'type'])
 
 function walkDelta(
