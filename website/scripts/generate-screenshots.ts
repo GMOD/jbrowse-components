@@ -172,7 +172,9 @@ const DEFAULT_SETTLE_MS = 2500
 async function assertViewsRendered(page: Page, name: string) {
   const emptyViews = await page.evaluate(() =>
     Array.from(
-      document.querySelectorAll<HTMLElement>('[data-testid^="view-container-"]'),
+      document.querySelectorAll<HTMLElement>(
+        '[data-testid^="view-container-"]',
+      ),
     )
       .filter(c => {
         const body = c.lastElementChild

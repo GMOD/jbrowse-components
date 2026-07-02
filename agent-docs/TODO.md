@@ -56,47 +56,6 @@ You've hit your session limit · resets 12:10am (America/Los_Angeles)
 
 ## avoid showing percentages if it gets stalled or just instantly...should be loading for at least like 500ms or something
 
-## zoom to variant in linear genome view should add grow 0.2
-
-## ylayout labels
-
-I am observing that in plugins/variants with a plain linearvariantdisplay (which uses plugins/canvas basic display) that the variants can get separated from their labels, see screenshot: [Image #1] please investigate. you can add debug logging or debug 'visualizations' if you want
-[Image #1]
-
-I'll investigate this. Let me look at the variants display and the canvas basic display code.
-
- Listed 2 directories, ran 1 shell command
-
-The labels (hash IDs) at top are separated from the variant rects below. Let me examine the label positioning logic.
-
- Read 1 file
-
-Labels are placed at featureBottomPx = topY + featureHeight. Let me see how variants produce topY/featureHeight and how the GPU rects get positioned — the mismatch suggests these diverge for variants.
-
- Searched for 1 pattern, read 2 files, ran 1 shell command
-
-The main thread does layout (yMorph). Rects get repositioned but labels may use stale topY. Let me look.
-
- Read 1 file
-
-Let me look at the LinearVariantDisplay model to see how it renders vs. the basic display.
-
- Read 2 files
-Loaded plugins/variants/src/CLAUDE.md
-
-Both rects and labels get the same layout offset. Let me check how the DOM overlay applies label Y (scrollTop etc).
-
- Read 1 file
-
-Both labels and rects share the overlay coordinate space. Let me find where the worker builds topfeatureHeight, and label relativeY.
- Per-feature, box and label share th layout offset — so a constantvertical offset between all boxes and all labels points to the container/canvas positioning, not per-feature math. Let me look at th GPU canvas and the label overlay.
- The canvas is position: sticky and offset, while labels live in thescrolled content div. A constant offset between the two layers points at scrollTop/maxY/canvas-height. Let m
-Loaded packages/core/CLAUDE.md
-Let me look at how the GPU renderer applies scrollY and canvas height.
-The per-feature layout is provably consistent (same layoutMap key & offset for rect and label). So the constant offset is a global scr the GPU canvas (paints with scrollY = model.scrollTop) and the label overlay (lives in the DOM-scrolled content div). Let me check what data the GPU upload uses and how scight changes.
- Read 1 file
- With S=0 and matching heights, the y consistent — yet the screenshotshows a ~200px constant gap. That means the box's rect-Y base and the label's topY base actually differ. Let me check pushBoxRect — on-zero vertical offset that thelabel's topY: 0 doesn't.
-A constant vertical offset between boxes and labels can only come from the shader's single additive Y term: yTopPx = inst.y - u.scrollYabels means the GPU used a smaller scrollY than the DOM container actually scrolled. Let me check setScrollTop and its clamping.
 
 
 ## sort icons

@@ -597,14 +597,6 @@ cytobandOffset so it stays cached by MobX
 type overviewLayout = ViewLayout
 ```
 
-#### getter: overviewScale
-
-bp-per-px scale used by overview tick labels
-
-```ts
-type overviewScale = number
-```
-
 #### getter: staticBlocks
 
 static blocks are an important concept jbrowse uses to avoid re-rendering when
