@@ -38,6 +38,12 @@ export default defineConfig({
   base: BASE,
   publicDir: './static',
   trailingSlash: 'always',
+  // Astro's default HTML minifier strips whitespace-only text nodes between
+  // elements, so `<strong>a</strong>\n<strong>b</strong>` renders as "ab" and
+  // authoring needs ugly {' '} spacers. Turning it off keeps normal HTML
+  // whitespace (the browser collapses runs to one space); the size cost is
+  // negligible for a static docs site.
+  compressHTML: false,
   integrations: [react(), icon(), fixAbsoluteLinks()],
   markdown: {
     processor: unified({
