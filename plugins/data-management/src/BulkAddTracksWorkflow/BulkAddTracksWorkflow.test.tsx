@@ -42,7 +42,7 @@ function pasteUrls(
 test('pairs a data file with its index and offers to add one track', () => {
   const { model } = getSession()
   const { getByLabelText, getByRole, getByText } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'https://x.com/a.bam\nhttps://x.com/a.bam.bai')
 
@@ -54,7 +54,7 @@ test('pairs a data file with its index and offers to add one track', () => {
 test('a URL pasted multiple times collapses to a single row', () => {
   const { model } = getSession()
   const { getByLabelText, getByRole } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(
     getByLabelText,
@@ -67,7 +67,7 @@ test('a URL pasted multiple times collapses to a single row', () => {
 test('an orphan index with no data file is reported once, not double-counted', () => {
   const { model } = getSession()
   const { getByLabelText, getByText, getByRole } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   // the same orphan index pasted twice must still report a single orphan
   pasteUrls(getByLabelText, 'https://x.com/o.tbi\nhttps://x.com/o.tbi')
@@ -81,7 +81,7 @@ test('an orphan index with no data file is reported once, not double-counted', (
 test('removing a row drops it from the addable set', () => {
   const { model } = getSession()
   const { getByLabelText, getByRole, getAllByLabelText } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'https://x.com/a.bam\nhttps://x.com/b.bam')
   expect(getByRole('button', { name: 'Add 2 tracks' })).toBeTruthy()
@@ -93,7 +93,7 @@ test('removing a row drops it from the addable set', () => {
 test('an unrecognized file type is flagged and not added', () => {
   const { model } = getSession()
   const { getByLabelText, getByText, getByRole } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'https://x.com/mystery.qqq')
 
@@ -104,7 +104,7 @@ test('an unrecognized file type is flagged and not added', () => {
 test('warns about ftp urls that JBrowse cannot access', () => {
   const { model } = getSession()
   const { getByLabelText, getByText } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'ftp://x.com/a.bam')
 
@@ -115,7 +115,7 @@ test('submitting adds the tracks to the session', () => {
   const { session, model } = getSession()
   const before = session.sessionTracks.length
   const { getByLabelText, getByRole } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'https://x.com/a.bam\nhttps://x.com/a.bam.bai')
 
@@ -145,7 +145,7 @@ test('notifies when submitted tracks are for an assembly not open in the view', 
 
   const notifySpy = jest.spyOn(session, 'notify')
   const { getByLabelText, getByRole } = render(
-    <BulkAddTracksWorkflow model={model} />,
+    <BulkAddTracksWorkflow model={model} switchWorkflow={() => {}} />,
   )
   pasteUrls(getByLabelText, 'https://x.com/a.bam')
   fireEvent.click(getByRole('button', { name: 'Add 1 track' }))

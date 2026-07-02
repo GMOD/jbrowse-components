@@ -3,7 +3,7 @@ import { useState } from 'react'
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper, Typography } from '@mui/material'
+import { Link, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import LocationInput from './LocationInput.tsx'
@@ -13,6 +13,7 @@ import TrackPreviewTable from './TrackPreviewTable.tsx'
 import { locationId } from './pairLocations.ts'
 import { summarizeBulkInput } from './preview.ts'
 import { useBulkLocations } from './useBulkLocations.ts'
+import { DEFAULT_WORKFLOW } from '../AddTrackWidget/workflowNames.ts'
 
 import type { AddTrackModel } from '../AddTrackWidget/model.ts'
 
@@ -28,8 +29,10 @@ const useStyles = makeStyles()(theme => ({
 
 const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
   model,
+  switchWorkflow,
 }: {
   model: AddTrackModel
+  switchWorkflow: (name: string) => void
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
@@ -62,7 +65,16 @@ const BulkAddTracksWorkflow = observer(function BulkAddTracksWorkflow({
       <Typography variant="body2" color="textSecondary">
         Paste a list of file URLs or drop a set of local files. Track types are
         auto-detected and index files (e.g. .bai, .tbi) are paired with their
-        data file automatically.
+        data file automatically.{' '}
+        <Link
+          component="button"
+          variant="body2"
+          onClick={() => {
+            switchWorkflow(DEFAULT_WORKFLOW)
+          }}
+        >
+          Add a single track instead
+        </Link>
       </Typography>
 
       <LocationInput input={input} />
