@@ -171,6 +171,8 @@ function inflateSubfeatures(
 export default class SimpleFeature implements Feature {
   private data: Record<string, unknown>
 
+  private subfeatures?: Feature[]
+
   private parentHandle?: Feature
 
   private uniqueId: string
@@ -203,16 +205,14 @@ export default class SimpleFeature implements Feature {
 
     validateFeatureData(this.data)
 
-    // store inflated subfeatures back into data so get/children read one
-    // source of truth
-    if (this.data.subfeatures) {
-      this.data.subfeatures = inflateSubfeatures(
-        this.data.subfeatures,
-        this,
-        this.uniqueId,
-        this.data.strand,
-      )
-    }
+    // keep inflated subfeatures in a separate field so the caller's input data
+    // is never mutated (features are effectively immutable)
+    this.subfeatures = inflateSubfeatures(
+      this.data.subfeatures,
+      this,
+      this.uniqueId,
+      this.data.strand,
+    )
   }
 
   /**
@@ -228,7 +228,11 @@ export default class SimpleFeature implements Feature {
   get(name: 'subfeatures'): Feature[] | undefined
   get(name: string): unknown
   public get(name: string): unknown {
-    return name === 'parent' ? this.parent() : this.data[name]
+    return name === 'subfeatures'
+      ? this.subfeatures
+      : name === 'parent'
+        ? this.parent()
+        : this.data[name]
   }
 
   /**
@@ -256,7 +260,7 @@ export default class SimpleFeature implements Feature {
    * Get an array of child features, or undefined if none.
    */
   public children(): Feature[] | undefined {
-    return this.get('subfeatures')
+    return this.subfeatures
   }
 
   public toJSON(): SimpleFeatureSerialized {
