@@ -5,6 +5,15 @@ import { GENOTYPE_SPLITTER as genotypeDelimRegex } from '../shared/constants.ts'
 
 import type VCF from '@gmod/vcf'
 
+// Coerce a VCF INFO value (which may be a string like '5', a number, '.', or
+// undefined) to a finite number, or undefined when it isn't numeric. VCF uses
+// '.' for missing values, which would otherwise coerce to NaN and leak into
+// feature coordinates / descriptions.
+export function parseFiniteNumber(value: unknown): number | undefined {
+  const n = Number(value)
+  return Number.isFinite(n) ? n : undefined
+}
+
 function isBreakend(alt: string) {
   return (
     alt.includes('[') ||
@@ -16,6 +25,16 @@ function isBreakend(alt: string) {
 
 function isSymbolic(alt: string) {
   return alt.startsWith('<') || isBreakend(alt)
+}
+
+// Render an allele sequence verbatim when short enough to read, otherwise a
+// compact base-pair count. Single source of the abbreviation threshold so ref
+// and alt never disagree within one rendered string.
+const ABBREVIATE_ALLELE_THRESHOLD = 10
+function abbreviateAllele(seq: string) {
+  return seq.length >= ABBREVIATE_ALLELE_THRESHOLD
+    ? getBpDisplayStr(seq.length)
+    : seq
 }
 
 const altTypeToSO: Record<string, string> = {
@@ -82,24 +101,25 @@ function formatGroupDescription(
         ) {
           return `<TRA> ${info.CHR2[0]}:${info.END[0]}`
         }
-        const svlen = svlenArr?.[i]
+        const svlen = parseFiniteNumber(svlenArr?.[i])
         return svlen !== undefined
-          ? `${a} ${getBpDisplayStr(Math.abs(+svlen))}`
+          ? `${a} ${getBpDisplayStr(Math.abs(svlen))}`
           : a
       })
       .join(',')
   }
 
-  const lenRef = ref.length
-  const altStr = alts
-    .map(a => (a.length >= 10 ? getBpDisplayStr(a.length) : a))
-    .join(',')
-  return `${lenRef >= 10 ? getBpDisplayStr(lenRef) : ref} -> ${altStr}`
+  return `${abbreviateAllele(ref)} -> ${alts.map(abbreviateAllele).join(',')}`
 }
 
 function findSOTerm(alt: string, parser: VCF): string | undefined {
   if (alt in altTypeToSO) {
     return altTypeToSO[alt]
+  }
+  // integer copy-number alleles <CN0>, <CN1>, ... emitted by 1000 Genomes,
+  // gnomAD-SV, and dbVar for multiallelic CNVs
+  if (/^<CN\d+>$/.test(alt)) {
+    return 'copy_number_variation'
   }
   if (parser.getMetadata('ALT', alt)) {
     return 'sequence_variant'
@@ -115,16 +135,14 @@ export function getMinimalDesc(ref: string, alt: string) {
   if (isSymbolic(alt) || (ref.length === 1 && alt.length === 1)) {
     return alt
   }
-  return ref.length > 5 || alt.length > 5
-    ? `${getBpDisplayStr(ref.length)} -> ${getBpDisplayStr(alt.length)}`
-    : `${ref} -> ${alt}`
+  return `${abbreviateAllele(ref)} -> ${abbreviateAllele(alt)}`
 }
 
 export function resolveAllele(allele: string, ref: string, alt: string[]) {
   return allele === '.'
     ? '.'
     : +allele === 0
-      ? `ref(${ref.length < 10 ? ref : getBpDisplayStr(ref.length)})`
+      ? `ref(${abbreviateAllele(ref)})`
       : getMinimalDesc(ref, alt[+allele - 1] ?? '')
 }
 

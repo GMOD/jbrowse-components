@@ -1,6 +1,6 @@
 import { type Feature, max } from '@jbrowse/core/util'
 
-import { getSOTermAndDescription } from './util.ts'
+import { getSOTermAndDescription, parseFiniteNumber } from './util.ts'
 
 import type VCFParser from '@gmod/vcf'
 import type { GenotypeCallback, Variant } from '@gmod/vcf'
@@ -15,29 +15,36 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
   return {
     refName: CHROM!,
     start,
-    end: getEnd(variant),
+    end: getEnd(variant, start),
     description,
     type,
     name: ID?.join(','),
   }
 }
-function getEnd(variant: Variant) {
-  const { POS, REF = '', ALT = [], INFO } = variant
-  const start = POS - 1
+
+// Symbolic (angle-bracket) ALTs carry their span in INFO.END / INFO.SVLEN
+// rather than in REF. Breakends (which use `[`/`]`, not `<`) and translocations
+// are single-breakpoint, so they intentionally fall through to REF.length.
+function getEnd(variant: Variant, start: number) {
+  const { REF = '', ALT = [], INFO } = variant
   const hasSymbolic = ALT.some(a => a.startsWith('<'))
   const hasTRA = ALT.includes('<TRA>')
   if (hasSymbolic && !hasTRA) {
     if (Array.isArray(INFO.END)) {
-      const end = INFO.END[0]
+      const end = parseFiniteNumber(INFO.END[0])
       if (end !== undefined) {
-        return +end
+        return end
       }
     }
     if (Array.isArray(INFO.SVLEN)) {
+      // insertions don't consume reference, so their span is 1; drop any
+      // missing/non-numeric SVLEN entries (e.g. '.') rather than let NaN leak
       const lens = INFO.SVLEN.map((len, i) =>
-        ALT[i]?.startsWith('<INS') ? 1 : Math.abs(+(len ?? 0)),
-      )
-      return start + max(lens)
+        ALT[i]?.startsWith('<INS') ? 1 : parseFiniteNumber(len),
+      ).filter(v => v !== undefined)
+      if (lens.length > 0) {
+        return start + max(lens.map(Math.abs))
+      }
     }
   }
   return start + REF.length

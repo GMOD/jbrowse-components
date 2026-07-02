@@ -97,6 +97,23 @@ test('INS feature with SVLEN when END not available', () => {
   expect(f.get('description')).toEqual('<INS> 500bp')
 })
 
+test('DEL with missing SVLEN falls back to REF length instead of NaN end', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tSVLEN=.;SVTYPE=DEL',
+  )
+
+  expect(f.get('start')).toEqual(99)
+  expect(f.get('end')).toEqual(100)
+})
+
+test('DEL with missing END falls back to SVLEN', () => {
+  const f = createFeature(
+    'chr1\t100\trs123\tR\t<DEL>\t29\tPASS\tEND=.;SVLEN=500;SVTYPE=DEL',
+  )
+
+  expect(f.get('end')).toEqual(599)
+})
+
 test('multiple SVs', () => {
   const f = createFeature(
     'chr1\t100\trs123\tR\t<INVDUP>,<INV>\t29\tPASS\tEND=1000;SVTYPE=DEL',
@@ -182,6 +199,15 @@ test('getSOTermAndDescription returns correct SO term for symbolic alleles', () 
   expect(soTerm('<UNKNOWN:FOO>')).toBe('variant')
 })
 
+test('getSOTermAndDescription maps integer copy-number alleles', () => {
+  const parser = createParser()
+  const soTerm = (alt: string) => getSOTermAndDescription('N', [alt], parser)[0]
+
+  expect(soTerm('<CN0>')).toBe('copy_number_variation')
+  expect(soTerm('<CN3>')).toBe('copy_number_variation')
+  expect(soTerm('<CN12>')).toBe('copy_number_variation')
+})
+
 test('getMinimalDesc - SNV returns just alt', () => {
   expect(getMinimalDesc('A', 'T')).toEqual('T')
 })
@@ -190,8 +216,13 @@ test('getMinimalDesc - short indel shows bases', () => {
   expect(getMinimalDesc('ACGT', 'A')).toEqual('ACGT -> A')
 })
 
-test('getMinimalDesc - long indel shows bp counts', () => {
-  expect(getMinimalDesc('ACGTACGT', 'A')).toEqual('8bp -> 1bp')
+test('getMinimalDesc - mid-length allele under threshold still shows bases', () => {
+  expect(getMinimalDesc('ACGTACGT', 'A')).toEqual('ACGTACGT -> A')
+})
+
+test('getMinimalDesc - long indel shows bp counts per side', () => {
+  expect(getMinimalDesc('ACGTACGTACGT', 'A')).toEqual('12bp -> A')
+  expect(getMinimalDesc('ACGTACGTACGT', 'ACGTACGTACGT')).toEqual('12bp -> 12bp')
 })
 
 test('getMinimalDesc - symbolic returns alt as-is', () => {
@@ -214,9 +245,15 @@ test('makeSimpleAltString - multi-allelic', () => {
   expect(makeSimpleAltString('1/2', 'A', ['T', 'G'])).toEqual('T/G')
 })
 
-test('makeSimpleAltString - ref shorter than 10 chars shown as bases', () => {
+test('makeSimpleAltString - ref/alt under threshold consistently shown as bases', () => {
   expect(makeSimpleAltString('0/1', 'ACGTACGT', ['T'])).toEqual(
-    'ref(ACGTACGT)/8bp -> 1bp',
+    'ref(ACGTACGT)/ACGTACGT -> T',
+  )
+})
+
+test('makeSimpleAltString - long ref shown as bp count on both sides', () => {
+  expect(makeSimpleAltString('0/1', 'ACGTACGTACGT', ['T'])).toEqual(
+    'ref(12bp)/12bp -> T',
   )
 })
 
