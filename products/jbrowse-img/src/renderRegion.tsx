@@ -1,5 +1,3 @@
-import { AsyncLocalStorage } from 'node:async_hooks'
-
 import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
@@ -7,7 +5,7 @@ import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-compar
 import { renderToSvg as renderLinearToSvg } from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
-import { autorun, observable, runInAction, when } from 'mobx'
+import { autorun, when } from 'mobx'
 
 import {
   applyDisplayOpts,
@@ -25,7 +23,6 @@ import type { CircularViewModel } from '@jbrowse/plugin-circular-view'
 import type { DotplotViewModel } from '@jbrowse/plugin-dotplot-view'
 import type { LinearSyntenyViewModel } from '@jbrowse/plugin-linear-comparative-view'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-import type { IObservableValue } from 'mobx'
 
 // react-app2 hosts every view type and accepts multiple assemblies, where the
 // LGV-only react2 host could not. RPC runs on the main thread (the rpc
@@ -42,8 +39,8 @@ function createModel(data: Config) {
   // The interactive app routes failures (a bad track config, an assembly that
   // won't load, an RPC error) to session.notifyError, which only pushes a
   // snackbar — invisible in this headless tool. Echo error notifications to
-  // stderr so the real cause is reported. This console.error is also what feeds
-  // the error scope that makes the failure fatal (see errorScope).
+  // stderr so the real cause is reported. These same errors are made fatal via
+  // throwOnSessionError (see renderRegion / whenViewReady).
   const { session } = model
   const reported = new Set<string>()
   addDisposer(
@@ -71,48 +68,38 @@ interface ModeContext {
   opts: Opts
   width: number
   spec?: ViewSpec
-  scope: ErrorScope
 }
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
 
-// Every failure in a render funnels through console.error but none of them
-// throw: a track's failed data fetch (BaseLinearDisplay's FetchMixin logs
-// "Fetch failed:"), a self-init view's init autorun (`console.error(e)`), and
-// our own session-error echo (createModel). They log and leave the SVG with that
-// track/view blank — a silent partial success that, for a headless export, is a
-// broken image written as if it succeeded. So capture that one stream and make
-// the first error fatal, rather than reaching into each view's structure.
-//
-// The capture is scoped with AsyncLocalStorage rather than a global console
-// swap: a render's async work (fire-and-forget fetch/init autoruns) can outlive
-// the awaited call and log late, and ALS guarantees such a late log is attributed
-// to its own render's store — never bleeding into a later render and failing it.
-interface ErrorScope {
-  errors: unknown[]
-  // observable so whenViewReady's `when` re-evaluates when an error is logged
-  count: IObservableValue<number>
+// Errors that jbrowse reports via session.notifyError (a bad track config, an
+// assembly that won't load, a navigation failure, a view's init autorun) land
+// as error-level snackbars. In the headless tool these must be fatal, not a
+// blank render.
+interface SessionErrors {
+  snackbarMessages: { message: string; level?: string }[]
 }
-const errorScope = new AsyncLocalStorage<ErrorScope>()
 
-const originalConsoleError = console.error
-console.error = (...args: unknown[]) => {
-  const scope = errorScope.getStore()
-  if (scope) {
-    // prefer an Error argument (console.error('Fetch failed:', err)) over a
-    // leading format string so the thrown cause is the real error
-    scope.errors.push(args.find(a => a instanceof Error) ?? args[0])
-    runInAction(() => {
-      scope.count.set(scope.errors.length)
-    })
+function firstSessionError(session: SessionErrors) {
+  return session.snackbarMessages.find(m => m.level === 'error')?.message
+}
+
+function throwOnSessionError(session: SessionErrors) {
+  const message = firstSessionError(session)
+  if (message !== undefined) {
+    throw new Error(message)
   }
-  originalConsoleError(...args)
 }
 
-function throwIfLogged(scope: ErrorScope) {
-  if (scope.errors.length > 0) {
-    const e = scope.errors[0]
-    throw e instanceof Error ? e : new Error(String(e))
+// A track whose data can't be loaded (a 404 / missing file / parse failure) has
+// its error caught by the fetch layer and stored on the display — the render
+// still returns with that track blank. Read it back so a headless export fails
+// loudly instead of writing a broken image.
+function throwOnDisplayError(displays: { error?: unknown }[]) {
+  for (const { error } of displays) {
+    if (error) {
+      throw error instanceof Error ? error : new Error(String(error))
+    }
   }
 }
 
@@ -134,16 +121,19 @@ interface InitView {
 // autorun (which awaits assemblies, navigates each sub-view, and attaches
 // tracks). The SVG only has content once that autorun has cleared `init`. On
 // failure the dotplot/synteny autorun deliberately KEEPS `init` set (interactive
-// recovery) but logs the error, so waiting on `!init` alone would hang — also
-// resolve when an error is logged, which throwIfLogged then rethrows.
-async function whenViewReady(view: InitView, scope: ErrorScope) {
-  await when(() => (view.initialized && !view.init) || scope.count.get() > 0, {
-    timeout: INIT_TIMEOUT_MS,
-  }).catch(() => {
+// recovery) but reports the error to the session, so waiting on `!init` alone
+// would hang — also resolve on a session error, which is then rethrown.
+async function whenViewReady(view: InitView, session: SessionErrors) {
+  await when(
+    () =>
+      (view.initialized && !view.init) ||
+      firstSessionError(session) !== undefined,
+    { timeout: INIT_TIMEOUT_MS },
+  ).catch(() => {
     // swallow the timeout rejection; the checks below turn an unresolved init
     // into a descriptive error
   })
-  throwIfLogged(scope)
+  throwOnSessionError(session)
   if (view.init) {
     throw new Error(`view did not initialize within ${INIT_TIMEOUT_MS / 1000}s`)
   }
@@ -160,7 +150,7 @@ async function addInitView<T extends InitView>(
 ) {
   const view = ctx.model.session.addView(viewType, { init }) as T
   view.setWidth(ctx.width)
-  await whenViewReady(view, ctx.scope)
+  await whenViewReady(view, ctx.model.session)
   return view
 }
 
@@ -231,7 +221,7 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     }
   }
 
-  return renderLinearToSvg(view, {
+  const svg = await renderLinearToSvg(view, {
     rasterizeLayers: !opts.noRasterize,
     createCanvas: (w: number, h: number) =>
       createCanvas(w, h) as unknown as HTMLCanvasElement,
@@ -239,6 +229,8 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     showGridlines,
     trackLabels,
   })
+  throwOnDisplayError(view.tracks.flatMap(t => t.displays))
+  return svg
 }
 
 // Build a sub-view spec per assembly in [query, target, …] order: the first
@@ -297,10 +289,12 @@ const renderDotplot: ModeRenderer = async ctx => {
         ...(ctx.opts.autoDiagonalize ? { autoDiagonalize: true } : {}),
       }
   const view = await addInitView<DotplotViewModel>(ctx, 'DotplotView', init)
-  return renderDotplotToSvg(view, {
+  const svg = await renderDotplotToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
   })
+  throwOnDisplayError(view.tracks.flatMap(t => t.displays))
+  return svg
 }
 
 // View-level synteny settings from CLI flags, included only when set so they
@@ -332,12 +326,17 @@ const renderSynteny: ModeRenderer = async ctx => {
     'LinearSyntenyView',
     init,
   )
-  return renderSyntenyToSvg(view, {
+  const svg = await renderSyntenyToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
     trackLabels: ctx.opts.trackLabels,
     showGridlines: ctx.opts.showGridlines,
   })
+  // synteny keeps its tracks per level, unlike the flat `tracks` of the others
+  throwOnDisplayError(
+    view.levels.flatMap(l => l.tracks).flatMap(t => t.displays),
+  )
+  return svg
 }
 
 // Circular renders one assembly's chord tracks (e.g. a VCF of structural
@@ -348,10 +347,12 @@ const renderCircular: ModeRenderer = async ctx => {
     ? initFromSpec(ctx.spec)
     : { assembly: ctx.data.assembly.name, tracks: trackIds }
   const view = await addInitView<CircularViewModel>(ctx, 'CircularView', init)
-  return renderCircularToSvg(view, {
+  const svg = await renderCircularToSvg(view, {
     rasterizeLayers: !ctx.opts.noRasterize,
     themeName: ctx.opts.themeName,
   })
+  throwOnDisplayError(view.tracks.flatMap(t => t.displays))
+  return svg
 }
 
 // Registry of every render mode. The exhaustive Record means adding a ViewMode
@@ -378,24 +379,21 @@ export async function renderRegion(opts: Opts) {
   // an explicit subcommand wins; otherwise a --spec selects its mode from the
   // view type, falling back to the default linear view
   const mode = opts.mode ?? (spec ? specMode(spec) : 'linear')
-  const scope: ErrorScope = { errors: [], count: observable.box(0) }
-  return errorScope.run(scope, async () => {
-    try {
-      const result = await modeRenderers[mode]({
-        model,
-        data,
-        opts,
-        width: opts.width ?? 1500,
-        spec,
-        scope,
-      })
-      // any error logged during the render (a failed track/data fetch, an init
-      // that logged-and-continued) means the SVG is incomplete — fail rather
-      // than emit a silently-broken image
-      throwIfLogged(scope)
-      return result
-    } finally {
-      destroy(model)
-    }
-  })
+  try {
+    const result = await modeRenderers[mode]({
+      model,
+      data,
+      opts,
+      width: opts.width ?? 1500,
+      spec,
+    })
+    // a failure reported to the session during the render (e.g. a bad track
+    // config) means the SVG is incomplete — fail rather than emit a
+    // silently-broken image (per-track data-load errors are caught in each
+    // renderer via throwOnDisplayError)
+    throwOnSessionError(model.session)
+    return result
+  } finally {
+    destroy(model)
+  }
 }
