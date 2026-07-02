@@ -147,6 +147,12 @@ function makeConfigurationSchemaModel<
   // schema registry (a WeakMap keyed by the MST type, see schemaRegistry.ts),
   // not on the instance.
   const volatileConstants: Record<string, unknown> = {}
+  // Keys of single sub-schema slots (not array/map-of-sub-schema). setSubschema
+  // replaces such a node via `.create(data)`, which throws a confusing MST
+  // validation error if pointed at an array/map-typed slot, so those are
+  // excluded here — collected as the loop classifies each entry rather than
+  // re-scanning modelDefinition afterward.
+  const subSchemaKeys = new Set<string>()
   for (const [slotName, slotDefinition] of Object.entries(schemaDefinition)) {
     if (isConfigurationSchemaType(slotDefinition)) {
       // a sub-configuration. A bare sub-schema is already stripDefault-wrapped
@@ -159,6 +165,7 @@ function makeConfigurationSchemaModel<
         modelDefinition[slotName] = types.stripDefault(slotDefinition, {})
       } else {
         modelDefinition[slotName] = slotDefinition
+        subSchemaKeys.add(slotName)
       }
     } else if (isConstantEntry(slotDefinition)) {
       volatileConstants[slotName] = slotDefinition
@@ -182,24 +189,6 @@ function makeConfigurationSchemaModel<
       )
     }
   }
-
-  // isConfigurationSchemaType walks union/optional/array/map types recursively,
-  // so it also matches an array/map *of* sub-schemas — but setSubschema below
-  // replaces a single sub-schema node with `.create(data)`, which throws a
-  // confusing MST validation error if pointed at an array/map-typed slot
-  // instead of the friendly "is not a subschema" message. Excluding those here
-  // makes the membership check double as the "is this a single-sub-schema
-  // slot" guard setSubschema actually needs.
-  const subSchemaKeys = new Set(
-    Object.keys(modelDefinition).filter(k => {
-      const type = modelDefinition[k]
-      return (
-        isConfigurationSchemaType(type) &&
-        !isArrayType(type) &&
-        !isMapType(type)
-      )
-    }),
-  )
 
   let completeModel = types
     .model(`${modelName}ConfigurationSchema`, modelDefinition)
@@ -309,6 +298,22 @@ function frozenTrackHydrationCache(
   return cache
 }
 
+// A slot holding either an id string (resolved through `ref`) or a full inline
+// config snapshot (held as a standalone schema instance). Both reference kinds
+// resolve to `schemaType` instances, so MST can't auto-dispatch on the instance
+// side — the explicit snapshot dispatcher (string → ref, object → schema)
+// disambiguates. Shared by TrackConfigurationReference/DisplayConfigurationReference.
+function idOrSnapshotUnion(ref: IAnyType, schemaType: IAnyType) {
+  return types.union(
+    {
+      dispatcher: snapshot =>
+        typeof snapshot === 'string' ? ref : schemaType,
+    },
+    ref,
+    schemaType,
+  )
+}
+
 /**
  * Reference to a track configuration. Snapshot output is the trackId string.
  *
@@ -362,14 +367,7 @@ export function TrackConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  return types.union(
-    {
-      dispatcher: snapshot =>
-        typeof snapshot === 'string' ? trackRef : schemaType,
-    },
-    trackRef,
-    schemaType,
-  )
+  return idOrSnapshotUnion(trackRef, schemaType)
 }
 
 /**
@@ -429,14 +427,7 @@ export function DisplayConfigurationReference(schemaType: IAnyType) {
     },
   })
 
-  return types.union(
-    {
-      dispatcher: snapshot =>
-        typeof snapshot === 'string' ? displayRef : schemaType,
-    },
-    displayRef,
-    schemaType,
-  )
+  return idOrSnapshotUnion(displayRef, schemaType)
 }
 
 /**

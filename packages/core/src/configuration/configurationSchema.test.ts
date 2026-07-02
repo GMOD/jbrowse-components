@@ -541,6 +541,9 @@ describe('ConfigurationReference', () => {
         rpcManager: types.frozen({}),
         configuration: types.frozen({}),
         _tracks: types.array(TrackConfig),
+        // tree-resident configs deliberately NOT surfaced via tracksById, to
+        // exercise the resolveIdentifier fallback (the viewTrackConfigs case)
+        _viewTrackConfigs: types.array(TrackConfig),
         holder: Holder,
       })
       .views(self => ({
@@ -598,6 +601,41 @@ describe('ConfigurationReference', () => {
         { pluginManager },
       )
       expect(getSnapshot(session.holder)).toEqual({ ref: 'aaa' })
+    })
+
+    // Fast unit canary for the tree-wide resolveIdentifier fallback documented
+    // in configuration/CLAUDE.md — otherwise only covered by the slow
+    // ReadVsRef.test.tsx integration test (LinearSyntenyView.viewTrackConfigs).
+    test('falls back to tree-wide resolveIdentifier when the id is absent from tracksById', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          _viewTrackConfigs: [{ trackId: 'view-local', name: 'ephemeral' }],
+          holder: { ref: 'view-local' },
+        },
+        { pluginManager },
+      )
+      expect(session.tracksById['view-local']).toBeUndefined()
+      expect(readConfObject(session.holder.ref, 'name')).toBe('ephemeral')
+    })
+
+    // Fast unit canary for the inline-snapshot union branch documented in
+    // configuration/CLAUDE.md — otherwise only covered by the slow
+    // SVInspector.test.tsx integration test (CircularView.addTrackConf /
+    // SvInspectorView push a full config object, not an id string).
+    test('accepts a full inline config snapshot held as an owned instance, not a ref', () => {
+      const { Session } = buildTrackEnv()
+      const session = Session.create(
+        {
+          holder: { ref: { trackId: 'inline1', name: 'inline-name' } },
+        },
+        { pluginManager },
+      )
+      expect(session.tracksById.inline1).toBeUndefined()
+      expect(readConfObject(session.holder.ref, 'name')).toBe('inline-name')
+      expect(getSnapshot(session.holder)).toEqual({
+        ref: { trackId: 'inline1', name: 'inline-name' },
+      })
     })
   })
 
