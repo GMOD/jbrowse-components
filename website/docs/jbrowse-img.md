@@ -115,6 +115,18 @@ jb2export --hub hg19 \
   --loc chr1:1,000,000-1,100,000 --out out.svg
 ```
 
+Hosted trackIds are all prefixed with the assembly name (`hg19-...`), so
+`--track` fills that in for you — `--track ncbiRefSeqCurated` resolves to
+`hg19-ncbiRefSeqCurated`. Matching is also case-insensitive and works on a
+track's display name, and a token that doesn't match anything errors with the
+closest trackIds:
+
+```
+$ jb2export --hub hg19 --track clinvar ...
+Error: --track "clinvar" not found in the config. Did you mean: hg19-clinvarMain,
+hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
+```
+
 Browse [genomes.jbrowse.org](https://genomes.jbrowse.org) to find assembly names
 and trackIds. `--config` also accepts a URL, so you can point at any hosted
 JBrowse `config.json` the same way; relative data URIs inside it resolve against
@@ -807,7 +819,7 @@ Options:
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON or name in config
   --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated. Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path or URL)
   --session         Path to session JSON
   --loc             Location to render (e.g., chr1:1-1000 or "all")
@@ -851,7 +863,7 @@ Options:
   --aliases             Path to reference name aliases file
   --assembly            Path to assembly JSON or name in config
   --hub                 Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated. Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config              Path to JBrowse config.json (path or URL)
   --session             Path to session JSON
   --loc                 Location to render (e.g., chr1:1-1000 or "all")
@@ -896,7 +908,7 @@ Options:
   --aliases             Path to reference name aliases file
   --assembly            Path to assembly JSON or name in config
   --hub                 Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated. Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config              Path to JBrowse config.json (path or URL)
   --session             Path to session JSON
   --loc                 Location to render (e.g., chr1:1-1000 or "all")
@@ -941,7 +953,7 @@ Options:
   --aliases         Path to reference name aliases file
   --assembly        Path to assembly JSON or name in config
   --hub             Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)
-  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated. Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
+  --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path or URL)
   --session         Path to session JSON
   --loc             Location to render (e.g., chr1:1-1000 or "all")

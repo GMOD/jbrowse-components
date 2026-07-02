@@ -66,6 +66,60 @@ export function configTrackCategory(
   return category ?? 'feature'
 }
 
+function trackName(track: Track) {
+  return typeof track.name === 'string' ? track.name : ''
+}
+
+// Resolve a user's --track token to a real trackId in the config. Hosted
+// trackIds are all prefixed with the assembly name (e.g. hg19-ncbiRefSeqCurated),
+// which is tedious to type, so this accepts: the exact id, the id with the
+// `<assembly>-` prefix dropped, or a case-insensitive match on the id or the
+// track's display name (when unambiguous). A miss throws with near-matches so the
+// user can correct the token rather than getting a downstream "failed to open".
+export function resolveTrackId(
+  tracks: Track[],
+  input: string,
+  assemblyName: string,
+): string {
+  const ids = new Set(tracks.map(t => t.trackId))
+  const prefixed = `${assemblyName}-${input}`
+  const target = input.toLowerCase()
+  const prefix = `${assemblyName}-`.toLowerCase()
+  const looseMatches = tracks.filter(t => {
+    const id = t.trackId.toLowerCase()
+    const unprefixed = id.startsWith(prefix) ? id.slice(prefix.length) : id
+    return id === target || unprefixed === target || trackName(t).toLowerCase() === target
+  })
+
+  const resolved = ids.has(input)
+    ? input
+    : ids.has(prefixed)
+      ? prefixed
+      : looseMatches.length === 1
+        ? looseMatches[0]!.trackId
+        : undefined
+
+  if (resolved === undefined) {
+    if (looseMatches.length > 1) {
+      throw new Error(
+        `--track "${input}" is ambiguous; matches: ${looseMatches.map(t => t.trackId).join(', ')}`,
+      )
+    }
+    const suggestions = tracks
+      .filter(
+        t =>
+          t.trackId.toLowerCase().includes(target) ||
+          trackName(t).toLowerCase().includes(target),
+      )
+      .slice(0, 8)
+      .map(t => t.trackId)
+    throw new Error(
+      `--track "${input}" not found in the config${suggestions.length ? `. Did you mean: ${suggestions.join(', ')}?` : ''}`,
+    )
+  }
+  return resolved
+}
+
 // Per-read height/spacing for the alignments compactness presets. Mirrors
 // COMPACTNESS_PRESETS in plugin-alignments (kept local to avoid a cross-plugin
 // value import for two stable numbers); the canvas feature display expresses the

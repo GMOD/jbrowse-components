@@ -26,7 +26,7 @@ export const optionDefs: OptionDef[] = [
   {
     name: 'track',
     description:
-      'Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated. Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
+      'Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
   },
   { name: 'config', description: 'Path to JBrowse config.json (path or URL)' },
   { name: 'session', description: 'Path to session JSON' },

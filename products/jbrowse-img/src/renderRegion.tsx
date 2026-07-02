@@ -11,6 +11,7 @@ import {
   applyDisplayOpts,
   applyTrackOpts,
   configTrackCategory,
+  resolveTrackId,
 } from './applyTrackOpts.ts'
 import { readData } from './readData.ts'
 import { resolveConfigObject } from './resolveHub.ts'
@@ -207,11 +208,17 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
     applyTrackOpts(track, view)
   }
 
-  // Hosted trackIds from --track (present in a --hub/--config config). The
-  // display category comes from the config track's own type, so modifiers
+  // Hosted trackIds from --track (present in a --hub/--config config). The token
+  // is resolved to a real trackId (accepting the assembly-name-prefix shorthand),
+  // then the display category comes from that track's own type so modifiers
   // (height:, color:, …) route to the right display slots.
-  for (const [, [trackId, ...displayOpts]] of showTracks) {
-    if (trackId) {
+  for (const [, [trackInput, ...displayOpts]] of showTracks) {
+    if (trackInput) {
+      const trackId = resolveTrackId(
+        data.tracks,
+        trackInput,
+        data.assembly.name,
+      )
       applyDisplayOpts(
         view,
         trackId,
