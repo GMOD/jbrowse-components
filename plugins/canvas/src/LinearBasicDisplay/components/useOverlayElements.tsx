@@ -22,7 +22,7 @@ interface OverlayModel {
   effectiveShowDescriptions: boolean
   selectedFeatureId: string | undefined
   selectFeatureById: (
-    featureInfo: FlatbushItem,
+    featureId: string,
     subfeatureInfo: SubfeatureInfo | undefined,
     displayedRegionIndex: number,
   ) => void
@@ -90,7 +90,11 @@ export function useFloatingLabels(
     clientX: number,
     clientY: number,
   ) => void,
-  onLabelMouseOver?: (item: FlatbushItem, e: React.MouseEvent) => void,
+  onLabelMouseOver?: (
+    item: FlatbushItem,
+    displayedRegionIndex: number,
+    e: React.MouseEvent,
+  ) => void,
 ) {
   const { classes, cx } = useStyles()
   const { showLabels, effectiveShowDescriptions, selectFeatureById } = model
@@ -117,7 +121,7 @@ export function useFloatingLabels(
       // entirely when there's no clickable item.
       const handleLabelClick = item
         ? () => {
-            selectFeatureById(item, undefined, displayedRegionIndex)
+            selectFeatureById(item.featureId, undefined, displayedRegionIndex)
           }
         : undefined
       const handleLabelContextMenu = item
@@ -129,7 +133,7 @@ export function useFloatingLabels(
       const handleLabelMouseMove =
         item && onLabelMouseOver
           ? (e: React.MouseEvent) => {
-              onLabelMouseOver(item, e)
+              onLabelMouseOver(item, displayedRegionIndex, e)
             }
           : undefined
 

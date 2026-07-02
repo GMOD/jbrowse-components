@@ -62,6 +62,7 @@ export interface LinearBasicDisplayModel {
   selectedFeatureId: string | undefined
   featureIdUnderMouse: string | null
   subfeatureIdUnderMouse: string | null
+  hoveredRegionIndex: number | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
   flatbushIndexes: ReadonlyMap<number, FlatbushRegionIndexes>
@@ -89,22 +90,29 @@ export interface LinearBasicDisplayModel {
     featureId: string | null,
     subfeatureId: string | null,
     tooltip: string | undefined,
+    displayedRegionIndex: number,
   ) => void
   selectFeatureById: (
-    featureInfo: FlatbushItem,
+    featureId: string,
     subfeatureInfo: SubfeatureInfo | undefined,
     displayedRegionIndex: number,
   ) => void
+  toggleSoloFeature: (featureId: string) => void
   showContextMenuForFeature: (
     featureInfo: FlatbushItem,
     displayedRegionIndex: number,
+    clientX: number,
+    clientY: number,
   ) => void
   contextMenuInfo:
-    { item: FlatbushItem; displayedRegionIndex: number } | undefined
-  setContextMenuInfo: (info?: {
-    item: FlatbushItem
-    displayedRegionIndex: number
-  }) => void
+    | {
+        item: FlatbushItem
+        displayedRegionIndex: number
+        clientX: number
+        clientY: number
+      }
+    | undefined
+  closeContextMenu: () => void
   fetchFullFeature: (
     featureId: string,
     displayedRegionIndex: number,
@@ -160,17 +168,17 @@ function OverlayLayer({ children }: { children: React.ReactNode }) {
 
 const ContextMenu = observer(function ContextMenu({
   model,
-  contextCoord,
-  onClose,
 }: {
   model: LinearBasicDisplayModel
-  contextCoord: [number, number]
-  onClose: () => void
 }) {
-  const items = model.contextMenuItems()
+  const info = model.contextMenuInfo
+  const items = info ? model.contextMenuItems() : []
+  const onClose = () => {
+    model.closeContextMenu()
+  }
   return (
     <Menu
-      open={items.length > 0}
+      open={!!info && items.length > 0}
       onMenuItemClick={callback => {
         callback()
         onClose()
@@ -178,8 +186,8 @@ const ContextMenu = observer(function ContextMenu({
       onClose={onClose}
       anchorReference="anchorPosition"
       anchorPosition={{
-        top: contextCoord[1],
-        left: contextCoord[0],
+        top: info?.clientY ?? 0,
+        left: info?.clientX ?? 0,
       }}
       menuItems={items}
     />
@@ -204,7 +212,11 @@ const Overlays = observer(function Overlays({
     clientX: number,
     clientY: number,
   ) => void
-  onLabelMouseOver: (item: FlatbushItem, e: React.MouseEvent) => void
+  onLabelMouseOver: (
+    item: FlatbushItem,
+    displayedRegionIndex: number,
+    e: React.MouseEvent,
+  ) => void
 }) {
   // Overlays follow the animated rows (renderDataMap) so they move with the
   // glyphs during a layout transition; FeatureBody's hit-testing reads the
@@ -304,9 +316,6 @@ const FeatureBody = observer(function FeatureBody({
   // false positive: omitting <[number,number]> widens to number[] — known tuple issue
   // https://github.com/typescript-eslint/typescript-eslint/issues/9529
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
-  const [contextMenuCoord, setContextMenuCoord] = useState<
-    [number, number] | undefined
-  >()
   const { classes } = useStyles()
 
   const view = getContainingView(model) as LGV
@@ -322,11 +331,15 @@ const FeatureBody = observer(function FeatureBody({
       clientY: number,
     ) => {
       // contextMenuInfo (set here) is all the menu needs — it carries
-      // featureId/startBp/endBp/type synchronously, and each item that needs
-      // the full feature re-fetches it on click. Opening the menu immediately
-      // avoids gating the right-click on an RPC round-trip.
-      model.showContextMenuForFeature(feature, displayedRegionIndex)
-      setContextMenuCoord([clientX, clientY])
+      // featureId/startBp/endBp/type plus the click position synchronously, and
+      // each item that needs the full feature re-fetches it on click. Opening
+      // the menu immediately avoids gating the right-click on an RPC round-trip.
+      model.showContextMenuForFeature(
+        feature,
+        displayedRegionIndex,
+        clientX,
+        clientY,
+      )
     },
     [model],
   )
@@ -423,41 +436,36 @@ const FeatureBody = observer(function FeatureBody({
         result.feature.featureId,
         result.subfeature?.featureId ?? null,
         hoverTooltip(result),
+        result.displayedRegionIndex,
       )
     } else {
       model.clearHover()
     }
   }
 
-  const handleClick = () => {
-    const { hoveredFeature, hoveredSubfeature } = model
-    if (hoveredFeature) {
-      const entry = model.featureItemMap.get(hoveredFeature.featureId)
-      if (entry) {
-        model.selectFeatureById(
-          hoveredFeature,
-          hoveredSubfeature ?? undefined,
-          entry.vr.displayedRegionIndex,
-        )
-      }
+  const handleClick = (e: React.MouseEvent<HTMLCanvasElement>) => {
+    const { hoveredFeature, hoveredSubfeature, hoveredRegionIndex } = model
+    // Ctrl/Cmd+click builds the "show only these features" collection instead
+    // of opening the feature details, so several features can be tagged while
+    // they're all still visible, then isolated together via the context menu.
+    if ((e.ctrlKey || e.metaKey) && hoveredFeature) {
+      model.toggleSoloFeature(hoveredFeature.featureId)
+    } else if (hoveredFeature && hoveredRegionIndex !== undefined) {
+      model.selectFeatureById(
+        hoveredFeature.featureId,
+        hoveredSubfeature ?? undefined,
+        hoveredRegionIndex,
+      )
     } else {
       model.clearSelection()
     }
   }
 
   const handleContextMenu = (e: React.MouseEvent<HTMLCanvasElement>) => {
-    const { hoveredFeature } = model
-    if (hoveredFeature) {
+    const { hoveredFeature, hoveredRegionIndex } = model
+    if (hoveredFeature && hoveredRegionIndex !== undefined) {
       e.preventDefault()
-      const entry = model.featureItemMap.get(hoveredFeature.featureId)
-      if (entry) {
-        openContextMenu(
-          hoveredFeature,
-          entry.vr.displayedRegionIndex,
-          e.clientX,
-          e.clientY,
-        )
-      }
+      openContextMenu(hoveredFeature, hoveredRegionIndex, e.clientX, e.clientY)
     }
   }
 
@@ -468,9 +476,9 @@ const FeatureBody = observer(function FeatureBody({
   }
 
   const onLabelMouseOver = useCallback(
-    (item: FlatbushItem, e: React.MouseEvent) => {
+    (item: FlatbushItem, displayedRegionIndex: number, e: React.MouseEvent) => {
       setClientXY([e.clientX, e.clientY])
-      model.setHover(item.featureId, null, item.tooltip)
+      model.setHover(item.featureId, null, item.tooltip, displayedRegionIndex)
     },
     [model],
   )
@@ -483,8 +491,8 @@ const FeatureBody = observer(function FeatureBody({
         onMouseLeave={() => {
           handleMouseLeave()
         }}
-        onClick={() => {
-          handleClick()
+        onClick={e => {
+          handleClick(e)
         }}
         onContextMenu={handleContextMenu}
         className={classes.canvas}
@@ -539,17 +547,7 @@ const FeatureBody = observer(function FeatureBody({
         info={model.mouseoverExtraInformation}
         clientMouseCoord={clientXY}
       />
-      {contextMenuCoord ? (
-        <ContextMenu
-          model={model}
-          contextCoord={contextMenuCoord}
-          onClose={() => {
-            setContextMenuCoord(undefined)
-            model.setContextMenuInfo(undefined)
-            model.clearHover()
-          }}
-        />
-      ) : null}
+      <ContextMenu model={model} />
     </>
   )
 })

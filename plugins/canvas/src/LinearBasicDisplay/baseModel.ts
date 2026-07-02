@@ -212,19 +212,41 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
+        // Region index of the hovered feature, captured from the hit test so a
+        // click/right-click acts on it directly instead of re-resolving the
+        // feature's region from featureItemMap. Set/cleared with the hover ids.
+        hoveredRegionIndex: undefined as number | undefined,
+        /**
+         * #volatile
+         */
         mouseoverExtraInformation: undefined as string | undefined,
         /**
          * #volatile
          */
         contextMenuInfo: undefined as
-          { item: FlatbushItem; displayedRegionIndex: number } | undefined,
+          | {
+              item: FlatbushItem
+              displayedRegionIndex: number
+              clientX: number
+              clientY: number
+            }
+          | undefined,
         /**
          * #volatile
          */
-        // "Show only this feature": when set, the worker admits only the feature
-        // whose id() matches (see buildFeatureAdmission). Volatile — a transient
-        // focus that shouldn't outlive a reload.
-        soloFeatureId: undefined as string | undefined,
+        // "Show only these features": the collected set the user builds by
+        // ctrl+clicking features (or via the right-click menu). Only isolates
+        // the view once `soloApplied` is true — before that it's a highlighted
+        // selection that hides nothing, so the candidates stay clickable.
+        // Volatile — a transient focus that shouldn't outlive a reload.
+        soloFeatureIds: observable.array<string>(),
+        /**
+         * #volatile
+         */
+        // Whether the collected soloFeatureIds set is actually isolating the
+        // view (worker drops non-members). Decoupled from collection so building
+        // a multi-feature set doesn't hide the features mid-build.
+        soloApplied: false,
         /**
          * #volatile
          */
@@ -572,6 +594,15 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // Membership set for the "show only these features" collection; drives
+        // the overlay highlight and the context-menu toggle labels.
+        get soloFeatureIdSet(): ReadonlySet<string> {
+          return new Set(self.soloFeatureIds)
+        },
+
+        /**
+         * #getter
+         */
         get featureWidgetType() {
           return {
             type: 'BaseFeatureWidget',
@@ -612,9 +643,14 @@ export default function baseStateModelFactory(
             } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
-            // Reading this here makes it an RPC cache key, so toggling solo
-            // refetches the region through the admission gate.
-            soloFeatureId: self.soloFeatureId,
+            // Only isolate once the collection is applied; collecting (ctrl+
+            // click) leaves this undefined so building the set doesn't refetch
+            // or hide anything. Reading both here makes them RPC cache keys, so
+            // applying/clearing the solo refetches through the admission gate.
+            soloFeatureIds:
+              self.soloApplied && self.soloFeatureIds.length > 0
+                ? toJS(self.soloFeatureIds)
+                : undefined,
             // Structurally-serializable theme description so worker-side coloring
             // (CDS frames, stroke fallback) matches the user's active theme; the
             // worker rebuilds the full theme via createJBrowseThemeFromArgs. The
@@ -1135,10 +1171,12 @@ export default function baseStateModelFactory(
           featureId: string | null,
           subfeatureId: string | null,
           tooltip: string | undefined,
+          displayedRegionIndex: number,
         ) {
           self.featureIdUnderMouse = featureId
           self.subfeatureIdUnderMouse = subfeatureId
           self.mouseoverExtraInformation = tooltip
+          self.hoveredRegionIndex = displayedRegionIndex
         },
 
         /**
@@ -1148,16 +1186,16 @@ export default function baseStateModelFactory(
           self.featureIdUnderMouse = null
           self.subfeatureIdUnderMouse = null
           self.mouseoverExtraInformation = undefined
+          self.hoveredRegionIndex = undefined
         },
 
         /**
          * #action
          */
-        setContextMenuInfo(info?: {
-          item: FlatbushItem
-          displayedRegionIndex: number
-        }) {
-          self.contextMenuInfo = info
+        // Close the feature context menu and drop the hover it was pinned to.
+        closeContextMenu() {
+          self.contextMenuInfo = undefined
+          this.clearHover()
         },
 
         /**
@@ -1178,24 +1216,66 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Pass undefined to clear the solo and show all features again.
-        setSoloFeatureId(featureId?: string) {
-          self.soloFeatureId = featureId
+        // Add/remove a feature from the "show only" collection. Ctrl+clicking a
+        // feature and the right-click "Add/Remove" item both route here. If a
+        // removal empties an applied set, drop back to showing everything.
+        toggleSoloFeature(featureId: string) {
+          const idx = self.soloFeatureIds.indexOf(featureId)
+          if (idx === -1) {
+            self.soloFeatureIds.push(featureId)
+          } else {
+            self.soloFeatureIds.splice(idx, 1)
+            if (self.soloFeatureIds.length === 0) {
+              self.soloApplied = false
+            }
+          }
+        },
+
+        /**
+         * #action
+         */
+        // Stop isolating and drop the whole collection.
+        clearSolo() {
+          self.soloFeatureIds.clear()
+          self.soloApplied = false
         },
       }))
       .actions(self => ({
         /**
          * #action
          */
-        // "Show only this feature": solo it and surface an Undo snackbar (same
-        // affordance as collapse-introns), so the isolation is reversible even
-        // without hunting for the feature to right-click again.
+        // Apply the collected set (worker starts dropping non-members) and
+        // surface an Undo snackbar — the same reversible affordance
+        // collapse-introns uses.
+        applySolo() {
+          if (self.soloFeatureIds.length === 0) {
+            return
+          }
+          self.soloApplied = true
+          getSession(self).notify(
+            'Showing only the selected features',
+            'info',
+            {
+              name: 'Undo',
+              onClick: () => {
+                self.clearSolo()
+              },
+            },
+          )
+        },
+
+        /**
+         * #action
+         */
+        // One-shot single-feature isolate: replace the collection with just this
+        // feature and apply immediately (the common "show only this one" case).
         soloFeature(featureId: string) {
-          self.setSoloFeatureId(featureId)
+          self.soloFeatureIds.replace([featureId])
+          self.soloApplied = true
           getSession(self).notify('Showing only this feature', 'info', {
             name: 'Undo',
             onClick: () => {
-              self.setSoloFeatureId(undefined)
+              self.clearSolo()
             },
           })
         },
@@ -1289,8 +1369,15 @@ export default function baseStateModelFactory(
         showContextMenuForFeature(
           featureInfo: FlatbushItem,
           displayedRegionIndex: number,
+          clientX: number,
+          clientY: number,
         ) {
-          self.setContextMenuInfo({ item: featureInfo, displayedRegionIndex })
+          self.contextMenuInfo = {
+            item: featureInfo,
+            displayedRegionIndex,
+            clientX,
+            clientY,
+          }
           self.mouseoverExtraInformation = undefined
         },
       }))
@@ -1354,41 +1441,6 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        selectFeatureById(
-          featureInfo: FlatbushItem,
-          subfeatureInfo: SubfeatureInfo | undefined,
-          displayedRegionIndex: number,
-        ) {
-          const region = self.loadedRegions.get(displayedRegionIndex)
-          if (!region) {
-            return
-          }
-          const featureIdToFetch = subfeatureInfo
-            ? subfeatureInfo.parentFeatureId
-            : featureInfo.featureId
-          void (async () => {
-            const parentFeature = await fetchCanvasFeatureDetails(
-              getSession(self),
-              getRpcSessionId(self),
-              self.adapterConfig,
-              featureIdToFetch,
-              region,
-            )
-            if (parentFeature && isAlive(self)) {
-              const target = subfeatureInfo
-                ? (findSubfeatureById(
-                    parentFeature,
-                    subfeatureInfo.featureId,
-                  ) ?? parentFeature)
-                : parentFeature
-              self.selectFeature(target)
-            }
-          })()
-        },
-
-        /**
-         * #action
-         */
         // The only bpPerPx-dependent worker decision is the amino-acid overlay
         // (gated by shouldRenderPeptideBackground). Refetch when crossing that
         // discrete threshold; otherwise the cached data stays valid.
@@ -1432,14 +1484,29 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        selectFullFeature(featureId: string, displayedRegionIndex: number) {
+        // Re-fetch the full feature by id and open it in the details widget (the
+        // painting ships only slim render arrays). With a subfeatureInfo we fetch
+        // its parent and descend to the clicked subfeature; otherwise the feature
+        // itself. Serves both the click path and the context menu's "Open feature
+        // details" (which passes no subfeature).
+        selectFeatureById(
+          featureId: string,
+          subfeatureInfo: SubfeatureInfo | undefined,
+          displayedRegionIndex: number,
+        ) {
           void (async () => {
-            const feature = await self.fetchFullFeature(
-              featureId,
+            const parentFeature = await self.fetchFullFeature(
+              subfeatureInfo ? subfeatureInfo.parentFeatureId : featureId,
               displayedRegionIndex,
             )
-            if (feature && isAlive(self)) {
-              self.selectFeature(feature)
+            if (parentFeature && isAlive(self)) {
+              const target = subfeatureInfo
+                ? (findSubfeatureById(
+                    parentFeature,
+                    subfeatureInfo.featureId,
+                  ) ?? parentFeature)
+                : parentFeature
+              self.selectFeature(target)
             }
           })()
         },
@@ -1838,12 +1905,18 @@ export default function baseStateModelFactory(
             displayedRegionIndex,
           } = info
           const pinned = self.pinnedFeatureIdSet.has(featureId)
+          const inSoloSet = self.soloFeatureIdSet.has(featureId)
+          const soloCount = self.soloFeatureIds.length
           return [
             {
               label: 'Open feature details',
               icon: MenuOpenIcon,
               onClick: () => {
-                self.selectFullFeature(featureId, displayedRegionIndex)
+                self.selectFeatureById(
+                  featureId,
+                  undefined,
+                  displayedRegionIndex,
+                )
               },
             },
             {
@@ -1853,20 +1926,59 @@ export default function baseStateModelFactory(
                 self.togglePinnedFeature(featureId)
               },
             },
-            {
-              label:
-                self.soloFeatureId === featureId
-                  ? 'Remove show only this feature'
-                  : 'Show only this feature',
-              icon: FilterAltIcon,
-              onClick: () => {
-                if (self.soloFeatureId === featureId) {
-                  self.setSoloFeatureId(undefined)
-                } else {
-                  self.soloFeature(featureId)
-                }
-              },
-            },
+            // Solo menu, driven by the collect-then-apply state:
+            //  - applied → offer to show everything again (and to drop this one)
+            //  - collecting (set non-empty) → add/remove + apply
+            //  - nothing collected → the one-shot single-feature isolate
+            ...(self.soloApplied
+              ? [
+                  {
+                    label: 'Show all features',
+                    icon: FilterAltIcon,
+                    onClick: () => {
+                      self.clearSolo()
+                    },
+                  },
+                  ...(inSoloSet && soloCount > 1
+                    ? [
+                        {
+                          label: 'Remove this feature from view',
+                          icon: FilterAltIcon,
+                          onClick: () => {
+                            self.toggleSoloFeature(featureId)
+                          },
+                        },
+                      ]
+                    : []),
+                ]
+              : soloCount === 0
+                ? [
+                    {
+                      label: 'Show only this feature',
+                      icon: FilterAltIcon,
+                      onClick: () => {
+                        self.soloFeature(featureId)
+                      },
+                    },
+                  ]
+                : [
+                    {
+                      label: inSoloSet
+                        ? 'Remove from show-only set'
+                        : 'Add to show-only set',
+                      icon: FilterAltIcon,
+                      onClick: () => {
+                        self.toggleSoloFeature(featureId)
+                      },
+                    },
+                    {
+                      label: `Show only these ${soloCount} feature${soloCount > 1 ? 's' : ''}`,
+                      icon: FilterAltIcon,
+                      onClick: () => {
+                        self.applySolo()
+                      },
+                    },
+                  ]),
             {
               label: 'Zoom to feature',
               icon: CenterFocusStrongIcon,
