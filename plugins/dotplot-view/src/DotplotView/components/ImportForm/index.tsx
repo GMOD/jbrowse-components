@@ -8,7 +8,7 @@ import { Button, Container, Grid, Paper, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackSelector from './TrackSelector.tsx'
-import { doSubmit, resolveImportFormSelection } from './doSubmit.ts'
+import { doSubmit } from './doSubmit.ts'
 
 import type { DotplotViewModel } from '../../model.ts'
 
@@ -31,8 +31,6 @@ const DotplotImportForm = observer(function DotplotImportForm({
   const [assemblyX, setAssemblyX] = useState(firstAssembly)
   const [assemblyY, setAssemblyY] = useState(firstAssembly)
   const [error, setError] = useState<unknown>()
-  const [choice, setChoice] = useState('tracklist')
-  const [preConfiguredTrackId, setPreConfiguredTrackId] = useState('')
 
   const syntenyTracks = getSyntenyTracks(session.tracks, [assemblyX, assemblyY])
   const displayError = error ?? model.error
@@ -51,21 +49,21 @@ const DotplotImportForm = observer(function DotplotImportForm({
           sx={{ justifyContent: 'center', alignItems: 'center' }}
         >
           <AssemblySelector
-            helperText="x-axis assembly"
+            label="X-axis assembly"
+            helperText=""
             selected={assemblyX}
             session={session}
             onChange={asm => {
               setAssemblyX(asm)
-              setPreConfiguredTrackId('')
             }}
           />
           <AssemblySelector
-            helperText="y-axis assembly"
+            label="Y-axis assembly"
+            helperText=""
             selected={assemblyY}
             session={session}
             onChange={asm => {
               setAssemblyY(asm)
-              setPreConfiguredTrackId('')
             }}
           />
           <Button
@@ -77,12 +75,6 @@ const DotplotImportForm = observer(function DotplotImportForm({
                   session,
                   assemblyX,
                   assemblyY,
-                  selection: resolveImportFormSelection({
-                    choice,
-                    preConfiguredTrackId,
-                    syntenyTracks,
-                    modelSelection: model.importFormSyntenyTrackSelections[0],
-                  }),
                 })
               } catch (e) {
                 console.error(e)
@@ -96,14 +88,11 @@ const DotplotImportForm = observer(function DotplotImportForm({
           </Button>
         </Grid>
         <TrackSelector
+          key={`${assemblyX}-${assemblyY}`}
           model={model}
           assemblyX={assemblyX}
           assemblyY={assemblyY}
           syntenyTracks={syntenyTracks}
-          choice={choice}
-          setChoice={setChoice}
-          preConfiguredTrackId={preConfiguredTrackId}
-          setPreConfiguredTrackId={setPreConfiguredTrackId}
         />
       </Paper>
     </Container>

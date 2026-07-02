@@ -72,6 +72,7 @@ const AssemblyRows = observer(function AssemblyRows({
     <div key={`${assemblyName}-${idx}`} className={classes.rel}>
       <span>Row {idx + 1}: </span>
       <AssemblySelector
+        label={`Row ${idx + 1} assembly`}
         helperText=""
         selected={assemblyName}
         onChange={newAssembly => {

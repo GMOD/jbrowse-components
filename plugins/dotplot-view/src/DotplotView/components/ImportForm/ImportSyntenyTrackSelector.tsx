@@ -2,6 +2,7 @@ import { ErrorBanner } from '@jbrowse/core/ui'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import { getSession } from '@jbrowse/core/util'
 import { getTrackName } from '@jbrowse/core/util/tracks'
+import { pickSyntenyTrackId } from '@jbrowse/synteny-core'
 import { MenuItem, Paper, Select, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -14,17 +15,16 @@ const ImportSyntenyTrackSelector = observer(
     assemblyX,
     assemblyY,
     syntenyTracks,
-    value,
-    setValue,
   }: {
     model: DotplotViewModel
     assemblyX: string
     assemblyY: string
     syntenyTracks: AnyConfigurationModel[]
-    value: string
-    setValue: (arg: string) => void
   }) {
     const session = getSession(model)
+    const selection = model.importFormSyntenyTrackSelections[0]
+    const picked = selection?.type === 'preConfigured' ? selection.value : ''
+    const value = pickSyntenyTrackId(picked, syntenyTracks) ?? ''
     return (
       <Paper style={{ padding: 12 }}>
         <Typography>
@@ -36,9 +36,13 @@ const ImportSyntenyTrackSelector = observer(
         </Typography>
         {syntenyTracks.length ? (
           <Select
-            value={value || syntenyTracks[0]!.trackId}
+            value={value}
+            inputProps={{ 'aria-label': 'Synteny track' }}
             onChange={event => {
-              setValue(event.target.value)
+              model.setImportFormSyntenyTrack(0, {
+                type: 'preConfigured',
+                value: event.target.value,
+              })
             }}
           >
             {syntenyTracks.map(track => (

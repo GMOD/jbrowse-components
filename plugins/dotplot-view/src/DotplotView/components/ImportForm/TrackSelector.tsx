@@ -2,15 +2,12 @@ import { Suspense } from 'react'
 
 import { getEnv } from '@jbrowse/core/util'
 import {
-  FormControl,
-  FormControlLabel,
-  FormLabel,
-  Radio,
-  RadioGroup,
-} from '@mui/material'
+  ImportFormOpenCustomTrack,
+  ImportFormSyntenyChoiceRadioGroup,
+  useImportFormSyntenyChoice,
+} from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
-import ImportSyntenyOpenCustomTrack from './ImportSyntenyOpenCustomTrack.tsx'
 import ImportSyntenyTrackSelector from './ImportSyntenyTrackSelector.tsx'
 
 import type { DotplotViewModel } from '../../model.ts'
@@ -41,19 +38,11 @@ const TrackSelector = observer(function TrackSelector({
   assemblyX,
   assemblyY,
   syntenyTracks,
-  choice,
-  setChoice,
-  preConfiguredTrackId,
-  setPreConfiguredTrackId,
 }: {
   model: DotplotViewModel
   assemblyX: string
   assemblyY: string
   syntenyTracks: AnyConfigurationModel[]
-  choice: string
-  setChoice: (arg: string) => void
-  preConfiguredTrackId: string
-  setPreConfiguredTrackId: (arg: string) => void
 }) {
   const { pluginManager } = getEnv(model)
 
@@ -61,6 +50,9 @@ const TrackSelector = observer(function TrackSelector({
   // (y-axis/x-axis) prop names
   const assembly1 = assemblyY
   const assembly2 = assemblyX
+
+  const { choice, setChoice } = useImportFormSyntenyChoice(model, 0)
+
   const customOptions = pluginManager.evaluateExtensionPoint(
     /** #extensionPoint DotplotView-ImportFormSyntenyOptions | sync | Add options to the dotplot view import form */
     'DotplotView-ImportFormSyntenyOptions',
@@ -72,49 +64,20 @@ const TrackSelector = observer(function TrackSelector({
 
   return (
     <>
-      <FormControl>
-        <FormLabel id="group-label">
-          (Optional) Select or add a synteny track
-        </FormLabel>
-        <RadioGroup
-          row
-          value={choice}
-          onChange={event => {
-            const val = event.target.value
-            setChoice(val)
-            if (val === 'none' || val === 'custom') {
-              model.setImportFormSyntenyTrack(0, { type: 'none' })
-            }
-          }}
-          aria-labelledby="group-label"
-        >
-          <FormControlLabel value="none" control={<Radio />} label="None" />
-          <FormControlLabel
-            value="tracklist"
-            control={<Radio />}
-            label="Existing track"
-          />
-          <FormControlLabel
-            value="custom"
-            control={<Radio />}
-            label="New track"
-          />
-          {customOptions.map(opt => (
-            <FormControlLabel
-              key={opt.value}
-              value={opt.value}
-              control={<Radio />}
-              label={opt.label}
-            />
-          ))}
-        </RadioGroup>
-      </FormControl>
+      <ImportFormSyntenyChoiceRadioGroup
+        choice={choice}
+        onChange={setChoice}
+        customOptions={customOptions}
+        label="(Optional) Select or add a synteny track"
+      />
       {choice === 'custom' ? (
-        <ImportSyntenyOpenCustomTrack
+        <ImportFormOpenCustomTrack
           key={`${assembly1}-${assembly2}`}
           model={model}
-          assembly2={assembly2}
+          rowIndex={0}
+          extensionPoint="DotplotView-SyntenyFileFormats"
           assembly1={assembly1}
+          assembly2={assembly2}
         />
       ) : null}
       {choice === 'tracklist' ? (
@@ -123,8 +86,6 @@ const TrackSelector = observer(function TrackSelector({
           assemblyX={assemblyX}
           assemblyY={assemblyY}
           syntenyTracks={syntenyTracks}
-          value={preConfiguredTrackId}
-          setValue={setPreConfiguredTrackId}
         />
       ) : null}
       {selectedCustomOption ? (

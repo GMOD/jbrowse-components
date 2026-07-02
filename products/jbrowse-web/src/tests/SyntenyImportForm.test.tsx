@@ -37,16 +37,15 @@ test('three level', async () => {
 }, 40000)
 
 test('open tracklist file', async () => {
-  const { session, findByTestId, findByRole, findAllByRole, findByText } =
+  const { session, findByTestId, findByRole, findByText } =
     await createView()
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
-  const r = await findAllByRole('combobox', { name: 'Assembly' })
-  expect(r.length).toBe(2)
-
-  fireEvent.mouseDown(r[1]!)
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'Row 2 assembly' }),
+  )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
   fireEvent.click(await findByText('Launch'))
 
@@ -54,15 +53,16 @@ test('open tracklist file', async () => {
 }, 40000)
 
 test('open local paf', async () => {
-  const { session, findByTestId, findByRole, findAllByRole, findByText } =
+  const { session, findByTestId, findByRole, findByText } =
     await createView()
 
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
 
-  const r = await findAllByRole('combobox', { name: 'Assembly' })
-  fireEvent.mouseDown(r[0]!)
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'Row 1 assembly' }),
+  )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))
@@ -83,7 +83,6 @@ test('open local pif', async () => {
     session,
     findByTestId,
     findByRole,
-    findAllByRole,
     findAllByTestId,
     findByText,
   } = await createView()
@@ -92,8 +91,9 @@ test('open local pif', async () => {
   fireEvent.click(await findByText('Linear synteny view'))
   expect(session.views.length).toBe(2)
 
-  const r = await findAllByRole('combobox', { name: 'Assembly' })
-  fireEvent.mouseDown(r[0]!)
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'Row 1 assembly' }),
+  )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))

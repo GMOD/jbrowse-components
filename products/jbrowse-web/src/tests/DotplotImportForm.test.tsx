@@ -14,18 +14,16 @@ afterEach(() => {
 })
 
 test('open tracklist file', async () => {
-  const { session, findByTestId, findByRole, findAllByRole, findByText } =
+  const { session, findByTestId, findByRole, findByText } =
     await createView()
 
   fireEvent.click(await findByText('File'))
   fireEvent.click(await findByText('Add'))
   fireEvent.click(await findByText('Dotplot view'))
   expect(session.views.length).toBe(2)
-  const r = await findAllByRole('combobox', { name: 'Assembly', hidden: true })
-
-  expect(r.length).toBe(2)
-
-  fireEvent.mouseDown(r[1]!)
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'Y-axis assembly', hidden: true }),
+  )
 
   const listbox = within(await findByRole('listbox'))
   fireEvent.click(listbox.getByText('volvox_del'))
@@ -35,7 +33,7 @@ test('open tracklist file', async () => {
 }, 50000)
 
 test('open local paf', async () => {
-  const { session, findByTestId, findByRole, findAllByRole, findByText } =
+  const { session, findByTestId, findByRole, findByText } =
     await createView()
 
   fireEvent.click(await findByText('File'))
@@ -43,8 +41,9 @@ test('open local paf', async () => {
   fireEvent.click(await findByText('Dotplot view'))
   expect(session.views.length).toBe(2)
 
-  const r = await findAllByRole('combobox', { name: 'Assembly', hidden: true })
-  fireEvent.mouseDown(r[0]!)
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'X-axis assembly', hidden: true }),
+  )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))
@@ -65,7 +64,6 @@ test('open local pif', async () => {
     session,
     findByTestId,
     findByRole,
-    findAllByRole,
     findAllByTestId,
     findByText,
   } = await createView()
@@ -75,8 +73,9 @@ test('open local pif', async () => {
   fireEvent.click(await findByText('Dotplot view'))
   expect(session.views.length).toBe(2)
 
-  const r = await findAllByRole('combobox', { name: 'Assembly', hidden: true })
-  fireEvent.mouseDown(r[0]!)
+  fireEvent.mouseDown(
+    await findByRole('combobox', { name: 'X-axis assembly', hidden: true }),
+  )
   fireEvent.click(within(await findByRole('listbox')).getByText('volvox_del'))
 
   fireEvent.click(await findByText('New track'))

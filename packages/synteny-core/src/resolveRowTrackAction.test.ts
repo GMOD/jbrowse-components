@@ -1,7 +1,7 @@
-import { resolveRowTrackAction } from './doSubmit.tsx'
+import { resolveRowTrackAction } from './resolveRowTrackAction.ts'
 
+import type { ImportFormSyntenyTrack } from './SelectorTypes.ts'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { ImportFormSyntenyTrack } from '@jbrowse/synteny-core'
 
 const track = (trackId: string) =>
   ({ trackId }) as unknown as AnyConfigurationModel

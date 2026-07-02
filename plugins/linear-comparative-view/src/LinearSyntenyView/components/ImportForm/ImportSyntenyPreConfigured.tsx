@@ -37,6 +37,7 @@ const ImportSyntenyTrackSelector = observer(
         {filteredTracks.length ? (
           <Select
             value={value}
+            inputProps={{ 'aria-label': 'Synteny track' }}
             onChange={event => {
               model.setImportFormSyntenyTrack(selectedRow, {
                 type: 'preConfigured',
