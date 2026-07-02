@@ -118,34 +118,35 @@ function regionCoord(r: RegionSnap, bp: number) {
 // `coord` is 1-based for display; `coord0` is the 0-based (BED/interbase) base
 // under the cursor — the value bpToPx consumes, so it round-trips. `offset` is
 // the raw 0-based float bp within the region — pair with offsetBpToPx.
-// manual return type since getSnapshot hard to infer here
-export function pxToBp(
-  self: ViewLayout,
-  px: number,
-): {
+export interface PxToBpResult extends RegionSnap {
   coord: number
   coord0: number
   index: number
-  refName: string
   oob: boolean
-  assemblyName: string
   offset: number
-  start: number
-  end: number
-  reversed?: boolean
-} {
+}
+
+function pxToBpResult(
+  r: RegionSnap,
+  offset: number,
+  index: number,
+  oob: boolean,
+): PxToBpResult {
+  return {
+    ...r,
+    oob,
+    offset,
+    index,
+    coord: regionCoord(r, offset),
+    coord0: regionBase0(r, offset),
+  }
+}
+
+export function pxToBp(self: ViewLayout, px: number): PxToBpResult {
   const { bpPerPx, offsetPx, displayedRegions } = self
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
-    const r = displayedRegions[0]!
-    return {
-      ...r,
-      oob: true,
-      coord: regionCoord(r, bp),
-      coord0: regionBase0(r, bp),
-      offset: bp,
-      index: 0,
-    }
+    return pxToBpResult(displayedRegions[0]!, bp, 0, true)
   }
 
   let bpSoFar = 0
@@ -155,14 +156,7 @@ export function pxToBp(
     const len = r.end - r.start
     const offset = bp - bpSoFar
     if (offset >= 0 && offset < len) {
-      return {
-        ...r,
-        oob: false,
-        offset,
-        coord: regionCoord(r, offset),
-        coord0: regionBase0(r, offset),
-        index: i,
-      }
+      return pxToBpResult(r, offset, i, false)
     }
     bpSoFar += len
   }
@@ -172,14 +166,7 @@ export function pxToBp(
     throw new Error('pxToBp called with empty displayedRegions')
   }
   const offset = bp - bpSoFar + r.end - r.start
-  return {
-    ...r,
-    oob: true,
-    offset,
-    coord: regionCoord(r, offset),
-    coord0: regionBase0(r, offset),
-    index: displayedRegions.length - 1,
-  }
+  return pxToBpResult(r, offset, displayedRegions.length - 1, true)
 }
 
 // Precise within-region float-bp-offset → track-px (unrounded). Use when the
