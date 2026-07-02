@@ -12,6 +12,21 @@ export function onDeviceLost(listener: () => void) {
   }
 }
 
+// One-line record of what GPU a user's machine actually gave us. The whole
+// point of the GPU path is scaling across hardware we can't see — when a report
+// comes in of a blank/errored track, this is the difference between "which GPU
+// and how much headroom" and pure guesswork. maxTextureDimension2D and
+// maxBufferSize are the two limits our over-allocation guards trip on.
+function logGpuCapabilities(adapter: GPUAdapter, device: GPUDevice) {
+  const { vendor, architecture, description } = adapter.info
+  const { maxTextureDimension2D, maxBufferSize, maxStorageBufferBindingSize } =
+    device.limits
+  console.warn(
+    `[GPU] WebGPU device ready — vendor="${vendor}" architecture="${architecture}" description="${description}" ` +
+      `maxTextureDimension2D=${maxTextureDimension2D} maxBufferSize=${maxBufferSize} maxStorageBufferBindingSize=${maxStorageBufferBindingSize}`,
+  )
+}
+
 async function createDevice(): Promise<GPUDevice | null> {
   try {
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-condition
@@ -34,6 +49,14 @@ async function createDevice(): Promise<GPUDevice | null> {
         maxBufferSize: adapter.limits.maxBufferSize,
       },
     })
+    // Best-effort diagnostic: a logging failure (e.g. an environment that
+    // doesn't populate adapter.info) must never abort device creation and drop
+    // us to WebGL2.
+    try {
+      logGpuCapabilities(adapter, d)
+    } catch (e) {
+      console.warn('[GPU] capability logging failed (non-fatal):', e)
+    }
     // Surface any WebGPU validation / out-of-memory / internal errors that
     // would otherwise be silently swallowed. Without this, a bad draw/pipeline
     // results in a blank canvas with no console output.

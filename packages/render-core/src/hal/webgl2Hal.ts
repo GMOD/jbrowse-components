@@ -370,7 +370,7 @@ export class WebGL2Hal implements GpuHal {
     const maxDim = Number(gl.getParameter(gl.MAX_TEXTURE_SIZE))
     if (width > maxDim || height > maxDim) {
       this.oom.report(
-        `texture ${width}x${height} exceeds GL_MAX_TEXTURE_SIZE ${maxDim} — region not rendered`,
+        `This region is too large to render on this GPU — zoom in. (texture ${width}×${height} exceeds max texture size ${maxDim})`,
       )
       return
     }

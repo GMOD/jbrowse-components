@@ -338,7 +338,7 @@ export class WebGPUHal implements GpuHal {
     const maxDim = this.device.limits.maxTextureDimension2D
     if (width > maxDim || height > maxDim) {
       this.oom.report(
-        `canvas ${width}x${height} exceeds device maxTextureDimension2D ${maxDim} — reduce view height or devicePixelRatio`,
+        `This view is too large for this GPU — zoom in or reduce the track height. (canvas ${width}×${height} exceeds max texture size ${maxDim})`,
       )
       return
     }
@@ -370,7 +370,7 @@ export class WebGPUHal implements GpuHal {
     const { maxBufferSize } = this.device.limits
     if (data.byteLength > maxBufferSize) {
       this.oom.report(
-        `vertex buffer ${data.byteLength} bytes exceeds device maxBufferSize ${maxBufferSize} — region not rendered`,
+        `This region has too much data to render on this GPU — zoom in. (vertex buffer ${data.byteLength} bytes exceeds device limit ${maxBufferSize})`,
       )
       return
     }
@@ -472,7 +472,7 @@ export class WebGPUHal implements GpuHal {
     const maxDim = this.device.limits.maxTextureDimension2D
     if (width > maxDim || height > maxDim) {
       this.oom.report(
-        `texture ${width}x${height} exceeds device maxTextureDimension2D ${maxDim} — region not rendered`,
+        `This region is too large to render on this GPU — zoom in. (texture ${width}×${height} exceeds max texture size ${maxDim})`,
       )
       return
     }
@@ -650,7 +650,7 @@ export class WebGPUHal implements GpuHal {
         // over-limit checks in uploadBuffer/uploadTexture). Surface to the
         // display, not just the console — the view is too large for this GPU.
         this.oom.report(
-          `endFrame: out-of-memory after submit (slot=${slotAtSubmit}): ${err.message}`,
+          `This view exhausted GPU memory — zoom in or reduce the track height. (out-of-memory after submit, slot ${slotAtSubmit}: ${err.message})`,
         )
       }
     })
