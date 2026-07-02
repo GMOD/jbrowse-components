@@ -447,7 +447,9 @@ export function generateUnknownTrackConf(
 }
 
 export function getTrackName(
-  conf: AnyConfigurationModel | { name?: string; type?: string },
+  conf:
+    | AnyConfigurationModel
+    | { name?: string; type?: string; trackId?: string },
   session: { assemblies: AnyConfigurationModel[] },
 ): string {
   const isMst = isStateTreeNode(conf)
@@ -463,7 +465,10 @@ export function getTrackName(
         })`
       : 'Reference sequence'
   }
-  return trackName
+  const trackId = isMst
+    ? (readConfObject(conf, 'trackId') as string)
+    : (conf.trackId ?? '')
+  return trackName || trackId
 }
 
 type MSTArray<T extends IAnyType> = Instance<ReturnType<typeof types.array<T>>>

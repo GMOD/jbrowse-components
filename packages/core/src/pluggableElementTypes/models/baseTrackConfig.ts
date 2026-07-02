@@ -147,9 +147,10 @@ export function createBaseTrackConfig(pluginManager: PluginManager) {
        * #slot
        */
       name: {
-        description: 'descriptive name of the track',
+        description:
+          'descriptive name of the track, falls back to the trackId when unset',
         type: 'string',
-        defaultValue: 'Track',
+        defaultValue: '',
       },
       /**
        * #slot

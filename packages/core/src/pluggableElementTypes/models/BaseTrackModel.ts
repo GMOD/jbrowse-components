@@ -105,7 +105,7 @@ export function createBaseTrackModel(
        * #getter
        */
       get name() {
-        return getConf(self, 'name')
+        return (getConf(self, 'name') as string) || this.trackId
       },
       /**
        * #getter

@@ -1,4 +1,4 @@
-import { findFileHandleIds, getFileName } from './tracks.ts'
+import { findFileHandleIds, getFileName, getTrackName } from './tracks.ts'
 
 describe('findFileHandleIds', () => {
   test('finds FileHandleLocation in flat object', () => {
@@ -211,5 +211,34 @@ describe('getFileName', () => {
   test('returns empty string for unknown location type', () => {
     const loc = { locationType: 'UnknownLocation' } as any
     expect(getFileName(loc)).toBe('')
+  })
+})
+
+describe('getTrackName', () => {
+  const session = { assemblies: [] }
+
+  test('returns the name when set', () => {
+    const conf = { name: 'My track', type: 'FeatureTrack', trackId: 'genes' }
+    expect(getTrackName(conf, session)).toBe('My track')
+  })
+
+  test('falls back to trackId when name is empty', () => {
+    const conf = { name: '', type: 'FeatureTrack', trackId: 'genes' }
+    expect(getTrackName(conf, session)).toBe('genes')
+  })
+
+  test('falls back to trackId when name is unset', () => {
+    const conf = { type: 'FeatureTrack', trackId: 'genes' }
+    expect(getTrackName(conf, session)).toBe('genes')
+  })
+
+  test('returns empty string when neither name nor trackId set', () => {
+    const conf = { type: 'FeatureTrack' }
+    expect(getTrackName(conf, session)).toBe('')
+  })
+
+  test('uses generic reference sequence label when no assembly matches', () => {
+    const conf = { type: 'ReferenceSequenceTrack', trackId: 'hg38-ref' }
+    expect(getTrackName(conf, session)).toBe('Reference sequence')
   })
 })
