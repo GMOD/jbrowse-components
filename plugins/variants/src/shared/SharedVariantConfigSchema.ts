@@ -24,6 +24,17 @@ export const sharedVariantConfigSlots = {
     model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
     defaultValue: 'alleleCount',
   },
+  // Optional per-feature color for the genotype cells: a jexl expression (or
+  // plain CSS color) evaluated once per variant in the worker, painting every
+  // alt-carrying cell with that color while ref/no-call cells keep their normal
+  // coloring so "who carries it" still reads. Empty means the default
+  // genotype-based coloring (allele dosage / phasing). The "Color cells by"
+  // menu offers presets like consequence impact (jexl:impactColor(feature)),
+  // but any feature jexl works, same as the standard `color` slot.
+  featureColor: {
+    type: 'string',
+    defaultValue: '',
+  },
   minorAlleleFrequencyFilter: {
     type: 'number',
     defaultValue: 0,

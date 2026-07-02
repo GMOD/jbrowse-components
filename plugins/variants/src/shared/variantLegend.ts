@@ -7,7 +7,9 @@ import {
   REFERENCE_COLOR,
   UNPHASED_COLOR,
   getAltColorForDosage,
+  titleCase,
 } from './constants.ts'
+import { CONSEQUENCE_IMPACT_JEXL, IMPACT_TIERS } from './variantConsequence.ts'
 
 import type { Source } from './types.ts'
 import type {
@@ -111,12 +113,6 @@ export function getSampleGroupLegendItems(
     }))
 }
 
-// Title-case the colorBy metadata key for the sample-grouping section header
-// (e.g. "population" -> "Population").
-function titleCase(s: string) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
-}
-
 // The legend split into independently-closable sections: the genotype/cell
 // coloring and (when colorBy is set) the sample-grouping coloring used for the
 // sidebar row labels — two distinct color meanings that share one legend box.
@@ -125,26 +121,41 @@ export function getVariantLegendSections({
   renderingMode,
   hasSecondaryAlt,
   hasUnphased,
+  featureColor,
   colorBy,
   sources,
 }: {
   renderingMode: string
   hasSecondaryAlt: boolean
   hasUnphased: boolean
+  // Per-variant cell color override; '' = default genotype coloring. When set,
+  // cells aren't genotype-colored, so the genotype legend is replaced — by the
+  // impact-tier key for the known consequence preset, or dropped for an
+  // arbitrary custom expression we can't build a key for.
+  featureColor: string
   colorBy: string
   sources: Source[] | undefined
 }): LegendSection[] {
   const groupItems = getSampleGroupLegendItems(colorBy, sources)
+  const cellSection: LegendSection | undefined = featureColor
+    ? featureColor === CONSEQUENCE_IMPACT_JEXL
+      ? {
+          id: 'consequenceImpact',
+          title: 'Consequence impact',
+          items: IMPACT_TIERS.map(t => ({ color: t.color, label: t.tier })),
+        }
+      : undefined
+    : {
+        id: 'genotypes',
+        title: 'Genotypes',
+        items: getGenotypeLegendItems({
+          renderingMode,
+          hasSecondaryAlt,
+          hasUnphased,
+        }),
+      }
   return [
-    {
-      id: 'genotypes',
-      title: 'Genotypes',
-      items: getGenotypeLegendItems({
-        renderingMode,
-        hasSecondaryAlt,
-        hasUnphased,
-      }),
-    },
+    ...(cellSection ? [cellSection] : []),
     ...(groupItems.length
       ? [
           {

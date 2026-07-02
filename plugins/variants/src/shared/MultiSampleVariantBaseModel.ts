@@ -10,7 +10,7 @@ import {
   openFeatureWidget,
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
-import { cast, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { cast, getEnv, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
@@ -24,7 +24,11 @@ import {
 } from '@jbrowse/tree-sidebar'
 import deepEqual from 'fast-deep-equal'
 
-import { GENOTYPE_SPLITTER, VARIANT_FEATURE_WIDGET } from './constants.ts'
+import {
+  GENOTYPE_SPLITTER,
+  INTERNAL_SOURCE_KEYS,
+  VARIANT_FEATURE_WIDGET,
+} from './constants.ts'
 import { buildSampleIndex, decodeGenotypes } from './genotypeCodec.ts'
 import { expandSourcesToHaplotypes, getSources } from './getSources.ts'
 import {
@@ -36,6 +40,7 @@ import { getVariantLegendSections } from './variantLegend.ts'
 
 import type { ProcessedSource, Source } from './types.ts'
 import type { CellDataResult } from '../VariantRPC/executeVariantCellData.ts'
+import type PluginManager from '@jbrowse/core/PluginManager'
 import type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
@@ -84,21 +89,8 @@ const PORTABLE_CONFIG_KEYS = [
   'showBranchLength',
   'referenceDrawingMode',
   'colorBy',
+  'featureColor',
 ] as const
-
-// Sample-metadata keys that aren't user-facing grouping attributes — internal
-// row plumbing (identity, haplotype index, rendering color/label). Everything
-// else a samplesTsv carries (population, sex, superpopulation, …) is offered as
-// a "Color samples by" choice.
-const NON_COLORBY_KEYS = new Set([
-  'name',
-  'sampleName',
-  'HP',
-  'baseUri',
-  'color',
-  'label',
-  'labelColor',
-])
 
 function encodeGenotype(gt: string) {
   const alleles = gt.split(GENOTYPE_SPLITTER)
@@ -169,6 +161,7 @@ async function callMultiSampleVariantCellData(args: {
     filters?: SerializableFilterChain
     renderingMode: string
     referenceDrawingMode: string
+    featureColor: string
   }
   mode: 'regular' | 'matrix'
   setStatusMessage: (status?: RpcStatus) => void
@@ -387,6 +380,14 @@ export default function MultiSampleVariantBaseModelF(
         },
         /**
          * #getter
+         * Whether any visible variant carries a SnpEff/VEP annotation, gating
+         * the "Color cells by consequence" menu option.
+         */
+        get hasConsequence() {
+          return self.cellData?.hasConsequence ?? false
+        },
+        /**
+         * #getter
          */
         get sampleInfo() {
           return self.cellData?.sampleInfo
@@ -409,6 +410,15 @@ export default function MultiSampleVariantBaseModelF(
          */
         get colorBy(): string {
           return getConf(self, 'colorBy')
+        },
+
+        /**
+         * #getter
+         * Optional per-variant cell color (jexl string or CSS color) applied to
+         * alt-carrying cells; '' means default genotype coloring.
+         */
+        get featureColor(): string {
+          return getConf(self, 'featureColor')
         },
 
         get featureWidgetType() {
@@ -589,6 +599,15 @@ export default function MultiSampleVariantBaseModelF(
         setReferenceDrawingMode(arg: string) {
           self.configuration.setSlot('referenceDrawingMode', arg)
         },
+        /**
+         * #action
+         * Set the per-variant cell color override (jexl string or CSS color), or
+         * '' to restore default genotype coloring. A fetch input — recomputes
+         * cells in the worker.
+         */
+        setFeatureColor(arg: string) {
+          self.configuration.setSlot('featureColor', arg)
+        },
       }))
       .views(self => ({
         /**
@@ -609,7 +628,11 @@ export default function MultiSampleVariantBaseModelF(
          */
         get filters() {
           return self.jexlFilters?.length
-            ? new SerializableFilterChain({ filters: [...self.jexlFilters] })
+            ? new SerializableFilterChain({
+                filters: [...self.jexlFilters],
+                jexl: getEnv<{ pluginManager: PluginManager }>(self)
+                  .pluginManager.jexl,
+              })
             : undefined
         },
 
@@ -642,7 +665,7 @@ export default function MultiSampleVariantBaseModelF(
           const keys = new Set<string>()
           for (const source of sources) {
             for (const key in source) {
-              if (!NON_COLORBY_KEYS.has(key)) {
+              if (!INTERNAL_SOURCE_KEYS.has(key)) {
                 keys.add(key)
               }
             }
@@ -738,6 +761,7 @@ export default function MultiSampleVariantBaseModelF(
             filters: self.filters,
             renderingMode: self.renderingMode,
             referenceDrawingMode: self.referenceDrawingMode,
+            featureColor: self.featureColor,
           }
         },
       }))
@@ -953,6 +977,7 @@ export default function MultiSampleVariantBaseModelF(
             renderingMode: self.renderingMode,
             hasSecondaryAlt: self.hasSecondaryAlt,
             hasUnphased: self.hasUnphased,
+            featureColor: self.featureColor,
             colorBy: self.colorBy,
             sources: self.sources,
           }).filter(s => !self.dismissedLegendSections.includes(s.id))

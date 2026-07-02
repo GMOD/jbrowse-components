@@ -126,3 +126,47 @@ describe('computeVariantCells insertion hit bounds', () => {
     expect(result.cellPositions[1]).toBe(101)
   })
 })
+
+describe('computeVariantCells featureColor override', () => {
+  const sources: ProcessedSource[] = [
+    { name: 'S1', sampleName: 'S1', HP: 0 },
+    { name: 'S2', sampleName: 'S2', HP: 0 },
+    { name: 'S3', sampleName: 'S3', HP: 0 },
+  ]
+  const feature = makeFeature({
+    // S1 hom-ref, S2 het-alt (carrying), S3 no-call
+    genotypes: { S1: '0/0', S2: '0/1', S3: './.' },
+    ALT: ['A'],
+    REF: 'G',
+    name: 'v1',
+    description: '',
+    type: 'SNV',
+    start: 100,
+    end: 101,
+  })
+
+  test('alt-carrying cell takes the override color; ref and no-call keep theirs', async () => {
+    const { getCachedABGR } = await import('../../shared/variantWebglUtils.ts')
+    const { REFERENCE_COLOR } = await import('../../shared/constants.ts')
+    const override = 'rgb(1,2,3)'
+    const result = computeVariantCells({
+      mafs: [{ feature, mostFrequentAlt: '1' }],
+      sources,
+      renderingMode: 'alleleCount',
+      referenceDrawingMode: 'draw',
+      featureColor: () => override,
+      genotypesCache: new Map(),
+    })
+    const colors = [...result.cellColors]
+    const overrideAbgr = getCachedABGR(override)
+    const refAbgr = getCachedABGR(REFERENCE_COLOR)
+    // exactly the single het-alt cell is painted with the override
+    expect(colors.filter(c => c === overrideAbgr)).toHaveLength(1)
+    // ref cell is untouched, no-call cell is neither ref nor override
+    expect(colors).toContain(refAbgr)
+    expect(colors.filter(c => c === overrideAbgr || c === refAbgr)).toHaveLength(
+      2,
+    )
+    expect(result.numCells).toBe(3)
+  })
+})

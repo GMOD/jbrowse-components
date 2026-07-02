@@ -32,6 +32,9 @@ export interface GetCellDataArgs extends BaseVariantRpcArgs {
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode?: string
+  // Optional per-feature cell color (jexl string or plain CSS color), evaluated
+  // once per variant in the worker. Empty/undefined = default genotype coloring.
+  featureColor?: string
   mode: 'regular' | 'matrix'
   displayedRegionIndices?: number[]
   statusCallback: (status: RpcStatus) => void

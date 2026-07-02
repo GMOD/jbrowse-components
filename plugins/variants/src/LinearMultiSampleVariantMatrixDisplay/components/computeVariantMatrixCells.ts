@@ -45,12 +45,15 @@ export function computeVariantMatrixCells({
   mafs,
   sources,
   renderingMode,
+  featureColor,
   genotypesCache,
   report,
 }: {
   mafs: MAFFilteredFeature[]
   sources: ProcessedSource[]
   renderingMode: string
+  // Optional per-variant color override (see computeVariantCells).
+  featureColor?: (feature: Feature) => string | undefined
   genotypesCache: Map<string, Record<string, string>>
   report?: ProgressReporter
 }): MatrixCellData {
@@ -92,6 +95,7 @@ export function computeVariantMatrixCells({
     report?.()
     const { feature, mostFrequentAlt } = mafs[idx]!
     const featureId = feature.id()
+    const overrideColor = featureColor?.(feature)
     const hasPhaseSet = (feature.get('FORMAT') as string | undefined)?.includes(
       'PS',
     )
@@ -140,7 +144,10 @@ export function computeVariantMatrixCells({
             PS,
           )
           if (c) {
-            addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
+            const isRefCell = c === REFERENCE_COLOR
+            const cellColor =
+              overrideColor !== undefined && !isRefCell ? overrideColor : c
+            addCell(idx, j, getCachedABGR(cellColor), isRefCell)
           }
         } else {
           addCell(idx, j, BLACK_ABGR, false)
@@ -155,7 +162,13 @@ export function computeVariantMatrixCells({
         if (!genotype) {
           continue
         }
-        const c = getAlleleColor(genotype, mostFrequentAlt, alleleColorCache)
+        const c = getAlleleColor(
+          genotype,
+          mostFrequentAlt,
+          alleleColorCache,
+          true,
+          overrideColor,
+        )
         if (c) {
           addCell(idx, j, getCachedABGR(c), c === REFERENCE_COLOR)
         }

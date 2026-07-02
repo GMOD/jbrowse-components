@@ -27,6 +27,12 @@ const IMPACT_COLOR: Record<string, string> = Object.fromEntries(
   IMPACT_TIERS.map(t => [t.tier, t.color]),
 )
 
+// The `featureColor` / `color` jexl preset that paints by consequence impact,
+// backed by the `impactColor` jexl function registered in the plugin's
+// configure(). Shared so the single-variant and multi-sample displays offer the
+// same one-click choice and detect it identically.
+export const CONSEQUENCE_IMPACT_JEXL = 'jexl:impactColor(feature)'
+
 const NO_IMPACT_COLOR = '#9e9e9e'
 
 function annotationStrings(feature: Feature) {
@@ -59,6 +65,16 @@ function mostSevereAnnotation(feature: Feature) {
     }
   }
   return best
+}
+
+/**
+ * Whether the variant carries any SnpEff/VEP annotation at all — used to gate
+ * the "color cells by consequence" menu option (like phased mode is gated on
+ * hasPhased) so it isn't offered when every cell would render the same
+ * no-impact grey.
+ */
+export function featureHasConsequence(feature: Feature) {
+  return annotationStrings(feature).length > 0
 }
 
 /**

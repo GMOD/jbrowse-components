@@ -1,3 +1,4 @@
+import { readConfigValue } from '@jbrowse/core/configuration'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
 import { rpcResult } from '@jbrowse/core/util/librpc'
@@ -7,6 +8,11 @@ import { computeVariantMatrixCells } from '../LinearMultiSampleVariantMatrixDisp
 import { internGenotype } from '../shared/genotypeCodec.ts'
 import { expandSourcesToHaplotypes } from '../shared/getSources.ts'
 import { getFeaturesThatPassMinorAlleleFrequencyFilter } from '../shared/minorAlleleFrequencyUtils.ts'
+import {
+  CONSEQUENCE_IMPACT_JEXL,
+  featureHasConsequence,
+  getVariantImpactColor,
+} from '../shared/variantConsequence.ts'
 
 import type { GetCellDataArgs } from './types.ts'
 import type { VariantCellData } from '../LinearMultiSampleVariantDisplay/components/computeVariantCells.ts'
@@ -19,7 +25,33 @@ import type {
 } from '../shared/types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { ProgressReporter } from '@jbrowse/core/util'
+import type { Feature, ProgressReporter } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+
+// Resolve the `featureColor` setting to a per-feature color function, or
+// undefined for the default genotype coloring. This runs once per *feature* (not
+// per cell), so the jexl path costs O(variants), not O(cells). The built-in
+// consequence preset skips jexl entirely via the native impact-color function.
+function makeFeatureColor(
+  featureColor: string | undefined,
+  jexl: JexlInstance,
+): ((feature: Feature) => string | undefined) | undefined {
+  if (!featureColor) {
+    return undefined
+  }
+  if (featureColor === CONSEQUENCE_IMPACT_JEXL) {
+    return getVariantImpactColor
+  }
+  const cfg = { color: featureColor }
+  return feature => {
+    try {
+      const css = readConfigValue(cfg, 'color', feature, jexl)
+      return typeof css === 'string' ? css : undefined
+    } catch {
+      return undefined
+    }
+  }
+}
 
 export interface SimplifiedVariantFeature {
   id: string
@@ -40,6 +72,9 @@ interface CellDataBase {
   // simplified features sent to the client no longer carry ALT/genotypes.
   hasSecondaryAlt: boolean
   hasUnphased: boolean
+  // Whether any visible variant carries a SnpEff/VEP annotation, gating the
+  // "Color cells by consequence" menu option.
+  hasConsequence: boolean
   simplifiedFeatures: SimplifiedVariantFeature[]
   // Interned genotype payload (see shared/genotypeCodec.ts): the distinct
   // genotype strings, and the canonical sample order that each feature's
@@ -125,6 +160,7 @@ function computeSampleInfo(
   let hasPhased = false
   let hasSecondaryAlt = false
   let hasUnphased = false
+  let hasConsequence = false
 
   // Single pass: accumulate sampleInfo/legend flags and build the simplified
   // feature list together. Avoids a second full iteration over mafs (was a
@@ -137,6 +173,9 @@ function computeSampleInfo(
     const alt = feature.get('ALT') as string[] | undefined
     if (alt && alt.length > 1) {
       hasSecondaryAlt = true
+    }
+    if (!hasConsequence && featureHasConsequence(feature)) {
+      hasConsequence = true
     }
     let samp = genotypesCache.get(featureId)
     if (!samp) {
@@ -174,6 +213,7 @@ function computeSampleInfo(
     hasPhased,
     hasSecondaryAlt,
     hasUnphased,
+    hasConsequence,
     simplifiedFeatures,
   }
 }
@@ -190,6 +230,7 @@ export async function executeVariantCellData({
     sources,
     renderingMode,
     referenceDrawingMode,
+    featureColor,
     minorAlleleFrequencyFilter,
     filters,
     regions,
@@ -199,6 +240,8 @@ export async function executeVariantCellData({
     stopToken,
     displayedRegionIndices,
   } = args
+
+  const featureColorFn = makeFeatureColor(featureColor, pluginManager.jexl)
 
   const regionLookup = displayedRegionIndices
     ? regions.map((r, i) => ({
@@ -325,6 +368,7 @@ export async function executeVariantCellData({
     hasPhased,
     hasSecondaryAlt,
     hasUnphased,
+    hasConsequence,
     simplifiedFeatures,
   } = await withProgress(
     { ...progressOpts, label: 'Computing sample info', total: mafs.length },
@@ -365,6 +409,7 @@ export async function executeVariantCellData({
               sources: effectiveSources,
               renderingMode,
               referenceDrawingMode: referenceDrawingMode ?? 'skip',
+              featureColor: featureColorFn,
               genotypesCache,
               report,
             })
@@ -377,6 +422,7 @@ export async function executeVariantCellData({
             sources: effectiveSources,
             renderingMode,
             referenceDrawingMode: referenceDrawingMode ?? 'skip',
+            featureColor: featureColorFn,
             genotypesCache,
             report,
           }),
@@ -419,6 +465,7 @@ export async function executeVariantCellData({
         hasPhased,
         hasSecondaryAlt,
         hasUnphased,
+        hasConsequence,
         simplifiedFeatures,
         genotypeDict,
         sampleNames,
@@ -438,6 +485,7 @@ export async function executeVariantCellData({
           mafs,
           sources: effectiveSources,
           renderingMode,
+          featureColor: featureColorFn,
           genotypesCache,
           report,
         }),
@@ -468,6 +516,7 @@ export async function executeVariantCellData({
         hasPhased,
         hasSecondaryAlt,
         hasUnphased,
+        hasConsequence,
         simplifiedFeatures,
         genotypeDict,
         sampleNames,

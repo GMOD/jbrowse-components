@@ -2,15 +2,14 @@ import { types } from '@jbrowse/mobx-state-tree'
 import { linearCanvasBaseDisplayStateModelFactory } from '@jbrowse/plugin-canvas'
 
 import { VARIANT_FEATURE_WIDGET } from '../shared/constants.ts'
-import { IMPACT_TIERS } from '../shared/variantConsequence.ts'
+import {
+  CONSEQUENCE_IMPACT_JEXL,
+  IMPACT_TIERS,
+} from '../shared/variantConsequence.ts'
 
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LegendItem } from '@jbrowse/plugin-linear-genome-view'
-
-// The `color` slot value that colors each variant by its most severe SnpEff/VEP
-// impact tier (see the `impactColor` jexl function in the plugin's configure()).
-const CONSEQUENCE_IMPACT_JEXL = 'jexl:impactColor(feature)'
 
 /**
  * #stateModel LinearVariantDisplay

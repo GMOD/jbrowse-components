@@ -3,6 +3,8 @@ import { memo } from 'react'
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 
+import { INTERNAL_SOURCE_KEYS } from '../constants.ts'
+
 const useStyles = makeStyles()({
   table: {
     borderCollapse: 'collapse',
@@ -29,16 +31,6 @@ const useStyles = makeStyles()({
     textAlign: 'center',
   },
 })
-
-const EXCLUDE_KEYS = new Set([
-  'color',
-  'HP',
-  'name',
-  'sampleName',
-  'id',
-  'baseUri',
-  'labelColor',
-])
 
 const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
   source,
@@ -71,7 +63,7 @@ const MultiSampleVariantTooltip = memo(function MultiSampleVariantTooltip({
       <table className={classes.table}>
         <tbody>
           {Object.entries(source).map(([key, value]) =>
-            !EXCLUDE_KEYS.has(key) && value !== undefined ? (
+            !INTERNAL_SOURCE_KEYS.has(key) && value !== undefined ? (
               <tr key={key}>
                 <td className={classes.keyCell}>{key}</td>
                 <td className={classes.valueCell}>{String(value)}</td>

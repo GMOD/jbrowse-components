@@ -100,6 +100,7 @@ describe('getVariantLegendSections', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      featureColor: '',
       colorBy: '',
       sources,
     })
@@ -111,12 +112,43 @@ describe('getVariantLegendSections', () => {
       renderingMode: 'alleleCount',
       hasSecondaryAlt: false,
       hasUnphased: false,
+      featureColor: '',
       colorBy: 'population',
       sources,
     })
     expect(sections.map(s => s.id)).toEqual(['genotypes', 'group'])
     expect(sections[1]!.title).toBe('Population')
     expect(sections[1]!.items.map(i => i.label)).toEqual(['EUR', 'AFR'])
+  })
+
+  it('replaces the genotype section with an impact key for the consequence preset', () => {
+    const sections = getVariantLegendSections({
+      renderingMode: 'alleleCount',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      featureColor: 'jexl:impactColor(feature)',
+      colorBy: '',
+      sources,
+    })
+    expect(sections.map(s => s.id)).toEqual(['consequenceImpact'])
+    expect(sections[0]!.items.map(i => i.label)).toEqual([
+      'HIGH',
+      'MODERATE',
+      'LOW',
+      'MODIFIER',
+    ])
+  })
+
+  it('drops the cell legend for an arbitrary custom feature color', () => {
+    const sections = getVariantLegendSections({
+      renderingMode: 'alleleCount',
+      hasSecondaryAlt: false,
+      hasUnphased: false,
+      featureColor: 'jexl:get(feature,"foo")',
+      colorBy: 'population',
+      sources,
+    })
+    expect(sections.map(s => s.id)).toEqual(['group'])
   })
 })
 

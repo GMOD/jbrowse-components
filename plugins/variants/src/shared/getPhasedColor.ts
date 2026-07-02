@@ -21,7 +21,13 @@ export function getPhasedColor(
   const allele = alleles[HP]!
   if (allele !== '0' && allele !== '.') {
     if (PS !== undefined) {
-      return `hsl(${+PS % 255}, 50%, 50%)`
+      // Hash the phase-set id to a hue. Hue is a cyclic 0-360 axis, so the wrap
+      // is correct (not a bug) — the old `% 255` just truncated the wheel,
+      // never emitting the 255-360 magenta/red arc. The golden-angle multiplier
+      // spreads consecutive phase sets far apart instead of by a single degree.
+      const ps = +PS
+      const hue = Number.isFinite(ps) ? (ps * 137.508) % 360 : 0
+      return `hsl(${hue}, 50%, 50%)`
     }
     const colorIdx = allele === mostFrequentAlt ? 0 : 1
     return set1[colorIdx] ?? UNPHASED_COLOR

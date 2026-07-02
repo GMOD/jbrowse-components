@@ -78,6 +78,7 @@ export function computeVariantCells({
   sources,
   renderingMode,
   referenceDrawingMode,
+  featureColor,
   genotypesCache,
   report,
 }: {
@@ -85,6 +86,10 @@ export function computeVariantCells({
   sources: ProcessedSource[]
   renderingMode: string
   referenceDrawingMode: string
+  // Optional per-variant color override (e.g. consequence impact). Resolved once
+  // per feature; alt-carrying cells take it, ref/no-call cells keep their normal
+  // coloring. Undefined = default genotype coloring.
+  featureColor?: (feature: Feature) => string | undefined
   genotypesCache: Map<string, Record<string, string>>
   report?: ProgressReporter
 }): VariantCellData {
@@ -152,6 +157,9 @@ export function computeVariantCells({
       shape === SHAPE_TRI_DOWN
         ? getInsertionRenderEnd(start, end, alt, feature)
         : end
+    // Per-variant override color, resolved once per feature (not per cell);
+    // undefined when no override is set, so normal genotype coloring runs.
+    const overrideColor = featureColor?.(feature)
 
     if (renderingMode === 'phased') {
       // PS (phase-set) coloring requires per-sample FORMAT data, which only the
@@ -199,13 +207,16 @@ export function computeVariantCells({
             drawRef,
           )
           if (c) {
+            const isRefCell = c === REFERENCE_COLOR
+            const cellColor =
+              overrideColor !== undefined && !isRefCell ? overrideColor : c
             addCell(
               start,
               renderEnd,
               j,
-              getCachedABGR(c),
+              getCachedABGR(cellColor),
               shape,
-              c === REFERENCE_COLOR,
+              isRefCell,
               featureIdx,
             )
             renderedGenotypes[sampleName] = genotype
@@ -231,6 +242,7 @@ export function computeVariantCells({
             mostFrequentAlt,
             alleleColorCache,
             drawRef,
+            overrideColor,
           )
           if (c) {
             addCell(

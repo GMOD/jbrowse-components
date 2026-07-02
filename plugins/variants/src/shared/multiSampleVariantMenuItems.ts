@@ -5,6 +5,7 @@ import { treeBranchLengthMenuItem } from '@jbrowse/tree-sidebar'
 import CategoryIcon from '@mui/icons-material/Category'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import FormatColorFillIcon from '@mui/icons-material/FormatColorFill'
 import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
@@ -12,7 +13,9 @@ import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { titleCase } from './constants.ts'
 import { createMAFFilterMenuItem } from './mafFilterUtils.ts'
+import { CONSEQUENCE_IMPACT_JEXL } from './variantConsequence.ts'
 
 import type { MultiSampleVariantBaseModel } from './MultiSampleVariantBaseModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -29,11 +32,6 @@ const ClusterDialog = lazy(
 const SetRowHeightDialog = lazy(
   () => import('./components/SetRowHeightDialog.tsx'),
 )
-
-// "population" -> "Population" for the metadata-attribute menu labels.
-function titleCase(s: string) {
-  return s ? s.charAt(0).toUpperCase() + s.slice(1) : s
-}
 
 // Items for the "Show..." submenu — toggles for sidebar labels, the clustering
 // tree, subtree filter, and the legend. Extended by subclasses via super-capture
@@ -158,6 +156,42 @@ export function variantTrackMenuItems(
       ],
     },
 
+    {
+      label: 'Color cells by',
+      icon: FormatColorFillIcon,
+      subMenu: [
+        {
+          label: 'Genotype',
+          helpText:
+            'Default coloring: allele dosage in allele-count mode, haplotype/allele color in phased mode',
+          type: 'radio',
+          checked: !self.featureColor,
+          onClick: () => {
+            self.setFeatureColor('')
+          },
+        },
+        {
+          label: `Consequence impact${
+            self.hasConsequence
+              ? ''
+              : !self.featuresVolatile
+                ? ' (checking for annotations...)'
+                : ' (no SnpEff/VEP annotations found)'
+          }`,
+          helpText:
+            'Color every alt-carrying cell by the variant’s most severe SnpEff (ANN) / VEP (CSQ) consequence impact tier; ref and no-call cells keep their normal coloring',
+          type: 'radio',
+          checked: self.featureColor === CONSEQUENCE_IMPACT_JEXL,
+          disabled: !self.hasConsequence,
+          disabledHelpText: !self.featuresVolatile
+            ? 'Checking for annotations...'
+            : 'No SnpEff/VEP annotations (ANN/CSQ) found in this dataset',
+          onClick: () => {
+            self.setFeatureColor(CONSEQUENCE_IMPACT_JEXL)
+          },
+        },
+      ],
+    },
     {
       label: 'Filter by',
       icon: ClearAllIcon,
