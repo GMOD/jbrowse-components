@@ -52,9 +52,122 @@ const overflowingPlainVariantSpec = {
   ],
 }
 
+// Back-compat: the multi-sample display was renamed
+// MultiLinearVariantDisplay -> LinearMultiSampleVariantDisplay. An old saved
+// session stores the pre-rename type on the active display instance; the model's
+// preProcessSnapshot must remap it so the dispatcher-less `displays` union still
+// resolves and the display renders. The demo track carries samplesTsvLocation +
+// colorBy:'population' + showReferenceAlleles, so this also exercises the
+// metadata-preloading path end to end. `volvox_test_vcf` has genotypes and
+// resolves through the same shared multi-sample model.
+const oldTypeNameSpec = {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_test_vcf',
+          displaySnapshot: {
+            // pre-rename type string, as an old saved session would store it
+            type: 'MultiLinearVariantDisplay',
+            height: 200,
+          },
+        },
+      ],
+    },
+  ],
+}
+
+const populationDemoSpec = {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: [{ trackId: 'volvox multi-sample sv' }],
+    },
+  ],
+}
+
 const suite: TestSuite = {
   name: 'Variants Track',
   tests: [
+    // Renders the old pre-rename display type via the model's preProcessSnapshot
+    // remap; if the union failed to resolve it, no canvas would ever paint.
+    {
+      name: 'old MultiLinearVariantDisplay type still renders (rename back-compat)',
+      fn: async page => {
+        await navigateWithSessionSpec(page, oldTypeNameSpec)
+        await findByTestId(page, 'variant-display-done', 30000)
+        await waitForDataLoaded(page)
+        await findByTestId(page, 'variant_canvas')
+      },
+    },
+
+    // colorBy:'population' + samplesTsvLocation end to end: the sample-metadata
+    // TSV must parse, reach the display's sources, and drive the palette so
+    // same-population rows share a color and different populations differ.
+    {
+      name: 'colorBy population colors sample rows from samplesTsv metadata',
+      fn: async page => {
+        await navigateWithSessionSpec(page, populationDemoSpec)
+        await findByTestId(page, 'variant-display-done', 30000)
+        await waitForDataLoaded(page)
+        const info = await page.evaluate(() => {
+          interface Src {
+            name: string
+            population?: string
+            color?: string
+          }
+          const session = (
+            window as unknown as {
+              JBrowseSession: {
+                views: { tracks: { displays: { colorBy: string; sources?: Src[] }[] }[] }[]
+              }
+            }
+          ).JBrowseSession
+          const display = session.views[0]!.tracks[0]!.displays[0]!
+          return {
+            colorBy: display.colorBy,
+            sources: (display.sources ?? []).map(s => ({
+              name: s.name,
+              population: s.population,
+              color: s.color,
+            })),
+          }
+        })
+        if (info.colorBy !== 'population') {
+          throw new Error(`expected colorBy 'population', got '${info.colorBy}'`)
+        }
+        if (info.sources.length === 0) {
+          throw new Error('no sample sources loaded from samplesTsv')
+        }
+        // every source carries a population attribute and a resolved color
+        const missing = info.sources.filter(s => !s.population || !s.color)
+        if (missing.length) {
+          throw new Error(
+            `sources missing population/color: ${JSON.stringify(missing.slice(0, 3))}`,
+          )
+        }
+        // one color per population: same pop => same color, and >1 distinct color
+        const colorByPop = new Map<string, string>()
+        for (const s of info.sources) {
+          const prev = colorByPop.get(s.population!)
+          if (prev && prev !== s.color) {
+            throw new Error(
+              `population ${s.population} has two colors: ${prev} vs ${s.color}`,
+            )
+          }
+          colorByPop.set(s.population!, s.color!)
+        }
+        if (new Set(colorByPop.values()).size < 2) {
+          throw new Error('expected multiple populations to get distinct colors')
+        }
+      },
+    },
+
     // Regression guard for the "variants separated from their labels" tear: the
     // plain LinearVariantDisplay (canvas-basic) scrolls virtually, so its label
     // overlay tracks model.scrollTop like the GPU canvas and can't ride a

@@ -43,9 +43,40 @@ non-default display type — see
 }
 ```
 
+Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
+whose first column is the sample name and whose other columns are per-sample
+attributes (e.g. `population`), then `colorBy` one of those attributes to color
+the sidebar rows on load. `showReferenceAlleles: false` paints the background
+solid grey and draws only ALT alleles on top, which makes overlapping structural
+variants easier to see. This is the 1000 Genomes "colored by population" demo
+config:
+
+```js
+{
+  type: 'VariantTrack',
+  trackId: 'cohort',
+  name: 'Cohort variants',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'VcfTabixAdapter',
+    uri: 'https://example.com/cohort.vcf.gz',
+    samplesTsvLocation: { uri: 'https://example.com/samples.tsv' },
+  },
+  displays: [
+    {
+      type: 'LinearMultiSampleVariantDisplay',
+      displayId: 'cohort-LinearMultiSampleVariantDisplay',
+      height: 800,
+      colorBy: 'population',
+      showReferenceAlleles: false,
+    },
+  ],
+}
+```
+
 Taller track, phased haplotype rows, with pre-declared sample colors and groups.
 `layout` seeds the initial sample order, color, and group labels (used for
-sidebar coloring):
+sidebar coloring) inline instead of from a `samplesTsvLocation`:
 
 ```js
 {

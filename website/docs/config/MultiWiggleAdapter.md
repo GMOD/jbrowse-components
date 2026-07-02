@@ -19,6 +19,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
+The `bigWigs` shorthand: a plain array of BigWig URLs, one subtrack each (the
+subtrack name is derived from the filename):
+
 ```js
 {
   type: 'MultiQuantitativeTrack',
@@ -30,6 +33,39 @@ reference the markdown files in our repo of the checked out git tag
     bigWigs: [
       'https://example.com/sample1.bw',
       'https://example.com/sample2.bw',
+    ],
+  },
+}
+```
+
+Preloading per-subtrack metadata: use `subadapters` instead of `bigWigs` to
+attach a `name`, a `color`, and a `group` to each subtrack. The extra keys ride
+along as source metadata — `group` drives the sidebar clustering tree and
+`color` sets the subtrack's line/fill on load:
+
+```js
+{
+  type: 'MultiQuantitativeTrack',
+  trackId: 'my_track',
+  name: 'My track',
+  assemblyNames: ['hg38'],
+  adapter: {
+    type: 'MultiWiggleAdapter',
+    subadapters: [
+      {
+        type: 'BigWigAdapter',
+        name: 'Alpha',
+        group: 'Islet',
+        color: '#e6194b',
+        bigWigLocation: { uri: 'https://example.com/alpha.bw' },
+      },
+      {
+        type: 'BigWigAdapter',
+        name: 'Beta',
+        group: 'Islet',
+        color: '#f58231',
+        bigWigLocation: { uri: 'https://example.com/beta.bw' },
+      },
     ],
   },
 }
