@@ -29,8 +29,10 @@ import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 import { autorun, observable, toJS, untracked } from 'mobx'
 
@@ -50,7 +52,6 @@ import {
   canMorph,
   captureFeatureTops,
   easeInOutCubic,
-  focusScrollDelta,
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
@@ -176,6 +177,14 @@ export default function baseStateModelFactory(
            * (runtime convention), unlike the deferred-evaluation config slot.
            */
           jexlFiltersSetting: types.maybe(types.array(types.string)),
+          /**
+           * #property
+           * Feature ids the user pinned to the top of the layout via the feature
+           * right-click menu. Pinned features are inserted first into the greedy
+           * row-packer, so they hold the topmost rows in their bp range across
+           * zoom re-packs (see packRef in layout.ts).
+           */
+          pinnedFeatureIds: types.array(types.string),
         }),
       )
       .volatile(() => ({
@@ -252,10 +261,11 @@ export default function baseStateModelFactory(
         // Height of the layout being animated away from; `maxY` holds at the
         // taller of this and the destination during a morph (anti-clip).
         morphFromMaxY: 0,
-        // Scroll-follow so the focused feature stays put through a repack:
-        // `scrollTop` eases from `morphScrollFrom` by `morphScrollDelta` (the
-        // anchor feature's row shift) in lockstep with the Y morph. Zero when
-        // there's nothing to pin. See focusScrollDelta.
+        // `scrollTop` eases from `morphScrollFrom` by `morphScrollDelta` in
+        // lockstep with the Y morph. Feature-follow on zoom is disabled, so this
+        // is normally 0 (scrollTop is left where the user put it); it goes
+        // nonzero only to clamp scrollTop back into range when a repack shrinks
+        // the content below the current scroll position.
         morphScrollFrom: 0,
         morphScrollDelta: 0,
       }))
@@ -545,6 +555,16 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // MobX caches this, so the returned Set keeps a stable reference until
+        // pinnedFeatureIds mutates — letting the layout cache detect a pin
+        // toggle with a cheap reference compare (see groupUnchanged).
+        get pinnedFeatureIdSet(): ReadonlySet<string> {
+          return new Set(self.pinnedFeatureIds)
+        },
+
+        /**
+         * #getter
+         */
         get featureWidgetType() {
           return {
             type: 'BaseFeatureWidget',
@@ -694,6 +714,7 @@ export default function baseStateModelFactory(
             showDescriptions: self.effectiveShowDescriptions,
             reversedRegions: self.reversedRegions,
             displayMode: self.displayMode,
+            pinnedFeatureIds: self.pinnedFeatureIdSet,
           })
         },
       }))
@@ -991,7 +1012,13 @@ export default function baseStateModelFactory(
           // entries during fetchNeeded. rpcDataMap is similarly preserved;
           // when regionTooLarge is true, laidOutDataMap returns empty so no
           // stale features render through the banner.
-          self.setScrollTop(0)
+          //
+          // NOTE: scrollTop is intentionally NOT reset here. clearAllRpcData
+          // fires on same-region refetches (zoom/settings), and zeroing scroll
+          // there yanks the viewport to the top on every zoom. The scroll-to-top
+          // reset lives in the displayedRegions-change handler (chromosome nav)
+          // instead; a re-pack that shrinks content is clamped by the layout
+          // autorun's maxScroll clamp).
         },
 
         /**
@@ -1121,6 +1148,21 @@ export default function baseStateModelFactory(
           displayedRegionIndex: number
         }) {
           self.contextMenuInfo = info
+        },
+
+        /**
+         * #action
+         */
+        // Pin/unpin a feature to the top of the layout. Toggling mutates the
+        // observable array, which reruns the layout (see pinnedFeatureIdSet)
+        // and animates the feature to/from its top row via the Y morph.
+        togglePinnedFeature(featureId: string) {
+          const idx = self.pinnedFeatureIds.indexOf(featureId)
+          if (idx === -1) {
+            self.pinnedFeatureIds.push(featureId)
+          } else {
+            self.pinnedFeatureIds.splice(idx, 1)
+          }
         },
       }))
       .actions(self => ({
@@ -1576,6 +1618,11 @@ export default function baseStateModelFactory(
               () => {
                 self.clearStaleDensityState()
                 self.clearHeightBeforeExpand()
+                // Reset scroll to the top only on an actual region-list change
+                // (chromosome navigation) — not on same-region zoom/pan, which
+                // must keep the user's scroll position (see
+                // clearDisplaySpecificData).
+                self.setScrollTop(0)
               },
               'CanvasClearDensityOnDisplayedRegions',
             )
@@ -1656,29 +1703,19 @@ export default function baseStateModelFactory(
                   // scrollTop/height are viewport state, not layout inputs —
                   // read untracked so writing scrollTop back below can't
                   // re-trigger this layout autorun.
-                  const { scrollTop, viewportCenterY, height } = untracked(
-                    () => ({
-                      scrollTop: self.scrollTop,
-                      viewportCenterY: self.scrollTop + self.height / 2,
-                      height: self.height,
-                    }),
-                  )
-                  // Pin the anchor feature, but clamp the target to the new
-                  // layout's scrollable range: setScrollTop doesn't clamp, so a
-                  // feature forced onto a deeper row (a real collision, the one
-                  // case we can't pack away) must not scroll the viewport past
-                  // the content. Both morph endpoints are in range, so every
-                  // eased frame between them stays in range too.
+                  const { scrollTop, height } = untracked(() => ({
+                    scrollTop: self.scrollTop,
+                    height: self.height,
+                  }))
+                  // Feature-follow on zoom is intentionally disabled: leave
+                  // scrollTop where the user put it rather than chasing the
+                  // viewport-centered feature to its new row. Only clamp to the
+                  // new layout's scrollable range so a re-pack that shrinks the
+                  // content (e.g. zoom-in de-stacking rows) can't strand the
+                  // viewport past the content bottom. Both morph endpoints stay
+                  // in range, so every eased frame between them does too.
                   const maxScroll = Math.max(0, maxBottom(current) - height)
-                  const rawDelta = focusScrollDelta(
-                    fromTops,
-                    captureFeatureTops(current),
-                    viewportCenterY,
-                  )
-                  const target = Math.min(
-                    Math.max(scrollTop + rawDelta, 0),
-                    maxScroll,
-                  )
+                  const target = Math.min(scrollTop, maxScroll)
                   const scrollDelta = target - scrollTop
                   if (
                     morphAllowed(getSession(self).animationMode) &&
@@ -1765,12 +1802,27 @@ export default function baseStateModelFactory(
             item: { featureId, startBp, endBp },
             displayedRegionIndex,
           } = info
+          const pinned = self.pinnedFeatureIdSet.has(featureId)
           return [
             {
               label: 'Open feature details',
               icon: MenuOpenIcon,
               onClick: () => {
                 self.selectFullFeature(featureId, displayedRegionIndex)
+              },
+            },
+            {
+              label: pinned ? 'Unpin from top' : 'Pin to top of layout',
+              icon: VerticalAlignTopIcon,
+              onClick: () => {
+                self.togglePinnedFeature(featureId)
+              },
+            },
+            {
+              label: 'Show only this feature',
+              icon: FilterAltIcon,
+              onClick: () => {
+                self.setJexlFilters([`jexl:id(feature)=='${featureId}'`])
               },
             },
             {

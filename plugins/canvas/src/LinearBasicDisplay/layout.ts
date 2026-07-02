@@ -27,6 +27,9 @@ export interface LayoutInputs {
   showDescriptions: boolean
   reversedRegions: ReadonlySet<number>
   displayMode: DisplayMode
+  // Feature ids the user pinned to the top: inserted first into the greedy
+  // packer so they claim the lowest rows in their bp range (see packRef).
+  pinnedFeatureIds: ReadonlySet<string>
 }
 
 // Reserve strand-arrow space only on the side the arrow actually points,
@@ -120,6 +123,7 @@ export function computeLaidOutData(
     showDescriptions,
     reversedRegions,
     displayMode,
+    pinnedFeatureIds,
   } = inputs
   const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
 
@@ -157,6 +161,7 @@ export function computeLaidOutData(
       showLabels,
       showDescriptions,
       reversedRegions,
+      pinnedFeatureIds,
       prevYByFeatureId,
     )
     for (const [, data] of regions) {
@@ -172,6 +177,9 @@ interface GroupCache {
   showLabels: boolean
   showDescriptions: boolean
   displayMode: DisplayMode
+  // The MobX-computed pinned set; a stable reference until pins change, so a
+  // reference compare in groupUnchanged detects a pin toggle.
+  pinnedFeatureIds: ReadonlySet<string>
   // idx -> raw fetch object, by reference. A new fetch swaps the reference.
   members: Map<number, FeatureDataResult>
   // members currently rendered reversed (affects label-overhang packing)
@@ -191,12 +199,14 @@ function groupUnchanged(
     showDescriptions,
     reversedRegions,
     displayMode,
+    pinnedFeatureIds,
   } = inputs
   const paramsSame =
     prev.bpPerPx === bpPerPx &&
     prev.showLabels === showLabels &&
     prev.showDescriptions === showDescriptions &&
     prev.displayMode === displayMode &&
+    prev.pinnedFeatureIds === pinnedFeatureIds &&
     prev.members.size === members.size
   return (
     paramsSame &&
@@ -273,6 +283,7 @@ export function createIncrementalLayout() {
           showLabels: inputs.showLabels,
           showDescriptions: inputs.showDescriptions,
           displayMode: inputs.displayMode,
+          pinnedFeatureIds: inputs.pinnedFeatureIds,
           members: new Map(members),
           reversed,
           output,
@@ -326,6 +337,9 @@ function packRef(
   showLabels: boolean,
   showDescriptions: boolean,
   reversedRegions: ReadonlySet<number>,
+  // Feature ids pinned to the top: sorted ahead of everything so they win the
+  // lowest rows in their bp range.
+  pinnedFeatureIds: ReadonlySet<string>,
   // Each feature's y (px) in the previous layout, if any. Used only to order
   // insertion, not to force a row — see the sort below.
   prevYByFeatureId?: ReadonlyMap<string, number>,
@@ -444,7 +458,14 @@ function packRef(
   // an existing top feature. This only reorders insertion — every feature still
   // lands on its compact first-fit row, so nothing is pushed below where it
   // would pack on its own. Ties fall back to layoutStartBp for determinism.
+  // Pinned features sort ahead of all others (before the prior-y ordering) so
+  // they claim the lowest rows in their bp range across every re-pack.
   const sorted = [...allFeatures.entries()].sort(([idA, a], [idB, b]) => {
+    const pinA = pinnedFeatureIds.has(idA)
+    const pinB = pinnedFeatureIds.has(idB)
+    if (pinA !== pinB) {
+      return pinA ? -1 : 1
+    }
     const ya = prevYByFeatureId?.get(idA)
     const yb = prevYByFeatureId?.get(idB)
     if (ya !== undefined && yb !== undefined && ya !== yb) {

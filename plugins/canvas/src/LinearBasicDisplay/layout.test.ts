@@ -69,6 +69,7 @@ function layout(
     showDescriptions,
     reversedRegions,
     displayMode,
+    pinnedFeatureIds: new Set<string>(),
   })
 }
 
@@ -446,10 +447,16 @@ test('reversed region reserves label overhang on the lower-bp side', () => {
   expect(rLeft.topPx).not.toBe(rLabel.topPx)
 })
 
+// Stable empty set: the model's pinnedFeatureIdSet is a MobX-cached getter with
+// a stable reference, so the incremental memo relies on reference identity to
+// detect a pin change. A fresh set per call would spuriously bust the cache.
+const NO_PINNED: ReadonlySet<string> = new Set<string>()
+
 function incInputs(
   regionKeys: Map<number, string>,
   bpPerPx = 1,
   reversedRegions = new Set<number>(),
+  pinnedFeatureIds: ReadonlySet<string> = NO_PINNED,
 ) {
   return {
     bpPerPx,
@@ -458,6 +465,7 @@ function incInputs(
     showDescriptions: true,
     reversedRegions,
     displayMode: 'normal' as const,
+    pinnedFeatureIds,
   }
 }
 
@@ -678,4 +686,58 @@ test('re-pack orders by prior y so a top feature keeps its low row', () => {
   )
   expect(topOf(primed, 'B')).toBe(0)
   expect(topOf(primed, 'A')).toBeGreaterThan(0)
+})
+
+test('a pinned feature claims the top row over its overlappers', () => {
+  // A and B overlap in x, so one stacks on the other. Unpinned, A sorts first
+  // by x and takes the top row. Pinning B sorts it ahead of everything, so it
+  // claims row 0 and A stacks below — even though A still sorts earlier by x.
+  const mk = () =>
+    makeFeatureData({
+      features: [
+        { featureId: 'A', startBp: 1000, endBp: 2000, height: 20 },
+        { featureId: 'B', startBp: 1500, endBp: 2500, height: 20 },
+      ],
+    })
+  const keys = new Map([[0, 'v:ctgA']])
+  const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
+    r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
+
+  const unpinned = computeLaidOutData(new Map([[0, mk()]]), incInputs(keys, 1))
+  expect(topOf(unpinned, 'A')).toBe(0)
+  expect(topOf(unpinned, 'B')).toBeGreaterThan(0)
+
+  const pinnedB = computeLaidOutData(
+    new Map([[0, mk()]]),
+    incInputs(keys, 1, new Set<number>(), new Set(['B'])),
+  )
+  expect(topOf(pinnedB, 'B')).toBe(0)
+  expect(topOf(pinnedB, 'A')).toBeGreaterThan(0)
+})
+
+test('incremental memo busts when the pinned set reference changes', () => {
+  const mk = () =>
+    makeFeatureData({
+      features: [
+        { featureId: 'A', startBp: 1000, endBp: 2000, height: 20 },
+        { featureId: 'B', startBp: 1500, endBp: 2500, height: 20 },
+      ],
+    })
+  const keys = new Map([[0, 'v:ctgA']])
+  const topOf = (r: Map<number, FeatureDataResult>, id: string) =>
+    r.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
+  const memo = createIncrementalLayout()
+
+  const before = memo(new Map([[0, mk()]]), incInputs(keys, 1))
+  const beforeOut = before.get(0)
+  expect(topOf(before, 'A')).toBe(0)
+
+  // Same params but a new pinned set including B → group re-packs (output object
+  // is not reused) and B takes the top row.
+  const after = memo(
+    new Map([[0, mk()]]),
+    incInputs(keys, 1, new Set<number>(), new Set(['B'])),
+  )
+  expect(after.get(0)).not.toBe(beforeOut)
+  expect(topOf(after, 'B')).toBe(0)
 })
