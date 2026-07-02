@@ -38,3 +38,32 @@ test('a bedgz (.bed.gz) track renders feature glyphs to SVG', async () => {
   assert.ok(svg.includes('<svg'), 'output should be SVG')
   assert.ok(svg.includes('<path'), 'bedgz should render feature glyphs')
 })
+
+// A track whose data file can't be loaded logs the failure but leaves the SVG
+// with that track blank rather than throwing. A headless export must fail on
+// that (a broken image written as if it succeeded), so the logged error is
+// captured and made fatal.
+test('an unreadable track file fails the render instead of silently blanking', async () => {
+  await assert.rejects(
+    renderRegion({
+      fasta,
+      loc: 'ctgA:1-5000',
+      trackList: [['bam', ['/nonexistent/reads.bam']]],
+    }),
+    /ENOENT|no such file/,
+  )
+})
+
+// A prior failed render's late async logging must not bleed into and fail a
+// subsequent good render (the error capture is scoped per-render).
+test('a good render after a failed one is unaffected', async () => {
+  await assert.rejects(
+    renderRegion({
+      fasta,
+      loc: 'ctgA:1-5000',
+      trackList: [['bam', ['/nonexistent/reads.bam']]],
+    }),
+  )
+  const svg = await renderRegion({ fasta, loc: 'ctgA:1-5000' })
+  assert.ok(svg.includes('<svg'), 'the good render should still succeed')
+})
