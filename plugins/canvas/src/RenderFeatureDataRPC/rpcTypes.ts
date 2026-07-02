@@ -93,6 +93,9 @@ export interface FeatureDataResult {
   // unpacks with bit shifts.
   rectColors: Uint32Array
   rectStrands: Float32Array // strand direction per rect: -1, 0, or +1
+  // 1 = whole-feature box glyph that fades to a density texture when collapsed
+  // sub-pixel (variants, plain BED); 0 = gene subfeature rect that never fades
+  rectDensityFade: Uint32Array
 
   // Connecting lines (introns) with strand info for dynamic chevron generation
   linePositions: Uint32Array
@@ -146,6 +149,7 @@ export type RegionRenderData = Pick<
   | 'rectHeights'
   | 'rectColors'
   | 'rectStrands'
+  | 'rectDensityFade'
   | 'outlineColor'
   | 'linePositions'
   | 'lineYs'

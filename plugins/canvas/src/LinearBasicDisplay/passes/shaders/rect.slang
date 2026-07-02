@@ -28,6 +28,9 @@ struct RectInstance {
   float y        : ATTR1;
   float height   : ATTR2;
   uint  color    : ATTR3;
+  // 1 = whole-feature box glyph eligible for the collapsed density fade;
+  // 0 = gene subfeature rect (CDS/exon/UTR/codon) that must stay opaque.
+  uint  densityFade : ATTR4;
 };
 
 // Binding 1 is the uniform across both the standard (storage+uniform) and
@@ -72,7 +75,10 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;
   float heightPx = abs(yBotPx - yTopPx);
 
-  float densityAlpha = realWidthPx < MIN_RECT_WIDTH_PX ? MIN_DENSITY_ALPHA : 1.0;
+  float densityAlpha =
+    inst.densityFade != 0u && realWidthPx < MIN_RECT_WIDTH_PX
+      ? MIN_DENSITY_ALPHA
+      : 1.0;
 
   VsOut o;
   o.position   = float4(sx, sy, 0.0, 1.0);

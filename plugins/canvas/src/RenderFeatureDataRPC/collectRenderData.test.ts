@@ -458,3 +458,41 @@ describe('collectRenderData intron chevrons', () => {
     expect([...result.lineDirections]).toEqual([0])
   })
 })
+
+describe('collectRenderData density-fade gating', () => {
+  it('flags whole-feature box glyphs (variants, plain BED) as fade-eligible', () => {
+    const feature = mockFeature({
+      type: 'SNV',
+      id: 'v1',
+      start: 100,
+      end: 101,
+    })
+    const result = collectRenderData(
+      [boxLayout(feature)],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+    expect([...result.rectDensityFade]).toEqual([1])
+  })
+
+  it('never flags gene subfeature (CDS/exon) rects as fade-eligible', () => {
+    const { layout } = twoExonTranscript()
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+    expect(result.rectDensityFade.length).toBeGreaterThan(0)
+    expect([...result.rectDensityFade].every(v => v === 0)).toBe(true)
+  })
+})

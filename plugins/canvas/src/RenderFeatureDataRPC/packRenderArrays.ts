@@ -8,6 +8,9 @@ export interface RectData {
   color: number
   strand: number
   flatbushIdx: number
+  // Whole-feature box glyphs (variants, plain BED) fade to a density texture
+  // when collapsed sub-pixel; gene subfeature rects (CDS/exon/UTR) never do.
+  densityFade: boolean
 }
 
 export interface LineData {
@@ -44,6 +47,7 @@ export function packRenderArrays(
   | 'rectHeights'
   | 'rectColors'
   | 'rectStrands'
+  | 'rectDensityFade'
   | 'rectFeatureIndices'
   | 'linePositions'
   | 'lineYs'
@@ -71,6 +75,7 @@ export function packRenderArrays(
   const rectHeights = new Float32Array(visibleRects.length)
   const rectColors = new Uint32Array(visibleRects.length)
   const rectStrands = new Float32Array(visibleRects.length)
+  const rectDensityFade = new Uint32Array(visibleRects.length)
   const rectFeatureIndices = new Uint32Array(visibleRects.length)
 
   for (const [i, rect] of visibleRects.entries()) {
@@ -80,6 +85,7 @@ export function packRenderArrays(
     rectHeights[i] = rect.height
     rectColors[i] = rect.color
     rectStrands[i] = rect.strand
+    rectDensityFade[i] = rect.densityFade ? 1 : 0
     rectFeatureIndices[i] = rect.flatbushIdx
   }
 
@@ -118,6 +124,7 @@ export function packRenderArrays(
     rectHeights,
     rectColors,
     rectStrands,
+    rectDensityFade,
     rectFeatureIndices,
     linePositions,
     lineYs,

@@ -7,6 +7,8 @@ import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
 
+import { packFixtureRects } from '../RenderFeatureDataRPC/testUtils.ts'
+
 import type { RenderSvgModel } from './renderSvg.tsx'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -58,23 +60,8 @@ function makeData(
 ): FeatureDataResult {
   const n = features.length
   return {
-    rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
-    rectYs: new Float32Array(n),
-    rectHeights: new Float32Array(n).fill(10),
-    rectColors: new Uint32Array(n).fill(0xff_80_40_ff),
-    rectStrands: new Float32Array(n),
-    rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
+    ...packFixtureRects(features),
     outlineColor: 0,
-    linePositions: new Uint32Array(0),
-    lineYs: new Float32Array(0),
-    lineColors: new Uint32Array(0),
-    lineDirections: new Int8Array(0),
-    lineFeatureIndices: new Uint32Array(0),
-    arrowXs: new Uint32Array(0),
-    arrowYs: new Float32Array(0),
-    arrowDirections: new Int8Array(0),
-    arrowColors: new Uint32Array(0),
-    arrowFeatureIndices: new Uint32Array(0),
     flatbushItems: features.map((f, i) => ({
       kind: 'feature' as const,
       featureId: `f${i}`,

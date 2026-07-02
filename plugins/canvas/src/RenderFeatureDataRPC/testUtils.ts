@@ -1,5 +1,7 @@
+import { packRenderArrays } from './packRenderArrays.ts'
 import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 
+import type { RectData } from './packRenderArrays.ts'
 import type { DisplayConfig } from './renderConfig.ts'
 
 export function mockDisplayConfig(
@@ -26,4 +28,24 @@ export function mockDisplayConfig(
     },
     ...overrides,
   }
+}
+
+// Packs the rect/line/arrow typed arrays a FeatureDataResult carries from a
+// minimal feature spec, using the same packRenderArrays the worker uses so
+// fixtures never drift from the production field set (e.g. a newly added
+// rectDensityFade). Every visible-window filter passes by default.
+export function packFixtureRects(
+  features: { startBp: number; endBp: number; densityFade?: boolean }[],
+) {
+  const rects: RectData[] = features.map((f, i) => ({
+    start: f.startBp,
+    end: f.endBp,
+    y: 0,
+    height: 10,
+    color: 0xff_80_40_ff,
+    strand: 0,
+    flatbushIdx: i,
+    densityFade: f.densityFade ?? false,
+  }))
+  return packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER)
 }

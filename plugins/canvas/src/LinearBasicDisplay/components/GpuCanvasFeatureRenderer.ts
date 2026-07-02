@@ -64,6 +64,7 @@ export class GpuCanvasFeatureRenderer extends GpuPerRegionRenderingBackend<
           y: data.rectYs,
           height: data.rectHeights,
           color: data.rectColors,
+          densityFade: data.rectDensityFade,
         },
         numRects,
       )

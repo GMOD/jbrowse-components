@@ -409,6 +409,8 @@ function processDefaultLayout(
     flatbushIdx,
     ctx,
     collector.rects,
+    undefined,
+    true,
   )
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }

@@ -115,13 +115,17 @@ function drawRects(
     const realWidth = Math.abs(x2 - x1)
     const w = Math.max(MIN_RECT_WIDTH_PX, realWidth)
 
-    // Collapsed features (widened to the min clamp) draw semi-transparent so
-    // src-over accumulation makes dense regions read as a density texture
-    // instead of a flat block (mirrors rect.slang's densityAlpha); non-collapsed
-    // features stay fully opaque. Fold the factor into the fill color's alpha so
-    // it also applies on the SVG-export path (SvgCanvas has no globalAlpha).
+    // Collapsed whole-feature box glyphs (variants, plain BED) draw
+    // semi-transparent so src-over accumulation makes dense regions read as a
+    // density texture instead of a flat block (mirrors rect.slang's
+    // densityAlpha); gene subfeature rects and non-collapsed features stay fully
+    // opaque. Fold the factor into the fill color's alpha so it also applies on
+    // the SVG-export path (SvgCanvas has no globalAlpha).
     const c = region.rectColors[i]!
-    const densityAlpha = realWidth < MIN_RECT_WIDTH_PX ? MIN_DENSITY_ALPHA : 1
+    const densityAlpha =
+      region.rectDensityFade[i] && realWidth < MIN_RECT_WIDTH_PX
+        ? MIN_DENSITY_ALPHA
+        : 1
     const a = (abgrAlpha(c) / 255) * densityAlpha
     ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
     ctx.fillRect(xLeft, y, w, h)
