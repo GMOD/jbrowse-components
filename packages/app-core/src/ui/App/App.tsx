@@ -52,13 +52,18 @@ const App = observer(function App(props: Props) {
       : `${drawer} ${main}`
     : main
 
+  // one element placed into either the left or right grid column by DOM order
+  // (the drawer isn't self-positioning, so it must be rendered on the matching
+  // side of the app container)
+  const drawerWidget = drawerVisible ? (
+    <Suspense fallback={null}>
+      <DrawerWidget session={session} />
+    </Suspense>
+  ) : null
+
   return (
     <div className={classes.root} style={{ gridTemplateColumns }}>
-      {drawerVisible && drawerPosition === 'left' ? (
-        <Suspense fallback={null}>
-          <DrawerWidget session={session} />
-        </Suspense>
-      ) : null}
+      {drawerPosition === 'left' ? drawerWidget : null}
       <DialogQueue session={session} />
       <div className={classes.appContainer}>
         <AppBar className={classes.appBar} position="static">
@@ -67,11 +72,7 @@ const App = observer(function App(props: Props) {
         <ViewsContainer {...props} />
       </div>
       <AppFab session={session} />
-      {drawerVisible && drawerPosition === 'right' ? (
-        <Suspense fallback={null}>
-          <DrawerWidget session={session} />
-        </Suspense>
-      ) : null}
+      {drawerPosition === 'right' ? drawerWidget : null}
       <Snackbar session={session} />
     </div>
   )
