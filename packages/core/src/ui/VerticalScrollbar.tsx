@@ -82,6 +82,18 @@ export default function VerticalScrollbar({
     // stopPropagation so the drag doesn't also pan the view; no preventDefault
     // on mousedown so its native focus shift can still close open popups.
     e.stopPropagation()
+    // Click-to-page: a click on the track above/below the thumb jumps one
+    // viewport toward the click (like a native scrollbar), rather than starting
+    // a drag. The thumb is pointerEvents:none so every click lands on the track;
+    // decide page-vs-drag from the click's Y relative to the thumb.
+    const clickY = e.clientY - e.currentTarget.getBoundingClientRect().top
+    if (clickY < thumbTop || clickY > thumbTop + thumbHeight) {
+      const dir = clickY < thumbTop ? -1 : 1
+      setScrollTop(
+        clamp(scrollTop + dir * viewportHeight, 0, scrollableHeight),
+      )
+      return
+    }
     dragRef.current?.abort()
     const ac = new AbortController()
     dragRef.current = ac
@@ -104,9 +116,7 @@ export default function VerticalScrollbar({
       () => {
         ac.abort()
       },
-      {
-        signal: ac.signal,
-      },
+      { signal: ac.signal },
     )
   }
 
