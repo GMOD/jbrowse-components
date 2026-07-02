@@ -924,6 +924,81 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // GC content / GC skew computed on the fly from the reference sequence — the
+  // tracks the reference sequence track's "Add GC content track" action builds.
+  // Two session GCContentTracks wrap the volvox sequence adapter (absolute 2bit
+  // url — session tracks don't inherit the config's baseUri): one in `content`
+  // mode (G+C fraction) and one in `skew` mode ((G−C)/(G+C), overlapping windows
+  // for a smoother curve). No sequence file of the user's own is needed.
+  {
+    mode: 'url',
+    name: 'gc_content',
+    url: sessionSpec(VOLVOX, {
+      sessionTracks: [
+        {
+          type: 'GCContentTrack',
+          trackId: 'gc_content_volvox',
+          name: 'GC content',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'GCContentAdapter',
+            sequenceAdapter: {
+              type: 'TwoBitAdapter',
+              twoBitLocation: {
+                uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.2bit',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+          displays: [
+            {
+              type: 'LinearGCContentTrackDisplay',
+              displayId: 'gc_content_volvox-display',
+              gcMode: 'content',
+            },
+          ],
+        },
+        {
+          type: 'GCContentTrack',
+          trackId: 'gc_skew_volvox',
+          name: 'GC skew',
+          assemblyNames: ['volvox'],
+          adapter: {
+            type: 'GCContentAdapter',
+            sequenceAdapter: {
+              type: 'TwoBitAdapter',
+              twoBitLocation: {
+                uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.2bit',
+                locationType: 'UriLocation',
+              },
+            },
+          },
+          displays: [
+            {
+              type: 'LinearGCContentTrackDisplay',
+              displayId: 'gc_skew_volvox-display',
+              gcMode: 'skew',
+              windowSize: 50,
+              windowDelta: 10,
+            },
+          ],
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'volvox',
+          loc: 'ctgA:1-50000',
+          tracks: ['gc_content_volvox', 'gc_skew_volvox'],
+        },
+      ],
+    }),
+    readyText: 'GC content',
+    settleMs: 4000,
+    // two short tracks; crop off the empty viewport below them
+    crop: { x: 0, y: 0, width: 1500, height: 430 },
+  },
+
   // Whole-genome coverage profile from a single BigWig (COLO829 tumor MinION
   // coverage), each chromosome a separate region (no `loc` →
   // showAllRegionsInAssembly), localsd ±3sd autoscale so copy-number gains/losses
