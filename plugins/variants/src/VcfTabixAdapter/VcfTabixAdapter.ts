@@ -1,16 +1,11 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  downloadStatus,
-  fetchAndMaybeUnzipText,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { downloadStatus, updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature/index.ts'
-import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
+import { getVcfSources, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -57,13 +52,22 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
     )
   }
 
+  // Index-only compressed-byte estimate (no feature download), used by the
+  // single-region feature-fetch RPC to short-circuit an over-budget region
+  // before pulling every line — see executeRenderFeatureData.
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    const { vcf } = await this.configure(opts)
+    return vcf.bytesForRegions(regions, opts)
+  }
+
   async getMultiRegionFeatureDensityStats(
     regions: Region[],
     opts?: BaseOptions,
   ) {
-    const { vcf } = await this.configure(opts)
-    const bytes = await vcf.bytesForRegions(regions, opts)
-    return { bytes, fetchSizeLimit: this.getConf('fetchSizeLimit') }
+    return {
+      bytes: await this.getRegionByteSize(regions, opts),
+      fetchSizeLimit: this.getConf('fetchSizeLimit'),
+    }
   }
 
   public async getRefNames(opts: BaseOptions = {}) {
@@ -113,42 +117,22 @@ export default class VcfTabixAdapter extends BaseFeatureDataAdapter<VcfTabixAdap
 
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = query
       const { vcf, parser } = await this.configure(opts)
-      const { statusCallback } = opts
-
-      // downloadStatus shows the label and clears when done; the onProgress it
-      // hands back upgrades the in-between status to a determinate bar as the
-      // blocks download
-      await downloadStatus('Downloading variants', statusCallback, onProgress =>
-        vcf.getLines(refName, start, end, {
-          signal: opts.signal,
-          lineCallback: (line, fileOffset) => {
-            observer.next(
-              new VcfFeature({
-                variant: parser.parseLine(line),
-                parser,
-                id: `${this.id}-vcf-${fileOffset}`,
-              }),
-            )
-          },
-          onProgress,
-        }),
+      await streamVcfFeatures(
+        { vcf, parser, idPrefix: this.id },
+        query,
+        opts,
+        observer,
       )
-      observer.complete()
     }, opts.stopToken)
   }
 
   async getSources() {
     const { parser } = await this.configure()
-    const conf = this.getConf('samplesTsvLocation')
-    if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
-      return parser.samples.map(name => ({ name }))
-    } else {
-      const txt = await fetchAndMaybeUnzipText(
-        openLocation(conf, this.pluginManager),
-      )
-      return parseSamplesTsv(txt, parser.samples)
-    }
+    return getVcfSources(
+      this.getConf('samplesTsvLocation'),
+      parser,
+      this.pluginManager,
+    )
   }
 }

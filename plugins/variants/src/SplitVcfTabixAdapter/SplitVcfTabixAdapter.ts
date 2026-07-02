@@ -1,23 +1,20 @@
 import { TabixIndexedFile } from '@gmod/tabix'
 import VcfParser from '@gmod/vcf'
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import {
-  downloadStatus,
-  fetchAndMaybeUnzipText,
-  updateStatus,
-} from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature/index.ts'
-import { parseSamplesTsv } from '../shared/parseSamplesTsv.ts'
+import { getVcfSources, streamVcfFeatures } from '../shared/vcfAdapterUtils.ts'
 
 import type { SplitVcfTabixAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature } from '@jbrowse/core/util'
+import type { Feature, Region } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
 export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVcfTabixAdapterConfig> {
+  public static capabilities = ['getFeatures', 'getRefNames', 'exportData']
+
   private configuredByRef = new Map<
     string,
     Promise<{ vcf: TabixIndexedFile; parser: VcfParser }>
@@ -66,45 +63,77 @@ export default class SplitVcfTabixAdapter extends BaseFeatureDataAdapter<SplitVc
     return Object.keys(this.getConf('vcfGzLocationMap'))
   }
 
+  // Index-only compressed-byte estimate (no feature download). Each refName is
+  // a separate file, so regions are grouped by refName and estimated against
+  // their own index — used to short-circuit an over-budget region before
+  // pulling every line (see executeRenderFeatureData).
+  async getRegionByteSize(regions: Region[], opts?: BaseOptions) {
+    const byRef = new Map<string, Region[]>()
+    for (const region of regions) {
+      const list = byRef.get(region.refName)
+      if (list) {
+        list.push(region)
+      } else {
+        byRef.set(region.refName, [region])
+      }
+    }
+    let total = 0
+    for (const [refName, refRegions] of byRef) {
+      const { vcf } = await this.configure(refName, opts)
+      total += await vcf.bytesForRegions(refRegions, opts)
+    }
+    return total
+  }
+
   public getFeatures(query: NoAssemblyRegion, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
-      const { refName, start, end } = query
-      const { vcf, parser } = await this.configure(refName, opts)
-      const { statusCallback } = opts
-
-      // downloadStatus shows the label and clears when done; the onProgress it
-      // hands back upgrades the in-between status to a determinate bar as the
-      // blocks download
-      await downloadStatus('Downloading variants', statusCallback, onProgress =>
-        vcf.getLines(refName, start, end, {
-          signal: opts.signal,
-          lineCallback: (line, fileOffset) => {
-            observer.next(
-              new VcfFeature({
-                variant: parser.parseLine(line),
-                parser,
-                id: `${this.id}-vcf-${fileOffset}`,
-              }),
-            )
-          },
-          onProgress,
-        }),
+      const { vcf, parser } = await this.configure(query.refName, opts)
+      await streamVcfFeatures(
+        { vcf, parser, idPrefix: this.id },
+        query,
+        opts,
+        observer,
       )
-      observer.complete()
     }, opts.stopToken)
   }
 
-  async getSources() {
-    const conf = this.getConf('samplesTsvLocation')
-    const r = Object.keys(this.getConf('vcfGzLocationMap'))[0]!
-    const { parser } = await this.configure(r)
-    if (conf.uri === '' || conf.uri === '/path/to/samples.tsv') {
-      return parser.samples.map(name => ({ name }))
-    } else {
-      const txt = await fetchAndMaybeUnzipText(
-        openLocation(conf, this.pluginManager),
-      )
-      return parseSamplesTsv(txt, parser.samples)
+  public async getExportData(
+    regions: NoAssemblyRegion[],
+    formatType: string,
+    opts?: BaseOptions,
+  ): Promise<string | undefined> {
+    if (formatType !== 'vcf') {
+      return undefined
     }
+
+    const exportLines: string[] = []
+    let headerWritten = false
+    for (const region of regions) {
+      const { vcf } = await this.configure(region.refName, opts)
+      if (!headerWritten) {
+        exportLines.push(...(await vcf.getHeader()).split('\n').filter(Boolean))
+        headerWritten = true
+      }
+      await updateStatus('Exporting variants', opts?.statusCallback, () =>
+        vcf.getLines(region.refName, region.start, region.end, {
+          lineCallback: (line: string) => {
+            exportLines.push(line)
+          },
+          ...opts,
+        }),
+      )
+    }
+
+    return exportLines.join('\n')
+  }
+
+  async getSources() {
+    const [refName] = Object.keys(this.getConf('vcfGzLocationMap'))
+    const { parser } = await this.configure(refName!)
+    return getVcfSources(
+      this.getConf('samplesTsvLocation'),
+      parser,
+      this.pluginManager,
+    )
   }
 }
