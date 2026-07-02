@@ -25,7 +25,7 @@ function dataFromVariant(variant: Variant, parser: VCFParser) {
 // Symbolic (angle-bracket) ALTs carry their span in INFO.END / INFO.SVLEN
 // rather than in REF. Breakends (which use `[`/`]`, not `<`) and translocations
 // are single-breakpoint, so they intentionally fall through to REF.length.
-function getEnd(variant: Variant, start: number) {
+export function getEnd(variant: Variant, start: number) {
   const { REF = '', ALT = [], INFO } = variant
   const hasSymbolic = ALT.some(a => a.startsWith('<'))
   const hasTRA = ALT.includes('<TRA>')

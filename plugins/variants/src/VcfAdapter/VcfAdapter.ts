@@ -5,7 +5,7 @@ import { openLocation } from '@jbrowse/core/util/io'
 import { groupLinesByRef } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import VcfFeature from '../VcfFeature/index.ts'
+import VcfFeature, { getEnd } from '../VcfFeature/index.ts'
 import { getVcfSources } from '../shared/vcfAdapterUtils.ts'
 
 import type { VcfAdapterConfig } from './configSchema.ts'
@@ -112,7 +112,7 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
       return undefined
     }
 
-    const { header, featureMap } = await this.setup()
+    const { header, featureMap, parser } = await this.setup()
     const exportLines: string[] = [header]
 
     for (const region of regions) {
@@ -120,10 +120,14 @@ export default class VcfAdapter extends BaseFeatureDataAdapter<VcfAdapterConfig>
       const lines = featureMap[refName]
       if (lines) {
         for (const line of lines) {
-          // POS is 1-based in VCF; convert to 0-based for comparison
-          const fields = line.split('\t')
-          const pos = parseInt(fields[1]!, 10)
-          if (pos - 1 >= start && pos - 1 < end) {
+          // match getFeatures: a variant belongs to the region when its full
+          // [start, end] span overlaps it, not just its POS — so spanning
+          // deletions/SVs that start before the region are still exported. Same
+          // closed-interval overlap the IntervalTree search uses.
+          const variant = parser.parseLine(line)
+          const featureStart = variant.POS - 1
+          const featureEnd = getEnd(variant, featureStart)
+          if (featureStart <= end && featureEnd >= start) {
             exportLines.push(line)
           }
         }
