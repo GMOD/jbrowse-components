@@ -77,6 +77,10 @@ describe('readConfSlot', () => {
     ).toBe('hello')
   })
 
+  it('returns an empty jexl body literally instead of throwing', () => {
+    expect(readConfSlot({ foo: 'jexl:' }, 'foo')).toBe('jexl:')
+  })
+
   it('reads a slot from a state tree node', () => {
     const config = TrackConf.create(
       { trackId: 't1', name: 'Track 1' },

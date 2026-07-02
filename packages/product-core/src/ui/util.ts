@@ -1,6 +1,10 @@
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import {
+  evaluateJexl,
+  getConf,
+  isCallbackValue,
+  readConfObject,
+} from '@jbrowse/core/configuration'
 import { isObject } from '@jbrowse/core/util'
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -24,7 +28,9 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
 
 /**
  * Read a single config slot from either a live MST config or a plain snapshot
- * object, evaluating the value if it is a `jexl:` expression.
+ * object, evaluating the value if it is a `jexl:` expression. A plain snapshot
+ * routes through the same `isCallbackValue`/`evaluateJexl` boundary as the MST
+ * path, so callback handling (empty-body guard, feature proxy) stays identical.
  */
 export function readConfSlot<T = unknown>(
   config: AnyConfigurationModel | Record<string, unknown>,
@@ -39,9 +45,7 @@ export function readConfSlot<T = unknown>(
     (node, key) => (node as Record<string, unknown> | undefined)?.[key],
     config,
   )
-  return typeof value === 'string' && value.startsWith('jexl:')
-    ? (stringToJexlExpression(value).eval(args) as T)
-    : (value as T)
+  return (isCallbackValue(value) ? evaluateJexl(value, args) : value) as T
 }
 
 /**
