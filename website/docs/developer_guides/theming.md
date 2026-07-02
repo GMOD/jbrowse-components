@@ -47,6 +47,23 @@ These extend MUI's standard `primary`/`secondary`/`error`/etc:
 | `frames[1..6]`    | PaletteColor[] | grey shades                | Reading frame coloring (non-CDS)       |
 | `framesCDS[1..6]` | PaletteColor[] | red/green/blue alternating | Reading frame coloring (CDS)           |
 
+The `string`-valued feature colors above render as the swatches below (generated
+from `theme.ts`, so the values never drift):
+
+<!-- COLOR_TABLE theme-colors START -->
+
+| Color                                                                                                                                                                       | Name                    | Value     | Description                                            |
+| --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------- | --------- | ------------------------------------------------------ |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#e22;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#e22"></span>       | Stop codon              | `#e22`    | Stop codon in gene/CDS tracks                          |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#3e3;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#3e3"></span>       | Start codon             | `#3e3`    | Start codon in gene/CDS tracks                         |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#808080;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#808080"></span> | Deletion                | `#808080` | Deletion markers in alignments                         |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#009a8a;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#009a8a"></span> | Skip (intron)           | `#009a8a` | Skipped regions such as introns in RNA-seq reads       |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8c8c8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8c8c8"></span> | Base modification (fwd) | `#c8c8c8` | Base modifications on the forward strand               |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#c8dcc8;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#c8dcc8"></span> | Base modification (rev) | `#c8dcc8` | Base modifications on the reverse strand               |
+| <span style="display:inline-block;width:0.9em;height:0.9em;background-color:#888;border:1px solid #8888;border-radius:2px;vertical-align:middle" title="#888"></span>       | Muted SNP base          | `#888`    | SNP bases muted when show-modifications coloring is on |
+
+<!-- COLOR_TABLE theme-colors END -->
+
 ## Exported color constants
 
 Some colors are used in RPC workers (no MUI theme context) and are exported as

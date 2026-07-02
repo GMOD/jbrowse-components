@@ -152,7 +152,9 @@ const frames: Frames = [
   hex('#adadad'),
   hex('#8f8f8f'),
 ]
+/** #color theme-colors | Stop codon | Stop codon in gene/CDS tracks */
 const stopCodon = '#e22'
+/** #color theme-colors | Start codon | Start codon in gene/CDS tracks */
 const startCodon = '#3e3'
 /** #color maf | Nonsynonymous codon | MAF codon view: the species' amino acid differs from the reference (nonsynonymous) */
 const codonNonsynonymous = '#e8930c'
@@ -163,14 +165,19 @@ const codonStop = '#cc2222'
 const coverage = grey[400]
 /** #color alignments-indicators | Insertion | Reads carry an insertion relative to the reference */
 const insertion = '#800080'
+/** #color theme-colors | Deletion | Deletion markers in alignments */
 const deletion = '#808080'
 /** #color alignments-indicators | Soft clip | Reads are soft-clipped (clipped bases retained in the read) */
 const softclip = '#00f'
 /** #color alignments-indicators | Hard clip | Reads are hard-clipped (clipped bases removed from the read) */
 const hardclip = '#f00'
+/** #color theme-colors | Skip (intron) | Skipped regions such as introns in RNA-seq reads */
 const skip = '#009a8a'
+/** #color theme-colors | Base modification (fwd) | Base modifications on the forward strand */
 const modificationFwd = '#c8c8c8'
+/** #color theme-colors | Base modification (rev) | Base modifications on the reverse strand */
 const modificationRev = '#c8dcc8'
+/** #color theme-colors | Muted SNP base | SNP bases muted when show-modifications coloring is on */
 const mutedSnpBase = '#888'
 // MAF bridged-row fill where the species has no alignment (à la UCSC)
 const missingData = '#ffffcc'
