@@ -5,12 +5,6 @@ import { Menu } from '@jbrowse/core/ui'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 
-interface BaseHit {
-  name: string
-  genotype: string
-  featureId: string
-}
-
 // Matches the real display model's setHoveredGenotype param — a tooltip record
 // that always carries genotype + name (the rest is display-specific fields).
 type Tooltip = Record<string, unknown> & { genotype: string; name: string }
@@ -28,20 +22,22 @@ interface InteractionModel {
  * (enriched-feature select), and onContextMenu (enriched-feature + Menu),
  * and renders the popup Menu itself.
  *
- * Caller supplies `getHit` (hit-test the canvas), `getTooltip` (the subset
- * of hit data passed to setHoveredGenotype), and `enrich` (turn a hit into
- * the SimpleFeature passed to select/setContextMenuFeature). `onHoverChange`
- * is invoked when the hovered hit changes — used by the regular variant
- * display to drive its HoveredCellHighlight overlay.
+ * The hit is opaque to the hook: the caller supplies `getHit` (hit-test the
+ * canvas), `getKey` (hover-dedup identity), `getTooltip` (the subset of hit data
+ * passed to setHoveredGenotype), and `enrich` (turn a hit into the SimpleFeature
+ * passed to select/setContextMenuFeature). `onHoverChange` is invoked when the
+ * hovered hit changes — used by the regular variant display to drive its
+ * HoveredCellHighlight overlay.
  */
-export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
+export function useVariantCanvasInteraction<H>(opts: {
   model: InteractionModel
   getHit: (rect: DOMRect, clientX: number, clientY: number) => H | undefined
+  getKey: (hit: H) => string
   getTooltip: (hit: H) => Tooltip
   enrich: (hit: H) => Feature | undefined
   onHoverChange?: (hit: H | undefined) => void
 }) {
-  const { model, getHit, getTooltip, enrich, onHoverChange } = opts
+  const { model, getHit, getKey, getTooltip, enrich, onHoverChange } = opts
   const [contextMenuCoord, setContextMenuCoord] = useState<
     [number, number] | undefined
   >()
@@ -52,10 +48,21 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
     onHoverChange?.(hit)
   }
 
+  function clearHover() {
+    lastHoveredRef.current = undefined
+    applyHoverChange(undefined)
+  }
+
+  function resolveFeature(e: MouseEvent<HTMLCanvasElement>) {
+    const rect = e.currentTarget.getBoundingClientRect()
+    const hit = getHit(rect, e.clientX, e.clientY)
+    return hit ? enrich(hit) : undefined
+  }
+
   const onMouseMove = (e: MouseEvent<HTMLCanvasElement>) => {
     const rect = e.currentTarget.getBoundingClientRect()
     const hit = getHit(rect, e.clientX, e.clientY)
-    const key = hit ? `${hit.name}:${hit.genotype}:${hit.featureId}` : undefined
+    const key = hit ? getKey(hit) : undefined
     if (key !== lastHoveredRef.current) {
       lastHoveredRef.current = key
       applyHoverChange(hit)
@@ -64,29 +71,25 @@ export function useVariantCanvasInteraction<H extends BaseHit>(opts: {
 
   const onMouseLeave = () => {
     if (lastHoveredRef.current !== undefined) {
-      lastHoveredRef.current = undefined
-      applyHoverChange(undefined)
+      clearHover()
     }
   }
 
   const onClick = (e: MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const hit = getHit(rect, e.clientX, e.clientY)
-    const enriched = hit ? enrich(hit) : undefined
+    const enriched = resolveFeature(e)
     if (enriched) {
+      // clear the hover tooltip so it doesn't linger after the widget opens
+      clearHover()
       model.selectFeature(enriched)
     }
   }
 
   const onContextMenu = (e: MouseEvent<HTMLCanvasElement>) => {
-    const rect = e.currentTarget.getBoundingClientRect()
-    const hit = getHit(rect, e.clientX, e.clientY)
-    const enriched = hit ? enrich(hit) : undefined
+    const enriched = resolveFeature(e)
     if (enriched) {
       e.preventDefault()
       // clear the hover tooltip so it doesn't stay stuck behind the menu
-      lastHoveredRef.current = undefined
-      applyHoverChange(undefined)
+      clearHover()
       model.setContextMenuFeature(enriched)
       setContextMenuCoord([e.clientX, e.clientY])
     }

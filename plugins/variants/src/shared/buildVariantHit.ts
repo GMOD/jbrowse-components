@@ -5,8 +5,9 @@ import { makeSimpleAltString } from '../VcfFeature/util.ts'
 import type { VariantFeatureInfo } from './types.ts'
 
 // The tooltip-field contract shared by both multi-sample variant displays. Both
-// hit-tests produce these identical fields (plus a display-specific carrier for
-// the enrich step); building them here keeps the two displays from drifting.
+// hit-tests produce these identical fields; each display pairs them with a
+// display-specific carrier (`featureInfo`/`cell` vs `featureData`) as a sibling
+// so building them here keeps the two displays from drifting.
 export interface VariantTooltipFields {
   genotype: string
   alleles: string
@@ -16,6 +17,13 @@ export interface VariantTooltipFields {
   sampleName: string
   name: string
   featureId: string
+}
+
+// Hover-dedup identity for a hovered cell — same feature+sample+genotype means
+// the same tooltip, so the hook skips redundant setHoveredGenotype calls. Shared
+// so both displays key hovers identically.
+export function variantTooltipKey(f: VariantTooltipFields) {
+  return `${f.name}:${f.genotype}:${f.featureId}`
 }
 
 export function buildVariantHit({

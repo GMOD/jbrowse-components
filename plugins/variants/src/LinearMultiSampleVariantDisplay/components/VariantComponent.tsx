@@ -6,7 +6,10 @@ import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
 import { computeVariantHitQuery } from './variantHitTest.ts'
-import { buildVariantHit } from '../../shared/buildVariantHit.ts'
+import {
+  buildVariantHit,
+  variantTooltipKey,
+} from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -27,7 +30,8 @@ interface HoveredCell {
   displayedRegionIndex: number
 }
 
-interface VariantHit extends VariantTooltipFields {
+interface VariantHit {
+  fields: VariantTooltipFields
   featureInfo: VariantFeatureInfo
   cell: HoveredCell
 }
@@ -114,7 +118,7 @@ function getFeatureUnderMouse(
     source.sampleName,
   )!
   return {
-    ...buildVariantHit({
+    fields: buildVariantHit({
       info,
       genotype,
       sampleName: source.sampleName,
@@ -214,16 +218,14 @@ const VariantBody = observer(function VariantBody({
     useVariantCanvasInteraction<VariantHit>({
       model,
       getHit: (rect, x, y) => getFeatureUnderMouse(model, rect, x, y),
-      getTooltip: hit => {
-        const { featureId, cell, sampleName, featureInfo, ...tooltip } = hit
-        return tooltip
-      },
+      getKey: hit => variantTooltipKey(hit.fields),
+      getTooltip: hit => ({ ...hit.fields }),
       enrich: hit => {
         const baseFeature = model.featuresVolatile?.find(
-          f => f.id() === hit.featureId,
+          f => f.id() === hit.fields.featureId,
         )
         return baseFeature
-          ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit)
+          ? enrichFeatureFromClick(baseFeature, hit.featureInfo, hit.fields)
           : undefined
       },
       onHoverChange: hit => {

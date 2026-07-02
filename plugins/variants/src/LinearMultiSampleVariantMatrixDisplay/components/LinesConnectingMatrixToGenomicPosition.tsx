@@ -44,6 +44,52 @@ function getGenomicX(
   )
 }
 
+// Shared column/offset geometry for the connector lines. `w` is one matrix
+// column's px width, `mx = idx*w + w/2` its center; genomic ends map through
+// getGenomicX(offsetAdj). AllLines, HighlightedLine, and the hovered line all
+// key off this so columns/lines/hit-tests stay pixel-aligned with the matrix
+// canvas (which lays out by totalWidthPxWithoutBorders / numFeatures).
+function getLineGeometry(model: MinimalModel) {
+  const { assemblyManager } = getSession(model)
+  const view = getContainingView(model) as LinearGenomeViewModel
+  const { featuresVolatile } = model
+  const assembly = assemblyManager.get(view.assemblyNames[0]!)
+  const n = featuresVolatile?.length ?? 0
+  const w = n === 0 ? 0 : view.totalWidthPxWithoutBorders / n
+  return {
+    view,
+    assembly,
+    featuresVolatile,
+    n,
+    w,
+    offsetAdj: Math.max(view.offsetPx, 0),
+    left: Math.max(0, -view.offsetPx),
+  }
+}
+
+// The red matrix→genome connector line (hovered column + crosshair column).
+function ConnectorLine({
+  mx,
+  gx,
+  lineZoneHeight,
+}: {
+  mx: number
+  gx: number
+  lineZoneHeight: number
+}) {
+  return (
+    <line
+      stroke="#f00c"
+      strokeWidth={2}
+      style={{ pointerEvents: 'none' }}
+      x1={mx}
+      x2={gx}
+      y1={lineZoneHeight}
+      y2={0}
+    />
+  )
+}
+
 interface HoveredLine {
   feature: Feature
   idx: number
@@ -87,27 +133,21 @@ const AllLines = observer(function AllLines({
   onHover: (arg: HoveredLine | undefined) => void
 }) {
   const theme = useTheme()
-  const { assemblyManager } = getSession(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, featuresVolatile } = model
-  const { offsetPx, assemblyNames } = view
-  const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = view.totalWidthPxWithoutBorders
-  const n = featuresVolatile?.length ?? 0
-  const offsetAdj = Math.max(offsetPx, 0)
+  const { view, assembly, featuresVolatile, n, w, offsetAdj } =
+    getLineGeometry(model)
+  const { lineZoneHeight } = model
 
   const lineCoords = useMemo(() => {
     if (!assembly || !featuresVolatile || n === 0) {
       return []
     }
-    const w = b0 / n
     return featuresVolatile.map((feature, i) => ({
       feature,
       idx: i,
       mx: i * w + w / 2,
       gx: getGenomicX(view, assembly, feature, offsetAdj),
     }))
-  }, [assembly, featuresVolatile, n, b0, view, offsetAdj])
+  }, [assembly, featuresVolatile, n, w, view, offsetAdj])
 
   const pathD = useMemo(
     () =>
@@ -184,40 +224,25 @@ const HighlightedLine = observer(function HighlightedLine({
   model: MinimalModel
   crosshairX: number
 }) {
-  const { assemblyManager } = getSession(model)
-  const view = getContainingView(model) as LinearGenomeViewModel
-  const { lineZoneHeight, featuresVolatile } = model
-  const { offsetPx, assemblyNames } = view
-  const assembly = assemblyManager.get(assemblyNames[0]!)
-  const b0 = view.totalWidthPxWithoutBorders
-  const n = featuresVolatile?.length ?? 0
+  const { view, assembly, featuresVolatile, n, w, offsetAdj, left } =
+    getLineGeometry(model)
+  const { lineZoneHeight } = model
 
   if (!assembly || !featuresVolatile || n === 0) {
     return null
   }
 
-  const w = b0 / n
-  const left = Math.max(0, -offsetPx)
-  const svgX = crosshairX - left
-  const idx = Math.floor(svgX / w)
-
+  const idx = Math.floor((crosshairX - left) / w)
   if (idx < 0 || idx >= n) {
     return null
   }
 
-  const offsetAdj = Math.max(offsetPx, 0)
   const gx = getGenomicX(view, assembly, featuresVolatile[idx]!, offsetAdj)
-  const mx = idx * w + w / 2
-
   return (
-    <line
-      stroke="#f00c"
-      strokeWidth={2}
-      style={{ pointerEvents: 'none' }}
-      x1={mx}
-      x2={gx}
-      y1={lineZoneHeight}
-      y2={0}
+    <ConnectorLine
+      mx={idx * w + w / 2}
+      gx={gx}
+      lineZoneHeight={lineZoneHeight}
     />
   )
 })
@@ -235,16 +260,11 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const { lineZoneHeight, featuresVolatile } = model
     const [hovered, setHovered] = useState<HoveredLine>()
-    const b0 = (getContainingView(model) as LinearGenomeViewModel)
-      .totalWidthPxWithoutBorders
-    const n = featuresVolatile?.length ?? 0
+    const { n, w } = getLineGeometry(model)
 
     if (!featuresVolatile || n === 0) {
       return null
     }
-
-    const w = b0 / n
-    const hMx = hovered ? hovered.idx * w + w / 2 : 0
 
     return (
       <>
@@ -252,14 +272,10 @@ const LinesConnectingMatrixToGenomicPosition = observer(
           <AllLines model={model} onHover={setHovered} />
           {hovered ? (
             <>
-              <line
-                stroke="#f00c"
-                strokeWidth={2}
-                style={{ pointerEvents: 'none' }}
-                x1={hMx}
-                x2={hovered.genomicX}
-                y1={lineZoneHeight}
-                y2={0}
+              <ConnectorLine
+                mx={hovered.idx * w + w / 2}
+                gx={hovered.genomicX}
+                lineZoneHeight={lineZoneHeight}
               />
               {hovered.feature.get('name') ? (
                 <BaseTooltip>{hovered.feature.get('name')}</BaseTooltip>

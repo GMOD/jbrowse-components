@@ -2,7 +2,10 @@ import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
-import { buildVariantHit } from '../../shared/buildVariantHit.ts'
+import {
+  buildVariantHit,
+  variantTooltipKey,
+} from '../../shared/buildVariantHit.ts'
 import { REFERENCE_COLOR } from '../../shared/constants.ts'
 import { enrichFeatureFromClick } from '../../shared/enrichFeatureFromClick.ts'
 import { decodeGenotype } from '../../shared/genotypeCodec.ts'
@@ -16,7 +19,8 @@ import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
 
-interface MatrixHit extends VariantTooltipFields {
+interface MatrixHit {
+  fields: VariantTooltipFields
   featureData: VariantFeatureInfo & { featureId: string }
 }
 
@@ -81,7 +85,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
       )
       if (genotype) {
         return {
-          ...buildVariantHit({
+          fields: buildVariantHit({
             info: feature,
             genotype,
             sampleName,
@@ -99,16 +103,14 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     useVariantCanvasInteraction<MatrixHit>({
       model,
       getHit,
-      getTooltip: hit => {
-        const { featureId, sampleName, featureData, ...tooltip } = hit
-        return tooltip
-      },
+      getKey: hit => variantTooltipKey(hit.fields),
+      getTooltip: hit => ({ ...hit.fields }),
       enrich: hit => {
         const baseFeature = model.featuresVolatile?.find(
-          f => f.id() === hit.featureId,
+          f => f.id() === hit.fields.featureId,
         )
         return baseFeature
-          ? enrichFeatureFromClick(baseFeature, hit.featureData, hit)
+          ? enrichFeatureFromClick(baseFeature, hit.featureData, hit.fields)
           : undefined
       },
     })
