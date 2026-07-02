@@ -89,6 +89,7 @@ const OverrideBadge = observer(function OverrideBadge({
     <Tooltip title={title}>
       <IconButton
         className={classes.editButton}
+        data-testid={edited ? 'track_edited_badge' : 'track_session_default_badge'}
         onClick={() => {
           session.queueDialog(handleClose => [
             TrackSettingsChangesDialog,
