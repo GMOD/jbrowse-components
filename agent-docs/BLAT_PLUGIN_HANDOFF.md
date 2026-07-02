@@ -98,16 +98,18 @@ all users; the desktop own-key override is the pressure valve.
   `pslToFeatures` (21-col PSL → features w/ per-block subfeatures + % identity),
   `runBlat({db,seq,urlBase,apiKey})`, `DEFAULT_BLAT_URL`, `MINIMUM_BLAT_LENGTH`.
 - `src/blatQuery.test.ts` — 3 tests over a real hgBlat JSON fixture, green.
-- `src/BlatDialog.tsx` — Tools-menu dialog: assembly picker, UCSC db (via
-  `ucscDbMap`), editable server URL, **optional apiKey field**, sequence paste;
-  adds results as a `FeatureTrack` w/ `FromConfigAdapter` and `showTrack`s it.
-  Desktop routes through `desktopBlatFetch` (CORS bypass), web uses `runBlat`.
-  On `BlatChallengeError` shows the electron-only "Solve CAPTCHA" fallback.
+- `src/BlatDialog.tsx` — Tools-menu dialog: assembly picker, UCSC db, editable
+  server URL, **optional apiKey field**, sequence paste; adds results as a
+  `FeatureTrack` w/ `FromConfigAdapter` and `showTrack`s it. Resolves the db via
+  `getConf(assembly, ['sequence','metadata','blatDb'])` (the jb2hubs stamp),
+  falling back to `ucscDbMap`. Desktop routes through `desktopBlatFetch` (CORS
+  bypass), web uses `runBlat`. On `BlatChallengeError` shows the electron-only
+  "Solve CAPTCHA" fallback.
 - `src/desktopBlat.ts` — renderer→main bridge: `desktopBlatFetch` +
   `openBlatChallenge` (the CAPTCHA-solve fallback).
-- `src/ucscDbMap.ts` — tiny static alias map (GRCh38→hg38 etc.); identity
-  default already covers name===db and bare GenArk accessions. `metadata.blatDb`
-  wiring (Task 1) is optional polish, not required for the common case.
+- `src/ucscDbMap.ts` — tiny static alias map (GRCh38→hg38 etc.); fallback for
+  configs predating the blatDb stamp. Identity default covers name===db and bare
+  GenArk accessions.
 - `src/index.ts` — registers Tools → "BLAT search…".
 
 Desktop wiring (committed):
@@ -180,11 +182,16 @@ CORS-blocked regardless of key).
   cache before broad rollout. See its README. The desktop own-key path is the
   pressure valve meanwhile.
 
-### Optional polish — jb2hubs `metadata.blatDb` hint
-Not required (assembly `name` already equals the UCSC db, and hgBlat resolves
-bare GenArk accessions). If wanted: emit `assembly.metadata.blatDb` in
-`ucsc2jbrowse` config generation and read it in `BlatDialog` via
-`getConf(assembly,['metadata','blatDb'])`, falling back to `assembly.name`.
+### Done — jb2hubs `sequence.metadata.blatDb` stamp
+jb2hubs now stamps `sequence.metadata.blatDb` on every generated assembly (=
+UCSC db name for golden-path, = bare accession for GenArk). Committed on jb2hubs
+branch `blat-assembly-metadata`: `ucsc2jbrowse/src/createAssembly.ts` +
+`hubtools/src/generateJBrowseConfigForAssemblyHub.ts`. The plugin reads it via
+`getConf(assembly, ['sequence','metadata','blatDb'])` (assembly schema has no
+top-level `metadata` slot, so it rides on the ref-seq track's existing frozen
+`metadata` slot; `readConfObject` traverses the path into the frozen object).
+**Takes effect only after a full jb2hubs regenerate + redeploy**; until then the
+plugin falls back to `ucscDbMap`.
 
 ### Dropped — GenArk via dynamic gfServer (was Task 3)
 UNNECESSARY: the web CGI resolves bare GenArk accessions statelessly (confirmed
