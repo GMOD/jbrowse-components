@@ -66,10 +66,18 @@ export interface Track {
   [key: string]: unknown
 }
 
+export interface TextSearchAdapter {
+  textSearchAdapterId: string
+  [key: string]: unknown
+}
+
 export interface Config {
   assemblies: Assembly[]
   assembly: Assembly
   tracks: Track[]
+  // Trix (or other) text-search adapters, e.g. from a --hub config, that let
+  // --loc navigate by gene name. Passed through to createViewState.
+  aggregateTextSearchAdapters?: TextSearchAdapter[]
   // Per-assembly location strings (aligned with `assemblies`) for comparative
   // views built from CLI args; undefined entries render that assembly
   // whole-genome.

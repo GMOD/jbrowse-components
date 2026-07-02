@@ -121,6 +121,17 @@ Error: --track "clinvar" not found in the config. Did you mean: hg19-clinvarMain
 hg19-clinvarCnv, hg19-dbSnp155ClinVar, ...?
 ```
 
+Hosted configs also carry a gene text-search index, so `--loc` accepts a **gene
+name** and jumps to it — no need to look up coordinates:
+
+```bash
+jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --out out.svg
+```
+
+`--loc` still takes ordinary locstrings (`chr1:1-10000`,
+`1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
+in the index and the view jumps to the top hit.
+
 Browse [genomes.jbrowse.org](https://genomes.jbrowse.org) to find assembly names
 and trackIds. `--config` also accepts a URL, so you can point at any hosted
 JBrowse `config.json` the same way; relative data URIs inside it resolve against
@@ -781,7 +792,8 @@ of the same type, e.g. `--bam file1.bam --bam file2.bam`
 
 ### Output params
 
-- `--loc` — location string to render, e.g. `chr1:1-10000` or `all`
+- `--loc` — location string to render, e.g. `chr1:1-10000` or `all`; also a gene
+  name when the config has a text-search index (e.g. from `--hub`)
 - `--out` — output file path; `.svg`, `.png`, or `.pdf`
 - `--width` — view width in pixels (default: 1500)
 - `--noRasterize` — render everything as SVG vectors instead of rasterizing
@@ -815,7 +827,7 @@ Options:
   --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path or URL)
   --session         Path to session JSON
-  --loc             Location to render (e.g., chr1:1-1000 or "all")
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
   --out             Output file path (SVG or PNG)
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]
@@ -859,7 +871,7 @@ Options:
   --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config              Path to JBrowse config.json (path or URL)
   --session             Path to session JSON
-  --loc                 Location to render (e.g., chr1:1-1000 or "all")
+  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
   --out                 Output file path (SVG or PNG)
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
@@ -904,7 +916,7 @@ Options:
   --track               Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config              Path to JBrowse config.json (path or URL)
   --session             Path to session JSON
-  --loc                 Location to render (e.g., chr1:1-1000 or "all")
+  --loc                 Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
   --out                 Output file path (SVG or PNG)
   --width               Width of output in pixels [default: 1500]
   --noRasterize         Disable rasterization of pileup/coverage [default: false]
@@ -949,7 +961,7 @@ Options:
   --track           Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated (the hg19- prefix is optional). Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)
   --config          Path to JBrowse config.json (path or URL)
   --session         Path to session JSON
-  --loc             Location to render (e.g., chr1:1-1000 or "all")
+  --loc             Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)
   --out             Output file path (SVG or PNG)
   --width           Width of output in pixels [default: 1500]
   --noRasterize     Disable rasterization of pileup/coverage [default: false]

@@ -32,7 +32,8 @@ export const optionDefs: OptionDef[] = [
   { name: 'session', description: 'Path to session JSON' },
   {
     name: 'loc',
-    description: 'Location to render (e.g., chr1:1-1000 or "all")',
+    description:
+      'Location to render (e.g., chr1:1-1000 or "all"), or a gene name when the config has a text-search index (e.g. from --hub)',
   },
   { name: 'out', description: 'Output file path (SVG or PNG)' },
   { name: 'width', description: 'Width of output in pixels', default: 1500 },

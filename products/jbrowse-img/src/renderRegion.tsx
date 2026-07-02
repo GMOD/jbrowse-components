@@ -2,7 +2,10 @@ import { addDisposer, destroy } from '@jbrowse/mobx-state-tree'
 import { renderToSvg as renderCircularToSvg } from '@jbrowse/plugin-circular-view'
 import { renderToSvg as renderDotplotToSvg } from '@jbrowse/plugin-dotplot-view'
 import { renderToSvg as renderSyntenyToSvg } from '@jbrowse/plugin-linear-comparative-view'
-import { renderToSvg as renderLinearToSvg } from '@jbrowse/plugin-linear-genome-view'
+import {
+  fetchResults,
+  renderToSvg as renderLinearToSvg,
+} from '@jbrowse/plugin-linear-genome-view'
 import { createViewState } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
 import { autorun, when } from 'mobx'
@@ -33,6 +36,9 @@ function createModel(data: Config) {
     config: {
       assemblies: data.assemblies,
       tracks: data.tracks,
+      // carried through so --loc can navigate by gene name via the hub's Trix
+      // index (see navToLocStringOrSearch)
+      aggregateTextSearchAdapters: data.aggregateTextSearchAdapters,
       defaultSession: data.defaultSession as { name: string } | undefined,
       configuration: { rpc: { defaultDriver: 'MainThreadRpcDriver' } },
     },
@@ -59,6 +65,34 @@ function createModel(data: Config) {
 }
 
 type Model = ReturnType<typeof createModel>
+
+// Navigate the view to --loc. A locstring (chr1:1-100) or bare refname navigates
+// directly. When the config carries a text-search index (e.g. from --hub), a
+// gene name is resolved through it and the view jumps to the top hit's location.
+// We search first (rather than lean on navToLocString's own search) because on
+// multiple hits navToLocString queues an interactive picker dialog — invisible,
+// and unanswerable, in a headless render — whereas here we just take the top hit.
+// A locstring simply returns no text-search hits and falls through to navToLocString.
+async function navToLocOrGene(
+  view: LinearGenomeViewModel,
+  session: Model['session'],
+  input: string,
+  assemblyName: string,
+  hasSearchIndex: boolean,
+) {
+  const hit = hasSearchIndex
+    ? (
+        await fetchResults({
+          queryString: input,
+          searchType: 'exact',
+          searchScope: view.searchScope(assemblyName),
+          textSearchManager: session.textSearchManager,
+          assembly: await session.assemblyManager.waitForAssembly(assemblyName),
+        })
+      ).find(r => r.hasLocation())
+    : undefined
+  await view.navToLocString(hit?.getLocation() ?? input, assemblyName)
+}
 
 // Per-mode render context. `width` is resolved once so each renderer doesn't
 // repeat the default. `spec` is the parsed --spec view object when supplied;
@@ -197,7 +231,13 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
       }
       view.showAllRegionsInAssembly(name)
     } else {
-      await view.navToLocString(loc, name)
+      await navToLocOrGene(
+        view,
+        session,
+        loc,
+        name,
+        !!data.aggregateTextSearchAdapters?.length,
+      )
     }
   } else if (!sessionParam && !defaultSession) {
     throw new Error(
