@@ -72,6 +72,62 @@ const HicTrackConfigFactory = () => {
         defaultValue: false,
         description: 'show the color scale legend',
       },
+      /**
+       * #slot
+       * Signed integer offset from the zoom-derived auto-picked binsize. `0`
+       * means pure auto; `-1` is one step finer, `+1` one step coarser. Tracking
+       * the offset (not an absolute binsize) keeps the intent valid across zoom.
+       */
+      resolutionBias: {
+        type: 'number',
+        defaultValue: 0,
+        description: 'offset from the auto-picked resolution binsize',
+      },
+      /**
+       * #slot
+       */
+      useLogScale: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'map contact counts to color on a log2 scale',
+      },
+      /**
+       * #slot
+       * false → maxScore/20 (linear) or maxScore (log); true → 95th percentile
+       * of counts, so off-diagonal contacts read more strongly.
+       */
+      useColorPercentile: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'saturate color at the 95th percentile of counts',
+      },
+      /**
+       * #slot
+       */
+      showResolutionControls: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'show the on-canvas resolution stepper overlay',
+      },
+      /**
+       * #slot
+       * Active matrix normalization scheme (e.g. KR, SCALE, VC, NONE),
+       * reconciled at runtime against what the `.hic` file actually provides.
+       */
+      activeNormalization: {
+        type: 'string',
+        defaultValue: 'KR',
+        description: 'matrix normalization scheme',
+      },
+      /**
+       * #slot
+       */
+      fitToHeight: {
+        type: 'boolean',
+        defaultValue: false,
+        description:
+          'squash the triangle vertically to fit the display height instead of drawing square bins',
+      },
     },
     {
       /**

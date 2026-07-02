@@ -43,9 +43,8 @@ export default function App() {
         tracks: [
           {
             trackId: 'volvox_bam',
-            // colorBy + groupBy are flat keys collected into configOverrides on
-            // load. pairing them on the same tag colors each haplotype
-            // distinctly within its group.
+            // colorBy + groupBy are alignments config slots. pairing them on the
+            // same tag colors each haplotype distinctly within its group.
             // increase height so all groups (HP:0, HP:1, unassigned) are visible
             displaySnapshot: {
               type: 'LinearAlignmentsDisplay',

@@ -169,12 +169,6 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        */
-      setColor(color?: string) {
-        confNode(self).configuration.setSlot('color', color)
-      },
-      /**
-       * #action
-       */
       setMinScore(val?: number) {
         confNode(self).configuration.setSlot('minScore', val)
       },

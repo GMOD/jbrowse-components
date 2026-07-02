@@ -64,10 +64,9 @@ const SetColorDialog = lazy(() => import('./components/SetColorDialog.tsx'))
  * State model factory for the single-source wiggle display.
  *
  * #example
- * A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
- * common display-level override; score-range and rendering options (autoscale,
- * min/max score, renderer) are config slots on the track itself — see the
- * `QuantitativeTrack` config:
+ * A complete `QuantitativeTrack` config to paste into `tracks`. `height` and the
+ * score-range and rendering options (autoscale, min/max score, renderer) are all
+ * config slots on the track itself — see the `QuantitativeTrack` config:
  * ```js
  * {
  *   type: 'QuantitativeTrack',
@@ -229,6 +228,13 @@ export default function stateModelFactory(
        */
       setUseBicolor(val?: boolean) {
         self.configuration.setSlot('useBicolor', val)
+      },
+
+      /**
+       * #action
+       */
+      setColor(color?: string) {
+        self.configuration.setSlot('color', color)
       },
 
       /**

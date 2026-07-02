@@ -416,8 +416,8 @@ function applyModifier(
       break
     }
     // Legacy fill toggle. `fill:false` historically meant "no fill" on
-    // xyplot-family renderers, which the wiggle migration maps to the `scatter`
-    // rendering type (see migrateWiggleSnapshot); `fill:true` is plain `xyplot`.
+    // xyplot-family renderers, which maps to the `scatter` rendering type;
+    // `fill:true` is plain `xyplot`.
     case 'fill': {
       if (isScore) {
         snap.defaultRendering = booleanize(val1 || 'true')

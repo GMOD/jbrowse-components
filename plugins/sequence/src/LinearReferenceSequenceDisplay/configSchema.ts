@@ -41,6 +41,30 @@ export const configSchema = ConfigurationSchema(
       description: 'display height in pixels; unset auto-fits to the sequence',
       defaultValue: undefined,
     },
+    /**
+     * #slot
+     */
+    showForward: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'show the forward-strand sequence row',
+    },
+    /**
+     * #slot
+     */
+    showReverse: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'show the reverse-complement sequence row (DNA only)',
+    },
+    /**
+     * #slot
+     */
+    showTranslation: {
+      type: 'boolean',
+      defaultValue: true,
+      description: 'show the translation frame rows (DNA only)',
+    },
   },
   { explicitIdentifier: 'displayId', explicitlyTyped: true },
 )

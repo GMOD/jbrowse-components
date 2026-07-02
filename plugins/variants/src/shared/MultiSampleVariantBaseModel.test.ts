@@ -1,4 +1,4 @@
-/* eslint-disable @typescript-eslint/no-unnecessary-condition */
+ 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { applyColorPalette } from '@jbrowse/tree-sidebar'
 
@@ -101,92 +101,6 @@ describe('SharedVariantConfigSchema', () => {
       })
       expect(readConfObject(config, 'minorAlleleFrequencyFilter')).toBe(0.05)
     })
-  })
-})
-
-describe('Config-to-getter fallback logic', () => {
-  it('referenceDrawingMode getter returns draw when showReferenceAlleles config is true', () => {
-    const showReferenceAlleles = true
-    const referenceDrawingModeSetting: string | undefined = undefined
-
-    const result =
-      referenceDrawingModeSetting ?? (showReferenceAlleles ? 'draw' : 'skip')
-
-    expect(result).toBe('draw')
-  })
-
-  it('referenceDrawingMode getter returns skip when showReferenceAlleles config is false', () => {
-    const showReferenceAlleles = false
-    const referenceDrawingModeSetting: string | undefined = undefined
-
-    const result =
-      referenceDrawingModeSetting ?? (showReferenceAlleles ? 'draw' : 'skip')
-
-    expect(result).toBe('skip')
-  })
-
-  it('referenceDrawingMode getter returns state value when explicitly set', () => {
-    const showReferenceAlleles = true
-    const referenceDrawingModeSetting = 'skip'
-
-    const result =
-      referenceDrawingModeSetting ?? (showReferenceAlleles ? 'draw' : 'skip')
-
-    expect(result).toBe('skip')
-  })
-
-  it('showSidebarLabels getter returns config value when state is undefined', () => {
-    const configValue = false
-    const settingValue: boolean | undefined = undefined
-
-    const result = settingValue ?? configValue
-
-    expect(result).toBe(false)
-  })
-
-  it('showSidebarLabels getter returns state value when explicitly set', () => {
-    const configValue = false
-    const settingValue = true
-
-    const result = settingValue ?? configValue
-
-    expect(result).toBe(true)
-  })
-
-  it('renderingMode getter returns config value when state is undefined', () => {
-    const configValue = 'phased'
-    const settingValue: string | undefined = undefined
-
-    const result = settingValue ?? configValue
-
-    expect(result).toBe('phased')
-  })
-
-  it('renderingMode getter returns state value when explicitly set', () => {
-    const configValue = 'phased'
-    const settingValue = 'alleleCount'
-
-    const result = settingValue ?? configValue
-
-    expect(result).toBe('alleleCount')
-  })
-
-  it('minorAlleleFrequencyFilter getter returns config value when state is undefined', () => {
-    const configValue = 0.1
-    const settingValue: number | undefined = undefined
-
-    const result = settingValue ?? configValue
-
-    expect(result).toBe(0.1)
-  })
-
-  it('minorAlleleFrequencyFilter getter returns state value when explicitly set', () => {
-    const configValue = 0.1
-    const settingValue = 0.2
-
-    const result = settingValue ?? configValue
-
-    expect(result).toBe(0.2)
   })
 })
 

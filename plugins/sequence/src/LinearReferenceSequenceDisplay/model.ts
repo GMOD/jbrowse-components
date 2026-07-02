@@ -97,24 +97,30 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        showForward: types.stripDefault(types.boolean, true),
-        /**
-         * #property
-         */
-        showReverse: types.stripDefault(types.boolean, true),
-        /**
-         * #property
-         */
-        showTranslation: types.stripDefault(types.boolean, true),
       }),
     )
     .volatile(() => ({
       sequenceData: observable.map<number, SequenceRegionData>(),
     }))
     .views(self => ({
+      /**
+       * #getter
+       */
+      get showForward(): boolean {
+        return getConf(self, 'showForward')
+      },
+      /**
+       * #getter
+       */
+      get showReverse(): boolean {
+        return getConf(self, 'showReverse')
+      },
+      /**
+       * #getter
+       */
+      get showTranslation(): boolean {
+        return getConf(self, 'showTranslation')
+      },
       /**
        * #getter
        */
@@ -257,21 +263,21 @@ export function modelFactory(configSchema: AnyConfigurationSchemaType) {
        * #action
        */
       toggleShowForward() {
-        self.showForward = !self.showForward
+        self.configuration.setSlot('showForward', !self.showForward)
         self.configuration.setSlot('height', undefined)
       },
       /**
        * #action
        */
       toggleShowReverse() {
-        self.showReverse = !self.showReverse
+        self.configuration.setSlot('showReverse', !self.showReverse)
         self.configuration.setSlot('height', undefined)
       },
       /**
        * #action
        */
       toggleShowTranslation() {
-        self.showTranslation = !self.showTranslation
+        self.configuration.setSlot('showTranslation', !self.showTranslation)
         self.configuration.setSlot('height', undefined)
       },
       /**

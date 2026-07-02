@@ -29,16 +29,3 @@ export function migrateLegacyArcRendererConfig(
     return snap
   }
 }
-
-// Back-compat for the display state model: the explicit display-mode field was
-// renamed from the bare `displayMode` to `displayModeOverride`.
-export function migrateArcSnapshot(snap: Record<string, unknown> | undefined) {
-  if (
-    snap?.displayMode !== undefined &&
-    snap.displayModeOverride === undefined
-  ) {
-    const { displayMode, ...rest } = snap
-    return { ...rest, displayModeOverride: displayMode }
-  }
-  return snap
-}

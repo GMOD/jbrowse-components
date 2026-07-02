@@ -13,8 +13,6 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import { migrateArcSnapshot } from './migrate.ts'
-
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
@@ -67,16 +65,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * explicit display-mode override; the `displayMode` getter resolves it
-         * over the config `displayMode` slot
-         */
-        displayModeOverride: types.maybe(types.string),
       }),
-    )
-    .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-      migrateArcSnapshot(snap),
     )
     .volatile(() => ({
       features: undefined as Feature[] | undefined,
@@ -114,9 +103,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
        * #getter
        */
       get displayMode() {
-        return (
-          self.displayModeOverride ?? readConfObject(self.conf, 'displayMode')
-        )
+        return getConf(self, 'displayMode')
       },
       /**
        * #getter
@@ -180,7 +167,7 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
        * #action
        */
       setDisplayMode(flag: string) {
-        self.displayModeOverride = flag
+        self.configuration.setSlot('displayMode', flag)
       },
     }))
     .actions(self => ({

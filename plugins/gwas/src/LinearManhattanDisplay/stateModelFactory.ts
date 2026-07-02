@@ -117,7 +117,7 @@ export function stateModelFactory(
       },
       /**
        * #getter
-       * resolved point color (config slot value or its override)
+       * resolved point color
        */
       get color(): string {
         return getConf(self, 'color')

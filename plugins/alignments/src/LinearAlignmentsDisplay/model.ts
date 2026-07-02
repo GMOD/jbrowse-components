@@ -707,7 +707,7 @@ export default function stateModelFactory(
           // color scheme (including modifications) and shown only on demand via
           // the "Show legend" track-menu item, rather than eagerly covering the
           // top of every alignments track.
-          return getConf(self, 'showLegend') ?? false
+          return !!getConf(self, 'showLegend')
         },
 
         /**

@@ -54,9 +54,9 @@ import type {
 
 // Apply a `colorBy` palette to the sample sources. Returns the colored sources,
 // or undefined when there's nothing to apply (no colorBy attribute, or sources
-// lack the requested attribute). `colorBy` is the resolved value (config default
-// or runtime override) so the same palettizing drives both initial load and the
-// interactive "Color samples by" menu.
+// lack the requested attribute). `colorBy` is the resolved config-slot value so
+// the same palettizing drives both initial load and the interactive "Color
+// samples by" menu.
 export function maybeApplyColorByPalette(
   colorBy: string,
   sources: Source[],
@@ -401,7 +401,7 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * Returns the effective rendering mode, falling back to config
+         * Returns the rendering mode config slot value
          */
         get renderingMode(): string {
           return getConf(self, 'renderingMode')
@@ -516,8 +516,8 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          * Recolor sample rows by a metadata attribute (e.g. 'population'), or
          * pass '' to clear the grouping. Persists the colored arrangement as the
-         * layout and records the choice as a `colorBy` override so it survives a
-         * data refetch and serializes into the session.
+         * layout and records the choice in the `colorBy` config slot so it
+         * survives a data refetch and serializes into the session.
          */
         setColorBy(colorBy: string) {
           self.configuration.setSlot('colorBy', colorBy)
@@ -608,7 +608,7 @@ export default function MultiSampleVariantBaseModelF(
       .views(self => ({
         /**
          * #getter
-         * Returns the effective minor allele frequency filter, falling back to config
+         * Returns the minor allele frequency filter config slot value
          */
         get minorAlleleFrequencyFilter(): number {
           return getConf(self, 'minorAlleleFrequencyFilter')

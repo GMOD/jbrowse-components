@@ -104,14 +104,6 @@ export default function stateModelFactory(
         configuration: ConfigurationReference(configSchema),
         /**
          * #property
-         * Per-display override of the config `rowHeight`: a positive px height
-         * pins fixed rows, `0` selects auto-fit. `rowHeightSetting` resolves
-         * override-or-config; the `rowHeight` getter then resolves `0` to the
-         * fit-to-height value, so it's never undefined.
-         */
-        rowHeightOverride: types.maybe(types.number),
-        /**
-         * #property
          */
         showTree: types.stripDefault(types.boolean, DEFAULTS.showTree),
         /**
@@ -263,10 +255,10 @@ export default function stateModelFactory(
       /**
        * #getter
        * Resolved fixed row-height setting: `0` is auto-fit, any positive value is
-       * a pinned px height. Override-or-config, never undefined.
+       * a pinned px height. Drag-resize / fit-toggle write it via `setSlot`.
        */
       get rowHeightSetting(): number {
-        return self.rowHeightOverride ?? readConfObject(self.conf, 'rowHeight')
+        return readConfObject(self.conf, 'rowHeight')
       },
     }))
     .views(self => ({
@@ -429,7 +421,7 @@ export default function stateModelFactory(
        * #action
        */
       setRowHeight(n: number) {
-        self.rowHeightOverride = n
+        self.configuration.setSlot('rowHeight', n)
       },
       /**
        * #action
@@ -496,7 +488,10 @@ export default function stateModelFactory(
             Math.max(newHeight, MIN_DISPLAY_HEIGHT),
           )
         } else {
-          self.rowHeightOverride = Math.max(1, newHeight / self.nrow)
+          self.configuration.setSlot(
+            'rowHeight',
+            Math.max(1, newHeight / self.nrow),
+          )
         }
         return self.height
       },
@@ -513,7 +508,7 @@ export default function stateModelFactory(
       /**
        * #action
        * Switch to auto-fit: seed the `height` config slot from the current
-       * content height (so toggling on doesn't jump), then `rowHeightOverride = 0`
+       * content height (so toggling on doesn't jump), then `rowHeight = 0`
        * makes `rowHeight` derive from it.
        */
       setFitToHeight() {
@@ -521,7 +516,7 @@ export default function stateModelFactory(
           'height',
           Math.max(self.height, MIN_DISPLAY_HEIGHT),
         )
-        self.rowHeightOverride = 0
+        self.configuration.setSlot('rowHeight', 0)
         self.scrollTop = 0
       },
       /**

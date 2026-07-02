@@ -79,47 +79,6 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Signed integer offset from the zoom-derived auto-picked binsize.
-         * `0` means pure auto. `-1` is one step finer than auto, `+1` is one
-         * step coarser, etc. Tracking the *offset* (not an absolute binsize)
-         * keeps the user's intent valid across zoom levels — a saved session
-         * with bias=-1 still means "one step finer than auto" when reopened
-         * at a different scale.
-         */
-        resolutionBias: types.stripDefault(types.number, 0),
-        /**
-         * #property
-         * Map contact counts to color on a log2 scale instead of linear.
-         */
-        useLogScale: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         * Color saturation point: false → maxScore/20 (linear) or maxScore
-         * (log), matches legacy behavior. true → 95th percentile of counts;
-         * lower saturation point so off-diagonal contacts read more strongly.
-         */
-        useColorPercentile: types.stripDefault(types.boolean, false),
-        /**
-         * #property
-         * Whether the on-canvas resolution stepper overlay is shown. Toggled
-         * from the track menu's `Show...` submenu; the stepper itself lives
-         * only on the canvas to keep the menu uncluttered.
-         */
-        showResolutionControls: types.stripDefault(types.boolean, true),
-        /**
-         * #property
-         * Active matrix normalization scheme (e.g. KR, SCALE, VC, NONE),
-         * reconciled against what the `.hic` file actually provides.
-         */
-        activeNormalization: types.stripDefault(types.string, 'KR'),
-        /**
-         * #property
-         * Squash the triangle vertically to fit the chosen display height
-         * instead of drawing square bins at natural proportions.
-         */
-        fitToHeight: types.stripDefault(types.boolean, false),
       }),
     )
     .volatile(() => ({
@@ -136,21 +95,46 @@ export default function stateModelFactory(
        */
       availableResolutions: undefined as number[] | undefined,
     }))
-
-    .preProcessSnapshot((snap: Record<string, unknown> | undefined) => {
-      if (!snap) {
-        return snap
-      }
-      // Drop any legacy `resolution` field — older snapshots stored either a
-      // multiplier (< 1000) or an absolute binsize (>= 1000); neither maps
-      // cleanly to the new `resolutionBias` field, so just reset to auto
-      // (bias = 0) and let zoom drive the choice.
-      //
-      // The legacy `mode` enum became the `fitToHeight` boolean; only its
-      // non-default 'adjust' value was ever serialized (stripDefault).
-      const { resolution: _drop, mode, ...rest } = snap
-      return mode === 'adjust' ? { ...rest, fitToHeight: true } : rest
-    })
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get resolutionBias(): number {
+        return getConf(self, 'resolutionBias')
+      },
+      /**
+       * #getter
+       */
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
+      get useLogScale(): boolean {
+        return getConf(self, 'useLogScale')
+      },
+      /**
+       * #getter
+       */
+      // eslint-disable-next-line @eslint-react/no-unnecessary-use-prefix -- MST getter named after config slot
+      get useColorPercentile(): boolean {
+        return getConf(self, 'useColorPercentile')
+      },
+      /**
+       * #getter
+       */
+      get showResolutionControls(): boolean {
+        return getConf(self, 'showResolutionControls')
+      },
+      /**
+       * #getter
+       */
+      get activeNormalization(): string {
+        return getConf(self, 'activeNormalization')
+      },
+      /**
+       * #getter
+       */
+      get fitToHeight(): boolean {
+        return getConf(self, 'fitToHeight')
+      },
+    }))
     .views(self => ({
       /**
        * #getter
@@ -383,19 +367,19 @@ export default function stateModelFactory(
        * #action
        */
       setUseLogScale(f: boolean) {
-        self.useLogScale = f
+        self.configuration.setSlot('useLogScale', f)
       },
       /**
        * #action
        */
       setUseColorPercentile(f: boolean) {
-        self.useColorPercentile = f
+        self.configuration.setSlot('useColorPercentile', f)
       },
       /**
        * #action
        */
       setShowResolutionControls(f: boolean) {
-        self.showResolutionControls = f
+        self.configuration.setSlot('showResolutionControls', f)
       },
       /**
        * #action
@@ -407,7 +391,7 @@ export default function stateModelFactory(
        * #action
        */
       setActiveNormalization(f: string) {
-        self.activeNormalization = f
+        self.configuration.setSlot('activeNormalization', f)
       },
       /**
        * #action
@@ -420,17 +404,19 @@ export default function stateModelFactory(
       setAvailableNormalizations(f: string[]) {
         self.availableNormalizations = f
         if (!f.includes(self.activeNormalization)) {
-          self.activeNormalization =
+          self.configuration.setSlot(
+            'activeNormalization',
             ['KR', 'SCALE', 'VC_SQRT', 'VC'].find(n => f.includes(n)) ??
-            f[0] ??
-            'NONE'
+              f[0] ??
+              'NONE',
+          )
         }
       },
       /**
        * #action
        */
       setFitToHeight(arg: boolean) {
-        self.fitToHeight = arg
+        self.configuration.setSlot('fitToHeight', arg)
       },
       /**
        * #action
@@ -459,15 +445,17 @@ export default function stateModelFactory(
         if (self.nextResolution(dir) === undefined) {
           return
         }
-        self.resolutionBias =
-          self.effectiveResolutionIdx + dir - self.autoResolutionIdx
+        self.configuration.setSlot(
+          'resolutionBias',
+          self.effectiveResolutionIdx + dir - self.autoResolutionIdx,
+        )
       },
       /**
        * #action
        * Reset to pure auto-mode: bias 0, binsize follows zoom directly.
        */
       resetResolutionBias() {
-        self.resolutionBias = 0
+        self.configuration.setSlot('resolutionBias', 0)
       },
     }))
     .views(self => {

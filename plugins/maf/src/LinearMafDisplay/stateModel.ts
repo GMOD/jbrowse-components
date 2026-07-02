@@ -33,6 +33,7 @@ import {
   findFrameAt,
 } from './components/computeVisibleAnnotations.ts'
 import {
+  computeCodonConservation,
   computeVisibleCodons,
   findCodonAt,
 } from './components/computeVisibleCodons.ts'
@@ -52,14 +53,17 @@ import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { fetchMafAlignmentData, fetchMafSummaryData } from './fetchMafData.ts'
-import { ROW_IDENTITY_MODE_VALUES } from './rowIdentityModes.ts'
 import { buildMafTrackMenuItems } from './trackMenuItems.ts'
 import { getMsaHighlights } from './util.ts'
 import { buildInstanceBuffer } from '../LinearMafRenderer/mafInstanceBuffer.ts'
 import { getMafColorPalette } from '../LinearMafRenderer/util.ts'
 
 import type { FrameMarker } from './components/computeVisibleAnnotations.ts'
-import type { CodonMarker } from './components/computeVisibleCodons.ts'
+import type {
+  CodonConservationBar,
+  CodonMarker,
+} from './components/computeVisibleCodons.ts'
+import type { ConservationMode } from './conservationModes.ts'
 import type {
   RowIdentityMode,
   RowIdentityModeWithOff,
@@ -141,160 +145,6 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         * Raw per-row height in px, or `0` for "fit to display height" mode,
-         * where rows stretch to fill the dragged track height. Mirrors the
-         * variants MultiSampleVariantDisplay `rowHeight`. The resolved value is
-         * the `effectiveRowHeight` getter — consumers read that, never this.
-         * Defaults to fit-to-height (`0`) so large alignments (hundreds of
-         * species) stay bounded by the track height rather than growing a canvas
-         * past the browser's max size.
-         */
-        rowHeight: types.stripDefault(types.number, 0),
-        /**
-         * #property
-         */
-        rowProportion: types.stripDefault(types.number, DEFAULTS.rowProportion),
-        /**
-         * #property
-         */
-        showAllLetters: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showAllLetters,
-        ),
-        /**
-         * #property
-         */
-        mismatchRendering: types.stripDefault(
-          types.boolean,
-          DEFAULTS.mismatchRendering,
-        ),
-        /**
-         * #property
-         */
-        showAsUpperCase: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showAsUpperCase,
-        ),
-        /**
-         * #property
-         */
-        showTree: types.stripDefault(types.boolean, DEFAULTS.showTree),
-        /**
-         * #property
-         * Position tree nodes by their cluster merge height (dendrogram) rather
-         * than evenly by topology (cladogram).
-         */
-        showBranchLength: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showBranchLength,
-        ),
-        /**
-         * #property
-         */
-        showCoverage: types.stripDefault(types.boolean, DEFAULTS.showCoverage),
-        /**
-         * #property
-         * Show the per-sample alignment rows. When off, only the coverage band
-         * renders (independent of `showCoverage`).
-         */
-        showAlignments: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showAlignments,
-        ),
-        /**
-         * #property
-         */
-        coverageHeight: types.stripDefault(
-          types.number,
-          DEFAULTS.coverageHeight,
-        ),
-        /**
-         * #property
-         * Show the conservation band (per-bp percent identity to the reference,
-         * computed from the aligned species). Off by default. Independent of
-         * `showCoverage`/`showAlignments`.
-         */
-        showConservation: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showConservation,
-        ),
-        /**
-         * #property
-         */
-        conservationHeight: types.stripDefault(
-          types.number,
-          DEFAULTS.conservationHeight,
-        ),
-        /**
-         * #property
-         * Per-row identity rendering shown in place of the base SNP coloring once
-         * zoomed out past base level (see `activeRowRendering`): each species row
-         * shows its local (per-pixel) percent identity to the reference.
-         * `heatmap` shades the row band on a red→grey→blue ramp; `xyplot` draws
-         * a per-species identity wiggle (bar height = identity). `none` (the
-         * default) keeps the base coloring at every zoom.
-         */
-        rowIdentityMode: types.stripDefault(
-          types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
-          DEFAULTS.rowIdentityMode,
-        ),
-        /**
-         * #property
-         * When true (default) the per-row identity plot follows zoom like UCSC
-         * `wigMaf` — bases at base level, the identity plot when zoomed out. When
-         * false the selected `rowIdentityMode` is pinned on at every zoom.
-         */
-        rowIdentityAutoZoom: types.stripDefault(
-          types.boolean,
-          DEFAULTS.rowIdentityAutoZoom,
-        ),
-        /**
-         * #property
-         * Show the per-species CDS reading-frame overlay sourced from the
-         * configured `annotationAdapter` (UCSC `mafFrames`). No effect unless
-         * an `annotationAdapter` is configured.
-         */
-        showAnnotations: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showAnnotations,
-        ),
-        /**
-         * #property
-         * Translate each species in the reference reading frame (from the
-         * `annotationAdapter` `mafFrames`) and draw the amino acid centered on
-         * each codon in place of the nucleotide letters — UCSC `wigMaf`
-         * "show translation". Residues differing from the reference
-         * (nonsynonymous) are emphasized. Needs an `annotationAdapter`.
-         */
-        showTranslation: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showTranslation,
-        ),
-        /**
-         * #property
-         * Color each species' alignment blocks by their source chromosome
-         * (`MafAlignedRow.chr`) instead of the per-base SNP coloring — a row
-         * whose blocks come from different source chromosomes changes color,
-         * surfacing translocations/rearrangements (MCGV "color by chromosome").
-         * Detail (non-summary) view only; needs no extra fetch.
-         */
-        colorByChromosome: types.stripDefault(
-          types.boolean,
-          DEFAULTS.colorByChromosome,
-        ),
-        /**
-         * #property
-         * Overlay a strand-flip (inversion) indicator: blocks aligning inverted
-         * relative to their own source chromosome's consensus orientation get a
-         * diagonal hatch. Composes on top of any rows rendering; needs no extra
-         * fetch (`MafAlignedRow.strand` is already shipped).
-         */
-        showInversions: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showInversions,
-        ),
       }),
     )
     .volatile(() => ({
@@ -349,12 +199,128 @@ export default function stateModelFactory(
       // Debounce handle that clears `resizing` after the drag stops.
       resizeSettleTimer: undefined as ReturnType<typeof setTimeout> | undefined,
     }))
+    .views(self => ({
+      /**
+       * #getter
+       */
+      get rowHeight(): number {
+        return getConf(self, 'rowHeight')
+      },
+      /**
+       * #getter
+       */
+      get rowProportion(): number {
+        return getConf(self, 'rowProportion')
+      },
+      /**
+       * #getter
+       */
+      get showAllLetters(): boolean {
+        return getConf(self, 'showAllLetters')
+      },
+      /**
+       * #getter
+       */
+      get mismatchRendering(): boolean {
+        return getConf(self, 'mismatchRendering')
+      },
+      /**
+       * #getter
+       */
+      get showAsUpperCase(): boolean {
+        return getConf(self, 'showAsUpperCase')
+      },
+      /**
+       * #getter
+       */
+      get showTree(): boolean {
+        return getConf(self, 'showTree')
+      },
+      /**
+       * #getter
+       */
+      get showBranchLength(): boolean {
+        return getConf(self, 'showBranchLength')
+      },
+      /**
+       * #getter
+       */
+      get showCoverage(): boolean {
+        return getConf(self, 'showCoverage')
+      },
+      /**
+       * #getter
+       */
+      get showAlignments(): boolean {
+        return getConf(self, 'showAlignments')
+      },
+      /**
+       * #getter
+       */
+      get coverageHeight(): number {
+        return getConf(self, 'coverageHeight')
+      },
+      /**
+       * #getter
+       */
+      get showConservation(): boolean {
+        return getConf(self, 'showConservation')
+      },
+      /**
+       * #getter
+       */
+      get conservationHeight(): number {
+        return getConf(self, 'conservationHeight')
+      },
+      /**
+       * #getter
+       */
+      get conservationMode(): ConservationMode {
+        return getConf(self, 'conservationMode')
+      },
+      /**
+       * #getter
+       */
+      get rowIdentityMode(): RowIdentityModeWithOff {
+        return getConf(self, 'rowIdentityMode')
+      },
+      /**
+       * #getter
+       */
+      get rowIdentityAutoZoom(): boolean {
+        return getConf(self, 'rowIdentityAutoZoom')
+      },
+      /**
+       * #getter
+       */
+      get showAnnotations(): boolean {
+        return getConf(self, 'showAnnotations')
+      },
+      /**
+       * #getter
+       */
+      get showTranslation(): boolean {
+        return getConf(self, 'showTranslation')
+      },
+      /**
+       * #getter
+       */
+      get colorByChromosome(): boolean {
+        return getConf(self, 'colorByChromosome')
+      },
+      /**
+       * #getter
+       */
+      get showInversions(): boolean {
+        return getConf(self, 'showInversions')
+      },
+    }))
     .actions(self => ({
       /**
        * #action
        */
       setRowHeight(n: number) {
-        self.rowHeight = n
+        self.configuration.setSlot('rowHeight', n)
       },
       /**
        * #action
@@ -366,19 +332,19 @@ export default function stateModelFactory(
        * #action
        */
       setRowProportion(n: number) {
-        self.rowProportion = n
+        self.configuration.setSlot('rowProportion', n)
       },
       /**
        * #action
        */
       setShowAllLetters(f: boolean) {
-        self.showAllLetters = f
+        self.configuration.setSlot('showAllLetters', f)
       },
       /**
        * #action
        */
       setMismatchRendering(f: boolean) {
-        self.mismatchRendering = f
+        self.configuration.setSlot('mismatchRendering', f)
       },
       /**
        * #action
@@ -414,85 +380,91 @@ export default function stateModelFactory(
        * #action
        */
       setShowAsUpperCase(arg: boolean) {
-        self.showAsUpperCase = arg
+        self.configuration.setSlot('showAsUpperCase', arg)
       },
       /**
        * #action
        */
       setShowTree(arg: boolean) {
-        self.showTree = arg
+        self.configuration.setSlot('showTree', arg)
       },
       /**
        * #action
        */
       setShowBranchLength(arg: boolean) {
-        self.showBranchLength = arg
+        self.configuration.setSlot('showBranchLength', arg)
       },
       /**
        * #action
        */
       setShowCoverage(arg: boolean) {
-        self.showCoverage = arg
+        self.configuration.setSlot('showCoverage', arg)
       },
       /**
        * #action
        */
       setShowAlignments(arg: boolean) {
-        self.showAlignments = arg
+        self.configuration.setSlot('showAlignments', arg)
       },
       /**
        * #action
        */
       setCoverageHeight(arg: number) {
-        self.coverageHeight = arg
+        self.configuration.setSlot('coverageHeight', arg)
       },
       /**
        * #action
        */
       setShowConservation(arg: boolean) {
-        self.showConservation = arg
+        self.configuration.setSlot('showConservation', arg)
+      },
+      /**
+       * #action
+       */
+      setConservationMode(arg: ConservationMode) {
+        self.configuration.setSlot('conservationMode', arg)
       },
       /**
        * #action
        */
       setRowIdentityMode(arg: RowIdentityModeWithOff) {
-        self.rowIdentityMode = arg
+        self.configuration.setSlot('rowIdentityMode', arg)
       },
       /**
        * #action
        */
       setRowIdentityAutoZoom(arg: boolean) {
-        self.rowIdentityAutoZoom = arg
+        self.configuration.setSlot('rowIdentityAutoZoom', arg)
       },
       /**
        * #action
        */
       setShowAnnotations(arg: boolean) {
-        self.showAnnotations = arg
+        self.configuration.setSlot('showAnnotations', arg)
       },
       /**
        * #action
        */
       setShowTranslation(arg: boolean) {
-        self.showTranslation = arg
+        self.configuration.setSlot('showTranslation', arg)
       },
       /**
        * #action
        */
       setColorByChromosome(arg: boolean) {
-        self.colorByChromosome = arg
+        self.configuration.setSlot('colorByChromosome', arg)
       },
       /**
        * #action
        */
       setShowInversions(arg: boolean) {
-        self.showInversions = arg
+        self.configuration.setSlot('showInversions', arg)
       },
       /**
        * #action
        */
       setConservationHeight(arg: number) {
-        self.conservationHeight = arg
+        self.configuration.setSlot('conservationHeight', arg)
       },
     }))
     .actions(self => {
@@ -565,7 +537,9 @@ export default function stateModelFactory(
        */
       get annotationDataActive(): boolean {
         return (
-          (self.showAnnotations || self.showTranslation) &&
+          (self.showAnnotations ||
+            self.showTranslation ||
+            (self.showConservation && self.conservationMode === 'codon')) &&
           !!self.annotationAdapterConfig
         )
       },
@@ -820,7 +794,7 @@ export default function stateModelFactory(
           'height',
           Math.max(self.height, minDisplayHeight),
         )
-        self.rowHeight = 0
+        self.configuration.setSlot('rowHeight', 0)
         self.scrollTop = 0
       },
       /**
@@ -838,7 +812,10 @@ export default function stateModelFactory(
         const newHeight = Math.max(oldHeight + distance, minDisplayHeight)
         self.configuration.setSlot('height', newHeight)
         if (self.rowHeight > 0) {
-          self.rowHeight = (self.rowHeight * newHeight) / oldHeight
+          self.configuration.setSlot(
+            'rowHeight',
+            (self.rowHeight * newHeight) / oldHeight,
+          )
         }
         self.resizing = true
         clearTimeout(self.resizeSettleTimer)
@@ -1355,6 +1332,35 @@ export default function stateModelFactory(
           defaultSrc: self.defaultCodonSpecies,
           rowHeight: self.effectiveRowHeight,
           rowProportion: self.rowProportion,
+        })
+      },
+      /**
+       * #getter
+       * Per-codon amino-acid conservation bars for the conservation band's codon
+       * mode. Empty unless the band is on in `codon` mode, an anchor species is
+       * known, and we're not in the cheap summary path (which ships no per-base
+       * blocks to translate). Draws only inside the CDS (where frames define
+       * codons); everywhere else the band is blank.
+       */
+      get visibleCodonConservation(): CodonConservationBar[] {
+        const view = self.lgv
+        const src = self.defaultCodonSpecies
+        if (
+          !view.initialized ||
+          !self.showConservation ||
+          self.conservationMode !== 'codon' ||
+          !self.annotationAdapterConfig ||
+          self.showSummary ||
+          !src
+        ) {
+          return []
+        }
+        return computeCodonConservation({
+          view,
+          rpcDataMap: self.rpcDataMap,
+          framesDataMap: self.framesDataMap,
+          defaultSrc: src,
+          refRowIndex: self.rowIndexBySrc.get(src) ?? -1,
         })
       },
       /**

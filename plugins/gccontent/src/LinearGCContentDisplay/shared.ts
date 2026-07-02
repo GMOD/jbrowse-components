@@ -5,8 +5,6 @@ import { getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import { linearWiggleDisplayModelFactory } from '@jbrowse/plugin-wiggle'
 
-import { migrateGCContentSnapshot } from './migration.ts'
-
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 
@@ -26,29 +24,7 @@ export default function SharedModelF(
     .compose(
       'SharedGCContentModel',
       linearWiggleDisplayModelFactory(pluginManager, configSchema),
-      types.model({
-        /**
-         * #property
-         * explicit override; the `windowSize` getter resolves it over the
-         * config `windowSize` slot
-         */
-        windowSizeOverride: types.maybe(types.number),
-        /**
-         * #property
-         * explicit override; resolved by the `windowDelta` getter
-         */
-        windowDeltaOverride: types.maybe(types.number),
-        /**
-         * #property
-         * explicit override; resolved by the `gcMode` getter
-         */
-        gcModeOverride: types.maybe(
-          types.enumeration('gcMode', ['content', 'skew']),
-        ),
-      }),
-    )
-    .preProcessSnapshot((snap: Record<string, unknown> | undefined) =>
-      migrateGCContentSnapshot(snap),
+      types.model({}),
     )
     .actions(self => ({
       setGCContentParams({
@@ -58,24 +34,24 @@ export default function SharedModelF(
         windowSize: number
         windowDelta: number
       }) {
-        self.windowSizeOverride = windowSize
-        self.windowDeltaOverride = windowDelta
+        self.configuration.setSlot('windowSize', windowSize)
+        self.configuration.setSlot('windowDelta', windowDelta)
         self.reload()
       },
       setGCMode(mode: 'content' | 'skew') {
-        self.gcModeOverride = mode
+        self.configuration.setSlot('gcMode', mode)
         self.reload()
       },
     }))
     .views(self => ({
       get windowSize() {
-        return self.windowSizeOverride ?? getConf(self, 'windowSize')
+        return getConf(self, 'windowSize')
       },
       get windowDelta() {
-        return self.windowDeltaOverride ?? getConf(self, 'windowDelta')
+        return getConf(self, 'windowDelta')
       },
       get gcMode() {
-        return self.gcModeOverride ?? getConf(self, 'gcMode')
+        return getConf(self, 'gcMode')
       },
     }))
     .views(self => {
