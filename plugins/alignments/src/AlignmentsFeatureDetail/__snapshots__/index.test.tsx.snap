@@ -143,7 +143,9 @@ exports[`open up a widget 1`] = `
                   class="css-2imjyh"
                 >
                   <div
-                    class="css-c392m0"
+                    aria-label="SEQ: read bases as stored in the file (reverse-complemented for reverse-strand reads)"
+                    class="css-1yswd44 css-c392m0"
+                    data-mui-internal-clone-element="true"
                     style="width: 96px;"
                   >
                     seq
@@ -160,7 +162,9 @@ exports[`open up a widget 1`] = `
                   class="css-2imjyh"
                 >
                   <div
-                    class="css-c392m0"
+                    aria-label="MAPQ: mapping quality, phred-scaled probability that the mapping position is wrong"
+                    class="css-1yswd44 css-c392m0"
+                    data-mui-internal-clone-element="true"
                     style="width: 96px;"
                   >
                     score
@@ -177,7 +181,9 @@ exports[`open up a widget 1`] = `
                   class="css-2imjyh"
                 >
                   <div
-                    class="css-c392m0"
+                    aria-label="QUAL: phred-scaled per-base quality scores"
+                    class="css-1yswd44 css-c392m0"
+                    data-mui-internal-clone-element="true"
                     style="width: 96px;"
                   >
                     qual
@@ -221,7 +227,9 @@ exports[`open up a widget 1`] = `
                   class="css-2imjyh"
                 >
                   <div
-                    class="css-c392m0"
+                    aria-label="CIGAR: alignment operations (M match, I insertion, D deletion, N skip, S/H soft/hard clip)"
+                    class="css-1yswd44 css-c392m0"
+                    data-mui-internal-clone-element="true"
                     style="width: 96px;"
                   >
                     CIGAR
@@ -255,7 +263,9 @@ exports[`open up a widget 1`] = `
                   class="css-2imjyh"
                 >
                   <div
-                    class="css-c392m0"
+                    aria-label="TLEN: signed observed template length (insert size) of a properly paired read"
+                    class="css-1yswd44 css-c392m0"
+                    data-mui-internal-clone-element="true"
                     style="width: 96px;"
                   >
                     template_length
@@ -272,7 +282,9 @@ exports[`open up a widget 1`] = `
                   class="css-2imjyh"
                 >
                   <div
-                    class="css-c392m0"
+                    aria-label="Length of the read sequence in bases"
+                    class="css-1yswd44 css-c392m0"
+                    data-mui-internal-clone-element="true"
                     style="width: 96px;"
                   >
                     seq_length

@@ -7,7 +7,7 @@ import LaunchPairedEndBreakpointSplitViewPanel from './LaunchPairedEndBreakpoint
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
 
-const SuppAlignments = observer(function SuppAlignments({
+const LinkedPairedAlignments = observer(function LinkedPairedAlignments({
   model,
   feature,
 }: {
@@ -24,4 +24,4 @@ const SuppAlignments = observer(function SuppAlignments({
   ) : null
 })
 
-export default SuppAlignments
+export default LinkedPairedAlignments

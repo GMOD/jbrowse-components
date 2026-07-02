@@ -10,6 +10,11 @@ import type { FeatureFormatter } from '../types.tsx'
 
 const MAX_ARRAY_LENGTH = 100
 
+// Numeric arrays (e.g. base-modification probabilities, per-base scores) are
+// rarely read element-by-element and can be thousands long, so only a handful
+// are shown until expanded
+const MAX_NUMERIC_ARRAY_LENGTH = 5
+
 const useStyles = makeStyles()(theme => ({
   field: {
     display: 'flex',
@@ -41,9 +46,12 @@ export default function ArrayValue({
 }) {
   const { classes } = useStyles()
   const [showAll, setShowAll] = useState(false)
-  const needsTruncation = value.length > MAX_ARRAY_LENGTH
+  const limit = value.every(v => typeof v === 'number')
+    ? MAX_NUMERIC_ARRAY_LENGTH
+    : MAX_ARRAY_LENGTH
+  const needsTruncation = value.length > limit
   const displayedValues =
-    needsTruncation && !showAll ? value.slice(0, MAX_ARRAY_LENGTH) : value
+    needsTruncation && !showAll ? value.slice(0, limit) : value
 
   return value.every(isObject) ? (
     value.length === 1 ? (
@@ -89,7 +97,7 @@ export default function ArrayValue({
             >
               {showAll
                 ? 'Show less'
-                : `Showing ${MAX_ARRAY_LENGTH} of ${value.length}. Show all...`}
+                : `Showing ${limit} of ${value.length}. Show all...`}
             </button>
           ) : null}
         </>

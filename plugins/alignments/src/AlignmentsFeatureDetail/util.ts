@@ -9,5 +9,5 @@ export interface AlignmentFeatureSerialized extends SimpleFeatureSerialized {
 }
 
 export function getTag(tag: string, feat: AlignmentFeatureSerialized) {
-  return feat.tags?.[tag] ?? feat[tag]
+  return feat.tags?.[tag]
 }

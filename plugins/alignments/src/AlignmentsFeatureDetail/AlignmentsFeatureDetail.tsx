@@ -8,7 +8,7 @@ import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import Flags from './Flags.tsx'
-import { tags } from './tagInfo.ts'
+import { fieldDescriptions, tags } from './tagInfo.ts'
 import { getTag } from './util.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
@@ -37,8 +37,9 @@ const AlignmentsFeatureDetailsBody = observer(
       <Paper data-testid="alignment-side-drawer">
         <FeatureDetails
           model={model}
-          descriptions={{ tags }}
+          descriptions={{ ...fieldDescriptions, tags }}
           feature={feat}
+          omit={['flags', 'next_ref', 'next_pos']}
           formatter={(value, key) =>
             key === 'next_segment_position' ? (
               <ActionLink
