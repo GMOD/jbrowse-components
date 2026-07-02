@@ -5,6 +5,7 @@ import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isAlive } from '@jbrowse/mobx-state-tree'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
+import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { autorun } from 'mobx'
 import { observer } from 'mobx-react'
 
@@ -144,31 +145,6 @@ const useStyles = makeStyles()({
     position: 'sticky',
     top: 0,
   },
-  // Overlay viewport: pinned to the top of the scroll port exactly like the
-  // sticky canvas, and clipping its content to the visible height. The inner
-  // layer is translated by -scrollTop so labels/highlights follow the SAME
-  // model.scrollTop the GPU shader paints from. Without this the overlays ride
-  // the native (compositor-driven) scroll while the canvas repaints from a
-  // main-thread-updated model.scrollTop, so on a fast scroll the labels tear
-  // away from their glyphs (they lead in the scroll direction).
-  overlayViewport: {
-    position: 'sticky',
-    top: 0,
-    left: 0,
-    width: '100%',
-    overflow: 'hidden',
-    pointerEvents: 'none',
-  },
-  // Sized to the full content height (maxY) so the absolutely-positioned
-  // overlay children keep the exact coordinate space they had when they lived
-  // in the scrolled content div; the transform (set inline) both shifts them by
-  // -scrollTop and, being a transform, makes this the containing block for them.
-  overlayScroll: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
-  },
   overlay: {
     position: 'absolute',
     top: 0,
@@ -277,11 +253,11 @@ const Overlays = observer(function Overlays({
   )
 })
 
-// Pins the overlay layers to the scroll port and shifts them by
-// -model.scrollTop so they track the GPU canvas (which paints at
-// `inst.y - model.scrollTop`) instead of the native compositor scroll. Its own
-// observer so only this thin wrapper re-renders per scroll frame, not the whole
-// FeatureBody tree (Overlays is passed as stable children and doesn't re-run).
+// Wraps the overlays in the shared ScrollLockedOverlay so labels/highlights
+// track the GPU canvas's model.scrollTop rather than the native compositor
+// scroll (see ScrollLockedOverlay for why). Its own observer so only this thin
+// wrapper re-renders per scroll frame, not the whole FeatureBody tree (Overlays
+// is passed as stable children and doesn't re-run).
 const OverlayScrollLayer = observer(function OverlayScrollLayer({
   model,
   children,
@@ -289,27 +265,14 @@ const OverlayScrollLayer = observer(function OverlayScrollLayer({
   model: LinearBasicDisplayModel
   children: React.ReactNode
 }) {
-  const { classes } = useStyles()
-  const contentHeight = model.hasOverflow ? model.maxY : model.height
   return (
-    <div
-      className={classes.overlayViewport}
-      // The sticky canvas precedes this in flow and occupies `model.height`, so
-      // this layer's natural origin sits one canvas-height down; pull it back up
-      // so it pins at the same viewport-top the canvas does (otherwise labels
-      // sit a canvas-height too low and only align past that scroll depth).
-      style={{ height: model.height, marginTop: -model.height }}
+    <ScrollLockedOverlay
+      scrollTop={model.scrollTop}
+      viewportHeight={model.height}
+      contentHeight={model.hasOverflow ? model.maxY : model.height}
     >
-      <div
-        className={classes.overlayScroll}
-        style={{
-          height: contentHeight,
-          transform: `translateY(${-model.scrollTop}px)`,
-        }}
-      >
-        {children}
-      </div>
-    </div>
+      {children}
+    </ScrollLockedOverlay>
   )
 })
 

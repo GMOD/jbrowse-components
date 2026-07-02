@@ -1,4 +1,6 @@
 import {
+  assertOverlayScrollLockedToCanvas,
+  delay,
   findByTestId,
   navigateWithSessionSpec,
   waitForDataLoaded,
@@ -54,13 +56,10 @@ const overflowingPlainVariantSpec = {
 const suite: TestSuite = {
   name: 'Variants Track',
   tests: [
-    // Regression guard for the "variants separated from their labels" tear: the
-    // sticky GPU canvas paints from model.scrollTop while the DOM label overlay
-    // used to ride the native (compositor) scroll, so a scroll faster than the
-    // main thread could service pulled the two apart. We simulate that lag by
-    // freezing the DOM->model rAF sync (so model.scrollTop stays 0) and then
-    // scrolling the native container: the sticky canvas must not move, and the
-    // labels must stay locked to it (before the fix they moved by -scroll).
+    // Regression guard for the "variants separated from their labels" tear
+    // (ScrollLockedOverlay): the plain LinearVariantDisplay label overlay must
+    // track model.scrollTop like the sticky GPU canvas, not ride native scroll.
+    // See assertOverlayScrollLockedToCanvas for the mechanism.
     {
       name: 'variant labels stay locked to the canvas during scroll',
       fn: async page => {
@@ -70,52 +69,36 @@ const suite: TestSuite = {
           'display-volvox_filtered_vcf-LinearVariantDisplay-done',
         )
         await waitForDataLoaded(page)
+        // clickable label divs carry data-testid="feature-<kind>-<text>"
+        await assertOverlayScrollLockedToCanvas(
+          page,
+          'canvas',
+          '[data-testid^="feature-"]',
+        )
+      },
+    },
 
-        const res = await page.evaluate(() => {
-          const canvas = document.querySelector('canvas')
-          let el = canvas?.parentElement ?? null
-          while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) {
-            el = el.parentElement
-          }
-          // a floating label div carries an inline translate() transform
-          const label = [...document.querySelectorAll('div')].find(d =>
-            d.style.transform.includes('translate('),
-          )
-          if (!el || !canvas || !label) {
-            return { setupFailed: true }
-          }
-          const labelBefore = label.getBoundingClientRect().top
-          const canvasBefore = canvas.getBoundingClientRect().top
-          const origRaf = window.requestAnimationFrame
-          window.requestAnimationFrame = () => 0
-          el.scrollTop = 60
-          const labelMoved = label.getBoundingClientRect().top - labelBefore
-          const canvasMoved = canvas.getBoundingClientRect().top - canvasBefore
-          window.requestAnimationFrame = origRaf
-          el.scrollTop = 0
-          return {
-            overflow: el.scrollHeight - el.clientHeight,
-            labelMoved,
-            canvasMoved,
-          }
+    // Same guard for the OTHER native-overflow GPU display: the multi-sample
+    // hover-highlight cell (a separate component using the same primitive).
+    {
+      name: 'multi-sample hover highlight stays locked to the canvas during scroll',
+      fn: async page => {
+        await navigateWithSessionSpec(page, overflowingMultiSampleSpec)
+        await findByTestId(page, 'variant-display-done')
+        await waitForDataLoaded(page)
+        // hover a cell so the highlight overlay renders
+        const box = await page.evaluate(() => {
+          const c = document.querySelector('[data-testid="variant_canvas"]')!
+          const r = c.getBoundingClientRect()
+          return { x: r.x + r.width / 2, y: r.y + 60 }
         })
-
-        if (res.setupFailed) {
-          throw new Error('could not locate scroll container, canvas, or label')
-        }
-        if ((res.overflow ?? 0) < 60) {
-          throw new Error(
-            `display did not overflow enough to scroll (${res.overflow}px)`,
-          )
-        }
-        if (Math.abs(res.canvasMoved!) > 1) {
-          throw new Error(`sticky canvas moved ${res.canvasMoved}px (expected 0)`)
-        }
-        if (Math.abs(res.labelMoved!) > 1) {
-          throw new Error(
-            `label tore from its glyph: moved ${res.labelMoved}px (expected ~0) — overlay is riding native scroll instead of model.scrollTop`,
-          )
-        }
+        await page.mouse.move(box.x, box.y)
+        await delay(500)
+        await assertOverlayScrollLockedToCanvas(
+          page,
+          '[data-testid="variant_canvas"]',
+          'div[style*="rgba(255, 255, 255"]',
+        )
       },
     },
 

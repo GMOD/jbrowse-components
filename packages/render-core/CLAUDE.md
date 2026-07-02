@@ -38,6 +38,18 @@ package_.
 
 ## Local invariants
 
+- **DOM overlays over a scrolling sticky GPU canvas MUST derive Y from
+  `model.scrollTop`, never ride native scroll.** A `position:sticky` GPU canvas
+  in a native `overflow:auto` container has two scroll spaces that look like
+  one: the DOM's compositor-driven `scrollTop` and the main-thread
+  `model.scrollTop` (updated via `scroll -> rAF -> setScrollTop`). The canvas can
+  only paint from the main-thread value, so a DOM overlay placed in the scrolled
+  content rides the compositor and tears away from its glyphs on a fast scroll.
+  Wrap such overlays in `ScrollLockedOverlay` (this package) — it pins them to
+  the scroll port like the canvas and shifts by `-scrollTop`, so both layers key
+  off one value. Used by `LinearBasicDisplay` (FeatureComponent) and
+  `LinearMultiSampleVariantDisplay`. The alternative (virtual-scrollbar
+  displays, e.g. alignments) is immune by construction — one scroll source.
 - **HAL parity.** A behavior change to one HAL must land in the other and in
   `MockHal`. `products/jbrowse-web/src/tests/glAttributeSync.test.ts` parses the
   generated GLSL and asserts every `GL_ATTRIBUTE` matches a shader input — keep

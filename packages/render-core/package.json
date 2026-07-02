@@ -38,6 +38,7 @@
     "./regionUploadSync": "./src/regionUploadSync.ts",
     "./renderBlock": "./src/renderBlock.ts",
     "./renderingBackendBase": "./src/renderingBackendBase.ts",
+    "./ScrollLockedOverlay": "./src/ScrollLockedOverlay.tsx",
     "./slangPass": "./src/slangPass.ts",
     "./useRenderingBackend": "./src/useRenderingBackend.ts",
     "./useTabVisibilityRerender": "./src/useTabVisibilityRerender.ts"

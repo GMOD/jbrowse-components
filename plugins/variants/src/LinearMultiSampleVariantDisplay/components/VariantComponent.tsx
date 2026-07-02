@@ -2,6 +2,7 @@ import { useRef, useState } from 'react'
 
 import { getContainingView } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { ScrollLockedOverlay } from '@jbrowse/render-core/ScrollLockedOverlay'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
@@ -37,25 +38,6 @@ const useStyles = makeStyles()({
     display: 'block',
     position: 'sticky',
     top: 0,
-  },
-  // Overlay viewport pinned to the scroll port like the sticky canvas; its inner
-  // layer is translated by -scrollTop so the hover highlight tracks the SAME
-  // model.scrollTop the GPU cells draw at. Without this the highlight rides the
-  // native (compositor) scroll while the canvas repaints from a main-thread
-  // model.scrollTop, so a fast scroll tears the highlight off its cell.
-  highlightViewport: {
-    position: 'sticky',
-    top: 0,
-    left: 0,
-    width: '100%',
-    overflow: 'hidden',
-    pointerEvents: 'none',
-  },
-  highlightScroll: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    width: '100%',
   },
 })
 
@@ -193,9 +175,8 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const px2 = toX(cell.genomicEnd)
   const left = Math.min(px1, px2)
   const right = Math.max(px1, px2)
-  // content coords: the -scrollTop shift is applied by the enclosing
-  // highlightScroll layer (which tracks model.scrollTop like the GPU), so this
-  // stays in raw row coordinates
+  // raw row coords: the enclosing ScrollLockedOverlay applies the -scrollTop
+  // shift (tracking model.scrollTop like the GPU), so no subtraction here
   const top = cell.rowIndex * model.effectiveRowHeight
   return (
     <div
@@ -280,27 +261,15 @@ const VariantBody = observer(function VariantBody({
             {...canvasHandlers}
           />
           {hoveredCell ? (
-            <div
-              className={classes.highlightViewport}
-              // pull up past the preceding sticky canvas so this pins at the
-              // same viewport-top the canvas does
-              style={{
-                height: model.availableHeight,
-                marginTop: -model.availableHeight,
-              }}
+            <ScrollLockedOverlay
+              scrollTop={model.scrollTop}
+              viewportHeight={model.availableHeight}
+              contentHeight={
+                model.hasOverflow ? model.totalHeight : model.availableHeight
+              }
             >
-              <div
-                className={classes.highlightScroll}
-                style={{
-                  height: model.hasOverflow
-                    ? model.totalHeight
-                    : model.availableHeight,
-                  transform: `translateY(${-model.scrollTop}px)`,
-                }}
-              >
-                <HoveredCellHighlight cell={hoveredCell} model={model} />
-              </div>
-            </div>
+              <HoveredCellHighlight cell={hoveredCell} model={model} />
+            </ScrollLockedOverlay>
           ) : null}
         </div>
       </div>

@@ -20,6 +20,7 @@ export type { RenderingBackendCallbacks } from './RenderLifecycleMixin.ts'
 export { useRenderingBackend } from './useRenderingBackend.ts'
 export type { RenderLifecycleModel } from './useRenderingBackend.ts'
 export { useTabVisibilityRerender } from './useTabVisibilityRerender.ts'
+export { ScrollLockedOverlay } from './ScrollLockedOverlay.tsx'
 
 // --- Backend factories ---
 export {

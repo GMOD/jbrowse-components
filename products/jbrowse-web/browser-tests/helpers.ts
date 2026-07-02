@@ -360,3 +360,67 @@ export async function setupWorkspacesViaMoveToTab(page: Page) {
   await clickViewMenuOption(page, 'Move to new tab', 0)
   await waitForWorkspacesReady(page)
 }
+
+// Regression guard for GPU/DOM scroll tearing (ScrollLockedOverlay). A display
+// that scrolls a position:sticky GPU canvas in a native overflow container has
+// two scroll spaces: the DOM's compositor scrollTop and the main-thread
+// model.scrollTop the canvas paints from. A DOM overlay that rides native
+// scroll tears away from its glyphs when the main thread trails the compositor.
+// We simulate that lag deterministically (headless scrolls synchronously so it
+// can't reproduce the race on its own) by no-op'ing requestAnimationFrame — the
+// DOM->model rAF sync then never fires, so model.scrollTop stays 0 — then
+// scrolling the native container: the sticky canvas must not move, and the
+// overlay must stay locked to it. Before the fix the overlay moved by -scroll.
+export async function assertOverlayScrollLockedToCanvas(
+  page: Page,
+  canvasSelector: string,
+  overlaySelector: string,
+) {
+  const res = await page.evaluate(
+    (canvasSel: string, overlaySel: string) => {
+      const canvas = document.querySelector(canvasSel)
+      let el = canvas?.parentElement ?? null
+      while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) {
+        el = el.parentElement
+      }
+      const overlay = document.querySelector(overlaySel)
+      if (!el || !canvas || !overlay) {
+        return { setupFailed: true as const }
+      }
+      const overlayBefore = overlay.getBoundingClientRect().top
+      const canvasBefore = canvas.getBoundingClientRect().top
+      const origRaf = window.requestAnimationFrame
+      window.requestAnimationFrame = () => 0
+      el.scrollTop = 60
+      const overlayMoved = overlay.getBoundingClientRect().top - overlayBefore
+      const canvasMoved = canvas.getBoundingClientRect().top - canvasBefore
+      window.requestAnimationFrame = origRaf
+      el.scrollTop = 0
+      return {
+        overflow: el.scrollHeight - el.clientHeight,
+        overlayMoved,
+        canvasMoved,
+      }
+    },
+    canvasSelector,
+    overlaySelector,
+  )
+  if (res.setupFailed) {
+    throw new Error(
+      `could not locate scroll container / canvas (${canvasSelector}) / overlay (${overlaySelector})`,
+    )
+  }
+  if (res.overflow < 60) {
+    throw new Error(
+      `display did not overflow enough to scroll (${res.overflow}px)`,
+    )
+  }
+  if (Math.abs(res.canvasMoved) > 1) {
+    throw new Error(`sticky canvas moved ${res.canvasMoved}px (expected 0)`)
+  }
+  if (Math.abs(res.overlayMoved) > 1) {
+    throw new Error(
+      `overlay tore from the canvas: moved ${res.overlayMoved}px (expected ~0) — it is riding native scroll instead of model.scrollTop`,
+    )
+  }
+}
