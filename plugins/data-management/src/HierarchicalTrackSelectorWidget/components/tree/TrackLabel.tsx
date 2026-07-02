@@ -1,10 +1,9 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
-import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import EditIcon from '@mui/icons-material/Edit'
-import { Checkbox, FormControlLabel, Tooltip } from '@mui/material'
+import { Checkbox, FormControlLabel } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import OverrideBadge from './OverrideBadge.tsx'
 import TrackSelectorTrackMenu from './TrackSelectorTrackMenu.tsx'
 import { isUnsupported } from '../../util.ts'
 
@@ -30,32 +29,7 @@ const useStyles = makeStyles()(theme => ({
     alignItems: 'center',
     gap: 2,
   },
-  editIcon: {
-    fontSize: '0.9rem',
-    color: theme.palette.text.secondary,
-  },
 }))
-
-// shown when a track carries session-track config edits that shadow the
-// admin-owned config track (see session.isTrackOverride / updateTrackConfiguration)
-const OverrideBadge = observer(function OverrideBadge({
-  model,
-  trackId,
-}: {
-  model: HierarchicalTrackSelectorModel
-  trackId: string
-}) {
-  const { classes } = useStyles()
-  const session = getSession(model)
-  const isOverride =
-    'isTrackOverride' in session &&
-    (session.isTrackOverride as (id: string) => boolean)(trackId)
-  return isOverride ? (
-    <Tooltip title="Edited — settings differ from the default. Use 'Reset track settings' to revert.">
-      <EditIcon className={classes.editIcon} />
-    </Tooltip>
-  ) : null
-})
 
 // Separate observer so only this checkbox re-renders when a track is toggled
 const TrackCheckbox = observer(function TrackCheckbox({
@@ -107,7 +81,7 @@ const TrackLabelText = observer(function TrackLabelText({
       className={`${classes.label} ${selected ? selectedClass : ''}`}
     >
       <SanitizedHTML html={name} />
-      <OverrideBadge model={model} trackId={trackId} />
+      <OverrideBadge model={model} trackId={trackId} name={name} />
     </div>
   )
 })

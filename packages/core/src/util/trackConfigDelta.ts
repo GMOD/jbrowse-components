@@ -173,3 +173,62 @@ export function mergeTrackConfig(
 ): Record<string, unknown> {
   return mergeValue(base as JsonObject, delta as JsonObject) as JsonObject
 }
+
+/** A single overridden slot: the dotted `path`, its base `from` and edited `to`. */
+export interface TrackConfigChange {
+  path: string[]
+  from: Json
+  to: Json
+}
+
+// Keys that identify a config node rather than record a user edit: trackId (kept
+// by diffTrackConfig so the delta self-identifies), plus displayId/type on a
+// display (diffValue re-stamps displayId, and a display present only in the delta
+// carries type/displayId whole). None reflect a setting the user changed, so they
+// are skipped when listing changes — a display stub with only these emits nothing.
+const IDENTITY_KEYS = new Set(['trackId', 'displayId', 'type'])
+
+function walkDelta(
+  base: Json,
+  delta: Json,
+  path: string[],
+  out: TrackConfigChange[],
+): void {
+  if (isDisplayArray(delta)) {
+    const baseById = new Map(
+      (isDisplayArray(base) ? base : []).map(d => [d.displayId as string, d]),
+    )
+    for (const editedDisplay of delta) {
+      const id = editedDisplay.displayId as string
+      const baseDisplay = baseById.get(id)
+      const label = (editedDisplay.type ?? baseDisplay?.type ?? id) as string
+      // recurse into every display (missing base ⇒ {}) so only real slot edits
+      // surface — a display present only for its {type, displayId} stub yields
+      // no changes rather than being dumped whole
+      walkDelta(baseDisplay ?? {}, editedDisplay, [...path, label], out)
+    }
+  } else if (isPlainObject(delta) && isPlainObject(base)) {
+    for (const [k, v] of Object.entries(delta)) {
+      if (!IDENTITY_KEYS.has(k)) {
+        walkDelta(base[k], v, [...path, k], out)
+      }
+    }
+  } else {
+    out.push({ path, from: base, to: delta })
+  }
+}
+
+/**
+ * Flatten a stored track-config `delta` (see {@link diffTrackConfig}) into a
+ * list of changed slots paired with their `base` values, so the UI can show a
+ * user exactly which settings they've overridden and what the default was.
+ * Displays are addressed by type/displayId; identity keys are omitted.
+ */
+export function flattenTrackConfigDelta(
+  base: Record<string, unknown>,
+  delta: Record<string, unknown>,
+): TrackConfigChange[] {
+  const out: TrackConfigChange[] = []
+  walkDelta(base as JsonObject, delta as JsonObject, [], out)
+  return out
+}

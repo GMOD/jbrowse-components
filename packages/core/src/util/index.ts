@@ -317,7 +317,12 @@ export { IntervalTree } from './IntervalTree.ts'
 export { useRenderingBackend } from './useRenderingBackend.ts'
 export { makeDisplayedRegionKey } from './blockTypes.ts'
 export { cmpStr } from './cmpStr.ts'
-export { diffTrackConfig, mergeTrackConfig } from './trackConfigDelta.ts'
+export {
+  diffTrackConfig,
+  flattenTrackConfigDelta,
+  mergeTrackConfig,
+} from './trackConfigDelta.ts'
+export type { TrackConfigChange } from './trackConfigDelta.ts'
 export {
   bezierConnectorHandlePx,
   bezierConnectorPath,

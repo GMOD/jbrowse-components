@@ -1,6 +1,7 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 
 import { bareFacet, getRowStr, isMetadataFacet } from './util.ts'
+import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 
 import type { FacetedColumn } from './FacetedDataGrid.tsx'
@@ -28,6 +29,7 @@ export function getFacetedColumns({
       cell: row => (
         <div className={nameClassName}>
           <SanitizedHTML html={row.name} />
+          <OverrideBadge model={model} trackId={row.id} name={row.name} />
           <TrackSelectorTrackMenu id={row.id} conf={row.conf} model={model} />
         </div>
       ),

@@ -1,4 +1,8 @@
-import { diffTrackConfig, mergeTrackConfig } from './trackConfigDelta.ts'
+import {
+  diffTrackConfig,
+  flattenTrackConfigDelta,
+  mergeTrackConfig,
+} from './trackConfigDelta.ts'
 
 interface Display {
   type?: string
@@ -152,4 +156,64 @@ test('a display added only by the user is carried whole into the delta', () => {
     { type: 'LDDisplay', displayId: 'vcf-LD', foo: 1 },
   ])
   expect((mergeTrackConfig(base, delta).displays as unknown[]).length).toBe(3)
+})
+
+test('flatten lists a top-level scalar change as from/to', () => {
+  const edited = clone(base)
+  edited.name = 'renamed'
+  const delta = diffTrackConfig(base, edited)
+  expect(flattenTrackConfigDelta(base, delta)).toEqual([
+    { path: ['name'], from: 'my vcf', to: 'renamed' },
+  ])
+})
+
+test('flatten addresses a display edit by display type and omits identity keys', () => {
+  const edited = clone(base)
+  edited.displays[1]!.color = 'green'
+  const delta = diffTrackConfig(base, edited)
+  expect(flattenTrackConfigDelta(base, delta)).toEqual([
+    {
+      path: ['displays', 'LinearVariantDisplay', 'color'],
+      from: undefined,
+      to: 'green',
+    },
+  ])
+})
+
+test('flatten recurses nested config objects', () => {
+  const edited = clone(base)
+  edited.adapter!.vcfGzLocation.uri = 'new.vcf.gz'
+  const delta = diffTrackConfig(base, edited)
+  expect(flattenTrackConfigDelta(base, delta)).toEqual([
+    {
+      path: ['adapter', 'vcfGzLocation', 'uri'],
+      from: 'v.vcf.gz',
+      to: 'new.vcf.gz',
+    },
+  ])
+})
+
+test('flatten reports only real slots of a user-added display, not its stub', () => {
+  const edited = clone(base)
+  edited.displays.push({ type: 'LDDisplay', displayId: 'vcf-LD', foo: 1 })
+  const delta = diffTrackConfig(base, edited)
+  expect(flattenTrackConfigDelta(base, delta)).toEqual([
+    { path: ['displays', 'LDDisplay', 'foo'], from: undefined, to: 1 },
+  ])
+})
+
+test('flatten ignores content-free display stubs (only type/displayId)', () => {
+  // a base track that omits displays; the edited snapshot gains stub displays
+  // plus one real height edit (mirrors baseTrackConfig display injection)
+  const noDisplayBase = { trackId: 't', type: 'FeatureTrack' }
+  const delta = {
+    trackId: 't',
+    displays: [
+      { type: 'LinearBasicDisplay', displayId: 't-basic', height: 200 },
+      { type: 'LinearArcDisplay', displayId: 't-arc' },
+    ],
+  }
+  expect(flattenTrackConfigDelta(noDisplayBase, delta)).toEqual([
+    { path: ['displays', 'LinearBasicDisplay', 'height'], from: undefined, to: 200 },
+  ])
 })

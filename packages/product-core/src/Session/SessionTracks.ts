@@ -1,4 +1,8 @@
-import { diffTrackConfig, mergeTrackConfig } from '@jbrowse/core/util'
+import {
+  diffTrackConfig,
+  flattenTrackConfigDelta,
+  mergeTrackConfig,
+} from '@jbrowse/core/util'
 import { getSnapshot, isStateTreeNode, types } from '@jbrowse/mobx-state-tree'
 
 import { isBaseSession } from './BaseSession.ts'
@@ -124,6 +128,19 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               return mergedTrack
             })
           return [...self.sessionTracks, ...merged]
+        },
+        /**
+         * #method
+         * The overridden slots for `trackId` (empty when it has no delta): each
+         * changed setting's path, its base/default value and the edited value.
+         * Drives the "view changes" dialog opened from the edited badge.
+         */
+        getTrackConfigChanges(trackId: string) {
+          const delta = self.trackConfigDeltas[trackId]
+          const base = (self.jbrowse.tracks as PlainTrackConfig[]).find(
+            t => t.trackId === trackId,
+          )
+          return delta && base ? flattenTrackConfigDelta(base, delta) : []
         },
       }
     })
