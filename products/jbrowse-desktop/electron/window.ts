@@ -111,6 +111,57 @@ export async function createMainWindow(
   return mainWindow
 }
 
+/**
+ * Open genome.ucsc.edu (or any BLAT server) in a window so the user can solve
+ * the Cloudflare Turnstile CAPTCHA that now fronts hgBlat. This window shares
+ * the default session cookie jar with the app, so once solved the cf_clearance
+ * cookie is available to subsequent main-process BLAT requests. Resolves true
+ * when the clearance cookie appears, false if the user closes the window first.
+ */
+export function createChallengeWindow(url: string): Promise<boolean> {
+  const win = new BrowserWindow({
+    width: 900,
+    height: 700,
+    title: 'Solve CAPTCHA to enable BLAT',
+    webPreferences: {
+      nodeIntegration: false,
+      contextIsolation: true,
+    },
+  })
+
+  win.loadURL(url).catch(logError)
+
+  return new Promise(resolve => {
+    let settled = false
+    const finish = (ok: boolean) => {
+      if (!settled) {
+        settled = true
+        resolve(ok)
+        if (!win.isDestroyed()) {
+          win.close()
+        }
+      }
+    }
+    const timer = setInterval(() => {
+      win.webContents.session.cookies
+        .get({ name: 'cf_clearance' })
+        .then(cookies => {
+          if (cookies.length) {
+            finish(true)
+          }
+        })
+        .catch(logError)
+    }, 1000)
+    win.on('closed', () => {
+      clearInterval(timer)
+      if (!settled) {
+        settled = true
+        resolve(false)
+      }
+    })
+  })
+}
+
 export function createAuthWindow(
   params: AuthWindowParams,
 ): Promise<string | undefined> {

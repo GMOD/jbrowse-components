@@ -832,6 +832,24 @@ importers:
         specifier: ^7.8.2
         version: 7.8.2
 
+  plugins/blat:
+    dependencies:
+      '@jbrowse/core':
+        specifier: workspace:^
+        version: link:../../packages/core
+      '@mui/material':
+        specifier: ^9.1.2
+        version: 9.1.2(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@emotion/styled@11.14.1(@emotion/react@11.14.0(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react@19.2.7))(@types/react@19.2.17)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      mobx:
+        specifier: ^6.16.1
+        version: 6.16.1
+      mobx-react:
+        specifier: ^9.2.2
+        version: 9.2.2(mobx@6.16.1)(react-dom@19.2.7(react@19.2.7))(react@19.2.7)
+      react:
+        specifier: '>=19.0.0'
+        version: 19.2.7
+
   plugins/breakpoint-split-view:
     dependencies:
       '@gmod/vcf':

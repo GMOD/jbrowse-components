@@ -167,6 +167,11 @@ export function formatCigarTooltip(cigarHit: CigarHitResult) {
 export function getTooltipBin(
   position: number,
   blockRpcData: PileupDataResult | undefined,
+  // Interbase (insertion/softclip/hardclip) events at this position. The
+  // coverage-depth tooltip omits them (false) — they're surfaced by hovering the
+  // interbase histogram bars directly; the interbase/indicator tooltip keeps
+  // them (true).
+  includeInterbase = true,
 ): CoverageTooltipBin | undefined {
   if (!blockRpcData) {
     return undefined
@@ -184,61 +189,63 @@ export function getTooltipBin(
   const snps = countSnpsAtPosition(position, blockRpcData)
 
   const interbase: CoverageTooltipBin['interbase'] = {}
-  const {
-    interbasePositions,
-    interbaseLengths,
-    interbaseTypes,
-    interbaseSequences,
-  } = blockRpcData
-  const numInterbases = interbasePositions.length
-  // avgLen accumulates the length sum during the scan and is divided by count in
-  // the finalize pass below. seqCountsByType tracks per-type sequence tallies to
-  // surface the most common inserted sequence.
-  const seqCountsByType = new Map<string, Map<string, number>>()
-  for (let i = 0; i < numInterbases; i++) {
-    if (interbasePositions[i] === position) {
-      const typeName = interbaseTypeName(interbaseTypes[i]!)
-      const len = interbaseLengths[i]!
-      const entry = (interbase[typeName] ??= {
-        count: 0,
-        minLen: len,
-        maxLen: len,
-        avgLen: 0,
-      })
-      entry.count++
-      entry.avgLen += len
-      if (len < entry.minLen) {
-        entry.minLen = len
-      }
-      if (len > entry.maxLen) {
-        entry.maxLen = len
-      }
-      const seq = interbaseSequences[i]
-      if (seq) {
-        let typeSeqs = seqCountsByType.get(typeName)
-        if (!typeSeqs) {
-          typeSeqs = new Map()
-          seqCountsByType.set(typeName, typeSeqs)
+  if (includeInterbase) {
+    const {
+      interbasePositions,
+      interbaseLengths,
+      interbaseTypes,
+      interbaseSequences,
+    } = blockRpcData
+    const numInterbases = interbasePositions.length
+    // avgLen accumulates the length sum during the scan and is divided by count
+    // in the finalize pass below. seqCountsByType tracks per-type sequence
+    // tallies to surface the most common inserted sequence.
+    const seqCountsByType = new Map<string, Map<string, number>>()
+    for (let i = 0; i < numInterbases; i++) {
+      if (interbasePositions[i] === position) {
+        const typeName = interbaseTypeName(interbaseTypes[i]!)
+        const len = interbaseLengths[i]!
+        const entry = (interbase[typeName] ??= {
+          count: 0,
+          minLen: len,
+          maxLen: len,
+          avgLen: 0,
+        })
+        entry.count++
+        entry.avgLen += len
+        if (len < entry.minLen) {
+          entry.minLen = len
         }
-        typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
+        if (len > entry.maxLen) {
+          entry.maxLen = len
+        }
+        const seq = interbaseSequences[i]
+        if (seq) {
+          let typeSeqs = seqCountsByType.get(typeName)
+          if (!typeSeqs) {
+            typeSeqs = new Map()
+            seqCountsByType.set(typeName, typeSeqs)
+          }
+          typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
+        }
       }
     }
-  }
-  for (const [typeName, entry] of Object.entries(interbase)) {
-    entry.avgLen /= entry.count
-    const typeSeqs = seqCountsByType.get(typeName)
-    if (typeSeqs) {
-      let topSeq: string | undefined
-      let topCount = 0
-      for (const [seq, count] of typeSeqs) {
-        if (count > topCount) {
-          topCount = count
-          topSeq = seq
+    for (const [typeName, entry] of Object.entries(interbase)) {
+      entry.avgLen /= entry.count
+      const typeSeqs = seqCountsByType.get(typeName)
+      if (typeSeqs) {
+        let topSeq: string | undefined
+        let topCount = 0
+        for (const [seq, count] of typeSeqs) {
+          if (count > topCount) {
+            topCount = count
+            topSeq = seq
+          }
         }
-      }
-      if (topSeq) {
-        entry.topSeq = topSeq
-        entry.topSeqCount = topCount
+        if (topSeq) {
+          entry.topSeq = topSeq
+          entry.topSeqCount = topCount
+        }
       }
     }
   }
@@ -320,7 +327,7 @@ export function formatCoverageTooltip(
   blockRpcData: PileupDataResult | undefined,
   refName: string | undefined,
 ): CoverageTooltipPayload | undefined {
-  const bin = getTooltipBin(position, blockRpcData)
+  const bin = getTooltipBin(position, blockRpcData, false)
   if (!bin) {
     return undefined
   }

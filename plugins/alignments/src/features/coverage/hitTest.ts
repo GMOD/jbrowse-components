@@ -35,17 +35,9 @@ export function hitTestCoverage(
     if (snpHit !== undefined) {
       return { type: 'coverage', position: snpHit }
     }
-    const interbaseHit = findSignificantInBin(
-      rpcData.interbasePositions,
-      coverageDepths,
-      coverageStartPos,
-      binStart,
-      binEnd,
-      0.2,
-    )
-    if (interbaseHit !== undefined) {
-      return { type: 'coverage', position: interbaseHit }
-    }
+    // Interbase events are no longer surfaced through the coverage tooltip — they
+    // are hit-tested directly on the histogram bars (hitTestInterbase) — so the
+    // coverage bin doesn't snap to them.
   }
 
   return { type: 'coverage', position: binStart }

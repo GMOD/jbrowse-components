@@ -60,6 +60,53 @@ mode requires phased genotypes (`|`-separated) in the VCF.
 You can switch modes from the track menu, or set `renderingMode` in the display
 configuration.
 
+## Coloring by consequence impact (SnpEff/VEP annotations)
+
+If the VCF's `INFO` field carries SnpEff `ANN` or VEP `CSQ` annotations, each
+variant's alt-carrying cells can be colored by the severity of its most severe
+predicted consequence instead of by genotype. From the track menu, open **Color
+cells by** and choose **Consequence impact** (this option only appears once the
+track detects real annotations in the loaded data — it's hidden, not just
+disabled, for unannotated VCFs).
+
+Every annotation is bucketed into one of four impact tiers and painted with a
+fixed color, so the legend is the same across tracks:
+
+- **HIGH** (red) — e.g. `stop_gained`, `frameshift_variant`, `exon_loss_variant`
+- **MODERATE** (orange) — e.g. `missense_variant`, `inframe_deletion`
+- **LOW** (yellow) — e.g. `synonymous_variant`, `splice_region_variant`
+- **MODIFIER** (grey) — e.g. `intron_variant`, `intergenic_region`
+
+This works for both SNVs/indels and structural variants — SnpEff's SV-specific
+consequence terms (`exon_loss_variant`, `transcript_ablation`, `gene_fusion`,
+...) map onto the same four tiers, so a deletion that removes an exon reads as
+HIGH the same way a stop-gained SNV does.
+
+<Figure caption="1000 Genomes phase 3 chr1 genotypes (2,504 samples) colored by consequence impact. Real SnpEff annotations against a real Ensembl database — red columns are stop-gained/splice-site variants, orange missense, yellow synonymous/splice-region, and grey (the majority) intronic or intergenic." src="/img/variants/consequence_impact_1000g.png" />
+
+The effect is even more visible on structural variants, since each call renders
+as a wide bar rather than a thin line:
+
+<Figure caption="Real HGSVC structural variant calls on chr1, colored by consequence impact. This window lands on NBPF20, a well-documented structural-variation hotspot — the dense red bars are real exon-disrupting deletions predicted HIGH impact by SnpEff." src="/img/variants/consequence_impact_sv.png" />
+
+Set it declaratively in the display configuration with the built-in
+`impactColor` Jexl function:
+
+```json
+{
+  "displays": [
+    {
+      "type": "LinearMultiSampleVariantDisplay",
+      "featureColor": "jexl:impactColor(feature)"
+    }
+  ]
+}
+```
+
+`featureColor` accepts any per-feature Jexl expression, not just this preset —
+the same slot backs a plain CSS color or a custom expression referencing
+`feature` attributes, same as the single-sample `color` slot.
+
 ## Coloring and grouping by sample metadata
 
 Samples can be grouped and colored by metadata — population, phenotype, sex, or

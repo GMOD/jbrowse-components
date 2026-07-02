@@ -416,6 +416,9 @@ export default defineConfig(
         { considerDefaultExhaustiveForUnions: true },
       ],
       '@typescript-eslint/require-await': 'off',
+      // An indexed `for` loop is often the clearer/faster choice (typed arrays,
+      // parallel arrays, index-dependent logic); loop style is our call.
+      '@typescript-eslint/prefer-for-of': 'off',
       '@typescript-eslint/restrict-template-expressions': 'off',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-extraneous-class': 'off',

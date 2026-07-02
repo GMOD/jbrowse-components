@@ -1,7 +1,7 @@
 import { canvasToGenomicCoords } from './alignmentComponentUtils.ts'
 import { hitTestCoverage } from '../../features/coverage/hitTest.ts'
 import { hitTestGap } from '../../features/gap/hitTest.ts'
-import { hitTestIndicator } from '../../features/indicator/hitTest.ts'
+import { hitTestInterbase } from '../../features/indicator/hitTest.ts'
 import {
   hitTestLargeInsertion,
   hitTestSmallInsertion,
@@ -110,6 +110,10 @@ export interface HitTestOptions {
   showCoverage: boolean
   showInterbaseIndicators: boolean
   coverageHeight: number
+  // Autoscaled coverage domain max (global across groups), needed to reproduce
+  // the interbase histogram bar heights for hit-testing. Undefined until the
+  // debounced autoscale resolves.
+  coverageMaxDepth: number | undefined
   topOffset: number
   // Screen-px Y of this section's coverage band top. 0 for the ungrouped
   // sticky-at-top coverage; a stacked group's scrolled coverage top otherwise.
@@ -162,6 +166,7 @@ export function performHitTest(
     showCoverage,
     showInterbaseIndicators,
     coverageHeight,
+    coverageMaxDepth,
     topOffset,
     coverageTopOffset,
     featureHeight,
@@ -186,16 +191,19 @@ export function performHitTest(
       : resolved.bpRange[0] + frac * bpSpan
 
     // Indicator and coverage tooltips work at all zoom levels.
-    // hitTestIndicator fires only in the top-5px indicator strip (zoom-safe).
-    // hitTestCoverage handles zoomed-out bins: returns the bin position and
-    // snaps to any significant SNP/insertion within the bin when bpPerPx > 1.
-    const indicatorHit = hitTestIndicator(
+    // hitTestInterbase fires over the interbase histogram bars + indicator
+    // triangles, taking priority over coverage so hovering a bar shows interbase.
+    // hitTestCoverage handles zoomed-out bins: returns the bin position and snaps
+    // to any significant SNP within the bin when bpPerPx > 1.
+    const indicatorHit = hitTestInterbase(
       genomicPos,
       bpPerPx,
       coverageY,
       resolved.rpcData,
       showCoverage,
       showInterbaseIndicators,
+      coverageHeight,
+      coverageMaxDepth,
     )
     if (indicatorHit) {
       return { type: 'indicator', hit: indicatorHit, resolved }

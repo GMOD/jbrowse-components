@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { samFlagLabels } from '@jbrowse/alignments-core'
-import { Dialog } from '@jbrowse/core/ui'
+import { Dialog, TagTextField } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import {
   Button,
@@ -15,7 +15,8 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { TAG_REGEX, defaultFilterFlags } from '../../shared/util.ts'
+import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
+import { defaultFilterFlags } from '../../shared/util.ts'
 
 import type { FilterBy } from '../../shared/types.ts'
 
@@ -43,14 +44,6 @@ const useStyles = makeStyles()(theme => ({
 
 function toggleBit(flag: number, index: number, checked: boolean) {
   return checked ? flag | (1 << index) : flag & ~(1 << index)
-}
-
-// Shared tag-name validity: a tag is "invalid" only once typed and not matching
-// the 2-char tag pattern (an empty field is allowed, not flagged). Used by the
-// tag section's error display and the dialog's submit-disable so they can't
-// disagree.
-function isInvalidTag(tag: string) {
-  return tag !== '' && !TAG_REGEX.test(tag)
 }
 
 function Bitmask(props: { flag?: number; setFlag: (arg: number) => void }) {
@@ -133,28 +126,19 @@ function TagFilterSection(props: {
 }) {
   const { classes } = useStyles()
   const { tag, tagValue, setTag, setTagValue } = props
-  const tagInvalid = isInvalidTag(tag)
 
   return (
     <Paper className={classes.paper} variant="outlined">
       <Typography>Filter by tag name and value</Typography>
-      <TextField
-        className={classes.field}
-        value={tag}
-        onChange={event => {
-          setTag(event.target.value)
-        }}
-        label="Tag name"
-        error={tagInvalid}
-        helperText={
-          tagInvalid ? 'Not a valid tag' : '2 characters, e.g. HP, RG'
-        }
-        slotProps={{
-          htmlInput: {
-            maxLength: 2,
-          },
-        }}
-      />
+      <div className={classes.field}>
+        <TagTextField
+          defaultValue={tag}
+          quickPicks={COMMON_READ_TAGS}
+          onValueChange={value => {
+            setTag(value ?? '')
+          }}
+        />
+      </div>
       <TextField
         className={classes.field}
         label="Tag value"
@@ -205,7 +189,6 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const [tag, setTag] = useState(filterBy.tagFilter?.tag ?? '')
   const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value ?? '')
   const [readName, setReadName] = useState(filterBy.readName ?? '')
-  const tagInvalid = isInvalidTag(tag)
 
   const handleReset = () => {
     setFlagInclude(defaultFilterFlags.flagInclude)
@@ -257,7 +240,6 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
           color="primary"
           autoFocus
           type="submit"
-          disabled={tagInvalid}
           onClick={handleSubmit}
         >
           Submit

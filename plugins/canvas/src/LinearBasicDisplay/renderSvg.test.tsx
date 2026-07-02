@@ -6,7 +6,6 @@ import path from 'node:path'
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
-
 import { packFixtureRects } from '../RenderFeatureDataRPC/testUtils.ts'
 
 import type { RenderSvgModel } from './renderSvg.tsx'

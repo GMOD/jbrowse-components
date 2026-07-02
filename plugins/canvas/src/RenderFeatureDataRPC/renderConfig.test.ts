@@ -1,6 +1,6 @@
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
-import { readConfigValue } from './renderConfig.ts'
+import { isDisplayMode, readConfigValue } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 
@@ -58,5 +58,16 @@ describe('readConfigValue', () => {
         jexl,
       ),
     ).toBe('myGene')
+  })
+})
+
+describe('isDisplayMode', () => {
+  it('accepts the three modes and rejects anything else', () => {
+    expect(isDisplayMode('normal')).toBe(true)
+    expect(isDisplayMode('compact')).toBe(true)
+    expect(isDisplayMode('superCompact')).toBe(true)
+    expect(isDisplayMode('super-compact')).toBe(false)
+    expect(isDisplayMode(undefined)).toBe(false)
+    expect(isDisplayMode('')).toBe(false)
   })
 })

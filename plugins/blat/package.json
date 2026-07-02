@@ -1,0 +1,54 @@
+{
+  "name": "@jbrowse/plugin-blat",
+  "version": "4.3.0",
+  "type": "module",
+  "description": "JBrowse 2 UCSC BLAT client",
+  "keywords": [
+    "jbrowse",
+    "jbrowse2"
+  ],
+  "license": "Apache-2.0",
+  "homepage": "https://jbrowse.org",
+  "bugs": "https://github.com/GMOD/jbrowse-components/issues",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/GMOD/jbrowse-components.git",
+    "directory": "plugins/blat"
+  },
+  "author": "JBrowse Team",
+  "main": "src/index.ts",
+  "files": [
+    "esm"
+  ],
+  "scripts": {
+    "build": "pnpm run /^build:/",
+    "test": "echo hi",
+    "prepublishOnly": "pnpm test",
+    "prepack": "pnpm build",
+    "prebuild": "pnpm clean",
+    "build:esm": "tsgo --build tsconfig.build.esm.json",
+    "clean": "rimraf esm *.tsbuildinfo"
+  },
+  "dependencies": {
+    "@jbrowse/core": "workspace:^",
+    "@mui/icons-material": "^9.1.1",
+    "@mui/material": "^9.1.2",
+    "mobx": "^6.16.1",
+    "mobx-react": "^9.2.2"
+  },
+  "peerDependencies": {
+    "react": ">=19.0.0"
+  },
+  "publishConfig": {
+    "access": "public",
+    "main": "esm/index.js",
+    "types": "esm/index.d.ts",
+    "exports": {
+      ".": {
+        "types": "./esm/index.d.ts",
+        "import": "./esm/index.js"
+      }
+    }
+  },
+  "sideEffects": false
+}

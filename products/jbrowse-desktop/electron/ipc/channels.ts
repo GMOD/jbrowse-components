@@ -49,6 +49,14 @@ export interface IpcChannels {
     args: [params: AuthWindowParams]
     return: string | undefined
   }
+  // opens the BLAT server in a window so the user can solve its CAPTCHA
+  openBlatChallenge: { args: [url: string]; return: boolean }
+  // POSTs a BLAT query from the main process so the solved-challenge cookie
+  // (held in the default session) attaches first-party; returns the raw body
+  blatFetch: {
+    args: [url: string, body: string]
+    return: { ok: boolean; status: number; text: string }
+  }
 }
 
 type IpcHandler<K extends keyof IpcChannels> = (

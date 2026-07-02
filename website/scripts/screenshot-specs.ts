@@ -924,6 +924,65 @@ export const specs: ScreenshotSpec[] = [
     viewportHeight: 650,
   },
 
+  // Multi-sample variant display colored by consequence impact, on REAL data:
+  // a small local slice of 1000 Genomes phase 3 chr1 (2,504 real samples,
+  // 1:155,000,000-155,050,000) run through real SnpEff 5.4c against the real
+  // Ensembl GRCh37.75 database — unlike the volvox spec above, every ANN
+  // annotation here is genuine SnpEff output on real genotypes, not
+  // hand-crafted. See test_data/1000g_snpeff_chr1/README.md for provenance.
+  // The window covers the DCST2/DCST1/ADAM15 locus, which has real
+  // stop-gained/splice-site (HIGH) variants alongside missense/synonymous/
+  // intronic ones.
+  {
+    mode: 'url',
+    name: 'variants/consequence_impact_1000g',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg19',
+      loc: '1:155,015,000-155,035,000',
+      tracks: [
+        {
+          trackId: '1000g_chr1_snpeff_consequence',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantDisplay',
+            height: 500,
+          },
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    settleMs: 4000,
+    viewportHeight: 650,
+  },
+
+  // Same feature, on a real structural-variant callset: real HGSVC chr1
+  // long-read SV calls (74 real sample/haplotype columns) run through real
+  // SnpEff 5.4c against the real Ensembl GRCh38.99 database. This window,
+  // chr1:145,250,000-145,450,000, lands on NBPF20 — a member of the NBPF gene
+  // cluster, one of the best-documented structural-variation hotspots in the
+  // human genome — where SnpEff calls real exon_loss_variant/frameshift_variant
+  // (HIGH) consequences against a MODIFIER (intronic/intergenic) background.
+  // See test_data/hgsvc_sv_snpeff/README.md for provenance.
+  {
+    mode: 'url',
+    name: 'variants/consequence_impact_sv',
+    url: lgvSession(DEMO_CONFIG, {
+      assembly: 'hg38',
+      loc: 'chr1:145,250,000-145,450,000',
+      tracks: [
+        {
+          trackId: 'hgsvc_sv_chr1_snpeff_consequence',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantDisplay',
+            height: 500,
+          },
+        },
+      ],
+    }),
+    readyText: 'chr1',
+    settleMs: 4000,
+    viewportHeight: 650,
+  },
+
   // Multi-sample variant display colored by population: the 1000 Genomes phase 3
   // chr1 callset (2,504 samples) with a population samples-TSV, so the per-sample
   // rows group/color by the 26 population codes. The track config in

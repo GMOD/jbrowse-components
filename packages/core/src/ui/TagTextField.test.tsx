@@ -24,3 +24,16 @@ test('caps input at two characters', () => {
   const { getByRole } = render(<TagTextField onValueChange={() => {}} />)
   expect(getByRole('textbox').getAttribute('maxlength')).toBe('2')
 })
+
+test('quick-pick chip fills the field and emits the tag', () => {
+  const onValueChange = jest.fn()
+  const { getByRole, getByText } = render(
+    <TagTextField
+      onValueChange={onValueChange}
+      quickPicks={[{ tag: 'HP', label: 'Haplotype' }]}
+    />,
+  )
+  fireEvent.click(getByText('HP — Haplotype'))
+  expect(onValueChange).toHaveBeenLastCalledWith('HP')
+  expect((getByRole('textbox') as HTMLInputElement).value).toBe('HP')
+})

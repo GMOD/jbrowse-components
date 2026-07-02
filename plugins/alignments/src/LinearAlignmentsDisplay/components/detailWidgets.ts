@@ -55,7 +55,9 @@ export function openCoverageWidget(
   blockRpcData: PileupDataResult | undefined,
   modType?: string,
 ) {
-  const tooltipBin = getTooltipBin(position, blockRpcData)
+  // Coverage widget omits interbase — those are reached by clicking the
+  // interbase histogram bars (openIndicatorWidget).
+  const tooltipBin = getTooltipBin(position, blockRpcData, false)
   if (!tooltipBin) {
     return
   }

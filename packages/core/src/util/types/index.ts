@@ -132,6 +132,14 @@ export interface AbstractSessionModel extends AbstractViewContainer {
   getPreference: (key: string) => unknown
   setPreferenceOverride?: (key: string, value: unknown) => void
   setScrollZoom?: (flag: boolean) => void
+  // per-display-type slot default a user promoted (e.g. "make compact the
+  // default for all tracks like this"), persisted alongside preferences
+  getDisplayTypeDefault?: (displayType: string, slot: string) => unknown
+  setDisplayTypeDefault?: (
+    displayType: string,
+    slot: string,
+    value: unknown,
+  ) => void
   hovered: unknown
   setHovered: (arg: unknown) => void
   setFocusedViewId?: (id: string) => void

@@ -18,6 +18,10 @@ function isAnimationMode(val: unknown): val is AnimationMode {
   return val === 'system' || val === 'enabled' || val === 'disabled'
 }
 
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null
+}
+
 /**
  * #stateModel BaseSessionModel
  *
@@ -155,6 +159,16 @@ export function BaseSessionModel<
           ? getConf(self, ['preferences', key])
           : override
       },
+      /**
+       * #method
+       * resolved value of a per-display-type slot default the user promoted
+       * (see `setDisplayTypeDefault`); undefined when nothing was promoted.
+       */
+      getDisplayTypeDefault(displayType: string, slot: string): unknown {
+        const all = self.preferencesOverrides.displayTypeDefaults
+        const forType = isRecord(all) ? all[displayType] : undefined
+        return isRecord(forType) ? forType[slot] : undefined
+      },
     }))
     .views(self => ({
       /**
@@ -216,6 +230,28 @@ export function BaseSessionModel<
         self.preferencesOverrides = {
           ...self.preferencesOverrides,
           scrollZoom: flag,
+        }
+      },
+      /**
+       * #action
+       * promote (or, with `value` undefined, clear) a per-display-type slot
+       * default. Stored under `preferencesOverrides.displayTypeDefaults` so the
+       * PreferencesSessionMixin persists it to localStorage like other prefs.
+       */
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
+        const all = self.preferencesOverrides.displayTypeDefaults
+        const map: Record<string, unknown> = isRecord(all) ? { ...all } : {}
+        const prev = map[displayType]
+        const forType: Record<string, unknown> = isRecord(prev) ? { ...prev } : {}
+        if (value === undefined) {
+          delete forType[slot]
+        } else {
+          forType[slot] = value
+        }
+        map[displayType] = forType
+        self.preferencesOverrides = {
+          ...self.preferencesOverrides,
+          displayTypeDefaults: map,
         }
       },
       /**

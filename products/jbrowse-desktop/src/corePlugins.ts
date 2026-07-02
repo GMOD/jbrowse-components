@@ -2,6 +2,7 @@ import Alignments from '@jbrowse/plugin-alignments'
 import Arc from '@jbrowse/plugin-arc'
 import Authentication from '@jbrowse/plugin-authentication'
 import Bed from '@jbrowse/plugin-bed'
+import Blat from '@jbrowse/plugin-blat'
 import BreakpointSplitView from '@jbrowse/plugin-breakpoint-split-view'
 import Canvas from '@jbrowse/plugin-canvas'
 import CircularView from '@jbrowse/plugin-circular-view'
@@ -60,6 +61,7 @@ const corePlugins = [
   GridBookmarkPlugin,
   ComparativeAdapters,
   Arc,
+  Blat,
 ]
 
 export default corePlugins

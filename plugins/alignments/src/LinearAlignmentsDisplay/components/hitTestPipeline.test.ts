@@ -58,6 +58,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   showCoverage: true,
   showInterbaseIndicators: true,
   coverageHeight: 50,
+  coverageMaxDepth: undefined,
   topOffset: 50,
   coverageTopOffset: 0,
   featureHeight: 10,

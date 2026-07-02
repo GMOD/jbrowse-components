@@ -24,6 +24,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
 
 export type { Region } from '@jbrowse/core/util'
 
+const displayModeLabels: Record<DisplayMode, string> = {
+  normal: 'Normal',
+  compact: 'Compact',
+  superCompact: 'Super-compact',
+}
+
 /**
  * #stateModel LinearBasicDisplay
  * GPU-accelerated feature display with gene-specific UI on top of the
@@ -81,6 +87,15 @@ export default function stateModelFactory(
 
       get displayDirectionalChevrons() {
         return getConf(self, 'displayDirectionalChevrons')
+      },
+
+      // true when the current displayMode is already the session-wide default
+      // for this display type (drives the "make default" checkbox + toggle)
+      get isDisplayModeDefault() {
+        return (
+          getSession(self).getDisplayTypeDefault?.(self.type, 'displayMode') ===
+          self.displayMode
+        )
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -142,6 +157,19 @@ export default function stateModelFactory(
         self.configuration.setSlot(
           'displayMode',
           level === 'super-compact' ? 'superCompact' : level,
+        )
+      },
+
+      // Promote the current displayMode to the session-wide default for this
+      // display type (persisted via preferences), or clear it when it already
+      // is the default. Every open track at the schema default picks this up
+      // reactively through the displayMode getter; tracks with an explicit
+      // per-track choice keep it.
+      toggleDisplayModeDefault() {
+        getSession(self).setDisplayTypeDefault?.(
+          self.type,
+          'displayMode',
+          self.isDisplayModeDefault ? undefined : self.displayMode,
         )
       },
 
@@ -220,18 +248,30 @@ export default function stateModelFactory(
             },
             {
               icon: HeightIcon,
-              ...radioSubMenu(
-                'Set feature height',
-                self.displayMode,
-                [
-                  { value: 'normal', label: 'Normal' },
-                  { value: 'compact', label: 'Compact' },
-                  { value: 'superCompact', label: 'Super-compact' },
-                ],
-                value => {
-                  self.setDisplayMode(value)
+              label: 'Set feature height',
+              subMenu: [
+                ...radioSubMenu(
+                  'Set feature height',
+                  self.displayMode,
+                  [
+                    { value: 'normal', label: 'Normal' },
+                    { value: 'compact', label: 'Compact' },
+                    { value: 'superCompact', label: 'Super-compact' },
+                  ],
+                  value => {
+                    self.setDisplayMode(value)
+                  },
+                ).subMenu,
+                { type: 'divider' as const },
+                {
+                  label: `Use "${displayModeLabels[self.displayMode]}" by default for all tracks like this`,
+                  type: 'checkbox' as const,
+                  checked: self.isDisplayModeDefault,
+                  onClick: () => {
+                    self.toggleDisplayModeDefault()
+                  },
                 },
-              ),
+              ],
             },
           ]
         },

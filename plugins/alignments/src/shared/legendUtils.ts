@@ -61,13 +61,37 @@ const BASE_LEGEND: { key: keyof ColorPalette; label: string }[] = [
  * swatch colors match the painted reads exactly. Modification swatches come from
  * `visibleModifications`; mapping/per-base quality are fixed hue ramps.
  */
+// Tags that encode strand rather than a categorical value; buildReadTagColors
+// paints these from the fixed strand colors (not colorTagMap), so their legend
+// is the strand key, not a per-value list.
+const STRAND_TAGS = new Set(['XS', 'TS', 'ts'])
+
 export function getReadDisplayLegendItems(
   colorBy: ColorBy | undefined,
   presentCategories: ReadonlySet<ReadColorCategory>,
   palette: ColorPalette,
   visibleModifications?: ReadonlyMap<string, ModificationTypeWithColor>,
+  colorTagMap?: Record<string, string>,
 ): LegendItem[] {
   const colorType = colorBy?.type
+
+  if (colorType === 'tag') {
+    const tag = colorBy?.tag
+    if (tag && STRAND_TAGS.has(tag)) {
+      return [
+        { color: rgb255(palette.colorFwdStrand), label: 'Forward strand' },
+        { color: rgb255(palette.colorRevStrand), label: 'Reverse strand' },
+        { color: rgb255(palette.colorNostrand), label: 'No strand' },
+      ]
+    }
+    // One swatch per discovered tag value, colored exactly as painted
+    // (colorTagMap holds the palette color baked into readTagColors). Sorted by
+    // value so the legend order stays stable as reads stream in rather than
+    // reordering by discovery. Empty until reads with the tag load.
+    return Object.entries(colorTagMap ?? {})
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([value, color]) => ({ color, label: value }))
+  }
 
   if (colorType === 'mappingQuality') {
     return hslRamp(50, [
@@ -105,12 +129,22 @@ export function getReadDisplayLegendItems(
     return items
   }
 
-  // Every remaining scheme (normal, strand, insert size, orientation, tag, …)
-  // is described entirely by which fixed-swatch buckets occurred.
-  return CATEGORY_LEGEND.filter(({ category }) =>
+  // Every remaining scheme (strand, insert size, orientation, tag, …) is
+  // described entirely by which fixed-swatch buckets occurred.
+  const buckets = CATEGORY_LEGEND.filter(({ category }) =>
     presentCategories.has(category),
   ).map(({ category, label }) => ({
     color: categorySwatchColor(category, palette),
     label,
   }))
+
+  // The normal scheme paints every read one flat color ('plain' → colorPairLR),
+  // which isn't a CATEGORY_LEGEND bucket, so without an explicit entry its
+  // legend would be empty and "Show legend" would render nothing. Prepend a
+  // base-reads swatch so the toggle always shows something, keeping any
+  // cross-cutting buckets (unmapped mate, supplementary in chain mode) after it.
+  if (colorType === undefined || colorType === 'normal') {
+    return [{ color: rgb255(palette.colorPairLR), label: 'Reads' }, ...buckets]
+  }
+  return buckets
 }

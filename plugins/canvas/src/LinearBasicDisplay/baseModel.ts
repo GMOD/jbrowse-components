@@ -60,11 +60,17 @@ import {
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
-import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
+import {
+  THEME_DERIVED_COLOR,
+  isDisplayMode,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
-import type { DisplayConfig } from '../RenderFeatureDataRPC/renderConfig.ts'
+import type {
+  DisplayConfig,
+  DisplayMode,
+} from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
   FeatureItemEntry,
@@ -382,8 +388,19 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        get displayMode() {
-          return getConf(self, 'displayMode')
+        get displayMode(): DisplayMode {
+          const configured: DisplayMode = getConf(self, 'displayMode')
+          const sessionDefault = getSession(self).getDisplayTypeDefault?.(
+            self.type,
+            'displayMode',
+          )
+          // An explicit per-track choice (differs from the 'normal' schema
+          // default) always wins; otherwise fall back to the user's session-wide
+          // type default so a promoted default reaches newly-opened tracks
+          // without editing their config — no delta, no "edited" badge.
+          return configured === 'normal' && isDisplayMode(sessionDefault)
+            ? sessionDefault
+            : configured
         },
 
         /**

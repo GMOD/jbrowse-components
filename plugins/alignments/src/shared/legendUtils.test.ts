@@ -17,6 +17,19 @@ function labels(
   ).map(i => i.label)
 }
 
+function tagLabels(
+  colorBy: { type: 'tag'; tag: string },
+  colorTagMap?: Record<string, string>,
+) {
+  return getReadDisplayLegendItems(
+    colorBy,
+    new Set<ReadColorCategory>(['tag']),
+    makeTestPalette(),
+    undefined,
+    colorTagMap,
+  ).map(i => i.label)
+}
+
 describe('getReadDisplayLegendItems', () => {
   test('lists only the buckets present in the reads', () => {
     expect(labels('insertSize', ['normalInsert'])).toEqual(['Normal'])
@@ -50,11 +63,49 @@ describe('getReadDisplayLegendItems', () => {
     ])
   })
 
-  test('normal scheme with no cross-cutting buckets has an empty legend', () => {
-    expect(labels('normal', ['plain'])).toEqual([])
-    // chain mode can still surface unmapped/supplementary
+  test('normal scheme shows a base-reads swatch plus any cross-cutting buckets', () => {
+    // a single "Reads" entry so "Show legend" is never a silent no-op
+    expect(labels('normal', ['plain'])).toEqual(['Reads'])
+    // chain mode still surfaces unmapped/supplementary after the base swatch
     expect(labels('normal', ['plain', 'unmappedMate'])).toEqual([
+      'Reads',
       'Unmapped mate',
+    ])
+  })
+
+  test('value tag scheme lists discovered tag values sorted, colored from the map', () => {
+    expect(
+      tagLabels({ type: 'tag', tag: 'HP' }, { '2': 'blue', '1': 'red' }),
+    ).toEqual(['1', '2'])
+    // empty until reads with the tag load
+    expect(tagLabels({ type: 'tag', tag: 'HP' }, {})).toEqual([])
+    expect(tagLabels({ type: 'tag', tag: 'HP' })).toEqual([])
+  })
+
+  test('value tag swatch colors come straight from colorTagMap', () => {
+    const items = getReadDisplayLegendItems(
+      { type: 'tag', tag: 'HP' },
+      new Set<ReadColorCategory>(['tag']),
+      makeTestPalette(),
+      undefined,
+      { '1': 'red', '2': 'blue' },
+    )
+    expect(items).toEqual([
+      { color: 'red', label: '1' },
+      { color: 'blue', label: '2' },
+    ])
+  })
+
+  test('strand-encoding tags (XS/TS/ts) show the strand key, not a value list', () => {
+    expect(tagLabels({ type: 'tag', tag: 'ts' }, { foo: 'red' })).toEqual([
+      'Forward strand',
+      'Reverse strand',
+      'No strand',
+    ])
+    expect(tagLabels({ type: 'tag', tag: 'XS' })).toEqual([
+      'Forward strand',
+      'Reverse strand',
+      'No strand',
     ])
   })
 

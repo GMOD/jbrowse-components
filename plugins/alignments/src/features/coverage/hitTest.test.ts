@@ -104,27 +104,18 @@ describe('hitTestCoverage zoomed-out bin search', () => {
     ).toBe(1000)
   })
 
-  it('snaps to an interbase position when frequency exceeds 20%', () => {
-    // depth=10, three interbase entries at 1005 → frequency = 3/10 = 30% > 20%
+  it('never snaps to interbase (surfaced via the histogram bars instead)', () => {
+    // depth=10, three interbase entries at 1005 → 30%, previously snapped here.
+    // Coverage now ignores interbase and returns the bin start.
     const rpcData = makeZoomedRpcData({
       interbasePositions: new Uint32Array([1005, 1005, 1005]),
-    })
-    expect(
-      hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
-    ).toBe(1005)
-  })
-
-  it('does not snap when interbase frequency is below 20%', () => {
-    // depth=10, one interbase entry at 1005 → frequency = 1/10 = 10% < 20%
-    const rpcData = makeZoomedRpcData({
-      interbasePositions: new Uint32Array([1005]),
     })
     expect(
       hitTestCoverage(genomicPos, bpPerPx, 20, rpcData, true, 50)?.position,
     ).toBe(1000)
   })
 
-  it('prefers snp snap over interbase snap', () => {
+  it('snaps to a significant snp, ignoring interbase', () => {
     const rpcData = makeZoomedRpcData({
       mismatchPositions: new Uint32Array([1002, 1002]),
       interbasePositions: new Uint32Array([1005, 1005, 1005]),

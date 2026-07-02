@@ -37,8 +37,23 @@ export function buildMafCoverageRegion(
     maxDepth: mafCov.maxDepth,
     startPos: mafCov.startPos,
   }
+
+  // mismatch + insertion event arrays for the hover tooltips (MismatchArrays /
+  // InterbaseArrays shapes consumed by alignments-core). The mismatch arrays
+  // also feed computeSNPCoverage directly, so the object list isn't iterated
+  // a second time.
+  const mmCount = mafCov.mismatches.length
+  const mismatchPositions = new Uint32Array(mmCount)
+  const mismatchBases = new Uint8Array(mmCount)
+  for (let i = 0; i < mmCount; i++) {
+    const m = mafCov.mismatches[i]!
+    mismatchPositions[i] = m.position
+    mismatchBases[i] = m.base
+  }
+
   const snpCoverage = computeSNPCoverage(
-    mafCov.mismatches,
+    mismatchPositions,
+    mismatchBases,
     regionStart,
     coverageForSnp,
   )
@@ -50,16 +65,6 @@ export function buildMafCoverageRegion(
     coverageForSnp,
   )
 
-  // mismatch + insertion event arrays for the hover tooltips (MismatchArrays /
-  // InterbaseArrays shapes consumed by alignments-core).
-  const mmCount = mafCov.mismatches.length
-  const mismatchPositions = new Uint32Array(mmCount)
-  const mismatchBases = new Uint8Array(mmCount)
-  for (let i = 0; i < mmCount; i++) {
-    const m = mafCov.mismatches[i]!
-    mismatchPositions[i] = m.position
-    mismatchBases[i] = m.base
-  }
   const insCount = mafCov.insertions.length
   const insertionPositions = new Uint32Array(insCount)
   const insertionLengths = new Uint32Array(insCount)
