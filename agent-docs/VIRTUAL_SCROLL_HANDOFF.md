@@ -47,17 +47,13 @@ Key files: `packages/render-core/src/ScrollLockedOverlay.tsx`,
 
 ## Open follow-ups
 
-1. **In-browser aesthetics check for `e7f25a98af` (medium priority, STILL
-   OPEN).** The morph now applies the shrink-clamp instantly instead of easing
-   it over 300ms. This only triggers when you're scrolled near the bottom of an
-   overflowing track and zoom **in** (content de-stacks, shrinks below the
-   current scroll). Verify the instant snap isn't perceptibly jarring; if it is,
-   restore the eased version (git show `e7f25a98af` for the removed code). Unit
-   tests already cover correctness (no strand/blank) — this is purely a motion
-   aesthetics judgment, i.e. a human call (screenshots can't capture it). Note:
-   an instant scrollTop clamp on content-shrink is exactly what a native scroll
-   container does (no easing there either), so instant is arguably the *more*
-   conventional behavior — lean toward keeping it unless it visibly janks.
+1. **In-browser aesthetics check for `e7f25a98af` — RESOLVED: keep instant.**
+   The morph applies the shrink-clamp instantly instead of easing it over 300ms
+   (only when scrolled near the bottom of an overflowing track and zooming
+   **in**). User elected to keep the instant clamp — it matches what a native
+   scroll container does on content-shrink (no easing there either), so it's the
+   more conventional behavior. Correctness (no strand/blank) is unit-tested. If
+   this ever needs reverting, `git show e7f25a98af` has the removed eased code.
 
 2. **Snapshot golden regen — DONE for the in-scope goldens.**
    - `demo-hg19-gene-glyph` — **regenerated** (canvas2d + webgl, committed
