@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { ErrorBanner } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
@@ -8,16 +8,10 @@ import { observer } from 'mobx-react'
 
 import ImportFormRow from './ImportFormRow.tsx'
 import SharedTrackSelector from './SharedTrackSelector.tsx'
-import { getSharedTracks, rowsToViewInits, swap } from './importFormUtils.ts'
+import { getSharedTracks, rowsToViewInits } from './importFormUtils.ts'
+import { useImportFormRows } from './useImportFormRows.ts'
 
-import type { ImportFormRowData } from './importFormUtils.ts'
 import type { BreakpointViewModel } from '../model.ts'
-
-// Stable per-row id so React keys (and AssemblySelector's internal state) follow
-// a row through reorder/remove instead of being pinned to the array index.
-interface Row extends ImportFormRowData {
-  id: string
-}
 
 const useStyles = makeStyles()(theme => ({
   container: {
@@ -41,13 +35,8 @@ const BreakpointSplitViewImportForm = observer(
     const { classes } = useStyles()
     const session = getSession(model)
     const defaultAssembly = session.assemblyNames[0] ?? ''
-    const idCounterRef = useRef(0)
-    const newRow = () => ({
-      id: `row-${idCounterRef.current++}`,
-      assembly: defaultAssembly,
-      loc: '',
-    })
-    const [rows, setRows] = useState<Row[]>(() => [newRow(), newRow()])
+    const { rows, addRow, updateRow, removeRow, moveRow } =
+      useImportFormRows(defaultAssembly)
     const [trackId, setTrackId] = useState('')
     const [error, setError] = useState<unknown>()
     const canLaunch = rows.every(r => r.assembly)
@@ -63,10 +52,6 @@ const BreakpointSplitViewImportForm = observer(
     const validTrackId = sharedTracks.some(t => t.trackId === trackId)
       ? trackId
       : ''
-
-    function patchRow(idx: number, patch: Partial<ImportFormRowData>) {
-      setRows(rows.map((r, i) => (i === idx ? { ...r, ...patch } : r)))
-    }
 
     return (
       <Container className={classes.container}>
@@ -84,16 +69,16 @@ const BreakpointSplitViewImportForm = observer(
               loc={row.loc}
               session={session}
               onAssemblyChange={val => {
-                patchRow(idx, { assembly: val })
+                updateRow(row.id, { assembly: val })
               }}
               onLocChange={val => {
-                patchRow(idx, { loc: val })
+                updateRow(row.id, { loc: val })
               }}
               onRemove={() => {
-                setRows(rows.filter((_, i) => i !== idx))
+                removeRow(row.id)
               }}
               onMove={delta => {
-                setRows(swap(rows, idx, idx + delta))
+                moveRow(row.id, delta)
               }}
             />
           ))}
@@ -115,7 +100,7 @@ const BreakpointSplitViewImportForm = observer(
             className={classes.button}
             variant="outlined"
             onClick={() => {
-              setRows([...rows, newRow()])
+              addRow()
             }}
           >
             Add row
