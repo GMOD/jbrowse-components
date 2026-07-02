@@ -171,7 +171,9 @@ const DEFAULT_SETTLE_MS = 2500
 // uniquely signals a broken render.
 async function assertViewsRendered(page: Page, name: string) {
   const emptyViews = await page.evaluate(() =>
-    Array.from(document.querySelectorAll('[data-testid^="view-container-"]'))
+    Array.from(
+      document.querySelectorAll<HTMLElement>('[data-testid^="view-container-"]'),
+    )
       .filter(c => {
         const body = c.lastElementChild
         return !body || body.childElementCount === 0
