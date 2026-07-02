@@ -303,27 +303,27 @@ germline-het sites.
 
 ### A cleaner BAF: haplotype-phase correction with Wakhan
 
-The BAF track above is exact per SNP, but at whole-chromosome or genome scale
-a genome browser has to summarize many SNPs into each on-screen pixel. The
-default summary is an average, and averaging raw BAF is exactly wrong here: an
-LOH bin is a genuine mix of points at 0 and 1, and its average collapses back
-to ~0.5 — indistinguishable from a balanced bin. That's why the figure above
-uses **scatter** (per-bin min/max) instead of the default whisker/average
-summary: it's the only rendering that keeps the 0/1 split visible without
-pre-processing the data, and it stops working once there are too many SNPs per
-pixel to plot individually (e.g. at whole-genome zoom).
+The BAF track above is exact per SNP, but at whole-chromosome or genome scale a
+genome browser has to summarize many SNPs into each on-screen pixel. The default
+summary is an average, and averaging raw BAF is exactly wrong here: an LOH bin
+is a genuine mix of points at 0 and 1, and its average collapses back to ~0.5 —
+indistinguishable from a balanced bin. That's why the figure above uses
+**scatter** (per-bin min/max) instead of the default whisker/average summary:
+it's the only rendering that keeps the 0/1 split visible without pre-processing
+the data, and it stops working once there are too many SNPs per pixel to plot
+individually (e.g. at whole-genome zoom).
 
-A more robust fix is to make the *data* survive averaging: fold each BAF value
+A more robust fix is to make the _data_ survive averaging: fold each BAF value
 about 0.5 (`abs(baf - 0.5)`) so balanced sites read ~0 and LOH sites read ~0.5
 regardless of which allele happened to be lost. You could hand-fold the raw
 per-site BAF built above with one `awk` pass, but
 [Wakhan](https://github.com/KolmogorovLab/Wakhan) (the haplotype-specific
-long-read CNV caller mentioned below) does the equivalent job more robustly:
-it phases the normal's germline heterozygous SNPs, uses that phasing to assign
-each SNP's tumor read support to a haplotype, corrects phase-switch errors
-with coverage evidence, and emits **one already-folded value per phase
-block** — clean by construction from haplotype assignment, not a per-site
-average smoothed after the fact.
+long-read CNV caller mentioned below) does the equivalent job more robustly: it
+phases the normal's germline heterozygous SNPs, uses that phasing to assign each
+SNP's tumor read support to a haplotype, corrects phase-switch errors with
+coverage evidence, and emits **one already-folded value per phase block** —
+clean by construction from haplotype assignment, not a per-site average smoothed
+after the fact.
 
 ```bash
 # 1. phase the normal's germline hets against its own long reads
@@ -354,11 +354,11 @@ jbrowse add-track HG008-T_baf_folded.bw --out $OUT --category "CNV" --load move
 ```
 
 Plot the folded track with a `0`/`0.5` **min/max score** and **scatter**
-rendering — now safe to average at any zoom level, with no whiskers or
-per-bin min/max needed to keep the LOH split visible. Wakhan's `bed_output/`
-also carries haplotype-specific copy-number segments (`total`/`hap1`/`hap2`
-columns), the same shape the CNV-calls track below already labels explicitly
-in the chr17 walkthrough.
+rendering — now safe to average at any zoom level, with no whiskers or per-bin
+min/max needed to keep the LOH split visible. Wakhan's `bed_output/` also
+carries haplotype-specific copy-number segments (`total`/`hap1`/`hap2` columns),
+the same shape the CNV-calls track below already labels explicitly in the chr17
+walkthrough.
 
 <Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above the folded BAF (bottom, 0=balanced/0.5=LOH), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF rising off 0 toward 0.5 — while the q-arm returns to a balanced state, log2 back near 0 and BAF back down near 0." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
@@ -515,13 +515,14 @@ ratio goes to ~0 (log2 → −∞, here clipped at the −2 axis limit). A singl
 a larger single-copy-loss arm, so it appears as a deeper focal notch punched
 into an already-reduced baseline.
 
-The whole-genome log2 ratio above is built from 10 kb bins, which is coarse
-next to a ~20 kb event — it shows the drop but not the deletion's exact edges.
-For that, drop down to **true per-base coverage** over just this locus: slice
-the tumor BAM to the region of interest (`samtools view -b $TUMOR
-chr9:21,800,000-22,200,000`), index the slice, and run plain `mosdepth` on it
-with no `-b`/`-n` flags (that's the per-base mode — cheap here because the
-slice is tiny, whereas per-base mode on the whole genome would be far slower):
+The whole-genome log2 ratio above is built from 10 kb bins, which is coarse next
+to a ~20 kb event — it shows the drop but not the deletion's exact edges. For
+that, drop down to **true per-base coverage** over just this locus: slice the
+tumor BAM to the region of interest
+(`samtools view -b $TUMOR chr9:21,800,000-22,200,000`), index the slice, and run
+plain `mosdepth` on it with no `-b`/`-n` flags (that's the per-base mode — cheap
+here because the slice is tiny, whereas per-base mode on the whole genome would
+be far slower):
 
 ```bash
 samtools view -b $TUMOR chr9:21,800,000-22,200,000 -o cdkn2a_slice.bam

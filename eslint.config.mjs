@@ -33,6 +33,7 @@ export default defineConfig(
       'products/**/webpack.config.mjs',
       '**/umd_plugin.js',
 
+      'scripts/announce.mjs',
       'products/jbrowse-desktop/test/**',
 
       // Vendored/external code
