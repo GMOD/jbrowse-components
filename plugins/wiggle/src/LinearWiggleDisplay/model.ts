@@ -313,6 +313,17 @@ export default function stateModelFactory(
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
+          // cross hatches are meaningless in density mode (score maps to color,
+          // not height); grouped under Show to match multi-wiggle placement
+          ...(self.isDensityMode
+            ? []
+            : [
+                {
+                  label: 'Show',
+                  icon: VisibilityIcon,
+                  subMenu: [makeCrossHatchItem(self)],
+                },
+              ]),
           {
             label: 'Edit color...',
             icon: PaletteIcon,
@@ -326,17 +337,6 @@ export default function stateModelFactory(
               ])
             },
           },
-          // cross hatches are meaningless in density mode (score maps to color,
-          // not height); grouped under Show to match multi-wiggle placement
-          ...(self.isDensityMode
-            ? []
-            : [
-                {
-                  label: 'Show',
-                  icon: VisibilityIcon,
-                  subMenu: [makeCrossHatchItem(self)],
-                },
-              ]),
         ]
       },
     }))

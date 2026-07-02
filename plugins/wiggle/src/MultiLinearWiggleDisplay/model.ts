@@ -57,6 +57,7 @@ import type {
   WiggleFeatureUnderMouse,
 } from '../util.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Region } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -363,29 +364,25 @@ export default function stateModelFactory(
     })
     .views(self => ({
       trackMenuItems() {
+        const showItems: MenuItem[] = [
+          // row separators only render in multi-row modes, not overlays
+          ...(self.isOverlay
+            ? []
+            : [
+                {
+                  label: 'Show row separators',
+                  type: 'checkbox' as const,
+                  checked: self.showRowSeparators,
+                  onClick: () => {
+                    self.setShowRowSeparators(!self.showRowSeparators)
+                  },
+                },
+              ]),
+          // density maps score to color, so score-axis cross hatches are
+          // meaningless there
+          ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+        ]
         return [
-          {
-            label: 'Show',
-            icon: VisibilityIcon,
-            subMenu: [
-              // row separators only render in multi-row modes, not overlays
-              ...(self.isOverlay
-                ? []
-                : [
-                    {
-                      label: 'Show row separators',
-                      type: 'checkbox' as const,
-                      checked: self.showRowSeparators,
-                      onClick: () => {
-                        self.setShowRowSeparators(!self.showRowSeparators)
-                      },
-                    },
-                  ]),
-              // density maps score to color, so score-axis cross hatches are
-              // meaningless there
-              ...(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
-            ],
-          },
           makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
           {
             label: 'Clustering',
@@ -437,12 +434,22 @@ export default function stateModelFactory(
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
+          // Show submenu omitted entirely when no toggles apply (e.g. a future
+          // overlay + density mode) rather than shown empty
+          ...(showItems.length
+            ? [
+                {
+                  label: 'Show',
+                  icon: VisibilityIcon,
+                  subMenu: showItems,
+                },
+              ]
+            : []),
           {
-            label: self.sourcesVolatile.length
-              ? 'Edit colors/arrangement...'
-              : 'Edit colors/arrangement... (loading...)',
+            label: 'Edit colors/arrangement...',
             icon: PaletteIcon,
             disabled: !self.sourcesVolatile.length,
+            disabledHelpText: 'Loading sources...',
             onClick: () => {
               getSession(self).queueDialog(handleClose => [
                 SetColorDialog,

@@ -1,3 +1,5 @@
+import type React from 'react'
+
 import type { MenuItem } from '@jbrowse/core/ui'
 
 /**
@@ -10,14 +12,16 @@ import type { MenuItem } from '@jbrowse/core/ui'
  */
 export function makeRadioSubMenu<T extends string>(opts: {
   label: string
+  icon?: React.ElementType
   value: T
   onChange: (value: T) => void
   options: readonly (readonly [T, string])[]
   extraItems?: MenuItem[]
 }): MenuItem {
-  const { label, value, onChange, options, extraItems = [] } = opts
+  const { label, icon, value, onChange, options, extraItems = [] } = opts
   return {
     label,
+    icon,
     subMenu: [
       ...options.map(([optionValue, optionLabel]) => ({
         label: optionLabel,

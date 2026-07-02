@@ -1,4 +1,5 @@
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
+import BarChartIcon from '@mui/icons-material/BarChart'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -7,7 +8,8 @@ export function makeRenderingTypeSubMenu(
   renderings: readonly (readonly [string, string])[],
 ): MenuItem {
   return makeRadioSubMenu({
-    label: 'Rendering type',
+    label: 'Plot type',
+    icon: BarChartIcon,
     value: self.renderingType,
     onChange: t => {
       self.setRenderingType(t)
