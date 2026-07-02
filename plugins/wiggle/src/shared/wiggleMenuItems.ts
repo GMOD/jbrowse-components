@@ -20,6 +20,7 @@ interface WithResolution {
   hasResolution: boolean
   resolution: number
   summaryScoreMode: string
+  isDensityMode: boolean
   setResolution: (n: number) => void
   setSummaryScoreMode: (v: string) => void
 }
@@ -64,6 +65,9 @@ export function makeResolutionAndSummarySubMenus(
         label: elt,
         type: 'radio' as const,
         checked: self.summaryScoreMode === elt,
+        // whiskers is ignored in density mode (score maps to color, not height)
+        disabled: elt === 'whiskers' && self.isDensityMode,
+        disabledHelpText: 'Not available in density mode',
         onClick: () => {
           self.setSummaryScoreMode(elt)
         },

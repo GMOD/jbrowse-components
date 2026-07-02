@@ -22,6 +22,7 @@ import {
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
@@ -325,7 +326,17 @@ export default function stateModelFactory(
               ])
             },
           },
-          makeCrossHatchItem(self),
+          // cross hatches are meaningless in density mode (score maps to color,
+          // not height); grouped under Show to match multi-wiggle placement
+          ...(self.isDensityMode
+            ? []
+            : [
+                {
+                  label: 'Show',
+                  icon: VisibilityIcon,
+                  subMenu: [makeCrossHatchItem(self)],
+                },
+              ]),
         ]
       },
     }))

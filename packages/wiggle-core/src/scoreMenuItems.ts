@@ -76,14 +76,40 @@ export function makeAutoscaleTypeSubMenu(
   }
 }
 
+// minScore/maxScore carry Number.MIN_VALUE / MAX_VALUE as the "unset, fall back
+// to autoscale" sentinel (see WiggleScoreConfigMixin minScoreBound/maxScoreBound).
+// Surfacing the resolved bounds lets the menu show that a manual range is in
+// force — otherwise an autoscale-type radio still reads as checked while a fixed
+// bound silently overrides it.
+function resolveScoreBounds(self: ScoreScaleModel) {
+  const min = self.minScore === Number.MIN_VALUE ? undefined : self.minScore
+  const max = self.maxScore === Number.MAX_VALUE ? undefined : self.maxScore
+  return { min, max, hasManual: min !== undefined || max !== undefined }
+}
+
 export function makeSetMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
+  const { min, max, hasManual } = resolveScoreBounds(self)
   return {
-    label: 'Set min/max score...',
+    label: hasManual
+      ? `Set min/max score (${min ?? 'auto'} – ${max ?? 'auto'})...`
+      : 'Set min/max score...',
     onClick: () => {
       getSession(self).queueDialog(handleClose => [
         SetMinMaxDialog,
         { model: self, handleClose },
       ])
+    },
+  }
+}
+
+// Only offered when a manual bound is set; resets both to the sentinel (same
+// path the dialog takes when its fields are cleared) so autoscale resumes.
+function makeClearMinMaxScoreItem(self: ScoreScaleModel): MenuItem {
+  return {
+    label: 'Clear manual min/max',
+    onClick: () => {
+      self.setMinScore(undefined)
+      self.setMaxScore(undefined)
     },
   }
 }
@@ -130,6 +156,9 @@ export function makeScoreSubMenu(
       ...(scaleType ? [makeScaleTypeSubMenu(self)] : []),
       makeAutoscaleTypeSubMenu(self, autoscaleOptions),
       makeSetMinMaxScoreItem(self),
+      ...(resolveScoreBounds(self).hasManual
+        ? [makeClearMinMaxScoreItem(self)]
+        : []),
     ],
   }
 }
