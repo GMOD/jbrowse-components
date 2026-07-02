@@ -386,21 +386,21 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         }
         const view = this.view
         const { v0, v1 } = connected
-        const { hoveredFeatureIdx, clickedFeatureIdx } = self
+        const { hoveredFeatureIdx, clickedFeatureIdx, instanceData } = self
+        // Instance index -> 1-based featureId (0 = "no hit"), the id the
+        // shaders/canvas compare against to highlight every instance of a
+        // feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
+        // interleaveInstances and the pick engine.
+        const toFeatureId = (idx: number) =>
+          idx >= 0 && instanceData ? instanceData.instanceFeatureIdx[idx]! + 1 : 0
         return {
           yTop: 0,
           height: this.height,
           alpha: view.alpha,
           fadeThinAlignments: view.fadeThinAlignments,
           minAlignmentLength: view.minAlignmentLength,
-          hoveredFeatureId:
-            hoveredFeatureIdx >= 0 && self.instanceData
-              ? self.instanceData.instanceFeatureIdx[hoveredFeatureIdx]! + 1
-              : 0,
-          clickedFeatureId:
-            clickedFeatureIdx >= 0 && self.instanceData
-              ? self.instanceData.instanceFeatureIdx[clickedFeatureIdx]! + 1
-              : 0,
+          hoveredFeatureId: toFeatureId(hoveredFeatureIdx),
+          clickedFeatureId: toFeatureId(clickedFeatureIdx),
           offsetPx0: v0.offsetPx,
           offsetPx1: v1.offsetPx,
           bpPerPx0: v0.bpPerPx,

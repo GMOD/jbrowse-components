@@ -1,4 +1,5 @@
 import { splitPositionWithFrac } from '@jbrowse/render-core/blockClipUtils'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
 import { interleaveInstances } from './instanceInterleave.ts'
@@ -158,7 +159,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
     if (!ctx) {
       return undefined
     }
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     return pickFeatureAtPoint({
       ctx,
       state,
@@ -176,7 +177,7 @@ export class GpuSyntenyRenderer implements SyntenyRenderingBackend {
   }
 
   private writeUniforms(p: SyntenyTrackRenderParams, overdrawPx: number) {
-    const dpr = typeof devicePixelRatio !== 'undefined' ? devicePixelRatio : 1
+    const dpr = getDpr()
     const u = this.uniformF32
     u[U.resolution] = this.canvas.width / dpr
     u[U.resolution + 1] = this.canvas.height / dpr

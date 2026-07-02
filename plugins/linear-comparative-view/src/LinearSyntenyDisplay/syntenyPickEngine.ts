@@ -1,3 +1,4 @@
+import { abgrAlpha } from '@jbrowse/core/util/colorBits'
 import Flatbush from '@jbrowse/core/util/flatbush'
 
 import type {
@@ -295,7 +296,7 @@ export function pickFeatureAtPoint(
       if (data.alignmentLengths[i]! < minAlignmentLength) {
         continue
       }
-      if (((data.colors[i]! >>> 24) & 0xff) / 255 < 0.01) {
+      if (abgrAlpha(data.colors[i]!) / 255 < 0.01) {
         continue
       }
 

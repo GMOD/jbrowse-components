@@ -4,6 +4,7 @@ import {
   abgrGreen,
   abgrRed,
 } from '@jbrowse/core/util/colorBits'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
 
 import { SyntenyGeometryCache } from './syntenyGeometryCache.ts'
 import {
@@ -30,46 +31,10 @@ import type { SyntenyInstanceData } from '../LinearSyntenyRPC/buildSyntenyGeomet
 
 export type { CanvasLike } from './syntenyPickEngine.ts'
 
-type Rgba = readonly [number, number, number, number]
-
 // SYNC: mirrors WIDTH_FADE_FLOOR in syntenyTypes.slang — keeps a lone
 // sub-pixel ribbon faintly locatable instead of fading all the way to
 // invisible on a whole-genome view with no minAlignmentLength filter.
 const WIDTH_FADE_FLOOR = 0.15
-
-// Shade an instance's packed color into the final displayed fill — applying
-// hover darkening and the CIGAR white pre-blend — as 0..255 rgb + 0..1 alpha.
-// SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with white
-// at the (hover-boosted) alpha so indels fade against the page; BASE darkens by
-// 0.7 and boosts alpha ×5 (capped 0.35) on hover. Keep the two in lockstep.
-function shadeInstanceFill(
-  packed: number,
-  alpha: number,
-  isCigar: boolean,
-  isHovered: boolean,
-): Rgba {
-  const r = abgrRed(packed)
-  const g = abgrGreen(packed)
-  const b = abgrBlue(packed)
-  const a = abgrAlpha(packed) / 255
-  const darken = isHovered ? 0.7 : 1
-  if (isCigar) {
-    const blend = isHovered ? Math.min(a * alpha * 5, 0.35) : a * alpha
-    const white = 255 * (1 - blend)
-    return [
-      (r * darken * blend + white) | 0,
-      (g * darken * blend + white) | 0,
-      (b * darken * blend + white) | 0,
-      a,
-    ]
-  }
-  return [
-    (r * darken) | 0,
-    (g * darken) | 0,
-    (b * darken) | 0,
-    isHovered ? Math.min(a * alpha * 5, 0.35) : a * alpha,
-  ]
-}
 
 function drawInstances(
   ctx: CanvasLike,
@@ -83,7 +48,6 @@ function drawInstances(
   drawCurves: boolean,
   leftLimit: number,
   rightLimit: number,
-  shadeCache: Map<number, Rgba>,
   yTop: number,
   fadeThinAlignments: boolean,
 ) {
@@ -121,16 +85,33 @@ function drawInstances(
     const isClicked = featureId === clickedFeatureId
     const isCigar = kind >= KIND_CIGAR_MATCH
 
-    // Hover recolors per-instance; everything else shares a color per packed
-    // value (e.g. the many tiles of a CIGAR fill), so cache the resolved rgba.
-    let rgba = isHovered ? undefined : shadeCache.get(packed)
-    if (!rgba) {
-      rgba = shadeInstanceFill(packed, alpha, isCigar, isHovered)
-      if (!isHovered) {
-        shadeCache.set(packed, rgba)
-      }
+    // Resolve the displayed fill inline: a handful of arithmetic ops, cheaper
+    // (and allocation-free) than the per-color Map lookup it replaces — which
+    // matters at whole-genome zoom, where the loop runs over every on-screen
+    // instance each frame. `shade` doubles as the CIGAR white-blend factor and
+    // the BASE output alpha (identical expression in both).
+    // SYNC: mirrors shadeFill() in syntenyTypes.slang — CIGAR pre-blends with
+    // white at the (hover-boosted) alpha so indels fade against the page; BASE
+    // darkens by 0.7 and boosts alpha ×5 (capped 0.35) on hover.
+    const pa = abgrAlpha(packed) / 255
+    const darken = isHovered ? 0.7 : 1
+    const shade = isHovered ? Math.min(pa * alpha * 5, 0.35) : pa * alpha
+    let r: number
+    let g: number
+    let b: number
+    let fa: number
+    if (isCigar) {
+      const white = 255 * (1 - shade)
+      r = (abgrRed(packed) * darken * shade + white) | 0
+      g = (abgrGreen(packed) * darken * shade + white) | 0
+      b = (abgrBlue(packed) * darken * shade + white) | 0
+      fa = pa
+    } else {
+      r = (abgrRed(packed) * darken) | 0
+      g = (abgrGreen(packed) * darken) | 0
+      b = (abgrBlue(packed) * darken) | 0
+      fa = shade
     }
-    const [r, g, b, fa] = rgba
 
     // Sub-pixel handling keys on the ribbon's PERPENDICULAR (visual) thickness,
     // not horizontal span: a steep diagonal can be several px wide horizontally
@@ -192,9 +173,6 @@ export function drawSyntenyTrack(
   } = params
 
   const transform = computeTransform(params)
-  // Resolved color is shared by many instances of one packed value (e.g. the
-  // tiles of a CIGAR fill); cache the shading so it runs once per color.
-  const shadeCache = new Map<number, Rgba>()
   const leftLimit = -overdrawPx
   const rightLimit = logicalW + overdrawPx
 
@@ -210,7 +188,6 @@ export function drawSyntenyTrack(
     drawCurves,
     leftLimit,
     rightLimit,
-    shadeCache,
     yTop,
     fadeThinAlignments,
   )
@@ -222,7 +199,7 @@ export class Canvas2DSyntenyRenderer implements SyntenyRenderingBackend {
   private cache = new SyntenyGeometryCache()
 
   private get dpr() {
-    return typeof window !== 'undefined' ? window.devicePixelRatio : 1
+    return getDpr()
   }
 
   constructor(canvas: HTMLCanvasElement) {
