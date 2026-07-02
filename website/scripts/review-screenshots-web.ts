@@ -199,31 +199,37 @@ const PAGE = /* html */ `<!doctype html>
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>Screenshot review</title>
 <style>
+  /* Surfaces/text/borders use CSS system colors so light and dark themes both
+     work with no media query — the browser maps Canvas/Field/etc per scheme.
+     Vivid accents (tab blue, pill pastels, card edges) stay fixed. */
   :root { color-scheme: light dark; }
   * { box-sizing: border-box; }
   body {
     font-family: system-ui, -apple-system, sans-serif;
     margin: 0;
-    background: #f4f5f7;
-    color: #1a1a1a;
+    background: Canvas;
+    color: CanvasText;
   }
   header {
     position: sticky; top: 0; z-index: 10;
-    background: #fff; border-bottom: 1px solid #ddd;
+    background: Canvas; border-bottom: 1px solid ButtonBorder;
     padding: 12px 20px; display: flex; gap: 16px; align-items: center; flex-wrap: wrap;
   }
   header h1 { font-size: 16px; margin: 0; }
-  header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid #ccc; border-radius: 6px; }
-  header select { padding: 6px 8px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; background: #fff; cursor: pointer; }
+  header input[type=search] { padding: 6px 10px; width: 220px; border: 1px solid ButtonBorder; border-radius: 6px; background: Field; color: FieldText; }
+  header select { padding: 6px 8px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; cursor: pointer; }
+  header select option { background: Field; color: FieldText; }
   header label { font-size: 13px; display: flex; gap: 5px; align-items: center; cursor: pointer; }
+  .ctrl { flex-direction: column; align-items: flex-start; gap: 2px; }
+  .ctrl > span { font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em; color: GrayText; }
   .tabs { display: flex; gap: 6px; }
   .tab {
-    padding: 7px 14px; border: 1px solid #ccc; border-radius: 6px; background: #fff;
-    cursor: pointer; font-size: 14px; font-weight: 500; color: #555;
+    padding: 7px 14px; border: 1px solid ButtonBorder; border-radius: 6px; background: Canvas;
+    cursor: pointer; font-size: 14px; font-weight: 500; color: CanvasText;
   }
   .tab.active { background: #2563eb; border-color: #2563eb; color: #fff; }
   .tab .tabcount { opacity: 0.7; margin-left: 5px; font-size: 12px; }
-  .counts { font-size: 13px; color: #555; margin-left: auto; display: flex; gap: 14px; flex-wrap: wrap; }
+  .counts { font-size: 13px; color: GrayText; margin-left: auto; display: flex; gap: 14px; flex-wrap: wrap; }
   .pill { padding: 1px 8px; border-radius: 999px; font-size: 12px; font-weight: 500; }
   .pill.good { background: #d6f5dd; color: #14532d; }
   .pill.bad { background: #fbd9d9; color: #7f1d1d; }
@@ -235,7 +241,7 @@ const PAGE = /* html */ `<!doctype html>
   .pill.stale { background: #fde68a; color: #854d0e; }
   main { padding: 20px; display: flex; flex-direction: column; gap: 18px; max-width: 1400px; margin: 0 auto; }
   .card {
-    background: #fff; border: 1px solid #e0e0e0; border-radius: 10px; overflow: hidden;
+    background: Canvas; border: 1px solid ButtonBorder; border-radius: 10px; overflow: hidden;
   }
   .card.good { border-left: 5px solid #22c55e; }
   .card.bad { border-left: 5px solid #ef4444; }
@@ -246,39 +252,50 @@ const PAGE = /* html */ `<!doctype html>
   .imgcol { flex: 1; display: flex; flex-direction: column; }
   .imglabel {
     font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;
-    padding: 4px 10px; background: #f8f8f8; border-bottom: 1px solid #eee; color: #666;
+    padding: 4px 10px; background: Canvas; border-bottom: 1px solid ButtonBorder; color: GrayText;
   }
   .imgwrap { background: #222; display: flex; align-items: center; justify-content: center; min-height: 180px; flex: 1; }
   .imgwrap img { max-width: 100%; max-height: 400px; display: block; cursor: zoom-in; }
-  .imgcol + .imgcol { border-left: 2px solid #ddd; }
+  .imgcol + .imgcol { border-left: 2px solid ButtonBorder; }
   .missing { color: #f88; padding: 30px; font-size: 14px; }
-  .meta { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid #eee; }
+  .meta { padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; border-top: 1px solid ButtonBorder; }
   .meta h2 { font-size: 14px; margin: 0; font-family: ui-monospace, monospace; word-break: break-all; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
   .usages { font-size: 13px; display: flex; flex-direction: column; gap: 8px; }
-  .usage { border-left: 3px solid #cbd5e1; padding-left: 10px; }
-  .usage .loc { font-family: ui-monospace, monospace; font-size: 12px; color: #2563eb; }
+  .usage { border-left: 3px solid ButtonBorder; padding-left: 10px; }
+  .usage .loc { font-family: ui-monospace, monospace; font-size: 12px; color: LinkText; }
   .usage .caption { font-style: italic; margin-top: 2px; }
   .noref { font-size: 13px; color: #b45309; }
   .actions { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; }
-  button { padding: 7px 14px; border-radius: 6px; border: 1px solid #ccc; background: #fff; cursor: pointer; font-size: 14px; }
-  button.approve { border-color: #22c55e; color: #14532d; }
+  button { padding: 7px 14px; border-radius: 6px; border: 1px solid ButtonBorder; background: ButtonFace; color: ButtonText; cursor: pointer; font-size: 14px; }
+  button.approve { border-color: #22c55e; color: #16a34a; }
   button.approve.active { background: #22c55e; color: #fff; }
-  button.deny { border-color: #ef4444; color: #7f1d1d; }
+  button.deny { border-color: #ef4444; color: #dc2626; }
   button.deny.active { background: #ef4444; color: #fff; }
-  button.clear { border-color: #ccc; color: #666; }
-  .note { width: 100%; padding: 6px 9px; border: 1px solid #ccc; border-radius: 6px; font-size: 13px; }
-  .reviewedAt { font-size: 11px; color: #999; }
+  button.clear { border-color: ButtonBorder; color: GrayText; }
+  .note { width: 100%; padding: 6px 9px; border: 1px solid ButtonBorder; border-radius: 6px; font-size: 13px; background: Field; color: FieldText; }
+  .reviewedAt { font-size: 11px; color: GrayText; }
 </style>
 </head>
 <body>
 <header>
   <h1>Screenshot review</h1>
   <input id="search" type="search" placeholder="filter by name…" />
-  <select id="group" title="Filter by group"><option value="">All groups</option></select>
-  <select id="sortby" title="Sort order">
-    <option value="default">A–Z</option>
-    <option value="recent">Recently reviewed</option>
-  </select>
+  <label class="ctrl"><span>Group</span>
+    <select id="group" title="Filter by name group"><option value="">All groups</option></select>
+  </label>
+  <label class="ctrl"><span>Kind</span>
+    <select id="kind" title="Filter by how the image is produced">
+      <option value="all">All kinds</option>
+      <option value="manual">Manual only</option>
+      <option value="auto">Autogenerated only</option>
+    </select>
+  </label>
+  <label class="ctrl"><span>Sort</span>
+    <select id="sortby" title="Sort order">
+      <option value="default">A–Z</option>
+      <option value="recent">Recently reviewed</option>
+    </select>
+  </label>
   <div class="tabs">
     <button class="tab" data-status="needs">Needs review<span class="tabcount" data-count="needs"></span></button>
     <button class="tab" data-status="good">Approved</button>
@@ -291,7 +308,7 @@ const PAGE = /* html */ `<!doctype html>
 <main id="main"></main>
 <script>
 let data = []
-const filters = { status: 'needs', changedOnly: false, sortBy: 'default', group: '' }
+const filters = { status: 'needs', changedOnly: false, sortBy: 'default', group: '', kind: 'all' }
 // Names acted on since the current filter view was entered. They stay visible
 // even once their new verdict no longer matches the filter, so you can still
 // type a reason after clicking Deny in the unreviewed/denied queue.
@@ -454,6 +471,7 @@ function syncControls() {
   }
   $('[data-toggle="changed"]').classList.toggle('active', filters.changedOnly)
   $('#sortby').value = filters.sortBy
+  $('#kind').value = filters.kind
 }
 
 function renderCounts() {
@@ -474,13 +492,17 @@ function renderCounts() {
 function matchesFilters(s, q) {
   const matchesQuery = !q || s.name.toLowerCase().includes(q)
   const matchesGroup = !filters.group || nameGroup(s.name) === filters.group
+  const matchesKind =
+    filters.kind === 'all' ||
+    (filters.kind === 'manual' && !s.autogenerated) ||
+    (filters.kind === 'auto' && s.autogenerated)
   const matchesStatus =
     filters.status === 'all' ||
     (filters.status === 'needs' && needsReview(s)) ||
     (filters.status === 'good' && s.verdict?.status === 'good' && !s.stale) ||
     (filters.status === 'bad' && s.verdict?.status === 'bad' && !s.stale)
   const matchesChanged = !filters.changedOnly || isNew(s) || isChanged(s)
-  return matchesQuery && matchesGroup && (justActed.has(s.name) || (matchesStatus && matchesChanged))
+  return matchesQuery && matchesGroup && matchesKind && (justActed.has(s.name) || (matchesStatus && matchesChanged))
 }
 
 function render() {
@@ -521,6 +543,7 @@ $('header').addEventListener('click', e => {
 $('#search').addEventListener('input', render)
 $('#sortby').addEventListener('change', () => changeFilter('sortBy', $('#sortby').value))
 $('#group').addEventListener('change', () => changeFilter('group', $('#group').value))
+$('#kind').addEventListener('change', () => changeFilter('kind', $('#kind').value))
 load()
 </script>
 </body>
