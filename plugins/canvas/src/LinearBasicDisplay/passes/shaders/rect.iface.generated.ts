@@ -7,6 +7,8 @@ export const VERTS_PER_INSTANCE = 6
 
 export const MIN_RECT_WIDTH_PX = 2
 
+export const MIN_DENSITY_ALPHA = 0.5
+
 export const UNIFORMS_SIZE_BYTES = 48
 
 // Indices into a Float32Array / Uint32Array view over the uniform buffer.

@@ -6,7 +6,7 @@
 // vertex.buffers; Slang's GLSL output emits `in T a_field;` declarations
 // that WebGL2 binds via `vertexAttribPointer` / `vertexAttribIPointer`.
 //! targets: wgsl, glsl
-//! export-consts: MIN_RECT_WIDTH_PX
+//! export-consts: MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA
 
 import hpmath;
 import colorPack;
@@ -15,6 +15,12 @@ import featureGlyphUniforms;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 static const float MIN_RECT_WIDTH_PX = 2.0;
+// Sub-pixel features get widened to MIN_RECT_WIDTH_PX; at that point they'd fuse
+// into one flat block (e.g. a dense variant track collapsing to solid orange).
+// Drawing them semi-transparent lets the standard src-alpha blend accumulate
+// where features overlap, so density reads as opacity/texture instead of a flat
+// fill. Alpha ramps from this floor up to 1 as the real width reaches the clamp.
+static const float MIN_DENSITY_ALPHA = 0.5;
 
 struct RectInstance {
   uint2 startEnd : ATTR0;
@@ -40,8 +46,14 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float2 q = quadLocal(vid);
   float localX = q.x, localY = q.y;
 
-  float sx1 = snapToPixelX(bpToClipX(inst.startEnd.x, u), u.canvasWidth);
-  float sx2 = snapToPixelX(bpToClipX(inst.startEnd.y, u), u.canvasWidth);
+  float cx1 = bpToClipX(inst.startEnd.x, u);
+  float cx2 = bpToClipX(inst.startEnd.y, u);
+
+  // Real (pre-clamp) on-screen width drives density alpha below.
+  float realWidthPx = abs(cx2 - cx1) * u.canvasWidth * 0.5;
+
+  float sx1 = snapToPixelX(cx1, u.canvasWidth);
+  float sx2 = snapToPixelX(cx2, u.canvasWidth);
 
   float minWidth = MIN_RECT_WIDTH_PX * 2.0 / u.canvasWidth;
   float dx = sx2 - sx1;
@@ -59,9 +71,12 @@ VsOut vs_main(RectInstance inst, uint vid : SV_VertexID) {
   float widthPx  = abs(sx2 - sx1) * u.canvasWidth * 0.5;
   float heightPx = abs(yBotPx - yTopPx);
 
+  float densityAlpha = clamp(realWidthPx / MIN_RECT_WIDTH_PX, MIN_DENSITY_ALPHA, 1.0);
+
   VsOut o;
   o.position   = float4(sx, sy, 0.0, 1.0);
   o.color      = unpackRGBA(inst.color);
+  o.color.a   *= densityAlpha;
   o.localPos   = float2(localX, localY);
   o.featSizePx = float2(widthPx, heightPx);
   return o;

@@ -91,6 +91,10 @@ export const FEATURE_GLYPH_UNIFORM_BYTE_SIZE = rectShader.UNIFORMS_SIZE_BYTES
 // and the Canvas2D draw path so both backends clamp identically.
 export const MIN_RECT_WIDTH_PX = rectShader.MIN_RECT_WIDTH_PX
 
+// Alpha floor for width-clamped (sub-pixel) rects so dense features blend into a
+// density texture rather than a flat block. Shared by the Canvas2D draw path.
+export const MIN_DENSITY_ALPHA = rectShader.MIN_DENSITY_ALPHA
+
 // Glyph draw dimensions (px). Authored in the `.slang` so the GPU shader owns
 // them; re-exported so the Canvas2D path draws matching geometry.
 export const {

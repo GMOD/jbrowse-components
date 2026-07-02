@@ -1,4 +1,5 @@
 import {
+  abgrAlpha,
   abgrBlue,
   abgrGreen,
   abgrRed,
@@ -21,6 +22,7 @@ import {
   CONT_TRI_HALF_H_PX,
   CONT_TRI_W_PX,
   HEAD_HALF_H_PX,
+  MIN_DENSITY_ALPHA,
   MIN_RECT_WIDTH_PX,
   STEM_HALF_H_PX,
   STEM_LENGTH_PX,
@@ -110,9 +112,21 @@ function drawRects(
     // On reversed blocks bpToScreenPx flips so x1 > x2; use abs + min for a
     // width-agnostic draw that matches the GPU shader's MIN_RECT_WIDTH clamp.
     const xLeft = Math.min(x1, x2)
-    const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(x2 - x1))
+    const realWidth = Math.abs(x2 - x1)
+    const w = Math.max(MIN_RECT_WIDTH_PX, realWidth)
 
-    ctx.fillStyle = abgrToCssRgba(region.rectColors[i]!)
+    // Sub-pixel features widened to the min clamp draw semi-transparent so
+    // src-over accumulation makes dense regions read as a density texture
+    // instead of a flat block (mirrors rect.slang's densityAlpha). Fold the
+    // factor into the fill color's alpha so it also applies on the SVG-export
+    // path (SvgCanvas has no globalAlpha).
+    const c = region.rectColors[i]!
+    const densityAlpha = Math.min(
+      1,
+      Math.max(MIN_DENSITY_ALPHA, realWidth / MIN_RECT_WIDTH_PX),
+    )
+    const a = (abgrAlpha(c) / 255) * densityAlpha
+    ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
     ctx.fillRect(xLeft, y, w, h)
     if (region.outlineColor && w > 2) {
       ctx.strokeStyle = abgrToCssRgba(region.outlineColor)
