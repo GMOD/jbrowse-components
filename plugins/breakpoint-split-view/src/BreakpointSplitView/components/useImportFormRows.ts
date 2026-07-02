@@ -1,23 +1,24 @@
-import { useRef, useState } from 'react'
+import { useState } from 'react'
 
 import { swap } from './importFormUtils.ts'
 
 import type { ImportFormRowData } from './importFormUtils.ts'
 
-// A stable per-row id so React keys (and AssemblySelector's internal state)
-// follow a row through reorder/remove instead of being pinned to the array
-// index.
+// A stable per-row id so React keys follow a row through reorder/remove instead
+// of being pinned to the array index.
 export interface Row extends ImportFormRowData {
   id: string
 }
+
+// Monotonic counter for minting row ids; only needs to be unique within a list.
+let rowIdCounter = 0
 
 // Row-list state machine for the import form. Every edit is keyed by the stable
 // row id (never the array index) and uses the functional setState form, so no
 // handler depends on the array order or a stale rows closure.
 export function useImportFormRows(defaultAssembly: string) {
-  const idCounterRef = useRef(0)
   const newRow = (assembly = defaultAssembly): Row => ({
-    id: `row-${idCounterRef.current++}`,
+    id: `row-${rowIdCounter++}`,
     assembly,
     loc: '',
   })

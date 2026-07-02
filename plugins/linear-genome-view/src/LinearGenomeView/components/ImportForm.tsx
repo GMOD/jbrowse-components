@@ -5,6 +5,7 @@ import {
   AssemblySelector,
   ErrorBanner,
   RefNameAutocomplete,
+  useAssemblySelection,
 } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -40,21 +41,23 @@ const LinearGenomeViewImportForm = observer(
   function LinearGenomeViewImportForm({ model }: { model: LGV }) {
     const { classes } = useStyles()
     const session = getSession(model)
-    const { assemblyNames, assemblyManager, textSearchManager } = session
-    const { initialized, error } = model
-    const [selectedAsm, setSelectedAsm] = useState(assemblyNames[0]!)
-    const [option, setOption] = useState<BaseResult>()
-    const assembly = assemblyManager.get(selectedAsm)
-    const assemblyError = assemblyNames.length
-      ? assembly?.error
-      : 'No configured assemblies'
-    const displayError = assemblyError || error
-    const [userValue, setUserValue] = useState<string | null>(null)
-    const regions = assembly?.regions
-    const assemblyLoaded = !!regions
-    const r0 = regions?.[0]?.refName ?? ''
-    const value = userValue ?? r0
-    const searchScope = model.searchScope(selectedAsm)
+    const { textSearchManager } = session
+    const { initialized, error: viewError } = model
+    const {
+      selectedAssemblyName: selectedAsm,
+      setSelectedAssemblyName,
+      assembly,
+      assemblyError,
+      regions,
+    } = useAssemblySelection(session, 'lgv')
+
+    // the location the form will open; the input starts on the first refname
+    // and is replaced by whatever the user types or picks
+    const [selectedOption, setSelectedOption] = useState<BaseResult>()
+    const [inputText, setInputText] = useState<string>()
+
+    const value = inputText ?? regions?.[0]?.refName ?? ''
+    const displayError = assemblyError || viewError
 
     return (
       <div className={classes.container}>
@@ -65,10 +68,10 @@ const LinearGenomeViewImportForm = observer(
               onSubmit={async event => {
                 event.preventDefault()
                 model.setError(undefined)
-                if (value) {
+                if (value && selectedAsm) {
                   try {
                     await navigateToSelectedOption({
-                      option: option ?? new BaseResult({ label: value }),
+                      option: selectedOption ?? new BaseResult({ label: value }),
                       model,
                       assemblyName: selectedAsm,
                     })
@@ -87,19 +90,18 @@ const LinearGenomeViewImportForm = observer(
                 <FormControl>
                   <AssemblySelector
                     onChange={val => {
-                      setSelectedAsm(val)
-                      setUserValue(null)
-                      setOption(undefined)
+                      setSelectedAssemblyName(val)
+                      setInputText(undefined)
+                      setSelectedOption(undefined)
                     }}
-                    localStorageKey="lgv"
                     session={session}
                     selected={selectedAsm}
                   />
                 </FormControl>
                 {selectedAsm ? (
                   assemblyError ? (
-                    <CloseIcon style={{ color: 'red' }} />
-                  ) : assemblyLoaded ? (
+                    <CloseIcon color="error" />
+                  ) : regions ? (
                     <FormControl>
                       <RefNameAutocomplete
                         fetchResults={queryString =>
@@ -107,7 +109,7 @@ const LinearGenomeViewImportForm = observer(
                             queryString,
                             assembly,
                             textSearchManager,
-                            searchScope,
+                            searchScope: model.searchScope(selectedAsm),
                           })
                         }
                         session={session}
@@ -115,12 +117,12 @@ const LinearGenomeViewImportForm = observer(
                         value={value}
                         minWidth={270}
                         onChange={v => {
-                          setUserValue(v)
-                          setOption(undefined)
+                          setInputText(v)
+                          setSelectedOption(undefined)
                         }}
                         onSelect={opt => {
-                          setOption(opt)
-                          setUserValue(opt.getDisplayString())
+                          setSelectedOption(opt)
+                          setInputText(opt.getDisplayString())
                         }}
                         helperText="Enter sequence name, feature name, or location"
                       />
@@ -142,7 +144,7 @@ const LinearGenomeViewImportForm = observer(
                 </FormControl>
                 <FormControl>
                   <Button
-                    disabled={!value}
+                    disabled={!!assemblyError || !regions}
                     className={classes.button}
                     onClick={() => {
                       model.setError(undefined)
