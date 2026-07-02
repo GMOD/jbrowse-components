@@ -12,7 +12,7 @@ import { observer } from 'mobx-react'
 import FileInfoPanel from './FileInfoPanel.tsx'
 import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
-import { generateDisplayableConfig, readConf } from './util.ts'
+import { getAboutDialogConfig, readConfSlot } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -49,11 +49,11 @@ const AboutDialogContents = observer(function AboutDialogContents({
 
   const hideUris =
     getConf(session, ['formatAbout', 'hideUris']) ||
-    readConf(config, ['formatAbout', 'hideUris'])
+    readConfSlot(config, ['formatAbout', 'hideUris'])
 
   const { pluginManager } = getEnv(session)
 
-  const confPostExt = generateDisplayableConfig({
+  const confPostExt = getAboutDialogConfig({
     config,
     session,
     pluginManager,

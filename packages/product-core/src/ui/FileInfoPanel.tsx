@@ -3,7 +3,7 @@ import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard
 import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
 import { useFetch } from '@jbrowse/core/util'
 
-import { readConf } from './util.ts'
+import { readConfSlot } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -18,7 +18,7 @@ export default function FileInfoPanel({
   session: AbstractSessionModel
 }) {
   const { rpcManager } = session
-  const trackId = readConf<string>(config, 'trackId')
+  const trackId = readConfSlot<string>(config, 'trackId')
 
   const {
     data: info,
@@ -28,7 +28,7 @@ export default function FileInfoPanel({
     ['CoreGetInfo', trackId],
     async () =>
       (await rpcManager.call(trackId, 'CoreGetInfo', {
-        adapterConfig: readConf<Record<string, unknown>>(config, 'adapter'),
+        adapterConfig: readConfSlot<Record<string, unknown>>(config, 'adapter'),
       })) as FileInfo,
   )
 

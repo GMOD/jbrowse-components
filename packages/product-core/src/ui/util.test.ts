@@ -2,7 +2,7 @@ import PluginManager from '@jbrowse/core/PluginManager'
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
 import { types } from '@jbrowse/mobx-state-tree'
 
-import { generateDisplayableConfig, readConf, removeAttr } from './util.ts'
+import { getAboutDialogConfig, readConfSlot, removeAttr } from './util.ts'
 
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -28,7 +28,7 @@ const SessionModel = types.model('Session', {
   configuration: ConfigurationSchema('Root', { formatAbout: FormatAbout }),
 })
 
-// extension point passthrough so generateDisplayableConfig returns its input
+// extension point passthrough so getAboutDialogConfig returns its input
 const passthroughPluginManager = {
   evaluateExtensionPoint: (_name: string, arg: unknown) => arg,
 } as unknown as PluginManager
@@ -60,18 +60,18 @@ describe('removeAttr', () => {
   })
 })
 
-describe('readConf', () => {
+describe('readConfSlot', () => {
   it('walks a path on a plain object', () => {
-    expect(readConf({ foo: { bar: 5 } }, ['foo', 'bar'])).toBe(5)
+    expect(readConfSlot({ foo: { bar: 5 } }, ['foo', 'bar'])).toBe(5)
   })
 
   it('evaluates a jexl string on a plain object', () => {
-    expect(readConf({ foo: 'jexl:1+2' }, 'foo')).toBe(3)
+    expect(readConfSlot({ foo: 'jexl:1+2' }, 'foo')).toBe(3)
   })
 
   it('passes context args to a jexl string on a plain object', () => {
     expect(
-      readConf({ foo: 'jexl:config.name' }, 'foo', {
+      readConfSlot({ foo: 'jexl:config.name' }, 'foo', {
         config: { name: 'hello' },
       }),
     ).toBe('hello')
@@ -82,7 +82,7 @@ describe('readConf', () => {
       { trackId: 't1', name: 'Track 1' },
       { pluginManager: corePluginManager },
     )
-    expect(readConf(config, 'name')).toBe('Track 1')
+    expect(readConfSlot(config, 'name')).toBe('Track 1')
   })
 
   it('passes context args to a callback slot on a state tree node', () => {
@@ -95,17 +95,17 @@ describe('readConf', () => {
       { pluginManager: corePluginManager },
     )
     expect(
-      readConf(config, ['formatAbout', 'config'], {
+      readConfSlot(config, ['formatAbout', 'config'], {
         config: { name: 'Track 1' },
       }),
     ).toEqual({ Computed: 'Track 1' })
   })
 })
 
-describe('generateDisplayableConfig', () => {
+describe('getAboutDialogConfig', () => {
   it('merges the base config for a plain object', () => {
     const config = { trackId: 't1', name: 'Track 1' }
-    const out = generateDisplayableConfig({
+    const out = getAboutDialogConfig({
       config,
       session: makeSession(),
       pluginManager: passthroughPluginManager,
@@ -124,7 +124,7 @@ describe('generateDisplayableConfig', () => {
       },
       { pluginManager: corePluginManager },
     )
-    const out = generateDisplayableConfig({
+    const out = getAboutDialogConfig({
       config,
       session: makeSession(),
       pluginManager: passthroughPluginManager,
@@ -141,7 +141,7 @@ describe('generateDisplayableConfig', () => {
       },
       { pluginManager: corePluginManager },
     )
-    const out = generateDisplayableConfig({
+    const out = getAboutDialogConfig({
       config,
       session: makeSession({ source: 'session', sessionOnly: true }),
       pluginManager: passthroughPluginManager,
@@ -159,7 +159,7 @@ describe('generateDisplayableConfig', () => {
         return arg
       },
     } as unknown as PluginManager
-    generateDisplayableConfig({
+    getAboutDialogConfig({
       config: { trackId: 't1', name: 'Track 1' },
       session: makeSession(),
       pluginManager,

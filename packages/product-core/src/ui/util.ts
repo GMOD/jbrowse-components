@@ -1,12 +1,16 @@
 import { getConf, readConfObject } from '@jbrowse/core/configuration'
 import { isObject } from '@jbrowse/core/util'
 import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
-import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
+/**
+ * Recursively delete every occurrence of a property key from a nested plain
+ * object (mutates in place), e.g. stripping `baseUri` from a config snapshot.
+ */
 export function removeAttr(obj: Record<string, unknown>, attr: string) {
   for (const prop in obj) {
     if (prop === attr) {
@@ -18,35 +22,34 @@ export function removeAttr(obj: Record<string, unknown>, attr: string) {
   return obj
 }
 
-export function readConf<T = unknown>(
+/**
+ * Read a single config slot from either a live MST config or a plain snapshot
+ * object, evaluating the value if it is a `jexl:` expression.
+ */
+export function readConfSlot<T = unknown>(
   config: AnyConfigurationModel | Record<string, unknown>,
-  slotPath?: string | string[],
+  slotPath: string | string[],
   args: Record<string, unknown> = {},
 ): T {
-  const path = slotPath
-    ? typeof slotPath === 'string'
-      ? [slotPath]
-      : slotPath
-    : undefined
+  const path = typeof slotPath === 'string' ? [slotPath] : slotPath
   if (isStateTreeNode(config)) {
-    return (
-      path ? readConfObject(config, path, args) : getSnapshot(config)
-    ) as T
+    return readConfObject(config, path, args) as T
   }
-  if (!path) {
-    return config as unknown as T
-  }
-  let result: unknown = config
-  for (const key of path) {
-    result = (result as Record<string, unknown> | undefined)?.[key]
-  }
-  if (typeof result === 'string' && result.startsWith('jexl:')) {
-    return stringToJexlExpression(result).eval(args) as T
-  }
-  return result as T
+  const value = path.reduce<unknown>(
+    (node, key) => (node as Record<string, unknown> | undefined)?.[key],
+    config,
+  )
+  return typeof value === 'string' && value.startsWith('jexl:')
+    ? (stringToJexlExpression(value).eval(args) as T)
+    : (value as T)
 }
 
-export function generateDisplayableConfig({
+/**
+ * Build the config object shown in a track's About dialog: the base config
+ * merged with session- and track-level `formatAbout` overrides, then passed
+ * through the `Core-customizeAbout` extension point.
+ */
+export function getAboutDialogConfig({
   config,
   session,
   pluginManager,
@@ -56,7 +59,7 @@ export function generateDisplayableConfig({
   pluginManager: PluginManager
 }) {
   const conf = isStateTreeNode(config) ? readConfObject(config) : config
-  const formatAboutConfig = readConf(config, ['formatAbout', 'config'], {
+  const trackFormatAbout = readConfSlot(config, ['formatAbout', 'config'], {
     config: conf,
   })
   const sessionFormatAbout = getConf(session, ['formatAbout', 'config'], {
@@ -69,7 +72,7 @@ export function generateDisplayableConfig({
       config: {
         ...conf,
         ...(isObject(sessionFormatAbout) ? sessionFormatAbout : {}),
-        ...(isObject(formatAboutConfig) ? formatAboutConfig : {}),
+        ...(isObject(trackFormatAbout) ? trackFormatAbout : {}),
       },
     },
     { session, config },

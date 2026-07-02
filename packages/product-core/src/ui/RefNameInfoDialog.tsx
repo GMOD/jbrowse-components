@@ -9,7 +9,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { DialogContent } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { readConf } from './util.ts'
+import { readConfSlot } from './util.ts'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -55,8 +55,8 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
 }) {
   const { classes } = useStyles()
   const { rpcManager } = session
-  const trackId = readConf<string>(config, 'trackId')
-  const assemblyNames = readConf<string[]>(config, 'assemblyNames')
+  const trackId = readConfSlot<string>(config, 'trackId')
+  const assemblyNames = readConfSlot<string[]>(config, 'assemblyNames')
 
   const {
     data: refNames,
@@ -71,7 +71,7 @@ const RefNameInfoDialog = observer(function RefNameInfoDialog({
             [
               assemblyName,
               await rpcManager.call(trackId, 'CoreGetRefNames', {
-                adapterConfig: readConf<Record<string, unknown>>(
+                adapterConfig: readConfSlot<Record<string, unknown>>(
                   config,
                   'adapter',
                 ),
