@@ -14,10 +14,11 @@
 // (set per block by the renderer) — a feature spilling past a sub-region
 // boundary never draws a mid-screen marker.
 //
-// 12 vertices per instance = 4 hollow triangles (a 2-triangle "»" per edge, two
-// edges). Each edge's pair is culled to OFFSCREEN unless the rect actually
-// straddles that screen edge. Barycentric coordinates carry edge distance to the
-// fragment shader so only the outline renders (filled interior is discarded).
+// 12 vertices per instance = 4 chevrons (a 2-chevron "»" per edge, two edges),
+// each drawn as one triangle whose back edge is suppressed in the fragment shader
+// to leave an open ">". Each edge's pair is culled to OFFSCREEN unless the rect
+// actually straddles that screen edge. Barycentric coordinates carry edge
+// distance to the fragment shader so only the two apex-facing arms render.
 // To suppress noise, the marker only draws once a meaningful amount of the
 // feature is hidden: the off-screen overhang past the edge must exceed
 // CONT_MIN_OVERHANG_PX. A small feature clipped by a couple px at the edge
@@ -143,9 +144,12 @@ VsOut vs_main(ContinuationInstance inst, uint vid : SV_VertexID) {
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  // Hollow outline via barycentric edge distance.  fwidth converts the
-  // barycentric gradient to pixel units so the line width is screen-stable.
-  float minBary = min(fragIn.bary.x, min(fragIn.bary.y, fragIn.bary.z));
+  // Open chevron (">") via barycentric edge distance: draw only the two arm
+  // edges (bary.y≈0 and bary.z≈0, the edges touching the apex vertex 0) and skip
+  // the back/base edge (bary.x≈0), so it reads as ">" not a filled triangle.
+  // fwidth converts the barycentric gradient to pixel units so the line width is
+  // screen-stable.
+  float minBary = min(fragIn.bary.y, fragIn.bary.z);
   float edgePx = minBary / fwidth(minBary);
   float edgeAlpha = 1.0 - smoothstep(0.5, 1.5, edgePx);
   return float4(fragIn.color.rgb, fragIn.color.a * edgeAlpha);

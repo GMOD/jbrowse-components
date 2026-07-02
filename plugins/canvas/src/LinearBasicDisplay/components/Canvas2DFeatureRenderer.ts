@@ -155,8 +155,10 @@ function drawArrows(
   }
 }
 
-// One filled triangle pointing toward `dir` (+1 right, -1 left), apex at apexX.
-function strokeTriangle(
+// One open chevron (">"/"<") pointing toward `dir` (+1 right, -1 left), apex at
+// apexX. Two base corners join at the apex with no back edge, so it reads as a
+// ">" not a filled triangle.
+function strokeChevron(
   ctx: Ctx2D,
   apexX: number,
   dir: number,
@@ -165,14 +167,13 @@ function strokeTriangle(
 ) {
   const baseX = apexX - dir * CONT_TRI_W_PX
   ctx.beginPath()
-  ctx.moveTo(apexX, cy)
-  ctx.lineTo(baseX, cy - halfH)
+  ctx.moveTo(baseX, cy - halfH)
+  ctx.lineTo(apexX, cy)
   ctx.lineTo(baseX, cy + halfH)
-  ctx.closePath()
   ctx.stroke()
 }
 
-// "Feature keeps going" double-arrow (»/«) pinned at a screen edge for any rect
+// "Feature keeps going" double-chevron (»/«) pinned at a screen edge for any rect
 // that runs past the visible block region. Mirrors continuation.slang.
 function drawContinuation(
   ctx: Ctx2D,
@@ -227,7 +228,7 @@ function drawContinuation(
           const anchorX =
             scissorRight - CONT_EDGE_MARGIN_PX - CONT_TRI_GAP_PX * p
           const apexX = anchorX - CONT_TRI_W_PX * (1 - strandMatchesEdge)
-          strokeTriangle(ctx, apexX, effectiveStrand, cy, halfH)
+          strokeChevron(ctx, apexX, effectiveStrand, cy, halfH)
         }
       }
       if (offLeft) {
@@ -237,7 +238,7 @@ function drawContinuation(
           const anchorX =
             scissorLeft + CONT_EDGE_MARGIN_PX + CONT_TRI_GAP_PX * p
           const apexX = anchorX + CONT_TRI_W_PX * (1 - strandMatchesEdge)
-          strokeTriangle(ctx, apexX, effectiveStrand, cy, halfH)
+          strokeChevron(ctx, apexX, effectiveStrand, cy, halfH)
         }
       }
     }
