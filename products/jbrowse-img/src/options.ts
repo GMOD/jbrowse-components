@@ -293,6 +293,7 @@ export function buildHelp(
   return [
     `Usage: ${scriptName} [options]`,
     `       ${scriptName} <${subcommandNames.join('|')}> [options]`,
+    `       ${scriptName} list [hub] [filter]`,
     '',
     'Options:',
     ...formatOpts(optionDefs, pad),
@@ -305,6 +306,8 @@ export function buildHelp(
     `Track options: ${trackTypes.map(t => `--${t}`).join(', ')}`,
     '',
     `Comparative subcommands (run "${scriptName} dotplot --help"): ${subcommandNames.join(', ')}`,
+    '',
+    `Discovery: "${scriptName} list" lists genomes.jbrowse.org assemblies; "${scriptName} list <hub> [filter]" lists a hub's tracks`,
   ].join('\n')
 }
 

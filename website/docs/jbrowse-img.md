@@ -138,10 +138,23 @@ jb2export --hub hg19 --track ncbiRefSeqCurated --loc BRCA1 --out out.svg
 `1:1,000,000-1,100,000`, or `all`); a name that isn't a locstring is looked up
 in the index and the view jumps to the top hit.
 
-Browse [genomes.jbrowse.org](https://genomes.jbrowse.org) to find assembly names
-and trackIds. `--config` also accepts a URL, so you can point at any hosted
-JBrowse `config.json` the same way; relative data URIs inside it resolve against
-the config's location, exactly as they do in JBrowse web.
+You don't have to leave the terminal to find hub names and trackIds — the `list`
+subcommand prints them:
+
+```bash
+## every assembly on genomes.jbrowse.org (name — organism — description)
+jb2export list
+
+## every track in a hub (trackId, type, name)
+jb2export list hg19
+
+## just the tracks whose id or name matches a filter
+jb2export list hg19 refseq
+```
+
+`--config` also accepts a URL, so you can point at any hosted JBrowse
+`config.json` the same way; relative data URIs inside it resolve against the
+config's location, exactly as they do in JBrowse web.
 
 ## Output formats
 
@@ -824,6 +837,7 @@ subcommand's options. The complete output:
 ```
 Usage: jb2export [options]
        jb2export <dotplot|synteny|circular> [options]
+       jb2export list [hub] [filter]
 
 Options:
   --fasta           Path to indexed FASTA file
@@ -866,6 +880,8 @@ Examples:
 Track options: --bam, --cram, --bigwig, --vcfgz, --gffgz, --hic, --bigbed, --bedgz
 
 Comparative subcommands (run "jb2export dotplot --help"): dotplot, synteny, circular
+
+Discovery: "jb2export list" lists genomes.jbrowse.org assemblies; "jb2export list <hub> [filter]" lists a hub's tracks
 
 Usage: jb2export dotplot [options]
 

@@ -9,6 +9,7 @@ import {
   syntenyTrackTypes,
   trackTypes,
 } from './index.ts'
+import { runList } from './list.ts'
 import { modeDescriptors, subcommandMode, subcommandTokens } from './modes.ts'
 import {
   buildHelp,
@@ -55,9 +56,14 @@ async function main() {
   const mode = isSubcommand ? subcommandMode(first) : undefined
   const args = isSubcommand ? argv.slice(1) : argv
 
-  if (isSubcommand && !mode) {
+  // `list` is a text-only discovery command (no rendering), so it's handled
+  // ahead of the render path: `list` prints hosted assemblies, `list <hub>
+  // [filter]` prints that hub's tracks.
+  if (first === 'list') {
+    console.log(await runList(argv.slice(1)))
+  } else if (isSubcommand && !mode) {
     console.error(
-      `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}`,
+      `Unknown subcommand "${first}". Known subcommands: ${subcommandTokens.join(', ')}, list`,
     )
     process.exit(1)
   } else if (args.includes('--help') || args.includes('-h')) {
