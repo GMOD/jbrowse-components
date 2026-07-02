@@ -77,37 +77,34 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             </text>
           )
         })}
-      {ticks.map(({ tick, alongPx: x }, idx) =>
-        x > 0 && x < width ? (
-          <line
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
-            key={`line-${tick.refName}-${tick.base}-${idx}`}
-            x1={x}
-            x2={x}
-            y1={0}
-            y2={tickLen({ tick, alongPx: x })}
-            strokeWidth={1}
-            {...stroke}
-          />
-        ) : null,
-      )}
-      {ticks.map(({ tick, alongPx: x }, idx) =>
-        tick.type === 'major' && x > 10 && x < width ? (
-          <text
-            x={x - 7}
-            y={0}
-            transform={`rotate(${htextRotation},${x},0)`}
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
-            key={`text-${tick.refName}-${tick.base}-${idx}`}
-            fontSize={11}
-            dominantBaseline="middle"
-            textAnchor="end"
-            {...fill}
-          >
-            {tickLabel(tick, bpPerPx)}
-          </text>
-        ) : null,
-      )}
+      {ticks.map(({ tick, alongPx: x }, idx) => (
+        // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
+        <g key={`${tick.refName}-${tick.base}-${idx}`}>
+          {x > 0 && x < width ? (
+            <line
+              x1={x}
+              x2={x}
+              y1={0}
+              y2={tickLen({ tick, alongPx: x })}
+              strokeWidth={1}
+              {...stroke}
+            />
+          ) : null}
+          {tick.type === 'major' && x > 10 && x < width ? (
+            <text
+              x={x - 7}
+              y={0}
+              transform={`rotate(${htextRotation},${x},0)`}
+              fontSize={11}
+              dominantBaseline="middle"
+              textAnchor="end"
+              {...fill}
+            >
+              {tickLabel(tick, bpPerPx)}
+            </text>
+          ) : null}
+        </g>
+      ))}
       <text
         y={borderY - 12}
         x={(viewWidth - borderX) / 2}
@@ -175,35 +172,34 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
       {ticks.map(({ tick, alongPx }, idx) => {
         const y = viewHeight - alongPx
         const len = tickLen({ tick, alongPx })
-        return alongPx > 0 && alongPx < viewHeight ? (
-          <line
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
-            key={`line-${tick.refName}-${tick.base}-${idx}`}
-            y1={y}
-            y2={y}
-            x1={borderX}
-            x2={borderX - len}
-            strokeWidth={1}
-            {...stroke}
-          />
-        ) : null
+        return (
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
+          <g key={`${tick.refName}-${tick.base}-${idx}`}>
+            {alongPx > 0 && alongPx < viewHeight ? (
+              <line
+                y1={y}
+                y2={y}
+                x1={borderX}
+                x2={borderX - len}
+                strokeWidth={1}
+                {...stroke}
+              />
+            ) : null}
+            {tick.type === 'major' && alongPx > 10 && alongPx < viewHeight ? (
+              <text
+                y={y - 3}
+                x={borderX - 7}
+                textAnchor="end"
+                dominantBaseline="hanging"
+                fontSize={11}
+                {...fill}
+              >
+                {tickLabel(tick, bpPerPx)}
+              </text>
+            ) : null}
+          </g>
+        )
       })}
-      {ticks.map(({ tick, alongPx }, idx) =>
-        tick.type === 'major' && alongPx > 10 && alongPx < viewHeight ? (
-          <text
-            y={viewHeight - alongPx - 3}
-            x={borderX - 7}
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- static axis tick marks, never reorder
-            key={`text-${tick.refName}-${tick.base}-${idx}`}
-            textAnchor="end"
-            dominantBaseline="hanging"
-            fontSize={11}
-            {...fill}
-          >
-            {tickLabel(tick, bpPerPx)}
-          </text>
-        ) : null,
-      )}
       <text
         y={(viewHeight - borderY) / 2}
         x={12}

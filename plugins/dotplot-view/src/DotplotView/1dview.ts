@@ -33,34 +33,32 @@ const Dotplot1DView = Base1DView.extend(self => {
         return 1 / 50
       },
 
+      // When content is smaller than the view (zoomed out), both bounds
+      // collapse to this centered offset; otherwise min/max open up a small
+      // padded scroll range.
+      get centeredOffset() {
+        return (self.displayedRegionsTotalPx - self.width) / 2
+      },
+
       /**
        * #getter
        */
       get maxOffset() {
         const contentPx = self.displayedRegionsTotalPx
-        const viewWidth = self.width
-        // When content is smaller than view (zoomed out), center it
-        if (contentPx <= viewWidth) {
-          return (contentPx - viewWidth) / 2
-        }
-        // Otherwise allow scrolling with small padding
         const leftPadding = 10
-        return contentPx - leftPadding
+        return contentPx <= self.width
+          ? this.centeredOffset
+          : contentPx - leftPadding
       },
 
       /**
        * #getter
        */
       get minOffset() {
-        const contentPx = self.displayedRegionsTotalPx
-        const viewWidth = self.width
-        // When content is smaller than view (zoomed out), center it
-        if (contentPx <= viewWidth) {
-          return (contentPx - viewWidth) / 2
-        }
-        // Otherwise allow scrolling with small padding
         const rightPadding = 30
-        return -viewWidth + rightPadding
+        return self.displayedRegionsTotalPx <= self.width
+          ? this.centeredOffset
+          : -self.width + rightPadding
       },
     },
     actions: {

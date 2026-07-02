@@ -1,7 +1,6 @@
 import type React from 'react'
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
 import BaseViewModel from '@jbrowse/core/pluggableElementTypes/models/BaseViewModel'
 import { TrackSelector as TrackSelectorIcon } from '@jbrowse/core/ui/Icons'
 import {
@@ -46,13 +45,8 @@ import type { DotplotDisplayModel } from '../DotplotDisplay/stateModelFactory.ts
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { RpcStatus } from '@jbrowse/core/util'
-import type { Base1DViewModel } from '@jbrowse/core/util/Base1DViewModel'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
-import type {
-  IAnyStateTreeNode,
-  Instance,
-  SnapshotIn,
-} from '@jbrowse/mobx-state-tree'
+import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 import type { HighlightType } from '@jbrowse/plugin-linear-genome-view'
 
 // lazies
@@ -405,14 +399,6 @@ export default function stateModelFactory(pm: PluginManager) {
         },
         /**
          * #getter
-         * Whether to show the import form
-         */
-        get showImportForm() {
-          return !this.hasSomethingToShow || !!self.volatileError
-        },
-
-        /**
-         * #getter
          * Label for the generic loading spinner. The auto-diagonalize wait is a
          * separate render branch (DiagonalizeLoadingScreen), so this only covers
          * the plain "view not ready" case.
@@ -461,11 +447,9 @@ export default function stateModelFactory(pm: PluginManager) {
          * #method
          */
         renderProps() {
-          const session = getSession(self)
           return {
             ...getParentRenderProps(self),
             drawCigar: self.drawCigar,
-            highResolutionScaling: getConf(session, 'highResolutionScaling'),
           }
         },
 
@@ -796,14 +780,6 @@ export default function stateModelFactory(pm: PluginManager) {
           self.hview.setDisplayedRegions([])
           self.vview.setDisplayedRegions([])
         },
-        /**
-         * #action
-         */
-        setViews(arr: SnapshotIn<Base1DViewModel>[]) {
-          self.hview = cast(arr[0])
-          self.vview = cast(arr[1])
-        },
-
         /**
          * #action
          */
