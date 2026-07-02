@@ -897,6 +897,33 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
+  // Multi-sample variant display colored by consequence impact: volvox_test_vcf
+  // carries simulated SnpEff ANN annotations (test_data/volvox/annotate_variants.mjs)
+  // cycling HIGH/MODERATE/LOW/MODIFIER across records, so featureColor:
+  // 'jexl:impactColor(feature)' (the "Color cells by consequence impact" menu
+  // preset) paints a visible spread of impact colors over this window.
+  {
+    mode: 'url',
+    name: 'variants/consequence_impact',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:2950-4250',
+      tracks: [
+        {
+          trackId: 'volvox_test_vcf',
+          displaySnapshot: {
+            type: 'LinearMultiSampleVariantDisplay',
+            height: 500,
+            featureColor: 'jexl:impactColor(feature)',
+          },
+        },
+      ],
+    }),
+    readyText: 'ctgA',
+    settleMs: 4000,
+    viewportHeight: 650,
+  },
+
   // Multi-sample variant display colored by population: the 1000 Genomes phase 3
   // chr1 callset (2,504 samples) with a population samples-TSV, so the per-sample
   // rows group/color by the 26 population codes. The track config in

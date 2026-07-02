@@ -145,7 +145,7 @@ test('failed search resets input to visible location', async () => {
 
   typeAndEnter({ input, value: 'nonexistent_location_xyz123' })
 
-  await findByText(/Unknown feature or sequence/, ...opts)
+  await findByText(/No results found/, ...opts)
 
   await waitFor(() => {
     expect(input.value).toBe(originalValue)

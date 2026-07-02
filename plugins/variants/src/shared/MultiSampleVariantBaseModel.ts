@@ -415,10 +415,14 @@ export default function MultiSampleVariantBaseModelF(
         /**
          * #getter
          * Optional per-variant cell color (jexl string or CSS color) applied to
-         * alt-carrying cells; '' means default genotype coloring.
+         * alt-carrying cells; '' means default genotype coloring. Reads the raw
+         * config value directly (not `getConf`, which evaluates a `jexl:...`
+         * string immediately with no `feature` bound) — this crosses the RPC
+         * boundary as-is and is evaluated once per feature in the worker (see
+         * `makeFeatureColor` in `executeVariantCellData.ts`).
          */
         get featureColor(): string {
-          return getConf(self, 'featureColor')
+          return self.configuration.featureColor
         },
 
         get featureWidgetType() {
