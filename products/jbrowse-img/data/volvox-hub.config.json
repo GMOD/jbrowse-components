@@ -1,0 +1,39 @@
+{
+  "assemblies": [
+    {
+      "name": "volvox",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "volvox-refseq",
+        "adapter": {
+          "type": "IndexedFastaAdapter",
+          "fastaLocation": { "localPath": "volvox/volvox.fa" },
+          "faiLocation": { "localPath": "volvox/volvox.fa.fai" }
+        }
+      }
+    }
+  ],
+  "tracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "volvox-genes",
+      "name": "Volvox genes",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": { "localPath": "volvox/volvox.sort.gff3.gz" },
+        "index": { "location": { "localPath": "volvox/volvox.sort.gff3.gz.tbi" } }
+      }
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "volvox-coverage",
+      "name": "Volvox coverage",
+      "assemblyNames": ["volvox"],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": { "localPath": "volvox/volvox-sorted.bam.coverage.bw" }
+      }
+    }
+  ]
+}
