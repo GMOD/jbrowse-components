@@ -8,7 +8,9 @@ import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 // The "Replace current view" / "Open in new view" pair, shared by the dialog
-// footer (acting on all transcripts) and each transcript table row.
+// footer (acting on all transcripts) and each transcript table row. When
+// `soloFeatureId` is set the resulting view's track (found by `trackId`) is
+// isolated to that feature.
 const IntronActionButtons = observer(function IntronActionButtons({
   view,
   transcripts,
@@ -17,6 +19,8 @@ const IntronActionButtons = observer(function IntronActionButtons({
   flip,
   canLaunchView,
   handleClose,
+  trackId,
+  soloFeatureId,
 }: {
   view: LinearGenomeViewModel
   transcripts: Feature[]
@@ -25,6 +29,8 @@ const IntronActionButtons = observer(function IntronActionButtons({
   flip: boolean
   canLaunchView: boolean
   handleClose: () => void
+  trackId: string
+  soloFeatureId: string | undefined
 }) {
   const disabled = windowSize === undefined
   return (
@@ -45,6 +51,8 @@ const IntronActionButtons = observer(function IntronActionButtons({
                   assembly,
                   padding: windowSize,
                   flip,
+                  trackId,
+                  soloFeatureId,
                 })
               },
               handleClose,
@@ -71,6 +79,8 @@ const IntronActionButtons = observer(function IntronActionButtons({
                     assembly,
                     padding: windowSize,
                     flip,
+                    trackId,
+                    soloFeatureId,
                   }),
                 handleClose,
               )

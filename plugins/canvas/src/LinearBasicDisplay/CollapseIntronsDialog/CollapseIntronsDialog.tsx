@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogContentText,
   FormControlLabel,
+  FormGroup,
 } from '@mui/material'
 import { isObservableArray } from 'mobx'
 import { observer } from 'mobx-react'
@@ -38,20 +39,28 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
   transcripts,
   assembly,
   handleClose,
+  featureId,
+  trackId,
 }: {
   view: LinearGenomeViewModel
   transcripts: Feature[]
   assembly: Assembly
   handleClose: () => void
+  featureId: string
+  trackId: string
 }) {
   const { classes } = useStyles()
   const [showAll, setShowAll] = useState(false)
   // default to flipping for a minus-strand gene so it reads 5'->3'
   const [flip, setFlip] = useState(transcripts[0]?.get('strand') === -1)
+  // opt-in: when checked, the resulting view's track is isolated to this gene
+  // so it isn't cluttered by other features overlapping the same locus
+  const [soloOnly, setSoloOnly] = useState(false)
   const [windowSize, setWindowSize] = useState<number | undefined>(
     DEFAULT_WINDOW_SIZE,
   )
   const canLaunchView = isObservableArray(getSession(view).views)
+  const soloFeatureId = soloOnly ? featureId : undefined
 
   return (
     <Dialog
@@ -85,17 +94,30 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           errorText="Must be a non-negative number"
           className={classes.windowSizeField}
         />
-        <FormControlLabel
-          control={
-            <Checkbox
-              checked={flip}
-              onChange={event => {
-                setFlip(event.target.checked)
-              }}
-            />
-          }
-          label="Reverse region order (read minus-strand gene 5'→3')"
-        />
+        <FormGroup>
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={flip}
+                onChange={event => {
+                  setFlip(event.target.checked)
+                }}
+              />
+            }
+            label="Reverse region order (read minus-strand gene 5'→3')"
+          />
+          <FormControlLabel
+            control={
+              <Checkbox
+                checked={soloOnly}
+                onChange={event => {
+                  setSoloOnly(event.target.checked)
+                }}
+              />
+            }
+            label="Show only this feature (hide others in the track)"
+          />
+        </FormGroup>
         {transcripts.length > 1 ? (
           <Button
             className={classes.showAllButton}
@@ -115,6 +137,8 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
             flip={flip}
             canLaunchView={canLaunchView}
             handleClose={handleClose}
+            trackId={trackId}
+            soloFeatureId={soloFeatureId}
           />
         ) : null}
       </DialogContent>
@@ -127,6 +151,8 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           flip={flip}
           canLaunchView={canLaunchView}
           handleClose={handleClose}
+          trackId={trackId}
+          soloFeatureId={soloFeatureId}
         />
         <Button
           onClick={() => {

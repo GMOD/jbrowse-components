@@ -1,7 +1,7 @@
 import { lazy } from 'react'
 
-import { getConf } from '@jbrowse/core/configuration'
-import { getSession } from '@jbrowse/core/util'
+import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import HeightIcon from '@mui/icons-material/Height'
@@ -271,9 +271,13 @@ export default function stateModelFactory(
                   ? session.assemblyManager.get(assemblyName)
                   : undefined
                 if (assembly) {
+                  const trackId = readConfObject(
+                    getContainingTrack(self).configuration,
+                    'trackId',
+                  )
                   session.queueDialog(handleClose => [
                     CollapseIntronsDialog,
-                    { view, transcripts, handleClose, assembly },
+                    { view, transcripts, handleClose, assembly, featureId, trackId },
                   ])
                 }
               },

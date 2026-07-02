@@ -64,6 +64,8 @@ const TranscriptTable = observer(function TranscriptTable({
   flip,
   canLaunchView,
   handleClose,
+  trackId,
+  soloFeatureId,
 }: {
   transcripts: Feature[]
   view: LinearGenomeViewModel
@@ -72,6 +74,8 @@ const TranscriptTable = observer(function TranscriptTable({
   flip: boolean
   canLaunchView: boolean
   handleClose: () => void
+  trackId: string
+  soloFeatureId: string | undefined
 }) {
   const { classes } = useStyles()
   const rows = buildRows(transcripts)
@@ -106,6 +110,8 @@ const TranscriptTable = observer(function TranscriptTable({
                   flip={flip}
                   canLaunchView={canLaunchView}
                   handleClose={handleClose}
+                  trackId={trackId}
+                  soloFeatureId={soloFeatureId}
                 />
               </TableCell>
             </TableRow>
