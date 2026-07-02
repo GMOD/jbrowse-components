@@ -11,8 +11,10 @@ import type {
   GlAttributeLayout,
   PassDescriptor,
 } from '@jbrowse/render-core/hal'
-// Multi-synteny and alignments have deep import chains that hit jest module
-// resolution issues, so they are tested via their own plugin test suites instead.
+// Alignments and multi-synteny are NOT validated here: their deep import chains
+// hit jest module-resolution issues in this suite, and no equivalent
+// attribute-parity check currently exists in their own plugin suites. Their
+// generated shaders are still regenerated + diffed by the CI gen:shaders check.
 
 interface GlslAttribute {
   name: string
