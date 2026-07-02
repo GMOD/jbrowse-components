@@ -98,23 +98,37 @@ export function preprocessTrackConfigSnapshot(
  * The `addDisplayConf` action shared by every track config schema — appends a
  * display config unless one with the same displayId already exists.
  */
-// self is untyped at the config-schema action boundary (the option signature is
-// `(self: unknown) => any`), matching every other config schema's actions block.
-export function trackConfigActions(self: any) {
+interface DisplayConf {
+  type: string
+  displayId: string
+}
+
+// The config-schema action boundary types `self` as `unknown` (option signature
+// is `(self: unknown) => any`), so it can't be given a precise parameter type.
+// Narrow it once to the minimal shape the action touches, keeping the body
+// checked.
+interface TrackConfigWithDisplays {
+  displays: {
+    find(cb: (d: DisplayConf) => boolean): DisplayConf | undefined
+    push(conf: DisplayConf): number
+    [index: number]: DisplayConf
+  }
+}
+
+export function trackConfigActions(self: unknown) {
+  const { displays } = self as TrackConfigWithDisplays
   return {
-    addDisplayConf(conf: { type: string; displayId: string }) {
+    addDisplayConf(conf: DisplayConf) {
       const { type } = conf
       if (!type) {
         throw new Error('display type not specified')
       }
-      const display = self.displays.find(
-        (d: { displayId?: string }) => d.displayId === conf.displayId,
-      )
+      const display = displays.find(d => d.displayId === conf.displayId)
       if (display) {
         return display
       }
-      const length = self.displays.push(conf)
-      return self.displays[length - 1]
+      const length = displays.push(conf)
+      return displays[length - 1]
     },
   }
 }
