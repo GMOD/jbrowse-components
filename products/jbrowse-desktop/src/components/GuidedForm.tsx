@@ -12,6 +12,7 @@ import {
   adapterTypes,
   applyPrimaryFile,
   applyTwoBitFile,
+  formHasSequence,
 } from './util.ts'
 
 import type { AdapterType, FormState } from './util.ts'
@@ -219,33 +220,24 @@ const GuidedForm = observer(function GuidedForm({
   const { classes } = useStyles()
   const [showAdvanced, setShowAdvanced] = useState(false)
 
+  const setField =
+    <K extends keyof FormState>(key: K) =>
+    (value: FormState[K]) => {
+      setForm(f => ({ ...f, [key]: value }))
+    }
   const setPrimaryFile = (loc: FileLocation) => {
     setForm(f => applyPrimaryFile(f, loc))
   }
   const setTwoBitFile = (loc: FileLocation) => {
     setForm(f => applyTwoBitFile(f, loc))
   }
-  const setFaiLocation = (loc: FileLocation) => {
-    setForm(f => ({ ...f, faiLocation: loc }))
-  }
-  const setGziLocation = (loc: FileLocation) => {
-    setForm(f => ({ ...f, gziLocation: loc }))
-  }
-  const setChromSizesLocation = (loc: FileLocation) => {
-    setForm(f => ({ ...f, chromSizesLocation: loc }))
-  }
-  const setRefNameAliasesLocation = (loc: FileLocation) => {
-    setForm(f => ({ ...f, refNameAliasesLocation: loc }))
-  }
-  const setCytobandsLocation = (loc: FileLocation) => {
-    setForm(f => ({ ...f, cytobandsLocation: loc }))
-  }
-  const setAssemblyDisplayName = (name: string) => {
-    setForm(f => ({ ...f, assemblyDisplayName: name }))
-  }
-  const setAdapterSelection = (type: AdapterType) => {
-    setForm(f => ({ ...f, adapterSelection: type }))
-  }
+  const setFaiLocation = setField('faiLocation')
+  const setGziLocation = setField('gziLocation')
+  const setChromSizesLocation = setField('chromSizesLocation')
+  const setRefNameAliasesLocation = setField('refNameAliasesLocation')
+  const setCytobandsLocation = setField('cytobandsLocation')
+  const setAssemblyDisplayName = setField('assemblyDisplayName')
+  const setAdapterSelection = setField('adapterSelection')
 
   return (
     <>
@@ -312,7 +304,7 @@ const GuidedForm = observer(function GuidedForm({
             className={classes.advancedButton}
             variant="outlined"
             size="small"
-            disabled={!!loading}
+            disabled={!!loading || !form.assemblyName || !formHasSequence(form)}
             onClick={() => {
               onStageAnother()
             }}

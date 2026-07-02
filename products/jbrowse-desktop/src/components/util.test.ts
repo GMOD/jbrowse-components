@@ -6,6 +6,7 @@ import {
   classifyFilename,
   clearFormFields,
   detectAdapterType,
+  formHasSequence,
   getAdapterConfig,
   getAssemblyNameFromFilename,
   getBaseAssemblyConfig,
@@ -41,6 +42,44 @@ describe('isBlank', () => {
 
   test('returns false for localPath location', () => {
     expect(isBlank(local)).toBe(false)
+  })
+})
+
+describe('formHasSequence', () => {
+  test('false for a freshly initialized form', () => {
+    expect(formHasSequence(initialFormState())).toBe(false)
+  })
+
+  test('true once a FASTA is set for a fasta adapter', () => {
+    expect(
+      formHasSequence({ ...initialFormState(), fastaLocation: fasta }),
+    ).toBe(true)
+  })
+
+  test('true once a 2bit is set for TwoBitAdapter', () => {
+    expect(
+      formHasSequence({
+        ...initialFormState(),
+        adapterSelection: 'TwoBitAdapter',
+        twoBitLocation: twobit,
+      }),
+    ).toBe(true)
+  })
+
+  test('false when only a 2bit is set but a fasta adapter is selected', () => {
+    expect(
+      formHasSequence({ ...initialFormState(), twoBitLocation: twobit }),
+    ).toBe(false)
+  })
+
+  test('false when only a fasta is set but TwoBitAdapter is selected', () => {
+    expect(
+      formHasSequence({
+        ...initialFormState(),
+        adapterSelection: 'TwoBitAdapter',
+        fastaLocation: fasta,
+      }),
+    ).toBe(false)
   })
 })
 

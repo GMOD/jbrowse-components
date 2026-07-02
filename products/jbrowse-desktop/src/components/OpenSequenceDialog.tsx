@@ -9,7 +9,12 @@ import BulkForm from './BulkForm.tsx'
 import GuidedForm from './GuidedForm.tsx'
 import ModeToggle from './ModeToggle.tsx'
 import StagedAssemblies from './StagedAssemblies.tsx'
-import { buildAssemblyConf, clearFormFields, initialFormState } from './util.ts'
+import {
+  buildAssemblyConf,
+  clearFormFields,
+  formHasSequence,
+  initialFormState,
+} from './util.ts'
 
 import type { Mode } from './ModeToggle.tsx'
 import type { AssemblyAdapter, AssemblyConf } from './util.ts'
@@ -41,7 +46,8 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [loading, setLoading] = useState('')
   const [mode, setMode] = useState<Mode>('guided')
 
-  const totalToOpen = assemblyConfs.length + (form.assemblyName ? 1 : 0)
+  const formReady = !!form.assemblyName && formHasSequence(form)
+  const totalToOpen = assemblyConfs.length + (formReady ? 1 : 0)
 
   async function indexFasta(
     fastaLocation: FileLocation,
@@ -89,14 +95,10 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
 
   function handleOpen() {
     return runStaging(async () => {
-      const confs = form.assemblyName
-        ? await stageCurrentAssembly()
-        : assemblyConfs
+      const confs = formReady ? await stageCurrentAssembly() : assemblyConfs
       if (!confs.length) {
         throw new Error('No assemblies specified')
       }
-      setAssemblyConfs(confs)
-      setForm(clearFormFields)
       await onClose(confs)
     })
   }

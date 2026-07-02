@@ -201,6 +201,15 @@ export function isBlank(location: FileLocation) {
   return 'uri' in location && location.uri === ''
 }
 
+// The form can be opened only once its primary sequence file is chosen: the
+// 2bit for TwoBitAdapter, otherwise the FASTA. Secondary files (.fai/.gzi) are
+// validated later in getAdapterConfig.
+export function formHasSequence(form: FormState) {
+  return form.adapterSelection === 'TwoBitAdapter'
+    ? !isBlank(form.twoBitLocation)
+    : !isBlank(form.fastaLocation)
+}
+
 export function getFilename(location: FileLocation) {
   if ('uri' in location) {
     return location.uri.split('/').pop() ?? ''
