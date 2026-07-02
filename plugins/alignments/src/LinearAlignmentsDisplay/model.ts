@@ -66,6 +66,7 @@ import {
   computeStackedSections,
 } from './sectionLayout.ts'
 import { computeArcsRegionMap } from '../features/arcs/compute.ts'
+import { enumerateBezierPairs } from '../features/linkedReads/computeOverlay.ts'
 import { COLOR_SCHEMES, isModificationScheme } from '../shared/colorSchemes.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
 import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
@@ -462,7 +463,15 @@ export default function stateModelFactory(
           // Region index → grouped worker result. Ungrouped fetches store a
           // single group (key ''); grouping (Stage 5) stores N. Every reader
           // iterates `.groups`, so the ungrouped path is the one-group case.
-          rpcDataMap: observable.map<number, GroupedAlignmentsResult>(),
+          // Shallow (`deep: false`): entries are whole worker results (nested
+          // plain objects wrapping large typed arrays) that are only ever
+          // replaced via `.set`/`.delete`, never mutated in place. Deep
+          // observability would recursively wrap every nested object/array on
+          // insert and tax every property access (`getObservablePropValue_`) in
+          // the layout/draw hot loops for zero benefit.
+          rpcDataMap: observable.map<number, GroupedAlignmentsResult>(undefined, {
+            deep: false,
+          }),
           /**
            * #volatile
            * pileup vertical scroll offset in px. Also read by the
@@ -873,6 +882,7 @@ export default function stateModelFactory(
             this.colorLegendCategories,
             this.colorPalette,
             self.visibleModifications,
+            self.colorTagMap,
           )
         },
 
@@ -1256,6 +1266,25 @@ export default function stateModelFactory(
 
         /**
          * #getter
+         * Scroll/pan-invariant half of the bezier connection overlay: the linked
+         * pairs of each section, resolved once per relayout. The read grouping +
+         * connection resolution (`enumerateBezierPairs`) is the allocation-heavy
+         * step; memoizing it here (this getter never reads `scrollTop`) keeps a
+         * scroll frame down to the cheap per-pair screen projection in
+         * `computePileupBezierArcsFromModel`. Empty when the overlay is off.
+         */
+        get bezierPairSections() {
+          return self.showBezierConnections
+            ? this.renderSections.map(sec => ({
+                topOffset: sec.topOffset,
+                pileupHeight: sec.pileupHeight,
+                pairs: enumerateBezierPairs(sec.laidOutPileupMap),
+              }))
+            : []
+        },
+
+        /**
+         * #getter
          * Per-section sashimi band placement, in stacking order. Each entry pairs
          * a group's raw data (sashimi counts live per-group) with the
          * content-space tops of *both* sub-bands: `coverageOverlayTop` for arcs
@@ -1386,7 +1415,10 @@ export default function stateModelFactory(
               : self.featureIdUnderMouse
                 ? [self.featureIdUnderMouse]
                 : []
-          return view.initialized
+          // Reading `readIdIndexMap` forces its (per-read) build over the whole
+          // fetched dataset — deferred until something is actually hovered /
+          // highlighted so it stays off the initial-render path.
+          return view.initialized && ids.length > 0
             ? computeHighlightBoxes({
                 view,
                 sections: this.renderSections,

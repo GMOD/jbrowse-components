@@ -6,7 +6,10 @@ import {
 } from '@jbrowse/alignments-core'
 
 import { LINKED_READ_COLOR_PAIR_RR } from './compute.ts'
-import { computePileupBezierArcs } from './computeOverlay.ts'
+import {
+  computePileupBezierArcs,
+  enumerateBezierPairs,
+} from './computeOverlay.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
@@ -87,7 +90,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     })
     const arcs = computePileupBezierArcs({
       ...baseOpts,
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -108,7 +111,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     })
     const arcs = computePileupBezierArcs({
       ...baseOpts,
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -132,7 +135,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     const arcs = computePileupBezierArcs({
       ...baseOpts,
       displayedRegions: [{ refName: 'chr1', reversed: true }],
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -153,7 +156,7 @@ describe('computePileupBezierArcs — split-read tangent direction', () => {
     })
     const arcs = computePileupBezierArcs({
       ...baseOpts,
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs[0]!.d).not.toMatch(/NaN/)
   })
@@ -181,7 +184,7 @@ describe('computePileupBezierArcs — paired tangent direction', () => {
     })
     const arcs = computePileupBezierArcs({
       ...baseOpts,
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(1)
     const { sx1, cp1x, cp2x, sx2 } = controlPoints(arcs[0]!.d)
@@ -209,7 +212,7 @@ describe('computePileupBezierArcs — exclusions', () => {
     })
     const arcs = computePileupBezierArcs({
       ...baseOpts,
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
     })
     expect(arcs).toHaveLength(0)
   })
@@ -227,7 +230,7 @@ describe('computePileupBezierArcs — exclusions', () => {
     })
     const arcs = computePileupBezierArcs({
       ...baseOpts,
-      laidOutPileupMap: new Map([[0, data]]),
+      pairs: enumerateBezierPairs(new Map([[0, data]])),
       bpToScreenX: () => undefined,
     })
     expect(arcs).toHaveLength(0)

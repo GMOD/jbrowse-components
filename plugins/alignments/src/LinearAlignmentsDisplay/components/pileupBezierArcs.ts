@@ -21,9 +21,9 @@ export function computePileupBezierArcsFromModel(
   view: LinearGenomeViewModel,
   scrollTop: number,
 ): PileupArc[] {
-  if (!model.showBezierConnections) {
-    return []
-  }
+  // `bezierPairSections` is [] when the overlay is off and memoizes the
+  // scroll-invariant pair enumeration, so a scroll frame only re-runs the
+  // screen projection below.
   const bpToScreenX = makeBpToScreenX(view)
   const scroll = {
     isGrouped: model.isGrouped,
@@ -31,11 +31,11 @@ export function computePileupBezierArcsFromModel(
     canvasHeight: model.height,
   }
   const result: PileupArc[] = []
-  for (const sec of model.renderSections) {
+  for (const sec of model.bezierPairSections) {
     const bottom = sectionBandBottom(sec.topOffset, sec.pileupHeight, scroll)
     result.push(
       ...computePileupBezierArcs({
-        laidOutPileupMap: sec.laidOutPileupMap,
+        pairs: sec.pairs,
         displayedRegions: view.displayedRegions,
         bpToScreenX,
         featureHeight: model.featureHeight,

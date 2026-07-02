@@ -7,7 +7,7 @@ import { iterLinkedPairs } from './compute.ts'
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import { linkedReadColorPalette } from '../../LinearAlignmentsDisplay/shaders/palettes.ts'
 
-import type { ReadEntry } from './compute.ts'
+import type { LinkedPair, ReadEntry } from './compute.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 
 // Cull by endpoint Y. A same-row connection is bowed up by a small fixed apex
@@ -24,8 +24,19 @@ export interface PileupArc {
   id2: string
 }
 
+// Enumerate the linked pairs of a laid-out region map: the scroll- and
+// pan-invariant half of the overlay. Only the read grouping + connection
+// resolution live here, so a model getter can memoize it (recompute on relayout
+// only) while the per-frame screen projection stays in `computePileupBezierArcs`
+// — the name→reads Map is no longer rebuilt on every scroll frame.
+export function enumerateBezierPairs(
+  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>,
+): LinkedPair[] {
+  return [...iterLinkedPairs(laidOutPileupMap)]
+}
+
 interface Opts {
-  laidOutPileupMap: ReadonlyMap<number, PileupDataResult>
+  pairs: LinkedPair[]
   displayedRegions: { refName: string; reversed?: boolean }[]
   bpToScreenX: (refName: string, bp: number) => number | undefined
   featureHeight: number
@@ -37,10 +48,12 @@ interface Opts {
 
 // Bezier curves for aberrant pairs, plus straight `M..L..` paths for
 // cross-region normal pairs. Within-region normal pairs are rendered by the
-// GPU + Canvas2D pipelines and intentionally absent here.
+// GPU + Canvas2D pipelines and intentionally absent here. Projects the
+// precomputed `pairs` (see `enumerateBezierPairs`) to screen space; this is the
+// only scroll/pan-dependent half.
 export function computePileupBezierArcs(opts: Opts): PileupArc[] {
   const {
-    laidOutPileupMap,
+    pairs,
     displayedRegions,
     bpToScreenX,
     featureHeight,
@@ -61,7 +74,7 @@ export function computePileupBezierArcs(opts: Opts): PileupArc[] {
 
   const result: PileupArc[] = []
 
-  for (const { e1, e2, c } of iterLinkedPairs(laidOutPileupMap)) {
+  for (const { e1, e2, c } of pairs) {
     const sameRegion = e1.displayedRegionIndex === e2.displayedRegionIndex
     // GPU + Canvas2D pipelines own normal-orientation within-region lines.
     if (c.isNormal && sameRegion) {
