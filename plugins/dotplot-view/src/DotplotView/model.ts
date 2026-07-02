@@ -1009,9 +1009,9 @@ export default function stateModelFactory(pm: PluginManager) {
           const hpx = hview.pxToBp(hview.width / 2)
           const vpx = vview.pxToBp(vview.width / 2)
           hview.setBpPerPx(avg / ratio)
-          hview.centerAt(hpx.coord, hpx.refName, hpx.index)
+          hview.centerAt(hpx.coord0, hpx.refName, hpx.index)
           vview.setBpPerPx(avg)
-          vview.centerAt(vpx.coord, vpx.refName, vpx.index)
+          vview.centerAt(vpx.coord0, vpx.refName, vpx.index)
         },
         /**
          * #action

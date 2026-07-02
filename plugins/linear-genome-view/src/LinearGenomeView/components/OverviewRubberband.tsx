@@ -67,7 +67,7 @@ const OverviewRubberband = observer(function OverviewRubberband({
         } else {
           const click = pxToBp(overview, startX - cytobandOffset)
           if (click.refName) {
-            model.centerAt(Math.round(click.coord), click.refName, click.index)
+            model.centerAt(click.coord0, click.refName, click.index)
           } else {
             getSession(model).notify('unknown position clicked')
             console.error('unknown position clicked', click)

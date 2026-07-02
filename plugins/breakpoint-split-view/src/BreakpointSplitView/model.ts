@@ -439,7 +439,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
           const center = view.pxToBp(view.width / 2)
           view.setNewView(average, view.offsetPx)
           if (center.refName) {
-            view.centerAt(center.coord, center.refName, center.index)
+            view.centerAt(center.coord0, center.refName, center.index)
           }
         }
       },
