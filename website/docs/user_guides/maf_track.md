@@ -42,15 +42,15 @@ uncheck **Auto-switch by zoom** to pin it on at every zoom level.
 ## Color by source chromosome
 
 **Color by source chromosome** replaces the per-base coloring with a structural
-view: within each species row, the source chromosomes its blocks come from (in
-that species' own genome) are ranked by coverage and colored by that per-row
-rank — the row's main chromosome gets the primary color, and blocks from a
-different source chromosome take a contrasting accent. So a species whose blocks
-in the window come from more than one source chromosome _changes color along its
-row_ — an immediate flag for a translocation or rearrangement — while everything
-else stays one calm color (no per-scaffold rainbow). A compact legend in the
-top-right names the rank scheme (main / 2nd / 3rd source). No extra data to
-fetch.
+view. Within each species row, the source chromosomes its blocks come from (in
+that species' own genome) are ranked by coverage: the row's main chromosome gets
+the primary color, and blocks from a different source chromosome take a
+contrasting accent. A row that stays one color is collinear; a row that _changes
+color along its length_ is drawing blocks from more than one source chromosome —
+an immediate flag for a translocation or rearrangement. Ranking per row keeps
+this readable, with no per-scaffold rainbow, and a compact legend in the
+top-right names the scheme (main / 2nd / 3rd source). Like conservation, it is
+derived from the alignment with no extra data to fetch.
 
 <Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its per-row source-chromosome rank, so every row's main chromosome is the same primary color and only blocks from a different source chromosome pick up an accent — the color switches (2nd/3rd source) mark rearrangements directly."/>
 

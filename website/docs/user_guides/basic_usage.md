@@ -86,11 +86,11 @@ A circular plus (+) icon button in the "Available tracks" widget also opens the
 <Figure caption="(1) Open the 'Available tracks' widget with the button on the far left of the linear genome view. (2) The circular plus (+) icon button in the bottom right of the 'Available tracks' widget can also be used to launch the 'Add a track' form." src="/img/add_track_tracklist.png" />
 
 In the "Add a track" form, you can provide a URL or open a file from your local
-machine. Some formats require an index (BAM/CRAM and tabix-indexed files like
-VCF/GFF/BED do; BigWig/BigBed do not). For remote files, the index is inferred
-automatically when the filename follows standard conventions (e.g. `file.bam` →
-`file.bam.bai`), but must be supplied manually for local files or non-standard
-names.
+machine. Some formats require an index: BAM (BAI or CSI), CRAM (CRAI), and
+tabix-indexed files like VCF/GFF/BED (TBI or CSI) all do; BigWig/BigBed do not.
+For remote files, the index is inferred automatically when the filename follows
+standard conventions (e.g. `file.bam` → `file.bam.bai`), but must be supplied
+manually for local files or non-standard names.
 
 ## File format support
 
@@ -130,9 +130,6 @@ The following file formats are supported in core JBrowse 2:
 
 Additional data formats can be supported via plugins; check out the
 [plugin store](/plugin_store).
-
-Index types: BAM accepts BAI or CSI; CRAM requires CRAI; tabix files accept TBI
-or CSI.
 
 :::note
 
