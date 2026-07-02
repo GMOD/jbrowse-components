@@ -1,5 +1,6 @@
 import { lazy } from 'react'
 
+import { vendoredPluginNames } from '@jbrowse/core/PluginLoader'
 import { ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
 import { getSession, isElectron } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
@@ -123,7 +124,11 @@ const PluginStoreWidget = observer(function PluginStoreWidget({
               const hasWebBuild = Boolean(
                 plugin.esmUrl || plugin.url || plugin.umdUrl,
               )
+              // plugins since vendored into core (e.g. MafViewer) are dropped at
+              // load, so installing one does nothing — hide it from the store
+              const vendored = vendoredPluginNames.has(plugin.name)
               return (
+                !vendored &&
                 (isElectron || hasWebBuild) &&
                 plugin.name.toLowerCase().includes(filterText.toLowerCase())
               )

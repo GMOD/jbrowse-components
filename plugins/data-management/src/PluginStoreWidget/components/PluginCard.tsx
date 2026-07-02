@@ -2,7 +2,12 @@ import { useState } from 'react'
 
 import { pluginUrl } from '@jbrowse/core/PluginLoader'
 import { ExternalLink } from '@jbrowse/core/ui'
-import { getEnv, getSession, resolvePlugin } from '@jbrowse/core/util'
+import {
+  getEnv,
+  getSession,
+  installedVersionFromUrl,
+  resolvePlugin,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { isSessionWithSessionPlugins } from '@jbrowse/core/util/types'
 import AddIcon from '@mui/icons-material/Add'
@@ -51,11 +56,19 @@ const PluginCard = observer(function PluginCard({
   // resolve the plugin build that matches this JBrowse version, and install
   // that concrete (version-pinned) definition rather than the raw store entry
   const resolved = resolvePlugin(plugin, session.version)
-  const resolvedUrl = pluginUrl(resolved.definition)
   const installDef = { ...resolved.definition, name: plugin.name }
 
-  const isInstalled = runtimePluginDefinitions.some(
-    d => pluginUrl(d) === resolvedUrl,
+  // installed-check is by packageName, not the resolved url: once a newer
+  // compatible version is published the resolved url changes, and a url match
+  // would flip the card back to "Install" and let the user add a second copy of
+  // the same plugin (same UMD global name) alongside the one already installed,
+  // which fails to load with duplicate pluggable-element registrations. Moving
+  // to a newer version is handled separately in the installed-plugins list.
+  const { packageName } = plugin
+  const isInstalled = runtimePluginDefinitions.some(d =>
+    packageName === undefined
+      ? pluginUrl(d) === pluginUrl(resolved.definition)
+      : installedVersionFromUrl(pluginUrl(d), packageName) !== undefined,
   )
   const [tempDisabled, setTempDisabled] = useState(false)
   const { adminMode, jbrowse } = session

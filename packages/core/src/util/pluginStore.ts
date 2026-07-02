@@ -93,24 +93,18 @@ export function resolvePlugin(
   )
   const best = matching.length > 0 ? highestVersion(matching) : undefined
 
-  return versions.length === 0
-    ? {
-        compatible: true,
-        supportedRanges,
-        definition: definitionFrom(plugin.name, plugin),
-      }
-    : best
-      ? {
-          compatible: true,
-          pluginVersion: best.pluginVersion,
-          supportedRanges,
-          definition: definitionFrom(plugin.name, best),
-        }
-      : {
-          compatible: false,
-          supportedRanges,
-          definition: definitionFrom(plugin.name, plugin),
-        }
+  // no declared versions → the top-level url covers every JBrowse version; with
+  // versions declared, compatible only if one of their ranges matched.
+  const compatible = versions.length === 0 || best !== undefined
+  // install the matched version's pinned build; when nothing matched (or nothing
+  // was declared) fall back to the plugin's top-level definition.
+  const source = best ?? plugin
+  return {
+    compatible,
+    pluginVersion: best?.pluginVersion,
+    supportedRanges,
+    definition: definitionFrom(plugin.name, source),
+  }
 }
 
 // The store mints version-pinned install urls as
