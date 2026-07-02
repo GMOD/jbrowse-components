@@ -268,55 +268,28 @@ export async function openVolvoxGenome(
   await clickButton(driver, 'Open new genome')
   await delay(1000)
 
-  const assemblyInput = await driver.wait(
-    until.elementLocated(By.css('input[type="text"]')),
+  // The dialog opens on a drop zone. Switch to URL entry and paste the FASTA
+  // plus its .fai index, one per line. The pane auto-detects the format
+  // (IndexedFastaAdapter) and derives the assembly name ("volvox") from the
+  // filename, so no manual name/format entry is needed.
+  await clickButton(driver, 'Open from a URL')
+  await delay(500)
+
+  // MUI's multiline TextField renders a hidden shadow textarea for sizing; the
+  // editable one is the non-aria-hidden textarea.
+  const urlInput = await driver.wait(
+    until.elementLocated(By.css('textarea:not([aria-hidden="true"])')),
     10000,
   )
-  await assemblyInput.sendKeys('volvox')
+  await urlInput.click()
+  await urlInput.sendKeys(`${fastaUrl}\n${fastaUrl}.fai`)
+  await delay(1000)
 
-  // The "FASTA with index" format has two file selectors (FASTA + .fai index),
-  // both required — the index is NOT auto-derived. Switch each to URL mode and
-  // fill it. The index url is <fasta>.fai.
-  const urlToggleButtons = await driver.findElements(
-    By.xpath("//button[contains(., 'URL')]"),
+  const submitBtn = await driver.wait(
+    until.elementLocated(By.css('[data-testid="open-sequence-submit"]')),
+    10000,
   )
-  if (urlToggleButtons.length >= 1) {
-    await urlToggleButtons[0]!.click()
-    await delay(500)
-  }
-  let urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  if (urlInputs.length >= 1) {
-    await clearInput(driver, urlInputs[0]!)
-    await urlInputs[0]!.sendKeys(fastaUrl)
-  }
-  if (urlToggleButtons.length >= 2) {
-    await urlToggleButtons[1]!.click()
-    await delay(500)
-  }
-  urlInputs = await driver.findElements(By.css('[data-testid="urlInput"]'))
-  if (urlInputs.length >= 2) {
-    // The index field auto-fills with a derived name; clear it before typing
-    await clearInput(driver, urlInputs[1]!)
-    await urlInputs[1]!.sendKeys(`${fastaUrl}.fai`)
-  }
-  for (const [i, input] of urlInputs.entries()) {
-    console.log(
-      `    DEBUG: urlInput[${i}] = ${await input.getAttribute('value')}`,
-    )
-  }
-
-  let submitButton = await driver.findElements(
-    By.css('[data-testid="open-sequence-submit"]'),
-  )
-  if (submitButton.length === 0) {
-    submitButton = [
-      await driver.wait(
-        until.elementLocated(By.xpath("//button[contains(., 'Submit')]")),
-        10000,
-      ),
-    ]
-  }
-  const submitBtn = submitButton[0]!
+  await driver.wait(until.elementIsEnabled(submitBtn), 10000)
   await driver.executeScript('arguments[0].scrollIntoView(true);', submitBtn)
   await delay(500)
   await driver.executeScript('arguments[0].click();', submitBtn)

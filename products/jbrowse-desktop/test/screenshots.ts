@@ -95,10 +95,10 @@ async function main(): Promise<void> {
   await delay(1500) // let panels settle
   await capture(driver, 'desktop-landing.png')
 
-  // "Open genome(s)" dialog (custom genome from files/URLs)
+  // "Open a genome" dialog (custom genome from files/URLs)
   console.log('Capturing open-genome dialog...')
   await clickButton(driver, 'Open new genome')
-  await findByText(driver, 'Open genome(s)')
+  await findByText(driver, 'Open a genome')
   await delay(1000)
   await capture(driver, 'desktop-open-genome.png')
   await cleanupUI(driver)
