@@ -141,7 +141,6 @@ const valueComponents: Record<string, React.ComponentType<any>> = {
   stringEnum: StringEnumEditor,
   boolean: BooleanEditor,
   frozen: JsonEditor,
-  configRelationships: JsonEditor,
 }
 
 const SlotEditor = observer(function SlotEditor({

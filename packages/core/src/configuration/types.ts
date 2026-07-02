@@ -2,7 +2,6 @@ import type {
   ConfigurationSchemaOptions,
   ConfigurationSchemaType,
 } from './configurationSchema.ts'
-import type ConfigSlot from './configurationSlot.ts'
 import type {
   ISimpleType,
   IStateTreeNode,
@@ -98,8 +97,6 @@ export type ConfigurationSlotValue<SCHEMA, K extends string> =
  */
 export type AnyConfigurationSchemaType = ConfigurationSchemaType<any, any>
 export type AnyConfigurationModel = Instance<AnyConfigurationSchemaType>
-export type AnyConfigurationSlotType = ReturnType<typeof ConfigSlot>
-export type AnyConfigurationSlot = Instance<AnyConfigurationSlotType>
 
 /** any configuration model, or snapshot thereof */
 export type AnyConfiguration =

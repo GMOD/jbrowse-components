@@ -1,19 +1,40 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
+import { isCallbackValue } from './slotValueUtils.ts'
+import { stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 
+import type { JexlInstance } from '../util/jexlStrings.ts'
 import type { IAnyType } from '@jbrowse/mobx-state-tree'
 
-const typeModels: Record<string, IAnyType> = {
-  stringArray: types.array(types.string),
-  stringArrayMap: types.map(types.array(types.string)),
-  numberMap: types.map(types.number),
-  boolean: types.boolean,
+interface SlotTypeSpec {
+  /** MST type of the slot's value */
+  model: IAnyType
+  /**
+   * value substituted when the config editor converts a callback back to a
+   * fixed value but the slot's own default is itself a callback (see
+   * `toFixedValue`). Omitted for `maybeNumber`, whose fixed form is genuinely
+   * "unset" — that conversion path throws instead.
+   */
+  fallbackDefault?: unknown
+}
+
+// Single source of truth for the builtin slot type names, pairing each with its
+// MST value type and its editor fallback default. Keeping model + fallback in
+// one table means adding a slot type is one edit and can't half-register.
+const slotTypes: Record<string, SlotTypeSpec> = {
+  stringArray: { model: types.array(types.string), fallbackDefault: [] },
+  stringArrayMap: {
+    model: types.map(types.array(types.string)),
+    fallbackDefault: {},
+  },
+  numberMap: { model: types.map(types.number), fallbackDefault: {} },
+  boolean: { model: types.boolean, fallbackDefault: true },
   // a color is just a string; the editor picks a color widget off the slot's
   // `type` metadata, and values are accepted unvalidated (CSS names, hex, jexl)
-  color: types.string,
-  integer: types.integer,
-  number: types.number,
+  color: { model: types.string, fallbackDefault: 'black' },
+  integer: { model: types.integer, fallbackDefault: 1 },
+  number: { model: types.number, fallbackDefault: 1 },
   // a number that may be unset (`undefined`), so a display can distinguish "not
   // explicitly set" (fall back to a computed/auto value) from an explicit
   // number — e.g. a drag-resized track height. Defaults to `undefined`.
@@ -26,11 +47,14 @@ const typeModels: Record<string, IAnyType> = {
   // theme" (see THEME_DERIVED_COLOR), keeping a concrete string flowing to every
   // consumer (GPU packing, jexl, the editor) instead of forcing each to defend
   // against `undefined`.
-  maybeNumber: types.maybe(types.number),
-  string: types.string,
-  text: types.string,
-  fileLocation: FileLocation,
-  frozen: types.frozen(),
+  maybeNumber: { model: types.maybe(types.number) },
+  string: { model: types.string, fallbackDefault: '' },
+  text: { model: types.string, fallbackDefault: '' },
+  fileLocation: {
+    model: FileLocation,
+    fallbackDefault: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
+  },
+  frozen: { model: types.frozen(), fallbackDefault: {} },
 }
 
 const JexlStringType = types.refinement('JexlString', types.string, str =>
@@ -73,7 +97,7 @@ export default function ConfigSlot({
   if (!type) {
     throw new Error('type name required')
   }
-  const valueModel = model ?? typeModels[type]
+  const valueModel = model ?? slotTypes[type]?.model
   if (!valueModel) {
     throw new Error(
       `no builtin config slot type "${type}", and no 'model' param provided`,
@@ -90,4 +114,48 @@ export default function ConfigSlot({
     types.union(JexlStringType, valueModel),
     defaultValue,
   )
+}
+
+/**
+ * New value when converting a fixed-value slot to a jexl callback. Already-
+ * callback values are returned unchanged.
+ *
+ * A single JSON.stringify covers every type: `jexl:${42}` and
+ * `jexl:${JSON.stringify(42)}` are identical for numbers/booleans, and the rest
+ * need the quoting/serialization anyway.
+ */
+export function toCallbackValue(value: unknown) {
+  return isCallbackValue(value) ? value : `jexl:${JSON.stringify(value)}`
+}
+
+/**
+ * New value when converting a jexl callback back to a fixed value: try
+ * evaluating with no args, else fall back to the slot default (and to the slot
+ * type's `fallbackDefault` if the default is itself a callback).
+ */
+export function toFixedValue(
+  value: unknown,
+  type: string,
+  defaultValue: unknown,
+  jexl?: JexlInstance,
+) {
+  if (!isCallbackValue(value)) {
+    return value
+  }
+  try {
+    const result = stringToJexlExpression(value, jexl).eval()
+    if (result !== undefined) {
+      return result
+    }
+  } catch {
+    /* fall through to default */
+  }
+  if (isCallbackValue(defaultValue)) {
+    const spec = slotTypes[type]
+    if (spec?.fallbackDefault === undefined) {
+      throw new Error(`no fallbackDefault defined for type ${type}`)
+    }
+    return spec.fallbackDefault
+  }
+  return defaultValue
 }

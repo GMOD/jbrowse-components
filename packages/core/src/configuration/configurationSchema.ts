@@ -29,8 +29,6 @@ import type { IAnyType } from '@jbrowse/mobx-state-tree'
 export type {
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  AnyConfigurationSlot,
-  AnyConfigurationSlotType,
 } from './types.ts'
 
 export interface ConfigurationSchemaDefinition {

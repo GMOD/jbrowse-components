@@ -8,20 +8,14 @@ export type {
   AnyConfiguration,
   AnyConfigurationModel,
   AnyConfigurationSchemaType,
-  AnyConfigurationSlot,
-  AnyConfigurationSlotType,
   ConfigurationSchemaForModel,
   ConfigurationSlotName,
   ConfigurationSlotValue,
 } from './types.ts'
 
 export * from './util.ts'
-export {
-  evaluateJexl,
-  isCallbackValue,
-  toCallbackValue,
-  toFixedValue,
-} from './slotValueUtils.ts'
+export { evaluateJexl, isCallbackValue } from './slotValueUtils.ts'
+export { toCallbackValue, toFixedValue } from './configurationSlot.ts'
 export {
   getSlotDefinition,
   isConfigurationSlot,
