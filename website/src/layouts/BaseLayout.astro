@@ -42,6 +42,12 @@ const navActive = styles.navActive!
     <meta name="twitter:image" content={ogImage} />
     <link rel="canonical" href={Astro.url.href} />
     <link rel="sitemap" href={`${baseUrl}/sitemap.xml`} />
+    <link
+      rel="alternate"
+      type="application/rss+xml"
+      title="JBrowse Blog"
+      href={`${baseUrl}/rss.xml`}
+    />
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
