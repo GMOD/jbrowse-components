@@ -16,6 +16,7 @@ import FeatureTooltip from './FeatureTooltip.tsx'
 import IsoformCollapseNotice from './IsoformCollapseNotice.tsx'
 import OverflowIndicator from './OverflowIndicator.tsx'
 import PeptideCanvas from './PeptideCanvas.tsx'
+import SoloSelectionChip from './SoloSelectionChip.tsx'
 import { hoverTooltip, performMultiRegionHitDetection } from './hitTesting.ts'
 import {
   useFloatingLabels,
@@ -98,6 +99,10 @@ export interface LinearBasicDisplayModel {
     displayedRegionIndex: number,
   ) => void
   toggleSoloFeature: (featureId: string) => void
+  soloFeatureIdSet: ReadonlySet<string>
+  soloApplied: boolean
+  applySolo: () => void
+  clearSolo: () => void
   showContextMenuForFeature: (
     featureInfo: FlatbushItem,
     displayedRegionIndex: number,
@@ -522,6 +527,16 @@ const FeatureBody = observer(function FeatureBody({
       />
 
       <BottomRightIndicators hasOverflow={model.hasOverflow}>
+        <SoloSelectionChip
+          count={model.soloFeatureIdSet.size}
+          applied={model.soloApplied}
+          onApply={() => {
+            model.applySolo()
+          }}
+          onClear={() => {
+            model.clearSolo()
+          }}
+        />
         <IsoformCollapseNotice
           visible={model.showIsoformCollapseNotice}
           onDismiss={() => {

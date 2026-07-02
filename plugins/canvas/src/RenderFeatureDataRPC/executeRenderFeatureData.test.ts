@@ -89,4 +89,22 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
     expect(admit(feat('region', { id: 'f2' }))).toBe(true)
   })
+
+  it('hiddenFeatureIds drops features whose id() is in the set', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig(),
+      hiddenFeatureIds: ['f2'],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
+    expect(admit(feat('gene', { id: 'f2' }))).toBe(false)
+  })
+
+  it('hidden wins over solo when a feature is in both', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig(),
+      soloFeatureIds: ['f1'],
+      hiddenFeatureIds: ['f1'],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(false)
+  })
 })

@@ -30,10 +30,14 @@ import CenterFocusStrongIcon from '@mui/icons-material/CenterFocusStrong'
 import ClearAllIcon from '@mui/icons-material/ClearAll'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
+import PlaylistAddIcon from '@mui/icons-material/PlaylistAdd'
+import PlaylistRemoveIcon from '@mui/icons-material/PlaylistRemove'
 import VerticalAlignTopIcon from '@mui/icons-material/VerticalAlignTop'
 import VisibilityIcon from '@mui/icons-material/Visibility'
+import VisibilityOffIcon from '@mui/icons-material/VisibilityOff'
 import { autorun, observable, toJS, untracked } from 'mobx'
 
 import {
@@ -247,6 +251,13 @@ export default function baseStateModelFactory(
         // view (worker drops non-members). Decoupled from collection so building
         // a multi-feature set doesn't hide the features mid-build.
         soloApplied: false,
+        /**
+         * #volatile
+         */
+        // "Hide this feature" exclusion set (inverse of solo): the worker drops
+        // these from layout/drawing. Applies immediately per feature — no
+        // collect-then-apply. Volatile like the solo state.
+        hiddenFeatureIds: observable.array<string>(),
         /**
          * #volatile
          */
@@ -603,6 +614,13 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        get hiddenFeatureIdSet(): ReadonlySet<string> {
+          return new Set(self.hiddenFeatureIds)
+        },
+
+        /**
+         * #getter
+         */
         get featureWidgetType() {
           return {
             type: 'BaseFeatureWidget',
@@ -650,6 +668,12 @@ export default function baseStateModelFactory(
             soloFeatureIds:
               self.soloApplied && self.soloFeatureIds.length > 0
                 ? toJS(self.soloFeatureIds)
+                : undefined,
+            // "Hide this feature" applies immediately (no collect step), so send
+            // it whenever non-empty. A cache key, so hide/unhide refetches.
+            hiddenFeatureIds:
+              self.hiddenFeatureIds.length > 0
+                ? toJS(self.hiddenFeatureIds)
                 : undefined,
             // Structurally-serializable theme description so worker-side coloring
             // (CDS frames, stroke fallback) matches the user's active theme; the
@@ -1239,6 +1263,24 @@ export default function baseStateModelFactory(
           self.soloFeatureIds.clear()
           self.soloApplied = false
         },
+
+        /**
+         * #action
+         */
+        // Hide a single feature (add to the exclusion set). Applies immediately.
+        hideFeature(featureId: string) {
+          if (!self.hiddenFeatureIds.includes(featureId)) {
+            self.hiddenFeatureIds.push(featureId)
+          }
+        },
+
+        /**
+         * #action
+         */
+        // Bring back every hidden feature.
+        showAllHidden() {
+          self.hiddenFeatureIds.clear()
+        },
       }))
       .actions(self => ({
         /**
@@ -1278,6 +1320,20 @@ export default function baseStateModelFactory(
               self.clearSolo()
             },
           })
+        },
+
+        /**
+         * #action
+         */
+        // Reset every feature-level filter: the show-only collection, the hidden
+        // set, and the runtime "Filter by..." jexl override. Backs the track
+        // menu's "Clear filters" item.
+        clearAllFeatureFilters() {
+          self.clearSolo()
+          self.showAllHidden()
+          // Drop the runtime "Filter by..." override so the config jexlFilters
+          // default applies again (setJexlFilters is defined in a later block).
+          self.jexlFiltersSetting = undefined
         },
       }))
       .actions(self => ({
@@ -1907,6 +1963,7 @@ export default function baseStateModelFactory(
           const pinned = self.pinnedFeatureIdSet.has(featureId)
           const inSoloSet = self.soloFeatureIdSet.has(featureId)
           const soloCount = self.soloFeatureIds.length
+          const hiddenCount = self.hiddenFeatureIds.length
           return [
             {
               label: 'Open feature details',
@@ -1926,15 +1983,16 @@ export default function baseStateModelFactory(
                 self.togglePinnedFeature(featureId)
               },
             },
-            // Solo menu, driven by the collect-then-apply state:
-            //  - applied → offer to show everything again (and to drop this one)
-            //  - collecting (set non-empty) → add/remove + apply
-            //  - nothing collected → the one-shot single-feature isolate
+            // Solo menu. Applying a collected set is done from the "N selected"
+            // badge (see SoloSelectionChip), so the menu only ever offers the
+            // one-shot single isolate, add/remove-from-set, and show-all.
+            //  - applied → show everything again (and optionally drop this one)
+            //  - otherwise → the one-shot isolate + add/remove this feature
             ...(self.soloApplied
               ? [
                   {
                     label: 'Show all features',
-                    icon: FilterAltIcon,
+                    icon: FilterAltOffIcon,
                     onClick: () => {
                       self.clearSolo()
                     },
@@ -1943,7 +2001,7 @@ export default function baseStateModelFactory(
                     ? [
                         {
                           label: 'Remove this feature from view',
-                          icon: FilterAltIcon,
+                          icon: PlaylistRemoveIcon,
                           onClick: () => {
                             self.toggleSoloFeature(featureId)
                           },
@@ -1951,34 +2009,42 @@ export default function baseStateModelFactory(
                       ]
                     : []),
                 ]
-              : soloCount === 0
-                ? [
-                    {
-                      label: 'Show only this feature',
-                      icon: FilterAltIcon,
-                      onClick: () => {
-                        self.soloFeature(featureId)
-                      },
+              : [
+                  {
+                    label: 'Show only this feature',
+                    icon: FilterAltIcon,
+                    onClick: () => {
+                      self.soloFeature(featureId)
                     },
-                  ]
-                : [
-                    {
-                      label: inSoloSet
-                        ? 'Remove from show-only set'
-                        : 'Add to show-only set',
-                      icon: FilterAltIcon,
-                      onClick: () => {
-                        self.toggleSoloFeature(featureId)
-                      },
+                  },
+                  {
+                    label: inSoloSet ? 'Remove from set' : 'Add to set',
+                    icon: inSoloSet ? PlaylistRemoveIcon : PlaylistAddIcon,
+                    onClick: () => {
+                      self.toggleSoloFeature(featureId)
                     },
-                    {
-                      label: `Show only these ${soloCount} feature${soloCount > 1 ? 's' : ''}`,
-                      icon: FilterAltIcon,
-                      onClick: () => {
-                        self.applySolo()
-                      },
+                  },
+                ]),
+            {
+              label: 'Hide this feature',
+              icon: VisibilityOffIcon,
+              onClick: () => {
+                self.hideFeature(featureId)
+              },
+            },
+            // Reachable from any still-visible feature; the track menu's "Clear
+            // filters" covers the case where everything got hidden.
+            ...(hiddenCount > 0
+              ? [
+                  {
+                    label: `Show ${hiddenCount} hidden feature${hiddenCount > 1 ? 's' : ''}`,
+                    icon: VisibilityIcon,
+                    onClick: () => {
+                      self.showAllHidden()
                     },
-                  ]),
+                  },
+                ]
+              : []),
             {
               label: 'Zoom to feature',
               icon: CenterFocusStrongIcon,
@@ -2084,6 +2150,10 @@ export default function baseStateModelFactory(
          * #method
          */
         trackMenuItems() {
+          const hasFeatureFilters =
+            self.jexlFiltersSetting !== undefined ||
+            self.soloFeatureIds.length > 0 ||
+            self.hiddenFeatureIds.length > 0
           return [
             {
               label: 'Show...',
@@ -2096,6 +2166,14 @@ export default function baseStateModelFactory(
               icon: ClearAllIcon,
               onClick: () => {
                 self.openFilterDialog()
+              },
+            },
+            {
+              label: 'Clear filters',
+              icon: FilterAltOffIcon,
+              disabled: !hasFeatureFilters,
+              onClick: () => {
+                self.clearAllFeatureFilters()
               },
             },
           ]

@@ -19,11 +19,13 @@ export function buildFeatureAdmission({
   jexl,
   showOnlyGenes,
   soloFeatureIds,
+  hiddenFeatureIds,
 }: {
   config: DisplayConfig
   jexl?: JexlInstance
   showOnlyGenes?: boolean
   soloFeatureIds?: string[]
+  hiddenFeatureIds?: string[]
 }) {
   const filterChain = new SerializableFilterChain({
     filters: config.jexlFilters.map(f =>
@@ -54,8 +56,13 @@ export function buildFeatureAdmission({
     soloFeatureIds && soloFeatureIds.length > 0
       ? new Set(soloFeatureIds)
       : undefined
+  const hiddenSet =
+    hiddenFeatureIds && hiddenFeatureIds.length > 0
+      ? new Set(hiddenFeatureIds)
+      : undefined
   return (feature: Feature) =>
     (soloSet === undefined || soloSet.has(feature.id())) &&
+    (hiddenSet === undefined || !hiddenSet.has(feature.id())) &&
     filterChain.passes(feature) &&
     (geneLikeTypes === undefined ||
       geneLikeTypes.has(featureType(feature).toLowerCase()))

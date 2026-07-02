@@ -43,6 +43,10 @@ export interface RenderFeatureDataArgs {
   // jexlFeatureProxy (feature.id reads the data field, e.g. GFF3 ID=, not the
   // uniqueId).
   soloFeatureIds?: string[]
+  // "Hide this feature" exclusion set: features whose id() is in this set are
+  // dropped from layout/drawing. Inverse of soloFeatureIds; hidden wins when a
+  // feature is somehow in both.
+  hiddenFeatureIds?: string[]
   maxFeatureDensity?: number
   // Compressed-byte budget for this region. When set and the adapter offers a
   // cheap index estimate (getRegionByteSize), the fetch short-circuits before
