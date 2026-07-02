@@ -1,6 +1,5 @@
 import {
   createProgressReporter,
-  dedupe,
   groupBy,
   updateStatus,
 } from '@jbrowse/core/util'
@@ -69,6 +68,39 @@ function isProperPairChain(chain: Feature[]) {
   )
 }
 
+// Guard against the same physical record being emitted twice — rare, only when
+// overlapping BAM index chunks re-decode one read; a dup would double-count
+// coverage depth and double-draw. `id()` (`${adapter}-${fileOffset}`) is unique
+// per record. In the overwhelmingly common no-dup case this returns the input
+// array untouched, so the guard costs one Set build, not a full-length copy of
+// every feature (matters at ultra-deep coverage — hundreds of thousands).
+function dedupeById(features: Feature[]) {
+  const seen = new Set<string>()
+  let dupIndex = -1
+  for (let i = 0; i < features.length; i++) {
+    const id = features[i]!.id()
+    if (seen.has(id)) {
+      dupIndex = i
+      break
+    }
+    seen.add(id)
+  }
+  if (dupIndex === -1) {
+    return features
+  }
+  // A dup exists: keep the unique prefix, then continue skipping repeats.
+  const out = features.slice(0, dupIndex)
+  for (let i = dupIndex; i < features.length; i++) {
+    const f = features[i]!
+    const id = f.id()
+    if (!seen.has(id)) {
+      seen.add(id)
+      out.push(f)
+    }
+  }
+  return out
+}
+
 // Chain mode groups reads into chains by name, then optionally drops
 // singletons (chains of one) and proper pairs.
 export function filterChainFeatures(
@@ -76,7 +108,7 @@ export function filterChainFeatures(
   drawSingletons: boolean,
   drawProperPairs: boolean,
 ) {
-  const deduped = dedupe(features, (f: Feature) => f.id())
+  const deduped = dedupeById(features)
   if (drawSingletons && drawProperPairs) {
     return deduped
   }

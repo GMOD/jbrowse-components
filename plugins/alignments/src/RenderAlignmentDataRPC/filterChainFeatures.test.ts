@@ -64,3 +64,19 @@ describe('filterChainFeatures drawProperPairs=false', () => {
     expect(filterChainFeatures(features, true, true)).toHaveLength(2)
   })
 })
+
+describe('filterChainFeatures dedup guard', () => {
+  test('collapses records sharing an id (duplicate index-chunk emit)', () => {
+    const [a, b] = pair('dup', 'F1R2', 0)
+    // b reuses a's uniqueId → same id(); guard must drop the second
+    const dup = new SimpleFeature({ ...b!.toJSON(), uniqueId: a!.id() })
+    const out = filterChainFeatures([a!, dup], true, true)
+    expect(out).toHaveLength(1)
+  })
+
+  test('returns the input array unchanged when there are no duplicates', () => {
+    const features = pair('uniq', 'F1R2', 0)
+    // no-dup fast path: same reference back, no copy
+    expect(filterChainFeatures(features, true, true)).toBe(features)
+  })
+})
