@@ -144,6 +144,10 @@ export default function f(pluginManager: PluginManager) {
         // form data — including altAssemblyName — in place, which would add
         // the track to the wrong assembly. Reset the form when the target
         // view changes.
+        //
+        // Intentionally a reaction, not an autorun: it must fire ONLY on a
+        // view change, never on mount. An autorun (or fireImmediately) would
+        // clearData() on first open and wipe legitimately-restored form state.
         addDisposer(
           self,
           reaction(
