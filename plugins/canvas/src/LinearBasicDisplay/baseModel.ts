@@ -1638,15 +1638,30 @@ export default function baseStateModelFactory(
                   // scrollTop/height are viewport state, not layout inputs —
                   // read untracked so writing scrollTop back below can't
                   // re-trigger this layout autorun.
-                  const { scrollTop, viewportCenterY } = untracked(() => ({
-                    scrollTop: self.scrollTop,
-                    viewportCenterY: self.scrollTop + self.height / 2,
-                  }))
-                  const scrollDelta = focusScrollDelta(
+                  const { scrollTop, viewportCenterY, height } = untracked(
+                    () => ({
+                      scrollTop: self.scrollTop,
+                      viewportCenterY: self.scrollTop + self.height / 2,
+                      height: self.height,
+                    }),
+                  )
+                  // Pin the anchor feature, but clamp the target to the new
+                  // layout's scrollable range: setScrollTop doesn't clamp, so a
+                  // feature forced onto a deeper row (a real collision, the one
+                  // case we can't pack away) must not scroll the viewport past
+                  // the content. Both morph endpoints are in range, so every
+                  // eased frame between them stays in range too.
+                  const maxScroll = Math.max(0, maxBottom(current) - height)
+                  const rawDelta = focusScrollDelta(
                     fromTops,
                     captureFeatureTops(current),
                     viewportCenterY,
                   )
+                  const target = Math.min(
+                    Math.max(scrollTop + rawDelta, 0),
+                    maxScroll,
+                  )
+                  const scrollDelta = target - scrollTop
                   if (
                     morphAllowed(getSession(self).animationMode) &&
                     canMorph(fromTops, current)
@@ -1661,7 +1676,7 @@ export default function baseStateModelFactory(
                     // Dense view or reduced motion: snap, but still keep the
                     // focused gene in place with an instant scroll shift.
                     self.endYMorph()
-                    self.setScrollTop(scrollTop + scrollDelta)
+                    self.setScrollTop(target)
                   }
                 } else {
                   self.endYMorph()

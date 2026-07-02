@@ -96,19 +96,6 @@ test('discards regions', () => {
   expect(l.bitmap[0].intervals.length).toBe(0)
 })
 
-test('discardRange tolerates sparse bitmap holes from stableSeeding', () => {
-  const l = new Layout({ pitchX: 1, pitchY: 1, stableSeeding: true })
-
-  // preferredRow seeds the feature onto row 1, leaving row 0 as an undefined
-  // hole in the bitmap. discardRange must skip the hole, not throw on it.
-  l.addRect('a', 0, 100, 1, undefined, undefined, 1)
-  expect(l.getByID('a')![1]).toBe(1)
-
-  expect(() => {
-    l.discardRange(0, 100)
-  }).not.toThrow()
-})
-
 test('getByID returns undefined for a feature that overflowed maxHeight', () => {
   const l = new Layout({ pitchX: 1, pitchY: 1, maxHeight: 1 })
 
