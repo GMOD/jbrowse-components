@@ -6,6 +6,7 @@ import {
   STRAND_ARROW_WIDTH,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
@@ -413,6 +414,7 @@ function packRef(
     strand: number
     hasReversed: boolean
     hasNonReversed: boolean
+    densityFade: boolean
   }
   const allFeatures = new Map<string, FeatureExtent>()
   for (const [displayedRegionIndex, data] of regions) {
@@ -448,6 +450,7 @@ function packRef(
         strand: item.strand ?? 0,
         hasReversed: reversed,
         hasNonReversed: !reversed,
+        densityFade: item.densityFade,
       })
     }
   }
@@ -509,16 +512,30 @@ function packRef(
     height: number
   } | null = null
   for (const [id, ext] of sorted) {
-    const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
-    const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
-    const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
-    const top = layout.addRect(id, leftPx, rightPx, ext.height)
-    if (top === null) {
-      overflowCount++
-      firstOverflowSample ??= { id, leftPx, rightPx, height: ext.height }
-      layoutMap.set(id, OFFSCREEN_Y)
+    // A density-fade box narrower than the renderer's min-width clamp collapses
+    // into the shared density texture (rect.slang densityAlpha), so pin it to
+    // row 0 and skip the greedy stacker: it reserves no vertical space and never
+    // overflows maxHeight. Without this, variants whose reserved label spans (or
+    // ~1px boxes) overlap stack onto extra rows under pixel-precise pitchX:1
+    // packing instead of collapsing. Gates on the box's own rendered width (not
+    // the label-padded layout span) to match the shader's realWidthPx <
+    // MIN_RECT_WIDTH_PX test.
+    const collapses =
+      ext.densityFade && (ext.endBp - ext.startBp) / bpPerPx < MIN_RECT_WIDTH_PX
+    if (collapses) {
+      layoutMap.set(id, 0)
     } else {
-      layoutMap.set(id, top)
+      const { left: arrowLeft, right: arrowRight } = strandArrowPadding(ext)
+      const leftPx = ext.layoutStartBp / bpPerPx - arrowLeft
+      const rightPx = ext.layoutEndBp / bpPerPx + arrowRight
+      const top = layout.addRect(id, leftPx, rightPx, ext.height)
+      if (top === null) {
+        overflowCount++
+        firstOverflowSample ??= { id, leftPx, rightPx, height: ext.height }
+        layoutMap.set(id, OFFSCREEN_Y)
+      } else {
+        layoutMap.set(id, top)
+      }
     }
     layoutHeights.set(id, ext.height)
   }

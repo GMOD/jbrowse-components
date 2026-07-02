@@ -72,7 +72,11 @@ function createDisplay(configDisplayMode?: DisplayMode) {
       assemblyNames: ['volvox'],
       displays: [
         configDisplayMode
-          ? { type: 'LinearBasicDisplay', displayId: 'd1', displayMode: configDisplayMode }
+          ? {
+              type: 'LinearBasicDisplay',
+              displayId: 'd1',
+              displayMode: configDisplayMode,
+            }
           : { type: 'LinearBasicDisplay', displayId: 'd1' },
       ],
     },
@@ -111,11 +115,7 @@ function createDisplay(configDisplayMode?: DisplayMode) {
         self.view = view
         return view
       },
-      setDisplayTypeDefault(
-        displayType: string,
-        slot: string,
-        value: unknown,
-      ) {
+      setDisplayTypeDefault(displayType: string, slot: string, value: unknown) {
         const forType = { ...self.displayTypeDefaults[displayType] }
         if (value === undefined) {
           delete forType[slot]
@@ -158,7 +158,11 @@ describe('canvas display displayMode resolution', () => {
 
   it('falls back to the session-wide default when config is the schema default', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'compact',
+    )
     // config displayMode is still the schema default 'normal', so the promoted
     // session default reaches this track without editing its config
     expect(display.displayMode).toBe('compact')
@@ -167,7 +171,11 @@ describe('canvas display displayMode resolution', () => {
 
   it('lets an explicit non-normal config win over the session default', () => {
     const { session, display } = createDisplay('superCompact')
-    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'compact',
+    )
     // an explicit per-track choice is never overridden by the session default
     expect(display.displayMode).toBe('superCompact')
     expect(display.isDisplayModeDefault).toBe(false)
@@ -178,7 +186,11 @@ describe('canvas display displayMode resolution', () => {
     // default, choosing Normal must actually show normal, not silently re-resolve
     // back to compact (the dead radio option)
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'compact',
+    )
     expect(display.displayMode).toBe('compact')
 
     display.setDisplayMode('normal')
@@ -189,7 +201,11 @@ describe('canvas display displayMode resolution', () => {
 
   it('resetDisplayMode un-pins a track so it follows the default again', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'compact',
+    )
     display.setDisplayMode('normal')
     expect(display.isDisplayModePinned).toBe(true)
     expect(display.displayMode).toBe('normal')

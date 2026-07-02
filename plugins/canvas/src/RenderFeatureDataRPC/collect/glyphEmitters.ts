@@ -496,6 +496,8 @@ export function processFeatureRecord(
     tooltip: featureTooltip(feature, ctx),
     name,
     strand: strand !== 0 ? strand : undefined,
+    // Box is the only glyph that emits a density-fade rect (processDefaultLayout).
+    densityFade: layout.glyphType === 'Box',
   })
   const flatbushIdx = collector.flatbushItems.length - 1
 

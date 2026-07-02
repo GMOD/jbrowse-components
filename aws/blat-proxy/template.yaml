@@ -1,6 +1,7 @@
 AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: JBrowse BLAT proxy — injects a UCSC apiKey + CORS in front of hgBlat
+Description:
+  JBrowse BLAT proxy — injects a UCSC apiKey + CORS in front of hgBlat
 
 Parameters:
   Stage:
@@ -11,9 +12,9 @@ Parameters:
     Type: String
     NoEcho: true
     Description: >-
-      UCSC apiKey (Genome Browser account -> Hub Development -> generate). Passed
-      at deploy time and stored as the function's UCSC_API_KEY env var; bypasses
-      the Cloudflare Turnstile that fronts hgBlat.
+      UCSC apiKey (Genome Browser account -> Hub Development -> generate).
+      Passed at deploy time and stored as the function's UCSC_API_KEY env var;
+      bypasses the Cloudflare Turnstile that fronts hgBlat.
 
 Globals:
   Function:

@@ -36,6 +36,7 @@ function makeItem(
     bottomPx,
     featureHeightPx: bottomPx - topPx,
     tooltip: featureId,
+    densityFade: false,
   }
 }
 
@@ -74,6 +75,7 @@ function makeData(
     rectHeights: new Float32Array(0),
     rectColors: new Uint32Array(0),
     rectStrands: new Float32Array(0),
+    rectDensityFade: new Uint32Array(0),
     rectFeatureIndices: new Uint32Array(0),
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),

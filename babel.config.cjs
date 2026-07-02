@@ -14,7 +14,11 @@ module.exports = function babelConfig(api) {
       '@babel/preset-typescript',
     ],
     ignore: [
-      './node_modules',
+      // Ignore node_modules EXCEPT react-msaview and its ESM-only deps, which
+      // ship untranspiled ESM and must be run through babel (jest can't parse
+      // them otherwise). The negative lookahead matches these package names
+      // anywhere in the pnpm path.
+      /node_modules\/(?!.*(?:react-msaview|msa-parsers|@jbrowse[+/]svgcanvas|flatbush|flatqueue|colord))/,
       './packages/*/node_modules',
       './products/*/node_modules',
       './plugins/*/node_modules',

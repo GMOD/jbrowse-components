@@ -137,6 +137,7 @@ and docs.
 
 **Methods:**
 [observedMaxDensity](../linearcanvasbasedisplay#method-observedmaxdensity),
+[sessionDefaultChanges](../linearcanvasbasedisplay#method-sessiondefaultchanges),
 [activeFilters](../linearcanvasbasedisplay#method-activefilters),
 [rpcProps](../linearcanvasbasedisplay#method-rpcprops),
 [getFeatureById](../linearcanvasbasedisplay#method-getfeaturebyid),
@@ -174,6 +175,7 @@ and docs.
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
 [setShowLabels](../linearcanvasbasedisplay#action-setshowlabels),
+[clearSessionDefaults](../linearcanvasbasedisplay#action-clearsessiondefaults),
 [setAutoHeight](../linearcanvasbasedisplay#action-setautoheight),
 [setShowDescriptions](../linearcanvasbasedisplay#action-setshowdescriptions),
 [setJexlFilters](../linearcanvasbasedisplay#action-setjexlfilters),
@@ -358,6 +360,7 @@ detail):
 | [`geneGlyphMode`](#getter-geneglyphmode)                           | `any`                                |
 | [`displayDirectionalChevrons`](#getter-displaydirectionalchevrons) | `any`                                |
 | [`isDisplayModeDefault`](#getter-isdisplaymodedefault)             | `boolean`                            |
+| [`isDisplayModePinned`](#getter-isdisplaymodepinned)               | `boolean`                            |
 | [`effectiveGeneGlyphMode`](#getter-effectivegeneglyphmode)         | `"auto" \| "all" \| "longestCoding"` |
 | [`showIsoformCollapseNotice`](#getter-showisoformcollapsenotice)   | `boolean`                            |
 | [`isGeneLike`](#getter-isgenelike)                                 | `boolean`                            |
@@ -389,6 +392,12 @@ type displayDirectionalChevrons = any
 
 ```ts
 type isDisplayModeDefault = boolean
+```
+
+#### getter: isDisplayModePinned
+
+```ts
+type isDisplayModePinned = boolean
 ```
 
 #### getter: effectiveGeneGlyphMode
@@ -477,6 +486,7 @@ detail):
 | [`setSubfeatureLabels`](#action-setsubfeaturelabels)                     | `(value: "none" \| "overlay" \| "below") => void`           |
 | [`setGeneGlyphMode`](#action-setgeneglyphmode)                           | `(value: "auto" \| "all" \| "longestCoding") => void`       |
 | [`setDisplayMode`](#action-setdisplaymode)                               | `(value: DisplayMode) => void`                              |
+| [`resetDisplayMode`](#action-resetdisplaymode)                           | `() => void`                                                |
 | [`setCompactness`](#action-setcompactness)                               | `(level: "normal" \| "compact" \| "super-compact") => void` |
 | [`toggleDisplayModeDefault`](#action-toggledisplaymodedefault)           | `() => void`                                                |
 | [`setShowOnlyGenes`](#action-setshowonlygenes)                           | `(value: boolean) => void`                                  |
@@ -504,6 +514,12 @@ type setGeneGlyphMode = (value: 'auto' | 'all' | 'longestCoding') => void
 
 ```ts
 type setDisplayMode = (value: DisplayMode) => void
+```
+
+#### action: resetDisplayMode
+
+```ts
+type resetDisplayMode = () => void
 ```
 
 #### action: setCompactness

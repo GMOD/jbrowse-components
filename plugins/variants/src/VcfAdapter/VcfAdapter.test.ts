@@ -40,7 +40,12 @@ test('getExportData filters by [start,end] overlap, matching getFeatures', async
 
   // region falls entirely inside the del1 span (POS 1000, END 5000) but after
   // its POS; a POS-only filter would drop it, an overlap filter keeps it
-  const region = { refName: 'ctgA', start: 2000, end: 3000 }
+  const region = {
+    assemblyName: 'volvox',
+    refName: 'ctgA',
+    start: 2000,
+    end: 3000,
+  }
   const exported = await adapter.getExportData([region], 'vcf')
   const ids = exported!
     .split('\n')

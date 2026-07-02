@@ -14,6 +14,7 @@ function makeFeatureData(opts: {
     endBp: number
     height: number
     strand?: number
+    densityFade?: boolean
   }[]
 }): FeatureDataResult {
   const { features } = opts
@@ -29,6 +30,7 @@ function makeFeatureData(opts: {
       featureHeightPx: f.height,
       tooltip: f.featureId,
       strand: f.strand,
+      densityFade: !!f.densityFade,
     })),
     subfeatureInfos: [],
     floatingLabelsData: {},
@@ -37,6 +39,9 @@ function makeFeatureData(opts: {
     rectHeights: new Float32Array(features.map(f => f.height)),
     rectColors: new Uint32Array(features.length),
     rectStrands: new Float32Array(features.length),
+    rectDensityFade: new Uint32Array(
+      features.map(f => (f.densityFade ? 1 : 0)),
+    ),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
     linePositions: new Uint32Array(0),
     lineYs: new Float32Array(0),
@@ -746,4 +751,40 @@ test('incremental memo busts when the pinned set reference changes', () => {
   )
   expect(after.get(0)).not.toBe(beforeOut)
   expect(topOf(after, 'B')).toBe(0)
+})
+
+test('density-fade boxes collapse onto row 0 only when sub-pixel', () => {
+  // Two abutting boxes at bpPerPx=1; the 1px inter-feature padding makes them
+  // collide, so first-fit stacks the second onto its own row unless collapsed.
+  const rows = (spanBp: number, densityFade: boolean) => {
+    const data = makeFeatureData({
+      features: [
+        {
+          featureId: 'a',
+          startBp: 100,
+          endBp: 100 + spanBp,
+          height: 10,
+          densityFade,
+        },
+        {
+          featureId: 'b',
+          startBp: 100 + spanBp,
+          endBp: 100 + 2 * spanBp,
+          height: 10,
+          densityFade,
+        },
+      ],
+    })
+    const out = layout(new Map([[0, data]]), new Map([[0, 'v:ctgA']]), 1, false)
+    const top = (id: string) =>
+      out.get(0)!.flatbushItems.find(it => it.featureId === id)!.topPx
+    return [top('a'), top('b')]
+  }
+
+  // sub-pixel (1px < the 2px clamp) + fade → both collapse onto the shared row
+  expect(rows(1, true)).toEqual([0, 0])
+  // same geometry, not a fade box (e.g. gene subfeature rects) → still stacks
+  expect(rows(1, false)[1]).toBeGreaterThan(0)
+  // fade box but wide (20px > clamp) → a real box, stacks normally
+  expect(rows(20, true)[1]).toBeGreaterThan(0)
 })

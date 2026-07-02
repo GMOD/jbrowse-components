@@ -57,7 +57,10 @@ test('advanced color columns are hidden until the toggle is checked', () => {
   const onChange = jest.fn()
   render(
     <SourceGrid
-      rows={[{ name: 'a' }, { name: 'b' }]}
+      rows={[
+        { name: 'a', color: '', labelColor: '' },
+        { name: 'b', color: '', labelColor: '' },
+      ]}
       onChange={onChange}
       showTips
       colorColumns={[

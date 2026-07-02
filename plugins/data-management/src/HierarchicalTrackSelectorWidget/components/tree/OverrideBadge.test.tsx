@@ -67,7 +67,11 @@ describe('OverrideBadge session-default awareness', () => {
 
   it('badges an open track affected by a session-wide default and queues the dialog', async () => {
     const { session, model } = openTrackSelector()
-    session.setDisplayTypeDefault('LinearBasicDisplay', 'displayMode', 'compact')
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'displayMode',
+      'compact',
+    )
 
     const { findByTestId } = render(
       theme(<HierarchicalTrackSelector model={model} toolbarHeight={20} />),

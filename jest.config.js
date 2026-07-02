@@ -11,7 +11,11 @@ const baseConfig = {
     '^.+\\.css$': '<rootDir>/config/jest/cssTransform.cjs',
   },
   transformIgnorePatterns: [
-    '/node_modules/.+\\.(js|jsx)$',
+    // react-msaview (and its ESM-only deps) ship untranspiled ESM, so they must
+    // be run through babel rather than ignored like the rest of node_modules.
+    // The negative lookahead matches these package names anywhere in the pnpm
+    // path (`.pnpm/<pkg>@.../node_modules/<pkg>/...`).
+    '/node_modules/(?!.*(?:react-msaview|msa-parsers|@jbrowse[+/]svgcanvas|flatbush|flatqueue|colord)).+\\.(js|jsx)$',
     '\\.module\\.(css|sass|scss)$',
   ],
   collectCoverageFrom: [

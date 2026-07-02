@@ -8,7 +8,10 @@ import { observer } from 'mobx-react'
 import TrackSettingsChangesDialog from '../dialogs/TrackSettingsChangesDialog.tsx'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
-import type { AbstractDisplayModel, TrackConfigChange } from '@jbrowse/core/util'
+import type {
+  AbstractDisplayModel,
+  TrackConfigChange,
+} from '@jbrowse/core/util'
 
 const useStyles = makeStyles()(theme => ({
   editButton: {
@@ -89,7 +92,9 @@ const OverrideBadge = observer(function OverrideBadge({
     <Tooltip title={title}>
       <IconButton
         className={classes.editButton}
-        data-testid={edited ? 'track_edited_badge' : 'track_session_default_badge'}
+        data-testid={
+          edited ? 'track_edited_badge' : 'track_session_default_badge'
+        }
         onClick={() => {
           session.queueDialog(handleClose => [
             TrackSettingsChangesDialog,

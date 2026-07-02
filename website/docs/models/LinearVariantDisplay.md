@@ -131,6 +131,7 @@ and docs.
 
 **Methods:**
 [observedMaxDensity](../linearcanvasbasedisplay#method-observedmaxdensity),
+[sessionDefaultChanges](../linearcanvasbasedisplay#method-sessiondefaultchanges),
 [activeFilters](../linearcanvasbasedisplay#method-activefilters),
 [rpcProps](../linearcanvasbasedisplay#method-rpcprops),
 [getFeatureById](../linearcanvasbasedisplay#method-getfeaturebyid),
@@ -168,6 +169,7 @@ and docs.
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
 [setShowLabels](../linearcanvasbasedisplay#action-setshowlabels),
+[clearSessionDefaults](../linearcanvasbasedisplay#action-clearsessiondefaults),
 [setAutoHeight](../linearcanvasbasedisplay#action-setautoheight),
 [setShowDescriptions](../linearcanvasbasedisplay#action-setshowdescriptions),
 [setJexlFilters](../linearcanvasbasedisplay#action-setjexlfilters),

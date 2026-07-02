@@ -28,7 +28,12 @@ function makeAdapter() {
   )
 }
 
-const region = { refName: 'ctgA', start: 0, end: 20000 }
+const region = {
+  assemblyName: 'volvox',
+  refName: 'ctgA',
+  start: 0,
+  end: 20000,
+}
 
 test('getRefNames returns the location map keys', async () => {
   expect(await makeAdapter().getRefNames()).toEqual(['ctgA'])

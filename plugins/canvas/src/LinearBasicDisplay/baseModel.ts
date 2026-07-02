@@ -89,7 +89,12 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnimationMode, Feature, Region, TrackConfigChange  } from '@jbrowse/core/util'
+import type {
+  AnimationMode,
+  Feature,
+  Region,
+  TrackConfigChange,
+} from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {

@@ -51,14 +51,20 @@ function makeModel(
   }
 }
 
+interface SubMenuItem {
+  label: string
+  subMenu?: { label: string; onClick: () => void }[]
+}
+
 function findSubMenu(items: unknown[], label: string) {
   const item = items.find(
-    i => !!i && typeof i === 'object' && 'label' in i && i.label === label,
+    (i): i is SubMenuItem =>
+      typeof i === 'object' && i !== null && 'label' in i && i.label === label,
   )
-  if (!item || !('subMenu' in item)) {
+  if (!item?.subMenu) {
     throw new Error(`no subMenu labeled ${label}`)
   }
-  return (item as { subMenu: { label: string; onClick: () => void }[] }).subMenu
+  return item.subMenu
 }
 
 // the model mock only needs to be structurally valid for the sort branch; the

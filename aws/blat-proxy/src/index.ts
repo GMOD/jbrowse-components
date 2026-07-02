@@ -1,4 +1,8 @@
-import { DEFAULT_UPSTREAM_URL, buildUpstreamBody, looksLikeHtml } from './proxy.ts'
+import {
+  DEFAULT_UPSTREAM_URL,
+  buildUpstreamBody,
+  looksLikeHtml,
+} from './proxy.ts'
 
 import type {
   APIGatewayProxyEventV2,
@@ -38,7 +42,9 @@ export const handler = async (
   } else {
     const clientBody =
       event.isBase64Encoded && event.body
-        ? Buffer.from(event.body, 'base64').toString('utf8')
+        ? new TextDecoder().decode(
+            Uint8Array.from(atob(event.body), char => char.charCodeAt(0)),
+          )
         : (event.body ?? '')
 
     try {

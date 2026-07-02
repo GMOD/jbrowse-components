@@ -71,6 +71,7 @@ function makeData(
       bottomPx: 10,
       featureHeightPx: 10,
       tooltip: `f${i}`,
+      densityFade: false,
     })),
     subfeatureInfos: [],
     floatingLabelsData: {},

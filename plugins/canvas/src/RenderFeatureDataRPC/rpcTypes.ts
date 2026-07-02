@@ -200,6 +200,9 @@ export interface FlatbushItem extends HitItemBase {
   tooltip: string
   name?: string
   strand?: number
+  // Whole-feature box glyph (variants, plain BED); packRef collapses sub-pixel
+  // ones onto one row and the shader fades them into a density texture.
+  densityFade: boolean
 }
 
 export interface SubfeatureInfo extends HitItemBase {

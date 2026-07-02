@@ -12,9 +12,10 @@ Turnstile. This proxy solves both:
   it.
 
 It is a **transparent proxy**: the plugin already POSTs a well-formed hgBlat
-body (`userSeq/type/db/output`), so the proxy just forces `apiKey` + `output=json`
-onto that body and relays the response. No client request-shape change needed —
-point the plugin's "BLAT server URL" field at the deployed endpoint.
+body (`userSeq/type/db/output`), so the proxy just forces `apiKey` +
+`output=json` onto that body and relays the response. No client request-shape
+change needed — point the plugin's "BLAT server URL" field at the deployed
+endpoint.
 
 ## Endpoint
 
@@ -39,10 +40,10 @@ as `DEFAULT_BLAT_URL` in `plugins/blat/src/blatQuery.ts` once it's stable).
 
 UCSC caps program-driven BLAT at **1 hit / 15 s, 5000 / day**, and this proxy
 uses ONE shared key for all users. Under real load that budget will be exceeded.
-Before broad rollout, add either a DynamoDB token-bucket in front of the upstream
-`fetch`, a short-TTL response cache keyed by `db`+`userSeq`, or both. The desktop
-"own apiKey" path (in the plugin dialog) is the pressure valve that avoids the
-shared budget entirely.
+Before broad rollout, add either a DynamoDB token-bucket in front of the
+upstream `fetch`, a short-TTL response cache keyed by `db`+`userSeq`, or both.
+The desktop "own apiKey" path (in the plugin dialog) is the pressure valve that
+avoids the shared budget entirely.
 
 ## Local
 

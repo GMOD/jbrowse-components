@@ -828,16 +828,17 @@ type colorMenuItems = () => {
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                 | Signature                                                                                                                                                                                                                                      |
-| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`observedMaxDensity`](#method-observedmaxdensity)     | `(bpPerPx: number) => number`                                                                                                                                                                                                                  |
-| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: IObservableArray<string> \| undefined; hiddenFeatureIds: IObservableArray<...> \| undefined; theme: SerializableThemeArgs \| undefined; }` |
-| [`getFeatureById`](#method-getfeaturebyid)             | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                                             |
-| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                       |
-| [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                   |
-| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                 |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                             |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]`                      |
+| Member                                                   | Signature                                                                                                                                                                                                                                      |
+| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`observedMaxDensity`](#method-observedmaxdensity)       | `(bpPerPx: number) => number`                                                                                                                                                                                                                  |
+| [`sessionDefaultChanges`](#method-sessiondefaultchanges) | `() => TrackConfigChange[]`                                                                                                                                                                                                                    |
+| [`rpcProps`](#method-rpcprops)                           | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: IObservableArray<string> \| undefined; hiddenFeatureIds: IObservableArray<...> \| undefined; theme: SerializableThemeArgs \| undefined; }` |
+| [`getFeatureById`](#method-getfeaturebyid)               | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                                             |
+| [`searchFeatureByID`](#method-searchfeaturebyid)         | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                       |
+| [`renderSvg`](#method-rendersvg)                         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                   |
+| [`showSubmenuMenuItems`](#method-showsubmenumenuitems)   | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                 |
+| [`contextMenuItems`](#method-contextmenuitems)           | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                             |
+| [`trackMenuItems`](#method-trackmenuitems)               | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]`                      |
 
 </details>
 
@@ -848,6 +849,12 @@ detail):
 
 ```ts
 type observedMaxDensity = (bpPerPx: number) => number
+```
+
+#### method: sessionDefaultChanges
+
+```ts
+type sessionDefaultChanges = () => TrackConfigChange[]
 ```
 
 #### method: rpcProps
@@ -969,6 +976,7 @@ detail):
 | [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                                    |
 | [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                                    |
 | [`setShowLabels`](#action-setshowlabels)                             | `(value: "auto" \| "off" \| "on") => void`                                                                                      |
+| [`clearSessionDefaults`](#action-clearsessiondefaults)               | `() => void`                                                                                                                    |
 | [`setAutoHeight`](#action-setautoheight)                             | `(value: boolean) => void`                                                                                                      |
 | [`setShowDescriptions`](#action-setshowdescriptions)                 | `(value: boolean) => void`                                                                                                      |
 | [`setShowOutline`](#action-setshowoutline)                           | `(value: boolean) => void`                                                                                                      |
@@ -1165,6 +1173,12 @@ type clearSelection = () => void
 
 ```ts
 type setShowLabels = (value: 'auto' | 'off' | 'on') => void
+```
+
+#### action: clearSessionDefaults
+
+```ts
+type clearSessionDefaults = () => void
 ```
 
 #### action: setAutoHeight
