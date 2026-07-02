@@ -310,6 +310,47 @@ simple URL:
 }
 ```
 
+A top-level `sessionAssemblies` array registers assemblies into the session, the
+counterpart to `sessionTracks`. Assemblies are added _before_ the tracks and
+views, so `sessionTracks` and each view's `assembly` can reference them by name.
+This makes a spec fully self-contained — a novel assembly, its tracks, and the
+views over them, with nothing baked into the served config (pair it with
+`?config=none`):
+
+```json
+{
+  "sessionAssemblies": [
+    {
+      "name": "my_assembly",
+      "sequence": {
+        "type": "ReferenceSequenceTrack",
+        "trackId": "my_assembly_refseq",
+        "adapter": {
+          "type": "TwoBitAdapter",
+          "uri": "https://example.com/my_assembly.2bit"
+        }
+      }
+    }
+  ],
+  "sessionTracks": [
+    {
+      "type": "FeatureTrack",
+      "trackId": "my_track",
+      "name": "My track",
+      "assemblyNames": ["my_assembly"],
+      "adapter": { "type": "FromConfigAdapter", "features": [] }
+    }
+  ],
+  "views": [
+    {
+      "type": "LinearGenomeView",
+      "assembly": "my_assembly",
+      "tracks": ["my_track"]
+    }
+  ]
+}
+```
+
 You can also use `&sessionName=` with session specs to set a custom session
 name:
 
