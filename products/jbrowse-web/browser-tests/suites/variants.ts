@@ -31,9 +31,94 @@ const overflowingMultiSampleSpec = {
   ],
 }
 
+// Plain LinearVariantDisplay (canvas basic) with a short track so its labelled
+// variants stack past the viewport and it scrolls. Used to guard the GPU/DOM
+// scroll-tear fix: the label overlay must track model.scrollTop (like the GPU
+// canvas), not ride the native compositor scroll.
+const overflowingPlainVariantSpec = {
+  views: [
+    {
+      type: 'LinearGenomeView',
+      assembly: 'volvox',
+      loc: 'ctgA:1-50000',
+      tracks: [
+        {
+          trackId: 'volvox_filtered_vcf',
+          displaySnapshot: { type: 'LinearVariantDisplay', height: 40 },
+        },
+      ],
+    },
+  ],
+}
+
 const suite: TestSuite = {
   name: 'Variants Track',
   tests: [
+    // Regression guard for the "variants separated from their labels" tear: the
+    // sticky GPU canvas paints from model.scrollTop while the DOM label overlay
+    // used to ride the native (compositor) scroll, so a scroll faster than the
+    // main thread could service pulled the two apart. We simulate that lag by
+    // freezing the DOM->model rAF sync (so model.scrollTop stays 0) and then
+    // scrolling the native container: the sticky canvas must not move, and the
+    // labels must stay locked to it (before the fix they moved by -scroll).
+    {
+      name: 'variant labels stay locked to the canvas during scroll',
+      fn: async page => {
+        await navigateWithSessionSpec(page, overflowingPlainVariantSpec)
+        await findByTestId(
+          page,
+          'display-volvox_filtered_vcf-LinearVariantDisplay-done',
+        )
+        await waitForDataLoaded(page)
+
+        const res = await page.evaluate(() => {
+          const canvas = document.querySelector('canvas')
+          let el = canvas?.parentElement ?? null
+          while (el && !/auto|scroll/.test(getComputedStyle(el).overflowY)) {
+            el = el.parentElement
+          }
+          // a floating label div carries an inline translate() transform
+          const label = [...document.querySelectorAll('div')].find(d =>
+            d.style.transform.includes('translate('),
+          )
+          if (!el || !canvas || !label) {
+            return { setupFailed: true }
+          }
+          const labelBefore = label.getBoundingClientRect().top
+          const canvasBefore = canvas.getBoundingClientRect().top
+          const origRaf = window.requestAnimationFrame
+          window.requestAnimationFrame = () => 0
+          el.scrollTop = 60
+          const labelMoved = label.getBoundingClientRect().top - labelBefore
+          const canvasMoved = canvas.getBoundingClientRect().top - canvasBefore
+          window.requestAnimationFrame = origRaf
+          el.scrollTop = 0
+          return {
+            overflow: el.scrollHeight - el.clientHeight,
+            labelMoved,
+            canvasMoved,
+          }
+        })
+
+        if (res.setupFailed) {
+          throw new Error('could not locate scroll container, canvas, or label')
+        }
+        if ((res.overflow ?? 0) < 60) {
+          throw new Error(
+            `display did not overflow enough to scroll (${res.overflow}px)`,
+          )
+        }
+        if (Math.abs(res.canvasMoved!) > 1) {
+          throw new Error(`sticky canvas moved ${res.canvasMoved}px (expected 0)`)
+        }
+        if (Math.abs(res.labelMoved!) > 1) {
+          throw new Error(
+            `label tore from its glyph: moved ${res.labelMoved}px (expected ~0) — overlay is riding native scroll instead of model.scrollTop`,
+          )
+        }
+      },
+    },
+
     lgvSnapshotTest({
       name: 'assembly aliases VCF track',
       snapshot: 'variants-assembly-aliases',

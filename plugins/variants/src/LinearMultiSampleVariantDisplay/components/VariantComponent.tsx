@@ -38,6 +38,25 @@ const useStyles = makeStyles()({
     position: 'sticky',
     top: 0,
   },
+  // Overlay viewport pinned to the scroll port like the sticky canvas; its inner
+  // layer is translated by -scrollTop so the hover highlight tracks the SAME
+  // model.scrollTop the GPU cells draw at. Without this the highlight rides the
+  // native (compositor) scroll while the canvas repaints from a main-thread
+  // model.scrollTop, so a fast scroll tears the highlight off its cell.
+  highlightViewport: {
+    position: 'sticky',
+    top: 0,
+    left: 0,
+    width: '100%',
+    overflow: 'hidden',
+    pointerEvents: 'none',
+  },
+  highlightScroll: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    width: '100%',
+  },
 })
 
 interface HoveredCell {
@@ -174,8 +193,9 @@ const HoveredCellHighlight = observer(function HoveredCellHighlight({
   const px2 = toX(cell.genomicEnd)
   const left = Math.min(px1, px2)
   const right = Math.max(px1, px2)
-  // content coords: the highlight lives in the natively-scrolling content div,
-  // so it moves with the rows (no manual scrollTop subtraction)
+  // content coords: the -scrollTop shift is applied by the enclosing
+  // highlightScroll layer (which tracks model.scrollTop like the GPU), so this
+  // stays in raw row coordinates
   const top = cell.rowIndex * model.effectiveRowHeight
   return (
     <div
@@ -260,7 +280,27 @@ const VariantBody = observer(function VariantBody({
             {...canvasHandlers}
           />
           {hoveredCell ? (
-            <HoveredCellHighlight cell={hoveredCell} model={model} />
+            <div
+              className={classes.highlightViewport}
+              // pull up past the preceding sticky canvas so this pins at the
+              // same viewport-top the canvas does
+              style={{
+                height: model.availableHeight,
+                marginTop: -model.availableHeight,
+              }}
+            >
+              <div
+                className={classes.highlightScroll}
+                style={{
+                  height: model.hasOverflow
+                    ? model.totalHeight
+                    : model.availableHeight,
+                  transform: `translateY(${-model.scrollTop}px)`,
+                }}
+              >
+                <HoveredCellHighlight cell={hoveredCell} model={model} />
+              </div>
+            </div>
           ) : null}
         </div>
       </div>
