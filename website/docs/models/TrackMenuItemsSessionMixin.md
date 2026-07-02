@@ -42,7 +42,7 @@ type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>
 track menu with About + "Track actions" submenu for the in-view label
 
 ```ts
-type getTrackActionMenuItems = ({ config, effectiveConfig, extraTrackActions, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] ...
+type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
 ```
 
 </details>

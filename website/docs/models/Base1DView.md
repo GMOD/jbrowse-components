@@ -214,10 +214,10 @@ type currBp = number
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                     | Signature                                                                                                                                                                             |
-| -------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`pxToBp`](#method-pxtobp) | `(px: number) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }` |
-| [`bpToPx`](#method-bptopx) | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => number \| undefined`                                 |
+| Member                     | Signature                                                                                                                                                                                             |
+| -------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`pxToBp`](#method-pxtobp) | `(px: number) => { coord: number; coord0: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }` |
+| [`bpToPx`](#method-bptopx) | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => number \| undefined`                                                 |
 
 </details>
 
@@ -229,6 +229,7 @@ detail):
 ```ts
 type pxToBp = (px: number) => {
   coord: number
+  coord0: number
   index: number
   refName: string
   oob: boolean

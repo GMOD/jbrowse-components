@@ -22,14 +22,14 @@ stale, so trust the json over it.
 - **Two render paths for URL-mode specs:**
   - default = the **built** `products/jbrowse-web/build` bundle. A change to app
     or plugin **source** needs a rebuild first:
-    `cd products/jbrowse-web && NODE_ENV=production node scripts/build.ts`
-    (~a few min; reliable in-sandbox, this is what I used this session).
+    `cd products/jbrowse-web && NODE_ENV=production node scripts/build.ts` (~a
+    few min; reliable in-sandbox, this is what I used this session).
   - `--port=3000` = proxy to a running dev server
     (`pnpm --filter @jbrowse/web start`), which HMRs source edits with no
     rebuild — faster for iterating on plugin code, but the server must stay up.
 - **cli/jbrowse-img specs** run `jb2export` from **source via tsx** (no build
-  needed for jb2export src edits), output to `products/jbrowse-img/img/`. Run the
-  bin directly to see stderr the generator swallows:
+  needed for jb2export src edits), output to `products/jbrowse-img/img/`. Run
+  the bin directly to see stderr the generator swallows:
   `cd products/jbrowse-img && npx tsx --tsconfig ../../tsconfig.json src/bin.ts <args> --out /tmp/x.png`
 - **Viewing PNGs**: capture is ~1500w@2x ≈ 3000px, too big for the Read tool.
   Downscale: `convert static/img/<name>.png -resize 1100x /tmp/x.png`, then Read
@@ -42,52 +42,58 @@ stale, so trust the json over it.
 
 ## Shared worktree — IMPORTANT
 
-Multiple agents share this working tree and commit concurrently (HEAD moved under
-me mid-session). **Scope any commit to explicit pathspecs; never `git add -A`.**
-Nothing from this session is committed. Files dirty from OTHER agents (not mine):
-`website/docs/user_guides/{alignments_track,hic_track,gc_content_track}.md`, root
-`package.json`/`pnpm-lock.yaml`/`.github`, etc.
+Multiple agents share this working tree and commit concurrently (HEAD moved
+under me mid-session). **Scope any commit to explicit pathspecs; never
+`git add -A`.** Nothing from this session is committed. Files dirty from OTHER
+agents (not mine):
+`website/docs/user_guides/{alignments_track,hic_track,gc_content_track}.md`,
+root `package.json`/`pnpm-lock.yaml`/`.github`, etc.
 
 ## Done this session (uncommitted) — the big one was a real bug
 
 **MAF fit-mode render regression (root cause + fix).** The MAF overlay
-components read the RAW `rowHeight` MST prop, which is **0 in fit-to-height mode**
-(what `heightOverride` uses, post the heightOverride→config-height-slot
+components read the RAW `rowHeight` MST prop, which is **0 in fit-to-height
+mode** (what `heightOverride` uses, post the heightOverride→config-height-slot
 migration), instead of the resolved `effectiveRowHeight`. `rowBandGeometry(0)` →
 `bandH 0` → `fillRect(...,0)` paints nothing. This silently **blanked** the
 identity heatmap and color-by-chromosome rows in BOTH the on-screen canvas and
-SVG export (the GPU base/SNP path was fine — it already used `effectiveRowHeight`,
-which is why only these overlays broke and the committed PNGs looked "stale").
-Fixed to use `effectiveRowHeight` in: `MafRowIdentityCanvas.tsx`,
-`MafSourceChromCanvas.tsx`, `LinearMafDisplayComponent.tsx` (row labels +
-tooltip/subsequence hit-test, which divided by 0), and `renderSvg.tsx`. **If a
-MAF overlay is blank only in fit mode, this is the class of bug.** All 8 maf PNGs
-were broadly stale and were regenerated.
+SVG export (the GPU base/SNP path was fine — it already used
+`effectiveRowHeight`, which is why only these overlays broke and the committed
+PNGs looked "stale"). Fixed to use `effectiveRowHeight` in:
+`MafRowIdentityCanvas.tsx`, `MafSourceChromCanvas.tsx`,
+`LinearMafDisplayComponent.tsx` (row labels + tooltip/subsequence hit-test,
+which divided by 0), and `renderSvg.tsx`. **If a MAF overlay is blank only in
+fit mode, this is the class of bug.** All 8 maf PNGs were broadly stale and were
+regenerated.
 
 Other done items (flipped `good` or deleted in the json):
+
 - **chromhmm** — new `docs/tutorials/chromhmm.md` (how the multirow-bigBed
   ChromHMM config is built + `LinearMultiRowFeatureDisplay`
   partitionField/color/rowOrder). Linked from `introduction.md`; guide index
   regenerated via `pnpm lint-docs`.
-- **maf_codon_translation**, **sv_cgiab/cnv_calibration** — DELETED (spec + PNG +
-  doc refs + json entry).
-- **maf_470way** — regression fixed + shortened (`heightOverride` 1080→560) + NEW
-  `MafIdentityLegend.tsx` (top-right Divergent/Conserved, reuses the `MafLegend`
-  scaffold + `identityColor`).
+- **maf_codon_translation**, **sv_cgiab/cnv_calibration** — DELETED (spec +
+  PNG + doc refs + json entry).
+- **maf_470way** — regression fixed + shortened (`heightOverride` 1080→560) +
+  NEW `MafIdentityLegend.tsx` (top-right Divergent/Conserved, reuses the
+  `MafLegend` scaffold + `identityColor`).
 - **maf_color_by_chromosome** — reworked the global name→hue **rainbow** into a
   PER-ROW rank scheme: `perRowChromRanks()` + `SOURCE_CHROM_PALETTE` in
   `drawSourceChrom.ts` (rank 0 = each row's main chromosome = primary blue; a
-  block from a different source chromosome = orange/crimson accent = rearrangement
-  signal). Legend getter renamed `visibleSourceChromosomes`→`sourceChromLegend`
-  (rank-based). Removed old `chromosomeColor`; test rewritten; user+config guide
-  prose/captions updated. maf tests green (299).
+  block from a different source chromosome = orange/crimson accent =
+  rearrangement signal). Legend getter renamed
+  `visibleSourceChromosomes`→`sourceChromLegend` (rank-based). Removed old
+  `chromosomeColor`; test rewritten; user+config guide prose/captions updated.
+  maf tests green (299).
 
 ## Still `bad` (per the json) — with what each actually needs
 
 Blocked on data regen + re-upload to jbrowse.org (recipes in
 `website/scripts/cnv-data-recipe.md`):
+
 - **sv_cgiab/cnv_multi_bigwig** — needs a log2(tumor/normal) bigWig from CRAMs.
-- **sv_cgiab/driver_cdkn2a_deletion** — needs per-base coverage (indexcov is ~16kb-binned).
+- **sv_cgiab/driver_cdkn2a_deletion** — needs per-base coverage (indexcov is
+  ~16kb-binned).
 - **sv_cgiab/driver_chr17_loh** — "CNA_21" labels come from the source BED.
 - **sv_cgiab/cnv_log2_baf**, **cnv_log2ratio_genome** — whiskers come from
   `summaryScoreMode` defaulting to `'whiskers'`. Can't just set `'avg'` (raw-BAF
@@ -95,17 +101,20 @@ Blocked on data regen + re-upload to jbrowse.org (recipes in
   (`|BAF−0.5|`) — folded-BAF recipe is in cnv-data-recipe.md.
 
 Blocked on code (not data):
+
 - **jbrowse-img/multisample_variants** — jb2export static SSR renders the
-  per-sample genotype MATRIX **empty** for the 1000G phase3 callset even with data
-  loaded LOCALLY and rows at 1px (volvox's simpler path works) → needs a jb2export
-  matrix-render fix first. AND real pop data is ref-dominant (grey) — the
-  compelling view is `colorBy:'population'`, which needs the adapter's samplesTsv:
-  a small jb2export CLI feature (a `samplesTsv:` modifier → `samplesTsvLocation`;
-  prototyped then reverted since the render bug blocks verification). bcftools in
-  this sandbox is broken (undefined symbol `bcf_format_gt_v2`) — slice 1000G with
-  `tabix -h <url> <region> | bgzip` (refnames unprefixed `1`; hg19.fa.gz also `1`).
+  per-sample genotype MATRIX **empty** for the 1000G phase3 callset even with
+  data loaded LOCALLY and rows at 1px (volvox's simpler path works) → needs a
+  jb2export matrix-render fix first. AND real pop data is ref-dominant (grey) —
+  the compelling view is `colorBy:'population'`, which needs the adapter's
+  samplesTsv: a small jb2export CLI feature (a `samplesTsv:` modifier →
+  `samplesTsvLocation`; prototyped then reverted since the render bug blocks
+  verification). bcftools in this sandbox is broken (undefined symbol
+  `bcf_format_gt_v2`) — slice 1000G with `tabix -h <url> <region> | bgzip`
+  (refnames unprefixed `1`; hg19.fa.gz also `1`).
 
 MAF feature/polish asks (doable, not started):
+
 - **maf_470way_codon** — reviewer: make the conservation track show CODON-level
   conservation (not per-base).
 - **maf_inversions** — inversions hard to see (want a "structure only" cue), and
@@ -115,13 +124,15 @@ MAF feature/polish asks (doable, not started):
   delete if low-value.
 
 Not a screenshot-specs.ts item:
+
 - **gene_track_collapse_introns** — re-added by a reviewer this session; earlier
   notes deemed the existing figure correct (ask was an extra sashimi-toggle
   screenshot idea, not a defect). Verify the current PNG.
 
 ## Workflow
 
-Edit spec/code → (`pnpm gen:shaders` if shader; rebuild jbrowse-web if app/plugin
-source) → regen `--filter <name> --exact --force` → downscale + Read the PNG to
-verify → set `status:"good"` + fresh sha1 in `screenshot-review.json`. Run
-`pnpm test plugins/<x>` for any plugin code you touch. Keep commits pathspec-scoped.
+Edit spec/code → (`pnpm gen:shaders` if shader; rebuild jbrowse-web if
+app/plugin source) → regen `--filter <name> --exact --force` → downscale + Read
+the PNG to verify → set `status:"good"` + fresh sha1 in
+`screenshot-review.json`. Run `pnpm test plugins/<x>` for any plugin code you
+touch. Keep commits pathspec-scoped.

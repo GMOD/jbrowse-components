@@ -75,7 +75,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -190,13 +189,10 @@ and docs.
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                         | Signature                                           |
-| ---------------------------------------------- | --------------------------------------------------- |
-| [`type`](#property-type)                       | `ISimpleType<"LinearReferenceSequenceDisplay">`     |
-| [`configuration`](#property-configuration)     | `ITypeUnion<any, any, any>`                         |
-| [`showForward`](#property-showforward)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`showReverse`](#property-showreverse)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`showTranslation`](#property-showtranslation) | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| Member                                     | Signature                                       |
+| ------------------------------------------ | ----------------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearReferenceSequenceDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                     |
 
 </details>
 
@@ -219,33 +215,6 @@ type: types.literal('LinearReferenceSequenceDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: showForward
-
-```ts
-// type signature
-type showForward = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showForward: types.stripDefault(types.boolean, true)
-```
-
-#### property: showReverse
-
-```ts
-// type signature
-type showReverse = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showReverse: types.stripDefault(types.boolean, true)
-```
-
-#### property: showTranslation
-
-```ts
-// type signature
-type showTranslation = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showTranslation: types.stripDefault(types.boolean, true)
 ```
 
 </details>
@@ -372,17 +341,38 @@ type displayPhase = DisplayPhase
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature |
-| ------------------------------------------ | --------- |
-| [`sequenceType`](#getter-sequencetype)     | `any`     |
-| [`numRows`](#getter-numrows)               | `number`  |
-| [`sequenceHeight`](#getter-sequenceheight) | `number`  |
-| [`rowHeight`](#getter-rowheight)           | `number`  |
+| Member                                       | Signature |
+| -------------------------------------------- | --------- |
+| [`showForward`](#getter-showforward)         | `boolean` |
+| [`showReverse`](#getter-showreverse)         | `boolean` |
+| [`showTranslation`](#getter-showtranslation) | `boolean` |
+| [`sequenceType`](#getter-sequencetype)       | `any`     |
+| [`numRows`](#getter-numrows)                 | `number`  |
+| [`sequenceHeight`](#getter-sequenceheight)   | `number`  |
+| [`rowHeight`](#getter-rowheight)             | `number`  |
 
 </details>
 
 <details>
 <summary>LinearReferenceSequenceDisplay - Getters (all signatures)</summary>
+
+#### getter: showForward
+
+```ts
+type showForward = boolean
+```
+
+#### getter: showReverse
+
+```ts
+type showReverse = boolean
+```
+
+#### getter: showTranslation
+
+```ts
+type showTranslation = boolean
+```
 
 #### getter: sequenceType
 

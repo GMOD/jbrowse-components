@@ -138,16 +138,6 @@ Returns the effective RPC driver name with hierarchical fallback:
 type effectiveRpcDriverName = any
 ```
 
-#### getter: effectiveTrackConfig
-
-The track's config as currently resolved (config-schema mutations from quick
-track-menu actions and the Settings dialog both write directly into this same
-node, so there's nothing left to merge here — this is just the live snapshot).
-
-```ts
-type effectiveTrackConfig = ModelSnapshotType<Record<string, any>>
-```
-
 #### getter: DisplayMessageComponent
 
 if a display-level message should be displayed instead, make this return a react

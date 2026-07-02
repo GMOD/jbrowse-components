@@ -48,6 +48,7 @@ and docs.
 
 **Actions:** [setRpcData](../linearwiggledisplay#action-setrpcdata),
 [setUseBicolor](../linearwiggledisplay#action-setusebicolor),
+[setColor](../linearwiggledisplay#action-setcolor),
 [setPosColor](../linearwiggledisplay#action-setposcolor),
 [setNegColor](../linearwiggledisplay#action-setnegcolor),
 [setFeatureUnderMouse](../linearwiggledisplay#action-setfeatureundermouse),
@@ -72,7 +73,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -220,52 +220,12 @@ and docs.
 [setResolution](../wigglescoreconfigmixin#action-setresolution),
 [setLoadedBpPerPx](../wigglescoreconfigmixin#action-setloadedbpperpx),
 [setScaleType](../wigglescoreconfigmixin#action-setscaletype),
-[setColor](../wigglescoreconfigmixin#action-setcolor),
 [setMinScore](../wigglescoreconfigmixin#action-setminscore),
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
-
-<details open>
-<summary>SharedGCContentModel - Properties</summary>
-
-#### property: windowSizeOverride
-
-explicit override; the `windowSize` getter resolves it over the config
-`windowSize` slot
-
-```ts
-// type signature
-type windowSizeOverride = IMaybe<ISimpleType<number>>
-// code
-windowSizeOverride: types.maybe(types.number)
-```
-
-#### property: windowDeltaOverride
-
-explicit override; resolved by the `windowDelta` getter
-
-```ts
-// type signature
-type windowDeltaOverride = IMaybe<ISimpleType<number>>
-// code
-windowDeltaOverride: types.maybe(types.number)
-```
-
-#### property: gcModeOverride
-
-explicit override; resolved by the `gcMode` getter
-
-```ts
-// type signature
-type gcModeOverride = IMaybe<ISimpleType<'content' | 'skew'>>
-// code
-gcModeOverride: types.maybe(types.enumeration('gcMode', ['content', 'skew']))
-```
-
-</details>
 
 <details open>
 <summary>SharedGCContentModel - Getters</summary>

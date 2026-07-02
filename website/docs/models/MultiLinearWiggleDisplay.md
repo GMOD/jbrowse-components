@@ -50,7 +50,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -198,7 +197,6 @@ and docs.
 [setResolution](../wigglescoreconfigmixin#action-setresolution),
 [setLoadedBpPerPx](../wigglescoreconfigmixin#action-setloadedbpperpx),
 [setScaleType](../wigglescoreconfigmixin#action-setscaletype),
-[setColor](../wigglescoreconfigmixin#action-setcolor),
 [setMinScore](../wigglescoreconfigmixin#action-setminscore),
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),

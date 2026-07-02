@@ -60,7 +60,6 @@ and docs.
 [setResolution](../wigglescoreconfigmixin#action-setresolution),
 [setLoadedBpPerPx](../wigglescoreconfigmixin#action-setloadedbpperpx),
 [setScaleType](../wigglescoreconfigmixin#action-setscaletype),
-[setColor](../wigglescoreconfigmixin#action-setcolor),
 [setMinScore](../wigglescoreconfigmixin#action-setminscore),
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),

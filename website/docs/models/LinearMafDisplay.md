@@ -70,7 +70,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -209,168 +208,13 @@ and docs.
 <details open>
 <summary>LinearMafDisplay - Properties</summary>
 
-#### property: rowHeight
-
-Raw per-row height in px, or `0` for "fit to display height" mode, where rows
-stretch to fill the dragged track height. Mirrors the variants
-MultiSampleVariantDisplay `rowHeight`. The resolved value is the
-`effectiveRowHeight` getter — consumers read that, never this. Defaults to
-fit-to-height (`0`) so large alignments (hundreds of species) stay bounded by
-the track height rather than growing a canvas past the browser's max size.
-
-```ts
-// type signature
-type rowHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-rowHeight: types.stripDefault(types.number, 0)
-```
-
-#### property: showBranchLength
-
-Position tree nodes by their cluster merge height (dendrogram) rather than
-evenly by topology (cladogram).
-
-```ts
-// type signature
-type showBranchLength = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showBranchLength: types.stripDefault(types.boolean, DEFAULTS.showBranchLength)
-```
-
-#### property: showAlignments
-
-Show the per-sample alignment rows. When off, only the coverage band renders
-(independent of `showCoverage`).
-
-```ts
-// type signature
-type showAlignments = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showAlignments: types.stripDefault(types.boolean, DEFAULTS.showAlignments)
-```
-
-#### property: showConservation
-
-Show the conservation band (per-bp percent identity to the reference, computed
-from the aligned species). Off by default. Independent of
-`showCoverage`/`showAlignments`.
-
-```ts
-// type signature
-type showConservation = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showConservation: types.stripDefault(types.boolean, DEFAULTS.showConservation)
-```
-
-#### property: rowIdentityMode
-
-Per-row identity rendering shown in place of the base SNP coloring once zoomed
-out past base level (see `activeRowRendering`): each species row shows its local
-(per-pixel) percent identity to the reference. `heatmap` shades the row band on
-a red→grey→blue ramp; `xyplot` draws a per-species identity wiggle (bar height =
-identity). `none` (the default) keeps the base coloring at every zoom.
-
-```ts
-// type signature
-type rowIdentityMode = IOptionalIType<
-  ISimpleType<'none' | 'xyplot' | 'heatmap'>,
-  [undefined]
->
-// code
-rowIdentityMode: types.stripDefault(
-  types.enumeration('RowIdentityMode', ROW_IDENTITY_MODE_VALUES),
-  DEFAULTS.rowIdentityMode,
-)
-```
-
-#### property: rowIdentityAutoZoom
-
-When true (default) the per-row identity plot follows zoom like UCSC `wigMaf` —
-bases at base level, the identity plot when zoomed out. When false the selected
-`rowIdentityMode` is pinned on at every zoom.
-
-```ts
-// type signature
-type rowIdentityAutoZoom = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-rowIdentityAutoZoom: types.stripDefault(
-  types.boolean,
-  DEFAULTS.rowIdentityAutoZoom,
-)
-```
-
-#### property: showAnnotations
-
-Show the per-species CDS reading-frame overlay sourced from the configured
-`annotationAdapter` (UCSC `mafFrames`). No effect unless an `annotationAdapter`
-is configured.
-
-```ts
-// type signature
-type showAnnotations = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showAnnotations: types.stripDefault(types.boolean, DEFAULTS.showAnnotations)
-```
-
-#### property: showTranslation
-
-Translate each species in the reference reading frame (from the
-`annotationAdapter` `mafFrames`) and draw the amino acid centered on each codon
-in place of the nucleotide letters — UCSC `wigMaf` "show translation". Residues
-differing from the reference (nonsynonymous) are emphasized. Needs an
-`annotationAdapter`.
-
-```ts
-// type signature
-type showTranslation = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showTranslation: types.stripDefault(types.boolean, DEFAULTS.showTranslation)
-```
-
-#### property: colorByChromosome
-
-Color each species' alignment blocks by their source chromosome
-(`MafAlignedRow.chr`) instead of the per-base SNP coloring — a row whose blocks
-come from different source chromosomes changes color, surfacing
-translocations/rearrangements (MCGV "color by chromosome"). Detail (non-summary)
-view only; needs no extra fetch.
-
-```ts
-// type signature
-type colorByChromosome = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-colorByChromosome: types.stripDefault(types.boolean, DEFAULTS.colorByChromosome)
-```
-
-#### property: showInversions
-
-Overlay a strand-flip (inversion) indicator: blocks aligning inverted relative
-to their own source chromosome's consensus orientation get a diagonal hatch.
-Composes on top of any rows rendering; needs no extra fetch
-(`MafAlignedRow.strand` is already shipped).
-
-```ts
-// type signature
-type showInversions = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showInversions: types.stripDefault(types.boolean, DEFAULTS.showInversions)
-```
-
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                               | Signature                                           |
-| ---------------------------------------------------- | --------------------------------------------------- |
-| [`type`](#property-type)                             | `ISimpleType<"LinearMafDisplay">`                   |
-| [`configuration`](#property-configuration)           | `ITypeUnion<any, any, any>`                         |
-| [`rowProportion`](#property-rowproportion)           | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-| [`showAllLetters`](#property-showallletters)         | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`mismatchRendering`](#property-mismatchrendering)   | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`showAsUpperCase`](#property-showasuppercase)       | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`showTree`](#property-showtree)                     | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`showCoverage`](#property-showcoverage)             | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
-| [`coverageHeight`](#property-coverageheight)         | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
-| [`conservationHeight`](#property-conservationheight) | `IOptionalIType<ISimpleType<number>, [undefined]>`  |
+| Member                                     | Signature                         |
+| ------------------------------------------ | --------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearMafDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`       |
 
 </details>
 
@@ -393,81 +237,6 @@ type: types.literal('LinearMafDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: rowProportion
-
-```ts
-// type signature
-type rowProportion = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-rowProportion: types.stripDefault(types.number, DEFAULTS.rowProportion)
-```
-
-#### property: showAllLetters
-
-```ts
-// type signature
-type showAllLetters = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showAllLetters: types.stripDefault(types.boolean, DEFAULTS.showAllLetters)
-```
-
-#### property: mismatchRendering
-
-```ts
-// type signature
-type mismatchRendering = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-mismatchRendering: types.stripDefault(types.boolean, DEFAULTS.mismatchRendering)
-```
-
-#### property: showAsUpperCase
-
-```ts
-// type signature
-type showAsUpperCase = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showAsUpperCase: types.stripDefault(types.boolean, DEFAULTS.showAsUpperCase)
-```
-
-#### property: showTree
-
-```ts
-// type signature
-type showTree = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showTree: types.stripDefault(types.boolean, DEFAULTS.showTree)
-```
-
-#### property: showCoverage
-
-```ts
-// type signature
-type showCoverage = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showCoverage: types.stripDefault(types.boolean, DEFAULTS.showCoverage)
-```
-
-#### property: coverageHeight
-
-```ts
-// type signature
-type coverageHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-coverageHeight: types.stripDefault(types.number, DEFAULTS.coverageHeight)
-```
-
-#### property: conservationHeight
-
-```ts
-// type signature
-type conservationHeight = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-conservationHeight: types.stripDefault(
-  types.number,
-  DEFAULTS.conservationHeight,
-)
 ```
 
 </details>
@@ -954,7 +723,7 @@ identity/chromosome canvases, the codon overlay, and SVG export all branch on
 this one getter so they can't disagree about what's on screen.
 
 ```ts
-type activeRowRendering = 'bases' | 'codon' | 'sourceChrom' | RowIdentityMode
+type activeRowRendering = 'codon' | 'bases' | 'sourceChrom' | RowIdentityMode
 ```
 
 #### getter: visibleLabels
@@ -997,15 +766,30 @@ anchor species is known.
 type visibleCodons = CodonMarker[]
 ```
 
-#### getter: visibleSourceChromosomes
+#### getter: visibleCodonConservation
 
-Source chromosomes among the visible alignment blocks, each with its stable
-color, ordered by descending bp coverage so the legend can keep the most
-prevalent ones and fold the long tail of rare scaffolds into a count. Empty
-unless the color-by-chromosome mode is active.
+Per-codon amino-acid conservation bars for the conservation band's codon mode.
+Empty unless the band is on in `codon` mode, an anchor species is known, and
+we're not in the cheap summary path (which ships no per-base blocks to
+translate). Draws only inside the CDS (where frames define codons); everywhere
+else the band is blank.
 
 ```ts
-type visibleSourceChromosomes = { chr: string; color: string }[]
+type visibleCodonConservation = CodonConservationBar[]
+```
+
+#### getter: sourceChromLegend
+
+Rank-based legend for the color-by-source-chromosome mode: one entry per
+source-chromosome rank actually present across the visible rows (rank 0 = each
+species' main chromosome, higher ranks = the minority chromosomes a row switches
+to at a rearrangement). Because coloring is by per-row rank rather than
+chromosome name (see `perRowChromRanks`), the legend is this short fixed scheme,
+not a per-scaffold rainbow. Empty unless the mode is active; a single "Main
+chromosome" entry means nothing rearranges in view.
+
+```ts
+type sourceChromLegend = { label: string; color: string }[]
 ```
 
 #### getter: msaHighlights
@@ -1019,14 +803,147 @@ type msaHighlights = MsaHighlight[]
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                 | Signature                                                          |
-| -------------------------------------- | ------------------------------------------------------------------ |
-| [`spatialIndex`](#getter-spatialindex) | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
+| Member                                               | Signature                                                          |
+| ---------------------------------------------------- | ------------------------------------------------------------------ |
+| [`rowHeight`](#getter-rowheight)                     | `number`                                                           |
+| [`rowProportion`](#getter-rowproportion)             | `number`                                                           |
+| [`showAllLetters`](#getter-showallletters)           | `boolean`                                                          |
+| [`mismatchRendering`](#getter-mismatchrendering)     | `boolean`                                                          |
+| [`showAsUpperCase`](#getter-showasuppercase)         | `boolean`                                                          |
+| [`showTree`](#getter-showtree)                       | `boolean`                                                          |
+| [`showBranchLength`](#getter-showbranchlength)       | `boolean`                                                          |
+| [`showCoverage`](#getter-showcoverage)               | `boolean`                                                          |
+| [`showAlignments`](#getter-showalignments)           | `boolean`                                                          |
+| [`coverageHeight`](#getter-coverageheight)           | `number`                                                           |
+| [`showConservation`](#getter-showconservation)       | `boolean`                                                          |
+| [`conservationHeight`](#getter-conservationheight)   | `number`                                                           |
+| [`conservationMode`](#getter-conservationmode)       | `"base" \| "codon"`                                                |
+| [`rowIdentityMode`](#getter-rowidentitymode)         | `"none" \| "xyplot" \| "heatmap"`                                  |
+| [`rowIdentityAutoZoom`](#getter-rowidentityautozoom) | `boolean`                                                          |
+| [`showAnnotations`](#getter-showannotations)         | `boolean`                                                          |
+| [`showTranslation`](#getter-showtranslation)         | `boolean`                                                          |
+| [`colorByChromosome`](#getter-colorbychromosome)     | `boolean`                                                          |
+| [`showInversions`](#getter-showinversions)           | `boolean`                                                          |
+| [`spatialIndex`](#getter-spatialindex)               | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
 
 </details>
 
 <details>
 <summary>LinearMafDisplay - Getters (all signatures)</summary>
+
+#### getter: rowHeight
+
+```ts
+type rowHeight = number
+```
+
+#### getter: rowProportion
+
+```ts
+type rowProportion = number
+```
+
+#### getter: showAllLetters
+
+```ts
+type showAllLetters = boolean
+```
+
+#### getter: mismatchRendering
+
+```ts
+type mismatchRendering = boolean
+```
+
+#### getter: showAsUpperCase
+
+```ts
+type showAsUpperCase = boolean
+```
+
+#### getter: showTree
+
+```ts
+type showTree = boolean
+```
+
+#### getter: showBranchLength
+
+```ts
+type showBranchLength = boolean
+```
+
+#### getter: showCoverage
+
+```ts
+type showCoverage = boolean
+```
+
+#### getter: showAlignments
+
+```ts
+type showAlignments = boolean
+```
+
+#### getter: coverageHeight
+
+```ts
+type coverageHeight = number
+```
+
+#### getter: showConservation
+
+```ts
+type showConservation = boolean
+```
+
+#### getter: conservationHeight
+
+```ts
+type conservationHeight = number
+```
+
+#### getter: conservationMode
+
+```ts
+type conservationMode = 'base' | 'codon'
+```
+
+#### getter: rowIdentityMode
+
+```ts
+type rowIdentityMode = 'none' | 'xyplot' | 'heatmap'
+```
+
+#### getter: rowIdentityAutoZoom
+
+```ts
+type rowIdentityAutoZoom = boolean
+```
+
+#### getter: showAnnotations
+
+```ts
+type showAnnotations = boolean
+```
+
+#### getter: showTranslation
+
+```ts
+type showTranslation = boolean
+```
+
+#### getter: colorByChromosome
+
+```ts
+type colorByChromosome = boolean
+```
+
+#### getter: showInversions
+
+```ts
+type showInversions = boolean
+```
 
 #### getter: spatialIndex
 
@@ -1264,6 +1181,7 @@ detail):
 | [`setShowAlignments`](#action-setshowalignments)               | `(arg: boolean) => void`                                                                                                                             |
 | [`setCoverageHeight`](#action-setcoverageheight)               | `(arg: number) => void`                                                                                                                              |
 | [`setShowConservation`](#action-setshowconservation)           | `(arg: boolean) => void`                                                                                                                             |
+| [`setConservationMode`](#action-setconservationmode)           | `(arg: "base" \| "codon") => void`                                                                                                                   |
 | [`setRowIdentityMode`](#action-setrowidentitymode)             | `(arg: "none" \| "xyplot" \| "heatmap") => void`                                                                                                     |
 | [`setRowIdentityAutoZoom`](#action-setrowidentityautozoom)     | `(arg: boolean) => void`                                                                                                                             |
 | [`setShowAnnotations`](#action-setshowannotations)             | `(arg: boolean) => void`                                                                                                                             |
@@ -1355,6 +1273,12 @@ type setCoverageHeight = (arg: number) => void
 
 ```ts
 type setShowConservation = (arg: boolean) => void
+```
+
+#### action: setConservationMode
+
+```ts
+type setConservationMode = (arg: 'base' | 'codon') => void
 ```
 
 #### action: setRowIdentityMode

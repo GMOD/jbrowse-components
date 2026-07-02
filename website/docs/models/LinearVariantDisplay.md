@@ -68,7 +68,6 @@ and docs.
 [featureIdUnderMouse](../linearcanvasbasedisplay#volatile-featureidundermouse),
 [subfeatureIdUnderMouse](../linearcanvasbasedisplay#volatile-subfeatureidundermouse),
 [mouseoverExtraInformation](../linearcanvasbasedisplay#volatile-mouseoverextrainformation),
-[contextMenuFeature](../linearcanvasbasedisplay#volatile-contextmenufeature),
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
@@ -85,8 +84,6 @@ and docs.
 [visibleFeatureDensityPerPx](../linearcanvasbasedisplay#getter-visiblefeaturedensityperpx),
 [renderState](../linearcanvasbasedisplay#getter-renderstate),
 [DisplayMessageComponent](../linearcanvasbasedisplay#getter-displaymessagecomponent),
-[showTooltipsEnabled](../linearcanvasbasedisplay#getter-showtooltipsenabled),
-[showLegend](../linearcanvasbasedisplay#getter-showlegend),
 [maxHeight](../linearcanvasbasedisplay#getter-maxheight),
 [autoHeight](../linearcanvasbasedisplay#getter-autoheight),
 [displayMode](../linearcanvasbasedisplay#getter-displaymode),
@@ -150,7 +147,6 @@ and docs.
 [setFeatureDensityStatsLimit](../linearcanvasbasedisplay#action-setfeaturedensitystatslimit),
 [setHover](../linearcanvasbasedisplay#action-sethover),
 [clearHover](../linearcanvasbasedisplay#action-clearhover),
-[setContextMenuFeature](../linearcanvasbasedisplay#action-setcontextmenufeature),
 [setContextMenuInfo](../linearcanvasbasedisplay#action-setcontextmenuinfo),
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
@@ -193,7 +189,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -329,14 +324,43 @@ type: types.literal('LinearVariantDisplay')
 </details>
 
 <details open>
+<summary>LinearVariantDisplay - Volatiles</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                     | Signature |
+| ---------------------------------------------------------- | --------- |
+| [`impactLegendDismissed`](#volatile-impactlegenddismissed) | `false`   |
+
+</details>
+
+<details>
+<summary>LinearVariantDisplay - Volatiles (all signatures)</summary>
+
+#### volatile: impactLegendDismissed
+
+```ts
+// type signature
+type impactLegendDismissed = false
+// code
+impactLegendDismissed: false
+```
+
+</details>
+
+<details open>
 <summary>LinearVariantDisplay - Getters</summary>
 
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                           | Signature                       |
-| ------------------------------------------------ | ------------------------------- |
-| [`featureWidgetType`](#getter-featurewidgettype) | `{ type: string; id: string; }` |
+| Member                                                           | Signature                       |
+| ---------------------------------------------------------------- | ------------------------------- |
+| [`featureWidgetType`](#getter-featurewidgettype)                 | `{ type: string; id: string; }` |
+| [`colorsByConsequenceImpact`](#getter-colorsbyconsequenceimpact) | `boolean`                       |
+| [`impactLegendItems`](#getter-impactlegenditems)                 | `LegendItem[]`                  |
+| [`showImpactLegend`](#getter-showimpactlegend)                   | `boolean`                       |
 
 </details>
 
@@ -347,6 +371,24 @@ detail):
 
 ```ts
 type featureWidgetType = { type: string; id: string }
+```
+
+#### getter: colorsByConsequenceImpact
+
+```ts
+type colorsByConsequenceImpact = boolean
+```
+
+#### getter: impactLegendItems
+
+```ts
+type impactLegendItems = LegendItem[]
+```
+
+#### getter: showImpactLegend
+
+```ts
+type showImpactLegend = boolean
 ```
 
 </details>
@@ -375,6 +417,29 @@ type colorBySubMenuItems = () => {
   checked: boolean
   onClick: () => void
 }[]
+```
+
+</details>
+
+<details open>
+<summary>LinearVariantDisplay - Actions</summary>
+
+**Other members** (undocumented — signatures only, expand below for full
+detail):
+
+| Member                                                         | Signature                |
+| -------------------------------------------------------------- | ------------------------ |
+| [`setImpactLegendDismissed`](#action-setimpactlegenddismissed) | `(arg: boolean) => void` |
+
+</details>
+
+<details>
+<summary>LinearVariantDisplay - Actions (all signatures)</summary>
+
+#### action: setImpactLegendDismissed
+
+```ts
+type setImpactLegendDismissed = (arg: boolean) => void
 ```
 
 </details>

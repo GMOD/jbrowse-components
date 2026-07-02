@@ -72,7 +72,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -180,82 +179,6 @@ and docs.
 <details open>
 <summary>LinearHicDisplay - Properties</summary>
 
-#### property: resolutionBias
-
-Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure
-auto. `-1` is one step finer than auto, `+1` is one step coarser, etc. Tracking
-the _offset_ (not an absolute binsize) keeps the user's intent valid across zoom
-levels — a saved session with bias=-1 still means "one step finer than auto"
-when reopened at a different scale.
-
-```ts
-// type signature
-type resolutionBias = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-resolutionBias: types.stripDefault(types.number, 0)
-```
-
-#### property: useLogScale
-
-Map contact counts to color on a log2 scale instead of linear.
-
-```ts
-// type signature
-type useLogScale = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-useLogScale: types.stripDefault(types.boolean, false)
-```
-
-#### property: useColorPercentile
-
-Color saturation point: false → maxScore/20 (linear) or maxScore (log), matches
-legacy behavior. true → 95th percentile of counts; lower saturation point so
-off-diagonal contacts read more strongly.
-
-```ts
-// type signature
-type useColorPercentile = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-useColorPercentile: types.stripDefault(types.boolean, false)
-```
-
-#### property: showResolutionControls
-
-Whether the on-canvas resolution stepper overlay is shown. Toggled from the
-track menu's `Show...` submenu; the stepper itself lives only on the canvas to
-keep the menu uncluttered.
-
-```ts
-// type signature
-type showResolutionControls = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showResolutionControls: types.stripDefault(types.boolean, true)
-```
-
-#### property: activeNormalization
-
-Active matrix normalization scheme (e.g. KR, SCALE, VC, NONE), reconciled
-against what the `.hic` file actually provides.
-
-```ts
-// type signature
-type activeNormalization = IOptionalIType<ISimpleType<string>, [undefined]>
-// code
-activeNormalization: types.stripDefault(types.string, 'KR')
-```
-
-#### property: fitToHeight
-
-Squash the triangle vertically to fit the chosen display height instead of
-drawing square bins at natural proportions.
-
-```ts
-// type signature
-type fitToHeight = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-fitToHeight: types.stripDefault(types.boolean, false)
-```
-
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -338,6 +261,28 @@ availableResolutions: undefined as number[] | undefined
 <details open>
 <summary>LinearHicDisplay - Getters</summary>
 
+#### getter: selectedNormalization
+
+The user's persisted normalization choice. May name a scheme the current `.hic`
+file doesn't actually offer — `activeNormalization` resolves that.
+
+```ts
+type selectedNormalization = string
+```
+
+#### getter: activeNormalization
+
+The normalization actually used, resolved against what the file offers
+(`availableNormalizations`). Falls back to the next-best available scheme when
+the selection is absent (hic-straw silently uses NONE otherwise). A pure getter,
+so opening a file that lacks the selected scheme never writes a config delta /
+marks the track edited — only an explicit user pick (setActiveNormalization)
+does.
+
+```ts
+type activeNormalization = string
+```
+
 #### getter: dataLoaded
 
 GlobalDataDisplayMixin hook: the contact matrix has been fetched once `rpcData`
@@ -390,17 +335,52 @@ type renderTransform = RenderTransform
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                   | Signature                           |
-| ---------------------------------------- | ----------------------------------- |
-| [`colorScheme`](#getter-colorscheme)     | `"fall" \| "juicebox" \| "viridis"` |
-| [`showLegend`](#getter-showlegend)       | `boolean`                           |
-| [`colorMaxScore`](#getter-colormaxscore) | `number`                            |
-| [`yScalar`](#getter-yscalar)             | `number`                            |
+| Member                                                     | Signature                           |
+| ---------------------------------------------------------- | ----------------------------------- |
+| [`resolutionBias`](#getter-resolutionbias)                 | `number`                            |
+| [`useLogScale`](#getter-uselogscale)                       | `boolean`                           |
+| [`useColorPercentile`](#getter-usecolorpercentile)         | `boolean`                           |
+| [`showResolutionControls`](#getter-showresolutioncontrols) | `boolean`                           |
+| [`fitToHeight`](#getter-fittoheight)                       | `boolean`                           |
+| [`colorScheme`](#getter-colorscheme)                       | `"fall" \| "juicebox" \| "viridis"` |
+| [`showLegend`](#getter-showlegend)                         | `boolean`                           |
+| [`colorMaxScore`](#getter-colormaxscore)                   | `number`                            |
+| [`yScalar`](#getter-yscalar)                               | `number`                            |
 
 </details>
 
 <details>
 <summary>LinearHicDisplay - Getters (all signatures)</summary>
+
+#### getter: resolutionBias
+
+```ts
+type resolutionBias = number
+```
+
+#### getter: useLogScale
+
+```ts
+type useLogScale = boolean
+```
+
+#### getter: useColorPercentile
+
+```ts
+type useColorPercentile = boolean
+```
+
+#### getter: showResolutionControls
+
+```ts
+type showResolutionControls = boolean
+```
+
+#### getter: fitToHeight
+
+```ts
+type fitToHeight = boolean
+```
 
 #### getter: colorScheme
 
@@ -528,13 +508,22 @@ the backend into the mixin-owned autorun pair via `attachRenderingBackend`.
 type startRenderingBackend = (backend: HicRenderingBackend) => void
 ```
 
+#### action: setActiveNormalization
+
+Persist the user's explicit normalization pick. Resolution against what the file
+offers happens in the `activeNormalization` getter, so this only fires on a real
+user choice.
+
+```ts
+type setActiveNormalization = (f: string) => void
+```
+
 #### action: setAvailableNormalizations
 
-Reconcile `activeNormalization` against what the file actually offers. The model
-seeds `activeNormalization='KR'` before `CoreGetInfo` resolves, but not every
-`.hic` carries KR — when it doesn't, fall back to the next-best available scheme
-so the UI selection matches what's rendered (hic-straw silently uses NONE for an
-absent norm otherwise).
+Record what the `.hic` file offers. Resolution lives in the
+`activeNormalization` getter (which falls back off this list when the user's
+`selectedNormalization` isn't available), so this doesn't write the selection —
+opening a file that lacks the selected scheme never marks the track edited.
 
 ```ts
 type setAvailableNormalizations = (f: string[]) => void
@@ -561,8 +550,8 @@ type resetResolutionBias = () => void
 
 #### action: performHicFetch
 
-Re-fetches contact matrix for the current viewport. Both the autorun (in
-`afterAttach`) and `reload()` invoke this directly.
+Re-fetches contact matrix for the current viewport. Driven by the `afterAttach`
+autorun, which also re-fires on `reload()` (it tracks `reloadCounter`).
 
 ```ts
 type performHicFetch = () => Promise<void>
@@ -578,7 +567,6 @@ detail):
 | [`setUseColorPercentile`](#action-setusecolorpercentile)         | `(f: boolean) => void`                                         |
 | [`setShowResolutionControls`](#action-setshowresolutioncontrols) | `(f: boolean) => void`                                         |
 | [`setColorScheme`](#action-setcolorscheme)                       | `(f?: "fall" \| "juicebox" \| "viridis" \| undefined) => void` |
-| [`setActiveNormalization`](#action-setactivenormalization)       | `(f: string) => void`                                          |
 | [`setFitToHeight`](#action-setfittoheight)                       | `(arg: boolean) => void`                                       |
 | [`setShowLegend`](#action-setshowlegend)                         | `(arg: boolean) => void`                                       |
 | [`setAvailableResolutions`](#action-setavailableresolutions)     | `(f: number[]) => void`                                        |
@@ -616,12 +604,6 @@ type setShowResolutionControls = (f: boolean) => void
 
 ```ts
 type setColorScheme = (f?: 'fall' | 'juicebox' | 'viridis' | undefined) => void
-```
-
-#### action: setActiveNormalization
-
-```ts
-type setActiveNormalization = (f: string) => void
 ```
 
 #### action: setFitToHeight

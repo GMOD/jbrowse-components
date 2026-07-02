@@ -54,7 +54,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -216,7 +215,6 @@ detail):
 | [`featureIdUnderMouse`](#volatile-featureidundermouse)             | `string \| null`                                                                                               |
 | [`subfeatureIdUnderMouse`](#volatile-subfeatureidundermouse)       | `string \| null`                                                                                               |
 | [`mouseoverExtraInformation`](#volatile-mouseoverextrainformation) | `string \| undefined`                                                                                          |
-| [`contextMenuFeature`](#volatile-contextmenufeature)               | `Feature \| undefined`                                                                                         |
 | [`contextMenuInfo`](#volatile-contextmenuinfo)                     | `{ item: FlatbushItem; displayedRegionIndex: number; } \| undefined`                                           |
 | [`userFeatureDensityLimit`](#volatile-userfeaturedensitylimit)     | `number \| undefined`                                                                                          |
 | [`byteEstimateVisibleBp`](#volatile-byteestimatevisiblebp)         | `number \| undefined`                                                                                          |
@@ -277,15 +275,6 @@ subfeatureIdUnderMouse: null as string | null
 type mouseoverExtraInformation = string | undefined
 // code
 mouseoverExtraInformation: undefined as string | undefined
-```
-
-#### volatile: contextMenuFeature
-
-```ts
-// type signature
-type contextMenuFeature = Feature | undefined
-// code
-contextMenuFeature: undefined as Feature | undefined
 ```
 
 #### volatile: contextMenuInfo
@@ -429,8 +418,6 @@ detail):
 | [`visibleFeatureDensityPerPx`](#getter-visiblefeaturedensityperpx) | `number`                                                          |
 | [`renderState`](#getter-renderstate)                               | `{ scrollY: number; canvasWidth: number; canvasHeight: number; }` |
 | [`DisplayMessageComponent`](#getter-displaymessagecomponent)       | `LazyExoticComponent<({ model }: Props) => Element>`              |
-| [`showTooltipsEnabled`](#getter-showtooltipsenabled)               | `boolean`                                                         |
-| [`showLegend`](#getter-showlegend)                                 | `boolean`                                                         |
 | [`maxHeight`](#getter-maxheight)                                   | `any`                                                             |
 | [`autoHeight`](#getter-autoheight)                                 | `any`                                                             |
 | [`displayMode`](#getter-displaymode)                               | `any`                                                             |
@@ -493,18 +480,6 @@ type renderState = {
 type DisplayMessageComponent = LazyExoticComponent<
   ({ model }: Props) => Element
 >
-```
-
-#### getter: showTooltipsEnabled
-
-```ts
-type showTooltipsEnabled = boolean
-```
-
-#### getter: showLegend
-
-```ts
-type showLegend = boolean
 ```
 
 #### getter: maxHeight
@@ -902,7 +877,6 @@ detail):
 | [`setFeatureDensityStatsLimit`](#action-setfeaturedensitystatslimit) | `(stats?: { bytes?: number \| undefined; fetchSizeLimit?: number \| undefined; } \| undefined) => void`          |
 | [`setHover`](#action-sethover)                                       | `(featureId: string \| null, subfeatureId: string \| null, tooltip: string \| undefined) => void`                |
 | [`clearHover`](#action-clearhover)                                   | `() => void`                                                                                                     |
-| [`setContextMenuFeature`](#action-setcontextmenufeature)             | `(feature?: Feature \| undefined) => void`                                                                       |
 | [`setContextMenuInfo`](#action-setcontextmenuinfo)                   | `(info?: { item: FlatbushItem; displayedRegionIndex: number; } \| undefined) => void`                            |
 | [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                     |
 | [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                     |
@@ -1036,12 +1010,6 @@ type setHover = (
 
 ```ts
 type clearHover = () => void
-```
-
-#### action: setContextMenuFeature
-
-```ts
-type setContextMenuFeature = (feature?: Feature | undefined) => void
 ```
 
 #### action: setContextMenuInfo

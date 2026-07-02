@@ -74,6 +74,7 @@ and docs.
 [contextMenuCigarHit](../linearalignmentsdisplay#volatile-contextmenucigarhit),
 [contextMenuIndicatorHit](../linearalignmentsdisplay#volatile-contextmenuindicatorhit),
 [contextMenuRefName](../linearalignmentsdisplay#volatile-contextmenurefname),
+[contextMenuRpcData](../linearalignmentsdisplay#volatile-contextmenurpcdata),
 [rpcDataMap](../linearalignmentsdisplay#volatile-rpcdatamap),
 [scrollTop](../linearalignmentsdisplay#volatile-scrolltop),
 [collapsedGroups](../linearalignmentsdisplay#volatile-collapsedgroups),
@@ -190,7 +191,7 @@ and docs.
 [trackMenuItems](../linearalignmentsdisplay#method-trackmenuitems),
 [contextMenuItems](../linearalignmentsdisplay#method-contextmenuitems)
 
-**Actions:** [afterAttach](../linearalignmentsdisplay#action-afterattach),
+**Actions:**
 [clearMouseoverState](../linearalignmentsdisplay#action-clearmouseoverstate),
 [setError](../linearalignmentsdisplay#action-seterror),
 [setRegionTooLarge](../linearalignmentsdisplay#action-setregiontoolarge),
@@ -259,6 +260,7 @@ and docs.
 [setContextMenuIndicatorHit](../linearalignmentsdisplay#action-setcontextmenuindicatorhit),
 [clearContextMenu](../linearalignmentsdisplay#action-clearcontextmenu),
 [setContextMenuRefName](../linearalignmentsdisplay#action-setcontextmenurefname),
+[setContextMenuRpcData](../linearalignmentsdisplay#action-setcontextmenurpcdata),
 [selectFeature](../linearalignmentsdisplay#action-selectfeature),
 [startRenderingBackend](../linearalignmentsdisplay#action-startrenderingbackend),
 [selectFeatureById](../linearalignmentsdisplay#action-selectfeaturebyid),
@@ -283,7 +285,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -431,19 +432,10 @@ configuration: ConfigurationReference(schema)
 <details open>
 <summary>LGVSyntenyDisplay - Getters</summary>
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                           | Signature                       |
-| ------------------------------------------------ | ------------------------------- |
-| [`featureWidgetType`](#getter-featurewidgettype) | `{ type: string; id: string; }` |
-
-</details>
-
-<details>
-<summary>LGVSyntenyDisplay - Getters (all signatures)</summary>
-
 #### getter: featureWidgetType
+
+synteny features open the SyntenyFeatureWidget; the inherited `selectFeature`
+action reads this getter, so no override is needed.
 
 ```ts
 type featureWidgetType = { type: string; id: string }
@@ -486,29 +478,6 @@ type contextMenuItems = () => (
 
 ```ts
 type trackMenuItems = () => ({ label: string; type: "subMenu"; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: MenuItem[]; } | { ...; } | { ...; })[]
-```
-
-</details>
-
-<details open>
-<summary>LGVSyntenyDisplay - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                   | Signature                    |
-| ---------------------------------------- | ---------------------------- |
-| [`selectFeature`](#action-selectfeature) | `(feature: Feature) => void` |
-
-</details>
-
-<details>
-<summary>LGVSyntenyDisplay - Actions (all signatures)</summary>
-
-#### action: selectFeature
-
-```ts
-type selectFeature = (feature: Feature) => void
 ```
 
 </details>

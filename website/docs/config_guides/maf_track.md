@@ -138,15 +138,15 @@ coloring with a structural view: within each species row, its source chromosomes
 (the chromosome/scaffold each aligned block comes from in that species' own
 genome) are ranked by how much of the row they cover, and colored by that
 **per-row rank** — the row's main chromosome gets the primary color, and a block
-from a different source chromosome takes a contrasting accent. So a species whose
-blocks across the window come from more than one source chromosome **changes
-color along its row** — an immediate flag for a translocation or rearrangement —
-while the rest of the track stays a single calm color. Ranking per row (rather
-than assigning a global color per chromosome name) is deliberate: every species
-has its own scaffold-naming scheme, so a global palette would be an unreadable
-rainbow, whereas the per-row scheme makes the _switch_ (the thing that matters)
-the only thing that stands out. No extra data is fetched — the source chromosome
-is already carried per block.
+from a different source chromosome takes a contrasting accent. So a species
+whose blocks across the window come from more than one source chromosome
+**changes color along its row** — an immediate flag for a translocation or
+rearrangement — while the rest of the track stays a single calm color. Ranking
+per row (rather than assigning a global color per chromosome name) is
+deliberate: every species has its own scaffold-naming scheme, so a global
+palette would be an unreadable rainbow, whereas the per-row scheme makes the
+_switch_ (the thing that matters) the only thing that stands out. No extra data
+is fetched — the source chromosome is already carried per block.
 
 This needs no `annotationAdapter` and works on any MAF track; it is shown in the
 detailed (per-base) view rather than the zoomed-out summary.

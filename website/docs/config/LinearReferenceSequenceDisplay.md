@@ -70,4 +70,46 @@ zoom-aware computed height. See the model's `height` getter.
 }
 ```
 
+#### slot: showForward
+
+show the forward-strand sequence row
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'show the forward-strand sequence row',
+}
+```
+
+#### slot: showReverse
+
+show the reverse-complement sequence row (DNA only)
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'show the reverse-complement sequence row (DNA only)',
+}
+```
+
+#### slot: showTranslation
+
+show the translation frame rows (DNA only)
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'show the translation frame rows (DNA only)',
+}
+```
+
 </details>

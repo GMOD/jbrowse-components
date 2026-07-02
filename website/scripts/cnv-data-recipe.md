@@ -3,8 +3,8 @@
 > **Preferred: run [Wakhan](https://github.com/KolmogorovLab/Wakhan) rather than
 > the hand-rolled pipeline below.** Wakhan is the Kolmogorov Lab
 > haplotype-specific CNV caller for long reads; it takes the phased tumor BAM
-> (phased against the germline hets) + reference and emits, in one validated run,
-> exactly what all four blocked cgiab CNV figures need:
+> (phased against the germline hets) + reference and emits, in one validated
+> run, exactly what all four blocked cgiab CNV figures need:
 >
 > - per-bin (and fine-scale) **coverage** — fixes `driver_cdkn2a_deletion`
 >   ("bins too large to show the fine-scale deletion").
@@ -20,12 +20,12 @@
 >
 > Convert Wakhan's coverage/BAF outputs to bigWig (`bedGraphToBigWig`) and its
 > copy-number segments to a BED with the `total/hap1/hap2` columns, upload to
-> `s3://jbrowse.org/demos/cgiab/`, then wire into the specs (§3). Running it needs
-> the HG008 tumor phased BAM + `GRCh38_GIABv3.fa` on a box with Wakhan installed —
-> a heavy job, not runnable inline in the screenshot sandbox.
+> `s3://jbrowse.org/demos/cgiab/`, then wire into the specs (§3). Running it
+> needs the HG008 tumor phased BAM + `GRCh38_GIABv3.fa` on a box with Wakhan
+> installed — a heavy job, not runnable inline in the screenshot sandbox.
 >
-> The manual mosdepth/bcftools workflow below is kept only as a fallback for when
-> Wakhan isn't available.
+> The manual mosdepth/bcftools workflow below is kept only as a fallback for
+> when Wakhan isn't available.
 
 ---
 
@@ -118,7 +118,7 @@ The reviewer asked for **no whiskers on the BAF**. The whiskers are not a spec
 oversight to toggle off: `LinearWiggleDisplay`'s `summaryScoreMode` defaults to
 `'whiskers'`, so at chromosome scale each display bin draws its min/avg/max. For
 a **raw** BAF (the `alt/depth` above, values scattered across 0..1) the whiskers
-*are* the signal — an LOH bin genuinely spans 0 and 1, so setting
+_are_ the signal — an LOH bin genuinely spans 0 and 1, so setting
 `summaryScoreMode:'avg'` collapses it to ~0.5 and hides the LOH the figure is
 meant to show. You can't get a clean, whisker-free BAF from raw values.
 

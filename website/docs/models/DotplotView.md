@@ -31,9 +31,13 @@ is allowed):
   init: {
     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
     tracks: ['hg38_vs_mm10.paf'],
+    colorBy: 'query',
   },
 }
 ```
+
+Other `init` fields: `autoDiagonalize`, `minAlignmentLength`, and a per-axis
+`loc` on each `views` entry — see the `init` property below.
 
 ## Overview
 
@@ -806,7 +810,7 @@ detail):
 | [`toggleTrack`](#action-toggletrack)                               | `(trackId: string) => void`                                                                                                                                                                                                                                                         |
 | [`setAssemblyNames`](#action-setassemblynames)                     | `(target: string, query: string) => void`                                                                                                                                                                                                                                           |
 | [`setViews`](#action-setviews)                                     | `(arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void` |
-| [`getCoords`](#action-getcoords)                                   | `(mousedown: Coord, mouseup: Coord) => { coord: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }[] \| undefined`                                                          |
+| [`getCoords`](#action-getcoords)                                   | `(mousedown: Coord, mouseup: Coord) => { coord: number; coord0: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }[] \| undefined`                                          |
 | [`showAllRegions`](#action-showallregions)                         | `() => void`                                                                                                                                                                                                                                                                        |
 | [`initializeDisplayedRegions`](#action-initializedisplayedregions) | `() => void`                                                                                                                                                                                                                                                                        |
 | [`applySquare`](#action-applysquare)                               | `(ratio: number) => void`                                                                                                                                                                                                                                                           |
@@ -998,6 +1002,7 @@ type getCoords = (
 ) =>
   | {
       coord: number
+      coord0: number
       index: number
       refName: string
       oob: boolean

@@ -59,7 +59,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -431,7 +430,7 @@ type hasUnphased = boolean
 
 #### getter: renderingMode
 
-Returns the effective rendering mode, falling back to config
+Returns the rendering mode config slot value
 
 ```ts
 type renderingMode = string
@@ -449,7 +448,7 @@ type colorBy = string
 
 #### getter: minorAlleleFrequencyFilter
 
-Returns the effective minor allele frequency filter, falling back to config
+Returns the minor allele frequency filter config slot value
 
 ```ts
 type minorAlleleFrequencyFilter = number
@@ -795,8 +794,8 @@ type dismissLegendSection = (id: string) => void
 
 Recolor sample rows by a metadata attribute (e.g. 'population'), or pass '' to
 clear the grouping. Persists the colored arrangement as the layout and records
-the choice as a `colorBy` override so it survives a data refetch and serializes
-into the session.
+the choice in the `colorBy` config slot so it survives a data refetch and
+serializes into the session.
 
 ```ts
 type setColorBy = (colorBy: string) => void

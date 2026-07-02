@@ -177,6 +177,15 @@ type tracksForAssembly = (selectedAssembly: string) => { track: ModelInstanceTyp
 <details open>
 <summary>SpreadsheetImportWizard - Actions</summary>
 
+#### action: selectDefaultTrack
+
+point the source/type at the first usable track for an assembly (or clear if
+none), used to seed the "open from track" flow
+
+```ts
+type selectDefaultTrack = (assembly: string) => void
+```
+
 #### action: import
 
 fetch and parse the file, returning a spreadsheet snapshot for the owning view

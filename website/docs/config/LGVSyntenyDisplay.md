@@ -72,6 +72,21 @@ Synteny reads are strand-colored by default (vs the base alignments display's
 }
 ```
 
+#### slot: showCoverage
+
+Synteny reads hide the coverage histogram by default; overrides the inherited
+base alignments display's `showCoverage` default of `true`.
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw the coverage histogram band',
+}
+```
+
 </details>
 
 ## Inherited config slots

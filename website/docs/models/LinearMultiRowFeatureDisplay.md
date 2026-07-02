@@ -54,7 +54,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -193,40 +192,13 @@ and docs.
 <details open>
 <summary>LinearMultiRowFeatureDisplay - Properties</summary>
 
-#### property: rowHeightOverride
-
-Per-display override of the config `rowHeight`: a positive px height pins fixed
-rows, `0` selects auto-fit. `rowHeightSetting` resolves override-or-config; the
-`rowHeight` getter then resolves `0` to the fit-to-height value, so it's never
-undefined.
-
-```ts
-// type signature
-type rowHeightOverride = IMaybe<ISimpleType<number>>
-// code
-rowHeightOverride: types.maybe(types.number)
-```
-
-#### property: showBranchLength
-
-Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
-(cladogram).
-
-```ts
-// type signature
-type showBranchLength = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showBranchLength: types.stripDefault(types.boolean, DEFAULTS.showBranchLength)
-```
-
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                           |
-| ------------------------------------------ | --------------------------------------------------- |
-| [`type`](#property-type)                   | `ISimpleType<"LinearMultiRowFeatureDisplay">`       |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                         |
-| [`showTree`](#property-showtree)           | `IOptionalIType<ISimpleType<boolean>, [undefined]>` |
+| Member                                     | Signature                                     |
+| ------------------------------------------ | --------------------------------------------- |
+| [`type`](#property-type)                   | `ISimpleType<"LinearMultiRowFeatureDisplay">` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`                   |
 
 </details>
 
@@ -249,15 +221,6 @@ type: types.literal('LinearMultiRowFeatureDisplay')
 type configuration = ITypeUnion<any, any, any>
 // code
 configuration: ConfigurationReference(configSchema)
-```
-
-#### property: showTree
-
-```ts
-// type signature
-type showTree = IOptionalIType<ISimpleType<boolean>, [undefined]>
-// code
-showTree: types.stripDefault(types.boolean, DEFAULTS.showTree)
 ```
 
 </details>
@@ -410,7 +373,7 @@ type fitTargetHeight = number
 #### getter: rowHeightSetting
 
 Resolved fixed row-height setting: `0` is auto-fit, any positive value is a
-pinned px height. Override-or-config, never undefined.
+pinned px height. Drag-resize / fit-toggle write it via `setSlot`.
 
 ```ts
 type rowHeightSetting = number
@@ -473,17 +436,31 @@ type renderState = MultiRowRenderState | undefined
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                       | Signature                                                          |
-| -------------------------------------------- | ------------------------------------------------------------------ |
-| [`partitionField`](#getter-partitionfield)   | `string`                                                           |
-| [`rowProportion`](#getter-rowproportion)     | `number`                                                           |
-| [`rowIndexByValue`](#getter-rowindexbyvalue) | `Map<string, number>`                                              |
-| [`spatialIndex`](#getter-spatialindex)       | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
+| Member                                         | Signature                                                          |
+| ---------------------------------------------- | ------------------------------------------------------------------ |
+| [`showTree`](#getter-showtree)                 | `boolean`                                                          |
+| [`showBranchLength`](#getter-showbranchlength) | `boolean`                                                          |
+| [`partitionField`](#getter-partitionfield)     | `string`                                                           |
+| [`rowProportion`](#getter-rowproportion)       | `number`                                                           |
+| [`rowIndexByValue`](#getter-rowindexbyvalue)   | `Map<string, number>`                                              |
+| [`spatialIndex`](#getter-spatialindex)         | `{ index: Flatbush; nodes: ClusterHierarchyNode[]; } \| undefined` |
 
 </details>
 
 <details>
 <summary>LinearMultiRowFeatureDisplay - Getters (all signatures)</summary>
+
+#### getter: showTree
+
+```ts
+type showTree = boolean
+```
+
+#### getter: showBranchLength
+
+```ts
+type showBranchLength = boolean
+```
 
 #### getter: partitionField
 
@@ -592,8 +569,8 @@ type resizeHeight = (distance: number) => number
 #### action: setFitToHeight
 
 Switch to auto-fit: seed the `height` config slot from the current content
-height (so toggling on doesn't jump), then `rowHeightOverride = 0` makes
-`rowHeight` derive from it.
+height (so toggling on doesn't jump), then `rowHeight = 0` makes `rowHeight`
+derive from it.
 
 ```ts
 type setFitToHeight = () => void

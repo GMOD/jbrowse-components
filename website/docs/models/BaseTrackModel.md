@@ -120,13 +120,24 @@ a shown track always has at least one display
 type activeDisplay = any
 ```
 
+#### getter: saveTrackDataMenuItem
+
+the "Save track data" menu entry. Kept separate from trackMenuItems so consumers
+(e.g. the LGV track-label menu) can place it alongside the session's
+Settings/Copy/Delete track actions without fishing it back out of the general
+list
+
+```ts
+type saveTrackDataMenuItem = MenuItem
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
 | Member                                           | Signature     |
 | ------------------------------------------------ | ------------- |
 | [`trackId`](#getter-trackid)                     | `string`      |
-| [`name`](#getter-name)                           | `any`         |
+| [`name`](#getter-name)                           | `string`      |
 | [`textSearchAdapter`](#getter-textsearchadapter) | `any`         |
 | [`adapterConfig`](#getter-adapterconfig)         | `any`         |
 | [`viewMenuActions`](#getter-viewmenuactions)     | `MenuItem[]`  |
@@ -147,7 +158,7 @@ type trackId = string
 #### getter: name
 
 ```ts
-type name = any
+type name = string
 ```
 
 #### getter: textSearchAdapter

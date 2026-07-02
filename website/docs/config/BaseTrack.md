@@ -33,15 +33,16 @@ identifies it (not one of the config slots below).
 
 #### slot: name
 
-descriptive name of the track
+descriptive name of the track, falls back to the trackId when unset
 
-**Type:** `string` · **Default:** `'Track'`
+**Type:** `string` · **Default:** `''`
 
 ```js
 {
-  description: 'descriptive name of the track',
+  description:
+    'descriptive name of the track, falls back to the trackId when unset',
   type: 'string',
-  defaultValue: 'Track',
+  defaultValue: '',
 }
 ```
 

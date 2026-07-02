@@ -114,7 +114,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -261,6 +260,19 @@ configuration: ConfigurationReference(configSchema)
 
 <details open>
 <summary>LinearAlignmentsDisplay - Volatiles</summary>
+
+#### volatile: contextMenuRpcData
+
+Block-level worker result under a right-click, so the indicator/coverage
+context-menu detail items can open the aggregate widget (mirrors the left-click
+path in useAlignmentsBase).
+
+```ts
+// type signature
+type contextMenuRpcData = PileupDataResult | undefined
+// code
+contextMenuRpcData: undefined as PileupDataResult | undefined
+```
 
 #### volatile: scrollTop
 
@@ -812,7 +824,7 @@ detail):
 | [`chainIdMap`](#getter-chainidmap)                             | `Map<string, string[]>`                                                                                                                                                                                                                                                                                             |
 | [`mismatchAlpha`](#getter-mismatchalpha)                       | `boolean`                                                                                                                                                                                                                                                                                                           |
 | [`showLowFreqMismatches`](#getter-showlowfreqmismatches)       | `boolean`                                                                                                                                                                                                                                                                                                           |
-| [`showLegend`](#getter-showlegend)                             | `any`                                                                                                                                                                                                                                                                                                               |
+| [`showLegend`](#getter-showlegend)                             | `boolean`                                                                                                                                                                                                                                                                                                           |
 | [`sortedBy`](#getter-sortedby)                                 | `SortedBy \| undefined`                                                                                                                                                                                                                                                                                             |
 | [`coverageIsLog`](#getter-coverageislog)                       | `boolean`                                                                                                                                                                                                                                                                                                           |
 | [`coverageStats`](#getter-coveragestats)                       | `ScoreStats \| undefined`                                                                                                                                                                                                                                                                                           |
@@ -1112,7 +1124,7 @@ type showLowFreqMismatches = boolean
 #### getter: showLegend
 
 ```ts
-type showLegend = any
+type showLegend = boolean
 ```
 
 #### getter: sortedBy
@@ -1467,10 +1479,9 @@ detail):
 
 | Member                                                                 | Signature                                                                                                                                                                                                                         |
 | ---------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`afterAttach`](#action-afterattach)                                   | `() => void`                                                                                                                                                                                                                      |
 | [`clearMouseoverState`](#action-clearmouseoverstate)                   | `() => void`                                                                                                                                                                                                                      |
 | [`setError`](#action-seterror)                                         | `(error?: unknown) => void`                                                                                                                                                                                                       |
-| [`setRegionTooLarge`](#action-setregiontoolarge)                       | `(value: boolean, reason?: string \| undefined) => void`                                                                                                                                                                          |
+| [`setRegionTooLarge`](#action-setregiontoolarge)                       | `(val: boolean, reason?: string \| undefined) => void`                                                                                                                                                                            |
 | [`setRpcData`](#action-setrpcdata)                                     | `(displayedRegionIndex: number, data: GroupedAlignmentsResult \| null) => void`                                                                                                                                                   |
 | [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)         | `() => void`                                                                                                                                                                                                                      |
 | [`setOverCigarItem`](#action-setovercigaritem)                         | `(flag: boolean) => void`                                                                                                                                                                                                         |
@@ -1487,12 +1498,12 @@ detail):
 | [`toggleMismatchAlpha`](#action-togglemismatchalpha)                   | `() => void`                                                                                                                                                                                                                      |
 | [`toggleShowLowFreqMismatches`](#action-toggleshowlowfreqmismatches)   | `() => void`                                                                                                                                                                                                                      |
 | [`setSortedBy`](#action-setsortedby)                                   | `(type: string, tag?: string \| undefined) => void`                                                                                                                                                                               |
-| [`setSortedByAtPosition`](#action-setsortedbyatposition)               | `(type: string, pos: number, referenceName: string) => void`                                                                                                                                                                      |
+| [`setSortedByAtPosition`](#action-setsortedbyatposition)               | `(type: string, pos: number, refName: string) => void`                                                                                                                                                                            |
 | [`clearSortedBy`](#action-clearsortedby)                               | `() => void`                                                                                                                                                                                                                      |
-| [`setScaleType`](#action-setscaletype)                                 | `(value: string) => void`                                                                                                                                                                                                         |
-| [`setAutoscale`](#action-setautoscale)                                 | `(value?: string \| undefined) => void`                                                                                                                                                                                           |
-| [`setMinScore`](#action-setminscore)                                   | `(value?: number \| undefined) => void`                                                                                                                                                                                           |
-| [`setMaxScore`](#action-setmaxscore)                                   | `(value?: number \| undefined) => void`                                                                                                                                                                                           |
+| [`setScaleType`](#action-setscaletype)                                 | `(val: string) => void`                                                                                                                                                                                                           |
+| [`setAutoscale`](#action-setautoscale)                                 | `(val?: string \| undefined) => void`                                                                                                                                                                                             |
+| [`setMinScore`](#action-setminscore)                                   | `(val?: number \| undefined) => void`                                                                                                                                                                                             |
+| [`setMaxScore`](#action-setmaxscore)                                   | `(val?: number \| undefined) => void`                                                                                                                                                                                             |
 | [`setFeatureHeight`](#action-setfeatureheight)                         | `(height?: number \| undefined) => void`                                                                                                                                                                                          |
 | [`setFeatureSpacing`](#action-setfeaturespacing)                       | `(spacing?: number \| undefined) => void`                                                                                                                                                                                         |
 | [`setMaxHeight`](#action-setmaxheight)                                 | `(height?: number \| undefined) => void`                                                                                                                                                                                          |
@@ -1530,25 +1541,20 @@ detail):
 | [`setContextMenuCigarHit`](#action-setcontextmenucigarhit)             | `(hit?: CigarHitResult \| undefined) => void`                                                                                                                                                                                     |
 | [`setContextMenuIndicatorHit`](#action-setcontextmenuindicatorhit)     | `(hit?: IndicatorHitResult \| undefined) => void`                                                                                                                                                                                 |
 | [`clearContextMenu`](#action-clearcontextmenu)                         | `() => void`                                                                                                                                                                                                                      |
-| [`setContextMenuRefName`](#action-setcontextmenurefname)               | `(referenceName?: string \| undefined) => void`                                                                                                                                                                                   |
+| [`setContextMenuRefName`](#action-setcontextmenurefname)               | `(refName?: string \| undefined) => void`                                                                                                                                                                                         |
+| [`setContextMenuRpcData`](#action-setcontextmenurpcdata)               | `(data?: PileupDataResult \| undefined) => void`                                                                                                                                                                                  |
 | [`selectFeature`](#action-selectfeature)                               | `(feature: Feature) => void`                                                                                                                                                                                                      |
 | [`startRenderingBackend`](#action-startrenderingbackend)               | `(backend: AlignmentsRenderingBackend) => void`                                                                                                                                                                                   |
 | [`selectFeatureById`](#action-selectfeaturebyid)                       | `(featureId: string) => Promise<void>`                                                                                                                                                                                            |
 | [`setContextMenuFeatureById`](#action-setcontextmenufeaturebyid)       | `(featureId: string) => Promise<void>`                                                                                                                                                                                            |
 | [`getByteEstimateConfig`](#action-getbyteestimateconfig)               | `() => { adapterConfig: any; fetchSizeLimit: any; userByteSizeLimit: number \| undefined; visibleBp: number; }`                                                                                                                   |
 | [`fetchNeeded`](#action-fetchneeded)                                   | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>`                                                                                                                                                  |
-| [`renderSvg`](#action-rendersvg)                                       | `(options?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                   |
+| [`renderSvg`](#action-rendersvg)                                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                      |
 
 </details>
 
 <details>
 <summary>LinearAlignmentsDisplay - Actions (all signatures)</summary>
-
-#### action: afterAttach
-
-```ts
-type afterAttach = () => void
-```
 
 #### action: clearMouseoverState
 
@@ -1565,7 +1571,7 @@ type setError = (error?: unknown) => void
 #### action: setRegionTooLarge
 
 ```ts
-type setRegionTooLarge = (value: boolean, reason?: string | undefined) => void
+type setRegionTooLarge = (val: boolean, reason?: string | undefined) => void
 ```
 
 #### action: setRpcData
@@ -1673,7 +1679,7 @@ type setSortedBy = (type: string, tag?: string | undefined) => void
 type setSortedByAtPosition = (
   type: string,
   pos: number,
-  referenceName: string,
+  refName: string,
 ) => void
 ```
 
@@ -1686,25 +1692,25 @@ type clearSortedBy = () => void
 #### action: setScaleType
 
 ```ts
-type setScaleType = (value: string) => void
+type setScaleType = (val: string) => void
 ```
 
 #### action: setAutoscale
 
 ```ts
-type setAutoscale = (value?: string | undefined) => void
+type setAutoscale = (val?: string | undefined) => void
 ```
 
 #### action: setMinScore
 
 ```ts
-type setMinScore = (value?: number | undefined) => void
+type setMinScore = (val?: number | undefined) => void
 ```
 
 #### action: setMaxScore
 
 ```ts
-type setMaxScore = (value?: number | undefined) => void
+type setMaxScore = (val?: number | undefined) => void
 ```
 
 #### action: setFeatureHeight
@@ -1937,7 +1943,13 @@ type clearContextMenu = () => void
 #### action: setContextMenuRefName
 
 ```ts
-type setContextMenuRefName = (referenceName?: string | undefined) => void
+type setContextMenuRefName = (refName?: string | undefined) => void
+```
+
+#### action: setContextMenuRpcData
+
+```ts
+type setContextMenuRpcData = (data?: PileupDataResult | undefined) => void
 ```
 
 #### action: selectFeature
@@ -1986,7 +1998,7 @@ type fetchNeeded = (
 #### action: renderSvg
 
 ```ts
-type renderSvg = (options?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
+type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactElement<unknown, string | JSXElementConstructor<any>> | Iterable<...> | AwaitedReactNode>
 ```
 
 </details>

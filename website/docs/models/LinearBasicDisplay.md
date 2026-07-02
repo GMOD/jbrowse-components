@@ -74,7 +74,6 @@ and docs.
 [featureIdUnderMouse](../linearcanvasbasedisplay#volatile-featureidundermouse),
 [subfeatureIdUnderMouse](../linearcanvasbasedisplay#volatile-subfeatureidundermouse),
 [mouseoverExtraInformation](../linearcanvasbasedisplay#volatile-mouseoverextrainformation),
-[contextMenuFeature](../linearcanvasbasedisplay#volatile-contextmenufeature),
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
@@ -91,8 +90,6 @@ and docs.
 [visibleFeatureDensityPerPx](../linearcanvasbasedisplay#getter-visiblefeaturedensityperpx),
 [renderState](../linearcanvasbasedisplay#getter-renderstate),
 [DisplayMessageComponent](../linearcanvasbasedisplay#getter-displaymessagecomponent),
-[showTooltipsEnabled](../linearcanvasbasedisplay#getter-showtooltipsenabled),
-[showLegend](../linearcanvasbasedisplay#getter-showlegend),
 [maxHeight](../linearcanvasbasedisplay#getter-maxheight),
 [autoHeight](../linearcanvasbasedisplay#getter-autoheight),
 [displayMode](../linearcanvasbasedisplay#getter-displaymode),
@@ -156,7 +153,6 @@ and docs.
 [setFeatureDensityStatsLimit](../linearcanvasbasedisplay#action-setfeaturedensitystatslimit),
 [setHover](../linearcanvasbasedisplay#action-sethover),
 [clearHover](../linearcanvasbasedisplay#action-clearhover),
-[setContextMenuFeature](../linearcanvasbasedisplay#action-setcontextmenufeature),
 [setContextMenuInfo](../linearcanvasbasedisplay#action-setcontextmenuinfo),
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
@@ -199,7 +195,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 

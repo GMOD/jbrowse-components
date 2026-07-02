@@ -19,6 +19,23 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SvInspectorView.md)
 
+## Example usage
+
+Hand-authored under `defaultSession.views`. The `init` shorthand loads a
+structural-variant file into the spreadsheet and mirrors the rows as arcs in the
+paired circular view; `assembly` resolves coordinates for both:
+
+```js
+{
+  type: 'SvInspectorView',
+  init: {
+    assembly: 'hg38',
+    uri: 'https://example.com/sv.vcf.gz',
+    fileType: 'VCF',
+  },
+}
+```
+
 ## Overview
 
 does not extend, but is a combination of a

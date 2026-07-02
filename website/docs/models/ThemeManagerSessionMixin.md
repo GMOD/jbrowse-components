@@ -97,7 +97,7 @@ React context.
 
 ```ts
 type getActiveThemeOptions = (
-  name?: any,
+  name?: string | undefined,
 ) => ThemeOptions & { name?: string | undefined }
 ```
 

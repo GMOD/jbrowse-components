@@ -108,6 +108,97 @@ show the color scale legend
 }
 ```
 
+#### slot: resolutionBias
+
+Signed integer offset from the zoom-derived auto-picked binsize. `0` means pure
+auto; `-1` is one step finer, `+1` one step coarser. Tracking the offset (not an
+absolute binsize) keeps the intent valid across zoom.
+
+**Type:** `number` · **Default:** `0`
+
+```js
+{
+  type: 'number',
+  defaultValue: 0,
+  description: 'offset from the auto-picked resolution binsize',
+}
+```
+
+#### slot: useLogScale
+
+map contact counts to color on a log2 scale
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'map contact counts to color on a log2 scale',
+}
+```
+
+#### slot: useColorPercentile
+
+false → maxScore/20 (linear) or maxScore (log); true → 95th percentile of
+counts, so off-diagonal contacts read more strongly.
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'saturate color at the 95th percentile of counts',
+}
+```
+
+#### slot: showResolutionControls
+
+show the on-canvas resolution stepper overlay
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'show the on-canvas resolution stepper overlay',
+}
+```
+
+#### slot: selectedNormalization
+
+The user's chosen matrix normalization scheme (e.g. KR, SCALE, VC, NONE).
+Resolved at runtime against what the `.hic` file actually provides — see the
+model's `activeNormalization` getter.
+
+**Type:** `string` · **Default:** `'KR'`
+
+```js
+{
+  type: 'string',
+  defaultValue: 'KR',
+  description: 'preferred matrix normalization scheme',
+}
+```
+
+#### slot: fitToHeight
+
+squash the triangle vertically to fit the display height instead of drawing
+square bins
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description:
+    'squash the triangle vertically to fit the display height instead of drawing square bins',
+}
+```
+
 </details>
 
 ## Inherited config slots

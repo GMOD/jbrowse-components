@@ -40,7 +40,9 @@ export const GET: APIRoute = async ({ site }) => {
       <link>${link}</link>
       <guid isPermaLink="true">${link}</guid>
       <pubDate>${post.data.date.toUTCString()}</pubDate>${
-        post.data.author ? `\n      <author>${escapeXml(post.data.author)}</author>` : ''
+        post.data.author
+          ? `\n      <author>${escapeXml(post.data.author)}</author>`
+          : ''
       }${(post.data.tags ?? [])
         .map(t => `\n      <category>${escapeXml(t)}</category>`)
         .join('')}

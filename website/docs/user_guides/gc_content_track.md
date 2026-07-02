@@ -6,9 +6,9 @@ guide_category: Track types
 
 A GC content track plots the base composition of the reference genome itself —
 no data file of your own required. It reads the assembly's sequence, slides a
-window along it, and draws the result as a quantitative (wiggle) track, so GC-rich
-and GC-poor regions, isochores, and — in bacterial genomes — the replication
-origin all become visible at a glance.
+window along it, and draws the result as a quantitative (wiggle) track, so
+GC-rich and GC-poor regions, isochores, and — in bacterial genomes — the
+replication origin all become visible at a glance.
 
 ## Launching a GC content track from the sequence
 
@@ -21,9 +21,9 @@ Instead, launch the track straight off the reference sequence track:
   same **Add GC content track** item.
 
 Either route creates a `GCContentTrack` that wraps the assembly's existing
-sequence adapter in a `GCContentAdapter`, so it works for any assembly regardless
-of whether its sequence is a 2bit, indexed FASTA, or bgzip-indexed FASTA — no new
-data is fetched beyond the sequence the browser already reads.
+sequence adapter in a `GCContentAdapter`, so it works for any assembly
+regardless of whether its sequence is a 2bit, indexed FASTA, or bgzip-indexed
+FASTA — no new data is fetched beyond the sequence the browser already reads.
 
 <Figure caption="A GC content track (top, XY plot) and a GC skew track (bottom) over volvox ctgA, both computed on the fly from the reference sequence. GC content reads out the local G+C fraction; GC skew swings positive and negative around zero as the (G−C)/(G+C) balance shifts between strands." src="/img/gc_content.png" />
 
@@ -41,29 +41,31 @@ The track menu's **GC skew** checkbox toggles between the two calculations:
 
 ## Adjusting the window
 
-**Change GC parameters** in the track menu opens a dialog for the two sliding-window
-settings:
+**Change GC parameters** in the track menu opens a dialog for the two
+sliding-window settings:
 
 - **Window size** (default 100 bp) — how many bases each point averages over.
   Larger windows smooth the signal and suppress local noise; smaller windows
   resolve finer structure.
-- **Window delta** (default 100 bp) — the step between successive windows. Making
-  the delta smaller than the window size produces _overlapping_ windows, which
-  gives a smoother, more finely-sampled curve (at the cost of more points to
-  compute).
+- **Window delta** (default 100 bp) — the step between successive windows.
+  Making the delta smaller than the window size produces _overlapping_ windows,
+  which gives a smoother, more finely-sampled curve (at the cost of more points
+  to compute).
 
 ## Display options
 
 The GC content track is a quantitative (wiggle) track under the hood, so it
-inherits the full set of [quantitative track](/docs/user_guides/quantitative_track)
-display options — XY plot / line / density / scatter rendering, linear vs log
-scale, autoscale modes, and manual min/max — all from the same track menu.
+inherits the full set of
+[quantitative track](/docs/user_guides/quantitative_track) display options — XY
+plot / line / density / scatter rendering, linear vs log scale, autoscale modes,
+and manual min/max — all from the same track menu.
 
 ## See also
 
 - [Quantitative track](/docs/user_guides/quantitative_track) — the wiggle
   rendering, autoscale, and scale options the GC track inherits
-- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence the
-  GC signal is computed from, and where the "Add GC content track" action lives
+- [Sequence track](/docs/user_guides/sequence_track) — the reference sequence
+  the GC signal is computed from, and where the "Add GC content track" action
+  lives
 - [GCContentAdapter configuration](/docs/config/gccontentadapter) — window size,
   window delta, and GC mode config slots

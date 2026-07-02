@@ -31,9 +31,13 @@ connecting them with a ribbon:
   init: {
     views: [{ assembly: 'hg38' }, { assembly: 'mm10' }],
     tracks: ['hg38_vs_mm10.paf'],
+    drawCurves: true,
   },
 }
 ```
+
+Other `init` fields: `colorBy`, `levelHeights`, `alpha`, `minAlignmentLength`,
+`autoDiagonalize` — see the `init` property below.
 
 ## Overview
 

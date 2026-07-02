@@ -21,10 +21,9 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-A complete `QuantitativeTrack` config to paste into `tracks`. `height` is the
-common display-level override; score-range and rendering options (autoscale,
-min/max score, renderer) are config slots on the track itself — see the
-`QuantitativeTrack` config:
+A complete `QuantitativeTrack` config to paste into `tracks`. `height` and the
+score-range and rendering options (autoscale, min/max score, renderer) are all
+config slots on the track itself — see the `QuantitativeTrack` config:
 
 ```js
 {
@@ -73,7 +72,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -221,7 +219,6 @@ and docs.
 [setResolution](../wigglescoreconfigmixin#action-setresolution),
 [setLoadedBpPerPx](../wigglescoreconfigmixin#action-setloadedbpperpx),
 [setScaleType](../wigglescoreconfigmixin#action-setscaletype),
-[setColor](../wigglescoreconfigmixin#action-setcolor),
 [setMinScore](../wigglescoreconfigmixin#action-setminscore),
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
@@ -416,6 +413,7 @@ detail):
 | -------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`setRpcData`](#action-setrpcdata)                       | `(displayedRegionIndex: number, data: WiggleDataResult) => void`                                                                                             |
 | [`setUseBicolor`](#action-setusebicolor)                 | `(val?: boolean \| undefined) => void`                                                                                                                       |
+| [`setColor`](#action-setcolor)                           | `(color?: string \| undefined) => void`                                                                                                                      |
 | [`setPosColor`](#action-setposcolor)                     | `(color?: string \| undefined) => void`                                                                                                                      |
 | [`setNegColor`](#action-setnegcolor)                     | `(color?: string \| undefined) => void`                                                                                                                      |
 | [`setFeatureUnderMouse`](#action-setfeatureundermouse)   | `(feat?: WiggleFeatureUnderMouse \| undefined) => void`                                                                                                      |
@@ -439,6 +437,12 @@ type setRpcData = (displayedRegionIndex: number, data: WiggleDataResult) => void
 
 ```ts
 type setUseBicolor = (val?: boolean | undefined) => void
+```
+
+#### action: setColor
+
+```ts
+type setColor = (color?: string | undefined) => void
 ```
 
 #### action: setPosColor

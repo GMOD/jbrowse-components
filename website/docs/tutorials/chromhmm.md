@@ -1,33 +1,35 @@
 ---
 title: ChromHMM chromatin states
-description: Painting many-cell-type ChromHMM segmentations in one track with the multi-row feature display
+description:
+  Painting many-cell-type ChromHMM segmentations in one track with the multi-row
+  feature display
 guide_category: Tutorials
 ---
 
-[ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into
-chromatin states (active promoter, strong enhancer, heterochromatin, …) from
-combinations of histone-mark ChIP-seq. A segmentation is produced _per cell
-type_, so a useful browser track stacks many cell types on top of each other at
-the same locus — one labeled row per cell type, each painted with the ChromHMM
-state colors.
+[ChromHMM](https://compbio.mit.edu/ChromHMM/) segments the genome into chromatin
+states (active promoter, strong enhancer, heterochromatin, …) from combinations
+of histone-mark ChIP-seq. A segmentation is produced _per cell type_, so a
+useful browser track stacks many cell types on top of each other at the same
+locus — one labeled row per cell type, each painted with the ChromHMM state
+colors.
 
-This tutorial shows how the gallery's ChromHMM figure is built: how to pack
-many per-cell-type segmentation BEDs into a single **multi-row bigBed**, and how
-to configure the **multi-row feature display** so the file draws as one
-color-coded row per cell type.
+This tutorial shows how the gallery's ChromHMM figure is built: how to pack many
+per-cell-type segmentation BEDs into a single **multi-row bigBed**, and how to
+configure the **multi-row feature display** so the file draws as one color-coded
+row per cell type.
 
 <Figure src="/img/chromhmm.png" caption="The multi-row feature display showing dense ChromHMM chromatin-state annotations from ENCODE. Each row is a cell type; each feature is colored by its chromatin state via the BED itemRgb field."/>
 
 ## The idea: one file, one row per cell type
 
-ChromHMM's per-cell-type output is a stack of separate BED files
-(`Gm12878.bed`, `K562.bed`, …), each a BED9 whose `name` column is the state
-(e.g. `1_Active_Promoter`) and whose `itemRgb` column carries the ENCODE state
-color. Rather than adding one JBrowse track per cell type — which quickly
-becomes unmanageable at 9, let alone 127 cell types — we merge them into a
-single file that carries an extra `cellType` column, then let the **multi-row
-feature display** split that one track back into a labeled sub-row per cell
-type. All rows share one config, one adapter, and one fetch.
+ChromHMM's per-cell-type output is a stack of separate BED files (`Gm12878.bed`,
+`K562.bed`, …), each a BED9 whose `name` column is the state (e.g.
+`1_Active_Promoter`) and whose `itemRgb` column carries the ENCODE state color.
+Rather than adding one JBrowse track per cell type — which quickly becomes
+unmanageable at 9, let alone 127 cell types — we merge them into a single file
+that carries an extra `cellType` column, then let the **multi-row feature
+display** split that one track back into a labeled sub-row per cell type. All
+rows share one config, one adapter, and one fetch.
 
 ## 1. Combine the per-cell-type BEDs
 

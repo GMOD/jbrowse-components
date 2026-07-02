@@ -19,6 +19,25 @@ reference the markdown files in our repo of the checked out git tag
 
 [GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BreakpointSplitView.md)
 
+## Example usage
+
+Hand-authored under `defaultSession.views`. `init` is an array — one entry per
+stacked panel — each declaring the `assembly`, a `loc`, and the `tracks` to
+show. The two panels flank a structural-variant breakpoint:
+
+```js
+{
+  type: 'BreakpointSplitView',
+  init: [
+    { assembly: 'hg38', loc: 'chr1:1,000,000-1,100,000', tracks: ['alignments'] },
+    { assembly: 'hg38', loc: 'chr5:2,000,000-2,100,000', tracks: ['alignments'] },
+  ],
+}
+```
+
+Each `tracks` entry can also be a `{ trackId, displaySnapshot }` object to set
+per-panel display options (e.g. a shorter alignments height).
+
 ## Overview
 
 ## Inherited members

@@ -75,7 +75,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -124,18 +123,6 @@ and docs.
 
 <details open>
 <summary>LinearArcDisplay - Properties</summary>
-
-#### property: displayModeOverride
-
-explicit display-mode override; the `displayMode` getter resolves it over the
-config `displayMode` slot
-
-```ts
-// type signature
-type displayModeOverride = IMaybe<ISimpleType<string>>
-// code
-displayModeOverride: types.maybe(types.string)
-```
 
 **Other members** (undocumented — signatures only, expand below for full
 detail):
@@ -266,7 +253,7 @@ detail):
 
 | Member                               | Signature |
 | ------------------------------------ | --------- |
-| [`displayMode`](#getter-displaymode) | `string`  |
+| [`displayMode`](#getter-displaymode) | `any`     |
 
 </details>
 
@@ -276,7 +263,7 @@ detail):
 #### getter: displayMode
 
 ```ts
-type displayMode = string
+type displayMode = any
 ```
 
 </details>

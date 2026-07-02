@@ -63,11 +63,6 @@ and docs.
 
 ### Available via [SharedGCContentModel](../sharedgccontentmodel)
 
-**Properties:**
-[windowSizeOverride](../sharedgccontentmodel#property-windowsizeoverride),
-[windowDeltaOverride](../sharedgccontentmodel#property-windowdeltaoverride),
-[gcModeOverride](../sharedgccontentmodel#property-gcmodeoverride)
-
 **Getters:** [windowSize](../sharedgccontentmodel#getter-windowsize),
 [windowDelta](../sharedgccontentmodel#getter-windowdelta),
 [gcMode](../sharedgccontentmodel#getter-gcmode)
@@ -100,6 +95,7 @@ and docs.
 
 **Actions:** [setRpcData](../linearwiggledisplay#action-setrpcdata),
 [setUseBicolor](../linearwiggledisplay#action-setusebicolor),
+[setColor](../linearwiggledisplay#action-setcolor),
 [setPosColor](../linearwiggledisplay#action-setposcolor),
 [setNegColor](../linearwiggledisplay#action-setnegcolor),
 [setFeatureUnderMouse](../linearwiggledisplay#action-setfeatureundermouse),
@@ -124,7 +120,6 @@ and docs.
 [adapterConfig](../basedisplay#getter-adapterconfig),
 [isMinimized](../basedisplay#getter-isminimized),
 [effectiveRpcDriverName](../basedisplay#getter-effectiverpcdrivername),
-[effectiveTrackConfig](../basedisplay#getter-effectivetrackconfig),
 [DisplayMessageComponent](../basedisplay#getter-displaymessagecomponent),
 [viewMenuActions](../basedisplay#getter-viewmenuactions)
 
@@ -272,7 +267,6 @@ and docs.
 [setResolution](../wigglescoreconfigmixin#action-setresolution),
 [setLoadedBpPerPx](../wigglescoreconfigmixin#action-setloadedbpperpx),
 [setScaleType](../wigglescoreconfigmixin#action-setscaletype),
-[setColor](../wigglescoreconfigmixin#action-setcolor),
 [setMinScore](../wigglescoreconfigmixin#action-setminscore),
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),

@@ -21,19 +21,29 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Overview
 
-The minimal in-view track-label menu (just "About track" plus any
-plugin-contributed extra actions) used by the embedded react views, which have
-no track-editing actions to offer.
+The minimal track menus used by the embedded react views, which have no
+track-editing actions to offer: just "About track" plus any plugin-contributed
+items (`Core-extraTrackMenuItems`). Mirrors the shape of the full
+`TrackMenuItemsSessionMixin` so both menu surfaces stay consistent across
+products, minus the Settings/Copy/Delete actions.
 
 <details open>
 <summary>TrackMenuSessionMixin - Methods</summary>
 
+#### method: getTrackListMenuItems
+
+flattened menu items for use in hierarchical track selector
+
+```ts
+type getTrackListMenuItems = (config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, view?: TrackActionView | undefined) => MenuItem[]
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                       | Signature                                                                                                                                                                                                                                                                                                                           |
-| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`getTrackActionMenuItems`](#method-gettrackactionmenuitems) | `({ effectiveConfig, extraTrackActions, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] \| undefined; v...` |
+| Member                                                       | Signature                                                                                                                                                                                                                                                                           |
+| ------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`getTrackActionMenuItems`](#method-gettrackactionmenuitems) | `({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView \| undefined; }) => MenuItem[]` |
 
 </details>
 
@@ -43,7 +53,7 @@ detail):
 #### method: getTrackActionMenuItems
 
 ```ts
-type getTrackActionMenuItems = ({ effectiveConfig, extraTrackActions, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; effectiveConfig: Record<...>; extraTrackActions?: MenuItem[] | undefined; v...
+type getTrackActionMenuItems = ({ config, view, }: { config: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>; view?: TrackActionView | undefined; }) => MenuItem[]
 ```
 
 </details>

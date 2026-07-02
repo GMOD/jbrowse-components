@@ -229,7 +229,6 @@ detail):
 | [`setResolution`](#action-setresolution)             | `(res: number) => void`                  |
 | [`setLoadedBpPerPx`](#action-setloadedbpperpx)       | `(bpPerPx: number \| undefined) => void` |
 | [`setScaleType`](#action-setscaletype)               | `(scaleType: string) => void`            |
-| [`setColor`](#action-setcolor)                       | `(color?: string \| undefined) => void`  |
 | [`setMinScore`](#action-setminscore)                 | `(val?: number \| undefined) => void`    |
 | [`setMaxScore`](#action-setmaxscore)                 | `(val?: number \| undefined) => void`    |
 | [`setRenderingType`](#action-setrenderingtype)       | `(type: string) => void`                 |
@@ -263,12 +262,6 @@ type setLoadedBpPerPx = (bpPerPx: number | undefined) => void
 
 ```ts
 type setScaleType = (scaleType: string) => void
-```
-
-#### action: setColor
-
-```ts
-type setColor = (color?: string | undefined) => void
 ```
 
 #### action: setMinScore

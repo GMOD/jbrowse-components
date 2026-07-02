@@ -182,4 +182,33 @@ rows).
 }
 ```
 
+#### slot: showTree
+
+show the cluster tree sidebar
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'show the cluster tree sidebar',
+}
+```
+
+#### slot: showBranchLength
+
+Position tree nodes by cluster merge height (dendrogram) vs. evenly by topology
+(cladogram).
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'position tree nodes by branch length (dendrogram)',
+}
+```
+
 </details>
