@@ -1,5 +1,8 @@
+import createJexlInstance from './jexl.ts'
 import { stringToJexlExpression } from './jexlStrings.ts'
 import SimpleFeature, { jexlFeatureProxy } from './simpleFeature.ts'
+
+const jexl = createJexlInstance()
 
 test('can create a simple feature', () => {
   const f = new SimpleFeature({
@@ -42,7 +45,7 @@ describe('jexlFeatureProxy', () => {
   })
   // exercise the real path: member access inside a compiled jexl expression
   const ev = (code: string, feature: SimpleFeature) =>
-    stringToJexlExpression(`jexl:${code}`).eval({
+    stringToJexlExpression(`jexl:${code}`, jexl).eval({
       feature: jexlFeatureProxy(feature),
     })
 

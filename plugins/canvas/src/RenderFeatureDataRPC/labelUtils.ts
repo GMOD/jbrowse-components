@@ -33,7 +33,7 @@ function readFeatureLabel(
   config: DisplayConfig,
   feature: Feature,
   which: 'name' | 'description',
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ) {
   return toLabelString(
     readConfigValueSafe<unknown>(
@@ -52,7 +52,7 @@ function readFeatureLabel(
 export function readFeatureName(
   config: DisplayConfig,
   feature: Feature,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ) {
   return readFeatureLabel(config, feature, 'name', jexl)
 }
@@ -60,7 +60,7 @@ export function readFeatureName(
 export function readFeatureLabels(
   config: DisplayConfig,
   feature: Feature,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ): { name: string | undefined; description: string | undefined } {
   return {
     name: readFeatureLabel(config, feature, 'name', jexl),

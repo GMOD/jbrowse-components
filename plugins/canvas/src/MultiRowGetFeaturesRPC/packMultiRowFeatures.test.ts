@@ -23,6 +23,7 @@ test('dedupes partition values and indexes features into them', () => {
     features,
     partitionField: 'sample',
     colorConfig: 'goldenrod',
+    jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual(['mom', 'offspring01'])
   expect([...r.featurePartitionIndex]).toEqual([0, 1, 1])
@@ -65,6 +66,7 @@ test('plain (non-jexl) color applies to every feature', () => {
     features,
     partitionField: 'sample',
     colorConfig: 'red',
+    jexl: createJexlInstance(),
   })
   const red = cssColorToABGR('red')
   expect([...r.featureColors]).toEqual([red, red, red])
@@ -75,6 +77,7 @@ test('missing partition value collapses to a single empty-string row', () => {
     features: [feat({ start: 1, end: 2 }), feat({ start: 3, end: 4 })],
     partitionField: 'sample',
     colorConfig: 'red',
+    jexl: createJexlInstance(),
   })
   expect(r.partitionValues).toEqual([''])
   expect([...r.featurePartitionIndex]).toEqual([0, 0])
@@ -88,6 +91,7 @@ test('captures feature id for the click → details fetch', () => {
     ],
     partitionField: 'sample',
     colorConfig: 'red',
+    jexl: createJexlInstance(),
   })
   expect(r.featureIds).toEqual(['feat1', 'feat2'])
 })
@@ -100,6 +104,7 @@ test('captures feature name for tooltips ("" when absent)', () => {
     ],
     partitionField: 'sample',
     colorConfig: 'red',
+    jexl: createJexlInstance(),
   })
   expect(r.featureNames).toEqual(['mom_maternal', ''])
 })

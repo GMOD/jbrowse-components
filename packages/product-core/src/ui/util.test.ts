@@ -66,19 +66,26 @@ describe('readConfSlot', () => {
   })
 
   it('evaluates a jexl string on a plain object', () => {
-    expect(readConfSlot({ foo: 'jexl:1+2' }, 'foo')).toBe(3)
+    expect(
+      readConfSlot({ foo: 'jexl:1+2' }, 'foo', {}, corePluginManager.jexl),
+    ).toBe(3)
   })
 
   it('passes context args to a jexl string on a plain object', () => {
     expect(
-      readConfSlot({ foo: 'jexl:config.name' }, 'foo', {
-        config: { name: 'hello' },
-      }),
+      readConfSlot(
+        { foo: 'jexl:config.name' },
+        'foo',
+        { config: { name: 'hello' } },
+        corePluginManager.jexl,
+      ),
     ).toBe('hello')
   })
 
   it('returns an empty jexl body literally instead of throwing', () => {
-    expect(readConfSlot({ foo: 'jexl:' }, 'foo')).toBe('jexl:')
+    expect(
+      readConfSlot({ foo: 'jexl:' }, 'foo', {}, corePluginManager.jexl),
+    ).toBe('jexl:')
   })
 
   it('reads a slot from a state tree node', () => {

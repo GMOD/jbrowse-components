@@ -160,11 +160,13 @@ const anyFeature = mockFeature()
 
 describe('readConfigValue', () => {
   it('returns value when present', () => {
-    expect(readConfigValue({ color1: 'red' }, 'color1', anyFeature)).toBe('red')
+    expect(
+      readConfigValue({ color1: 'red' }, 'color1', anyFeature, pm.jexl),
+    ).toBe('red')
   })
 
   it('returns undefined when key is missing', () => {
-    expect(readConfigValue({}, 'color1', anyFeature)).toBeUndefined()
+    expect(readConfigValue({}, 'color1', anyFeature, pm.jexl)).toBeUndefined()
   })
 
   it('evaluates JEXL expression per-feature', () => {
@@ -172,10 +174,15 @@ describe('readConfigValue', () => {
       color1: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     }
     expect(
-      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' })),
+      readConfigValue(config, 'color1', mockFeature({ type: 'SNV' }), pm.jexl),
     ).toBe('green')
     expect(
-      readConfigValue(config, 'color1', mockFeature({ type: 'insertion' })),
+      readConfigValue(
+        config,
+        'color1',
+        mockFeature({ type: 'insertion' }),
+        pm.jexl,
+      ),
     ).toBe('purple')
   })
 
@@ -185,6 +192,7 @@ describe('readConfigValue', () => {
         { labels: { fontSize: 14 } },
         ['labels', 'fontSize'],
         anyFeature,
+        pm.jexl,
       ),
     ).toBe(14)
   })
@@ -197,9 +205,9 @@ describe('readConfigValue', () => {
     )
     const snap = getConfSnapshot(config)
 
-    expect(readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' }))).toBe(
-      'green',
-    )
+    expect(
+      readConfigValue(snap, 'color1', mockFeature({ type: 'SNV' }), pm.jexl),
+    ).toBe('green')
     expect(snap.featureHeight).toBe(10)
   })
 })

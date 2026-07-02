@@ -1,10 +1,13 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { FeatureLayout } from './types.ts'
 import type { Feature } from '@jbrowse/core/util'
+
+const jexl = createJexlInstance()
 
 function mockFeature(opts: {
   type: string
@@ -73,6 +76,7 @@ describe('collectRenderData peptide overlay', () => {
       theme,
       false,
       new Map([['tx1', { protein: 'MFK' }]]),
+      jexl,
     )
 
     const overlay = result.aminoAcidOverlay!
@@ -118,6 +122,7 @@ describe('collectRenderData peptide overlay', () => {
       theme,
       false,
       new Map([['tx1', { protein: 'MFK', translExceptIndices: new Set([2]) }]]),
+      jexl,
     )
     const overlay = result.aminoAcidOverlay!
     expect(overlay.find(a => a.proteinIndex === 2)!.isTranslExcept).toBe(true)
@@ -128,7 +133,16 @@ describe('collectRenderData peptide overlay', () => {
 
   it('emits no amino-acid overlay when the transcript has no peptide data', () => {
     const { layout } = twoExonTranscript()
-    const result = collectRenderData([layout], 0, 1000, config, theme, false)
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 })
@@ -202,6 +216,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       theme,
       true,
       new Map([['g1', { protein: 'MFKLST' }]]),
+      jexl,
     )
 
     const overlay = result.aminoAcidOverlay!
@@ -229,6 +244,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       theme,
       true,
       new Map([['g1', { protein: 'MFKLST' }]]),
+      jexl,
     )
 
     const overlay = result.aminoAcidOverlay!
@@ -254,6 +270,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       theme,
       true,
       new Map([['g1', { protein: 'MFKLST*' }]]),
+      jexl,
     )
     const overlay = result.aminoAcidOverlay!
     expect(overlay.map(a => a.aminoAcid).sort()).toEqual([
@@ -288,6 +305,7 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
       theme,
       true,
       new Map([['g1', { protein: 'MFKLST' }]]),
+      jexl,
     )
     const byRow = (y: number) =>
       result
@@ -302,7 +320,16 @@ describe('collectRenderData polyprotein mature-peptide overlay', () => {
 
   it('emits no amino-acid overlay when peptide data is absent', () => {
     const { layout } = polyproteinLayout(100, 118, [{ start: 100, end: 118 }])
-    const result = collectRenderData([layout], 0, 1000, config, theme, true)
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      config,
+      theme,
+      true,
+      undefined,
+      jexl,
+    )
     expect(result.aminoAcidOverlay).toBeUndefined()
   })
 })
@@ -320,6 +347,8 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
       cfg,
       theme,
       false,
+      undefined,
+      jexl,
     )
     expect(result.flatbushItems[0]!.tooltip).toBe('score: g1')
   })
@@ -334,6 +363,8 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
       cfg,
       theme,
       false,
+      undefined,
+      jexl,
     )
     expect(result.flatbushItems[0]!.tooltip).toBe('static text')
   })
@@ -351,6 +382,8 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
       cfg,
       theme,
       false,
+      undefined,
+      jexl,
     )
     expect(result.flatbushItems[0]!.tooltip).toBe('m1')
   })
@@ -364,6 +397,8 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
       config,
       theme,
       false,
+      undefined,
+      jexl,
     )
     expect(result.flatbushItems[0]!.tooltip).toBe('g1')
   })
@@ -371,7 +406,16 @@ describe('collectRenderData tooltip (mouseover slot)', () => {
   it('top-level feature tooltip is the single hover source (subfeatures carry no tooltip)', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ mouseover: `jexl:get(feature,'id')` })
-    const result = collectRenderData([layout], 0, 1000, cfg, theme, false)
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
     expect(result.flatbushItems[0]!.tooltip).toBe('tx1')
     // subfeatures no longer carry their own tooltip — hover unifies on the
     // top-level feature's resolved mouseover
@@ -385,14 +429,32 @@ describe('collectRenderData intron chevrons', () => {
   it('sets intron line direction to the strand when chevrons are enabled', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ displayDirectionalChevrons: true })
-    const result = collectRenderData([layout], 0, 1000, cfg, theme, false)
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
     expect([...result.lineDirections]).toEqual([1])
   })
 
   it('zeroes intron line direction when chevrons are disabled', () => {
     const { layout } = twoExonTranscript()
     const cfg = mockDisplayConfig({ displayDirectionalChevrons: false })
-    const result = collectRenderData([layout], 0, 1000, cfg, theme, false)
+    const result = collectRenderData(
+      [layout],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
     expect([...result.lineDirections]).toEqual([0])
   })
 })

@@ -10,7 +10,7 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ) {
   try {
     const css = readConfigValue(colorCfg, 'color', feature, jexl)
@@ -41,7 +41,7 @@ export function packMultiRowFeatures({
   features: Feature[]
   partitionField: string
   colorConfig: string
-  jexl?: JexlInstance
+  jexl: JexlInstance
   report?: ProgressReporter
 }): MultiRowGetFeaturesResult {
   const n = features.length

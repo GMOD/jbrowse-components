@@ -1,7 +1,7 @@
 import { types } from '@jbrowse/mobx-state-tree'
 
 import { isCallbackValue } from './slotValueUtils.ts'
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { FileLocation } from '../util/types/mst.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -52,14 +52,15 @@ const slotTypes: Record<string, SlotTypeSpec> = {
   text: { model: types.string, fallbackDefault: '' },
   fileLocation: {
     model: FileLocation,
-    fallbackDefault: { uri: '/path/to/resource.txt', locationType: 'UriLocation' },
+    fallbackDefault: {
+      uri: '/path/to/resource.txt',
+      locationType: 'UriLocation',
+    },
   },
   frozen: { model: types.frozen(), fallbackDefault: {} },
 }
 
-const JexlStringType = types.refinement('JexlString', types.string, str =>
-  str.startsWith('jexl:'),
-)
+const JexlStringType = types.refinement('JexlString', types.string, isJexl)
 
 export interface ConfigSlotDefinition {
   /** human-readable description of the slot's meaning */
@@ -137,7 +138,7 @@ export function toFixedValue(
   value: unknown,
   type: string,
   defaultValue: unknown,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ) {
   if (!isCallbackValue(value)) {
     return value

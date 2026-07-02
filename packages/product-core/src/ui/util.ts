@@ -10,6 +10,7 @@ import { isStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 /**
  * Recursively delete every occurrence of a property key from a nested plain
@@ -36,6 +37,7 @@ export function readConfSlot<T = unknown>(
   config: AnyConfigurationModel | Record<string, unknown>,
   slotPath: string | string[],
   args: Record<string, unknown> = {},
+  jexl?: JexlInstance,
 ): T {
   const path = typeof slotPath === 'string' ? [slotPath] : slotPath
   if (isStateTreeNode(config)) {
@@ -45,7 +47,19 @@ export function readConfSlot<T = unknown>(
     (node, key) => (node as Record<string, unknown> | undefined)?.[key],
     config,
   )
-  return (isCallbackValue(value) ? evaluateJexl(value, args) : value) as T
+  // A plain-object config has no MST env, so the realm's jexl instance can't be
+  // resolved automatically — callers reading a callback slot must pass it. Only
+  // reached when the slot actually holds a `jexl:` value (trackId/adapter/etc.
+  // never do), so non-callback readers need not supply it.
+  if (isCallbackValue(value)) {
+    if (!jexl) {
+      throw new Error(
+        `cannot evaluate jexl config slot ${JSON.stringify(slotPath)} on a plain-object config: no jexl instance provided`,
+      )
+    }
+    return evaluateJexl(value, args, jexl) as T
+  }
+  return value as T
 }
 
 /**
@@ -63,9 +77,12 @@ export function getAboutDialogConfig({
   pluginManager: PluginManager
 }) {
   const conf = isStateTreeNode(config) ? readConfObject(config) : config
-  const trackFormatAbout = readConfSlot(config, ['formatAbout', 'config'], {
-    config: conf,
-  })
+  const trackFormatAbout = readConfSlot(
+    config,
+    ['formatAbout', 'config'],
+    { config: conf },
+    pluginManager.jexl,
+  )
   const sessionFormatAbout = getConf(session, ['formatAbout', 'config'], {
     config: conf,
   })

@@ -19,7 +19,7 @@ export interface RenderContext {
   peptideDataMap?: Map<string, PeptideData>
   // worker pluginManager's jexl instance, so a custom `mouseover` slot can call
   // plugin-registered jexl functions. Undefined in tests → default instance.
-  jexl?: JexlInstance
+  jexl: JexlInstance
 }
 
 // Mutable accumulator the emitters push into; packed into typed arrays once all

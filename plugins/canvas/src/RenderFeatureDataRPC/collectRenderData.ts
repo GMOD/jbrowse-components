@@ -21,8 +21,8 @@ export function collectRenderData(
   config: DisplayConfig,
   theme: Theme,
   colorByCDS: boolean,
-  peptideDataMap?: Map<string, PeptideData>,
-  jexl?: JexlInstance,
+  peptideDataMap: Map<string, PeptideData> | undefined,
+  jexl: JexlInstance,
 ) {
   const ctx: RenderContext = {
     config,

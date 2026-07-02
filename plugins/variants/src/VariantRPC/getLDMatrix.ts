@@ -590,7 +590,10 @@ export async function getLDMatrix({
   const hweFilterEnabled = hweFilterThreshold > 0
   const filterChain =
     jexlFilters.length > 0
-      ? new SerializableFilterChain({ filters: jexlFilters })
+      ? new SerializableFilterChain({
+          filters: jexlFilters,
+          jexl: pluginManager.jexl,
+        })
       : null
 
   let dataIsPhased = false

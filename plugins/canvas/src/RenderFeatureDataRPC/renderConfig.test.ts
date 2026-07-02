@@ -1,6 +1,10 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
 import { readConfigValue } from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
+
+const jexl = createJexlInstance()
 
 function mockFeature(data: Record<string, unknown> = {}) {
   return {
@@ -19,24 +23,29 @@ const anyFeature = mockFeature()
 
 describe('readConfigValue', () => {
   it('returns value when present', () => {
-    expect(readConfigValue(cfg({ color: 'red' }), 'color', anyFeature)).toBe(
-      'red',
-    )
+    expect(
+      readConfigValue(cfg({ color: 'red' }), 'color', anyFeature, jexl),
+    ).toBe('red')
   })
 
   it('returns undefined when key is missing', () => {
-    expect(readConfigValue(cfg({}), 'color', anyFeature)).toBeUndefined()
+    expect(readConfigValue(cfg({}), 'color', anyFeature, jexl)).toBeUndefined()
   })
 
   it('evaluates JEXL expression per-feature', () => {
     const config = cfg({
       color: "jexl:get(feature,'type')=='SNV'?'green':'purple'",
     })
-    expect(readConfigValue(config, 'color', mockFeature({ type: 'SNV' }))).toBe(
-      'green',
-    )
     expect(
-      readConfigValue(config, 'color', mockFeature({ type: 'insertion' })),
+      readConfigValue(config, 'color', mockFeature({ type: 'SNV' }), jexl),
+    ).toBe('green')
+    expect(
+      readConfigValue(
+        config,
+        'color',
+        mockFeature({ type: 'insertion' }),
+        jexl,
+      ),
     ).toBe('purple')
   })
 
@@ -46,6 +55,7 @@ describe('readConfigValue', () => {
         cfg({ labels: { name: 'myGene' } }),
         ['labels', 'name'],
         anyFeature,
+        jexl,
       ),
     ).toBe('myGene')
   })

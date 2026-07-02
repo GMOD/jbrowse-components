@@ -88,7 +88,7 @@ export function getBoxColor({
   config: DisplayConfig
   colorByCDS: boolean
   theme: Theme
-  jexl?: JexlInstance
+  jexl: JexlInstance
 }) {
   let fill = isUTR(feature)
     ? readConfigValue<string>(config, 'utrColor', feature, jexl)
@@ -129,7 +129,7 @@ export function getStrokeColor({
   feature: Feature
   config: DisplayConfig
   theme: Theme
-  jexl?: JexlInstance
+  jexl: JexlInstance
 }) {
   const c = readConfigValue<string>(config, 'connectorColor', feature, jexl)
   // text.secondary is translucent; keep its alpha so connector lines and strand

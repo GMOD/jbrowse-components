@@ -1,4 +1,4 @@
-import { stringToJexlExpression } from '../util/jexlStrings.ts'
+import { isJexl, stringToJexlExpression } from '../util/jexlStrings.ts'
 import { isFeature, jexlFeatureProxy } from '../util/simpleFeature.ts'
 
 import type { JexlInstance } from '../util/jexlStrings.ts'
@@ -13,7 +13,7 @@ import type { JexlInstance } from '../util/jexlStrings.ts'
  */
 
 export function isCallbackValue(value: unknown): value is string {
-  return typeof value === 'string' && value.startsWith('jexl:')
+  return isJexl(value)
 }
 
 /**
@@ -25,7 +25,7 @@ export function isCallbackValue(value: unknown): value is string {
 export function evaluateJexl(
   value: string,
   args: Record<string, unknown>,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ) {
   if (value.length <= 'jexl:'.length) {
     return value

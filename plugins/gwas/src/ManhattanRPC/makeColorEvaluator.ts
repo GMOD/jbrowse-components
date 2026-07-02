@@ -1,5 +1,5 @@
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import { isJexl, stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
 
 import type { Feature } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
@@ -9,9 +9,9 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 // Literals short-circuit to a constant.
 export function makeColorEvaluator(
   color: string,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ): (feature: Feature) => number {
-  if (color.startsWith('jexl:')) {
+  if (isJexl(color)) {
     const expr = stringToJexlExpression(color, jexl)
     return feature => {
       const v = expr.eval({ feature })

@@ -8,6 +8,22 @@ import type { Feature } from './simpleFeature.ts'
 
 export default function JexlF(/* config?: any*/) {
   const j = new Jexl()
+
+  // Memoize compilation on the instance itself. A compiled Expression closes
+  // over this instance's grammar (its registered functions), so the cache
+  // belongs here and is naturally per-instance — there is no shared cache that
+  // could bind an expression to the wrong instance's functions.
+  const rawCompile = j.compile.bind(j)
+  const cache = new Map<string, ReturnType<typeof rawCompile>>()
+  j.compile = (code: string) => {
+    let expr = cache.get(code)
+    if (expr === undefined) {
+      expr = rawCompile(code)
+      cache.set(code, expr)
+    }
+    return expr
+  }
+
   // someday will make sure all of configs callbacks are added in, including
   // ones passed in
 

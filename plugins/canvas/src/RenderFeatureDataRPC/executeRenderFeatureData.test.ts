@@ -1,7 +1,11 @@
+import createJexlInstance from '@jbrowse/core/util/jexl'
+
 import { buildFeatureAdmission } from './featureAdmission.ts'
 import { mockDisplayConfig } from './testUtils.ts'
 
 import type { Feature } from '@jbrowse/core/util'
+
+const jexl = createJexlInstance()
 
 function feat(type: string, attrs: Record<string, unknown> = {}): Feature {
   const map: Record<string, unknown> = { type, ...attrs }
@@ -13,13 +17,14 @@ function feat(type: string, attrs: Record<string, unknown> = {}): Feature {
 
 describe('buildFeatureAdmission', () => {
   it('admits everything when no filters and showOnlyGenes is off', () => {
-    const admit = buildFeatureAdmission({ config: mockDisplayConfig() })
+    const admit = buildFeatureAdmission({ jexl, config: mockDisplayConfig() })
     expect(admit(feat('gene'))).toBe(true)
     expect(admit(feat('region'))).toBe(true)
   })
 
   it('applies config jexlFilters (slot strings carry no jexl: prefix)', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig({
         jexlFilters: [`get(feature,'type')=='gene'`],
       }),
@@ -32,6 +37,7 @@ describe('buildFeatureAdmission', () => {
     // activeFilters() in the model emits `jexl:`-prefixed expressions; admission
     // must normalize them identically to the unprefixed config-slot form.
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig({
         jexlFilters: [`jexl:get(feature,'type')=='gene'`],
       }),
@@ -42,6 +48,7 @@ describe('buildFeatureAdmission', () => {
 
   it('ANDs multiple filters together', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig({
         jexlFilters: [`get(feature,'type')=='gene'`, `get(feature,'score')>5`],
       }),
@@ -52,6 +59,7 @@ describe('buildFeatureAdmission', () => {
 
   it('showOnlyGenes keeps gene-like top-level types and drops the rest', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig({ transcriptTypes: ['mRNA'] }),
       showOnlyGenes: true,
     })
@@ -63,6 +71,7 @@ describe('buildFeatureAdmission', () => {
 
   it('showOnlyGenes and jexlFilters both apply (admission is their AND)', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig({ jexlFilters: [`get(feature,'score')>5`] }),
       showOnlyGenes: true,
     })
@@ -73,6 +82,7 @@ describe('buildFeatureAdmission', () => {
 
   it('soloFeatureIds admits only features whose id() is in the set', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig(),
       soloFeatureIds: ['f1', 'f3'],
     })
@@ -83,6 +93,7 @@ describe('buildFeatureAdmission', () => {
 
   it('an empty soloFeatureIds set admits everything', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig(),
       soloFeatureIds: [],
     })
@@ -92,6 +103,7 @@ describe('buildFeatureAdmission', () => {
 
   it('hiddenFeatureIds drops features whose id() is in the set', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig(),
       hiddenFeatureIds: ['f2'],
     })
@@ -101,6 +113,7 @@ describe('buildFeatureAdmission', () => {
 
   it('hidden wins over solo when a feature is in both', () => {
     const admit = buildFeatureAdmission({
+      jexl,
       config: mockDisplayConfig(),
       soloFeatureIds: ['f1'],
       hiddenFeatureIds: ['f1'],

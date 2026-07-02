@@ -18,7 +18,7 @@ export default class SerializableFilterChain {
     jexl,
   }: {
     filters: SerializedFilterChain
-    jexl?: JexlInstance
+    jexl: JexlInstance
   }) {
     this.filterChain = filters
       .map(f => f.trim())
@@ -43,7 +43,10 @@ export default class SerializableFilterChain {
     return { filters: this.filterChain.map(f => f.string) }
   }
 
-  static fromJSON(json: { filters: SerializedFilterChain }) {
+  static fromJSON(json: {
+    filters: SerializedFilterChain
+    jexl: JexlInstance
+  }) {
     return new SerializableFilterChain(json)
   }
 }

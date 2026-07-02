@@ -2,7 +2,10 @@ import { types } from '@jbrowse/mobx-state-tree'
 
 import PluginManager from '../PluginManager.ts'
 import { ConfigurationSchema } from './configurationSchema.ts'
-import ConfigSlot, { toCallbackValue, toFixedValue } from './configurationSlot.ts'
+import ConfigSlot, {
+  toCallbackValue,
+  toFixedValue,
+} from './configurationSlot.ts'
 import { readConfObject } from './util.ts'
 
 const pluginManager = new PluginManager([]).createPluggableElements()
@@ -110,9 +113,9 @@ describe('toFixedValue', () => {
   })
 
   test('falls back to defaultValue when eval yields undefined', () => {
-    expect(toFixedValue('jexl:undeclaredVar', 'string', 'myDefault', jexl)).toBe(
-      'myDefault',
-    )
+    expect(
+      toFixedValue('jexl:undeclaredVar', 'string', 'myDefault', jexl),
+    ).toBe('myDefault')
   })
 
   test('falls back to type default when defaultValue is itself a callback', () => {

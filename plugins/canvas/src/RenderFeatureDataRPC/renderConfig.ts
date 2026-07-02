@@ -11,7 +11,7 @@ export function readConfigValue<T>(
   config: DisplayConfig,
   key: string | string[],
   feature: Feature,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ): T {
   return coreReadConfigValue<T>(
     config as unknown as Record<string, unknown>,
@@ -32,7 +32,7 @@ export function readConfigValueSafe<T>(
   config: DisplayConfig,
   key: string | string[],
   feature: Feature,
-  jexl: JexlInstance | undefined,
+  jexl: JexlInstance,
   fallback: T,
 ): T {
   try {

@@ -1,6 +1,9 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
+
+const jexl = createJexlInstance()
 
 // ABGR uint32 packing: 0xAABBGGRR
 function abgr(r: number, g: number, b: number, a = 255) {
@@ -29,7 +32,7 @@ const f2 = new SimpleFeature({
 })
 
 test('literal CSS color → same ABGR for every feature', () => {
-  const fn = makeColorEvaluator('green')
+  const fn = makeColorEvaluator('green', jexl)
   expect(fn(f1)).toBe(fn(f2))
 })
 
@@ -37,6 +40,7 @@ test('jexl callback evaluates per feature', () => {
   // alternate red / blue based on start
   const fn = makeColorEvaluator(
     "jexl:get(feature,'start') == 100 ? 'red' : 'blue'",
+    jexl,
   )
   expect(fn(f1)).toBe(abgr(255, 0, 0))
   expect(fn(f2)).toBe(abgr(0, 0, 255))
@@ -46,6 +50,7 @@ test('jexl with arithmetic on feature scores', () => {
   // score==5 → black; score==6 → white
   const fn = makeColorEvaluator(
     "jexl:get(feature,'score') == 5 ? 'black' : 'white'",
+    jexl,
   )
   expect(fn(f1)).toBe(abgr(0, 0, 0))
   expect(fn(f2)).toBe(abgr(255, 255, 255))

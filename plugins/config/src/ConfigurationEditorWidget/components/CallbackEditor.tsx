@@ -1,7 +1,10 @@
 import { useState, useTransition } from 'react'
 
 import { MonospaceTextField } from '@jbrowse/core/ui'
-import { stringToJexlExpression } from '@jbrowse/core/util/jexlStrings'
+import {
+  ensureJexlPrefix,
+  stringToJexlExpression,
+} from '@jbrowse/core/util/jexlStrings'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import HelpIcon from '@mui/icons-material/Help'
 import { IconButton, Tooltip } from '@mui/material'
@@ -29,7 +32,7 @@ function validateAndSetCode(
     return
   }
   try {
-    const jexlCode = code.startsWith('jexl:') ? code : `jexl:${code}`
+    const jexlCode = ensureJexlPrefix(code)
     stringToJexlExpression(jexlCode, slot.pluginManager.jexl)
     slot.set(jexlCode)
     setCodeError(undefined)
@@ -86,7 +89,7 @@ const CallbackEditor = observer(function CallbackEditor({
           color="primary"
           onClick={() => {
             window.open(
-              'https://github.com/TomFrost/Jexl',
+              'https://jbrowse.org/jb2/docs/config_guides/jexl/',
               '_blank',
               'noopener,noreferrer',
             )

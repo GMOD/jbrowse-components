@@ -36,9 +36,11 @@ import type { Feature } from '../util/index.ts'
 import type { JexlInstance } from '../util/jexlStrings.ts'
 import type { IMSTMap } from '@jbrowse/mobx-state-tree'
 
-// Evaluate a slot's `jexl:...` callback string. The pluginManager's jexl
-// instance (carrying plugin-registered functions) comes from the config node's
-// env; a plain-object config falls back to the default jexl instance.
+// Evaluate a slot's `jexl:...` callback string against the realm's single jexl
+// instance (carrying plugin-registered functions), read from the config node's
+// env. readConfObject only ever operates on live MST configs — nested sub-config
+// reads stay MST (env resolves to the root), and frozen track configs hydrate to
+// MST before any callback is read — so the env instance is always present here.
 function evalConfigCallback(
   expr: string,
   args: Record<string, unknown>,
@@ -48,6 +50,11 @@ function evalConfigCallback(
     ? getEnv<{ pluginManager?: { jexl?: JexlInstance } }>(confObject)
         .pluginManager?.jexl
     : undefined
+  if (!jexl) {
+    throw new Error(
+      `cannot evaluate jexl config callback ${JSON.stringify(expr)}: no pluginManager jexl instance in config env`,
+    )
+  }
   return evaluateJexl(expr, args, jexl)
 }
 
@@ -343,15 +350,14 @@ function resolveConfigValue(
 /**
  * Read a value from a plain config snapshot object. Automatically evaluates
  * "jexl:..." strings per-feature. Works without MST — intended for use in
- * rendering code (GPU, Canvas2D, workers). Pass the worker pluginManager's jexl
- * instance to make plugin-registered jexl functions available (e.g. a custom
- * `mouseover` slot); omit it to use the default instance.
+ * rendering code (GPU, Canvas2D, workers). Pass the realm's `pluginManager.jexl`
+ * so plugin-registered functions (e.g. in a custom `mouseover` slot) resolve.
  */
 export function readConfigValue<T>(
   config: Record<string, unknown>,
   key: string | string[],
   feature: Feature,
-  jexl?: JexlInstance,
+  jexl: JexlInstance,
 ) {
   const raw = resolveConfigValue(config, key)
   return (

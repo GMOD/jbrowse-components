@@ -1,4 +1,5 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import { ensureJexlPrefix } from '@jbrowse/core/util/jexlStrings'
 
 import { featureType } from './util.ts'
 
@@ -22,15 +23,13 @@ export function buildFeatureAdmission({
   hiddenFeatureIds,
 }: {
   config: DisplayConfig
-  jexl?: JexlInstance
+  jexl: JexlInstance
   showOnlyGenes?: boolean
   soloFeatureIds?: string[]
   hiddenFeatureIds?: string[]
 }) {
   const filterChain = new SerializableFilterChain({
-    filters: config.jexlFilters.map(f =>
-      f.startsWith('jexl:') ? f : `jexl:${f}`,
-    ),
+    filters: config.jexlFilters.map(ensureJexlPrefix),
     jexl,
   })
 
@@ -62,7 +61,7 @@ export function buildFeatureAdmission({
       : undefined
   return (feature: Feature) =>
     (soloSet === undefined || soloSet.has(feature.id())) &&
-    (hiddenSet === undefined || !hiddenSet.has(feature.id())) &&
+    (!hiddenSet?.has(feature.id())) &&
     filterChain.passes(feature) &&
     (geneLikeTypes === undefined ||
       geneLikeTypes.has(featureType(feature).toLowerCase()))

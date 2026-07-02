@@ -1,4 +1,5 @@
 import SerializableFilterChain from '@jbrowse/core/pluggableElementTypes/renderers/util/serializableFilterChain'
+import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { calculateAlleleCounts } from './alleleCounts.ts'
 import {
@@ -298,6 +299,7 @@ describe('getFeaturesThatPassMinorAlleleFrequencyFilter', () => {
       minorAlleleFrequencyFilter: 0,
       filterChain: new SerializableFilterChain({
         filters: ["jexl:get(feature,'end')-get(feature,'start')<10"],
+        jexl: createJexlInstance(),
       }),
     })
 

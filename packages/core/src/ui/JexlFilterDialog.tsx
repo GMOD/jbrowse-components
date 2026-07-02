@@ -7,6 +7,8 @@ import MonospaceTextField from './MonospaceTextField.tsx'
 import SubmitDialog from './SubmitDialog.tsx'
 import { stringToJexlExpression } from '../util/jexlStrings.ts'
 
+import type { JexlInstance } from '../util/jexlStrings.ts'
+
 // Non-blank, trimmed lines — the filter list excludes blank lines a user leaves
 // in the textarea, and the same set is what gets validated.
 function filterLines(text: string) {
@@ -17,11 +19,12 @@ function filterLines(text: string) {
 }
 
 // jexl compile error for the current text, or undefined when every line parses.
-// Derived during render (compilation is cached per string, so no effect needed).
-function jexlError(text: string) {
+// Derived during render (compilation is cached on the instance, so no effect
+// needed).
+function jexlError(text: string, jexl: JexlInstance) {
   try {
     for (const line of filterLines(text)) {
-      stringToJexlExpression(line)
+      stringToJexlExpression(line, jexl)
     }
     return undefined
   } catch (e) {
@@ -40,13 +43,15 @@ const JexlFilterDialog = observer(function JexlFilterDialog({
   filters,
   setFilters,
   handleClose,
+  jexl,
 }: {
   filters?: string[]
   setFilters: (arg: string[]) => void
   handleClose: () => void
+  jexl: JexlInstance
 }) {
   const [data, setData] = useState((filters ?? []).join('\n'))
-  const error = jexlError(data)
+  const error = jexlError(data, jexl)
 
   return (
     <SubmitDialog

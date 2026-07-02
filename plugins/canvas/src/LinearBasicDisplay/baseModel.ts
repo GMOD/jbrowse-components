@@ -14,6 +14,7 @@ import {
   isFeature,
   openFeatureWidget,
 } from '@jbrowse/core/util'
+import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
@@ -438,9 +439,7 @@ export default function baseStateModelFactory(
         // the default swatch same as unset.
         get featureColor() {
           const raw = self.conf.color
-          return raw !== undefined && !raw.startsWith('jexl:')
-            ? raw
-            : FEATURE_COLOR_DEFAULT
+          return raw !== undefined && !isJexl(raw) ? raw : FEATURE_COLOR_DEFAULT
         },
 
         /**
@@ -463,7 +462,7 @@ export default function baseStateModelFactory(
           if (raw === STRAND_COLOR_JEXL) {
             return 'strand'
           }
-          return raw?.startsWith('jexl:') ? 'attribute' : 'solid'
+          return isJexl(raw) ? 'attribute' : 'solid'
         },
 
         /**

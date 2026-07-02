@@ -63,6 +63,7 @@ describe('getFeatureName', () => {
 
 describe('readFeatureLabels', () => {
   const feature = createMockFeature('GENE')
+  const jexl = createJexlInstance()
 
   it('joins a multi-valued (array) description into a single string', () => {
     // RefSeq GFFs with unescaped commas in a description get parsed into an
@@ -72,26 +73,26 @@ describe('readFeatureLabels', () => {
       'microRNAs are short',
       ' which are cleaved',
     ] as unknown as string
-    const { description } = readFeatureLabels(config, feature)
+    const { description } = readFeatureLabels(config, feature, jexl)
     expect(description).toBe('microRNAs are short, which are cleaved')
   })
 
   it('passes a plain string description through', () => {
     const config = mockDisplayConfig()
     config.labels.description = 'A gene'
-    expect(readFeatureLabels(config, feature).description).toBe('A gene')
+    expect(readFeatureLabels(config, feature, jexl).description).toBe('A gene')
   })
 
   it('returns undefined for an empty description', () => {
-    expect(readFeatureLabels(mockDisplayConfig(), feature).description).toBe(
-      undefined,
-    )
+    expect(
+      readFeatureLabels(mockDisplayConfig(), feature, jexl).description,
+    ).toBe(undefined)
   })
 
   it('evaluates a jexl labels.name against the feature', () => {
     const config = mockDisplayConfig()
     config.labels.name = `jexl:get(feature,'name')`
-    expect(readFeatureLabels(config, feature).name).toBe('GENE')
+    expect(readFeatureLabels(config, feature, jexl).name).toBe('GENE')
   })
 
   it('resolves a plugin-registered jexl function in labels.name when the instance is passed', () => {
@@ -99,11 +100,11 @@ describe('readFeatureLabels', () => {
     // resolves when the worker pluginManager's jexl instance is threaded in
     // (same contract as the mouseover slot). The expression string is unique so
     // stringToJexlExpression's compilation cache binds it to this instance.
-    const jexl = createJexlInstance()
-    jexl.addFunction('shoutLabelUnique', (s: string) => `${s}!`)
+    const pluginJexl = createJexlInstance()
+    pluginJexl.addFunction('shoutLabelUnique', (s: string) => `${s}!`)
     const config = mockDisplayConfig()
     config.labels.name = `jexl:shoutLabelUnique(get(feature,'name'))`
-    expect(readFeatureLabels(config, feature, jexl).name).toBe('GENE!')
+    expect(readFeatureLabels(config, feature, pluginJexl).name).toBe('GENE!')
   })
 })
 
