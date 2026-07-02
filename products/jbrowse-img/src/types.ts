@@ -9,6 +9,11 @@ export interface Opts {
   session?: string
   assembly?: string
   config?: string
+  // A genomes.jbrowse.org assembly to pull the whole config from: a UCSC db name
+  // (hg19, mm10) or a GenArk accession (GCA_/GCF_...). Supplies the assembly
+  // (sequence, cytobands, refNameAliases, geneticCodes) plus hosted trackIds
+  // referenceable via --track. See resolveHub.ts.
+  hub?: string
   fasta?: string
   aliases?: string
   cytobands?: string
@@ -38,6 +43,10 @@ export interface Opts {
   // sub-views and level-indexed tracks directly. Assemblies and synteny-track
   // configs it references by name come from --config. See urlparams.md.
   spec?: string
+  // Hosted trackIds (from --hub/--config) to show in a linear view, each with
+  // optional display modifiers — same [key, [trackId, ...opts]] shape as a
+  // track-type flag. See renderRegion/applyDisplayOpts.
+  showTracks?: Entry[]
 }
 
 export interface Assembly {

@@ -75,6 +75,10 @@ async function main() {
       ...trackTypes,
       ...syntenyTrackTypes,
     ])
+    // --track is repeatable and carries its own [id, ...modifiers], so it's read
+    // from the raw entries rather than the collapsed `rest` (which keeps only the
+    // last value of a repeated flag).
+    const showTracks = parsed.filter(([key]) => key === 'track')
 
     for (const key of Object.keys(rest)) {
       if (!knownOptions.has(key)) {
@@ -101,8 +105,10 @@ async function main() {
       fasta: getString(rest, 'fasta'),
       aliases: getString(rest, 'aliases'),
       assembly: getString(rest, 'assembly'),
+      hub: getString(rest, 'hub'),
       config: getString(rest, 'config'),
       session: getString(rest, 'session'),
+      showTracks,
       loc: getString(rest, 'loc'),
       width,
       noRasterize: getBoolean(rest, 'noRasterize'),

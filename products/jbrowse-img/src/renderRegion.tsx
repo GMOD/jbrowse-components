@@ -9,8 +9,13 @@ import { createViewState } from '@jbrowse/react-app2'
 import { createCanvas } from 'canvas'
 import { autorun, observable, runInAction, when } from 'mobx'
 
-import { applyTrackOpts } from './applyTrackOpts.ts'
+import {
+  applyDisplayOpts,
+  applyTrackOpts,
+  configTrackCategory,
+} from './applyTrackOpts.ts'
 import { readData } from './readData.ts'
+import { resolveConfigObject } from './resolveHub.ts'
 import { initFromSpec, parseSpec, specMode } from './spec.ts'
 
 import type { ViewMode } from './modes.ts'
@@ -163,6 +168,7 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
   const {
     loc,
     trackList = [],
+    showTracks = [],
     session: sessionParam,
     defaultSession,
     themeName,
@@ -209,6 +215,20 @@ const renderLinear: ModeRenderer = async ({ model, data, opts, width }) => {
 
   for (const track of trackList) {
     applyTrackOpts(track, view)
+  }
+
+  // Hosted trackIds from --track (present in a --hub/--config config). The
+  // display category comes from the config track's own type, so modifiers
+  // (height:, color:, …) route to the right display slots.
+  for (const [, [trackId, ...displayOpts]] of showTracks) {
+    if (trackId) {
+      applyDisplayOpts(
+        view,
+        trackId,
+        configTrackCategory(data.tracks, trackId),
+        displayOpts,
+      )
+    }
   }
 
   return renderLinearToSvg(view, {
@@ -344,7 +364,7 @@ const modeRenderers: Record<ViewMode, ModeRenderer> = {
 }
 
 export async function renderRegion(opts: Opts) {
-  const data = readData(opts)
+  const data = readData(opts, await resolveConfigObject(opts))
   const model = createModel(data)
   // Set the theme on the session up front: worker-side label/feature colors
   // (e.g. gene-description blue) are baked at feature-fetch time from

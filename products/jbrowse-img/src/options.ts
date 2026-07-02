@@ -18,7 +18,17 @@ export const optionDefs: OptionDef[] = [
   },
   { name: 'aliases', description: 'Path to reference name aliases file' },
   { name: 'assembly', description: 'Path to assembly JSON or name in config' },
-  { name: 'config', description: 'Path to JBrowse config.json' },
+  {
+    name: 'hub',
+    description:
+      'Pull a whole config from genomes.jbrowse.org: a UCSC db name (hg19, mm10) or GenArk accession (GCA_/GCF_...). Gives cytobands, refName aliasing, and hosted trackIds (see --track)',
+  },
+  {
+    name: 'track',
+    description:
+      'Show a trackId already in the config (from --hub/--config), e.g. --track hg19-ncbiRefSeqCurated. Repeatable; accepts the same display modifiers as track flags (height:, color:, ...)',
+  },
+  { name: 'config', description: 'Path to JBrowse config.json (path or URL)' },
   { name: 'session', description: 'Path to session JSON' },
   {
     name: 'loc',
@@ -120,6 +130,10 @@ const examples: [string, string][] = [
   [
     '--fasta ref.fa --bam reads.bam height:80 color:strand --loc chr1:1-10000 --out out.svg',
     'Custom track height and strand coloring',
+  ],
+  [
+    '--hub hg19 --track hg19-ncbiRefSeqCurated --loc chr1:1-100000 --out out.svg',
+    'Pull the hg19 config from genomes.jbrowse.org and show a hosted track',
   ],
   [
     '--config jbrowse.json --assembly hg38 --tracks tracks.json --loc chr1:1-100000 --out out.svg',

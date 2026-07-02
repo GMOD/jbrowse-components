@@ -2006,6 +2006,9 @@ importers:
       '@jbrowse/plugin-linear-genome-view':
         specifier: workspace:^
         version: link:../../plugins/linear-genome-view
+      '@jbrowse/product-core':
+        specifier: workspace:^
+        version: link:../../packages/product-core
       '@jbrowse/react-app2':
         specifier: workspace:^
         version: link:../jbrowse-react-app

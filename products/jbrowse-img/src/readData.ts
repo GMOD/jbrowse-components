@@ -37,18 +37,25 @@ function resolveLocalPaths(value: unknown, baseDir: string) {
   }
 }
 
-export function readData({
-  assembly: asm,
-  config,
-  session,
-  fasta,
-  aliases,
-  cytobands,
-  defaultSession,
-  tracks,
-  trackList = [],
-  argv = [],
-}: Opts) {
+// `configObject` is a config already fetched off the network (from --hub or a
+// URL --config, see resolveHub.ts); when present it stands in for the local
+// --config file read. Its adapters use remote `uri`s, so no localPath rewriting
+// applies.
+export function readData(
+  {
+    assembly: asm,
+    config,
+    session,
+    fasta,
+    aliases,
+    cytobands,
+    defaultSession,
+    tracks,
+    trackList = [],
+    argv = [],
+  }: Opts,
+  configObject?: Config,
+) {
   let assemblyData: Assembly | undefined
   if (asm && fs.existsSync(asm)) {
     assemblyData = read(asm) as Assembly
@@ -66,15 +73,17 @@ export function readData({
       resolveLocalPaths(track, baseDir)
     }
   }
-  const configData: Partial<Config> & Record<string, unknown> = config
-    ? (read(config) as Config)
-    : {}
+  const configData: Partial<Config> & Record<string, unknown> = configObject
+    ? configObject
+    : config
+      ? (read(config) as Config)
+      : {}
 
   let sessionData = session
     ? (read(session) as Record<string, unknown>)
     : undefined
 
-  if (config) {
+  if (config && !configObject) {
     resolveLocalPaths(configData, path.dirname(path.resolve(config)))
   }
 

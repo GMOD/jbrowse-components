@@ -3,6 +3,7 @@ import path from 'node:path'
 import { booleanize } from './util.ts'
 
 import type { Entry } from './parseArgv.ts'
+import type { Track } from './types.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearAlignmentsDisplayModel } from '@jbrowse/plugin-alignments'
 import type { LinearBasicDisplayModel } from '@jbrowse/plugin-canvas'
@@ -41,6 +42,28 @@ const categoryByType: Record<string, Category> = {
   bigbed: 'feature',
   bedgz: 'feature',
   hic: 'hic',
+}
+
+// Display category for a track already in the config (referenced by --track from
+// a --hub/--config), keyed by the config track's `type`. Anything unlisted
+// (FeatureTrack and friends) drives a feature display.
+const categoryByConfigType: Record<string, Category> = {
+  AlignmentsTrack: 'alignments',
+  QuantitativeTrack: 'wiggle',
+  MultiQuantitativeTrack: 'wiggle',
+  VariantTrack: 'variant',
+  MultiVariantTrack: 'variant',
+  HicTrack: 'hic',
+}
+
+export function configTrackCategory(
+  tracks: Track[],
+  trackId: string,
+): Category {
+  const type = tracks.find(t => t.trackId === trackId)?.type
+  const category =
+    typeof type === 'string' ? categoryByConfigType[type] : undefined
+  return category ?? 'feature'
 }
 
 // Per-read height/spacing for the alignments compactness presets. Mirrors
@@ -403,12 +426,16 @@ export function buildDisplaySnapshot(category: Category, opts: string[]) {
   return result
 }
 
-export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
-  const [trackType, [track, ...opts]] = trackEntry
-  if (!track) {
-    throw new Error('invalid command line args')
-  }
-  const category = categoryByType[trackType] ?? 'feature'
+// Open a track already known to the view's config (a `--bam` file whose adapter
+// was built into the config, or a hosted `--track <id>`) with its display in the
+// requested state. `trackId` is the exact id; `category` selects which modifiers
+// apply. Shared by applyTrackOpts and the --track path.
+export function applyDisplayOpts(
+  view: LinearGenomeViewModel,
+  trackId: string,
+  category: Category,
+  opts: string[],
+) {
   const { snap, sort, force, displayType } = buildDisplaySnapshot(
     category,
     opts,
@@ -431,7 +458,7 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   // default display with setter actions. An explicit `display:` selects a
   // non-default display via the snapshot `type` showTrack reads.
   const opened = view.showTrack(
-    path.basename(track),
+    trackId,
     {},
     displayType ? { ...snap, type: displayType } : snap,
   )
@@ -440,7 +467,7 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   // instead of a downstream "cannot read 'displays' of undefined".
   if (!opened) {
     throw new Error(
-      `Failed to open track "${track}"${displayType ? ` with display "${displayType}"` : ''}`,
+      `Failed to open track "${trackId}"${displayType ? ` with display "${displayType}"` : ''}`,
     )
   }
   const display = opened.displays[0] as TrackDisplay
@@ -451,4 +478,20 @@ export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
   if (force) {
     display.setFeatureDensityStatsLimit({ bytes: Number.MAX_VALUE })
   }
+}
+
+// A track-type CLI flag (--bam file.bam, --bigwig sig.bw, …): the file's
+// basename is the trackId readData built, and the flag name selects the display
+// category. Thin wrapper over applyDisplayOpts.
+export function applyTrackOpts(trackEntry: Entry, view: LinearGenomeViewModel) {
+  const [trackType, [track, ...opts]] = trackEntry
+  if (!track) {
+    throw new Error('invalid command line args')
+  }
+  applyDisplayOpts(
+    view,
+    path.basename(track),
+    categoryByType[trackType] ?? 'feature',
+    opts,
+  )
 }
