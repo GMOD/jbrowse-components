@@ -57,7 +57,9 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewWidth, borderX, borderY, hview, htextRotation } = model
+  const { viewWidth, borderX, borderY, hview } = model
+  // Horizontal-axis labels are drawn vertically (rotated -90° about their anchor).
+  const rotate = -90
   const { offsetPx, width, dynamicBlocks, bpPerPx } = hview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.hblockLabelKeysToHide
@@ -72,7 +74,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
           const xoff = Math.floor(b.offsetPx - offsetPx)
           return (
             <text
-              transform={`rotate(${htextRotation},${xoff},0)`}
+              transform={`rotate(${rotate},${xoff},0)`}
               key={b.key}
               x={xoff}
               y={1}
@@ -102,7 +104,7 @@ export const HorizontalAxisRaw = observer(function HorizontalAxisRaw({
             <text
               x={x - 7}
               y={0}
-              transform={`rotate(${htextRotation},${x},0)`}
+              transform={`rotate(${rotate},${x},0)`}
               fontSize={11}
               dominantBaseline="middle"
               textAnchor="end"
@@ -146,7 +148,7 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
 }: {
   model: DotplotViewModel
 }) {
-  const { viewHeight, borderX, borderY, vview, vtextRotation } = model
+  const { viewHeight, borderX, borderY, vview } = model
   const { offsetPx, dynamicBlocks, bpPerPx } = vview
   const blocks = dynamicBlocks.contentBlocks
   const hide = model.vblockLabelKeysToHide
@@ -163,7 +165,6 @@ export const VerticalAxisRaw = observer(function VerticalAxisRaw({
           const yoff = Math.floor(viewHeight - b.offsetPx + offsetPx)
           return (
             <text
-              transform={`rotate(${vtextRotation},${borderX},${b.offsetPx})`}
               key={b.key}
               x={borderX}
               y={yoff}

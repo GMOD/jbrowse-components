@@ -187,11 +187,6 @@ detail):
 | [`id`](#property-id)                               | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
 | [`type`](#property-type)                           | `ISimpleType<"DotplotView">`                                                                                                                                                                                                                                                                                                       |
 | [`height`](#property-height)                       | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`borderSize`](#property-bordersize)               | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`tickSize`](#property-ticksize)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`vtextRotation`](#property-vtextrotation)         | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`htextRotation`](#property-htextrotation)         | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
-| [`fontSize`](#property-fontsize)                   | `IOptionalIType<ISimpleType<number>, [undefined]>`                                                                                                                                                                                                                                                                                 |
 | [`trackSelectorType`](#property-trackselectortype) | `IOptionalIType<ISimpleType<string>, [undefined]>`                                                                                                                                                                                                                                                                                 |
 | [`assemblyNames`](#property-assemblynames)         | `IOptionalIType<IArrayType<ISimpleType<string>>, [undefined]>`                                                                                                                                                                                                                                                                     |
 | [`drawCigar`](#property-drawcigar)                 | `IOptionalIType<ISimpleType<boolean>, [undefined]>`                                                                                                                                                                                                                                                                                |
@@ -229,51 +224,6 @@ type: types.literal('DotplotView')
 type height = IOptionalIType<ISimpleType<number>, [undefined]>
 // code
 height: types.stripDefault(types.number, defaultHeight)
-```
-
-#### property: borderSize
-
-```ts
-// type signature
-type borderSize = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-borderSize: types.stripDefault(types.number, defaultBorderSize)
-```
-
-#### property: tickSize
-
-```ts
-// type signature
-type tickSize = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-tickSize: types.stripDefault(types.number, defaultTickSize)
-```
-
-#### property: vtextRotation
-
-```ts
-// type signature
-type vtextRotation = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-vtextRotation: types.stripDefault(types.number, 0)
-```
-
-#### property: htextRotation
-
-```ts
-// type signature
-type htextRotation = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-htextRotation: types.stripDefault(types.number, defaultHtextRotation)
-```
-
-#### property: fontSize
-
-```ts
-// type signature
-type fontSize = IOptionalIType<ISimpleType<number>, [undefined]>
-// code
-fontSize: types.stripDefault(types.number, defaultFontSize)
 ```
 
 #### property: trackSelectorType
@@ -546,8 +496,8 @@ detail):
 | [`assemblyErrors`](#getter-assemblyerrors)               | `string`                                                                                                                                                                                                                                                                                         |
 | [`assembliesInitialized`](#getter-assembliesinitialized) | `boolean`                                                                                                                                                                                                                                                                                        |
 | [`initialized`](#getter-initialized)                     | `boolean`                                                                                                                                                                                                                                                                                        |
-| [`hticks`](#getter-hticks)                               | `{ type: string; base: number; index: number; refName: string; }[]`                                                                                                                                                                                                                              |
-| [`vticks`](#getter-vticks)                               | `{ type: string; base: number; index: number; refName: string; }[]`                                                                                                                                                                                                                              |
+| [`hticks`](#getter-hticks)                               | `Tick[]`                                                                                                                                                                                                                                                                                         |
+| [`vticks`](#getter-vticks)                               | `Tick[]`                                                                                                                                                                                                                                                                                         |
 | [`hTickPositions`](#getter-htickpositions)               | `PositionedTick[]`                                                                                                                                                                                                                                                                               |
 | [`vTickPositions`](#getter-vtickpositions)               | `PositionedTick[]`                                                                                                                                                                                                                                                                               |
 | [`hasSomethingToShow`](#getter-hassomethingtoshow)       | `boolean`                                                                                                                                                                                                                                                                                        |
@@ -590,13 +540,13 @@ type initialized = boolean
 #### getter: hticks
 
 ```ts
-type hticks = { type: string; base: number; index: number; refName: string }[]
+type hticks = Tick[]
 ```
 
 #### getter: vticks
 
 ```ts
-type vticks = { type: string; base: number; index: number; refName: string }[]
+type vticks = Tick[]
 ```
 
 #### getter: hTickPositions

@@ -91,10 +91,6 @@ function canonicalRegion(
 
 // defaults for postProcessSnapshot filtering
 const defaultHeight = 600
-const defaultBorderSize = 20
-const defaultTickSize = 5
-const defaultHtextRotation = -90
-const defaultFontSize = 15
 const defaultLineWidth = 2.5
 
 export interface ExportSvgOptions {
@@ -146,26 +142,6 @@ export default function stateModelFactory(pm: PluginManager) {
            * #property
            */
           height: types.stripDefault(types.number, defaultHeight),
-          /**
-           * #property
-           */
-          borderSize: types.stripDefault(types.number, defaultBorderSize),
-          /**
-           * #property
-           */
-          tickSize: types.stripDefault(types.number, defaultTickSize),
-          /**
-           * #property
-           */
-          vtextRotation: types.stripDefault(types.number, 0),
-          /**
-           * #property
-           */
-          htextRotation: types.stripDefault(types.number, defaultHtextRotation),
-          /**
-           * #property
-           */
-          fontSize: types.stripDefault(types.number, defaultFontSize),
           /**
            * #property
            */
