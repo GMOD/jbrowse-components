@@ -31,6 +31,9 @@ const useStyles = makeStyles()(theme => ({
   defaultCell: {
     color: theme.palette.text.secondary,
   },
+  section: {
+    marginTop: theme.spacing(2),
+  },
 }))
 
 function formatValue(value: unknown): string {
@@ -41,16 +44,59 @@ function formatValue(value: unknown): string {
       : JSON.stringify(value)
 }
 
+const ChangesTable = observer(function ChangesTable({
+  changes,
+}: {
+  changes: TrackConfigChange[]
+}) {
+  const { classes } = useStyles()
+  return (
+    <Table size="small">
+      <TableHead>
+        <TableRow>
+          <TableCell>Setting</TableCell>
+          <TableCell>Default</TableCell>
+          <TableCell>Current</TableCell>
+        </TableRow>
+      </TableHead>
+      <TableBody>
+        {changes.map(change => (
+          <TableRow key={change.path.join('.')}>
+            <TableCell className={classes.path}>
+              {change.path.join(' › ')}
+            </TableCell>
+            <TableCell className={`${classes.value} ${classes.defaultCell}`}>
+              {formatValue(change.from)}
+            </TableCell>
+            <TableCell className={classes.value}>
+              {formatValue(change.to)}
+            </TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  )
+})
+
+// Lists both sources that make a track's effective settings differ from its
+// configured defaults: per-track edits (`changes`, resettable) and settings
+// imposed by a session-wide displayTypeDefault (`sessionDefaults`, clearable).
+// The two are kept visually separate so a global preference never reads as an
+// individual edit of this track.
 const TrackSettingsChangesDialog = observer(
   function TrackSettingsChangesDialog({
     changes,
+    sessionDefaults = [],
     trackName,
     onReset,
+    onClearDefaults,
     handleClose,
   }: {
     changes: TrackConfigChange[]
+    sessionDefaults?: TrackConfigChange[]
     trackName: string
     onReset?: () => void
+    onClearDefaults?: () => void
     handleClose: () => void
   }) {
     const { classes } = useStyles()
@@ -67,36 +113,22 @@ const TrackSettingsChangesDialog = observer(
           {changes.length ? (
             <>
               <DialogContentText>
-                These settings differ from the track's default configuration.
+                These settings were edited on this track and differ from its
+                default configuration.
               </DialogContentText>
-              <Table size="small">
-                <TableHead>
-                  <TableRow>
-                    <TableCell>Setting</TableCell>
-                    <TableCell>Default</TableCell>
-                    <TableCell>Current</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {changes.map(change => (
-                    <TableRow key={change.path.join('.')}>
-                      <TableCell className={classes.path}>
-                        {change.path.join(' › ')}
-                      </TableCell>
-                      <TableCell
-                        className={`${classes.value} ${classes.defaultCell}`}
-                      >
-                        {formatValue(change.from)}
-                      </TableCell>
-                      <TableCell className={classes.value}>
-                        {formatValue(change.to)}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <ChangesTable changes={changes} />
             </>
-          ) : (
+          ) : null}
+          {sessionDefaults.length ? (
+            <div className={classes.section}>
+              <DialogContentText>
+                These settings come from a session-wide default you set for all
+                tracks of this type, not from an edit to this track.
+              </DialogContentText>
+              <ChangesTable changes={sessionDefaults} />
+            </div>
+          ) : null}
+          {changes.length || sessionDefaults.length ? null : (
             <Typography>This track has no setting changes.</Typography>
           )}
         </DialogContent>
@@ -110,6 +142,17 @@ const TrackSettingsChangesDialog = observer(
               }}
             >
               Reset to default
+            </Button>
+          ) : null}
+          {sessionDefaults.length && onClearDefaults ? (
+            <Button
+              color="secondary"
+              onClick={() => {
+                onClearDefaults()
+                handleClose()
+              }}
+            >
+              Clear session default
             </Button>
           ) : null}
           <Button

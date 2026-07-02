@@ -230,4 +230,51 @@ describe('canvas display displayMode resolution', () => {
       expect(display.isDisplayModeDefault).toBe(false)
     })
   })
+
+  describe('sessionDefaultChanges', () => {
+    it('is empty when no session default affects the track', () => {
+      const { display } = createDisplay()
+      expect(display.sessionDefaultChanges()).toEqual([])
+    })
+
+    it('reports the config->resolved diff when a session default applies', () => {
+      const { session, display } = createDisplay()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      expect(display.sessionDefaultChanges()).toEqual([
+        { path: ['displayMode'], from: 'normal', to: 'compact' },
+      ])
+    })
+
+    it('is empty when an explicit config overrides the session default', () => {
+      const { session, display } = createDisplay('superCompact')
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      // explicit config wins, so the resolved value equals the configured one
+      expect(display.sessionDefaultChanges()).toEqual([])
+    })
+
+    it('clearSessionDefaults reverts the track and empties the changes', () => {
+      const { session, display } = createDisplay()
+      session.setDisplayTypeDefault(
+        'LinearBasicDisplay',
+        'displayMode',
+        'compact',
+      )
+      expect(display.displayMode).toBe('compact')
+
+      display.clearSessionDefaults()
+      expect(
+        session.getDisplayTypeDefault('LinearBasicDisplay', 'displayMode'),
+      ).toBeUndefined()
+      expect(display.displayMode).toBe('normal')
+      expect(display.sessionDefaultChanges()).toEqual([])
+    })
+  })
 })

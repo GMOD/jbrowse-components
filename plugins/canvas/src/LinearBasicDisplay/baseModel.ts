@@ -88,7 +88,7 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
+import type { AnimationMode, Feature, Region, TrackConfigChange  } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -401,6 +401,23 @@ export default function baseStateModelFactory(
           return configured === 'normal' && isDisplayMode(sessionDefault)
             ? sessionDefault
             : configured
+        },
+
+        /**
+         * #method
+         */
+        // Effective config differences caused by a session-wide
+        // displayTypeDefault (see the displayMode resolution above) — distinct
+        // from per-track config edits (trackConfigDeltas). Reads the live
+        // resolved value against the configured one, so it can never drift from
+        // the getter that owns the resolution. Empty when they agree. Drives the
+        // "affected by a session default" badge in the track selector.
+        sessionDefaultChanges(): TrackConfigChange[] {
+          const configured: DisplayMode = getConf(self, 'displayMode')
+          const resolved = this.displayMode
+          return configured === resolved
+            ? []
+            : [{ path: ['displayMode'], from: configured, to: resolved }]
         },
 
         /**
@@ -1374,6 +1391,20 @@ export default function baseStateModelFactory(
          */
         setShowLabels(value: ShowLabelsMode) {
           self.configuration.setSlot('showLabels', value)
+        },
+
+        /**
+         * #action
+         */
+        // Clear the session-wide defaults reported by sessionDefaultChanges so
+        // this display (and its siblings of the same type) revert to their
+        // config values. Backs the "Clear default" action on the selector badge.
+        clearSessionDefaults() {
+          getSession(self).setDisplayTypeDefault?.(
+            self.type,
+            'displayMode',
+            undefined,
+          )
         },
 
         /**
