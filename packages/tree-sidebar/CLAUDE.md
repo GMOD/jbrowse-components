@@ -1,7 +1,8 @@
 # tree-sidebar
 
-## Vendored d3-hierarchy2
+## Hand-written hierarchy layout (`src/hierarchy.ts`)
 
-`src/d3-hierarchy2/` is a vendored subset of d3-hierarchy (only `cluster` and
-`hierarchy`). d3-hierarchy is pure ESM and breaks Jest, so it cannot be used as
-an npm dependency. Do not replace it with the npm package.
+`src/hierarchy.ts` is a small hand-written subset of what d3-hierarchy used to
+provide (`hierarchy`, `leaves`, `descendants`, `links`, `sum`, `sort`, and a
+`clusterLayout`/`assign*Y` dendrogram layout). d3-hierarchy is pure ESM and
+breaks Jest, so it isn't used as an npm dependency — don't reintroduce it.
