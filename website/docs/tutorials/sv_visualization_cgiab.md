@@ -224,7 +224,7 @@ line is the sample's genome-wide median, **not** absolute diploid: in a tumor
 where much of the genome is deleted, copy-neutral regions sit above 0 — the
 benchmark CNV BED track gives the absolute copy-number reference alongside it.
 
-<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, drawn as a single-color scatter capped to a symmetric ±2 domain, above the benchmark somatic CNV calls. Gains (positive) and losses (negative) read off the 0 line by position and line up with the called intervals." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
+<Figure caption="The log2(tumor/normal) coverage ratio across all chromosomes, drawn as a single-color scatter capped to a symmetric ±2 domain, above a folded B-allele-frequency track (built later in this walkthrough — 0=balanced, 0.5=full LOH) and the benchmark somatic CNV calls. The BAF panel tracks the same copy-number structure visible in the log2 ratio: LOH blocks read high, balanced blocks read low." src="/img/sv_cgiab/cnv_log2ratio_genome.png" />
 
 > For a quick approximation without downloading the full alignments, build the
 > same track from [indexcov](https://github.com/brentp/goleft) bigWigs (computed
@@ -301,7 +301,66 @@ exists to show. Balanced regions then sit at a single 0.5 band that splits
 toward 0 and 1 under LOH — which is why somatic CNV callers all work from
 germline-het sites.
 
-<Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above BAF (bottom), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF splitting away from 0.5 toward 0 and 1 — while the q-arm returns to a balanced state with the BAF clustered at 0.5." src="/img/sv_cgiab/cnv_log2_baf.png" />
+### A cleaner BAF: haplotype-phase correction with Wakhan
+
+The BAF track above is exact per SNP, but at whole-chromosome or genome scale
+a genome browser has to summarize many SNPs into each on-screen pixel. The
+default summary is an average, and averaging raw BAF is exactly wrong here: an
+LOH bin is a genuine mix of points at 0 and 1, and its average collapses back
+to ~0.5 — indistinguishable from a balanced bin. That's why the figure above
+uses **scatter** (per-bin min/max) instead of the default whisker/average
+summary: it's the only rendering that keeps the 0/1 split visible without
+pre-processing the data, and it stops working once there are too many SNPs per
+pixel to plot individually (e.g. at whole-genome zoom).
+
+A more robust fix is to make the *data* survive averaging: fold each BAF value
+about 0.5 (`abs(baf - 0.5)`) so balanced sites read ~0 and LOH sites read ~0.5
+regardless of which allele happened to be lost. You could hand-fold the raw
+per-site BAF built above with one `awk` pass, but
+[Wakhan](https://github.com/KolmogorovLab/Wakhan) (the haplotype-specific
+long-read CNV caller mentioned below) does the equivalent job more robustly:
+it phases the normal's germline heterozygous SNPs, uses that phasing to assign
+each SNP's tumor read support to a haplotype, corrects phase-switch errors
+with coverage evidence, and emits **one already-folded value per phase
+block** — clean by construction from haplotype assignment, not a per-site
+average smoothed after the fact.
+
+```bash
+# 1. phase the normal's germline hets against its own long reads
+# (longphase: https://github.com/twolinin/longphase — fast, ~1-3 min
+# genome-wide at 24 threads; works directly on a CRAM with -r for the
+# reference; any variant caller's VCF works as input, not just Clair3)
+longphase phase -s $GERMLINE_VCF -b $NORMAL -r $REF --pb -t 24 -o normal_phased
+bgzip normal_phased.vcf && tabix -p vcf normal_phased.vcf.gz
+
+# 2. tumor-normal mode: for each phased het SNP, pileup the tumor BAM for
+# allele-specific coverage, then segment copy number and estimate
+# purity/ploidy. --change-point-detection-for-cna (or a real --breakpoints
+# SV VCF, e.g. from Severus) is required or Wakhan silently no-ops; an empty
+# placeholder VCF also works and avoids an unrelated crash in segment export.
+python wakhan.py all --threads 24 --reference $REF --target-bam $TUMOR \
+  --normal-phased-vcf normal_phased.vcf.gz --genome-name HG008-T \
+  --change-point-detection-for-cna --breakpoints empty_breakpoints.vcf \
+  --out-dir-plots wakhan_out
+
+# 3. fold coverage_data/baf.csv (chrom,pos,minor_haplotype_fraction — ~0.5 in
+# balanced regions, ~0.0 under full LOH, i.e. already inverted relative to a
+# per-allele BAF) into a 0=balanced/0.5=LOH bedGraph, then to bigWig
+awk -F, '{print $1"\t"$2"\t"$2+50000"\t"(0.5-$3)}' wakhan_out/*/coverage_data/baf.csv \
+  | sort -k1,1 -k2,2n > HG008-T_baf_folded.bedgraph
+bedGraphToBigWig HG008-T_baf_folded.bedgraph GRCh38_GIABv3.chrom.sizes HG008-T_baf_folded.bw
+
+jbrowse add-track HG008-T_baf_folded.bw --out $OUT --category "CNV" --load move
+```
+
+Plot the folded track with a `0`/`0.5` **min/max score** and **scatter**
+rendering — now safe to average at any zoom level, with no whiskers or
+per-bin min/max needed to keep the LOH split visible. Wakhan's `bed_output/`
+also carries haplotype-specific copy-number segments (`total`/`hap1`/`hap2`
+columns), the same shape the CNV-calls track below already labels explicitly
+in the chr17 walkthrough.
+
+<Figure caption="The two-panel view over chromosome 3: log2 ratio (top) above the folded BAF (bottom, 0=balanced/0.5=LOH), with the benchmark CNV calls below. The p-arm is a single-copy loss with loss-of-heterozygosity — negative log2 AND the BAF rising off 0 toward 0.5 — while the q-arm returns to a balanced state, log2 back near 0 and BAF back down near 0." src="/img/sv_cgiab/cnv_log2_baf.png" />
 
 ### From signal to calls
 
@@ -456,7 +515,29 @@ ratio goes to ~0 (log2 → −∞, here clipped at the −2 axis limit). A singl
 a larger single-copy-loss arm, so it appears as a deeper focal notch punched
 into an already-reduced baseline.
 
-<Figure caption="CDKN2A on chr9: the benchmark SV_75 call is a focal homozygous deletion (copy number 0). The log2 ratio plunges to the floor over the gene — both parental copies are gone — distinct from the surrounding single-copy-loss arm near −0.5. This homozygous-vs-heterozygous distinction tells a complete two-hit suppressor knockout from a single allelic loss." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
+The whole-genome log2 ratio above is built from 10 kb bins, which is coarse
+next to a ~20 kb event — it shows the drop but not the deletion's exact edges.
+For that, drop down to **true per-base coverage** over just this locus: slice
+the tumor BAM to the region of interest (`samtools view -b $TUMOR
+chr9:21,800,000-22,200,000`), index the slice, and run plain `mosdepth` on it
+with no `-b`/`-n` flags (that's the per-base mode — cheap here because the
+slice is tiny, whereas per-base mode on the whole genome would be far slower):
+
+```bash
+samtools view -b $TUMOR chr9:21,800,000-22,200,000 -o cdkn2a_slice.bam
+samtools index cdkn2a_slice.bam
+mosdepth -t4 cdkn2a_perbase cdkn2a_slice.bam
+zcat cdkn2a_perbase.per-base.bed.gz > HG008-T_coverage_perbase.bedgraph
+bedGraphToBigWig HG008-T_coverage_perbase.bedgraph GRCh38_GIABv3.chrom.sizes HG008-T_coverage_perbase.bw
+
+jbrowse add-track HG008-T_coverage_perbase.bw --out $OUT --category "CNV" --load move
+```
+
+Plotted with the default line/area rendering, this resolves the deletion's
+boundaries almost exactly: depth drops from ~65x to precisely 0 right at
+`chr9:21,952,497-21,972,343`, matching the benchmark call almost to the base.
+
+<Figure caption="CDKN2A on chr9: NCBI RefSeq genes (top), true per-base tumor coverage (second), the whole-genome log2 ratio for scale/context (third), and the benchmark CNV calls (bottom). The benchmark SV_75 call is a focal homozygous deletion (copy number 0); per-base coverage drops from ~65x to precisely 0 across the deletion's exact boundaries, while the coarser 10kb-binned log2 ratio shows the same drop with less precision. This homozygous-vs-heterozygous distinction tells a complete two-hit suppressor knockout from a single allelic loss." src="/img/sv_cgiab/driver_cdkn2a_deletion.png" />
 
 #### chr17: loss-with-LOH vs copy-neutral LOH
 

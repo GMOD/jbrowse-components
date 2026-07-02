@@ -3394,126 +3394,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 15000,
   },
 
-  // Whole-genome normal-vs-tumor coverage as a MultiQuantitativeTrack, from
-  // indexcov-estimated coverage bigWigs (computed in seconds from the BAM .bai
-  // indexes, normalized so median≈1 → reads directly as copy number) hosted at
-  // jbrowse.org/demos/cgiab. All 24 chromosomes via a multi-region locstring
-  // (showAllRegions races the giant remote assembly load, so name them).
-  {
-    mode: 'url',
-    name: 'sv_cgiab/cnv_multi_bigwig',
-    url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'MultiQuantitativeTrack',
-          trackId: 'hg008_cnv_indexcov',
-          name: 'HG008 normal vs tumor coverage (indexcov)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'MultiWiggleAdapter',
-            subadapters: [
-              {
-                name: 'HG008-N (normal)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-              {
-                name: 'HG008-T (tumor)',
-                type: 'BigWigAdapter',
-                bigWigLocation: {
-                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
-                  locationType: 'UriLocation',
-                },
-              },
-            ],
-          },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GRCh38_GIABv3',
-          loc: 'chr1 chr2 chr3 chr4 chr5 chr6 chr7 chr8 chr9 chr10 chr11 chr12 chr13 chr14 chr15 chr16 chr17 chr18 chr19 chr20 chr21 chr22 chrX chrY',
-          tracks: [
-            {
-              trackId: 'hg008_cnv_indexcov',
-              displaySnapshot: { height: 200 },
-            },
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr1',
-    readyTimeout: 90000,
-    // narrower + shorter capture (reviewer) — still wide enough for the 24
-    // chromosomes and tall enough for the centered score dialog in stage 2
-    viewportWidth: 1500,
-    viewportHeight: 520,
-    settleMs: 25000,
-    // Two-stage figure (reviewer dropped the former initial + capped-result rows
-    // as low-value): stage 1 shows the "Set min/max score" dialog open with the
-    // cap entered; stage 2 submits the cap then switches to overlapping scatter
-    // so normal vs tumor coverage share one band. The normalized indexcov domain
-    // runs ~0-2, so capping at 0-2.5 keeps a few centromere/repeat spikes from
-    // compressing the copy-number band.
-    stages: [
-      {
-        actions: [
-          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Score', 'Set min/max score'], 300),
-          { type: 'click', text: 'Set min/max score' },
-          { type: 'waitForText', text: 'Set min/max score for track' },
-          { type: 'delay', ms: 500 },
-          {
-            type: 'type',
-            selector: '[role="dialog"] input[placeholder="Enter min score"]',
-            value: '0',
-          },
-          {
-            type: 'type',
-            selector: '[role="dialog"] input[placeholder="Enter max score"]',
-            value: '2.5',
-          },
-          { type: 'delay', ms: 400 },
-        ],
-        // place the caption in the clear track area to the LEFT of the centered
-        // dialog (reviewer: it was overlapping the dialog's editable fields)
-        annotations: [
-          {
-            type: 'text',
-            x: 250,
-            y: 235,
-            text: 'Cap the score range from the track menu (Score → Set min/max score)',
-            maxWidth: 320,
-          },
-        ],
-      },
-      {
-        actions: [
-          // apply the cap (was its own row), then switch rendering type
-          { type: 'click', text: 'Submit' },
-          { type: 'delay', ms: 12000 },
-          { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-          ...menuCascade(['Rendering type', 'Overlapping scatter'], 300),
-          { type: 'click', text: 'Overlapping scatter' },
-          { type: 'delay', ms: 12000 },
-        ],
-        annotations: [
-          {
-            type: 'text',
-            x: 40,
-            y: 150,
-            maxWidth: 360,
-            text: 'Switch to overlapping scatter (Rendering type → Overlapping scatter) to plot normal and tumor coverage in one band',
-          },
-        ],
-      },
-    ],
-  },
-
   // The normalized CNV signal built in the "Build CNV tracks" tutorial section:
   // a single log2(tumor/normal) coverage ratio bigWig across all chromosomes,
   // over the benchmark CNV BED. Unlike the two independently-median-normalized
@@ -3540,14 +3420,19 @@ export const specs: ScreenshotSpec[] = [
           },
         },
         {
+          // Wakhan's phase-corrected, already-folded BAF (0 = balanced,
+          // 0.5 = full LOH) — see cnv-data-recipe.md / WAKHAN-PIPELINE.md.
+          // Unlike raw per-site BAF, this survives summaryScoreMode:'avg'
+          // at genome scale, so it can be shown as a normal averaged track
+          // instead of needing whiskers.
           type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
+          trackId: 'hg008_baf_folded',
+          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
             type: 'BigWigAdapter',
             bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
               locationType: 'UriLocation',
             },
           },
@@ -3621,6 +3506,21 @@ export const specs: ScreenshotSpec[] = [
                 height: 160,
               },
             },
+            {
+              trackId: 'hg008_baf_folded',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                // folded BAF survives averaging, so this is a normal avg
+                // scatter (no whiskers needed) — balanced hugs 0, LOH rises to 0.5
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                resolution: 10,
+                minScore: 0,
+                maxScore: 0.5,
+                height: 120,
+              },
+            },
             'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
           ],
         },
@@ -3629,17 +3529,18 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr1',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 740,
+    viewportHeight: 860,
     settleMs: 25000,
   },
 
   // The conventional two-panel somatic-CNV view over chromosome 3: log2 ratio
-  // (copy number) above BAF (allelic state), with the benchmark CNV calls below.
-  // chr3 is a clean teaching example — the p-arm is a single-copy loss WITH
-  // loss-of-heterozygosity (negative log2 AND the BAF split toward 0/1), while
-  // the q-arm is balanced (log2 back up, BAF tight at 0.5). BAF is one value per
-  // germline-het SNP, so it renders as a scatter (a line/density would average
-  // the 0-and-1 LOH bands back to ~0.5 and hide the split).
+  // (copy number) above folded BAF (allelic state), with the benchmark CNV
+  // calls below. chr3 is a clean teaching example — the p-arm is a single-copy
+  // loss WITH loss-of-heterozygosity (negative log2 AND BAF rising off 0 toward
+  // 0.5), while the q-arm is balanced (log2 back up, BAF back down near 0). BAF
+  // is Wakhan's phase-corrected, already-folded track (0=balanced, 0.5=LOH),
+  // so it plots as a normal averaged scatter — no whiskers needed (see
+  // cnv-data-recipe.md / WAKHAN-PIPELINE.md for why raw per-site BAF can't).
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2_baf',
@@ -3660,13 +3561,13 @@ export const specs: ScreenshotSpec[] = [
         },
         {
           type: 'QuantitativeTrack',
-          trackId: 'hg008_baf',
-          name: 'HG008-T B-allele frequency (BAF)',
+          trackId: 'hg008_baf_folded',
+          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
             type: 'BigWigAdapter',
             bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
               locationType: 'UriLocation',
             },
           },
@@ -3695,19 +3596,17 @@ export const specs: ScreenshotSpec[] = [
               },
             },
             {
-              trackId: 'hg008_baf',
+              trackId: 'hg008_baf_folded',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                // scatter at chromosome scale: each pixel bins hundreds of SNPs,
-                // so plotting the per-bin min/max/avg as points exposes the BAF
-                // spread — LOH bins put points at both 0 and 1 (two bands), while
-                // balanced bins cluster at 0.5. Density is wrong here: it colors
-                // each bin by its mean, and both LOH (a mix of 0s and 1s) and
-                // balanced bins average to ~0.5, washing out to a uniform fill.
+                // folded BAF (0=balanced, 0.5=LOH) is a single clean value per
+                // bin by construction (Wakhan's phase correction), so a normal
+                // avg scatter reads the LOH split directly — no whiskers
                 defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 minScore: 0,
-                maxScore: 1,
+                maxScore: 0.5,
                 height: 140,
               },
             },
@@ -3726,13 +3625,14 @@ export const specs: ScreenshotSpec[] = [
   // CDKN2A focal homozygous deletion (chr9:21,952,497-21,972,343, benchmark
   // SV_75, total CN=0 / hap 0+0) — the canonical PDAC two-hit tumor-suppressor
   // loss. A homozygous deletion reads differently from a heterozygous (single-
-  // copy) loss: the log2 ratio drops to the floor (depth ratio -> ~0, both
-  // parental copies gone), whereas a het loss only halves depth (~ -1). The
-  // deletion is punched into a larger single-copy-loss arm (CN=1), so it shows
-  // as a deeper focal dip. Shown over NCBI RefSeq genes (CDKN2A context) with
-  // the benchmark CNV BED's CN=0 SV_75 call. (The indexcov coverage estimate is
-  // ~16kb-binned, too coarse to resolve a 20kb event, so the mosdepth-derived
-  // log2 ratio is the informative track here.)
+  // copy) loss: depth drops to the floor (both parental copies gone), whereas
+  // a het loss only halves depth. The deletion is punched into a larger
+  // single-copy-loss arm (CN=1), so it shows as a deeper focal dip. True
+  // per-base tumor coverage (mosdepth on a targeted BAM slice, not the 10kb-
+  // binned log2 ratio) resolves the ~20kb event's boundaries almost exactly:
+  // depth drops from ~65x to precisely 0 at chr9:21,952,497-21,972,343. Shown
+  // over NCBI RefSeq genes (CDKN2A context), the coarser log2 ratio for scale
+  // context, and the benchmark CNV BED's CN=0 SV_75 call.
   {
     mode: 'url',
     name: 'sv_cgiab/driver_cdkn2a_deletion',
@@ -3759,6 +3659,23 @@ export const specs: ScreenshotSpec[] = [
           },
         },
         {
+          // true per-base depth from mosdepth on a targeted BAM slice around
+          // CDKN2A (not genome-wide — see WAKHAN-PIPELINE.md step 5) — fine
+          // enough to resolve the ~20kb deletion's boundaries, unlike the
+          // 10kb-binned log2 ratio below
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_t_coverage_finescale',
+          name: 'HG008-T fine-scale coverage (per-base)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_coverage_perbase.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
           type: 'QuantitativeTrack',
           trackId: 'hg008_log2ratio',
           name: 'HG008 log2(tumor/normal) coverage ratio',
@@ -3780,6 +3697,15 @@ export const specs: ScreenshotSpec[] = [
           tracks: [
             'hg38_ncbiRefSeq_ucsc',
             {
+              trackId: 'hg008_t_coverage_finescale',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                minScore: 0,
+                maxScore: 100,
+                height: 160,
+              },
+            },
+            {
               trackId: 'hg008_log2ratio',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
@@ -3789,7 +3715,7 @@ export const specs: ScreenshotSpec[] = [
                 scatterPointSize: 3,
                 minScore: -2,
                 maxScore: 2,
-                height: 160,
+                height: 140,
               },
             },
             'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
@@ -3800,7 +3726,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr9',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 520,
+    viewportHeight: 660,
     settleMs: 20000,
   },
 
@@ -3910,6 +3836,161 @@ export const specs: ScreenshotSpec[] = [
     viewportWidth: 1500,
     viewportHeight: 620,
     settleMs: 30000,
+  },
+
+  // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on
+  // chr12 — positive log2 ratio with an imbalanced (but not fully split) BAF,
+  // the fourth entry in the log2xBAF decision table (driver_chr17_loh).
+  {
+    mode: 'url',
+    name: 'sv_cgiab/driver_kras_gain',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_baf_folded',
+          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr12:24,000,000-27,500,000',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                useBicolor: false,
+                summaryScoreMode: 'avg',
+                scatterPointSize: 3,
+                minScore: -2,
+                maxScore: 2,
+                height: 140,
+              },
+            },
+            {
+              trackId: 'hg008_baf_folded',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 3,
+                minScore: 0,
+                maxScore: 0.5,
+                height: 140,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr12',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 520,
+    settleMs: 20000,
+  },
+
+  // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH
+  // (CN 1, 0+1) — negative log2 AND the BAF rising off 0 toward 0.5.
+  {
+    mode: 'url',
+    name: 'sv_cgiab/driver_smad4_loh',
+    url: cgiabUrl({
+      sessionTracks: [
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_log2ratio',
+          name: 'HG008 log2(tumor/normal) coverage ratio',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+        {
+          type: 'QuantitativeTrack',
+          trackId: 'hg008_baf_folded',
+          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'BigWigAdapter',
+            bigWigLocation: {
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
+              locationType: 'UriLocation',
+            },
+          },
+        },
+      ],
+      views: [
+        {
+          type: 'LinearGenomeView',
+          assembly: 'GRCh38_GIABv3',
+          loc: 'chr18:1-80,373,285',
+          tracks: [
+            {
+              trackId: 'hg008_log2ratio',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                useBicolor: false,
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: -2,
+                maxScore: 2,
+                height: 140,
+              },
+            },
+            {
+              trackId: 'hg008_baf_folded',
+              displaySnapshot: {
+                type: 'LinearWiggleDisplay',
+                defaultRendering: 'scatter',
+                summaryScoreMode: 'avg',
+                scatterPointSize: 1,
+                minScore: 0,
+                maxScore: 0.5,
+                height: 140,
+              },
+            },
+            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+          ],
+        },
+      ],
+    }),
+    readyText: 'chr18',
+    readyTimeout: 90000,
+    viewportWidth: 1500,
+    viewportHeight: 520,
+    settleMs: 20000,
   },
 
   {

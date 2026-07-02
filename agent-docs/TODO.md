@@ -30,3 +30,24 @@ On the dotplot, if you're zoomed all the way out and then place your mouse near 
 
 - multi-wiggle trackMenuItems() (~93 lines) — same pattern, direct hic/maf precedent. Caveat: needs a couple of internal interfaces exported across packages (WithResolution), so slightly more plumbing.
 - Small genuinely-pure transforms — alignments colorLegendCategories / buildCoverageBlocks, variant colorByAttributes. These are the cleanest demonstrations of the lever (plain args in, plain data out, zero self) but small (~15 lines each).
+
+## sv
+
+Now let's regenerate these two new screenshots and remove the stale chr5 link plus replace the KRAS/SMAD4 prose links with real Figures.
+
+  Ran 2 shell commands
+
+Both rendered. Let's review both before wiring into the doc.
+
+  Read 2 files, ran 2 shell commands
+You've hit your session limit · resets 12:10am (America/Los_Angeles)
+
+✻ Baked for 1h 24m 10s
+
+✻ Claude resuming /loop wakeup (Jul 1 10:57pm)
+
+Good — this confirms the SMAD4 CN=1 LOH block (chr18:28,482,566-80,363,285) matches the figure and caption. That earlier scheduled check already resolved (I completed the investigation and am now implementing it). Continuing — let's wire the doc.
+
+  Read 1 file
+You've hit your session limit · resets 12:10am (America/Los_Angeles)
+/usage-credits to request more usage from your admin.
