@@ -6,7 +6,11 @@ import path from 'node:path'
 import { renderToString } from 'react-dom/server'
 
 import { renderSvg } from './renderSvg.tsx'
-import { packFixtureRects } from '../RenderFeatureDataRPC/testUtils.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+  packFixtureRects,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 
 import type { RenderSvgModel } from './renderSvg.tsx'
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
@@ -57,26 +61,13 @@ jest.mock('mobx', () => ({
 function makeData(
   features: { startBp: number; endBp: number }[] = [],
 ): FeatureDataResult {
-  const n = features.length
-  return {
+  return makeFeatureData({
     ...packFixtureRects(features),
-    outlineColor: 0,
-    flatbushItems: features.map((f, i) => ({
-      kind: 'feature' as const,
-      featureId: `f${i}`,
-      type: 'gene',
-      startBp: f.startBp,
-      endBp: f.endBp,
-      topPx: 0,
-      bottomPx: 10,
-      featureHeightPx: 10,
-      tooltip: `f${i}`,
-      densityFade: false,
-    })),
-    subfeatureInfos: [],
-    floatingLabelsData: {},
-    featureCount: n,
-  }
+    flatbushItems: features.map((f, i) =>
+      makeFlatbushItem({ featureId: `f${i}`, startBp: f.startBp, endBp: f.endBp }),
+    ),
+    featureCount: features.length,
+  })
 }
 
 function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {

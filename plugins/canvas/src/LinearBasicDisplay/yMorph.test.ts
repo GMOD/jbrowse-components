@@ -4,26 +4,22 @@ import {
   easeInOutCubic,
   interpolateYData,
 } from './yMorph.ts'
-
-import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 
 // One rect per feature, sitting at the feature's top.
 function region(features: { featureId: string; top: number }[]) {
-  return {
-    flatbushItems: features.map(f => ({
-      kind: 'feature' as const,
-      featureId: f.featureId,
-      type: 'feature',
-      startBp: 0,
-      endBp: 10,
-      topPx: f.top,
-      bottomPx: f.top + 10,
-      featureHeightPx: 10,
-      tooltip: f.featureId,
-      densityFade: false,
-    })),
-    subfeatureInfos: [],
-    floatingLabelsData: {},
+  return makeFeatureData({
+    flatbushItems: features.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'feature',
+        topPx: f.top,
+        bottomPx: f.top + 10,
+      }),
+    ),
     rectPositions: new Uint32Array(features.length * 2),
     rectYs: new Float32Array(features.map(f => f.top)),
     rectHeights: new Float32Array(features.map(() => 10)),
@@ -31,19 +27,7 @@ function region(features: { featureId: string; top: number }[]) {
     rectStrands: new Float32Array(features.length),
     rectDensityFade: new Uint32Array(features.length),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
-    linePositions: new Uint32Array(0),
-    lineYs: new Float32Array(0),
-    lineColors: new Uint32Array(0),
-    lineDirections: new Int8Array(0),
-    lineFeatureIndices: new Uint32Array(0),
-    arrowXs: new Uint32Array(0),
-    arrowYs: new Float32Array(0),
-    arrowDirections: new Int8Array(0),
-    arrowColors: new Uint32Array(0),
-    arrowFeatureIndices: new Uint32Array(0),
-    outlineColor: 0,
-    featureCount: 0,
-  } as FeatureDataResult
+  })
 }
 
 test('easeInOutCubic pins the endpoints and midpoint', () => {

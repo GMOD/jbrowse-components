@@ -1,10 +1,7 @@
 import { calculateFeatureDensityStats } from '@jbrowse/core/data_adapters/BaseAdapter/stats'
 import { checkStopToken2 } from '@jbrowse/core/util/stopToken'
 
-import type {
-  RenderFeatureDataArgs,
-  RenderFeatureDataResult,
-} from './rpcTypes.ts'
+import type { RegionTooLargeResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { StatusCallback } from '@jbrowse/core/util'
 import type { StopToken, StopTokenChecker } from '@jbrowse/core/util/stopToken'
@@ -28,7 +25,7 @@ export function featuresPerPx(
 export function tooManyFeaturesResult(
   featureCount: number,
   bytes: number | undefined,
-): RenderFeatureDataResult {
+): RegionTooLargeResult {
   return { regionTooLarge: true, featureCount, bytes }
 }
 
@@ -51,7 +48,7 @@ export function densityTooLargeResult(
   bpPerPx: number,
   maxFeatureDensity: number,
   bytes: number | undefined,
-): RenderFeatureDataResult | undefined {
+): RegionTooLargeResult | undefined {
   const featureCount = Math.round(
     featureDensityPerBp * (region.end - region.start),
   )
@@ -91,7 +88,7 @@ export async function samplePreFetchDensity({
   stopToken?: StopToken
   statusCallback?: StatusCallback
   stopTokenCheck?: StopTokenChecker
-}): Promise<RenderFeatureDataResult | undefined> {
+}): Promise<RegionTooLargeResult | undefined> {
   const { featureDensity } = await calculateFeatureDensityStats(
     region,
     (r, o) => dataAdapter.getFeatures(r, o),

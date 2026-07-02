@@ -3,6 +3,7 @@ import { THEME_DERIVED_COLOR } from './renderConfig.ts'
 
 import type { RectData } from './packRenderArrays.ts'
 import type { DisplayConfig } from './renderConfig.ts'
+import type { FeatureDataResult, FlatbushItem } from './rpcTypes.ts'
 
 export function mockDisplayConfig(
   overrides: Partial<DisplayConfig> = {},
@@ -48,4 +49,39 @@ export function packFixtureRects(
     densityFade: f.densityFade ?? false,
   }))
   return packRenderArrays(rects, [], [], 0, Number.MAX_SAFE_INTEGER)
+}
+
+// A hit-test FlatbushItem with sensible defaults; override what a test cares
+// about. Keeps every fixture in sync with the field set (e.g. densityFade).
+export function makeFlatbushItem(
+  overrides: Partial<FlatbushItem> & Pick<FlatbushItem, 'featureId'>,
+): FlatbushItem {
+  return {
+    kind: 'feature',
+    type: 'gene',
+    startBp: 0,
+    endBp: 10,
+    topPx: 0,
+    bottomPx: 10,
+    featureHeightPx: 10,
+    tooltip: overrides.featureId,
+    densityFade: false,
+    ...overrides,
+  }
+}
+
+// A full FeatureDataResult built from the production packer, so tests never
+// hand-maintain the ~20 empty typed arrays it carries. Override any field.
+export function makeFeatureData(
+  overrides: Partial<FeatureDataResult> = {},
+): FeatureDataResult {
+  return {
+    ...packFixtureRects([]),
+    flatbushItems: [],
+    subfeatureInfos: [],
+    floatingLabelsData: {},
+    outlineColor: 0,
+    featureCount: 0,
+    ...overrides,
+  }
 }

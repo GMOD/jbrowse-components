@@ -15,37 +15,10 @@ import { waitFor } from '@testing-library/react'
 
 import configSchemaFactory from './configSchema.ts'
 import stateModelFactory from './model.ts'
+import { makeFeatureData } from '../RenderFeatureDataRPC/testUtils.ts'
 
-import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-function makeEmptyFeatureData(): FeatureDataResult {
-  return {
-    flatbushItems: [],
-    subfeatureInfos: [],
-    floatingLabelsData: {},
-    rectPositions: new Uint32Array(0),
-    rectYs: new Float32Array(0),
-    rectHeights: new Float32Array(0),
-    rectColors: new Uint32Array(0),
-    rectStrands: new Float32Array(0),
-    rectDensityFade: new Uint32Array(0),
-    rectFeatureIndices: new Uint32Array(0),
-    linePositions: new Uint32Array(0),
-    lineYs: new Float32Array(0),
-    lineColors: new Uint32Array(0),
-    lineDirections: new Int8Array(0),
-    lineFeatureIndices: new Uint32Array(0),
-    arrowXs: new Uint32Array(0),
-    arrowYs: new Float32Array(0),
-    arrowDirections: new Int8Array(0),
-    arrowColors: new Uint32Array(0),
-    arrowFeatureIndices: new Uint32Array(0),
-    outlineColor: 0,
-    featureCount: 0,
-  }
-}
 
 // RenderFeatureData responder that mimics executeRenderFeatureData's byte gate:
 // the index estimate scales with the queried span, and a region over
@@ -61,7 +34,7 @@ function makeByteGatedRender(bytesPerBp: number) {
     return Promise.resolve(
       args.byteSizeLimit !== undefined && bytes > args.byteSizeLimit
         ? { regionTooLarge: true as const, bytes }
-        : { ...makeEmptyFeatureData(), bytes },
+        : { ...makeFeatureData(), bytes },
     )
   }
 }
@@ -229,7 +202,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('fetches regions on initial load', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
 
     const { display, view } = createDisplay()
 
@@ -343,7 +316,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Now simulate "Force Load": raise limit, clear state, reload.
     // setFeatureDensityStatsLimit triples the limit so the RPC succeeds.
     display.setFeatureDensityStatsLimit()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
     display.reload()
 
     jest.advanceTimersByTime(800)
@@ -372,7 +345,7 @@ describe('FetchVisibleRegions autorun', () => {
     // Each region's RenderFeatureData call succeeds
     mockRpcCall.mockImplementation((_sid: string, method: string) => {
       if (method === 'RenderFeatureData') {
-        return Promise.resolve(makeEmptyFeatureData())
+        return Promise.resolve(makeFeatureData())
       }
       return Promise.resolve({})
     })
@@ -414,7 +387,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('preserves laidOutDataMap during layout refresh (soft reset)', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    const featureData = makeEmptyFeatureData()
+    const featureData = makeFeatureData()
     mockRpcCall.mockResolvedValue(featureData)
 
     const { display, view } = createDisplay()
@@ -463,7 +436,7 @@ describe('FetchVisibleRegions autorun', () => {
     })
 
     // Now fix the issue and retry (simulating user clicking "Retry")
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
     display.reload()
 
     jest.advanceTimersByTime(800)
@@ -480,7 +453,7 @@ describe('FetchVisibleRegions autorun', () => {
     // while clearing rpcDataMap. The FetchVisibleRegions autorun would then
     // see boundsValid=true + isCacheValid=true → skip fetch → blank region.
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
 
     const { display, view } = createDisplay()
 
@@ -520,7 +493,7 @@ describe('FetchVisibleRegions autorun', () => {
   it('clearAllRpcData resets state and triggers a new fetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
 
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
 
     const { display } = createDisplay()
 
@@ -552,7 +525,7 @@ describe('FetchVisibleRegions autorun', () => {
 describe('SettingsInvalidate autorun', () => {
   it('triggers refetch when settings change while data is loaded', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(800)
@@ -577,7 +550,7 @@ describe('SettingsInvalidate autorun', () => {
 
   it('keeps stale rpcDataMap visible through a settings-change refetch', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
     const { display } = createDisplay()
 
     jest.advanceTimersByTime(800)
@@ -617,7 +590,7 @@ describe('SettingsInvalidate autorun', () => {
 
   it('does not double-fetch when settings change before the initial FetchVisibleRegions fires', async () => {
     const { createDisplay, mockRpcCall } = createTestEnvironment()
-    mockRpcCall.mockResolvedValue(makeEmptyFeatureData())
+    mockRpcCall.mockResolvedValue(makeFeatureData())
     const { display } = createDisplay()
 
     // Change setting before FetchVisibleRegions fires (delay: 600ms).
@@ -793,7 +766,7 @@ describe('derived regionTooLarge', () => {
       renderCalls += 1
       return renderCalls === 1
         ? Promise.resolve({ regionTooLarge: true, featureCount: 5000 })
-        : Promise.resolve(makeEmptyFeatureData())
+        : Promise.resolve(makeFeatureData())
     })
 
     jest.advanceTimersByTime(800)
@@ -909,7 +882,7 @@ describe('derived regionTooLarge', () => {
       renderCalls += 1
       return renderCalls === 1
         ? Promise.resolve({ regionTooLarge: true, featureCount: 1500 })
-        : Promise.resolve(makeEmptyFeatureData())
+        : Promise.resolve(makeFeatureData())
     })
 
     jest.advanceTimersByTime(800)
@@ -1255,8 +1228,8 @@ describe('regionKeys/reversedRegions derive from rpcDataMap', () => {
       end: 100,
       reversed: true,
     }
-    display.setRpcData(0, makeEmptyFeatureData(), 1, regionA)
-    display.setRpcData(1, makeEmptyFeatureData(), 1, regionB)
+    display.setRpcData(0, makeFeatureData(), 1, regionA)
+    display.setRpcData(1, makeFeatureData(), 1, regionB)
 
     // No setLoadedRegion was called — this is exactly the post-clear refetch
     // window where rpcDataMap holds data but loadedRegions is empty.

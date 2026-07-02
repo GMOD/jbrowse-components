@@ -5,6 +5,10 @@ import {
   isHitFeature,
   performMultiRegionHitDetection,
 } from './hitTesting.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../../RenderFeatureDataRPC/testUtils.ts'
 
 import type {
   FlatbushRegionIndexes,
@@ -26,18 +30,14 @@ function makeItem(
   topPx: number,
   bottomPx: number,
 ): FlatbushItem {
-  return {
-    kind: 'feature',
+  return makeFlatbushItem({
     featureId,
-    type: 'gene',
     startBp,
     endBp,
     topPx,
     bottomPx,
     featureHeightPx: bottomPx - topPx,
-    tooltip: featureId,
-    densityFade: false,
-  }
+  })
 }
 
 function makeSub(
@@ -65,31 +65,7 @@ function makeData(
   subfeatureInfos: SubfeatureInfo[] = [],
   aminoAcidOverlay?: AminoAcidOverlayItem[],
 ): FeatureDataResult {
-  return {
-    flatbushItems,
-    subfeatureInfos,
-    aminoAcidOverlay,
-    floatingLabelsData: {},
-    rectPositions: new Uint32Array(0),
-    rectYs: new Float32Array(0),
-    rectHeights: new Float32Array(0),
-    rectColors: new Uint32Array(0),
-    rectStrands: new Float32Array(0),
-    rectDensityFade: new Uint32Array(0),
-    rectFeatureIndices: new Uint32Array(0),
-    linePositions: new Uint32Array(0),
-    lineYs: new Float32Array(0),
-    lineColors: new Uint32Array(0),
-    lineDirections: new Int8Array(0),
-    lineFeatureIndices: new Uint32Array(0),
-    arrowXs: new Uint32Array(0),
-    arrowYs: new Float32Array(0),
-    arrowDirections: new Int8Array(0),
-    arrowColors: new Uint32Array(0),
-    arrowFeatureIndices: new Uint32Array(0),
-    outlineColor: 0,
-    featureCount: 0,
-  }
+  return makeFeatureData({ flatbushItems, subfeatureInfos, aminoAcidOverlay })
 }
 
 function makeRegion(

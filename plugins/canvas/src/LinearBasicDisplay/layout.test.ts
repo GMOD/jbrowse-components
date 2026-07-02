@@ -4,6 +4,10 @@ import {
   createIncrementalLayout,
 } from './layout.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
+import {
+  makeFeatureData as makeBaseFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 
 import type { FeatureDataResult } from '../RenderFeatureDataRPC/rpcTypes.ts'
 
@@ -18,44 +22,27 @@ function makeFeatureData(opts: {
   }[]
 }): FeatureDataResult {
   const { features } = opts
-  return {
-    flatbushItems: features.map(f => ({
-      kind: 'feature' as const,
-      featureId: f.featureId,
-      type: 'feature',
-      startBp: f.startBp,
-      endBp: f.endBp,
-      topPx: 0,
-      bottomPx: f.height,
-      featureHeightPx: f.height,
-      tooltip: f.featureId,
-      strand: f.strand,
-      densityFade: !!f.densityFade,
-    })),
-    subfeatureInfos: [],
-    floatingLabelsData: {},
+  return makeBaseFeatureData({
+    flatbushItems: features.map(f =>
+      makeFlatbushItem({
+        featureId: f.featureId,
+        type: 'feature',
+        startBp: f.startBp,
+        endBp: f.endBp,
+        bottomPx: f.height,
+        featureHeightPx: f.height,
+        strand: f.strand,
+        densityFade: !!f.densityFade,
+      }),
+    ),
     rectPositions: new Uint32Array(features.flatMap(f => [f.startBp, f.endBp])),
     rectYs: new Float32Array(features.length),
     rectHeights: new Float32Array(features.map(f => f.height)),
     rectColors: new Uint32Array(features.length),
     rectStrands: new Float32Array(features.length),
-    rectDensityFade: new Uint32Array(
-      features.map(f => (f.densityFade ? 1 : 0)),
-    ),
+    rectDensityFade: new Uint32Array(features.map(f => (f.densityFade ? 1 : 0))),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
-    linePositions: new Uint32Array(0),
-    lineYs: new Float32Array(0),
-    lineColors: new Uint32Array(0),
-    lineDirections: new Int8Array(0),
-    lineFeatureIndices: new Uint32Array(0),
-    arrowXs: new Uint32Array(0),
-    arrowYs: new Float32Array(0),
-    arrowDirections: new Int8Array(0),
-    arrowColors: new Uint32Array(0),
-    arrowFeatureIndices: new Uint32Array(0),
-    outlineColor: 0,
-    featureCount: 0,
-  }
+  })
 }
 
 function layout(

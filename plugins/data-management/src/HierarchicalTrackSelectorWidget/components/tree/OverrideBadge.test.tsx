@@ -112,4 +112,55 @@ describe('TrackSettingsChangesDialog session-default section', () => {
     fireEvent.click(getByText('Clear session default'))
     expect(cleared).toHaveBeenCalledTimes(1)
   })
+
+  it('renders a per-track edit separately from a session default and wires both resets', () => {
+    const reset = jest.fn()
+    const cleared = jest.fn()
+    const { getByText, getAllByText } = render(
+      theme(
+        <TrackSettingsChangesDialog
+          changes={[{ path: ['name'], from: 'Genes', to: 'My genes' }]}
+          sessionDefaults={[
+            { path: ['displayMode'], from: 'normal', to: 'compact' },
+          ]}
+          trackName="Genes"
+          onReset={() => {
+            reset()
+          }}
+          onClearDefaults={() => {
+            cleared()
+          }}
+          handleClose={() => {}}
+        />,
+      ),
+    )
+    // both sources are surfaced, in their own framing
+    expect(getByText(/edited on this track/)).toBeTruthy()
+    expect(getByText(/session-wide default/)).toBeTruthy()
+    expect(getByText('My genes')).toBeTruthy()
+    expect(getByText('compact')).toBeTruthy()
+    // each source has its own reset that fires independently
+    expect(getAllByText('Default')).toHaveLength(2)
+    fireEvent.click(getByText('Reset to default'))
+    fireEvent.click(getByText('Clear session default'))
+    expect(reset).toHaveBeenCalledTimes(1)
+    expect(cleared).toHaveBeenCalledTimes(1)
+  })
+
+  it('shows only the per-track edit section when no session default applies', () => {
+    const { getByText, queryByText } = render(
+      theme(
+        <TrackSettingsChangesDialog
+          changes={[{ path: ['name'], from: 'Genes', to: 'My genes' }]}
+          trackName="Genes"
+          onReset={() => {}}
+          handleClose={() => {}}
+        />,
+      ),
+    )
+    expect(getByText(/edited on this track/)).toBeTruthy()
+    expect(getByText('Reset to default')).toBeTruthy()
+    expect(queryByText(/session-wide default/)).toBeNull()
+    expect(queryByText('Clear session default')).toBeNull()
+  })
 })
