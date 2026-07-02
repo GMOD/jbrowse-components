@@ -32,7 +32,9 @@ const useStyles = makeStyles()(theme => ({
     overflow: 'hidden',
     whiteSpace: 'nowrap',
     '&:hover': {
-      background: theme.palette.grey[300],
+      // action.hover is a mode-aware translucent overlay; the old hardcoded
+      // grey[300] stayed light in dark mode, washing out the light label text
+      background: theme.palette.action.hover,
     },
   },
   b0: {

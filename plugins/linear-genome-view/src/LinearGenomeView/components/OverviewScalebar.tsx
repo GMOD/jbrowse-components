@@ -48,6 +48,13 @@ const useStyles = makeStyles()(theme => ({
     height: HEADER_OVERVIEW_HEIGHT,
     overflow: 'hidden',
   },
+  // cytoband strip keeps a fixed light backdrop in both light/dark mode: the
+  // Giemsa greyscale runs to pure black (gpos100/gvar), which would vanish on
+  // the dark theme's background.default. UCSC/IGV likewise draw the ideogram on
+  // a fixed white strip.
+  scalebarContigCytoband: {
+    backgroundColor: theme.palette.common.white,
+  },
   scalebarContigForward: {
     backgroundImage: `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 15 9'%3E%3Cpath d='M-.1 0L6 4.5L-.1 9' fill='none' stroke='${theme.palette.divider}'/%3E%3C/svg%3E")`,
     backgroundRepeat: 'repeat',
@@ -122,7 +129,9 @@ const OverviewBox = observer(function OverviewBox({
         {showRefName ? (
           <Typography
             style={{
-              color: theme.palette.text.primary,
+              // fixed dark: this label overlays the always-white cytoband strip,
+              // so text.primary (white in dark mode) would be invisible
+              color: theme.palette.common.black,
               transform: `translateX(${block.offsetPx + 3}px)`,
             }}
             className={classes.scalebarRefName}
@@ -131,7 +140,7 @@ const OverviewBox = observer(function OverviewBox({
           </Typography>
         ) : null}
         <div
-          className={classes.scalebarContig}
+          className={cx(classes.scalebarContig, classes.scalebarContigCytoband)}
           style={{
             transform: `translateX(${block.offsetPx + cytobandOffset}px)`,
             width: block.widthPx,
