@@ -139,10 +139,153 @@ this page is self-contained.
 
 [SharedVariantDisplay config →](../sharedvariantdisplay)
 
-#### slot:
+#### slot: showReferenceAlleles
+
+Starting value for drawing reference alleles. When false, the row background is
+filled solid grey and only ALT alleles are painted on top (makes overlapping
+variants easier to see); when true, reference alleles are drawn normally. Seeds
+referenceDrawingMode the first time a config is loaded.
+
+**Type:** `boolean` · **Default:** `false`
 
 ```js
-...sharedVariantConfigSlots
+{
+  type: 'boolean',
+  defaultValue: false,
+  description:
+    'Starting value for drawing reference alleles. When false, the row background is filled solid grey and only ALT alleles are painted on top (makes overlapping variants easier to see); when true, reference alleles are drawn normally. Seeds referenceDrawingMode the first time a config is loaded.',
+}
+```
+
+#### slot: showSidebarLabels
+
+Show the per-sample row labels in the sidebar
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Show the per-sample row labels in the sidebar',
+}
+```
+
+#### slot: showTree
+
+Show the sample clustering tree in the sidebar
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description: 'Show the sample clustering tree in the sidebar',
+}
+```
+
+#### slot: showBranchLength
+
+Draw the clustering tree with branch lengths
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw the clustering tree with branch lengths',
+}
+```
+
+#### slot: renderingMode
+
+'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws
+one row per haplotype
+
+**Type:** `stringEnum` · **Default:** `'alleleCount'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('RenderingMode', ['alleleCount', 'phased']),
+  defaultValue: 'alleleCount',
+  description:
+    "'alleleCount' draws one row per sample colored by allele dosage; 'phased' draws one row per haplotype",
+}
+```
+
+#### slot: featureColor
+
+Optional per-feature color for the genotype cells: a jexl expression (or plain
+CSS color) evaluated once per variant in the worker, painting every alt-carrying
+cell with that color while ref/no-call cells keep their normal coloring so "who
+carries it" still reads. Empty means the default genotype-based coloring (allele
+dosage / phasing). The "Color cells by" menu offers presets like consequence
+impact (`jexl:impactColor(feature)`), but any feature jexl works, same as the
+standard `color` slot.
+
+**Type:** `string` · **Default:** `''`
+
+```js
+{
+  type: 'string',
+  defaultValue: '',
+}
+```
+
+#### slot: minorAlleleFrequencyFilter
+
+Hide variants whose minor allele frequency is below this threshold
+
+**Type:** `number` · **Default:** `0`
+
+```js
+{
+  type: 'number',
+  defaultValue: 0,
+  advanced: true,
+  description:
+    'Hide variants whose minor allele frequency is below this threshold',
+}
+```
+
+#### slot: colorBy
+
+Name of a sample-metadata attribute (a column in the adapter's
+samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means
+no grouping
+
+**Type:** `string` · **Default:** `''`
+
+```js
+{
+  type: 'string',
+  defaultValue: '',
+  description:
+    "Name of a sample-metadata attribute (a column in the adapter's samplesTsvLocation, e.g. 'population') to color the sidebar rows by; empty means no grouping",
+}
+```
+
+#### slot: referenceDrawingMode
+
+A 'draw'/'skip' toggle for reference alleles, settable independent of
+showReferenceAlleles (the admin-config-only starting default). No fallback
+derivation at read time — preProcessSnapshot below seeds this from
+showReferenceAlleles once, the first time a config lacking it is hydrated, so
+from then on this slot alone is the single source of truth.
+
+**Type:** `stringEnum` · **Default:** `'skip'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('ReferenceDrawingMode', ['draw', 'skip']),
+  defaultValue: 'skip',
+  description:
+    "'draw' paints reference alleles; 'skip' fills the background solid grey and draws only ALT alleles",
+}
 ```
 
 </details>
