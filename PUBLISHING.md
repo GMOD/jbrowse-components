@@ -20,12 +20,21 @@ Announcements to Bluesky, Mastodon (`@usejbrowse@genomic.social`), and the email
 newsletter are sent by the **Announce release** GitHub Actions workflow — run it
 manually _after_ the GitHub release is published:
 
-- Actions → **Announce release** → **Run workflow**.
-- Leave **dry_run** checked first: it prints the social post, the email HTML, and
-  the newsletter subscriber count without sending anything.
-- Re-run with **dry_run** unchecked to actually post and send. Optionally set
-  **tag** to override the auto-detected version (defaults to the newest blog
-  post).
+- Actions → **Announce release** → **Run workflow**, or from the CLI:
+
+  ```bash
+  pnpm announce:dispatch                      # dry run (workflow's default)
+  pnpm announce:dispatch -- -f dry_run=false  # real post + send
+  pnpm announce:dispatch -- -f dry_run=false -f tag=v4.3.1
+  ```
+
+- The default (**dry_run** true) prints the social post, the email HTML, and the
+  newsletter subscriber count without sending anything.
+- Set **dry_run** false to actually post and send. Optionally set **tag** to
+  override the auto-detected version (defaults to the newest blog post).
+- `announce:dispatch` needs `announce.yml` present on the default branch (that's
+  when GitHub exposes the dispatch); the workflow runs on a GitHub runner using
+  the repo secrets.
 
 It reads the newest release blog post, links to the GitHub release, and emails
 the human-written summary (the part before `## Downloads`) rather than the full
