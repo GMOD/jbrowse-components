@@ -12,7 +12,10 @@ import {
 import { observer } from 'mobx-react'
 
 import { getUniqueTags } from '../../shared/getUniqueTags.ts'
-import { GROUP_BY_DIMENSIONS } from '../../shared/groupFeatures.ts'
+import {
+  GROUP_BY_DIMENSIONS,
+  isChainGroupableType,
+} from '../../shared/groupFeatures.ts'
 import { TAG_REGEX } from '../../shared/util.ts'
 
 import type {
@@ -56,7 +59,17 @@ const GroupByDialog = observer(function GroupByDialog(props: {
   // Pre-fill from the active grouping so reopening the dialog reflects (and can
   // tweak) the current dimension rather than resetting to blank.
   const [groupByTag, setGroupByTag] = useState(model.groupBy?.tag ?? '')
-  const [type, setType] = useState(model.groupBy?.type)
+  // Chain mode only offers chain-consistent dimensions, so a stored per-read
+  // dimension (e.g. strand) from a prior ungrouped session has no matching
+  // MenuItem and would render the select blank. Drop it back to unset so the
+  // field reads empty rather than showing a value the menu can't display — the
+  // worker already degrades such a value to ungrouped.
+  const [type, setType] = useState(() => {
+    const stored = model.groupBy?.type
+    return model.isChainMode && !isChainGroupableType(stored)
+      ? undefined
+      : stored
+  })
   // Grouping by a tag almost always pairs with coloring by it (e.g. HP
   // haplotype), so the checkbox defaults on. The one case it opens unchecked is
   // when reads are already colored by a *different* tag, so reopening doesn't

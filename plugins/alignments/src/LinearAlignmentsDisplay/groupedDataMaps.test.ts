@@ -1,6 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
 
-import { partitionFeatures } from '../shared/groupFeatures.ts'
 import {
   anyGroupHasSashimi,
   buildChainIdMap,
@@ -8,12 +7,13 @@ import {
   buildReadIdIndexMap,
   orderedGroups,
 } from './groupedDataMaps.ts'
+import { partitionFeatures } from '../shared/groupFeatures.ts'
 
-import type { GroupBy } from '../shared/types.ts'
 import type {
   GroupedAlignmentsResult,
   PileupDataResult,
 } from '../RenderAlignmentDataRPC/types.ts'
+import type { GroupBy } from '../shared/types.ts'
 import type { Feature } from '@jbrowse/core/util'
 
 // Minimal PileupDataResult stub: only the fields these scans read.

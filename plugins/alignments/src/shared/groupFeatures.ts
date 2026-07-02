@@ -92,11 +92,14 @@ function mapqKey(feature: Feature): GroupKey {
     return { key: '255', label: 'MAPQ unavailable' }
   }
   const bin = Math.floor(mapq / 10) * 10
+  // Real MAPQ caps at 254 (255 is the separate "unavailable" bucket), so the top
+  // decade spans 250-254, not 250-259 — clamp the label's upper bound.
+  const hi = Math.min(bin + 9, 254)
   // Zero-pad to 3 digits so string sort matches numeric order across every bin
   // (0-250) and the '255' unavailable bucket lands last.
   return {
     key: String(bin).padStart(3, '0'),
-    label: `MAPQ ${bin}-${bin + 9}`,
+    label: `MAPQ ${bin}-${hi}`,
   }
 }
 

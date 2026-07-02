@@ -84,6 +84,19 @@ test('mapq buckets sort numerically via zero-padded keys', () => {
   expect(keys(groups)).toEqual(['000', '060', '255'])
 })
 
+test('mapq top decade labels 250-254, not 250-259 (255 is unavailable)', () => {
+  const features = [
+    feat('a', { score: 252 }),
+    feat('b', { score: 30 }),
+    feat('c', { score: 255 }),
+  ]
+  const groups = partitionFeatures(features, { type: 'mapq' })
+  const labelFor = (key: string) => groups.find(g => g.key === key)!.label
+  expect(labelFor('250')).toBe('MAPQ 250-254')
+  expect(labelFor('030')).toBe('MAPQ 30-39')
+  expect(labelFor('255')).toBe('MAPQ unavailable')
+})
+
 test('duplicate grouping splits on the duplicate flag', () => {
   const features = [feat('a', { flags: 0x400 }), feat('b', { flags: 0 })]
   const groups = partitionFeatures(features, { type: 'duplicate' })
