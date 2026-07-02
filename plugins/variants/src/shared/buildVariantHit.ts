@@ -7,8 +7,13 @@ import type { VariantFeatureInfo } from './types.ts'
 // The tooltip-field contract shared by both multi-sample variant displays. Both
 // hit-tests produce these identical fields; each display pairs them with a
 // display-specific carrier (`featureInfo`/`cell` vs `featureData`) as a sibling
-// so building them here keeps the two displays from drifting.
+// so building them here keeps the two displays from drifting. The index
+// signature reflects that these records are open — the model merges sample
+// metadata attributes into them (`{...source, ...hoveredGenotype}`) before the
+// tooltip table renders — and lets them satisfy the hook's/model's
+// `Record<string, unknown>` hovered-genotype slot without a laundering spread.
 export interface VariantTooltipFields {
+  [key: string]: unknown
   genotype: string
   alleles: string
   featureName: string

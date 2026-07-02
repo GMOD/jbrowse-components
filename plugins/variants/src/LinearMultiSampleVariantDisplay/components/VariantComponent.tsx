@@ -219,7 +219,7 @@ const VariantBody = observer(function VariantBody({
       model,
       getHit: (rect, x, y) => getFeatureUnderMouse(model, rect, x, y),
       getKey: hit => variantTooltipKey(hit.fields),
-      getTooltip: hit => ({ ...hit.fields }),
+      getTooltip: hit => hit.fields,
       enrich: hit => {
         const baseFeature = model.featuresVolatile?.find(
           f => f.id() === hit.fields.featureId,

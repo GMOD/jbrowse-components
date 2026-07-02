@@ -104,7 +104,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
       model,
       getHit,
       getKey: hit => variantTooltipKey(hit.fields),
-      getTooltip: hit => ({ ...hit.fields }),
+      getTooltip: hit => hit.fields,
       enrich: hit => {
         const baseFeature = model.featuresVolatile?.find(
           f => f.id() === hit.fields.featureId,
