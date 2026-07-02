@@ -1965,75 +1965,6 @@ export default function baseStateModelFactory(
               },
             },
             {
-              label: pinned ? 'Unpin from top' : 'Pin to top of layout',
-              icon: VerticalAlignTopIcon,
-              onClick: () => {
-                self.togglePinnedFeature(featureId)
-              },
-            },
-            // Solo menu. Applying a collected set is done from the "N selected"
-            // badge (see SoloSelectionChip), so the menu only ever offers the
-            // one-shot single isolate, add/remove-from-set, and show-all.
-            //  - applied → show everything again (and optionally drop this one)
-            //  - otherwise → the one-shot isolate + add/remove this feature
-            ...(self.soloApplied
-              ? [
-                  {
-                    label: 'Show all features',
-                    icon: FilterAltOffIcon,
-                    onClick: () => {
-                      self.clearSolo()
-                    },
-                  },
-                  ...(inSoloSet && soloCount > 1
-                    ? [
-                        {
-                          label: 'Remove this feature from view',
-                          icon: PlaylistRemoveIcon,
-                          onClick: () => {
-                            self.toggleSoloFeature(featureId)
-                          },
-                        },
-                      ]
-                    : []),
-                ]
-              : [
-                  {
-                    label: 'Show only this feature',
-                    icon: FilterAltIcon,
-                    onClick: () => {
-                      self.soloFeature(featureId)
-                    },
-                  },
-                  {
-                    label: inSoloSet ? 'Remove from set' : 'Add to set',
-                    icon: inSoloSet ? PlaylistRemoveIcon : PlaylistAddIcon,
-                    onClick: () => {
-                      self.toggleSoloFeature(featureId)
-                    },
-                  },
-                ]),
-            {
-              label: 'Hide this feature',
-              icon: VisibilityOffIcon,
-              onClick: () => {
-                self.hideFeature(featureId)
-              },
-            },
-            // Reachable from any still-visible feature; the track menu's "Clear
-            // filters" covers the case where everything got hidden.
-            ...(hiddenCount > 0
-              ? [
-                  {
-                    label: `Show ${hiddenCount} hidden feature${hiddenCount > 1 ? 's' : ''}`,
-                    icon: VisibilityIcon,
-                    onClick: () => {
-                      self.showAllHidden()
-                    },
-                  },
-                ]
-              : []),
-            {
               label: 'Zoom to feature',
               icon: CenterFocusStrongIcon,
               onClick: () => {
@@ -2052,6 +1983,85 @@ export default function baseStateModelFactory(
                   )
                 }
               },
+            },
+            // The show/hide family (pin, solo, hide) groups the growing set of
+            // visibility toggles behind one submenu so the common actions above
+            // stay one click away.
+            {
+              label: 'Show/hide',
+              icon: VisibilityIcon,
+              subMenu: [
+                {
+                  label: pinned ? 'Unpin from top' : 'Pin to top of layout',
+                  icon: VerticalAlignTopIcon,
+                  onClick: () => {
+                    self.togglePinnedFeature(featureId)
+                  },
+                },
+                // Solo menu. Applying a collected set is done from the "N
+                // selected" badge (see SoloSelectionChip), so the menu only
+                // ever offers the one-shot single isolate, add/remove-from-set,
+                // and show-all.
+                //  - applied → show everything again (and optionally drop this)
+                //  - otherwise → the one-shot isolate + add/remove this feature
+                ...(self.soloApplied
+                  ? [
+                      {
+                        label: 'Show all features',
+                        icon: FilterAltOffIcon,
+                        onClick: () => {
+                          self.clearSolo()
+                        },
+                      },
+                      ...(inSoloSet && soloCount > 1
+                        ? [
+                            {
+                              label: 'Remove this feature from view',
+                              icon: PlaylistRemoveIcon,
+                              onClick: () => {
+                                self.toggleSoloFeature(featureId)
+                              },
+                            },
+                          ]
+                        : []),
+                    ]
+                  : [
+                      {
+                        label: 'Show only this feature',
+                        icon: FilterAltIcon,
+                        onClick: () => {
+                          self.soloFeature(featureId)
+                        },
+                      },
+                      {
+                        label: inSoloSet ? 'Remove from set' : 'Add to set',
+                        icon: inSoloSet ? PlaylistRemoveIcon : PlaylistAddIcon,
+                        onClick: () => {
+                          self.toggleSoloFeature(featureId)
+                        },
+                      },
+                    ]),
+                {
+                  label: 'Hide this feature',
+                  icon: VisibilityOffIcon,
+                  onClick: () => {
+                    self.hideFeature(featureId)
+                  },
+                },
+                // Reachable from any still-visible feature; the track menu's
+                // "Clear filters" covers the case where everything got hidden.
+                ...(hiddenCount > 0
+                  ? [
+                      {
+                        label: `Show ${hiddenCount} hidden feature${hiddenCount > 1 ? 's' : ''}`,
+                        icon: VisibilityIcon,
+                        onClick: () => {
+                          self.showAllHidden()
+                        },
+                      },
+                    ]
+                  : []),
+              ],
             },
             {
               label: 'Copy info to clipboard',

@@ -31,6 +31,7 @@ import type {
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { DisplayPhase } from '@jbrowse/render-core/displayPhase'
@@ -124,7 +125,7 @@ export interface LinearBasicDisplayModel {
     featureId: string,
     displayedRegionIndex: number,
   ) => Promise<Feature | undefined>
-  contextMenuItems: () => { label: string; onClick: () => void }[]
+  contextMenuItems: () => MenuItem[]
   getFeatureById: (featureId: string) => FlatbushItem | undefined
   clearSelection: () => void
   startRenderingBackend: (backend: CanvasFeatureRenderingBackend) => void
