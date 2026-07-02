@@ -167,6 +167,12 @@ async function indexDriver({
   stopToken?: StopToken
 }) {
   const checker = createStopTokenChecker(stopToken)
+  // accumulate across tracks so an aggregate index reports monotonic progress
+  // rather than resetting to zero at each track. The denominator grows as each
+  // track's size is discovered (we don't stat every file up front), but the
+  // numerator only ever increases
+  let bankedBytes = 0
+  let cumulativeTotal = 0
   const readable = Readable.from(
     indexFiles({
       tracks,
@@ -177,13 +183,17 @@ async function indexDriver({
         checkStopToken2(checker)
       },
       makeProgress: () => {
-        let totalBytes = 0
+        let trackTotal = 0
         return {
           onStart: bytes => {
-            totalBytes = bytes
+            trackTotal = bytes
+            cumulativeTotal += bytes
           },
           onUpdate: bytes => {
-            statusCallback(`${bytes}/${totalBytes}`)
+            statusCallback(`${bankedBytes + bytes}/${cumulativeTotal}`)
+          },
+          onDone: () => {
+            bankedBytes += trackTotal
           },
         }
       },
