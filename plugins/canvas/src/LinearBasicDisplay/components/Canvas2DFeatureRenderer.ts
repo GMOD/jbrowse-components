@@ -109,11 +109,15 @@ function drawRects(
     const x2 = toX(endBp)
     const y = Math.floor(region.rectYs[i]! - scrollY + 0.5)
     const h = Math.floor(region.rectHeights[i]! + 0.5)
-    // On reversed blocks bpToScreenPx flips so x1 > x2; use abs + min for a
-    // width-agnostic draw that matches the GPU shader's MIN_RECT_WIDTH clamp.
-    const xLeft = Math.min(x1, x2)
+    // Pixel-snap the endpoints (matching the GPU shader's snapToPixelX) so a
+    // min-width box is a crisp >=2px column instead of an anti-aliased sub-2px
+    // blur. The pre-snap real width still drives the density decision below. On
+    // reversed blocks bpToScreenPx flips so x1 > x2, hence abs + min.
     const realWidth = Math.abs(x2 - x1)
-    const w = Math.max(MIN_RECT_WIDTH_PX, realWidth)
+    const sx1 = Math.round(x1)
+    const sx2 = Math.round(x2)
+    const xLeft = Math.min(sx1, sx2)
+    const w = Math.max(MIN_RECT_WIDTH_PX, Math.abs(sx2 - sx1))
 
     // Collapsed whole-feature box glyphs (variants, plain BED) draw
     // semi-transparent so src-over accumulation makes dense regions read as a
