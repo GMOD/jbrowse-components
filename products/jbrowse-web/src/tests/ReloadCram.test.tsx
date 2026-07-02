@@ -1,15 +1,4 @@
-import { LocalFile } from 'generic-filehandle2'
-
-import {
-  doBeforeEach,
-  generateReadBuffer,
-  setup,
-  testFileReload,
-} from './util.tsx'
-
-const readBuffer = generateReadBuffer(
-  url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-)
+import { doBeforeEach, setup, testFileReload } from './util.tsx'
 
 setup()
 
@@ -20,7 +9,6 @@ beforeEach(() => {
 test('reloads alignments track (CRAI 404)', async () => {
   await testFileReload({
     failingFile: 'volvox-sorted-altname.cram.crai',
-    readBuffer,
     trackId: 'volvox_cram_pileup',
     viewLocation: [0.5, 0],
     expectedCanvas: 'pileup-display-done',
@@ -31,7 +19,6 @@ test('reloads alignments track (CRAI 404)', async () => {
 test('reloads alignments track (CRAM 404)', async () => {
   await testFileReload({
     failingFile: 'volvox-sorted-altname.cram',
-    readBuffer,
     trackId: 'volvox_cram_snpcoverage',
     viewLocation: [0.5, 0],
     expectedCanvas: 'pileup-display-done',

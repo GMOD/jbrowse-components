@@ -1,8 +1,6 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { getPluginManager } from './util.tsx'
-
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getTestSession } from './util.tsx'
 
 interface DisplaySnap {
   type?: string
@@ -14,18 +12,8 @@ interface TrackSnap {
   displays?: DisplaySnap[]
 }
 
-function getView() {
-  const { rootModel } = getPluginManager()
-  const session = rootModel.session!
-  const view = session.views[0] as {
-    showTrack: (id: string) => void
-    tracks: { trackId: string; configuration: IAnyStateTreeNode }[]
-  }
-  return { session, view }
-}
-
 function showAndSnapshot(
-  view: ReturnType<typeof getView>['view'],
+  view: ReturnType<typeof getTestSession>['view'],
   trackId: string,
 ): TrackSnap {
   view.showTrack(trackId)
@@ -39,7 +27,7 @@ function showAndSnapshot(
 // new trackId without colliding with the original (displayId is a
 // types.identifier; a collision would crash MST)
 test('copied track gets unique displayIds derived from the new trackId', () => {
-  const { session, view } = getView()
+  const { session, view } = getTestSession()
   const orig = showAndSnapshot(view, 'volvox_filtered_vcf')
 
   // every display snapshot has the canonical id form
@@ -55,7 +43,7 @@ test('copied track gets unique displayIds derived from the new trackId', () => {
     d.displayId = `${snap.trackId}-${d.type}`
   }
 
-  const added = session.addTrackConf!(snap) as { trackId: string }
+  const added = session.addTrackConf(snap) as { trackId: string }
   const copy = showAndSnapshot(view, added.trackId)
 
   const origIds = new Set(orig.displays!.map(d => d.displayId))

@@ -18,6 +18,7 @@ import JBrowse from './TestingJBrowse.tsx'
 import JBrowseRootModelFactory from '../rootModel/rootModel.ts'
 import sessionModelFactory from '../sessionModel/index.ts'
 
+import type { WebSessionModel } from '../sessionModel/index.ts'
 import type { AbstractSessionModel, AppRootModel } from '@jbrowse/core/util'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderResult } from '@testing-library/react'
@@ -144,6 +145,21 @@ export function createViewNoWait(args?: any, adminMode?: boolean): Results {
   const session = rootModel.session! as AbstractSessionModel
   const view = session.views[0] as LGV
   return { view, rootModel, session, ...rest }
+}
+
+/**
+ * Build an unrendered root model with its web session + first LGV, for pure
+ * model-logic tests that don't need a React render. Typed via the real
+ * WebSessionModel/LGV so callers don't hand-roll ad-hoc cast interfaces.
+ */
+export function getTestSession(
+  args?: Record<string, unknown>,
+  adminMode?: boolean,
+) {
+  const { rootModel } = getPluginManager(args, adminMode)
+  const session = rootModel.session! as WebSessionModel
+  const view = session.views[0] as LGV
+  return { rootModel, session, view }
 }
 
 export function doBeforeEach(
@@ -276,26 +292,31 @@ export async function exportAndVerifySvg({
   return svg
 }
 
+const volvoxReadBuffer = generateReadBuffer(
+  url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
+)
+
 export async function testFileReload(config: {
   failingFile: string
-  readBuffer: (request: Request) => Promise<Response>
+  readBuffer?: (request: Request) => Promise<Response>
   trackId: string
   viewLocation: [number, number]
   expectedCanvas: string | RegExp
   timeout?: number
 }) {
+  const readBuffer = config.readBuffer ?? volvoxReadBuffer
   const delay = { timeout: config.timeout ?? 30000 }
   const opts = [{}, delay]
 
   await mockConsole(async () => {
-    mockFile404(config.failingFile, config.readBuffer)
+    mockFile404(config.failingFile, readBuffer)
     const { view, findByTestId, findAllByTestId, findAllByText } =
       await createView()
     view.setNewView(config.viewLocation[0], config.viewLocation[1])
     fireEvent.click(await findByTestId(hts(config.trackId), ...opts))
     await findAllByText(/HTTP 404/, ...opts)
 
-    fetchMock.mockResponse(config.readBuffer)
+    fetchMock.mockResponse(readBuffer)
     const buttons = await findAllByTestId('reload_button')
     fireEvent.click(buttons[0]!)
 

@@ -1,4 +1,4 @@
-import { doBeforeEach, getPluginManager, mockConsole } from './util.tsx'
+import { doBeforeEach, getTestSession, mockConsole } from './util.tsx'
 
 const TRACK_ID = 'volvox_gc'
 
@@ -6,28 +6,7 @@ beforeEach(() => {
   doBeforeEach()
 })
 
-// Type that exposes the real return values from LGV's track actions (the
-// shared AbstractSessionModel interface types them void, but LGV returns them)
-interface TrackActionsView {
-  showTrack(
-    id: string,
-    initialSnapshot?: Record<string, unknown>,
-    displayInitialSnapshot?: Record<string, unknown>,
-  ):
-    | {
-        configuration: { trackId: string }
-        displays: { rpcDriverName?: string }[]
-      }
-    | undefined
-  hideTrack(id: string): boolean
-  toggleTrack(id: string): boolean
-  tracks: { configuration: { trackId: string } }[]
-}
-
-function getView(): TrackActionsView {
-  const { rootModel } = getPluginManager()
-  return rootModel.session!.views[0]
-}
+const getView = () => getTestSession().view
 
 test('showTrack returns the track and adds it to view.tracks', () => {
   const view = getView()

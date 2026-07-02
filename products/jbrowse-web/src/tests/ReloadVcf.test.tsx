@@ -1,15 +1,4 @@
-import { LocalFile } from 'generic-filehandle2'
-
-import {
-  doBeforeEach,
-  generateReadBuffer,
-  setup,
-  testFileReload,
-} from './util.tsx'
-
-const readBuffer = generateReadBuffer(
-  url => new LocalFile(require.resolve(`../../test_data/volvox/${url}`)),
-)
+import { doBeforeEach, setup, testFileReload } from './util.tsx'
 
 setup()
 
@@ -20,7 +9,6 @@ beforeEach(() => {
 test('reloads vcf (VCF.GZ 404)', async () => {
   await testFileReload({
     failingFile: 'volvox.filtered.vcf.gz',
-    readBuffer,
     trackId: 'volvox_filtered_vcf',
     viewLocation: [0.05, 5000],
     expectedCanvas: /^display-.*-done$/,
@@ -31,7 +19,6 @@ test('reloads vcf (VCF.GZ 404)', async () => {
 test('reloads vcf (VCF.GZ.TBI 404)', async () => {
   await testFileReload({
     failingFile: 'volvox.filtered.vcf.gz.tbi',
-    readBuffer,
     trackId: 'volvox_filtered_vcf',
     viewLocation: [0.05, 5000],
     expectedCanvas: /^display-.*-done$/,

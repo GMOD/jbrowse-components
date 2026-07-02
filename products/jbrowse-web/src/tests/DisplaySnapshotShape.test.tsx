@@ -1,8 +1,6 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
-import { getPluginManager } from './util.tsx'
-
-import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
+import { getTestSession } from './util.tsx'
 
 // Documents the serialized shape of display configs that the BaseTrackModel
 // persistence reaction relies on. A track's displays are injected by
@@ -10,16 +8,7 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 // types.identifier), so they never serialize to `{}` and always retain type +
 // displayId — even when every other slot is default.
 function getTrack(trackId: string) {
-  const { rootModel } = getPluginManager()
-  const session = rootModel.session!
-  const view = session.views[0] as {
-    showTrack: (id: string) => void
-    tracks: {
-      trackId: string
-      configuration: IAnyStateTreeNode
-      displays: { configuration: IAnyStateTreeNode }[]
-    }[]
-  }
+  const { view } = getTestSession()
   view.showTrack(trackId)
   return view.tracks.find(t => t.trackId === trackId)!
 }
