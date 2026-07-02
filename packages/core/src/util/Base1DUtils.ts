@@ -100,22 +100,31 @@ export function computeMoveToLayout(
   return { bpPerPx, offsetPx: computeScrollPos(self, start, bpPerPx, 0) }
 }
 
-// 1-based display coord: floor(within-region bp) + 1. Use for showing a
-// genomic position to a user, not for arithmetic — round-tripping through
-// bpToPx loses up to 1 bp because bpToPx accepts 0-based BED-style coords.
-// For arithmetic, use pxToBp's `offset` field with offsetBpToPx instead.
-function regionCoord(r: RegionSnap, bp: number) {
-  return Math.floor(r.reversed ? r.end - bp : r.start + bp) + 1
+// 0-based interbase base under the cursor: floor(within-region bp). This is the
+// BED-style coordinate that bpToPx consumes, so it round-trips cleanly. Use it
+// for arithmetic (feature start/end, codon math); use `coord` only for display.
+function regionBase0(r: RegionSnap, bp: number) {
+  return Math.floor(r.reversed ? r.end - bp : r.start + bp)
 }
 
-// `coord` is 1-based for display; `offset` is the raw 0-based float bp within
-// the region — pair with offsetBpToPx for round-trip arithmetic.
+// 1-based display coord: regionBase0 + 1. Use for showing a genomic position to
+// a user, not for arithmetic — round-tripping through bpToPx loses up to 1 bp
+// because bpToPx accepts 0-based BED-style coords. For arithmetic use `coord0`
+// (0-based) or pair `offset` with offsetBpToPx.
+function regionCoord(r: RegionSnap, bp: number) {
+  return regionBase0(r, bp) + 1
+}
+
+// `coord` is 1-based for display; `coord0` is the 0-based (BED/interbase) base
+// under the cursor — the value bpToPx consumes, so it round-trips. `offset` is
+// the raw 0-based float bp within the region — pair with offsetBpToPx.
 // manual return type since getSnapshot hard to infer here
 export function pxToBp(
   self: ViewLayout,
   px: number,
 ): {
   coord: number
+  coord0: number
   index: number
   refName: string
   oob: boolean
@@ -129,7 +138,14 @@ export function pxToBp(
   const bp = (offsetPx + px) * bpPerPx
   if (bp < 0) {
     const r = displayedRegions[0]!
-    return { ...r, oob: true, coord: regionCoord(r, bp), offset: bp, index: 0 }
+    return {
+      ...r,
+      oob: true,
+      coord: regionCoord(r, bp),
+      coord0: regionBase0(r, bp),
+      offset: bp,
+      index: 0,
+    }
   }
 
   let bpSoFar = 0
@@ -144,6 +160,7 @@ export function pxToBp(
         oob: false,
         offset,
         coord: regionCoord(r, offset),
+        coord0: regionBase0(r, offset),
         index: i,
       }
     }
@@ -160,6 +177,7 @@ export function pxToBp(
     oob: true,
     offset,
     coord: regionCoord(r, offset),
+    coord0: regionBase0(r, offset),
     index: displayedRegions.length - 1,
   }
 }

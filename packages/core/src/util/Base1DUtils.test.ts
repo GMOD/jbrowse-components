@@ -157,6 +157,22 @@ describe('pxToBp', () => {
     expect(px2bp.offset).toBe(500)
   })
 
+  it('coord0 is the 0-based sibling of coord and round-trips through bpToPx', () => {
+    const self = makeSnap([{ refName: 'chr1', start: 1000, end: 2000 }])
+    const result = pxToBp(self, 500)
+    expect(result.coord0).toBe(result.coord - 1)
+    // coord0 is the BED-style base bpToPx consumes; feeding it back lands on the
+    // same pixel, whereas the 1-based coord would be off by one bp
+    const back = bpToPx({ self, refName: 'chr1', coord: result.coord0 })
+    expect(back!.offsetPx).toBe(500)
+  })
+
+  it('coord0 tracks coord on reversed regions', () => {
+    const self = makeSnap([{ refName: 'ctgA', start: 0, end: 1000, reversed: true }])
+    const result = pxToBp(self, 300)
+    expect(result.coord0).toBe(result.coord - 1)
+  })
+
   it('handles oob before first region', () => {
     const self = makeSnap([{ refName: 'chr1', start: 0, end: 1000 }])
     const result = pxToBp(self, -100)

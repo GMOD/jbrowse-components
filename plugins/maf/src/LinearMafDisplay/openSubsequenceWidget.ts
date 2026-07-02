@@ -30,7 +30,7 @@ export function openSubsequenceWidget(
     regions: [
       {
         refName: sBp.refName,
-        start: sBp.coord - 1,
+        start: sBp.coord0,
         end: eBp.coord,
         assemblyName: sBp.assemblyName,
       },

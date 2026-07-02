@@ -390,7 +390,7 @@ export default function stateModelFactory(
         if (!region) {
           return undefined
         }
-        const bp = p.coord - 1
+        const bp = p.coord0
         const {
           featureStarts,
           featureEnds,
