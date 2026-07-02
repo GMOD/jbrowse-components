@@ -2,7 +2,6 @@ import {
   canMorph,
   captureFeatureTops,
   easeInOutCubic,
-  focusScrollDelta,
   interpolateYData,
 } from './yMorph.ts'
 
@@ -136,26 +135,4 @@ test('canMorph is false when a shared feature did not move', () => {
   // stable seeding kept "a" on the same row across the repack — nothing to ease
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
   expect(canMorph(new Map([['a', 0]]), target)).toBe(false)
-})
-
-test('focusScrollDelta pins the shared feature nearest the viewport center', () => {
-  const fromTops = new Map([
-    ['a', 0],
-    ['b', 100],
-    ['c', 200],
-  ])
-  const newTops = new Map([
-    ['a', 0],
-    ['b', 40],
-    ['c', 90],
-  ])
-  // viewport centered at 110 -> old top nearest is b@100; b's row moved 100->40
-  expect(focusScrollDelta(fromTops, newTops, 110)).toBe(-60)
-})
-
-test('focusScrollDelta is 0 with no shared feature and when the anchor is still', () => {
-  expect(focusScrollDelta(new Map([['a', 0]]), new Map([['z', 5]]), 0)).toBe(0)
-  expect(focusScrollDelta(new Map([['a', 40]]), new Map([['a', 40]]), 40)).toBe(
-    0,
-  )
 })

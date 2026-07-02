@@ -38,18 +38,21 @@ package_.
 
 ## Local invariants
 
-- **DOM overlays over a scrolling sticky GPU canvas MUST derive Y from
-  `model.scrollTop`, never ride native scroll.** A `position:sticky` GPU canvas
-  in a native `overflow:auto` container has two scroll spaces that look like
-  one: the DOM's compositor-driven `scrollTop` and the main-thread
-  `model.scrollTop` (updated via `scroll -> rAF -> setScrollTop`). The canvas can
-  only paint from the main-thread value, so a DOM overlay placed in the scrolled
-  content rides the compositor and tears away from its glyphs on a fast scroll.
-  Wrap such overlays in `ScrollLockedOverlay` (this package) — it pins them to
-  the scroll port like the canvas and shifts by `-scrollTop`, so both layers key
-  off one value. Used by `LinearBasicDisplay` (FeatureComponent) and
-  `LinearMultiSampleVariantDisplay`. The alternative (virtual-scrollbar
-  displays, e.g. alignments) is immune by construction — one scroll source.
+- **A scrolling GPU canvas and its DOM overlays MUST share one scroll source
+  (`model.scrollTop`).** The canvas GPU displays scroll VIRTUALLY: a fixed
+  (`position:absolute`) canvas painting the visible window at `inst.y - scrollY`
+  (`scrollY = model.scrollTop`), a `VerticalScrollbar` overlay + a
+  `useVirtualScrollWheel` handler driving `model.scrollTop`, and DOM overlays
+  translated by the same value. The failure mode this avoids: a native
+  `overflow:auto` container (a second, compositor-driven scroll space) — the DOM
+  overlays would ride the compositor while the canvas repaints from the
+  main-thread `model.scrollTop`, so on a fast scroll the labels/highlights tear
+  away from their glyphs. Wrap DOM overlays in `ScrollLockedOverlay` (this
+  package): it clips to the viewport and shifts children by `-scrollTop` so they
+  track the canvas. Used by `LinearBasicDisplay` (FeatureComponent);
+  `LinearMultiSampleVariantDisplay` positions its hover highlight from
+  `model.scrollTop` inline. The alignments pileup uses the same single-source
+  virtual model.
 - **HAL parity.** A behavior change to one HAL must land in the other and in
   `MockHal`. `products/jbrowse-web/src/tests/glAttributeSync.test.ts` parses the
   generated GLSL and asserts every `GL_ATTRIBUTE` matches a shader input — keep
