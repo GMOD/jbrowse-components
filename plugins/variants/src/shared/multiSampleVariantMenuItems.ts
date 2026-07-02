@@ -9,8 +9,8 @@ import FormatColorFillIcon from '@mui/icons-material/FormatColorFill'
 import HeightIcon from '@mui/icons-material/Height'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import PaletteIcon from '@mui/icons-material/Palette'
-import SortIcon from '@mui/icons-material/Sort'
 import SplitscreenIcon from '@mui/icons-material/Splitscreen'
+import SwapVertIcon from '@mui/icons-material/SwapVert'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { titleCase } from './constants.ts'
@@ -301,7 +301,7 @@ export function variantContextMenuItems(
     },
     {
       label: 'Sort by genotype',
-      icon: SortIcon,
+      icon: SwapVertIcon,
       onClick: () => {
         self.sortByGenotype(feat.id())
       },
