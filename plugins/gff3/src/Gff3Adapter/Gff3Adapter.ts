@@ -7,7 +7,7 @@ import {
 } from '@jbrowse/core/util/parseLineByLine'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 import SimpleFeature from '@jbrowse/core/util/simpleFeature'
-import { parseStringSync } from 'gff-nostream'
+import { parseRecords } from 'gff-nostream'
 
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util/simpleFeature'
@@ -32,9 +32,12 @@ export default class Gff3Adapter extends BaseFeatureDataAdapter {
 
     const intervalTreeMap = makeFeatureIntervalTreeMap<Gff3Feature>(
       linesByRef,
+      // lines are already split and comment/FASTA-filtered by groupLinesByRef,
+      // so feed them straight to parseRecords rather than re-joining and
+      // re-splitting through parseStringSync
       (lines, refName) =>
-        parseStringSync(`${lines.join('\n')}\n`).map((f, i) => ({
-          ...f,
+        parseRecords(lines.map(line => ({ line }))).map(({ feature }, i) => ({
+          ...feature,
           uniqueId: `${this.id}-${refName}-${i}`,
         })),
       'Parsing GFF data',

@@ -101,15 +101,17 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
           lines = await fetchLines({ ...query, ...redispatch })
         }
 
-        // emit only top-level features intersecting the original query
-        for (const feature of parseRecords(lines)) {
+        // emit only top-level features intersecting the original query. the
+        // byte offset stays on our own record and is used purely to mint a
+        // stable id, so it never pollutes the feature's data
+        for (const { feature, record } of parseRecords(lines)) {
           if (
             doesIntersect2(feature.start, feature.end, query.start, query.end)
           ) {
             observer.next(
               new SimpleFeature({
                 data: feature,
-                id: `${this.id}-offset-${feature._lineHash}`,
+                id: `${this.id}-offset-${record.offset}`,
               }),
             )
           }
@@ -122,8 +124,18 @@ export default class Gff3TabixAdapter extends BaseFeatureDataAdapter<Gff3TabixAd
   }
 }
 
+// The parser only reads `line`; the extra fields are ours. `offset` (the tabix
+// byte offset) mints a stable per-feature id, and start/end/type feed the
+// redispatch calculation that runs before any line is parsed.
+interface GffLine extends LineRecord {
+  offset: number
+  start: number
+  end: number
+  type: string
+}
+
 function readLines(gff: TabixIndexedFile, query: Region, opts: BaseOptions) {
-  const lines: LineRecord[] = []
+  const lines: GffLine[] = []
   return downloadStatus(
     'Downloading features',
     opts.statusCallback,
@@ -132,10 +144,9 @@ function readLines(gff: TabixIndexedFile, query: Region, opts: BaseOptions) {
         lineCallback: (line, fileOffset, start, end) => {
           lines.push({
             line,
-            lineHash: fileOffset,
+            offset: fileOffset,
             start,
             end,
-            hasEscapes: line.includes('%'),
             type: extractType(line),
           })
         },
