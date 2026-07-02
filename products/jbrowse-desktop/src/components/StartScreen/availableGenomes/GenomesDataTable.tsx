@@ -9,6 +9,7 @@ import { Button, IconButton } from '@mui/material'
 
 import NetworkErrorMessage from '../NetworkErrorMessage.tsx'
 import CategorySelector from './CategorySelector.tsx'
+import CladeSelector from './CladeSelector.tsx'
 import GenomesTable from './GenomesTable.tsx'
 import MoreInfoDialog from './MoreInfoDialog.tsx'
 import SearchField from './SearchField.tsx'
@@ -19,6 +20,7 @@ import { getTableMenuItems } from './getTableMenuItems.ts'
 import useCategories from './useCategories.ts'
 import { useGenomesData } from './useGenomesData.ts'
 import { useSearchHighlight } from './useSearchHighlight.ts'
+import useTaxonomyClades from './useTaxonomyClades.ts'
 
 import type { Entry, GenomeColumn } from './getColumnDefinitions.tsx'
 import type { Fav, LaunchCallback } from '../types.ts'
@@ -76,6 +78,7 @@ export default function GenomesDataTable({
   const [moreInfoDialogOpen, setMoreInfoDialogOpen] = useState(false)
   const [multipleSelection, setMultipleSelection] = useState(false)
   const [searchQuery, setSearchQuery] = useState('')
+  const [clade, setClade] = useState('')
   const [pageIndex, setPageIndex] = useState(0)
   const [pageSize, setPageSize] = useState(50)
   const [sorting, setSorting] = useState<{ id: string; desc: boolean }>()
@@ -94,6 +97,10 @@ export default function GenomesDataTable({
     setFilterOption(f)
     setPageIndex(0)
   }
+  const setCladeAndReset = (c: string) => {
+    setClade(c)
+    setPageIndex(0)
+  }
   const setTypeOptionAndReset = (t: string) => {
     setTypeOption(t)
     setFilterOption('all')
@@ -108,6 +115,8 @@ export default function GenomesDataTable({
     error: categoriesError,
   } = useCategories()
   const url = categories?.categories.find(f => f.key === typeOption)?.url
+  const { clades } = useTaxonomyClades()
+  const cladeTaxonIds = clade ? clades?.get(clade) : undefined
 
   const favs = new Set(favorites.map(f => f.id))
   const toggleFavorite = (row: Entry) => {
@@ -124,6 +133,7 @@ export default function GenomesDataTable({
     showOnlyFavs,
     favorites,
     url,
+    cladeTaxonIds,
   })
 
   // categoriesError leaves url undefined, which would otherwise hang on an
@@ -199,6 +209,11 @@ export default function GenomesDataTable({
           categoriesLoading={categoriesLoading}
           categoriesError={categoriesError}
           onChange={setTypeOptionAndReset}
+        />
+        <CladeSelector
+          clades={clades}
+          clade={clade}
+          onChange={setCladeAndReset}
         />
         <CascadingMenuButton
           menuItems={() =>
