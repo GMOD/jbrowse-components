@@ -221,6 +221,13 @@ export default function baseStateModelFactory(
         /**
          * #volatile
          */
+        // "Show only this feature": when set, the worker admits only the feature
+        // whose id() matches (see buildFeatureAdmission). Volatile — a transient
+        // focus that shouldn't outlive a reload.
+        soloFeatureId: undefined as string | undefined,
+        /**
+         * #volatile
+         */
         userFeatureDensityLimit: undefined as number | undefined,
         /**
          * #volatile
@@ -605,6 +612,9 @@ export default function baseStateModelFactory(
             } as DisplayConfig,
             maxFeatureDensity: self.maxFeatureDensity,
             colorByCDS: self.colorByCDS,
+            // Reading this here makes it an RPC cache key, so toggling solo
+            // refetches the region through the admission gate.
+            soloFeatureId: self.soloFeatureId,
             // Structurally-serializable theme description so worker-side coloring
             // (CDS frames, stroke fallback) matches the user's active theme; the
             // worker rebuilds the full theme via createJBrowseThemeFromArgs. The
@@ -1163,6 +1173,31 @@ export default function baseStateModelFactory(
           } else {
             self.pinnedFeatureIds.splice(idx, 1)
           }
+        },
+
+        /**
+         * #action
+         */
+        // Pass undefined to clear the solo and show all features again.
+        setSoloFeatureId(featureId?: string) {
+          self.soloFeatureId = featureId
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
+        // "Show only this feature": solo it and surface an Undo snackbar (same
+        // affordance as collapse-introns), so the isolation is reversible even
+        // without hunting for the feature to right-click again.
+        soloFeature(featureId: string) {
+          self.setSoloFeatureId(featureId)
+          getSession(self).notify('Showing only this feature', 'info', {
+            name: 'Undo',
+            onClick: () => {
+              self.setSoloFeatureId(undefined)
+            },
+          })
         },
       }))
       .actions(self => ({
@@ -1819,10 +1854,17 @@ export default function baseStateModelFactory(
               },
             },
             {
-              label: 'Show only this feature',
+              label:
+                self.soloFeatureId === featureId
+                  ? 'Remove show only this feature'
+                  : 'Show only this feature',
               icon: FilterAltIcon,
               onClick: () => {
-                self.setJexlFilters([`jexl:id(feature)=='${featureId}'`])
+                if (self.soloFeatureId === featureId) {
+                  self.setSoloFeatureId(undefined)
+                } else {
+                  self.soloFeature(featureId)
+                }
               },
             },
             {

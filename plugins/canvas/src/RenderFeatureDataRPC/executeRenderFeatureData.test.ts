@@ -70,4 +70,13 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('gene', { score: 1 }))).toBe(false)
     expect(admit(feat('exon', { score: 10 }))).toBe(false)
   })
+
+  it('soloFeatureId admits only the matching feature id() (the uniqueId)', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig(),
+      soloFeatureId: 'f1',
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
+    expect(admit(feat('gene', { id: 'f2' }))).toBe(false)
+  })
 })

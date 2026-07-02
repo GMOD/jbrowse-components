@@ -18,10 +18,12 @@ export function buildFeatureAdmission({
   config,
   jexl,
   showOnlyGenes,
+  soloFeatureId,
 }: {
   config: DisplayConfig
   jexl?: JexlInstance
   showOnlyGenes?: boolean
+  soloFeatureId?: string
 }) {
   const filterChain = new SerializableFilterChain({
     filters: config.jexlFilters.map(f =>
@@ -45,7 +47,10 @@ export function buildFeatureAdmission({
       )
     : undefined
 
+  // "Show only this feature": an exact uniqueId match, applied at the same
+  // admission stage as the type/jexl gates so "what gets drawn" has one answer.
   return (feature: Feature) =>
+    (soloFeatureId === undefined || feature.id() === soloFeatureId) &&
     filterChain.passes(feature) &&
     (geneLikeTypes === undefined ||
       geneLikeTypes.has(featureType(feature).toLowerCase()))

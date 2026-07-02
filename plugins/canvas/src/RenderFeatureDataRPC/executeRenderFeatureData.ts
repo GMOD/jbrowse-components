@@ -40,6 +40,7 @@ export async function executeRenderFeatureData({
     geneticCodeId,
     sequenceAdapter,
     showOnlyGenes,
+    soloFeatureId,
     maxFeatureDensity,
     byteSizeLimit,
     theme: themeOptions,
@@ -99,6 +100,7 @@ export async function executeRenderFeatureData({
     config: displayConfig,
     jexl: pluginManager.jexl,
     showOnlyGenes,
+    soloFeatureId,
   })
   const features = new Map<string, Feature>()
   for (const f of featuresArray) {
