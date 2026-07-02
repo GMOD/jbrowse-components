@@ -124,8 +124,10 @@ const UpdatePluginButton = observer(function UpdatePluginButton({
         onClick={() => {
           // swap the version-pinned definition: remove the current url, add the
           // newer one. Both actions flag pluginsUpdated, prompting a reload that
-          // loads the new build.
-          const next = { ...update.definition, name: plugin.name }
+          // loads the new build. Install under the store's name (the UMD global,
+          // e.g. "GWAS") — not the runtime class name (e.g. "GWASPlugin"), which
+          // would make the UMD bundle fail to load.
+          const next = { ...update.definition, name: update.name }
           if (adminMode) {
             jbrowse.removePlugin(current)
             jbrowse.addPlugin(next)

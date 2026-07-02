@@ -23,6 +23,9 @@ export interface ResolvedPlugin {
 export interface PluginUpdate {
   // the newest compatible published version, strictly newer than installed
   pluginVersion: string
+  // the store's name (the UMD global, e.g. "GWAS") — the definition must be
+  // installed under this, not the runtime Plugin class name (e.g. "GWASPlugin")
+  name: string
   // the version-pinned definition to install in place of the current one
   definition: PluginDefinition
 }
@@ -145,6 +148,10 @@ export function getPluginUpdate(
     resolved.pluginVersion !== undefined &&
     installedVersion !== undefined &&
     isNewer(resolved.pluginVersion, installedVersion)
-    ? { pluginVersion: resolved.pluginVersion, definition: resolved.definition }
+    ? {
+        pluginVersion: resolved.pluginVersion,
+        name: plugin.name,
+        definition: resolved.definition,
+      }
     : undefined
 }

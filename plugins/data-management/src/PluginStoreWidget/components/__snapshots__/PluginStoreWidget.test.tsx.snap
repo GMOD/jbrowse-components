@@ -1217,6 +1217,12 @@ exports[`renders with the available plugins 1`] = `
                   >
                     multiple sequence alignment browser plugin for JBrowse 2
                   </p>
+                  <img
+                    alt="MsaView screenshot"
+                    class="css-85fkpk"
+                    loading="lazy"
+                    src="https://raw.githubusercontent.com/GMOD/jbrowse-plugin-list/main/img/msaview-screenshot-fs8.png"
+                  />
                 </div>
                 <div
                   class="MuiCardActions-root MuiCardActions-spacing css-1q4nm6f-MuiCardActions-root"
