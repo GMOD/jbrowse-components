@@ -89,6 +89,7 @@
     "./ui/ReturnToImportFormDialog": "./src/ui/ReturnToImportFormDialog.tsx",
     "./ui/RubberbandTooltip": "./src/ui/RubberbandTooltip.tsx",
     "./ui/SanitizedHTML": "./src/ui/SanitizedHTML.tsx",
+    "./ui/SequenceAdapterInputs": "./src/ui/SequenceAdapterInputs.tsx",
     "./ui/ShareLinkField": "./src/ui/ShareLinkField.tsx",
     "./ui/Snackbar": "./src/ui/Snackbar.tsx",
     "./ui/SnackbarModel": "./src/ui/SnackbarModel.tsx",
@@ -106,6 +107,7 @@
     "./util/TimeTraveller": "./src/util/TimeTraveller.ts",
     "./util/aborting": "./src/util/aborting.ts",
     "./util/analytics": "./src/util/analytics.ts",
+    "./util/assemblyConfigUtils": "./src/util/assemblyConfigUtils.ts",
     "./util/blockTypes": "./src/util/blockTypes.ts",
     "./util/calculateDynamicBlocks": "./src/util/calculateDynamicBlocks.ts",
     "./util/calculateStaticBlocks": "./src/util/calculateStaticBlocks.ts",
@@ -476,6 +478,10 @@
         "types": "./esm/ui/SanitizedHTML.d.ts",
         "import": "./esm/ui/SanitizedHTML.js"
       },
+      "./ui/SequenceAdapterInputs": {
+        "types": "./esm/ui/SequenceAdapterInputs.d.ts",
+        "import": "./esm/ui/SequenceAdapterInputs.js"
+      },
       "./ui/ShareLinkField": {
         "types": "./esm/ui/ShareLinkField.d.ts",
         "import": "./esm/ui/ShareLinkField.js"
@@ -543,6 +549,10 @@
       "./util/analytics": {
         "types": "./esm/util/analytics.d.ts",
         "import": "./esm/util/analytics.js"
+      },
+      "./util/assemblyConfigUtils": {
+        "types": "./esm/util/assemblyConfigUtils.d.ts",
+        "import": "./esm/util/assemblyConfigUtils.js"
       },
       "./util/blockTypes": {
         "types": "./esm/util/blockTypes.d.ts",
@@ -926,6 +936,9 @@
         "ui/SanitizedHTML": [
           "esm/ui/SanitizedHTML.d.ts"
         ],
+        "ui/SequenceAdapterInputs": [
+          "esm/ui/SequenceAdapterInputs.d.ts"
+        ],
         "ui/ShareLinkField": [
           "esm/ui/ShareLinkField.d.ts"
         ],
@@ -976,6 +989,9 @@
         ],
         "util/analytics": [
           "esm/util/analytics.d.ts"
+        ],
+        "util/assemblyConfigUtils": [
+          "esm/util/assemblyConfigUtils.d.ts"
         ],
         "util/blockTypes": [
           "esm/util/blockTypes.d.ts"

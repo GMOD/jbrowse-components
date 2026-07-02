@@ -1,7 +1,7 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Box, Chip, Typography } from '@mui/material'
 
-import type { AssemblyConf } from './util.ts'
+import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
 
 const useStyles = makeStyles()(theme => ({
   stagedAssemblies: {

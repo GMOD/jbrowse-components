@@ -1,198 +1,20 @@
 import { useState } from 'react'
 
-import { FileSelector } from '@jbrowse/core/ui'
+import SequenceAdapterInputs from '@jbrowse/core/ui/SequenceAdapterInputs'
 import {
-  Alert,
-  Button,
-  DialogActions,
-  DialogContent,
-  MenuItem,
-  TextField,
-} from '@mui/material'
+  applyPrimaryFile,
+  applyTwoBitFile,
+  getBaseAssemblyConfig,
+  initialFormState,
+} from '@jbrowse/core/util/assemblyConfigUtils'
+import { Button, DialogActions, DialogContent, TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import type { AssemblyAdapter } from '@jbrowse/core/util/assemblyConfigUtils'
 import type {
   AbstractSessionModel,
   FileLocation,
 } from '@jbrowse/core/util/types'
-
-const AdapterSelector = observer(function AdapterSelector({
-  adapterSelection,
-  setAdapterSelection,
-  adapterTypes,
-}: {
-  adapterSelection: AdapterType
-  setAdapterSelection: (arg: AdapterType) => void
-  adapterTypes: readonly string[]
-}) {
-  return (
-    <TextField
-      value={adapterSelection}
-      variant="outlined"
-      select
-      helperText="Type of adapter to use"
-      fullWidth
-      onChange={event => {
-        setAdapterSelection(event.target.value as AdapterType)
-      }}
-    >
-      {adapterTypes.map(str => (
-        <MenuItem key={str} value={str}>
-          {str}
-        </MenuItem>
-      ))}
-    </TextField>
-  )
-})
-
-const UnindexedFastaAdapterInput = observer(
-  function UnindexedFastaAdapterInput({
-    fastaLocation,
-    setFastaLocation,
-  }: {
-    fastaLocation: FileLocation
-    setFastaLocation: (arg: FileLocation) => void
-  }) {
-    return (
-      <>
-        <Alert severity="warning" style={{ margin: 8 }}>
-          Note: a FASTA index will be generated on submit, might take a couple
-          minutes and if the file is remote, it will be downloaded in full
-        </Alert>
-        <div>
-          <FileSelector
-            inline
-            name="FASTA file"
-            location={fastaLocation}
-            setLocation={setFastaLocation}
-          />
-        </div>
-      </>
-    )
-  },
-)
-
-const IndexedFastaAdapterInput = observer(function IndexedFastaAdapterInput({
-  fastaLocation,
-  faiLocation,
-  setFaiLocation,
-  setFastaLocation,
-}: {
-  fastaLocation: FileLocation
-  faiLocation: FileLocation
-  setFastaLocation: (arg: FileLocation) => void
-  setFaiLocation: (arg: FileLocation) => void
-}) {
-  return (
-    <>
-      <div>
-        <FileSelector
-          inline
-          name="FASTA file"
-          location={fastaLocation}
-          setLocation={setFastaLocation}
-        />
-      </div>
-      <div>
-        <FileSelector
-          inline
-          name="FASTA index (.fai) file"
-          location={faiLocation}
-          setLocation={setFaiLocation}
-        />
-      </div>
-    </>
-  )
-})
-
-const BgzipFastaAdapterInput = observer(function BgzipFastaAdapterInput({
-  fastaLocation,
-  faiLocation,
-  gziLocation,
-  setFaiLocation,
-  setGziLocation,
-  setFastaLocation,
-}: {
-  fastaLocation: FileLocation
-  faiLocation: FileLocation
-  gziLocation: FileLocation
-  setGziLocation: (arg: FileLocation) => void
-  setFastaLocation: (arg: FileLocation) => void
-  setFaiLocation: (arg: FileLocation) => void
-}) {
-  return (
-    <>
-      <div>
-        <FileSelector
-          inline
-          name="FASTA file (.fa.gz)"
-          location={fastaLocation}
-          setLocation={setFastaLocation}
-        />
-      </div>
-      <div>
-        <FileSelector
-          inline
-          name="FASTA index (.fai) file"
-          location={faiLocation}
-          setLocation={setFaiLocation}
-        />
-      </div>
-      <div>
-        <FileSelector
-          inline
-          name="FASTA gzip index (.gzi) file"
-          location={gziLocation}
-          setLocation={setGziLocation}
-        />
-      </div>
-    </>
-  )
-})
-
-const TwoBitAdapterInput = observer(function TwoBitAdapterInput({
-  twoBitLocation,
-  chromSizesLocation,
-  setTwoBitLocation,
-  setChromSizesLocation,
-}: {
-  twoBitLocation: FileLocation
-  chromSizesLocation: FileLocation
-  setTwoBitLocation: (arg: FileLocation) => void
-  setChromSizesLocation: (arg: FileLocation) => void
-}) {
-  return (
-    <>
-      <div>
-        <FileSelector
-          inline
-          name="2bit file"
-          location={twoBitLocation}
-          setLocation={setTwoBitLocation}
-        />
-      </div>
-      <div>
-        <FileSelector
-          inline
-          name=".chrom.sizes (optional, can speed up loading 2bit files with many contigs)"
-          location={chromSizesLocation}
-          setLocation={setChromSizesLocation}
-        />
-      </div>
-    </>
-  )
-})
-
-const blank = { uri: '' } as FileLocation
-
-const adapterTypes = [
-  'IndexedFastaAdapter',
-  'BgzipFastaAdapter',
-  'UnindexedFastaAdapter',
-  'TwoBitAdapter',
-] as const
-
-type AdapterType = (typeof adapterTypes)[number]
 
 const AssemblyAddForm = observer(function AssemblyAddForm({
   session,
@@ -201,50 +23,57 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
   session: AbstractSessionModel
   onClose: () => void
 }) {
-  const [assemblyName, setAssemblyName] = useState('')
-  const [assemblyDisplayName, setAssemblyDisplayName] = useState('')
-  const [adapterSelection, setAdapterSelection] = useState<AdapterType>(
-    adapterTypes[0],
-  )
-  const [fastaLocation, setFastaLocation] = useState(blank)
-  const [faiLocation, setFaiLocation] = useState(blank)
-  const [gziLocation, setGziLocation] = useState(blank)
-  const [twoBitLocation, setTwoBitLocation] = useState(blank)
-  const [chromSizesLocation, setChromSizesLocation] = useState(blank)
+  const [form, setForm] = useState(initialFormState)
+  const {
+    assemblyName,
+    assemblyDisplayName,
+    fastaLocation,
+    faiLocation,
+    gziLocation,
+    twoBitLocation,
+    chromSizesLocation,
+  } = form
+
+  const setPrimaryFile = (loc: FileLocation) => {
+    setForm(f => applyPrimaryFile(f, loc))
+  }
+  const setTwoBitFile = (loc: FileLocation) => {
+    setForm(f => applyTwoBitFile(f, loc))
+  }
 
   function onSubmit() {
     if (!assemblyName.trim()) {
       session.notify("Can't create an assembly without a name")
     } else {
       onClose()
+      const adapter: AssemblyAdapter = {
+        IndexedFastaAdapter: {
+          type: 'IndexedFastaAdapter' as const,
+          fastaLocation,
+          faiLocation,
+        },
+        BgzipFastaAdapter: {
+          type: 'BgzipFastaAdapter' as const,
+          fastaLocation,
+          faiLocation,
+          gziLocation,
+        },
+        FastaAdapter: {
+          type: 'UnindexedFastaAdapter' as const,
+          fastaLocation,
+        },
+        TwoBitAdapter: {
+          type: 'TwoBitAdapter' as const,
+          twoBitLocation,
+          chromSizesLocation,
+        },
+      }[form.adapterSelection]
       session.addAssembly?.({
-        name: assemblyName,
-        displayName: assemblyDisplayName,
+        ...getBaseAssemblyConfig(form),
         sequence: {
           type: 'ReferenceSequenceTrack',
           trackId: `${assemblyName}-${performance.now()}`,
-          adapter: {
-            IndexedFastaAdapter: {
-              type: 'IndexedFastaAdapter',
-              fastaLocation,
-              faiLocation,
-            },
-            BgzipFastaAdapter: {
-              type: 'BgzipFastaAdapter',
-              fastaLocation,
-              faiLocation,
-              gziLocation,
-            },
-            UnindexedFastaAdapter: {
-              type: 'UnindexedFastaAdapter',
-              fastaLocation,
-            },
-            TwoBitAdapter: {
-              type: 'TwoBitAdapter',
-              twoBitLocation,
-              chromSizesLocation,
-            },
-          }[adapterSelection],
+          adapter,
         },
       })
       session.notify(`Added "${assemblyName}"`, 'success')
@@ -261,7 +90,8 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
           variant="outlined"
           value={assemblyName}
           onChange={event => {
-            setAssemblyName(event.target.value)
+            const { value } = event.target
+            setForm(f => ({ ...f, assemblyName: value }))
           }}
           slotProps={{
             htmlInput: { 'data-testid': 'assembly-name' },
@@ -274,7 +104,8 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
           variant="outlined"
           value={assemblyDisplayName}
           onChange={event => {
-            setAssemblyDisplayName(event.target.value)
+            const { value } = event.target
+            setForm(f => ({ ...f, assemblyDisplayName: value }))
           }}
           slotProps={{
             htmlInput: {
@@ -282,40 +113,12 @@ const AssemblyAddForm = observer(function AssemblyAddForm({
             },
           }}
         />
-        <AdapterSelector
-          adapterSelection={adapterSelection}
-          adapterTypes={adapterTypes}
-          setAdapterSelection={setAdapterSelection}
+        <SequenceAdapterInputs
+          form={form}
+          setForm={setForm}
+          setPrimaryFile={setPrimaryFile}
+          setTwoBitFile={setTwoBitFile}
         />
-        {adapterSelection === 'IndexedFastaAdapter' ? (
-          <IndexedFastaAdapterInput
-            fastaLocation={fastaLocation}
-            faiLocation={faiLocation}
-            setFaiLocation={setFaiLocation}
-            setFastaLocation={setFastaLocation}
-          />
-        ) : adapterSelection === 'UnindexedFastaAdapter' ? (
-          <UnindexedFastaAdapterInput
-            fastaLocation={fastaLocation}
-            setFastaLocation={setFastaLocation}
-          />
-        ) : adapterSelection === 'TwoBitAdapter' ? (
-          <TwoBitAdapterInput
-            twoBitLocation={twoBitLocation}
-            chromSizesLocation={chromSizesLocation}
-            setTwoBitLocation={setTwoBitLocation}
-            setChromSizesLocation={setChromSizesLocation}
-          />
-        ) : (
-          <BgzipFastaAdapterInput
-            fastaLocation={fastaLocation}
-            gziLocation={gziLocation}
-            faiLocation={faiLocation}
-            setFaiLocation={setFaiLocation}
-            setGziLocation={setGziLocation}
-            setFastaLocation={setFastaLocation}
-          />
-        )}
       </DialogContent>
       <DialogActions>
         <Button

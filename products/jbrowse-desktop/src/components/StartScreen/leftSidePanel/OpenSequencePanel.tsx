@@ -6,8 +6,8 @@ import { Button } from '@mui/material'
 import OpenSequenceDialog from '../../OpenSequenceDialog.tsx'
 import AvailableGenomesDialog from '../availableGenomes/AvailableGenomesDialog.tsx'
 
-import type { AssemblyConf } from '../../util.ts'
 import type { Fav, JBrowseConfig, LaunchCallback } from '../types.ts'
+import type { AssemblyConf } from '@jbrowse/core/util/assemblyConfigUtils'
 
 const useStyles = makeStyles()({
   button: {

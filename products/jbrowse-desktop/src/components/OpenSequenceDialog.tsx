@@ -1,24 +1,27 @@
 import { useState } from 'react'
 
 import { Dialog, ErrorMessage, LoadingEllipses } from '@jbrowse/core/ui'
-import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Button, DialogActions, DialogContent, Paper } from '@mui/material'
-import { observer } from 'mobx-react'
-
-import BulkForm from './BulkForm.tsx'
-import GuidedForm from './GuidedForm.tsx'
-import ModeToggle from './ModeToggle.tsx'
-import StagedAssemblies from './StagedAssemblies.tsx'
 import {
   buildAssemblyConf,
   clearFormFields,
   formHasSequence,
   initialFormState,
-} from './util.ts'
+} from '@jbrowse/core/util/assemblyConfigUtils'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Button, DialogActions, DialogContent, Link, Paper } from '@mui/material'
+import { observer } from 'mobx-react'
 
-import type { Mode } from './ModeToggle.tsx'
-import type { AssemblyAdapter, AssemblyConf } from './util.ts'
+import GuidedForm from './GuidedForm.tsx'
+import OpenSequenceWizard from './OpenSequenceWizard.tsx'
+import StagedAssemblies from './StagedAssemblies.tsx'
+
+import type {
+  AssemblyAdapter,
+  AssemblyConf,
+} from '@jbrowse/core/util/assemblyConfigUtils'
 import type { FileLocation } from '@jbrowse/core/util/types'
+
+type Mode = 'wizard' | 'manual'
 
 const { ipcRenderer } = window.require('electron')
 
@@ -44,7 +47,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
   const [assemblyConfs, setAssemblyConfs] = useState<AssemblyConf[]>([])
   const [error, setError] = useState<unknown>()
   const [loading, setLoading] = useState('')
-  const [mode, setMode] = useState<Mode>('guided')
+  const [mode, setMode] = useState<Mode>('wizard')
 
   const formReady = !!form.assemblyName && formHasSequence(form)
   const totalToOpen = assemblyConfs.length + (formReady ? 1 : 0)
@@ -71,7 +74,14 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
     if (assemblyConfs.some(conf => conf.name === form.assemblyName)) {
       throw new Error(`Assembly "${form.assemblyName}" is already staged`)
     }
-    return [...assemblyConfs, await buildAssemblyConf(form, indexFasta)]
+    return [
+      ...assemblyConfs,
+      await buildAssemblyConf(
+        form,
+        indexFasta,
+        `${form.assemblyName}-${Date.now()}`,
+      ),
+    ]
   }
 
   async function runStaging(action: () => Promise<void>) {
@@ -130,19 +140,38 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
         {error ? <ErrorMessage error={error} /> : null}
 
         <Paper className={classes.paper}>
-          <ModeToggle mode={mode} setMode={setMode} disabled={!!loading} />
-
-          {mode === 'bulk' ? (
-            <BulkForm form={form} setForm={setForm} />
-          ) : (
-            <GuidedForm
+          {mode === 'wizard' ? (
+            <OpenSequenceWizard
               form={form}
               setForm={setForm}
               loading={loading}
               onStageAnother={() => {
                 void addAnotherAssembly()
               }}
+              onManual={() => {
+                setMode('manual')
+              }}
             />
+          ) : (
+            <>
+              <Link
+                component="button"
+                type="button"
+                onClick={() => {
+                  setMode('wizard')
+                }}
+              >
+                ← Back to guided drop
+              </Link>
+              <GuidedForm
+                form={form}
+                setForm={setForm}
+                loading={loading}
+                onStageAnother={() => {
+                  void addAnotherAssembly()
+                }}
+              />
+            </>
           )}
         </Paper>
       </DialogContent>

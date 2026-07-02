@@ -1,6 +1,13 @@
-import { isLocalPathLocation, isUriLocation } from '@jbrowse/core/util/types'
+import { isLocalPathLocation, isUriLocation } from './types/index.ts'
 
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type { FileLocation } from './types/index.ts'
+
+// Shared assembly "add sequence" form logic used by both the jbrowse-desktop
+// Open genome(s) dialog and the in-app data-management Assembly manager. Pure
+// (no React, no MST, no product wiring) so it can live in core and be reused by
+// both surfaces. The one product-specific step — turning a plain FASTA into a
+// usable adapter — is injected into buildAssemblyConf (desktop runs samtools
+// faidx to produce an IndexedFastaAdapter; web keeps an UnindexedFastaAdapter).
 
 export const adapterTypes = [
   'IndexedFastaAdapter',
@@ -14,7 +21,7 @@ export type AdapterType = (typeof adapterTypes)[number]
 export const adapterLabels: Record<AdapterType, string> = {
   IndexedFastaAdapter: 'FASTA with index (.fa + .fai)',
   BgzipFastaAdapter: 'Compressed FASTA (.fa.gz + .fai + .gzi)',
-  FastaAdapter: 'FASTA (index will be generated)',
+  FastaAdapter: 'FASTA (automatically indexed)',
   TwoBitAdapter: '2bit file (.2bit)',
 }
 
@@ -184,6 +191,10 @@ export type AssemblyAdapter =
       gziLocation: FileLocation
     }
   | {
+      type: 'UnindexedFastaAdapter'
+      fastaLocation: FileLocation
+    }
+  | {
       type: 'TwoBitAdapter'
       twoBitLocation: FileLocation
       chromSizesLocation: FileLocation
@@ -348,22 +359,26 @@ export function applyClassifiedFiles(
 }
 
 // Build a full assembly config from the form. A plain FASTA has no index, so
-// the caller supplies an indexFasta callback (it runs an out-of-process samtools
-// faidx in the desktop main process) used only for the needsFastaIndex case.
+// the caller supplies a resolveFastaAdapter callback (desktop runs an
+// out-of-process samtools faidx to make an IndexedFastaAdapter; web keeps an
+// UnindexedFastaAdapter) used only for the needsFastaIndex case.
 export async function buildAssemblyConf(
   form: FormState,
-  indexFasta: (fastaLocation: FileLocation) => Promise<AssemblyAdapter>,
+  resolveFastaAdapter: (
+    fastaLocation: FileLocation,
+  ) => Promise<AssemblyAdapter> | AssemblyAdapter,
+  trackId: string,
 ): Promise<AssemblyConf> {
   const result = getAdapterConfig(form)
   const adapter =
     result.kind === 'needsFastaIndex'
-      ? await indexFasta(result.fastaLocation)
+      ? await resolveFastaAdapter(result.fastaLocation)
       : result.adapter
   return {
     ...getBaseAssemblyConfig(form),
     sequence: {
       type: 'ReferenceSequenceTrack',
-      trackId: `${form.assemblyName}-${Date.now()}`,
+      trackId,
       adapter,
     },
   }
@@ -378,9 +393,9 @@ export function urlTextToLocations(text: string): FileLocation[] {
 }
 
 // Either a ready-to-use sequence adapter, or a signal that the chosen plain
-// FASTA must have a .fai generated before it can become an IndexedFastaAdapter.
-// Kept as a discriminated union rather than a sentinel property so the caller
-// can't accidentally write an un-indexed FASTA into a saved config.
+// FASTA must be resolved (indexed) before it can become a usable adapter. Kept
+// as a discriminated union rather than a sentinel property so the caller can't
+// accidentally write an un-indexed FASTA into a saved config.
 export type AdapterConfigResult =
   | { kind: 'ready'; adapter: AssemblyAdapter }
   | { kind: 'needsFastaIndex'; fastaLocation: FileLocation }

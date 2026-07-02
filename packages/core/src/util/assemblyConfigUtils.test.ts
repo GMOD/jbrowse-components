@@ -14,9 +14,9 @@ import {
   initialFormState,
   isBlank,
   urlTextToLocations,
-} from './util.ts'
+} from './assemblyConfigUtils.ts'
 
-import type { FileLocation } from '@jbrowse/core/util/types'
+import type { FileLocation } from './types/index.ts'
 
 const blank = { uri: '' } as FileLocation
 const fasta = { uri: 'https://example.com/hg38.fa' } as FileLocation
