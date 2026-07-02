@@ -8,7 +8,11 @@ import { getSession } from '@jbrowse/core/util'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { fetchResults, navigateToSelectedOption } from '../../searchUtils.ts'
+import {
+  SearchResultsNotFoundError,
+  fetchResults,
+  navigateToSelectedOption,
+} from '../../searchUtils.ts'
 import { SPACING, WIDGET_HEIGHT } from '../consts.ts'
 
 import type { LinearGenomeViewModel } from '../model.ts'
@@ -43,7 +47,10 @@ const SearchBox = observer(function SearchBox({
           await navigateToSelectedOption({ model, assemblyName, option })
         } catch (e) {
           console.error(e)
-          session.notify(`${e}`, 'warning')
+          session.notify(
+            e instanceof SearchResultsNotFoundError ? e.message : `${e}`,
+            'warning',
+          )
         }
       }}
       assemblyName={assemblyName}

@@ -40,7 +40,7 @@ WebGL2, or Canvas2D at runtime. Your renderer code talks to the HAL — it never
 calls WebGPU or WebGL2 directly.
 
 See `agent-docs/ARCHITECTURE.md` for the full lifecycle spec and
-`packages/core/src/gpu/CLAUDE.md` for HAL invariants.
+`packages/render-core/CLAUDE.md` for HAL invariants.
 
 The simplest concrete reference is `plugins/canvas/src/LinearBasicDisplay/` — a
 generic feature display with four shader passes (rectangles, lines, chevrons,
@@ -96,30 +96,37 @@ export type MyRenderingBackend = PerRegionRenderingBackend<
 Create a `.slang` file — JBrowse uses a Slang-derived shader language that
 compiles to both WGSL (WebGPU) and GLSL (WebGL2):
 
+Modules are referenced by bare name (`import hpmath;`), not by file path. The
+shared helpers live in `packages/render-core/src/shaders/` (`hpmath` for the
+high-precision genomic→pixel transform, `colorPack` for unpacking packed
+colors); your own uniform struct goes in a sibling module (`myUniforms.slang`,
+which starts with `module myUniforms;` and declares a `public struct`).
+
 ```slang
 // shaders/my.slang
-import "../../../../../../packages/core/src/gpu/shaders/hpmath"
-import "./myUniforms"
+import hpmath;
+import colorPack;
+import myUniforms;
+
+// Bind the uniform buffer declared by the myUniforms module
+[[vk::binding(1, 0)]] ConstantBuffer<MyUniforms> u;
 
 struct InstanceInput {
-  float bpStartHi;
-  float bpStartLo;
-  float bpWidth;
-  uint  color;      // packed RGBA
+  uint startBp : ATTR0;   // absolute genomic position (uint32)
+  uint widthBp : ATTR1;
+  uint color   : ATTR2;   // packed ABGR
 }
 
 [shader("vertex")]
 float4 vertexMain(InstanceInput inst, uint vertexId: SV_VertexID) -> float4 {
-  // Convert genomic bp position to clip space x
-  float xPx = hpSub(inst.bpStartHi, inst.bpStartLo, uniforms.bpStartHi, uniforms.bpStartLo)
-              / uniforms.bpPerPx;
-  float widthPx = inst.bpWidth / uniforms.bpPerPx;
+  // hpmath converts an absolute genomic bp position to clip-space x
+  float x = bpToClipX(inst.startBp, u);
   // ... standard quad expansion via vertexId
 }
 
 [shader("fragment")]
-float4 fragmentMain(...) -> SV_Target {
-  return unpackColor(inst.color);
+float4 fragmentMain(InstanceInput inst) -> SV_Target {
+  return colorPack.unpackRGBA(inst.color);
 }
 ```
 
@@ -143,14 +150,14 @@ The `canvas_width` / `canvas_height` uniforms are CSS pixels — do not scale by
 
 ```ts
 // GpuMyRenderer.ts
-import { clipBlock } from '@jbrowse/core/gpu/blockClipUtils'
-import { getDpr } from '@jbrowse/core/gpu/canvas2dUtils'
-import { GpuPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
-import { slangPass } from '@jbrowse/core/gpu/slangPass'
+import { clipBlock } from '@jbrowse/render-core/blockClipUtils'
+import { getDpr } from '@jbrowse/render-core/canvas2dUtils'
+import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { slangPass } from '@jbrowse/render-core/slangPass'
 import * as MY_SHADER from './shaders/my.generated.ts'
 
-import type { GpuHal } from '@jbrowse/core/gpu/hal'
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { GpuHal } from '@jbrowse/render-core/hal'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
 
 const MY_PASS = slangPass({ id: 'my', mod: MY_SHADER })
@@ -223,10 +230,10 @@ import {
   clipBlockForCanvas,
   makeBpMapper,
   prepareCanvas,
-} from '@jbrowse/core/gpu/canvas2dUtils'
-import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/core/gpu/perRegionRenderingBackend'
+} from '@jbrowse/render-core/canvas2dUtils'
+import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import type { RenderBlock } from '@jbrowse/core/gpu/renderBlock'
+import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { MyUploadData, MyRenderState } from './myRenderingBackendTypes.ts'
 
 export class Canvas2DMyRenderer extends Canvas2DPerRegionRenderingBackend<
@@ -264,7 +271,7 @@ export class Canvas2DMyRenderer extends Canvas2DPerRegionRenderingBackend<
 
 ```ts
 // MyRendererFactory.ts
-import { createRenderingBackend } from '@jbrowse/core/gpu/createRenderingBackend'
+import { createRenderingBackend } from '@jbrowse/render-core/createRenderingBackend'
 
 import { GpuMyRenderer } from './GpuMyRenderer.ts'
 import { Canvas2DMyRenderer } from './Canvas2DMyRenderer.ts'
@@ -295,7 +302,7 @@ add a `startRenderingBackend` action:
 // model.ts
 import { MultiRegionDisplayMixin } from '@jbrowse/plugin-linear-genome-view'
 import { getContainingView } from '@jbrowse/core/util'
-import { createRegionUploadSync } from '@jbrowse/core/gpu/regionUploadSync'
+import { createRegionUploadSync } from '@jbrowse/render-core/regionUploadSync'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type {

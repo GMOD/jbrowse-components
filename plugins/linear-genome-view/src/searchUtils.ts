@@ -1,5 +1,10 @@
 import { RefSequenceResult } from '@jbrowse/core/TextSearch/BaseResults'
-import { dedupe, getEnv, getSession } from '@jbrowse/core/util'
+import {
+  UnknownRefNameError,
+  dedupe,
+  getEnv,
+  getSession,
+} from '@jbrowse/core/util'
 
 import { parseLocStrings } from './LinearGenomeView/util.ts'
 
@@ -83,6 +88,13 @@ export async function navToOption({
   )
 }
 
+// Thrown when a name search yields no hits and the input isn't coordinate-shaped.
+// Typed (rather than a bare Error) so callers can render it as a soft "not found"
+// warning instead of an error — string-matching the message would be brittle.
+export class SearchResultsNotFoundError extends Error {
+  name = 'SearchResultsNotFoundError'
+}
+
 // if input is a known ref or locstring, navigate directly;
 // otherwise search and: pop a dialog for multiple results, navigate for one,
 // or fall back to treating input as a locstring
@@ -132,7 +144,21 @@ export async function handleSelectedRegion({
         assemblyName,
       })
     } else {
-      await navToLocstrings()
+      // no search hits: still try to resolve the input as a locstring (bare
+      // refname, "ref start end" triplet, etc). if that also can't find a
+      // refname AND the input is a single bare token (a plausible gene name),
+      // reframe the unknown-ref error as a clean "no results" message; keep the
+      // specific ref error for coordinate/multi-part queries
+      try {
+        await navToLocstrings()
+      } catch (e) {
+        const isPlainName = !input.includes(':') && !input.includes(' ')
+        if (e instanceof UnknownRefNameError && isPlainName) {
+          throw new SearchResultsNotFoundError(`No results found for "${input}"`)
+        } else {
+          throw e
+        }
+      }
     }
   }
 }

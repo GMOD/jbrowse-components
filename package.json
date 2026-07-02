@@ -25,7 +25,7 @@
     "postautogen": "pnpm format",
     "gen:shaders": "node --experimental-strip-types packages/shader-tools/src/build-shaders.ts",
     "lint-docs": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts",
-    "lint-docs-check": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts --check && pnpm gen-img-doc --check",
+    "lint-docs-check": "node --experimental-strip-types website/scripts/generate-guide-indexes.ts --check && pnpm gen-img-doc --check && node --experimental-strip-types website/scripts/check-doc-imports.ts",
     "fix-extensions": "node scripts/add-extensions.ts",
     "releasenotes": "pnpm prettier --prose-wrap never website/blog/$(ls -Art website/blog/ | tail -n 1)|sed -e '/## Downloads/,+7d'|tail -n +7",
     "copynotes": "pnpm --silent releasenotes | xclip -selection clipboard",

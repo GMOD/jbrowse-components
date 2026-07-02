@@ -7,6 +7,8 @@ import {
 import { addDisposer } from '@jbrowse/mobx-state-tree'
 import { autorun, when } from 'mobx'
 
+import { SearchResultsNotFoundError } from '../searchUtils.ts'
+
 import type { LinearGenomeViewModel } from './model.ts'
 import type { HighlightType, InitState } from './types.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
@@ -88,7 +90,12 @@ async function navigateInit(
     }
   } catch (e) {
     console.error(init, e)
-    session.notifyError(`${e}`, e)
+    if (e instanceof SearchResultsNotFoundError) {
+      // a &loc= gene name that matched nothing is a soft miss, not an app error
+      session.notify(e.message, 'warning')
+    } else {
+      session.notifyError(`${e}`, e)
+    }
   }
 }
 

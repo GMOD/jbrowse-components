@@ -112,9 +112,9 @@ the coordinate space differs slightly from on-screen rendering:
 - Y axis runs from 0 (top) to `model.height` (bottom), same as on-screen
 
 Use `buildRenderBlocks(view.visibleRegions)` (imported from
-`@jbrowse/core/gpu/renderBlock`) to get `{ startPx, endPx }` offsets per region
-— these map genomic coordinates into pixels in the full export canvas. The
-display model also exposes a `renderBlocks` getter via
+`@jbrowse/render-core/renderBlock`) to get `{ startPx, endPx }` offsets per
+region — these map genomic coordinates into pixels in the full export canvas.
+The display model also exposes a `renderBlocks` getter via
 `MultiRegionDisplayMixin`.
 
 ## Reusing on-screen drawing code

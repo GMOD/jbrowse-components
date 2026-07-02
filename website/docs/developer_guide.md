@@ -97,3 +97,4 @@ own via pull request.
 
 - [PIF (Pairwise Indexed Format)](/docs/developer_guides/pif_format) - Tabix-indexed pairwise alignment format for large-scale synteny data
 - [RefName aliasing](/docs/developer_guides/refname_aliasing) - Map between chromosome naming conventions across tracks and assemblies
+- [Testing a plugin](/docs/developer_guides/testing_plugins) - How to unit-test adapters, models, and components, plus where browser and component tests fit

@@ -1237,6 +1237,42 @@ test('space separated locstring', async () => {
   })
 })
 
+test('unresolved gene name reports a clean no-results error', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+
+  await expect(model.navToLocString('nonexistentgene')).rejects.toThrow(
+    /No results found for "nonexistentgene"/,
+  )
+})
+
+test('unknown-ref coordinate query keeps the specific ref error', async () => {
+  const { Session, LinearGenomeModel } = initialize()
+  const model = Session.create({
+    configuration: {},
+  }).setView(
+    LinearGenomeModel.create({
+      type: 'LinearGenomeView',
+      tracks: [{ name: 'foo track', type: 'BasicTrack' }],
+    }),
+  )
+  model.setWidth(800)
+  model.setDisplayedRegions(volvoxDisplayedRegions.slice(0, 1))
+
+  await expect(model.navToLocString('badref:100-200')).rejects.toThrow(
+    /unknown reference sequence/,
+  )
+})
+
 test('showLoading is true when displayedRegions are set but not yet initialized', () => {
   const { Session, LinearGenomeModel } = initialize()
   const model = Session.create({

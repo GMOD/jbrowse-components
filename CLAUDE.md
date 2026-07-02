@@ -7,7 +7,7 @@ and Canvas2D fallbacks). Worker output is **absolute genomic uint32** — no
 regionStart-relative arithmetic crosses the worker boundary. See
 `agent-docs/ARCHITECTURE.md`.
 
-## GPU rendering (`plugins/canvas`, `packages/core/src/gpu`)
+## GPU rendering (`plugins/canvas`, `packages/render-core`)
 
 - **Never hand-edit `*.generated.ts` shader files.** Edit `.slang` source and
   run `pnpm gen:shaders`.

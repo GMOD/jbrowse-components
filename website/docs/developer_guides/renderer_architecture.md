@@ -15,7 +15,7 @@ JBrowse 2 renders feature data on the main thread with the GPU. The split is:
   then Canvas2D. This covers the high-volume track types: alignments, wiggle,
   features, and variants.
 
-See `plugins/canvas` and `packages/core/src/gpu` for the implementation, and
+See `plugins/canvas` and `packages/render-core` for the implementation, and
 [creating a GPU-accelerated display](/docs/developer_guides/creating_gpu_display)
 to build one.
 

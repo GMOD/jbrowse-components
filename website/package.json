@@ -9,6 +9,7 @@
     "typecheck": "astro check",
     "lint-docs": "node --experimental-strip-types scripts/generate-guide-indexes.ts",
     "lint-docs-check": "node --experimental-strip-types scripts/generate-guide-indexes.ts --check",
+    "check-doc-imports": "node --experimental-strip-types scripts/check-doc-imports.ts",
     "generate-screenshots": "node --experimental-strip-types scripts/generate-screenshots.ts",
     "review-screenshots-web": "node --experimental-strip-types scripts/review-screenshots-web.ts",
     "audit-figures": "node --experimental-strip-types scripts/audit-figures.ts"

@@ -168,7 +168,7 @@ right-click context menus. Your callback receives every pluggable element
 registered to the system. See [Adding menus](/docs/developer_guides/menus) for a
 worked example that uses this point to add track context-menu items.
 
-https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/extensionPoints.ts#L9-L43
+https://github.com/GMOD/jbrowse-components/blob/main/plugins/dotplot-view/src/DotplotReadVsRef/index.ts#L12-L45
 
 ### Core-guessAdapterForLocation
 
