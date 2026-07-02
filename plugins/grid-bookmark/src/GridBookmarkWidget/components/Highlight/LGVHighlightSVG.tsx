@@ -1,9 +1,9 @@
+import { highlightKey } from '@jbrowse/core/util/highlights'
 import { SVGHighlightBand } from '@jbrowse/plugin-linear-genome-view'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
-import { bookmarkKey } from '../../utils.ts'
 
 import type { IExtendedLGV } from '../../model.ts'
 
@@ -24,8 +24,7 @@ const LGVHighlightSVG = observer(function LGVHighlightSVG({
     const coords = model.getHighlightCoords(r)
     return coords ? (
       <SVGHighlightBand
-        // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
-        key={`${bookmarkKey(r)}_${idx}`}
+        key={highlightKey(r, idx)}
         coords={coords}
         height={height}
         color={r.highlight}

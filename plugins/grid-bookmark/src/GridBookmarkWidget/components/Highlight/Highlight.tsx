@@ -1,4 +1,5 @@
 import { colord } from '@jbrowse/core/util/colord'
+import { highlightKey } from '@jbrowse/core/util/highlights'
 import {
   HighlightBand,
   HighlightChip,
@@ -7,7 +8,6 @@ import BookmarkIcon from '@mui/icons-material/Bookmark'
 import { observer } from 'mobx-react'
 
 import { getBookmarkHighlights } from './getBookmarkHighlights.ts'
-import { bookmarkKey } from '../../utils.ts'
 
 import type { IExtendedLGV } from '../../model.ts'
 
@@ -26,8 +26,7 @@ const Highlight = observer(function Highlight({
           <HighlightBand
             // region fields keep the key stable across pan/zoom (unlike pixel
             // coords); idx disambiguates duplicate bookmarks on the same region
-            // eslint-disable-next-line @eslint-react/no-array-index-key -- bookmarks have no id and can duplicate; idx only breaks ties
-            key={`${bookmarkKey(r)}_${idx}`}
+            key={highlightKey(r, idx)}
             coords={coords}
             background={r.highlight}
           >

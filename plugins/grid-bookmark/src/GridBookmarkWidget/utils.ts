@@ -13,16 +13,17 @@ type LGV = LinearGenomeViewModel
 
 type MaybeLGV = LGV | undefined
 
-// stable identity for a bookmark/highlight region, used both to dedupe shared
-// vs local bookmarks on load and to key overlay components (bookmarks have no
-// id and can legitimately duplicate, so callers append an index to break ties)
+// stable identity for a bookmark region, used to dedupe shared vs local
+// bookmarks on load. JSON-encoding the fields (rather than joining on a
+// delimiter) avoids collisions when a refName contains the delimiter. Overlay
+// components key off the shared highlightKey instead (it also breaks index ties)
 export function bookmarkKey(r: {
   assemblyName?: string
   refName: string
   start: number
   end: number
 }) {
-  return `${r.assemblyName}_${r.refName}_${r.start}_${r.end}`
+  return JSON.stringify([r.assemblyName, r.refName, r.start, r.end])
 }
 
 // DataGrid column width fitting the wider of the header text and the cell

@@ -5,11 +5,14 @@ import type { Theme } from '@mui/material'
 // Highlight regions have no id and can duplicate, so the trailing index only
 // breaks ties between otherwise-identical regions. Wrapping the array index in
 // this helper also keeps it out of the `no-array-index-key` lint's view.
+// JSON-encoding the fields (rather than joining on a delimiter) avoids
+// collisions when a refName contains the delimiter, e.g. `chr1_2`@3 vs
+// `chr1`@`2_3`.
 export function highlightKey(
   h: { assemblyName?: string; refName: string; start: number; end: number },
   i: number,
 ) {
-  return `${h.assemblyName}-${h.refName}-${h.start}-${h.end}-${i}`
+  return JSON.stringify([h.assemblyName, h.refName, h.start, h.end, i])
 }
 
 // User-supplied color is used as-is so explicit alpha is preserved; otherwise
