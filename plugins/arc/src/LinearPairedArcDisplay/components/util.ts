@@ -33,6 +33,23 @@ export function makeFeaturePair(feature: Feature, alt?: string) {
   }
 }
 
+interface Endpoint {
+  refName: string
+  start: number
+  end: number
+}
+
+// Canonical, orientation-independent key for an arc: a paired feature is
+// emitted from both endpoints' interval trees (flip r1/r2), and reciprocal VCF
+// BNDs are two records pointing at each other, so the same physical connection
+// arrives twice with the endpoints swapped. Sorting the two endpoint locstrings
+// collapses those to one key so the arc is drawn once.
+export function pairKey(k1: Endpoint, k2: Endpoint, alt?: string) {
+  const a = `${k1.refName}:${k1.start}-${k1.end}`
+  const b = `${k2.refName}:${k2.start}-${k2.end}`
+  return [...[a, b].sort(), alt ?? ''].join('|')
+}
+
 export function makeSummary(feature: Feature, alt?: string) {
   const { k1, k2 } = makeFeaturePair(feature, alt)
   return [

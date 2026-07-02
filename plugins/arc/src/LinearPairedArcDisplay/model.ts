@@ -5,14 +5,14 @@ import {
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes'
-import { openFeatureWidget } from '@jbrowse/core/util'
+import { dedupe, openFeatureWidget } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import {
   RegionTooLargeMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
-import { makeFeaturePair } from './components/util.ts'
+import { makeFeaturePair, pairKey } from './components/util.ts'
 
 import type {
   LinearPairedArcDisplayConfig,
@@ -106,10 +106,13 @@ export function stateModelFactory(
        * #getter
        * per-arc styling and endpoint pairs (one per ALT), evaluated once when
        * features/config change. Keeps the color jexl and makeFeaturePair (which
-       * runs parseSvAlt) out of the per-pan render loop.
+       * runs parseSvAlt) out of the per-pan render loop. Deduped on a canonical
+       * endpoint-pair key: a paired feature is emitted from both endpoints and
+       * reciprocal BNDs arrive as two records, so the same arc otherwise draws
+       * twice whenever both endpoints are in the fetched regions.
        */
       get arcStyles() {
-        return self.features?.flatMap(feature => {
+        const styles = self.features?.flatMap(feature => {
           const alts = feature.get('ALT') as string[] | undefined
           const make = (alt: string | undefined) => ({
             feature,
@@ -119,6 +122,7 @@ export function stateModelFactory(
           })
           return alts?.length ? alts.map(alt => make(alt)) : [make(undefined)]
         })
+        return styles && dedupe(styles, s => pairKey(s.k1, s.k2, s.alt))
       },
     }))
 
