@@ -2,6 +2,8 @@ import { getContainingView, getSession } from '@jbrowse/core/util'
 import { launchBreakpointSplitView } from '@jbrowse/sv-core'
 import CompareArrowsIcon from '@mui/icons-material/CompareArrows'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
+import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import FilterAltOffIcon from '@mui/icons-material/FilterAltOff'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
 import SwapVertIcon from '@mui/icons-material/SwapVert'
 
@@ -19,6 +21,7 @@ import { viewMateRegionInCurrentView } from '../viewMateRegion.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type { IndicatorHitResult } from '../../features/indicator/types.ts'
 import type { CigarHitResult } from '../../shared/hitTestTypes.ts'
+import type { FilterBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type { Feature } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -32,8 +35,18 @@ interface ContextMenuModel extends IAnyStateTreeNode {
   contextMenuIndicatorHit: IndicatorHitResult | undefined
   contextMenuRefName: string | undefined
   contextMenuRpcData: PileupDataResult | undefined
+  filterBy: FilterBy
+  setFilterBy: (filterBy: FilterBy) => void
   setSortedByAtPosition: (type: string, pos: number, refName: string) => void
   selectFeature: (feature: Feature) => void
+}
+
+// SAM tags live under a `tags` object on the fetched feature, but a few
+// well-known ones (e.g. SA) are also surfaced as top-level fields.
+function getReadTag(feat: Feature, tag: string): string | undefined {
+  const tags = feat.get('tags') as Record<string, unknown> | undefined
+  const val = tags?.[tag] ?? feat.get(tag)
+  return val === undefined ? undefined : String(val)
 }
 
 // Right-click menu over the pileup: sort/details for the CIGAR op or coverage
@@ -156,6 +169,66 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
             },
           },
         ],
+      })
+    }
+    const readName = feat.get('name')
+    const hp = getReadTag(feat, 'HP')
+    const rg = getReadTag(feat, 'RG')
+    const filterSubMenu: MenuItem[] = []
+    if (readName) {
+      filterSubMenu.push({
+        label: 'Filter for this read',
+        icon: FilterAltIcon,
+        onClick: () => {
+          self.setFilterBy({ ...self.filterBy, readName })
+        },
+      })
+    }
+    if (hp !== undefined) {
+      filterSubMenu.push({
+        label: `Filter for this haplotype (HP:${hp})`,
+        icon: FilterAltIcon,
+        onClick: () => {
+          self.setFilterBy({
+            ...self.filterBy,
+            tagFilter: { tag: 'HP', value: hp },
+          })
+        },
+      })
+    }
+    if (rg !== undefined) {
+      filterSubMenu.push({
+        label: `Filter for this read group (RG:${rg})`,
+        icon: FilterAltIcon,
+        onClick: () => {
+          self.setFilterBy({
+            ...self.filterBy,
+            tagFilter: { tag: 'RG', value: rg },
+          })
+        },
+      })
+    }
+    const hasReadOrTagFilter =
+      self.filterBy.readName !== undefined ||
+      self.filterBy.tagFilter !== undefined
+    if (hasReadOrTagFilter) {
+      filterSubMenu.push({
+        label: 'Clear read/tag filters',
+        icon: FilterAltOffIcon,
+        onClick: () => {
+          self.setFilterBy({
+            flagInclude: self.filterBy.flagInclude,
+            flagExclude: self.filterBy.flagExclude,
+          })
+        },
+      })
+    }
+    if (filterSubMenu.length) {
+      items.push({
+        label: 'Filter',
+        icon: FilterAltIcon,
+        type: 'subMenu',
+        subMenu: filterSubMenu,
       })
     }
     items.push(

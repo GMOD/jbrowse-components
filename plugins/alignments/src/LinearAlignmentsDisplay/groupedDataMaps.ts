@@ -1,3 +1,5 @@
+import { compareGroupKeys } from '../shared/groupFeatures.ts'
+
 import type { LinkedReadsMode } from './constants.ts'
 import type {
   GroupedAlignmentsResult,
@@ -73,26 +75,31 @@ export interface GroupId {
   label: string
 }
 
-// Ordered, de-duplicated group identities across every fetched region, in the
-// worker's emit order (sorted, untagged-key '' last). Group membership, order,
-// and labels are a property of the *fetch*, not of layout — deriving them
-// straight from `rpcDataMap` keeps the order stable across every main-thread
-// relayout (sortedBy / softclip / per-group height drag) and gives the whole
-// model one source of truth for it, rather than recomputing it inside the
-// layout pass (`buildLaidOutByGroup`) and again as `buildRawDataByGroup`'s key
-// order.
+// Ordered, de-duplicated group identities across every fetched region, sorted
+// (untagged-key '' last) by the same `compareGroupKeys` the worker's per-region
+// partition uses. Group membership, order, and labels are a property of the
+// *fetch*, not of layout — deriving them straight from `rpcDataMap` keeps the
+// order stable across every main-thread relayout (sortedBy / softclip /
+// per-group height drag) and gives the whole model one source of truth for it,
+// rather than recomputing it inside the layout pass (`buildLaidOutByGroup`) and
+// again as `buildRawDataByGroup`'s key order.
+//
+// The explicit re-sort is load-bearing across regions: the worker sorts each
+// region's groups on its own, but a plain first-seen merge would order the
+// union by which region first exhibited each key. A group absent from an early
+// region (e.g. a chromosome with only reverse-strand reads) would then sort
+// ahead of one it should follow — and an untagged group could escape last —
+// purely from fetch layout. Sorting the merged set restores the intended order.
 export function orderedGroups(
   rpcDataMap: ReadonlyMap<number, GroupedAlignmentsResult>,
 ): GroupId[] {
-  const order: GroupId[] = []
-  const seen = new Set<string>()
+  const order = new Map<string, GroupId>()
   for (const { key, label } of eachGroup(rpcDataMap)) {
-    if (!seen.has(key)) {
-      seen.add(key)
-      order.push({ key, label })
+    if (!order.has(key)) {
+      order.set(key, { key, label })
     }
   }
-  return order
+  return [...order.values()].sort((a, b) => compareGroupKeys(a.key, b.key))
 }
 
 // Per-read lookups derived by scanning every group of every fetched region.

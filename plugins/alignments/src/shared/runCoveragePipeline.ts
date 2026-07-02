@@ -18,7 +18,6 @@ import type {
   GapData,
   HardclipData,
   InsertionData,
-  MismatchData,
   ModificationEntry,
   SoftclipData,
 } from './webglRpcTypes.ts'
@@ -39,7 +38,6 @@ import type { StopTokenChecker } from '@jbrowse/core/util/stopToken'
 export async function runCoveragePipeline({
   features,
   gaps,
-  mismatches,
   insertions,
   softclips,
   hardclips,
@@ -56,7 +54,6 @@ export async function runCoveragePipeline({
 }: {
   features: FeatureData[]
   gaps: GapData[]
-  mismatches: MismatchData[]
   insertions: InsertionData[]
   softclips: SoftclipData[]
   hardclips: HardclipData[]
@@ -92,7 +89,12 @@ export async function runCoveragePipeline({
       coverage.startPos,
     )
 
-  const snpCoverage = computeSNPCoverage(mismatches, regionStart, coverage)
+  const snpCoverage = computeSNPCoverage(
+    mismatchArrays.mismatchPositions,
+    mismatchArrays.mismatchBases,
+    regionStart,
+    coverage,
+  )
   const interbaseCoverage = computeInterbaseCoverage(
     insertions,
     softclips,

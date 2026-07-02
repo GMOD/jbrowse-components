@@ -6,6 +6,7 @@ import {
   SAM_FLAG_SUPPLEMENTARY,
 } from '@jbrowse/alignments-core'
 
+import { chainGroupingKey } from './chainGroupingKey.ts'
 import { extractFeatureTagValue } from './extractFeatureTagValue.ts'
 
 import type { GroupBy, GroupByType } from './types.ts'
@@ -103,23 +104,28 @@ function groupKeyFor(feature: Feature, groupBy: GroupBy): GroupKey {
   return GROUP_BY_DIMENSIONS[groupBy.type].key(feature, groupBy)
 }
 
-// Stable key sort with the empty-key ("untagged"/"unknown") group pinned last.
-// Plain code-point comparison (not localeCompare) keeps it deterministic and
-// orders '+' before '-' for strand grouping; zero-padded numeric keys (mapq)
-// already sort correctly under it.
+// Stable group-key ordering with the empty-key ("untagged"/"unknown") group
+// pinned last. Plain code-point comparison (not localeCompare) keeps it
+// deterministic and orders '+' before '-' for strand grouping; zero-padded
+// numeric keys (mapq) already sort correctly under it. Exported so the
+// main-thread cross-region merge (`orderedGroups`) applies the identical order
+// — the worker's per-region sort alone doesn't fix merged order when a group is
+// absent from an early region.
+export function compareGroupKeys(a: string, b: string) {
+  if (a === b) {
+    return 0
+  }
+  if (a === '') {
+    return 1
+  }
+  if (b === '') {
+    return -1
+  }
+  return a < b ? -1 : 1
+}
+
 function orderGroups(groups: FeatureGroup[]) {
-  return groups.sort((a, b) => {
-    if (a.key === b.key) {
-      return 0
-    }
-    if (a.key === '') {
-      return 1
-    }
-    if (b.key === '') {
-      return -1
-    }
-    return a.key < b.key ? -1 : 1
-  })
+  return groups.sort((a, b) => compareGroupKeys(a.key, b.key))
 }
 
 // Append a single feature into its group, creating the group on first sight.
@@ -263,12 +269,16 @@ export function partitionChains(
   }
   const chains = new Map<string, Feature[]>()
   for (const feature of features) {
-    const name = getName(feature)
-    const chain = chains.get(name)
+    const key = chainGroupingKey(
+      getName(feature),
+      feature.id(),
+      getFlags(feature),
+    )
+    const chain = chains.get(key)
     if (chain) {
       chain.push(feature)
     } else {
-      chains.set(name, [feature])
+      chains.set(key, [feature])
     }
   }
   const groups = new Map<string, FeatureGroup>()

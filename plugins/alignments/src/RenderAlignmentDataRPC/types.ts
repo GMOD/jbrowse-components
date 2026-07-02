@@ -232,7 +232,8 @@ export interface PileupDataResult {
   chainAbsMinStarts?: Uint32Array // absolute genomic start of each chain
   chainAbsMaxEnds?: Uint32Array // absolute genomic end of each chain
   chainDistances?: Uint32Array // chain distance: templateLength or span
-  chainNames?: string[] // read QNAME per chain (for cross-region dedup)
+  chainNames?: string[] // chain identity key: QNAME, or a unique synthetic key
+  // for secondary alignments (see chainGroupingKey); for cross-region dedup
   chainHasMultiple?: Uint8Array // 1 if chain has ≥2 reads (draw connecting line)
 
   // Connecting line data for chain modes (cloud/linkedRead).

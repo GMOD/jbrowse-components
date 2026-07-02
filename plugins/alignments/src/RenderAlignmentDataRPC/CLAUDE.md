@@ -45,6 +45,16 @@ runs over once each. Pileup uses `partitionFeatures` (per read). Chain uses
 as a unit (via the chain's representative read's key), so a chain never splits —
 which would break connecting lines and desync mate rows.
 
+The chain key is `chainGroupingKey` (`shared/chainGroupingKey.ts`), the single
+source of truth used by every by-name grouping site (`partitionChains`,
+`filterChainFeatures`, `buildChainMetadata`). It returns the QNAME for
+primary/supplementary reads — mates and split segments chain together — but a
+unique synthetic key for **secondary** alignments (0x100), so a secondary (a
+competing mapping of the same read to another locus, e.g. an RNA-seq
+multimapper) never joins its primary's chain and renders standalone. This
+mirrors IGV and the connection resolver `readGroupConnections`, which also drops
+secondary.
+
 Chain mode therefore only allows **chain-consistent** dimensions — ones where
 every read of a chain yields the same key (`tag`, `firstOfPairStrand`,
 `pairOrientation`). Per-read dimensions (`strand`, `supplementary`, `mapq`,

@@ -17,6 +17,7 @@ import {
 import { buildBaseReadArrays } from '../shared/buildBaseReadArrays.ts'
 import { buildChainMetadata } from '../shared/buildChainMetadata.ts'
 import { buildCoverageResultFields } from '../shared/buildCoverageResultFields.ts'
+import { chainGroupingKey } from '../shared/chainGroupingKey.ts'
 import { collectGroupedTransferables } from '../shared/collectTransferables.ts'
 import { isModificationScheme } from '../shared/colorSchemes.ts'
 import {
@@ -79,8 +80,14 @@ export function filterChainFeatures(
   if (drawSingletons && drawProperPairs) {
     return deduped
   }
-  const byName = groupBy(deduped, (f: Feature) => f.get('name') ?? '')
-  let rawChains = Object.values(byName)
+  const byChain = groupBy(deduped, (f: Feature) =>
+    chainGroupingKey(
+      f.get('name') ?? '',
+      f.id(),
+      (f.get('flags') as number | undefined) ?? 0,
+    ),
+  )
+  let rawChains = Object.values(byChain)
   if (!drawSingletons) {
     rawChains = rawChains.filter(c => c.length > 1)
   }
@@ -250,7 +257,6 @@ async function buildGroupResult(
   const pipeline = await runCoveragePipeline({
     features,
     gaps,
-    mismatches,
     insertions,
     softclips,
     hardclips,

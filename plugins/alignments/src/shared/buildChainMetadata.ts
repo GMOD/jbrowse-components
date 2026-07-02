@@ -4,6 +4,8 @@ import {
 } from '@jbrowse/alignments-core'
 import { groupBy } from '@jbrowse/core/util'
 
+import { chainGroupingKey } from './chainGroupingKey.ts'
+
 import type { ChainFeatureData } from './webglRpcTypes.ts'
 
 /**
@@ -18,9 +20,11 @@ import type { ChainFeatureData } from './webglRpcTypes.ts'
  * all groups (see computeChainInsertSizeStats).
  */
 export function buildChainMetadata(features: ChainFeatureData[]) {
-  const featuresByName = groupBy(features, f => f.name)
-  const chains = Object.values(featuresByName)
-  const numChains = chains.length
+  const featuresByChain = groupBy(features, f =>
+    chainGroupingKey(f.name, f.id, f.flags),
+  )
+  const chainEntries = Object.entries(featuresByChain)
+  const numChains = chainEntries.length
 
   const chainAbsMinStarts = new Uint32Array(numChains)
   const chainAbsMaxEnds = new Uint32Array(numChains)
@@ -34,7 +38,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
 
   const featureIdToChainIdx = new Map<string, number>()
   for (let chainIdx = 0; chainIdx < numChains; chainIdx++) {
-    const chain = chains[chainIdx]!
+    const [chainKey, chain] = chainEntries[chainIdx]!
     let minStart = Number.POSITIVE_INFINITY
     let maxEnd = Number.NEGATIVE_INFINITY
     let hasSupp = false
@@ -63,7 +67,10 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     chainAbsMinStarts[chainIdx] = minStart
     chainAbsMaxEnds[chainIdx] = maxEnd
     chainDistances[chainIdx] = distance
-    chainNames.push(chain[0]!.name)
+    // For normal chains this is the QNAME; secondary alignments get a
+    // unique synthetic key so they never merge with their primary's chain
+    // (cross-region merge + chainIdMap both key on this). Never displayed.
+    chainNames.push(chainKey)
     chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
     chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
