@@ -37,6 +37,13 @@ export function interleaveInstances(data: SyntenyInstanceData) {
     f[off + FIELD_OFFSET_F32.bp4Hi] = bp4Hi[i]!
     f[off + FIELD_OFFSET_F32.bp4Lo] = bp4Lo[i]!
     u32[off + FIELD_OFFSET_F32.color] = colors[i]!
+    // featureId goes through the Float32 view (shader reads it as a float
+    // attribute + compares to the float hovered/clickedFeatureId uniforms), so
+    // it's exact only to 2^24 ~= 16.7M features. Past that, adjacent ids
+    // collide and hover/click highlights the wrong feature (visual only).
+    // Genome-size-independent; likeliest to surface on dense all-vs-all PAF.
+    // Fix = make featureId a uint attribute+uniform. See OTHER_IDEAS.md
+    // "Synteny coordinate-precision ceilings".
     f[off + FIELD_OFFSET_F32.featureId] = instanceFeatureIdx[i]! + 1
     f[off + FIELD_OFFSET_F32.alignmentLength] = alignmentLengths[i]!
     f[off + FIELD_OFFSET_F32.kind] = kinds[i]!

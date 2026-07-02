@@ -1159,6 +1159,47 @@ Dotplot currently stays on pre-projected Float32 pixel offsets per
 ADR-010. Its geometry-buffer layout (line endpoints) differs from
 synteny's parallelogram corners and would need its own migration.
 
+### Genome-size limits (what must fit where)
+
+Two distinct thresholds apply — one hard, one not a real limit:
+
+- **Single reference sequence (one chromosome/contig) must be `< 2³²` =
+  4.29 Gbp.** This is the one hard assumption. Every `uint32` position
+  attribute (LGV-family, split in-shader via `hpSplitUint`) and every
+  per-feature `starts`/`ends`/`mateStarts`/`mateEnds` array in the synteny
+  RPC (`executeSyntenyFeaturesAndPositions.ts`) stores *chromosome-local*
+  coordinates and assumes this. **We accept it:** real chromosomes clear it
+  comfortably (human chr1 ≈ 250 Mbp, hexaploid wheat's largest chr3B ≈
+  830 Mbp). It would only wrap for a genome whose *single* reference exceeds
+  4.29 Gbp (e.g. certain lungfish/amphibian chromosomes) — out of scope.
+
+- **Whole-assembly cumulative-bp is NOT bounded by uint32, but has its own
+  ~68 Gbp GPU ceiling.** The sum across all chromosomes — what a synteny ribbon
+  corner and the whole-genome overview span — is Float64 on the CPU (exact to
+  2⁵³) and split to a Float32 hi/lo pair for the GPU. Because `hi` is a
+  4096-bp-aligned (2¹²) multiple, it stays exact in Float32 (24-bit mantissa)
+  only while `cumBp < 2³⁶ ≈ 68.7 Gbp`. So a 16 Gbp assembly (e.g. hexaploid
+  wheat, 21 chromosomes) positions and renders correctly in the synteny view
+  and its overview scalebar; `Region.start`/`end` are Float64 throughout with
+  no bitwise coordinate ops.
+
+  **Above ~68.7 Gbp the hi/lo split degrades.** Real genomes exceed it —
+  *Tmesipteris oblanceolata* ≈ 160 Gbp, *Paris japonica* ≈ 148 Gbp, some
+  lungfish ≈ 130 Gbp. Past 2³⁶ the Float32 ULP grows beyond 4096, so `hi` can
+  no longer sit exactly on its 4096 boundary and rounds — introducing up to
+  ±8192 bp of error per corner. In a **whole-genome overview** this is
+  harmless (`bpPerPx ≈ 10⁸`, so the error is sub-pixel and the overview looks
+  correct), but **zoomed-in navigation on the far end of such a genome would
+  misalign ribbons by `~16384 / bpPerPx` px.** If we ever need to support
+  those genomes, widening the hi/lo bucket from 2¹² to 2¹⁴ (in `writeHiLo`,
+  `splitPositionWithFrac`, and `hpmath.slang`'s `HP_LOW_MASK` in lockstep)
+  pushes the exact range to `2¹⁴ · 2²⁴ ≈ 274 Gbp`; `lo` stays sub-bp precise.
+
+- **Soft, non-bp ceiling:** the synteny per-instance `featureId`
+  (`instanceInterleave.ts`) is a Float32, exact only to 2²⁴ ≈ 16.7M *rendered
+  instances* — a density limit on a single whole-genome PAF, not a coordinate
+  limit. Overview-zoom culling keeps counts well below it.
+
 ---
 
 ## Coordinate convention (alignments and wiggle data)

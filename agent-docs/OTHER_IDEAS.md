@@ -168,6 +168,37 @@ separate, larger step. The id is the prerequisite, not the whole feature. Start 
 builds an image showing read pairs, read depth, and L/R–R/L pairs as a matrix — could
 this be shown as a triangular heatmap (like `plugins/hic`) or in dotplot?
 
+### Synteny coordinate-precision ceilings (documented, deferred — see ARCHITECTURE.md "Genome-size limits")
+
+Two ceilings in the synteny GPU path. Neither affects wheat (16 Gbp) or any
+common genome; both are documented and left unfixed as YAGNI until a real
+dataset hits them.
+
+**hi/lo Float32 cumulative-bp cap ~68.7 Gbp.** Corner positions split into a
+4096-bp-aligned (2¹²) Float32 `hi` + `lo` pair; `hi` is exact only while
+`cumBp < 2³⁶ ≈ 68.7 Gbp`. Above that (*Tmesipteris oblanceolata* ~160 Gbp,
+*Paris japonica* ~148 Gbp, some lungfish ~130 Gbp) `hi` rounds off its
+boundary: the whole-genome overview stays sub-pixel-correct, but zoomed-in
+navigation on far chromosomes misaligns by `~16384/bpPerPx` px. Fix if ever
+needed: widen the bucket 2¹²→2¹⁴ (in `writeHiLo`, `splitPositionWithFrac`, and
+`hpmath.slang`'s `HP_LOW_MASK` in lockstep) → exact to ~274 Gbp. Note this is
+incomplete alone — such genomes likely also breach the per-reference uint32 cap
+(4.29 Gbp/chromosome) used by the local `starts/ends/mateStarts/mateEnds`
+arrays, so full support means addressing both.
+
+**`featureId` as Float32 → 16.7M-instance cap.** `instanceInterleave.ts` writes
+the per-instance `featureId` through the Float32 view, and the shader compares
+it to `float` `hoveredFeatureId`/`clickedFeatureId` uniforms
+(`GpuSyntenyRenderer.ts`). Past 2²⁴ features in one synteny RPC response,
+adjacent indices collide in Float32 and hover/click highlights the wrong
+feature (visual identity only — coords/colors stay correct; `color` already
+goes through the `u32` view). This one is **genome-size-independent** and the
+likeliest to surface first, via dense all-vs-all whole-genome PAF (see
+`all-vs-all-paf-multiway-plan.md`). Fix: flip the `featureId` attribute + both
+uniforms from `float` to `uint` and regen the `.iface` (the interleave buffer
+already has a `u32` view). Fold into the all-vs-all PAF work rather than doing
+it speculatively.
+
 ## Ortholog / multi-genome navigation
 
 Two synteny pains: no way to say "show me gene X across all these genomes" (search is

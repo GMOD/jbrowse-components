@@ -6,8 +6,11 @@
 // adds measurable GC pressure across millions of CIGAR segments.
 //
 // Invariants:
-//   - hi is a multiple of 4096 representable exactly in Float32 for any
-//     cumulative-bp value up to ~2^31 (4 Gbp cap)
+//   - hi is a multiple of 4096, so it stays exact in Float32 (24-bit mantissa)
+//     only for cumulative-bp up to 4096*2^24 ~= 68.7 Gbp. Fine for wheat-scale
+//     (16 Gbp), but genomes beyond ~68 Gbp (e.g. Tmesipteris ~160 Gbp) round hi
+//     off its 4096 boundary and misalign when zoomed in — widen the bucket to
+//     2^14 to reach ~274 Gbp. See agent-docs/ARCHITECTURE.md "Genome-size limits".
 //   - lo is in [0, 4096) and carries the fractional remainder
 //   - hi + lo === cumBp in Float64 (within Float64 ULP)
 //
