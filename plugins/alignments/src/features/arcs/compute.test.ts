@@ -840,6 +840,42 @@ describe('computeArcsFromPileupData', () => {
     // start (7000), NOT a mate arc to position 0
     expect(loneArc.p2.bp).toBe(7000)
   })
+
+  test('wide inversion split keeps its inversion color in a paired dataset', () => {
+    // A paired pair (idx 0/1) makes the dataset globally paired and gives the
+    // long-range threshold a finite value. A lone unpaired read (idx 2) is
+    // SA-split fwd→rev spanning >10kb — its |gap|/2 clears both the
+    // long-range and the 10kb large-insert threshold. The split must still
+    // color by its own strands (inversion FR slot 4), NOT get repainted
+    // long-insert (slot 1) by the paired-only large-insert override.
+    const data = makePileupData({
+      regionStart: 1000,
+      readPositions: new Uint32Array([1000, 1200, 1400, 1600, 1000, 1500]),
+      readFlags: new Uint16Array([
+        SAM_FLAG_PAIRED | SAM_FLAG_FIRST_IN_PAIR,
+        SAM_FLAG_PAIRED | SAM_FLAG_SECOND_IN_PAIR,
+        0,
+      ]),
+      readStrands: new Int8Array([1, -1, 1]),
+      readInsertSizes: new Float32Array([200, 200, 0]),
+      readPairOrientations: new Uint8Array([1, 1, 0]),
+      readNames: ['pair', 'pair', 'lone'],
+      readSuppAlignments: ['', '', 'chr1,30001,-,200M,60,0;'],
+    })
+    const regions = [
+      { refName: 'chr1', start: 1000, end: 40000, displayedRegionIndex: 0 },
+    ]
+    const { arcs } = computeArcsFromPileupData(new Map([[0, data]]), regions, {
+      colorByType: 'insertSizeAndOrientation',
+      drawInter: false,
+      drawLongRange: true,
+    })
+    const loneArc = arcs.find(a => a.p1.bp === 1500)!
+    // |30200 - 1500| / 2 ≈ 14350 > 10000 large-insert threshold
+    expect(Math.abs((loneArc.p2.bp - loneArc.p1.bp) / 2)).toBeGreaterThan(10000)
+    // fwd→rev split junction → unpaired FR inversion slot 4, not long-insert 1
+    expect(loneArc.colorType).toBe(4)
+  })
 })
 
 describe('groupArcsByRef', () => {

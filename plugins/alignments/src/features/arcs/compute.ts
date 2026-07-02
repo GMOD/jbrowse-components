@@ -160,20 +160,23 @@ function getArcColorType(args: {
     stats,
   } = args
 
-  // Long-range, large-insert pairs always paint as long-insert.
-  if (longRange && largeInsert) {
-    return COLOR_LONG_INSERT
-  }
   // A split-read junction carries no pair semantics (no template length, no
   // pair orientation), so it colors by its own segment strands — opposite
   // strands flag the inversion — regardless of whether OTHER reads in the view
   // are paired. Keying on the per-connection `isSplit` instead of the dataset-
   // global `hasPaired` is what lets a paired read that is itself SA-split show
-  // its inversion junctions correctly.
+  // its inversion junctions correctly. Resolved before the long-/large-insert
+  // override below because that is a paired-insert concept: a wide inversion
+  // breakpoint (large genomic gap) must keep its inversion color, not get
+  // repainted long-insert just because its span clears the pair thresholds.
   if (!hasPaired || isSplit) {
     return colorByType === 'insertSize'
       ? COLOR_DEFAULT
       : unpairedOrientationColor(p1Strand, p2Strand)
+  }
+  // Long-range, large-insert pairs always paint as long-insert.
+  if (longRange && largeInsert) {
+    return COLOR_LONG_INSERT
   }
   const orient = orientationColor(pairOrientationNum)
   const insert = insertSizeColor(tlen, stats)
