@@ -239,6 +239,18 @@ export default function stateModelFactory() {
     .actions(self => ({
       /**
        * #action
+       * point the source/type at the first usable track for an assembly (or
+       * clear if none), used to seed the "open from track" flow
+       */
+      selectDefaultTrack(assembly: string) {
+        const first = self.tracksForAssembly(assembly)[0]
+        self.setFileSource(first?.loc)
+        if (first) {
+          self.setFileType(first.type)
+        }
+      },
+      /**
+       * #action
        * fetch and parse the file, returning a spreadsheet snapshot for the
        * owning view to display (the view owns displaySpreadsheet; this stays a
        * pure fetch/parse with no reach into the parent)
