@@ -5,7 +5,6 @@ import {
   descendants,
   eachAfter,
   hierarchy,
-  leafNameMap,
   leaves,
   links,
   maxNodeHeight,
@@ -199,21 +198,4 @@ test('renderTreeSVG emits orthogonal connector path', () => {
       `M${source.y},${source.x}L${source.y},${target.x}M${source.y},${target.x}L${target.y},${target.x}`,
     )
   }
-})
-
-test('leafNameMap collects leaf names per subtree in linear time', () => {
-  const root = hierarchy(sample(), childrenOf)
-  const map = leafNameMap(root)
-  expect(map.get(root)).toEqual(['A', 'C', 'D'])
-  expect(map.get(root.children![1]!)).toEqual(['C', 'D'])
-  expect(map.get(root.children![0]!)).toEqual(['A'])
-})
-
-test('leafNameMap skips leaves with undefined name', () => {
-  const root = hierarchy<Node>(
-    { children: [{ name: 'a' }, {}, { name: 'b' }] },
-    childrenOf,
-  )
-  const map = leafNameMap(root)
-  expect(map.get(root)).toEqual(['a', 'b'])
 })

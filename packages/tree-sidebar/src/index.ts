@@ -10,7 +10,6 @@ export {
   applySubtreeFilter,
   buildClusteredLayout,
   buildTree,
-  clusterTree,
   parseClusterOrder,
   parseClusterTree,
   pruneNewickToLeaves,
@@ -33,19 +32,10 @@ export type {
   TreeLayoutModel,
 } from './setColorDialog/SetColorDialog.tsx'
 export type { ColorColumn } from './setColorDialog/SourceGrid.tsx'
-export {
-  assignDepthY,
-  clusterLayout,
-  descendants,
-  eachAfter,
-  hierarchy,
-  leafNameMap,
-  leaves,
-  links,
-  renderTreeSVG,
-  sort,
-  sum,
-} from './hierarchy.ts'
+// Only clusterLayout is part of the public surface; hierarchy/leaves/links/sum
+// and the y-assignment/traversal helpers are internal to the layout and draw
+// code (kept in hierarchy.ts, not re-exported).
+export { clusterLayout } from './hierarchy.ts'
 export type { HierarchyNode, PositionedHierarchyNode } from './hierarchy.ts'
 export type {
   ClusterHierarchyNode,

@@ -47,34 +47,6 @@ function findSubtree<T extends ClusterNodeData>(
   return found
 }
 
-/**
- * Wrap a pre-parsed Newick-shaped tree in a HierarchyNode and (optionally)
- * descend into the deepest subtree whose leaves exactly match
- * `subtreeFilter`. Use when you already hold the parsed tree (e.g. an MST
- * volatile); use `parseClusterTree(string, filter)` to accept a Newick
- * string directly.
- *
- * Children are NOT re-sorted — hclust already produces the leaf order that
- * matches the layout/sources array. Re-sorting would shift leaf positions
- * and break row-highlight alignment.
- */
-export function clusterTree<T extends ClusterNodeData>(
-  data: T,
-  subtreeFilter?: string[],
-) {
-  let root = hierarchy<T>(data, d => d.children as T[] | undefined)
-  sum(root, d => (d.children ? 0 : 1))
-
-  if (subtreeFilter?.length) {
-    const filterSet = new Set(subtreeFilter)
-    const subtree = findSubtree(root, filterSet)
-    if (subtree) {
-      root = subtree
-    }
-  }
-  return root
-}
-
 // Parse a Newick string and build a hierarchy, without applying a filter.
 // Kept separate from applySubtreeFilter so MST can cache them independently —
 // changing the subtree filter re-runs only the traversal, not the parser.

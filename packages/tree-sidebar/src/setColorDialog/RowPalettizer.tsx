@@ -1,17 +1,16 @@
 import { Button } from '@mui/material'
 
 import { applyColorPalette } from './applyColorPalette.ts'
-import { extraColumns } from '../sourcesGridUtils.ts'
+import { IDENTITY_FIELDS, extraColumns } from '../sourcesGridUtils.ts'
 
-// Reserved fields whose values aren't meaningful as palette keys. Plugins
-// can extend this via the `excludedFields` prop.
-const ALWAYS_EXCLUDED = new Set([
-  'name',
-  'source',
+// Reserved fields whose values aren't meaningful as palette keys: the identity
+// fields plus the color/label fields the palette itself writes. Plugins can
+// extend this via the `excludedFields` prop.
+const ALWAYS_EXCLUDED = new Set<string>([
+  ...IDENTITY_FIELDS,
   'color',
   'labelColor',
   'label',
-  'baseUri',
   'id',
 ])
 

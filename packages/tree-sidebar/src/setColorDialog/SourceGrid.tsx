@@ -7,9 +7,9 @@ import BulkColorControls from './BulkColorControls.tsx'
 import SelectionMoveButtons from './SelectionMoveButtons.tsx'
 import { buildSourceColumns } from './buildSourceColumns.tsx'
 import { useSourceSort } from './useSourceSort.ts'
-import { extraColumns } from '../sourcesGridUtils.ts'
+import { IDENTITY_FIELDS, extraColumns } from '../sourcesGridUtils.ts'
 
-import type { GridRowId } from '@mui/x-data-grid'
+import type { GridRowId, GridSortModel } from '@mui/x-data-grid'
 
 const useStyles = makeStyles()({
   cell: {
@@ -29,7 +29,9 @@ export interface ColorColumn<S> {
   bulkLabel?: string
 }
 
-const ALWAYS_RESERVED = ['name', 'source', 'baseUri']
+// Permanently empty: the grid's sort is controlled externally via
+// onSortModelChange (see useSourceSort), so MUI's own model stays unset.
+const EMPTY_SORT_MODEL: GridSortModel = []
 
 export default function SourceGrid<S extends { name: string; color?: string }>({
   rows,
@@ -52,7 +54,7 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
   const onSortModelChange = useSourceSort(rows, onChange)
 
   const reserved = new Set<string>([
-    ...ALWAYS_RESERVED,
+    ...IDENTITY_FIELDS,
     ...colorColumns.map(c => c.field),
     ...(reservedExtra ?? []),
   ])
@@ -90,11 +92,7 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
             onChange,
             cellClassName: classes.cell,
           })}
-          sortModel={
-            [
-              /* controlled via onSortModelChange so we can flip-flop direction */
-            ]
-          }
+          sortModel={EMPTY_SORT_MODEL}
           onSortModelChange={onSortModelChange}
         />
       </div>

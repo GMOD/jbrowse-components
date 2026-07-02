@@ -1,6 +1,5 @@
 import {
   buildClusteredLayout,
-  clusterTree,
   getLeafNames,
   parseClusterTree,
   pruneNewickToLeaves,
@@ -25,17 +24,6 @@ test('getLeafNames skips unnamed leaves', () => {
     d => d.children,
   )
   expect(getLeafNames(root).sort()).toEqual(['A', 'B'])
-})
-
-test('clusterTree preserves child order (no sort)', () => {
-  const root = clusterTree<NewickNode>({
-    children: [
-      { name: 'A', length: 3 },
-      { name: 'B', length: 1 },
-      { name: 'C', length: 2 },
-    ],
-  })
-  expect(root.children!.map(c => c.data.name)).toEqual(['A', 'B', 'C'])
 })
 
 test('parseClusterTree returns the full tree when no filter is given', () => {

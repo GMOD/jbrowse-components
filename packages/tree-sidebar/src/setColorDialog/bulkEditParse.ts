@@ -1,3 +1,5 @@
+import { IDENTITY_FIELDS } from '../sourcesGridUtils.ts'
+
 // Detect the primary delimiter from the first line (whichever of tab/comma
 // appears first). Defaults to comma when neither is found.
 function detectDelimiter(header: string): string {
@@ -126,15 +128,16 @@ function toCsvField(val: string): string {
   return /[,\t\n"]/.test(val) ? `"${val.replaceAll('"', '""')}"` : val
 }
 
-// Field names to include in an export: union across all rows, minus internal
-// plumbing fields, with `name` always first.
-// `source` is excluded because it always equals `name` for multi-wiggle.
+// Field names to include in an export: union across all rows, minus the
+// identity fields, with `name` always first. `source`/`baseUri` are dropped
+// because `source` always equals `name` for multi-wiggle and `baseUri` is
+// plumbing.
 function csvExportFields(rows: Record<string, unknown>[]): string[] {
-  const skip = new Set(['baseUri', 'source'])
+  const skip = new Set<string>(IDENTITY_FIELDS)
   const others = new Set<string>()
   for (const row of rows) {
     for (const k of Object.keys(row)) {
-      if (!skip.has(k) && k !== 'name') {
+      if (!skip.has(k)) {
         others.add(k)
       }
     }

@@ -11,8 +11,7 @@ const nwk = '((a:1,b:1):1,(c:1,d:1):1):0;'
 // jsdom returns null from getContext; the autorun draws nothing useful but we
 // only care that it sizes the canvas, which happens after a non-null context.
 const stubCtx = {
-  resetTransform() {},
-  scale() {},
+  setTransform() {},
   clearRect() {},
   translate() {},
   beginPath() {},
@@ -29,7 +28,11 @@ const stubCtx = {
   lineWidth: 0,
 } as unknown as CanvasRenderingContext2D
 
+// Backing-store size is CSS px x devicePixelRatio (via render-core getDpr).
+const DPR = 2
+
 beforeAll(() => {
+  globalThis.devicePixelRatio = DPR
   HTMLCanvasElement.prototype.getContext = (() =>
     stubCtx) as unknown as typeof HTMLCanvasElement.prototype.getContext
 })
@@ -91,16 +94,16 @@ test('autorun sizes the tree canvas itself, surviving a height change', () => {
   const canvas = document.createElement('canvas')
   display.setTreeCanvasRef(canvas)
 
-  // Backing store is 2x CSS pixels (treeAreaWidth x contentHeight).
-  expect(canvas.width).toBe(80 * 2)
-  expect(canvas.height).toBe(40 * 2)
+  // Backing store is DPR x CSS pixels (treeAreaWidth x contentHeight).
+  expect(canvas.width).toBe(80 * DPR)
+  expect(canvas.height).toBe(40 * DPR)
 
   // A subtree filter shrinks the row count -> height. The autorun must resize
   // the backing store itself rather than leaving a stale (or React-cleared)
   // canvas; this is the regression guard for the subtree-filter blanking bug.
   display.setHeight(20)
-  expect(canvas.width).toBe(80 * 2)
-  expect(canvas.height).toBe(20 * 2)
+  expect(canvas.width).toBe(80 * DPR)
+  expect(canvas.height).toBe(20 * DPR)
 })
 
 test('autorun sizes the mouseover canvas to view width x content height', () => {
@@ -110,9 +113,9 @@ test('autorun sizes the mouseover canvas to view width x content height', () => 
   const canvas = document.createElement('canvas')
   display.setMouseoverCanvasRef(canvas)
 
-  expect(canvas.width).toBe(800)
-  expect(canvas.height).toBe(40)
+  expect(canvas.width).toBe(800 * DPR)
+  expect(canvas.height).toBe(40 * DPR)
 
   display.setHeight(20)
-  expect(canvas.height).toBe(20)
+  expect(canvas.height).toBe(20 * DPR)
 })

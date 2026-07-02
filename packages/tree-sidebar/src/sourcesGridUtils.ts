@@ -1,5 +1,11 @@
 import type { GridRowId } from '@mui/x-data-grid'
 
+// Row fields that identify a source rather than describe it. They drive their
+// own handling (join key, hidden columns) so the grid, palettizer, and bulk
+// import/export all exclude them from the auto-derived "extra" attribute list.
+// Each site spreads from this so a new plumbing field is added in one place.
+export const IDENTITY_FIELDS = ['name', 'source', 'baseUri'] as const
+
 // Move the selected rows up by `by` slots. Selected rows keep their relative
 // order; the first row clamps at the top.
 export function moveUp<T extends { name: string }>(

@@ -26,15 +26,28 @@ export function nextSortState(
   }
 }
 
+// Compare two cells: numerically when both parse as finite numbers (so a
+// numeric column like a score sorts 2 < 10, not "10" < "2"), else by locale
+// string order.
+function compareCells(a: unknown, b: unknown): number {
+  const na = Number(a)
+  const nb = Number(b)
+  const bothNumeric =
+    a !== '' && b !== '' && Number.isFinite(na) && Number.isFinite(nb)
+  return bothNumeric ? na - nb : getStr(a).localeCompare(getStr(b))
+}
+
 export function sortRows<S>(
   rows: S[],
   field: string,
   direction: 'asc' | 'desc',
 ): S[] {
   return rows.toSorted((a, b) => {
-    const aa = getStr((a as Record<string, unknown>)[field])
-    const bb = getStr((b as Record<string, unknown>)[field])
-    return direction === 'asc' ? aa.localeCompare(bb) : bb.localeCompare(aa)
+    const cmp = compareCells(
+      (a as Record<string, unknown>)[field],
+      (b as Record<string, unknown>)[field],
+    )
+    return direction === 'asc' ? cmp : -cmp
   })
 }
 

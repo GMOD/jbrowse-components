@@ -232,40 +232,34 @@ export function assignBranchLengthY<T extends { length?: number }>(
   visit(node)
 }
 
-// Single post-order pass building a Map from every node to the array of
-// leaf names below it. Useful when callers need leaf names for many nodes —
-// repeated `getLeafNames(node)` calls are O(n²) over a tree.
-export function leafNameMap<T extends { name?: string }>(
-  root: HierarchyNode<T>,
-): Map<HierarchyNode<T>, string[]> {
-  const map = new Map<HierarchyNode<T>, string[]>()
-  function visit(node: HierarchyNode<T>): string[] {
-    if (!node.children?.length) {
-      const names = node.data.name === undefined ? [] : [node.data.name]
-      map.set(node, names)
-      return names
-    }
-    const names: string[] = []
-    for (const child of node.children) {
-      for (const name of visit(child)) {
-        names.push(name)
-      }
-    }
-    map.set(node, names)
-    return names
-  }
-  visit(root)
-  return map
+// The two orthogonal segments of a parent→child dendrogram connector, in
+// draw-space coordinates (node.y = depth/horizontal axis, node.x = row/vertical
+// axis). Single source of truth for the elbow geometry, shared by the canvas
+// draw path and the SVG export so the two can never drift.
+export function treeLinkSegments<N extends { x: number; y: number }>(
+  source: N,
+  target: N,
+): [[number, number], [number, number]][] {
+  return [
+    // vertical: down the parent's depth line from its row to the child's row
+    [
+      [source.y, source.x],
+      [source.y, target.x],
+    ],
+    // horizontal: across the child's row from the parent depth to the child
+    [
+      [source.y, target.x],
+      [target.y, target.x],
+    ],
+  ]
 }
 
 export function renderTreeSVG<T>(hierarchy: PositionedHierarchyNode<T>) {
   const parts: string[] = []
-  for (const link of links(hierarchy)) {
-    const sx = link.source.y
-    const sy = link.source.x
-    const tx = link.target.y
-    const ty = link.target.x
-    parts.push(`M${sx},${sy}L${sx},${ty}M${sx},${ty}L${tx},${ty}`)
+  for (const { source, target } of links(hierarchy)) {
+    for (const [[x0, y0], [x1, y1]] of treeLinkSegments(source, target)) {
+      parts.push(`M${x0},${y0}L${x1},${y1}`)
+    }
   }
   return parts.join('')
 }
