@@ -19,7 +19,9 @@ function MyComponent() {
 ```
 
 If you instead call `createViewState` yourself, wrap it in `useState(() => …)`
-(as the other examples here do) to get the same stability.
+(as the other examples here do) to get the same stability. To skip
+`createViewState` altogether, the [managed `<LinearGenomeView>`](../managed/)
+owns the engine for you — no hook or state plumbing required.
 
 See the
 [embedded components guide](https://jbrowse.org/jb2/docs/embedded_components/)

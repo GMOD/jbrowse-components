@@ -7,10 +7,12 @@ errors is the host application's responsibility. There are two classes of error:
 - **Runtime errors** — observable on `viewState.session.view.error`. An
   `observer` component can render an error UI when this becomes truthy.
 
-For both cases we recommend the
-[`@jbrowse/core/ui/ErrorMessage`](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/ui/ErrorMessage.tsx)
-component (an error _display_, not a React error boundary) — it formats JBrowse
-errors with helpful context.
+For both cases we recommend the `ErrorBanner` component from `@jbrowse/core/ui`
+(an error _display_, not a React error boundary) — it formats JBrowse errors
+with helpful context, adding a stack-trace button and, for `createViewState`
+validation failures, the offending config snapshot. Its plainer sibling
+`ErrorMessage` renders just the message text.
 
-This example configures a `BadTrack` track type that fails validation and
-renders the resulting error in a red banner.
+This example wraps [`createViewState`](../use-create-view-state/) in a
+try/catch, configures a `BadTrack` track type that fails validation, and renders
+the caught error with `ErrorBanner`.
