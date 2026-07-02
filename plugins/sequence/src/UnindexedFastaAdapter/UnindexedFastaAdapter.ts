@@ -1,12 +1,13 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature } from '@jbrowse/core/util'
+import { SimpleFeature, fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import { readOptionalMetadata } from '../chromSizesUtils.ts'
 
 import type { UnindexedFastaAdapterConfig } from './configSchema.ts'
+import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature } from '@jbrowse/core/util'
 import type { NoAssemblyRegion } from '@jbrowse/core/util/types'
 
@@ -35,13 +36,13 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     fasta: ReturnType<typeof parseSmallFasta>
   }>
 
-  public async getRefNames() {
-    const { fasta } = await this.setup()
+  public async getRefNames(opts?: BaseOptions) {
+    const { fasta } = await this.setup(opts)
     return [...fasta.keys()]
   }
 
-  public async getRegions() {
-    const { fasta } = await this.setup()
+  public async getRegions(opts?: BaseOptions) {
+    const { fasta } = await this.setup(opts)
     return [...fasta.entries()].map(([refName, data]) => ({
       refName,
       start: 0,
@@ -49,12 +50,13 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     }))
   }
 
-  public async setupPre() {
-    const res = parseSmallFasta(
-      await openLocation(
-        this.getConf('fastaLocation'),
-        this.pluginManager,
-      ).readFile('utf8'),
+  public async setupPre(opts?: BaseOptions) {
+    const text = await fetchAndMaybeUnzipText(
+      openLocation(this.getConf('fastaLocation'), this.pluginManager),
+      opts,
+    )
+    const res = await updateStatus('Parsing FASTA', opts?.statusCallback, () =>
+      parseSmallFasta(text),
     )
 
     const fasta = new Map<string, { description: string; sequence: string }>()
@@ -73,18 +75,18 @@ export default class UnindexedFastaAdapter extends BaseSequenceAdapter<Unindexed
     )
   }
 
-  public async setup() {
-    this.setupP ??= this.setupPre().catch((e: unknown) => {
+  public async setup(opts?: BaseOptions) {
+    this.setupP ??= this.setupPre(opts).catch((e: unknown) => {
       this.setupP = undefined
       throw e
     })
     return this.setupP
   }
 
-  public getFeatures(region: NoAssemblyRegion) {
+  public getFeatures(region: NoAssemblyRegion, opts?: BaseOptions) {
     const { refName, start, end } = region
     return ObservableCreate<Feature>(async observer => {
-      const { fasta } = await this.setup()
+      const { fasta } = await this.setup(opts)
       const entry = fasta.get(refName)
       if (entry) {
         observer.next(
