@@ -404,9 +404,16 @@ export interface SNPCoverageResult {
  * Groups mismatches by position, counts A/C/G/T (and N/other as one grey
  * bucket) per position, and creates stacked segments expressed as fractions of
  * THIS position's coverage bar. colorType: 1=A 2=C 3=G 4=T 5=N.
+ *
+ * Consumes the flat `mismatchPositions`/`mismatchBases` arrays directly (same
+ * arrays the frequency pass reads) rather than an object array, so callers
+ * don't hold a second `{position, base}[]` representation of the same
+ * mismatches. Positions left of `regionStart` are dropped, so callers may pass
+ * unfiltered arrays.
  */
 export function computeSNPCoverage(
-  mismatches: MismatchEntry[],
+  mismatchPositions: Uint32Array,
+  mismatchBases: Uint8Array,
   regionStart: number,
   coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ): SNPCoverageResult {
@@ -415,7 +422,7 @@ export function computeSNPCoverage(
     maxDepth,
     startPos: coverageStartPos,
   } = coverage
-  if (mismatches.length === 0 || maxDepth === 0) {
+  if (mismatchPositions.length === 0 || maxDepth === 0) {
     return {
       positions: new Uint32Array(0),
       yOffsets: new Float32Array(0),
@@ -426,142 +433,141 @@ export function computeSNPCoverage(
     }
   }
 
+  // Coverage depth at a position is the bar denominator; a position at zero
+  // depth can't host SNPs so it emits no segment. Depends only on the position,
+  // so it is resolved once when the entry is created and cached on `depth`.
+  function depthAt(position: number) {
+    const idx = position - coverageStartPos
+    return idx >= 0 && idx < coverageDepths.length
+      ? (coverageDepths[idx] ?? 0)
+      : 0
+  }
+
   const snpByPosition = new Map<
     number,
-    { position: number; a: number; c: number; g: number; t: number; n: number }
+    {
+      position: number
+      depth: number
+      a: number
+      c: number
+      g: number
+      t: number
+      n: number
+    }
   >()
-  for (const mm of mismatches) {
-    let entry = snpByPosition.get(mm.position)
-    if (!entry) {
-      entry = { position: mm.position, a: 0, c: 0, g: 0, t: 0, n: 0 }
-      snpByPosition.set(mm.position, entry)
-    }
-    // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate into
-    // entry.n, drawn as one grey segment (colorType 5) on the coverage bar.
-    switch (mm.base) {
-      case 65:
-        entry.a++
-        break
-      case 67:
-        entry.c++
-        break
-      case 71:
-        entry.g++
-        break
-      case 84:
-        entry.t++
-        break
-      default:
-        entry.n++
+  for (let i = 0; i < mismatchPositions.length; i++) {
+    const position = mismatchPositions[i]!
+    // Positions left of regionStart never emit a segment; dropping them here
+    // (rather than filtering the output) lets callers pass unfiltered arrays.
+    if (position >= regionStart) {
+      let entry = snpByPosition.get(position)
+      if (!entry) {
+        entry = { position, depth: depthAt(position), a: 0, c: 0, g: 0, t: 0, n: 0 }
+        snpByPosition.set(position, entry)
+      }
+      // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate
+      // into entry.n, drawn as one grey segment (colorType 5) on the bar.
+      switch (mismatchBases[i]) {
+        case 65:
+          entry.a++
+          break
+        case 67:
+          entry.c++
+          break
+        case 71:
+          entry.g++
+          break
+        case 84:
+          entry.t++
+          break
+        default:
+          entry.n++
+      }
     }
   }
 
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    colorType: number
-    relDepth: number
-  }[] = []
-
+  // Pre-size the output typed arrays by counting emitted segments first, then
+  // fill by index — no intermediate segment-object array or filter pass (per the
+  // package's no-per-iteration-allocation rule for the coverage compute paths).
+  let count = 0
   for (const entry of snpByPosition.values()) {
-    const total = entry.a + entry.c + entry.g + entry.t + entry.n
-    if (total === 0) {
-      continue
-    }
-    // totalDepth at this position determines bar height; SNP fractions are
-    // counts / totalDepth so they fill the visible part of the bar correctly.
-    // Skip positions outside coverage or with zero depth — there can't be
-    // SNPs without reads, so this is a data-inconsistency guard.
-    const idx = entry.position - coverageStartPos
-    const totalDepth =
-      idx >= 0 && idx < coverageDepths.length ? (coverageDepths[idx] ?? 0) : 0
-    if (totalDepth === 0) {
-      continue
-    }
-    const relDepth = totalDepth / maxDepth
-    // colorType 1=A 2=C 3=G 4=T, stacked bottom-to-top by accumulating yOffset.
-    // Unrolled (not a [a,c,g,t] loop) to avoid a per-position array allocation.
-    let yOffset = 0
-    if (entry.a > 0) {
-      const height = entry.a / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 1,
-        relDepth,
-      })
-      yOffset += height
-    }
-    if (entry.c > 0) {
-      const height = entry.c / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 2,
-        relDepth,
-      })
-      yOffset += height
-    }
-    if (entry.g > 0) {
-      const height = entry.g / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 3,
-        relDepth,
-      })
-      yOffset += height
-    }
-    if (entry.t > 0) {
-      const height = entry.t / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 4,
-        relDepth,
-      })
-      yOffset += height
-    }
-    if (entry.n > 0) {
-      const height = entry.n / totalDepth
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 5,
-        relDepth,
-      })
+    if (entry.depth > 0) {
+      count +=
+        (entry.a > 0 ? 1 : 0) +
+        (entry.c > 0 ? 1 : 0) +
+        (entry.g > 0 ? 1 : 0) +
+        (entry.t > 0 ? 1 : 0) +
+        (entry.n > 0 ? 1 : 0)
     }
   }
 
-  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const positions = new Uint32Array(filteredSegments.length)
-  const yOffsets = new Float32Array(filteredSegments.length)
-  const heights = new Float32Array(filteredSegments.length)
-  const colorTypes = new Uint8Array(filteredSegments.length)
-  const relDepths = new Float32Array(filteredSegments.length)
+  const positions = new Uint32Array(count)
+  const yOffsets = new Float32Array(count)
+  const heights = new Float32Array(count)
+  const colorTypes = new Uint8Array(count)
+  const relDepths = new Float32Array(count)
 
-  for (const [i, seg] of filteredSegments.entries()) {
-    positions[i] = seg.position
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colorTypes[i] = seg.colorType
-    relDepths[i] = seg.relDepth
+  let idx = 0
+  for (const entry of snpByPosition.values()) {
+    const totalDepth = entry.depth
+    if (totalDepth > 0) {
+      const relDepth = totalDepth / maxDepth
+      // colorType 1=A 2=C 3=G 4=T 5=N, stacked bottom-to-top by accumulating
+      // yOffset. Unrolled (not a [a,c,g,t] loop) to avoid a per-position array.
+      let yOffset = 0
+      if (entry.a > 0) {
+        const height = entry.a / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 1
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.c > 0) {
+        const height = entry.c / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 2
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.g > 0) {
+        const height = entry.g / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 3
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.t > 0) {
+        const height = entry.t / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 4
+        relDepths[idx] = relDepth
+        idx++
+        yOffset += height
+      }
+      if (entry.n > 0) {
+        const height = entry.n / totalDepth
+        positions[idx] = entry.position
+        yOffsets[idx] = yOffset
+        heights[idx] = height
+        colorTypes[idx] = 5
+        relDepths[idx] = relDepth
+        idx++
+      }
+    }
   }
 
-  return {
-    positions,
-    yOffsets,
-    heights,
-    colorTypes,
-    relDepths,
-    count: filteredSegments.length,
-  }
+  return { positions, yOffsets, heights, colorTypes, relDepths, count }
 }
 
 export { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/wiggle-core'
