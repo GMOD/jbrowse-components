@@ -4,6 +4,7 @@
 
 import fs from 'node:fs'
 import http from 'node:http'
+import os from 'node:os'
 import path from 'node:path'
 
 import { indexGff3 } from './gff3Adapter.ts'
@@ -59,6 +60,40 @@ describe('indexGff3', () => {
 
     expect(results.length).toBeGreaterThan(0)
     expect(results[0]).toContain('test-track-gz')
+  })
+
+  test('skips truncated/malformed lines without throwing', async () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'gff3-index-'))
+    const file = path.join(tmpDir, 'malformed.gff3')
+    // a well-formed feature, then a truncated line missing column 9
+    fs.writeFileSync(
+      file,
+      [
+        'ctgA\t.\tgene\t1\t100\t.\t+\t.\tID=gene1;Name=good',
+        'ctgA\t.\tgene\t200\t300',
+        '',
+      ].join('\n'),
+    )
+
+    const results: string[] = []
+    const generator = indexGff3({
+      config: { trackId: 'malformed-track' },
+      attributesToIndex: ['ID', 'Name'],
+      inLocation: file,
+      outDir: tmpDir,
+      featureTypesToExclude: [],
+      onStart: () => {},
+      onUpdate: () => {},
+    })
+
+    for await (const record of generator) {
+      results.push(record)
+    }
+
+    fs.rmSync(tmpDir, { recursive: true, force: true })
+
+    expect(results).toHaveLength(1)
+    expect(results[0]).toContain('gene1')
   })
 
   describe('real HTTP server integration', () => {
