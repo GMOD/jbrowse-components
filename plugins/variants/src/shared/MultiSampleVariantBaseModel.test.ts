@@ -1,4 +1,3 @@
- 
 import { readConfObject } from '@jbrowse/core/configuration'
 import { applyColorPalette } from '@jbrowse/tree-sidebar'
 

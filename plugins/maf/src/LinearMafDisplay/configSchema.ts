@@ -144,7 +144,10 @@ export default function configSchemaF(pluginManager: PluginManager) {
        */
       conservationMode: {
         type: 'stringEnum',
-        model: types.enumeration('MafConservationMode', CONSERVATION_MODE_VALUES),
+        model: types.enumeration(
+          'MafConservationMode',
+          CONSERVATION_MODE_VALUES,
+        ),
         defaultValue: DEFAULTS.conservationMode,
         description: 'conservation band resolution: base or codon',
       },
