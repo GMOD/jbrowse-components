@@ -3,6 +3,7 @@
  * single per-position bucket sweep. Returns both arrays so callers can route
  * indicator data to features/indicator/ without redoing the bucket pass.
  */
+import { interbaseDepthAt } from './coverageDownsampling.ts'
 
 export interface InsertionEntry {
   position: number
@@ -27,19 +28,57 @@ interface InterbaseBucket {
 
 type InterbaseField = 'insertion' | 'softclip' | 'hardclip'
 
+// Buckets in-region entries by position. Out-of-region entries (position <
+// regionStart) are dropped here rather than filtered out of the output arrays
+// later, so no bucket or segment is ever built for them.
 function bumpInterbase(
   map: Map<number, InterbaseBucket>,
   entries: { position: number }[],
   field: InterbaseField,
+  regionStart: number,
 ) {
   for (const { position } of entries) {
-    let bucket = map.get(position)
-    if (!bucket) {
-      bucket = { position, insertion: 0, softclip: 0, hardclip: 0 }
-      map.set(position, bucket)
+    if (position >= regionStart) {
+      let bucket = map.get(position)
+      if (!bucket) {
+        bucket = { position, insertion: 0, softclip: 0, hardclip: 0 }
+        map.set(position, bucket)
+      }
+      bucket[field]++
     }
-    bucket[field]++
   }
+}
+
+// 0 = not a significant indicator; otherwise the dominant type code
+// (1=insertion 2=softclip 3=hardclip). An indicator is emitted only where local
+// depth is deep enough and the interbase events exceed a fraction of it.
+function indicatorTypeFor(
+  entry: InterbaseBucket,
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+) {
+  const total = entry.insertion + entry.softclip + entry.hardclip
+  const localDepth = interbaseDepthAt(
+    coverageDepths,
+    coverageStartPos,
+    entry.position,
+  )
+  let dominantType = 0
+  if (
+    localDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
+    total > localDepth * INDICATOR_THRESHOLD
+  ) {
+    dominantType = 1
+    let dominantCount = entry.insertion
+    if (entry.softclip > dominantCount) {
+      dominantType = 2
+      dominantCount = entry.softclip
+    }
+    if (entry.hardclip > dominantCount) {
+      dominantType = 3
+    }
+  }
+  return dominantType
 }
 
 export function computeInterbaseCoverage(
@@ -55,9 +94,9 @@ export function computeInterbaseCoverage(
     startPos: coverageStartPos,
   } = coverage
   const interbaseByPosition = new Map<number, InterbaseBucket>()
-  bumpInterbase(interbaseByPosition, insertions, 'insertion')
-  bumpInterbase(interbaseByPosition, softclips, 'softclip')
-  bumpInterbase(interbaseByPosition, hardclips, 'hardclip')
+  bumpInterbase(interbaseByPosition, insertions, 'insertion', regionStart)
+  bumpInterbase(interbaseByPosition, softclips, 'softclip', regionStart)
+  bumpInterbase(interbaseByPosition, hardclips, 'hardclip', regionStart)
 
   if (interbaseByPosition.size === 0) {
     return {
@@ -75,99 +114,75 @@ export function computeInterbaseCoverage(
 
   const scale = Math.max(maxDepth, 1)
 
-  const segments: {
-    position: number
-    yOffset: number
-    height: number
-    colorType: number
-  }[] = []
-  const indicators: { position: number; colorType: number }[] = []
-
+  // Count pass: one stacked segment per non-empty type per position, plus the
+  // significant-indicator count, so the typed arrays are sized exactly and
+  // filled by index — no per-segment object allocation in this hot worker path.
+  let segmentCount = 0
+  let indicatorCount = 0
   for (const entry of interbaseByPosition.values()) {
-    const total = entry.insertion + entry.softclip + entry.hardclip
+    if (entry.insertion > 0) {
+      segmentCount++
+    }
+    if (entry.softclip > 0) {
+      segmentCount++
+    }
+    if (entry.hardclip > 0) {
+      segmentCount++
+    }
+    if (indicatorTypeFor(entry, coverageDepths, coverageStartPos) !== 0) {
+      indicatorCount++
+    }
+  }
+
+  const positions = new Uint32Array(segmentCount)
+  const yOffsets = new Float32Array(segmentCount)
+  const heights = new Float32Array(segmentCount)
+  const colorTypes = new Uint8Array(segmentCount)
+  const indicatorPositions = new Uint32Array(indicatorCount)
+  const indicatorColorTypes = new Uint8Array(indicatorCount)
+
+  let s = 0
+  let ind = 0
+  for (const entry of interbaseByPosition.values()) {
     // colorType 1=insertion 2=softclip 3=hardclip, stacked by accumulating
     // yOffset. Unrolled to avoid a per-position array allocation.
     let yOffset = 0
     if (entry.insertion > 0) {
       const height = entry.insertion / scale
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 1,
-      })
+      positions[s] = entry.position
+      yOffsets[s] = yOffset
+      heights[s] = height
+      colorTypes[s] = 1
+      s++
       yOffset += height
     }
     if (entry.softclip > 0) {
       const height = entry.softclip / scale
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 2,
-      })
+      positions[s] = entry.position
+      yOffsets[s] = yOffset
+      heights[s] = height
+      colorTypes[s] = 2
+      s++
       yOffset += height
     }
     if (entry.hardclip > 0) {
       const height = entry.hardclip / scale
-      segments.push({
-        position: entry.position,
-        yOffset,
-        height,
-        colorType: 3,
-      })
+      positions[s] = entry.position
+      yOffsets[s] = yOffset
+      heights[s] = height
+      colorTypes[s] = 3
+      s++
     }
-    const depthIdx = entry.position - coverageStartPos
-    const leftDepth =
-      depthIdx - 1 >= 0 ? (coverageDepths[depthIdx - 1] ?? 0) : 0
-    const rightDepth =
-      depthIdx >= 0 && depthIdx < coverageDepths.length
-        ? (coverageDepths[depthIdx] ?? 0)
-        : 0
-    // localDepth <= maxDepth always (it's drawn from coverageDepths, maxDepth
-    // is their max), so a separate maxDepth >= MIN check would be redundant.
-    const localDepth = Math.max(leftDepth, rightDepth)
-    if (
-      localDepth >= MINIMUM_INDICATOR_READ_DEPTH &&
-      total > localDepth * INDICATOR_THRESHOLD
-    ) {
-      let dominantType = 1
-      let dominantCount = entry.insertion
-      if (entry.softclip > dominantCount) {
-        dominantType = 2
-        dominantCount = entry.softclip
-      }
-      if (entry.hardclip > dominantCount) {
-        dominantType = 3
-      }
-      indicators.push({ position: entry.position, colorType: dominantType })
+    const dominantType = indicatorTypeFor(
+      entry,
+      coverageDepths,
+      coverageStartPos,
+    )
+    if (dominantType !== 0) {
+      indicatorPositions[ind] = entry.position
+      indicatorColorTypes[ind] = dominantType
+      ind++
     }
-  }
-
-  const filteredSegments = segments.filter(seg => seg.position >= regionStart)
-  const filteredIndicators = indicators.filter(
-    ind => ind.position >= regionStart,
-  )
-
-  const positions = new Uint32Array(filteredSegments.length)
-  const yOffsets = new Float32Array(filteredSegments.length)
-  const heights = new Float32Array(filteredSegments.length)
-  const colorTypes = new Uint8Array(filteredSegments.length)
-
-  for (let i = 0; i < filteredSegments.length; i++) {
-    const seg = filteredSegments[i]!
-    positions[i] = seg.position
-    yOffsets[i] = seg.yOffset
-    heights[i] = seg.height
-    colorTypes[i] = seg.colorType
-  }
-
-  const indicatorPositions = new Uint32Array(filteredIndicators.length)
-  const indicatorColorTypes = new Uint8Array(filteredIndicators.length)
-  for (let i = 0; i < filteredIndicators.length; i++) {
-    const ind = filteredIndicators[i]!
-    indicatorPositions[i] = ind.position
-    indicatorColorTypes[i] = ind.colorType
   }
 
   return {
@@ -178,7 +193,7 @@ export function computeInterbaseCoverage(
     indicatorPositions,
     indicatorColorTypes,
     maxCount: scale,
-    segmentCount: filteredSegments.length,
-    indicatorCount: filteredIndicators.length,
+    segmentCount,
+    indicatorCount,
   }
 }

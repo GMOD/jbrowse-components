@@ -1,11 +1,7 @@
-import { INTERBASE_TYPES } from './types.ts'
+import { interbaseTypeName } from '../../shared/types.ts'
 
-import type { IndicatorHitResult, InterbaseType } from './types.ts'
+import type { IndicatorHitResult } from './types.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
-
-function getInterbaseTypeName(colorType: number): InterbaseType {
-  return INTERBASE_TYPES[colorType - 1] ?? 'insertion'
-}
 
 export function hitTestIndicator(
   genomicPos: number,
@@ -30,7 +26,7 @@ export function hitTestIndicator(
       return {
         type: 'indicator',
         position: pos,
-        indicatorType: getInterbaseTypeName(colorType ?? 1),
+        indicatorType: interbaseTypeName(colorType ?? 1),
       }
     }
   }

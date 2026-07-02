@@ -115,6 +115,20 @@ export const INTERBASE_INSERTION = 1
 export const INTERBASE_SOFTCLIP = 2
 export const INTERBASE_HARDCLIP = 3
 
+// Names in code order (index = code - 1). Single source for turning the numeric
+// interbase code back into a name — used by the indicator hit-test and the
+// coverage/indicator tooltip so the two can't drift.
+export const INTERBASE_TYPE_NAMES = [
+  'insertion',
+  'softclip',
+  'hardclip',
+] as const
+export type InterbaseTypeName = (typeof INTERBASE_TYPE_NAMES)[number]
+
+export function interbaseTypeName(code: number): InterbaseTypeName {
+  return INTERBASE_TYPE_NAMES[code - 1] ?? 'insertion'
+}
+
 const typeLabels: Record<string, string> = {
   insertion: 'Insertion',
   softclip: 'Soft clip',

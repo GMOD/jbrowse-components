@@ -127,4 +127,40 @@ describe('computeInterbaseCoverage (indicator triangles)', () => {
     )
     expect(result.indicatorCount).toBe(1)
   })
+
+  it('stacks one segment per non-empty type, accumulating yOffset', () => {
+    const result = computeInterbaseCoverage(
+      [{ position: 105, length: 5 }],
+      [
+        { position: 105, length: 10 },
+        { position: 105, length: 10 },
+      ],
+      [{ position: 105, length: 3 }],
+      100,
+      cov(new Float32Array(20).fill(10), 10),
+    )
+    // 1 insertion + 2 softclips + 1 hardclip at one position => 3 segments
+    // (ins, soft, hard) with heights count/scale and stacked yOffsets.
+    expect(result.segmentCount).toBe(3)
+    expect([...result.colorTypes]).toEqual([1, 2, 3])
+    expect([...result.heights]).toEqual([...new Float32Array([0.1, 0.2, 0.1])])
+    expect([...result.yOffsets]).toEqual([...new Float32Array([0, 0.1, 0.3])])
+    expect([...result.positions]).toEqual([105, 105, 105])
+  })
+
+  it('drops events left of regionStart from segments and indicators', () => {
+    const insertions = Array.from({ length: 10 }, () => ({
+      position: 99,
+      length: 5,
+    }))
+    const result = computeInterbaseCoverage(
+      insertions,
+      [],
+      [],
+      100,
+      cov(new Float32Array(20).fill(20), 20),
+    )
+    expect(result.segmentCount).toBe(0)
+    expect(result.indicatorCount).toBe(0)
+  })
 })

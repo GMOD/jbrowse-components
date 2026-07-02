@@ -1,8 +1,11 @@
 import {
   countSnpsAtPosition,
   formatInsertionLabel,
+  interbaseDepthAt,
 } from '@jbrowse/alignments-core'
 import { toLocale } from '@jbrowse/core/util'
+
+import { interbaseTypeName } from '../../shared/types.ts'
 
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types'
 import type {
@@ -188,22 +191,22 @@ export function getTooltipBin(
     interbaseSequences,
   } = blockRpcData
   const numInterbases = interbasePositions.length
-  const typeNames = ['', 'insertion', 'softclip', 'hardclip']
-  const interbaseSums = new Map<string, number>()
-  const seqCounts = new Map<string, Map<string, number>>()
+  // avgLen accumulates the length sum during the scan and is divided by count in
+  // the finalize pass below. seqCountsByType tracks per-type sequence tallies to
+  // surface the most common inserted sequence.
+  const seqCountsByType = new Map<string, Map<string, number>>()
   for (let i = 0; i < numInterbases; i++) {
     if (interbasePositions[i] === position) {
-      const typeName = typeNames[interbaseTypes[i]!] ?? 'insertion'
+      const typeName = interbaseTypeName(interbaseTypes[i]!)
       const len = interbaseLengths[i]!
-      interbase[typeName] ??= {
+      const entry = (interbase[typeName] ??= {
         count: 0,
         minLen: len,
         maxLen: len,
         avgLen: 0,
-      }
-      const entry = interbase[typeName]
+      })
       entry.count++
-      interbaseSums.set(typeName, (interbaseSums.get(typeName) ?? 0) + len)
+      entry.avgLen += len
       if (len < entry.minLen) {
         entry.minLen = len
       }
@@ -212,18 +215,18 @@ export function getTooltipBin(
       }
       const seq = interbaseSequences[i]
       if (seq) {
-        let typeSeqs = seqCounts.get(typeName)
+        let typeSeqs = seqCountsByType.get(typeName)
         if (!typeSeqs) {
           typeSeqs = new Map()
-          seqCounts.set(typeName, typeSeqs)
+          seqCountsByType.set(typeName, typeSeqs)
         }
         typeSeqs.set(seq, (typeSeqs.get(seq) ?? 0) + 1)
       }
     }
   }
   for (const [typeName, entry] of Object.entries(interbase)) {
-    entry.avgLen = (interbaseSums.get(typeName) ?? 0) / entry.count
-    const typeSeqs = seqCounts.get(typeName)
+    entry.avgLen /= entry.count
+    const typeSeqs = seqCountsByType.get(typeName)
     if (typeSeqs) {
       let topSeq: string | undefined
       let topCount = 0
@@ -281,8 +284,11 @@ export function getTooltipBin(
     return undefined
   }
 
-  const leftDepth = blockRpcData.coverageDepths[binIdx - 1] ?? 0
-  const interbaseDepth = Math.max(leftDepth, depth)
+  const interbaseDepth = interbaseDepthAt(
+    blockRpcData.coverageDepths,
+    blockRpcData.coverageStartPos,
+    position,
+  )
 
   return {
     position,

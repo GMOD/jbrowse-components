@@ -1,3 +1,5 @@
+import { interbaseDepthAt } from '@jbrowse/alignments-core'
+
 import { featureFrequencyThreshold } from '../LinearAlignmentsDisplay/constants.ts'
 
 function getDepthAt(
@@ -36,22 +38,10 @@ export function computeMismatchFrequencies(
   return frequencies
 }
 
-// Interbase features (insertions/softclips/hardclips) sit between two bases;
-// at coverage cliffs one side may be near zero, so use max(left, right) to
-// avoid misleading proportions.
-function getInterbaseDepth(
-  coverageDepths: Float32Array,
-  depthIdx: number,
-  fallback: number,
-) {
-  const leftDepth = getDepthAt(coverageDepths, depthIdx - 1, 0)
-  const rightDepth = getDepthAt(coverageDepths, depthIdx, 0)
-  const depth = Math.max(leftDepth, rightDepth)
-  return depth > 0 ? depth : fallback
-}
-
 // Per-position count / total depth. Used for insertions, softclips, hardclips
-// (point features), and gap start positions.
+// (point features), and gap start positions. Depth basis is interbaseDepthAt
+// (deeper of the two flanking bins); a zero-depth position falls back to 1 so a
+// stray event there reads as full frequency rather than dividing by zero.
 export function computePositionFrequencies(
   positions: Uint32Array,
   coverageDepths: Float32Array,
@@ -66,11 +56,10 @@ export function computePositionFrequencies(
   }
   for (let i = 0; i < n; i++) {
     const pos = positions[i]!
-    const depthIdx = pos - coverageStartPos
-    const depth = getInterbaseDepth(coverageDepths, depthIdx, 1)
+    const localDepth = interbaseDepthAt(coverageDepths, coverageStartPos, pos)
+    const depth = localDepth > 0 ? localDepth : 1
     const count = posCounts.get(pos) ?? 1
-    const freq = depth > 0 ? count / depth : 0
-    frequencies[i] = Math.min(255, Math.round(freq * 255))
+    frequencies[i] = Math.min(255, Math.round((count / depth) * 255))
   }
   return frequencies
 }
@@ -86,10 +75,9 @@ export function applyDepthDependentThreshold(
 ) {
   for (let i = 0; i < frequencies.length; i++) {
     const pos = positions[i]!
-    const depthIdx = pos - coverageStartPos
     const depth = interbase
-      ? getInterbaseDepth(coverageDepths, depthIdx, 0)
-      : getDepthAt(coverageDepths, depthIdx, 0)
+      ? interbaseDepthAt(coverageDepths, coverageStartPos, pos)
+      : getDepthAt(coverageDepths, pos - coverageStartPos, 0)
     const freq = frequencies[i]! / 255
     const threshold = thresholdFn(depth)
     if (freq < threshold) {

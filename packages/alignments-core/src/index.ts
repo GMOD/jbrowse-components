@@ -99,6 +99,7 @@ export {
   countSnpsAtPosition,
   downsampleMinMax,
   findSignificantInBin,
+  interbaseDepthAt,
   niceStep,
 } from './coverageDownsampling.ts'
 export type {

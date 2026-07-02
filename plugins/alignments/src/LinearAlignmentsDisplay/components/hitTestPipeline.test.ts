@@ -264,7 +264,7 @@ describe('contextMenuFieldsForHit', () => {
     const ind = {
       type: 'indicator' as const,
       position: 100,
-      indicatorType: 'insertion',
+      indicatorType: 'insertion' as const,
     }
     const fields = contextMenuFieldsForHit({
       type: 'indicator',

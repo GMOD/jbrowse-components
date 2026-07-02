@@ -257,6 +257,22 @@ export interface CoverageArrays {
   coverageStartPos: number
 }
 
+// Interbase events (insertions/softclips/hardclips) sit at a base *boundary*,
+// not inside a cell, so their depth basis is the deeper of the two flanking
+// bins — at a coverage cliff one side can be ~0 and would give a misleading
+// proportion. Single source for the indicator, shader-fade and tooltip paths.
+export function interbaseDepthAt(
+  coverageDepths: Float32Array,
+  coverageStartPos: number,
+  position: number,
+) {
+  const idx = position - coverageStartPos
+  const left = idx - 1 >= 0 ? (coverageDepths[idx - 1] ?? 0) : 0
+  const right =
+    idx >= 0 && idx < coverageDepths.length ? (coverageDepths[idx] ?? 0) : 0
+  return Math.max(left, right)
+}
+
 export function countSnpsAtPosition(
   posOffset: number,
   mismatches: MismatchArrays,
@@ -368,13 +384,16 @@ export function buildCoverageTooltipBin(
   if (depth === 0 && !hasInterbase) {
     return undefined
   }
-  // Interbase events sit between bins, so their depth basis is the deeper of the
-  // two flanking bins (mirrors the alignments display's interbaseDepth).
-  const leftDepth = coverage.coverageDepths[binIdx - 1] ?? 0
   return {
     position,
     depth,
-    interbaseDepth: hasInterbase ? Math.max(leftDepth, depth) : 0,
+    interbaseDepth: hasInterbase
+      ? interbaseDepthAt(
+          coverage.coverageDepths,
+          coverage.coverageStartPos,
+          position,
+        )
+      : 0,
     snps: depth > 0 ? countSnpsAtPosition(position, mismatches) : {},
     interbase,
   }
