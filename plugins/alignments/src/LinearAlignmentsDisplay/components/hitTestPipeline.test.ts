@@ -1,4 +1,8 @@
-import { SNP_HIT_MAX_BP_PER_PX, performHitTest } from './hitTestPipeline.ts'
+import {
+  SNP_HIT_MAX_BP_PER_PX,
+  contextMenuFieldsForHit,
+  performHitTest,
+} from './hitTestPipeline.ts'
 
 import type { HitTestOptions } from './hitTestPipeline.ts'
 import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
@@ -203,5 +207,72 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('mismatch')
     }
+  })
+})
+
+describe('contextMenuFieldsForHit', () => {
+  const resolved = makeResolved()
+
+  it('coverage and none hits show no menu', () => {
+    expect(
+      contextMenuFieldsForHit({
+        type: 'coverage',
+        hit: { type: 'coverage', position: 1 },
+        resolved,
+      }).show,
+    ).toBe(false)
+    expect(contextMenuFieldsForHit({ type: 'none' }).show).toBe(false)
+  })
+
+  it('a feature hit carries the feature id', () => {
+    expect(
+      contextMenuFieldsForHit({
+        type: 'feature',
+        hit: { id: 'r1', index: 3 },
+        resolved,
+      }),
+    ).toEqual({ show: true, featureId: 'r1' })
+  })
+
+  it('a cigar hit carries both the cigar hit and its read feature id', () => {
+    const cigar = { type: 'mismatch', index: 0, position: 42 } as const
+    expect(
+      contextMenuFieldsForHit({
+        type: 'cigar',
+        hit: cigar,
+        featureHit: { id: 'r2', index: 1 },
+        resolved,
+      }),
+    ).toEqual({ show: true, cigarHit: cigar, featureId: 'r2' })
+  })
+
+  // regression: a modification hit used to fall through to the native browser
+  // menu; it must expose the read's feature id (and the base's cigar hit).
+  it('a modification hit exposes the underlying read feature id', () => {
+    const cigar = { type: 'mismatch', index: 0, position: 7, base: 'A' } as const
+    const fields = contextMenuFieldsForHit({
+      type: 'modification',
+      hit: { position: 7, modType: 'm', probability: 0.9, color: '#f00' },
+      featureHit: { id: 'r3', index: 2 },
+      cigarHit: cigar,
+      resolved,
+    })
+    expect(fields).toEqual({ show: true, cigarHit: cigar, featureId: 'r3' })
+  })
+
+  it('an indicator hit carries the indicator hit but no feature', () => {
+    const ind = {
+      type: 'indicator' as const,
+      position: 100,
+      indicatorType: 'insertion',
+    }
+    const fields = contextMenuFieldsForHit({
+      type: 'indicator',
+      hit: ind,
+      resolved,
+    })
+    expect(fields.show).toBe(true)
+    expect(fields.indicatorHit).toBe(ind)
+    expect(fields.featureId).toBeUndefined()
   })
 })

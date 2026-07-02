@@ -19,11 +19,7 @@ import { bandOnScreen, bandScreenTop, contentScreenY } from './sectionScreen.ts'
 import { formatChainTooltip, formatFeatureTooltip } from './tooltipUtils.ts'
 import { useAlignmentsBase } from './useAlignmentsBase.ts'
 
-import type {
-  FeatureHit,
-  LinearAlignmentsDisplayModel,
-} from './useAlignmentsBase.ts'
-import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type { LinearAlignmentsDisplayModel } from './useAlignmentsBase.ts'
 
 const SCROLLBAR_WIDTH = 12
 const COMPACT_AXIS_HEIGHT = 30
@@ -99,20 +95,15 @@ const PileupBody = observer(function PileupBody({
   // the whole display (grouped, where the entire stack scrolls).
   const topOffset = model.isGrouped ? 0 : bands.bottom
 
-  function chainIdsForHit(hit: FeatureHit, resolved: ResolvedBlock) {
-    const { readChainIndices, chainNames } = resolved.rpcData
-    const chainIdx = readChainIndices?.[hit.index]
-    const name = chainIdx === undefined ? undefined : chainNames?.[chainIdx]
-    return name === undefined ? [] : (model.chainIdMap.get(name) ?? [])
-  }
-
   function handleCanvasMouseMove(e: React.MouseEvent) {
     processMouseMove(
       e,
       (hit, resolved) => {
         model.setFeatureIdUnderMouse(hit.id)
         if (model.isChainMode) {
-          model.setHighlightedChainIds(chainIdsForHit(hit, resolved))
+          model.setHighlightedChainIds(
+            model.chainIdsForRead(resolved.rpcData, hit.index),
+          )
           model.setMouseoverExtraInformation(
             formatChainTooltip(resolved.rpcData, hit.index, resolved.refName),
           )
@@ -135,7 +126,9 @@ const PileupBody = observer(function PileupBody({
       (hit, resolved) => {
         void model.selectFeatureById(hit.id)
         if (model.isChainMode) {
-          model.setSelectedChainIds(chainIdsForHit(hit, resolved))
+          model.setSelectedChainIds(
+            model.chainIdsForRead(resolved.rpcData, hit.index),
+          )
         }
       },
       () => {

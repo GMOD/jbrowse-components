@@ -18,7 +18,7 @@ import {
   openModificationWidget,
 } from './detailWidgets.ts'
 import { findSectionAtY } from './findSectionAtY.ts'
-import { performHitTest } from './hitTestPipeline.ts'
+import { contextMenuFieldsForHit, performHitTest } from './hitTestPipeline.ts'
 import {
   formatCigarTooltip,
   formatCoverageTooltip,
@@ -138,6 +138,15 @@ export function useAlignmentsBase(
     return undefined
   }
 
+  // Maps a mouse event to canvas coordinates and runs the full hit-test
+  // pipeline. Returns undefined only when the event can't be located on the
+  // canvas (no live canvas / rect). Shared by the context-menu, click, and
+  // move handlers so the coord + hit-test preamble lives in one place.
+  function hitTestEvent(e: React.MouseEvent) {
+    const coords = getCanvasCoords(e, canvas, canvasRectRef)
+    return coords ? runHitTest(coords.canvasX, coords.canvasY) : undefined
+  }
+
   // --- Shared event handlers ---
 
   function handleMouseDown(e: React.MouseEvent) {
@@ -160,28 +169,28 @@ export function useAlignmentsBase(
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    const coords = getCanvasCoords(e, canvas, canvasRectRef)
-    if (!coords) {
+    const hit = hitTestEvent(e)
+    if (!hit) {
       return
     }
-
-    const { resolved, result } = runHitTest(coords.canvasX, coords.canvasY)
-    if (['cigar', 'indicator', 'feature'].includes(result.type)) {
+    const { resolved, result } = hit
+    const { show, cigarHit, indicatorHit, featureId } =
+      contextMenuFieldsForHit(result)
+    if (show) {
       e.preventDefault()
       model.clearMouseoverState()
       model.setContextMenuCoord([e.clientX, e.clientY])
       model.setContextMenuRefName(resolved?.refName)
       model.setContextMenuRpcData(resolved?.rpcData)
-      model.setContextMenuCigarHit(
-        result.type === 'cigar' ? result.hit : undefined,
-      )
-      model.setContextMenuIndicatorHit(
-        result.type === 'indicator' ? result.hit : undefined,
-      )
-      if (result.type === 'cigar' && result.featureHit) {
-        void model.setContextMenuFeatureById(result.featureHit.id)
-      } else if (result.type === 'feature') {
-        void model.setContextMenuFeatureById(result.hit.id)
+      model.setContextMenuCigarHit(cigarHit)
+      model.setContextMenuIndicatorHit(indicatorHit)
+      // Clear the previous read first: consecutive right-clicks reposition the
+      // same open menu without a close/clear, so an indicator-only hit must not
+      // inherit the prior read's feature items (and the async fetch below
+      // shouldn't leave stale items visible until it resolves).
+      model.setContextMenuFeature(undefined)
+      if (featureId !== undefined) {
+        void model.setContextMenuFeatureById(featureId)
       }
     }
   }
@@ -197,12 +206,30 @@ export function useAlignmentsBase(
       return
     }
 
-    const coords = getCanvasCoords(e, canvas, canvasRectRef)
-    if (!coords) {
+    const hit = hitTestEvent(e)
+    if (!hit) {
       return
     }
+    const { result, picked } = hit
 
-    const { result, picked } = runHitTest(coords.canvasX, coords.canvasY)
+    // Keep the chain highlight tracking the read under the cursor even while
+    // hovering a cigar/modification base on it (chain mode only) — else the
+    // previous read's highlight goes stale until the cursor reaches bare read
+    // body. No-op in plain mode (chain ids are always empty there).
+    function syncChainHighlight(
+      featureHit: { index: number } | undefined,
+      resolved: ResolvedBlock,
+    ) {
+      if (model.isChainMode) {
+        model.setHighlightedChainIds(
+          featureHit
+            ? model.chainIdsForRead(resolved.rpcData, featureHit.index)
+            : [],
+        )
+      } else {
+        model.clearHighlights()
+      }
+    }
 
     // Screen-px coverage band of the hovered section, so the tooltip's vertical
     // bar lands on the hovered group's coverage band rather than always the top.
@@ -257,6 +284,7 @@ export function useAlignmentsBase(
             snpBase,
           ),
         })
+        syncChainHighlight(result.featureHit, result.resolved)
         return
       }
       case 'cigar':
@@ -265,6 +293,7 @@ export function useAlignmentsBase(
           featureIdUnderMouse: result.featureHit?.id,
           mouseoverExtraInformation: formatCigarTooltip(result.hit),
         })
+        syncChainHighlight(result.featureHit, result.resolved)
         return
       case 'feature':
         model.setOverCigarItem(false)
@@ -287,13 +316,11 @@ export function useAlignmentsBase(
       dragMovedRef.current = false
       return
     }
-    const coords = getCanvasCoords(e, canvas, canvasRectRef)
-    if (!coords) {
+    const hit = hitTestEvent(e)
+    if (!hit) {
       return
     }
-    const { canvasX, canvasY } = coords
-
-    const { result } = runHitTest(canvasX, canvasY)
+    const { result } = hit
 
     switch (result.type) {
       case 'indicator':

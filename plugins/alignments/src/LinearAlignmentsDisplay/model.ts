@@ -1423,6 +1423,20 @@ export default function stateModelFactory(
         /**
          * #method
          */
+        /**
+         * #method
+         * Chain IDs sharing a QNAME with the read at `index` in `rpcData`.
+         * Empty when the read isn't part of a chain. Shared by hover-highlight
+         * and click-select so the two paths can't drift.
+         */
+        chainIdsForRead(rpcData: PileupDataResult, index: number) {
+          const { readChainIndices, chainNames } = rpcData
+          const chainIdx = readChainIndices?.[index]
+          const name =
+            chainIdx === undefined ? undefined : chainNames?.[chainIdx]
+          return name === undefined ? [] : (self.chainIdMap.get(name) ?? [])
+        },
+
         getFeatureInfoById(featureId: string) {
           const hit = self.findFeatureInRpcData(featureId)
           if (!hit) {

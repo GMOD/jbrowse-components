@@ -48,6 +48,42 @@ export type HitTestResult =
 // too zoomed out to be meaningful.
 export const SNP_HIT_MAX_BP_PER_PX = 25
 
+export interface ContextMenuFields {
+  // false for coverage/none hits, which have no right-click menu
+  show: boolean
+  cigarHit?: CigarHitResult
+  indicatorHit?: IndicatorHitResult
+  featureId?: string
+}
+
+// Which context-menu state a right-click hit maps to. A cigar/modification hit
+// carries the read's featureId so the read's own menu items (view mate, feature
+// details) stay reachable over a mismatched/modified base — not just bare body.
+export function contextMenuFieldsForHit(
+  result: HitTestResult,
+): ContextMenuFields {
+  switch (result.type) {
+    case 'cigar':
+      return {
+        show: true,
+        cigarHit: result.hit,
+        featureId: result.featureHit?.id,
+      }
+    case 'modification':
+      return {
+        show: true,
+        cigarHit: result.cigarHit,
+        featureId: result.featureHit?.id,
+      }
+    case 'indicator':
+      return { show: true, indicatorHit: result.hit }
+    case 'feature':
+      return { show: true, featureId: result.hit.id }
+    default:
+      return { show: false }
+  }
+}
+
 function hitTestChain(
   coords: CigarCoords,
   rpcData: PileupDataResult,
