@@ -16,6 +16,26 @@ const cancelDelayMs = 5000
 // there's no content to flash over, so the indicator shows right away.
 const flashDelayMs = 250
 
+// Returns false, then flips true once `active` has stayed true continuously for
+// `delayMs`. Resets to false the moment `active` goes false, so each activation
+// gets a fresh delay.
+function useDelayedFlag(active: boolean, delayMs: number) {
+  const [flag, setFlag] = useState(false)
+  useEffect(() => {
+    if (active) {
+      const id = setTimeout(() => {
+        setFlag(true)
+      }, delayMs)
+      return () => {
+        clearTimeout(id)
+        setFlag(false)
+      }
+    }
+    return undefined
+  }, [active, delayMs])
+  return flag
+}
+
 const useStyles = makeStyles()(theme => {
   // derive the stripe + chip tints from the theme so the "something's happening"
   // signal stays subtle and equally visible in light and dark mode
@@ -96,39 +116,14 @@ export default function LoadingOverlay({
   const hasProgress = progress !== undefined
 
   // anti-flash: only render after the load has run long enough to be worth
-  // signaling, so fast loads show nothing at all. The delayed flag resets in
-  // cleanup so a subsequent load gets a fresh flash delay. `immediate` bypasses
-  // this for initial loads, where nothing is on screen to flash over yet.
-  const [shownAfterDelay, setShownAfterDelay] = useState(false)
-  useEffect(() => {
-    if (isVisible && !immediate) {
-      const id = setTimeout(() => {
-        setShownAfterDelay(true)
-      }, flashDelayMs)
-      return () => {
-        clearTimeout(id)
-        setShownAfterDelay(false)
-      }
-    }
-    return undefined
-  }, [isVisible, immediate])
+  // signaling, so fast loads show nothing at all. `immediate` bypasses this for
+  // initial loads, where nothing is on screen to flash over yet.
+  const shownAfterDelay = useDelayedFlag(!!isVisible && !immediate, flashDelayMs)
   const shown = isVisible && (immediate || shownAfterDelay)
 
   // only offer cancel after the overlay has been continuously visible for a few
   // seconds, so a quick load can't be canceled by an accidental click
-  const [cancelableAfterDelay, setCancelableAfterDelay] = useState(false)
-  useEffect(() => {
-    if (isVisible) {
-      const id = setTimeout(() => {
-        setCancelableAfterDelay(true)
-      }, cancelDelayMs)
-      return () => {
-        clearTimeout(id)
-        setCancelableAfterDelay(false)
-      }
-    }
-    return undefined
-  }, [isVisible])
+  const cancelableAfterDelay = useDelayedFlag(!!isVisible, cancelDelayMs)
   const cancelable = isVisible && cancelableAfterDelay
 
   return (

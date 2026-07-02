@@ -142,6 +142,20 @@ export default function FetchMixin() {
     .actions(self => ({
       /**
        * #action
+       * Abort the in-flight fetch (if any) and clear its status. The shared
+       * preamble of both cancel paths; the difference between them is only what
+       * they do to `fetchCanceled` / `fetchGeneration` afterward.
+       */
+      stopActiveFetch() {
+        if (self.activeStopToken) {
+          stopStopToken(self.activeStopToken)
+          self.resetStatus()
+        }
+      },
+    }))
+    .actions(self => ({
+      /**
+       * #action
        * Record one concurrent operation's latest status (keyed) and recompute
        * the shared statusMessage/statusProgress as the aggregate across all
        * in-flight keys. Pass undefined to drop a key. Used by displays that fan
@@ -165,10 +179,7 @@ export default function FetchMixin() {
        * — it clears any user-cancel flag so the retrigger actually re-fetches.
        */
       cancelFetch() {
-        if (self.activeStopToken) {
-          stopStopToken(self.activeStopToken)
-          self.resetStatus()
-        }
+        self.stopActiveFetch()
         self.fetchCanceled = false
         self.fetchGeneration++
       },
@@ -181,10 +192,7 @@ export default function FetchMixin() {
        * (the overlay's retry button), or it clears on the next viewport change.
        */
       cancelFetchByUser() {
-        if (self.activeStopToken) {
-          stopStopToken(self.activeStopToken)
-          self.resetStatus()
-        }
+        self.stopActiveFetch()
         self.fetchCanceled = true
       },
       /**

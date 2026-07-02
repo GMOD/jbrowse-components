@@ -117,6 +117,10 @@ export default function GlobalDataDisplayMixin() {
        */
       reload() {
         self.setError(undefined)
+        // clear the durable user-cancel flag synchronously so the overlay flips
+        // from "canceled" to "loading" immediately, rather than lingering until
+        // the debounced fetch autorun runs runFetch (which also clears it)
+        self.fetchCanceled = false
         self.reloadCounter += 1
       },
     }))
