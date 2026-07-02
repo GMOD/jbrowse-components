@@ -53,15 +53,29 @@ web/desktop) or live MST config nodes (product-core, embedded react views).
 
 A delta can't be "deleted" (the underlying admin track remains), so the track
 menu swaps **Delete track** for **Reset track settings** when
-`#method isTrackOverride(trackId)` is true — i.e. `trackId in trackConfigDeltas`
-(web session). Reset calls `#action resetTrackConfiguration(trackId)`, which
-drops the delta key **without** dereferencing the track from open views — the
-base config re-resolves in place, so an open track stays open and simply reverts
-to the admin default. (Plain `#action deleteTrackConf` dereferences and closes;
-don't use it for reset.)
+`#method isTrackOverride(trackId)` is true (web session). This checks
+`getTrackConfigChanges(trackId).length > 0`, **not** merely
+`trackId in trackConfigDeltas`: a delta can hold only content-free `{type,
+displayId}` display stubs (see below) that record no real edit, and those must
+not read as an override. Reset calls `#action resetTrackConfiguration(trackId)`,
+which drops the delta key **without** dereferencing the track from open views —
+the base config re-resolves in place, so an open track stays open and simply
+reverts to the admin default. (Plain `#action deleteTrackConf` dereferences and
+closes; don't use it for reset.)
 
 `isTrackOverride` also drives an "edited" badge on the track row in the
-hierarchical selector (`TrackLabel.tsx`).
+hierarchical and faceted selectors, which opens `TrackSettingsChangesDialog`
+listing each changed slot vs its default (`OverrideBadge.tsx`).
+
+### Stub-only deltas are not real overrides
+
+A track config that omits `displays` diffs against the hydrated snapshot's
+injected `{type, displayId}` display stubs to yield `{trackId, displays:
+[...stubs]}` — nonzero keys but no changed slot. `deltaHasChanges` (gating
+storage in `updateTrackConfiguration`) and `isTrackOverride` therefore both test
+`flattenTrackConfigDelta(base, delta).length > 0` (which drops identity keys and
+empty stubs), **not** a raw key count — otherwise the "edited" badge lights up on
+tracks the user never edited.
 
 ### Legacy migration
 
