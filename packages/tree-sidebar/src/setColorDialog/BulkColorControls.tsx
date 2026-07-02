@@ -48,7 +48,7 @@ export default function BulkColorControls<
           </Button>
           <ColorPopover
             anchorEl={anchorByField[c.field] ?? null}
-            color={widgetColorByField[c.field] ?? 'blue'}
+            color={widgetColorByField[c.field] ?? c.defaultColor ?? 'blue'}
             onChange={value => {
               setWidgetColorByField(prev => ({ ...prev, [c.field]: value }))
               onChange(

@@ -1,6 +1,7 @@
 import { useState } from 'react'
 
 import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { Checkbox, FormControlLabel } from '@mui/material'
 import { DataGrid } from '@mui/x-data-grid'
 
 import BulkColorControls from './BulkColorControls.tsx'
@@ -27,6 +28,15 @@ export interface ColorColumn<S> {
   // Label for the header "Change … of selected" button. Falls back to a
   // default constructed from headerName when omitted.
   bulkLabel?: string
+  // The effective color a row renders with when its own value is unset (e.g.
+  // MAF/wiggle label text defaults to black). Shown in the swatch — with an
+  // "auto" affordance — so the grid reflects what's actually on screen instead
+  // of a misleading placeholder. Never persisted on Submit.
+  defaultColor?: string
+  // Secondary columns (e.g. wiggle's label color) most users never touch. When
+  // true the column and its bulk button are hidden behind a "Show …" toggle so
+  // the common case is a single-color grid.
+  advanced?: boolean
 }
 
 // Permanently empty: the grid's sort is controlled externally via
@@ -51,8 +61,10 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
 }) {
   const { classes } = useStyles()
   const [selected, setSelected] = useState([] as GridRowId[])
+  const [showAdvanced, setShowAdvanced] = useState(false)
   const onSortModelChange = useSourceSort(rows, onChange)
 
+  // Hidden columns still reserve their field so they never leak into `extras`.
   const reserved = new Set<string>([
     ...IDENTITY_FIELDS,
     ...colorColumns.map(c => c.field),
@@ -60,14 +72,36 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
   ])
   const extras = extraColumns(rows, reserved)
 
+  const advancedColumns = colorColumns.filter(c => c.advanced)
+  const visibleColorColumns = showAdvanced
+    ? colorColumns
+    : colorColumns.filter(c => !c.advanced)
+  const advancedToggleLabel =
+    advancedColumns.length === 1
+      ? `Show ${advancedColumns[0]!.headerName.toLowerCase()}`
+      : 'Show advanced color options'
+
   return (
     <div>
       <BulkColorControls
-        colorColumns={colorColumns}
+        colorColumns={visibleColorColumns}
         rows={rows}
         selected={selected}
         onChange={onChange}
       />
+      {advancedColumns.length > 0 ? (
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={showAdvanced}
+              onChange={() => {
+                setShowAdvanced(!showAdvanced)
+              }}
+            />
+          }
+          label={advancedToggleLabel}
+        />
+      ) : null}
       <SelectionMoveButtons
         rows={rows}
         selected={selected}
@@ -86,7 +120,7 @@ export default function SourceGrid<S extends { name: string; color?: string }>({
           rowHeight={25}
           columnHeaderHeight={33}
           columns={buildSourceColumns({
-            colorColumns,
+            colorColumns: visibleColorColumns,
             extras,
             rows,
             onChange,

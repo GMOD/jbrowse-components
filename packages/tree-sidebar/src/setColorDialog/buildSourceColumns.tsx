@@ -29,7 +29,10 @@ export function buildSourceColumns<S extends { name: string; color?: string }>({
           width: 100,
           renderCell: ({ value, id }) => (
             <PopoverPicker
-              color={value || 'blue'}
+              // Unset rows show the effective color they actually render with
+              // (auto), so the swatch never misrepresents on-screen state.
+              color={value || c.defaultColor || 'auto'}
+              unset={!value}
               onChange={color => {
                 onChange(
                   updateRows(rows, [id], { [c.field]: color } as Partial<S>),
