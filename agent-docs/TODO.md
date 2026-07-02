@@ -63,3 +63,74 @@ You've hit your session limit · resets 12:10am (America/Los_Angeles)
 import SwapVertIcon from '@mui/icons-material/SwapVert';
 
 ## dont do codeql so much ?
+
+Write(test_data/volvox/annotate_variants.mjs)
+Wrote 85 lines to test_data/volvox/annotate_variants.mjs
+#!/usr/bin/env node
+// Injects simulated SnpEff `ANN` consequence annotations into a multi-sample
+// VCF so the "Color cells by consequence" mode of the multi-sample variant
+// display has data to render. Each record gets one ANN entry per ALT allele
+// with a deterministic impact tier (HIGH/MODERATE/LOW/MODIFIER) cycled by
+// position, giving a visible spread of impact colors across the track.
+//
+// Usage:
+//   node annotate_variants.mjs [input.vcf.gz] [output.vcf.gz]
+// Defaults to rewriting volvox.test.vcf.gz in place. Requires bgzip + tabix on
+… +76 lines
+
+## live eval jexl
+
+## next
+
+
+ FAIL  products/jbrowse-web/src/tests/DotplotViewInit.test.tsx (13.295 s)
+  ● DotplotView showImportForm is false when init is set
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: false
+    Received: undefined
+
+      76 |   })
+      77 |
+    > 78 |   expect(view.showImportForm).toBe(false)
+         |                               ^
+      79 |   expect(view.hasSomethingToShow).toBe(true)
+      80 |
+      81 |   await waitFor(
+
+      at Object.<anonymous> (products/jbrowse-web/src/tests/DotplotViewInit.test.tsx:78:31)
+
+  ● DotplotView showImportForm is true when no init
+
+    expect(received).toBe(expected) // Object.is equality
+
+    Expected: true
+    Received: undefined
+
+      94 |   const view = session.addView('DotplotView', {})
+      95 |
+    > 96 |   expect(view.showImportForm).toBe(true)
+         |                               ^
+      97 |   expect(view.hasSomethingToShow).toBe(false)
+      98 | }, 40000)
+      99 |
+
+      at Object.<anonymous> (products/jbrowse-web/src/tests/DotplotViewInit.test.tsx:96:31)
+
+ FAIL  products/jbrowse-web/src/tests/TextSearching.test.tsx (87.244 s)
+  ● failed search resets input to visible location
+
+    thrown: "Exceeded timeout of 70000 ms for a test.
+    Add a timeout value to this test to increase the timeout, if this is a long-running test. See https://jestjs.io/docs/api#testname-fn-timeout."
+
+      129 | }, 70_000)
+      130 |
+    > 131 | test('failed search resets input to visible location', async () => {
+          | ^
+      132 |   const consoleMock = jest.spyOn(console, 'error').mockImplementation()
+      133 |   const { input, findByText, view } = await doSetup()
+      134 |
+
+      at Object.<anonymous> (products/jbrowse-web/src/tests/TextSearching.test.tsx:131:1)
+

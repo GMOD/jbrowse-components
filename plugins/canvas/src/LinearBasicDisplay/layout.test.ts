@@ -621,7 +621,11 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
   // bpPerPx=1 (300 < 400/1), so zooming in frees row 0 under B. Through the
   // incremental memo (which once seeded from the prior layout) B must now rise
   // to row 0 rather than being held on its old lower row.
-  const withNameLabel = (data: FeatureDataResult, id: string, width: number) => {
+  const withNameLabel = (
+    data: FeatureDataResult,
+    id: string,
+    width: number,
+  ) => {
     data.floatingLabelsData[id] = {
       featureId: id,
       minX: 0,
@@ -652,7 +656,9 @@ test('a feature compacts up to a freed row on zoom-in (no downward hold)', () =>
   const keys = new Map([[0, 'v:ctgA']])
   const memo = createIncrementalLayout()
 
-  expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 2)))).toBeGreaterThan(0)
+  expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 2)))).toBeGreaterThan(
+    0,
+  )
   expect(bTop(memo(new Map([[0, mk()]]), incInputs(keys, 1)))).toBe(0)
 })
 

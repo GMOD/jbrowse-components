@@ -74,6 +74,25 @@ export function jexlFeatureProxy(feature: Feature): Feature {
   })
 }
 
+/**
+ * Build the variable bindings a jexl callback evaluates against, wrapping any
+ * `Feature`-valued entry in `jexlFeatureProxy` (so `x.attr` reads directly while
+ * `get(x,'attr')` still works) and passing everything else through untouched.
+ *
+ * The single context-construction path shared by config-slot evaluation
+ * (`evaluateJexl`) and the filter chain (`SerializableFilterChain`), so which
+ * variables a callback can reference — and how a feature is exposed — never
+ * depends on which call site invoked it.
+ */
+export function buildJexlContext(args: Record<string, unknown>) {
+  const context: Record<string, unknown> = {}
+  for (const key in args) {
+    const value = args[key]
+    context[key] = isFeature(value) ? jexlFeatureProxy(value) : value
+  }
+  return context
+}
+
 export interface SimpleFeatureArgs {
   /** key-value data, must include 'start' and 'end' */
   data: Record<string, unknown>

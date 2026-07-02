@@ -1,5 +1,5 @@
 import { stringToJexlExpression } from '../../../util/jexlStrings.ts'
-import { isFeature, jexlFeatureProxy } from '../../../util/simpleFeature.ts'
+import { buildJexlContext } from '../../../util/simpleFeature.ts'
 
 import type { JexlExpression, JexlInstance } from '../../../util/jexlStrings.ts'
 
@@ -29,10 +29,14 @@ export default class SerializableFilterChain {
       })
   }
 
-  passes(...args: unknown[]) {
-    const feature = isFeature(args[0]) ? jexlFeatureProxy(args[0]) : args[0]
+  // `feature` is the filter subject; `extraContext` supplies any additional
+  // named bindings the expression may reference. Both go through the same
+  // context builder as config-slot evaluation, so a Feature is exposed
+  // identically (proxy + `get()`), regardless of which path evaluates it.
+  passes(feature: unknown, extraContext?: Record<string, unknown>) {
+    const context = buildJexlContext({ ...extraContext, feature })
     for (const entry of this.filterChain) {
-      if (!entry.expr.eval({ feature })) {
+      if (!entry.expr.eval(context)) {
         return false
       }
     }

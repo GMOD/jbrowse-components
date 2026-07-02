@@ -154,7 +154,9 @@ export async function handleSelectedRegion({
       } catch (e) {
         const isPlainName = !input.includes(':') && !input.includes(' ')
         if (e instanceof UnknownRefNameError && isPlainName) {
-          throw new SearchResultsNotFoundError(`No results found for "${input}"`)
+          throw new SearchResultsNotFoundError(
+            `No results found for "${input}"`,
+          )
         } else {
           throw e
         }

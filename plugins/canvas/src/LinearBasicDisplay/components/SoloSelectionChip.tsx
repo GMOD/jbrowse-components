@@ -1,5 +1,5 @@
-import { Chip, Tooltip } from '@mui/material'
 import FilterAltIcon from '@mui/icons-material/FilterAlt'
+import { Chip, Tooltip } from '@mui/material'
 
 // Bottom-right badge for the "show only these features" collection. While the
 // user is collecting (ctrl/cmd+click or the right-click "Add to show-only set"

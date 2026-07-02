@@ -38,17 +38,6 @@ this is the entry under the `configuration` key e.g.
 RpcManager.configSchema
 ```
 
-#### slot: configuration.highResolutionScaling
-
-**Type:** `number` · **Default:** `2`
-
-```js
-{
-  type: 'number',
-  defaultValue: 2,
-}
-```
-
 #### slot: configuration.disableAnalytics
 
 **Type:** `boolean` · **Default:** `false`
@@ -57,6 +46,7 @@ RpcManager.configSchema
 {
   type: 'boolean',
   defaultValue: false,
+  advanced: true,
 }
 ```
 
@@ -71,6 +61,7 @@ when true, URL params like `&loc=` navigate within the configured defaultSession
 {
   type: 'boolean',
   defaultValue: false,
+  advanced: true,
 }
 ```
 
@@ -99,6 +90,7 @@ PreferencesConfigSchemaFactory()
 {
   type: 'frozen',
   defaultValue: {},
+  advanced: true,
 }
 ```
 
@@ -113,6 +105,7 @@ PreferencesConfigSchemaFactory()
     uri: '',
     locationType: 'UriLocation',
   },
+  advanced: true,
 }
 ```
 

@@ -85,10 +85,10 @@ type assemblyManager = ModelInstanceTypeProps<{ assemblies: IArrayType<IModelTyp
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                               | Signature                                                             |
-| ------------------------------------ | --------------------------------------------------------------------- |
-| [`renderProps`](#method-renderprops) | `() => { theme: SerializableThemeArgs; highResolutionScaling: any; }` |
-| [`menus`](#method-menus)             | `() => Menu[]`                                                        |
+| Member                               | Signature                                 |
+| ------------------------------------ | ----------------------------------------- |
+| [`renderProps`](#method-renderprops) | `() => { theme: SerializableThemeArgs; }` |
+| [`menus`](#method-menus)             | `() => Menu[]`                            |
 
 </details>
 
@@ -98,10 +98,7 @@ detail):
 #### method: renderProps
 
 ```ts
-type renderProps = () => {
-  theme: SerializableThemeArgs
-  highResolutionScaling: any
-}
+type renderProps = () => { theme: SerializableThemeArgs }
 ```
 
 #### method: menus

@@ -67,14 +67,19 @@ and docs.
 
 **Properties:**
 [configuration](../linearcanvasbasedisplay#property-configuration),
-[jexlFiltersSetting](../linearcanvasbasedisplay#property-jexlfilterssetting)
+[jexlFiltersSetting](../linearcanvasbasedisplay#property-jexlfilterssetting),
+[pinnedFeatureIds](../linearcanvasbasedisplay#property-pinnedfeatureids)
 
 **Volatiles:** [rpcDataMap](../linearcanvasbasedisplay#volatile-rpcdatamap),
 [densityStatsPerRegion](../linearcanvasbasedisplay#volatile-densitystatsperregion),
 [featureIdUnderMouse](../linearcanvasbasedisplay#volatile-featureidundermouse),
 [subfeatureIdUnderMouse](../linearcanvasbasedisplay#volatile-subfeatureidundermouse),
+[hoveredRegionIndex](../linearcanvasbasedisplay#volatile-hoveredregionindex),
 [mouseoverExtraInformation](../linearcanvasbasedisplay#volatile-mouseoverextrainformation),
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
+[soloFeatureIds](../linearcanvasbasedisplay#volatile-solofeatureids),
+[soloApplied](../linearcanvasbasedisplay#volatile-soloapplied),
+[hiddenFeatureIds](../linearcanvasbasedisplay#volatile-hiddenfeatureids),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
 [heightBeforeExpand](../linearcanvasbasedisplay#volatile-heightbeforeexpand),
@@ -82,9 +87,7 @@ and docs.
 [morphFromTops](../linearcanvasbasedisplay#volatile-morphfromtops),
 [morphProgress](../linearcanvasbasedisplay#volatile-morphprogress),
 [morphStartMs](../linearcanvasbasedisplay#volatile-morphstartms),
-[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy),
-[morphScrollFrom](../linearcanvasbasedisplay#volatile-morphscrollfrom),
-[morphScrollDelta](../linearcanvasbasedisplay#volatile-morphscrolldelta)
+[morphFromMaxY](../linearcanvasbasedisplay#volatile-morphfrommaxy)
 
 **Getters:** [conf](../linearcanvasbasedisplay#getter-conf),
 [visibleFeatureDensityPerPx](../linearcanvasbasedisplay#getter-visiblefeaturedensityperpx),
@@ -108,6 +111,9 @@ and docs.
 [sequenceAdapter](../linearcanvasbasedisplay#getter-sequenceadapter),
 [regionKeys](../linearcanvasbasedisplay#getter-regionkeys),
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
+[pinnedFeatureIdSet](../linearcanvasbasedisplay#getter-pinnedfeatureidset),
+[soloFeatureIdSet](../linearcanvasbasedisplay#getter-solofeatureidset),
+[hiddenFeatureIdSet](../linearcanvasbasedisplay#getter-hiddenfeatureidset),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
 [estimatedVisibleBytes](../linearcanvasbasedisplay#getter-estimatedvisiblebytes),
 [densityTooLarge](../linearcanvasbasedisplay#getter-densitytoolarge),
@@ -118,7 +124,10 @@ and docs.
 [renderDataMap](../linearcanvasbasedisplay#getter-renderdatamap),
 [maxY](../linearcanvasbasedisplay#getter-maxy),
 [hasOverflow](../linearcanvasbasedisplay#getter-hasoverflow),
+[contentHeight](../linearcanvasbasedisplay#getter-contentheight),
+[scrollableHeight](../linearcanvasbasedisplay#getter-scrollableheight),
 [fitHeight](../linearcanvasbasedisplay#getter-fitheight),
+[canExpand](../linearcanvasbasedisplay#getter-canexpand),
 [featureIdIndex](../linearcanvasbasedisplay#getter-featureidindex),
 [subfeatureIdIndex](../linearcanvasbasedisplay#getter-subfeatureidindex),
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
@@ -153,7 +162,15 @@ and docs.
 [setFeatureDensityStatsLimit](../linearcanvasbasedisplay#action-setfeaturedensitystatslimit),
 [setHover](../linearcanvasbasedisplay#action-sethover),
 [clearHover](../linearcanvasbasedisplay#action-clearhover),
-[setContextMenuInfo](../linearcanvasbasedisplay#action-setcontextmenuinfo),
+[closeContextMenu](../linearcanvasbasedisplay#action-closecontextmenu),
+[togglePinnedFeature](../linearcanvasbasedisplay#action-togglepinnedfeature),
+[toggleSoloFeature](../linearcanvasbasedisplay#action-togglesolofeature),
+[clearSolo](../linearcanvasbasedisplay#action-clearsolo),
+[hideFeature](../linearcanvasbasedisplay#action-hidefeature),
+[showAllHidden](../linearcanvasbasedisplay#action-showallhidden),
+[applySolo](../linearcanvasbasedisplay#action-applysolo),
+[soloFeature](../linearcanvasbasedisplay#action-solofeature),
+[clearAllFeatureFilters](../linearcanvasbasedisplay#action-clearallfeaturefilters),
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
 [setShowLabels](../linearcanvasbasedisplay#action-setshowlabels),
@@ -168,10 +185,9 @@ and docs.
 [openColorByAttributeDialog](../linearcanvasbasedisplay#action-opencolorbyattributedialog),
 [openFilterDialog](../linearcanvasbasedisplay#action-openfilterdialog),
 [fetchFullFeature](../linearcanvasbasedisplay#action-fetchfullfeature),
-[selectFeatureById](../linearcanvasbasedisplay#action-selectfeaturebyid),
 [isCacheValid](../linearcanvasbasedisplay#action-iscachevalid),
 [byteSizeLimit](../linearcanvasbasedisplay#action-bytesizelimit),
-[selectFullFeature](../linearcanvasbasedisplay#action-selectfullfeature),
+[selectFeatureById](../linearcanvasbasedisplay#action-selectfeaturebyid),
 [reload](../linearcanvasbasedisplay#action-reload),
 [fetchNeeded](../linearcanvasbasedisplay#action-fetchneeded),
 [setFeatureDensityStats](../linearcanvasbasedisplay#action-setfeaturedensitystats),
@@ -393,12 +409,12 @@ type isGeneLike = boolean
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                 | Signature                                                                                                                                                                                                                                                                                                                              |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: { geneGlyphMode: "auto" \| "all" \| "longestCoding"; subfeatureLabels: "none" \| "overlay" \| "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: any; colorByCDS: boolean; theme: Serializabl...` |
-| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                                                         |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                                                                                                                                                                                             |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                                                                                                                                        |
+| Member                                                 | Signature                                                                                                                                                                                                                                                                                                |
+| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: { geneGlyphMode: "auto" \| "all" \| "longestCoding"; subfeatureLabels: "none" \| "overlay" \| "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; ... 5 more ...; theme: SerializableThemeArgs \| undefined; }` |
+| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                           |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                                                                                                                                                               |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                                                                                                          |
 
 </details>
 
@@ -408,7 +424,7 @@ detail):
 #### method: rpcProps
 
 ```ts
-type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; showOnlyGenes: boolean; maxFeatureDensity: any; colorByCDS: boolean; theme: Serializabl...
+type rpcProps = () => { displayConfig: { geneGlyphMode: "auto" | "all" | "longestCoding"; subfeatureLabels: "none" | "overlay" | "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; ... 5 more ...; theme: SerializableThemeArgs | undefined; }
 ```
 
 #### method: showSubmenuMenuItems

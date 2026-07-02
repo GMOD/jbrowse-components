@@ -740,46 +740,46 @@ type coarseVisibleLocStrings = string
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                                   | Signature                                                                                                                                                                                          |
-| ------------------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`pinnedTracks`](#getter-pinnedtracks)                                   | `any[]`                                                                                                                                                                                            |
-| [`unpinnedTracks`](#getter-unpinnedtracks)                               | `any[]`                                                                                                                                                                                            |
-| [`width`](#getter-width)                                                 | `number`                                                                                                                                                                                           |
-| [`assemblyNames`](#getter-assemblynames)                                 | `string[]`                                                                                                                                                                                         |
-| [`assemblyDisplayNames`](#getter-assemblydisplaynames)                   | `string[]`                                                                                                                                                                                         |
-| [`rubberbandTop`](#getter-rubberbandtop)                                 | `number`                                                                                                                                                                                           |
-| [`pinnedTracksTop`](#getter-pinnedtrackstop)                             | `number`                                                                                                                                                                                           |
-| [`assembliesNotFound`](#getter-assembliesnotfound)                       | `string \| undefined`                                                                                                                                                                              |
-| [`assemblyErrors`](#getter-assemblyerrors)                               | `string`                                                                                                                                                                                           |
-| [`assembliesInitialized`](#getter-assembliesinitialized)                 | `boolean`                                                                                                                                                                                          |
-| [`initialized`](#getter-initialized)                                     | `boolean`                                                                                                                                                                                          |
-| [`hasDisplayedRegions`](#getter-hasdisplayedregions)                     | `boolean`                                                                                                                                                                                          |
-| [`loadingMessage`](#getter-loadingmessage)                               | `"Loading" \| undefined`                                                                                                                                                                           |
-| [`hasSomethingToShow`](#getter-hassomethingtoshow)                       | `boolean`                                                                                                                                                                                          |
-| [`scalebarHeight`](#getter-scalebarheight)                               | `number`                                                                                                                                                                                           |
-| [`headerHeight`](#getter-headerheight)                                   | `number`                                                                                                                                                                                           |
-| [`trackHeights`](#getter-trackheights)                                   | `number`                                                                                                                                                                                           |
-| [`trackHeightsWithResizeHandles`](#getter-trackheightswithresizehandles) | `number`                                                                                                                                                                                           |
-| [`height`](#getter-height)                                               | `number`                                                                                                                                                                                           |
-| [`totalBp`](#getter-totalbp)                                             | `number`                                                                                                                                                                                           |
-| [`maxBpPerPx`](#getter-maxbpperpx)                                       | `number`                                                                                                                                                                                           |
-| [`minBpPerPx`](#getter-minbpperpx)                                       | `number`                                                                                                                                                                                           |
-| [`error`](#getter-error)                                                 | `unknown`                                                                                                                                                                                          |
-| [`maxOffset`](#getter-maxoffset)                                         | `number`                                                                                                                                                                                           |
-| [`minOffset`](#getter-minoffset)                                         | `number`                                                                                                                                                                                           |
-| [`displayedRegionsTotalPx`](#getter-displayedregionstotalpx)             | `number`                                                                                                                                                                                           |
-| [`trackMap`](#getter-trackmap)                                           | `Map<any, any>`                                                                                                                                                                                    |
-| [`trackTypeActions`](#getter-tracktypeactions)                           | `Map<string, MenuItem[]>`                                                                                                                                                                          |
-| [`canShowCytobands`](#getter-canshowcytobands)                           | `boolean`                                                                                                                                                                                          |
-| [`showCytobands`](#getter-showcytobands)                                 | `boolean`                                                                                                                                                                                          |
-| [`anyCytobandsExist`](#getter-anycytobandsexist)                         | `boolean`                                                                                                                                                                                          |
-| [`isTrackSelectorOpen`](#getter-istrackselectoropen)                     | `boolean`                                                                                                                                                                                          |
-| [`visibleBp`](#getter-visiblebp)                                         | `number`                                                                                                                                                                                           |
-| [`coarseTotalBpDisplayStr`](#getter-coarsetotalbpdisplaystr)             | `string`                                                                                                                                                                                           |
-| [`effectiveBpPerPx`](#getter-effectivebpperpx)                           | `number`                                                                                                                                                                                           |
-| [`effectiveTotalBp`](#getter-effectivetotalbp)                           | `number`                                                                                                                                                                                           |
-| [`effectiveTotalBpDisplayStr`](#getter-effectivetotalbpdisplaystr)       | `string`                                                                                                                                                                                           |
-| [`centerLineInfo`](#getter-centerlineinfo)                               | `{ coord: number; coord0: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; } \| undefined` |
+| Member                                                                   | Signature                   |
+| ------------------------------------------------------------------------ | --------------------------- |
+| [`pinnedTracks`](#getter-pinnedtracks)                                   | `any[]`                     |
+| [`unpinnedTracks`](#getter-unpinnedtracks)                               | `any[]`                     |
+| [`width`](#getter-width)                                                 | `number`                    |
+| [`assemblyNames`](#getter-assemblynames)                                 | `string[]`                  |
+| [`assemblyDisplayNames`](#getter-assemblydisplaynames)                   | `string[]`                  |
+| [`rubberbandTop`](#getter-rubberbandtop)                                 | `number`                    |
+| [`pinnedTracksTop`](#getter-pinnedtrackstop)                             | `number`                    |
+| [`assembliesNotFound`](#getter-assembliesnotfound)                       | `string \| undefined`       |
+| [`assemblyErrors`](#getter-assemblyerrors)                               | `string`                    |
+| [`assembliesInitialized`](#getter-assembliesinitialized)                 | `boolean`                   |
+| [`initialized`](#getter-initialized)                                     | `boolean`                   |
+| [`hasDisplayedRegions`](#getter-hasdisplayedregions)                     | `boolean`                   |
+| [`loadingMessage`](#getter-loadingmessage)                               | `"Loading" \| undefined`    |
+| [`hasSomethingToShow`](#getter-hassomethingtoshow)                       | `boolean`                   |
+| [`scalebarHeight`](#getter-scalebarheight)                               | `number`                    |
+| [`headerHeight`](#getter-headerheight)                                   | `number`                    |
+| [`trackHeights`](#getter-trackheights)                                   | `number`                    |
+| [`trackHeightsWithResizeHandles`](#getter-trackheightswithresizehandles) | `number`                    |
+| [`height`](#getter-height)                                               | `number`                    |
+| [`totalBp`](#getter-totalbp)                                             | `number`                    |
+| [`maxBpPerPx`](#getter-maxbpperpx)                                       | `number`                    |
+| [`minBpPerPx`](#getter-minbpperpx)                                       | `number`                    |
+| [`error`](#getter-error)                                                 | `unknown`                   |
+| [`maxOffset`](#getter-maxoffset)                                         | `number`                    |
+| [`minOffset`](#getter-minoffset)                                         | `number`                    |
+| [`displayedRegionsTotalPx`](#getter-displayedregionstotalpx)             | `number`                    |
+| [`trackMap`](#getter-trackmap)                                           | `Map<any, any>`             |
+| [`trackTypeActions`](#getter-tracktypeactions)                           | `Map<string, MenuItem[]>`   |
+| [`canShowCytobands`](#getter-canshowcytobands)                           | `boolean`                   |
+| [`showCytobands`](#getter-showcytobands)                                 | `boolean`                   |
+| [`anyCytobandsExist`](#getter-anycytobandsexist)                         | `boolean`                   |
+| [`isTrackSelectorOpen`](#getter-istrackselectoropen)                     | `boolean`                   |
+| [`visibleBp`](#getter-visiblebp)                                         | `number`                    |
+| [`coarseTotalBpDisplayStr`](#getter-coarsetotalbpdisplaystr)             | `string`                    |
+| [`effectiveBpPerPx`](#getter-effectivebpperpx)                           | `number`                    |
+| [`effectiveTotalBp`](#getter-effectivetotalbp)                           | `number`                    |
+| [`effectiveTotalBpDisplayStr`](#getter-effectivetotalbpdisplaystr)       | `string`                    |
+| [`centerLineInfo`](#getter-centerlineinfo)                               | `PxToBpResult \| undefined` |
 
 </details>
 
@@ -1011,20 +1011,7 @@ type effectiveTotalBpDisplayStr = string
 #### getter: centerLineInfo
 
 ```ts
-type centerLineInfo =
-  | {
-      coord: number
-      coord0: number
-      index: number
-      refName: string
-      oob: boolean
-      assemblyName: string
-      offset: number
-      start: number
-      end: number
-      reversed?: boolean | undefined
-    }
-  | undefined
+type centerLineInfo = PxToBpResult | undefined
 ```
 
 </details>
@@ -1145,18 +1132,18 @@ type highlightMenuItems = (_highlight: HighlightType) => MenuItem[]
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                         | Signature                                                                                                                                                                                             |
-| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`scalebarDisplayPrefix`](#method-scalebardisplayprefix)       | `() => string`                                                                                                                                                                                        |
-| [`MiniControlsComponent`](#method-minicontrolscomponent)       | `() => FC<any>`                                                                                                                                                                                       |
-| [`HeaderComponent`](#method-headercomponent)                   | `() => FC<any>`                                                                                                                                                                                       |
-| [`renderProps`](#method-renderprops)                           | `() => { bpPerPx: number; colorByCDS: boolean; }`                                                                                                                                                     |
-| [`searchScope`](#method-searchscope)                           | `(assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }`                                           |
-| [`getTrack`](#method-gettrack)                                 | `(id: string) => any`                                                                                                                                                                                 |
-| [`rubberBandMenuItems`](#method-rubberbandmenuitems)           | `() => MenuItem[]`                                                                                                                                                                                    |
-| [`bpToPx`](#method-bptopx)                                     | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => { index: number; offsetPx: number; } \| undefined`                   |
-| [`pxToBp`](#method-pxtobp)                                     | `(px: number) => { coord: number; coord0: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }` |
-| [`rubberbandClickMenuItems`](#method-rubberbandclickmenuitems) | `(clickOffset: BpOffset) => MenuItem[]`                                                                                                                                                               |
+| Member                                                         | Signature                                                                                                                                                                           |
+| -------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`scalebarDisplayPrefix`](#method-scalebardisplayprefix)       | `() => string`                                                                                                                                                                      |
+| [`MiniControlsComponent`](#method-minicontrolscomponent)       | `() => FC<any>`                                                                                                                                                                     |
+| [`HeaderComponent`](#method-headercomponent)                   | `() => FC<any>`                                                                                                                                                                     |
+| [`renderProps`](#method-renderprops)                           | `() => { bpPerPx: number; colorByCDS: boolean; }`                                                                                                                                   |
+| [`searchScope`](#method-searchscope)                           | `(assemblyName: string) => { assemblyName: string; includeAggregateIndexes: boolean; tracks: IMSTArray<IAnyType> & IStateTreeNode<IArrayType<IAnyType>>; }`                         |
+| [`getTrack`](#method-gettrack)                                 | `(id: string) => any`                                                                                                                                                               |
+| [`rubberBandMenuItems`](#method-rubberbandmenuitems)           | `() => MenuItem[]`                                                                                                                                                                  |
+| [`bpToPx`](#method-bptopx)                                     | `({ refName, coord, displayedRegionIndex, }: { refName: string; coord: number; displayedRegionIndex?: number \| undefined; }) => { index: number; offsetPx: number; } \| undefined` |
+| [`pxToBp`](#method-pxtobp)                                     | `(px: number) => PxToBpResult`                                                                                                                                                      |
+| [`rubberbandClickMenuItems`](#method-rubberbandclickmenuitems) | `(clickOffset: BpOffset) => MenuItem[]`                                                                                                                                             |
 
 </details>
 
@@ -1226,18 +1213,7 @@ type bpToPx = ({
 #### method: pxToBp
 
 ```ts
-type pxToBp = (px: number) => {
-  coord: number
-  coord0: number
-  index: number
-  refName: string
-  oob: boolean
-  assemblyName: string
-  offset: number
-  start: number
-  end: number
-  reversed?: boolean | undefined
-}
+type pxToBp = (px: number) => PxToBpResult
 ```
 
 #### method: rubberbandClickMenuItems

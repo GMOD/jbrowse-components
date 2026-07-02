@@ -86,7 +86,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
       renderProps() {
         return {
           theme: getConf(self, 'theme'),
-          highResolutionScaling: getConf(self, 'highResolutionScaling'),
         }
       },
     }))

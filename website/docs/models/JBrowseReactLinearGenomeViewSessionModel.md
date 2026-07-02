@@ -259,9 +259,9 @@ type theme = Theme
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                               | Signature                                           |
-| ------------------------------------ | --------------------------------------------------- |
-| [`renderProps`](#method-renderprops) | `() => { theme: any; highResolutionScaling: any; }` |
+| Member                               | Signature               |
+| ------------------------------------ | ----------------------- |
+| [`renderProps`](#method-renderprops) | `() => { theme: any; }` |
 
 </details>
 
@@ -271,7 +271,7 @@ detail):
 #### method: renderProps
 
 ```ts
-type renderProps = () => { theme: any; highResolutionScaling: any }
+type renderProps = () => { theme: any }
 ```
 
 </details>

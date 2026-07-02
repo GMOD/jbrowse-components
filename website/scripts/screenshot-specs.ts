@@ -204,6 +204,20 @@ const HG002_NANOPORE_ADAPTER = {
     indexType: 'BAI',
   },
 }
+// NA12878 direct-RNA nanopore reads sliced to just the PTEN locus and re-hosted,
+// so the collapse-introns/sashimi figure downloads a ~2 MB deterministic file
+// instead of range-querying the whole-genome BAM (which never quiesced before
+// the loading-overlay timeout — the source of that figure's run-to-run flakiness).
+const PTEN_RNASEQ_BAM =
+  'https://jbrowse.org/demos/rnaseq/NA12878-DirectRNA.PTEN.bam'
+const PTEN_RNASEQ_ADAPTER = {
+  type: 'BamAdapter',
+  bamLocation: { uri: PTEN_RNASEQ_BAM, locationType: 'UriLocation' },
+  index: {
+    location: { uri: `${PTEN_RNASEQ_BAM}.bai`, locationType: 'UriLocation' },
+    indexType: 'BAI',
+  },
+}
 const DOTPLOT_CONFIG = 'test_data/config_dotplot.json'
 const HS1_MM39_CONFIG = 'test_data/hs1_vs_mm39/config.json'
 const DEMO_CONFIG = 'test_data/config_demo.json'
@@ -1365,32 +1379,47 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'gene_track_collapse_introns',
-    url: lgvSession(DEMO_CONFIG, {
-      assembly: 'hg38',
-      loc: 'chr10:87,863,113-87,971,930',
-      // offset labels so they overlay the tracks (reviewer)
-      trackLabels: 'offset',
-      tracks: [
+    url: sessionSpec(DEMO_CONFIG, {
+      sessionTracks: [
         {
-          trackId: 'ncbi_refseq_109_hg38_latest',
-          // one clean transcript per gene so the PTEN glyph + label is tidy.
-          // The collapse-introns dialog's "Show only this feature" (on by
-          // default) isolates the reshaped view to PTEN, dropping the
-          // neighboring KLLN fragment — no jexl filter needed.
-          displaySnapshot: {
-            type: 'LinearBasicDisplay',
-            geneGlyphMode: 'longestCoding',
-          },
+          type: 'AlignmentsTrack',
+          trackId: 'pten_directrna',
+          name: 'NA12878 direct-RNA (PTEN)',
+          assemblyNames: ['hg38'],
+          adapter: PTEN_RNASEQ_ADAPTER,
         },
+      ],
+      views: [
         {
-          // compact pileup so the RNA-seq reads pack tightly (reviewer)
-          trackId:
-            'NA12878-DirectRNA.pass.dedup.NoU.fastq.hg38.minimap2.sorted',
-          displaySnapshot: {
-            type: 'LinearAlignmentsDisplay',
-            featureHeight: 3,
-            featureSpacing: 0,
-          },
+          type: 'LinearGenomeView',
+          assembly: 'hg38',
+          loc: 'chr10:87,863,113-87,971,930',
+          // offset labels so they overlay the tracks (reviewer)
+          trackLabels: 'offset',
+          tracks: [
+            {
+              trackId: 'ncbi_refseq_109_hg38_latest',
+              // one clean transcript per gene so the PTEN glyph + label is tidy.
+              // The collapse-introns dialog's "Show only this feature" (on by
+              // default) isolates the reshaped view to PTEN, dropping the
+              // neighboring KLLN fragment — no jexl filter needed.
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                geneGlyphMode: 'longestCoding',
+              },
+            },
+            {
+              // PTEN-only sliced RNA-seq BAM (see PTEN_RNASEQ_ADAPTER): a tiny
+              // deterministic download, so the sashimi arcs are reliably present
+              // at capture. compact pileup so the reads pack tightly (reviewer)
+              trackId: 'pten_directrna',
+              displaySnapshot: {
+                type: 'LinearAlignmentsDisplay',
+                featureHeight: 3,
+                featureSpacing: 0,
+              },
+            },
+          ],
         },
       ],
     }),
@@ -1399,9 +1428,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 6000,
     viewportHeight: 600,
     hideTooltip: true,
-    // remote nanopore RNA-seq: pileup/sashimi positions jitter run-to-run, so
-    // allow more drift before re-committing the PNG
-    diffThreshold: 0.03,
     actions: [
       // `readyText: 'NCBI RefSeq'` matches the track *name*, which appears before
       // the remote GFF finishes loading — so wait for the PTEN label itself to
@@ -1417,8 +1443,8 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 600 },
       { type: 'click', text: 'Replace current view' },
       { type: 'waitForText', text: 'Replace current view', hidden: true },
-      // let the reshaped view kick off its refetch, then wait out the remote
-      // RNA download so the sashimi arcs are present in the capture
+      // let the reshaped view kick off its refetch, then wait for the (now tiny,
+      // sliced) RNA BAM to load so the sashimi arcs are present in the capture
       { type: 'delay', ms: 2000 },
       {
         type: 'waitForSelector',

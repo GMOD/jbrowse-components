@@ -28,10 +28,6 @@ export function createConfigModel(
     .model('Configuration', {
       configuration: ConfigurationSchema('Root', {
         rpc: RpcManager.configSchema,
-        highResolutionScaling: {
-          type: 'number',
-          defaultValue: 2,
-        },
         hierarchical: HierarchicalConfigSchemaFactory(),
         preferences: PreferencesConfigSchemaFactory(),
         formatDetails: FormatDetailsConfigSchemaFactory(),

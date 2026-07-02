@@ -44,7 +44,7 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  * }
  * ```
  */
-export default ConfigurationSchema(
+const linearWiggleDisplayConfigSchema = ConfigurationSchema(
   'LinearWiggleDisplay',
   {
     /**
@@ -119,3 +119,5 @@ export default ConfigurationSchema(
       remapRetiredAutoscale(snap),
   },
 )
+
+export default linearWiggleDisplayConfigSchema

@@ -93,7 +93,6 @@ test('DotplotView showImportForm is true when no init', () => {
 
   const view = session.addView('DotplotView', {})
 
-  expect(view.showImportForm).toBe(true)
   expect(view.hasSomethingToShow).toBe(false)
 }, 40000)
 

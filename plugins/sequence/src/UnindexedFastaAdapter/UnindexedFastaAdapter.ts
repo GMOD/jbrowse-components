@@ -1,6 +1,10 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { BaseSequenceAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, fetchAndMaybeUnzipText, updateStatus } from '@jbrowse/core/util'
+import {
+  SimpleFeature,
+  fetchAndMaybeUnzipText,
+  updateStatus,
+} from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 

@@ -1,10 +1,12 @@
 import { parseCigar2Typed } from '@jbrowse/alignments-core'
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
-import { cmpStr, createProgressReporter, updateStatus } from '@jbrowse/core/util'
-import { rpcResult } from '@jbrowse/core/util/librpc'
 import {
-  createStopTokenChecker,
-} from '@jbrowse/core/util/stopToken'
+  cmpStr,
+  createProgressReporter,
+  updateStatus,
+} from '@jbrowse/core/util'
+import { rpcResult } from '@jbrowse/core/util/librpc'
+import { createStopTokenChecker } from '@jbrowse/core/util/stopToken'
 import { bpToCumBp, buildBpRegionIndex } from '@jbrowse/synteny-core'
 
 import {

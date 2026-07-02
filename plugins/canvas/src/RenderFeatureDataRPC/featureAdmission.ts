@@ -61,7 +61,7 @@ export function buildFeatureAdmission({
       : undefined
   return (feature: Feature) =>
     (soloSet === undefined || soloSet.has(feature.id())) &&
-    (!hiddenSet?.has(feature.id())) &&
+    !hiddenSet?.has(feature.id()) &&
     filterChain.passes(feature) &&
     (geneLikeTypes === undefined ||
       geneLikeTypes.has(featureType(feature).toLowerCase()))

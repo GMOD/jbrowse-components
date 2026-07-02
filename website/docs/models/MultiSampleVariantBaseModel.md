@@ -297,16 +297,15 @@ cellData: undefined as CellDataResult | undefined
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                         | Signature                                                                      |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| [`showLegend`](#volatile-showlegend)                           | `true`                                                                         |
-| [`sourcesLoadingStopToken`](#volatile-sourcesloadingstoptoken) | `StopToken \| undefined`                                                       |
-| [`contextMenuFeature`](#volatile-contextmenufeature)           | `Feature \| undefined`                                                         |
-| [`sourcesVolatile`](#volatile-sourcesvolatile)                 | `Source[] \| undefined`                                                        |
-| [`hoveredGenotype`](#volatile-hoveredgenotype)                 | `(Record<string, unknown> & { genotype: string; name: string; }) \| undefined` |
-| [`loadedBpPerPx`](#volatile-loadedbpperpx)                     | `number \| undefined`                                                          |
-| [`reloadCount`](#volatile-reloadcount)                         | `number`                                                                       |
-| [`pendingClusterTree`](#volatile-pendingclustertree)           | `string \| undefined`                                                          |
+| Member                                               | Signature                                                                      |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------ |
+| [`showLegend`](#volatile-showlegend)                 | `true`                                                                         |
+| [`contextMenuFeature`](#volatile-contextmenufeature) | `Feature \| undefined`                                                         |
+| [`sourcesVolatile`](#volatile-sourcesvolatile)       | `Source[] \| undefined`                                                        |
+| [`hoveredGenotype`](#volatile-hoveredgenotype)       | `(Record<string, unknown> & { genotype: string; name: string; }) \| undefined` |
+| [`loadedBpPerPx`](#volatile-loadedbpperpx)           | `number \| undefined`                                                          |
+| [`reloadCount`](#volatile-reloadcount)               | `number`                                                                       |
+| [`pendingClusterTree`](#volatile-pendingclustertree) | `string \| undefined`                                                          |
 
 </details>
 
@@ -320,15 +319,6 @@ detail):
 type showLegend = true
 // code
 showLegend: true
-```
-
-#### volatile: sourcesLoadingStopToken
-
-```ts
-// type signature
-type sourcesLoadingStopToken = StopToken | undefined
-// code
-sourcesLoadingStopToken: undefined as StopToken | undefined
 ```
 
 #### volatile: contextMenuFeature
@@ -428,6 +418,15 @@ phased mode).
 type hasUnphased = boolean
 ```
 
+#### getter: hasConsequence
+
+Whether any visible variant carries a SnpEff/VEP annotation, gating the "Color
+cells by consequence" menu option.
+
+```ts
+type hasConsequence = boolean
+```
+
 #### getter: renderingMode
 
 Returns the rendering mode config slot value
@@ -444,6 +443,15 @@ grouping.
 
 ```ts
 type colorBy = string
+```
+
+#### getter: featureColor
+
+Optional per-variant cell color (jexl string or CSS color) applied to
+alt-carrying cells; '' means default genotype coloring.
+
+```ts
+type featureColor = string
 ```
 
 #### getter: minorAlleleFrequencyFilter
@@ -735,12 +743,12 @@ type legendSections = () => LegendSection[]
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                         | Signature                                                                                                                                                                                    |
-| ---------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)                 | `() => { sources: ProcessedSource[] \| undefined; minorAlleleFrequencyFilter: number; filters: SerializableFilterChain \| undefined; renderingMode: string; referenceDrawingMode: string; }` |
-| [`showSubmenuItems`](#method-showsubmenuitems) | `() => MenuItem[]`                                                                                                                                                                           |
-| [`trackMenuItems`](#method-trackmenuitems)     | `() => MenuItem[]`                                                                                                                                                                           |
-| [`contextMenuItems`](#method-contextmenuitems) | `() => MenuItem[]`                                                                                                                                                                           |
+| Member                                         | Signature                                                                                                                                                                                                          |
+| ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [`rpcProps`](#method-rpcprops)                 | `() => { sources: ProcessedSource[] \| undefined; minorAlleleFrequencyFilter: number; filters: SerializableFilterChain \| undefined; renderingMode: string; referenceDrawingMode: string; featureColor: string; }` |
+| [`showSubmenuItems`](#method-showsubmenuitems) | `() => MenuItem[]`                                                                                                                                                                                                 |
+| [`trackMenuItems`](#method-trackmenuitems)     | `() => MenuItem[]`                                                                                                                                                                                                 |
+| [`contextMenuItems`](#method-contextmenuitems) | `() => MenuItem[]`                                                                                                                                                                                                 |
 
 </details>
 
@@ -756,6 +764,7 @@ type rpcProps = () => {
   filters: SerializableFilterChain | undefined
   renderingMode: string
   referenceDrawingMode: string
+  featureColor: string
 }
 ```
 
@@ -829,6 +838,16 @@ vertically resized
 type resizeHeight = (distance: number) => number
 ```
 
+#### action: setFeatureColor
+
+Set the per-variant cell color override (jexl string or CSS color), or '' to
+restore default genotype coloring. A fetch input — recomputes cells in the
+worker.
+
+```ts
+type setFeatureColor = (arg: string) => void
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -842,7 +861,6 @@ detail):
 | [`selectFeature`](#action-selectfeature)                                   | `(feature: Feature) => void`                                                                   |
 | [`setRowHeight`](#action-setrowheight)                                     | `(arg: number) => void`                                                                        |
 | [`setHoveredGenotype`](#action-sethoveredgenotype)                         | `(arg?: (Record<string, unknown> & { genotype: string; name: string; }) \| undefined) => void` |
-| [`setSourcesLoading`](#action-setsourcesloading)                           | `(token: StopToken) => void`                                                                   |
 | [`setSources`](#action-setsources)                                         | `(sources: Source[]) => void`                                                                  |
 | [`setMafFilter`](#action-setmaffilter)                                     | `(arg: number) => void`                                                                        |
 | [`setShowSidebarLabels`](#action-setshowsidebarlabels)                     | `(arg: boolean) => void`                                                                       |
@@ -913,12 +931,6 @@ type setHoveredGenotype = (
   arg?:
     (Record<string, unknown> & { genotype: string; name: string }) | undefined,
 ) => void
-```
-
-#### action: setSourcesLoading
-
-```ts
-type setSourcesLoading = (token: StopToken) => void
 ```
 
 #### action: setSources

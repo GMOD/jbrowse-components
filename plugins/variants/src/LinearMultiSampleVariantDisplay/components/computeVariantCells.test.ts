@@ -164,9 +164,9 @@ describe('computeVariantCells featureColor override', () => {
     expect(colors.filter(c => c === overrideAbgr)).toHaveLength(1)
     // ref cell is untouched, no-call cell is neither ref nor override
     expect(colors).toContain(refAbgr)
-    expect(colors.filter(c => c === overrideAbgr || c === refAbgr)).toHaveLength(
-      2,
-    )
+    expect(
+      colors.filter(c => c === overrideAbgr || c === refAbgr),
+    ).toHaveLength(2)
     expect(result.numCells).toBe(3)
   })
 })

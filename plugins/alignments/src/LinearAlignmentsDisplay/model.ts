@@ -2437,7 +2437,11 @@ export default function stateModelFactory(
               regions: [region],
               ...self.rpcProps(),
               stopToken,
-              statusCallback: self.makeStatusCallback(),
+              // per-region status so the N parallel collapsed-intron fetches
+              // aggregate into one bar instead of clobbering each other's
+              // progress text (matches every other multi-region display)
+              statusCallback:
+                self.makeRegionStatusCallback(displayedRegionIndex),
             },
           )
 

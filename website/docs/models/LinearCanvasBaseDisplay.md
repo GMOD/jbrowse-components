@@ -179,6 +179,20 @@ type jexlFiltersSetting = IMaybe<IArrayType<ISimpleType<string>>>
 jexlFiltersSetting: types.maybe(types.array(types.string))
 ```
 
+#### property: pinnedFeatureIds
+
+Feature ids the user pinned to the top of the layout via the feature right-click
+menu. Pinned features are inserted first into the greedy row-packer, so they
+hold the topmost rows in their bp range across zoom re-packs (see packRef in
+layout.ts).
+
+```ts
+// type signature
+type pinnedFeatureIds = IArrayType<ISimpleType<string>>
+// code
+pinnedFeatureIds: types.array(types.string)
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -214,8 +228,12 @@ detail):
 | [`densityStatsPerRegion`](#volatile-densitystatsperregion)         | `ObservableMap<number, RegionDensityStats>`                                                                    |
 | [`featureIdUnderMouse`](#volatile-featureidundermouse)             | `string \| null`                                                                                               |
 | [`subfeatureIdUnderMouse`](#volatile-subfeatureidundermouse)       | `string \| null`                                                                                               |
+| [`hoveredRegionIndex`](#volatile-hoveredregionindex)               | `number \| undefined`                                                                                          |
 | [`mouseoverExtraInformation`](#volatile-mouseoverextrainformation) | `string \| undefined`                                                                                          |
-| [`contextMenuInfo`](#volatile-contextmenuinfo)                     | `{ item: FlatbushItem; displayedRegionIndex: number; } \| undefined`                                           |
+| [`contextMenuInfo`](#volatile-contextmenuinfo)                     | `{ item: FlatbushItem; displayedRegionIndex: number; clientX: number; clientY: number; } \| undefined`         |
+| [`soloFeatureIds`](#volatile-solofeatureids)                       | `IObservableArray<string>`                                                                                     |
+| [`soloApplied`](#volatile-soloapplied)                             | `false`                                                                                                        |
+| [`hiddenFeatureIds`](#volatile-hiddenfeatureids)                   | `IObservableArray<string>`                                                                                     |
 | [`userFeatureDensityLimit`](#volatile-userfeaturedensitylimit)     | `number \| undefined`                                                                                          |
 | [`byteEstimateVisibleBp`](#volatile-byteestimatevisiblebp)         | `number \| undefined`                                                                                          |
 | [`heightBeforeExpand`](#volatile-heightbeforeexpand)               | `number \| undefined`                                                                                          |
@@ -224,8 +242,6 @@ detail):
 | [`morphProgress`](#volatile-morphprogress)                         | `number`                                                                                                       |
 | [`morphStartMs`](#volatile-morphstartms)                           | `number`                                                                                                       |
 | [`morphFromMaxY`](#volatile-morphfrommaxy)                         | `number`                                                                                                       |
-| [`morphScrollFrom`](#volatile-morphscrollfrom)                     | `number`                                                                                                       |
-| [`morphScrollDelta`](#volatile-morphscrolldelta)                   | `number`                                                                                                       |
 
 </details>
 
@@ -268,6 +284,15 @@ type subfeatureIdUnderMouse = string | null
 subfeatureIdUnderMouse: null as string | null
 ```
 
+#### volatile: hoveredRegionIndex
+
+```ts
+// type signature
+type hoveredRegionIndex = number | undefined
+// code
+hoveredRegionIndex: undefined as number | undefined
+```
+
 #### volatile: mouseoverExtraInformation
 
 ```ts
@@ -282,10 +307,49 @@ mouseoverExtraInformation: undefined as string | undefined
 ```ts
 // type signature
 type contextMenuInfo =
-  { item: FlatbushItem; displayedRegionIndex: number } | undefined
+  | {
+      item: FlatbushItem
+      displayedRegionIndex: number
+      clientX: number
+      clientY: number
+    }
+  | undefined
 // code
 contextMenuInfo: undefined as
-  { item: FlatbushItem; displayedRegionIndex: number } | undefined
+  | {
+      item: FlatbushItem
+      displayedRegionIndex: number
+      clientX: number
+      clientY: number
+    }
+  | undefined
+```
+
+#### volatile: soloFeatureIds
+
+```ts
+// type signature
+type soloFeatureIds = IObservableArray<string>
+// code
+soloFeatureIds: observable.array<string>()
+```
+
+#### volatile: soloApplied
+
+```ts
+// type signature
+type soloApplied = false
+// code
+soloApplied: false
+```
+
+#### volatile: hiddenFeatureIds
+
+```ts
+// type signature
+type hiddenFeatureIds = IObservableArray<string>
+// code
+hiddenFeatureIds: observable.array<string>()
 ```
 
 #### volatile: userFeatureDensityLimit
@@ -363,24 +427,6 @@ type morphFromMaxY = number
 morphFromMaxY: 0
 ```
 
-#### volatile: morphScrollFrom
-
-```ts
-// type signature
-type morphScrollFrom = number
-// code
-morphScrollFrom: 0
-```
-
-#### volatile: morphScrollDelta
-
-```ts
-// type signature
-type morphScrollDelta = number
-// code
-morphScrollDelta: 0
-```
-
 </details>
 
 <details open>
@@ -436,6 +482,9 @@ detail):
 | [`sequenceAdapter`](#getter-sequenceadapter)                       | `any`                                                             |
 | [`regionKeys`](#getter-regionkeys)                                 | `Map<number, string>`                                             |
 | [`reversedRegions`](#getter-reversedregions)                       | `Set<number>`                                                     |
+| [`pinnedFeatureIdSet`](#getter-pinnedfeatureidset)                 | `ReadonlySet<string>`                                             |
+| [`soloFeatureIdSet`](#getter-solofeatureidset)                     | `ReadonlySet<string>`                                             |
+| [`hiddenFeatureIdSet`](#getter-hiddenfeatureidset)                 | `ReadonlySet<string>`                                             |
 | [`featureWidgetType`](#getter-featurewidgettype)                   | `{ type: string; id: string; }`                                   |
 | [`densityTooLarge`](#getter-densitytoolarge)                       | `boolean`                                                         |
 | [`tooLargeStatus`](#getter-toolargestatus)                         | `RegionTooLargeStatus`                                            |
@@ -445,7 +494,10 @@ detail):
 | [`renderDataMap`](#getter-renderdatamap)                           | `Map<number, FeatureDataResult>`                                  |
 | [`maxY`](#getter-maxy)                                             | `number`                                                          |
 | [`hasOverflow`](#getter-hasoverflow)                               | `boolean`                                                         |
+| [`contentHeight`](#getter-contentheight)                           | `number`                                                          |
+| [`scrollableHeight`](#getter-scrollableheight)                     | `number`                                                          |
 | [`fitHeight`](#getter-fitheight)                                   | `number`                                                          |
+| [`canExpand`](#getter-canexpand)                                   | `boolean`                                                         |
 | [`featureIdIndex`](#getter-featureidindex)                         | `Map<string, FlatbushItem>`                                       |
 | [`subfeatureIdIndex`](#getter-subfeatureidindex)                   | `Map<string, SubfeatureInfo>`                                     |
 | [`hoveredFeature`](#getter-hoveredfeature)                         | `FlatbushItem \| null`                                            |
@@ -590,6 +642,24 @@ type regionKeys = Map<number, string>
 type reversedRegions = Set<number>
 ```
 
+#### getter: pinnedFeatureIdSet
+
+```ts
+type pinnedFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: soloFeatureIdSet
+
+```ts
+type soloFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: hiddenFeatureIdSet
+
+```ts
+type hiddenFeatureIdSet = ReadonlySet<string>
+```
+
 #### getter: featureWidgetType
 
 ```ts
@@ -644,10 +714,28 @@ type maxY = number
 type hasOverflow = boolean
 ```
 
+#### getter: contentHeight
+
+```ts
+type contentHeight = number
+```
+
+#### getter: scrollableHeight
+
+```ts
+type scrollableHeight = number
+```
+
 #### getter: fitHeight
 
 ```ts
 type fitHeight = number
+```
+
+#### getter: canExpand
+
+```ts
+type canExpand = boolean
 ```
 
 #### getter: featureIdIndex
@@ -739,16 +827,16 @@ type colorMenuItems = () => {
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                 | Signature                                                                                                                                                                                                                 |
-| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`observedMaxDensity`](#method-observedmaxdensity)     | `(bpPerPx: number) => number`                                                                                                                                                                                             |
-| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; theme: SerializableThemeArgs \| undefined; }`                                                                                         |
-| [`getFeatureById`](#method-getfeaturebyid)             | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                        |
-| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                  |
-| [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                              |
-| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                            |
-| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                           |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]` |
+| Member                                                 | Signature                                                                                                                                                                                                                                      |
+| ------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`observedMaxDensity`](#method-observedmaxdensity)     | `(bpPerPx: number) => number`                                                                                                                                                                                                                  |
+| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: IObservableArray<string> \| undefined; hiddenFeatureIds: IObservableArray<...> \| undefined; theme: SerializableThemeArgs \| undefined; }` |
+| [`getFeatureById`](#method-getfeaturebyid)             | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                                             |
+| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                       |
+| [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                   |
+| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                 |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => { label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; }[]`                                                                                                                |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; } \| { ...; })[]`          |
 
 </details>
 
@@ -764,12 +852,7 @@ type observedMaxDensity = (bpPerPx: number) => number
 #### method: rpcProps
 
 ```ts
-type rpcProps = () => {
-  displayConfig: DisplayConfig
-  maxFeatureDensity: any
-  colorByCDS: boolean
-  theme: SerializableThemeArgs | undefined
-}
+type rpcProps = () => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: IObservableArray<string> | undefined; hiddenFeatureIds: IObservableArray<...> | undefined; theme: SerializableThemeArgs | undefined; }
 ```
 
 #### method: getFeatureById
@@ -822,7 +905,7 @@ type contextMenuItems = () => {
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; })[]
+type trackMenuItems = () => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } | { ...; } | { ...; } | { ...; })[]
 ```
 
 </details>
@@ -861,44 +944,51 @@ type resizeHeight = (distance: number) => number
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                               | Signature                                                                                                        |
-| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| [`beginYMorph`](#action-beginymorph)                                 | `(fromTops: Map<string, number>, fromMaxY: number, scrollFrom: number, scrollDelta: number) => void`             |
-| [`setMorphProgress`](#action-setmorphprogress)                       | `(t: number) => void`                                                                                            |
-| [`endYMorph`](#action-endymorph)                                     | `() => void`                                                                                                     |
-| [`expandToFit`](#action-expandtofit)                                 | `() => void`                                                                                                     |
-| [`collapseFromExpand`](#action-collapsefromexpand)                   | `() => void`                                                                                                     |
-| [`clearHeightBeforeExpand`](#action-clearheightbeforeexpand)         | `() => void`                                                                                                     |
-| [`setRpcData`](#action-setrpcdata)                                   | `(displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void`         |
-| [`setDensityStats`](#action-setdensitystats)                         | `(displayedRegionIndex: number, stats: RegionDensityStats) => void`                                              |
-| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)       | `() => void`                                                                                                     |
-| [`pruneRpcDataMapToVisible`](#action-prunerpcdatamaptovisible)       | `(visibleDisplayedRegionIndices: Set<number>) => void`                                                           |
-| [`startRenderingBackend`](#action-startrenderingbackend)             | `(backend: CanvasFeatureRenderingBackend) => void`                                                               |
-| [`setFeatureDensityStatsLimit`](#action-setfeaturedensitystatslimit) | `(stats?: { bytes?: number \| undefined; fetchSizeLimit?: number \| undefined; } \| undefined) => void`          |
-| [`setHover`](#action-sethover)                                       | `(featureId: string \| null, subfeatureId: string \| null, tooltip: string \| undefined) => void`                |
-| [`clearHover`](#action-clearhover)                                   | `() => void`                                                                                                     |
-| [`setContextMenuInfo`](#action-setcontextmenuinfo)                   | `(info?: { item: FlatbushItem; displayedRegionIndex: number; } \| undefined) => void`                            |
-| [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                     |
-| [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                     |
-| [`setShowLabels`](#action-setshowlabels)                             | `(value: "auto" \| "off" \| "on") => void`                                                                       |
-| [`setAutoHeight`](#action-setautoheight)                             | `(value: boolean) => void`                                                                                       |
-| [`setShowDescriptions`](#action-setshowdescriptions)                 | `(value: boolean) => void`                                                                                       |
-| [`setShowOutline`](#action-setshowoutline)                           | `(value: boolean) => void`                                                                                       |
-| [`setFeatureColor`](#action-setfeaturecolor)                         | `(color?: string \| undefined) => void`                                                                          |
-| [`setUtrColor`](#action-setutrcolor)                                 | `(color?: string \| undefined) => void`                                                                          |
-| [`showContextMenuForFeature`](#action-showcontextmenuforfeature)     | `(featureInfo: FlatbushItem, displayedRegionIndex: number) => void`                                              |
-| [`openSetColorDialog`](#action-opensetcolordialog)                   | `(showUtrColor?: any) => void`                                                                                   |
-| [`openColorByAttributeDialog`](#action-opencolorbyattributedialog)   | `() => void`                                                                                                     |
-| [`openFilterDialog`](#action-openfilterdialog)                       | `() => void`                                                                                                     |
-| [`fetchFullFeature`](#action-fetchfullfeature)                       | `(featureId: string, displayedRegionIndex: number) => Promise<SimpleFeature \| undefined>`                       |
-| [`selectFeatureById`](#action-selectfeaturebyid)                     | `(featureInfo: FlatbushItem, subfeatureInfo: SubfeatureInfo \| undefined, displayedRegionIndex: number) => void` |
-| [`isCacheValid`](#action-iscachevalid)                               | `(displayedRegionIndex: number) => boolean`                                                                      |
-| [`byteSizeLimit`](#action-bytesizelimit)                             | `() => number \| undefined`                                                                                      |
-| [`selectFullFeature`](#action-selectfullfeature)                     | `(featureId: string, displayedRegionIndex: number) => void`                                                      |
-| [`reload`](#action-reload)                                           | `() => Promise<void>`                                                                                            |
-| [`fetchNeeded`](#action-fetchneeded)                                 | `(needed: { region: Region; displayedRegionIndex: number; }[]) => void`                                          |
-| [`clearStaleDensityState`](#action-clearstaledensitystate)           | `() => void`                                                                                                     |
-| [`afterAttach`](#action-afterattach)                                 | `() => void`                                                                                                     |
+| Member                                                               | Signature                                                                                                                       |
+| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| [`beginYMorph`](#action-beginymorph)                                 | `(fromTops: Map<string, number>, fromMaxY: number) => void`                                                                     |
+| [`setMorphProgress`](#action-setmorphprogress)                       | `(t: number) => void`                                                                                                           |
+| [`endYMorph`](#action-endymorph)                                     | `() => void`                                                                                                                    |
+| [`expandToFit`](#action-expandtofit)                                 | `() => void`                                                                                                                    |
+| [`collapseFromExpand`](#action-collapsefromexpand)                   | `() => void`                                                                                                                    |
+| [`clearHeightBeforeExpand`](#action-clearheightbeforeexpand)         | `() => void`                                                                                                                    |
+| [`setRpcData`](#action-setrpcdata)                                   | `(displayedRegionIndex: number, data: FeatureDataResult, loadedBpPerPx: number, region: Region) => void`                        |
+| [`setDensityStats`](#action-setdensitystats)                         | `(displayedRegionIndex: number, stats: RegionDensityStats) => void`                                                             |
+| [`clearDisplaySpecificData`](#action-cleardisplayspecificdata)       | `() => void`                                                                                                                    |
+| [`pruneRpcDataMapToVisible`](#action-prunerpcdatamaptovisible)       | `(visibleDisplayedRegionIndices: Set<number>) => void`                                                                          |
+| [`startRenderingBackend`](#action-startrenderingbackend)             | `(backend: CanvasFeatureRenderingBackend) => void`                                                                              |
+| [`setFeatureDensityStatsLimit`](#action-setfeaturedensitystatslimit) | `(stats?: { bytes?: number \| undefined; fetchSizeLimit?: number \| undefined; } \| undefined) => void`                         |
+| [`setHover`](#action-sethover)                                       | `(featureId: string \| null, subfeatureId: string \| null, tooltip: string \| undefined, displayedRegionIndex: number) => void` |
+| [`clearHover`](#action-clearhover)                                   | `() => void`                                                                                                                    |
+| [`closeContextMenu`](#action-closecontextmenu)                       | `() => void`                                                                                                                    |
+| [`togglePinnedFeature`](#action-togglepinnedfeature)                 | `(featureId: string) => void`                                                                                                   |
+| [`toggleSoloFeature`](#action-togglesolofeature)                     | `(featureId: string) => void`                                                                                                   |
+| [`clearSolo`](#action-clearsolo)                                     | `() => void`                                                                                                                    |
+| [`hideFeature`](#action-hidefeature)                                 | `(featureId: string) => void`                                                                                                   |
+| [`showAllHidden`](#action-showallhidden)                             | `() => void`                                                                                                                    |
+| [`applySolo`](#action-applysolo)                                     | `() => void`                                                                                                                    |
+| [`soloFeature`](#action-solofeature)                                 | `(featureId: string) => void`                                                                                                   |
+| [`clearAllFeatureFilters`](#action-clearallfeaturefilters)           | `() => void`                                                                                                                    |
+| [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                                    |
+| [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                                    |
+| [`setShowLabels`](#action-setshowlabels)                             | `(value: "auto" \| "off" \| "on") => void`                                                                                      |
+| [`setAutoHeight`](#action-setautoheight)                             | `(value: boolean) => void`                                                                                                      |
+| [`setShowDescriptions`](#action-setshowdescriptions)                 | `(value: boolean) => void`                                                                                                      |
+| [`setShowOutline`](#action-setshowoutline)                           | `(value: boolean) => void`                                                                                                      |
+| [`setFeatureColor`](#action-setfeaturecolor)                         | `(color?: string \| undefined) => void`                                                                                         |
+| [`setUtrColor`](#action-setutrcolor)                                 | `(color?: string \| undefined) => void`                                                                                         |
+| [`showContextMenuForFeature`](#action-showcontextmenuforfeature)     | `(featureInfo: FlatbushItem, displayedRegionIndex: number, clientX: number, clientY: number) => void`                           |
+| [`openSetColorDialog`](#action-opensetcolordialog)                   | `(showUtrColor?: any) => void`                                                                                                  |
+| [`openColorByAttributeDialog`](#action-opencolorbyattributedialog)   | `() => void`                                                                                                                    |
+| [`openFilterDialog`](#action-openfilterdialog)                       | `() => void`                                                                                                                    |
+| [`fetchFullFeature`](#action-fetchfullfeature)                       | `(featureId: string, displayedRegionIndex: number) => Promise<SimpleFeature \| undefined>`                                      |
+| [`isCacheValid`](#action-iscachevalid)                               | `(displayedRegionIndex: number) => boolean`                                                                                     |
+| [`byteSizeLimit`](#action-bytesizelimit)                             | `() => number \| undefined`                                                                                                     |
+| [`selectFeatureById`](#action-selectfeaturebyid)                     | `(featureId: string, subfeatureInfo: SubfeatureInfo \| undefined, displayedRegionIndex: number) => void`                        |
+| [`reload`](#action-reload)                                           | `() => Promise<void>`                                                                                                           |
+| [`fetchNeeded`](#action-fetchneeded)                                 | `(needed: { region: Region; displayedRegionIndex: number; }[]) => void`                                                         |
+| [`clearStaleDensityState`](#action-clearstaledensitystate)           | `() => void`                                                                                                                    |
+| [`afterAttach`](#action-afterattach)                                 | `() => void`                                                                                                                    |
 
 </details>
 
@@ -908,12 +998,7 @@ detail):
 #### action: beginYMorph
 
 ```ts
-type beginYMorph = (
-  fromTops: Map<string, number>,
-  fromMaxY: number,
-  scrollFrom: number,
-  scrollDelta: number,
-) => void
+type beginYMorph = (fromTops: Map<string, number>, fromMaxY: number) => void
 ```
 
 #### action: setMorphProgress
@@ -1003,6 +1088,7 @@ type setHover = (
   featureId: string | null,
   subfeatureId: string | null,
   tooltip: string | undefined,
+  displayedRegionIndex: number,
 ) => void
 ```
 
@@ -1012,12 +1098,58 @@ type setHover = (
 type clearHover = () => void
 ```
 
-#### action: setContextMenuInfo
+#### action: closeContextMenu
 
 ```ts
-type setContextMenuInfo = (
-  info?: { item: FlatbushItem; displayedRegionIndex: number } | undefined,
-) => void
+type closeContextMenu = () => void
+```
+
+#### action: togglePinnedFeature
+
+```ts
+type togglePinnedFeature = (featureId: string) => void
+```
+
+#### action: toggleSoloFeature
+
+```ts
+type toggleSoloFeature = (featureId: string) => void
+```
+
+#### action: clearSolo
+
+```ts
+type clearSolo = () => void
+```
+
+#### action: hideFeature
+
+```ts
+type hideFeature = (featureId: string) => void
+```
+
+#### action: showAllHidden
+
+```ts
+type showAllHidden = () => void
+```
+
+#### action: applySolo
+
+```ts
+type applySolo = () => void
+```
+
+#### action: soloFeature
+
+```ts
+type soloFeature = (featureId: string) => void
+```
+
+#### action: clearAllFeatureFilters
+
+```ts
+type clearAllFeatureFilters = () => void
 ```
 
 #### action: selectFeature
@@ -1074,6 +1206,8 @@ type setUtrColor = (color?: string | undefined) => void
 type showContextMenuForFeature = (
   featureInfo: FlatbushItem,
   displayedRegionIndex: number,
+  clientX: number,
+  clientY: number,
 ) => void
 ```
 
@@ -1104,16 +1238,6 @@ type fetchFullFeature = (
 ) => Promise<SimpleFeature | undefined>
 ```
 
-#### action: selectFeatureById
-
-```ts
-type selectFeatureById = (
-  featureInfo: FlatbushItem,
-  subfeatureInfo: SubfeatureInfo | undefined,
-  displayedRegionIndex: number,
-) => void
-```
-
 #### action: isCacheValid
 
 ```ts
@@ -1126,11 +1250,12 @@ type isCacheValid = (displayedRegionIndex: number) => boolean
 type byteSizeLimit = () => number | undefined
 ```
 
-#### action: selectFullFeature
+#### action: selectFeatureById
 
 ```ts
-type selectFullFeature = (
+type selectFeatureById = (
   featureId: string,
+  subfeatureInfo: SubfeatureInfo | undefined,
   displayedRegionIndex: number,
 ) => void
 ```

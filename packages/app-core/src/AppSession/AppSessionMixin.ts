@@ -1,4 +1,3 @@
-import { getConf } from '@jbrowse/core/configuration'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import type { AppRootModel } from './AppRootModel.ts'
@@ -37,7 +36,6 @@ export function AppSessionMixin(_pluginManager: PluginManager) {
         renderProps() {
           return {
             theme: self.themeOptions,
-            highResolutionScaling: getConf(self, 'highResolutionScaling'),
           }
         },
       }

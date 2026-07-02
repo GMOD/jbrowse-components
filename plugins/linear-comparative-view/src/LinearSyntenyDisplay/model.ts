@@ -392,7 +392,9 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
         // feature. Matches the `instanceFeatureIdx[i] + 1` mapping in
         // interleaveInstances and the pick engine.
         const toFeatureId = (idx: number) =>
-          idx >= 0 && instanceData ? instanceData.instanceFeatureIdx[idx]! + 1 : 0
+          idx >= 0 && instanceData
+            ? instanceData.instanceFeatureIdx[idx]! + 1
+            : 0
         return {
           yTop: 0,
           height: this.height,

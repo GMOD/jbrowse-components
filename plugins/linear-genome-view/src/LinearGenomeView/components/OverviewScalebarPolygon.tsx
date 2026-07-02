@@ -87,7 +87,11 @@ const OverviewScalebarPolygon = observer(function OverviewScalebarPolygon({
   // so a main-view pixel maps to the (more zoomed-out) overview by the bpPerPx
   // ratio; the bottom edge is the same extent in main-view space, shifted by
   // the scroll offset
-  const top = transformSpan(extent, bpPerPx / overview.bpPerPx, overviewOffsetPx)
+  const top = transformSpan(
+    extent,
+    bpPerPx / overview.bpPerPx,
+    overviewOffsetPx,
+  )
   const bottom = transformSpan(extent, 1, -offsetPx)
   const points = trapezoidPoints(top, bottom, HEADER_BAR_HEIGHT)
 

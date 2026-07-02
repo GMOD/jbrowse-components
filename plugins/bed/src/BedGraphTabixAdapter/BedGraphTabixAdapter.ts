@@ -60,8 +60,10 @@ export default class BedGraphTabixAdapter extends BaseFeatureDataAdapter<BedGrap
 
   public async getRefNames(opts: BaseOptions = {}) {
     const { bedGraph } = await this.configure(opts)
-    return downloadStatus('Downloading index', opts.statusCallback, onProgress =>
-      bedGraph.getReferenceSequenceNames({ ...opts, onProgress }),
+    return downloadStatus(
+      'Downloading index',
+      opts.statusCallback,
+      onProgress => bedGraph.getReferenceSequenceNames({ ...opts, onProgress }),
     )
   }
 

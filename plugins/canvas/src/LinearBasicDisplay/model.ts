@@ -277,7 +277,14 @@ export default function stateModelFactory(
                   )
                   session.queueDialog(handleClose => [
                     CollapseIntronsDialog,
-                    { view, transcripts, handleClose, assembly, featureId, trackId },
+                    {
+                      view,
+                      transcripts,
+                      handleClose,
+                      assembly,
+                      featureId,
+                      trackId,
+                    },
                   ])
                 }
               },

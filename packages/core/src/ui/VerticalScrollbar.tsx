@@ -89,9 +89,7 @@ export default function VerticalScrollbar({
     const clickY = e.clientY - e.currentTarget.getBoundingClientRect().top
     if (clickY < thumbTop || clickY > thumbTop + thumbHeight) {
       const dir = clickY < thumbTop ? -1 : 1
-      setScrollTop(
-        clamp(scrollTop + dir * viewportHeight, 0, scrollableHeight),
-      )
+      setScrollTop(clamp(scrollTop + dir * viewportHeight, 0, scrollableHeight))
       return
     }
     dragRef.current?.abort()

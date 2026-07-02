@@ -620,7 +620,7 @@ export async function getLDMatrix({
       continue
     }
 
-    if (filterChain && !filterChain.passes(feature, undefined, undefined)) {
+    if (filterChain && !filterChain.passes(feature)) {
       continue
     }
 

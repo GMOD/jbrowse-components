@@ -39,14 +39,6 @@ export default function RootConfiguration({
      */
     rpc: RpcManager.configSchema,
 
-    /**
-     * #slot configuration.highResolutionScaling
-     */
-    highResolutionScaling: {
-      type: 'number',
-      defaultValue: 2,
-    },
-
     formatDetails: FormatDetailsConfigSchemaFactory(),
     formatAbout: FormatAboutConfigSchemaFactory(),
 
@@ -56,6 +48,7 @@ export default function RootConfiguration({
     shareURL: {
       type: 'string',
       defaultValue: 'https://share.jbrowse.org/api/v1/',
+      advanced: true,
     },
     /**
      * #slot configuration.disableAnalytics
@@ -63,6 +56,7 @@ export default function RootConfiguration({
     disableAnalytics: {
       type: 'boolean',
       defaultValue: false,
+      advanced: true,
     },
     /**
      * #slot configuration.extendDefaultSessionWithUrlParams
@@ -73,6 +67,7 @@ export default function RootConfiguration({
     extendDefaultSessionWithUrlParams: {
       type: 'boolean',
       defaultValue: false,
+      advanced: true,
     },
 
     hierarchical: HierarchicalConfigSchemaFactory(),
@@ -93,6 +88,7 @@ export default function RootConfiguration({
     extraThemes: {
       type: 'frozen',
       defaultValue: {},
+      advanced: true,
     },
     /**
      * #slot configuration.logoPath
@@ -103,6 +99,7 @@ export default function RootConfiguration({
         uri: '',
         locationType: 'UriLocation',
       },
+      advanced: true,
     },
     /**
      * #slotAnnot

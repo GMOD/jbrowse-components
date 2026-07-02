@@ -464,14 +464,6 @@ Whether to show a loading indicator instead of the import form or view
 type showLoading = boolean
 ```
 
-#### getter: showImportForm
-
-Whether to show the import form
-
-```ts
-type showImportForm = boolean
-```
-
 #### getter: loadingMessage
 
 Label for the generic loading spinner. The auto-diagonalize wait is a separate
@@ -693,7 +685,7 @@ detail):
 
 | Member                               | Signature                                                                                                                                                                      |
 | ------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| [`renderProps`](#method-renderprops) | `() => { drawCigar: boolean; highResolutionScaling: any; }`                                                                                                                    |
+| [`renderProps`](#method-renderprops) | `() => { drawCigar: boolean; }`                                                                                                                                                |
 | [`menuItems`](#method-menuitems)     | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; } \| { ...; })[]` |
 
 </details>
@@ -704,7 +696,7 @@ detail):
 #### method: renderProps
 
 ```ts
-type renderProps = () => { drawCigar: boolean; highResolutionScaling: any }
+type renderProps = () => { drawCigar: boolean }
 ```
 
 #### method: menuItems
@@ -780,42 +772,41 @@ type exportSvg = (opts?: ExportSvgOptions) => Promise<void>
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                             | Signature                                                                                                                                                                                                                                                                           |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setImportFormSyntenyTrack`](#action-setimportformsyntenytrack)   | `(arg: number, val: ImportFormSyntenyTrack) => void`                                                                                                                                                                                                                                |
-| [`startRenderingBackend`](#action-startrenderingbackend)           | `(backend: DotplotRenderingBackend) => void`                                                                                                                                                                                                                                        |
-| [`setCursorMode`](#action-setcursormode)                           | `(mode: CursorMode) => void`                                                                                                                                                                                                                                                        |
-| [`setDrawCigar`](#action-setdrawcigar)                             | `(flag: boolean) => void`                                                                                                                                                                                                                                                           |
-| [`setLodMode`](#action-setlodmode)                                 | `(value: "auto" \| "fine" \| "coarse") => void`                                                                                                                                                                                                                                     |
-| [`setLockAspectRatio`](#action-setlockaspectratio)                 | `(flag: boolean) => void`                                                                                                                                                                                                                                                           |
-| [`setLineWidth`](#action-setlinewidth)                             | `(value: number) => void`                                                                                                                                                                                                                                                           |
-| [`addToHighlights`](#action-addtohighlights)                       | `(highlight: HighlightType) => void`                                                                                                                                                                                                                                                |
-| [`setHighlight`](#action-sethighlight)                             | `(highlight?: HighlightType[] \| undefined) => void`                                                                                                                                                                                                                                |
-| [`removeHighlight`](#action-removehighlight)                       | `(highlight: HighlightType) => void`                                                                                                                                                                                                                                                |
-| [`setHighlightsVisible`](#action-sethighlightsvisible)             | `(arg: boolean) => void`                                                                                                                                                                                                                                                            |
-| [`setBorderX`](#action-setborderx)                                 | `(n: number) => void`                                                                                                                                                                                                                                                               |
-| [`setBorderY`](#action-setbordery)                                 | `(n: number) => void`                                                                                                                                                                                                                                                               |
-| [`setWidth`](#action-setwidth)                                     | `(newWidth: number) => number`                                                                                                                                                                                                                                                      |
-| [`setHeight`](#action-setheight)                                   | `(newHeight: number) => number`                                                                                                                                                                                                                                                     |
-| [`setError`](#action-seterror)                                     | `(e: unknown) => void`                                                                                                                                                                                                                                                              |
-| [`setInit`](#action-setinit)                                       | `(init?: DotplotViewInit \| undefined) => void`                                                                                                                                                                                                                                     |
-| [`setAwaitingAutoDiagonalize`](#action-setawaitingautodiagonalize) | `(arg: boolean) => void`                                                                                                                                                                                                                                                            |
-| [`setDiagonalizeStatus`](#action-setdiagonalizestatus)             | `(arg?: RpcStatus \| undefined) => void`                                                                                                                                                                                                                                            |
-| [`setDiagonalizeStopToken`](#action-setdiagonalizestoptoken)       | `(arg?: StopToken \| undefined) => void`                                                                                                                                                                                                                                            |
-| [`zoomOut`](#action-zoomout)                                       | `() => void`                                                                                                                                                                                                                                                                        |
-| [`zoomIn`](#action-zoomin)                                         | `() => void`                                                                                                                                                                                                                                                                        |
-| [`activateTrackSelector`](#action-activatetrackselector)           | `() => Widget`                                                                                                                                                                                                                                                                      |
-| [`showTrack`](#action-showtrack)                                   | `(trackId: string, initialSnapshot?: any) => any`                                                                                                                                                                                                                                   |
-| [`hideTrack`](#action-hidetrack)                                   | `(trackId: string) => boolean`                                                                                                                                                                                                                                                      |
-| [`toggleTrack`](#action-toggletrack)                               | `(trackId: string) => void`                                                                                                                                                                                                                                                         |
-| [`setAssemblyNames`](#action-setassemblynames)                     | `(target: string, query: string) => void`                                                                                                                                                                                                                                           |
-| [`setViews`](#action-setviews)                                     | `(arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void` |
-| [`getCoords`](#action-getcoords)                                   | `(mousedown: Coord, mouseup: Coord) => { coord: number; coord0: number; index: number; refName: string; oob: boolean; assemblyName: string; offset: number; start: number; end: number; reversed?: boolean \| undefined; }[] \| undefined`                                          |
-| [`showAllRegions`](#action-showallregions)                         | `() => void`                                                                                                                                                                                                                                                                        |
-| [`initializeDisplayedRegions`](#action-initializedisplayedregions) | `() => void`                                                                                                                                                                                                                                                                        |
-| [`applySquare`](#action-applysquare)                               | `(ratio: number) => void`                                                                                                                                                                                                                                                           |
-| [`squareView`](#action-squareview)                                 | `() => void`                                                                                                                                                                                                                                                                        |
-| [`squareViewProportional`](#action-squareviewproportional)         | `() => void`                                                                                                                                                                                                                                                                        |
+| Member                                                             | Signature                                                           |
+| ------------------------------------------------------------------ | ------------------------------------------------------------------- |
+| [`setImportFormSyntenyTrack`](#action-setimportformsyntenytrack)   | `(arg: number, val: ImportFormSyntenyTrack) => void`                |
+| [`startRenderingBackend`](#action-startrenderingbackend)           | `(backend: DotplotRenderingBackend) => void`                        |
+| [`setCursorMode`](#action-setcursormode)                           | `(mode: CursorMode) => void`                                        |
+| [`setDrawCigar`](#action-setdrawcigar)                             | `(flag: boolean) => void`                                           |
+| [`setLodMode`](#action-setlodmode)                                 | `(value: "auto" \| "fine" \| "coarse") => void`                     |
+| [`setLockAspectRatio`](#action-setlockaspectratio)                 | `(flag: boolean) => void`                                           |
+| [`setLineWidth`](#action-setlinewidth)                             | `(value: number) => void`                                           |
+| [`addToHighlights`](#action-addtohighlights)                       | `(highlight: HighlightType) => void`                                |
+| [`setHighlight`](#action-sethighlight)                             | `(highlight?: HighlightType[] \| undefined) => void`                |
+| [`removeHighlight`](#action-removehighlight)                       | `(highlight: HighlightType) => void`                                |
+| [`setHighlightsVisible`](#action-sethighlightsvisible)             | `(arg: boolean) => void`                                            |
+| [`setBorderX`](#action-setborderx)                                 | `(n: number) => void`                                               |
+| [`setBorderY`](#action-setbordery)                                 | `(n: number) => void`                                               |
+| [`setWidth`](#action-setwidth)                                     | `(newWidth: number) => number`                                      |
+| [`setHeight`](#action-setheight)                                   | `(newHeight: number) => number`                                     |
+| [`setError`](#action-seterror)                                     | `(e: unknown) => void`                                              |
+| [`setInit`](#action-setinit)                                       | `(init?: DotplotViewInit \| undefined) => void`                     |
+| [`setAwaitingAutoDiagonalize`](#action-setawaitingautodiagonalize) | `(arg: boolean) => void`                                            |
+| [`setDiagonalizeStatus`](#action-setdiagonalizestatus)             | `(arg?: RpcStatus \| undefined) => void`                            |
+| [`setDiagonalizeStopToken`](#action-setdiagonalizestoptoken)       | `(arg?: StopToken \| undefined) => void`                            |
+| [`zoomOut`](#action-zoomout)                                       | `() => void`                                                        |
+| [`zoomIn`](#action-zoomin)                                         | `() => void`                                                        |
+| [`activateTrackSelector`](#action-activatetrackselector)           | `() => Widget`                                                      |
+| [`showTrack`](#action-showtrack)                                   | `(trackId: string, initialSnapshot?: any) => any`                   |
+| [`hideTrack`](#action-hidetrack)                                   | `(trackId: string) => boolean`                                      |
+| [`toggleTrack`](#action-toggletrack)                               | `(trackId: string) => void`                                         |
+| [`setAssemblyNames`](#action-setassemblynames)                     | `(target: string, query: string) => void`                           |
+| [`getCoords`](#action-getcoords)                                   | `(mousedown: Coord, mouseup: Coord) => PxToBpResult[] \| undefined` |
+| [`showAllRegions`](#action-showallregions)                         | `() => void`                                                        |
+| [`initializeDisplayedRegions`](#action-initializedisplayedregions) | `() => void`                                                        |
+| [`applySquare`](#action-applysquare)                               | `(ratio: number) => void`                                           |
+| [`squareView`](#action-squareview)                                 | `() => void`                                                        |
+| [`squareViewProportional`](#action-squareviewproportional)         | `() => void`                                                        |
 
 </details>
 
@@ -987,32 +978,13 @@ type toggleTrack = (trackId: string) => void
 type setAssemblyNames = (target: string, query: string) => void
 ```
 
-#### action: setViews
-
-```ts
-type setViews = (arr: ModelCreationType<ExtractCFromProps<{ id: IOptionalIType<ISimpleType<string>, [undefined]>; displayedRegions: IOptionalIType<IType<Region[], Region[], Region[]>, [...]>; bpPerPx: IType<...>; offsetPx: IType<...>; minimumBlockWidth: IOptionalIType<...>; }>>[]) => void
-```
-
 #### action: getCoords
 
 ```ts
 type getCoords = (
   mousedown: Coord,
   mouseup: Coord,
-) =>
-  | {
-      coord: number
-      coord0: number
-      index: number
-      refName: string
-      oob: boolean
-      assemblyName: string
-      offset: number
-      start: number
-      end: number
-      reversed?: boolean | undefined
-    }[]
-  | undefined
+) => PxToBpResult[] | undefined
 ```
 
 #### action: showAllRegions

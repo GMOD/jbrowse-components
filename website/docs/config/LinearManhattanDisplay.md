@@ -123,7 +123,120 @@ used when colorBy is 'ld'.
 
 </details>
 
+## Inherited config slots
+
+Slots available on this config via its base configuration(s), shown in full so
+this page is self-contained.
+
+<details open>
+<summary>Inherited from LinearWiggleDisplay</summary>
+
+[LinearWiggleDisplay config →](../linearwiggledisplay)
+
+#### slot: defaultRendering
+
+Default rendering type: `xyplot`, `density`, `line`, or `scatter`.
+
+**Type:** `stringEnum` · **Default:** `'xyplot'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('Rendering type', [...WIGGLE_RENDERING_TYPES]),
+  defaultValue: 'xyplot',
+  description: 'Default rendering type',
+}
+```
+
+**Example:**
+
+```json
+{
+  "type": "LinearWiggleDisplay",
+  "defaultRendering": "density"
+}
+```
+
+#### slot: height
+
+Default height of the track
+
+**Type:** `number` · **Default:** `100`
+
+```js
+{
+  type: 'number',
+  defaultValue: 100,
+  description: 'Default height of the track',
+}
+```
+
+#### slot: useBicolor
+
+Use separate positive/negative colors instead of a single color
+
+**Type:** `boolean` · **Default:** `true`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: true,
+  description:
+    'Use separate positive/negative colors instead of a single color',
+}
+```
+
+#### slot: color
+
+Color for the wiggle bars (when not using bicolor mode)
+
+**Type:** `color`
+
+```js
+{
+  type: 'color',
+  defaultValue: WIGGLE_POS_COLOR_DEFAULT,
+  description: 'Color for the wiggle bars (when not using bicolor mode)',
+}
+```
+
+#### slot: minimalTicks
+
+Draw only the min/max Y-axis ticks
+
+**Type:** `boolean` · **Default:** `false`
+
+```js
+{
+  type: 'boolean',
+  defaultValue: false,
+  description: 'Draw only the min/max Y-axis ticks',
+  advanced: true,
+}
+```
+
+#### slot: summaryScoreMode
+
+choose whether to use max/min/average or whiskers which combines all three into
+the same rendering
+
+**Type:** `stringEnum` · **Default:** `'whiskers'`
+
+```js
+{
+  type: 'stringEnum',
+  model: types.enumeration('Score type', ['max', 'min', 'avg', 'whiskers']),
+  description:
+    'choose whether to use max/min/average or whiskers which combines all three into the same rendering',
+  defaultValue: 'whiskers',
+}
+```
+
+</details>
+
 ### LinearManhattanDisplay - Derives from
+
+- [LinearWiggleDisplay](../linearwiggledisplay)
 
 ```js
 baseConfiguration: linearWiggleDisplayConfigSchema
