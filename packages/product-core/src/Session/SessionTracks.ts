@@ -38,12 +38,16 @@ function toPlainConfig(base: PlainTrackConfig): PlainTrackConfig {
   return isStateTreeNode(node) ? (getSnapshot(node) as PlainTrackConfig) : base
 }
 
-// diffTrackConfig always retains a self-identifying trackId, so a delta whose
-// only key is trackId records no changed slots: the edited config matches the
-// base. Such a delta must not be stored — it would flip isTrackOverride (edited
-// badge + Reset menu) on with nothing actually overridden.
-function deltaHasChanges(delta: PlainTrackConfig): boolean {
-  return Object.keys(delta).length > 1
+// A delta must not be stored unless it records a real user edit, or it would
+// flip isTrackOverride (edited badge + Reset menu) on with nothing actually
+// overridden. Two ways an empty edit slips past a key count: diffTrackConfig
+// always retains the self-identifying trackId, and a base config that omits
+// `displays` diffs against the hydrated snapshot's injected {type, displayId}
+// display stubs to yield `{trackId, displays: [...stubs]}` — nonzero keys but no
+// changed slot. flattenTrackConfigDelta (which drops identity keys and empty
+// display stubs) is the honest test of whether any real setting changed.
+function deltaHasChanges(base: PlainTrackConfig, delta: PlainTrackConfig): boolean {
+  return flattenTrackConfigDelta(base, delta).length > 0
 }
 
 function withoutDelta(
@@ -157,13 +161,14 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
         if (legacy.length > 0) {
           const deltas = { ...self.trackConfigDeltas }
           for (const track of legacy) {
+            const plainBase = toPlainConfig(configById.get(track.trackId)!)
             const delta = diffTrackConfig(
-              toPlainConfig(configById.get(track.trackId)!),
+              plainBase,
               getSnapshot(track),
             ) as PlainTrackConfig
             // a legacy override identical to its base contributes no changed
             // slots: drop it rather than migrate a content-free delta
-            if (deltaHasChanges(delta)) {
+            if (deltaHasChanges(plainBase, delta)) {
               deltas[track.trackId] = delta
             }
           }
@@ -234,15 +239,16 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
               t => t.trackId === trackId,
             )
             if (base) {
+              const plainBase = toPlainConfig(base)
               const delta = diffTrackConfig(
-                toPlainConfig(base),
+                plainBase,
                 trackConf,
               ) as PlainTrackConfig
               // an edit that nets back to the base carries no changed slots:
               // clear any prior override (implicit reset) instead of pinning a
               // content-free delta; skip a no-op write when there's nothing to
               // clear, so the tracks getter doesn't needlessly churn identity
-              if (deltaHasChanges(delta)) {
+              if (deltaHasChanges(plainBase, delta)) {
                 self.trackConfigDeltas = {
                   ...self.trackConfigDeltas,
                   [trackId]: delta,

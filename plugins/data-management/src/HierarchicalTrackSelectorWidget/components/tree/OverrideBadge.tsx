@@ -33,11 +33,8 @@ const OverrideBadge = observer(function OverrideBadge({
 }) {
   const { classes } = useStyles()
   const session = getSession(model)
-  const isOverride =
-    'isTrackOverride' in session &&
-    (session.isTrackOverride as (id: string) => boolean)(trackId)
   const changes =
-    isOverride && 'getTrackConfigChanges' in session
+    'getTrackConfigChanges' in session
       ? (session.getTrackConfigChanges as (id: string) => TrackConfigChange[])(
           trackId,
         )
@@ -48,7 +45,7 @@ const OverrideBadge = observer(function OverrideBadge({
           ;(session.resetTrackConfiguration as (id: string) => void)(trackId)
         }
       : undefined
-  return isOverride ? (
+  return changes.length ? (
     <Tooltip title="Edited — click to view the changed settings">
       <IconButton
         className={classes.editButton}

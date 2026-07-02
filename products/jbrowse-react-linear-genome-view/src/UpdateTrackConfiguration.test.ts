@@ -86,6 +86,29 @@ test('a non-admin edit over an MST-node config base merges cleanly (no leaked li
   expect(isStateTreeNode(adapter)).toBe(false)
 })
 
+test('re-persisting a hydrated config with only injected display stubs stores no delta', () => {
+  // a track config that omits `displays`; hydration injects {type, displayId}
+  // stubs. Persisting that hydrated snapshot back (no real user edit) must not
+  // pin a stub-only delta that would falsely flag the track as overridden.
+  const noDisplayTrack = {
+    type: 'FeatureTrack',
+    trackId: 'nodisplays',
+    name: 'No displays',
+    assemblyNames: ['volvox'],
+    adapter: { type: 'FromConfigAdapter', features: [] },
+  }
+  const state = createViewState({ assembly, tracks: [noDisplayTrack] })
+  const session = state.session as unknown as DeltaSession
+
+  const base = session.tracks.find(t => t.trackId === 'nodisplays')!
+  const hydrated = getSnapshot(base) as { trackId: string; displays: unknown[] }
+  expect(hydrated.displays.length).toBeGreaterThan(0)
+
+  session.updateTrackConfiguration(hydrated)
+
+  expect(session.trackConfigDeltas.nodisplays).toBeUndefined()
+})
+
 test('a display-slot edit is a per-display delta, merges by displayId, no leaked nodes', () => {
   const state = createViewState({ assembly, tracks: [track] })
   const session = state.session as unknown as DeltaSession
