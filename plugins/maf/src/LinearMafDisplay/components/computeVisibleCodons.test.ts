@@ -1,4 +1,5 @@
 import {
+  computeCodonConservation,
   computeVisibleCodons,
   enumerateCodons,
   findCodonAt,
@@ -221,6 +222,68 @@ test('codons with a gap in a row are skipped for that row only', () => {
   })
   // ref: M K * ; row2: (gap) K * — row2's codon-1 cell is dropped
   expect(markers.map(m => m.aa)).toEqual(['M', 'K', 'K', '*', '*'])
+})
+
+describe('computeCodonConservation', () => {
+  // ref:  ATG AAA TAA → M K *
+  // row0: ATG AAA TAA (the reference row, excluded by refRowIndex)
+  // row1: ATG GAA TAA → M E * (K→E, amino acid changed at codon 2)
+  // row2: ATG AAG TAA → M K * (AAA→AAG, synonymous — still K at codon 2)
+  const rpc = new Map([
+    [0, regionData('ATGAAATAA', ['ATGAAATAA', 'ATGGAATAA', 'ATGAAGTAA'])],
+  ])
+
+  test('per-codon amino-acid identity across the non-reference species', () => {
+    const bars = computeCodonConservation({
+      view,
+      rpcDataMap: rpc,
+      framesDataMap: new Map([[0, frames]]),
+      defaultSrc: 'ref',
+      refRowIndex: 0,
+    })
+    // codon 1 (M): both species match → 1; codon 2 (K): row1 E no, row2 K yes
+    // (synonymous counts as conserved) → 0.5; codon 3 (*): both match → 1
+    expect(bars.map(x => x.fraction)).toEqual([1, 0.5, 1])
+    // one contiguous cell per codon; scale=10, region start 100
+    expect(bars.map(x => x.xLeft)).toEqual([0, 30, 60])
+    expect(bars.map(x => x.width)).toEqual([30, 30, 30])
+  })
+
+  test('refRowIndex -1 counts every row (reference included)', () => {
+    const bars = computeCodonConservation({
+      view,
+      rpcDataMap: rpc,
+      framesDataMap: new Map([[0, frames]]),
+      defaultSrc: 'ref',
+      refRowIndex: -1,
+    })
+    // codon 2 (K): ref K + row2 K match, row1 E doesn't → 2/3
+    expect(bars.map(x => x.fraction)).toEqual([1, 2 / 3, 1])
+  })
+
+  test('a codon with no translatable non-reference species is NaN', () => {
+    const bars = computeCodonConservation({
+      view,
+      // only the reference row present; excluding it leaves nothing classifiable
+      rpcDataMap: new Map([[0, regionData('ATGAAATAA', ['ATGAAATAA'])]]),
+      framesDataMap: new Map([[0, frames]]),
+      defaultSrc: 'ref',
+      refRowIndex: 0,
+    })
+    expect(bars.every(x => Number.isNaN(x.fraction))).toBe(true)
+  })
+
+  test('no frames → no bars', () => {
+    expect(
+      computeCodonConservation({
+        view,
+        rpcDataMap: rpc,
+        framesDataMap: new Map(),
+        defaultSrc: 'ref',
+        refRowIndex: 0,
+      }),
+    ).toEqual([])
+  })
 })
 
 describe('findCodonAt', () => {

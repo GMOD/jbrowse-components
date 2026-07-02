@@ -16,6 +16,7 @@ import { YScaleBar } from '@jbrowse/wiggle-core'
 
 import {
   conservationTicks,
+  drawCodonConservation,
   drawConservation,
 } from './components/drawConservation.ts'
 import { drawMafCoverage } from './components/drawMafCoverage.ts'
@@ -90,6 +91,7 @@ function MafSvgBody({
     showCoverage,
     coverageDomain,
     showConservation,
+    conservationMode,
     conservationHeight,
     activeRowRendering,
     rowProportion,
@@ -122,11 +124,19 @@ function MafSvgBody({
       {showConservation ? (
         <g transform={`translate(0, ${coverageDisplayHeight})`}>
           {paintLayer(width, conservationHeight, opts, ctx => {
-            drawConservation(ctx, renderBlocks, model.rpcDataMap, {
-              conservationHeight,
-              canvasWidth: width,
-              theme,
-            })
+            if (conservationMode === 'codon') {
+              drawCodonConservation(ctx, model.visibleCodonConservation, {
+                conservationHeight,
+                canvasWidth: width,
+                theme,
+              })
+            } else {
+              drawConservation(ctx, renderBlocks, model.rpcDataMap, {
+                conservationHeight,
+                canvasWidth: width,
+                theme,
+              })
+            }
           })}
         </g>
       ) : null}

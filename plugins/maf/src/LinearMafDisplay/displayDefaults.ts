@@ -18,6 +18,9 @@ export const DEFAULTS = {
   coverageHeight: 45,
   showConservation: false,
   conservationHeight: 40,
+  // Conservation band resolution: per-base percent identity ('base') or
+  // per-codon amino-acid identity ('codon', needs an annotationAdapter).
+  conservationMode: 'base',
   rowIdentityMode: 'none',
   rowIdentityAutoZoom: true,
   // CDS-frame strip is an opt-in expert overlay (frame-number coloring is

@@ -2,7 +2,7 @@ import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import TrackBandCanvas from './TrackBandCanvas.tsx'
-import { drawConservation } from './drawConservation.ts'
+import { drawCodonConservation, drawConservation } from './drawConservation.ts'
 
 import type { LinearMafDisplayModel } from '../stateModel.ts'
 
@@ -17,7 +17,12 @@ const MafConservationCanvas = observer(function MafConservationCanvas({
   model: LinearMafDisplayModel
 }) {
   const theme = useTheme()
-  const { showConservation, conservationHeight, coverageDisplayHeight } = model
+  const {
+    showConservation,
+    conservationMode,
+    conservationHeight,
+    coverageDisplayHeight,
+  } = model
   return (
     <TrackBandCanvas
       model={model}
@@ -25,11 +30,19 @@ const MafConservationCanvas = observer(function MafConservationCanvas({
       height={conservationHeight}
       show={showConservation}
       draw={ctx => {
-        drawConservation(ctx, model.renderBlocks, model.rpcDataMap, {
-          conservationHeight,
-          canvasWidth: model.lgv.width,
-          theme,
-        })
+        if (conservationMode === 'codon') {
+          drawCodonConservation(ctx, model.visibleCodonConservation, {
+            conservationHeight,
+            canvasWidth: model.lgv.width,
+            theme,
+          })
+        } else {
+          drawConservation(ctx, model.renderBlocks, model.rpcDataMap, {
+            conservationHeight,
+            canvasWidth: model.lgv.width,
+            theme,
+          })
+        }
       }}
     />
   )

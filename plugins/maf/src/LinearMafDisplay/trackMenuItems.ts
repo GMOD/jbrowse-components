@@ -6,9 +6,11 @@ import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
 import HeightIcon from '@mui/icons-material/Height'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
+import { CONSERVATION_MODES } from './conservationModes.ts'
 import { DEFAULTS } from './displayDefaults.ts'
 import { ROW_IDENTITY_MODES } from './rowIdentityModes.ts'
 
+import type { ConservationMode } from './conservationModes.ts'
 import type { RowIdentityModeWithOff } from './rowIdentityModes.ts'
 import type { MafSource } from './stateModel.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -31,6 +33,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   showCoverage: boolean
   showAlignments: boolean
   showConservation: boolean
+  conservationMode: ConservationMode
   showAnnotations: boolean
   showTranslation: boolean
   colorByChromosome: boolean
@@ -52,6 +55,7 @@ interface MafMenuSelf extends IAnyStateTreeNode {
   setShowCoverage: (f: boolean) => void
   setShowAlignments: (f: boolean) => void
   setShowConservation: (f: boolean) => void
+  setConservationMode: (m: ConservationMode) => void
   setShowAnnotations: (f: boolean) => void
   setShowTranslation: (f: boolean) => void
   setColorByChromosome: (f: boolean) => void
@@ -172,6 +176,21 @@ export function buildMafTrackMenuItems(self: MafMenuSelf): MenuItem[] {
             self.setShowConservation(!self.showConservation)
           },
         },
+        // Per-codon (amino-acid) conservation is only meaningful with a reading
+        // frame, so the mode radio only appears when an annotationAdapter
+        // (mafFrames) is configured.
+        ...(self.annotationAdapterConfig
+          ? [
+              makeRadioSubMenu({
+                label: 'Conservation resolution',
+                value: self.conservationMode,
+                onChange: m => {
+                  self.setConservationMode(m)
+                },
+                options: CONSERVATION_MODES,
+              }),
+            ]
+          : []),
         {
           label: 'Color by source chromosome',
           type: 'checkbox',

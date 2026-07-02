@@ -420,6 +420,106 @@ export function computeVisibleCodons(
   return markers
 }
 
+/**
+ * One reference codon's protein-level conservation, as a pixel cell plus the
+ * fraction of aligned species whose amino acid matches the reference. A codon
+ * stitched across an exon boundary yields one bar per piece (sharing `fraction`).
+ */
+export interface CodonConservationBar {
+  /** left px of the codon cell (one piece of the codon) */
+  xLeft: number
+  /** px width of the codon cell */
+  width: number
+  /**
+   * Fraction (0..1) of aligned non-reference species whose translated amino
+   * acid matches the reference amino acid at this codon — protein-level
+   * conservation, where synonymous (silent) substitutions still read as
+   * conserved. `NaN` when no species has a translatable codon here (all gapped
+   * / non-standard), so the bar is skipped like a `NaN` per-base identity.
+   */
+  fraction: number
+}
+
+interface ComputeCodonConservationParams {
+  view: VisibleRegionsView
+  rpcDataMap: { get(idx: number): MafRegionData | undefined }
+  framesDataMap: { get(idx: number): MafFrameRecord[] | undefined }
+  /** Anchor species whose frames define the reading frame (the reference). */
+  defaultSrc: string
+  /**
+   * Display row of the reference species, excluded from the numerator and
+   * denominator so its trivial self-match doesn't inflate conservation (same
+   * policy as the per-base `computeMafCoverage`). `-1` counts all rows.
+   */
+  refRowIndex: number
+}
+
+/**
+ * Per-codon protein-level conservation for the conservation band's codon mode:
+ * each reference codon (from the anchor `mafFrames`) carries the fraction of
+ * aligned non-reference species whose translated amino acid equals the reference
+ * amino acid — the codon-resolution analog of the per-base percent identity
+ * `computeMafCoverage` ships. Synonymous substitutions count as conserved (the
+ * amino acid is unchanged), so this reads selection on the protein rather than
+ * nucleotide drift, and 3rd-codon-position wobble stops dragging the profile
+ * down. Only defined inside the CDS; a reference codon with a gap/`N` (no
+ * reference amino acid) emits no bar. Reuses the same codon enumeration + column
+ * mapping as the codon overlay so the band and the per-species cells can't
+ * disagree about the reading frame.
+ */
+export function computeCodonConservation(
+  params: ComputeCodonConservationParams,
+): CodonConservationBar[] {
+  const { view, rpcDataMap, framesDataMap, defaultSrc, refRowIndex } = params
+  const bars: CodonConservationBar[] = []
+  for (const {
+    data: regionData,
+    bpToPx,
+    displayedRegionIndex,
+  } of eachVisibleRegion(view, rpcDataMap)) {
+    const frames = framesDataMap.get(displayedRegionIndex)
+    if (!frames) {
+      continue
+    }
+    const codons = enumerateCodons(frames, defaultSrc)
+    if (codons.length === 0) {
+      continue
+    }
+    for (const block of regionData.blocks) {
+      const ref = block.refSeqBytes
+      const refColumns = buildRefColumns(ref)
+      for (const codon of codons) {
+        const cols = codonColumns(codon.positions, block.startBp, refColumns)
+        if (!cols) {
+          continue
+        }
+        const refAa = translateAt(ref, cols, codon.strand)
+        if (refAa === undefined) {
+          continue
+        }
+        let matches = 0
+        let classifiable = 0
+        for (const row of block.rows) {
+          if (row.rowIndex !== refRowIndex) {
+            const aa = translateAt(row.alignmentBytes, cols, codon.strand)
+            if (aa !== undefined) {
+              classifiable += 1
+              if (aa === refAa) {
+                matches += 1
+              }
+            }
+          }
+        }
+        const fraction = classifiable > 0 ? matches / classifiable : Number.NaN
+        for (const cell of codonCells(codon.positions, bpToPx)) {
+          bars.push({ xLeft: cell.xLeft, width: cell.width, fraction })
+        }
+      }
+    }
+  }
+  return bars
+}
+
 /** A single species' codon resolved under the cursor, for the hover tooltip. */
 export interface CodonHit {
   /** the species' codon triplet, read 5'→3' in the gene direction */

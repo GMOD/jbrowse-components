@@ -4,6 +4,7 @@ import {
   makeBpMapper,
 } from '@jbrowse/render-core/canvas2dUtils'
 
+import type { CodonConservationBar } from './computeVisibleCodons.ts'
 import type { MafRegionData } from '../../LinearMafRenderer/mafRenderingBackendTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
@@ -126,6 +127,33 @@ export function drawConservation(
     if (c > 0) {
       const h = (sum[x]! / c) * effectiveH
       ctx.fillRect(x, bottom - h, 1, h)
+    }
+  }
+}
+
+/**
+ * Draw the codon-level conservation band: one bar per reference codon spanning
+ * its pixel cell, at a height set by the fraction of aligned species whose amino
+ * acid matches the reference (protein-level identity — see
+ * `computeCodonConservation`). Only the CDS carries codons, so the band is empty
+ * outside coding exons rather than 0%; `NaN` fractions (no translatable species)
+ * are skipped like a `NaN` per-base identity. Shares the `coverageLayout` inset
+ * + palette with the per-base band so the two modes read identically apart from
+ * codon vs base resolution.
+ */
+export function drawCodonConservation(
+  ctx: Ctx2D,
+  bars: CodonConservationBar[],
+  state: DrawConservationState,
+) {
+  const { conservationHeight, theme } = state
+  const { effectiveH, bottom } = coverageLayout(conservationHeight)
+  ctx.fillStyle = theme.palette.coverage
+  for (const bar of bars) {
+    if (!Number.isNaN(bar.fraction)) {
+      const h = bar.fraction * effectiveH
+      // ≥1px wide so a single-base exon-boundary codon piece still paints.
+      ctx.fillRect(bar.xLeft, bottom - h, Math.max(1, bar.width), h)
     }
   }
 }
