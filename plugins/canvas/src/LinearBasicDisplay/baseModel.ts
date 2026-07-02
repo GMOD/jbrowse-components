@@ -1289,9 +1289,13 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
-        // Bring back every hidden feature.
+        // Bring back every hidden feature. Reset scroll so a re-shown feature
+        // that first-fits to a top row (it re-enters layout as "new", with no
+        // prior-y to hold its old row) lands in view instead of above a
+        // scrolled-down viewport.
         showAllHidden() {
           self.hiddenFeatureIds.clear()
+          self.setScrollTop(0)
         },
       }))
       .actions(self => ({
