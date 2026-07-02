@@ -6,6 +6,25 @@
 // max zoom delta per millisecond — equivalent to 0.2 per frame at 60fps
 export const MAX_ZOOM_RATE_PER_MS = 0.2 / 16.67
 
+// Scroll-zoom (plain wheel with the scrollZoom preference on) divides by a fixed
+// amount for a smooth proportional feel, rather than the adaptive
+// getZoomNormalizer used for ctrl/pinch zoom where device deltas vary wildly.
+export const SCROLL_ZOOM_FACTOR_DIVISOR = 500
+
+// The per-event contribution to the zoom accumulator, given a wheel delta
+// already normalized to pixels via normalizeWheelDelta. ctrl/pinch zoom uses the
+// adaptive normalizer; scroll-zoom uses the fixed divisor. Single source of the
+// zoom-step feel so every wheel handler (LGV, breakpoint overlay, synteny)
+// zooms identically for the same gesture.
+export function wheelZoomAccum(normalizedDeltaY: number, isCtrlZoom: boolean) {
+  return (
+    normalizedDeltaY /
+    (isCtrlZoom
+      ? getZoomNormalizer(normalizedDeltaY)
+      : SCROLL_ZOOM_FACTOR_DIVISOR)
+  )
+}
+
 // larger wheel deltas (e.g. mouse wheel notches) divide by more so a single
 // notch produces a consistent zoom step regardless of device delta magnitude
 export function getZoomNormalizer(deltaY: number) {

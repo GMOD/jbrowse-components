@@ -1,6 +1,12 @@
 import { useEffect, useRef } from 'react'
 
-import { isActivelyZooming } from '@jbrowse/core/util'
+import {
+  applyZoomAccum,
+  isActivelyZooming,
+  normalizeWheelDelta,
+  wheelFrameElapsedMs,
+  wheelZoomAccum,
+} from '@jbrowse/core/util'
 import { transaction } from 'mobx'
 
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
@@ -20,13 +26,13 @@ interface UseWheelScrollZoomResult {
 // Wheel event manager for the synteny canvas. Accumulates deltas across the
 // frame and applies them in a single MobX transaction on the next rAF, so
 // inertial-scroll bursts collapse to one model update per frame instead of
-// thrashing all child views on every event.
+// thrashing all child views on every event. Deltas are normalized and the zoom
+// step is computed via the shared wheelZoom helpers so this matches the LGV and
+// breakpoint-overlay handlers exactly.
 //
-// Decision matrix:
-//   - ctrl+wheel OR (scrollZoom && |dy|>|dx|)  → zoom around cursor X
-//   - |dy| < |dx|                              → horizontal pan
-//   - anything else                            → ignored (vertical scroll
-//                                                bypasses the canvas)
+// Decision matrix (mirrors the LGV handler):
+//   - ctrl/meta+wheel OR (scrollZoom && |dy|>=|dx|)  → zoom around cursor X
+//   - otherwise, unless mid-zoom                     → horizontal pan by dx
 export function useWheelScrollZoom(
   canvas: HTMLCanvasElement | null,
   parentView: ParentViewDuck,
@@ -38,6 +44,7 @@ export function useWheelScrollZoom(
   const zoomScheduledRef = useRef(false)
   const lastZoomClientXRef = useRef(0)
   const lastZoomTimeRef = useRef<number | null>(null)
+  const lastRafTimeRef = useRef<number | null>(null)
 
   useEffect(() => {
     if (!canvas) {
@@ -66,13 +73,15 @@ export function useWheelScrollZoom(
         return
       }
       zoomScheduledRef.current = true
-      requestAnimationFrame(() => {
+      requestAnimationFrame(now => {
+        const elapsed = wheelFrameElapsedMs(now, lastRafTimeRef.current)
+        lastRafTimeRef.current = now
         const d = zoomAccumRef.current
         const canvasLeft = canvas!.getBoundingClientRect().left
         transaction(() => {
           for (const v of parentView.views) {
             v.zoomTo(
-              d > 0 ? v.bpPerPx * (1 + d) : v.bpPerPx / (1 - d),
+              applyZoomAccum(v.bpPerPx, d, elapsed),
               lastZoomClientXRef.current - canvasLeft,
             )
           }
@@ -90,23 +99,24 @@ export function useWheelScrollZoom(
         scrollingRef.current = false
       }, 150)
 
-      const doZoom =
-        event.ctrlKey ||
-        (parentView.scrollZoom &&
-          Math.abs(event.deltaY) > Math.abs(event.deltaX))
-      if (doZoom) {
-        zoomAccumRef.current += event.deltaY / 500
+      const deltaY = normalizeWheelDelta(event.deltaY, event.deltaMode)
+      const deltaX = normalizeWheelDelta(event.deltaX, event.deltaMode)
+      const isCtrlZoom = event.ctrlKey || event.metaKey
+      if (
+        isCtrlZoom ||
+        (parentView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
+      ) {
+        zoomAccumRef.current += wheelZoomAccum(deltaY, isCtrlZoom)
         lastZoomClientXRef.current = event.clientX
         lastZoomTimeRef.current = event.timeStamp
         flushZoom()
       } else if (
-        Math.abs(event.deltaY) < Math.abs(event.deltaX) &&
         // ignore stray horizontal deltas that arrive mid-zoom — trackpads emit
         // an unintentional side-scroll during a pinch/scroll-zoom gesture that
         // would otherwise pan the view away from where the user is zooming
         !isActivelyZooming(event.timeStamp, lastZoomTimeRef.current)
       ) {
-        scrollAccumXRef.current += event.deltaX / 2
+        scrollAccumXRef.current += deltaX
         flushHorizontalScroll()
       }
     }

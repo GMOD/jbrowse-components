@@ -1,4 +1,7 @@
-import { isSessionWithAddTracks } from '@jbrowse/core/util'
+import {
+  isSessionWithAddAssembly,
+  isSessionWithAddTracks,
+} from '@jbrowse/core/util'
 
 import type { LayoutNode, ViewSpec } from './types.ts'
 import type { DockviewLayoutNode } from '@jbrowse/app-core'
@@ -32,11 +35,13 @@ function convertLayoutNode(
 export async function loadSessionSpec(
   {
     views,
+    sessionAssemblies = [],
     sessionTracks = [],
     layout,
     sessionName,
   }: {
     views: ViewSpec[]
+    sessionAssemblies?: Record<string, unknown>[]
     sessionTracks?: Record<string, unknown>[]
     layout?: LayoutNode
     sessionName?: string
@@ -51,6 +56,14 @@ export async function loadSessionSpec(
     })
 
     const { session } = rootModel
+    // Assemblies first: sessionTracks and the views below reference them by
+    // name, so a self-contained spec (novel assemblies + their tracks, no
+    // hosted config) resolves only if the assemblies exist before either runs.
+    if (isSessionWithAddAssembly(session)) {
+      for (const assembly of sessionAssemblies) {
+        session.addSessionAssembly(assembly)
+      }
+    }
     if (isSessionWithAddTracks(session)) {
       for (const track of sessionTracks) {
         session.addTrackConf(track)

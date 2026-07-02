@@ -3,10 +3,10 @@ import { useEffect, useRef } from 'react'
 
 import {
   applyZoomAccum,
-  getZoomNormalizer,
   isActivelyZooming,
   normalizeWheelDelta,
   wheelFrameElapsedMs,
+  wheelZoomAccum,
 } from '@jbrowse/core/util'
 
 interface GenomeViewModel {
@@ -15,8 +15,6 @@ interface GenomeViewModel {
   zoomTo: (bpPerPx: number, offset?: number) => void
   horizontalScroll: (delta: number) => void
 }
-
-const SCROLL_ZOOM_FACTOR_DIVISOR = 500
 
 // accumulate horizontal scroll across a frame, restarting from zero when the
 // gesture reverses direction so a flick the opposite way isn't cancelled out by
@@ -95,9 +93,7 @@ export function useWheelScroll(
           )
         }
         event.preventDefault()
-        s.zoomAccum +=
-          deltaY /
-          (isCtrlZoom ? getZoomNormalizer(deltaY) : SCROLL_ZOOM_FACTOR_DIVISOR)
+        s.zoomAccum += wheelZoomAccum(deltaY, isCtrlZoom)
         s.lastClientX = event.clientX
         s.lastZoomTime = event.timeStamp
         // drop any side-scroll accumulated earlier this frame — we're zooming,

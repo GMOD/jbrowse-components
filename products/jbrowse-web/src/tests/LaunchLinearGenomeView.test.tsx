@@ -92,3 +92,42 @@ test('unknown view type in spec surfaces an error instead of failing silently', 
     delay,
   )
 }, 60000)
+
+test('spec url can carry its own assembly via sessionAssemblies', async () => {
+  // a self-contained spec: an assembly the hosted config does not define,
+  // supplied inline, plus a view launched on it. guards the
+  // loadSessionSpec -> addSessionAssembly wiring so a novel assembly resolves
+  // without being baked into the config first.
+  const spec = {
+    sessionAssemblies: [
+      {
+        name: 'volvox_session',
+        sequence: {
+          type: 'ReferenceSequenceTrack',
+          trackId: 'volvox_session_refseq',
+          adapter: {
+            type: 'TwoBitAdapter',
+            uri: 'test_data/volvox/volvox.2bit',
+          },
+        },
+      },
+    ],
+    views: [
+      {
+        type: 'LinearGenomeView',
+        assembly: 'volvox_session',
+        loc: 'ctgA:1-50000',
+      },
+    ],
+  }
+  const { findByPlaceholderText } = render(
+    <App
+      search={`?config=test_data/volvox/config_main_thread.json&session=spec-${JSON.stringify(spec)}`}
+    />,
+  )
+
+  const elt = await findByPlaceholderText('Search for location', {}, delay)
+  await waitFor(() => {
+    expect((elt as HTMLInputElement).value).toBe('ctgA:1..50,000')
+  }, delay)
+}, 60000)

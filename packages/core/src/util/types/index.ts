@@ -260,6 +260,16 @@ export function isSessionWithAddTracks(t: unknown): t is SessionWithAddTracks {
   )
 }
 
+/** abstract interface for a session that allows adding session assemblies */
+export interface SessionWithAddAssembly extends AbstractSessionModel {
+  addSessionAssembly(conf: Record<string, unknown>): void
+}
+export function isSessionWithAddAssembly(
+  t: unknown,
+): t is SessionWithAddAssembly {
+  return isSessionModel(t) && typeof t.addSessionAssembly === 'function'
+}
+
 /** abstract interface for a session that allows deleting track configs */
 export interface SessionWithDeleteTrackConf extends AbstractSessionModel {
   deleteTrackConf(configuration: AnyConfigurationModel): void

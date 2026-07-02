@@ -2,10 +2,10 @@ import { useEffect, useRef } from 'react'
 
 import {
   applyZoomAccum,
-  getZoomNormalizer,
   isActivelyZooming,
   normalizeWheelDelta,
   wheelFrameElapsedMs,
+  wheelZoomAccum,
 } from '@jbrowse/core/util'
 
 import type { BreakpointViewModel } from '../model.ts'
@@ -87,7 +87,7 @@ export function useOverlayWheelZoom(
         (targetView.scrollZoom && Math.abs(deltaY) >= Math.abs(deltaX))
       ) {
         event.preventDefault()
-        s.zoomAccum += deltaY / getZoomNormalizer(deltaY)
+        s.zoomAccum += wheelZoomAccum(deltaY, isCtrlZoom)
         s.lastClientX = event.clientX
         s.lastViewIndex = viewIndex
         s.lastZoomTime = event.timeStamp

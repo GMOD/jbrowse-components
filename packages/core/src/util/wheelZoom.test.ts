@@ -1,10 +1,12 @@
 import {
+  SCROLL_ZOOM_FACTOR_DIVISOR,
   ZOOM_ACTIVE_WINDOW_MS,
   applyZoomAccum,
   getZoomNormalizer,
   isActivelyZooming,
   normalizeWheelDelta,
   wheelFrameElapsedMs,
+  wheelZoomAccum,
 } from './wheelZoom.ts'
 
 describe('getZoomNormalizer', () => {
@@ -82,6 +84,20 @@ describe('applyZoomAccum', () => {
   test('rate-limits a large accum to MAX_ZOOM_RATE_PER_MS * elapsed', () => {
     // capped at 0.2/16.67 * 16.67 = 0.2 per frame
     expect(applyZoomAccum(10, 5, 16.67)).toBeCloseTo(12)
+  })
+})
+
+describe('wheelZoomAccum', () => {
+  test('ctrl zoom uses the adaptive normalizer', () => {
+    expect(wheelZoomAccum(10, true)).toBeCloseTo(10 / getZoomNormalizer(10))
+    expect(wheelZoomAccum(200, true)).toBeCloseTo(200 / getZoomNormalizer(200))
+  })
+
+  test('scroll zoom uses the fixed divisor', () => {
+    expect(wheelZoomAccum(10, false)).toBeCloseTo(10 / SCROLL_ZOOM_FACTOR_DIVISOR)
+    expect(wheelZoomAccum(200, false)).toBeCloseTo(
+      200 / SCROLL_ZOOM_FACTOR_DIVISOR,
+    )
   })
 })
 
