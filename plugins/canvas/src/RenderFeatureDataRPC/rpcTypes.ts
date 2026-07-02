@@ -37,11 +37,12 @@ export interface RenderFeatureDataArgs {
   geneticCodeId?: number
   sequenceAdapter?: Record<string, unknown>
   showOnlyGenes?: boolean
-  // "Show only this feature" solo: admit only the feature whose id() matches.
-  // Matched against feature.id() (the uniqueId) — not a jexl filter, since the
-  // uniqueId isn't reachable through jexlFeatureProxy (feature.id reads the data
-  // field, e.g. GFF3 ID=, not the uniqueId).
-  soloFeatureId?: string
+  // "Show only these features" solo set: when present and non-empty, admit only
+  // features whose id() is in the set. Matched against feature.id() (the
+  // uniqueId) — not a jexl filter, since the uniqueId isn't reachable through
+  // jexlFeatureProxy (feature.id reads the data field, e.g. GFF3 ID=, not the
+  // uniqueId).
+  soloFeatureIds?: string[]
   maxFeatureDensity?: number
   // Compressed-byte budget for this region. When set and the adapter offers a
   // cheap index estimate (getRegionByteSize), the fetch short-circuits before

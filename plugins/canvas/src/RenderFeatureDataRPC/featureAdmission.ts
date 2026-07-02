@@ -18,12 +18,12 @@ export function buildFeatureAdmission({
   config,
   jexl,
   showOnlyGenes,
-  soloFeatureId,
+  soloFeatureIds,
 }: {
   config: DisplayConfig
   jexl?: JexlInstance
   showOnlyGenes?: boolean
-  soloFeatureId?: string
+  soloFeatureIds?: string[]
 }) {
   const filterChain = new SerializableFilterChain({
     filters: config.jexlFilters.map(f =>
@@ -47,10 +47,15 @@ export function buildFeatureAdmission({
       )
     : undefined
 
-  // "Show only this feature": an exact uniqueId match, applied at the same
-  // admission stage as the type/jexl gates so "what gets drawn" has one answer.
+  // "Show only these features": an exact uniqueId-membership match, applied at
+  // the same admission stage as the type/jexl gates so "what gets drawn" has
+  // one answer. An empty/absent set admits everything.
+  const soloSet =
+    soloFeatureIds && soloFeatureIds.length > 0
+      ? new Set(soloFeatureIds)
+      : undefined
   return (feature: Feature) =>
-    (soloFeatureId === undefined || feature.id() === soloFeatureId) &&
+    (soloSet === undefined || soloSet.has(feature.id())) &&
     filterChain.passes(feature) &&
     (geneLikeTypes === undefined ||
       geneLikeTypes.has(featureType(feature).toLowerCase()))

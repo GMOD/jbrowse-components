@@ -71,12 +71,22 @@ describe('buildFeatureAdmission', () => {
     expect(admit(feat('exon', { score: 10 }))).toBe(false)
   })
 
-  it('soloFeatureId admits only the matching feature id() (the uniqueId)', () => {
+  it('soloFeatureIds admits only features whose id() is in the set', () => {
     const admit = buildFeatureAdmission({
       config: mockDisplayConfig(),
-      soloFeatureId: 'f1',
+      soloFeatureIds: ['f1', 'f3'],
     })
     expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
     expect(admit(feat('gene', { id: 'f2' }))).toBe(false)
+    expect(admit(feat('gene', { id: 'f3' }))).toBe(true)
+  })
+
+  it('an empty soloFeatureIds set admits everything', () => {
+    const admit = buildFeatureAdmission({
+      config: mockDisplayConfig(),
+      soloFeatureIds: [],
+    })
+    expect(admit(feat('gene', { id: 'f1' }))).toBe(true)
+    expect(admit(feat('region', { id: 'f2' }))).toBe(true)
   })
 })
