@@ -14,6 +14,7 @@ import { observer } from 'mobx-react'
 
 import { locationName } from './ldAdapterConfig.ts'
 import { buildGwasTrackConfig, canSubmit } from './util.ts'
+import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
 
 import type { AbstractRootModel } from '@jbrowse/core/util'
 import type { FileLocation } from '@jbrowse/core/util/types'
@@ -43,7 +44,7 @@ const GWASAddTrackWorkflow = observer(function GWASAddTrackWorkflow({
   const rootModel = getRoot<AbstractRootModel>(model)
   const [gwasLocation, setGwasLocation] = useState<FileLocation>()
   const [gwasIndexLocation, setGwasIndexLocation] = useState<FileLocation>()
-  const [scoreColumn, setScoreColumn] = useState('neg_log_pvalue')
+  const [scoreColumn, setScoreColumn] = useState(DEFAULT_SCORE_COLUMN)
   const [ldLocation, setLdLocation] = useState<FileLocation>()
   const [ldIndexLocation, setLdIndexLocation] = useState<FileLocation>()
   const [trackName, setTrackName] = useState(() => `GWAS${Date.now()}`)

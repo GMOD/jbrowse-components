@@ -4,6 +4,10 @@ import { bedTabixConfigSchema } from '@jbrowse/plugin-bed'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
+// Default -log10 p-value column, shared with the add-track UIs so the schema
+// default and the form pre-fill can't drift apart.
+export const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
+
 /**
  * #config GWASAdapter
  * #category adapter
@@ -20,7 +24,7 @@ const GWASAdapterConfigSchema = ConfigurationSchema(
     scoreColumn: {
       type: 'string',
       description: 'BED column to read as the Manhattan plot score',
-      defaultValue: 'neg_log_pvalue',
+      defaultValue: DEFAULT_SCORE_COLUMN,
     },
     /**
      * #slot

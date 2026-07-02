@@ -10,8 +10,10 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *
  * #example
  * `GWASAdapter` is a `BedTabixAdapter` that defaults `scoreColumn` to
- * `neg_log_pvalue`. Override it if your BED has the p-value (not -log10 p) in a
- * different column:
+ * `neg_log_pvalue`. If your BED holds a raw p-value (not -log10 p), point
+ * `scoreColumn` at that column *and* set `scoreTransform: 'negLog10'` so it's
+ * converted into the Manhattan -log10 p value (use `negLog10FromLn` for a
+ * natural-log p-value):
  * ```js
  * {
  *   type: 'GWASTrack',
@@ -22,6 +24,7 @@ import type PluginManager from '@jbrowse/core/PluginManager'
  *     type: 'GWASAdapter',
  *     uri: 'https://example.com/gwas.bed.gz',
  *     scoreColumn: 'p_value',
+ *     scoreTransform: 'negLog10',
  *   },
  * }
  * ```

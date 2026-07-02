@@ -24,8 +24,9 @@ const LdIndexWarning = observer(function LdIndexWarning({
   const { classes } = useStyles()
   return (
     <div className={classes.container} style={{ top: offsetTop + 2 }}>
-      Index SNP not found in LD data — try “Set index SNP to top hit” in the
-      track menu
+      Index SNP not found in the LD data for this region — every point is grey.
+      Check that the index SNP is covered by the LD file and that its reference
+      name matches (e.g. “chr2” vs “2”).
     </div>
   )
 })

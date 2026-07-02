@@ -22,8 +22,9 @@ export interface ManhattanHit {
 const HIT_RADIUS_PX = 8
 
 // 2D hit test. The Flatbush index over (bp, score) is built worker-side per
-// region and wrapped by the display model's `flatbushMap` view (MobX-cached so
-// it survives mousemoves without rebuild). Here we derive a (bp, score) query
+// region and wrapped by the display model's `flatbushes` map (kept in lockstep
+// with rpcDataMap so it survives mousemoves without rebuild). Here we derive a
+// (bp, score) query
 // box from the mouse position + current view and only check exact pixel
 // distance for points inside that box. Edge-clamped points (out-of-domain
 // scores pinned to the canvas top/bottom) are still catchable because the

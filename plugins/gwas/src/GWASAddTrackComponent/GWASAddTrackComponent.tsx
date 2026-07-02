@@ -3,18 +3,18 @@ import { useState } from 'react'
 import { TextField } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { DEFAULT_SCORE_COLUMN } from '../GWASAdapter/configSchema.ts'
+
 interface GWASAddTrackComponentProps {
   model: {
     setMixinData: (data: { adapter: { scoreColumn: string } }) => void
   }
 }
 
-// Default lives in the GWASAdapter schema so accepting defaults still
+// The default lives in the GWASAdapter schema so accepting defaults still
 // produces a working track. This input only matters when the user wants to
 // override the column name — mixinData is only pushed once they actually
 // change it.
-const DEFAULT_SCORE_COLUMN = 'neg_log_pvalue'
-
 const GWASAddTrackComponent = observer(function ({
   model,
 }: GWASAddTrackComponentProps) {
