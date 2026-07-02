@@ -41,7 +41,7 @@ function createModel(data: Config) {
   // won't load, an RPC error) to session.notifyError, which only pushes a
   // snackbar — invisible in this headless tool. Echo error notifications to
   // stderr so the real cause is reported. These same errors are made fatal via
-  // throwOnSessionError (see renderRegion / whenViewReady).
+  // throwOnRenderError (see renderRegion / whenViewReady).
   const { session } = model
   const reported = new Set<string>()
   addDisposer(
@@ -73,22 +73,31 @@ interface ModeContext {
 
 type ModeRenderer = (ctx: ModeContext) => Promise<string>
 
-// Errors that jbrowse reports via session.notifyError (a bad track config, an
-// assembly that won't load, a navigation failure, a view's init autorun) land
-// as error-level snackbars. In the headless tool these must be fatal, not a
-// blank render.
-interface SessionErrors {
+// Errors reported through the session that must be fatal in the headless tool
+// rather than producing a blank render. Two sources:
+//  - session.notifyError (bad track config, navigation failure, a comparative
+//    view's init autorun) → an error-level snackbar
+//  - a failed assembly load → assembly.error. Most views route this to a
+//    snackbar by awaiting waitForAssembly in their init, but CircularView reads
+//    assemblyManager.get() without awaiting, so its bad-assembly error only
+//    lives here — check it directly so circular fails fast instead of hanging.
+interface RenderErrorSources {
   snackbarMessages: { message: string; level?: string }[]
+  assemblyManager: { assemblies: { error?: unknown }[] }
 }
 
-function firstSessionError(session: SessionErrors) {
-  return session.snackbarMessages.find(m => m.level === 'error')?.message
+function firstRenderError(session: RenderErrorSources): unknown {
+  const snackbar = session.snackbarMessages.find(m => m.level === 'error')
+  return (
+    snackbar?.message ??
+    session.assemblyManager.assemblies.find(a => a.error)?.error
+  )
 }
 
-function throwOnSessionError(session: SessionErrors) {
-  const message = firstSessionError(session)
-  if (message !== undefined) {
-    throw new Error(message)
+function throwOnRenderError(session: RenderErrorSources) {
+  const error = firstRenderError(session)
+  if (error !== undefined) {
+    throw error instanceof Error ? error : new Error(String(error))
   }
 }
 
@@ -124,17 +133,17 @@ interface InitView {
 // failure the dotplot/synteny autorun deliberately KEEPS `init` set (interactive
 // recovery) but reports the error to the session, so waiting on `!init` alone
 // would hang — also resolve on a session error, which is then rethrown.
-async function whenViewReady(view: InitView, session: SessionErrors) {
+async function whenViewReady(view: InitView, session: RenderErrorSources) {
   await when(
     () =>
       (view.initialized && !view.init) ||
-      firstSessionError(session) !== undefined,
+      firstRenderError(session) !== undefined,
     { timeout: INIT_TIMEOUT_MS },
   ).catch(() => {
     // swallow the timeout rejection; the checks below turn an unresolved init
     // into a descriptive error
   })
-  throwOnSessionError(session)
+  throwOnRenderError(session)
   if (view.init) {
     throw new Error(`view did not initialize within ${INIT_TIMEOUT_MS / 1000}s`)
   }
@@ -394,11 +403,11 @@ export async function renderRegion(opts: Opts) {
       width: opts.width ?? 1500,
       spec,
     })
-    // a failure reported to the session during the render (e.g. a bad track
-    // config) means the SVG is incomplete — fail rather than emit a
-    // silently-broken image (per-track data-load errors are caught in each
-    // renderer via throwOnDisplayError)
-    throwOnSessionError(model.session)
+    // a failure reported to the session during the render (a bad track config,
+    // a failed assembly load) means the SVG is incomplete — fail rather than
+    // emit a silently-broken image (per-track data-load errors are caught in
+    // each renderer via throwOnDisplayError)
+    throwOnRenderError(model.session)
     return result
   } finally {
     destroy(model)

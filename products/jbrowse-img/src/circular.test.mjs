@@ -26,3 +26,18 @@ test('circular renders structural variant chords from a VCF', async () => {
     `expected variant chords, got ${paths.length} paths`,
   )
 })
+
+// CircularView reads assemblyManager.get() without awaiting, so a failed
+// assembly load never reaches the session and its init never completes — which
+// would hang headlessly. The assembly error is detected directly so it fails
+// fast instead.
+test('circular with an unreadable assembly rejects instead of hanging', async () => {
+  await assert.rejects(
+    renderRegion({
+      mode: 'circular',
+      fasta: '/nonexistent/ref.fa',
+      trackList: [['vcfgz', [sv]]],
+    }),
+    /ENOENT|no such file/,
+  )
+})
