@@ -1,4 +1,5 @@
 import { ConfigurationSchema } from '@jbrowse/core/configuration'
+import { types } from '@jbrowse/mobx-state-tree'
 
 import type { Instance } from '@jbrowse/mobx-state-tree'
 
@@ -30,7 +31,8 @@ const SplitVcfTabixAdapter = ConfigurationSchema(
      * #slot
      */
     indexType: {
-      type: 'string',
+      model: types.enumeration('IndexType', ['TBI', 'CSI']),
+      type: 'stringEnum',
       defaultValue: 'TBI',
     },
 
