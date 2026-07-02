@@ -50,6 +50,11 @@ export function remapMultiWiggleConfig(snap: Record<string, unknown>) {
  * array form — see
  * [configuring displays](/docs/config_guides/tracks#configuring-displays).
  *
+ * Per-subtrack metadata (a `name`, `color`, and `group` for each subtrack) is
+ * preloaded on the *adapter*, not here — use `MultiWiggleAdapter`'s
+ * `subadapters` slot, where `group` drives the sidebar clustering tree and
+ * `color` sets each subtrack's line/fill.
+ *
  * #example
  * Minimal `MultiQuantitativeTrack` config. See the
  * [multi-quantitative track guide](/docs/config_guides/multiquantitative_track)

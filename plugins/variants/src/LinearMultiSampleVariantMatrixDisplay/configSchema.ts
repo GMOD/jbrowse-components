@@ -30,9 +30,37 @@ import sharedVariantConfigFactory from '../shared/SharedVariantConfigSchema.ts'
  * ```
  *
  * #example
+ * Preloading sample metadata: point the adapter's `samplesTsvLocation` at a TSV
+ * whose first column is the sample name and whose other columns are per-sample
+ * attributes (e.g. `population`), then `colorBy` one of those attributes to
+ * color the matrix rows on load (same metadata mechanism as the regular
+ * `LinearMultiSampleVariantDisplay`):
+ * ```js
+ * {
+ *   type: 'VariantTrack',
+ *   trackId: 'cohort',
+ *   name: 'Cohort variants',
+ *   assemblyNames: ['hg38'],
+ *   adapter: {
+ *     type: 'VcfTabixAdapter',
+ *     uri: 'https://example.com/cohort.vcf.gz',
+ *     samplesTsvLocation: { uri: 'https://example.com/samples.tsv' },
+ *   },
+ *   displays: [
+ *     {
+ *       type: 'LinearMultiSampleVariantMatrixDisplay',
+ *       displayId: 'cohort-LinearMultiSampleVariantMatrixDisplay',
+ *       height: 400,
+ *       colorBy: 'population',
+ *     },
+ *   ],
+ * }
+ * ```
+ *
+ * #example
  * Taller matrix filtering rare variants (MAF < 5 %), with pre-declared sample
  * colors and groups. `layout` seeds the initial row order, color, and group
- * labels:
+ * labels inline instead of from a `samplesTsvLocation`:
  * ```js
  * {
  *   type: 'VariantTrack',

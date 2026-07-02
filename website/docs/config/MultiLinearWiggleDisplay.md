@@ -73,6 +73,11 @@ shorthand `displayDefaults: { key: value }` is equivalent to the full
 array form — see
 [configuring displays](/docs/config_guides/tracks#configuring-displays).
 
+Per-subtrack metadata (a `name`, `color`, and `group` for each subtrack) is
+preloaded on the _adapter_, not here — use `MultiWiggleAdapter`'s `subadapters`
+slot, where `group` drives the sidebar clustering tree and `color` sets each
+subtrack's line/fill.
+
 ### MultiLinearWiggleDisplay - State model
 
 This config's runtime API is documented on its
