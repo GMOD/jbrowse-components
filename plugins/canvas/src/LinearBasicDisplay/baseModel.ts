@@ -2160,19 +2160,28 @@ export default function baseStateModelFactory(
             },
             ...self.colorMenuItems(),
             {
-              label: 'Filter by...',
-              icon: ClearAllIcon,
-              onClick: () => {
-                self.openFilterDialog()
-              },
-            },
-            {
-              label: 'Clear filters',
-              icon: FilterAltOffIcon,
-              disabled: !hasFeatureFilters,
-              onClick: () => {
-                self.clearAllFeatureFilters()
-              },
+              label: 'Edit filters',
+              icon: FilterAltIcon,
+              subMenu: [
+                {
+                  label: 'Filter by...',
+                  icon: ClearAllIcon,
+                  onClick: () => {
+                    self.openFilterDialog()
+                  },
+                },
+                ...(hasFeatureFilters
+                  ? [
+                      {
+                        label: 'Clear filters',
+                        icon: FilterAltOffIcon,
+                        onClick: () => {
+                          self.clearAllFeatureFilters()
+                        },
+                      },
+                    ]
+                  : []),
+              ],
             },
           ]
         },
