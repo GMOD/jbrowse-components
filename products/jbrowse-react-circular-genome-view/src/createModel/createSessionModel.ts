@@ -11,8 +11,8 @@ import {
 } from '@jbrowse/product-core'
 
 import type PluginManager from '@jbrowse/core/PluginManager'
-import type { AbstractSessionModel } from '@jbrowse/core/util/types'
 import type { Instance } from '@jbrowse/mobx-state-tree'
+import type { AssertSessionModel } from '@jbrowse/product-core'
 
 /**
  * #stateModel JBrowseReactCircularGenomeViewSessionModel
@@ -112,9 +112,5 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 
 type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-function z(x: Instance<SessionStateModel>): AbstractSessionModel {
-  // this function's sole purpose is to get typescript to check
-  // that the session model implements all of AbstractSessionModel
-  return x
-}
+// compile-time check that the session model implements AbstractSessionModel
+export type _AssertSessionModel = AssertSessionModel<Instance<SessionStateModel>>

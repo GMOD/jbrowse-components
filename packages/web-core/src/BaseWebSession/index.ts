@@ -26,6 +26,7 @@ import {
   ThemeManagerSessionMixin,
   TrackMenuItemsSessionMixin,
   copyTrackSnapshot,
+  finalizeSession,
   trackActionItems,
 } from '@jbrowse/product-core'
 import { autorun } from 'mobx'
@@ -278,26 +279,7 @@ export function finalizeWebSession<T extends IAnyModelType>(
   pluginManager: PluginManager,
   sessionModel: T,
 ) {
-  const extendedSessionModel = pluginManager.evaluateExtensionPoint(
-    /** #extensionPoint Core-extendSession | sync | Extend the session model with extra state or actions */
-    'Core-extendSession',
-    sessionModel,
-  ) as T
-
-  return types.snapshotProcessor(extendedSessionModel, {
-    preProcessor(
-      snapshot: SnapshotIn<T> & {
-        connectionInstances?: unknown
-      },
-    ) {
-      const { connectionInstances, ...rest } = snapshot
-
-      // connectionInstances schema changed from object to an array, so any old
-      // connectionInstances as object is in snapshot, filter it out
-      // xref https://github.com/GMOD/jbrowse-components/issues/1903
-      return !Array.isArray(connectionInstances) ? rest : snapshot
-    },
-  })
+  return finalizeSession(pluginManager, sessionModel)
 }
 
 /**

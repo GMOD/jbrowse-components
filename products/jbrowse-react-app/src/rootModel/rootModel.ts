@@ -119,19 +119,6 @@ export default function RootModel({
         setPluginsUpdated() {
           self.pluginsUpdated = true
         },
-        /**
-         * #action
-         * BaseRootModel's setDefaultSession reuses defaultSession's literal
-         * name; react-app instead timestamps it so multiple "new sessions"
-         * don't collide.
-         */
-        setDefaultSession() {
-          const { defaultSession } = self.jbrowse
-          self.setSession({
-            ...defaultSession,
-            name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
-          })
-        },
       }
     })
     .views(self => ({

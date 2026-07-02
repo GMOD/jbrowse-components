@@ -213,16 +213,6 @@ export default function RootModel({
       /**
        * #action
        */
-      setDefaultSession() {
-        const { defaultSession } = self.jbrowse
-        self.setSession({
-          ...defaultSession,
-          name: `${defaultSession.name || 'New session'} ${new Date().toLocaleString()}`,
-        })
-      },
-      /**
-       * #action
-       */
       async activateSession(id: string) {
         try {
           const ret = await self.sessionDB?.get('sessions', id)
