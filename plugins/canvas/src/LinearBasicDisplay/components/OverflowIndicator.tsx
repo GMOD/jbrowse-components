@@ -24,6 +24,7 @@ const useStyles = makeStyles()(theme => ({
 const OverflowIndicator = observer(function OverflowIndicator({
   autoHeight,
   expanded,
+  canExpand,
   hasOverflow,
   scrollZoom,
   onExpand,
@@ -31,16 +32,29 @@ const OverflowIndicator = observer(function OverflowIndicator({
 }: {
   autoHeight: boolean
   expanded: boolean
+  canExpand: boolean
   hasOverflow: boolean
   scrollZoom: boolean
   onExpand: () => void
   onRestore: () => void
 }) {
   const { classes } = useStyles()
-  const visible = !autoHeight && (hasOverflow || expanded)
+  // Once expanded, keep offering "restore" (resize back down) rather than
+  // flipping to expand again — the collapse affordance is the priority. The
+  // expand action is gated on canExpand so it never offers a no-op or a shrink.
+  const visible = !autoHeight && (canExpand || expanded)
   const label = expanded ? 'Restore previous height' : 'Expand to fit features'
-  const title =
-    hasOverflow && scrollZoom ? `${label} — shift+wheel to scroll` : label
+  // Content still overflows but the track can't grow — pinned at the maxHeight
+  // cap. Surface that so a persistent scrollbar after "expand to fit" reads as
+  // intentional rather than a half-working button.
+  const atMaxHeight = hasOverflow && !canExpand
+  const title = [
+    label,
+    atMaxHeight ? 'maximum height reached' : undefined,
+    hasOverflow && scrollZoom ? 'shift+wheel to scroll' : undefined,
+  ]
+    .filter(Boolean)
+    .join(' — ')
   return visible ? (
     <Tooltip title={title}>
       <IconButton

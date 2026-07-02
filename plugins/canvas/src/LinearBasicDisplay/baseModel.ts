@@ -799,6 +799,18 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // Whether "Expand to fit" would actually grow the track. Overflow alone
+        // isn't enough: when the display is already at/above the maxHeight cap
+        // (e.g. dragged taller than maxHeight while content still overflows),
+        // fitHeight <= height and "expanding" would *shrink* it. Gate the expand
+        // affordance on this so the button only ever offers a real grow.
+        get canExpand() {
+          return this.fitHeight > self.height
+        },
+
+        /**
+         * #getter
+         */
         get featureIdIndex() {
           return indexById(self.laidOutDataMap, d => d.flatbushItems)
         },
@@ -917,6 +929,12 @@ export default function baseStateModelFactory(
         expandToFit() {
           self.heightBeforeExpand = self.height
           self.setHeight(self.fitHeight)
+          // Show the content from the top. Without this, a track scrolled down
+          // before expanding keeps its old scrollTop; if the grow removes
+          // overflow the GPU canvas paints at that now-invalid offset (top
+          // features clipped, blank below) until a DOM scroll event happens to
+          // sync it back.
+          self.setScrollTop(0)
         },
 
         /**
