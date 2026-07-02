@@ -541,7 +541,17 @@ const SessionLoader = types
           await self.fetchSharedSession()
         } else if (self.sessionQueryType === 'spec') {
           self.decodeSessionSpec()
+        } else if (self.sessionQueryType === 'encoded') {
+          await self.decodeEncodedUrlSession()
+        } else if (self.sessionQueryType === 'json') {
+          await self.decodeJsonUrlSession()
+        } else if (self.sessionQueryType === 'local') {
+          await self.fetchLocalSession()
         } else if (self.isJb1StyleSession) {
+          // the loc/assembly/tracks shorthand ranks below every explicit
+          // `session=` prefix: an explicit session always wins over a stray
+          // loc (generated URLs never combine them — loc is stripped once
+          // consumed — so this only disambiguates hand-crafted URLs)
           if (self.extendDefaultSession) {
             // layer loc/tracks onto the configured defaultSession (applied in
             // initSession via defaultSessionViewInit) rather than replacing it
@@ -549,12 +559,6 @@ const SessionLoader = types
           } else {
             self.decodeJb1StyleSession()
           }
-        } else if (self.sessionQueryType === 'encoded') {
-          await self.decodeEncodedUrlSession()
-        } else if (self.sessionQueryType === 'json') {
-          await self.decodeJsonUrlSession()
-        } else if (self.sessionQueryType === 'local') {
-          await self.fetchLocalSession()
         } else if (self.isHubSession) {
           // lower priority than local session: hubURL is left in URL even
           // when a local session exists

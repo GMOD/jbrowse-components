@@ -593,6 +593,21 @@ describe('SessionLoader', () => {
       expect(loader.sessionSource).toEqual({ type: 'spec', spec })
     })
 
+    // an explicit `session=` prefix outranks the loc/assembly shorthand: a
+    // stray loc must not clobber the requested session (generated URLs never
+    // combine them, but hand-crafted ones can)
+    it('explicit encoded session wins over a stray loc param', async () => {
+      const loader = createAndInit({
+        sessionQuery: 'encoded-abc',
+        loc: 'chr1:1-1000',
+        assembly: 'hg38',
+        initialTimestamp: Date.now(),
+      })
+      await when(() => loader.isSessionLoaded, { timeout: 5000 })
+      // resolves the encoded session (a snapshot), not a jb1 loc spec
+      expect(loader.sessionSource).toMatchObject({ type: 'snapshot' })
+    })
+
     it('dispatches JB1-style session (loc + assembly)', async () => {
       const loader = createAndInit({
         loc: 'chr1:1-1000',
