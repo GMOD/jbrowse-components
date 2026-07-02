@@ -2,6 +2,7 @@ import type React from 'react'
 
 import {
   ConfigurationReference,
+  getConf,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
@@ -69,11 +70,6 @@ export interface HoveredFeature extends MultiRowHit {
   clientY: number
 }
 
-const DEFAULTS = {
-  showTree: true,
-  showBranchLength: false,
-} as const
-
 /**
  * #stateModel LinearMultiRowFeatureDisplay
  * Multi-row interval painter (chromosome / ancestry painting). Partitions a
@@ -102,19 +98,6 @@ export default function stateModelFactory(
          * #property
          */
         configuration: ConfigurationReference(configSchema),
-        /**
-         * #property
-         */
-        showTree: types.stripDefault(types.boolean, DEFAULTS.showTree),
-        /**
-         * #property
-         * Position tree nodes by cluster merge height (dendrogram) vs. evenly by
-         * topology (cladogram).
-         */
-        showBranchLength: types.stripDefault(
-          types.boolean,
-          DEFAULTS.showBranchLength,
-        ),
       }),
     )
     .volatile(() => ({
@@ -135,6 +118,18 @@ export default function stateModelFactory(
        */
       get conf(): LinearMultiRowFeatureDisplayConfig {
         return self.configuration
+      },
+      /**
+       * #getter
+       */
+      get showTree(): boolean {
+        return getConf(self, 'showTree')
+      },
+      /**
+       * #getter
+       */
+      get showBranchLength(): boolean {
+        return getConf(self, 'showBranchLength')
       },
     }))
     .views(self => ({
@@ -427,13 +422,13 @@ export default function stateModelFactory(
        * #action
        */
       setShowTree(f: boolean) {
-        self.showTree = f
+        self.configuration.setSlot('showTree', f)
       },
       /**
        * #action
        */
       setShowBranchLength(f: boolean) {
-        self.showBranchLength = f
+        self.configuration.setSlot('showBranchLength', f)
       },
       /**
        * #action

@@ -136,6 +136,24 @@ export default function configSchemaF(pluginManager: PluginManager) {
         description: 'fraction of the row height each block fills',
         advanced: true,
       },
+      /**
+       * #slot
+       */
+      showTree: {
+        type: 'boolean',
+        defaultValue: true,
+        description: 'show the cluster tree sidebar',
+      },
+      /**
+       * #slot
+       * Position tree nodes by cluster merge height (dendrogram) vs. evenly by
+       * topology (cladogram).
+       */
+      showBranchLength: {
+        type: 'boolean',
+        defaultValue: false,
+        description: 'position tree nodes by branch length (dendrogram)',
+      },
     },
     {
       baseConfiguration: baseLinearDisplayConfigSchema,
