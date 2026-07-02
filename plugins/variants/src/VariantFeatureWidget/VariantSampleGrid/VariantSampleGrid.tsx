@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { ErrorBanner } from '@jbrowse/core/ui'
@@ -33,6 +33,11 @@ const columnDisplayModes: ReadonlySet<ColumnDisplayMode> = new Set([
 
 const gtOnlyFields = new Set(['sample', 'GT'])
 const gtAndGenotypeFields = new Set(['sample', 'GT', 'genotype'])
+
+// Stable empty defaults so the row/frequency memos below don't churn on every
+// render when a field is absent.
+const EMPTY_SAMPLES = {}
+const EMPTY_ALT: string[] = []
 
 export default function VariantSampleGrid({
   feature,
@@ -74,17 +79,18 @@ export default function VariantSampleGrid({
   const [selectedGenotypes, setSelectedGenotypes] =
     useState<Set<string> | null>(null)
 
-  const rows = getSampleGridRows(
-    feature.samples ?? {},
-    feature.REF ?? '',
-    feature.ALT ?? [],
-    useCounts,
+  // These tally over every sample, so memoize — the grid re-renders on each
+  // filter keystroke / toggle, and a big VCF can carry thousands of samples.
+  const samples = feature.samples ?? EMPTY_SAMPLES
+  const REF = feature.REF ?? ''
+  const ALT = feature.ALT ?? EMPTY_ALT
+  const rows = useMemo(
+    () => getSampleGridRows(samples, REF, ALT, useCounts),
+    [samples, REF, ALT, useCounts],
   )
-
-  const alleleFrequencies = getAlleleFrequencies(
-    feature.samples ?? {},
-    feature.REF ?? '',
-    feature.ALT ?? [],
+  const alleleFrequencies = useMemo(
+    () => getAlleleFrequencies(samples, REF, ALT),
+    [samples, REF, ALT],
   )
 
   const { rows: textFilteredRows, error } = filterSampleRows(rows, filter)

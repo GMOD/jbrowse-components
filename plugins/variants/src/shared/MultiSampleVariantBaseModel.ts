@@ -433,6 +433,31 @@ export default function MultiSampleVariantBaseModelF(
           return self.userByteSizeLimit ?? getConf(self, 'fetchSizeLimit')
         },
       }))
+      .actions(self => {
+        // VCF-header field descriptions (INFO/FORMAT) are static per adapter, so
+        // fetch once and reuse the promise — every feature-widget open otherwise
+        // round-trips the worker just to re-read the same header. Cleared on
+        // failure so a later click retries.
+        let metadataPromise: Promise<unknown> | undefined
+        return {
+          /**
+           * #action
+           */
+          fetchMetadataDescriptions() {
+            if (!metadataPromise) {
+              metadataPromise = getSession(self)
+                .rpcManager.call(getRpcSessionId(self), 'CoreGetMetadata', {
+                  adapterConfig: self.adapterConfig,
+                })
+                .catch((e: unknown) => {
+                  metadataPromise = undefined
+                  throw e
+                })
+            }
+            return metadataPromise
+          },
+        }
+      })
       .actions(self => ({
         /**
          * #action
@@ -462,11 +487,8 @@ export default function MultiSampleVariantBaseModelF(
          * #action
          */
         selectFeature(feature: Feature) {
-          const session = getSession(self)
-          session.rpcManager
-            .call(getRpcSessionId(self), 'CoreGetMetadata', {
-              adapterConfig: self.adapterConfig,
-            })
+          self
+            .fetchMetadataDescriptions()
             .then(descriptions => {
               if (isAlive(self)) {
                 openFeatureWidget(self, feature.toJSON(), {
@@ -477,7 +499,7 @@ export default function MultiSampleVariantBaseModelF(
             })
             .catch((e: unknown) => {
               console.error(e)
-              session.notifyError(`${e}`, e)
+              getSession(self).notifyError(`${e}`, e)
             })
         },
         /**
