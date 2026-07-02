@@ -42,15 +42,17 @@ uncheck **Auto-switch by zoom** to pin it on at every zoom level.
 ## Color by source chromosome
 
 **Color by source chromosome** replaces the per-base coloring with a structural
-view: each species' alignment blocks are filled by a stable color derived from
-the source chromosome the aligned sequence comes from in that species' own
-genome. Because the color depends only on the source chromosome, a species whose
-blocks in the window come from more than one source chromosome _changes color
-along its row_ — an immediate flag for a translocation or rearrangement, with no
-extra data to fetch. A compact legend in the top-right names each visible source
-chromosome.
+view: within each species row, the source chromosomes its blocks come from (in
+that species' own genome) are ranked by coverage and colored by that per-row
+rank — the row's main chromosome gets the primary color, and blocks from a
+different source chromosome take a contrasting accent. So a species whose blocks
+in the window come from more than one source chromosome _changes color along its
+row_ — an immediate flag for a translocation or rearrangement — while everything
+else stays one calm color (no per-scaffold rainbow). A compact legend in the
+top-right names the rank scheme (main / 2nd / 3rd source). No extra data to
+fetch.
 
-<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species' blocks are colored by their source chromosome/scaffold. The reference (ce11) is a single color across the window, while several species' rows switch color where their aligned blocks come from different source scaffolds. The legend (top right) names each visible source chromosome."/>
+<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its per-row source-chromosome rank, so every row's main chromosome is the same primary color and only blocks from a different source chromosome pick up an accent — the color switches (2nd/3rd source) mark rearrangements directly."/>
 
 ## Inversions (strand flips)
 

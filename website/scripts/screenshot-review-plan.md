@@ -1,65 +1,127 @@
-# Screenshot review — plan for the next agent
+# Screenshot review — handoff for the next agent
 
 Continues the screenshot-review cleanup. `screenshot-review.json` is the review
-log (gitignored, local coordination only). Each entry's `note` is the reviewer's
-ask; `status` is `good`/`bad`. **The json is the source of truth** — this plan
-goes stale; trust the json's `status` fields over this file.
+log (tracked in git but "local coordination only" — **do NOT commit it**, leave
+it working-tree-dirty). Each entry's `note` is the reviewer's ask; `status` is
+`good`/`bad`. **The json's `status` is the source of truth** — this doc goes
+stale, so trust the json over it.
 
 ## How the system works (read first)
 
 - Specs live in `website/scripts/screenshot-specs.ts`. One object per figure;
-  `name` == the PNG path under `website/static/img/`.
-- PNGs are rendered by `website/scripts/generate-screenshots.ts` driving
-  puppeteer. Run from `website/`:
+  `name` == the PNG path under `website/static/img/` (cli/jbrowse-img specs land
+  in `products/jbrowse-img/img/` instead).
+- PNGs are rendered by `website/scripts/generate-screenshots.ts` (puppeteer).
+  From `website/`:
   ```
-  node --experimental-strip-types scripts/generate-screenshots.ts --filter <name> --exact --port=3000
+  node --experimental-strip-types scripts/generate-screenshots.ts --filter <name> --exact
   ```
-  `--port=3000` proxies the app to a running dev server
-  (`pnpm --filter @jbrowse/web start`) so **app/plugin source edits are picked
-  up via HMR with no rebuild** — including regenerated `*.generated.ts` shaders.
-  Without `--port`, it renders the built `products/jbrowse-web/build` (needs a
-  `pnpm build` after code changes). NOT `npx tsx` (keepNames breaks
-  `page.evaluate`).
-- **Content-stable writes**: an unchanged spec re-renders byte-identical
-  (`≈ kept`); only a real change `✓ updates` the PNG (>0.5% pixel diff). Always
-  regen before assuming a fix is needed — several "bad" entries were just stale
-  PNGs whose spec a prior agent already fixed.
-- **Viewing PNGs**: capture is 1500w @2x ≈ 3000px, too big for Read. Downscale:
-  `convert static/img/<name>.png -resize 1300x /tmp/x.png`.
+  NOT `npx tsx` (its keepNames breaks `page.evaluate`). Add `--force` to rewrite
+  even a near-identical PNG (default only writes on >0.5% pixel diff — an
+  unaffected spec re-renders byte-identical and logs `≈ kept`).
+- **Two render paths for URL-mode specs:**
+  - default = the **built** `products/jbrowse-web/build` bundle. A change to app
+    or plugin **source** needs a rebuild first:
+    `cd products/jbrowse-web && NODE_ENV=production node scripts/build.ts`
+    (~a few min; reliable in-sandbox, this is what I used this session).
+  - `--port=3000` = proxy to a running dev server
+    (`pnpm --filter @jbrowse/web start`), which HMRs source edits with no
+    rebuild — faster for iterating on plugin code, but the server must stay up.
+- **cli/jbrowse-img specs** run `jb2export` from **source via tsx** (no build
+  needed for jb2export src edits), output to `products/jbrowse-img/img/`. Run the
+  bin directly to see stderr the generator swallows:
+  `cd products/jbrowse-img && npx tsx --tsconfig ../../tsconfig.json src/bin.ts <args> --out /tmp/x.png`
+- **Viewing PNGs**: capture is ~1500w@2x ≈ 3000px, too big for the Read tool.
+  Downscale: `convert static/img/<name>.png -resize 1100x /tmp/x.png`, then Read
+  `/tmp/x.png`. Whole-genome/many-row figures (470-way, dotplots) especially.
 - Shaders: edit `.slang`, run `pnpm gen:shaders` (never hand-edit
-  `*.generated.ts`); the dev server HMRs the regenerated module.
-- Multi-stage figures: `stages: [{actions, annotations}, ...]` — each captured
-  and stacked vertically (`convert -append`); spec-level `crop` applies to every
-  frame. `menuCascade`/`cascadeBoxes` drive + box a menu drill-down path.
-- Two generators can't run at once (both bind port 3334).
+  `*.generated.ts`).
+- `isVerdictStale` only re-surfaces a bad verdict that HAS a `hash`; to mark
+  something good set `status:"good"` + a fresh sha1 of the PNG (node:
+  `crypto.createHash('sha1').update(fs.readFileSync(path)).digest('hex')`).
 
-## Remaining `bad` items
+## Shared worktree — IMPORTANT
 
-Both render correctly — they're blocked on **remote demo-data regeneration**
-(can't upload to jbrowse.org/demos from here), not on any spec/code edit. Each
-review-json `note` has the details.
+Multiple agents share this working tree and commit concurrently (HEAD moved under
+me mid-session). **Scope any commit to explicit pathspecs; never `git add -A`.**
+Nothing from this session is committed. Files dirty from OTHER agents (not mine):
+`website/docs/user_guides/{alignments_track,hic_track,gc_content_track}.md`, root
+`package.json`/`pnpm-lock.yaml`/`.github`, etc.
 
-- **sv_cgiab/cnv_multi_bigwig** — the indexcov bigWigs are per-sample
-  median-normalized, so normal vs tumor share no common CNV baseline. Proper fix
-  is a log2(tumor/normal) ratio track + optional BAF track. Data-gen recipe is
-  written at **`website/scripts/cnv-data-recipe.md`**; needs the source CRAMs +
-  re-upload to `jbrowse.org/demos/cgiab`, then swap the subadapters in the spec
-  and flip to `good`.
-- **trio-hapibd-painting** — the gaps are intentional hap-ibd length-threshold
-  behavior, documented in `analyze_trio.md` ("Is hap-ibd the right tool?"). Low
-  priority. To fill them, re-run with lower `min-seed`/`min-output` and lower
-  the conversion script's `MIN_RUN_CM` / raise `MAX_GAP`, or use the
-  direct-genotype method already in the tutorial — both trade gaps for
-  phasing-error noise and need `trio.hapibd.bed.gz` re-uploaded.
+## Done this session (uncommitted) — the big one was a real bug
 
-Closed since the last plan: **sv_inspector_importform_filtered** (not a defect —
-the SV-search-language enhancement is now filed in `agent-docs/TODO.md`). The
-formerly-listed deep items (translocation_sv_inspector_view, multisv,
-desktop-add-track, population_1000genomes, embed_linear_genome_view/final,
-read_cloud) are all resolved — the json shows only the two above as `bad`.
+**MAF fit-mode render regression (root cause + fix).** The MAF overlay
+components read the RAW `rowHeight` MST prop, which is **0 in fit-to-height mode**
+(what `heightOverride` uses, post the heightOverride→config-height-slot
+migration), instead of the resolved `effectiveRowHeight`. `rowBandGeometry(0)` →
+`bandH 0` → `fillRect(...,0)` paints nothing. This silently **blanked** the
+identity heatmap and color-by-chromosome rows in BOTH the on-screen canvas and
+SVG export (the GPU base/SNP path was fine — it already used `effectiveRowHeight`,
+which is why only these overlays broke and the committed PNGs looked "stale").
+Fixed to use `effectiveRowHeight` in: `MafRowIdentityCanvas.tsx`,
+`MafSourceChromCanvas.tsx`, `LinearMafDisplayComponent.tsx` (row labels +
+tooltip/subsequence hit-test, which divided by 0), and `renderSvg.tsx`. **If a
+MAF overlay is blank only in fit mode, this is the class of bug.** All 8 maf PNGs
+were broadly stale and were regenerated.
+
+Other done items (flipped `good` or deleted in the json):
+- **chromhmm** — new `docs/tutorials/chromhmm.md` (how the multirow-bigBed
+  ChromHMM config is built + `LinearMultiRowFeatureDisplay`
+  partitionField/color/rowOrder). Linked from `introduction.md`; guide index
+  regenerated via `pnpm lint-docs`.
+- **maf_codon_translation**, **sv_cgiab/cnv_calibration** — DELETED (spec + PNG +
+  doc refs + json entry).
+- **maf_470way** — regression fixed + shortened (`heightOverride` 1080→560) + NEW
+  `MafIdentityLegend.tsx` (top-right Divergent/Conserved, reuses the `MafLegend`
+  scaffold + `identityColor`).
+- **maf_color_by_chromosome** — reworked the global name→hue **rainbow** into a
+  PER-ROW rank scheme: `perRowChromRanks()` + `SOURCE_CHROM_PALETTE` in
+  `drawSourceChrom.ts` (rank 0 = each row's main chromosome = primary blue; a
+  block from a different source chromosome = orange/crimson accent = rearrangement
+  signal). Legend getter renamed `visibleSourceChromosomes`→`sourceChromLegend`
+  (rank-based). Removed old `chromosomeColor`; test rewritten; user+config guide
+  prose/captions updated. maf tests green (299).
+
+## Still `bad` (per the json) — with what each actually needs
+
+Blocked on data regen + re-upload to jbrowse.org (recipes in
+`website/scripts/cnv-data-recipe.md`):
+- **sv_cgiab/cnv_multi_bigwig** — needs a log2(tumor/normal) bigWig from CRAMs.
+- **sv_cgiab/driver_cdkn2a_deletion** — needs per-base coverage (indexcov is ~16kb-binned).
+- **sv_cgiab/driver_chr17_loh** — "CNA_21" labels come from the source BED.
+- **sv_cgiab/cnv_log2_baf**, **cnv_log2ratio_genome** — whiskers come from
+  `summaryScoreMode` defaulting to `'whiskers'`. Can't just set `'avg'` (raw-BAF
+  LOH bins average to ~0.5 and the split vanishes). Needs a FOLDED BAF bigwig
+  (`|BAF−0.5|`) — folded-BAF recipe is in cnv-data-recipe.md.
+
+Blocked on code (not data):
+- **jbrowse-img/multisample_variants** — jb2export static SSR renders the
+  per-sample genotype MATRIX **empty** for the 1000G phase3 callset even with data
+  loaded LOCALLY and rows at 1px (volvox's simpler path works) → needs a jb2export
+  matrix-render fix first. AND real pop data is ref-dominant (grey) — the
+  compelling view is `colorBy:'population'`, which needs the adapter's samplesTsv:
+  a small jb2export CLI feature (a `samplesTsv:` modifier → `samplesTsvLocation`;
+  prototyped then reverted since the render bug blocks verification). bcftools in
+  this sandbox is broken (undefined symbol `bcf_format_gt_v2`) — slice 1000G with
+  `tabix -h <url> <region> | bgzip` (refnames unprefixed `1`; hg19.fa.gz also `1`).
+
+MAF feature/polish asks (doable, not started):
+- **maf_470way_codon** — reviewer: make the conservation track show CODON-level
+  conservation (not per-base).
+- **maf_inversions** — inversions hard to see (want a "structure only" cue), and
+  the tree sidebar's top level is clipped ~1px left (a real minor layout bug).
+- **maf_cds_frames** — reviewer doesn't value the CDS-frame strips (confusable
+  with inversions). Documents a real feature; left as-is. Improve caption or
+  delete if low-value.
+
+Not a screenshot-specs.ts item:
+- **gene_track_collapse_introns** — re-added by a reviewer this session; earlier
+  notes deemed the existing figure correct (ask was an extra sashimi-toggle
+  screenshot idea, not a defect). Verify the current PNG.
 
 ## Workflow
 
-Edit spec/code → (`pnpm gen:shaders` if shader) → regen with
-`--filter <name> --exact --port=3000` → downscale + Read the PNG to verify →
-flip `status` to `good` with a note in `screenshot-review.json`.
+Edit spec/code → (`pnpm gen:shaders` if shader; rebuild jbrowse-web if app/plugin
+source) → regen `--filter <name> --exact --force` → downscale + Read the PNG to
+verify → set `status:"good"` + fresh sha1 in `screenshot-review.json`. Run
+`pnpm test plugins/<x>` for any plugin code you touch. Keep commits pathspec-scoped.

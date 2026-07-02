@@ -26,7 +26,7 @@ const MAFTooltip = observer(function ({
     showCoverage,
     coverageDisplayHeight,
     rowsTopOffset,
-    rowHeight,
+    effectiveRowHeight,
     scrollTop,
   } = model
   // Controlled point for floating-ui. Without it, `useClientPoint` enters
@@ -78,7 +78,9 @@ const MAFTooltip = observer(function ({
   // Per-row hover: convert (mouseX, mouseY) to (bp, rowIndex into `sources`)
   // and resolve the aligned base or bridged/empty region at that row. Skipped
   // during a selection drag (origMouseX set) so the drag's range readout stays.
-  const rowIndex = Math.floor((mouseY + scrollTop - rowsTopOffset) / rowHeight)
+  const rowIndex = Math.floor(
+    (mouseY + scrollTop - rowsTopOffset) / effectiveRowHeight,
+  )
   const hover =
     origMouseX === undefined && !p2.oob
       ? model.rowHoverInfo(p2.index, gposFrac, rowIndex, view.bpPerPx)

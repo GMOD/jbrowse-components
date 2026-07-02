@@ -25,6 +25,7 @@ import MafConservationCanvas from './MafConservationCanvas.tsx'
 import MafConservationYScale from './MafConservationYScale.tsx'
 import MafCoverageCanvas from './MafCoverageCanvas.tsx'
 import MafCoverageYScale from './MafCoverageYScale.tsx'
+import MafIdentityLegend from './MafIdentityLegend.tsx'
 import MafRowIdentityCanvas from './MafRowIdentityCanvas.tsx'
 import MafSourceChromCanvas from './MafSourceChromCanvas.tsx'
 import MafSourceChromLegend from './MafSourceChromLegend.tsx'
@@ -88,7 +89,7 @@ const MafBody = observer(function MafBody({
     rowsHeight,
     rowsTopOffset,
     scrollTop,
-    rowHeight,
+    effectiveRowHeight,
     showTree,
     treeAreaWidth,
     hierarchy,
@@ -186,6 +187,7 @@ const MafBody = observer(function MafBody({
         <MafSourceChromCanvas model={model} />
         <MafSourceChromLegend model={model} />
         <MafCodonLegend model={model} />
+        <MafIdentityLegend model={model} />
         <EmptyLinesOverlay
           segments={model.visibleEmptyLines}
           width={width}
@@ -247,7 +249,7 @@ const MafBody = observer(function MafBody({
           >
             <SvgRowLabels
               sources={sources}
-              rowHeight={rowHeight}
+              rowHeight={effectiveRowHeight}
               labelOffset={sidebarOffset}
               scrollTop={scrollTop}
               availableHeight={rowsHeight}
@@ -299,7 +301,7 @@ const MafBody = observer(function MafBody({
         model={model}
         view={view}
         samples={samples}
-        rowHeight={rowHeight}
+        rowHeight={effectiveRowHeight}
         rowsTopOffset={rowsTopOffset}
         scrollTop={scrollTop}
         contextCoord={contextCoord}

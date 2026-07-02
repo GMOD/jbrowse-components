@@ -42,7 +42,12 @@ import { computeVisibleInsertions } from './components/computeVisibleInsertions.
 import { computeVisibleInversions } from './components/computeVisibleInversions.ts'
 import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { computeVisibleSummaryBars } from './components/computeVisibleSummaryBars.ts'
-import { chromosomeColor } from './components/drawSourceChrom.ts'
+import {
+  perRowChromRanks,
+  sourceChromRankColor,
+  sourceChromRankLabel,
+  uniqueRegionsFromBlocks,
+} from './components/drawSourceChrom.ts'
 import { findRowHoverAtBp } from './components/findRowHover.ts'
 import { coverageInsertionAt } from './coverageInsertion.ts'
 import { DEFAULTS } from './displayDefaults.ts'
@@ -1354,31 +1359,29 @@ export default function stateModelFactory(
       },
       /**
        * #getter
-       * Source chromosomes among the visible alignment blocks, each with its
-       * stable color, ordered by descending bp coverage so the legend can keep
-       * the most prevalent ones and fold the long tail of rare scaffolds into a
-       * count. Empty unless the color-by-chromosome mode is active.
+       * Rank-based legend for the color-by-source-chromosome mode: one entry per
+       * source-chromosome rank actually present across the visible rows (rank 0 =
+       * each species' main chromosome, higher ranks = the minority chromosomes a
+       * row switches to at a rearrangement). Because coloring is by per-row rank
+       * rather than chromosome name (see `perRowChromRanks`), the legend is this
+       * short fixed scheme, not a per-scaffold rainbow. Empty unless the mode is
+       * active; a single "Main chromosome" entry means nothing rearranges in view.
        */
-      get visibleSourceChromosomes(): { chr: string; color: string }[] {
+      get sourceChromLegend(): { label: string; color: string }[] {
         const view = self.lgv
         if (self.activeRowRendering !== 'sourceChrom' || !view.initialized) {
           return []
         }
-        const bpByChr = new Map<string, number>()
-        for (const block of view.dynamicBlocks.contentBlocks) {
-          const region = self.rpcDataMap.get(block.displayedRegionIndex!)
-          for (const mafBlock of region?.blocks ?? []) {
-            const len = mafBlock.endBp - mafBlock.startBp
-            for (const row of mafBlock.rows) {
-              if (row.chr) {
-                bpByChr.set(row.chr, (bpByChr.get(row.chr) ?? 0) + len)
-              }
-            }
-          }
-        }
-        return [...bpByChr]
-          .sort((a, b) => b[1] - a[1])
-          .map(([chr]) => ({ chr, color: chromosomeColor(chr) }))
+        const { maxRank } = perRowChromRanks(
+          uniqueRegionsFromBlocks(
+            view.dynamicBlocks.contentBlocks,
+            self.rpcDataMap,
+          ),
+        )
+        return Array.from({ length: maxRank + 1 }, (_, rank) => ({
+          label: sourceChromRankLabel(rank),
+          color: sourceChromRankColor(rank),
+        }))
       },
       /**
        * #method

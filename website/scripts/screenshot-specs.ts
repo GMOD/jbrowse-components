@@ -787,6 +787,17 @@ const jbrowseImgSpecs: CliSpec[] = [
   // LinearMultiSampleVariantDisplay for a 1094-sample VCF (volvox.test.vcf.gz,
   // refname contigA reconciled to ctgA via --aliases). Each column is a variant,
   // each row a sample; alt genotypes paint over the reference background.
+  //
+  // NOTE (screenshot review): the reviewer wants human 1000 Genomes data here.
+  // Two blockers make that more than a locus swap, both confirmed by testing:
+  //  1. jb2export's static SSR renders the per-sample genotype MATRIX empty for
+  //     the 1000 Genomes phase-3 callset even with the data fully loaded locally
+  //     and rows at 1px — only volvox's simpler path paints cells. So the
+  //     multivariant matrix render needs a jb2export fix first.
+  //  2. Even once it paints, real population data is reference-dominant (grey);
+  //     the compelling view colors rows by population (colorBy:'population'),
+  //     which needs the adapter's samplesTsv — a small jb2export CLI feature
+  //     (a samplesTsv: modifier -> samplesTsvLocation) that has to land with it.
   cliSpec('multisample_variants', [
     '--fasta',
     'data/volvox/volvox.fa',
@@ -882,7 +893,7 @@ export const specs: ScreenshotSpec[] = [
     name: 'variants/population_1000genomes',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg19',
-      loc: 'chr1:1,000,000-1,020,000',
+      loc: '1:155,000,000-155,050,000',
       tracks: [
         {
           trackId:
@@ -3708,89 +3719,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 30000,
   },
 
-  // BAF-anchored baseline calibration, before vs after, over chromosome 3. The
-  // raw log2 track is centered on each sample's genome-wide median, so 0 is the
-  // modal copy state rather than diploid; the calibrated track subtracts the
-  // median log2 of allelically-balanced (BAF~0.5) windows so 0 is absolute
-  // diploid. Stacked over the benchmark CNV BED, the shift is obvious: chr3's
-  // CN=2 q-arm sits above 0 in the raw track but drops onto 0 once calibrated,
-  // and the CN=1 p-arm lands near -1 (log2(1/2)).
-  {
-    mode: 'url',
-    name: 'sv_cgiab/cnv_calibration',
-    url: cgiabUrl({
-      sessionTracks: [
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio_raw',
-          name: 'HG008 log2 ratio (raw, median-centered)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-        {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio_cal',
-          name: 'HG008 log2 ratio (BAF-calibrated to diploid)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.calibrated.bw',
-              locationType: 'UriLocation',
-            },
-          },
-        },
-      ],
-      views: [
-        {
-          type: 'LinearGenomeView',
-          assembly: 'GRCh38_GIABv3',
-          loc: 'chr3',
-          tracks: [
-            {
-              trackId: 'hg008_log2ratio_raw',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 1,
-                minScore: -2,
-                maxScore: 2,
-                height: 140,
-              },
-            },
-            {
-              trackId: 'hg008_log2ratio_cal',
-              displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 1,
-                minScore: -2,
-                maxScore: 2,
-                height: 140,
-              },
-            },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
-          ],
-        },
-      ],
-    }),
-    readyText: 'chr3',
-    readyTimeout: 90000,
-    viewportWidth: 1500,
-    viewportHeight: 560,
-    settleMs: 25000,
-  },
-
   // CDKN2A focal homozygous deletion (chr9:21,952,497-21,972,343, benchmark
   // SV_75, total CN=0 / hap 0+0) — the canonical PDAC two-hit tumor-suppressor
   // loss. A homozygous deletion reads differently from a heterozygous (single-
@@ -6394,39 +6322,6 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
   {
-    // Codon view on the 26-way, zoomed to codon level: each species' coding
-    // sequence translated in the reference reading frame, one amino acid per
-    // codon cell, colored by amino-acid change (nonsynonymous stands out,
-    // synonymous faint, stops flagged, conserved clean). Enabled via
-    // showTranslation alone — the CDS-frame strip stays off (decoupled default).
-    mode: 'url',
-    name: 'maf_codon_translation',
-    url: lgvSession(CE_MAF_FRAMES, {
-      assembly: 'ce11',
-      loc: 'chrI:2,999,200-2,999,370',
-      tracks: [
-        {
-          trackId: 'ce11.26way',
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 470,
-            showTranslation: true,
-          },
-        },
-      ],
-    }),
-    readyText: 'chrI',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 600,
-    settleMs: 12000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 100 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-  {
     // Codon-view hover tooltip: in the per-species codon translation, hovering a
     // codon cell reads out the species codon + amino acid alongside the reference
     // codon + amino acid and the syn/nonsyn classification, so a specific change
@@ -6543,10 +6438,13 @@ export const specs: ScreenshotSpec[] = [
       tracks: [
         {
           trackId: 'hg38.multiz470way',
-          // fit-to-display-height: all ~470 rows packed into the track height
+          // fit-to-display-height: all ~470 rows packed into a compact track —
+          // rows go sub-pixel but the conserved/divergent banding still reads as
+          // a texture, and the whole figure is far less overwhelming than a
+          // full-screen wall. The top-right legend names the red/blue ramp.
           displaySnapshot: {
             type: 'LinearMafDisplay',
-            heightOverride: 1080,
+            heightOverride: 560,
             rowIdentityMode: 'heatmap',
             rowIdentityAutoZoom: false,
           },
@@ -6556,7 +6454,7 @@ export const specs: ScreenshotSpec[] = [
     readyText: '6,53',
     readyTimeout: 120000,
     viewportWidth: 1100,
-    viewportHeight: 1180,
+    viewportHeight: 680,
     // all ~470 species over remote UCSC data — long settle so the heatmap is
     // fully painted and the loading indicator has cleared before capture
     settleMs: 35000,

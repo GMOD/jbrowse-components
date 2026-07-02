@@ -83,6 +83,35 @@ Plot BAF with a fixed `0..1` domain and `xyplot`/density rendering (point-like
 data, not a continuous line). Pairing the log2-ratio (copy number) with BAF
 (allelic state) is the conventional two-panel somatic-CNV view.
 
+### No-whiskers BAF (folded / mirrored) — review notes for cnv_log2_baf & cnv_log2ratio_genome
+
+The reviewer asked for **no whiskers on the BAF**. The whiskers are not a spec
+oversight to toggle off: `LinearWiggleDisplay`'s `summaryScoreMode` defaults to
+`'whiskers'`, so at chromosome scale each display bin draws its min/avg/max. For
+a **raw** BAF (the `alt/depth` above, values scattered across 0..1) the whiskers
+*are* the signal — an LOH bin genuinely spans 0 and 1, so setting
+`summaryScoreMode:'avg'` collapses it to ~0.5 and hides the LOH the figure is
+meant to show. You can't get a clean, whisker-free BAF from raw values.
+
+The fix is to store a **folded** BAF so a single per-bin value carries the LOH,
+then plot it with `summaryScoreMode:'avg'` (no whiskers):
+
+```bash
+# fold about 0.5: 0 = balanced (het ~0.5), 0.5 = fully skewed (LOH, 0 or 1)
+awk -F'[\t,]' '{d=$3+$4; if(d>=10){b=$4/d; printf "%s\t%d\t%d\t%.4f\n",$1,$2-1,$2,(b<0.5?0.5-b:b-0.5)}}' \
+  <(bcftools mpileup -f GRCh38_GIABv3.fa -R hets.vcf.gz -a AD HG008-T.cram \
+      | bcftools query -f '%CHROM\t%POS\t[%AD]\n') \
+  > HG008-T_baf_folded.bedgraph
+bedGraphToBigWig HG008-T_baf_folded.bedgraph GRCh38_GIABv3.fa.fai HG008-T_baf_folded.bw
+```
+
+Then in the spec: BAF track with `summaryScoreMode:'avg'`, `minScore:0`,
+`maxScore:0.5`, scatter — balanced regions hug 0, LOH rises toward 0.5, with no
+whiskers. This needs `HG008-T_baf_folded.bw` uploaded to
+`https://jbrowse.org/demos/cgiab/` (same access requirement as the tracks
+above), after which `cnv_log2_baf` can drop the whiskers and
+`cnv_log2ratio_genome` can add the folded BAF panel.
+
 ## 3. Wire into the screenshot spec
 
 After uploading `HG008_log2ratio.bw` and `HG008-T_baf.bw` to

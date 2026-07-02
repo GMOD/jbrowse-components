@@ -124,8 +124,6 @@ acid itself is drawn on each codon once you zoom in far enough to read it.
 Unlike the per-base view, this answers "did the protein change here?" directly,
 across every aligned species at once.
 
-<Figure src="/img/maf_codon_translation.png" caption="Codon view on the ce11 26-way alignment: the per-sample rows show one cell per codon, colored by amino-acid change relative to the reference (nonsynonymous changes stand out, synonymous changes are faint, stops flagged, conserved codons clean), with the residue drawn on each codon. This reads the protein-level conservation across all species without the per-nucleotide noise of the SNP view."/>
-
 Hovering a codon reads out the exact change: the species' codon and amino acid
 alongside the reference's, plus the synonymous/nonsynonymous classification — so
 a specific substitution is identifiable directly rather than inferred from the
@@ -136,19 +134,24 @@ cell color.
 ## Color by source chromosome
 
 **Color by source chromosome** in the track menu replaces the per-base SNP
-coloring with a structural view: each species' alignment blocks are filled by a
-stable color derived from their source chromosome (the chromosome/scaffold the
-aligned sequence comes from in that species' own genome). Because the color
-depends only on the source chromosome, a species whose blocks across the window
-come from more than one source chromosome **changes color along its row** — an
-immediate flag for a translocation or rearrangement relative to the reference,
-with no extra data to fetch (the source chromosome is already carried per
-block). A compact legend maps each visible source chromosome to its color.
+coloring with a structural view: within each species row, its source chromosomes
+(the chromosome/scaffold each aligned block comes from in that species' own
+genome) are ranked by how much of the row they cover, and colored by that
+**per-row rank** — the row's main chromosome gets the primary color, and a block
+from a different source chromosome takes a contrasting accent. So a species whose
+blocks across the window come from more than one source chromosome **changes
+color along its row** — an immediate flag for a translocation or rearrangement —
+while the rest of the track stays a single calm color. Ranking per row (rather
+than assigning a global color per chromosome name) is deliberate: every species
+has its own scaffold-naming scheme, so a global palette would be an unreadable
+rainbow, whereas the per-row scheme makes the _switch_ (the thing that matters)
+the only thing that stands out. No extra data is fetched — the source chromosome
+is already carried per block.
 
 This needs no `annotationAdapter` and works on any MAF track; it is shown in the
 detailed (per-base) view rather than the zoomed-out summary.
 
-<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species' blocks are colored by their source chromosome/scaffold. The reference (ce11) is a single color across the window, while several species' rows switch color where their aligned blocks come from different source scaffolds — surfacing rearrangements directly. The legend (top right) names each visible source chromosome."/>
+<Figure src="/img/maf_color_by_chromosome.png" caption="Color-by-source-chromosome mode on the ce11 26-way alignment: each species row is colored by its per-row source-chromosome rank, so every row's main chromosome is the same primary color and only the blocks that come from a different source chromosome pick up an accent — the color switches (top-right: 2nd/3rd source) mark rearrangements directly, without a per-scaffold rainbow."/>
 
 ## Inversions (strand flips)
 

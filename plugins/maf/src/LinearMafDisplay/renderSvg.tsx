@@ -82,7 +82,7 @@ function MafSvgBody({
     showTree,
     treeAreaWidth,
     sources,
-    rowHeight,
+    effectiveRowHeight,
     rowsHeight,
     coverageDisplayHeight,
     rowsTopOffset,
@@ -140,7 +140,7 @@ function MafSvgBody({
           } else if (activeRowRendering === 'sourceChrom') {
             if (sources?.length) {
               drawSourceChrom(ctx, renderBlocks, model.rpcDataMap, {
-                rowHeight,
+                rowHeight: effectiveRowHeight,
                 rowProportion,
                 nRows: sources.length,
                 canvasWidth: width,
@@ -149,7 +149,7 @@ function MafSvgBody({
           } else if (activeRowRendering !== 'bases') {
             if (sources?.length) {
               drawRowIdentity(ctx, renderBlocks, model.rpcDataMap, {
-                rowHeight,
+                rowHeight: effectiveRowHeight,
                 rowProportion,
                 nRows: sources.length,
                 canvasWidth: width,
@@ -175,7 +175,7 @@ function MafSvgBody({
         {sources?.length ? (
           <SvgRowLabels
             sources={sources}
-            rowHeight={rowHeight}
+            rowHeight={effectiveRowHeight}
             labelOffset={labelOffset}
           />
         ) : null}

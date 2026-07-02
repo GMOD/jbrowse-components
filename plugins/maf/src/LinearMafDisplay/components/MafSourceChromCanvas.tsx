@@ -16,7 +16,8 @@ const MafSourceChromCanvas = observer(function MafSourceChromCanvas({
 }: {
   model: LinearMafDisplayModel
 }) {
-  const { activeRowRendering, rowsHeight, rowHeight, rowProportion } = model
+  const { activeRowRendering, rowsHeight, effectiveRowHeight, rowProportion } =
+    model
   const show = activeRowRendering === 'sourceChrom'
   return (
     <TrackBandCanvas
@@ -28,7 +29,7 @@ const MafSourceChromCanvas = observer(function MafSourceChromCanvas({
         const nRows = model.sources?.length ?? 0
         if (show && nRows > 0) {
           drawSourceChrom(ctx, model.renderBlocks, model.rpcDataMap, {
-            rowHeight,
+            rowHeight: effectiveRowHeight,
             rowProportion,
             nRows,
             canvasWidth: model.lgv.width,
