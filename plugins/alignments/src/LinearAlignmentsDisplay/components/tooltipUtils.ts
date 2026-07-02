@@ -282,8 +282,7 @@ export function getTooltipBin(
   }
 
   const leftDepth = blockRpcData.coverageDepths[binIdx - 1] ?? 0
-  const rightDepth = blockRpcData.coverageDepths[binIdx] ?? 0
-  const interbaseDepth = Math.max(leftDepth, rightDepth)
+  const interbaseDepth = Math.max(leftDepth, depth)
 
   return {
     position,

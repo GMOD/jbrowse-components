@@ -95,30 +95,6 @@ export function canvasToGenomicCoords(
   return { bpPerPx, genomicPos, row, adjustedY, yWithinRow }
 }
 
-export function getCanvasCoords(
-  e: React.MouseEvent,
-  canvas: HTMLCanvasElement | null,
-  canvasRectRef: React.RefObject<{ rect: DOMRect; timestamp: number } | null>,
-) {
-  if (!canvas) {
-    return undefined
-  }
-
-  const now = Date.now()
-  const cached = canvasRectRef.current
-
-  if (cached && now - cached.timestamp < 100) {
-    return {
-      canvasX: e.clientX - cached.rect.left,
-      canvasY: e.clientY - cached.rect.top,
-    }
-  }
-
-  const rect = canvas.getBoundingClientRect()
-  canvasRectRef.current = { rect, timestamp: now }
-  return { canvasX: e.clientX - rect.left, canvasY: e.clientY - rect.top }
-}
-
 export const CIGAR_TYPE_LABELS: Record<string, string> = {
   mismatch: 'SNP/Mismatch',
   insertion: 'Insertion',

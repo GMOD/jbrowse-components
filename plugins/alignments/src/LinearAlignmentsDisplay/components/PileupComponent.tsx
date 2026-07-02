@@ -67,7 +67,7 @@ const PileupBody = observer(function PileupBody({
     handleContextMenu,
     processMouseMove,
     processClick,
-  } = useAlignmentsBase(model, canvas)
+  } = useAlignmentsBase(model)
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view

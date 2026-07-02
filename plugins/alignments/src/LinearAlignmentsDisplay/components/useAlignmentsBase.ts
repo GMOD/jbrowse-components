@@ -6,7 +6,6 @@ import { useTheme } from '@mui/material'
 
 import {
   CLICK_SUPPRESS_THRESHOLD_PX,
-  getCanvasCoords,
   isDragInProgress,
   startDocumentDrag,
   useAbortableRef,
@@ -27,7 +26,10 @@ import {
 } from './tooltipUtils.ts'
 import { getMismatchContrastMap } from '../../shared/util.ts'
 
-import type { ResolvedBlock } from '../../shared/hitTestTypes.ts'
+import type {
+  CigarHitResult,
+  ResolvedBlock,
+} from '../../shared/hitTestTypes.ts'
 import type { LinearAlignmentsDisplayModel } from '../model.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -38,19 +40,19 @@ export interface FeatureHit {
   index: number
 }
 
-// Hit-test handlers + theme plumbing for the pileup canvas. The GPU backend
-// lifecycle is owned by DisplayChrome, which hands the live `canvas` down; this
-// hook only needs it to map mouse events to canvas coordinates.
-export function useAlignmentsBase(
-  model: LinearAlignmentsDisplayModel,
-  canvas: HTMLCanvasElement | null,
-) {
+// The SNP base to annotate a modification hit with, when the modified base is
+// also a mismatch. undefined for a modification over a reference-matching base.
+function snpBaseFromCigar(cigarHit: CigarHitResult | undefined) {
+  return cigarHit?.type === 'mismatch' ? cigarHit.base : undefined
+}
+
+// Hit-test handlers + theme plumbing for the pileup canvas. Mouse coords come
+// straight off the native event (`offsetX`/`offsetY`, canvas-relative since the
+// canvas is a borderless leaf element), so no canvas ref or rect math is needed.
+export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
   const view = getContainingView(model) as LinearGenomeViewModel
   const width = view.initialized ? view.width : undefined
 
-  const canvasRectRef = useRef<{ rect: DOMRect; timestamp: number } | null>(
-    null,
-  )
   // Tracks the currently-active pan drag. Starting a new pan aborts the
   // previous and unmount aborts in-flight. Doubles as the "is dragging"
   // source of truth via isDragInProgress; no parallel boolean state needed.
@@ -138,18 +140,23 @@ export function useAlignmentsBase(
     return undefined
   }
 
-  // Maps a mouse event to canvas coordinates and runs the full hit-test
-  // pipeline. Returns undefined only when the event can't be located on the
-  // canvas (no live canvas / rect). Shared by the context-menu, click, and
-  // move handlers so the coord + hit-test preamble lives in one place.
+  // Maps a canvas mouse event to canvas coordinates and runs the full hit-test
+  // pipeline. Shared by the context-menu, click, and move handlers so the coord
+  // + hit-test preamble lives in one place.
   function hitTestEvent(e: React.MouseEvent) {
-    const coords = getCanvasCoords(e, canvas, canvasRectRef)
-    return coords ? runHitTest(coords.canvasX, coords.canvasY) : undefined
+    const { offsetX, offsetY } = e.nativeEvent
+    return runHitTest(offsetX, offsetY)
   }
 
   // --- Shared event handlers ---
 
   function handleMouseDown(e: React.MouseEvent) {
+    // Only the primary button pans. A right/middle press must fall through to
+    // the native context menu / autoscroll rather than starting a document pan
+    // drag (which also flips dragMovedRef and would swallow a later click).
+    if (e.button !== 0) {
+      return
+    }
     dragMovedRef.current = false
     const startOffsetPx = view.offsetPx
     startDocumentDrag(e, dragControllerRef, (dx, dy) => {
@@ -169,11 +176,7 @@ export function useAlignmentsBase(
   }
 
   function handleContextMenu(e: React.MouseEvent) {
-    const hit = hitTestEvent(e)
-    if (!hit) {
-      return
-    }
-    const { resolved, result } = hit
+    const { resolved, result } = hitTestEvent(e)
     const { show, cigarHit, indicatorHit, featureId } =
       contextMenuFieldsForHit(result)
     if (show) {
@@ -206,11 +209,7 @@ export function useAlignmentsBase(
       return
     }
 
-    const hit = hitTestEvent(e)
-    if (!hit) {
-      return
-    }
-    const { result, picked } = hit
+    const { result, picked } = hitTestEvent(e)
 
     // Keep the chain highlight tracking the read under the cursor even while
     // hovering a cigar/modification base on it (chain mode only) — else the
@@ -268,10 +267,7 @@ export function useAlignmentsBase(
         model.clearHighlights()
         return
       case 'modification': {
-        const snpBase =
-          result.cigarHit?.type === 'mismatch'
-            ? result.cigarHit.base
-            : undefined
+        const snpBase = snpBaseFromCigar(result.cigarHit)
         model.setHoverState({
           overCigarItem: true,
           featureIdUnderMouse: result.featureHit?.id,
@@ -316,11 +312,7 @@ export function useAlignmentsBase(
       dragMovedRef.current = false
       return
     }
-    const hit = hitTestEvent(e)
-    if (!hit) {
-      return
-    }
-    const { result } = hit
+    const { result } = hitTestEvent(e)
 
     switch (result.type) {
       case 'indicator':
@@ -343,10 +335,7 @@ export function useAlignmentsBase(
         openCigarWidget(model, result.hit, result.resolved.refName)
         return
       case 'modification': {
-        const snpBase =
-          result.cigarHit?.type === 'mismatch'
-            ? result.cigarHit.base
-            : undefined
+        const snpBase = snpBaseFromCigar(result.cigarHit)
         openModificationWidget(
           model,
           result.hit,

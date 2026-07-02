@@ -2348,6 +2348,7 @@ export default function stateModelFactory(
             self.contextMenuCigarHit = undefined
             self.contextMenuIndicatorHit = undefined
             self.contextMenuRpcData = undefined
+            self.contextMenuRefName = undefined
           },
 
           /**
