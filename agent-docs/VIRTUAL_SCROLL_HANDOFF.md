@@ -47,31 +47,41 @@ Key files: `packages/render-core/src/ScrollLockedOverlay.tsx`,
 
 ## Open follow-ups
 
-1. **In-browser check for `e7f25a98af` (medium priority).** The morph now
-   applies the shrink-clamp instantly instead of easing it over 300ms. This only
-   triggers when you're scrolled near the bottom of an overflowing track and
-   zoom **in** (content de-stacks, shrinks below the current scroll). Verify the
-   instant snap isn't perceptibly jarring; if it is, restore the eased version
-   (git show `e7f25a98af` for the removed code). Unit tests already cover
-   correctness (no strand/blank) — this is purely an aesthetics check.
+1. **In-browser aesthetics check for `e7f25a98af` (medium priority, STILL
+   OPEN).** The morph now applies the shrink-clamp instantly instead of easing
+   it over 300ms. This only triggers when you're scrolled near the bottom of an
+   overflowing track and zoom **in** (content de-stacks, shrinks below the
+   current scroll). Verify the instant snap isn't perceptibly jarring; if it is,
+   restore the eased version (git show `e7f25a98af` for the removed code). Unit
+   tests already cover correctness (no strand/blank) — this is purely a motion
+   aesthetics judgment, i.e. a human call (screenshots can't capture it). Note:
+   an instant scrollTop clamp on content-shrink is exactly what a native scroll
+   container does (no easing there either), so instant is arguably the *more*
+   conventional behavior — lean toward keeping it unless it visibly janks.
 
-2. **Regenerate the remaining canvas snapshot goldens (blocked earlier by
-   concurrent edits; now unblocked).** A full canvas2d suite run showed 15
-   failures. Most are **not** from this migration and should be left to their
-   owners: BigWig GC content (84%) / GC skew (14%) — a gccontent/wiggle change;
-   BEDPE arcs, alignments (linked-read/methylation), Hi-C (~1%, near-flaky),
-   wiggle-color timeout, sequence-display selector. The ones in scope here are
-   the **LinearBasicDisplay / variant** goldens whose rendering is now settled:
-   - `demo-hg19-gene-glyph` (label shift from this migration + committed chevron
-     changes from `921648ba08`)
-   - `additional-multisample-vcf` (verify first — its diff was a whole-matrix
-     change that looked like a *variant-rendering* change, not scroll; only
-     regenerate if that's settled/intended).
+2. **Snapshot golden regen — DONE for the in-scope goldens.**
+   - `demo-hg19-gene-glyph` — **regenerated** (canvas2d + webgl, committed
+     `4e00b688a5`). canvas2d diff was 2.14% (label shift + committed `>>`
+     chevrons from `921648ba08`), verified in the diff-visual. The webgl golden
+     was additionally stale from Jun 4 (34% — predated a demo track rename +
+     label rendering); its gene bodies/UTR/chevrons match the canvas2d golden so
+     it was stale content, not GPU variance. **Caveat:** webgl golden regen'd on
+     *this* box — may want a final regen on canonical CI hardware if GPU
+     antialiasing pushes it back over the 5% webgl threshold there.
+   - `additional-multisample-vcf` — **verified, deliberately NOT regenerated.**
+     Its 2.44% diff is scattered matrix-*cell* rendering changes + a legend-text
+     position shift. The matrix-cell change is not attributable to this
+     virtual-scroll migration (which only moves scroll/labels), so per
+     "regenerate only if settled/intended" it's left for its owner (likely the
+     variant-matrix subpixel-alpha work). Don't blanket-regen it with this
+     migration.
+   - Out-of-scope failures from the earlier full suite run (BigWig GC content/
+     skew, BEDPE arcs, alignments linked-read/methylation, Hi-C ~1% near-flaky,
+     wiggle-color timeout, sequence-display selector) remain their owners'.
 
-   Regenerate with: `cd products/jbrowse-web && pnpm --filter @jbrowse/web build`
-   then `DISPLAY=:0 node browser-tests/runner.ts --filter="<suite>" --test="<name>" -u`
-   (and `--backend=webgl -u` for the webgl golden — GPU-deterministic on this
-   box, but goldens are GPU-sensitive so ideally regen on canonical hardware).
+   Regen recipe (if needed): `pnpm --filter @jbrowse/web build` then
+   `DISPLAY=:0 node browser-tests/runner.ts --filter="<suite>" --test="<name>" -u`
+   (add `--backend=webgl -u` for the webgl golden).
 
 ## Declined / out of scope (agreed with user)
 
