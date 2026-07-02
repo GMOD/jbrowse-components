@@ -481,13 +481,12 @@ For background on SV signals in the alignments track, see the
 Whole-genome coverage stored as a bigWig is fast at any zoom level, so the
 quickest copy-number check is to open the tumor and normal coverage bigWigs as a
 single **multi-bigwig** track. From the linear genome view start screen, click
-**Show all regions in assembly** to open every chromosome at once
-([live demo on chr5](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B"views":%5B%7B"type":"LinearGenomeView","assembly":"GRCh38_GIABv3","loc":"chr5:1-180915260","tracks":%5B"HG008-N-P_PacBio-HiFi-Revio_20240125_35x_GRCh38-GIABv3.cram.all","GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls"%5D%7D%5D%7D)).
-Apply a manual **min/max score** cap from the track menu (a few centromere and
-repeat spikes otherwise compress the copy-number signal), then switch to
-**overlapping scatter** so the two samples plot as points in one band — tumor
-red, normal blue. Zoom to a region and open the benchmark CNV BED track to check
-that coverage changes line up with the called intervals.
+**Show all regions in assembly** to open every chromosome at once. Apply a
+manual **min/max score** cap from the track menu (a few centromere and repeat
+spikes otherwise compress the copy-number signal), then switch to **overlapping
+scatter** so the two samples plot as points in one band — tumor red, normal
+blue. Zoom to a region and open the benchmark CNV BED track to check that
+coverage changes line up with the called intervals.
 
 <Figure caption="A multi-bigwig track with tumor (red) and normal (blue) coverage zoomed to chromosome 5, in overlapping-scatter rendering, above the benchmark CNV BED track. Orange boxes mark individual CNVs (clicking one shows its feature details); coverage drops and gains line up with the called intervals below." src="/img/sv_cgiab/cnv_with_bed_track.png" />
 
@@ -578,12 +577,17 @@ BAF track directly.
 #### KRAS and SMAD4
 
 The same reading covers the other two drivers. `KRAS`, the central PDAC
-oncogene, sits on a low-level gain on chr12 (CN 3, 2+1) — positive log2,
-imbalanced BAF
-([live demo at KRAS](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr12%3A24%2C000%2C000-27%2C500%2C000%22%2C%22tracks%22%3A%5B%22HG008_log2ratio%22%2C%22HG008-T_baf%22%2C%22GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls%22%5D%7D%5D%7D)).
+oncogene, sits on a low-level gain on chr12 (CN 3, 2+1) — positive log2, and a
+BAF split off 0 but well short of 0.5, since a 2+1 gain only partially
+imbalances the alleles.
+
+<Figure caption="KRAS on chr12: log2 ratio (top) over BAF (bottom) over the CNV calls. The benchmark SV_101 call is a low-level allelic gain (CN 3, 2+1) — log2 sits just above 0 across the whole gain, and the BAF splits off 0 but stays well short of 0.5, the partial imbalance expected from a 2+1 gain rather than a full haplotype loss." src="/img/sv_cgiab/driver_kras_gain.png" />
+
 `SMAD4` (historically "DPC4", _deleted in pancreatic cancer_) is lost with LOH
-on 18q (CN 1, 0+1), the mirror image of the TP53 event
-([live demo at SMAD4](https://jbrowse.org/code/jb2/latest/?config=/demos/cgiab/config.json&session=spec-%7B%22views%22%3A%5B%7B%22type%22%3A%22LinearGenomeView%22%2C%22assembly%22%3A%22GRCh38_GIABv3%22%2C%22loc%22%3A%22chr18%3A1-80%2C373%2C285%22%2C%22tracks%22%3A%5B%22HG008_log2ratio%22%2C%22HG008-T_baf%22%2C%22GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls%22%5D%7D%5D%7D)).
+on 18q (CN 1, 0+1), the mirror image of the TP53 event, though the shift here is
+far more muted than the stark chr17 example below.
+
+<Figure caption="Chromosome 18: log2 ratio (top) over BAF (bottom) over the CNV calls. The centromere-proximal ~22 Mb is noisy mapping-bias signal and uncalled (noCNV); CNA_48, the single-copy loss with LOH, spans nearly the rest of the chromosome but reads as only a modest negative log2 dip and a sparse BAF lift off 0 — both far weaker than the TP53 event on chr17, illustrating how tumor purity can dilute the same underlying allelic-loss signature." src="/img/sv_cgiab/driver_smad4_loh.png" />
 
 Two interpretive caveats: how far the BAF bands separate from 0.5 reflects tumor
 purity (normal-cell contamination pulls the split back toward 0.5), and PDAC
