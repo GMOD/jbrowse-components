@@ -49,6 +49,14 @@ test('redispatches off the spanning transcript line to recover the whole gene', 
   expect(cds.length).toBe(8)
 })
 
+test('getRegionByteSize returns a positive index-only estimate', async () => {
+  const adapter = makeAdapter()
+  const bytes = await adapter.getRegionByteSize([
+    { refName: 'GeneScaffold_10', start: 0, end: 1_000_000, assemblyName: 'volvox' },
+  ])
+  expect(bytes).toBeGreaterThan(0)
+})
+
 test('mints stable feature ids across different query windows', async () => {
   const adapter = makeAdapter()
   const geneIdFor = async (start: number, end: number) => {
