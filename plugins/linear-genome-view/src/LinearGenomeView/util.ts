@@ -198,8 +198,9 @@ export function getScalebarRefNameLabels({
   blocks: BaseBlock[]
   offsetPx: number
   regionEndPx: Map<number, number>
-  prefix: string
+  prefix: string | undefined
 }) {
+  const hasPrefix = prefix !== undefined && prefix !== ''
   const stickyIdx = stickyBlockIndex(blocks, offsetPx)
   const isRunStart = showRefNameLabels(blocks, getBlockRefName)
   const labels: ScalebarRefNameLabel[] = []
@@ -208,7 +209,8 @@ export function getScalebarRefNameLabels({
   for (let i = 0; i < blocks.length; i++) {
     const block = blocks[i]!
     const sticky = i === stickyIdx
-    const show = sticky || (!!block.isLeftEndOfDisplayedRegion && isRunStart[i]!)
+    const show =
+      sticky || (!!block.isLeftEndOfDisplayedRegion && isRunStart[i]!)
     if (
       block.type !== 'ContentBlock' ||
       block.displayedRegionIndex === undefined ||
@@ -221,7 +223,7 @@ export function getScalebarRefNameLabels({
     if (!layout) {
       continue
     }
-    const withPrefix = sticky && prefix !== ''
+    const withPrefix = sticky && hasPrefix
     stickyHasPrefix ||= withPrefix
     labels.push({
       key: block.key,
@@ -233,7 +235,7 @@ export function getScalebarRefNameLabels({
       text: withPrefix ? `${prefix}:${block.refName}` : block.refName,
     })
   }
-  return { labels, showPrefixFallback: prefix !== '' && !stickyHasPrefix }
+  return { labels, showPrefixFallback: hasPrefix && !stickyHasPrefix }
 }
 
 /**

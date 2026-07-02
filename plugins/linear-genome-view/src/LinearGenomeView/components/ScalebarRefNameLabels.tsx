@@ -49,92 +49,63 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
   const { classes, cx } = useStyles()
   const [menuState, setMenuState] = useState<MenuState>()
 
-  const { staticBlocks, offsetPx } = model
-  const blocks = staticBlocks.blocks
-  const prefix = model.scalebarDisplayPrefix()
-  const regionEndPx = model.scalebarRegionEndPx
-
-  // Sticky label: rightmost content block whose left edge is left of the
-  // viewport. Falls back to the first content block if none are left of viewport.
-  let stickyBlockIdx = blocks.findIndex(b => b.type === 'ContentBlock')
-  for (let i = 0; i < blocks.length; i++) {
-    const b = blocks[i]!
-    if (b.type === 'ContentBlock' && b.offsetPx < offsetPx) {
-      stickyBlockIdx = i
-    }
-  }
-
-  const labels = []
-
-  // Set once the sticky far-left label renders the prefix inline (e.g.
-  // "hg38:chr5"); the standalone prefix below is then skipped to show it once.
-  let stickyHasPrefix = false
-
-  const showRefName = showRefNameLabels(blocks, getBlockRefName)
-
-  for (let i = 0; i < blocks.length; i++) {
-    const block = blocks[i]!
-    if (block.type !== 'ContentBlock') {
-      continue
-    }
-    const sticky = i === stickyBlockIdx
-    if ((!block.isLeftEndOfDisplayedRegion || !showRefName[i]) && !sticky) {
-      continue
-    }
-    const layout = getLabelLayout(block, offsetPx, regionEndPx, sticky)
-    if (!layout) {
-      continue
-    }
-    const { transform, maxWidth } = layout
-    const { refName, displayedRegionIndex } = block
-    if (sticky && prefix) {
-      stickyHasPrefix = true
-    }
-    labels.push(
-      <span
-        key={block.key}
-        className={classes.refLabel}
-        style={{
-          transform: `translateX(${transform}px)`,
-          paddingLeft: sticky ? 0 : 1,
-          maxWidth,
-        }}
-        data-testid={`refLabel-${refName}`}
-        onMouseDown={() => {
-          model.setScalebarRefNameClickPending(true)
-        }}
-        onClick={e => {
-          model.setScalebarRefNameClickPending(false)
-          model.setIsScalebarRefNameMenuOpen(true)
-          setMenuState({
-            anchorEl: e.currentTarget,
-            refName,
-            displayedRegionIndex: displayedRegionIndex!,
-          })
-        }}
-      >
-        {sticky && prefix ? `${prefix}:${refName}` : refName}
-      </span>,
-    )
-  }
-
-  // Fallback: show the bare assembly name pinned far-left only when no sticky
-  // region label carried it (e.g. the leftmost region was too narrow to label).
-  if (prefix && !stickyHasPrefix) {
-    labels.push(
-      <span
-        key="b0"
-        className={cx(classes.b0, classes.refLabel)}
-        data-testid="refLabel-prefix"
-      >
-        {prefix}
-      </span>,
-    )
-  }
+  const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+    blocks: model.staticBlocks.blocks,
+    offsetPx: model.offsetPx,
+    regionEndPx: model.scalebarRegionEndPx,
+    prefix: model.scalebarDisplayPrefix(),
+  })
 
   return (
     <>
-      <div>{labels}</div>
+      <div>
+        {labels.map(
+          ({
+            key,
+            refName,
+            displayedRegionIndex,
+            transform,
+            maxWidth,
+            paddingLeft,
+            text,
+          }) => (
+            <span
+              key={key}
+              className={classes.refLabel}
+              style={{
+                transform: `translateX(${transform}px)`,
+                paddingLeft,
+                maxWidth,
+              }}
+              data-testid={`refLabel-${refName}`}
+              onMouseDown={() => {
+                model.setScalebarRefNameClickPending(true)
+              }}
+              onClick={e => {
+                model.setScalebarRefNameClickPending(false)
+                model.setIsScalebarRefNameMenuOpen(true)
+                setMenuState({
+                  anchorEl: e.currentTarget,
+                  refName,
+                  displayedRegionIndex,
+                })
+              }}
+            >
+              {text}
+            </span>
+          ),
+        )}
+        {/* Fallback: bare assembly name pinned far-left when no sticky label
+        carried it (e.g. the leftmost region was too narrow to label) */}
+        {showPrefixFallback ? (
+          <span
+            className={cx(classes.b0, classes.refLabel)}
+            data-testid="refLabel-prefix"
+          >
+            {model.scalebarDisplayPrefix()}
+          </span>
+        ) : null}
+      </div>
       {menuState ? (
         <RefNameMenu
           model={model}
@@ -148,30 +119,6 @@ const ScalebarRefNameLabels = observer(function ScalebarRefNameLabels({
     </>
   )
 })
-
-// Returns the CSS translateX value and maxWidth for a ref-name label.
-// Returns undefined when the label is too narrow to display (< 20px).
-function getLabelLayout(
-  block: ContentBlock,
-  offsetPx: number,
-  regionEndPx: Map<number, number>,
-  sticky: boolean,
-): { transform: number; maxWidth: number | undefined } | undefined {
-  const regEndPxVal =
-    block.displayedRegionIndex !== undefined
-      ? regionEndPx.get(block.displayedRegionIndex)
-      : undefined
-  const labelStartPx = sticky ? offsetPx : block.offsetPx
-  const maxWidth =
-    regEndPxVal !== undefined ? regEndPxVal - labelStartPx - 2 : undefined
-  if (maxWidth !== undefined && maxWidth < 20) {
-    return undefined
-  }
-  const transform = sticky
-    ? Math.max(0, -offsetPx)
-    : block.offsetPx - offsetPx - 1
-  return { transform, maxWidth }
-}
 
 const RefNameMenu = observer(function RefNameMenu({
   model,

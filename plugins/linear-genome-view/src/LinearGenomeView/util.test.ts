@@ -4,11 +4,15 @@ import {
 } from '@jbrowse/core/util/blockTypes'
 
 import {
+  getScalebarRefNameLabels,
   groupContiguousBlocks,
   makeBlockTicks,
   makeOverviewTicks,
   makeTicks,
+  stickyBlockIndex,
 } from './util.ts'
+
+import type { BaseBlock } from '@jbrowse/core/util/blockTypes'
 
 // bpPerPx=5000 → chooseGridPitch gives majorPitch=1_000_000
 const SCALE = 5000
@@ -155,5 +159,244 @@ describe('groupContiguousBlocks', () => {
       block(0, 800, 1600, 803),
     ])
     expect(runs).toHaveLength(2)
+  })
+})
+
+// scalebar refName labels
+
+function refBlock({
+  key,
+  refName,
+  displayedRegionIndex,
+  offsetPx,
+  widthPx,
+  isLeftEndOfDisplayedRegion = false,
+}: {
+  key: string
+  refName: string
+  displayedRegionIndex: number
+  offsetPx: number
+  widthPx: number
+  isLeftEndOfDisplayedRegion?: boolean
+}) {
+  return makeContentBlock({
+    key,
+    assemblyName: 'volvox',
+    refName,
+    start: 0,
+    end: widthPx,
+    offsetPx,
+    widthPx,
+    displayedRegionIndex,
+    isLeftEndOfDisplayedRegion,
+  })
+}
+
+// map of displayedRegionIndex -> right-edge px (offsetPx + widthPx)
+function regionEnds(blocks: BaseBlock[]) {
+  const m = new Map<number, number>()
+  for (const b of blocks) {
+    if (b.type === 'ContentBlock' && b.displayedRegionIndex !== undefined) {
+      m.set(
+        b.displayedRegionIndex,
+        Math.max(m.get(b.displayedRegionIndex) ?? 0, b.offsetPx + b.widthPx),
+      )
+    }
+  }
+  return m
+}
+
+describe('stickyBlockIndex', () => {
+  test('no content blocks yields -1', () => {
+    expect(stickyBlockIndex([], 0)).toBe(-1)
+  })
+
+  test('nothing scrolled off left falls back to first content block', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'c1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'c1',
+        displayedRegionIndex: 0,
+        offsetPx: 800,
+        widthPx: 800,
+      }),
+    ]
+    expect(stickyBlockIndex(blocks, 0)).toBe(0)
+  })
+
+  test('picks rightmost block whose left edge is off the left of the viewport', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'c1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'c1',
+        displayedRegionIndex: 0,
+        offsetPx: 800,
+        widthPx: 800,
+      }),
+      refBlock({
+        key: 'c',
+        refName: 'c1',
+        displayedRegionIndex: 0,
+        offsetPx: 1600,
+        widthPx: 800,
+      }),
+    ]
+    expect(stickyBlockIndex(blocks, 1000)).toBe(1)
+  })
+})
+
+describe('getScalebarRefNameLabels', () => {
+  test('one visible region: single sticky label pinned to the left', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 800,
+        widthPx: 800,
+      }),
+    ]
+    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    })
+    expect(showPrefixFallback).toBe(false)
+    expect(labels).toEqual([
+      {
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        transform: 0,
+        maxWidth: 1598,
+        paddingLeft: 0,
+        text: 'chr1',
+      },
+    ])
+  })
+
+  test('prefix folds into the sticky label as prefix:refName', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      regionEndPx: regionEnds(blocks),
+      prefix: 'hg38',
+    })
+    expect(showPrefixFallback).toBe(false)
+    expect(labels[0]!.text).toBe('hg38:chr1')
+  })
+
+  test('adjacent same-refName regions label the name once', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'chr1',
+        displayedRegionIndex: 1,
+        offsetPx: 800,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    })
+    expect(labels.map(l => l.key)).toEqual(['a'])
+  })
+
+  test('scrolled past a region: run-start label offscreen-left + sticky pinned', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 800,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+      refBlock({
+        key: 'b',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 800,
+        widthPx: 800,
+      }),
+    ]
+    const { labels } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 1000,
+      regionEndPx: regionEnds(blocks),
+      prefix: '',
+    })
+    // run-start block 'a' is pushed off the left (negative transform); block 'b'
+    // is the sticky one pinned to the viewport edge (transform 0)
+    expect(labels.map(l => ({ key: l.key, transform: l.transform }))).toEqual([
+      { key: 'a', transform: -1001 },
+      { key: 'b', transform: 0 },
+    ])
+  })
+
+  test('too-narrow sticky region drops its label, prefix falls back to standalone', () => {
+    const blocks = [
+      refBlock({
+        key: 'a',
+        refName: 'chr1',
+        displayedRegionIndex: 0,
+        offsetPx: 0,
+        widthPx: 10,
+        isLeftEndOfDisplayedRegion: true,
+      }),
+    ]
+    const { labels, showPrefixFallback } = getScalebarRefNameLabels({
+      blocks,
+      offsetPx: 0,
+      regionEndPx: regionEnds(blocks),
+      prefix: 'hg38',
+    })
+    expect(labels).toEqual([])
+    expect(showPrefixFallback).toBe(true)
   })
 })
