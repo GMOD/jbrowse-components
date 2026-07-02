@@ -15,63 +15,15 @@ import type { PileupDataResult } from '../../RenderAlignmentDataRPC/types.ts'
 import type { SashimiArc } from '../../features/sashimi/computeOverlay.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
-// One arc path plus its optional count label. Owns its own hover state so a
-// mouseover re-renders only this path (widening the stroke declaratively) — no
-// imperative setAttribute, and no recompute of the section's arc geometry.
-const SashimiArcPath = observer(function SashimiArcPath({
-  model,
-  arc,
-  isSelected,
-  onSelect,
-}: {
-  model: LinearAlignmentsDisplayModel
-  arc: SashimiArc
-  isSelected: boolean
-  onSelect: (key: string | null) => void
-}) {
-  const [hovered, setHovered] = useState(false)
-  const arcKey = sashimiArcKey(arc)
-  const wide = isSelected || hovered
-  return (
-    <g>
-      <path
-        d={arc.d}
-        stroke={isSelected ? '#333' : arc.stroke}
-        strokeWidth={wide ? arc.strokeWidth + 2 : arc.strokeWidth}
-        fill="none"
-        style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
-        onMouseEnter={() => {
-          setHovered(true)
-          model.setMouseoverExtraInformation(
-            formatSashimiTooltip({
-              start: arc.start,
-              end: arc.end,
-              score: arc.score,
-              strand: arc.strand,
-              refName: arc.refName,
-            }),
-          )
-        }}
-        onMouseLeave={() => {
-          setHovered(false)
-          model.clearMouseoverState()
-        }}
-        onClick={() => {
-          onSelect(isSelected ? null : arcKey)
-          openSashimiWidget(model, arc)
-        }}
-      />
-      {arc.showLabel && model.showSashimiLabels ? (
-        <SashimiArcLabel x={arc.labelX} y={arc.labelY} score={arc.score} />
-      ) : null}
-    </g>
-  )
-})
-
 // One side's worth of arcs as an absolutely-positioned SVG at the (scrolled)
 // sub-band top. Up arcs overlay the coverage band (overflow visible so a tall
 // arc can rise into it); down arcs sit in their own reserved strip and clip to
 // it. Native per-path hover/click means each band resolves its own events.
+//
+// Hover just widens the stroke: it's plain React state, not an imperative
+// setAttribute. Arc geometry is computed one level up in SashimiBand, which
+// doesn't re-render on this component's state, so hovering repaints only this
+// band's (low count) paths without recomputing anything.
 const SashimiSubBand = observer(function SashimiSubBand({
   model,
   arcs,
@@ -91,6 +43,7 @@ const SashimiSubBand = observer(function SashimiSubBand({
   selectedArcKey: string | null
   onSelect: (key: string | null) => void
 }) {
+  const [hoveredArcKey, setHoveredArcKey] = useState<string | null>(null)
   if (!arcs.length) {
     return null
   }
@@ -108,14 +61,45 @@ const SashimiSubBand = observer(function SashimiSubBand({
     >
       {arcs.map(arc => {
         const arcKey = sashimiArcKey(arc)
+        const isSelected = arcKey === selectedArcKey
+        const wide = isSelected || arcKey === hoveredArcKey
         return (
-          <SashimiArcPath
-            key={arcKey}
-            model={model}
-            arc={arc}
-            isSelected={arcKey === selectedArcKey}
-            onSelect={onSelect}
-          />
+          <g key={arcKey}>
+            <path
+              d={arc.d}
+              stroke={isSelected ? '#333' : arc.stroke}
+              strokeWidth={wide ? arc.strokeWidth + 2 : arc.strokeWidth}
+              fill="none"
+              style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
+              onMouseEnter={() => {
+                setHoveredArcKey(arcKey)
+                model.setMouseoverExtraInformation(
+                  formatSashimiTooltip({
+                    start: arc.start,
+                    end: arc.end,
+                    score: arc.score,
+                    strand: arc.strand,
+                    refName: arc.refName,
+                  }),
+                )
+              }}
+              onMouseLeave={() => {
+                setHoveredArcKey(null)
+                model.clearMouseoverState()
+              }}
+              onClick={() => {
+                onSelect(isSelected ? null : arcKey)
+                openSashimiWidget(model, arc)
+              }}
+            />
+            {arc.showLabel && model.showSashimiLabels ? (
+              <SashimiArcLabel
+                x={arc.labelX}
+                y={arc.labelY}
+                score={arc.score}
+              />
+            ) : null}
+          </g>
         )
       })}
     </svg>
