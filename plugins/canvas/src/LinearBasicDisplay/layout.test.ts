@@ -812,3 +812,54 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
   expect(top('wideGene')).toBe(0)
   expect(top('fakeSNP')).toBeGreaterThan(0)
 })
+
+test('compact mode scales aminoAcidOverlay height alongside its top', () => {
+  // The codon rect height is scaled via rectHeights in compact mode; the
+  // overlay item that annotates it (font size + vertical centering + hit box)
+  // must scale in lockstep so letters stay sized to and centered on the row.
+  const data = makeBaseFeatureData({
+    flatbushItems: [
+      makeFlatbushItem({
+        featureId: 'cds',
+        type: 'CDS',
+        startBp: 100,
+        endBp: 400,
+        bottomPx: 20,
+        featureHeightPx: 20,
+      }),
+    ],
+    rectPositions: new Uint32Array([100, 400]),
+    rectYs: new Float32Array([0]),
+    rectHeights: new Float32Array([20]),
+    rectColors: new Uint32Array([0]),
+    rectStrands: new Float32Array([0]),
+    rectDensityFade: new Uint32Array([0]),
+    rectFeatureIndices: new Uint32Array([0]),
+    aminoAcidOverlay: [
+      {
+        startBp: 100,
+        endBp: 103,
+        aminoAcid: 'M',
+        proteinIndex: 0,
+        topPx: 5,
+        heightPx: 20,
+        isStopOrNonTriplet: false,
+        isTranslExcept: false,
+        flatbushIdx: 0,
+      },
+    ],
+  })
+  const out = layout(
+    new Map([[0, data]]),
+    new Map([[0, 'volvox:ctgA']]),
+    0.02,
+    false,
+    false,
+    new Set<number>(),
+    'compact',
+  )
+  const aa = out.get(0)!.aminoAcidOverlay![0]!
+  // compact multiplier is 0.6; topPx and heightPx must scale by the same factor
+  expect(aa.heightPx).toBeCloseTo(12)
+  expect(aa.topPx).toBeCloseTo(3)
+})

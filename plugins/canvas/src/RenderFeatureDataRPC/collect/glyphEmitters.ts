@@ -193,15 +193,6 @@ function processSubfeaturesLayout(
   }
 }
 
-// Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
-// stacked in rows by layoutMatureProteinRegion. Each child already carries its
-// own y/height; draw a strand arrow on the parent CDS when it is top-level so
-// it shows direction like every other glyph. baseTopPx shifts the rows when the
-// CDS is nested inside a container glyph (gene → CDS → mature regions).
-// rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
-// by id, and the key into peptideDataMap — for a gene with multiple polyprotein
-// CDS children, e.g. SARS-CoV-2 ORF1a/ORF1ab, translation is keyed at the gene
-// level); each region is registered as a subfeature off it so it is individually
 // Register a subfeature as both a hoverable/selectable hit-test entry and (when
 // subfeatureLabels is enabled) a floating label, keyed by the child's own
 // coordinates. Shared by the mature-protein and repeat-region glyph paths so the
@@ -247,6 +238,15 @@ function registerSubfeature(
   )
 }
 
+// Viral polyproteins: a CDS whose mature_protein_region children tile the ORF,
+// stacked in rows by layoutMatureProteinRegion. Each child already carries its
+// own y/height; draw a strand arrow on the parent CDS when it is top-level so
+// it shows direction like every other glyph. baseTopPx shifts the rows when the
+// CDS is nested inside a container glyph (gene → CDS → mature regions).
+// rootFeature is the top-level feature (the one GetCanvasFeatureDetails resolves
+// by id, and the key into peptideDataMap — for a gene with multiple polyprotein
+// CDS children, e.g. SARS-CoV-2 ORF1a/ORF1ab, translation is keyed at the gene
+// level); each region is registered as a subfeature off it so it is individually
 // hoverable and selectable. cdsFeature is the polyprotein CDS that directly owns
 // the mature-region children — same object as rootFeature for a standalone CDS,
 // but the immediate child layout's feature (not the enclosing gene) when nested,
@@ -332,7 +332,7 @@ function processMatureProteinLayout(
       {
         feature: childFeature,
         parentFeatureId: rootFeature.id(),
-        type: childFeature.get('type'),
+        type: featureType(childFeature),
         topPx,
         heightPx: childLayout.height,
         displayLabel,

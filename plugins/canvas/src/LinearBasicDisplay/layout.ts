@@ -102,6 +102,11 @@ function applyHeightScale(data: FeatureDataResult, multiplier: number) {
   if (data.aminoAcidOverlay) {
     for (const aa of data.aminoAcidOverlay) {
       aa.topPx *= multiplier
+      // heightPx drives the peptide letter font size and vertical centering
+      // (peptidePositioning.ts) and the codon hit box (hitTesting.ts); scale it
+      // with topPx so letters stay sized to and centered on the shrunken codon
+      // rect (whose height is scaled via rectHeights) in compact mode.
+      aa.heightPx *= multiplier
     }
   }
 }
