@@ -2,16 +2,16 @@ import Flatbush from '@jbrowse/core/util/flatbush'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 
-// Extra pixels added to each side of every feature's hit box so small
-// zoomed-out features (including un-stranded ones) remain hoverable.
-export const HIT_PAD_PX = 4
-
 import type {
   AminoAcidOverlayItem,
   FeatureDataResult,
   FlatbushItem,
   SubfeatureInfo,
 } from '../../RenderFeatureDataRPC/rpcTypes.ts'
+
+// Extra pixels added to each side of every feature's hit box so small
+// zoomed-out features (including un-stranded ones) remain hoverable.
+export const HIT_PAD_PX = 4
 
 export interface VisibleRegion {
   refName: string
@@ -85,8 +85,8 @@ export function buildFeatureFlatbushIndex(
     return null
   }
   const index = new Flatbush(items.length)
+  const padBp = HIT_PAD_PX * bpPerPx
   for (const item of items) {
-    const padBp = HIT_PAD_PX * bpPerPx
     let hitStartBp = item.startBp - padBp
     let hitEndBp = item.endBp + padBp
     const labelData = floatingLabelsData[item.featureId]

@@ -48,6 +48,7 @@ function drawLines(
   block: BpRegionBounds,
   toX: BpToScreen,
   scrollY: number,
+  canvasWidth: number,
 ) {
   for (let i = 0; i < region.lineYs.length; i++) {
     const startBp = region.linePositions[i * 2]!
@@ -80,7 +81,17 @@ function drawLines(
         // N chevrons with gaps at both ends ⇒ N+1 evenly-sized gaps.
         const spacing = lineWidthPx / (totalChevrons + 1)
         const minX = Math.min(x1, x2)
-        for (let c = 0; c < totalChevrons; c++) {
+        // Only iterate chevrons whose center lands on-screen. A long intron
+        // zoomed in spans millions of px with almost all chevrons off-screen;
+        // without this window the loop issues thousands of clipped-away strokes
+        // (mirrors the GPU shader's visible-range windowing). cx positions are
+        // unchanged, so on-screen output is identical.
+        const firstC = Math.max(0, Math.ceil(-minX / spacing - 1))
+        const lastC = Math.min(
+          totalChevrons - 1,
+          Math.floor((canvasWidth - minX) / spacing - 1),
+        )
+        for (let c = firstC; c <= lastC; c++) {
           const cx = minX + spacing * (c + 1)
           // Three-segment "<" or ">" centred on (cx, y). The two outer
           // points share an x offset on the side opposite to `dir`, so
@@ -133,7 +144,7 @@ function drawRects(
     const a = (abgrAlpha(c) / 255) * densityAlpha
     ctx.fillStyle = `rgba(${abgrRed(c)},${abgrGreen(c)},${abgrBlue(c)},${a})`
     ctx.fillRect(xLeft, y, w, h)
-    if (region.outlineColor && w > 2) {
+    if (region.outlineColor && w > 2 && h > 2) {
       ctx.strokeStyle = abgrToCssRgba(region.outlineColor)
       ctx.lineWidth = 1
       ctx.strokeRect(xLeft + 0.5, y + 0.5, w - 1, h - 1)
@@ -299,7 +310,7 @@ export function drawFeatureBlocks(
     ctx.clip()
 
     const toX = makeBpMapper(block)
-    drawLines(ctx, region, block, toX, scrollY)
+    drawLines(ctx, region, block, toX, scrollY, canvasWidth)
     drawRects(ctx, region, toX, scrollY)
     drawArrows(ctx, region, block, toX, scrollY)
     // Drawn last so the markers sit on top of the glyphs they annotate.

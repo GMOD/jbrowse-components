@@ -7,7 +7,7 @@ import {
   toggleSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
-import { types } from '@jbrowse/mobx-state-tree'
+import { isAlive, types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
 import HeightIcon from '@mui/icons-material/Height'
 import SegmentIcon from '@mui/icons-material/Segment'
@@ -325,7 +325,10 @@ export default function stateModelFactory(
                   featureId,
                   displayedRegionIndex,
                 )
-                if (!fullFeature) {
+                // isAlive guards against the display being closed while
+                // fetchFullFeature was in flight; getView/getContainingTrack
+                // below would throw on a detached node.
+                if (!fullFeature || !isAlive(self)) {
                   return
                 }
                 const transcripts = getTranscripts(fullFeature)
