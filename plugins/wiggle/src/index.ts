@@ -56,6 +56,7 @@ export {
 
 export { WiggleCommonMixin } from './shared/WiggleCommonMixin.ts'
 export { WiggleScoreConfigMixin } from './shared/WiggleScoreConfigMixin.ts'
+export { SMALL_POINT_MAX_DIAMETER_PX } from './shared/wiggleComponentUtils.ts'
 
 export type {
   SourceRenderData,

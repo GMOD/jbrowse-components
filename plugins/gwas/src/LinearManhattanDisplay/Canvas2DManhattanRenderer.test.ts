@@ -63,6 +63,7 @@ const state: ManhattanRenderState = {
   domainY: [0, 10],
   canvasWidth: 100,
   canvasHeight: 100,
+  pointDiameterPx: 4,
 }
 
 // ABGR packing matches normalizedRgbToABGR/cssColorToABGR: 0xAABBGGRR.
@@ -115,6 +116,25 @@ test('draws one arc per feature at the expected screen position', () => {
   expect(arcs[1]).toMatchObject({ x: 50, y: 50 })
   // bp=1000 → x=100, score=0 → y=100
   expect(arcs[2]).toMatchObject({ x: 100, y: 100 })
+})
+
+test('draws tiny points as crisp squares instead of muddy discs', () => {
+  const { ctx, calls } = mockCtx()
+  const red = abgr(255, 0, 0)
+  drawManhattanBlocks(
+    ctx as unknown as CanvasRenderingContext2D,
+    new Map([[0, data([500], [5], [red])]]),
+    [block],
+    { ...state, pointDiameterPx: 2 },
+  )
+  const arcs = calls.filter(c => c.kind === 'arc')
+  const rects = calls.filter(
+    (c): c is Extract<Call, { kind: 'rect' }> => c.kind === 'rect',
+  )
+  expect(arcs).toHaveLength(0)
+  expect(rects).toHaveLength(1)
+  // 2px square centered on bp500→x50, score5→y50: top-left (49, 49)
+  expect(rects[0]).toMatchObject({ x: 49, y: 49, w: 2, h: 2 })
 })
 
 test('draws a ranged SV as a bar spanning start→end, points as discs', () => {

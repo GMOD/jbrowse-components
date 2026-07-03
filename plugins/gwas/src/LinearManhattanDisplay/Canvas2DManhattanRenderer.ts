@@ -1,11 +1,12 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
+import { SMALL_POINT_MAX_DIAMETER_PX } from '@jbrowse/plugin-wiggle'
 import {
   bpToScreenPx,
   clipBlockForCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 
-import { POINT_RADIUS_PX, scoreToY } from './manhattanRenderingBackendTypes.ts'
+import { scoreToY } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
@@ -24,7 +25,8 @@ export function drawManhattanBlocks(
   blocks: RenderBlock[],
   state: ManhattanRenderState,
 ) {
-  const { canvasWidth, canvasHeight, domainY } = state
+  const { canvasWidth, canvasHeight, domainY, pointDiameterPx } = state
+  const r = pointDiameterPx / 2
 
   for (const block of blocks) {
     const data = regions.get(block.displayedRegionIndex)
@@ -76,17 +78,20 @@ export function drawManhattanBlocks(
       )
       const left = Math.min(xStart, xEnd)
       const widthPx = Math.abs(xEnd - xStart)
-      if (widthPx > POINT_RADIUS_PX * 2) {
-        ctx.rect(left, y - POINT_RADIUS_PX, widthPx, POINT_RADIUS_PX * 2)
+      if (widthPx > pointDiameterPx) {
+        ctx.rect(left, y - r, widthPx, pointDiameterPx)
       } else if (glyphs[i] === 1) {
         // Insertion: inverted triangle (apex pointing down) at the point.
-        ctx.moveTo(xStart - POINT_RADIUS_PX, y - POINT_RADIUS_PX)
-        ctx.lineTo(xStart + POINT_RADIUS_PX, y - POINT_RADIUS_PX)
-        ctx.lineTo(xStart, y + POINT_RADIUS_PX)
+        ctx.moveTo(xStart - r, y - r)
+        ctx.lineTo(xStart + r, y - r)
+        ctx.lineTo(xStart, y + r)
         ctx.closePath()
+      } else if (pointDiameterPx <= SMALL_POINT_MAX_DIAMETER_PX) {
+        // tiny point: crisp square instead of a muddy AA disc
+        ctx.rect(xStart - r, y - r, pointDiameterPx, pointDiameterPx)
       } else {
-        ctx.moveTo(xStart + POINT_RADIUS_PX, y)
-        ctx.arc(xStart, y, POINT_RADIUS_PX, 0, TWO_PI)
+        ctx.moveTo(xStart + r, y)
+        ctx.arc(xStart, y, r, 0, TWO_PI)
       }
     }
     ctx.fill()

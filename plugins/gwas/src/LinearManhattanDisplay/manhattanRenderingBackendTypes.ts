@@ -5,12 +5,16 @@ export interface ManhattanRenderState {
   domainY: [number, number]
   canvasWidth: number
   canvasHeight: number
+  // Point diameter in CSS pixels (user-configurable via scatterPointSize),
+  // threaded through state so Canvas2D, GPU and SVG export all draw identically
+  // sized points. Separate from findManhattanHit's larger HIT_RADIUS_PX grab
+  // tolerance.
+  pointDiameterPx: number
 }
 
-// Point radius in CSS pixels, shared by both backends so the Canvas2D and GPU
-// renderers (and SVG export) draw identically sized points. Separate from
-// findManhattanHit's larger HIT_RADIUS_PX grab tolerance.
-export const POINT_RADIUS_PX = 2
+// Default point diameter — preserves the historical radius-2 disc. Also the
+// value the track menu's "reset" returns to.
+export const DEFAULT_POINT_DIAMETER_PX = 4
 
 // Map a score to its canvas Y (px from the top). Shared by the Canvas2D/SVG
 // draw path and the hover hit-test so the drawn point and its grab target stay

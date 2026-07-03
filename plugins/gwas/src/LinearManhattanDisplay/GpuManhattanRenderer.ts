@@ -2,7 +2,6 @@ import { writeBpRangeUniforms } from '@jbrowse/render-core/blockClipUtils'
 import { GpuPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import { slangPass } from '@jbrowse/render-core/slangPass'
 
-import { POINT_RADIUS_PX } from './manhattanRenderingBackendTypes.ts'
 import * as shader from './shaders/manhattan.generated.ts'
 
 import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
@@ -58,7 +57,7 @@ export class GpuManhattanRenderer extends GpuPerRegionRenderingBackend<
     // CSS-scaled canvasHeight produces vertically-stretched ellipses on
     // hi-DPI displays.
     this.uniformF32[U.viewportWidth] = clip.scissorW
-    this.uniformF32[U.pointRadius] = POINT_RADIUS_PX
+    this.uniformF32[U.pointRadius] = state.pointDiameterPx / 2
 
     this.hal.writeUniforms(this.uniformData)
     this.hal.drawPass(PASS, block.displayedRegionIndex)

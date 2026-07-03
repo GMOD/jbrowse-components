@@ -80,6 +80,7 @@ describe('reversed convention', () => {
     domainY: [0, 10],
     canvasWidth: 800,
     canvasHeight: 400,
+    pointDiameterPx: 4,
   }
   const block = {
     displayedRegionIndex: 0,

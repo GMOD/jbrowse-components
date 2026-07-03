@@ -26,13 +26,16 @@ import {
   computeYTicks,
   getNiceDomain,
   makeCrossHatchItem,
+  makePointSizeMenu,
   makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
+import { DEFAULT_POINT_DIAMETER_PX } from './manhattanRenderingBackendTypes.ts'
 
 import type { ManhattanHit } from './findManhattanHit.ts'
 import type {
@@ -223,7 +226,12 @@ export function stateModelFactory(
         return resolveRenderState(
           self.domain,
           self.rpcDataMap.size > 0,
-          domainY => ({ domainY, canvasWidth, canvasHeight }),
+          domainY => ({
+            domainY,
+            canvasWidth,
+            canvasHeight,
+            pointDiameterPx: self.scatterPointSize,
+          }),
         )
       },
       /**
@@ -372,6 +380,18 @@ export function stateModelFactory(
       trackMenuItems() {
         return [
           makeScoreSubMenu(self, { scaleType: false }),
+          makePointSizeMenu({
+            label: 'Point size',
+            icon: ScatterPlotIcon,
+            getValue: () => self.scatterPointSize,
+            isDefault: self.scatterPointSize === DEFAULT_POINT_DIAMETER_PX,
+            onChange: n => {
+              self.setScatterPointSize(n)
+            },
+            onReset: () => {
+              self.setScatterPointSize(undefined)
+            },
+          }),
           makeCrossHatchItem(self),
           {
             // whole submenu greys out without a configured .ld adapter

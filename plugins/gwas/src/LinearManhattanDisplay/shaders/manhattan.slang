@@ -49,7 +49,12 @@ struct VsOut {
 static const float AA_PAD_PX = 1.0;
 static const float SHAPE_DISC = 0.0;
 static const float SHAPE_TRI = 1.0;
+// >1.5 in the fragment shader = flat solid fill (ranged-SV bar, or the tiny
+// square below). At/below SMALL_POINT_MAX_DIAMETER an AA disc reads as a muddy
+// blob, so a crisp square is drawn instead (mirrors wiggle.slang + the JS
+// SMALL_POINT_MAX_DIAMETER_PX).
 static const float SHAPE_BAR = 2.0;
+static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 // 1/sqrt(5): normalizes the two slanted edges of the inverted triangle so the
 // edge functions read as true perpendicular distances for antialiasing.
 static const float INV_SQRT5 = 0.4472136;
@@ -89,6 +94,14 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     float halfBandPx = u.pointRadius;
     float y = centerClipY + local.y * halfBandPx * 2.0 / u.canvasHeight;
     o.position = float4(x, y, 0.0, 1.0);
+    o.localPos = local;
+    o.shape = SHAPE_BAR;
+  } else if (inst.glyph != 1u && u.pointRadius * 2.0 <= SMALL_POINT_MAX_DIAMETER) {
+    // tiny SNP point: crisp filled square (no AA disc). Insertions keep their
+    // triangle marker even when small.
+    float dx = local.x * u.pointRadius * 2.0 / u.viewportWidth;
+    float dy = local.y * u.pointRadius * 2.0 / u.canvasHeight;
+    o.position = float4(startClipX + dx, centerClipY + dy, 0.0, 1.0);
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else {

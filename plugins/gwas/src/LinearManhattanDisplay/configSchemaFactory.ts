@@ -78,6 +78,16 @@ export function configSchemaFactory() {
       },
       /**
        * #slot
+       * Manhattan point diameter in px (adjustable from the track menu). Larger
+       * default than wiggle's since Manhattan points are the primary glyph.
+       */
+      scatterPointSize: {
+        type: 'number',
+        defaultValue: 4,
+        description: 'Diameter in px of Manhattan points',
+      },
+      /**
+       * #slot
        * PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying
        * pairwise r² used when colorBy is 'ld'.
        */

@@ -35,6 +35,7 @@ const state: ManhattanRenderState = {
   domainY: [0, 10],
   canvasWidth: 100,
   canvasHeight: 100,
+  pointDiameterPx: 4,
 }
 
 const refNames = new Map([[0, 'chr1']])
