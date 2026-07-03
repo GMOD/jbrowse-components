@@ -1,7 +1,12 @@
 import { AssemblySelector } from '@jbrowse/core/ui'
 import { getSession } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { getSyntenyTracks, pickSyntenyTrackId } from '@jbrowse/synteny-core'
+import {
+  getConnectedAssemblies,
+  getSyntenyTracks,
+  pickSyntenyTrackId,
+  planSyntenyChain,
+} from '@jbrowse/synteny-core'
 import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos'
 import CloseIcon from '@mui/icons-material/Close'
 import { Button, IconButton, Tooltip } from '@mui/material'
@@ -175,14 +180,45 @@ const LeftPanel = observer(function LeftPanel({
           className={classes.button}
           variant="outlined"
           onClick={() => {
+            // default the new row to an assembly that already has a synteny
+            // track to the current bottom row, so the added pair is launchable
+            // instead of immediately flagged as needing configuration
+            const bottom =
+              selectedAssemblyNames[selectedAssemblyNames.length - 1]!
+            const connected = getConnectedAssemblies(session.tracks, bottom)
             setSelectedAssemblyNames([
               ...selectedAssemblyNames,
-              defaultAssemblyName,
+              connected[0] ?? defaultAssemblyName,
             ])
           }}
         >
           Add row
         </Button>
+        {selectedAssemblyNames.length > 2 && !canLaunch ? (
+          <Tooltip title="Reorder rows so adjacent pairs share a synteny dataset">
+            <Button
+              className={classes.button}
+              variant="outlined"
+              onClick={() => {
+                setSelectedAssemblyNames(
+                  planSyntenyChain(
+                    selectedAssemblyNames,
+                    (a, b) =>
+                      a !== b &&
+                      getSyntenyTracks(session.tracks, [a, b]).length > 0,
+                  ),
+                )
+                // per-pair selections are indexed by row position, so a
+                // reorder invalidates them; clear so doSubmit auto-picks each
+                // pair's track for the new ordering
+                setSelectedRow(0)
+                model.clearImportFormSyntenyTracks()
+              }}
+            >
+              Auto-arrange rows
+            </Button>
+          </Tooltip>
+        ) : null}
         <Button
           className={classes.button}
           disabled={!canLaunch}

@@ -36,7 +36,12 @@ export { default as DiagonalizeLoadingScreen } from './DiagonalizeLoadingScreen.
 export { withDiagonalizeProgress } from './withDiagonalizeProgress.ts'
 export { default as MinLengthSlider } from './MinLengthSlider.tsx'
 export { defaultSyntenyFileFormats } from './defaultSyntenyFileFormats.tsx'
-export { getSyntenyTracks, pickSyntenyTrackId } from './getSyntenyTracks.ts'
+export {
+  getConnectedAssemblies,
+  getSyntenyTracks,
+  pickSyntenyTrackId,
+} from './getSyntenyTracks.ts'
+export { planSyntenyChain } from './planSyntenyChain.ts'
 export { resolveRowTrackAction } from './resolveRowTrackAction.ts'
 export type { RowTrackAction } from './resolveRowTrackAction.ts'
 export { useImportFormSyntenyChoice } from './useImportFormSyntenyChoice.ts'
