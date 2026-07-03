@@ -1,4 +1,5 @@
 import { createJBrowseTheme } from '@jbrowse/core/ui'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { collectRenderData } from './collectRenderData.ts'
@@ -456,6 +457,29 @@ describe('collectRenderData intron chevrons', () => {
       jexl,
     )
     expect([...result.lineDirections]).toEqual([0])
+  })
+})
+
+describe('collectRenderData color-slot robustness', () => {
+  // A per-feature color jexl that throws (references an unregistered function)
+  // must not fail the whole track render — it degrades to a visible magenta
+  // sentinel per feature, mirroring the mouseover/labels slots.
+  it('degrades to magenta when a per-feature color jexl throws', () => {
+    const feature = mockFeature({ type: 'gene', id: 'g1', start: 0, end: 50 })
+    const cfg = mockDisplayConfig({
+      color: `jexl:qvcolor(get(feature,'missing'))`,
+    })
+    const result = collectRenderData(
+      [boxLayout(feature)],
+      0,
+      1000,
+      cfg,
+      theme,
+      false,
+      undefined,
+      jexl,
+    )
+    expect([...result.rectColors]).toEqual([cssColorToABGR('magenta')])
   })
 })
 

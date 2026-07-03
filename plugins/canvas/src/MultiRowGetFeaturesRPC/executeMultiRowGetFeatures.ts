@@ -54,10 +54,11 @@ export async function executeMultiRowGetFeatures({
       stopTokenCheck,
     }),
   })
-  return rpcResult(result, [
-    result.featureStarts.buffer,
-    result.featureEnds.buffer,
-    result.featureColors.buffer,
-    result.featurePartitionIndex.buffer,
-  ]) as unknown as MultiRowGetFeaturesResult
+  // Derive transferables from the result (like executeRenderFeatureData) so a
+  // new TypedArray field can't silently get cloned across the worker boundary
+  // just because a hand-maintained buffer list wasn't extended.
+  const transferables = Object.values(result)
+    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
+    .map(v => v.buffer as ArrayBuffer)
+  return rpcResult(result, transferables) as unknown as MultiRowGetFeaturesResult
 }

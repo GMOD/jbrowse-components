@@ -1,6 +1,10 @@
 import { getFrame, measureText } from '@jbrowse/core/util'
 
-import { readConfigValue, resolveThemeColor } from './renderConfig.ts'
+import {
+  THEME_DERIVED_COLOR,
+  readConfigValueSafe,
+  resolveThemeColor,
+} from './renderConfig.ts'
 
 import type { DisplayConfig } from './renderConfig.ts'
 import type { JBrowseTheme as Theme } from '@jbrowse/core/ui'
@@ -9,6 +13,15 @@ import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 const MAX_LABEL_LENGTH = 50
 const UTR_REGEX = /(\bUTR|_UTR|untranslated[_\s]region)\b/i
+
+// Fallback when a per-feature `color`/`utrColor` jexl expression throws (e.g. a
+// callback referencing a missing plugin function or an attribute absent on some
+// features). Magenta so the bad slot is visually obvious rather than silently
+// wrong, matching parseCssColor's INVALID_COLOR contract — and, crucially, so
+// one throwing feature degrades to a magenta box instead of failing the whole
+// track render (the color slots are the last unguarded per-feature jexl reads;
+// mouseover/labels already route through readConfigValueSafe).
+const INVALID_COLOR = 'magenta'
 
 export function truncateLabel(text: string, maxLength = MAX_LABEL_LENGTH) {
   return text.length > maxLength ? `${text.slice(0, maxLength - 1)}…` : text
@@ -91,8 +104,8 @@ export function getBoxColor({
   jexl: JexlInstance
 }) {
   let fill = isUTR(feature)
-    ? readConfigValue<string>(config, 'utrColor', feature, jexl)
-    : readConfigValue<string>(config, 'color', feature, jexl)
+    ? readConfigValueSafe<string>(config, 'utrColor', feature, jexl, INVALID_COLOR)
+    : readConfigValueSafe<string>(config, 'color', feature, jexl, INVALID_COLOR)
 
   const featureStrand = feature.get('strand')
   const featurePhase = feature.get('phase')
@@ -131,7 +144,15 @@ export function getStrokeColor({
   theme: Theme
   jexl: JexlInstance
 }) {
-  const c = readConfigValue<string>(config, 'connectorColor', feature, jexl)
+  // A throwing connectorColor jexl degrades to the theme-derived stroke (its
+  // own default), keeping the line subtle rather than crashing the render.
+  const c = readConfigValueSafe<string>(
+    config,
+    'connectorColor',
+    feature,
+    jexl,
+    THEME_DERIVED_COLOR,
+  )
   // text.secondary is translucent; keep its alpha so connector lines and strand
   // arrows blend into the track as a subtle grey rather than glaring full-white
   // (dark mode) or full-black (light mode) at forced opacity.
