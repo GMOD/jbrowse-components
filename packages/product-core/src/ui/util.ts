@@ -1,3 +1,5 @@
+import type { ComponentType } from 'react'
+
 import {
   evaluateJexl,
   getConf,
@@ -11,6 +13,46 @@ import type PluginManager from '@jbrowse/core/PluginManager'
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
+
+export type AboutConfig = AnyConfigurationModel | Record<string, unknown>
+
+export interface AboutPanelProps {
+  session: AbstractSessionModel
+  config: AboutConfig
+}
+
+// Augmentation lives here (not in the consuming components) because
+// AboutDialogContents imports from this module, so the registry entries are
+// visible wherever these points are evaluated — including getAboutDialogConfig
+// below, which then needs no cast on the Core-customizeAbout result.
+declare module '@jbrowse/core/PluginManager' {
+  interface ExtensionPointRegistry {
+    // accumulates an array of panels — every callback appends its own component
+    // and returns the array, so panels from multiple plugins compose instead of
+    // clobbering one another. Each renders its own BaseCard chrome
+    'Core-extraAboutPanel': {
+      args: ComponentType<AboutPanelProps>[]
+      result: ComponentType<AboutPanelProps>[]
+      props: AboutPanelProps
+    }
+    // singular: one dialog body renders, so this stays a single-component fold —
+    // return your own component to replace/wrap the default, or the default to
+    // opt out
+    'Core-replaceAbout': {
+      args: ComponentType<AboutPanelProps>
+      result: ComponentType<AboutPanelProps>
+      props: AboutPanelProps
+    }
+    // data transform: mutate the config object shown in the dialog
+    'Core-customizeAbout': {
+      args: { config: Record<string, unknown> }
+      result: {
+        config: { metadata?: Record<string, unknown>; [key: string]: unknown }
+      }
+      props: AboutPanelProps
+    }
+  }
+}
 
 /**
  * Recursively delete every occurrence of a property key from a nested plain
@@ -76,7 +118,9 @@ export function getAboutDialogConfig({
   session: AbstractSessionModel
   pluginManager: PluginManager
 }) {
-  const conf = isStateTreeNode(config) ? readConfObject(config) : config
+  const conf: Record<string, unknown> = isStateTreeNode(config)
+    ? readConfObject(config)
+    : config
   const trackFormatAbout = readConfSlot(
     config,
     ['formatAbout', 'config'],
@@ -86,18 +130,17 @@ export function getAboutDialogConfig({
   const sessionFormatAbout = getConf(session, ['formatAbout', 'config'], {
     config: conf,
   })
+  const merged: { config: Record<string, unknown> } = {
+    config: {
+      ...conf,
+      ...(isObject(sessionFormatAbout) ? sessionFormatAbout : {}),
+      ...(isObject(trackFormatAbout) ? trackFormatAbout : {}),
+    },
+  }
   return pluginManager.evaluateExtensionPoint(
     /** #extensionPoint Core-customizeAbout | sync | Transform the config shown in a track's About dialog */
     'Core-customizeAbout',
-    {
-      config: {
-        ...conf,
-        ...(isObject(sessionFormatAbout) ? sessionFormatAbout : {}),
-        ...(isObject(trackFormatAbout) ? trackFormatAbout : {}),
-      },
-    },
+    merged,
     { session, config },
-  ) as {
-    config: { metadata?: Record<string, unknown>; [key: string]: unknown }
-  }
+  )
 }

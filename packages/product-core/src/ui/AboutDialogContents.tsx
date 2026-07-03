@@ -3,7 +3,6 @@ import { Suspense, useState } from 'react'
 import Attributes from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/Attributes'
 import BaseCard from '@jbrowse/core/BaseFeatureWidget/BaseFeatureDetail/BaseCard'
 import { getConf } from '@jbrowse/core/configuration'
-import { PluggableComponent } from '@jbrowse/core/ui'
 import { getEnv } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { getSnapshot, isStateTreeNode } from '@jbrowse/mobx-state-tree'
@@ -14,22 +13,7 @@ import HeaderButtons from './HeaderButtons.tsx'
 import RefNameInfoDialog from './RefNameInfoDialog.tsx'
 import { getAboutDialogConfig, readConfSlot } from './util.ts'
 
-import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
-
-type AboutConfig = AnyConfigurationModel | Record<string, unknown>
-
-interface AboutPanelProps {
-  session: AbstractSessionModel
-  config: AboutConfig
-}
-
-// default for the Core-extraAboutPanel slot: renders nothing. A plugin
-// replaces this via PluggableComponent and is responsible for its own
-// BaseCard chrome.
-function NoAboutPanel(_props: AboutPanelProps) {
-  return null
-}
+import type { AboutPanelProps } from './util.ts'
 
 const useStyles = makeStyles()({
   content: {
@@ -59,6 +43,16 @@ const AboutDialogContents = observer(function AboutDialogContents({
     pluginManager,
   })
 
+  // each registered panel scopes itself (returns null when it doesn't apply)
+  // and owns its own BaseCard chrome
+  const extraPanels = [
+    /** #extensionPoint Core-extraAboutPanel | sync | Add extra panels to a track's About dialog */
+    pluginManager.evaluateExtensionPoint('Core-extraAboutPanel', [], {
+      session,
+      config,
+    }),
+  ].flat()
+
   return (
     <div className={classes.content}>
       <BaseCard title="Configuration">
@@ -80,14 +74,15 @@ const AboutDialogContents = observer(function AboutDialogContents({
           />
         </BaseCard>
       ) : null}
-      <Suspense fallback={null}>
-        <PluggableComponent
-          pluginManager={pluginManager}
-          name="Core-extraAboutPanel"
-          component={NoAboutPanel}
-          props={{ session, config }}
-        />
-      </Suspense>
+      {extraPanels.map((Panel, i) => (
+        <Suspense
+          // eslint-disable-next-line @eslint-react/no-array-index-key -- panels are registration-ordered, stable across renders
+          key={i}
+          fallback={null}
+        >
+          <Panel session={session} config={config} />
+        </Suspense>
+      ))}
       <FileInfoPanel config={config} session={session} />
       {showRefNames ? (
         <RefNameInfoDialog
