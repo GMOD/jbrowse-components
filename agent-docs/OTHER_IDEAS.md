@@ -731,35 +731,10 @@ should fail fast/silent offline instead of hanging or erroring noisily.
 Scratch list of not-yet-committed ideas. Each links to a fuller plan doc where
 one exists.
 
-## Display-type config defaults ("all alignments compact by default")
+## Display-type config defaults ("all alignments compact by default") — SHIPPED
 
-Let an admin (config.json) and a user (UI) override the *default* config applied
-to a whole class of displays, without editing each track. The "configOverrides"
-idea, reframed as the missing third config axis:
-
-- per-track edits → `trackConfigDeltas` (keyed by trackId) — done
-- app-scope prefs → `preferences` (one global singleton) — done
-- **type defaults → keyed by display type** — this idea
-
-Composes the two existing mechanisms, almost no new concept:
-
-- admin-default + user-override layering = copy the `preferences` pattern
-  (`configuration.preferences.*` + `preferencesOverrides` volatile + localStorage
-  + `getPreference` resolver).
-- layer a partial config over a base track = `mergeTrackConfig`
-  (`packages/core/src/util/trackConfigDelta.ts`), already used by the `tracks`
-  getter in `SessionTracks.ts`.
-
-Decisions locked: **display-type granularity** (compact/height/featureHeight live
-on displays); **user choice wins** (user's global type-default overrides an
-admin's explicit per-track setting). Precedence low→high: schema default < admin
-type-default (`configuration.displayTypeDefaults[type]`, a `frozen` slot) < admin
-explicit track (jbrowse.tracks) < user type-default (`displayTypeDefaultOverrides`
-localStorage) < user per-track delta (trackConfigDeltas).
-
-Injection = extra `mergeTrackConfig` layers in the `SessionTracks.ts` tracks
-getter, keyed to the base's own stable displayIds (`${trackId}-${displayType}`).
-Load-bearing subtlety: fold the type-layer snapshots into the getter's identity/
-memo key so the config hydration cache stays warm.
-
-Full plan: `agent-docs/DISPLAY_TYPE_DEFAULTS_PLAN.md`.
+Session-wide per-display-type slot defaults (the missing third config axis
+alongside per-track `trackConfigDeltas` and app-scope `preferences`). **Shipped**
+as promotable config slots that resolve at read-time on the display — NOT the
+`mergeTrackConfig`-layers-in-the-tracks-getter design originally sketched here.
+See **`agent-docs/DISPLAY_TYPE_DEFAULTS.md`** for the master doc.

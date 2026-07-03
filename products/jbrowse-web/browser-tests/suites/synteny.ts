@@ -1,12 +1,49 @@
 import {
   findByTestId,
-  navigateWithSessionSpec,
+  navigateToUrl,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
+
+// The config's default session has a blank LinearSyntenyView (import form).
+// Picking a synteny track in the quick-start selector should auto-fill both row
+// assemblies (volvox_snp / volvox) and enable Launch, which then renders.
+const quickStartTest: TestCase = {
+  name: 'import form quick-start auto-fills assemblies from synteny track',
+  fn: async page => {
+    await navigateToUrl(
+      page,
+      'config=test_data%2Fvolvox%2Fconfig_synteny_snp.json',
+    )
+    const combo = await page.waitForSelector(
+      '::-p-text(Select a synteny track to auto-fill)',
+      { timeout: 30000 },
+    )
+    await combo!.click()
+    await page.waitForSelector('li[role="option"]', { timeout: 10000 })
+    for (const opt of await page.$$('li[role="option"]')) {
+      const text = await opt.evaluate(e => e.textContent)
+      if (text.includes('cs mismatches')) {
+        await opt.click()
+        break
+      }
+    }
+    // both rows now read the track's assemblyNames
+    const values = await page.$$eval('.MuiSelect-select', els =>
+      els.map(e => e.textContent),
+    )
+    if (!values.includes('volvox_snp') || !values.includes('volvox')) {
+      throw new Error(`assemblies not auto-filled: ${JSON.stringify(values)}`)
+    }
+    const launch = await page.waitForSelector('::-p-text(Launch)')
+    await launch!.click()
+    await findByTestId(page, 'synteny_canvas_done', 60000)
+    await waitForDataLoaded(page, 60000)
+  },
+}
 
 function syntenyTest(
   name: string,
@@ -85,6 +122,7 @@ const identityLegendTest: TestCase = {
 const suite: TestSuite = {
   name: 'Synteny Views',
   tests: [
+    quickStartTest,
     identityLegendTest,
     syntenyTest(
       'horizontally flipped inverted alignment',

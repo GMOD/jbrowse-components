@@ -123,13 +123,18 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
       displayMode: {
         type: 'stringEnum',
         model: types.enumeration('displayMode', [
+          'inherit',
           'normal',
           'compact',
           'superCompact',
         ]),
         description:
-          'Feature height preset. `normal` is the default and, when left unchanged, inherits the session-wide default for this display type; compact/superCompact pin an explicit height',
-        defaultValue: 'normal',
+          'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` each pin an explicit height (including pinning `normal` over a compact session default)',
+        // `inherit` is the CSS-style sentinel default (the un-pinned state);
+        // `promotedBase` ('normal') is what it resolves to when nothing is
+        // promoted. See promotableDefaults.ts.
+        defaultValue: 'inherit',
+        promotedBase: 'normal',
         promotable: true,
       },
       /**

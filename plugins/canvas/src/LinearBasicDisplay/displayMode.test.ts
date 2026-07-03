@@ -181,20 +181,25 @@ describe('canvas display displayMode resolution', () => {
     expect(display.isDisplayModeDefault).toBe(false)
   })
 
-  it('setting Normal un-pins a track, so it follows the session default', () => {
-    // uniform "at the slot default = inherit" rule: Normal is the slot default,
-    // so choosing it can't pin Normal over a session default — the track
-    // re-inherits. To hold an explicit small height, pin compact/superCompact.
+  it('pins Normal over an opposite session default, then resetDisplayMode re-inherits', () => {
+    // CSS inherit model: 'inherit' is the slot default, so choosing Normal now
+    // *pins* it and holds over a superCompact session default. resetDisplayMode
+    // ('inherit') is the un-pin path, not selecting Normal.
     const { session, display } = createDisplay('compact')
     session.setDisplayTypeDefault(
       'LinearBasicDisplay',
       'displayMode',
       'superCompact',
     )
-    expect(display.displayMode).toBe('compact') // pinned wins
+    expect(display.displayMode).toBe('compact') // pinned compact wins
 
-    display.setDisplayMode('normal') // un-pins
-    expect(display.displayMode).toBe('superCompact') // now inherits the default
+    display.setDisplayMode('normal') // pins normal explicitly
+    expect(display.displayMode).toBe('normal') // holds over the superCompact default
+    expect(display.isDisplayModePinned).toBe(true)
+    expect(display.sessionDefaultChanges()).toEqual([]) // pinned, not inheriting
+
+    display.resetDisplayMode() // un-pin -> follow the session default again
+    expect(display.displayMode).toBe('superCompact')
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['displayMode'], from: 'normal', to: 'superCompact' },
     ])
@@ -234,6 +239,11 @@ describe('canvas display displayMode resolution', () => {
       'nonsense',
     )
     expect(display.displayMode).toBe('normal')
+    // the invalid value is rejected uniformly: the "make default" checkbox and
+    // the session-default badge agree with the getter instead of reading the
+    // garbage value as an active default
+    expect(display.isDisplayModeDefault).toBe(false)
+    expect(display.sessionDefaultChanges()).toEqual([])
   })
 
   it('ignores a default promoted for a different display type', () => {

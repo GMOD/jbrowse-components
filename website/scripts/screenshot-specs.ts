@@ -1223,6 +1223,122 @@ export const specs: ScreenshotSpec[] = [
   },
 
   {
+    // Multi-step procedure proving the session-wide feature-height default and
+    // the CSS-style inherit/pin (displayMode promotable slot). Two feature
+    // tracks of the same display type: (1) both inherit Normal, (2) promote
+    // Compact "for all tracks like this" and both follow, (3) pin the second
+    // track back to Normal — it holds over the compact session default. This is
+    // the capability that the inherit sentinel unlocked; a plain slot couldn't
+    // pin its own default value back. See agent-docs/DISPLAY_TYPE_DEFAULTS.md.
+    mode: 'url',
+    name: 'feature_height_default_pin',
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:1..20,000',
+      tracks: ['gff3tabix_genes', 'bigbed_genes'],
+    }),
+    readyText: 'ctgA',
+    viewportWidth: 1100,
+    viewportHeight: 470,
+    settleMs: 5000,
+    hideTooltip: true,
+    stages: [
+      {
+        // both feature tracks sit at the default (Normal) height
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 42,
+            maxWidth: 1000,
+            text: '1. Two feature tracks — both inherit the default Normal height',
+          },
+        ],
+      },
+      {
+        // set the first track to Compact, then "Use Compact by default for all
+        // tracks like this" — the second (un-pinned) track follows via inherit
+        actions: [
+          {
+            type: 'click',
+            selector:
+              '[data-testid="track_menu_icon"][data-trackid="gff3tabix_genes"]',
+          },
+          { type: 'waitForText', text: 'Set feature height' },
+          { type: 'hover', text: 'Set feature height' },
+          { type: 'waitForText', text: 'Super-compact' },
+          { type: 'delay', ms: 400 },
+          // exact-text match so "Compact" hits the radio, not the longer
+          // "Use Compact by default…" checkbox that also contains the word
+          {
+            type: 'click',
+            selector:
+              '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Compact"])',
+          },
+          { type: 'delay', ms: 300 },
+          { type: 'press', key: 'Escape' },
+          { type: 'delay', ms: 600 },
+          {
+            type: 'click',
+            selector:
+              '[data-testid="track_menu_icon"][data-trackid="gff3tabix_genes"]',
+          },
+          { type: 'waitForText', text: 'Set feature height' },
+          { type: 'hover', text: 'Set feature height' },
+          { type: 'waitForText', text: 'by default for all tracks like this' },
+          { type: 'delay', ms: 400 },
+          { type: 'click', text: 'by default for all tracks like this' },
+          { type: 'delay', ms: 300 },
+          { type: 'press', key: 'Escape' },
+          { type: 'delay', ms: 1400 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 42,
+            maxWidth: 1000,
+            text: '2. "Use Compact by default for all tracks like this" — every un-pinned track follows',
+          },
+        ],
+      },
+      {
+        closeMenusFirst: true,
+        // pin the second track back to Normal; it holds over the compact
+        // session default (the first track stays compact)
+        actions: [
+          {
+            type: 'click',
+            selector:
+              '[data-testid="track_menu_icon"][data-trackid="bigbed_genes"]',
+          },
+          { type: 'waitForText', text: 'Set feature height' },
+          { type: 'hover', text: 'Set feature height' },
+          { type: 'waitForText', text: 'Super-compact' },
+          { type: 'delay', ms: 400 },
+          {
+            type: 'click',
+            selector:
+              '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Normal"])',
+          },
+          { type: 'delay', ms: 300 },
+          { type: 'press', key: 'Escape' },
+          { type: 'delay', ms: 1400 },
+        ],
+        annotations: [
+          {
+            type: 'text',
+            x: 24,
+            y: 42,
+            maxWidth: 1000,
+            text: '3. Pin the second track back to Normal — it holds over the compact session default',
+          },
+        ],
+      },
+    ],
+  },
+
+  {
     mode: 'url',
     name: 'sequence_track',
     url: lgvSession(VOLVOX, {

@@ -1,137 +1,179 @@
-# Display-type defaults plan
+# Display-type defaults (promotable config slots)
 
-Goal: let an admin (config.json) and a user (UI) override the *default* config
-applied to a whole class of displays — e.g. "all alignments displays are compact
-by default" — without touching each track. Historically gestured at as
-"configOverrides"; this is the type-keyed layer, distinct from the per-track
-`trackConfigDeltas` and the app-scope `preferences` systems already in tree.
+The third config axis, alongside per-track [`trackConfigDeltas`](CONFIG_DELTA_OVERRIDE_HANDOFF.md)
+and app-scope `preferences`: a **session-wide default for one config slot, keyed
+by display type**. "Make all my alignments tracks compact", "show soft-clipping
+on every alignments track by default" — set it once, every track of that type
+that hasn't pinned its own value follows.
 
-## Why this is small
+The whole thing is a **small CSS cascade for a single config slot**. If you only
+read one section, read [The cascade](#the-cascade).
 
-It composes two mechanisms that already exist:
+## Where it lives
 
-- **Admin-default + user-override layering** — the `preferences` system
-  (`configuration.preferences.*` admin default + `preferencesOverrides` volatile
-  persisted to localStorage + `getPreference` resolver). See
-  `packages/product-core/src/Session/{Preferences.ts,BaseSession.ts}` and
-  `RootModel/PreferencesConfig.ts`.
-- **Layer a partial config over a base track** — `mergeTrackConfig`
-  (`packages/core/src/util/trackConfigDelta.ts`), already used by the `tracks`
-  getter in `SessionTracks.ts` to merge `trackConfigDeltas` over `jbrowse.tracks`.
-  Merges `displays` by `displayId`, recurses nested configs.
+| Concern | File |
+| --- | --- |
+| Resolver + exported API | `packages/core/src/configuration/promotableDefaults.ts` |
+| `promotable` / `promotedBase` slot metadata | `packages/core/src/configuration/configurationSlot.ts` |
+| Session store (`get/setDisplayTypeDefault`) | `packages/product-core/src/Session/BaseSession.ts` |
+| Session/display type surface | `packages/core/src/util/types/index.ts` |
+| Badge hooks mixin | `plugins/linear-genome-view/src/BaseLinearDisplay/models/PromotableDefaultsMixin.tsx` |
+| Track-selector badge | `plugins/data-management/.../tree/OverrideBadge.tsx` |
+| Adopter: `displayMode` (sentinel) | `plugins/canvas/src/LinearBasicDisplay/{baseConfigSchema,baseModel,model}.ts` |
+| Adopter: `showSoftClipping` / `featureHeight` / `featureSpacing` (plain) | `plugins/alignments/src/LinearAlignmentsDisplay/{configSchema,model}.ts` |
 
-Type-defaults are the missing middle axis: per-track deltas are keyed by
-`trackId`; preferences are one global singleton; type-defaults are keyed by
-**display type**.
+Tests: `displayMode.test.ts`, `showSoftClipping.test.ts` (both under their
+adopter), `OverrideBadge.test.tsx`, `sessionModelFactory.test.ts` (store
+round-trip).
 
-## Decisions (locked with user 2026-07-02)
+## The cascade
 
-- **Granularity: display type** (`LinearPileupDisplay`, `LinearAlignmentsDisplay`,
-  …). That is where `compact`/height/featureHeight actually live; track-type
-  would just reach through to displays anyway.
-- **Precedence: user choice wins.** A user's global type-default overrides an
-  admin's *explicit per-track* setting. Within each actor, the more specific
-  (per-track) layer beats the more general (per-type) one.
-
-### Precedence stack (lowest → highest priority)
+A config slot marks itself `promotable: true`. Reading it through
+`getConfResolved(self, slot)` walks three tiers:
 
 ```
-display schema default            baked into the display type (MST optional)
-  └ admin type-default            configuration.displayTypeDefaults[type]   (config.json)
-     └ admin explicit track       jbrowse.tracks entry (stripDefault: explicit slots only)
-        └ user type-default       displayTypeDefaultOverrides[type]  (localStorage, UI)
-           └ user per-track delta trackConfigDeltas[trackId]        (existing)
+pinned track value (differs from the slot default)     ← highest priority
+  └ session-wide promoted default for this display type
+     └ the slot's base value                            ← lowest (CSS `initial`)
 ```
 
-Note user-type sits ABOVE admin-explicit-track (per "user choice wins"), but
-user-per-track-delta stays on top (a user's edit to one specific track beats
-their own global default for that type).
+Two things make this cheap:
 
-## Implementation
+- **No stored "is-pinned" flag.** `types.stripDefault` already collapses an
+  at-default slot out of the snapshot, so "the slot is at its default" *is* the
+  "un-pinned / inherit" signal. Pinned = holds any other value.
+- **The promoted value lives in the session, not the track.** So promoting a
+  default doesn't rewrite every track's config — un-pinned tracks just resolve
+  differently on their next read.
 
-### 1. Admin schema slot
+### Plain vs. sentinel slots
 
-`RootConfiguration.ts` (+ embedded `product-core/RootModel/createConfigModel.ts`,
-same as preferences did) gains:
+The only real design choice per slot: **is the default value itself pinnable?**
+
+- **Plain** (`showSoftClipping`, `featureHeight`, `featureSpacing`) —
+  `defaultValue` doubles as the base *and* the inherit signal. Consequence: you
+  can't pin that one value over an opposite session default. With a `true`
+  soft-clipping session default, a track can't hold `false` (writing `false`
+  reads as "inherit" → resolves back to `true`). **One-directional pin.**
+
+- **Sentinel** (`displayMode`) — `defaultValue` is a dedicated `'inherit'` enum
+  member (the CSS `inherit` keyword), and a separate `promotedBase` field holds
+  the value it resolves to (`'normal'`, the CSS `initial`). Now **every real
+  value — `promotedBase` included — is pinnable**, so a track *can* hold
+  `displayMode: 'normal'` over a `compact` session default.
+
+The plain flavor's limitation is **kept on purpose** for booleans/numbers, not an
+oversight: the "bad direction" doesn't happen in practice. Soft-clipping-on-by-
+default is rare, and nobody pins a number to *exactly its default* to override a
+session default. Only `displayMode` earned the sentinel, because its default
+(`normal`) is a value users genuinely want to pin. **Don't reflexively add
+sentinels to boolean/number promotable slots** — decide whether the reverse-pin
+case is real first. A boolean that needs it would become tri-state
+(true/false/inherit) and need an explicit inherit affordance in the UI.
+
+## The resolver
+
+Everything routes through one internal function; the exported API is thin
+readers of it. Don't re-derive tiers in a consumer — add a field to
+`SlotResolution` if you need something new.
 
 ```ts
-displayTypeDefaults: { type: 'frozen', defaultValue: {} }
+interface SlotResolution {
+  base: unknown      // value an un-pinned track shows with nothing promoted
+  pinned: boolean    // track holds its own value rather than inheriting
+  promoted: unknown  // raw session-wide promoted default, if any
+  value: unknown     // final cascaded value (never a slot's inherit sentinel)
+}
+
+function resolveSlot(self, slot): SlotResolution {
+  const def = getSlotDefinition(self.configuration, slot)
+  const base = def.promotedBase ?? def.defaultValue
+  const own = getConf(self, slot)
+  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  const pinned = own !== def.defaultValue
+  const value = pinned ? own : promotedUsable(def, promoted) ? promoted : base
+  return { base, pinned, promoted, value }
+}
 ```
 
-Shape: `{ [displayType: string]: PartialDisplayConfig }`, e.g.
-`{ LinearPileupDisplay: { renderer: { ... } }, LinearAlignmentsDisplay: { height: 100 } }`.
-`frozen` (not a typed sub-schema) because the value space is the open union of
-every plugin's display slots — same call the `theme` slot already makes.
+`promotedUsable` rejects a stale/garbage promoted value (wrong JS type, a
+`stringEnum` value that isn't a current choice, or a sentinel slot's own
+`'inherit'` member) so the getter, the "make default" checkbox, and the badge all
+fall back in lockstep — no consumer guards on its own.
 
-### 2. User-override volatile + resolver (mirror preferences exactly)
+`getConfResolved` **always returns a real value**, never a slot's inherit
+sentinel, so the display getter needs no post-guard:
+`get displayMode() { return getConfResolved<DisplayMode>(self, 'displayMode') }`.
 
-In `BaseSession.ts`:
-- volatile `displayTypeDefaultOverrides: {} as Record<string, PlainConfig>`
-- resolver `getDisplayTypeDefault(type): PlainConfig` =
-  `mergeConfig(getConf(self, ['displayTypeDefaults', type]) ?? {}, overrides[type] ?? {})`
-  (user merged over admin, shallow-recursive like `mergeTrackConfig`).
-- action `setDisplayTypeDefaultOverride(type, partial)`.
+### Exported API (`@jbrowse/core/configuration`)
 
-New `DisplayTypeDefaultsSessionMixin` (sibling of `PreferencesSessionMixin`,
-web/desktop only) loads/persists `displayTypeDefaultOverrides` to localStorage
-under its own key. Embedded omits it → resolves admin-only, matching preferences.
+| Function | Reads | Drives |
+| --- | --- | --- |
+| `getConfResolved(self, slot)` | `.value` | the display's own value getter |
+| `isSlotPinned(self, slot)` | `.pinned` | "Follow default" reset item visibility |
+| `areSlotsAtSessionDefault(self, slots)` | `promoted !== undefined && value === promoted` | "make default" checkbox tick |
+| `toggleSlotsSessionDefault(self, slots)` | promotes `.value` / clears | "make default" checkbox click |
+| `displaySessionDefaultChanges(self)` | `!pinned && value !== base` | track-selector badge diff |
+| `clearDisplaySessionDefaults(self)` | — | badge "clear default" |
 
-### 3. Injection in the `tracks` getter (`SessionTracks.ts`)
+`areSlotsAtSessionDefault` / `toggleSlotsSessionDefault` take a **slot group** so
+several slots move behind one menu item (alignments' `featureHeight` +
+`featureSpacing` = one "compactness" default).
 
-Today (per base track): `mergeTrackConfig(toPlainConfig(base), delta)`.
+Note `resolveSlot` reads the session even for a pinned track — required so the
+"pinned value equals the promoted default → checkbox checked" case works. This is
+cheap: the display's value getter is a cached MobX computed that re-resolves to
+the same `===` value, so nothing downstream re-runs.
 
-Build a type-default layer keyed to the base's OWN display ids (base displays
-carry stable ids `${trackId}-${displayType}`, injected by
-`baseTrackConfig.preProcessSnapshot`), so `mergeTrackConfig`'s merge-by-displayId
-realigns it. Resolve each layer separately so the stack ordering is honored:
+## Storage
 
-```
-const adminTypeLayer = buildTypeLayer(base, t => getConf admin default for t)
-const userTypeLayer  = buildTypeLayer(base, t => user override for t)
-let cfg = toPlainConfig(base)
-cfg = mergeTrackConfig(adminTypeLayer, cfg)   // base (admin explicit) wins over admin type-default
-cfg = mergeTrackConfig(cfg, userTypeLayer)    // user type-default wins over admin explicit
-cfg = mergeTrackConfig(cfg, delta)            // user per-track edit wins over all
-```
+`BaseSession.get/setDisplayTypeDefault(displayType, slot, value)` on
+`preferencesOverrides.displayTypeDefaults` (nested `type → slot → value`).
+Persists for free via the preferences mixin → localStorage; embedded products
+without that mixin resolve admin-only. Both are **optional** methods on
+`AbstractSessionModel` (`getDisplayTypeDefault?`) so a session that lacks them
+degrades to "no promoted defaults", never throws.
 
-`buildTypeLayer(base, resolve)` maps `base.displays` → `{ trackId,
-displays: [{ type, displayId, ...resolve(display.type) }] }`, skipping displays
-whose type has no default (so the layer is `{}`-cheap for the common case).
+## UI surface
 
-**Identity/cache discipline (load-bearing):** the current getter returns `base`
-by identity when there's no delta, to keep the hydration cache warm
-(`configuration/CLAUDE.md`). Extend the memo key from `(base, delta)` to
-`(base, delta, adminTypeSnapshot, userTypeSnapshot)`; when all layers are empty
-for a track, still return `base` unchanged by identity. The type-default maps are
-frozen (admin) / structural-shared (user), so referential keying works. Guard
-against unnecessary churn the same way the delta path does.
+- **Track menu** (per adopter): a radio/checkbox for the value, a "Use X by
+  default for all tracks like this" checkbox (`areSlotsAtSessionDefault` state +
+  `toggleSlotsSessionDefault`), and — only when `isSlotPinned` — a "Follow
+  default" reset item that writes the slot back to its default/sentinel.
+  Selecting the sentinel slot's base value now **pins** it; the reset item is the
+  un-pin path.
+- **Badge** (`OverrideBadge.tsx`, track selector): a distinct `SettingsSuggestIcon`
+  (vs. the per-track-edit pencil) shows when `sessionDefaultChanges()` is
+  non-empty; click opens `TrackSettingsChangesDialog` with a "clear default"
+  action. Both hooks (`sessionDefaultChanges()` view + `clearSessionDefaults()`
+  action) come from **`PromotableDefaultsMixin`** — compose it and any display
+  gets the badge contract for free (no per-display passthroughs).
 
-### 4. UI
+## Adding a promotable slot
 
-- **Admin**: nothing new — `displayTypeDefaults` is a config slot, editable via
-  the config editor / config.json.
-- **User**: a display/track-menu action "Set current settings as default for all
-  <TypeLabel> displays" → `diffTrackConfig`-style diff of this display against its
-  schema default → `setDisplayTypeDefaultOverride(type, partial)`. Plus a "clear
-  type defaults" affordance. A settings surface listing active type-defaults can
-  come later; v1 is set/clear from the menu.
+1. In the display's config schema, add `promotable: true` to the slot. For a
+   value users will want to pin *at its default* (rare — think hard), instead make
+   the default a dedicated inherit sentinel and add `promotedBase: <realDefault>`.
+2. Read it on the display via `getConfResolved(self, slot)` (never raw `getConf`
+   for a promotable slot — raw won't apply the session default, and for a
+   sentinel slot could hand a consumer `'inherit'`).
+3. If the display isn't already an adopter, `.compose(PromotableDefaultsMixin())`
+   so the badge hooks exist.
+4. Track menu: "make default" via `toggleSlotsSessionDefault(self, [slot])` and
+   `areSlotsAtSessionDefault(self, [slot])`; group slots that move together.
+5. **Worker boundary:** promotable slots resolve on the **main thread**. If the
+   worker needs the value, pass the *resolved* value through `rpcProps()` (read
+   the display's resolved getter), and exclude the raw slot from any
+   `getConfSnapshot` spread you send. `displayMode` is excluded from the canvas
+   worker payload entirely (compact scaling is main-thread).
 
-## Tests
+## Historical note
 
-- `trackConfigDelta` merge already covered; add cases for the 3-layer stack
-  ordering in a new `displayTypeDefaults.test.ts` (admin type < admin explicit <
-  user type < user delta).
-- `SessionTracks` getter: base returned by identity when no layers apply; type
-  layer fills a slot the base omits; user type overrides an admin-explicit slot;
-  per-track delta still wins.
-- Resolver: user override merges over admin default; embedded resolves admin-only.
-- Persistence round-trip through localStorage (mirror preferences test).
-
-## Open / defer
-
-- Track-level (non-display) slot defaults: out of scope; add a parallel
-  `trackTypeDefaults` later if a real need appears.
-- Sharing user type-defaults in a saved session: preferences chose localStorage-
-  only (personal, not shared). Match that for v1.
-- Migration: nothing to migrate — this is additive; legacy sessions have neither
-  the slot nor the override map, both default empty.
+An earlier design (this file's prior contents, and the stale block in
+`OTHER_IDEAS.md`) layered admin/user type-default configs via extra
+`mergeTrackConfig` passes in the `SessionTracks.ts` `tracks` getter, with a
+4-part identity/memo key to keep the hydration cache warm. **Superseded** by the
+promotable-slot read-time resolve above: no tracks-getter merge, no admin config
+slot, no cache-key surgery — a slot opts in and the display resolves it on read.
+Kept the "user choice wins / display-type granularity" decisions; dropped the
+machinery.

@@ -83,11 +83,24 @@ export interface ConfigSlotDefinition {
    * all tracks of the same display type (track menu "make default"). A slot left
    * at its `defaultValue` is un-pinned and inherits that promoted default; any
    * other value pins the track. See `getConfResolved` / `promotableDefaults.ts`.
-   * A slot can't pin its own default value back over an opposite session default
-   * (that value is the "inherit" signal) — an accepted, uniform trade-off. See
-   * `promotableDefaults.ts`.
+   *
+   * By default the `defaultValue` doubles as the "inherit" signal, so a track
+   * can't pin that one value back over an opposite session default. A slot whose
+   * value space has no spare value to spend on that role sidesteps it with an
+   * explicit inherit sentinel + `promotedBase` (see below).
    */
   promotable?: boolean
+  /**
+   * For a `promotable` slot whose `defaultValue` is a dedicated **inherit
+   * sentinel** (e.g. displayMode's `'inherit'`) rather than a real value: the
+   * concrete value that sentinel resolves to when a track inherits and nothing
+   * is promoted. This is the CSS model — `defaultValue` is the `inherit` keyword
+   * (the un-pinned/stripped state), `promotedBase` is `initial` (the value at
+   * the bottom of the cascade). Its point is that every *real* value, including
+   * `promotedBase`, then becomes pinnable over a session default. Omit for an
+   * ordinary promotable slot whose `defaultValue` is itself a usable value.
+   */
+  promotedBase?: unknown
 }
 
 /**

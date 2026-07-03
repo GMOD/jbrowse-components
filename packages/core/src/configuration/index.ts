@@ -27,6 +27,7 @@ export {
   clearDisplaySessionDefaults,
   displaySessionDefaultChanges,
   getConfResolved,
+  isSlotPinned,
   toggleSlotsSessionDefault,
 } from './promotableDefaults.ts'
 export type { PromotableDisplay } from './promotableDefaults.ts'

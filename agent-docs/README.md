@@ -13,6 +13,7 @@ Start with `PRD.md`. It is the governing doc for agent work on this branch.
 | **[CLUSTERING_WORKFLOW.md](CLUSTERING_WORKFLOW.md)**                 | In-app hierarchical clustering (wiggle + variants)          | Touching cluster dialogs, dendrograms, TreeSidebar |
 | **[ARCHITECTURE.md](ARCHITECTURE.md)**                               | Canonical GPU lifecycle / shaders / HAL reference           | Touching a display, backend, or shader        |
 | **[CONFIG_PATTERN.md](CONFIG_PATTERN.md)**                           | Display config → MST snapshot → plain object → renderer     | Touching config, JEXL callbacks, RPC payloads |
+| **[DISPLAY_TYPE_DEFAULTS.md](DISPLAY_TYPE_DEFAULTS.md)**             | Session-wide per-display-type slot defaults (promotable slots, CSS-cascade resolve) | Adding a "make default for all tracks like this" setting; touching `getConfResolved` / `promotable` slots |
 | **[VIEW_INIT.md](VIEW_INIT.md)**                                     | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
 | **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
 | **[MIGRATION_AUDIT.md](MIGRATION_AUDIT.md)**                         | Config/session migration patterns + verification method     | Migrating a display or stored snapshot        |

@@ -3,6 +3,7 @@ import { lazy } from 'react'
 import {
   areSlotsAtSessionDefault,
   getConf,
+  isSlotPinned,
   readConfObject,
   toggleSlotsSessionDefault,
 } from '@jbrowse/core/configuration'
@@ -113,7 +114,7 @@ export default function stateModelFactory(
       // rather than inheriting; gates the "Follow default height" reset item so
       // it only appears when there's a pin to undo.
       get isDisplayModePinned() {
-        return getConf(self, 'displayMode') !== 'normal'
+        return isSlotPinned(self, 'displayMode')
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -171,10 +172,10 @@ export default function stateModelFactory(
         self.configuration.setSlot('displayMode', value)
       },
 
-      // Revert to 'normal' (the slot default), which strips the pin so the track
-      // follows the session-wide type default again.
+      // Revert to 'inherit' (the slot default), which strips the pin so the
+      // track follows the session-wide type default again.
       resetDisplayMode() {
-        self.configuration.setSlot('displayMode', 'normal')
+        self.configuration.setSlot('displayMode', 'inherit')
       },
 
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {

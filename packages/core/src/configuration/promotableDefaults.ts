@@ -4,30 +4,32 @@ import { getConfigurationSchemaMetadata } from './schemaRegistry.ts'
 import { getSlotDefinition } from './slotFacade.ts'
 import { getConf, isSlotDefinitionEntry } from './util.ts'
 import { getSession } from '../util/index.ts'
+import { getEnumerationValues } from '../util/mst-reflection.ts'
 
+import type { ConfigSlotDefinition } from './configurationSlot.ts'
 import type { AnyConfigurationModel } from './types.ts'
 import type { TrackConfigChange } from '../util/trackConfigDelta.ts'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 
 /**
- * Session-wide "promoted defaults" for display-type config slots.
+ * Session-wide "promoted defaults" for display-type config slots — a small CSS
+ * cascade for one slot. A `promotable` slot resolves through three tiers:
  *
- * A slot flagged `promotable` in its schema resolves through three tiers:
+ *   pinned track value (differs from the slot default) -> session-wide promoted
+ *   default for this display type -> the slot's base value
  *
- *   this track's own value (if it differs from the slot default = "pinned")
- *     -> the user's session-wide default for this display type
- *     -> the slot's schema default
- *
- * "un-pinned = at the slot default" is the whole rule, read straight off the
- * config schema (`types.stripDefault` already collapses an at-default slot).
- * There is no per-display resolution code, no tri-state slot, and no migration:
- * a display marks a slot `promotable: true`, reads it with `getConfResolved`,
+ * A display marks a slot `promotable: true`, reads it with `getConfResolved`,
  * and the session store (`get/setDisplayTypeDefault`) holds the promoted value.
+ * `stripDefault` collapses an at-default slot, so "un-pinned = at the slot
+ * default" needs no stored flag. `resolveSlot` is the one place the cascade
+ * lives; every exported function reads a field off it.
  *
- * The accepted trade-off (uniform across every promotable slot): a slot can't
- * pin its own default value back over an opposite session default, because that
- * value is the "inherit" signal — e.g. with a compact session default, a track
- * can't hold `showSoftClipping: false` or `displayMode: 'normal'`.
+ * Whether the default value itself is pinnable depends on the slot:
+ *   - Plain (`showSoftClipping`): `defaultValue` is both the base and the
+ *     inherit signal, so it can't be pinned over an opposite session default.
+ *   - Sentinel (`displayMode`): `defaultValue` is a dedicated `'inherit'` member
+ *     (CSS `inherit`) and `promotedBase` is what it resolves to (CSS `initial`),
+ *     freeing every real value — base included — to be pinned.
  */
 
 export type PromotableDisplay = IAnyStateTreeNode & {
@@ -46,30 +48,72 @@ function promotableSlots(self: PromotableDisplay): string[] {
     .map(([name]) => name)
 }
 
-function slotDefault(self: PromotableDisplay, slot: string): unknown {
-  return getSlotDefinition(self.configuration, slot).defaultValue
+/**
+ * A stored promoted default is only usable when it could be a valid slot value:
+ * same JS type as the slot default, and — for a `stringEnum` slot — one of the
+ * enum's choices, and never the inherit sentinel itself. Rejects a stale/garbage
+ * value left in a saved preference so every consumer falls back in lockstep.
+ */
+function promotedUsable(def: ConfigSlotDefinition, promoted: unknown): boolean {
+  const { type, model, defaultValue, promotedBase } = def
+  if (promoted === undefined) {
+    return false
+  }
+  // a sentinel slot's own `defaultValue` (its `'inherit'` member) is never a
+  // real value to inherit — only `promotedBase` and the other members are
+  if (promotedBase !== undefined && promoted === defaultValue) {
+    return false
+  }
+  return type === 'stringEnum' && model
+    ? typeof promoted === 'string' &&
+        getEnumerationValues(model).includes(promoted)
+    : typeof promoted === typeof defaultValue
+}
+
+interface SlotResolution {
+  /** value an un-pinned track shows with nothing promoted (CSS `initial`) */
+  base: unknown
+  /** track holds its own value rather than inheriting */
+  pinned: boolean
+  /** the raw session-wide promoted default, if any */
+  promoted: unknown
+  /** the final cascaded value (never a slot's inherit sentinel) */
+  value: unknown
+}
+
+// The whole three-tier cascade for one slot, in one place. Every exported
+// function below just reads a field off this.
+function resolveSlot(self: PromotableDisplay, slot: string): SlotResolution {
+  const def = getSlotDefinition(self.configuration, slot)
+  const base = def.promotedBase ?? def.defaultValue
+  const own = getConf(self, slot)
+  const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
+  const pinned = own !== def.defaultValue
+  const value = pinned ? own : promotedUsable(def, promoted) ? promoted : base
+  return { base, pinned, promoted, value }
+}
+
+/**
+ * #api core/configuration
+ * Whether this track pins the slot (holds a non-default value) rather than
+ * inheriting the session-wide promoted default.
+ */
+export function isSlotPinned(self: PromotableDisplay, slot: string): boolean {
+  return resolveSlot(self, slot).pinned
 }
 
 /**
  * #api core/configuration
  * Read a `promotable` slot, layering the session-wide promoted default under the
  * track's own value. Drop-in for `getConf` on the display's own promotable
- * slots. Main-thread only (consults the session) — the worker reads raw config.
+ * slots, and always returns a real value (never a slot's inherit sentinel).
+ * Main-thread only (consults the session) — the worker reads raw config.
  */
 export function getConfResolved<T = unknown>(
   self: PromotableDisplay,
   slot: string,
 ): T {
-  const value = getConf(self, slot)
-  const def = slotDefault(self, slot)
-  if (value !== def) {
-    return value
-  } else {
-    // un-pinned (at the slot default): use the promoted default when present and
-    // of the slot's type (a stale/garbage stored value is ignored -> default)
-    const promoted = getSession(self).getDisplayTypeDefault?.(self.type, slot)
-    return (typeof promoted === typeof def ? promoted : def) as T
-  }
+  return resolveSlot(self, slot).value as T
 }
 
 /**
@@ -81,10 +125,9 @@ export function areSlotsAtSessionDefault(
   self: PromotableDisplay,
   slots: string[],
 ): boolean {
-  const session = getSession(self)
   return slots.every(slot => {
-    const promoted = session.getDisplayTypeDefault?.(self.type, slot)
-    return promoted !== undefined && getConfResolved(self, slot) === promoted
+    const { promoted, value } = resolveSlot(self, slot)
+    return promoted !== undefined && value === promoted
   })
 }
 
@@ -119,11 +162,9 @@ export function displaySessionDefaultChanges(
   self: PromotableDisplay,
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
-    const def = slotDefault(self, slot)
-    const resolved = getConfResolved(self, slot)
-    const pinned = getConf(self, slot) !== def
-    return !pinned && resolved !== def
-      ? [{ path: [slot], from: def, to: resolved } as TrackConfigChange]
+    const { base, pinned, value } = resolveSlot(self, slot)
+    return !pinned && value !== base
+      ? [{ path: [slot], from: base, to: value } as TrackConfigChange]
       : []
   })
 }
