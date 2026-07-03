@@ -32,6 +32,13 @@ describe('computeCoverageTicks', () => {
     }
   })
 
+  test('shallow coverage yields integer depth ticks, not fractions', () => {
+    // maxDepth < 3 makes niceStep return 0.5; depth is integer-valued so the
+    // step floors to 1 (ticks 0, 1, 2 rather than 0, 0.5, 1, 1.5, 2).
+    const result = computeCoverageTicks(2, 150)
+    expect(result.items.map(t => t.value)).toEqual([0, 1, 2])
+  })
+
   test('tick y values are within bounds', () => {
     const result = computeCoverageTicks(200, 100)
     for (const tick of result.items) {

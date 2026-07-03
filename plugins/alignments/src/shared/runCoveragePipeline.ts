@@ -92,7 +92,6 @@ export async function runCoveragePipeline({
   const snpCoverage = computeSNPCoverage(
     mismatchArrays.mismatchPositions,
     mismatchArrays.mismatchBases,
-    regionStart,
     coverage,
   )
   const interbaseCoverage = computeInterbaseCoverage(

@@ -64,7 +64,10 @@ export function computeCoverageTicks(
   } else if (coverageHeight < 70) {
     ticks.push({ value: 0, y: yOf(0) }, { value: maxDepth, y: yOf(maxDepth) })
   } else {
-    const step = niceStep(maxDepth)
+    // Depth is integer-valued, so floor the nice step to 1: for maxDepth < 3
+    // niceStep returns 0.5, which would emit meaningless fractional depth labels
+    // (0, 0.5, 1).
+    const step = Math.max(1, niceStep(maxDepth))
     const stepCount = Math.floor(maxDepth / step)
     for (let i = 0; i <= stepCount; i++) {
       ticks.push({ value: i * step, y: yOf(i * step) })
@@ -427,13 +430,13 @@ export interface SNPCoverageResult {
  * Consumes the flat `mismatchPositions`/`mismatchBases` arrays directly (same
  * arrays the frequency pass reads) rather than an object array, so callers
  * don't hold a second `{position, base}[]` representation of the same
- * mismatches. Positions left of `regionStart` are dropped, so callers may pass
- * unfiltered arrays.
+ * mismatches. A position left of the coverage window resolves to zero depth via
+ * `depthAt` and emits no segment (the loops below gate on `depth > 0`), so
+ * out-of-window mismatches drop out without an explicit filter.
  */
 export function computeSNPCoverage(
   mismatchPositions: Uint32Array,
   mismatchBases: Uint8Array,
-  regionStart: number,
   coverage: { depths: Float32Array; maxDepth: number; startPos: number },
 ): SNPCoverageResult {
   const {
@@ -476,40 +479,36 @@ export function computeSNPCoverage(
   >()
   for (let i = 0; i < mismatchPositions.length; i++) {
     const position = mismatchPositions[i]!
-    // Positions left of regionStart never emit a segment; dropping them here
-    // (rather than filtering the output) lets callers pass unfiltered arrays.
-    if (position >= regionStart) {
-      let entry = snpByPosition.get(position)
-      if (!entry) {
-        entry = {
-          position,
-          depth: depthAt(position),
-          a: 0,
-          c: 0,
-          g: 0,
-          t: 0,
-          n: 0,
-        }
-        snpByPosition.set(position, entry)
+    let entry = snpByPosition.get(position)
+    if (!entry) {
+      entry = {
+        position,
+        depth: depthAt(position),
+        a: 0,
+        c: 0,
+        g: 0,
+        t: 0,
+        n: 0,
       }
-      // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate
-      // into entry.n, drawn as one grey segment (colorType 5) on the bar.
-      switch (mismatchBases[i]) {
-        case 65:
-          entry.a++
-          break
-        case 67:
-          entry.c++
-          break
-        case 71:
-          entry.g++
-          break
-        case 84:
-          entry.t++
-          break
-        default:
-          entry.n++
-      }
+      snpByPosition.set(position, entry)
+    }
+    // N and other non-A/C/G/T bases (IUPAC ambiguity codes) all accumulate
+    // into entry.n, drawn as one grey segment (colorType 5) on the bar.
+    switch (mismatchBases[i]) {
+      case 65:
+        entry.a++
+        break
+      case 67:
+        entry.c++
+        break
+      case 71:
+        entry.g++
+        break
+      case 84:
+        entry.t++
+        break
+      default:
+        entry.n++
     }
   }
 

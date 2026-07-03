@@ -29,6 +29,9 @@ import {
   INSTANCE_STRIDE_F32 as SNP_STRIDE,
 } from './snpCoverageLayout.generated.ts'
 
+import type { SNPCoverageResult } from './coverageDownsampling.ts'
+import type { computeInterbaseCoverage } from './interbaseCoverage.ts'
+
 // Layout per bin: [position(u32), normalizedDepth(f32)] = 8 bytes.
 // Matches alignments plugin coverage.slang Instance. Position is absolute
 // genomic uint32 (exact up to 4 Gbp); shader uses hp-math for clip-space
@@ -144,4 +147,36 @@ export function packInterbaseSegmentsForGpu(
     f32[o + INTERBASE_FIELD.colorType] = colorTypes[i]!
   }
   return buffer
+}
+
+// The SNP + interbase-histogram + indicator GPU segment buffers are the coverage
+// area's position-aggregate passes, packed identically for every backend (the
+// pileup worker and the MAF worker both feed the same three shaders). Grouping
+// them here keeps the field order in one place so the two callers can't drift.
+export function packCoverageSegmentsForGpu(
+  snp: SNPCoverageResult,
+  interbase: ReturnType<typeof computeInterbaseCoverage>,
+) {
+  return {
+    snpPackedBuffer: packSnpSegmentsForGpu(
+      snp.positions,
+      snp.yOffsets,
+      snp.heights,
+      snp.colorTypes,
+      snp.relDepths,
+      snp.count,
+    ),
+    interbasePackedBuffer: packInterbaseSegmentsForGpu(
+      interbase.positions,
+      interbase.yOffsets,
+      interbase.heights,
+      interbase.colorTypes,
+      interbase.segmentCount,
+    ),
+    indicatorPackedBuffer: packIndicatorsForGpu(
+      interbase.indicatorPositions,
+      interbase.indicatorColorTypes,
+      interbase.indicatorCount,
+    ),
+  }
 }

@@ -2,9 +2,7 @@ import {
   computeInterbaseCoverage,
   computeSNPCoverage,
   packCoverageBinsCanvas2D,
-  packIndicatorsForGpu,
-  packInterbaseSegmentsForGpu,
-  packSnpSegmentsForGpu,
+  packCoverageSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 
 import { computeMafCoverage } from './computeMafCoverage.ts'
@@ -54,7 +52,6 @@ export function buildMafCoverageRegion(
   const snpCoverage = computeSNPCoverage(
     mismatchPositions,
     mismatchBases,
-    regionStart,
     coverageForSnp,
   )
   const interbaseCoverage = computeInterbaseCoverage(
@@ -87,26 +84,7 @@ export function buildMafCoverageRegion(
       mafCov.depths,
       mafCov.startPos,
     ),
-    snpPackedBuffer: packSnpSegmentsForGpu(
-      snpCoverage.positions,
-      snpCoverage.yOffsets,
-      snpCoverage.heights,
-      snpCoverage.colorTypes,
-      snpCoverage.relDepths,
-      snpCoverage.count,
-    ),
-    interbasePackedBuffer: packInterbaseSegmentsForGpu(
-      interbaseCoverage.positions,
-      interbaseCoverage.yOffsets,
-      interbaseCoverage.heights,
-      interbaseCoverage.colorTypes,
-      interbaseCoverage.segmentCount,
-    ),
     interbaseMaxCount: interbaseCoverage.maxCount,
-    indicatorPackedBuffer: packIndicatorsForGpu(
-      interbaseCoverage.indicatorPositions,
-      interbaseCoverage.indicatorColorTypes,
-      interbaseCoverage.indicatorCount,
-    ),
+    ...packCoverageSegmentsForGpu(snpCoverage, interbaseCoverage),
   }
 }

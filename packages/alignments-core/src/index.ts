@@ -82,6 +82,7 @@ export {
 export type { Canvas2DCoverageBuffer } from './rendererUtils.ts'
 export {
   packCoverageBinsForGpu,
+  packCoverageSegmentsForGpu,
   packIndicatorsForGpu,
   packInterbaseSegmentsForGpu,
   packModCovSegmentsForGpu,

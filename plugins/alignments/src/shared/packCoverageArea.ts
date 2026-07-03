@@ -9,12 +9,10 @@
 
 import {
   packCoverageBinsForGpu,
-  packInterbaseSegmentsForGpu,
+  packCoverageSegmentsForGpu,
 } from '@jbrowse/alignments-core'
 
-import { packIndicatorsForGpu } from '../features/indicator/packGpu.ts'
 import { packModCovSegmentsForGpu } from '../features/modCoverage/packGpu.ts'
-import { packSnpSegmentsForGpu } from '../features/snpCoverage/packGpu.ts'
 
 import type { computeModificationCoverage } from '../features/modCoverage/compute.ts'
 import type {
@@ -40,26 +38,7 @@ export function packCoverageAreaForGpu(
       coverage.startPos,
       coverage.depths.length,
     ),
-    snpPackedBuffer: packSnpSegmentsForGpu(
-      snp.positions,
-      snp.yOffsets,
-      snp.heights,
-      snp.colorTypes,
-      snp.relDepths,
-      snp.count,
-    ),
-    interbasePackedBuffer: packInterbaseSegmentsForGpu(
-      interbase.positions,
-      interbase.yOffsets,
-      interbase.heights,
-      interbase.colorTypes,
-      interbase.segmentCount,
-    ),
-    indicatorPackedBuffer: packIndicatorsForGpu(
-      interbase.indicatorPositions,
-      interbase.indicatorColorTypes,
-      interbase.indicatorCount,
-    ),
+    ...packCoverageSegmentsForGpu(snp, interbase),
     modCovPackedBuffer: modCov
       ? packModCovSegmentsForGpu(
           modCov.positions,
