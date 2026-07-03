@@ -279,7 +279,12 @@ export async function runIntronAction(
   }
 }
 
-export function collapseIntrons({
+// Pure view snapshot for the collapsed-intron "Open in new view" action:
+// merged regions, precomputed zoom/offset (bpPerPx/offsetPx upfront to avoid
+// layout thrashing on the new view), stripped track ids, and — when a solo
+// feature is requested — the display seeded to open already isolated. Returns
+// data only; collapseIntrons is the imperative sink that hands it to addView.
+export function buildCollapsedViewSnapshot({
   view,
   transcripts,
   assembly,
@@ -294,13 +299,19 @@ export function collapseIntrons({
     soloFeatureId === undefined
       ? rest.tracks
       : seedSoloInTracks(rest.tracks, view, trackId, soloFeatureId)
-  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view
-  getSession(view).addView('LinearGenomeView', {
+  return {
     ...rest,
     tracks: stripTrackIds(tracks),
     displayName: `${transcriptLabel(transcripts)} (introns collapsed)`,
     displayedRegions: args.mergedRegions,
     bpPerPx: args.initialState.bpPerPx,
     offsetPx: args.initialState.offsetPx,
-  })
+  }
+}
+
+export function collapseIntrons(args: IntronActionArgs) {
+  getSession(args.view).addView(
+    'LinearGenomeView',
+    buildCollapsedViewSnapshot(args),
+  )
 }
