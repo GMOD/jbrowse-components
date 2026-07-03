@@ -22,7 +22,6 @@ import {
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { WiggleCommonMixin } from '../shared/WiggleCommonMixin.ts'
 import { buildSourceRenderData } from '../shared/buildSourceRenderData.ts'
@@ -33,6 +32,7 @@ import {
 import {
   makeRenderingTypeSubMenu,
   makeResolutionAndSummarySubMenus,
+  makeShowSubMenu,
 } from '../shared/wiggleMenuItems.ts'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
@@ -314,16 +314,8 @@ export default function stateModelFactory(
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
           // cross hatches are meaningless in density mode (score maps to color,
-          // not height); grouped under Show to match multi-wiggle placement
-          ...(self.isDensityMode
-            ? []
-            : [
-                {
-                  label: 'Show',
-                  icon: VisibilityIcon,
-                  subMenu: [makeCrossHatchItem(self)],
-                },
-              ]),
+          // not height)
+          ...makeShowSubMenu(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
           {
             label: 'Edit color...',
             icon: PaletteIcon,

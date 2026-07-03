@@ -29,7 +29,6 @@ import {
 } from '@jbrowse/wiggle-core'
 import AccountTreeIcon from '@mui/icons-material/AccountTree'
 import PaletteIcon from '@mui/icons-material/Palette'
-import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import {
   buildEditableSources,
@@ -47,6 +46,7 @@ import {
 import {
   makeRenderingTypeSubMenu,
   makeResolutionAndSummarySubMenus,
+  makeShowSubMenu,
 } from '../shared/wiggleMenuItems.ts'
 import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
 
@@ -434,17 +434,7 @@ export default function stateModelFactory(
             scaleType: true,
             leadingItems: makeResolutionAndSummarySubMenus(self),
           }),
-          // Show submenu omitted entirely when no toggles apply (e.g. a future
-          // overlay + density mode) rather than shown empty
-          ...(showItems.length
-            ? [
-                {
-                  label: 'Show',
-                  icon: VisibilityIcon,
-                  subMenu: showItems,
-                },
-              ]
-            : []),
+          ...makeShowSubMenu(showItems),
           {
             label: 'Edit colors/arrangement...',
             icon: PaletteIcon,

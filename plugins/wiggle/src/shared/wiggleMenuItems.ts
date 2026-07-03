@@ -1,9 +1,20 @@
 import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
+import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
 const SCATTER_POINT_SIZE_DEFAULT = 2
+
+// Shared "Show" submenu: single and multi wiggle both group their visibility
+// toggles here, and both drop the whole submenu when no toggle applies (e.g.
+// density mode removes cross hatches). Kept as one helper so the two displays
+// can't drift on the label/icon or the empty-omit behavior.
+export function makeShowSubMenu(items: MenuItem[]): MenuItem[] {
+  return items.length
+    ? [{ label: 'Show', icon: VisibilityIcon, subMenu: items }]
+    : []
+}
 
 export function makeRenderingTypeSubMenu(
   self: {
