@@ -7,6 +7,7 @@ import {
   getContainingTrack,
   getContainingView,
   getEnv,
+  statusFraction,
   statusMessageText,
 } from '../../util/index.ts'
 import { getParentRenderProps } from '../../util/tracks.ts'
@@ -40,6 +41,14 @@ function stateModelFactory() {
       // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
       error: undefined as unknown,
       statusMessage: undefined as string | undefined,
+      /**
+       * #volatile
+       * determinate progress fraction [0,1] for the current status, or
+       * undefined when the in-flight phase is indeterminate. Set alongside
+       * `statusMessage` by `setStatusMessage`; a display that never shows a
+       * bar simply leaves it undefined.
+       */
+      statusProgress: undefined as number | undefined,
     }))
     .views(self => ({
       /**
@@ -196,10 +205,11 @@ function stateModelFactory() {
       /**
        * #action
        */
-      setStatusMessage(arg?: RpcStatus) {
-        // base displays render only the indeterminate label; FetchMixin
-        // overrides this to also derive a determinate `statusProgress`
-        self.statusMessage = statusMessageText(arg)
+      setStatusMessage(status?: RpcStatus) {
+        // derive the indeterminate label and the determinate fraction from the
+        // one status transport; displays with no bar just ignore statusProgress
+        self.statusMessage = statusMessageText(status)
+        self.statusProgress = statusFraction(status)
       },
       /**
        * #action

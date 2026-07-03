@@ -1,10 +1,6 @@
 import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
-import {
-  getContainingView,
-  statusFraction,
-  statusMessageText,
-} from '@jbrowse/core/util'
+import { getContainingView } from '@jbrowse/core/util'
 import { getParent, types } from '@jbrowse/mobx-state-tree'
 
 import { syntenyDisplayKey } from './syntenyDisplayKey.ts'
@@ -15,7 +11,6 @@ import type { ClickCoord } from './components/util.ts'
 import type { SyntenyGeometry } from '../LinearSyntenyRPC/buildSyntenyGeometry.ts'
 import type { LinearSyntenyViewModel } from '../LinearSyntenyView/model.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type { RpcStatus } from '@jbrowse/core/util'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
@@ -164,13 +159,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       // data yet) from a refetch (stale data still on screen) so the two get
       // different overlays — see `loading`/`refetching`.
       fetching: false,
-      statusMessage: undefined as string | undefined,
-      /**
-       * #volatile
-       * determinate progress fraction [0,1] for the current status, or
-       * undefined when the in-flight phase is indeterminate
-       */
-      statusProgress: undefined as number | undefined,
       // Set once at view load by a refName-comparison check, independent of the
       // per-render fetch. See afterAttach.
       assembliesSwapped: false,
@@ -187,10 +175,6 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
       ) {
         self.featureData = featureData
         self.instanceData = instanceData
-      },
-      setStatusMessage(status?: RpcStatus) {
-        self.statusMessage = statusMessageText(status)
-        self.statusProgress = statusFraction(status)
       },
       setFetching(arg: boolean) {
         self.fetching = arg
