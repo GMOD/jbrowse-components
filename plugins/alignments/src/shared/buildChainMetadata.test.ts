@@ -53,6 +53,24 @@ test('a supplementary alignment chains with its primary', () => {
   expect([...chainSuppTypes]).toEqual([1])
 })
 
+test('chain pair orientation comes from the primary, not the supplementary', () => {
+  // The primary read pair is LL (3, abnormal same-strand); the split
+  // supplementary segment's own record computes a divergent LR (1). The chain
+  // must carry the primary's LL so supplementary segments can inherit it.
+  const { chainPairOrientations } = buildChainMetadata([
+    feat({ id: 'r1.1', name: 'r1', start: 0, end: 100, pairOrientation: 3 }),
+    feat({
+      id: 'r1.supp',
+      name: 'r1',
+      start: 900,
+      end: 950,
+      flags: SAM_FLAG_SUPPLEMENTARY,
+      pairOrientation: 1,
+    }),
+  ])
+  expect([...chainPairOrientations]).toEqual([3])
+})
+
 test('a secondary alignment does NOT chain with its primary', () => {
   // A competing mapping of the same read to another locus. It must render
   // standalone, not share the primary's row / connecting line.

@@ -1,3 +1,4 @@
+import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/alignments-core'
 import {
   createProgressReporter,
   groupBy,
@@ -136,8 +137,17 @@ export function filterChainFeatures(
 }
 
 // Chain metadata + the per-read arrays linking each read back to its chain.
+// `readPairOrientations` (already built by buildBaseReadArrays) is corrected in
+// place: a supplementary segment's own record computes a divergent orientation
+// (its strand is flipped at the split junction), so under the pairOrientation
+// scheme it would color as the normal LR grey instead of the pair's abnormal
+// RR/LL hue. Inheriting the chain primary's orientation makes the whole read
+// pair color consistently — the fix flows to the GPU (pairOrient attribute),
+// the Canvas2D/legend path, and the tooltip alike, since all read the corrected
+// array.
 function buildChainResultFields(
   features: ChainFeatureData[],
+  readPairOrientations: Uint8Array,
 ): Partial<PileupDataResult> {
   const {
     chainAbsMinStarts,
@@ -145,6 +155,7 @@ function buildChainResultFields(
     chainDistances,
     chainNames,
     chainSuppTypes,
+    chainPairOrientations,
     chainHasMultiple,
     chainFirstReadIndices,
     featureIdToChainIdx,
@@ -161,6 +172,11 @@ function buildChainResultFields(
     readChainHasSupp[i] = chainSuppTypes[cIdx]!
     readChainIndices[i] = cIdx
     readNextRefs.push(f.nextRef ?? '')
+    // Only overwrite when the chain's primary (paired) read set an orientation;
+    // a supplementary whose primary is in another region keeps its own value.
+    if (f.flags & SAM_FLAG_SUPPLEMENTARY && chainPairOrientations[cIdx]! > 0) {
+      readPairOrientations[i] = chainPairOrientations[cIdx]!
+    }
     if (!chainFirstReadSeen[cIdx]) {
       chainFirstReadSeen[cIdx] = 1
       chainFirstReadIndices[cIdx] = i
@@ -243,7 +259,10 @@ async function buildGroupResult(
 
   // `isChain` implies the chain builder ran, so `features` are ChainFeatureData.
   const chainFields: Partial<PileupDataResult> = isChain
-    ? buildChainResultFields(features as ChainFeatureData[])
+    ? buildChainResultFields(
+        features as ChainFeatureData[],
+        readArrays.readPairOrientations,
+      )
     : {
         readNextRefs: nextRefs,
         sortTagValues,

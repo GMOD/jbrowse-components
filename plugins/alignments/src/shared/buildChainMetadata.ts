@@ -33,6 +33,10 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
   // Worker-local: drives readChainHasSupp in the read-array loop. Not part of
   // the result transferred to the main thread.
   const chainSuppTypes = new Uint8Array(numChains)
+  // Pair orientation (0=unknown, 1=LR, 2=RL, 3=RR, 4=LL) taken from the chain's
+  // primary read, so supplementary segments can inherit the pair's orientation
+  // rather than the divergent one their own strand-flipped record computes.
+  const chainPairOrientations = new Uint8Array(numChains)
   const chainHasMultiple = new Uint8Array(numChains)
   const chainFirstReadIndices = new Uint32Array(numChains)
 
@@ -43,6 +47,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     let maxEnd = Number.NEGATIVE_INFINITY
     let hasSupp = false
     let primaryStrand = 1
+    let primaryPairOrientation = 0
     for (const f of chain) {
       if (f.start < minStart) {
         minStart = f.start
@@ -54,6 +59,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
         hasSupp = true
       } else {
         primaryStrand = f.flags & SAM_FLAG_REVERSE ? -1 : 1
+        primaryPairOrientation = f.pairOrientation
       }
       featureIdToChainIdx.set(f.id, chainIdx)
     }
@@ -72,6 +78,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     // (cross-region merge + chainIdMap both key on this). Never displayed.
     chainNames.push(chainKey)
     chainSuppTypes[chainIdx] = hasSupp ? (primaryStrand === -1 ? 2 : 1) : 0
+    chainPairOrientations[chainIdx] = primaryPairOrientation
     chainHasMultiple[chainIdx] = chain.length >= 2 ? 1 : 0
   }
 
@@ -81,6 +88,7 @@ export function buildChainMetadata(features: ChainFeatureData[]) {
     chainDistances,
     chainNames,
     chainSuppTypes,
+    chainPairOrientations,
     chainHasMultiple,
     chainFirstReadIndices,
     featureIdToChainIdx,
