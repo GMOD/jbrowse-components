@@ -11,9 +11,12 @@ three-way grape / peach / cacao view from a single
 standard way the comparative-genomics community encodes a multi-genome ortholog
 table.
 
-You can open the finished demo here:
+You can open the finished demos here:
 
 - [Grape / peach / cacao 3-way synteny](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json)
+  (`.blocks`, below)
+- [E. coli 4-strain pangenome](https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json)
+  (all-vs-all PAF, [below](#all-vs-all-paf-the-pangenome-case))
 
 ## What a `.blocks` file is
 
@@ -133,3 +136,44 @@ peach–cacao): it joins the two columns on their shared reference gene. That li
 means "both are orthologous to the same grape gene" — a **transitive** ortholog
 relationship, not a direct alignment — which is worth keeping in mind if you
 stack non-reference genomes adjacently.
+
+## All-vs-all PAF: the pangenome case
+
+When your genomes are closely related (strains / accessions of one species), a
+better source is a single **all-vs-all** PAF — every genome aligned to every
+other. This is what the [PGGB](https://github.com/pangenome/pggb) mapping step
+produces, and you can make one directly by concatenating PanSN-named genomes and
+self-aligning with minimap2:
+
+```bash
+# PanSN names each sequence sample#haplotype#contig, e.g. K12#1#chr
+cat K12.fa Sakai.fa CFT073.fa NCTC86.fa > all.fa
+minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
+```
+
+Because the file already contains every pairwise comparison, the
+`AllVsAllPAFAdapter` lets **one PAF back every band** of the stacked view — no
+per-pair alignment step. Each track names the pair it draws; the adapter keeps
+only the records whose two sides are that pair (classified by PanSN prefix):
+
+```json
+{
+  "type": "SyntenyTrack",
+  "trackId": "K12_Sakai_ava",
+  "name": "K12 vs Sakai (all-vs-all PAF)",
+  "assemblyNames": ["K12", "Sakai"],
+  "adapter": {
+    "type": "AllVsAllPAFAdapter",
+    "pafLocation": { "uri": "all_vs_all.paf.gz" },
+    "assemblyNames": ["K12", "Sakai"]
+  }
+}
+```
+
+If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
+`assemblyNameToPanSN` slot (e.g. `{ "grape": "Vitis_vinifera" }`).
+
+Unlike a reference-anchored `.blocks` table, an all-vs-all file is a **complete
+graph** — every adjacent band is a real, direct alignment, so you can stack the
+genomes in any order without worrying about transitive links. This makes it the
+most convenient source when you have it.

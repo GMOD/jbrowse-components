@@ -198,6 +198,10 @@ export const syntenyConfigs: readonly SampleLink[] = [
     label: 'Grape/Peach/Cacao 3-way synteny (MCScan blocks)',
   },
   {
+    href: '?config=https://jbrowse.org/demos/ecoli_pangenome/config.json',
+    label: 'E. coli 4-strain pangenome (all-vs-all PAF)',
+  },
+  {
     config: 'test_data/config_dotplot.json',
     label: 'Grape/Peach dotplot',
   },
