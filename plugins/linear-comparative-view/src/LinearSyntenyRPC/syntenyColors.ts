@@ -33,7 +33,13 @@ const DEFAULT_COLOR = cssColorToABGR(colorSchemes.default.cigarColors.M)
 // lines using this packed alpha directly (no colorBy/global-alpha scaling).
 const MARKER_COLOR = packAbgr(0, 0, 0, 64)
 
-const category10Packed = category10.map(hex => cssColorToABGR(hex))
+// Query/target chromosome-painting palette. category10's grey (#7f7f7f) is
+// dropped: a grey synteny ribbon reads as "uncolored/broken", and a genome
+// whose sole (or hashed) chromosome lands on that slot paints the whole view
+// muddy grey — the exact failure a single-contig assembly named "chr" hits.
+const nameColorPalette = category10
+  .filter(hex => hex.toLowerCase() !== '#7f7f7f')
+  .map(hex => cssColorToABGR(hex))
 
 // Precomputed 256-bin LUTs mapping a normalized [0,1] value to packed ABGR.
 // The ramp math lives in @jbrowse/synteny-core so the dotplot view evaluates
@@ -115,7 +121,7 @@ function nameColorFunction(names: readonly string[]) {
     const name = names[index]!
     let c = colorCache.get(name)
     if (c === undefined) {
-      c = category10Packed[hashString(name) % category10Packed.length]!
+      c = nameColorPalette[hashString(name) % nameColorPalette.length]!
       colorCache.set(name, c)
     }
     return c
@@ -169,34 +175,6 @@ export function computeSyntenyColors({
   const colorN = indelColors[CIGAR_N] ?? DEFAULT_COLOR
   const { identities } = featureData
   const out = new Uint32Array(instanceCount)
-
-  // TEMP DEBUG
-  const kindHist: Record<number, number> = {}
-  for (let i = 0; i < instanceCount; i++) {
-    kindHist[kinds[i]!] = (kindHist[kinds[i]!] ?? 0) + 1
-  }
-  const firstBase = (() => {
-    for (let i = 0; i < instanceCount; i++) {
-      if (kinds[i]! < KIND_CIGAR_MATCH && kinds[i]! !== KIND_MARKER) {
-        const c = colorFn(instanceFeatureIdx[i]!)
-        return `idx${i} feat${instanceFeatureIdx[i]} abgr${c.toString(16)}`
-      }
-    }
-    return 'none'
-  })()
-  // eslint-disable-next-line no-console
-  console.error(
-    'SYNTENY_DEBUG colorBy=',
-    colorBy,
-    'count=',
-    instanceCount,
-    'kinds=',
-    JSON.stringify(kindHist),
-    'firstBase=',
-    firstBase,
-    'defaultColorAbgr=',
-    DEFAULT_COLOR.toString(16),
-  )
 
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!

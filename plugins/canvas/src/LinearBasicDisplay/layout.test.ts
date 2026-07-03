@@ -778,6 +778,76 @@ test('density-fade boxes collapse onto row 0 only when sub-pixel', () => {
   expect(rows(20, true)[1]).toBeGreaterThan(0)
 })
 
+test('labeled sub-pixel fade boxes stack instead of collapsing onto row 0', () => {
+  // Two miRNA-sized genes (sub-pixel at whole-arm zoom) sitting at nearly the
+  // same spot. Both are density-fade Box glyphs, so the collapse path would pin
+  // them to row 0 — but each still renders a floating name at its left edge, so
+  // collapsing paints the two names on top of each other (the observed genes
+  // track collision). With labels shown they must stack so the reserved label
+  // width keeps the names apart.
+  const data = makeFeatureData({
+    features: [
+      {
+        featureId: 'mir1',
+        startBp: 1000,
+        endBp: 1070,
+        height: 10,
+        densityFade: true,
+      },
+      {
+        featureId: 'mir2',
+        startBp: 1100,
+        endBp: 1170,
+        height: 10,
+        densityFade: true,
+      },
+    ],
+  })
+  data.floatingLabelsData = {
+    mir1: {
+      featureId: 'mir1',
+      minX: 1000,
+      maxX: 1070,
+      topY: 0,
+      featureHeight: 10,
+      nameLabel: {
+        text: 'MIR6088',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 60,
+      },
+    },
+    mir2: {
+      featureId: 'mir2',
+      minX: 1100,
+      maxX: 1170,
+      topY: 0,
+      featureHeight: 10,
+      nameLabel: {
+        text: 'MIR769',
+        relativeY: 0,
+        color: 'black',
+        textWidth: 55,
+      },
+    },
+  }
+  const keys = new Map([[0, 'v:ctgA']])
+  // showLabels off: no label to protect, so the sub-pixel boxes still collapse
+  const noLabels = layout(new Map([[0, data]]), keys, 26, false)
+  const topNo = (id: string) =>
+    noLabels.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
+  expect(topNo('mir1')).toBe(0)
+  expect(topNo('mir2')).toBe(0)
+
+  // showLabels on: labels are ~60px wide (~1560bp at bpPerPx=26) and overlap, so
+  // the two features must land on different rows
+  const withLabels = layout(new Map([[0, data]]), keys, 26, true)
+  const topYes = (id: string) =>
+    withLabels.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
+  expect(topYes('mir1')).toBe(0)
+  expect(topYes('mir2')).toBeGreaterThan(0)
+})
+
 test('a sub-pixel fade box overlapping a visible feature stacks, not overprints', () => {
   // A 1bp SNP sitting inside a wide gene box: both are density-fade boxes, but
   // only the SNP is sub-pixel. Pinning it to row 0 would draw it on top of the

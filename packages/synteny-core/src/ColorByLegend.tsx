@@ -86,13 +86,15 @@ const useStyles = makeStyles()(theme => ({
 // the plugin gates visibility on its own model flag and supplies onClose.
 export function ColorByLegend({
   colorBy,
+  drawsCigar = true,
   onClose,
 }: {
   colorBy: SyntenyColorBy
+  drawsCigar?: boolean
   onClose: () => void
 }) {
   const { classes } = useStyles()
-  const swatch = getColorBySwatch(colorBy)
+  const swatch = getColorBySwatch(colorBy, { drawsCigar })
   return (
     <div className={classes.root} data-testid="color-by-legend">
       <div className={classes.header}>

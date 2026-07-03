@@ -45,6 +45,18 @@ test('default/strand modes show labeled chips including CIGAR ops', () => {
   }
 })
 
+test('point-based views (drawsCigar=false) drop the CIGAR chips', () => {
+  const def = getColorBySwatch('default', { drawsCigar: false })
+  if (def?.kind === 'chips') {
+    expect(def.chips.map(c => c.label)).toEqual(['alignment'])
+    expect(def.chips[0]!.color).toBe('#000')
+  }
+  const strand = getColorBySwatch('strand', { drawsCigar: false })
+  if (strand?.kind === 'chips') {
+    expect(strand.chips.map(c => c.label)).toEqual(['forward', 'reverse'])
+  }
+})
+
 test('per-name categorical modes have no fixed legend', () => {
   expect(getColorBySwatch('query')).toBeUndefined()
   expect(getColorBySwatch('target')).toBeUndefined()

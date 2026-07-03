@@ -93,7 +93,7 @@ function checkSpecifier(specifier: string): string | undefined {
   const pkgName = m ? m[1] : specifier
   const subpath = m?.[2] ? `.${m[2]}` : '.'
 
-  const pkgDir = packages.get(pkgName)
+  const pkgDir = packages.get(pkgName!)
   if (!pkgDir) {
     return undefined // external / not in this workspace — can't validate
   }
@@ -142,12 +142,12 @@ function scanFile(path: string): Problem[] {
     if (fence) {
       // Any ``` line closes an open block; only a known code language opens one
       // (so ```slang / ```bash / ```text blocks are skipped entirely).
-      inCode = inCode ? false : CODE_LANGS.has(fence[1].toLowerCase())
+      inCode = inCode ? false : CODE_LANGS.has(fence[1]!.toLowerCase())
       return
     }
     if (inCode && line.includes('@jbrowse/')) {
       for (const match of line.matchAll(IMPORT_FROM)) {
-        const spec = match[1]
+        const spec = match[1]!
         if (spec.startsWith('@jbrowse/')) {
           const reason = checkSpecifier(spec)
           if (reason) {
@@ -197,7 +197,7 @@ function repoPathExists(rel: string) {
 
 function anchorOf(p: string) {
   const segs = p.split('/')
-  return ANCHORED.has(segs[0]) ? segs.slice(0, 2).join('/') : segs[0]
+  return ANCHORED.has(segs[0]!) ? segs.slice(0, 2).join('/') : segs[0]!
 }
 
 function scanFilePaths(path: string): Problem[] {
@@ -208,7 +208,7 @@ function scanFilePaths(path: string): Problem[] {
       const ref = match[0].replace(/[./]+$/, '')
       // Only hold a path to account when its package anchor really exists —
       // otherwise it's a placeholder/example path, not a live repo reference.
-      if (repoPathExists(anchorOf(ref)) && !repoPathExists(ref)) {
+      if (repoPathExists(anchorOf(ref)!) && !repoPathExists(ref)) {
         problems.push({
           file: path,
           line: i + 1,
@@ -223,7 +223,7 @@ function scanFilePaths(path: string): Problem[] {
 
 const allDocs = walk(docsDir)
 const handwritten = allDocs.filter(
-  f => !AUTOGEN_DIRS.has(f.slice(docsDir.length + 1).split('/')[0]),
+  f => !AUTOGEN_DIRS.has(f.slice(docsDir.length + 1).split('/')[0]!),
 )
 
 const problems = [

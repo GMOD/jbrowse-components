@@ -35,6 +35,7 @@ export default defineConfig(
 
       'scripts/announce.mjs',
       'products/jbrowse-desktop/test/**',
+      'plugins/blat/esbuild.mjs',
 
       // Vendored/external code
       'packages/core/src/util/map-obj',

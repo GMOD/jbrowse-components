@@ -287,20 +287,34 @@ const trackMenuIcon = (trackId: string): ScreenshotAction => ({
   selector: `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`,
 })
 
-// Open the alignments "Set feature height..." submenu and leave it open. Hovers
-// the submenu-parent <li> row itself (via xpath) rather than its inner label
-// span, so MUI's onMouseEnter fires and the submenu expands — a text-only hover
-// on the label didn't reliably trigger it for this ellipsis-labelled subMenu.
+// Open the alignments "Set feature height..." submenu and leave it open.
+// CascadingSubmenu opens on click as well as hover (onClick -> onOpen), and a
+// click is deterministic where a hover is timing-sensitive (the pileup keeps
+// re-laying-out while reads stream, so the hovered row can move out from under
+// the cursor). Target the submenu row by its data-testid prefix.
 const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
   { type: 'waitForText', text: 'Set feature height' },
-  { type: 'delay', ms: 400 },
+  { type: 'delay', ms: 300 },
   {
-    type: 'hover',
-    selector:
-      '::-p-xpath(//li[@role="menuitem"][contains(normalize-space(.), "Set feature height")])',
+    type: 'click',
+    selector: '[data-testid^="cascading-submenu-set_feature_height"]',
   },
   { type: 'waitForText', text: 'Super-compact' },
   { type: 'delay', ms: 500 },
+]
+
+// A stage that ends with its submenu open must be fully dismissed before the
+// next stage clicks a different track's menu, or the lingering menu's backdrop
+// swallows that click and it lands on the wrong track. Escape does NOT close
+// these menus (keyboard focus isn't inside the popover), but the invisible modal
+// backdrop does on click — two clicks on a neutral spot (the view title bar)
+// pop the submenu then the main menu; then wait for the menu text to be gone.
+const dismissMenus = (): ScreenshotAction[] => [
+  { type: 'click', from: { x: 550, y: 58 } },
+  { type: 'delay', ms: 300 },
+  { type: 'click', from: { x: 550, y: 58 } },
+  { type: 'waitForText', text: 'Set feature height', hidden: true },
+  { type: 'delay', ms: 300 },
 ]
 
 // ── Trio crossover callouts (analyze_trio.md) ──────────────────────────────
@@ -1249,9 +1263,12 @@ export const specs: ScreenshotSpec[] = [
     // promotable slots (getConfResolved: track value → session default → schema
     // default), so: (1) both alignments tracks inherit Normal, (2) "Use current
     // height by default on all alignments tracks" promotes Compact and the
-    // second track follows via inherit, (3) pin the second track back to Normal
-    // — it overrides the compact session default. Each stage leaves the "Set
-    // feature height" submenu open and boxes the item being clicked.
+    // second track follows via inherit, (3) pin the second track to
+    // Super-compact — it overrides the compact session default. (These are plain
+    // promotable slots, so the pin must be a non-schema-default value: setting it
+    // back to Normal would read as "un-pinned" and re-inherit Compact — that's
+    // the case the canvas displayMode sentinel slot exists to escape.) Each stage
+    // leaves the "Set feature height" submenu open and boxes the item clicked.
     mode: 'url',
     name: 'feature_height_default_pin',
     url: lgvSession(VOLVOX, {
@@ -1264,7 +1281,7 @@ export const specs: ScreenshotSpec[] = [
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    viewportHeight: 720,
+    viewportHeight: 900,
     // alignments pileups keep re-laying-out while reads stream in; wait long
     // enough that the menu geometry is stable before the hover/click sequence
     settleMs: 14000,
@@ -1296,12 +1313,12 @@ export const specs: ScreenshotSpec[] = [
         ],
       },
       {
-        closeMenusFirst: true,
         // set the first track to Compact, then enable "Use current height by
         // default on all alignments tracks" — the second (un-pinned) track
         // follows via inherit. Re-open the submenu so the now-checked default
         // toggle (the item actually clicked) is visible and boxed.
         actions: [
+          ...dismissMenus(),
           trackMenuIcon('volvox_alignments_pileup_coverage'),
           ...openFeatureHeightSubmenu(),
           // exact-text match so "Compact" hits the radio, not a longer label
@@ -1311,14 +1328,12 @@ export const specs: ScreenshotSpec[] = [
               '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Compact"])',
           },
           { type: 'delay', ms: 300 },
-          { type: 'press', key: 'Escape' },
-          { type: 'delay', ms: 600 },
+          ...dismissMenus(),
           trackMenuIcon('volvox_alignments_pileup_coverage'),
           ...openFeatureHeightSubmenu(),
           { type: 'click', text: 'by default on all alignments tracks' },
           { type: 'delay', ms: 600 },
-          { type: 'press', key: 'Escape' },
-          { type: 'delay', ms: 800 },
+          ...dismissMenus(),
           // re-open to display the checkbox now ticked, kept on screen for capture
           trackMenuIcon('volvox_alignments_pileup_coverage'),
           ...openFeatureHeightSubmenu(),
@@ -1341,28 +1356,26 @@ export const specs: ScreenshotSpec[] = [
         ],
       },
       {
-        closeMenusFirst: true,
-        // pin the second track back to Normal; it holds over the compact
-        // session default (the first track stays compact). Re-open its submenu
-        // so the newly-selected "Normal" radio is visible and boxed.
+        // pin the second track to Super-compact; it holds over the compact
+        // session default (the first track stays compact). A non-schema-default
+        // value is required to pin — Normal (the schema default) would re-inherit
+        // the compact default. Re-open its submenu so the newly-selected
+        // "Super-compact" radio is visible and boxed.
         actions: [
+          ...dismissMenus(),
           trackMenuIcon('volvox_cram_alignments_ctga'),
           ...openFeatureHeightSubmenu(),
-          {
-            type: 'click',
-            selector:
-              '::-p-xpath(//li[@role="menuitem"][normalize-space(.)="Normal"])',
-          },
           { type: 'delay', ms: 300 },
-          { type: 'press', key: 'Escape' },
-          { type: 'delay', ms: 700 },
+          { type: 'click', text: 'Super-compact' },
+          { type: 'delay', ms: 500 },
+          ...dismissMenus(),
           trackMenuIcon('volvox_cram_alignments_ctga'),
           ...openFeatureHeightSubmenu(),
         ],
         annotations: [
           {
             type: 'box',
-            anchor: { text: 'Normal' },
+            anchor: { text: 'Super-compact' },
             strokeWidth: 3,
             fillOpacity: 0.12,
           },
@@ -1372,7 +1385,7 @@ export const specs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 440,
             fontSize: 15,
-            text: '3. Pin the second track back to Normal — it holds over the compact session default',
+            text: '3. Pin the second track to Super-compact — it overrides the compact session default',
           },
         ],
       },
@@ -5524,7 +5537,7 @@ export const specs: ScreenshotSpec[] = [
   // Multi-quantitative (MultiWig) screenshots
   // ────────────────────────────────────────────────────────────────────────
 
-  // MultiWig track menu showing the renderer type submenu.
+  // MultiWig track menu showing the plot type submenu.
   {
     mode: 'url',
     name: 'multiwig/multi_renderer_types',
@@ -5537,9 +5550,9 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 5000,
     actions: [
       { type: 'click', selector: '[data-testid="track_menu_icon"]' },
-      ...menuCascade(['Rendering type', 'Multi-row XY plot']),
+      ...menuCascade(['Plot type', 'Multi-row XY plot']),
     ],
-    annotations: [{ type: 'box', anchor: { text: 'Rendering type' } }],
+    annotations: [{ type: 'box', anchor: { text: 'Plot type' } }],
   },
 
   // multiquantitative_track.md: the track-selector selection workflow for

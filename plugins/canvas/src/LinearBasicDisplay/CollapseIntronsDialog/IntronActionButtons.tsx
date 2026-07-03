@@ -72,7 +72,7 @@ const IntronActionButtons = observer(function IntronActionButtons({
             if (windowSize !== undefined) {
               void runIntronAction(
                 view,
-                () =>
+                () => {
                   collapseIntrons({
                     view,
                     transcripts,
@@ -81,7 +81,8 @@ const IntronActionButtons = observer(function IntronActionButtons({
                     flip,
                     trackId,
                     soloFeatureId,
-                  }),
+                  })
+                },
                 handleClose,
               )
             }

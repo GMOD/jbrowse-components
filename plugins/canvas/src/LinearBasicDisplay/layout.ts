@@ -572,8 +572,16 @@ function packRef(
       ext.endBp / bpPerPx,
       boxStartPx + MIN_RECT_WIDTH_PX * 2,
     )
+    // A collapsed box reserves no horizontal label space, so a labeled sub-pixel
+    // feature (e.g. a miRNA gene at whole-arm zoom) must NOT collapse: its label
+    // still renders at the feature's left edge, and piling several onto row 0
+    // paints their names on top of each other. Send it through addRect so its
+    // label width is reserved and it stacks like every other labeled feature.
+    const hasRenderedLabel =
+      (labelInfoByFeatureId.get(id)?.maxLabelWidthPx ?? 0) > 0
     const collapses =
       isSubPixelFade(ext, bpPerPx) &&
+      !hasRenderedLabel &&
       !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)

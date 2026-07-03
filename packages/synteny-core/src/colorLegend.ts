@@ -49,6 +49,18 @@ const STRAND_CHIPS: ColorChip[] = [
   { color: strandCigar.D, label: 'del/skip' },
 ]
 
+// Point-based views (dotplot) paint each alignment a single flat color and never
+// draw CIGAR ops, so their default/strand legends drop the indel chips the
+// ribbon-based synteny view shows. The dotplot default is plain black (its
+// conventional point color), not the ribbon's red match.
+const DOTPLOT_DEFAULT_CHIPS: ColorChip[] = [
+  { color: '#000', label: 'alignment' },
+]
+const DOTPLOT_STRAND_CHIPS: ColorChip[] = [
+  { color: posColor, label: 'forward' },
+  { color: negColor, label: 'reverse' },
+]
+
 // Short human-readable title for the floating legend header.
 export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   default: 'Default',
@@ -65,8 +77,11 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
 // Legend spec for a color-by mode: a gradient ramp for continuous modes, or a
 // set of labeled chips for the structural modes. Returns undefined for the
 // per-name categorical modes (query/target), which have no fixed legend.
+// `drawsCigar` is true for the ribbon-based synteny view (which paints CIGAR
+// ops); the point-based dotplot passes false to omit the indel chips.
 export function getColorBySwatch(
   colorBy: SyntenyColorBy,
+  { drawsCigar = true }: { drawsCigar?: boolean } = {},
 ): ColorBySwatchSpec | undefined {
   switch (colorBy) {
     case 'identity':
@@ -101,9 +116,15 @@ export function getColorBySwatch(
         maxLabel: 'conserved',
       }
     case 'strand':
-      return { kind: 'chips', chips: STRAND_CHIPS }
+      return {
+        kind: 'chips',
+        chips: drawsCigar ? STRAND_CHIPS : DOTPLOT_STRAND_CHIPS,
+      }
     case 'default':
-      return { kind: 'chips', chips: DEFAULT_CHIPS }
+      return {
+        kind: 'chips',
+        chips: drawsCigar ? DEFAULT_CHIPS : DOTPLOT_DEFAULT_CHIPS,
+      }
     case 'query':
     case 'target':
       return undefined

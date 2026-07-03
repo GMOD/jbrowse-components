@@ -98,6 +98,7 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
         {model.showColorLegend ? (
           <ColorByLegend
             colorBy={colorBy}
+            drawsCigar={false}
             onClose={() => {
               model.setShowColorLegend(false)
             }}

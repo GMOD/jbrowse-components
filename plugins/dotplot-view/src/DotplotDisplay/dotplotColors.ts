@@ -21,10 +21,16 @@ function packColor(r: number, g: number, b: number, alpha: number) {
   return packAbgr(r, g, b, Math.round(alpha * 255))
 }
 
-const category10Rgb = category10.map(hex => {
-  const c = parseCssColor(hex)
-  return [getRed(c), getGreen(c), getBlue(c)] as const
-})
+// Query/target chromosome-painting palette. Drop category10's grey (#7f7f7f):
+// a grey point reads as uncolored, and a genome whose (hashed) chromosome lands
+// on that slot paints muddy grey — matches the synteny nameColorPalette so the
+// two views can't drift.
+const nameColorRgb = category10
+  .filter(hex => hex.toLowerCase() !== '#7f7f7f')
+  .map(hex => {
+    const c = parseCssColor(hex)
+    return [getRed(c), getGreen(c), getBlue(c)] as const
+  })
 
 export function unpackColorToCSS(packed: number) {
   const r = packed & 0xff
@@ -67,7 +73,7 @@ function nameColorFn(
   alpha: number,
   pick: (d: DotplotRpcData, i: number) => string,
 ): DotplotColorFn {
-  const palette = category10Rgb.map(([r, g, b]) => packColor(r, g, b, alpha))
+  const palette = nameColorRgb.map(([r, g, b]) => packColor(r, g, b, alpha))
   const cache = new Map<string, number>()
   return (d, i) => {
     const name = pick(d, i)
