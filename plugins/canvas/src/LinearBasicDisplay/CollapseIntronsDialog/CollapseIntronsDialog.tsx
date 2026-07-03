@@ -76,9 +76,8 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
           <p>
             Select the 'window size', the amount of extra space to include
             around each splice boundary. The default of {DEFAULT_WINDOW_SIZE}bp
-            shows
-            {DEFAULT_WINDOW_SIZE}bp of context on either side of every exon; 0
-            shows only the exons themselves.
+            shows {DEFAULT_WINDOW_SIZE}bp of context on either side of every
+            exon; 0 shows only the exons themselves.
           </p>
           <p>
             By default the union of exons from all transcripts will be used. To
