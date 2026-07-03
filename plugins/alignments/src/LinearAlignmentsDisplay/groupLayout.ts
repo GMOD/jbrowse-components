@@ -104,6 +104,55 @@ export function fitGroupMaxRows({
   return Math.min(maxRows, rows)
 }
 
+// One group's outcome after the equal-split layout pass, for the spare-row
+// reclaim below. `usedRows` is how many rows it actually laid out (== the cap
+// when it truncated, fewer when all its reads fit).
+export interface FitGroupOutcome {
+  key: string
+  usedRows: number
+  truncated: boolean
+}
+
+// After the equal-split pass caps every group at `defaultMaxRows`, sparse groups
+// fit all their reads in fewer rows and leave the rest of their slice empty,
+// while denser groups get truncated. Reclaim each sparse group's unused rows and
+// split them evenly across the truncated groups, so the viewport budget goes to
+// the groups that can use it instead of sitting empty. Returns a raised cap per
+// truncated group (only those change), or undefined when nothing can move — no
+// truncated recipient, or no spare — so the caller skips the second layout pass.
+//
+// Deliberately a single round: a recipient whose reads all fit under its raised
+// cap may end up with a little slack again, but re-reclaiming that would mean
+// laying out repeatedly. The new caps never push the participants past their
+// original combined budget (`bonus * recipients <= spare`), so the stack still
+// fits the viewport. Collapsed and height-overridden groups are excluded by the
+// caller — they don't share the fit budget.
+export function reclaimFitRows({
+  outcomes,
+  defaultMaxRows,
+  maxRows,
+}: {
+  outcomes: FitGroupOutcome[]
+  defaultMaxRows: number
+  maxRows: number
+}): Map<string, number> | undefined {
+  const truncated = outcomes.filter(o => o.truncated)
+  const spare = outcomes.reduce(
+    (sum, o) => sum + (o.truncated ? 0 : defaultMaxRows - o.usedRows),
+    0,
+  )
+  const bonus =
+    truncated.length > 0 ? Math.floor(spare / truncated.length) : 0
+  if (bonus <= 0) {
+    return undefined
+  }
+  const caps = new Map<string, number>()
+  for (const o of truncated) {
+    caps.set(o.key, Math.min(maxRows, defaultMaxRows + bonus))
+  }
+  return caps
+}
+
 // Max row count for a group's laid-out region map (sections stack by this).
 export function groupMaxY(map: Map<number, PileupDataResult>) {
   let max = 0

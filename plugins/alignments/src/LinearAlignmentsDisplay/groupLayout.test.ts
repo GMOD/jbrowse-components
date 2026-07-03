@@ -1,4 +1,4 @@
-import { MIN_FIT_ROWS, fitGroupMaxRows } from './groupLayout.ts'
+import { MIN_FIT_ROWS, fitGroupMaxRows, reclaimFitRows } from './groupLayout.ts'
 
 test('fitGroupMaxRows: splits the post-overhead height evenly across groups', () => {
   // 1000px height, 2 groups, 50px overhead each => (1000 - 100)/2 = 450px per
@@ -82,4 +82,78 @@ test('fitGroupMaxRows: all groups collapsed never divides by zero', () => {
       maxRows: 60,
     }),
   ).toBe(60)
+})
+
+test('reclaimFitRows: sparse groups donate unused rows to truncated ones', () => {
+  // cap 45. Group a fit in 5 rows (40 spare), b in 15 (30 spare), c truncated.
+  // 70 spare -> one recipient c -> cap 45 + 70 = 115.
+  expect(
+    reclaimFitRows({
+      outcomes: [
+        { key: 'a', usedRows: 5, truncated: false },
+        { key: 'b', usedRows: 15, truncated: false },
+        { key: 'c', usedRows: 45, truncated: true },
+      ],
+      defaultMaxRows: 45,
+      maxRows: 1000,
+    }),
+  ).toEqual(new Map([['c', 115]]))
+})
+
+test('reclaimFitRows: spare splits evenly across multiple truncated groups', () => {
+  // 60 spare from a, split across two truncated (b, c) => +30 each.
+  expect(
+    reclaimFitRows({
+      outcomes: [
+        { key: 'a', usedRows: 40, truncated: false },
+        { key: 'b', usedRows: 100, truncated: true },
+        { key: 'c', usedRows: 100, truncated: true },
+      ],
+      defaultMaxRows: 100,
+      maxRows: 1000,
+    }),
+  ).toEqual(
+    new Map([
+      ['b', 130],
+      ['c', 130],
+    ]),
+  )
+})
+
+test('reclaimFitRows: never raises a recipient past the global cap', () => {
+  expect(
+    reclaimFitRows({
+      outcomes: [
+        { key: 'a', usedRows: 0, truncated: false },
+        { key: 'b', usedRows: 45, truncated: true },
+      ],
+      defaultMaxRows: 45,
+      maxRows: 50,
+    }),
+  ).toEqual(new Map([['b', 50]]))
+})
+
+test('reclaimFitRows: no second pass when nothing can move', () => {
+  // No truncated recipient.
+  expect(
+    reclaimFitRows({
+      outcomes: [
+        { key: 'a', usedRows: 5, truncated: false },
+        { key: 'b', usedRows: 10, truncated: false },
+      ],
+      defaultMaxRows: 45,
+      maxRows: 1000,
+    }),
+  ).toBeUndefined()
+  // No spare (every group truncated).
+  expect(
+    reclaimFitRows({
+      outcomes: [
+        { key: 'a', usedRows: 45, truncated: true },
+        { key: 'b', usedRows: 45, truncated: true },
+      ],
+      defaultMaxRows: 45,
+      maxRows: 1000,
+    }),
+  ).toBeUndefined()
 })

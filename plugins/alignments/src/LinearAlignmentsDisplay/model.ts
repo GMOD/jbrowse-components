@@ -43,6 +43,7 @@ import {
   buildLaidOutByGroup,
   fitGroupMaxRows,
   groupMaxY,
+  reclaimFitRows,
 } from './groupLayout.ts'
 import {
   anyGroupHasSashimi,
