@@ -28,6 +28,9 @@ export {
   divergingIdentityRgb,
 } from './colorRamps.ts'
 export type { Rgb } from './colorRamps.ts'
+export { ColorBySwatch } from './ColorBySwatch.tsx'
+export { getColorBySwatch } from './colorLegend.ts'
+export type { ColorBySwatchSpec } from './colorLegend.ts'
 export type { SyntenyViewSharedInit } from './SyntenyViewInit.ts'
 export { default as SliderTooltip } from './SliderTooltip.tsx'
 export { default as SettingsPopover } from './SettingsPopover.tsx'
