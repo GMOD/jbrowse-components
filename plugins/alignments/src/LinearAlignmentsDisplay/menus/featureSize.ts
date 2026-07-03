@@ -34,9 +34,11 @@ interface FeatureHeightModel {
   featureHeight: number
   featureSpacing: number
   maxHeight: number
+  isCompactnessDefault: boolean
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
   setMaxHeight: (height?: number) => void
+  toggleCompactnessDefault: () => void
 }
 
 export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
@@ -66,6 +68,14 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
               handleClose,
             },
           ])
+        },
+      },
+      {
+        label: 'Use current height by default on all alignments tracks',
+        type: 'checkbox' as const,
+        checked: model.isCompactnessDefault,
+        onClick: () => {
+          model.toggleCompactnessDefault()
         },
       },
       {

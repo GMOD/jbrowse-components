@@ -1,6 +1,11 @@
 import { lazy } from 'react'
 
-import { getConf, readConfObject } from '@jbrowse/core/configuration'
+import {
+  areSlotsAtSessionDefault,
+  getConf,
+  readConfObject,
+  toggleSlotsSessionDefault,
+} from '@jbrowse/core/configuration'
 import { getContainingTrack, getSession } from '@jbrowse/core/util'
 import { types } from '@jbrowse/mobx-state-tree'
 import CloseFullscreenIcon from '@mui/icons-material/CloseFullscreen'
@@ -101,17 +106,14 @@ export default function stateModelFactory(
       // true when the current displayMode is already the session-wide default
       // for this display type (drives the "make default" checkbox + toggle)
       get isDisplayModeDefault() {
-        return (
-          getSession(self).getDisplayTypeDefault?.(self.type, 'displayMode') ===
-          self.displayMode
-        )
+        return areSlotsAtSessionDefault(self, ['displayMode'])
       },
 
-      // true when this track pins an explicit height rather than inheriting via
-      // the 'default' sentinel; gates the "Follow default height" reset item so
+      // true when this track pins an explicit height (a non-default value)
+      // rather than inheriting; gates the "Follow default height" reset item so
       // it only appears when there's a pin to undo.
       get isDisplayModePinned() {
-        return getConf(self, 'displayMode') !== 'default'
+        return getConf(self, 'displayMode') !== 'normal'
       },
 
       get effectiveGeneGlyphMode(): DisplayConfig['geneGlyphMode'] {
@@ -169,10 +171,10 @@ export default function stateModelFactory(
         self.configuration.setSlot('displayMode', value)
       },
 
-      // Revert to the 'default' (inherit) value so the track follows the
-      // session-wide type default again, undoing an explicit height pin.
+      // Revert to 'normal' (the slot default), which strips the pin so the track
+      // follows the session-wide type default again.
       resetDisplayMode() {
-        self.configuration.setSlot('displayMode', 'default')
+        self.configuration.setSlot('displayMode', 'normal')
       },
 
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
@@ -188,11 +190,7 @@ export default function stateModelFactory(
       // reactively through the displayMode getter; tracks with an explicit
       // per-track choice keep it.
       toggleDisplayModeDefault() {
-        getSession(self).setDisplayTypeDefault?.(
-          self.type,
-          'displayMode',
-          self.isDisplayModeDefault ? undefined : self.displayMode,
-        )
+        toggleSlotsSessionDefault(self, ['displayMode'])
       },
 
       setShowOnlyGenes(value: boolean) {

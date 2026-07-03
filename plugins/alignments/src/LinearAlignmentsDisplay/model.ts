@@ -5,7 +5,15 @@ import {
   computeCoverageTicks,
   computeVisibleCoverageStats,
 } from '@jbrowse/alignments-core'
-import { ConfigurationReference, getConf } from '@jbrowse/core/configuration'
+import {
+  ConfigurationReference,
+  areSlotsAtSessionDefault,
+  clearDisplaySessionDefaults,
+  displaySessionDefaultChanges,
+  getConf,
+  getConfResolved,
+  toggleSlotsSessionDefault,
+} from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
   SimpleFeature,
@@ -69,7 +77,10 @@ import { computeArcsRegionMap } from '../features/arcs/compute.ts'
 import { enumerateBezierPairs } from '../features/linkedReads/computeOverlay.ts'
 import { COLOR_SCHEMES, isModificationScheme } from '../shared/colorSchemes.ts'
 import { getReadDisplayLegendItems } from '../shared/legendUtils.ts'
-import { DEFAULT_MODIFICATION_THRESHOLD } from '../shared/types.ts'
+import {
+  DEFAULT_MODIFICATION_THRESHOLD,
+  normalizeFilterBy,
+} from '../shared/types.ts'
 import { getColorForModification } from '../util.ts'
 import { computeArcBand } from './renderers/rendererTypes.ts'
 
@@ -418,52 +429,20 @@ export default function stateModelFactory(
           return getConf(self, 'readConnectionsHeight')
         },
         /** #getter */
-        // A concrete true/false in the config pins this track; the null schema
-        // default means inherit the user's session-wide default for this display
-        // type (see setDisplayTypeDefault), falling back to off when none is set.
-        // Mirrors the canvas displayMode sentinel resolution.
+        // Resolved through the promotable-slot tiers (getConfResolved): a track
+        // configured `true` pins soft clipping on; otherwise it follows the
+        // session-wide default, falling back to off. A boolean slot can't store
+        // an explicit "off", so a session default of "on" can't be pinned back
+        // off on a single track — the pin only works in the "on" direction.
         get showSoftClipping(): boolean {
-          const configured: unknown = getConf(self, 'showSoftClipping')
-          if (typeof configured === 'boolean') {
-            return configured
-          }
-          const sessionDefault = getSession(self).getDisplayTypeDefault?.(
-            self.type,
-            'showSoftClipping',
-          )
-          return typeof sessionDefault === 'boolean' ? sessionDefault : false
+          return getConfResolved(self, 'showSoftClipping')
         },
 
         /** #getter */
-        // true when the resolved soft-clipping already equals the session-wide
-        // default for this display type (drives the "make default" checkbox)
+        // true when soft clipping already equals the session-wide default for
+        // this display type (drives the "make default" checkbox)
         get isShowSoftClippingDefault(): boolean {
-          return (
-            getSession(self).getDisplayTypeDefault?.(
-              self.type,
-              'showSoftClipping',
-            ) === self.showSoftClipping
-          )
-        },
-
-        /** #getter */
-        // true when this track pins soft clipping rather than inheriting (null);
-        // gates the "Follow default" item so it only shows when there's a pin
-        get isShowSoftClippingPinned(): boolean {
-          return typeof getConf(self, 'showSoftClipping') === 'boolean'
-        },
-
-        /** #method */
-        // Effective config difference caused by a session-wide soft-clipping
-        // default (distinct from per-track edits) — reported only for an
-        // un-pinned track whose inherited value differs from the off fallback,
-        // so it can't fire on the schema default alone. Drives the selector
-        // "affected by a session default" badge.
-        sessionDefaultChanges(): TrackConfigChange[] {
-          const configured: unknown = getConf(self, 'showSoftClipping')
-          return typeof configured === 'boolean' || !self.showSoftClipping
-            ? []
-            : [{ path: ['showSoftClipping'], from: false, to: true }]
+          return areSlotsAtSessionDefault(self, ['showSoftClipping'])
         },
       }))
       .volatile(() => {
@@ -706,21 +685,41 @@ export default function stateModelFactory(
          * #getter
          */
         get filterBy(): FilterBy {
-          return getConf(self, 'filterBy')
+          return normalizeFilterBy(getConf(self, 'filterBy'))
         },
 
         /**
          * #getter
          */
-        get featureHeight() {
-          return getConf(self, 'featureHeight')
+        // featureHeight/featureSpacing are promotable slots: each resolves
+        // through getConfResolved (track value, else session-wide default, else
+        // schema default). "Compactness" is just these two slots moved together.
+        get featureHeight(): number {
+          return getConfResolved(self, 'featureHeight')
         },
 
         /**
          * #getter
          */
-        get featureSpacing() {
-          return getConf(self, 'featureSpacing')
+        get featureSpacing(): number {
+          return getConfResolved(self, 'featureSpacing')
+        },
+
+        // true when the current size already equals the session-wide default
+        // (drives the "use current height by default" checkbox)
+        get isCompactnessDefault(): boolean {
+          return areSlotsAtSessionDefault(self, [
+            'featureHeight',
+            'featureSpacing',
+          ])
+        },
+
+        /** #method */
+        // Effective differences an un-pinned track inherits from session-wide
+        // defaults, across every promotable slot. Drives the track-selector
+        // "affected by a session default" badge.
+        sessionDefaultChanges(): TrackConfigChange[] {
+          return displaySessionDefaultChanges(self)
         },
 
         /**
@@ -1912,6 +1911,35 @@ export default function stateModelFactory(
               'showSoftClipping',
               !self.showSoftClipping,
             )
+          },
+
+          /**
+           * #action
+           */
+          // Promote the current soft-clipping to the session-wide default for
+          // this display type (persisted via preferences), or clear it when it
+          // already is the default. Every alignments track that hasn't pinned
+          // soft clipping on picks this up through the showSoftClipping getter.
+          toggleShowSoftClippingDefault() {
+            toggleSlotsSessionDefault(self, ['showSoftClipping'])
+          },
+
+          /**
+           * #action
+           */
+          // Promote the current size (any preset or a custom size) to the
+          // session-wide default for this display type, or clear it when it
+          // already is the default. Every alignments track left at the default
+          // size picks this up through the featureHeight/featureSpacing getters.
+          toggleCompactnessDefault() {
+            toggleSlotsSessionDefault(self, ['featureHeight', 'featureSpacing'])
+          },
+
+          // Clear the session-wide defaults reported by sessionDefaultChanges so
+          // sibling tracks of this type revert to their own config values. Backs
+          // the "clear default" action on the track-selector badge.
+          clearSessionDefaults() {
+            clearDisplaySessionDefaults(self)
           },
 
           /**

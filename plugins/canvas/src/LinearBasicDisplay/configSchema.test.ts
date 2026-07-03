@@ -24,9 +24,9 @@ describe('LinearBasicDisplay configSchema', () => {
     expect(readConfObject(config, 'connectorColor')).toBe(THEME_DERIVED_COLOR)
     expect(readConfObject(config, 'utrColor')).toBe('#357089')
     expect(readConfObject(config, 'featureHeight')).toBe(10)
-    // schema default is the 'default' (inherit) sentinel; it resolves to
-    // 'normal' at the display model unless a session-wide default is set
-    expect(readConfObject(config, 'displayMode')).toBe('default')
+    // 'normal' is the slot default; left unchanged it inherits a session-wide
+    // default at the display model (getConfResolved)
+    expect(readConfObject(config, 'displayMode')).toBe('normal')
     expect(readConfObject(config, 'geneGlyphMode')).toBe('auto')
     expect(readConfObject(config, 'transcriptTypes')).toEqual([
       'mRNA',

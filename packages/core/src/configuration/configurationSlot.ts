@@ -78,6 +78,16 @@ export interface ConfigSlotDefinition {
    * editor, so common slots aren't crowded out by rarely-changed ones
    */
   advanced?: boolean
+  /**
+   * a user can promote this slot's current value to a session-wide default for
+   * all tracks of the same display type (track menu "make default"). A slot left
+   * at its `defaultValue` is un-pinned and inherits that promoted default; any
+   * other value pins the track. See `getConfResolved` / `promotableDefaults.ts`.
+   * A slot can't pin its own default value back over an opposite session default
+   * (that value is the "inherit" signal) — an accepted, uniform trade-off. See
+   * `promotableDefaults.ts`.
+   */
+  promotable?: boolean
 }
 
 /**

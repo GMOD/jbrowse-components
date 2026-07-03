@@ -2,20 +2,20 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
+  clearDisplaySessionDefaults,
+  displaySessionDefaultChanges,
   getConf,
+  getConfResolved,
   getConfSnapshot,
   readConfObject,
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
-  bindPromotableDefault,
-  clearPromotableSessionDefaults,
   getContainingTrack,
   getContainingView,
   getSession,
   isFeature,
   openFeatureWidget,
-  promotableSessionDefaultChanges,
 } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -74,7 +74,6 @@ import type { RegionDensityStats } from './baseModelHelpers.ts'
 import type {
   DisplayConfig,
   DisplayMode,
-  DisplayModeConfig,
 } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type { CanvasFeatureRenderingBackend } from './components/canvasFeatureRenderingBackendTypes.ts'
 import type {
@@ -395,44 +394,26 @@ export default function baseStateModelFactory(
           return getConf(self, 'autoHeight')
         },
 
-        // The per-display-type settings a user can promote to a session-wide
-        // default, each bound to this display. `displayMode` uses the 'default'
-        // config sentinel as its "inherit" signal (a concrete mode pins the
-        // track); the three-tier resolution, "is default" check, promote/clear
-        // toggle, and override-badge diff all live in `@jbrowse/core/util`
-        // promotableDefaults. `all` feeds the aggregate changes/clear helpers.
-        get promotableDefaults() {
-          const displayMode = bindPromotableDefault<DisplayMode>(self, {
-            slot: 'displayMode',
-            // an explicit mode pins the track; the 'default' sentinel inherits
-            getPinned: () => {
-              const configured: DisplayModeConfig = getConf(self, 'displayMode')
-              return isDisplayMode(configured) ? configured : undefined
-            },
-            plainDefault: 'normal',
-            validate: v => (isDisplayMode(v) ? v : undefined),
-            toChange: (from, to) => ({ path: ['displayMode'], from, to }),
-          })
-          return { displayMode, all: [displayMode] }
-        },
-
         /**
          * #getter
          */
+        // `displayMode` is a promotable slot: 'normal' (the slot default) means
+        // inherit the session-wide default, compact/superCompact pin the track.
+        // getConfResolved handles the tiers; the guard defends against a corrupt
+        // promoted value.
         get displayMode(): DisplayMode {
-          return this.promotableDefaults.displayMode.resolve()
+          const resolved = getConfResolved<DisplayMode>(self, 'displayMode')
+          return isDisplayMode(resolved) ? resolved : 'normal'
         },
 
         /**
          * #method
          */
-        // Effective config differences caused by a session-wide
-        // displayTypeDefault (distinct from per-track config edits /
-        // trackConfigDeltas), reported only for an un-pinned track whose
-        // inherited height differs from the plain 'normal' fallback. Drives the
-        // "affected by a session default" badge.
+        // Effective config differences an un-pinned track inherits from
+        // session-wide defaults (distinct from per-track config edits /
+        // trackConfigDeltas). Drives the "affected by a session default" badge.
         sessionDefaultChanges(): TrackConfigChange[] {
-          return promotableSessionDefaultChanges(this.promotableDefaults.all)
+          return displaySessionDefaultChanges(self)
         },
 
         /**
@@ -1419,7 +1400,7 @@ export default function baseStateModelFactory(
         // this display (and its siblings of the same type) revert to their
         // config values. Backs the "Clear default" action on the selector badge.
         clearSessionDefaults() {
-          clearPromotableSessionDefaults(self.promotableDefaults.all)
+          clearDisplaySessionDefaults(self)
         },
 
         /**

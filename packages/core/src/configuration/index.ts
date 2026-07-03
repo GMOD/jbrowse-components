@@ -22,3 +22,10 @@ export {
   makeSlotFacade,
 } from './slotFacade.ts'
 export type { SlotFacade } from './slotFacade.ts'
+export {
+  areSlotsAtSessionDefault,
+  clearDisplaySessionDefaults,
+  displaySessionDefaultChanges,
+  getConfResolved,
+  toggleSlotsSessionDefault,
+} from './promotableDefaults.ts'

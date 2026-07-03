@@ -15,6 +15,8 @@ interface ReadsModel {
   setShowMismatches: (show: boolean) => void
   showSoftClipping: boolean
   toggleSoftClipping: () => void
+  isShowSoftClippingDefault: boolean
+  toggleShowSoftClippingDefault: () => void
   showInterbaseIndicators: boolean
   setShowInterbaseIndicators: (show: boolean) => void
   mismatchAlpha: boolean
@@ -48,6 +50,13 @@ export function getReadsMenuItem(model: ReadsModel) {
       checkboxItem('Show soft clipping', model.showSoftClipping, () => {
         model.toggleSoftClipping()
       }),
+      checkboxItem(
+        'Show soft clipping by default on all alignments tracks',
+        model.isShowSoftClippingDefault,
+        () => {
+          model.toggleShowSoftClippingDefault()
+        },
+      ),
       {
         label: 'Advanced',
         type: 'subMenu' as const,

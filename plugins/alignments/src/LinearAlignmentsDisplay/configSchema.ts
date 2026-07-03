@@ -73,6 +73,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 7,
         description: 'Height of each feature (read) in pixels',
+        promotable: true,
       },
       /**
        * #slot
@@ -81,6 +82,7 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
         type: 'number',
         defaultValue: 1,
         description: 'Spacing between features in pixels',
+        promotable: true,
       },
       /**
        * #slot
@@ -428,11 +430,10 @@ export default function configSchemaFactory(_pluginManager: PluginManager) {
        * #slot
        */
       showSoftClipping: {
-        type: 'frozen',
-        defaultValue: null,
-        description:
-          'Draw soft-clipped read portions. null = follow the session-wide default for alignments tracks (off when none is set); true/false pin this track regardless of that default',
-        advanced: true,
+        type: 'boolean',
+        defaultValue: false,
+        description: 'Draw soft-clipped read portions',
+        promotable: true,
       },
     },
     {

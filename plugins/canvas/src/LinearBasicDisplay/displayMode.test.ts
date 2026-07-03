@@ -181,41 +181,41 @@ describe('canvas display displayMode resolution', () => {
     expect(display.isDisplayModeDefault).toBe(false)
   })
 
-  it('lets an explicit Normal pin override a compact session default', () => {
-    // the sentinel-ambiguity regression: on a track inheriting a compact
-    // default, choosing Normal must actually show normal, not silently re-resolve
-    // back to compact (the dead radio option)
-    const { session, display } = createDisplay()
+  it('setting Normal un-pins a track, so it follows the session default', () => {
+    // uniform "at the slot default = inherit" rule: Normal is the slot default,
+    // so choosing it can't pin Normal over a session default — the track
+    // re-inherits. To hold an explicit small height, pin compact/superCompact.
+    const { session, display } = createDisplay('compact')
     session.setDisplayTypeDefault(
       'LinearBasicDisplay',
       'displayMode',
-      'compact',
+      'superCompact',
     )
-    expect(display.displayMode).toBe('compact')
+    expect(display.displayMode).toBe('compact') // pinned wins
 
-    display.setDisplayMode('normal')
-    expect(display.displayMode).toBe('normal')
-    // now an explicit pin, so it no longer reads as affected by the default
-    expect(display.sessionDefaultChanges()).toEqual([])
+    display.setDisplayMode('normal') // un-pins
+    expect(display.displayMode).toBe('superCompact') // now inherits the default
+    expect(display.sessionDefaultChanges()).toEqual([
+      { path: ['displayMode'], from: 'normal', to: 'superCompact' },
+    ])
   })
 
   it('resetDisplayMode un-pins a track so it follows the default again', () => {
-    const { session, display } = createDisplay()
+    const { session, display } = createDisplay('compact')
     session.setDisplayTypeDefault(
       'LinearBasicDisplay',
       'displayMode',
-      'compact',
+      'superCompact',
     )
-    display.setDisplayMode('normal')
     expect(display.isDisplayModePinned).toBe(true)
-    expect(display.displayMode).toBe('normal')
+    expect(display.displayMode).toBe('compact')
 
     display.resetDisplayMode()
     expect(display.isDisplayModePinned).toBe(false)
-    // back to inheriting the compact session default
-    expect(display.displayMode).toBe('compact')
+    // back to inheriting the session default
+    expect(display.displayMode).toBe('superCompact')
     expect(display.sessionDefaultChanges()).toEqual([
-      { path: ['displayMode'], from: 'normal', to: 'compact' },
+      { path: ['displayMode'], from: 'normal', to: 'superCompact' },
     ])
   })
 
