@@ -80,9 +80,9 @@ export function progressLabel(
 }
 
 /**
- * Human label for a status: the message, with a rounded percentage appended
- * when the status is determinate (e.g. `"Downloading 45%"`). The single place
- * the percentage suffix is formatted, shared by the loading dialogs/overlays.
+ * {@link progressLabel} for an {@link RpcStatus}: the message, with a rounded
+ * percentage appended when the status is determinate (e.g. `"Downloading 45%"`).
+ * The form the loading dialogs use, holding the raw status object.
  */
 export function statusProgressLabel(status: RpcStatus | undefined) {
   return progressLabel(statusMessageText(status), statusFraction(status))
