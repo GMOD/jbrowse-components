@@ -74,6 +74,9 @@ export function pslToFeatures(
 
 export const MINIMUM_BLAT_LENGTH = 20
 
+// UCSC rejects queries over 25kb server-side; enforce locally for a clear message
+export const MAXIMUM_BLAT_LENGTH = 25000
+
 export function buildBlatBody({
   db,
   seq,
@@ -138,10 +141,17 @@ export async function runBlat({
   urlBase?: string
   apiKey?: string
 }) {
+  // a browser fetch straight to genome.ucsc.edu is CORS-blocked and surfaces as
+  // an opaque TypeError; rethrow with the proxy requirement spelled out
   const response = await fetch(urlBase, {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: buildBlatBody({ db, seq, apiKey }),
+  }).catch((e: unknown) => {
+    throw new Error(
+      `Could not reach the BLAT server at ${urlBase}. In the browser this must ` +
+        `be a CORS-enabled proxy, not genome.ucsc.edu directly (${e}).`,
+    )
   })
   if (!response.ok) {
     throw new Error(

@@ -15,6 +15,7 @@ import { observer } from 'mobx-react'
 import {
   BlatChallengeError,
   DEFAULT_BLAT_URL,
+  MAXIMUM_BLAT_LENGTH,
   MINIMUM_BLAT_LENGTH,
   buildBlatBody,
   parseBlatResponse,
@@ -73,6 +74,7 @@ const BlatDialog = observer(function BlatDialog({
 
   const cleanSeq = stripFasta(seq)
   const tooShort = cleanSeq.length < MINIMUM_BLAT_LENGTH
+  const tooLong = cleanSeq.length > MAXIMUM_BLAT_LENGTH
 
   // desktop routes through the main process to bypass renderer CORS (so a
   // direct hgBlat call with the user's apiKey works without a proxy); web uses
@@ -210,6 +212,11 @@ const BlatDialog = observer(function BlatDialog({
           placeholder="Paste DNA sequence or FASTA"
           slotProps={{ htmlInput: { style: { fontFamily: 'monospace' } } }}
         />
+        {tooLong ? (
+          <Typography color="error">
+            {`Sequence is ${cleanSeq.length.toLocaleString()} bp; UCSC BLAT is limited to ${MAXIMUM_BLAT_LENGTH.toLocaleString()} bp`}
+          </Typography>
+        ) : null}
         {error ? <Typography color="error">{`${error}`}</Typography> : null}
         {challenged ? (
           <Typography>
@@ -238,7 +245,7 @@ const BlatDialog = observer(function BlatDialog({
         ) : null}
         <Button
           variant="contained"
-          disabled={loading || tooShort || !db}
+          disabled={loading || tooShort || tooLong || !db}
           onClick={() => void handleSubmit()}
         >
           {loading ? 'Searching…' : 'Submit'}
