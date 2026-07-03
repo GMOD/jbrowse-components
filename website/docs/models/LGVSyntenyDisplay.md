@@ -109,6 +109,7 @@ and docs.
 [sashimiArcsHeight](../linearalignmentsdisplay#getter-sashimiarcsheight),
 [readConnectionsHeight](../linearalignmentsdisplay#getter-readconnectionsheight),
 [showSoftClipping](../linearalignmentsdisplay#getter-showsoftclipping),
+[isShowSoftClippingDefault](../linearalignmentsdisplay#getter-isshowsoftclippingdefault),
 [isChainMode](../linearalignmentsdisplay#getter-ischainmode),
 [showLinkedReadLines](../linearalignmentsdisplay#getter-showlinkedreadlines),
 [scaleType](../linearalignmentsdisplay#getter-scaletype),
@@ -126,6 +127,7 @@ and docs.
 [filterBy](../linearalignmentsdisplay#getter-filterby),
 [featureHeight](../linearalignmentsdisplay#getter-featureheight),
 [featureSpacing](../linearalignmentsdisplay#getter-featurespacing),
+[isCompactnessDefault](../linearalignmentsdisplay#getter-iscompactnessdefault),
 [maxHeight](../linearalignmentsdisplay#getter-maxheight),
 [showSashimiLabels](../linearalignmentsdisplay#getter-showsashimilabels),
 [chainIdMap](../linearalignmentsdisplay#getter-chainidmap),
@@ -210,6 +212,8 @@ and docs.
 [setFilterBy](../linearalignmentsdisplay#action-setfilterby),
 [setShowOutline](../linearalignmentsdisplay#action-setshowoutline),
 [toggleSoftClipping](../linearalignmentsdisplay#action-togglesoftclipping),
+[toggleShowSoftClippingDefault](../linearalignmentsdisplay#action-toggleshowsoftclippingdefault),
+[toggleCompactnessDefault](../linearalignmentsdisplay#action-togglecompactnessdefault),
 [toggleMismatchAlpha](../linearalignmentsdisplay#action-togglemismatchalpha),
 [toggleShowLowFreqMismatches](../linearalignmentsdisplay#action-toggleshowlowfreqmismatches),
 [setSortedBy](../linearalignmentsdisplay#action-setsortedby),
@@ -278,7 +282,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -395,6 +400,14 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
+
+### Available via [PromotableDefaultsMixin](../promotabledefaultsmixin)
+
+**Methods:**
+[sessionDefaultChanges](../promotabledefaultsmixin#method-sessiondefaultchanges)
+
+**Actions:**
+[clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
 <details open>
 <summary>LGVSyntenyDisplay - Properties</summary>

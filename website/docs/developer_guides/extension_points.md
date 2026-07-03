@@ -127,6 +127,7 @@ that follow are hand-written.
 | `Core-extendPluggableElement`                 | sync  | Mutate any pluggable element after it is created                |
 | `Core-extendSession`                          | sync  | Extend the session model with extra state or actions            |
 | `Core-extendWorker`                           | sync  | Register extra RPC methods on the web worker                    |
+| `Core-extraAboutPanel`                        | sync  | Add extra panels to a track's About dialog                      |
 | `Core-extraFeaturePanel`                      | sync  | Add extra panels to the feature details widget                  |
 | `Core-extraTrackMenuItems`                    | sync  | Add items to a single track's menu                              |
 | `Core-guessAdapterForLocation`                | sync  | Guess an adapter config from a file location                    |

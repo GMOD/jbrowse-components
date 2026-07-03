@@ -323,7 +323,7 @@ type getTrackOverlayData = (
   yOffsets: any[]
   heights: any[]
   getX: (level: number, refName: string, coord: number) => number | undefined
-  getY: (level: number, c: LayoutRecord) => any
+  getY: (level: number, c: LayoutRecord) => number
 }
 ```
 

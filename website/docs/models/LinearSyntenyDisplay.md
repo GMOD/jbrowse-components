@@ -70,7 +70,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -144,18 +145,6 @@ type instanceData = SyntenyGeometry | undefined
 instanceData: undefined as SyntenyGeometry | undefined
 ```
 
-#### volatile: statusProgress
-
-determinate progress fraction [0,1] for the current status, or undefined when
-the in-flight phase is indeterminate
-
-```ts
-// type signature
-type statusProgress = number | undefined
-// code
-statusProgress: undefined as number | undefined
-```
-
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -166,7 +155,6 @@ detail):
 | [`clickedFeatureIdx`](#volatile-clickedfeatureidx) | `number`                          |
 | [`contextMenuAnchor`](#volatile-contextmenuanchor) | `ClickCoord \| undefined`         |
 | [`fetching`](#volatile-fetching)                   | `false`                           |
-| [`statusMessage`](#volatile-statusmessage)         | `string \| undefined`             |
 | [`assembliesSwapped`](#volatile-assembliesswapped) | `false`                           |
 
 </details>
@@ -217,15 +205,6 @@ contextMenuAnchor: undefined as ClickCoord | undefined
 type fetching = false
 // code
 fetching: false
-```
-
-#### volatile: statusMessage
-
-```ts
-// type signature
-type statusMessage = string | undefined
-// code
-statusMessage: undefined as string | undefined
 ```
 
 #### volatile: assembliesSwapped
@@ -461,26 +440,19 @@ type setRpcData = (
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                 | Signature                                   |
-| ------------------------------------------------------ | ------------------------------------------- |
-| [`setStatusMessage`](#action-setstatusmessage)         | `(status?: RpcStatus \| undefined) => void` |
-| [`setFetching`](#action-setfetching)                   | `(arg: boolean) => void`                    |
-| [`setAssembliesSwapped`](#action-setassembliesswapped) | `(arg: boolean) => void`                    |
-| [`setHoveredFeatureIdx`](#action-sethoveredfeatureidx) | `(idx: number) => void`                     |
-| [`setClickedFeatureIdx`](#action-setclickedfeatureidx) | `(idx: number) => void`                     |
-| [`openContextMenu`](#action-opencontextmenu)           | `(anchor: ClickCoord) => void`              |
-| [`closeContextMenu`](#action-closecontextmenu)         | `() => void`                                |
+| Member                                                 | Signature                      |
+| ------------------------------------------------------ | ------------------------------ |
+| [`setFetching`](#action-setfetching)                   | `(arg: boolean) => void`       |
+| [`setAssembliesSwapped`](#action-setassembliesswapped) | `(arg: boolean) => void`       |
+| [`setHoveredFeatureIdx`](#action-sethoveredfeatureidx) | `(idx: number) => void`        |
+| [`setClickedFeatureIdx`](#action-setclickedfeatureidx) | `(idx: number) => void`        |
+| [`openContextMenu`](#action-opencontextmenu)           | `(anchor: ClickCoord) => void` |
+| [`closeContextMenu`](#action-closecontextmenu)         | `() => void`                   |
 
 </details>
 
 <details>
 <summary>LinearSyntenyDisplay - Actions (all signatures)</summary>
-
-#### action: setStatusMessage
-
-```ts
-type setStatusMessage = (status?: RpcStatus | undefined) => void
-```
 
 #### action: setFetching
 

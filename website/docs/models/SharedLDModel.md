@@ -35,7 +35,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -178,6 +179,19 @@ configuration: ConfigurationReference(configSchema)
 <details open>
 <summary>SharedLDModel - Volatiles</summary>
 
+#### volatile: focalSnpLocus
+
+Locus (`refName:start`) of the focal SNP whose LD row+column is emphasized, or
+undefined. Keyed by locus rather than array index so the selection survives a
+re-fetch that reorders SNPs.
+
+```ts
+// type signature
+type focalSnpLocus = string | undefined
+// code
+focalSnpLocus: undefined as string | undefined
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -211,6 +225,15 @@ than computing LD from VCF genotypes
 
 ```ts
 type snps = LDSnp[]
+```
+
+#### getter: focalSnpIndex
+
+Array index of the focal SNP in the current `snps`, or -1 if none is selected or
+the locus is no longer present after a re-fetch.
+
+```ts
+type focalSnpIndex = number
 ```
 
 #### getter: effectiveLineZoneHeight
@@ -545,6 +568,7 @@ detail):
 | Member                                                             | Signature                                  |
 | ------------------------------------------------------------------ | ------------------------------------------ |
 | [`setRpcData`](#action-setrpcdata)                                 | `(data: LDDataResult \| null) => void`     |
+| [`setFocalSnp`](#action-setfocalsnp)                               | `(snp: LDSnp \| undefined) => void`        |
 | [`setLineZoneHeight`](#action-setlinezoneheight)                   | `(n: number) => void`                      |
 | [`setMafFilter`](#action-setmaffilter)                             | `(arg: number) => void`                    |
 | [`setLengthCutoffFilter`](#action-setlengthcutofffilter)           | `(arg: number) => void`                    |
@@ -572,6 +596,12 @@ detail):
 
 ```ts
 type setRpcData = (data: LDDataResult | null) => void
+```
+
+#### action: setFocalSnp
+
+```ts
+type setFocalSnp = (snp: LDSnp | undefined) => void
 ```
 
 #### action: setLineZoneHeight

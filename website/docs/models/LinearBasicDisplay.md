@@ -65,10 +65,17 @@ and docs.
 
 ### Available via [LinearCanvasBaseDisplay](../linearcanvasbasedisplay)
 
-**Properties:**
+**Properties:** [refName](../linearcanvasbasedisplay#property-refname),
+[start](../linearcanvasbasedisplay#property-start),
+[end](../linearcanvasbasedisplay#property-end),
+[name](../linearcanvasbasedisplay#property-name),
 [configuration](../linearcanvasbasedisplay#property-configuration),
 [jexlFiltersSetting](../linearcanvasbasedisplay#property-jexlfilterssetting),
-[pinnedFeatureIds](../linearcanvasbasedisplay#property-pinnedfeatureids)
+[pinnedFeatureIds](../linearcanvasbasedisplay#property-pinnedfeatureids),
+[soloFeatureIds](../linearcanvasbasedisplay#property-solofeatureids),
+[soloApplied](../linearcanvasbasedisplay#property-soloapplied),
+[hiddenFeatureIds](../linearcanvasbasedisplay#property-hiddenfeatureids),
+[featureHighlights](../linearcanvasbasedisplay#property-featurehighlights)
 
 **Volatiles:** [rpcDataMap](../linearcanvasbasedisplay#volatile-rpcdatamap),
 [densityStatsPerRegion](../linearcanvasbasedisplay#volatile-densitystatsperregion),
@@ -77,9 +84,6 @@ and docs.
 [hoveredRegionIndex](../linearcanvasbasedisplay#volatile-hoveredregionindex),
 [mouseoverExtraInformation](../linearcanvasbasedisplay#volatile-mouseoverextrainformation),
 [contextMenuInfo](../linearcanvasbasedisplay#volatile-contextmenuinfo),
-[soloFeatureIds](../linearcanvasbasedisplay#volatile-solofeatureids),
-[soloApplied](../linearcanvasbasedisplay#volatile-soloapplied),
-[hiddenFeatureIds](../linearcanvasbasedisplay#volatile-hiddenfeatureids),
 [userFeatureDensityLimit](../linearcanvasbasedisplay#volatile-userfeaturedensitylimit),
 [byteEstimateVisibleBp](../linearcanvasbasedisplay#volatile-byteestimatevisiblebp),
 [heightBeforeExpand](../linearcanvasbasedisplay#volatile-heightbeforeexpand),
@@ -133,11 +137,12 @@ and docs.
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
 [hoveredSubfeature](../linearcanvasbasedisplay#getter-hoveredsubfeature),
 [featureItemMap](../linearcanvasbasedisplay#getter-featureitemmap),
+[highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
+[highlightedFeatureIds](../linearcanvasbasedisplay#getter-highlightedfeatureids),
 [flatbushIndexes](../linearcanvasbasedisplay#getter-flatbushindexes)
 
 **Methods:**
 [observedMaxDensity](../linearcanvasbasedisplay#method-observedmaxdensity),
-[sessionDefaultChanges](../linearcanvasbasedisplay#method-sessiondefaultchanges),
 [activeFilters](../linearcanvasbasedisplay#method-activefilters),
 [rpcProps](../linearcanvasbasedisplay#method-rpcprops),
 [getFeatureById](../linearcanvasbasedisplay#method-getfeaturebyid),
@@ -169,13 +174,14 @@ and docs.
 [clearSolo](../linearcanvasbasedisplay#action-clearsolo),
 [hideFeature](../linearcanvasbasedisplay#action-hidefeature),
 [showAllHidden](../linearcanvasbasedisplay#action-showallhidden),
+[setFeatureHighlights](../linearcanvasbasedisplay#action-setfeaturehighlights),
+[clearFeatureHighlights](../linearcanvasbasedisplay#action-clearfeaturehighlights),
 [applySolo](../linearcanvasbasedisplay#action-applysolo),
 [soloFeature](../linearcanvasbasedisplay#action-solofeature),
 [clearAllFeatureFilters](../linearcanvasbasedisplay#action-clearallfeaturefilters),
 [selectFeature](../linearcanvasbasedisplay#action-selectfeature),
 [clearSelection](../linearcanvasbasedisplay#action-clearselection),
 [setShowLabels](../linearcanvasbasedisplay#action-setshowlabels),
-[clearSessionDefaults](../linearcanvasbasedisplay#action-clearsessiondefaults),
 [setAutoHeight](../linearcanvasbasedisplay#action-setautoheight),
 [setShowDescriptions](../linearcanvasbasedisplay#action-setshowdescriptions),
 [setJexlFilters](../linearcanvasbasedisplay#action-setjexlfilters),
@@ -204,7 +210,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -321,6 +328,14 @@ and docs.
 [cancelFetch](../fetchmixin#action-cancelfetch),
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
+
+### Available via [PromotableDefaultsMixin](../promotabledefaultsmixin)
+
+**Methods:**
+[sessionDefaultChanges](../promotabledefaultsmixin#method-sessiondefaultchanges)
+
+**Actions:**
+[clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
 
 <details open>
 <summary>LinearBasicDisplay - Volatiles</summary>

@@ -45,7 +45,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -163,6 +164,14 @@ and docs.
 [cancelFetchByUser](../fetchmixin#action-cancelfetchbyuser),
 [runFetch](../fetchmixin#action-runfetch)
 
+### Available via [PromotableDefaultsMixin](../promotabledefaultsmixin)
+
+**Methods:**
+[sessionDefaultChanges](../promotabledefaultsmixin#method-sessiondefaultchanges)
+
+**Actions:**
+[clearSessionDefaults](../promotabledefaultsmixin#action-clearsessiondefaults)
+
 <details open>
 <summary>LinearCanvasBaseDisplay - Properties</summary>
 
@@ -185,26 +194,140 @@ jexlFiltersSetting: types.maybe(types.array(types.string))
 Feature ids the user pinned to the top of the layout via the feature right-click
 menu. Pinned features are inserted first into the greedy row-packer, so they
 hold the topmost rows in their bp range across zoom re-packs (see packRef in
-layout.ts).
+layout.ts). stripDefault so a display with nothing pinned omits the empty array
+from its snapshot.
 
 ```ts
 // type signature
-type pinnedFeatureIds = IArrayType<ISimpleType<string>>
+type pinnedFeatureIds = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
 // code
-pinnedFeatureIds: types.array(types.string)
+pinnedFeatureIds: types.stripDefault(types.array(types.string), [])
+```
+
+#### property: soloFeatureIds
+
+"Show only these features": the collected set the user builds by ctrl+clicking
+features (or via the right-click menu). Only isolates the view once
+`soloApplied` is true — before that it's a highlighted selection that hides
+nothing, so the candidates stay clickable. Persistent so a view can be opened
+pre-focused declaratively (e.g. collapse-introns seeds it in the new view's
+snapshot). stripDefault so an unfocused display omits the empty array from its
+snapshot.
+
+```ts
+// type signature
+type soloFeatureIds = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+soloFeatureIds: types.stripDefault(types.array(types.string), [])
+```
+
+#### property: soloApplied
+
+Whether the collected soloFeatureIds set is actually isolating the view (worker
+drops non-members). Decoupled from collection so building a multi-feature set
+doesn't hide the features mid-build.
+
+```ts
+// type signature
+type soloApplied = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+soloApplied: types.stripDefault(types.boolean, false)
+```
+
+#### property: hiddenFeatureIds
+
+"Hide this feature" exclusion set (inverse of solo): the worker drops these from
+layout/drawing. Applies immediately per feature — no collect-then-apply.
+Persistent like the solo set, so a hidden feature stays hidden across
+reload/session save. stripDefault so a display with nothing hidden omits the
+empty array from its snapshot.
+
+```ts
+// type signature
+type hiddenFeatureIds = IOptionalIType<
+  IArrayType<ISimpleType<string>>,
+  [undefined]
+>
+// code
+hiddenFeatureIds: types.stripDefault(types.array(types.string), [])
+```
+
+#### property: featureHighlights
+
+Declarative feature highlights, typically seeded by a text search (highlight the
+gene you searched for). Each entry pins a feature by its span+name signature
+rather than its uniqueId — trix never serializes the uniqueId and it isn't
+stable anyway — and is resolved against rendered features on the main thread.
+stripDefault so a display with no highlights omits the empty array from its
+snapshot.
+
+```ts
+// type signature
+type featureHighlights = IOptionalIType<IArrayType<IModelType<{ refName: ISimpleType<string>; start: ISimpleType<number>; end: ISimpleType<number>; name: IMaybe<ISimpleType<string>>; }, {}, _NotCustomized, _NotCustomized>>, [...]>
+// code
+featureHighlights: types.stripDefault(
+            types.array(FeatureHighlightModel),
+            [],
+          )
 ```
 
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                   |
-| ------------------------------------------ | --------------------------- |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>` |
+| Member                                     | Signature                     |
+| ------------------------------------------ | ----------------------------- |
+| [`refName`](#property-refname)             | `ISimpleType<string>`         |
+| [`start`](#property-start)                 | `ISimpleType<number>`         |
+| [`end`](#property-end)                     | `ISimpleType<number>`         |
+| [`name`](#property-name)                   | `IMaybe<ISimpleType<string>>` |
+| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>`   |
 
 </details>
 
 <details>
 <summary>LinearCanvasBaseDisplay - Properties (all signatures)</summary>
+
+#### property: refName
+
+```ts
+// type signature
+type refName = ISimpleType<string>
+// code
+refName: types.string
+```
+
+#### property: start
+
+```ts
+// type signature
+type start = ISimpleType<number>
+// code
+start: types.number
+```
+
+#### property: end
+
+```ts
+// type signature
+type end = ISimpleType<number>
+// code
+end: types.number
+```
+
+#### property: name
+
+```ts
+// type signature
+type name = IMaybe<ISimpleType<string>>
+// code
+name: types.maybe(types.string)
+```
 
 #### property: configuration
 
@@ -232,9 +355,6 @@ detail):
 | [`hoveredRegionIndex`](#volatile-hoveredregionindex)               | `number \| undefined`                                                                                          |
 | [`mouseoverExtraInformation`](#volatile-mouseoverextrainformation) | `string \| undefined`                                                                                          |
 | [`contextMenuInfo`](#volatile-contextmenuinfo)                     | `{ item: FlatbushItem; displayedRegionIndex: number; clientX: number; clientY: number; } \| undefined`         |
-| [`soloFeatureIds`](#volatile-solofeatureids)                       | `IObservableArray<string>`                                                                                     |
-| [`soloApplied`](#volatile-soloapplied)                             | `false`                                                                                                        |
-| [`hiddenFeatureIds`](#volatile-hiddenfeatureids)                   | `IObservableArray<string>`                                                                                     |
 | [`userFeatureDensityLimit`](#volatile-userfeaturedensitylimit)     | `number \| undefined`                                                                                          |
 | [`byteEstimateVisibleBp`](#volatile-byteestimatevisiblebp)         | `number \| undefined`                                                                                          |
 | [`heightBeforeExpand`](#volatile-heightbeforeexpand)               | `number \| undefined`                                                                                          |
@@ -324,33 +444,6 @@ contextMenuInfo: undefined as
       clientY: number
     }
   | undefined
-```
-
-#### volatile: soloFeatureIds
-
-```ts
-// type signature
-type soloFeatureIds = IObservableArray<string>
-// code
-soloFeatureIds: observable.array<string>()
-```
-
-#### volatile: soloApplied
-
-```ts
-// type signature
-type soloApplied = false
-// code
-soloApplied: false
-```
-
-#### volatile: hiddenFeatureIds
-
-```ts
-// type signature
-type hiddenFeatureIds = IObservableArray<string>
-// code
-hiddenFeatureIds: observable.array<string>()
 ```
 
 #### volatile: userFeatureDensityLimit
@@ -504,6 +597,8 @@ detail):
 | [`hoveredFeature`](#getter-hoveredfeature)                         | `FlatbushItem \| null`                                            |
 | [`hoveredSubfeature`](#getter-hoveredsubfeature)                   | `SubfeatureInfo \| null`                                          |
 | [`featureItemMap`](#getter-featureitemmap)                         | `Map<string, FeatureItemEntry>`                                   |
+| [`highlightedFeatureIdSet`](#getter-highlightedfeatureidset)       | `ReadonlySet<string>`                                             |
+| [`highlightedFeatureIds`](#getter-highlightedfeatureids)           | `string[]`                                                        |
 | [`flatbushIndexes`](#getter-flatbushindexes)                       | `Map<number, FlatbushRegionIndexes>`                              |
 
 </details>
@@ -769,6 +864,18 @@ type hoveredSubfeature = SubfeatureInfo | null
 type featureItemMap = Map<string, FeatureItemEntry>
 ```
 
+#### getter: highlightedFeatureIdSet
+
+```ts
+type highlightedFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: highlightedFeatureIds
+
+```ts
+type highlightedFeatureIds = string[]
+```
+
 #### getter: flatbushIndexes
 
 ```ts
@@ -828,17 +935,16 @@ type colorMenuItems = () => {
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                                   | Signature                                                                                                                                                                                                                                      |
-| -------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`observedMaxDensity`](#method-observedmaxdensity)       | `(bpPerPx: number) => number`                                                                                                                                                                                                                  |
-| [`sessionDefaultChanges`](#method-sessiondefaultchanges) | `() => TrackConfigChange[]`                                                                                                                                                                                                                    |
-| [`rpcProps`](#method-rpcprops)                           | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: IObservableArray<string> \| undefined; hiddenFeatureIds: IObservableArray<...> \| undefined; theme: SerializableThemeArgs \| undefined; }` |
-| [`getFeatureById`](#method-getfeaturebyid)               | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                                             |
-| [`searchFeatureByID`](#method-searchfeaturebyid)         | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                       |
-| [`renderSvg`](#method-rendersvg)                         | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                   |
-| [`showSubmenuMenuItems`](#method-showsubmenumenuitems)   | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                 |
-| [`contextMenuItems`](#method-contextmenuitems)           | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                             |
-| [`trackMenuItems`](#method-trackmenuitems)               | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]`                      |
+| Member                                                 | Signature                                                                                                                                                                                                                                                                                                     |
+| ------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`observedMaxDensity`](#method-observedmaxdensity)     | `(bpPerPx: number) => number`                                                                                                                                                                                                                                                                                 |
+| [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<...>>) \| undefined; hiddenFeatureIds: (IMSTArray<...> & IStateTreeNode<...>) \| undefined; theme: SerializableThemeArgs \| undefined; }` |
+| [`getFeatureById`](#method-getfeaturebyid)             | `(featureId: string) => FlatbushItem \| undefined`                                                                                                                                                                                                                                                            |
+| [`searchFeatureByID`](#method-searchfeaturebyid)       | `(id: string) => readonly [number, number, number, number] \| undefined`                                                                                                                                                                                                                                      |
+| [`renderSvg`](#method-rendersvg)                       | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>`                                                                                                                                                  |
+| [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                                |
+| [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                                                                                            |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { ...; } \| { ...; })[]`                                                                                     |
 
 </details>
 
@@ -851,16 +957,10 @@ detail):
 type observedMaxDensity = (bpPerPx: number) => number
 ```
 
-#### method: sessionDefaultChanges
-
-```ts
-type sessionDefaultChanges = () => TrackConfigChange[]
-```
-
 #### method: rpcProps
 
 ```ts
-type rpcProps = () => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: IObservableArray<string> | undefined; hiddenFeatureIds: IObservableArray<...> | undefined; theme: SerializableThemeArgs | undefined; }
+type rpcProps = () => { displayConfig: DisplayConfig; maxFeatureDensity: any; colorByCDS: boolean; soloFeatureIds: (IMSTArray<ISimpleType<string>> & IStateTreeNode<IOptionalIType<...>>) | undefined; hiddenFeatureIds: (IMSTArray<...> & IStateTreeNode<...>) | undefined; theme: SerializableThemeArgs | undefined; }
 ```
 
 #### method: getFeatureById
@@ -970,13 +1070,14 @@ detail):
 | [`clearSolo`](#action-clearsolo)                                     | `() => void`                                                                                                                    |
 | [`hideFeature`](#action-hidefeature)                                 | `(featureId: string) => void`                                                                                                   |
 | [`showAllHidden`](#action-showallhidden)                             | `() => void`                                                                                                                    |
+| [`setFeatureHighlights`](#action-setfeaturehighlights)               | `(highlights: FeatureHighlight[]) => void`                                                                                      |
+| [`clearFeatureHighlights`](#action-clearfeaturehighlights)           | `() => void`                                                                                                                    |
 | [`applySolo`](#action-applysolo)                                     | `() => void`                                                                                                                    |
 | [`soloFeature`](#action-solofeature)                                 | `(featureId: string) => void`                                                                                                   |
 | [`clearAllFeatureFilters`](#action-clearallfeaturefilters)           | `() => void`                                                                                                                    |
 | [`selectFeature`](#action-selectfeature)                             | `(feature: Feature) => void`                                                                                                    |
 | [`clearSelection`](#action-clearselection)                           | `() => void`                                                                                                                    |
 | [`setShowLabels`](#action-setshowlabels)                             | `(value: "auto" \| "off" \| "on") => void`                                                                                      |
-| [`clearSessionDefaults`](#action-clearsessiondefaults)               | `() => void`                                                                                                                    |
 | [`setAutoHeight`](#action-setautoheight)                             | `(value: boolean) => void`                                                                                                      |
 | [`setShowDescriptions`](#action-setshowdescriptions)                 | `(value: boolean) => void`                                                                                                      |
 | [`setShowOutline`](#action-setshowoutline)                           | `(value: boolean) => void`                                                                                                      |
@@ -1139,6 +1240,18 @@ type hideFeature = (featureId: string) => void
 type showAllHidden = () => void
 ```
 
+#### action: setFeatureHighlights
+
+```ts
+type setFeatureHighlights = (highlights: FeatureHighlight[]) => void
+```
+
+#### action: clearFeatureHighlights
+
+```ts
+type clearFeatureHighlights = () => void
+```
+
 #### action: applySolo
 
 ```ts
@@ -1173,12 +1286,6 @@ type clearSelection = () => void
 
 ```ts
 type setShowLabels = (value: 'auto' | 'off' | 'on') => void
-```
-
-#### action: clearSessionDefaults
-
-```ts
-type clearSessionDefaults = () => void
 ```
 
 #### action: setAutoHeight

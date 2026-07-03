@@ -38,7 +38,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -152,19 +153,6 @@ uploads them to the shared backend keyed by track index.
 type geometry = DotplotGeometryData | undefined
 // code
 geometry: undefined as DotplotGeometryData | undefined
-```
-
-#### volatile: statusProgress
-
-determinate progress fraction [0,1] for the current status, or undefined when
-the in-flight phase is indeterminate. Pairs with the `statusMessage` volatile
-inherited from BaseDisplay.
-
-```ts
-// type signature
-type statusProgress = number | undefined
-// code
-statusProgress: undefined as number | undefined
 ```
 
 **Other members** (undocumented — signatures only, expand below for full
@@ -284,16 +272,6 @@ type renderSvg = (
 
 <details open>
 <summary>DotplotDisplay - Actions</summary>
-
-#### action: setStatusMessage
-
-Status callback for the in-flight fetch; derives the indeterminate message and
-the determinate progress fraction. Overrides BaseDisplay's string-only setter so
-the dotplot loading overlay can show a bar.
-
-```ts
-type setStatusMessage = (status?: RpcStatus | undefined) => void
-```
 
 **Other members** (undocumented — signatures only, expand below for full
 detail):

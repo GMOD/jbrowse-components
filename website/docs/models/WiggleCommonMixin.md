@@ -96,6 +96,16 @@ rpcDataMap: observable.map<number, WiggleDataResult>()
 <details open>
 <summary>WiggleCommonMixin - Getters</summary>
 
+#### getter: hasNoData
+
+True once a fetch has completed (loadedBpPerPx set) but every loaded region came
+back with zero features — lets the display show a "no data" message instead of
+an ambiguous flat baseline at score 0.
+
+```ts
+type hasNoData = boolean
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 

@@ -245,7 +245,6 @@ detail):
 | [`setSessionDB`](#action-setsessiondb)                                     | `(sessionDB: IDBPDatabase<SessionDB>) => void`                                                                    |
 | [`setPluginsUpdated`](#action-setpluginsupdated)                           | `() => void`                                                                                                      |
 | [`setReloadPluginManagerCallback`](#action-setreloadpluginmanagercallback) | `(callback: (configSnapshot: Record<string, unknown>, sessionSnapshot: Record<string, unknown>) => void) => void` |
-| [`setDefaultSession`](#action-setdefaultsession)                           | `() => void`                                                                                                      |
 | [`activateSession`](#action-activatesession)                               | `(id: string) => Promise<void>`                                                                                   |
 | [`setSavedSessionFavorite`](#action-setsavedsessionfavorite)               | `(id: string, favorite: boolean) => Promise<void>`                                                                |
 | [`deleteSavedSession`](#action-deletesavedsession)                         | `(id: string) => Promise<void>`                                                                                   |
@@ -289,12 +288,6 @@ type setReloadPluginManagerCallback = (
     sessionSnapshot: Record<string, unknown>,
   ) => void,
 ) => void
-```
-
-#### action: setDefaultSession
-
-```ts
-type setDefaultSession = () => void
 ```
 
 #### action: activateSession

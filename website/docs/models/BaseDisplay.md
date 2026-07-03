@@ -70,6 +70,19 @@ rpcDriverName: types.maybe(types.string)
 <details open>
 <summary>BaseDisplay - Volatiles</summary>
 
+#### volatile: statusProgress
+
+determinate progress fraction [0,1] for the current status, or undefined when
+the in-flight phase is indeterminate. Set alongside `statusMessage` by
+`setStatusMessage`; a display that never shows a bar simply leaves it undefined.
+
+```ts
+// type signature
+type statusProgress = number | undefined
+// code
+statusProgress: undefined as number | undefined
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -258,11 +271,11 @@ type reload = () => void
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                         | Signature                                |
-| ---------------------------------------------- | ---------------------------------------- |
-| [`setStatusMessage`](#action-setstatusmessage) | `(arg?: RpcStatus \| undefined) => void` |
-| [`setError`](#action-seterror)                 | `(error?: unknown) => void`              |
-| [`setRpcDriverName`](#action-setrpcdrivername) | `(rpcDriverName: string) => void`        |
+| Member                                         | Signature                                   |
+| ---------------------------------------------- | ------------------------------------------- |
+| [`setStatusMessage`](#action-setstatusmessage) | `(status?: RpcStatus \| undefined) => void` |
+| [`setError`](#action-seterror)                 | `(error?: unknown) => void`                 |
+| [`setRpcDriverName`](#action-setrpcdrivername) | `(rpcDriverName: string) => void`           |
 
 </details>
 
@@ -272,7 +285,7 @@ detail):
 #### action: setStatusMessage
 
 ```ts
-type setStatusMessage = (arg?: RpcStatus | undefined) => void
+type setStatusMessage = (status?: RpcStatus | undefined) => void
 ```
 
 #### action: setError

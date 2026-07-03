@@ -150,15 +150,6 @@ type menus = () => Menu[]
 <details open>
 <summary>JBrowseReactAppRootModel - Actions</summary>
 
-#### action: setDefaultSession
-
-BaseRootModel's setDefaultSession reuses defaultSession's literal name;
-react-app instead timestamps it so multiple "new sessions" don't collide.
-
-```ts
-type setDefaultSession = () => void
-```
-
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 

@@ -45,7 +45,8 @@ and docs.
 [rpcDriverName](../basedisplay#property-rpcdrivername)
 
 **Volatiles:** [error](../basedisplay#volatile-error),
-[statusMessage](../basedisplay#volatile-statusmessage)
+[statusMessage](../basedisplay#volatile-statusmessage),
+[statusProgress](../basedisplay#volatile-statusprogress)
 
 **Getters:** [parentTrack](../basedisplay#getter-parenttrack),
 [parentDisplay](../basedisplay#getter-parentdisplay),
@@ -244,10 +245,10 @@ hoveredFeature: undefined as HoveredFeature | undefined
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                   |
-| ------------------------------------------ | ------------------------------------------- |
-| [`rpcDataMap`](#volatile-rpcdatamap)       | `ObservableMap<number, MultiRowRegionData>` |
-| [`prefersOffset`](#volatile-prefersoffset) | `true`                                      |
+| Member                                     | Signature                                          |
+| ------------------------------------------ | -------------------------------------------------- |
+| [`rpcDataMap`](#volatile-rpcdatamap)       | `ObservableMap<number, MultiRowGetFeaturesResult>` |
+| [`prefersOffset`](#volatile-prefersoffset) | `true`                                             |
 
 </details>
 
@@ -258,7 +259,7 @@ detail):
 
 ```ts
 // type signature
-type rpcDataMap = ObservableMap<number, MultiRowRegionData>
+type rpcDataMap = ObservableMap<number, MultiRowGetFeaturesResult>
 // code
 rpcDataMap: observable.map<number, MultiRowRegionData>()
 ```
@@ -380,20 +381,12 @@ pinned px height. Drag-resize / fit-toggle write it via `setSlot`.
 type rowHeightSetting = number
 ```
 
-#### getter: autoRowHeight
-
-Per-row height in auto-fit mode: the display height split evenly across rows, so
-all rows stay visible as the row count grows.
-
-```ts
-type autoRowHeight = number
-```
-
 #### getter: rowHeight
 
-Resolved per-row height. `rowHeightSetting === 0` auto-fits (rows stretch to
-fill the display height); any positive value is pinned. Every consumer reads
-this, never `rowHeightSetting`.
+Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display height
+split evenly across rows so all rows stay visible as the row count grows. Any
+positive value is a pinned px height. Every consumer reads this, never
+`rowHeightSetting`.
 
 ```ts
 type rowHeight = number
@@ -586,7 +579,7 @@ detail):
 | [`setShowTree`](#action-setshowtree)                           | `(f: boolean) => void`                                                           |
 | [`setShowBranchLength`](#action-setshowbranchlength)           | `(f: boolean) => void`                                                           |
 | [`setHoveredFeature`](#action-sethoveredfeature)               | `(arg?: HoveredFeature \| undefined) => void`                                    |
-| [`setRpcData`](#action-setrpcdata)                             | `(regionIndex: number, data: MultiRowRegionData) => void`                        |
+| [`setRpcData`](#action-setrpcdata)                             | `(regionIndex: number, data: MultiRowGetFeaturesResult) => void`                 |
 | [`clearDisplaySpecificData`](#action-cleardisplayspecificdata) | `() => void`                                                                     |
 | [`startRenderingBackend`](#action-startrenderingbackend)       | `(backend: MultiRowRenderingBackend) => void`                                    |
 | [`fetchNeeded`](#action-fetchneeded)                           | `(needed: { region: Region; displayedRegionIndex: number; }[]) => Promise<void>` |
@@ -624,7 +617,7 @@ type setHoveredFeature = (arg?: HoveredFeature | undefined) => void
 #### action: setRpcData
 
 ```ts
-type setRpcData = (regionIndex: number, data: MultiRowRegionData) => void
+type setRpcData = (regionIndex: number, data: MultiRowGetFeaturesResult) => void
 ```
 
 #### action: clearDisplaySpecificData
