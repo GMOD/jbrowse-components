@@ -221,6 +221,29 @@ consecutive rows the way `AddRowDialog` already does. Reuses all multiway plumbi
 per-row search UI; no new renderer or adapter. The view is *derived from the gene*, so
 setup difficulty disappears.
 
+**Prototype exists in `~/src/jb2hubs` (website explorer) — graduate it into core.** The
+jb2hubs pangene explorer already validates the whole data model: `generatePangenomePangene.ts`
+walks `lh3/pangene`'s HPRC human100 GFA (W-lines = haplotype walks) into per-locus
+`gene → {haplotype, copyNumber}` matrices (static `public/pangenome/<id>.pangene.json`, 20
+curated structurally-variable loci — HBA/KIR/MHC-HLA/C4/AMY1/SMN…), rendered by a bespoke
+CSS-grid `PangeneMatrix.tsx` (references pinned, columns sorted by copy-number pattern). Synteny
+drilldown already launches `LinearSyntenyView` with pairwise gene tracks — but via *deep-link
+URLs*, so the navigation lives in URL construction, not the browser. Two rails it hasn't jumped:
+curated-loci-bound (20 hand-picked, not any-gene) and website-bespoke (not a JBrowse primitive).
+
+Next step: **make the matrix the navigator, not a static picture.** Click a gene row / haplotype
+cell → drive a `LinearSyntenyView` to that gene across exactly the haplotypes that carry it (matrix
+order). The matrix answers "which haplotypes matter" (copy 0/2/3); the ribbons answer "how they
+differ." This internalizes the existing deep-link seam into the core "locate gene → build synteny
+init" primitive above — the copy-number matrix *stays* a curated website widget (editorial
+storytelling), only the navigation graduates, so it then works for any gene in any deployment.
+Sequence: (a) navigation primitive first (low-risk, no new renderer/adapter, converts the whole
+website effort into a browser capability); (b) data generality via impg on-demand `impg query`
+projection second (the `pangenome-build/` pipeline + `aws/ortholog-assembler`-style service already
+sketched) — any region live, not 20 precomputed loci, slotting behind the same locator (placements
+from precomputed walks vs live projection are interchangeable). Mouse (mm39) analog is planned in
+jb2hubs `agent-docs/MOUSE_PANGENOME_PLAN.md`.
+
 **PanSN + IMPG (complementary, for alignments-without-annotations).** When there are
 alignments but no gene labels, project a locus transitively through an all-vs-all PanSN
 PAF (PR #4985) — a JS port of IMPG's `query_transitive_dfs` bounded to loaded levels
@@ -300,11 +323,17 @@ by hand") is one of four defects:
 - **Fold semantics are wrong for components.** Accumulator-chaining is right for
   *transforming data* (menu arrays, the `customizeAbout` snapshot) but for
   *contributing UI* it means last-loaded-plugin-clobbers-earlier with no
-  conflict signal. Proof: `FeatureDetails.tsx` renders `Core-extraFeaturePanel`
-  as a *single* `PluggableComponent` slot — two plugins both adding a panel,
-  plugin B receives A's component as its `DefaultPanel`; if B forgets to render
+  conflict signal. Proof (historical): the "extra panel" points rendered as a
+  *single* `PluggableComponent` slot — two plugins both adding a panel, plugin B
+  receives A's component as its `DefaultPanel`; if B forgets to render
   `<DefaultPanel/>`, A silently vanishes, and which wins depends on load order.
   The "add a panel" point can't reliably add two panels.
+  **RESOLVED for both panel points:** `Core-extraFeaturePanel` and (2026-07)
+  `Core-extraAboutPanel` now accumulate an array (`evaluateExtensionPoint([...])`
+  + `.flat().map()`), so panels compose in registration order; a legacy bare
+  component is normalized in. The three About points are now typed in the
+  registry too. The remaining defects (dispatch-by-key filtering, `trackId`
+  fragility, five names for one idea, replace-style clobber) still stand.
 - **`trackId` is the most fragile key.** `copyTrackSnapshot` (`TrackMenu.ts:42`)
   rewrites it (`-<timestamp>-sessionTrack`), so the correct filter is a prefix
   regex, not the `===` the docs show first. You key on an id the system mutates.
@@ -496,6 +525,70 @@ logic.
 **Inter-chromosomal UI.** `getHeader` already computes `hasInterChromosomalData` but
 never surfaces it; when true, show a chromosome-pair selector (chr1 × chr2) to navigate
 inter-chromosomal contact blocks without a manual multi-region view.
+
+## Multi-sample variant display
+
+Ideas from an analysis of `LinearMultiSampleVariantDisplay` /
+`LinearMultiSampleVariantMatrixDisplay` (both share
+`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The opt-in
+genotype-quality masking/dimming idea has its own detailed plan in
+[MULTISAMPLE_VARIANT_QUALITY_HANDOFF.md](MULTISAMPLE_VARIANT_QUALITY_HANDOFF.md);
+the items below are the *other*, unrelated findings. Read
+`plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
+invalidation tiers constrain all of these.
+
+**Pedigree / inheritance awareness (biggest biological ceiling).** There is no
+pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on
+arbitrary `samplesTsv` columns (`shared/variantLegend.ts::getSampleGroupLegendItems`).
+If the sample metadata carried `father`/`mother`/`affected`, the per-sample genotypes
+(already fetched) are enough to compute and highlight **de novo mutations**, **compound
+hets**, and **Mendelian-error sites**. Aligns with the existing trio-crossover work.
+Large but high-value; start by defining the pedigree metadata shape (columns in
+`samplesTsv`, or a dedicated pedigree file) and a worker-side per-site classification
+that bakes a highlight color into the existing `cellColors` array (same
+bake-into-color discipline as `featureColor`), rather than a new render pass.
+
+**More `featureColor` presets (cheapest wins — no new RPC field).** `featureColor`
+already supports arbitrary jexl plus one built-in preset (consequence impact,
+`shared/variantConsequence.ts`, surfaced in the "Color cells by" menu). These read
+`INFO` fields the feature already carries, so they are near-clones of the consequence
+preset with zero worker-plumbing changes:
+- **gnomAD / AF rarity** — color by `INFO/AF` or `AF_popmax` so ultra-rare variants pop
+  (the classic cohort-filtering read).
+- **ClinVar significance** — `INFO/CLNSIG` → pathogenic/benign tiers.
+- **Specific SO consequence** — missense vs synonymous vs LOF, not just the 4 impact
+  tiers `getVariantImpact` currently collapses to.
+Each is a new entry alongside `CONSEQUENCE_IMPACT_JEXL` plus a legend key.
+
+**Per-site summary lane.** The matrix already reserves a resizable `lineZoneHeight`
+band above the grid (`components/LinesConnectingMatrixToGenomicPosition.tsx`). A
+companion lane showing **carrier count / allele frequency / call-rate** per site would
+give the "which sites matter" read that's missing. `mostFrequentAlt`'s AF is already
+computed for the MAF filter (`shared/minorAlleleFrequencyUtils.ts`) and then discarded —
+surfacing it is mostly a rendering task.
+
+**Filter & sort samples by metadata attribute.** Today you can *color* rows by a
+metadata column but not *show only cases* / *only one population*, and sort is limited to
+one variant's genotype (right-click → Sort by genotype, non-ref count descending). A
+metadata-based sample filter is a natural extension of the existing `subtreeFilter`
+mechanism; a metadata sort extends `sortByGenotype`. Core cohort operations that are
+currently missing.
+
+**Matrix connector-line hover is thin and O(features)/mousemove.** In
+`LinesConnectingMatrixToGenomicPosition.tsx` the hover shows only `feature.get('name')`
+and rescans every line with `pointToSegmentDist` on each mousemove
+(`AllLines.onMouseMove`, ~:160-190); `getLineGeometry` is recomputed by several sibling
+components each render, and the crosshair-line and hovered-line are separate code paths
+computing the same `idx*w + w/2` geometry. Enrich the tooltip (position / ref / alt),
+add click-through to feature detail, and dedupe the geometry.
+
+**Matrix ref/no-call cells are silently non-interactive.** Hover requires a decoded
+genotype (`LinearMultiSampleVariantMatrixDisplay/components/VariantMatrixComponent.tsx:86`),
+so blank grid regions give no tooltip — reads as "the UI is dead here." Small fix.
+
+**Bug: multiallelic sites lose their VCF description.** `shared/buildVariantHit.ts:51`
+overwrites the real `description` with the literal `'multiple ALT alleles'` when
+`alt.length >= 3`, discarding the actual annotation. Straightforward correctness fix.
 
 ## Config & sessions
 
