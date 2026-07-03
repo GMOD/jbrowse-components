@@ -222,6 +222,13 @@ export default function stateModelFactory(pm: PluginManager) {
            * controls whether view.highlight entries are rendered
            */
           highlightsVisible: types.stripDefault(types.boolean, true),
+          /**
+           * #property
+           * Show the floating color-by legend in the top-right of the plot.
+           * Dismissible via the legend's close button; re-enable from the
+           * color-by (palette) menu.
+           */
+          showColorLegend: types.stripDefault(types.boolean, true),
         }),
       )
       .volatile(() => ({
@@ -617,6 +624,12 @@ export default function stateModelFactory(pm: PluginManager) {
          */
         setHighlightsVisible(arg: boolean) {
           self.highlightsVisible = arg
+        },
+        /**
+         * #action
+         */
+        setShowColorLegend(arg: boolean) {
+          self.showColorLegend = arg
         },
         /**
          * #action

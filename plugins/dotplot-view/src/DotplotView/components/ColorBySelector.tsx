@@ -72,35 +72,45 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: DotplotViewModel
 }) {
-  const { dotplotDisplays } = model
+  const { dotplotDisplays, showColorLegend } = model
   const colorBy = dotplotDisplays[0]?.colorBy ?? 'default'
 
   return (
     <CascadingMenuButton
-      menuItems={COLOR_BY_OPTIONS.map(opt => ({
-        label: (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              width: '100%',
-              justifyContent: 'space-between',
-            }}
-          >
-            {opt.label}
-            <ColorBySwatch colorBy={opt.value} />
-          </span>
-        ),
-        type: 'radio' as const,
-        checked: colorBy === opt.value,
-        onClick: () => {
-          for (const d of dotplotDisplays) {
-            d.setColorBy(opt.value)
-          }
+      menuItems={[
+        ...COLOR_BY_OPTIONS.map(opt => ({
+          label: (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                width: '100%',
+                justifyContent: 'space-between',
+              }}
+            >
+              {opt.label}
+              <ColorBySwatch colorBy={opt.value} />
+            </span>
+          ),
+          type: 'radio' as const,
+          checked: colorBy === opt.value,
+          onClick: () => {
+            for (const d of dotplotDisplays) {
+              d.setColorBy(opt.value)
+            }
+          },
+          helpText: opt.helpText,
+        })),
+        {
+          label: 'Show color legend',
+          type: 'checkbox' as const,
+          checked: showColorLegend,
+          onClick: () => {
+            model.setShowColorLegend(!showColorLegend)
+          },
         },
-        helpText: opt.helpText,
-      }))}
+      ]}
     >
       <PaletteIcon />
     </CascadingMenuButton>
