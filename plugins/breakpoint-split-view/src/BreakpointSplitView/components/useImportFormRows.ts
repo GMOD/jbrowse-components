@@ -41,7 +41,10 @@ export function useImportFormRows(defaultAssembly: string) {
     moveRow(id: string, delta: number) {
       setRows(prev => {
         const idx = prev.findIndex(r => r.id === id)
-        return swap(prev, idx, idx + delta)
+        const target = idx + delta
+        return idx === -1 || target < 0 || target >= prev.length
+          ? prev
+          : swap(prev, idx, target)
       })
     },
   }

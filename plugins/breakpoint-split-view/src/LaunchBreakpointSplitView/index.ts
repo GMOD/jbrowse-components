@@ -5,7 +5,7 @@ import type { AbstractSessionModel } from '@jbrowse/core/util'
 import type { SnapshotIn } from '@jbrowse/mobx-state-tree'
 
 // Every BreakpointSplitView snapshot property (showIntraviewLinks,
-// interactiveOverlay, drawCRReads, ...) minus the ones the launcher controls
+// interactiveOverlay, linkViews, showHeader, ...) minus the ones the launcher controls
 // itself: `type` is fixed, `id` is assigned by addView, and `views`/`init` are
 // replaced by the declarative loc-based `views` below (resolved async in the
 // view's afterAttach). Deriving from the model snapshot keeps this in lockstep

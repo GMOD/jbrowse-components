@@ -36,6 +36,38 @@ export function isOffscreenLayout(c: LayoutRecord) {
   return c[1] === OFFSCREEN_Y_SENTINEL
 }
 
+// Vertical screen position (relative to the overlay SVG) of an overlay endpoint
+// for a feature laid out at `layout` in a track of the given `height`.
+//   - Off-display features (see makeOffscreenLayout) snap to the bottom edge.
+//   - Otherwise it's the layout rectangle's vertical midpoint, shifted by the
+//     track's vertical scroll and its coverage-subtrack offset.
+// The result is always clamped into [yOffset + coverageOffset, yOffset + height]
+// so the endpoint lands inside the visible pileup. AlignmentConnections relies
+// on the `<= yOffset + height` half of that invariant.
+export function computeOverlayY({
+  yOffset,
+  height,
+  coverageOffset,
+  scrollTop,
+  layout,
+}: {
+  yOffset: number
+  height: number
+  coverageOffset: number
+  scrollTop: number
+  layout: LayoutRecord
+}) {
+  if (isOffscreenLayout(layout)) {
+    return yOffset + height
+  }
+  const top = layout[1]
+  const bot = layout[3]
+  const mid = top - scrollTop + (bot - top) / 2 + coverageOffset
+  return (
+    yOffset + (mid < coverageOffset ? coverageOffset : Math.min(mid, height))
+  )
+}
+
 // Find which row (level) of the breakpoint split view a feature "belongs to"
 // by checking which view's `displayedRegions` contain the feature's position.
 // Assumption: `view.bpToPx({ refName, coord })` returns truthy iff the coord

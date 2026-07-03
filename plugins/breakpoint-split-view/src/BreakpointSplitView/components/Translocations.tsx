@@ -8,7 +8,7 @@ import {
   buildPairTooltip,
   isLevelPairMinimized,
   strandToSign,
-  tickX,
+  tickAtPx,
 } from './overlayUtils.tsx'
 import { findFeatureViewLevel } from '../util.ts'
 
@@ -53,15 +53,16 @@ export default function Translocations(props: OverlayProps) {
               if (x2 == null) {
                 return []
               }
-              const c2: LayoutRecord = [x2, 0, x2 + 1, 0]
+              // getY only reads the y-slots (indices 1,3); the mate has no
+              // pileup layout so both are 0 (snaps to the track top). x2 comes
+              // from getX above, not from this record.
+              const c2: LayoutRecord = [0, 0, 0, 0]
               const x1 = getX(level1, f1.get('refName'), c1[LEFT])
               if (x1 == null) {
                 return []
               }
               const y1 = getY(level1, c1)
               const y2 = getY(level2, c2)
-              const reversed1 = views[level1]!.pxToBp(x1).reversed
-              const reversed2 = views[level2]!.pxToBp(x2).reversed
               const mateLoc = assembleLocString({
                 refName: mate.chr,
                 start: matePos,
@@ -75,8 +76,8 @@ export default function Translocations(props: OverlayProps) {
                     y1,
                     x2,
                     y2,
-                    tickX(x1, strandToSign(mate.myDir), reversed1),
-                    tickX(x2, strandToSign(mate.mateDir), reversed2),
+                    tickAtPx(views, level1, x1, strandToSign(mate.myDir)),
+                    tickAtPx(views, level2, x2, strandToSign(mate.mateDir)),
                   ),
                   tooltip: buildPairTooltip(f1, mateLoc),
                 },

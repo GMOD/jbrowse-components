@@ -22,10 +22,10 @@ import {
 import {
   VIEW_DIVIDER_HEIGHT,
   calc,
+  computeOverlayY,
   findFeatureViewLevel,
   getBlockFeatures,
   intersect,
-  isOffscreenLayout,
   makeOffscreenLayout,
 } from './util.ts'
 
@@ -255,17 +255,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         }
 
         function getY(level: number, c: LayoutRecord) {
-          // Synthesized off-display marker from getMatchedFeaturesInLayout —
-          // snap to the track's bottom edge.
-          if (isOffscreenLayout(c)) {
-            return yOffsets[level] + heights[level]
-          }
-          const off = coverageOffsets[level]
-          const top = c[1]
-          const bot = c[3]
-          const mid = top - scrollTops[level] + (bot - top) / 2 + off
-          const max = heights[level]
-          return yOffsets[level] + (mid < off ? off : Math.min(mid, max))
+          return computeOverlayY({
+            yOffset: yOffsets[level],
+            height: heights[level],
+            coverageOffset: coverageOffsets[level],
+            scrollTop: scrollTops[level],
+            layout: c,
+          })
         }
 
         function getX(level: number, refName: string, coord: number) {

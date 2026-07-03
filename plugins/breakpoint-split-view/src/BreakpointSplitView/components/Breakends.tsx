@@ -2,7 +2,7 @@ import {
   VariantOverlay,
   buildBreakpointPath,
   canonicalPairs,
-  tickX,
+  tickAtPx,
 } from './overlayUtils.tsx'
 import { findMatchingAlt } from './util.ts'
 
@@ -21,17 +21,17 @@ export default function Breakends(props: OverlayProps) {
             if (!relevantAlt) {
               return []
             }
-            const reversed1 = views[level1]!.pxToBp(x1).reversed
-            const reversed2 = views[level2]!.pxToBp(x2).reversed
-            const x1Tick = tickX(
+            const x1Tick = tickAtPx(
+              views,
+              level1,
               x1,
               relevantAlt.Join === 'left' ? -1 : 1,
-              reversed1,
             )
-            const x2Tick = tickX(
+            const x2Tick = tickAtPx(
+              views,
+              level2,
               x2,
               relevantAlt.MateDirection === 'left' ? 1 : -1,
-              reversed2,
             )
             return [
               {

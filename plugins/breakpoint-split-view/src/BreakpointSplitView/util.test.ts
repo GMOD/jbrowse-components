@@ -1,5 +1,6 @@
 import {
   OFFSCREEN_Y_SENTINEL,
+  computeOverlayY,
   findFeatureViewLevel,
   isOffscreenLayout,
   makeOffscreenLayout,
@@ -18,6 +19,52 @@ describe('makeOffscreenLayout / isOffscreenLayout', () => {
   test('a real layout with finite y is not offscreen', () => {
     expect(isOffscreenLayout([100, 0, 200, 8])).toBe(false)
     expect(isOffscreenLayout([100, 1199, 200, 1200])).toBe(false)
+  })
+})
+
+describe('computeOverlayY', () => {
+  const base = { yOffset: 1000, height: 200, coverageOffset: 40, scrollTop: 0 }
+
+  test('off-display features snap to the track bottom edge', () => {
+    expect(
+      computeOverlayY({ ...base, layout: makeOffscreenLayout(100, 200) }),
+    ).toBe(base.yOffset + base.height)
+  })
+
+  test('uses the layout rectangle vertical midpoint plus coverage offset', () => {
+    // midpoint of [50,90] is 70, +40 coverage offset = 110
+    expect(computeOverlayY({ ...base, layout: [0, 50, 0, 90] })).toBe(
+      1000 + 110,
+    )
+  })
+
+  test('vertical scroll shifts the endpoint up', () => {
+    expect(
+      computeOverlayY({ ...base, scrollTop: 30, layout: [0, 50, 0, 90] }),
+    ).toBe(1000 + 80)
+  })
+
+  test('clamps up to the coverage offset when the midpoint is above it', () => {
+    // scrolled so far that mid < coverageOffset -> pinned to coverageOffset
+    expect(
+      computeOverlayY({ ...base, scrollTop: 1000, layout: [0, 50, 0, 90] }),
+    ).toBe(1000 + base.coverageOffset)
+  })
+
+  test('clamps down to the track height when the midpoint is below it', () => {
+    expect(computeOverlayY({ ...base, layout: [0, 5000, 0, 5000] })).toBe(
+      1000 + base.height,
+    )
+  })
+
+  test('result always lands within [yOffset+coverageOffset, yOffset+height]', () => {
+    for (const scrollTop of [-500, 0, 75, 5000]) {
+      for (const top of [0, 60, 1000]) {
+        const y = computeOverlayY({ ...base, scrollTop, layout: [0, top, 0, top + 20] })
+        expect(y).toBeGreaterThanOrEqual(base.yOffset + base.coverageOffset)
+        expect(y).toBeLessThanOrEqual(base.yOffset + base.height)
+      }
+    }
   })
 })
 

@@ -41,6 +41,28 @@ export function useMouseoverElt() {
   return [mouseoverElt, setMouseoverElt] as const
 }
 
+// Shared setup for every overlay renderer: the session, hover state, the
+// matched features for this track, and the per-render coordinate closures.
+// Both VariantOverlay and AlignmentConnections read the same four things off
+// the model, so keeping this in one place stops them drifting (e.g. one
+// forgetting to thread domYOffsets through).
+export function useOverlayState({
+  model,
+  trackId,
+  yOffsetsOverride,
+  domYOffsets,
+}: OverlayProps) {
+  const session = getSession(model)
+  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
+  const match = model.overlayMatches.get(trackId)
+  const overlayData = model.getTrackOverlayData(
+    trackId,
+    yOffsetsOverride,
+    domYOffsets,
+  )
+  return { session, mouseoverElt, setMouseoverElt, match, overlayData }
+}
+
 function hoverHandlers(
   id: string,
   setMouseoverElt: (id: string | undefined) => void,
@@ -115,8 +137,29 @@ export function strandToSign(s: string) {
   return s === '+' ? 1 : s === '-' ? -1 : 0
 }
 
-export function tickX(x: number, sign: number, reversed: boolean | undefined) {
+function tickX(x: number, sign: number, reversed: boolean | undefined) {
   return x - 20 * sign * (reversed ? -1 : 1)
+}
+
+// A view level is horizontally flipped when its px→bp maps to a reversed
+// coordinate; an overlay endpoint's tick/handle direction flips with it.
+export function isReversed(
+  views: BreakpointViewModel['views'],
+  level: number,
+  x: number,
+) {
+  return views[level]!.pxToBp(x).reversed
+}
+
+// Screen-x of a breakpoint tick mark at endpoint `x` pointing in `sign`
+// direction, accounting for a horizontally-flipped view.
+export function tickAtPx(
+  views: BreakpointViewModel['views'],
+  level: number,
+  x: number,
+  sign: number,
+) {
+  return tickX(x, sign, isReversed(views, level, x))
 }
 
 // Flat (y1===y2) connections render as a quadratic arc bowed upward, keeping
@@ -200,14 +243,8 @@ export const VariantOverlay = observer(function VariantOverlay({
 }: VariantOverlayProps) {
   const { interactiveOverlay, views, assembly } = model
   const theme = useTheme()
-  const session = getSession(model)
-  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
-  const match = model.overlayMatches.get(trackId)
-  const overlayData = model.getTrackOverlayData(
-    trackId,
-    yOffsetsOverride,
-    domYOffsets,
-  )
+  const { session, mouseoverElt, setMouseoverElt, match, overlayData } =
+    useOverlayState({ model, trackId, yOffsetsOverride, domYOffsets })
   if (!assembly || !match) {
     return null
   }

@@ -1,9 +1,5 @@
 import { readLeadingBp, readTrailingBp } from '@jbrowse/cigar-utils'
-import {
-  bezierConnectorPath,
-  getSession,
-  getStrokeProps,
-} from '@jbrowse/core/util'
+import { bezierConnectorPath, getStrokeProps } from '@jbrowse/core/util'
 import { useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -15,8 +11,9 @@ import {
   buildPairTooltip,
   createAlignmentMouseHandlers,
   getTestId,
+  isReversed,
   resolvedPairs,
-  useMouseoverElt,
+  useOverlayState,
 } from './overlayUtils.tsx'
 
 import type { OverlayProps } from './overlayUtils.tsx'
@@ -30,17 +27,12 @@ const AlignmentConnections = observer(function AlignmentConnections({
   const { interactiveOverlay, views, showIntraviewLinks, assembly } = model
   const theme = useTheme()
   const { getPairedOrientation, getLongReadOrientation } = useOrientationColor()
-  const session = getSession(model)
-  const [mouseoverElt, setMouseoverElt] = useMouseoverElt()
-  const match = model.overlayMatches.get(trackId)
-  const { tracks, yOffsets, heights, getX, getY } = model.getTrackOverlayData(
-    trackId,
-    yOffsetsOverride,
-    domYOffsets,
-  )
+  const { session, mouseoverElt, setMouseoverElt, match, overlayData } =
+    useOverlayState({ model, trackId, yOffsetsOverride, domYOffsets })
   if (!assembly || !match) {
     return null
   }
+  const { tracks, yOffsets, heights, getX, getY } = overlayData
   const { layoutMatches, hasPairedReads: hasPaired, allFeatures } = match
 
   const connections = [...resolvedPairs({ match, assembly, tracks })].flatMap(
@@ -75,20 +67,18 @@ const AlignmentConnections = observer(function AlignmentConnections({
       if (x1 == null || x2 == null) {
         return []
       }
-      const reversed1 = views[level1]!.pxToBp(x1).reversed
-      const reversed2 = views[level2]!.pxToBp(x2).reversed
+      const reversed1 = isReversed(views, level1, x1)
+      const reversed2 = isReversed(views, level2, x2)
       const y1 = getY(level1, c1)
       const y2 = getY(level2, c2)
       const sameLevel = level1 === level2
       const abnormalSpecialRenderFlag = sameLevel && isAbnormal
-      const trackHeight = abnormalSpecialRenderFlag ? heights[level1]! : 0
-      const y0 = yOffsets[level1]!
-      const cy1 = abnormalSpecialRenderFlag
-        ? Math.min(y0 + trackHeight, y1 + trackHeight)
-        : y1
-      const cy2 = abnormalSpecialRenderFlag
-        ? Math.min(y0 + trackHeight, y2 + trackHeight)
-        : y2
+      // Same-row abnormal connections bow the bezier's control points down to
+      // the track's bottom edge. getY always clamps within the track, so both
+      // endpoints resolve to this same edge.
+      const trackBottom = yOffsets[level1]! + heights[level1]!
+      const cy1 = abnormalSpecialRenderFlag ? trackBottom : y1
+      const cy2 = abnormalSpecialRenderFlag ? trackBottom : y2
       // Cross-view connections in a stacked split view use a fixed 200px handle
       // (ends are separated vertically). Endpoint 1 is read1's 3' edge; endpoint
       // 2 is the next segment's 5' leading edge for a split junction, or the
