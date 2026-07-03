@@ -1,3 +1,4 @@
+import { useId } from 'react'
 import type React from 'react'
 
 import { YSCALEBAR_LABEL_OFFSET } from '@jbrowse/alignments-core'
@@ -71,6 +72,7 @@ const PileupBody = observer(function PileupBody({
 
   const view = getContainingView(model) as { scrollZoom?: boolean }
   const { scrollZoom } = view
+  const canvasId = useId()
 
   useVirtualScrollWheel(canvas, (e, applyScroll) => {
     if ((scrollZoom && !e.shiftKey) || e.ctrlKey || e.metaKey) {
@@ -144,6 +146,7 @@ const PileupBody = observer(function PileupBody({
     >
       <PileupCanvas
         model={model}
+        canvasId={canvasId}
         canvasRef={canvasRef}
         width={width}
         height={height}
@@ -187,6 +190,7 @@ const PileupBody = observer(function PileupBody({
         }}
         viewportHeight={model.pileupViewportHeight}
         contentHeight={model.pileupContentHeight}
+        controlsId={canvasId}
         top={topOffset}
       />
     </div>
@@ -330,6 +334,7 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
 
 const PileupCanvas = observer(function PileupCanvas({
   model,
+  canvasId,
   canvasRef,
   width,
   height,
@@ -340,6 +345,7 @@ const PileupCanvas = observer(function PileupCanvas({
   handleContextMenu,
 }: {
   model: LinearAlignmentsDisplayModel
+  canvasId: string
   canvasRef: (node: HTMLCanvasElement | null) => void
   width: number
   height: number
@@ -351,6 +357,7 @@ const PileupCanvas = observer(function PileupCanvas({
 }) {
   return (
     <canvas
+      id={canvasId}
       ref={canvasRef}
       style={{
         display: 'block',

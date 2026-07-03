@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from 'react'
+import React, { useCallback, useEffect, useId, useState } from 'react'
 
 import { Menu, VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -326,6 +326,7 @@ const FeatureBody = observer(function FeatureBody({
   // https://github.com/typescript-eslint/typescript-eslint/issues/9529
   const [clientXY, setClientXY] = useState<[number, number]>([0, 0])
   const { classes } = useStyles()
+  const canvasId = useId()
 
   const view = getContainingView(model) as LGV
 
@@ -495,6 +496,7 @@ const FeatureBody = observer(function FeatureBody({
   return (
     <>
       <canvas
+        id={canvasId}
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => {
@@ -528,6 +530,7 @@ const FeatureBody = observer(function FeatureBody({
         }}
         viewportHeight={model.height}
         contentHeight={model.contentHeight}
+        controlsId={canvasId}
       />
 
       <BottomRightIndicators hasOverflow={model.hasOverflow}>

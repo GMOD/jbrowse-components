@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 
 import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
@@ -201,6 +201,7 @@ const VariantBody = observer(function VariantBody({
 
   const view = getContainingView(model) as LGV
   const width = view.trackWidthPx
+  const canvasId = useId()
 
   useVariantVirtualScroll({
     canvas,
@@ -236,6 +237,7 @@ const VariantBody = observer(function VariantBody({
   return (
     <>
       <canvas
+        id={canvasId}
         data-testid="variant_canvas"
         ref={canvasRef}
         style={{
@@ -259,6 +261,7 @@ const VariantBody = observer(function VariantBody({
         }}
         viewportHeight={model.availableHeight}
         contentHeight={model.totalHeight}
+        controlsId={canvasId}
       />
       {contextMenuNode}
     </>

@@ -1,3 +1,5 @@
+import { useId } from 'react'
+
 import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
@@ -39,6 +41,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   const view = getContainingView(model) as LGV
   const width = view.totalWidthPxWithoutBorders
   const height = model.availableHeight
+  const canvasId = useId()
 
   useVariantVirtualScroll({
     canvas,
@@ -118,6 +121,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
   return (
     <>
       <canvas
+        id={canvasId}
         data-testid="variant_matrix_canvas"
         ref={canvasRef}
         style={{
@@ -138,6 +142,7 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
         }}
         viewportHeight={model.availableHeight}
         contentHeight={model.totalHeight}
+        controlsId={canvasId}
       />
       {contextMenuNode}
     </>
