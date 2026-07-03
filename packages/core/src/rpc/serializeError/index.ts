@@ -1,239 +1,93 @@
-import { errorConstructors, errorFactories } from './errorConstructors.ts'
-import NonError from './nonError.ts'
-
 export interface ErrorObject {
-  name?: string
+  name: string
   message: string
   stack?: string
-  code?: string
   cause?: unknown
+  [key: string]: unknown
 }
 
-const errorProperties: { property: string; enumerable: boolean }[] = [
-  { property: 'name', enumerable: false },
-  { property: 'message', enumerable: false },
-  { property: 'stack', enumerable: false },
-  { property: 'code', enumerable: true },
-  { property: 'cause', enumerable: false },
-  { property: 'errors', enumerable: false },
-]
+// Error's core fields (name/message/stack) are non-enumerable, so they're
+// copied explicitly; `cause` is non-enumerable too and recursed separately. Any
+// other own-enumerable props (AuthNeededError.url, a Node-style .code, etc.) are
+// copied generically so custom error data survives the worker boundary.
+const coreProperties = new Set(['name', 'message', 'stack', 'cause'])
 
-const toJsonWasCalled = new WeakSet()
-
-function toJSON(from: Record<string, unknown>) {
-  toJsonWasCalled.add(from)
-  const json = (from as { toJSON: () => unknown }).toJSON()
-  toJsonWasCalled.delete(from)
-  return json
-}
-
-function newError(name: string) {
-  const factory = errorFactories.get(name)
-  if (factory) {
-    return factory()
+function stringify(value: unknown) {
+  if (typeof value === 'string') {
+    return value
   }
-  if (name === 'AggregateError') {
-    return new AggregateError([], 'AggregateError')
+  try {
+    return JSON.stringify(value) ?? String(value)
+  } catch {
+    return String(value)
   }
-  const ErrorConstructor = errorConstructors.get(name) ?? Error
-  return new ErrorConstructor()
 }
 
-function isBufferValue(value: unknown): value is Uint8Array {
-  return value instanceof Uint8Array && value.constructor.name === 'Buffer'
-}
-
-function isStreamValue(value: unknown): boolean {
-  return (
-    value !== null &&
-    typeof value === 'object' &&
-    typeof (value as { pipe?: unknown }).pipe === 'function'
-  )
-}
-
-export function isErrorLike(value: unknown): value is Error {
+function isSerializedError(value: unknown): value is ErrorObject {
   return (
     !!value &&
     typeof value === 'object' &&
-    typeof (value as Error).name === 'string' &&
-    typeof (value as Error).message === 'string' &&
-    typeof (value as Error).stack === 'string'
+    !Array.isArray(value) &&
+    typeof (value as ErrorObject).message === 'string'
   )
 }
 
-function isMinimumViableSerializedError(value: unknown): value is ErrorObject {
-  return (
-    !!value &&
-    typeof value === 'object' &&
-    typeof (value as ErrorObject).message === 'string' &&
-    !Array.isArray(value)
-  )
+function errorToObject(error: Error, seen: Set<unknown>): ErrorObject {
+  const obj: ErrorObject = {
+    name: error.name,
+    message: error.message,
+    stack: error.stack,
+  }
+  // copy custom own-enumerable data (url, code, ...); skip functions since they
+  // aren't structured-cloneable and postMessage would throw on them
+  for (const [key, value] of Object.entries(error)) {
+    if (!coreProperties.has(key) && typeof value !== 'function') {
+      obj[key] = value
+    }
+  }
+  const { cause } = error
+  if (cause !== undefined && !seen.has(cause)) {
+    seen.add(cause)
+    obj.cause = cause instanceof Error ? errorToObject(cause, seen) : cause
+  }
+  return obj
 }
 
-interface DestroyCircularOpts {
-  from: Record<string, unknown>
-  seen: unknown[]
-  to?: Record<string, unknown>
-  forceEnumerable?: boolean
-  maxDepth: number
-  depth: number
-  useToJSON?: boolean
-  serialize?: boolean
+export function serializeError(value: unknown): ErrorObject {
+  if (value instanceof Error) {
+    return errorToObject(value, new Set([value]))
+  }
+  // a thrown non-Error value (string, object, ...) still travels as an Error so
+  // the other side can reject with something error-shaped
+  return { name: 'NonError', message: stringify(value) }
 }
 
-function destroyCircular({
-  from,
-  seen,
-  to,
-  forceEnumerable,
-  maxDepth,
-  depth,
-  useToJSON,
-  serialize,
-}: DestroyCircularOpts): Record<string, unknown> {
-  if (!to) {
-    if (Array.isArray(from)) {
-      to = [] as unknown as Record<string, unknown>
-    } else if (!serialize && isErrorLike(from)) {
-      to = newError((from as Error).name) as unknown as Record<string, unknown>
-    } else {
-      to = {}
-    }
-  }
-
-  seen.push(from)
-
-  if (depth >= maxDepth) {
-    return to
-  }
-
-  if (
-    useToJSON &&
-    typeof (from as { toJSON?: unknown }).toJSON === 'function' &&
-    !toJsonWasCalled.has(from)
-  ) {
-    return toJSON(from) as Record<string, unknown>
-  }
-
-  const continueDestroyCircular = (value: Record<string, unknown>) =>
-    destroyCircular({
-      from: value,
-      seen: [...seen],
-      forceEnumerable,
-      maxDepth,
-      depth: depth + 1,
-      useToJSON,
-      serialize,
-    })
-
-  for (const [key, value] of Object.entries(from)) {
-    if (isBufferValue(value)) {
-      to[key] = serialize ? '[object Buffer]' : value
-      continue
-    }
-
-    if (isStreamValue(value)) {
-      to[key] = serialize ? '[object Stream]' : value
-      continue
-    }
-
-    if (typeof value === 'function') {
-      if (!serialize) {
-        to[key] = value
-      }
-      continue
-    }
-
-    if (!value || typeof value !== 'object') {
-      try {
-        to[key] = value
-      } catch {
-        // ignore
-      }
-      continue
-    }
-
-    to[key] = seen.includes(from[key])
-      ? '[Circular]'
-      : continueDestroyCircular(from[key] as Record<string, unknown>)
-  }
-
-  if (serialize || to instanceof Error) {
-    for (const { property, enumerable } of errorProperties) {
-      const val = from[property]
-      if (val !== undefined && val !== null) {
-        Object.defineProperty(to, property, {
-          value:
-            isErrorLike(val) || Array.isArray(val)
-              ? continueDestroyCircular(
-                  val as unknown as Record<string, unknown>,
-                )
-              : val,
-          enumerable: forceEnumerable ? true : enumerable,
-          configurable: true,
-          writable: true,
-        })
-      }
-    }
-  }
-
-  return to
-}
-
-export function serializeError(
-  value: unknown,
-  options: { maxDepth?: number; useToJSON?: boolean } = {},
-) {
-  const { maxDepth = Number.POSITIVE_INFINITY, useToJSON = true } = options
-
-  if (typeof value === 'object' && value !== null) {
-    return destroyCircular({
-      from: value as Record<string, unknown>,
-      seen: [],
-      forceEnumerable: true,
-      maxDepth,
-      depth: 0,
-      useToJSON,
-      serialize: true,
-    }) as unknown as ErrorObject
-  }
-
-  let normalized: unknown = value
-  if (typeof value === 'function') {
-    normalized = '<Function>'
-  }
-
-  return destroyCircular({
-    from: new NonError(normalized) as unknown as Record<string, unknown>,
-    seen: [],
-    forceEnumerable: true,
-    maxDepth,
-    depth: 0,
-    useToJSON,
-    serialize: true,
-  }) as unknown as ErrorObject
-}
-
-export function deserializeError(
-  value: unknown,
-  options: { maxDepth?: number } = {},
-) {
-  const { maxDepth = Number.POSITIVE_INFINITY } = options
-
+export function deserializeError(value: unknown): Error {
   if (value instanceof Error) {
     return value
   }
-
-  if (isMinimumViableSerializedError(value)) {
-    return destroyCircular({
-      from: value as unknown as Record<string, unknown>,
-      seen: [],
-      to: newError(value.name ?? 'Error') as unknown as Record<string, unknown>,
-      maxDepth,
-      depth: 0,
-      serialize: false,
-    }) as unknown as Error
+  if (typeof value === 'string') {
+    return new Error(value)
   }
-
-  return new NonError(value)
+  if (isSerializedError(value)) {
+    // reconstructed as a plain Error carrying the original name (nothing in the
+    // app branches on `instanceof TypeError` etc. across the worker boundary)
+    const error = new Error(value.message) as Error & Record<string, unknown>
+    error.name = value.name ?? 'Error'
+    if (value.stack) {
+      error.stack = value.stack
+    }
+    for (const [key, val] of Object.entries(value)) {
+      if (!coreProperties.has(key)) {
+        error[key] = val
+      }
+    }
+    if (value.cause !== undefined) {
+      error.cause = isSerializedError(value.cause)
+        ? deserializeError(value.cause)
+        : value.cause
+    }
+    return error
+  }
+  return new Error(stringify(value))
 }

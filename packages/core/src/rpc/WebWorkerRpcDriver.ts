@@ -72,9 +72,8 @@ export default class WebWorkerRpcDriver extends WorkerPoolRpcDriver {
   }
 
   async makeWorker() {
-    // note that we are making a Rpc.Client connection with a worker pool of
-    // one for each worker, because we want to do our own state-group-aware
-    // load balancing rather than using librpc's builtin round-robin
+    // one RpcClient per worker so we can do our own state-group-aware load
+    // balancing across the pool (see WorkerPoolRpcDriver)
     const instance = this.makeWorkerInstance()
     const handle = new WebWorkerHandle(instance)
     const isSafari = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)

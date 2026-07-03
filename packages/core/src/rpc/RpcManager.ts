@@ -18,11 +18,10 @@ export type RpcDriverFactory = (
 // `call` accepts any string method name: a registered one resolves to its typed
 // args/return (the `& RpcMethodName` re-narrows M inside the conditional, which
 // TS won't do on its own), and an unknown one (e.g. a plugin-defined method not
-// in the registry) falls back to the loose shapes. `sessionId` is omitted from
-// the caller-facing args because `call` injects it from its first argument — the
-// server-side `execute` still receives it.
+// in the registry) falls back to the loose shapes. Registry args never include
+// `sessionId` — `call` injects it from its first argument before dispatch.
 type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'>
+  ? RpcArgs<M & RpcMethodName>
   : Record<string, unknown>
 type RpcCallReturn<M extends string> = M extends RpcMethodName
   ? RpcReturn<M & RpcMethodName>

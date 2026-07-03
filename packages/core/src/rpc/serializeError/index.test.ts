@@ -1,4 +1,4 @@
-import { deserializeError, isErrorLike, serializeError } from './index.ts'
+import { deserializeError, serializeError } from './index.ts'
 
 describe('serializeError', () => {
   test('serializes a basic Error to a plain object', () => {
@@ -14,37 +14,36 @@ describe('serializeError', () => {
     expect(serializeError(new RangeError('r')).name).toBe('RangeError')
   })
 
-  test('handles circular references without throwing', () => {
-    const obj: Record<string, unknown> = { a: 1 }
-    obj.self = obj
-    const s = serializeError(obj) as unknown as Record<string, unknown>
-    expect(s.self).toBe('[Circular]')
+  test('preserves custom own-enumerable props (e.g. url, code)', () => {
+    const e = Object.assign(new Error('auth'), {
+      name: 'AuthNeededError',
+      url: 'http://example.com/data',
+      code: 'EAUTH',
+    })
+    const s = serializeError(e)
+    expect(s.name).toBe('AuthNeededError')
+    expect(s.url).toBe('http://example.com/data')
+    expect(s.code).toBe('EAUTH')
+
+    const restored = deserializeError(s) as Error & Record<string, unknown>
+    expect(restored.name).toBe('AuthNeededError')
+    expect(restored.url).toBe('http://example.com/data')
   })
 
-  test('respects maxDepth on nested objects', () => {
-    const deep: Record<string, unknown> = { lvl: 0 }
-    let cur = deep
-    for (let i = 1; i < 10; i++) {
-      const next: Record<string, unknown> = { lvl: i }
-      cur.next = next
-      cur = next
-    }
-    const s = serializeError(deep, { maxDepth: 2 }) as unknown as Record<
-      string,
-      unknown
-    >
-    // depth 0 has .next, depth 1 has .next, depth 2 should be truncated
-    const d1 = s.next as Record<string, unknown>
-    const d2 = d1.next as Record<string, unknown>
-    expect(d2.next).toBeUndefined()
+  test('drops function-valued props so postMessage can clone the result', () => {
+    const e = Object.assign(new Error('boom'), { retry: () => {} })
+    const s = serializeError(e) as Record<string, unknown>
+    expect(s.retry).toBeUndefined()
   })
 
-  test('round-trips Error through deserializeError', () => {
+  test('round-trips Error through deserializeError, preserving name + stack', () => {
     const original = new TypeError('round trip')
     const wire = serializeError(original)
     const restored = deserializeError(wire)
-    expect(restored).toBeInstanceOf(TypeError)
+    expect(restored).toBeInstanceOf(Error)
+    expect(restored.name).toBe('TypeError')
     expect(restored.message).toBe('round trip')
+    expect(restored.stack).toBe(original.stack)
   })
 
   test('deserializeError returns Error passthrough', () => {
@@ -52,18 +51,38 @@ describe('serializeError', () => {
     expect(deserializeError(e)).toBe(e)
   })
 
-  test('serializes errors with a cause', () => {
-    const inner = new Error('inner')
-    const outer = new Error('outer', { cause: inner })
-    const s = serializeError(outer) as unknown as Record<string, unknown>
-    expect(s.message).toBe('outer')
-    expect((s.cause as Record<string, unknown>).message).toBe('inner')
+  test('deserializeError wraps a bare string message', () => {
+    const restored = deserializeError('Unknown RPC method')
+    expect(restored).toBeInstanceOf(Error)
+    expect(restored.message).toBe('Unknown RPC method')
   })
 
-  test('isErrorLike detects error-shaped objects', () => {
-    expect(isErrorLike(new Error('x'))).toBe(true)
-    expect(isErrorLike({ name: 'Error', message: 'x', stack: 'y' })).toBe(true)
-    expect(isErrorLike({ name: 'Error' })).toBe(false)
-    expect(isErrorLike(null)).toBe(false)
+  test('serializes and restores errors with a cause', () => {
+    const inner = new Error('inner')
+    const outer = new Error('outer', { cause: inner })
+    const s = serializeError(outer)
+    expect(s.message).toBe('outer')
+    expect((s.cause as Record<string, unknown>).message).toBe('inner')
+
+    const restored = deserializeError(s)
+    expect((restored.cause as Error).message).toBe('inner')
+  })
+
+  test('does not infinite-loop on a self-referential cause', () => {
+    const e = new Error('loop')
+    e.cause = e
+    expect(() => serializeError(e)).not.toThrow()
+  })
+
+  test('wraps a thrown non-error value', () => {
+    const s = serializeError('just a string')
+    expect(s.name).toBe('NonError')
+    expect(s.message).toBe('just a string')
+  })
+
+  test('wraps a thrown undefined without producing a non-string message', () => {
+    const s = serializeError(undefined)
+    expect(s.name).toBe('NonError')
+    expect(s.message).toBe('undefined')
   })
 })
