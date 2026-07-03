@@ -5,8 +5,11 @@ import { Transform } from 'node:stream'
 import { pipeline } from 'node:stream/promises'
 import { createGunzip } from 'node:zlib'
 
-import { flipCigar, swapIndelCigar } from './cigar-utils.ts'
-import { splitCigarOnLargeGaps } from './structural-summary.ts'
+import {
+  flipCigar,
+  splitCigarOnLargeGaps,
+  swapIndelCigar,
+} from './cigar-utils.ts'
 
 import type { Writable } from 'node:stream'
 
@@ -18,7 +21,13 @@ import type { Writable } from 'node:stream'
 export const DEFAULT_COARSE_SPLIT_GAP = 10_000
 
 function processLine(line: string, coarseSplitGap: number | undefined): string {
-  const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = line.split('\t')
+  const parts = line.split('\t')
+  // A valid PAF row has 12 mandatory columns; anything shorter (blank, comment,
+  // or truncated) would produce NaN coords, so skip it rather than emit garbage.
+  if (parts.length < 12) {
+    return ''
+  }
+  const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
   const tRow = `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`
@@ -45,7 +54,6 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
         cigar: cigarStr,
         strand: strand!,
         tstart: +s2!,
-        tend: +e2!,
         qstart: +s1!,
         qend: +e1!,
         splitGap: coarseSplitGap,
@@ -61,10 +69,17 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
         },
       ]
   const mapq = rest[2]
+  // With a CIGAR we recompute divergence per split segment. Without one, prefer
+  // the aligner's own de:f: tag (more accurate than the num_matches/block_len
+  // proxy) and only fall back to the computed value when no tag is present.
+  const passthroughDe = cigarStr
+    ? undefined
+    : rest.find(f => f.startsWith('de:f:'))?.slice(5)
   let coarseRows = ''
   for (const seg of segments) {
     const de =
-      seg.blockLen > 0 ? (1 - seg.numMatches / seg.blockLen).toFixed(6) : '0'
+      passthroughDe ??
+      (seg.blockLen > 0 ? (1 - seg.numMatches / seg.blockLen).toFixed(6) : '0')
     coarseRows += `${[
       `T${c2}`,
       l2,

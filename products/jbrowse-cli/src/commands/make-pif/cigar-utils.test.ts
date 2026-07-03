@@ -1,10 +1,9 @@
-import { splitCigarOnLargeGaps } from './structural-summary.ts'
+import { splitCigarOnLargeGaps } from './cigar-utils.ts'
 
 function call({
   cigar = '100M',
   strand = '+',
   tstart = 0,
-  tend = 100,
   qstart = 0,
   qend = 100,
   splitGap,
@@ -12,7 +11,6 @@ function call({
   cigar?: string | undefined
   strand?: string
   tstart?: number
-  tend?: number
   qstart?: number
   qend?: number
   splitGap: number | undefined
@@ -21,7 +19,6 @@ function call({
     cigar,
     strand,
     tstart,
-    tend,
     qstart,
     qend,
     splitGap,
@@ -48,7 +45,6 @@ describe('splitCigarOnLargeGaps', () => {
     const segs = call({
       cigar: '30M1000D30M',
       qend: 60,
-      tend: 1060,
       splitGap: 500,
     })
     expect(segs).toHaveLength(2)
@@ -72,7 +68,6 @@ describe('splitCigarOnLargeGaps', () => {
     const segs = call({
       cigar: '20M1000I20M',
       qend: 1040,
-      tend: 40,
       splitGap: 500,
     })
     expect(segs).toHaveLength(2)
@@ -100,7 +95,6 @@ describe('splitCigarOnLargeGaps', () => {
       qstart: 0,
       qend: 40,
       tstart: 0,
-      tend: 1040,
       splitGap: 500,
     })
     expect(segs).toHaveLength(2)
@@ -124,7 +118,6 @@ describe('splitCigarOnLargeGaps', () => {
     const segs = call({
       cigar: '20M1000D20M',
       qend: 40,
-      tend: 1040,
       splitGap: 0,
     })
     expect(segs).toHaveLength(1)
@@ -140,7 +133,6 @@ describe('splitCigarOnLargeGaps', () => {
     const segs = call({
       cigar: '10M1000D10M1000I10M',
       qend: 1030,
-      tend: 1030,
       splitGap: 500,
     })
     expect(segs).toHaveLength(3)
@@ -163,7 +155,6 @@ describe('splitCigarOnLargeGaps', () => {
     const segs = call({
       cigar: '50=10X40=',
       qend: 100,
-      tend: 100,
       splitGap: 0,
     })
     expect(segs).toHaveLength(1)
@@ -177,7 +168,6 @@ describe('splitCigarOnLargeGaps', () => {
     const segs = call({
       cigar: undefined,
       qend: 100,
-      tend: 100,
       splitGap: 500,
     })
     expect(segs).toHaveLength(1)
