@@ -40,10 +40,8 @@ import { computeVisibleLabels } from './components/computeVisibleLabels.ts'
 import { ColorScheme } from './constants.ts'
 import {
   anyRegionTruncated,
-  buildLaidOutByGroup,
-  fitGroupMaxRows,
   groupMaxY,
-  reclaimFitRows,
+  layoutGroupsToViewport,
 } from './groupLayout.ts'
 import {
   anyGroupHasSashimi,
@@ -205,16 +203,6 @@ export { ColorScheme } from './constants.ts'
 
 // Floor for the user-resizable coverage / arc / sashimi bands, in px.
 const MIN_BAND_HEIGHT = 20
-
-// Max pileup rows the layout may produce before overflow reads collapse to the
-// bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
-// `readYs`) and the overflow sentinel never wrap.
-export function maxRowsFor(maxHeight: number, rowHeight: number) {
-  return Math.max(
-    1,
-    Math.min(65534, Math.floor(maxHeight / Math.max(1, rowHeight))),
-  )
-}
 
 // colorBy.type → shader colorScheme index, resolved through the shared
 // COLOR_SCHEMES registry (each scheme names a shader path) and ColorScheme (the
@@ -960,76 +948,28 @@ export default function stateModelFactory(
          * main-thread tier-2 setting — see readTagColors.
          */
         get laidOutByGroup() {
-          const rowHeight = this.featureHeight + this.featureSpacing
-          const order = this.groupOrder
-          const maxHeightRows = maxRowsFor(this.maxHeight, rowHeight)
-          // Collapsed groups draw only their coverage band, so they still cost
-          // `overhead` but claim no pileup rows — divide the pileup budget across
-          // just the groups still showing a pileup so collapsing frees space.
-          const visibleGroupCount = order.filter(
-            ({ key }) => !self.collapsedGroups.has(key),
-          ).length
-          const defaultMaxRows =
-            order.length > 1
-              ? fitGroupMaxRows({
-                  height: self.height,
-                  groupCount: order.length,
-                  visibleGroupCount,
-                  rowHeight,
-                  overhead: belowCoverageBandsGeometry(
-                    this.belowCoverageBandsInput,
-                  ).bottom,
-                  maxRows: maxHeightRows,
-                })
-              : maxHeightRows
-          const maxRowsOverrides = new Map<string, number>()
-          for (const [key, px] of self.groupMaxHeightOverrides) {
-            maxRowsOverrides.set(key, maxRowsFor(px, rowHeight))
-          }
-          const layoutOpts = {
-            order,
-            rawByGroup: this.rawDataByGroup,
-            isChainMode: self.isChainMode,
-            sortedBy: this.sortedBy,
-            showSoftClipping: self.showSoftClipping,
-            regions: self.loadedRegions,
-            maxRows: defaultMaxRows,
-            showLinkedReadLines: self.showLinkedReadLines,
-            colorBy: this.colorBy,
-            colorTagMap: self.colorTagMap,
-          }
-          const pass = buildLaidOutByGroup({ ...layoutOpts, maxRowsOverrides })
-          // When the equal-split cap left sparse groups with empty rows while
-          // denser siblings truncated, hand the unused rows to the truncated
-          // groups and lay out once more. Only fit-budget groups take part —
-          // collapsed groups draw no pileup and overridden groups opt out — and
-          // `reclaimFitRows` bails (no second pass) when nothing can move.
-          const participants = order.filter(
-            ({ key }) =>
-              !self.collapsedGroups.has(key) &&
-              !self.groupMaxHeightOverrides.has(key),
+          return layoutGroupsToViewport(
+            {
+              order: this.groupOrder,
+              rawByGroup: this.rawDataByGroup,
+              isChainMode: self.isChainMode,
+              sortedBy: this.sortedBy,
+              showSoftClipping: self.showSoftClipping,
+              regions: self.loadedRegions,
+              showLinkedReadLines: self.showLinkedReadLines,
+              colorBy: this.colorBy,
+              colorTagMap: self.colorTagMap,
+            },
+            {
+              rowHeight: this.featureHeight + this.featureSpacing,
+              height: self.height,
+              maxHeight: this.maxHeight,
+              overhead: belowCoverageBandsGeometry(this.belowCoverageBandsInput)
+                .bottom,
+              collapsedKeys: self.collapsedGroups,
+              heightOverridesPx: self.groupMaxHeightOverrides,
+            },
           )
-          const bonusCaps =
-            order.length > 1
-              ? reclaimFitRows({
-                  outcomes: participants.map(({ key }) => {
-                    const map = pass.get(key)
-                    return {
-                      key,
-                      usedRows: map ? groupMaxY(map) : 0,
-                      truncated: map ? anyRegionTruncated(map) : false,
-                    }
-                  }),
-                  defaultMaxRows,
-                  maxRows: maxHeightRows,
-                })
-              : undefined
-          return bonusCaps
-            ? buildLaidOutByGroup({
-                ...layoutOpts,
-                maxRowsOverrides: new Map([...maxRowsOverrides, ...bonusCaps]),
-              })
-            : pass
         },
 
         /**

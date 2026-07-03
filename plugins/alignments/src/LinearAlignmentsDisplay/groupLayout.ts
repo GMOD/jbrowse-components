@@ -13,29 +13,24 @@ import type { ColorBy, SortedBy } from '../shared/types.ts'
 // Per group key: region index → laid-out data (Y arrays filled).
 export type LaidOutByGroup = Map<string, Map<number, PileupDataResult>>
 
-// Lay out each group independently so one dense group can't starve the rest:
-// every group runs the existing single/multi-region layout over just its own
-// reads, capped at `maxRows` per group. Ungrouped fetches are the one-group
-// case, so this reduces exactly to the previous `laidOutPileupMap`. Stacking
-// order is the caller's `order` (see `orderedGroups`), so this stays purely a
-// layout pass — it doesn't re-derive group identity.
-export function buildLaidOutByGroup({
-  order,
-  rawByGroup,
-  isChainMode,
-  sortedBy,
-  showSoftClipping,
-  regions,
-  maxRows,
-  maxRowsOverrides,
-  showLinkedReadLines,
-  colorBy,
-  colorTagMap,
-}: {
+// Max pileup rows a layout may produce before overflow reads collapse to the
+// bottom. Hard-capped below the Uint16 ceiling so row indices (stored in
+// `readYs`) and the overflow sentinel never wrap.
+export function maxRowsFor(maxHeight: number, rowHeight: number) {
+  return Math.max(
+    1,
+    Math.min(65534, Math.floor(maxHeight / Math.max(1, rowHeight))),
+  )
+}
+
+// Everything needed to lay one group's reads out, minus the per-group row cap.
+// The stacking `order` and this bundle stay constant across the fit passes; only
+// the caps vary, so they're threaded separately.
+export interface GroupLayoutContext {
   order: GroupId[]
   // Pre-grouped raw data (group key → region idx → data) from
-  // `buildRawDataByGroup`; reused here so the per-key region map is an O(1)
-  // lookup instead of re-partitioning `rpcDataMap` with a nested `.find`.
+  // `buildRawDataByGroup`; reused so the per-key region map is an O(1) lookup
+  // instead of re-partitioning `rpcDataMap` with a nested `.find`.
   rawByGroup: ReadonlyMap<string, Map<number, PileupDataResult>>
   isChainMode: boolean
   sortedBy: SortedBy | undefined
@@ -43,31 +38,111 @@ export function buildLaidOutByGroup({
   // Region bounds by displayed-region index, so multi-region layout can locate
   // the sort position's region and detect the single-refName case.
   regions: ReadonlyMap<number, RegionBounds>
-  maxRows: number
-  // Per-group row caps (from per-group height drags); a key falls back to the
-  // display-wide `maxRows` when absent.
-  maxRowsOverrides?: ReadonlyMap<string, number>
   showLinkedReadLines: boolean
   colorBy: ColorBy | undefined
   colorTagMap: Record<string, string>
-}): LaidOutByGroup {
+}
+
+// Lay out each group independently so one dense group can't starve the rest:
+// every group runs the existing single/multi-region layout over just its own
+// reads, capped at `maxRowsOverrides.get(key) ?? maxRows`. Ungrouped fetches are
+// the one-group case, so this reduces exactly to the previous `laidOutPileupMap`.
+// Stacking order is `ctx.order` (see `orderedGroups`), so this stays purely a
+// layout pass — it doesn't re-derive group identity.
+export function buildLaidOutByGroup(
+  ctx: GroupLayoutContext,
+  maxRows: number,
+  maxRowsOverrides?: ReadonlyMap<string, number>,
+): LaidOutByGroup {
   const byGroup: LaidOutByGroup = new Map()
-  for (const { key } of order) {
-    const dataMap = rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
+  for (const { key } of ctx.order) {
+    const dataMap =
+      ctx.rawByGroup.get(key) ?? new Map<number, PileupDataResult>()
     const cap = maxRowsOverrides?.get(key) ?? maxRows
-    const base = isChainMode
+    const base = ctx.isChainMode
       ? buildLaidOutChainMap(dataMap, cap)
       : buildLaidOutPileupMap({
           dataMap,
-          sortedBy,
-          showSoftClipping,
-          regions,
+          sortedBy: ctx.sortedBy,
+          showSoftClipping: ctx.showSoftClipping,
+          regions: ctx.regions,
           maxRows: cap,
         })
-    const withLines = showLinkedReadLines ? attachLinkedReadLines(base) : base
-    byGroup.set(key, overlayReadTagColors(withLines, colorBy, colorTagMap))
+    const withLines = ctx.showLinkedReadLines
+      ? attachLinkedReadLines(base)
+      : base
+    byGroup.set(key, overlayReadTagColors(withLines, ctx.colorBy, ctx.colorTagMap))
   }
   return byGroup
+}
+
+// Fit-to-viewport policy inputs, in px, plus the per-group user overrides. Kept
+// apart from `GroupLayoutContext` because these drive the row caps rather than
+// the layout mechanics.
+export interface FitViewportInput {
+  rowHeight: number
+  height: number
+  maxHeight: number
+  overhead: number
+  // Groups drawing coverage only — they cost overhead but no pileup rows.
+  collapsedKeys: ReadonlySet<string>
+  // Per-group pileup-height overrides in px (drag / "show all"); opt out of the
+  // shared fit budget entirely.
+  heightOverridesPx: ReadonlyMap<string, number>
+}
+
+// The full grouped layout: split the viewport across the groups, lay them out,
+// then reclaim any sparse group's unused rows for its truncated siblings. The
+// single place the two-pass fit policy lives, so the model getter is a thin
+// adapter and the whole pipeline is unit-testable without an MST instance.
+export function layoutGroupsToViewport(
+  ctx: GroupLayoutContext,
+  fit: FitViewportInput,
+): LaidOutByGroup {
+  const { rowHeight, collapsedKeys, heightOverridesPx } = fit
+  const maxHeightRows = maxRowsFor(fit.maxHeight, rowHeight)
+  const grouped = ctx.order.length > 1
+  // Collapsed groups draw only their coverage band, so they still cost overhead
+  // but claim no pileup rows — divide the pileup budget across just the groups
+  // still showing a pileup so collapsing frees space for the rest.
+  const visibleGroupCount = ctx.order.filter(
+    g => !collapsedKeys.has(g.key),
+  ).length
+  const defaultMaxRows = grouped
+    ? fitGroupMaxRows({
+        height: fit.height,
+        groupCount: ctx.order.length,
+        visibleGroupCount,
+        rowHeight,
+        overhead: fit.overhead,
+        maxRows: maxHeightRows,
+      })
+    : maxHeightRows
+
+  const overrideCaps = new Map<string, number>()
+  for (const [key, px] of heightOverridesPx) {
+    overrideCaps.set(key, maxRowsFor(px, rowHeight))
+  }
+  const pass = buildLaidOutByGroup(ctx, defaultMaxRows, overrideCaps)
+  if (!grouped) {
+    return pass
+  }
+  // Only fit-budget groups take part in reclaim — collapsed groups draw no
+  // pileup and overridden groups opt out.
+  const outcomes = ctx.order
+    .filter(g => !collapsedKeys.has(g.key) && !heightOverridesPx.has(g.key))
+    .map(({ key }) => {
+      const map = pass.get(key) ?? new Map<number, PileupDataResult>()
+      return { key, usedRows: groupMaxY(map), truncated: anyRegionTruncated(map) }
+    })
+  const bonusCaps = reclaimFitRows({ outcomes, defaultMaxRows, maxRows: maxHeightRows })
+  return bonusCaps
+    ? buildLaidOutByGroup(
+        ctx,
+        defaultMaxRows,
+        new Map([...overrideCaps, ...bonusCaps]),
+      )
+    : pass
 }
 
 // Equal-split row budget per group when grouping fits to the viewport: every
