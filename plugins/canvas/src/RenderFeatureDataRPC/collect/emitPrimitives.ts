@@ -22,19 +22,25 @@ import type { Feature } from '@jbrowse/core/util'
 
 const UTR_HEIGHT_FRACTION = 0.65
 
+// Shrink a rect to `fraction` of its row height, keeping it vertically centered.
+// Shared by UTRs and retrotransposon bodies so the geometry can't drift.
+export function centerShrink(
+  topPx: number,
+  height: number,
+  fraction: number,
+): [topPx: number, height: number] {
+  return [topPx + ((1 - fraction) / 2) * height, height * fraction]
+}
+
 // UTRs render thinner and vertically centered within the feature row.
 function applyUTRSizing(
   topPx: number,
   height: number,
   utr: boolean,
 ): [topPx: number, height: number] {
-  if (!utr) {
-    return [topPx, height]
-  }
-  return [
-    topPx + ((1 - UTR_HEIGHT_FRACTION) / 2) * height,
-    height * UTR_HEIGHT_FRACTION,
-  ]
+  return utr
+    ? centerShrink(topPx, height, UTR_HEIGHT_FRACTION)
+    : [topPx, height]
 }
 
 export function emitIntronLines(
@@ -96,7 +102,11 @@ export function emitCodonRects(
   const color1 = colorToUint32(lighten(baseHex, 0.5))
   const color2 = colorToUint32(lighten(baseHex, 0.35))
 
-  for (const [i, aa] of aminoAcids.entries()) {
+  // emitCodonRects is called once per CDS segment, so alternate by the global
+  // residue index (proteinIndex), not the per-call loop index — this keeps the
+  // stripe phase continuous across exon boundaries and paints both halves of a
+  // codon that straddles a boundary the same color.
+  for (const aa of aminoAcids) {
     rects.push({
       start: aa.startBp,
       end: aa.endBp,
@@ -104,7 +114,7 @@ export function emitCodonRects(
       height,
       color: aa.isTranslExcept
         ? TRANSL_EXCEPT_HIGHLIGHT
-        : i % 2 === 1
+        : aa.proteinIndex % 2 === 1
           ? color2
           : color1,
       strand,
@@ -225,7 +235,11 @@ export function emitSubfeatureLabel(
       parentFeatureId: args.parentFeatureId,
       theme: ctx.theme,
     })
+    // Merge, don't replace: a standalone top-level transcript already has a
+    // name/description entry under this same id from processFeatureRecord, and
+    // FeatureLabelData carries name/description and subfeature labels together.
     collector.floatingLabelsData[featureId] = {
+      ...collector.floatingLabelsData[featureId],
       featureId,
       minX,
       maxX,

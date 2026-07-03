@@ -8,6 +8,7 @@ import {
 } from '../labelUtils.ts'
 import { featureType } from '../util.ts'
 import {
+  centerShrink,
   emitCodonRects,
   emitIntronLines,
   emitStrandArrow,
@@ -201,6 +202,51 @@ function processSubfeaturesLayout(
 // by id, and the key into peptideDataMap — for a gene with multiple polyprotein
 // CDS children, e.g. SARS-CoV-2 ORF1a/ORF1ab, translation is keyed at the gene
 // level); each region is registered as a subfeature off it so it is individually
+// Register a subfeature as both a hoverable/selectable hit-test entry and (when
+// subfeatureLabels is enabled) a floating label, keyed by the child's own
+// coordinates. Shared by the mature-protein and repeat-region glyph paths so the
+// recorded metadata can't drift between them.
+function registerSubfeature(
+  args: {
+    feature: Feature
+    parentFeatureId: string
+    type: string
+    topPx: number
+    heightPx: number
+    displayLabel: string | undefined
+  },
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature, parentFeatureId, type, topPx, heightPx, displayLabel } = args
+  const startBp = feature.get('start')
+  const endBp = feature.get('end')
+  collector.subfeatureInfos.push({
+    kind: 'subfeature',
+    featureId: feature.id(),
+    parentFeatureId,
+    type,
+    startBp,
+    endBp,
+    topPx,
+    bottomPx: topPx + heightPx,
+    displayLabel,
+  })
+  emitSubfeatureLabel(
+    {
+      featureId: feature.id(),
+      displayLabel,
+      featureHeight: heightPx,
+      minX: startBp,
+      maxX: endBp,
+      topY: topPx,
+      parentFeatureId,
+    },
+    ctx,
+    collector,
+  )
+}
+
 // hoverable and selectable. cdsFeature is the polyprotein CDS that directly owns
 // the mature-region children — same object as rootFeature for a standalone CDS,
 // but the immediate child layout's feature (not the enclosing gene) when nested,
@@ -279,29 +325,17 @@ function processMatureProteinLayout(
       cdsLabel && cdsLabel !== childLabel && cdsLabel !== cdsFeature.id()
         ? `${childLabel} (${cdsLabel})`
         : childLabel
-    collector.subfeatureInfos.push({
-      kind: 'subfeature',
-      featureId: childFeature.id(),
-      parentFeatureId: rootFeature.id(),
-      type: childFeature.get('type'),
-      startBp: childFeature.get('start'),
-      endBp: childFeature.get('end'),
-      topPx,
-      bottomPx: topPx + childLayout.height,
-      displayLabel,
-    })
 
     // mirror the transcript path so `subfeatureLabels` actually labels mature
     // peptides (matureProteinRegion glyph)
-    emitSubfeatureLabel(
+    registerSubfeature(
       {
-        featureId: childFeature.id(),
-        displayLabel,
-        featureHeight: childLayout.height,
-        minX: cStart,
-        maxX: cEnd,
-        topY: topPx,
+        feature: childFeature,
         parentFeatureId: rootFeature.id(),
+        type: childFeature.get('type'),
+        topPx,
+        heightPx: childLayout.height,
+        displayLabel,
       },
       ctx,
       collector,
@@ -344,13 +378,13 @@ function processRepeatRegionLayout(
     const childFeature = childLayout.feature
     const childType = featureType(childFeature)
     const isBody = childType.endsWith('_retrotransposon')
-    const topPx = isBody
-      ? childLayout.y +
-        ((1 - REPEAT_BODY_HEIGHT_FRACTION) / 2) * childLayout.height
-      : childLayout.y
-    const heightPx = isBody
-      ? childLayout.height * REPEAT_BODY_HEIGHT_FRACTION
-      : childLayout.height
+    const [topPx, heightPx] = isBody
+      ? centerShrink(
+          childLayout.y,
+          childLayout.height,
+          REPEAT_BODY_HEIGHT_FRACTION,
+        )
+      : [childLayout.y, childLayout.height]
     const color = REPEAT_COLOR_MAP[childType]
 
     pushBoxRect(
@@ -366,27 +400,14 @@ function processRepeatRegionLayout(
     const displayLabel =
       readFeatureName(ctx.config, childFeature, ctx.jexl) ??
       getFeatureName(childFeature)
-    collector.subfeatureInfos.push({
-      kind: 'subfeature',
-      featureId: childFeature.id(),
-      parentFeatureId: feature.id(),
-      type: childType,
-      startBp: childFeature.get('start'),
-      endBp: childFeature.get('end'),
-      topPx,
-      bottomPx: topPx + heightPx,
-      displayLabel,
-    })
-
-    emitSubfeatureLabel(
+    registerSubfeature(
       {
-        featureId: childFeature.id(),
-        displayLabel,
-        featureHeight: heightPx,
-        minX: childFeature.get('start'),
-        maxX: childFeature.get('end'),
-        topY: topPx,
+        feature: childFeature,
         parentFeatureId: feature.id(),
+        type: childType,
+        topPx,
+        heightPx,
+        displayLabel,
       },
       ctx,
       collector,
