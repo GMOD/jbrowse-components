@@ -389,6 +389,21 @@ In JBrowse 2, the top-level menu performs only global operations; each linear
 genome view has its own hamburger menu and each track has its own track menu. In
 JBrowse 1 the app menu operated directly on the single view.
 
+### What keyboard shortcuts does the linear genome view support
+
+With the view focused (click it first):
+
+- `Ctrl`/`Cmd` + `↑` / `↓` — zoom in / out
+- `Ctrl`/`Cmd` + `←` / `→` — pan left / right
+- `Ctrl` + mouse wheel — zoom (trackpad pinch also works)
+- `Shift` + click-drag — rubberband-select a region
+- `Shift` (held, no drag) — show a red vertical guide bar
+- `Ctrl`/`Cmd` + `Z` — undo; `Ctrl`/`Cmd` + `Shift` + `Z` (or `Ctrl` + `Y`) —
+  redo
+
+See [Basic usage](/docs/user_guides/basic_usage#zooming) for the scroll-to-zoom
+toggle and other navigation controls.
+
 ### Why do some of my reads not display soft-clipping
 
 Some reads, such as secondary reads, do not have a `SEQ` field on their records,

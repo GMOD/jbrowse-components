@@ -69,6 +69,8 @@ appear automatically.
 
 - [Circular genome view](/docs/user_guides/circular_view) — the whole-genome
   chord overview on its own, for plotting a single SV track without the table
+- [Spreadsheet view](/docs/user_guides/spreadsheet_view) — the tabular half on
+  its own, for importing CSV/TSV/BED/VCF as a searchable feature table
 - [Structural variant visualization](/docs/user_guides/sv_visualization) —
   interpreting SV signals across alignment colorings, arcs, and the breakpoint
   split view
