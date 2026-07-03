@@ -224,6 +224,123 @@ test('codons with a gap in a row are skipped for that row only', () => {
   expect(markers.map(m => m.aa)).toEqual(['M', 'K', 'K', '*', '*'])
 })
 
+// Two adjacent blocks splitting the reference mid-codon: block A holds bp
+// 100-101, block B holds bp 102-108. The first codon [100,101,102] straddles the
+// A/B boundary — before cross-block stitching it was dropped entirely (blank
+// column that per-base coverage doesn't show); now it's assembled from both.
+function twoBlockRegion(
+  aRef: string,
+  aRows: string[],
+  bRef: string,
+  bRows: [number, string][],
+): MafRegionData {
+  return {
+    blocks: [
+      {
+        startBp: 100,
+        endBp: 100 + aRef.replaceAll('-', '').length,
+        refSeqBytes: b(aRef),
+        rows: aRows.map((alignment, rowIndex) => ({
+          rowIndex,
+          alignmentBytes: b(alignment),
+        })),
+        empties: [],
+      },
+      {
+        startBp: 102,
+        endBp: 102 + bRef.replaceAll('-', '').length,
+        refSeqBytes: b(bRef),
+        rows: bRows.map(([rowIndex, alignment]) => ({
+          rowIndex,
+          alignmentBytes: b(alignment),
+        })),
+        empties: [],
+      },
+    ],
+    coverage: emptyMafCoverage(100),
+  }
+}
+
+test('a codon straddling a block boundary is stitched from both blocks', () => {
+  // ref ATG AAA TAA (M K *); block A = "AT" (bp 100-101), block B = "GAAATAA"
+  // (bp 102-108). Codon 1 [100,101,102] crosses the boundary. row0 is in both
+  // blocks (full ATGAAATAA); row1 is only in block B, so it has no complete
+  // codon 1 and that cell is dropped for it — but codons 2/3 still classify.
+  const markers = computeVisibleCodons({
+    view,
+    rpcDataMap: new Map([
+      [
+        0,
+        twoBlockRegion(
+          'AT',
+          ['AT'],
+          'GAAATAA',
+          [
+            [0, 'GAAATAA'],
+            [1, 'GAAATAA'],
+          ],
+        ),
+      ],
+    ]),
+    framesDataMap: new Map([[0, frames]]),
+    defaultSrc: 'ref',
+    rowHeight: 15,
+    rowProportion: 0.8,
+  })
+  // codon 1 (M): only row0 (present in both blocks); codons 2/3: both rows
+  expect(markers.map(m => m.aa)).toEqual(['M', 'K', 'K', '*', '*'])
+  // the straddling codon still spans its 3 bases as one contiguous cell
+  expect(markers[0]).toMatchObject({ xLeft: 0, width: 30 })
+})
+
+test('computeCodonConservation stitches a boundary-straddling codon', () => {
+  // ref M K *; row0 = reference (excluded), row1 = ATGAAATAA (all match).
+  // Codon 1 straddles A/B; row1 present in both → conservation 1 there too, not
+  // NaN (which is what the old block-local drop produced).
+  const bars = computeCodonConservation({
+    view,
+    rpcDataMap: new Map([
+      [
+        0,
+        twoBlockRegion(
+          'AT',
+          ['AT', 'AT'],
+          'GAAATAA',
+          [
+            [0, 'GAAATAA'],
+            [1, 'GAAATAA'],
+          ],
+        ),
+      ],
+    ]),
+    framesDataMap: new Map([[0, frames]]),
+    defaultSrc: 'ref',
+    refRowIndex: 0,
+  })
+  expect(bars.map(x => x.fraction)).toEqual([1, 1, 1])
+})
+
+test('findCodonAt resolves a codon straddling a block boundary', () => {
+  const region = twoBlockRegion(
+    'AT',
+    ['AT'],
+    'GAAATAA',
+    [[0, 'GAAATAA']],
+  )
+  // bp 102 (the exon-B piece of the straddling codon 1) resolves the whole ATG
+  for (const bp of [100, 101, 102]) {
+    expect(
+      findCodonAt({
+        blocks: region.blocks,
+        frames,
+        defaultSrc: 'ref',
+        bp,
+        rowIndex: 0,
+      }),
+    ).toMatchObject({ codon: 'ATG', aa: 'M', refCodon: 'ATG', change: 'same' })
+  }
+})
+
 describe('computeCodonConservation', () => {
   // ref:  ATG AAA TAA → M K *
   // row0: ATG AAA TAA (the reference row, excluded by refRowIndex)

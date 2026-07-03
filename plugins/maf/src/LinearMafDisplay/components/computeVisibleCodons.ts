@@ -206,70 +206,123 @@ interface ComputeVisibleCodonsParams {
   rowProportion: number
 }
 
-/** Alignment-byte columns of a codon's three reference positions, ascending. */
-type CodonColumns = [number, number, number]
+/** A codon's three reference bytes (from the reference row or a species row),
+ * gathered in ascending genomic order — possibly across two blocks. */
+type CodonBytes = [number, number, number]
 
 // Case-insensitive equality of two alignment bytes (ASCII letter-case bit).
 function sameBase(a: number, b: number) {
   return (a & ~LOWER_BIT) === (b & ~LOWER_BIT)
 }
 
-// Translate / read the codon triplet from a row's bytes at the codon's columns.
-function translateAt(bytes: Uint8Array, cols: CodonColumns, strand: number) {
-  return translateCodonBytes(
-    bytes[cols[0]]!,
-    bytes[cols[1]]!,
-    bytes[cols[2]]!,
-    strand,
-  )
-}
-function tripletAt(bytes: Uint8Array, cols: CodonColumns, strand: number) {
-  return orientedTriplet(
-    bytes[cols[0]]!,
-    bytes[cols[1]]!,
-    bytes[cols[2]]!,
-    strand,
-  )
+/** A reference position resolved to the block that holds it plus the alignment
+ * column of that base within the block. */
+interface RefColLoc {
+  blockIdx: number
+  col: number
 }
 
 /**
- * Map a codon's three reference positions to alignment-byte columns within a
- * block, or undefined if any position lies outside it. `refColumns.length` is the
- * block's reference-base count, so a position before `startBp` or past the last
- * reference base falls out — which is exactly how a codon stitched into an exon
- * that isn't in this block is skipped.
+ * Resolve an absolute reference position to the block containing it and the
+ * alignment column of that base within the block. Blocks are disjoint reference
+ * ranges (`refColumns.length` reference bases starting at `startBp`), so at most
+ * one contains `p`; returns undefined when no fetched block covers it.
  */
-function codonColumns(
+function locateRefPos(
+  blocks: MafBlock[],
+  refColumnsPerBlock: Int32Array[],
+  p: number,
+): RefColLoc | undefined {
+  for (let bi = 0; bi < blocks.length; bi++) {
+    const g = p - blocks[bi]!.startBp
+    const cols = refColumnsPerBlock[bi]!
+    if (g >= 0 && g < cols.length) {
+      return { blockIdx: bi, col: cols[g]! }
+    }
+  }
+  return undefined
+}
+
+/** Codon type resolved to per-block columns. */
+type CodonLocs = [RefColLoc, RefColLoc, RefColLoc]
+
+/**
+ * Resolve a codon's three reference positions to per-block columns, or undefined
+ * if any position lies outside every fetched block. Unlike a single-block
+ * mapping, the three positions may resolve into DIFFERENT blocks — so a codon
+ * whose bases straddle a MAF alignment-block boundary (or the two exon pieces of
+ * a boundary-stitched codon) is assembled from both blocks rather than dropped.
+ */
+function locateCodon(
   positions: readonly [number, number, number],
-  startBp: number,
-  refColumns: Int32Array,
-): CodonColumns | undefined {
-  const g0 = positions[0] - startBp
-  const g1 = positions[1] - startBp
-  const g2 = positions[2] - startBp
-  const n = refColumns.length
-  return g0 < 0 || g1 < 0 || g2 < 0 || g0 >= n || g1 >= n || g2 >= n
-    ? undefined
-    : [refColumns[g0]!, refColumns[g1]!, refColumns[g2]!]
+  blocks: MafBlock[],
+  refColumnsPerBlock: Int32Array[],
+): CodonLocs | undefined {
+  const l0 = locateRefPos(blocks, refColumnsPerBlock, positions[0])
+  const l1 = locateRefPos(blocks, refColumnsPerBlock, positions[1])
+  const l2 = locateRefPos(blocks, refColumnsPerBlock, positions[2])
+  return l0 && l1 && l2 ? [l0, l1, l2] : undefined
+}
+
+// Per-block rowIndex → alignment bytes, so a codon straddling blocks can read a
+// species' bytes from whichever block holds each of its three positions.
+function rowByteMap(block: MafBlock): Map<number, Uint8Array> {
+  const m = new Map<number, Uint8Array>()
+  for (const row of block.rows) {
+    m.set(row.rowIndex, row.alignmentBytes)
+  }
+  return m
+}
+
+// The three reference bytes of a located codon (from each position's block).
+function refCodonBytes(locs: CodonLocs, blocks: MafBlock[]): CodonBytes {
+  return [
+    blocks[locs[0].blockIdx]!.refSeqBytes[locs[0].col]!,
+    blocks[locs[1].blockIdx]!.refSeqBytes[locs[1].col]!,
+    blocks[locs[2].blockIdx]!.refSeqBytes[locs[2].col]!,
+  ]
 }
 
 /**
- * Classify a species' codon (a row's bytes at the codon `cols`) against the
- * reference codon at the same columns: `stop` if it translates to a stop,
- * `nonsyn` if its amino acid differs from `refAa`, `same` if every base matches
- * the reference, else `syn` (silent). Returns undefined when the species' codon
- * is gapped/non-standard (no residue to draw). Shared by the codon overlay
- * (`computeVisibleCodons`) and the hover lookup (`findCodonAt`) so the colored
- * cell and the tooltip can't disagree.
+ * The three alignment bytes of a located codon for one species row, or undefined
+ * if that row is absent from any block the codon spans — a species present in
+ * only one of two straddled blocks has no complete codon there, so it's dropped
+ * (the same "no residue" outcome as a gapped codon).
+ */
+function rowCodonBytes(
+  locs: CodonLocs,
+  rowMapsPerBlock: Map<number, Uint8Array>[],
+  rowIndex: number,
+): CodonBytes | undefined {
+  const r0 = rowMapsPerBlock[locs[0].blockIdx]!.get(rowIndex)
+  const r1 = rowMapsPerBlock[locs[1].blockIdx]!.get(rowIndex)
+  const r2 = rowMapsPerBlock[locs[2].blockIdx]!.get(rowIndex)
+  if (!r0 || !r1 || !r2) {
+    return undefined
+  }
+  const b0 = r0[locs[0].col]
+  const b1 = r1[locs[1].col]
+  const b2 = r2[locs[2].col]
+  return b0 === undefined || b1 === undefined || b2 === undefined
+    ? undefined
+    : [b0, b1, b2]
+}
+
+/**
+ * Classify a species' codon bytes against the reference codon bytes: `stop` if
+ * it translates to a stop, `nonsyn` if its amino acid differs from `refAa`,
+ * `same` if every base matches the reference, else `syn` (silent). Returns
+ * undefined when the species' codon is gapped/non-standard (no residue to draw).
+ * Shared by the codon overlay (`computeVisibleCodons`) and the hover lookup
+ * (`findCodonAt`) so the colored cell and the tooltip can't disagree.
  */
 function classifyChange(
-  rowBytes: Uint8Array,
-  refBytes: Uint8Array,
-  cols: CodonColumns,
+  rowBytes: CodonBytes,
+  refBytes: CodonBytes,
   strand: number,
   refAa: string | undefined,
 ): { aa: string; change: CodonChange } | undefined {
-  const aa = translateAt(rowBytes, cols, strand)
+  const aa = translateCodonBytes(rowBytes[0], rowBytes[1], rowBytes[2], strand)
   if (aa === undefined) {
     return undefined
   }
@@ -278,7 +331,9 @@ function classifyChange(
       ? 'stop'
       : refAa !== undefined && aa !== refAa
         ? 'nonsyn'
-        : cols.every(c => sameBase(rowBytes[c]!, refBytes[c]!))
+        : sameBase(rowBytes[0], refBytes[0]) &&
+            sameBase(rowBytes[1], refBytes[1]) &&
+            sameBase(rowBytes[2], refBytes[2])
           ? 'same'
           : 'syn'
   return { aa, change }
@@ -376,44 +431,52 @@ export function computeVisibleCodons(
       continue
     }
 
-    for (const block of regionData.blocks) {
-      const ref = block.refSeqBytes
-      const refColumns = buildRefColumns(ref)
-      for (const codon of codons) {
-        const cols = codonColumns(codon.positions, block.startBp, refColumns)
-        if (!cols) {
+    const blocks = regionData.blocks
+    const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
+    const rowMapsPerBlock = blocks.map(rowByteMap)
+
+    for (const codon of codons) {
+      const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
+      if (!locs) {
+        continue
+      }
+      const refBytes = refCodonBytes(locs, blocks)
+      const refAa = translateCodonBytes(
+        refBytes[0],
+        refBytes[1],
+        refBytes[2],
+        codon.strand,
+      )
+      const cells = codonCells(codon.positions, bpToPx)
+      const glyphIdx = widestCell(cells)
+      // A species must appear in every block the codon spans to have a complete
+      // codon; iterate the rows of the block holding its first (lowest) base and
+      // pull the other bases from their blocks (all the same block in the common
+      // single-block case). Row order is preserved for a stable marker order.
+      for (const row of blocks[locs[0].blockIdx]!.rows) {
+        const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
+        if (!rowBytes) {
           continue
         }
-        const refAa = translateAt(ref, cols, codon.strand)
-        const cells = codonCells(codon.positions, bpToPx)
-        const glyphIdx = widestCell(cells)
-        for (const row of block.rows) {
-          const cls = classifyChange(
-            row.alignmentBytes,
-            ref,
-            cols,
-            codon.strand,
-            refAa,
-          )
-          if (!cls) {
-            continue
-          }
-          const rowTop = offset + rowHeight * row.rowIndex
-          const y = Math.round(hp2 + rowTop)
-          cells.forEach((cell, i) => {
-            markers.push({
-              xLeft: cell.xLeft,
-              width: cell.width,
-              rowTop,
-              h,
-              x: cell.x,
-              y,
-              aa: cls.aa,
-              change: cls.change,
-              drawGlyph: i === glyphIdx,
-            })
-          })
+        const cls = classifyChange(rowBytes, refBytes, codon.strand, refAa)
+        if (!cls) {
+          continue
         }
+        const rowTop = offset + rowHeight * row.rowIndex
+        const y = Math.round(hp2 + rowTop)
+        cells.forEach((cell, i) => {
+          markers.push({
+            xLeft: cell.xLeft,
+            width: cell.width,
+            rowTop,
+            h,
+            x: cell.x,
+            y,
+            aa: cls.aa,
+            change: cls.change,
+            drawGlyph: i === glyphIdx,
+          })
+        })
       }
     }
   }
@@ -485,35 +548,48 @@ export function computeCodonConservation(
     if (codons.length === 0) {
       continue
     }
-    for (const block of regionData.blocks) {
-      const ref = block.refSeqBytes
-      const refColumns = buildRefColumns(ref)
-      for (const codon of codons) {
-        const cols = codonColumns(codon.positions, block.startBp, refColumns)
-        if (!cols) {
-          continue
-        }
-        const refAa = translateAt(ref, cols, codon.strand)
-        if (refAa === undefined) {
-          continue
-        }
-        let matches = 0
-        let classifiable = 0
-        for (const row of block.rows) {
-          if (row.rowIndex !== refRowIndex) {
-            const aa = translateAt(row.alignmentBytes, cols, codon.strand)
-            if (aa !== undefined) {
-              classifiable += 1
-              if (aa === refAa) {
-                matches += 1
-              }
+    const blocks = regionData.blocks
+    const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
+    const rowMapsPerBlock = blocks.map(rowByteMap)
+    for (const codon of codons) {
+      const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
+      if (!locs) {
+        continue
+      }
+      const refBytes = refCodonBytes(locs, blocks)
+      const refAa = translateCodonBytes(
+        refBytes[0],
+        refBytes[1],
+        refBytes[2],
+        codon.strand,
+      )
+      if (refAa === undefined) {
+        continue
+      }
+      let matches = 0
+      let classifiable = 0
+      for (const row of blocks[locs[0].blockIdx]!.rows) {
+        if (row.rowIndex !== refRowIndex) {
+          const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, row.rowIndex)
+          const aa =
+            rowBytes &&
+            translateCodonBytes(
+              rowBytes[0],
+              rowBytes[1],
+              rowBytes[2],
+              codon.strand,
+            )
+          if (aa) {
+            classifiable += 1
+            if (aa === refAa) {
+              matches += 1
             }
           }
         }
-        const fraction = classifiable > 0 ? matches / classifiable : Number.NaN
-        for (const cell of codonCells(codon.positions, bpToPx)) {
-          bars.push({ xLeft: cell.xLeft, width: cell.width, fraction })
-        }
+      }
+      const fraction = classifiable > 0 ? matches / classifiable : Number.NaN
+      for (const cell of codonCells(codon.positions, bpToPx)) {
+        bars.push({ xLeft: cell.xLeft, width: cell.width, fraction })
       }
     }
   }
@@ -562,33 +638,38 @@ export function findCodonAt(params: FindCodonAtParams): CodonHit | undefined {
   if (!codon) {
     return undefined
   }
-  for (const block of blocks) {
-    const ref = block.refSeqBytes
-    const refColumns = buildRefColumns(ref)
-    const cols = codonColumns(codon.positions, block.startBp, refColumns)
-    const row = block.rows.find(r => r.rowIndex === rowIndex)
-    if (!cols || !row) {
-      continue
-    }
-    const refCodon = tripletAt(ref, cols, codon.strand)
-    const refAa = refCodon === undefined ? undefined : codonTable[refCodon]
-    const cls = classifyChange(
-      row.alignmentBytes,
-      ref,
-      cols,
-      codon.strand,
-      refAa,
-    )
-    const codonTriplet = tripletAt(row.alignmentBytes, cols, codon.strand)
-    return cls && codonTriplet !== undefined
-      ? {
-          codon: codonTriplet,
-          aa: cls.aa,
-          refCodon,
-          refAa,
-          change: cls.change,
-        }
-      : undefined
+  const refColumnsPerBlock = blocks.map(bl => buildRefColumns(bl.refSeqBytes))
+  const rowMapsPerBlock = blocks.map(rowByteMap)
+  const locs = locateCodon(codon.positions, blocks, refColumnsPerBlock)
+  if (!locs) {
+    return undefined
   }
-  return undefined
+  const refBytes = refCodonBytes(locs, blocks)
+  const refCodon = orientedTriplet(
+    refBytes[0],
+    refBytes[1],
+    refBytes[2],
+    codon.strand,
+  )
+  const refAa = refCodon === undefined ? undefined : codonTable[refCodon]
+  const rowBytes = rowCodonBytes(locs, rowMapsPerBlock, rowIndex)
+  if (!rowBytes) {
+    return undefined
+  }
+  const cls = classifyChange(rowBytes, refBytes, codon.strand, refAa)
+  const codonTriplet = orientedTriplet(
+    rowBytes[0],
+    rowBytes[1],
+    rowBytes[2],
+    codon.strand,
+  )
+  return cls && codonTriplet !== undefined
+    ? {
+        codon: codonTriplet,
+        aa: cls.aa,
+        refCodon,
+        refAa,
+        change: cls.change,
+      }
+    : undefined
 }
