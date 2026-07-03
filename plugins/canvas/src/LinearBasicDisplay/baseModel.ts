@@ -273,7 +273,8 @@ export default function baseStateModelFactory(
          */
         // "Hide this feature" exclusion set (inverse of solo): the worker drops
         // these from layout/drawing. Applies immediately per feature — no
-        // collect-then-apply. Volatile like the solo state.
+        // collect-then-apply. Volatile — a transient hide that doesn't outlive a
+        // reload (unlike the now-persistent solo set).
         hiddenFeatureIds: observable.array<string>(),
         /**
          * #volatile
