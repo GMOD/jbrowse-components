@@ -292,8 +292,8 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
     expect(display.renderSections.length).toBe(2)
   }, delay)
 
-  const fullHeight = display.sections.contentHeight
   const firstKey = display.groupOrder[0].key
+  const otherPileupBefore = display.sections.sections[1].pileupHeight
   display.toggleGroupCollapsed(firstKey)
 
   await waitFor(() => {
@@ -302,8 +302,11 @@ test('collapsing a group zeroes its pileup band but keeps coverage', async () =>
     const sec = display.sections.sections[0]
     expect(sec.pileupHeight).toBe(0)
     expect(sec.coverageHeight).toBeGreaterThan(0)
-    // total stacked height shrinks by the collapsed pileup.
-    expect(display.sections.contentHeight).toBeLessThan(fullHeight)
+    // fit-to-viewport hands the collapsed group's pileup slice to the group
+    // still showing a pileup, so that section's band grows to fill the space.
+    expect(display.sections.sections[1].pileupHeight).toBeGreaterThan(
+      otherPileupBefore,
+    )
   }, delay)
 }, 60000)
 
