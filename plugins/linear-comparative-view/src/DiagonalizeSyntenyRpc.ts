@@ -13,14 +13,32 @@ import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAda
 import type { Region, StatusCallback } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 
+// One alignment adapter drawn in a level, plus the per-adapter refName
+// reconciliation the worker needs (it has no assemblyManager to resolve
+// aliases, and each adapter has its own namespace):
+// - fetchRegions:    the reference regions renamed into this adapter's namespace
+//                    for the getFeatures query
+// - refRefNameMap /
+//   queryRefNameMap: adapter refName -> canonical, per axis, to translate the
+//                    fetched alignments back so they match the canonical
+//                    reference/current regions below
+interface DiagonalizeSyntenyAdapter {
+  adapterConfig: Record<string, unknown>
+  fetchRegions: Region[]
+  refRefNameMap: Record<string, string>
+  queryRefNameMap: Record<string, string>
+}
+
 // One synteny level (the gap between two adjacent views): the alignment
 // adapters drawn there, the region set of the reference view (above), and the
 // region set of the view being reordered (below). Called once per level so each
 // routes to the same worker its track renders on (rpcSessionId is per-track),
-// reusing that worker's already-parsed adapters.
+// reusing that worker's already-parsed adapters. referenceRegions/currentRegions
+// stay in canonical namespace — the algorithm matches against them and hands
+// currentRegions (reordered) straight back to the view.
 export interface DiagonalizeSyntenyArgs {
   sessionId: string
-  adapterConfigs: Record<string, unknown>[]
+  adapters: DiagonalizeSyntenyAdapter[]
   referenceRegions: Region[]
   currentRegions: Region[]
   bpPerPx: number
@@ -45,7 +63,7 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
 
   async execute(args: DiagonalizeSyntenyArgs, rpcDriverClassName: string) {
     const {
-      adapterConfigs,
+      adapters,
       referenceRegions,
       currentRegions,
       bpPerPx,
@@ -66,7 +84,12 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
     statusCallback?.('Fetching features')
 
     const alignments: AlignmentData[] = []
-    for (const adapterConfig of adapterConfigs) {
+    for (const {
+      adapterConfig,
+      fetchRegions,
+      refRefNameMap,
+      queryRefNameMap,
+    } of adapters) {
       const { dataAdapter } = await getAdapter(
         this.pluginManager,
         sessionId,
@@ -75,7 +98,7 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
       const feats = dedupe(
         await (
           dataAdapter as BaseFeatureDataAdapter
-        ).getFeaturesInMultipleRegionsArray(referenceRegions, {
+        ).getFeaturesInMultipleRegionsArray(fetchRegions, {
           stopToken,
           bpPerPx,
           statusCallback,
@@ -85,7 +108,10 @@ export default class DiagonalizeSyntenyRpc extends RpcMethodTypeWithFiltersAndRe
       // append element-by-element, not `push(...arr)`: whole-genome synteny
       // yields hundreds of thousands of alignments, and spreading that many
       // args overflows the call stack ("Maximum call stack size exceeded")
-      for (const a of extractAlignmentData(feats)) {
+      for (const a of extractAlignmentData(feats, {
+        refRefNameMap,
+        queryRefNameMap,
+      })) {
         alignments.push(a)
       }
     }

@@ -1,5 +1,9 @@
 import { getSession } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
+import {
+  getAdapterToCanonicalRefNameMap,
+  renameRegionsForAdapter,
+} from '@jbrowse/synteny-core'
 import { transaction } from 'mobx'
 
 import type { LinearSyntenyDisplayModel } from '../../LinearSyntenyDisplay/model.ts'
@@ -36,27 +40,58 @@ export async function runDiagonalize(
   // sticky worker and hits the already-set-up (parsed) adapter instead of
   // re-parsing into a fresh adapter cache. Results align to `levels`; a level
   // returns null when it has nothing to reorder (no displays / no alignments).
+  const { assemblyManager, rpcManager } = getSession(model)
   const results = await Promise.all(
-    model.levels.map((level: Level, i: number) => {
+    model.levels.map(async (level: Level, i: number) => {
       const displays = level.linearSyntenyDisplays
       if (displays.length === 0) {
-        return Promise.resolve(null)
+        return null
       }
       const sessionId = getRpcSessionId(displays[0])
-      return getSession(model).rpcManager.call(
-        sessionId,
-        'DiagonalizeSynteny',
-        {
-          adapterConfigs: displays.map(
-            (d: LinearSyntenyDisplayModel) => d.adapterConfig,
-          ),
-          referenceRegions: model.views[i]!.displayedRegions,
-          currentRegions: model.views[i + 1]!.displayedRegions,
-          bpPerPx: model.views[i]!.bpPerPx,
-          stopToken: opts.stopToken,
-          statusCallback: opts.statusCallback,
-        },
+      // referenceRegions/currentRegions stay canonical; the worker matches
+      // against them and reorders currentRegions back into the view. Each
+      // adapter may use its own refName namespace, so refName reconciliation is
+      // resolved per-adapter here on the main thread (the worker has no
+      // assemblyManager): the reference regions are renamed for the fetch, and
+      // per-axis adapter->canonical maps let the worker translate fetched
+      // alignments back to canonical.
+      const referenceRegions = model.views[i]!.displayedRegions
+      const currentRegions = model.views[i + 1]!.displayedRegions
+      const adapters = await Promise.all(
+        displays.map(async (d: LinearSyntenyDisplayModel) => {
+          const { adapterConfig } = d
+          const [fetchRegions, refRefNameMap, queryRefNameMap] =
+            await Promise.all([
+              renameRegionsForAdapter({
+                assemblyManager,
+                sessionId,
+                adapterConfig,
+                regions: referenceRegions,
+              }),
+              getAdapterToCanonicalRefNameMap({
+                assemblyManager,
+                sessionId,
+                adapterConfig,
+                regions: referenceRegions,
+              }),
+              getAdapterToCanonicalRefNameMap({
+                assemblyManager,
+                sessionId,
+                adapterConfig,
+                regions: currentRegions,
+              }),
+            ])
+          return { adapterConfig, fetchRegions, refRefNameMap, queryRefNameMap }
+        }),
       )
+      return rpcManager.call(sessionId, 'DiagonalizeSynteny', {
+        adapters,
+        referenceRegions,
+        currentRegions,
+        bpPerPx: model.views[i]!.bpPerPx,
+        stopToken: opts.stopToken,
+        statusCallback: opts.statusCallback,
+      })
     }),
   )
 

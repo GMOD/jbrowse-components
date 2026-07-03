@@ -23,10 +23,15 @@ declare module '@jbrowse/core/rpc/RpcRegistry' {
 
 export interface DiagonalizeDotplotArgs {
   sessionId: string
-  view: {
-    hview: { displayedRegions: Region[] }
-    vview: { displayedRegions: Region[] }
-  }
+  // horizontal axis (already renamed into the adapter's refName namespace on the
+  // main thread): drives the getFeatures query and the reference ordering
+  referenceRegions: Region[]
+  // vertical axis, kept in canonical namespace because the reordered result is
+  // handed straight back to the view
+  currentRegions: Region[]
+  // adapter refName -> canonical refName for the vertical axis, so fetched
+  // alignments line up with the canonical currentRegions
+  queryRefNameMap: Record<string, string>
   adapterConfig: Record<string, unknown>
   stopToken?: StopToken
   statusCallback?: StatusCallback
@@ -36,12 +41,15 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
   name = 'DiagonalizeDotplot'
 
   async execute(args: DiagonalizeDotplotArgs, rpcDriverClassName: string) {
-    const deserializedArgs = await this.deserializeArguments(
-      args,
-      rpcDriverClassName,
-    )
-    const { view, sessionId, adapterConfig, stopToken, statusCallback } =
-      deserializedArgs
+    const {
+      referenceRegions,
+      currentRegions,
+      queryRefNameMap,
+      sessionId,
+      adapterConfig,
+      stopToken,
+      statusCallback,
+    } = await this.deserializeArguments(args, rpcDriverClassName)
 
     if (!sessionId) {
       throw new Error('must pass a unique session id')
@@ -58,7 +66,7 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     const feats = dedupe(
       await (
         dataAdapter as BaseFeatureDataAdapter
-      ).getFeaturesInMultipleRegionsArray(view.hview.displayedRegions, {
+      ).getFeaturesInMultipleRegionsArray(referenceRegions, {
         sessionId,
         stopToken,
         statusCallback,
@@ -69,7 +77,10 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
     checkStopToken(stopToken)
     statusCallback?.('Extracting alignment data')
 
-    const alignments = extractAlignmentData(feats)
+    // referenceRegions are already adapter-space (renamed on the main thread),
+    // so the reference axis needs no translation; only the query axis is mapped
+    // back to canonical to line up with the canonical currentRegions.
+    const alignments = extractAlignmentData(feats, { queryRefNameMap })
 
     if (alignments.length === 0) {
       throw new Error('No alignments found to diagonalize')
@@ -81,8 +92,8 @@ export default class DiagonalizeDotplotRpc extends RpcMethodTypeWithFiltersAndRe
 
     const result = await diagonalizeRegions(
       alignments,
-      view.hview.displayedRegions,
-      view.vview.displayedRegions,
+      referenceRegions,
+      currentRegions,
       () => {
         checkStopToken(stopToken)
       },

@@ -32,3 +32,44 @@ export async function renameRegionsForAdapter({
   })
   return renamed
 }
+
+/**
+ * Inverse of the map `renameRegionsForAdapter` applies: adapter refName ->
+ * canonical assembly refName (e.g. "NC_012119.1" -> "1"), covering every
+ * assembly present in `regions`.
+ *
+ * The diagonalize RPCs rename their reference regions into adapter space (so the
+ * worker's getFeatures + refName matching line up), but the reordered *query*
+ * regions are handed straight back to the view, which must stay in canonical
+ * space. The worker uses this map to translate the query-axis refName of each
+ * fetched alignment back to canonical before the diagonalization matches it
+ * against the (canonical) query regions. Built on the main thread because the
+ * worker has no assemblyManager to resolve aliases.
+ */
+export async function getAdapterToCanonicalRefNameMap({
+  assemblyManager,
+  sessionId,
+  adapterConfig,
+  regions,
+}: {
+  assemblyManager: AssemblyManager
+  sessionId: string
+  adapterConfig: Record<string, unknown>
+  regions: Region[]
+}): Promise<Record<string, string>> {
+  const assemblyNames = [...new Set(regions.map(r => r.assemblyName))]
+  const inverse: Record<string, string> = {}
+  for (const name of assemblyNames) {
+    const assembly = name
+      ? await assemblyManager.waitForAssembly(name)
+      : undefined
+    // canonical -> adapter; invert so the worker can go adapter -> canonical
+    const forward = assembly
+      ? await assembly.getRefNameMapForAdapter(adapterConfig, { sessionId })
+      : {}
+    for (const [canonical, adapter] of Object.entries(forward)) {
+      inverse[adapter] = canonical
+    }
+  }
+  return inverse
+}

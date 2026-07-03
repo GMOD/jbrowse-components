@@ -110,7 +110,14 @@ export async function executeDotplotFeaturesAndPositions({
   let n = 0
   let skippedFeatureCount = 0
   for (const f of features) {
-    const mate = f.get('mate') as FeatureMate
+    // A comparative feature without a mate has no vertical-axis location to
+    // plot, so skip it — mirrors extractAlignmentData's contract, and avoids
+    // dereferencing an undefined mate below.
+    const mate = f.get('mate') as FeatureMate | undefined
+    if (!mate) {
+      skippedFeatureCount++
+      continue
+    }
     const strand = f.get('strand') ?? 1
     const refName = f.get('refName')
     const mateRefName = mate.refName
