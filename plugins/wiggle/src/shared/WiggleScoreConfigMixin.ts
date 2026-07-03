@@ -193,6 +193,12 @@ export function WiggleScoreConfigMixin() {
       /**
        * #action
        */
+      setScatterPointSize(val?: number) {
+        confNode(self).configuration.setSlot('scatterPointSize', val)
+      },
+      /**
+       * #action
+       */
       setAutoscale(val?: string) {
         confNode(self).configuration.setSlot('autoscale', val)
       },
