@@ -116,12 +116,7 @@ describe('seedSoloInTracks', () => {
       tracks: { id: string; displays: { id: string }[] }[]
     }
 
-    const seeded = seedSoloInTracks(
-      snap.tracks,
-      view,
-      'test_track',
-      'gene1',
-    )
+    const seeded = seedSoloInTracks(snap.tracks, view, 'test_track', 'gene1')
 
     const display = seeded[0]!.displays[0]! as Record<string, unknown>
     expect(display.soloFeatureIds).toEqual(['gene1'])
@@ -135,12 +130,7 @@ describe('seedSoloInTracks', () => {
       tracks: { id: string; displays: { id: string }[] }[]
     }
 
-    const seeded = seedSoloInTracks(
-      snap.tracks,
-      view,
-      'no_such_track',
-      'gene1',
-    )
+    const seeded = seedSoloInTracks(snap.tracks, view, 'no_such_track', 'gene1')
 
     const display = seeded[0]!.displays[0]! as Record<string, unknown>
     expect(display.soloFeatureIds).toBeUndefined()

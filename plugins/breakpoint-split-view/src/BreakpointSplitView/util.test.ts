@@ -60,7 +60,11 @@ describe('computeOverlayY', () => {
   test('result always lands within [yOffset+coverageOffset, yOffset+height]', () => {
     for (const scrollTop of [-500, 0, 75, 5000]) {
       for (const top of [0, 60, 1000]) {
-        const y = computeOverlayY({ ...base, scrollTop, layout: [0, top, 0, top + 20] })
+        const y = computeOverlayY({
+          ...base,
+          scrollTop,
+          layout: [0, top, 0, top + 20],
+        })
         expect(y).toBeGreaterThanOrEqual(base.yOffset + base.coverageOffset)
         expect(y).toBeLessThanOrEqual(base.yOffset + base.height)
       }

@@ -29,7 +29,9 @@ export default function PromotableDefaultsMixin() {
        * trackConfigDeltas). Drives the "affected by a session default" badge.
        */
       sessionDefaultChanges(): TrackConfigChange[] {
-        return displaySessionDefaultChanges(self as unknown as PromotableDisplay)
+        return displaySessionDefaultChanges(
+          self as unknown as PromotableDisplay,
+        )
       },
     }))
     .actions(self => ({
