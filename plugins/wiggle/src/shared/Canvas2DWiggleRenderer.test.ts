@@ -14,6 +14,8 @@ import type { SourceRenderData } from '@jbrowse/wiggle-core'
 
 function createMockCanvas() {
   const fillRectCalls: [number, number, number, number][] = []
+  const rectCalls: [number, number, number, number][] = []
+  const arcCalls: [number, number, number][] = []
   const ctx = {
     setTransform: jest.fn(),
     clearRect: jest.fn(),
@@ -25,7 +27,13 @@ function createMockCanvas() {
     beginPath: jest.fn(),
     moveTo: jest.fn(),
     lineTo: jest.fn(),
-    rect: jest.fn(),
+    rect: jest.fn((x: number, y: number, w: number, h: number) => {
+      rectCalls.push([x, y, w, h])
+    }),
+    arc: jest.fn((x: number, y: number, r: number) => {
+      arcCalls.push([x, y, r])
+    }),
+    fill: jest.fn(),
     clip: jest.fn(),
     stroke: jest.fn(),
     fillStyle: '',
@@ -37,7 +45,7 @@ function createMockCanvas() {
     height: 0,
     getContext: jest.fn(() => ctx),
   } as unknown as HTMLCanvasElement
-  return { canvas, ctx, fillRectCalls }
+  return { canvas, ctx, fillRectCalls, rectCalls, arcCalls }
 }
 
 function makeSource(scores: number[], startBps: number[], endBps: number[]) {
@@ -161,14 +169,15 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(ctx.stroke).toHaveBeenCalled()
   })
 
-  test('renderBlocks handles scatter rendering type', () => {
-    const { canvas, fillRectCalls } = createMockCanvas()
+  test('renderBlocks scatter draws a bar for a wide bin', () => {
+    const { canvas, rectCalls, arcCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
       writable: true,
     })
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
+    // 0..1000bp spans the whole 800px block, far wider than the 2px point
     const source = makeSource([5], [0], [1000])
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
@@ -176,7 +185,34 @@ describe('Canvas2DWiggleRenderer', () => {
       renderingType: RENDERING_TYPE_SCATTER,
     })
 
-    expect(fillRectCalls.length).toBe(1)
+    // exclude the full-height clip rect; scatter bars have height === pointSize
+    const bars = rectCalls.filter(([, , , h]) => h === defaultState.scatterPointSize)
+    expect(bars.length).toBe(1)
+    expect(arcCalls.length).toBe(0)
+  })
+
+  test('renderBlocks scatter draws a disc centered on point-like bins', () => {
+    const { canvas, rectCalls, arcCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    // a zero-width feature at bp 500 → x = 400px; disc centered there
+    const source = makeSource([5], [500], [500])
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      renderingType: RENDERING_TYPE_SCATTER,
+    })
+
+    const bars = rectCalls.filter(([, , , h]) => h === defaultState.scatterPointSize)
+    expect(bars.length).toBe(0)
+    expect(arcCalls.length).toBe(1)
+    const [cx, , r] = arcCalls[0]!
+    expect(cx).toBeCloseTo(400)
+    expect(r).toBeCloseTo(1)
   })
 
   // Regression: a reversed block maps feature start→right edge, end→left edge,
@@ -190,7 +226,7 @@ describe('Canvas2DWiggleRenderer', () => {
   ])(
     'reversed block fills the full mirrored cell (%s)',
     (_name, renderingType) => {
-      const { canvas, fillRectCalls } = createMockCanvas()
+      const { canvas, fillRectCalls, rectCalls } = createMockCanvas()
       Object.defineProperty(window, 'devicePixelRatio', {
         value: 1,
         writable: true,
@@ -205,8 +241,14 @@ describe('Canvas2DWiggleRenderer', () => {
         { ...defaultState, renderingType },
       )
 
-      expect(fillRectCalls.length).toBe(1)
-      const [x, , w] = fillRectCalls[0]!
+      // scatter draws its wide-bin bar via ctx.rect (filter out the full-height
+      // clip rect); xyplot/density draw via fillRect
+      const calls =
+        renderingType === RENDERING_TYPE_SCATTER
+          ? rectCalls.filter(([, , , h]) => h === defaultState.scatterPointSize)
+          : fillRectCalls
+      expect(calls.length).toBe(1)
+      const [x, , w] = calls[0]!
       expect(x).toBeCloseTo(400)
       expect(w).toBeCloseTo(400.8)
     },

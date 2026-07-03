@@ -16,6 +16,14 @@ static const int RENDERING_TYPE_LINE = 2;
 static const int RENDERING_TYPE_SCATTER = 3;
 static const int SCALE_TYPE_LOG = 1;
 
+// Scatter glyph shapes carved by the fragment shader (matches manhattan.slang):
+// point-like features become an AA disc, wide (low-zoom) bins a solid bar.
+static const float SHAPE_SOLID = 0.0;
+static const float SHAPE_DISC = 1.0;
+static const float SHAPE_BAR = 2.0;
+// 1px device pad around a disc so the smoothstep edge has room to fade.
+static const float AA_PAD_PX = 1.0;
+
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
   float score     : ATTR1;
@@ -46,6 +54,11 @@ float bpToClipX(uint bp, Uniforms u) {
 struct VsOut {
   float4 position : SV_Position;
   float4 color    : COLOR0;
+  // scatter-only: local quad coord (-1..1) for disc AA, and the shape selector.
+  // SHAPE_SOLID for every non-scatter mode so the fragment shader returns a flat
+  // fill.
+  float2 localPos : TEXCOORD0;
+  float  shape    : TEXCOORD1;
 };
 
 float normalizeScore(float score, float domainMin, float domainMax, int scaleType) {
@@ -84,6 +97,8 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
 
   float sx;
   float sy;
+  float shape = SHAPE_SOLID;
+  float2 localPos = float2(0.0, 0.0);
 
   if (u.renderingType == RENDERING_TYPE_LINE) {
     uint v = vid % VERTS_PER_INSTANCE;
@@ -107,6 +122,33 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sx = sx2;
       sy = clipNextY;
     }
+  } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
+    // Point plot: an AA disc centered on the bp midpoint (matches
+    // manhattan.slang). scatterPointSize is the disc diameter. A bin wider than
+    // the point becomes a horizontal bar so low-zoom summary bins keep their
+    // extent instead of collapsing to a dot.
+    float midX = (sx1 + sx2) * 0.5;
+    float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
+    float centerClipY = 1.0 - scoreYPx * pxToClip;
+    float2 q = quadLocal(vid);
+    float2 local = q * 2.0 - float2(1.0, 1.0);
+    float radiusPx = u.scatterPointSize * 0.5;
+    float spanPx = abs(sx2 - sx1) * 0.5 * u.viewportWidth;
+    if (spanPx > u.scatterPointSize) {
+      float padClipX = AA_PAD_PX * 2.0 / u.viewportWidth;
+      sx = (q.x < 0.5 ? min(sx1, sx2) - padClipX : max(sx1, sx2) + padClipX);
+      sy = centerClipY + local.y * radiusPx * pxToClip;
+      shape = SHAPE_BAR;
+      localPos = local;
+    } else {
+      // expand the quad by the AA pad so the disc's fade edge isn't clipped
+      float expand = (radiusPx + AA_PAD_PX) / max(radiusPx, 0.5);
+      float halfPx = radiusPx * expand;
+      sx = midX + local.x * halfPx * 2.0 / u.viewportWidth;
+      sy = centerClipY + local.y * halfPx * pxToClip;
+      shape = SHAPE_DISC;
+      localPos = local * expand;
+    }
   } else {
     // 3px (1.5 CSS px) minimum width keeps sub-pixel features visible, matching
     // WIGGLE_MIN_PX in the Canvas2D path. Reversal is baked into bpRangeX
@@ -127,11 +169,6 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     if (u.renderingType == RENDERING_TYPE_DENSITY) {
       topPx = rowTop;
       botPx = rowTop + rowHeight;
-    } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
-      float scoreY = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
-      float half = u.scatterPointSize * 0.5;
-      topPx = scoreY - half;
-      botPx = scoreY + half;
     } else {
       float scoreY  = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
       float originY = scoreToY(0.0,        u.domainYMin, u.domainYMax, rowHeight, u.scaleType);
@@ -156,10 +193,23 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
   VsOut o;
   o.position = float4(sx, sy, 0.0, 1.0);
   o.color = outColor;
+  o.localPos = localPos;
+  o.shape = shape;
   return o;
 }
 
 [shader("fragment")]
 float4 fs_main(VsOut fragIn) : SV_Target {
-  return fragIn.color;
+  // Solid modes (xyplot/density/line) and the wide-bin bar are flat fills.
+  if (fragIn.shape != SHAPE_DISC) {
+    return fragIn.color;
+  }
+  // Disc: boundary at distance 1 from center, SDF = 1 - radius, smoothstep AA.
+  float coverage = 1.0 - length(fragIn.localPos);
+  float aa = fwidth(coverage);
+  float alpha = smoothstep(-aa, aa, coverage);
+  if (alpha <= 0.0) {
+    discard;
+  }
+  return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

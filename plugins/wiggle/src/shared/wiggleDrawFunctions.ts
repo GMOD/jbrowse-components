@@ -205,7 +205,10 @@ export function drawScatter(
   const scores = source.featureScores
   const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
-  const halfPoint = pointSize / 2
+  const radius = pointSize / 2
+  // Point-like features are filled discs centered on the bp midpoint; a bin
+  // wider than the point is a bar (mirrors the GPU wiggle.slang scatter branch).
+  ctx.beginPath()
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
       positions[i * 2]!,
@@ -224,8 +227,15 @@ export function drawScatter(
       reversed,
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const left = Math.min(x1, x2)
-    const w = Math.max(WIGGLE_MIN_PX, Math.abs(x2 - x1) + WIGGLE_FUDGE_FACTOR)
-    ctx.fillRect(left, scoreY - halfPoint, w, pointSize)
+    const spanPx = Math.abs(x2 - x1)
+    if (spanPx > pointSize) {
+      const w = Math.max(WIGGLE_MIN_PX, spanPx + WIGGLE_FUDGE_FACTOR)
+      ctx.rect(Math.min(x1, x2), scoreY - radius, w, pointSize)
+    } else {
+      const cx = (x1 + x2) / 2
+      ctx.moveTo(cx + radius, scoreY)
+      ctx.arc(cx, scoreY, radius, 0, Math.PI * 2)
+    }
   }
+  ctx.fill()
 }
