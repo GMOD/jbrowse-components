@@ -1,0 +1,97 @@
+import { SingleSlider } from '@jbrowse/core/ui'
+import { Typography } from '@mui/material'
+import { observer } from 'mobx-react'
+
+import type { MenuItem } from '@jbrowse/core/ui'
+
+// `getValue` is a thunk read inside the observer so the live slider tracks the
+// model while the menu stays open (the value is the only thing that changes
+// mid-interaction; a captured number would go stale).
+const PointSizeSlider = observer(function PointSizeSlider({
+  getValue,
+  min,
+  max,
+  unit,
+  onChange,
+}: {
+  getValue: () => number
+  min: number
+  max: number
+  unit: string
+  onChange: (n: number) => void
+}) {
+  const value = getValue()
+  return (
+    <div style={{ width: 200 }}>
+      <Typography variant="caption" color="textSecondary">
+        Point size: {value}
+        {unit}
+      </Typography>
+      <SingleSlider
+        value={value}
+        min={min}
+        max={max}
+        step={1}
+        size="small"
+        valueLabelDisplay="auto"
+        valueLabelFormat={(v: number) => `${v}${unit}`}
+        onChange={v => {
+          onChange(v)
+        }}
+      />
+    </div>
+  )
+})
+
+// Shared "point size" submenu (inline slider + reset row) used by the wiggle
+// scatter and GWAS manhattan displays. Each display owns its own config
+// slot/semantics and just wires the accessors.
+export function makePointSizeMenu(opts: {
+  label?: string
+  icon?: React.ElementType
+  getValue: () => number
+  isDefault: boolean
+  min?: number
+  max?: number
+  unit?: string
+  onChange: (n: number) => void
+  onReset: () => void
+}): MenuItem {
+  const {
+    label = 'Point size',
+    icon,
+    getValue,
+    isDefault,
+    min = 1,
+    max = 12,
+    unit = 'px',
+    onChange,
+    onReset,
+  } = opts
+  return {
+    label,
+    icon,
+    subMenu: [
+      {
+        label: 'Point size slider',
+        type: 'custom',
+        render: () => (
+          <PointSizeSlider
+            getValue={getValue}
+            min={min}
+            max={max}
+            unit={unit}
+            onChange={onChange}
+          />
+        ),
+      },
+      {
+        label: 'Reset to default size',
+        disabled: isDefault,
+        onClick: () => {
+          onReset()
+        },
+      },
+    ],
+  }
+}

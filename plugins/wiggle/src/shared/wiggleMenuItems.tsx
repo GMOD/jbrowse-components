@@ -1,9 +1,7 @@
-import { makeRadioSubMenu } from '@jbrowse/wiggle-core'
+import { makePointSizeMenu, makeRadioSubMenu } from '@jbrowse/wiggle-core'
 import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import ShowChartIcon from '@mui/icons-material/ShowChart'
 import VisibilityIcon from '@mui/icons-material/Visibility'
-
-import ScatterPointSizeSlider from './ScatterPointSizeSlider.tsx'
 
 import type { MenuItem } from '@jbrowse/core/ui'
 
@@ -36,8 +34,7 @@ export function makeRenderingTypeSubMenu(
 
 // Top-level track-menu item (not nested under Plot type, for discoverability),
 // present only in scatter variants ('scatter'/'multirowscatter'/'multiscatter')
-// where point size applies. The submenu renders a live slider inline plus a
-// reset row.
+// where point size applies. Uses the shared inline-slider submenu.
 export function makePointSizeMenuItems(self: {
   renderingType: string
   scatterPointSize: number
@@ -47,24 +44,18 @@ export function makePointSizeMenuItems(self: {
     return []
   }
   return [
-    {
+    makePointSizeMenu({
       label: 'Scatter point size',
       icon: ScatterPlotIcon,
-      subMenu: [
-        {
-          label: 'Point size slider',
-          type: 'custom',
-          render: () => <ScatterPointSizeSlider model={self} />,
-        },
-        {
-          label: 'Reset to default size',
-          disabled: self.scatterPointSize === SCATTER_POINT_SIZE_DEFAULT,
-          onClick: () => {
-            self.setScatterPointSize(undefined)
-          },
-        },
-      ],
-    },
+      getValue: () => self.scatterPointSize,
+      isDefault: self.scatterPointSize === SCATTER_POINT_SIZE_DEFAULT,
+      onChange: n => {
+        self.setScatterPointSize(n)
+      },
+      onReset: () => {
+        self.setScatterPointSize(undefined)
+      },
+    }),
   ]
 }
 
