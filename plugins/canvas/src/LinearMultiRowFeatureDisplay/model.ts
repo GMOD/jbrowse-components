@@ -259,23 +259,14 @@ export default function stateModelFactory(
     .views(self => ({
       /**
        * #getter
-       * Per-row height in auto-fit mode: the display height split evenly across
-       * rows, so all rows stay visible as the row count grows.
-       */
-      get autoRowHeight(): number {
-        return Math.max(1, self.fitTargetHeight / self.nrow)
-      },
-    }))
-    .views(self => ({
-      /**
-       * #getter
-       * Resolved per-row height. `rowHeightSetting === 0` auto-fits (rows stretch
-       * to fill the display height); any positive value is pinned. Every consumer
-       * reads this, never `rowHeightSetting`.
+       * Resolved per-row height. `rowHeightSetting === 0` auto-fits: the display
+       * height split evenly across rows so all rows stay visible as the row count
+       * grows. Any positive value is a pinned px height. Every consumer reads
+       * this, never `rowHeightSetting`.
        */
       get rowHeight(): number {
         return self.rowHeightSetting === 0
-          ? self.autoRowHeight
+          ? Math.max(1, self.fitTargetHeight / self.nrow)
           : self.rowHeightSetting
       },
     }))

@@ -1,7 +1,12 @@
 import { tagColorPalette } from '@jbrowse/core/ui/theme'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
-import { orderPartitionValues, resolveRowColors } from './sourcesLogic.ts'
+import {
+  buildEditableSources,
+  buildSources,
+  orderPartitionValues,
+  resolveRowColors,
+} from './sourcesLogic.ts'
 
 const rows = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
 
@@ -55,5 +60,59 @@ test('rowOrder entries not present in data are skipped', () => {
   expect(orderPartitionValues(new Set(['a', 'b']), ['z', 'b'])).toEqual([
     'b',
     'a',
+  ])
+})
+
+const discovered = [{ name: 'mom' }, { name: 'dad' }, { name: 'kid' }]
+
+test('buildEditableSources: empty layout returns discovered unchanged', () => {
+  expect(buildEditableSources(discovered, [])).toBe(discovered)
+})
+
+test('buildEditableSources: layout reorders discovered rows', () => {
+  const layout = [{ name: 'kid' }, { name: 'mom' }, { name: 'dad' }]
+  expect(buildEditableSources(discovered, layout)).toEqual([
+    { name: 'kid' },
+    { name: 'mom' },
+    { name: 'dad' },
+  ])
+})
+
+test('buildEditableSources: layout rows no longer in the data are dropped', () => {
+  const layout = [{ name: 'gone' }, { name: 'dad' }]
+  expect(buildEditableSources(discovered, layout)).toEqual([
+    { name: 'dad' },
+    { name: 'mom' },
+    { name: 'kid' },
+  ])
+})
+
+test('buildEditableSources: newly-discovered rows append in discovered order', () => {
+  const layout = [{ name: 'dad' }]
+  expect(buildEditableSources(discovered, layout)).toEqual([
+    { name: 'dad' },
+    { name: 'mom' },
+    { name: 'kid' },
+  ])
+})
+
+test('buildEditableSources: layout label/color overrides merge over discovered', () => {
+  const layout = [{ name: 'mom', label: 'Mother', color: 'red' }]
+  expect(buildEditableSources(discovered, layout)).toEqual([
+    { name: 'mom', label: 'Mother', color: 'red' },
+    { name: 'dad' },
+    { name: 'kid' },
+  ])
+})
+
+test('buildSources: no filter returns editable unchanged', () => {
+  expect(buildSources(discovered, undefined)).toBe(discovered)
+  expect(buildSources(discovered, [])).toBe(discovered)
+})
+
+test('buildSources: filter narrows to the named subset, keeping order', () => {
+  expect(buildSources(discovered, ['kid', 'mom'])).toEqual([
+    { name: 'mom' },
+    { name: 'kid' },
   ])
 })
