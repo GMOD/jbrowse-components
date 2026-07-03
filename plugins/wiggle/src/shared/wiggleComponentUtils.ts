@@ -20,6 +20,11 @@ export const RENDERING_TYPE_DENSITY: WiggleRenderingType = 1
 export const RENDERING_TYPE_LINE: WiggleRenderingType = 2
 export const RENDERING_TYPE_SCATTER: WiggleRenderingType = 3
 
+// Scatter points at/below this diameter draw as a crisp filled square rather
+// than an AA disc, which reads as a muddy blob at small sizes. Must match
+// SMALL_POINT_MAX_DIAMETER in wiggle.slang.
+export const SMALL_POINT_MAX_DIAMETER_PX = 3
+
 function lightenColor(
   rgb: [number, number, number],
   amount: number,

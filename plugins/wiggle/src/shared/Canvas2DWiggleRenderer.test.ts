@@ -191,7 +191,7 @@ describe('Canvas2DWiggleRenderer', () => {
     expect(arcCalls.length).toBe(0)
   })
 
-  test('renderBlocks scatter draws a disc centered on point-like bins', () => {
+  test('renderBlocks scatter draws a small square for tiny point-like bins', () => {
     const { canvas, rectCalls, arcCalls } = createMockCanvas()
     Object.defineProperty(window, 'devicePixelRatio', {
       value: 1,
@@ -199,7 +199,8 @@ describe('Canvas2DWiggleRenderer', () => {
     })
 
     const renderer = new Canvas2DWiggleRenderer(canvas)
-    // a zero-width feature at bp 500 → x = 400px; disc centered there
+    // a zero-width feature at bp 500 → x = 400px; the default 2px point is
+    // below the small-point threshold, so a crisp square is drawn (not a disc)
     const source = makeSource([5], [500], [500])
 
     renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
@@ -207,12 +208,37 @@ describe('Canvas2DWiggleRenderer', () => {
       renderingType: RENDERING_TYPE_SCATTER,
     })
 
-    const bars = rectCalls.filter(([, , , h]) => h === defaultState.scatterPointSize)
-    expect(bars.length).toBe(0)
+    const squares = rectCalls.filter(
+      ([, , , h]) => h === defaultState.scatterPointSize,
+    )
+    expect(squares.length).toBe(1)
+    expect(arcCalls.length).toBe(0)
+    // centered on the bp: x = cx - radius = 400 - 1
+    expect(squares[0]![0]).toBeCloseTo(399)
+  })
+
+  test('renderBlocks scatter draws an AA disc for larger point sizes', () => {
+    const { canvas, rectCalls, arcCalls } = createMockCanvas()
+    Object.defineProperty(window, 'devicePixelRatio', {
+      value: 1,
+      writable: true,
+    })
+
+    const renderer = new Canvas2DWiggleRenderer(canvas)
+    const source = makeSource([5], [500], [500])
+
+    renderer.renderBlocks([defaultBlock], new Map([[0, [source]]]), {
+      ...defaultState,
+      renderingType: RENDERING_TYPE_SCATTER,
+      scatterPointSize: 8,
+    })
+
     expect(arcCalls.length).toBe(1)
     const [cx, , r] = arcCalls[0]!
     expect(cx).toBeCloseTo(400)
-    expect(r).toBeCloseTo(1)
+    expect(r).toBeCloseTo(4)
+    // no square rows (only the full-height clip rect)
+    expect(rectCalls.filter(([, , , h]) => h === 8).length).toBe(0)
   })
 
   // Regression: a reversed block maps feature start→right edge, end→left edge,

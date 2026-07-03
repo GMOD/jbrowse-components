@@ -23,6 +23,9 @@ static const float SHAPE_DISC = 1.0;
 static const float SHAPE_BAR = 2.0;
 // 1px device pad around a disc so the smoothstep edge has room to fade.
 static const float AA_PAD_PX = 1.0;
+// At/below this diameter an AA disc reads as a muddy blob, so draw a crisp
+// filled square instead (must match SMALL_POINT_MAX_DIAMETER_PX in JS).
+static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -140,6 +143,11 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       sy = centerClipY + local.y * radiusPx * pxToClip;
       shape = SHAPE_BAR;
       localPos = local;
+    } else if (u.scatterPointSize <= SMALL_POINT_MAX_DIAMETER) {
+      // tiny point: crisp filled square (SHAPE_SOLID), no AA disc
+      sx = midX + local.x * radiusPx * 2.0 / u.viewportWidth;
+      sy = centerClipY + local.y * radiusPx * pxToClip;
+      shape = SHAPE_SOLID;
     } else {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
       float expand = (radiusPx + AA_PAD_PX) / max(radiusPx, 0.5);

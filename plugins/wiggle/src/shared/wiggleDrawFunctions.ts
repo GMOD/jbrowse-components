@@ -1,7 +1,10 @@
 import { bpToScreenPx } from '@jbrowse/render-core/canvas2dUtils'
 
 import { makeDensityRgbStringFn } from './getDensityColor.ts'
-import { SCALE_TYPE_LOG } from './wiggleComponentUtils.ts'
+import {
+  SCALE_TYPE_LOG,
+  SMALL_POINT_MAX_DIAMETER_PX,
+} from './wiggleComponentUtils.ts'
 import {
   WIGGLE_FUDGE_FACTOR,
   WIGGLE_MIN_PX,
@@ -228,11 +231,14 @@ export function drawScatter(
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
     const spanPx = Math.abs(x2 - x1)
+    const cx = (x1 + x2) / 2
     if (spanPx > pointSize) {
       const w = Math.max(WIGGLE_MIN_PX, spanPx + WIGGLE_FUDGE_FACTOR)
       ctx.rect(Math.min(x1, x2), scoreY - radius, w, pointSize)
+    } else if (pointSize <= SMALL_POINT_MAX_DIAMETER_PX) {
+      // tiny point: crisp square instead of a muddy AA disc
+      ctx.rect(cx - radius, scoreY - radius, pointSize, pointSize)
     } else {
-      const cx = (x1 + x2) / 2
       ctx.moveTo(cx + radius, scoreY)
       ctx.arc(cx, scoreY, radius, 0, Math.PI * 2)
     }
