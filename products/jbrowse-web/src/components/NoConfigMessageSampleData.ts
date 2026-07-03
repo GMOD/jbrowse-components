@@ -194,6 +194,10 @@ export const syntenyConfigs: readonly SampleLink[] = [
     label: 'Grape/Peach synteny',
   },
   {
+    href: '?config=https://jbrowse.org/demos/grape_peach_cacao/config.json',
+    label: 'Grape/Peach/Cacao 3-way synteny (MCScan blocks)',
+  },
+  {
     config: 'test_data/config_dotplot.json',
     label: 'Grape/Peach dotplot',
   },
