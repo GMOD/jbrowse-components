@@ -125,6 +125,8 @@ so both bands are direct comparisons:
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–grape) and
 `tracks[1]` connects rows 1–2 (grape–cacao).
 
+<Figure caption="Three genomes stacked peach – grape – cacao, with one MCScan .blocks file backing both synteny bands. Ribbons are colored by query chromosome (chromosome painting), so each grape chromosome's orthologs can be traced up into peach and down into cacao." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
+
 ## Reference in the middle, and transitive pairs
 
 Because a `.blocks` table is reference-anchored, any pair that includes the
@@ -172,6 +174,8 @@ only the records whose two sides are that pair (classified by PanSN prefix):
 
 If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
 `assemblyNameToPanSN` slot (e.g. `{ "grape": "Vitis_vinifera" }`).
+
+<Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF. Every adjacent band is a direct alignment because an all-vs-all file is a complete graph; the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
 
 Unlike a reference-anchored `.blocks` table, an all-vs-all file is a **complete
 graph** — every adjacent band is a real, direct alignment, so you can stack the

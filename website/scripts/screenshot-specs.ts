@@ -1,5 +1,7 @@
 import { encodeSessionSpec } from '@jbrowse/browser-test-utils'
 
+import type { KeyInput } from 'puppeteer'
+
 export interface ScreenshotAction {
   type:
     | 'click'
@@ -10,10 +12,15 @@ export interface ScreenshotAction {
     | 'scroll'
     | 'waitForText'
     | 'waitForSelector'
+    | 'press'
     | 'delay'
   selector?: string
   text?: string
   ms?: number
+  // for 'press': a puppeteer keyboard key name (e.g. 'ArrowDown', 'Enter') — used
+  // to drive keyboard-only widgets like the MUI search-autocomplete dropdown,
+  // which ignores synthetic option clicks
+  key?: KeyInput
   // for 'waitForText'/'waitForSelector': wait for the element to be hidden
   hidden?: boolean
   // for 'type': text to type into the focused/selected input
@@ -1595,6 +1602,63 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
 
+  // Selecting a gene from the search dropdown navigates to it AND boxes the
+  // specific matched feature (not just the region). Types "EDEN" into the search
+  // box, clicks the EDEN gene option, then waits for the highlight overlay
+  // (data-testid="feature-highlight") the canvas display draws once the searched
+  // feature resolves against the rendered features.
+  {
+    mode: 'url',
+    name: 'search_feature_highlight',
+    // start away from EDEN (1050..9000) so its on-canvas floating label isn't in
+    // the DOM — otherwise `click text:'EDEN'` would hit that label instead of the
+    // search dropdown option. The capture only shows the post-navigation state.
+    // A searched feature auto-pins to a top layout row (layoutPinnedFeatureIdSet),
+    // so EDEN sits at the top of the otherwise-dense ctgA:1..10,000 stack.
+    url: lgvSession(VOLVOX, {
+      assembly: 'volvox',
+      loc: 'ctgA:30,000..40,000',
+      tracks: ['gff3tabix_genes'],
+    }),
+    readyText: 'ctgA',
+    viewportWidth: 1100,
+    // small page margin below the (content-sized) view for the callout, so it
+    // points up at the pinned-to-top highlight instead of overlapping the track
+    viewportHeight: 470,
+    settleMs: 4000,
+    actions: [
+      {
+        type: 'type',
+        selector: 'input[placeholder="Search for location"]',
+        value: 'EDEN',
+        clear: true,
+      },
+      { type: 'waitForText', text: 'EDEN' },
+      { type: 'delay', ms: 800 },
+      // keyboard-select the first option (the EDEN gene): MUI's autocomplete
+      // ignores synthetic option clicks, so ArrowDown highlights it and Enter
+      // fires navigation + the search-result-selected extension point
+      { type: 'press', key: 'ArrowDown' },
+      { type: 'press', key: 'Enter' },
+      // wait for navigation to settle and the highlight overlay to resolve
+      { type: 'waitForSelector', selector: '[data-testid="feature-highlight"]' },
+      { type: 'delay', ms: 1200 },
+    ],
+    annotations: [
+      {
+        type: 'arrow',
+        from: { x: 510, y: 360 },
+        anchor: { selector: '[data-testid="feature-highlight"]' },
+      },
+      {
+        type: 'text',
+        text: 'The searched gene is pinned to the top, boxed, and tinted',
+        x: 510,
+        y: 400,
+      },
+    ],
+  },
+
   // Rubberband selection on the main scalebar, which pops the "Zoom to region /
   // Get sequence / Copy range / Bookmark region" menu.
   {
@@ -1823,6 +1887,29 @@ export const specs: ScreenshotSpec[] = [
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 60000,
     settleMs: 10000,
+  },
+
+  // Multi-way synteny demos for the multiway_synteny.md tutorial. Both load a
+  // hosted demo config (whose defaultSession opens the stacked LinearSyntenyView)
+  // as a bare ?config= against the local build, since MCScanBlocksAdapter /
+  // AllVsAllPAFAdapter are newer than jbrowse.org/code/jb2/latest. Generous
+  // timeout/settle: the config pulls remote genomes + a synteny file and
+  // autoDiagonalize runs a whole-genome RPC before the canvas settles.
+  {
+    mode: 'url',
+    name: 'multiway_synteny/grape_peach_cacao',
+    url: `?config=${encodeURIComponent('https://jbrowse.org/demos/grape_peach_cacao/config.json')}`,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
+  },
+  {
+    mode: 'url',
+    name: 'multiway_synteny/ecoli_pangenome',
+    url: `?config=${encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json')}`,
+    readySelector: '[data-testid="synteny_canvas_done"]',
+    readyTimeout: 120000,
+    settleMs: 15000,
   },
 
   // For the gallery: load the exact curated share session the reviewer wants
