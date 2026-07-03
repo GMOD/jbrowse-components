@@ -56,7 +56,10 @@ function slotDefault(self: DisplaySelf, slot: string): unknown {
  * track's own value. Drop-in for `getConf` on the display's own promotable
  * slots. Main-thread only (consults the session) — the worker reads raw config.
  */
-export function getConfResolved<T = unknown>(self: DisplaySelf, slot: string): T {
+export function getConfResolved<T = unknown>(
+  self: DisplaySelf,
+  slot: string,
+): T {
   const value = getConf(self, slot)
   const def = slotDefault(self, slot)
   if (value !== def) {

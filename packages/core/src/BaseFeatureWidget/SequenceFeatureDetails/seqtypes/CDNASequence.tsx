@@ -62,7 +62,9 @@ const CDNASequence = observer(function CDNASequence({
     if (intron && includeIntrons && idx < chunks.length - 1) {
       middle.push({
         key: `${chunk.start}-${chunk.end}-${chunk.type}-intron`,
-        str: toLower(getIntronDisplayStr(intron, intronBp, collapseIntron ?? false)),
+        str: toLower(
+          getIntronDisplayStr(intron, intronBp, collapseIntron ?? false),
+        ),
       })
     }
   }

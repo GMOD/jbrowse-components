@@ -21,7 +21,7 @@ export type RpcDriverFactory = (
 // in the registry) falls back to the loose shapes. Registry args never include
 // `sessionId` — `call` injects it from its first argument before dispatch.
 type RpcCallArgs<M extends string> = M extends RpcMethodName
-  ? RpcArgs<M & RpcMethodName>
+  ? Omit<RpcArgs<M & RpcMethodName>, 'sessionId'>
   : Record<string, unknown>
 type RpcCallReturn<M extends string> = M extends RpcMethodName
   ? RpcReturn<M & RpcMethodName>

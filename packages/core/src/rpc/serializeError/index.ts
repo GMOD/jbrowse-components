@@ -1,5 +1,5 @@
 export interface ErrorObject {
-  name: string
+  name?: string
   message: string
   stack?: string
   cause?: unknown
@@ -16,8 +16,17 @@ function stringify(value: unknown) {
   if (typeof value === 'string') {
     return value
   }
+  // JSON.stringify returns undefined (not a string) for undefined, functions,
+  // and symbols, despite its type signature claiming otherwise
+  if (
+    value === undefined ||
+    typeof value === 'function' ||
+    typeof value === 'symbol'
+  ) {
+    return String(value)
+  }
   try {
-    return JSON.stringify(value) ?? String(value)
+    return JSON.stringify(value)
   } catch {
     return String(value)
   }
