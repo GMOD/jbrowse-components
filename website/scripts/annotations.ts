@@ -190,7 +190,7 @@ export async function drawAnnotations(page: Page, annotations: Annotation[]) {
           // default font, with word-wrapping once a line exceeds maxWidth.
           const fontFamily = 'system-ui, sans-serif'
           const fontWeight = '600'
-          const fontSize = Math.max(a.fontSize ?? 22, 18)
+          const fontSize = Math.max(a.fontSize ?? 22, 13)
           const maxWidth = a.maxWidth ?? 420
           const measure = (s: string) => {
             const t = document.createElementNS(NS, 'text')

@@ -1248,9 +1248,10 @@ export const specs: ScreenshotSpec[] = [
         annotations: [
           {
             type: 'text',
-            x: 24,
-            y: 42,
-            maxWidth: 1000,
+            x: 620,
+            y: 34,
+            maxWidth: 440,
+            fontSize: 15,
             text: '1. Two feature tracks — both inherit the default Normal height',
           },
         ],
@@ -1295,9 +1296,10 @@ export const specs: ScreenshotSpec[] = [
         annotations: [
           {
             type: 'text',
-            x: 24,
-            y: 42,
-            maxWidth: 1000,
+            x: 620,
+            y: 34,
+            maxWidth: 440,
+            fontSize: 15,
             text: '2. "Use Compact by default for all tracks like this" — every un-pinned track follows',
           },
         ],
@@ -1328,9 +1330,10 @@ export const specs: ScreenshotSpec[] = [
         annotations: [
           {
             type: 'text',
-            x: 24,
-            y: 42,
-            maxWidth: 1000,
+            x: 620,
+            y: 34,
+            maxWidth: 440,
+            fontSize: 15,
             text: '3. Pin the second track back to Normal — it holds over the compact session default',
           },
         ],
