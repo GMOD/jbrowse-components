@@ -33,6 +33,7 @@ console.warn = (...args) => {
   if (
     r.includes('The `anchorEl` prop provided to the component is invalid') ||
     r.includes('[GPU] WebGPU initialization failed') ||
+    r.includes('[GPU] WebGPU device ready') ||
     r.includes('[GPU] WebGL2 unavailable, falling back to Canvas2D') ||
     r.includes('[GPU] WebGPU not supported in this browser') ||
     r.includes('] init (live=') ||

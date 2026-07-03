@@ -74,6 +74,11 @@ interface FakeDevice {
   lost: Promise<{ message: string }>
   resolveLost: (message: string) => void
   addEventListener: () => void
+  limits: {
+    maxTextureDimension2D: number
+    maxBufferSize: number
+    maxStorageBufferBindingSize: number
+  }
 }
 
 function makeFakeDevice(): FakeDevice {
@@ -87,11 +92,17 @@ function makeFakeDevice(): FakeDevice {
       resolveLost({ message })
     },
     addEventListener: () => {},
+    limits: {
+      maxTextureDimension2D: 1,
+      maxBufferSize: 1,
+      maxStorageBufferBindingSize: 1,
+    },
   }
 }
 
 function installFakeGpu(device: FakeDevice) {
   const adapter = {
+    info: { vendor: 'fake', architecture: 'fake', description: 'fake' },
     limits: { maxStorageBufferBindingSize: 1, maxBufferSize: 1 },
     requestDevice: jest.fn().mockResolvedValue(device),
   }
