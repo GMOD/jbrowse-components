@@ -1,6 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
-import { useTheme } from '@mui/material'
+import { alpha, useTheme } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
@@ -34,6 +34,8 @@ interface HighlightModel {
   selectedFeatureId: string | undefined
   hoveredFeature: FlatbushItem | null
   hoveredSubfeature: SubfeatureInfo | null
+  // uniqueIds of features resolved from a declarative search highlight
+  highlightedFeatureIds: string[]
 }
 
 // Shared gate for both overlay builders: nothing to position until the view is
@@ -188,6 +190,7 @@ export function useHighlightOverlays(
     hoveredFeature,
     hoveredSubfeature,
     selectedFeatureId,
+    highlightedFeatureIds,
     showLabels,
     effectiveShowDescriptions,
   } = model
@@ -298,6 +301,28 @@ export function useHighlightOverlays(
         subfeatureHover ? 0 : computeExtraWidth(entry),
         subfeatureHover ? 0 : HIT_PAD_PX,
         0,
+      )
+    }
+  }
+
+  // Search highlights: box + tint the specific matched feature(s). Drawn before
+  // selection so a click's selection border still reads on top.
+  const highlightColor = theme.palette.highlight.main
+  for (const featureId of highlightedFeatureIds) {
+    const entry = featureItemMap.get(featureId)
+    if (entry) {
+      addOverlay(
+        entry.item,
+        entry.vr.refName,
+        {
+          border: `2px solid ${highlightColor}`,
+          borderRadius: 3,
+          backgroundColor: alpha(highlightColor, 0.25),
+        },
+        `search-highlight-${featureId}`,
+        computeExtraWidth(entry),
+        2,
+        2,
       )
     }
   }

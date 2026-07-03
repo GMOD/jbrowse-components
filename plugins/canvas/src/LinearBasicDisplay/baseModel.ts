@@ -54,6 +54,7 @@ import {
   buildFeatureFlatbushIndex,
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
+import { featureMatchesHighlight } from './featureHighlight.ts'
 import { createIncrementalLayout } from './layout.ts'
 import {
   canMorph,
@@ -81,6 +82,7 @@ import type {
   VisibleRegion,
 } from './components/hitTesting.ts'
 import type { LinearBasicDisplayConfigModel } from './configSchema.ts'
+import type { FeatureHighlight } from './featureHighlight.ts'
 import type { ShowLabelsMode } from './showLabelsMode.ts'
 // rpcTypes.ts also declares the RpcRegistry augmentation; importing any type
 // from it is enough to make rpcManager.call() resolve to the typed args.
@@ -101,6 +103,16 @@ import type {
 } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+// Persistent, declarative feature-highlight request (see featureHighlight.ts).
+// A plain span+name signature — never the adapter uniqueId — so it can be
+// authored in a session snapshot / URL and resolved once the region renders.
+const FeatureHighlightModel = types.model('FeatureHighlight', {
+  refName: types.string,
+  start: types.number,
+  end: types.number,
+  name: types.maybe(types.string),
+})
 
 // Region identity (regionKey/reversed) is stored alongside the data so layout
 // grouping derives from rpcDataMap directly. Deriving it from loadedRegions
@@ -228,6 +240,19 @@ export default function baseStateModelFactory(
            * display with nothing hidden omits the empty array from its snapshot.
            */
           hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
+          /**
+           * #property
+           * Declarative feature highlights, typically seeded by a text search
+           * (highlight the gene you searched for). Each entry pins a feature by
+           * its span+name signature rather than its uniqueId — trix never
+           * serializes the uniqueId and it isn't stable anyway — and is resolved
+           * against rendered features on the main thread. stripDefault so a
+           * display with no highlights omits the empty array from its snapshot.
+           */
+          featureHighlights: types.stripDefault(
+            types.array(FeatureHighlightModel),
+            [],
+          ),
         }),
       )
       .volatile(() => ({
@@ -997,6 +1022,37 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // Resolve the declarative featureHighlights against the currently
+        // rendered features: the uniqueIds of features whose span+name matches a
+        // highlight request. Recomputes with featureItemMap (layout/pan/zoom), so
+        // a highlight "follows" its feature without ever storing a uniqueId.
+        get highlightedFeatureIdSet(): ReadonlySet<string> {
+          const ids = new Set<string>()
+          if (self.featureHighlights.length > 0) {
+            for (const entry of this.featureItemMap.values()) {
+              if (
+                entry.kind === 'feature' &&
+                self.featureHighlights.some(h =>
+                  featureMatchesHighlight(entry.item, entry.vr.refName, h),
+                )
+              ) {
+                ids.add(entry.item.featureId)
+              }
+            }
+          }
+          return ids
+        },
+
+        /**
+         * #getter
+         */
+        get highlightedFeatureIds(): string[] {
+          return [...this.highlightedFeatureIdSet]
+        },
+
+        /**
+         * #getter
+         */
         // Flatbush spatial indexes per region for hit testing. Recomputes when
         // any input observable moves (laid-out data, label visibility, zoom,
         // reversed flag); MobX caches the value so repeated hover events read
@@ -1303,6 +1359,23 @@ export default function baseStateModelFactory(
         showAllHidden() {
           self.hiddenFeatureIds.clear()
           self.setScrollTop(0)
+        },
+
+        /**
+         * #action
+         */
+        // Replace the highlight set (a search selecting a new gene supersedes the
+        // previous highlight rather than accumulating). Resolved lazily against
+        // rendered features via highlightedFeatureIdSet.
+        setFeatureHighlights(highlights: FeatureHighlight[]) {
+          self.featureHighlights = cast(highlights)
+        },
+
+        /**
+         * #action
+         */
+        clearFeatureHighlights() {
+          self.featureHighlights.clear()
         },
       }))
       .actions(self => ({

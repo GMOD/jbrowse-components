@@ -64,6 +64,7 @@ export interface LinearBasicDisplayModel {
   autoHeight: boolean
   showLabels: boolean
   selectedFeatureId: string | undefined
+  highlightedFeatureIds: string[]
   featureIdUnderMouse: string | null
   subfeatureIdUnderMouse: string | null
   hoveredRegionIndex: number | undefined
