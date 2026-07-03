@@ -104,6 +104,14 @@ const suite: TestSuite = {
       loc: 'ctgA:30,222..33,669',
       tracks: ['volvox_ins.paf'],
     }),
+    lgvSnapshotTest({
+      name: 'LGV synteny per-base mismatches from cs tag',
+      snapshot: 'synteny-lgv-cs-mismatches',
+      config: 'test_data/volvox/config_synteny_snp.json',
+      assembly: 'volvox',
+      loc: 'ctgA:1..400',
+      tracks: ['volvox_snp_synteny'],
+    }),
   ],
 }
 
