@@ -34,7 +34,7 @@ describe('computeSNPCoverage', () => {
       { position: 100, base: 84, strand: 1 }, // T
     ]
     const { positions, bases } = toArrays(mismatches)
-    const result = computeSNPCoverage(positions, bases, 100, coverageAt100(10))
+    const result = computeSNPCoverage(positions, bases, coverageAt100(10))
     const byType = segmentsByColorType(result)
     expect(byType[1]).toBeCloseTo(0.2) // A: 2/10
     expect(byType[4]).toBeCloseTo(0.1) // T: 1/10
@@ -47,7 +47,7 @@ describe('computeSNPCoverage', () => {
       { position: 100, base: 82, strand: 1 }, // R (IUPAC ambiguity)
     ]
     const { positions, bases } = toArrays(mismatches)
-    const result = computeSNPCoverage(positions, bases, 100, coverageAt100(10))
+    const result = computeSNPCoverage(positions, bases, coverageAt100(10))
     const byType = segmentsByColorType(result)
     expect(byType[1]).toBeCloseTo(0.1) // A: 1/10
     expect(byType[5]).toBeCloseTo(0.2) // N + R: 2/10
@@ -59,18 +59,18 @@ describe('computeSNPCoverage', () => {
       { position: 100, base: 78, strand: 1 },
     ]
     const { positions, bases } = toArrays(mismatches)
-    const result = computeSNPCoverage(positions, bases, 100, coverageAt100(10))
+    const result = computeSNPCoverage(positions, bases, coverageAt100(10))
     const byType = segmentsByColorType(result)
     expect(byType[5]).toBeCloseTo(0.2)
   })
 
-  test('mismatches left of regionStart are dropped', () => {
+  test('mismatches left of the coverage window are dropped', () => {
     const mismatches = [
-      { position: 99, base: 65, strand: 1 }, // left of regionStart 100
+      { position: 99, base: 65, strand: 1 }, // left of coverage startPos 100
       { position: 100, base: 84, strand: 1 }, // T, kept
     ]
     const { positions, bases } = toArrays(mismatches)
-    const result = computeSNPCoverage(positions, bases, 100, coverageAt100(10))
+    const result = computeSNPCoverage(positions, bases, coverageAt100(10))
     expect(result.count).toBe(1)
     expect(result.positions[0]).toBe(100)
     expect(result.colorTypes[0]).toBe(4)
