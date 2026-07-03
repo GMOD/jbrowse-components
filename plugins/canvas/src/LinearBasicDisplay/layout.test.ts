@@ -40,7 +40,9 @@ function makeFeatureData(opts: {
     rectHeights: new Float32Array(features.map(f => f.height)),
     rectColors: new Uint32Array(features.length),
     rectStrands: new Float32Array(features.length),
-    rectDensityFade: new Uint32Array(features.map(f => (f.densityFade ? 1 : 0))),
+    rectDensityFade: new Uint32Array(
+      features.map(f => (f.densityFade ? 1 : 0)),
+    ),
     rectFeatureIndices: new Uint32Array(features.map((_, i) => i)),
   })
 }
@@ -774,4 +776,22 @@ test('density-fade boxes collapse onto row 0 only when sub-pixel', () => {
   expect(rows(1, false)[1]).toBeGreaterThan(0)
   // fade box but wide (20px > clamp) → a real box, stacks normally
   expect(rows(20, true)[1]).toBeGreaterThan(0)
+})
+
+test('a sub-pixel fade box overlapping a visible feature stacks, not overprints', () => {
+  // A 1bp SNP sitting inside a wide gene box: both are density-fade boxes, but
+  // only the SNP is sub-pixel. Pinning it to row 0 would draw it on top of the
+  // wide gene (also at row 0), so it must stack instead. Regression for the
+  // observed genes-track collision.
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'wideGene', startBp: 100, endBp: 5000, height: 12, densityFade: true },
+      { featureId: 'fakeSNP', startBp: 2000, endBp: 2001, height: 12, densityFade: true },
+    ],
+  })
+  const out = layout(new Map([[0, data]]), new Map([[0, 'volvox:ctgA']]), 26, false)
+  const top = (id: string) =>
+    out.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
+  expect(top('wideGene')).toBe(0)
+  expect(top('fakeSNP')).toBeGreaterThan(0)
 })

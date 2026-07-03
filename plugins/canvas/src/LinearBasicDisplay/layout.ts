@@ -333,6 +333,58 @@ function cloneMutableFields(raw: FeatureDataResult) {
   }
 }
 
+// A density-fade box narrower than the renderer's min-width clamp renders into
+// the shared density texture (rect.slang densityAlpha) as a faded ~pixel mark.
+// Gates on the box's own rendered width (not the label-padded layout span) to
+// match the shader's realWidthPx < MIN_RECT_WIDTH_PX test.
+function isSubPixelFade(
+  ext: { densityFade: boolean; startBp: number; endBp: number },
+  bpPerPx: number,
+) {
+  return (
+    ext.densityFade && (ext.endBp - ext.startBp) / bpPerPx < MIN_RECT_WIDTH_PX
+  )
+}
+
+// Merge sorted [start,end] px intervals into a disjoint, sorted set so an
+// overlap query is a single binary search.
+function mergeIntervals(intervals: [number, number][]) {
+  const sorted = [...intervals].sort((a, b) => a[0] - b[0])
+  const merged: [number, number][] = []
+  for (const [start, end] of sorted) {
+    const last = merged.at(-1)
+    if (last && start <= last[1]) {
+      last[1] = Math.max(last[1], end)
+    } else {
+      merged.push([start, end])
+    }
+  }
+  return merged
+}
+
+// True if [queryStart,queryEnd) overlaps any of the disjoint, sorted `merged`
+// intervals. Finds the rightmost interval starting before queryEnd; because the
+// set is disjoint, no earlier interval can reach queryStart if that one doesn't.
+function intersectsMerged(
+  queryStart: number,
+  queryEnd: number,
+  merged: [number, number][],
+) {
+  let lo = 0
+  let hi = merged.length - 1
+  let idx = -1
+  while (lo <= hi) {
+    const mid = (lo + hi) >> 1
+    if (merged[mid]![0] < queryEnd) {
+      idx = mid
+      lo = mid + 1
+    } else {
+      hi = mid - 1
+    }
+  }
+  return idx >= 0 && merged[idx]![1] > queryStart
+}
+
 function packRef(
   regions: [number, FeatureDataResult][],
   bpPerPx: number,
@@ -504,6 +556,16 @@ function packRef(
     }
     return a.layoutStartBp - b.layoutStartBp
   })
+  // Box px-spans of the visible (non-collapsing) features. A sub-pixel fade box
+  // may collapse onto row 0 only where it doesn't overlap one of these — else it
+  // must stack, or it renders on top of the visible feature (a 1bp SNP sitting
+  // inside a wide gene box is the canonical case).
+  const solidSpansPx = mergeIntervals(
+    [...allFeatures.values()]
+      .filter(ext => !isSubPixelFade(ext, bpPerPx))
+      .map(ext => [ext.startBp / bpPerPx, ext.endBp / bpPerPx]),
+  )
+
   let overflowCount = 0
   let firstOverflowSample: {
     id: string
@@ -512,16 +574,23 @@ function packRef(
     height: number
   } | null = null
   for (const [id, ext] of sorted) {
-    // A density-fade box narrower than the renderer's min-width clamp collapses
-    // into the shared density texture (rect.slang densityAlpha), so pin it to
-    // row 0 and skip the greedy stacker: it reserves no vertical space and never
-    // overflows maxHeight. Without this, variants whose reserved label spans (or
-    // ~1px boxes) overlap stack onto extra rows under pixel-precise pitchX:1
-    // packing instead of collapsing. Gates on the box's own rendered width (not
-    // the label-padded layout span) to match the shader's realWidthPx <
-    // MIN_RECT_WIDTH_PX test.
+    // A sub-pixel density-fade box collapses into the shared density texture
+    // (rect.slang densityAlpha), so pin it to row 0 and skip the greedy stacker:
+    // it reserves no vertical space and never overflows maxHeight. This keeps a
+    // dense variant pileup (all ~1px boxes) on one row instead of stacking onto
+    // extra rows under pixel-precise pitchX:1 packing. But only collapse where
+    // the box doesn't overlap a visible feature — its clamped render would
+    // otherwise land on top of that feature. Match the render extent to the
+    // shader's min-draw clamp (MIN_RECT_WIDTH_PX * 2, anchored at the start) so a
+    // mark abutting a visible feature stacks rather than overprinting it.
+    const boxStartPx = ext.startBp / bpPerPx
+    const boxEndPx = Math.max(
+      ext.endBp / bpPerPx,
+      boxStartPx + MIN_RECT_WIDTH_PX * 2,
+    )
     const collapses =
-      ext.densityFade && (ext.endBp - ext.startBp) / bpPerPx < MIN_RECT_WIDTH_PX
+      isSubPixelFade(ext, bpPerPx) &&
+      !intersectsMerged(boxStartPx, boxEndPx, solidSpansPx)
     if (collapses) {
       layoutMap.set(id, 0)
     } else {
