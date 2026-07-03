@@ -67,6 +67,8 @@ appear automatically.
 
 ## See also
 
+- [Circular genome view](/docs/user_guides/circular_view) — the whole-genome
+  chord overview on its own, for plotting a single SV track without the table
 - [Structural variant visualization](/docs/user_guides/sv_visualization) —
   interpreting SV signals across alignment colorings, arcs, and the breakpoint
   split view

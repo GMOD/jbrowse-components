@@ -24,6 +24,34 @@ can optionally add a .paf, .out (MashMap), .delta (MUMmer), .chain, .anchors, or
 
 <Figure caption="Screenshot showing the linear synteny view for the grape vs peach genome." src="/img/linear_synteny.png" />
 
+## Navigating each panel
+
+Each genome panel is a full linear genome view and is controlled independently:
+
+- scroll, zoom, and pan either panel on its own; ribbons redraw to follow
+- type a region or gene name into a panel's search box to jump it there
+- add tracks (genes, alignments, coverage) to either side from its track
+  selector — useful for reading what a syntenic block actually contains
+
+## Interacting with the ribbons
+
+- **Hover** a ribbon to see a tooltip with the alignment's coordinates on both
+  genomes and, when zoomed in, the CIGAR operation under the cursor
+- **Click** a ribbon to highlight it across both panels
+- **Right-click** a ribbon for a context menu with **Center on feature**, which
+  recenters both panels on that alignment
+
+## View options
+
+The view's hamburger menu controls how the ribbons are drawn:
+
+- **Show curved lines** — draw ribbons as bezier curves instead of straight
+  connectors
+- **Show location markers** — vertical guides marking each alignment's endpoints
+- **Show all regions** — fit both whole assemblies into view
+- **Square view** — equalize the horizontal scale of the two panels
+- **Add assembly row** — compare three or more assemblies stacked vertically
+
 ## See also
 
 - [Dotplot view](/docs/user_guides/dotplot_view) — whole-genome synteny overview

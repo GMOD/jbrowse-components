@@ -24,6 +24,7 @@ title: User guide
 
 ## Views
 
+- [Circular genome view](/docs/user_guides/circular_view) - Whole-genome chord plot of structural variants
 - [Dotplot view](/docs/user_guides/dotplot_view) - Whole-genome synteny dotplot
 - [Linear synteny view](/docs/user_guides/linear_synteny_view) - Side-by-side alignment of two genomes
 - [SV inspector view](/docs/user_guides/sv_inspector_view) - Structural variant spreadsheet and circular view
