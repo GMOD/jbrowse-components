@@ -56,36 +56,21 @@ async function fetchSequence(
   }
 }
 
-// Coding-transcript detection is structural, mirroring findGlyph: a feature (or
-// child of a container) with a direct CDS child is a coding transcript, so any
-// type — mRNA, V_gene_segment, a prokaryotic gene → CDS, an org-specific type —
-// is picked up without configuration. containerTypes only helps decide when to
-// descend into a parent to reach its per-row transcripts.
+// Coding-transcript detection is structural, mirroring findGlyph: a feature with
+// a direct CDS child is a coding transcript, so any type — mRNA, V_gene_segment,
+// a prokaryotic gene → CDS, an org-specific type — is picked up without
+// configuration. A feature whose children are themselves containers (gene →
+// mRNA → exon) is descended into to reach its per-row transcripts; that check
+// alone suffices, since a child only matches when it carries a CDS grandchild,
+// which already makes the parent a container.
 export function findTranscriptsWithCDS(
   features: Map<string, Feature>,
-  containerTypes: readonly string[],
 ): Feature[] {
-  const containerTypeSet = new Set(containerTypes)
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
-    const type = feature.get('type')
-    const subfeatures = feature.get('subfeatures')
-
-    // Mirror findGlyph's container heuristic: a top-level feature stacks its
-    // children on their own rows when its type is an explicit containerType or
-    // its children are themselves containers (gene → mRNA → exon). Descending
-    // into any such container — not just `gene` — lets the peptide overlay reach
-    // the per-row transcripts of custom gene-like types without configuration.
-    const isContainer =
-      type === 'gene' ||
-      (type !== undefined && containerTypeSet.has(type)) ||
-      hasContainerChildren(feature)
-
-    if (isContainer && subfeatures?.length) {
-      const matchingTranscripts = subfeatures.filter((sf: Feature) =>
-        hasCDSSubfeature(sf),
-      )
+    if (hasContainerChildren(feature)) {
+      const matchingTranscripts = getSubfeatures(feature).filter(hasCDSSubfeature)
       if (matchingTranscripts.length > 0) {
         transcripts.push(...matchingTranscripts)
       } else if (hasCDSSubfeature(feature)) {
@@ -189,12 +174,11 @@ export async function fetchPeptideData(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
   features: Map<string, Feature>,
-  containerTypes: readonly string[],
   assemblyGeneticCodeId?: number,
 ): Promise<Map<string, PeptideData>> {
   const peptideDataMap = new Map<string, PeptideData>()
 
-  const transcripts = findTranscriptsWithCDS(features, containerTypes)
+  const transcripts = findTranscriptsWithCDS(features)
   if (transcripts.length === 0) {
     return peptideDataMap
   }
