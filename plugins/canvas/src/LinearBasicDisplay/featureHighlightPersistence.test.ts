@@ -1,6 +1,10 @@
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
 
 import { createTestEnvironment } from './testEnv.ts'
+import {
+  makeFeatureData,
+  makeFlatbushItem,
+} from '../RenderFeatureDataRPC/testUtils.ts'
 
 import type { FeatureHighlight } from './featureHighlight.ts'
 
@@ -9,6 +13,26 @@ const brca1: FeatureHighlight = {
   start: 1000,
   end: 2000,
   name: 'BRCA1',
+}
+
+const ctgA = { assemblyName: 'volvox', refName: 'ctgA', start: 0, end: 10_000 }
+
+type Display = ReturnType<
+  ReturnType<typeof createTestEnvironment>['createDisplay']
+>['display']
+
+// Load one rendered feature into region 0's raw data (rpcDataMap), the input the
+// pre-layout highlight resolver reads.
+function loadFeature(
+  display: Display,
+  item: { featureId: string; startBp: number; endBp: number; name?: string },
+) {
+  display.setRpcData(
+    0,
+    makeFeatureData({ flatbushItems: [makeFlatbushItem(item)] }),
+    10,
+    ctgA,
+  )
 }
 
 describe('feature highlight declarative persistence', () => {
@@ -63,5 +87,74 @@ describe('feature highlight declarative persistence', () => {
 
     // resolver runs against featureItemMap; empty until features render
     expect(display.highlightedFeatureIds).toEqual([])
+  })
+
+  it('resolves the highlight against raw data and pins it for layout', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    loadFeature(display, {
+      featureId: 'feat-xyz',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
+
+    // resolved pre-layout (from rpcDataMap) so it can feed the pin set
+    expect([...display.highlightedFeatureIdSet]).toEqual(['feat-xyz'])
+    // and the searched feature is pinned toward the top of the layout
+    expect([...display.layoutPinnedFeatureIdSet]).toContain('feat-xyz')
+  })
+
+  it('a non-matching rendered feature is neither highlighted nor pinned', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    loadFeature(display, {
+      featureId: 'other',
+      startBp: 5000,
+      endBp: 6000,
+      name: 'TP53',
+    })
+
+    expect(display.highlightedFeatureIdSet.size).toBe(0)
+    // falls back to the (empty) user pin set by reference
+    expect(display.layoutPinnedFeatureIdSet).toBe(display.pinnedFeatureIdSet)
+  })
+
+  it('clearFeatureHighlights drops the pin so layout un-pins the feature', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+    loadFeature(display, {
+      featureId: 'feat-xyz',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
+    expect([...display.layoutPinnedFeatureIdSet]).toContain('feat-xyz')
+
+    display.clearFeatureHighlights()
+    expect(display.highlightedFeatureIdSet.size).toBe(0)
+    expect(display.layoutPinnedFeatureIdSet).toBe(display.pinnedFeatureIdSet)
+  })
+
+  it('merges the highlight with existing user pins', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({
+      featureHighlights: [brca1],
+      pinnedFeatureIds: ['pinned-1'],
+    })
+
+    loadFeature(display, {
+      featureId: 'feat-xyz',
+      startBp: 1000,
+      endBp: 2000,
+      name: 'BRCA1',
+    })
+
+    expect([...display.layoutPinnedFeatureIdSet].sort()).toEqual([
+      'feat-xyz',
+      'pinned-1',
+    ])
   })
 })

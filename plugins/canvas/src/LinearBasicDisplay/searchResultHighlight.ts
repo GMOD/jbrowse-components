@@ -43,8 +43,13 @@ export function highlightSearchResultFeature({
     assemblyManager.isValidRefName(ref, assemblyName),
   )
   if (parsed.start !== undefined && parsed.end !== undefined) {
+    // Canonicalize the parsed refName: trix records whatever refName the source
+    // GFF/GTF used (e.g. "1"), but visibleRegions carry the assembly's canonical
+    // name (e.g. "chr1"). featureMatchesHighlight compares them directly, so an
+    // alias here would navigate correctly yet never resolve to a highlight.
+    const assembly = assemblyManager.get(assemblyName)
     const highlight: FeatureHighlight = {
-      refName: parsed.refName,
+      refName: assembly?.getCanonicalRefName(parsed.refName) ?? parsed.refName,
       start: parsed.start,
       end: parsed.end,
       name: result.getLabel(),

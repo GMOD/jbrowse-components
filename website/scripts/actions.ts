@@ -205,6 +205,8 @@ export async function runAction(page: Page, action: ScreenshotAction) {
         ancestor.scrollLeft = targetCenter - ancestor.clientWidth / 2
       }
     })
+  } else if (action.type === 'press' && action.key) {
+    await page.keyboard.press(action.key)
   } else if (action.type === 'waitForSelector' && action.selector) {
     // rethrow puppeteer's parsed-selector blob ([[[{name,value}]]]) as the
     // readable selector so a timeout names what was missing

@@ -242,6 +242,7 @@ export function useHighlightOverlays(
     extraWidth = 0,
     xPadding = 0,
     yPadding = 0,
+    testId?: string,
   ) => {
     for (const vr of visibleRegions) {
       if (vr.refName !== refName) {
@@ -252,6 +253,7 @@ export function useHighlightOverlays(
         overlays.push(
           <div
             key={`${key}-${vr.displayedRegionIndex}`}
+            data-testid={testId}
             style={{
               position: 'absolute',
               left: rect.leftPx - xPadding,
@@ -284,6 +286,30 @@ export function useHighlightOverlays(
     )
   }
 
+  // Box around a resolved top-level feature; selection and search-highlight share
+  // the same 2px inset box (label width reserved), differing only in color/tint.
+  // No-op when the id isn't currently rendered.
+  const addFeatureBox = (
+    featureId: string,
+    style: React.CSSProperties,
+    key: string,
+    testId?: string,
+  ) => {
+    const entry = featureItemMap.get(featureId)
+    if (entry) {
+      addOverlay(
+        entry.item,
+        entry.vr.refName,
+        style,
+        key,
+        computeExtraWidth(entry),
+        2,
+        2,
+        testId,
+      )
+    }
+  }
+
   const hoverItem = hoveredSubfeature ?? hoveredFeature
   if (hoverItem) {
     const entry = featureItemMap.get(hoverItem.featureId)
@@ -309,40 +335,27 @@ export function useHighlightOverlays(
   // selection so a click's selection border still reads on top.
   const highlightColor = theme.palette.highlight.main
   for (const featureId of highlightedFeatureIds) {
-    const entry = featureItemMap.get(featureId)
-    if (entry) {
-      addOverlay(
-        entry.item,
-        entry.vr.refName,
-        {
-          border: `2px solid ${highlightColor}`,
-          borderRadius: 3,
-          backgroundColor: alpha(highlightColor, 0.25),
-        },
-        `search-highlight-${featureId}`,
-        computeExtraWidth(entry),
-        2,
-        2,
-      )
-    }
+    addFeatureBox(
+      featureId,
+      {
+        border: `2px solid ${highlightColor}`,
+        borderRadius: 3,
+        backgroundColor: alpha(highlightColor, 0.25),
+      },
+      `search-highlight-${featureId}`,
+      'feature-highlight',
+    )
   }
 
   if (selectedFeatureId) {
-    const entry = featureItemMap.get(selectedFeatureId)
-    if (entry) {
-      addOverlay(
-        entry.item,
-        entry.vr.refName,
-        {
-          border: `2px solid ${theme.palette.featureSelected}`,
-          borderRadius: 3,
-        },
-        'selected',
-        computeExtraWidth(entry),
-        2,
-        2,
-      )
-    }
+    addFeatureBox(
+      selectedFeatureId,
+      {
+        border: `2px solid ${theme.palette.featureSelected}`,
+        borderRadius: 3,
+      },
+      'selected',
+    )
   }
 
   return overlays.length > 0 ? overlays : null

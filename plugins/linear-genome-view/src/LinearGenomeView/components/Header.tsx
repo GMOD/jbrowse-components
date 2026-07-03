@@ -3,6 +3,7 @@ import ZoomInMapIcon from '@mui/icons-material/ZoomInMap'
 import { ToggleButton } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import HeaderClearHighlightButton from './HeaderClearHighlightButton.tsx'
 import HeaderPanControls from './HeaderPanControls.tsx'
 import HeaderRegionWidth from './HeaderRegionWidth.tsx'
 import HeaderTrackSelectorButton from './HeaderTrackSelectorButton.tsx'
@@ -54,6 +55,7 @@ const Controls = observer(function Controls({
       <div className={classes.spacer} />
       <HeaderPanControls model={model} />
       <SearchBox model={model} />
+      <HeaderClearHighlightButton model={model} />
       <HeaderRegionWidth model={model} />
       <HeaderZoomControls model={model} />
       <div className={classes.spacer} />

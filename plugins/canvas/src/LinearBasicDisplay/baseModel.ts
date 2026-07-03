@@ -107,6 +107,9 @@ type LGV = LinearGenomeViewModel
 // Persistent, declarative feature-highlight request (see featureHighlight.ts).
 // A plain span+name signature — never the adapter uniqueId — so it can be
 // authored in a session snapshot / URL and resolved once the region renders.
+// Mirror of the plain FeatureHighlight signature. Keep the two in sync by hand:
+// the pure matcher + search bridge use the interface, this MST model persists it,
+// and setFeatureHighlights(cast(...)) silently DROPS any field the model lacks.
 const FeatureHighlightModel = types.model('FeatureHighlight', {
   refName: types.string,
   start: types.number,
@@ -123,6 +126,9 @@ const FeatureHighlightModel = types.model('FeatureHighlight', {
 type LoadedFeatureData = FeatureDataResult & {
   loadedBpPerPx: number
   regionKey: string
+  // canonical refName, kept alongside the raw features so a highlight can be
+  // resolved to its uniqueId *before* layout (see highlightedFeatureIdSet)
+  refName: string
   reversed: boolean
 }
 
@@ -642,6 +648,49 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
+        // The searched-feature uniqueIds, resolved against the RAW fetched data
+        // (rpcDataMap) rather than the laid-out data. This is deliberately
+        // pre-layout: it feeds layoutPinnedFeatureIdSet, so the highlight can pin
+        // its feature toward the top BEFORE packing — resolving against
+        // laidOutDataMap instead would be a layout→layout cycle. Coords/name live
+        // on the raw flatbushItems, so no row/topPx info is needed here.
+        get highlightedFeatureIdSet(): ReadonlySet<string> {
+          const ids = new Set<string>()
+          if (self.featureHighlights.length > 0) {
+            for (const data of self.rpcDataMap.values()) {
+              for (const item of data.flatbushItems) {
+                if (
+                  self.featureHighlights.some(h =>
+                    featureMatchesHighlight(item, data.refName, h),
+                  )
+                ) {
+                  ids.add(item.featureId)
+                }
+              }
+            }
+          }
+          return ids
+        },
+
+        /**
+         * #getter
+         */
+        // Rows the packer pins to the top: the user's explicit pins PLUS any
+        // searched highlight, so a searched feature lands in a top row instead of
+        // being buried (or clipped) deep in a dense track. Returns the pinned set
+        // by reference when nothing is highlighted, keeping the layout cache's
+        // reference compare cheap in the common case.
+        get layoutPinnedFeatureIdSet(): ReadonlySet<string> {
+          const highlighted = this.highlightedFeatureIdSet
+          if (highlighted.size === 0) {
+            return this.pinnedFeatureIdSet
+          }
+          return new Set([...self.pinnedFeatureIds, ...highlighted])
+        },
+
+        /**
+         * #getter
+         */
         // Membership set for the "show only these features" collection; drives
         // the overlay highlight and the context-menu toggle labels.
         get soloFeatureIdSet(): ReadonlySet<string> {
@@ -821,7 +870,7 @@ export default function baseStateModelFactory(
             showDescriptions: self.effectiveShowDescriptions,
             reversedRegions: self.reversedRegions,
             displayMode: self.displayMode,
-            pinnedFeatureIds: self.pinnedFeatureIdSet,
+            pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
           })
         },
       }))
@@ -1022,32 +1071,19 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // Resolve the declarative featureHighlights against the currently
-        // rendered features: the uniqueIds of features whose span+name matches a
-        // highlight request. Recomputes with featureItemMap (layout/pan/zoom), so
-        // a highlight "follows" its feature without ever storing a uniqueId.
-        get highlightedFeatureIdSet(): ReadonlySet<string> {
-          const ids = new Set<string>()
-          if (self.featureHighlights.length > 0) {
-            for (const entry of this.featureItemMap.values()) {
-              if (
-                entry.kind === 'feature' &&
-                self.featureHighlights.some(h =>
-                  featureMatchesHighlight(entry.item, entry.vr.refName, h),
-                )
-              ) {
-                ids.add(entry.item.featureId)
-              }
+        // Highlighted uniqueIds that are actually on screen right now, for the
+        // overlay to box. The set is resolved pre-layout (highlightedFeatureIdSet)
+        // and intersected with the laid-out features here, so the highlight
+        // "follows" its feature across pan/zoom without a second span match.
+        get highlightedFeatureIds(): string[] {
+          const ids: string[] = []
+          for (const id of self.highlightedFeatureIdSet) {
+            const entry = this.featureItemMap.get(id)
+            if (entry?.kind === 'feature') {
+              ids.push(id)
             }
           }
           return ids
-        },
-
-        /**
-         * #getter
-         */
-        get highlightedFeatureIds(): string[] {
-          return [...this.highlightedFeatureIdSet]
         },
 
         /**
@@ -1133,6 +1169,7 @@ export default function baseStateModelFactory(
             ...data,
             loadedBpPerPx,
             regionKey: `${region.assemblyName}:${region.refName}`,
+            refName: region.refName,
             reversed: !!region.reversed,
           })
         },

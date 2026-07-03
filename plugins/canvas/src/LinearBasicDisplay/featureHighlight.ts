@@ -5,7 +5,7 @@ import type { FlatbushItem } from '../RenderFeatureDataRPC/rpcTypes.ts'
 // adapter's uniqueId, and that id is synthetic/unstable anyway (file offset or
 // array index), so we pin the feature down by what trix DOES record: the
 // feature's exact span plus its indexed name. Resolved against rendered
-// features on the main thread (see highlightedFeatureIdSet), so it survives
+// features on the main thread (see highlightedFeatureIds), so it survives
 // pan/zoom/refetch without ever needing the uniqueId.
 export interface FeatureHighlight {
   refName: string
@@ -15,12 +15,13 @@ export interface FeatureHighlight {
   name?: string
 }
 
-// A rendered feature matches a request when its span is (nearly) identical to
-// the recorded span, OR when it overlaps and shares the recorded name. The span
-// test alone resolves the common gene-search case (trix records the gene's
-// exact coords); the name+overlap test rescues records whose span drifted from
-// the top-level feature (e.g. a transcript indexed under its gene) or whose
-// coords differ by one from adapter base conventions.
+// The reliable signal is the (refName, start, end) triple — trix records the
+// feature's exact coords, so a near-exact span match resolves the common
+// gene-search case on its own. `name` is only a best-effort tiebreaker: the
+// text-search label can be an indexed description ("protein kinase") rather than
+// the feature's Name, so it's used solely to RESCUE an overlapping span that
+// drifted (e.g. a transcript indexed under its gene) — never to reject an
+// otherwise-good span match. A wrong/description label just falls back to span.
 export function featureMatchesHighlight(
   item: Pick<FlatbushItem, 'startBp' | 'endBp' | 'name'>,
   itemRefName: string,

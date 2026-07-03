@@ -66,6 +66,16 @@ setup.
 
 <Figure caption="When configured, you can search for gene names or other features via the location search box." src="/img/searching_lgv.png" />
 
+When you pick a gene or feature from the search results (rather than a plain
+region), JBrowse navigates to it and also highlights the specific matched
+feature on its track, so it stands out from its neighbors even in a dense
+region. The highlighted feature is pinned toward the top of the track so it
+isn't buried in the layout, and the highlight follows the feature as you pan and
+zoom. Search again to move the highlight to a new feature, or click the "Clear
+search highlight" button that appears in the header bar to remove it.
+
+<Figure caption="Selecting a feature from the search results pins it to the top of its track and boxes and tints that specific feature, not just the surrounding region." src="/img/search_feature_highlight.png" />
+
 ## Opening tracks
 
 To open a new track or connection, use the menu bar: `File` → `Open track...`
