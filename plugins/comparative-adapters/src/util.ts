@@ -132,3 +132,78 @@ export function flipCigar(cigar: string) {
 export function swapIndelCigar(cigar: string) {
   return cigar.replaceAll('D', 'K').replaceAll('I', 'D').replaceAll('K', 'I')
 }
+
+// Convert a minimap2 `cs` difference string (https://github.com/lh3/minimap2#cs)
+// to a standard CIGAR. Both the short form (`:N` match run, `*ab` substitution,
+// `+seq` insertion, `-seq` deletion) and long form (`=SEQ` match run) are
+// handled, plus `~` splice/introns. Matches become `=`, substitutions `X`,
+// insertions `I`, deletions `D`, introns `N`. Sequence bases are discarded, so
+// the result reorients with the same flipCigar/swapIndelCigar helpers as `cg`.
+export function csToCigar(cs: string) {
+  const ops: [number, string][] = []
+  function push(len: number, op: string) {
+    if (len > 0) {
+      const last = ops[ops.length - 1]
+      if (last?.[1] === op) {
+        last[0] += len
+      } else {
+        ops.push([len, op])
+      }
+    }
+  }
+  function countBases(start: number) {
+    let j = start
+    while (j < cs.length && /[A-Za-z]/.test(cs[j]!)) {
+      j++
+    }
+    return j - start
+  }
+  function countDigits(start: number) {
+    let j = start
+    let len = 0
+    while (j < cs.length && cs[j]! >= '0' && cs[j]! <= '9') {
+      len = len * 10 + (cs.charCodeAt(j) - 48)
+      j++
+    }
+    return { len, next: j }
+  }
+
+  let i = 0
+  while (i < cs.length) {
+    const c = cs[i]!
+    if (c === ':') {
+      const { len, next } = countDigits(i + 1)
+      push(len, '=')
+      i = next
+    } else if (c === '=') {
+      const n = countBases(i + 1)
+      push(n, '=')
+      i = i + 1 + n
+    } else if (c === '*') {
+      // substitution: ref base + query base
+      push(1, 'X')
+      i += 3
+    } else if (c === '+') {
+      const n = countBases(i + 1)
+      push(n, 'I')
+      i = i + 1 + n
+    } else if (c === '-') {
+      const n = countBases(i + 1)
+      push(n, 'D')
+      i = i + 1 + n
+    } else if (c === '~') {
+      // intron: `~` + 2-letter donor + length + 2-letter acceptor
+      const { len, next } = countDigits(i + 3)
+      push(len, 'N')
+      i = next + 2
+    } else {
+      i++
+    }
+  }
+  let result = ''
+  for (const [len, op] of ops) {
+    result += len
+    result += op
+  }
+  return result
+}

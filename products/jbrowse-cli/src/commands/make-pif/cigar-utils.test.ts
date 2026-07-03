@@ -1,8 +1,23 @@
 import {
+  csToCigar,
   flipCigar,
   splitCigarOnLargeGaps,
   swapIndelCigar,
 } from './cigar-utils.ts'
+
+describe('csToCigar', () => {
+  test('short form match/sub/ins/del', () => {
+    expect(csToCigar(':6*ct:4+gtc:3-a')).toBe('6=1X4=3I3=1D')
+  })
+
+  test('long form (=SEQ)', () => {
+    expect(csToCigar('=ACGT*ct=AC')).toBe('4=1X2=')
+  })
+
+  test('splice (~) becomes N', () => {
+    expect(csToCigar(':5~gt10ag:5')).toBe('5=10N5=')
+  })
+})
 
 function call({
   cigar = '100M',

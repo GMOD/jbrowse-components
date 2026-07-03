@@ -73,6 +73,28 @@ test('make-pif --no-coarse omits T/Q coarse tier', async () => {
   })
 })
 
+test('make-pif converts a cs difference string to a cg CIGAR', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const pafPath = path.join(dir, 'cs.paf')
+    // one PAF row on + strand carrying only a cs:Z: tag (no cg:Z:)
+    fs.writeFileSync(
+      pafPath,
+      `${['q1', '100', '0', '10', '+', 't1', '100', '0', '10', '9', '10', '60', 'cs:Z::6*ct+gt:1'].join(
+        '\t',
+      )  }\n`,
+    )
+    const fn = 'cs.pif.gz'
+    await runCommand(['make-pif', pafPath, '--out', fn, '--no-coarse'])
+    const lines = gunzipSync(fs.readFileSync(fn)).toString().split('\n').filter(Boolean)
+    const tRow = lines.find(l => l.startsWith('t'))!
+    const qRow = lines.find(l => l.startsWith('q'))!
+    // cs :6*ct+gt:1 -> 6=1X2I1=; q-row swaps I<->D on + strand
+    expect(tRow).toContain('cg:Z:6=1X2I1=')
+    expect(qRow).toContain('cg:Z:6=1X2D1=')
+    expect(tRow).not.toContain('cs:Z:')
+  })
+})
+
 test('make pif with CSI', async () => {
   await runInTmpDir(async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`

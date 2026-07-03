@@ -7,6 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import {
+  csToCigar,
   flipCigar,
   getAssemblyNamesFromConf,
   pafIdentity,
@@ -128,14 +129,14 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         }
         const { extra, strand } = r
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
-          const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+          const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
 
-          let CIGAR = cg
-          if (cg) {
+          let CIGAR = cg ?? (cs ? csToCigar(cs) : undefined)
+          if (CIGAR) {
             if (flip && strand === -1) {
-              CIGAR = flipCigar(cg)
+              CIGAR = flipCigar(CIGAR)
             } else if (flip) {
-              CIGAR = swapIndelCigar(cg)
+              CIGAR = swapIndelCigar(CIGAR)
             }
           }
 

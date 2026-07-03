@@ -5,7 +5,12 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
+import {
+  csToCigar,
+  getAssemblyNamesFromConf,
+  pafIdentity,
+  parsePAFLine,
+} from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -152,7 +157,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
           lineCallback: (line, fileOffset) => {
             const r = parsePAFLine(line)
             const { extra, strand } = r
-            const { numMatches = 0, blockLen = 1, cg, ...rest } = extra
+            const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
 
             // PIF format pre-orients each line from its perspective:
             // - When querying 'q' lines: columns 2-3 have query coords (the "main" feature)
@@ -171,8 +176,10 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
             const mateEnd = r.tend
 
             // PIF format already has pre-computed CIGARs for each perspective
-            // (q-lines have D↔I swapped relative to t-lines)
-            const CIGAR = extra.cg
+            // (q-lines have D↔I swapped relative to t-lines). A hand-built PIF
+            // carrying only a `cs` tag falls back to converting it.
+            const CIGAR =
+              cg ?? (typeof cs === 'string' ? csToCigar(cs) : undefined)
 
             observer.next(
               new SyntenyFeature({

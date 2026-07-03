@@ -6,6 +6,7 @@ import { pipeline } from 'node:stream/promises'
 import { createGunzip } from 'node:zlib'
 
 import {
+  csToCigar,
   flipCigar,
   splitCigarOnLargeGaps,
   swapIndelCigar,
@@ -30,9 +31,20 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
   const [c1, l1, s1, e1, strand, c2, l2, s2, e2, ...rest] = parts
   // rest[0]=num_matches, rest[1]=block_len, rest[2]=mapq, rest[3+]=optional tags
 
+  // Prefer an existing CIGAR (cg:Z). When only a minimap2 cs difference string
+  // is present, rewrite it in place as a cg:Z tag so both PIF perspectives carry
+  // a uniform CIGAR and the flip/split logic below works unchanged.
+  let cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
+  if (cigarIdx === -1) {
+    const csIdx = rest.findIndex(f => f.startsWith('cs:Z'))
+    if (csIdx !== -1) {
+      rest[csIdx] = `cg:Z:${csToCigar(rest[csIdx]!.slice(5))}`
+      cigarIdx = csIdx
+    }
+  }
+
   const tRow = `${[`t${c2}`, l2, s2, e2, strand, c1, l1, s1, e1, ...rest].join('\t')}\n`
 
-  const cigarIdx = rest.findIndex(f => f.startsWith('cg:Z'))
   const CIGAR = rest[cigarIdx]
   const cigarStr = CIGAR ? CIGAR.slice(5) : undefined
   if (cigarStr) {

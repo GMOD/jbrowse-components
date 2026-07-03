@@ -10,6 +10,7 @@ export interface PAFRecord {
   strand: number
   extra: {
     cg?: string
+    cs?: string
     blockLen?: number
     mappingQual?: number
     numMatches?: number
