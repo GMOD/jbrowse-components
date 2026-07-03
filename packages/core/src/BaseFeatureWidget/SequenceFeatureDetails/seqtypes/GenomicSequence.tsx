@@ -1,8 +1,8 @@
 import { observer } from 'mobx-react'
 
 import { genomeColor, updownstreamColor } from '../consts.ts'
-import { computeCoordProps, splitString } from '../util.ts'
-import SequenceDisplay from './SequenceDisplay.tsx'
+import { computeCoordProps } from '../util.ts'
+import { renderSequenceSegments } from './renderSequenceSegments.tsx'
 
 import type { SimpleFeatureSerialized } from '../../../util/index.ts'
 import type { SequenceFeatureDetailsModel } from '../model.ts'
@@ -20,82 +20,27 @@ const GenomicSequence = observer(function GenomicSequence({
   downstream?: string
   model: SequenceFeatureDetailsModel
 }) {
-  const { charactersPerRow, showCoordinatesSetting, showCoordinates } = model
-  let currStart = 0
-  let upstreamChunk: React.ReactNode = null
-  let currRemainder = 0
-  const { mult, coordStart: initialCoordStart } = computeCoordProps(
+  const { mult, coordStart } = computeCoordProps(
     feature,
-    showCoordinatesSetting === 'genomic',
+    model.showCoordinatesSetting === 'genomic',
     upstream,
   )
-  let coordStart = initialCoordStart
-  if (upstream) {
-    const { segments, remainder } = splitString({
-      str: upstream,
-      charactersPerRow,
-      showCoordinates,
-    })
-    upstreamChunk = (
-      <SequenceDisplay
-        model={model}
-        color={updownstreamColor}
-        strand={mult}
-        start={currStart}
-        coordStart={coordStart}
-        chunks={segments}
-      />
-    )
-    currRemainder = remainder
-    currStart = currStart + upstream.length * mult
-    coordStart = coordStart + upstream.length * mult
-  }
-
-  const { segments, remainder } = splitString({
-    str: sequence,
-    charactersPerRow,
-    showCoordinates,
-    currRemainder,
-  })
-  const middleChunk = (
-    <SequenceDisplay
-      model={model}
-      color={genomeColor}
-      strand={mult}
-      start={currStart}
-      coordStart={coordStart}
-      chunks={segments}
-    />
-  )
-  currRemainder = remainder
-  currStart += sequence.length * mult
-  coordStart = coordStart + sequence.length * mult
-
-  let downstreamChunk: React.ReactNode = null
-  if (downstream) {
-    const { segments } = splitString({
-      str: downstream,
-      charactersPerRow,
-      currRemainder,
-      showCoordinates,
-    })
-    downstreamChunk = (
-      <SequenceDisplay
-        start={currStart}
-        model={model}
-        strand={mult}
-        chunks={segments}
-        coordStart={coordStart}
-        color={updownstreamColor}
-      />
-    )
-  }
-
   return (
     <>
-      {upstreamChunk}
-      {middleChunk}
-      {downstreamChunk}
+      {renderSequenceSegments({
+        model,
+        mult,
+        coordStart,
+        segments: [
+          ...(upstream
+            ? [{ key: 'upstream', str: upstream, color: updownstreamColor }]
+            : []),
+          { key: 'genome', str: sequence, color: genomeColor },
+          ...(downstream
+            ? [{ key: 'downstream', str: downstream, color: updownstreamColor }]
+            : []),
+        ],
+      })}
     </>
   )
 })

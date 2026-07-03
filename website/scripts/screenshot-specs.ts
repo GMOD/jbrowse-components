@@ -897,33 +897,6 @@ export const specs: ScreenshotSpec[] = [
     settleMs: 4000,
   },
 
-  // Multi-sample variant display colored by consequence impact: volvox_test_vcf
-  // carries simulated SnpEff ANN annotations (test_data/volvox/annotate_variants.mjs)
-  // cycling HIGH/MODERATE/LOW/MODIFIER across records, so featureColor:
-  // 'jexl:impactColor(feature)' (the "Color cells by consequence impact" menu
-  // preset) paints a visible spread of impact colors over this window.
-  {
-    mode: 'url',
-    name: 'variants/consequence_impact',
-    url: lgvSession(VOLVOX, {
-      assembly: 'volvox',
-      loc: 'ctgA:2950-4250',
-      tracks: [
-        {
-          trackId: 'volvox_test_vcf',
-          displaySnapshot: {
-            type: 'LinearMultiSampleVariantDisplay',
-            height: 500,
-            featureColor: 'jexl:impactColor(feature)',
-          },
-        },
-      ],
-    }),
-    readyText: 'ctgA',
-    settleMs: 4000,
-    viewportHeight: 650,
-  },
-
   // Multi-sample variant display colored by consequence impact, on REAL data:
   // a small local slice of 1000 Genomes phase 3 chr1 (2,504 real samples,
   // 1:155,000,000-155,050,000) run through real SnpEff 5.4c against the real
@@ -933,6 +906,12 @@ export const specs: ScreenshotSpec[] = [
   // The window covers the DCST2/DCST1/ADAM15 locus, which has real
   // stop-gained/splice-site (HIGH) variants alongside missense/synonymous/
   // intronic ones.
+  // Clustered so the 2,504 sample rows are reordered by genotype similarity with
+  // a dendrogram in the left sidebar (reviewer: "add clustering if it helps") —
+  // co-inherited haplotype blocks group into contiguous same-color bands instead
+  // of being scattered row-to-row. Clustering is a real RPC over the genotype
+  // matrix, so the figure drives the "Cluster by genotype" → "Run clustering"
+  // actions rather than setting a (stale) precomputed tree in the snapshot.
   {
     mode: 'url',
     name: 'variants/consequence_impact_1000g',
@@ -950,8 +929,19 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
-    settleMs: 4000,
+    settleMs: 8000,
     viewportHeight: 650,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Cluster by genotype' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Cluster by genotype' },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Run clustering' },
+      { type: 'waitForText', text: 'Run clustering', hidden: true },
+      { type: 'delay', ms: 10000 },
+    ],
   },
 
   // Same feature, on a real structural-variant callset: real HGSVC chr1
@@ -962,12 +952,21 @@ export const specs: ScreenshotSpec[] = [
   // human genome — where SnpEff calls real exon_loss_variant/frameshift_variant
   // (HIGH) consequences against a MODIFIER (intronic/intergenic) background.
   // See test_data/hgsvc_sv_snpeff/README.md for provenance.
+  // Clustered (reviewer: the raw insertion glyphs "look kind of chaotic ... may
+  // want to add clustering"): running "Cluster by genotype" reorders the 74
+  // sample/haplotype rows by SV-genotype similarity and adds a dendrogram, so
+  // samples sharing the same structural calls stack into coherent blocks instead
+  // of an unordered scatter of insertion triangles. Driven through the real
+  // clustering RPC via the menu actions, same as the 1000g spec above.
   {
     mode: 'url',
     name: 'variants/consequence_impact_sv',
     url: lgvSession(DEMO_CONFIG, {
       assembly: 'hg38',
-      loc: 'chr1:145,250,000-145,450,000',
+      // zoomed out to ~450kb (reviewer: "try zooming out more") so the NBPF20
+      // cluster's SV calls sit in flanking context rather than filling the
+      // window, while keeping the cluster roughly centered
+      loc: 'chr1:145,150,000-145,600,000',
       tracks: [
         {
           trackId: 'hgsvc_sv_chr1_snpeff_consequence',
@@ -979,8 +978,19 @@ export const specs: ScreenshotSpec[] = [
       ],
     }),
     readyText: 'chr1',
-    settleMs: 4000,
+    settleMs: 8000,
     viewportHeight: 650,
+    actions: [
+      { type: 'click', selector: '[data-testid="track_menu_icon"]' },
+      { type: 'waitForText', text: 'Cluster by genotype' },
+      { type: 'delay', ms: 300 },
+      { type: 'click', text: 'Cluster by genotype' },
+      { type: 'waitForText', text: 'Run clustering' },
+      { type: 'delay', ms: 500 },
+      { type: 'click', text: 'Run clustering' },
+      { type: 'waitForText', text: 'Run clustering', hidden: true },
+      { type: 'delay', ms: 10000 },
+    ],
   },
 
   // Multi-sample variant display colored by population: the 1000 Genomes phase 3
@@ -1037,26 +1047,34 @@ export const specs: ScreenshotSpec[] = [
 
   // GC content / GC skew computed on the fly from the reference sequence — the
   // tracks the reference sequence track's "Add GC content track" action builds.
-  // Two session GCContentTracks wrap the volvox sequence adapter (absolute 2bit
-  // url — session tracks don't inherit the config's baseUri): one in `content`
-  // mode (G+C fraction) and one in `skew` mode ((G−C)/(G+C), overlapping windows
-  // for a smoother curve). No sequence file of the user's own is needed.
+  // Shown whole-genome on H. pylori 26695 (a compact 1.67 Mbp bacterial genome)
+  // so the GC skew resolves real replication biology: the (G−C)/(G+C) balance
+  // stays predominantly one sign along each replichore and flips at the origin
+  // and terminus of replication, drawing the classic two-arm skew profile. Two
+  // session GCContentTracks wrap the assembly's sequence (absolute fasta url —
+  // session tracks don't inherit the config's baseUri): one in `content` mode
+  // (G+C fraction) and one in `skew` mode, both with large overlapping windows
+  // to smooth the genome-scale curve.
   {
     mode: 'url',
     name: 'gc_content',
-    url: sessionSpec(VOLVOX, {
+    url: hpyloriUrl({
       sessionTracks: [
         {
           type: 'GCContentTrack',
-          trackId: 'gc_content_volvox',
+          trackId: 'gc_content_hpylori',
           name: 'GC content',
-          assemblyNames: ['volvox'],
+          assemblyNames: ['hpylori_26695'],
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: {
-              type: 'TwoBitAdapter',
-              twoBitLocation: {
-                uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.2bit',
+              type: 'IndexedFastaAdapter',
+              fastaLocation: {
+                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa',
+                locationType: 'UriLocation',
+              },
+              faiLocation: {
+                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa.fai',
                 locationType: 'UriLocation',
               },
             },
@@ -1064,22 +1082,28 @@ export const specs: ScreenshotSpec[] = [
           displays: [
             {
               type: 'LinearGCContentTrackDisplay',
-              displayId: 'gc_content_volvox-display',
+              displayId: 'gc_content_hpylori-display',
               gcMode: 'content',
+              windowSize: 2000,
+              windowDelta: 2000,
             },
           ],
         },
         {
           type: 'GCContentTrack',
-          trackId: 'gc_skew_volvox',
+          trackId: 'gc_skew_hpylori',
           name: 'GC skew',
-          assemblyNames: ['volvox'],
+          assemblyNames: ['hpylori_26695'],
           adapter: {
             type: 'GCContentAdapter',
             sequenceAdapter: {
-              type: 'TwoBitAdapter',
-              twoBitLocation: {
-                uri: 'https://jbrowse.org/code/jb2/latest/test_data/volvox/volvox.2bit',
+              type: 'IndexedFastaAdapter',
+              fastaLocation: {
+                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa',
+                locationType: 'UriLocation',
+              },
+              faiLocation: {
+                uri: 'https://jbrowse.org/demos/hpylori/hpylori_26695.fa.fai',
                 locationType: 'UriLocation',
               },
             },
@@ -1087,10 +1111,10 @@ export const specs: ScreenshotSpec[] = [
           displays: [
             {
               type: 'LinearGCContentTrackDisplay',
-              displayId: 'gc_skew_volvox-display',
+              displayId: 'gc_skew_hpylori-display',
               gcMode: 'skew',
-              windowSize: 50,
-              windowDelta: 10,
+              windowSize: 20000,
+              windowDelta: 2000,
             },
           ],
         },
@@ -1098,14 +1122,15 @@ export const specs: ScreenshotSpec[] = [
       views: [
         {
           type: 'LinearGenomeView',
-          assembly: 'volvox',
-          loc: 'ctgA:1-50000',
-          tracks: ['gc_content_volvox', 'gc_skew_volvox'],
+          assembly: 'hpylori_26695',
+          loc: 'NC_018939.1',
+          tracks: ['gc_content_hpylori', 'gc_skew_hpylori'],
         },
       ],
     }),
     readyText: 'GC content',
-    settleMs: 4000,
+    readyTimeout: 60000,
+    settleMs: 8000,
     // two short tracks; crop off the empty viewport below them
     crop: { x: 0, y: 0, width: 1500, height: 430 },
   },
@@ -3030,8 +3055,10 @@ export const specs: ScreenshotSpec[] = [
   // spanning its two mates — the same curve shape BreakpointSplitView's
   // AlignmentConnections draws in a single linear view — so the green LL / blue
   // RR same-orientation pairs of the inverted segment stand out as bundled curves
-  // across the locus. linkedReads stays off (mates keep their own pileup rows,
-  // matching how a breakpoint split view lays reads out).
+  // across the locus. "View as pairs" (linkedReads: 'normal') is on (reviewer),
+  // so each mate pair collapses onto a single row joined by its bezier curve —
+  // the abnormal same-orientation (LL/RR) pairs of the inverted duplication read
+  // as a coherent stack of curves instead of scattered singleton pileup rows.
   {
     mode: 'url',
     name: 'inverted_duplication_bezier',
@@ -3047,6 +3074,7 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'HG02768.final',
               displaySnapshot: {
                 showBezierConnections: true,
+                linkedReads: 'normal',
                 height: 1300,
                 coverageHeight: 120,
                 featureHeight: 9,
@@ -3067,7 +3095,7 @@ export const specs: ScreenshotSpec[] = [
         type: 'text',
         x: 60,
         y: 470,
-        text: 'Bezier connection mode: each read pair is a horizontal-tangent oval curve between its mates — the same curve shape a breakpoint split view draws. Green LL / blue RR same-orientation pairs bundle across the inverted-duplication locus.',
+        text: 'View as pairs + bezier connections: each read pair collapses onto one row joined by a horizontal-tangent oval curve. Green LL / blue RR same-orientation pairs bundle across the inverted-duplication locus.',
         maxWidth: 520,
       },
     ],
@@ -3535,11 +3563,6 @@ export const specs: ScreenshotSpec[] = [
           },
         },
         {
-          // Wakhan's phase-corrected, already-folded BAF (0 = balanced,
-          // 0.5 = full LOH) — see cnv-data-recipe.md / WAKHAN-PIPELINE.md.
-          // Unlike raw per-site BAF, this survives summaryScoreMode:'avg'
-          // at genome scale, so it can be shown as a normal averaged track
-          // instead of needing whiskers.
           type: 'QuantitativeTrack',
           trackId: 'hg008_baf_folded',
           name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
@@ -3625,8 +3648,11 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_baf_folded',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                // folded BAF survives averaging, so this is a normal avg
-                // scatter (no whiskers needed) — balanced hugs 0, LOH rises to 0.5
+                // folded BAF (|BAF-0.5|) as an avg-summarized scatter: LOH arms
+                // rise off 0 toward 0.5 as a clean elevated band (reviewer: the
+                // raw 0..1 BAF with whiskers was too hard to read at genome
+                // scale — raw-BAF LOH bins average back to ~0.5 and the split
+                // vanishes, whereas folded BAF averages to a legible elevation)
                 defaultRendering: 'scatter',
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
@@ -3636,7 +3662,7 @@ export const specs: ScreenshotSpec[] = [
                 height: 120,
               },
             },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+            'hg008_cnv_calls',
           ],
         },
       ],
@@ -3649,13 +3675,13 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // The conventional two-panel somatic-CNV view over chromosome 3: log2 ratio
-  // (copy number) above folded BAF (allelic state), with the benchmark CNV
-  // calls below. chr3 is a clean teaching example — the p-arm is a single-copy
-  // loss WITH loss-of-heterozygosity (negative log2 AND BAF rising off 0 toward
-  // 0.5), while the q-arm is balanced (log2 back up, BAF back down near 0). BAF
-  // is Wakhan's phase-corrected, already-folded track (0=balanced, 0.5=LOH),
-  // so it plots as a normal averaged scatter — no whiskers needed (see
-  // cnv-data-recipe.md / WAKHAN-PIPELINE.md for why raw per-site BAF can't).
+  // (copy number) above the folded B-allele frequency (allelic state), with the
+  // benchmark CNV calls below. chr3 is a clean teaching example — the p-arm is a
+  // single-copy loss WITH loss-of-heterozygosity (negative log2 AND the folded
+  // BAF rising off 0 toward 0.5), while the q-arm is balanced (log2 back up,
+  // folded BAF collapsing back toward 0). The folded BAF (|BAF-0.5|) reads the
+  // LOH as a single clean elevated band rather than the raw 0..1 view's dense
+  // two-band scatter, which the reviewer found too hard to read.
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2_baf',
@@ -3714,18 +3740,20 @@ export const specs: ScreenshotSpec[] = [
               trackId: 'hg008_baf_folded',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                // folded BAF (0=balanced, 0.5=LOH) is a single clean value per
-                // bin by construction (Wakhan's phase correction), so a normal
-                // avg scatter reads the LOH split directly — no whiskers
+                // folded BAF (|BAF-0.5|), avg-summarized: the p-arm LOH reads as
+                // a clean elevated band off 0 and the balanced q-arm collapses
+                // toward 0. resolution:10 pulls finer bigwig bins so the band
+                // isn't washed out at chromosome scale.
                 defaultRendering: 'scatter',
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
+                resolution: 10,
                 minScore: 0,
                 maxScore: 0.5,
                 height: 140,
               },
             },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+            'hg008_cnv_calls',
           ],
         },
       ],
@@ -3746,33 +3774,18 @@ export const specs: ScreenshotSpec[] = [
   // per-base tumor coverage (mosdepth on a targeted BAM slice, not the 500bp-
   // binned log2 ratio) resolves the ~20kb event's boundaries almost exactly:
   // depth drops from ~65x to precisely 0 at chr9:21,952,497-21,972,343. Shown
-  // over NCBI RefSeq genes (CDKN2A context), the coarser log2 ratio for scale
-  // context, and the benchmark CNV BED's CN=0 SV_75 call.
+  // over NCBI RefSeq genes (the config's hg38_ncbiRefSeq_ucsc, compact for
+  // CDKN2A context), the raw HG008-T long-read pileup with supplementary
+  // alignments linked (the deletion is a clean drop-out in the reads
+  // themselves), and the CN-labeled benchmark CNV track (the config's
+  // hg008_cnv_calls) whose label reads out the called copy number (CN 0). The
+  // coarse log2 ratio was dropped (reviewer: it duplicates the per-base
+  // coverage without adding scale context at this zoom).
   {
     mode: 'url',
     name: 'sv_cgiab/driver_cdkn2a_deletion',
     url: cgiabUrl({
       sessionTracks: [
-        {
-          type: 'FeatureTrack',
-          trackId: 'hg38_ncbiRefSeq_ucsc',
-          name: 'NCBI RefSeq genes (hg38)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'Gff3TabixAdapter',
-            gffGzLocation: {
-              uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz',
-              locationType: 'UriLocation',
-            },
-            index: {
-              location: {
-                uri: 'https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi',
-                locationType: 'UriLocation',
-              },
-              indexType: 'CSI',
-            },
-          },
-        },
         {
           // true per-base depth from mosdepth on a targeted BAM slice around
           // CDKN2A (not genome-wide — see WAKHAN-PIPELINE.md step 5) — fine
@@ -3791,15 +3804,25 @@ export const specs: ScreenshotSpec[] = [
           },
         },
         {
-          type: 'QuantitativeTrack',
-          trackId: 'hg008_log2ratio',
-          name: 'HG008 log2(tumor/normal) coverage ratio',
+          // Tumor PacBio-HiFi reads, re-declared inline so fetchSizeLimit can be
+          // raised — the default 5 MB limit blocks the ~116x pileup at this scale
+          type: 'AlignmentsTrack',
+          trackId: 'hg008_t_reads_cdkn2a',
+          name: 'HG008-T PacBio HiFi reads',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
-            type: 'BigWigAdapter',
-            bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008_log2ratio.bw',
+            type: 'BamAdapter',
+            fetchSizeLimit: 30_000_000,
+            bamLocation: {
+              uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam',
               locationType: 'UriLocation',
+            },
+            index: {
+              indexType: 'BAI',
+              location: {
+                uri: 'https://ftp-trace.ncbi.nlm.nih.gov/ReferenceSamples/giab/data_somatic/HG008/Liss_lab/PacBio_Revio_20240125/HG008-T_PacBio-HiFi-Revio_20240125_116x_GRCh38-GIABv3.bam.bai',
+                locationType: 'UriLocation',
+              },
             },
           },
         },
@@ -3808,41 +3831,53 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
-          loc: 'chr9:21,900,000-22,020,000',
+          // ~60kb around the deletion: tight enough that the ~116x read pileup
+          // loads (vs the whole ±60kb overview) while still showing CDKN2A and
+          // flanking single-copy-loss context
+          loc: 'chr9:21,930,000-21,990,000',
           tracks: [
-            'hg38_ncbiRefSeq_ucsc',
+            {
+              // genes compact so the RefSeq isoforms collapse to a thin band
+              // rather than dominating the figure (reviewer)
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                displayMode: 'compact',
+              },
+            },
             {
               trackId: 'hg008_t_coverage_finescale',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
                 minScore: 0,
                 maxScore: 100,
-                height: 160,
+                height: 200,
               },
             },
             {
-              trackId: 'hg008_log2ratio',
+              // raw long-read pileup (reviewer): the homozygous deletion is a
+              // clean read drop-out. linkedReads:'normal' chains each read's
+              // supplementary/split alignments onto one row joined by a
+              // connector (reviewer: "add view as pairs / link supplementary
+              // reads") so reads spanning the deletion breakpoints read as
+              // coherent split alignments
+              trackId: 'hg008_t_reads_cdkn2a',
               displaySnapshot: {
-                type: 'LinearWiggleDisplay',
-                defaultRendering: 'scatter',
-                useBicolor: false,
-                summaryScoreMode: 'avg',
-                scatterPointSize: 3,
-                minScore: -2,
-                maxScore: 2,
-                height: 140,
+                type: 'LinearAlignmentsDisplay',
+                linkedReads: 'normal',
+                height: 320,
               },
             },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+            'hg008_cnv_calls',
           ],
         },
       ],
     }),
     readyText: 'chr9',
-    readyTimeout: 90000,
+    readyTimeout: 120000,
     viewportWidth: 1500,
-    viewportHeight: 660,
-    settleMs: 20000,
+    viewportHeight: 1040,
+    settleMs: 30000,
   },
 
   // chr17 as the log2xBAF decision-table teacher. One chromosome shows two
@@ -3881,34 +3916,6 @@ export const specs: ScreenshotSpec[] = [
               locationType: 'UriLocation',
             },
           },
-        },
-        {
-          // Re-declare the CNV calls track with a label that reads out the
-          // actual copy number + haplotype split instead of the opaque "CNA_21"
-          // id (reviewer). The BED carries total/hap1/hap2 copy-number columns
-          // (its `#`-header names them), so a labels.name jexl surfaces them —
-          // and the haplotype split makes the LOH explicit: a "CN 2 (2|0)"
-          // region is copy-neutral LOH (both copies from one haplotype).
-          type: 'FeatureTrack',
-          trackId: 'hg008_cnv_calls',
-          name: 'HG008-T somatic CNV calls (copy number)',
-          assemblyNames: ['GRCh38_GIABv3'],
-          adapter: {
-            type: 'BedAdapter',
-            bedLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed',
-              locationType: 'UriLocation',
-            },
-          },
-          displays: [
-            {
-              type: 'LinearBasicDisplay',
-              displayId: 'hg008_cnv_calls-LinearBasicDisplay',
-              labels: {
-                name: "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'",
-              },
-            },
-          ],
         },
       ],
       views: [
@@ -3955,7 +3962,14 @@ export const specs: ScreenshotSpec[] = [
 
   // KRAS, the central PDAC oncogene: a low-level allelic gain (CN 3, 2+1) on
   // chr12 — positive log2 ratio with an imbalanced (but not fully split) BAF,
-  // the fourth entry in the log2xBAF decision table (driver_chr17_loh).
+  // the fourth entry in the log2xBAF decision table (driver_chr17_loh). The raw
+  // 0..1 BAF resolves the 2+1 imbalance: het SNPs split into an upper (~0.67) and
+  // lower (~0.33) band rather than the single 0.5 line of a balanced region.
+  // A compact NCBI RefSeq gene track (hg38_ncbiRefSeq_ucsc, from the cgiab
+  // config) anchors KRAS in the gained arm, and the CN-labeled benchmark CNV
+  // track (hg008_cnv_calls, also from the config) reads the opaque "SV_101" id
+  // out as its copy number (reviewer: the bare SV id doesn't clarify the
+  // event). Zoomed out from 3.5Mb so the gain sits in flanking context.
   {
     mode: 'url',
     name: 'sv_cgiab/driver_kras_gain',
@@ -3976,13 +3990,13 @@ export const specs: ScreenshotSpec[] = [
         },
         {
           type: 'QuantitativeTrack',
-          trackId: 'hg008_baf_folded',
-          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
             type: 'BigWigAdapter',
             bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
               locationType: 'UriLocation',
             },
           },
@@ -3992,8 +4006,15 @@ export const specs: ScreenshotSpec[] = [
         {
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
-          loc: 'chr12:24,000,000-27,500,000',
+          loc: 'chr12:23,000,000-27,500,000',
           tracks: [
+            {
+              trackId: 'hg38_ncbiRefSeq_ucsc',
+              displaySnapshot: {
+                type: 'LinearBasicDisplay',
+                displayMode: 'compact',
+              },
+            },
             {
               trackId: 'hg008_log2ratio',
               displaySnapshot: {
@@ -4006,24 +4027,27 @@ export const specs: ScreenshotSpec[] = [
                 maxScore: 2,
                 height: 140,
                 // request bigwig bins 10x finer than screen resolution so the
-                // 500bp-binned log2 signal resolves at this 3.5Mb window rather
-                // than being served as a coarse bigwig zoom level
+                // 500bp-binned log2 signal resolves at this window rather than
+                // being served as a coarse bigwig zoom level
                 resolution: 10,
               },
             },
             {
-              trackId: 'hg008_baf_folded',
+              trackId: 'hg008_baf',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
+                // raw 0..1 BAF scatter with default whisker summary preserving the
+                // per-bin spread; resolution:10 makes it fine-grained so the 2+1
+                // gain's band-split is legible
                 defaultRendering: 'scatter',
-                summaryScoreMode: 'avg',
-                scatterPointSize: 3,
+                scatterPointSize: 2,
+                resolution: 10,
                 minScore: 0,
-                maxScore: 0.5,
+                maxScore: 1,
                 height: 140,
               },
             },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+            'hg008_cnv_calls',
           ],
         },
       ],
@@ -4031,12 +4055,17 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr12',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 520,
+    // tall enough for the gene track + both wiggles + the CN-labeled CNV calls
+    // track to all fit (the gene track pushes the CNV calls down)
+    viewportHeight: 780,
     settleMs: 20000,
   },
 
   // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH
-  // (CN 1, 0+1) — negative log2 AND the BAF rising off 0 toward 0.5.
+  // (CN 1, 0+1) — negative log2 AND the folded BAF rising off 0 toward 0.5.
+  // The CNV calls use the config's CN-labeled hg008_cnv_calls track so the 18q
+  // event reads out as its copy number + haplotype split (reviewer: the bare
+  // draftbenchmark SV ids don't say what the call is).
   {
     mode: 'url',
     name: 'sv_cgiab/driver_smad4_loh',
@@ -4103,7 +4132,7 @@ export const specs: ScreenshotSpec[] = [
                 height: 140,
               },
             },
-            'GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls',
+            'hg008_cnv_calls',
           ],
         },
       ],
@@ -6521,42 +6550,6 @@ export const specs: ScreenshotSpec[] = [
     ],
   },
   {
-    // Per-species CDS reading-frame overlay (UCSC mafFrames) on the 26-way
-    // alignment: a thin frame-colored strip at the bottom of each species row
-    // marks the coding exons projected onto every aligned species, so the gene
-    // structure (exon segments, shared reading frame) reads across the whole
-    // alignment. Sourced from a local bigBed built from the real UCSC ce11
-    // multiz26wayFrames data; the overlay is on by default once an
-    // `annotationAdapter` is configured.
-    mode: 'url',
-    name: 'maf_cds_frames',
-    url: lgvSession(CE_MAF_FRAMES, {
-      assembly: 'ce11',
-      loc: 'chrI:2,998,950-2,999,780',
-      tracks: [
-        {
-          trackId: 'ce11.26way',
-          // strip is opt-in (off by default), so enable it for this figure
-          displaySnapshot: {
-            type: 'LinearMafDisplay',
-            heightOverride: 400,
-            showAnnotations: true,
-          },
-        },
-      ],
-    }),
-    readyText: 'chrI',
-    readyTimeout: 90000,
-    viewportWidth: 1000,
-    viewportHeight: 560,
-    settleMs: 12000,
-    hideTooltip: true,
-    actions: [
-      { type: 'hover', from: { x: 250, y: 100 } },
-      { type: 'delay', ms: 2000 },
-    ],
-  },
-  {
     // Codon-view hover tooltip: in the per-species codon translation, hovering a
     // codon cell reads out the species codon + amino acid alongside the reference
     // codon + amino acid and the syn/nonsyn classification, so a specific change
@@ -6714,7 +6707,18 @@ export const specs: ScreenshotSpec[] = [
     name: 'maf_470way_codon',
     url: lgvSession(HG38_470WAY, {
       assembly: 'hg38',
-      loc: '12:6,536,485-6,536,600',
+      // window trimmed to sit fully inside one GAPDH coding exon (reviewer): the
+      // original ran a few bp past the exon 3' end, so the species that have no
+      // aligned block there drew empty "bridge" e-lines on the right that read as
+      // artifacts. The codon view is now gap-free across the window: reviewers
+      // earlier saw blank columns spanning every row (reference included) where a
+      // reference codon's three bases straddle a MAF alignment-block boundary —
+      // those codons were dropped (computeVisibleCodons required all three in one
+      // block) while the block-agnostic per-base coverage stayed continuous.
+      // computeVisibleCodons/computeCodonConservation now stitch a codon across
+      // blocks (locateCodon resolves each base to whichever block holds it), so
+      // the codon layer lines up with the coverage band above it.
+      loc: '12:6,536,485-6,536,590',
       tracks: [
         {
           trackId: 'hg38.multiz470way',

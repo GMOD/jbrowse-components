@@ -1,5 +1,6 @@
 import { observer } from 'mobx-react'
 
+import { modeHasUpDownstream } from './featureTypeUtil.ts'
 import CDNASequence from './seqtypes/CDNASequence.tsx'
 import CDSSequence from './seqtypes/CDSSequence.tsx'
 import GenomicSequence from './seqtypes/GenomicSequence.tsx'
@@ -19,6 +20,10 @@ import type { TranslExcept } from '../../util/geneticCodes.ts'
 import type { SimpleFeatureSerialized } from '../../util/index.ts'
 import type { Feat, SeqState } from '../util.tsx'
 
+function findCdsSubfeature(feature: SimpleFeatureSerialized) {
+  return feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
+}
+
 // CDS-bound translation reads `transl_table` off the CDS subfeature (or the
 // feature itself), so e.g. a mitochondrial gene translates with table 2 rather
 // than the standard code. When the feature carries no transl_table (e.g. UCSC
@@ -28,7 +33,7 @@ function proteinGeneticCode(
   feature: SimpleFeatureSerialized,
   assemblyGeneticCodeId: number | undefined,
 ) {
-  const cds = feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
+  const cds = findCdsSubfeature(feature)
   const id =
     parseTranslTable(feature.transl_table) ??
     parseTranslTable(cds?.transl_table) ??
@@ -40,7 +45,7 @@ function proteinGeneticCode(
 // system used by convertCodingSequenceToPeptides (feature-relative, reversed for
 // minus-strand genes).
 function featureTranslExcept(feature: SimpleFeatureSerialized): TranslExcept[] {
-  const cds = feature.subfeatures?.find(f => f.type?.toLowerCase() === 'cds')
+  const cds = findCdsSubfeature(feature)
   const raw = feature.transl_except ?? cds?.transl_except
   return raw
     ? relativizeTranslExcept({
@@ -73,7 +78,7 @@ function RenderedSequenceComponent({
   }
 }) {
   const { seq, upstream, downstream, cds, exons, utr } = sequenceData
-  const withUpDown = mode.includes('updownstream')
+  const withUpDown = modeHasUpDownstream(mode)
 
   switch (mode) {
     case 'genomic':

@@ -34,6 +34,14 @@ export function getDefaultMode(
       : 'genomic'
 }
 
+// whether the mode renders up/downstream flanks. shared by the sequence body
+// (which fetches+renders the flanks) and the FASTA header (which annotates
+// them) so the two can't drift, e.g. gene_updownstream_collapsed_intron
+// contains 'updownstream' but does not end with it
+export function modeHasUpDownstream(mode: SequenceDisplayMode) {
+  return mode.includes('updownstream')
+}
+
 // genomic coordinates only make sense for continuous genome-based sequence
 // types (not collapsed-intron or spliced views)
 export function showGenomicCoordsOption(mode: SequenceDisplayMode) {

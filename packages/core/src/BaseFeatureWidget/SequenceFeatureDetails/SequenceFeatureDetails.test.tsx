@@ -153,6 +153,23 @@ test('NCDN updownstream', () => {
   expect(element.textContent).toMatchSnapshot()
 })
 
+test('updownstream annotation shown in header for collapsed-intron+flanks mode', () => {
+  // gene_updownstream_collapsed_intron contains but does not end with
+  // "updownstream"; the header must still note the flanks it renders
+  const seq = readFasta('./test_data/volvox.fa')
+  const model = SequenceFeatureDetailsF().create()
+  const { getByTestId } = render(
+    <SequencePanel
+      model={model}
+      mode="gene_updownstream_collapsed_intron"
+      sequence={{ seq, upstream: 'ACGT', downstream: 'ACGT' }}
+      feature={f}
+    />,
+  )
+  const header = getByTestId('sequence_panel').textContent.split('\n')[0]!
+  expect(header).toContain('up/downstream bp')
+})
+
 test('plaintext copy strips legend so it does not corrupt FASTA output', () => {
   const el = document.createElement('div')
   el.innerHTML =

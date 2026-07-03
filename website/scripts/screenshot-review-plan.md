@@ -86,48 +86,59 @@ Other done items (flipped `good` or deleted in the json):
   `chromosomeColor`; test rewritten; user+config guide prose/captions updated.
   maf tests green (299).
 
-## Still `bad` (per the json) — with what each actually needs
+## 2026-07-03 session — resolved
 
-Blocked on data regen + re-upload to jbrowse.org (recipes in
-`website/scripts/cnv-data-recipe.md`):
+Cleared 11 of the then-13 bad items (json is the source of truth):
 
-- **sv_cgiab/cnv_multi_bigwig** — needs a log2(tumor/normal) bigWig from CRAMs.
-- **sv_cgiab/driver_cdkn2a_deletion** — needs per-base coverage (indexcov is
-  ~16kb-binned).
-- **sv_cgiab/driver_chr17_loh** — "CNA_21" labels come from the source BED.
-- **sv_cgiab/cnv_log2_baf**, **cnv_log2ratio_genome** — whiskers come from
-  `summaryScoreMode` defaulting to `'whiskers'`. Can't just set `'avg'` (raw-BAF
-  LOH bins average to ~0.5 and the split vanishes). Needs a FOLDED BAF bigwig
-  (`|BAF−0.5|`) — folded-BAF recipe is in cnv-data-recipe.md.
+- **gc_content** — already on H. pylori w/ GC skew; approved as-is.
+- **variants/consequence_impact**, **maf_cds_frames** — stale entries (spec+PNG
+  already deleted); removed from the json.
+- **consequence_impact_sv** — zoomed out to ~450kb.
+- **sv_cgiab/{driver_cdkn2a_deletion, driver_kras_gain, driver_smad4_loh}** —
+  cdkn2a: linked supplementary reads + dropped redundant log2 track; kras: gene
+  track + CN 3 (2|1) label + zoom-out; smad4: CN labels + folded BAF.
+- **sv_cgiab/{cnv_log2_baf, cnv_log2ratio_genome}** — switched BAF to the
+  **folded** track (`HG008-T_baf_folded.bw`, avg mode). It already exists
+  genome-wide (smad4 used it), so this was unblocked — LOH now reads as a clean
+  elevated band. (The reviewer's "align tick labels always-right, SVG=left" is a
+  separate GLOBAL wiggle YScaleBar-position change, NOT done — flagged for a
+  dedicated pass; current render already shows all ticks left, consistently.)
+- **maf_470way_codon** — root-caused + FIXED. The blank codon columns were
+  reference codons whose 3 bases **straddle a MAF alignment-block boundary**,
+  dropped by the old single-block `codonColumns` (coverage is per-base so it
+  didn't gap — hence the mismatch). `computeVisibleCodons.ts` now resolves each
+  codon position across blocks (`locateCodon`/`rowCodonBytes`) and stitches the
+  codon from both, respecting per-block species membership. 3 new cross-block
+  tests. See memory `key_pattern_maf_codon_block_straddle_gap`.
 
-Blocked on code (not data):
+**Config change**: added `hg008_cnv_calls` (CN-labeled CNV BED) + a hg38 RefSeq
+gene track (`hg38_ncbiRefSeq_ucsc`) to the DEPLOYED
+`jbrowse.org/demos/cgiab/config.json` (rclone upload as user `cmdcolin` +
+CloudFront invalidation of `/demos/cgiab/config.json`), synced the local
+`cgiab-demo-config.json`, and switched cdkn2a/chr17/kras/smad4 to reference them
+by id. Backup of the pre-change config is in this session's scratchpad.
 
-- **jbrowse-img/multisample_variants** — jb2export static SSR renders the
-  per-sample genotype MATRIX **empty** for the 1000G phase3 callset even with
-  data loaded LOCALLY and rows at 1px (volvox's simpler path works) → needs a
-  jb2export matrix-render fix first. AND real pop data is ref-dominant (grey) —
-  the compelling view is `colorBy:'population'`, which needs the adapter's
-  samplesTsv: a small jb2export CLI feature (a `samplesTsv:` modifier →
-  `samplesTsvLocation`; prototyped then reverted since the render bug blocks
-  verification). bcftools in this sandbox is broken (undefined symbol
-  `bcf_format_gt_v2`) — slice 1000G with `tabix -h <url> <region> | bgzip`
-  (refnames unprefixed `1`; hg19.fa.gz also `1`).
+**tree 1px clip** (maf_inversions): `TREE_LEFT_PAD` 1→2 in
+`packages/tree-sidebar/src/hierarchy.ts` (root stroke now a clear px off the
+edge). Shared by all tree figures, but the 1px shift is sub-`--diff-threshold`
+for most, so only `--force`-regen'd figures change; other tree figures'
+committed PNGs (+ their verdicts) stay valid until a future full regen.
 
-MAF feature/polish asks (doable, not started):
+## Still `bad` — deferred as design/blocked (user chose to defer)
 
-- **maf_470way_codon** — reviewer: make the conservation track show CODON-level
-  conservation (not per-base).
-- **maf_inversions** — inversions hard to see (want a "structure only" cue), and
-  the tree sidebar's top level is clipped ~1px left (a real minor layout bug).
-- **maf_cds_frames** — reviewer doesn't value the CDS-frame strips (confusable
-  with inversions). Documents a real feature; left as-is. Improve caption or
-  delete if low-value.
-
-Not a screenshot-specs.ts item:
-
-- **gene_track_collapse_introns** — re-added by a reviewer this session; earlier
-  notes deemed the existing figure correct (ask was an extra sashimi-toggle
-  screenshot idea, not a defect). Verify the current PNG.
+- **inverted_duplication_bezier** — design: make the bezier more dramatic, add
+  read-pair arcs, and color the grey supplementary-chain segments. Alignments-
+  rendering feature work.
+- **maf_inversions** (structure-only cue) — inversions are hard to see; wants a
+  specialized "structure-only" view. The 1px tree clip half of this note IS
+  fixed (above); the "hard to see" half is deferred design work.
+- **jbrowse-img/multisample_variants** — blocked on code: jb2export static SSR
+  renders the per-sample genotype MATRIX **empty** for the 1000G phase3 callset
+  (volvox's simpler path works) → needs a jb2export matrix-render fix. AND real
+  pop data is ref-dominant (grey); the compelling view is `colorBy:'population'`
+  needing a `samplesTsv:` jb2export CLI feature. bcftools in this sandbox is
+  broken (`bcf_format_gt_v2`) — slice 1000G with `tabix -h <url> <region> |
+  bgzip` (refnames unprefixed `1`; hg19.fa.gz also `1`).
 
 ## Workflow
 

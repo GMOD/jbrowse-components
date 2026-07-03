@@ -91,8 +91,12 @@
           "indexType": "TBI"
         }
       },
-      "category": ["Variant calls"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Variant calls"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "FeatureTrack",
@@ -105,8 +109,12 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["Variant calls"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Variant calls"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "QuantitativeTrack",
@@ -119,8 +127,12 @@
           "locationType": "UriLocation"
         }
       },
-      "category": ["Coverage"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Coverage"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "SyntenyTrack",
@@ -139,9 +151,15 @@
           },
           "indexType": "TBI"
         },
-        "assemblyNames": ["HG008T.hap1", "GRCh38_GIABv3"]
+        "assemblyNames": [
+          "HG008T.hap1",
+          "GRCh38_GIABv3"
+        ]
       },
-      "assemblyNames": ["HG008T.hap1", "GRCh38_GIABv3"]
+      "assemblyNames": [
+        "HG008T.hap1",
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "SyntenyTrack",
@@ -160,9 +178,15 @@
           },
           "indexType": "TBI"
         },
-        "assemblyNames": ["HG008T.hap2", "GRCh38_GIABv3"]
+        "assemblyNames": [
+          "HG008T.hap2",
+          "GRCh38_GIABv3"
+        ]
       },
-      "assemblyNames": ["HG008T.hap2", "GRCh38_GIABv3"]
+      "assemblyNames": [
+        "HG008T.hap2",
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -182,8 +206,12 @@
           "indexType": "BAI"
         }
       },
-      "category": ["Reads"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Reads"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "AlignmentsTrack",
@@ -203,15 +231,23 @@
           "indexType": "BAI"
         }
       },
-      "category": ["Reads"],
-      "assemblyNames": ["GRCh38_GIABv3"]
+      "category": [
+        "Reads"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ]
     },
     {
       "type": "QuantitativeTrack",
       "trackId": "HG008_log2ratio",
       "name": "HG008 log2(tumor/normal) coverage ratio",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -224,7 +260,6 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008_log2ratio-LinearWiggleDisplay",
           "defaultRendering": "scatter",
-          "useBicolor": false,
           "summaryScoreMode": "avg",
           "scatterPointSize": 1,
           "minScore": -2,
@@ -237,8 +272,12 @@
       "type": "QuantitativeTrack",
       "trackId": "HG008_log2ratio_calibrated",
       "name": "HG008 log2 ratio (BAF-calibrated to diploid)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -251,7 +290,6 @@
           "type": "LinearWiggleDisplay",
           "displayId": "HG008_log2ratio_calibrated-LinearWiggleDisplay",
           "defaultRendering": "scatter",
-          "useBicolor": false,
           "summaryScoreMode": "avg",
           "scatterPointSize": 1,
           "minScore": -2,
@@ -264,8 +302,12 @@
       "type": "QuantitativeTrack",
       "trackId": "HG008-T_baf",
       "name": "HG008-T B-allele frequency (BAF)",
-      "category": ["CNV"],
-      "assemblyNames": ["GRCh38_GIABv3"],
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
       "adapter": {
         "type": "BigWigAdapter",
         "bigWigLocation": {
@@ -282,6 +324,142 @@
           "minScore": 0,
           "maxScore": 1,
           "height": 120
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "HG008-T_baf_folded",
+      "name": "HG008-T folded BAF (0=balanced, 0.5=LOH)",
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "HG008-T_baf_folded.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "HG008-T_baf_folded-LinearWiggleDisplay",
+          "defaultRendering": "scatter",
+          "summaryScoreMode": "avg",
+          "scatterPointSize": 1,
+          "minScore": 0,
+          "maxScore": 0.5,
+          "height": 120
+        }
+      ]
+    },
+    {
+      "type": "QuantitativeTrack",
+      "trackId": "HG008-T_coverage_perbase",
+      "name": "HG008-T fine-scale coverage (per-base, CDKN2A locus)",
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
+      "adapter": {
+        "type": "BigWigAdapter",
+        "bigWigLocation": {
+          "uri": "HG008-T_coverage_perbase.bw",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearWiggleDisplay",
+          "displayId": "HG008-T_coverage_perbase-LinearWiggleDisplay",
+          "minScore": 0,
+          "maxScore": 100,
+          "height": 120
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "HG008-T_wakhan_cnv",
+      "name": "HG008-T Wakhan haplotype-specific CNV segments",
+      "category": [
+        "Variant calls"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "HG008-T_wakhan_cnv.bed",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "HG008-T_wakhan_cnv-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'"
+          }
+        }
+      ]
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg38_ncbiRefSeq_ucsc",
+      "name": "NCBI RefSeq genes (hg38)",
+      "category": [
+        "Genes"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
+      "adapter": {
+        "type": "Gff3TabixAdapter",
+        "gffGzLocation": {
+          "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz",
+          "locationType": "UriLocation"
+        },
+        "index": {
+          "location": {
+            "uri": "https://jbrowse.org/ucsc/hg38/ncbiRefSeq.gff.gz.csi",
+            "locationType": "UriLocation"
+          },
+          "indexType": "CSI"
+        }
+      }
+    },
+    {
+      "type": "FeatureTrack",
+      "trackId": "hg008_cnv_calls",
+      "name": "HG008-T somatic CNV calls (copy number)",
+      "category": [
+        "CNV"
+      ],
+      "assemblyNames": [
+        "GRCh38_GIABv3"
+      ],
+      "adapter": {
+        "type": "BedAdapter",
+        "bedLocation": {
+          "uri": "GRCh38_HG008-T-V0.4_somatic-CNV_PASS.draftbenchmark.calls.bed",
+          "locationType": "UriLocation"
+        }
+      },
+      "displays": [
+        {
+          "type": "LinearBasicDisplay",
+          "displayId": "hg008_cnv_calls-LinearBasicDisplay",
+          "labels": {
+            "name": "jexl:'CN '+get(feature,'total_copy_number')+' ('+get(feature,'hap1_copy_number')+'|'+get(feature,'hap2_copy_number')+')'"
+          }
         }
       ]
     }

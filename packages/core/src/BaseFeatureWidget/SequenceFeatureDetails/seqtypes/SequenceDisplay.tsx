@@ -47,11 +47,13 @@ const SequenceDisplay = observer(function SequenceDisplay({
         ? `${`${f + idx * strand * charactersPerRow}`.padStart(4)}   `
         : ''
     const isLastChunk = idx === chunks.length - 1
-    const lastChunkCharCount =
-      (chunks.at(-1)?.replaceAll(' ', '').length ?? 0) +
+    // a partial final row (not filled to charactersPerRow) gets no trailing
+    // newline; every full row does
+    const lastRowCharCount =
+      chunk.replaceAll(' ', '').length +
       (idx === 0 ? start % charactersPerRow : 0)
     const postfix =
-      isLastChunk && lastChunkCharCount !== charactersPerRow
+      isLastChunk && lastRowCharCount !== charactersPerRow
         ? null
         : showCoordinates
           ? ' \n'

@@ -5,29 +5,25 @@ import SequenceName from './SequenceName.tsx'
 
 import type { SequencePanelProps } from './types.ts'
 
+// raw inline styles (not classes) so an html copy carries styling into external
+// documents like Word; the explicit black-on-white also keeps the readout
+// legible under a dark theme (coordinate labels and introns are uncolored)
+const baseSeqStyle = {
+  fontFamily: 'monospace',
+  color: 'black',
+  background: 'white',
+  fontSize: 11,
+} as const
+
 function WordWrap({ children }: { children: React.ReactNode }) {
-  return (
-    <pre
-      style={{
-        /* raw styles instead of className so that html copy works */
-        fontFamily: 'monospace',
-        color: 'black',
-        fontSize: 11,
-      }}
-    >
-      {children}
-    </pre>
-  )
+  return <pre style={baseSeqStyle}>{children}</pre>
 }
 
 function NoWordWrap({ children }: { children: React.ReactNode }) {
   return (
     <div
       style={{
-        /* raw styles instead of className so that html copy works */
-        fontFamily: 'monospace',
-        color: 'black',
-        fontSize: 11,
+        ...baseSeqStyle,
         maxWidth: 600,
         whiteSpace: 'normal',
         wordBreak: 'break-all',
