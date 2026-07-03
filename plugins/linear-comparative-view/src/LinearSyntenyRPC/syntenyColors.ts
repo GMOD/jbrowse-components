@@ -6,7 +6,6 @@ import {
   continuousRampConfig,
   divergingIdentityRgb,
   hashString,
-  hslRampRgb,
 } from '@jbrowse/synteny-core'
 
 import type { SyntenyColorBy } from '@jbrowse/synteny-core'
@@ -50,15 +49,9 @@ function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
   return lut
 }
 
-const IDENTITY_LUT = buildLut(norm =>
-  hslRampRgb(norm, continuousRampConfig.identity.hueRange),
-)
-const MEAN_MAPQ_LUT = buildLut(norm =>
-  hslRampRgb(norm, continuousRampConfig.meanQueryMappingQuality.hueRange),
-)
-const MAPQ_LUT = buildLut(norm =>
-  hslRampRgb(norm, continuousRampConfig.mappingQuality.hueRange),
-)
+const IDENTITY_LUT = buildLut(continuousRampConfig.identity.toRgb)
+const MEAN_MAPQ_LUT = buildLut(continuousRampConfig.meanQueryMappingQuality.toRgb)
+const MAPQ_LUT = buildLut(continuousRampConfig.mappingQuality.toRgb)
 // Diverging LUT is indexed by identity directly (0..1) since the pivot remap
 // inside divergingIdentityRgb is non-linear — bin i encodes identity i/255.
 const IDENTITY_DIVERGING_LUT = buildLut(divergingIdentityRgb)

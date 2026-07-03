@@ -10,7 +10,6 @@ import {
   continuousRampConfig,
   divergingIdentityRgb,
   hashString,
-  hslRampRgb,
 } from '@jbrowse/synteny-core'
 
 import type { DotplotRpcData } from './types.ts'
@@ -85,18 +84,13 @@ function constantColorFn(packed: number): DotplotColorFn {
   return () => packed
 }
 
-function hslRampColorFn(
+function rampConfigColorFn(
   values: Float32Array,
   mode: keyof typeof continuousRampConfig,
   alpha: number,
 ): DotplotColorFn {
-  const { hueRange, maxValue } = continuousRampConfig[mode]
-  return rampColorFn(
-    values,
-    norm => hslRampRgb(norm, hueRange),
-    maxValue,
-    alpha,
-  )
+  const { toRgb, maxValue } = continuousRampConfig[mode]
+  return rampColorFn(values, toRgb, maxValue, alpha)
 }
 
 export function createDotplotColorFunction(
@@ -112,17 +106,17 @@ export function createDotplotColorFunction(
     case 'target':
       return nameColorFn(alpha, (d, i) => d.mateRefNames[i]!)
     case 'identity':
-      return hslRampColorFn(data.identities, 'identity', alpha)
+      return rampConfigColorFn(data.identities, 'identity', alpha)
     // Diverging LUT is indexed by identity directly; the pivot remap is inside
     // divergingIdentityRgb, so its normalization max is 1.
     case 'identityDiverging':
       return rampColorFn(data.identities, divergingIdentityRgb, 1, alpha)
     case 'meanQueryIdentity':
-      return hslRampColorFn(data.meanIdentities, 'meanQueryIdentity', alpha)
+      return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity', alpha)
     case 'meanQueryMappingQuality':
-      return hslRampColorFn(data.meanScores, 'meanQueryMappingQuality', alpha)
+      return rampConfigColorFn(data.meanScores, 'meanQueryMappingQuality', alpha)
     case 'mappingQuality':
-      return hslRampColorFn(data.mappingQuals, 'mappingQuality', alpha)
+      return rampConfigColorFn(data.mappingQuals, 'mappingQuality', alpha)
     // Dotplot keeps a plain black default (its conventional line color) rather
     // than the synteny ribbon's red.
     case 'default':

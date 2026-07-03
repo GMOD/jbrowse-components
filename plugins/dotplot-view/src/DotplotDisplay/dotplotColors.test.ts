@@ -1,10 +1,3 @@
-import {
-  getBlue,
-  getGreen,
-  getRed,
-  parseCssColor,
-} from '@jbrowse/core/util/colorBits'
-
 import { createDotplotColorFunction } from './dotplotColors.ts'
 
 import type { DotplotRpcData } from './types.ts'
@@ -54,22 +47,23 @@ describe('createDotplotColorFunction', () => {
     expect(unpack(fn(data, 0))).toEqual({ r: 0, g: 0, b: 0, a: 255 })
   })
 
-  // Locks in that the HSL math matches the canonical browser HSL within 1
-  // channel — this is the regression test for the parseCssColor refactor.
-  test('identity HSL output matches CSS hsl reference within 1', () => {
-    const data = fakeRpcData({ identities: new Float32Array([0, 0.5, 1]) })
+  // Identity uses the perceptually-uniform viridis ramp: dark purple at low
+  // identity, bright yellow at high. Lock in the endpoints and that luminance
+  // increases monotonically (the property colorblind-safe ramps must have).
+  test('identity ramp is viridis (dark purple → yellow, monotonic luminance)', () => {
+    const data = fakeRpcData({
+      identities: new Float32Array([0, 0.25, 0.5, 0.75, 1]),
+    })
     const fn = createDotplotColorFunction('identity', 1, data)
-    const checkHue = (i: number, hue: number) => {
-      const ref = parseCssColor(`hsl(${hue}, 100%, 40%)`)
-      const got = unpack(fn(data, i))
-      expect(Math.abs(got.r - getRed(ref))).toBeLessThanOrEqual(1)
-      expect(Math.abs(got.g - getGreen(ref))).toBeLessThanOrEqual(1)
-      expect(Math.abs(got.b - getBlue(ref))).toBeLessThanOrEqual(1)
+    const lum = (i: number) => {
+      const { r, g, b } = unpack(fn(data, i))
+      return 0.299 * r + 0.587 * g + 0.114 * b
     }
-    // hueScale=120 for identity: 0→red, 0.5→yellow-green, 1→green
-    checkHue(0, 0)
-    checkHue(1, 60)
-    checkHue(2, 120)
+    expect(unpack(fn(data, 0))).toMatchObject({ r: 68, g: 1, b: 84 })
+    expect(unpack(fn(data, 4))).toMatchObject({ r: 253, g: 231, b: 37 })
+    for (let i = 1; i < 5; i++) {
+      expect(lum(i)).toBeGreaterThan(lum(i - 1))
+    }
   })
 
   test('missing-value sentinel (-1) returns red', () => {

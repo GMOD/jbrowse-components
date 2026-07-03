@@ -20,7 +20,7 @@ const COLOR_BY_OPTIONS: readonly {
     value: 'identity',
     label: 'Identity',
     helpText:
-      'Color alignments by per-alignment sequence identity: low identity is red, high identity is green. Useful for distinguishing divergent vs. conserved regions.',
+      'Color alignments by per-alignment sequence identity on a perceptually-uniform viridis scale: low identity is dark purple, high identity is bright yellow. Useful for distinguishing divergent vs. conserved regions.',
   },
   {
     value: 'identityDiverging',
@@ -44,7 +44,7 @@ const COLOR_BY_OPTIONS: readonly {
     value: 'mappingQuality',
     label: 'Mapping quality',
     helpText:
-      'Color alignments by per-alignment PAF mapping quality (MAPQ, 0–60): low MAPQ red, high MAPQ yellow. Useful for identifying ambiguous or multi-mapping regions.',
+      'Color alignments by per-alignment PAF mapping quality (MAPQ, 0–60) on a perceptually-uniform cividis scale: low MAPQ dark blue, high MAPQ yellow. Useful for identifying ambiguous or multi-mapping regions.',
   },
   {
     value: 'strand',
