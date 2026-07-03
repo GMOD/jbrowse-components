@@ -158,16 +158,21 @@ function sortOverlappingByIndex(
     const { readStrands } = data
     overlapping.sort((a, b) => readStrands[b]! - readStrands[a]!)
   } else if (type === 'tag' && sortTagValues) {
-    const first = overlapping[0]
-    const firstVal = first !== undefined ? sortTagValues[first] : undefined
-    const isString = firstVal !== undefined && Number.isNaN(Number(firstVal))
-    if (isString) {
-      overlapping.sort((a, b) =>
-        (sortTagValues[b] ?? '').localeCompare(sortTagValues[a] ?? ''),
-      )
-    } else {
+    // Numeric sort only when every present value parses as a number (empty/
+    // missing values coerce to 0 and don't force string mode). A single
+    // numeric-looking first value must not decide the mode for a column of
+    // string tags — that garbled string tags into NaN comparisons.
+    const allNumeric = overlapping.every(i => {
+      const v = sortTagValues[i]
+      return v === undefined || v === '' || !Number.isNaN(Number(v))
+    })
+    if (allNumeric) {
       overlapping.sort(
         (a, b) => Number(sortTagValues[b] ?? 0) - Number(sortTagValues[a] ?? 0),
+      )
+    } else {
+      overlapping.sort((a, b) =>
+        (sortTagValues[b] ?? '').localeCompare(sortTagValues[a] ?? ''),
       )
     }
   }

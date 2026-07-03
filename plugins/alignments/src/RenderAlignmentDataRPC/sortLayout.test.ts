@@ -670,6 +670,26 @@ describe('computeSortedLayout', () => {
     expect(readYs[1]).toBe(0)
     expect(readYs[0]).toBe(1)
   })
+
+  test('tag sort with a numeric-looking first value but string rest stays lexicographic', () => {
+    // A leading value that parses as a number must not switch the whole column
+    // to numeric mode — the string tags would coerce to NaN and garble the
+    // order. Mode is decided by scanning every value, not just the first.
+    const data = makePileupData({
+      regionStart: 0,
+      sortPos: 500,
+      reads: [
+        { start: 400, end: 700, tagValue: '10' },
+        { start: 420, end: 720, tagValue: 'barcodeB' },
+        { start: 440, end: 740, tagValue: 'barcodeA' },
+      ],
+    })
+    const { readYs } = computeSortedLayout(data, makeSortedBy(500, 'tag', 'BX'))
+    // localeCompare descending: 'barcodeB' > 'barcodeA' > '10'
+    expect(readYs[1]).toBe(0)
+    expect(readYs[2]).toBe(1)
+    expect(readYs[0]).toBe(2)
+  })
 })
 
 describe('placeRect scale', () => {
