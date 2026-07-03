@@ -44,10 +44,11 @@ import {
   wiggleFeatureWidgetData,
 } from '../shared/wiggleComponentUtils.ts'
 import {
+  makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionAndSummarySubMenus,
   makeShowSubMenu,
-} from '../shared/wiggleMenuItems.ts'
+} from '../shared/wiggleMenuItems.tsx'
 import { MULTI_WIGGLE_RENDERINGS } from '../util.ts'
 
 import type {
@@ -384,6 +385,7 @@ export default function stateModelFactory(
         ]
         return [
           makeRenderingTypeSubMenu(self, MULTI_WIGGLE_RENDERINGS),
+          ...makePointSizeMenuItems(self),
           {
             label: 'Clustering',
             icon: AccountTreeIcon,

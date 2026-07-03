@@ -209,6 +209,28 @@ function CascadingMenuList({
             </ListSubheader>
           )
         }
+        if (item.type === 'custom') {
+          // Rendered as a plain list row, not a MenuItem: no click-to-close.
+          // Pointer/key events are kept local: the menu is portaled in the DOM
+          // but is still a React descendant of the view, so without this a
+          // slider drag bubbles (via React's synthetic-event tree) into the
+          // LGV's click-drag side-scroll, and arrow-key nudging gets stolen by
+          // the menu's own arrow navigation.
+          return (
+            <li
+              key={`custom-${item.label}`}
+              style={{ padding: '4px 16px' }}
+              onMouseDown={e => {
+                e.stopPropagation()
+              }}
+              onKeyDown={e => {
+                e.stopPropagation()
+              }}
+            >
+              {item.render(onCloseRoot)}
+            </li>
+          )
+        }
 
         const isCheckOrRadio = item.type === 'checkbox' || item.type === 'radio'
         // a disabled row can't open the help popover (pointer-events:none), so

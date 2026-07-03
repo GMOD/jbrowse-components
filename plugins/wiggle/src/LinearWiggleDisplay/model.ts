@@ -30,10 +30,11 @@ import {
   wiggleFeatureWidgetData,
 } from '../shared/wiggleComponentUtils.ts'
 import {
+  makePointSizeMenuItems,
   makeRenderingTypeSubMenu,
   makeResolutionAndSummarySubMenus,
   makeShowSubMenu,
-} from '../shared/wiggleMenuItems.ts'
+} from '../shared/wiggleMenuItems.tsx'
 import {
   SINGLE_WIGGLE_SOURCE_NAME,
   WIGGLE_RENDERINGS,
@@ -307,6 +308,7 @@ export default function stateModelFactory(
       trackMenuItems() {
         return [
           makeRenderingTypeSubMenu(self, WIGGLE_RENDERINGS),
+          ...makePointSizeMenuItems(self),
           // scaleType: true keeps the scale-type submenu (manhattan, linear-only,
           // drops it); resolution/summary lead the submenu, matching multi-wiggle.
           makeScoreSubMenu(self, {

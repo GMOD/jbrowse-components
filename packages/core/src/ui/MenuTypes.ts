@@ -50,6 +50,15 @@ export interface SubMenuItem extends BaseMenuItem {
   subMenu: MenuItem[]
 }
 
+// Renders arbitrary React content inline in the menu (e.g. a slider) instead of
+// a clickable row. The menu is not dismissed when interacting with it, so a
+// control can be dragged live; `onClose` is passed for content that wants to
+// close the menu explicitly. `label` is used only as a React key/testid.
+export interface CustomMenuItem extends BaseMenuItem {
+  type: 'custom'
+  render: (onClose: () => void) => React.ReactNode
+}
+
 export type MenuItem =
   | MenuDivider
   | MenuSubHeader
@@ -57,5 +66,6 @@ export type MenuItem =
   | CheckboxMenuItem
   | RadioMenuItem
   | SubMenuItem
+  | CustomMenuItem
 
 export type MenuItemsGetter = MenuItem[] | (() => MenuItem[])
