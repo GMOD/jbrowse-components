@@ -1,12 +1,12 @@
 import { useState } from 'react'
 
+import { StatusProgressBar } from '@jbrowse/core/ui'
 import {
   Box,
   Button,
   Card,
   CardActions,
   CardContent,
-  LinearProgress,
   Typography,
 } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -41,12 +41,12 @@ const CurrentJobCard = observer(function CurrentJobCard({
         >
           {job.progressPct === 0 || job.progressPct === 100 ? (
             <Box sx={{ width: '100%' }}>
-              <LinearProgress variant="indeterminate" />
+              <StatusProgressBar />
             </Box>
           ) : (
             <>
               <Box sx={{ width: '100%' }}>
-                <LinearProgress variant="determinate" value={job.progressPct} />
+                <StatusProgressBar fraction={job.progressPct / 100} />
               </Box>
               <Box sx={{ m: 1 }}>
                 <Typography>{`${Math.round(job.progressPct)}%`}</Typography>

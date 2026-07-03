@@ -64,15 +64,28 @@ export function statusFraction(status: RpcStatus | undefined) {
 }
 
 /**
+ * Format a phase label with a rounded percentage appended when a determinate
+ * `fraction` is present (e.g. `progressLabel('Downloading', 0.45)` →
+ * `"Downloading 45%"`). The single place the `X%` suffix is formatted: both
+ * {@link statusProgressLabel} (RpcStatus callers) and the loading
+ * overlays/indicators — which hold the message and fraction already split apart
+ * onto the model — route through it, so no caller hand-rolls `Math.round`.
+ */
+export function progressLabel(
+  message: string | undefined,
+  fraction: number | undefined,
+) {
+  const percent = fraction === undefined ? '' : `${Math.round(fraction * 100)}%`
+  return [message, percent].filter(Boolean).join(' ')
+}
+
+/**
  * Human label for a status: the message, with a rounded percentage appended
  * when the status is determinate (e.g. `"Downloading 45%"`). The single place
  * the percentage suffix is formatted, shared by the loading dialogs/overlays.
  */
 export function statusProgressLabel(status: RpcStatus | undefined) {
-  const message = statusMessageText(status)
-  const fraction = statusFraction(status)
-  const percent = fraction === undefined ? '' : `${Math.round(fraction * 100)}%`
-  return [message, percent].filter(Boolean).join(' ')
+  return progressLabel(statusMessageText(status), statusFraction(status))
 }
 
 /**

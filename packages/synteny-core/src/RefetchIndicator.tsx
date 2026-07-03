@@ -1,4 +1,5 @@
 import { LoadingEllipses, StatusProgressBar } from '@jbrowse/core/ui'
+import { progressLabel } from '@jbrowse/core/util'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
 import { observer } from 'mobx-react'
 
@@ -52,11 +53,7 @@ const RefetchIndicator = observer(function RefetchIndicator({
   return (
     <div className={classes.root}>
       <LoadingEllipses
-        message={
-          statusProgress === undefined
-            ? statusMessage
-            : `${statusMessage || 'Loading'} ${Math.round(statusProgress * 100)}%`
-        }
+        message={progressLabel(statusMessage || 'Loading', statusProgress)}
       />
       {statusProgress === undefined ? null : (
         <StatusProgressBar className={classes.bar} fraction={statusProgress} />

@@ -1,5 +1,5 @@
 import { LoadingEllipses, StatusProgressBar } from '@jbrowse/core/ui'
-import { statusFraction, statusMessageText } from '@jbrowse/core/util'
+import { progressLabel, statusFraction, statusMessageText } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -38,19 +38,15 @@ const DiagonalizeLoadingScreen = observer(function DiagonalizeLoadingScreen({
   const { classes } = useStyles()
   const fraction = statusFraction(status)
   // LoadingEllipses supplies its own animated dots, so the source phase labels
-  // carry no trailing ellipsis. Append the percent when determinate, mirroring
-  // RefetchIndicator.
-  const base = statusMessageText(status) || 'Reordering chromosomes'
+  // carry no trailing ellipsis. progressLabel appends the percent when
+  // determinate, mirroring RefetchIndicator.
+  const label = progressLabel(
+    statusMessageText(status) || 'Reordering chromosomes',
+    fraction,
+  )
   return (
     <div className={classes.root}>
-      <LoadingEllipses
-        variant="h6"
-        message={
-          fraction === undefined
-            ? base
-            : `${base} ${Math.round(fraction * 100)}%`
-        }
-      />
+      <LoadingEllipses variant="h6" message={label} />
       <StatusProgressBar fraction={fraction} className={classes.bar} />
       {onCancel ? (
         <Button

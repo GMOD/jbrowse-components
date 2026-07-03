@@ -6,6 +6,8 @@ import { IconButton, Tooltip } from '@mui/material'
 import { alpha } from '@mui/material/styles'
 
 import LoadingDots from './LoadingDots.tsx'
+import StatusProgressBar from './StatusProgressBar.tsx'
+import { progressLabel } from '../util/progress.ts'
 import { cx, makeStyles } from '../util/tss-react/index.ts'
 
 const cancelDelayMs = 5000
@@ -82,15 +84,6 @@ const useStyles = makeStyles()(theme => {
     },
     bar: {
       width: 160,
-      height: 4,
-      borderRadius: 2,
-      background: alpha(theme.palette.text.primary, 0.15),
-      overflow: 'hidden',
-    },
-    barFill: {
-      height: '100%',
-      background: '#3f88c5',
-      transition: 'width 0.15s linear',
     },
   }
 })
@@ -156,12 +149,8 @@ export default function LoadingOverlay({
           <>
             <span className={classes.row}>
               <span className={classes.text}>
-                {statusMessage || 'Loading'}
-                {hasProgress ? (
-                  ` ${Math.round(progress * 100)}%`
-                ) : (
-                  <LoadingDots />
-                )}
+                {progressLabel(statusMessage || 'Loading', progress)}
+                {hasProgress ? null : <LoadingDots />}
               </span>
               {onCancel && cancelable ? (
                 <Tooltip title="Cancel">
@@ -178,12 +167,7 @@ export default function LoadingOverlay({
               ) : null}
             </span>
             {hasProgress ? (
-              <span className={classes.bar}>
-                <span
-                  className={classes.barFill}
-                  style={{ width: `${Math.min(100, progress * 100)}%` }}
-                />
-              </span>
+              <StatusProgressBar className={classes.bar} fraction={progress} />
             ) : null}
           </>
         )}

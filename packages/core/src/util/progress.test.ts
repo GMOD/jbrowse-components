@@ -2,6 +2,7 @@ import {
   aggregateStatus,
   createProgressReporter,
   downloadStatus,
+  progressLabel,
   statusFraction,
   statusMessageText,
   statusProgressLabel,
@@ -159,6 +160,22 @@ describe('statusFraction', () => {
   })
   it('clamps to 1 when current exceeds total', () => {
     expect(statusFraction({ message: 'x', current: 5, total: 4 })).toBe(1)
+  })
+})
+
+describe('progressLabel', () => {
+  it('is just the message when the fraction is undefined', () => {
+    expect(progressLabel('Downloading', undefined)).toBe('Downloading')
+  })
+  it('appends a rounded percentage when a fraction is present', () => {
+    expect(progressLabel('Downloading', 0.45)).toBe('Downloading 45%')
+  })
+  it('is just the percent when the message is empty', () => {
+    expect(progressLabel('', 0.5)).toBe('50%')
+    expect(progressLabel(undefined, 0.5)).toBe('50%')
+  })
+  it('is empty when both are absent', () => {
+    expect(progressLabel(undefined, undefined)).toBe('')
   })
 })
 

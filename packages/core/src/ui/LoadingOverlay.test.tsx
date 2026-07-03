@@ -69,8 +69,8 @@ describe('LoadingOverlay status + progress', () => {
       <LoadingOverlay isVisible statusMessage="Downloading" progress={0.5} />,
     )
     flash()
-    const fill = container.querySelector<HTMLElement>('span[style*="width"]')
-    expect(fill?.style.width).toBe('50%')
+    const bar = container.querySelector('[role="progressbar"]')
+    expect(bar!.getAttribute('aria-valuenow')).toBe('50')
   })
 
   it('clamps the bar to 100% when progress overshoots', () => {
@@ -78,8 +78,8 @@ describe('LoadingOverlay status + progress', () => {
       <LoadingOverlay isVisible statusMessage="Downloading" progress={1.5} />,
     )
     flash()
-    const fill = container.querySelector<HTMLElement>('span[style*="width"]')
-    expect(fill?.style.width).toBe('100%')
+    const bar = container.querySelector('[role="progressbar"]')
+    expect(bar!.getAttribute('aria-valuenow')).toBe('100')
   })
 
   it('renders no progress bar in the indeterminate case', () => {
@@ -87,7 +87,7 @@ describe('LoadingOverlay status + progress', () => {
       <LoadingOverlay isVisible statusMessage="Loading features" />,
     )
     flash()
-    expect(container.querySelector('span[style*="width"]')).toBeNull()
+    expect(container.querySelector('[role="progressbar"]')).toBeNull()
   })
 })
 
