@@ -966,11 +966,18 @@ export default function stateModelFactory(
           const rowHeight = this.featureHeight + this.featureSpacing
           const order = this.groupOrder
           const maxHeightRows = maxRowsFor(this.maxHeight, rowHeight)
+          // Collapsed groups draw only their coverage band, so they still cost
+          // `overhead` but claim no pileup rows — divide the pileup budget across
+          // just the groups still showing a pileup so collapsing frees space.
+          const visibleGroupCount = order.filter(
+            ({ key }) => !self.collapsedGroups.has(key),
+          ).length
           const defaultMaxRows =
             order.length > 1
               ? fitGroupMaxRows({
                   height: self.height,
                   groupCount: order.length,
+                  visibleGroupCount,
                   rowHeight,
                   overhead: belowCoverageBandsGeometry(
                     this.belowCoverageBandsInput,
@@ -1494,9 +1501,6 @@ export default function stateModelFactory(
           return [start, top, end, top + self.featureHeight]
         },
 
-        /**
-         * #method
-         */
         /**
          * #method
          * Chain IDs sharing a QNAME with the read at `index` in `rpcData`.
