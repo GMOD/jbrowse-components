@@ -129,7 +129,7 @@ export function soloFeatureInView(
 // them only on the display that actually supports solo (located by id in the
 // source `view`, whose track/display ids still match the snapshot before
 // stripTrackIds runs), so no other display type sees an unknown property.
-function seedSoloInTracks(
+export function seedSoloInTracks(
   tracks: TrackSnapshot[],
   view: LinearGenomeViewModel,
   trackId: string,
