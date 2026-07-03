@@ -408,6 +408,67 @@ describe('RemoteFileWithRangeCache', () => {
     expect(calls[0]!.start).toBe(CHUNK)
   })
 
+  // Regression: the module-global LRU is capped and shared across every file.
+  // A chunk this read already holds can be evicted by other concurrent reads'
+  // putCached calls during the fetch await window. Assembly must not re-read
+  // the (possibly-evicted) chunk from the Map — it holds a local reference —
+  // else getCached returns undefined and undefined.length throws a TypeError.
+  test('evicting a needed chunk mid-fetch still assembles correct bytes', async () => {
+    // Read spans chunk 0 (already cached) and chunk 1 (missing → slow fetch).
+    // While chunk 1's fetch is parked, flood the shared LRU past its cap so
+    // chunk 0's Map entry is evicted. Assembly must still produce chunk 0's
+    // bytes from its locally-held reference.
+    let releaseChunk1 = () => {}
+    const chunk1Gate = new Promise<void>(res => {
+      releaseChunk1 = res
+    })
+
+    const mainUrl = 'https://example.com/evict.bin'
+    const mockFetch = async (
+      url: string | URL | Request,
+      init?: RequestInit,
+    ) => {
+      const range = new Headers(init?.headers).get('range')
+      const m = range ? /bytes=(\d+)-(\d+)/.exec(range) : null
+      if (m) {
+        const start = Number(m[1])
+        const end = Math.min(Number(m[2]), FILE_SIZE - 1)
+        if (String(url) === mainUrl && start >= CHUNK) {
+          await chunk1Gate
+        }
+        return new Response(slice(start, end), { status: 206 })
+      }
+      return new Response('', { status: 200 })
+    }
+
+    // fetch() keys the cache on the url argument, so call it directly with
+    // distinct URLs here (the shared fetchRange helper hardcodes one URL).
+    const read = async (url: string, s: number, e: number) => {
+      const res = await new RemoteFileWithRangeCache(url, {
+        fetch: mockFetch,
+      }).fetch(url, { headers: { range: `bytes=${s}-${e}` } })
+      return new Uint8Array(await res.arrayBuffer())
+    }
+
+    // Prime chunk 0 so it is present in the LRU (and captured by the next read).
+    await read(mainUrl, 0, 99)
+
+    // Read spanning chunk 0 (cached) + chunk 1 (missing); parks on chunk1Gate.
+    const start = CHUNK - 50
+    const end = CHUNK + 50
+    const readPromise = read(mainUrl, start, end)
+
+    // Flood the shared LRU from other URLs past MAX_CACHE_ENTRIES (2000) so the
+    // FIFO eviction discards chunk 0's key while the read above is in flight.
+    for (let i = 0; i < 2100; i++) {
+      await read(`https://example.com/flood${i}.bin`, 0, 99)
+    }
+
+    releaseChunk1()
+    const result = await readPromise
+    expect(result).toEqual(slice(start, end))
+  })
+
   test('different URLs do not share cache', async () => {
     const { calls, mockFetch } = createMockFetch()
     const file = makeFile(mockFetch)

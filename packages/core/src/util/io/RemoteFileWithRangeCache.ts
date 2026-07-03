@@ -155,16 +155,29 @@ export class RemoteFileWithRangeCache extends RemoteFile {
     }
     const chunkCount = effectiveEndChunk - startChunk + 1
 
+    // Capture a strong reference to every chunk we'll assemble from into a local
+    // array. Already-cached chunks are grabbed here (before any await); missing
+    // chunks are grabbed as their fetch resolves below. Assembly then reads only
+    // from this local array — never from the module-global LRU. The LRU is
+    // capped and shared across every file, so a concurrent read's putCached
+    // could otherwise evict a chunk we depend on during the fetch await, and a
+    // later getCached would return undefined (→ TypeError). Holding the
+    // reference locally makes eviction from the Map harmless.
+    const chunks: (Uint8Array | undefined)[] = new Array(chunkCount)
+
     // Find contiguous runs of missing (uncached) chunks
     const runs: { start: number; end: number }[] = []
     for (let i = 0; i < chunkCount; i++) {
-      if (!getCached(cacheKey(url, startChunk + i))) {
+      const cached = getCached(cacheKey(url, startChunk + i))
+      if (cached === undefined) {
         const lastRun = runs[runs.length - 1]
         if (lastRun?.end === i - 1) {
           lastRun.end = i
         } else {
           runs.push({ start: i, end: i })
         }
+      } else {
+        chunks[i] = cached
       }
     }
 
@@ -179,30 +192,36 @@ export class RemoteFileWithRangeCache extends RemoteFile {
           const data = await this.fetchRange(url, rangeStart, rangeEnd, signal)
           for (let i = run.start; i <= run.end; i++) {
             const offset = (i - run.start) * CHUNK_SIZE
-            putCached(
-              cacheKey(url, startChunk + i),
-              data.subarray(offset, offset + CHUNK_SIZE),
-            )
+            const chunk = data.subarray(offset, offset + CHUNK_SIZE)
+            chunks[i] = chunk
+            putCached(cacheKey(url, startChunk + i), chunk)
           }
         }),
       ),
     )
 
-    // Assemble result from cached chunks
+    // Assemble result from the locally-held chunk references
     const offsetInFirstChunk = start - startChunk * CHUNK_SIZE
     const result = new Uint8Array(length)
     let written = 0
     for (let i = 0; i < chunkCount; i++) {
-      // Every chunk in [startChunk, effectiveEndChunk] is guaranteed cached
-      // here: either it was already present (skipped by the runs loop) or it
-      // was just fetched and putCached'd above.
-      const chunk = getCached(cacheKey(url, startChunk + i))!
-      const sourceStart = i === 0 ? offsetInFirstChunk : 0
-      const available = chunk.length - sourceStart
-      const needed = length - written
-      const copyLen = Math.min(available, needed)
-      result.set(chunk.subarray(sourceStart, sourceStart + copyLen), written)
-      written += copyLen
+      const chunk = chunks[i]
+      // Unreachable: every index is filled either as an already-cached chunk
+      // above or by the fetch of the run that covers it. Throw rather than
+      // assert so a future refactor that breaks the invariant fails loudly
+      // instead of reading undefined.length.
+      if (chunk === undefined) {
+        throw new Error(
+          `internal: chunk ${startChunk + i} missing during range assembly of ${url}`,
+        )
+      } else {
+        const sourceStart = i === 0 ? offsetInFirstChunk : 0
+        const available = chunk.length - sourceStart
+        const needed = length - written
+        const copyLen = Math.min(available, needed)
+        result.set(chunk.subarray(sourceStart, sourceStart + copyLen), written)
+        written += copyLen
+      }
     }
     return result.subarray(0, written)
   }
