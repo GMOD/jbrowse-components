@@ -63,7 +63,10 @@ export class GpuMultiRowRenderer extends GpuPerRegionRenderingBackend<
     this.uniformF32[U.bpRangeX + 1] = bpLo
     this.uniformF32[U.bpRangeX + 2] = bpLen
     this.uniformF32[U.canvasHeight] = state.canvasHeight
-    this.uniformF32[U.viewportWidth] = clip.pxW
+    // CSS px, not physical: the shader's minClipW = 2/viewportWidth is a
+    // 1-CSS-pixel minimum feature width, matching the Canvas2D Math.max(1,...)
+    // path. clip.pxW is dpr-scaled, so on hi-DPI it would halve the min width.
+    this.uniformF32[U.viewportWidth] = clip.scissorW
     this.uniformF32[U.zero] = 0
     this.uniformF32[U.rowHeight] = state.rowHeight
     this.uniformF32[U.rowProportion] = state.rowProportion

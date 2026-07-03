@@ -381,7 +381,10 @@ export default function stateModelFactory(
         // so the per-feature test is an int compare (and naturally matches
         // nothing when the row has no features here, i.e. index -1)
         const targetIndex = partitionValues.indexOf(source.name)
-        for (let i = 0; i < featureStarts.length; i++) {
+        // Iterate back-to-front: both render paths paint in array order, so a
+        // later feature sits on top of an overlapping earlier one — the hit must
+        // resolve to the one actually visible.
+        for (let i = featureStarts.length - 1; i >= 0; i--) {
           const localIndex = featurePartitionIndex[i]!
           if (
             localIndex === targetIndex &&
