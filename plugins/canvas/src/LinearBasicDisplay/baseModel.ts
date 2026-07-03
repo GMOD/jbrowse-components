@@ -212,24 +212,26 @@ export default function baseStateModelFactory(
            * the view once `soloApplied` is true — before that it's a highlighted
            * selection that hides nothing, so the candidates stay clickable.
            * Persistent so a view can be opened pre-focused declaratively (e.g.
-           * collapse-introns seeds it in the new view's snapshot).
+           * collapse-introns seeds it in the new view's snapshot). stripDefault
+           * so an unfocused display omits the empty array from its snapshot.
            */
-          soloFeatureIds: types.array(types.string),
+          soloFeatureIds: types.stripDefault(types.array(types.string), []),
           /**
            * #property
            * Whether the collected soloFeatureIds set is actually isolating the
            * view (worker drops non-members). Decoupled from collection so
            * building a multi-feature set doesn't hide the features mid-build.
            */
-          soloApplied: types.optional(types.boolean, false),
+          soloApplied: types.stripDefault(types.boolean, false),
           /**
            * #property
            * "Hide this feature" exclusion set (inverse of solo): the worker
            * drops these from layout/drawing. Applies immediately per feature —
            * no collect-then-apply. Persistent like the solo set, so a hidden
-           * feature stays hidden across reload/session save.
+           * feature stays hidden across reload/session save. stripDefault so a
+           * display with nothing hidden omits the empty array from its snapshot.
            */
-          hiddenFeatureIds: types.array(types.string),
+          hiddenFeatureIds: types.stripDefault(types.array(types.string), []),
         }),
       )
       .volatile(() => ({
