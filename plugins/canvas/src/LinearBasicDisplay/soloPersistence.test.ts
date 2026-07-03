@@ -13,6 +13,13 @@ function feat(fields: Record<string, unknown>): Feature {
   return { get: (k: string) => fields[k] } as unknown as Feature
 }
 
+interface PersistenceSnapshot {
+  soloFeatureIds?: string[]
+  soloApplied?: boolean
+  hiddenFeatureIds?: string[]
+  pinnedFeatureIds?: string[]
+}
+
 // A minus-strand-agnostic two-exon gene with a wide intron, so collapsing
 // yields two padded regions.
 const transcripts = [
@@ -72,7 +79,7 @@ describe('solo/hidden declarative persistence', () => {
   it('stripDefault omits the feature-id props from an at-default snapshot', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    const snap = getSnapshot(display)
+    const snap = getSnapshot<PersistenceSnapshot>(display)
 
     expect(snap.soloFeatureIds).toBeUndefined()
     expect(snap.soloApplied).toBeUndefined()
@@ -87,7 +94,7 @@ describe('solo/hidden declarative persistence', () => {
       soloApplied: true,
       hiddenFeatureIds: ['gene2'],
     })
-    const snap = getSnapshot(display)
+    const snap = getSnapshot<PersistenceSnapshot>(display)
 
     expect(snap.soloFeatureIds).toEqual(['gene1'])
     expect(snap.soloApplied).toBe(true)
