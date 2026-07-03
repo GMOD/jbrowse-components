@@ -15,6 +15,17 @@ test('shows the mode title and gradient, and fires onClose', () => {
   expect(onClose).toHaveBeenCalledTimes(1)
 })
 
+test('default mode lists CIGAR-op chips with labels', () => {
+  const { getByText } = render(
+    <ColorByLegend colorBy="default" onClose={() => {}} />,
+  )
+  getByText('Default')
+  getByText('match')
+  getByText('insertion')
+  getByText('deletion')
+  getByText('skip')
+})
+
 test('per-name modes show a note instead of a gradient', () => {
   const { container, getByText } = render(
     <ColorByLegend colorBy="query" onClose={() => {}} />,

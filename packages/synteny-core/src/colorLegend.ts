@@ -18,11 +18,36 @@ function gradientCss(toRgb: (norm: number) => Rgb) {
   return `linear-gradient(to right, ${stops.join(',')})`
 }
 
-export interface ColorBySwatchSpec {
-  background: string
-  minLabel?: string
-  maxLabel?: string
+export interface ColorChip {
+  color: string
+  label: string
 }
+
+// A continuous mode maps to a gradient ramp with domain labels; the structural
+// modes (default/strand) map to a set of discrete labeled chips — including the
+// CIGAR indel colors those modes overlay, which a single swatch can't convey.
+export type ColorBySwatchSpec =
+  | { kind: 'ramp'; background: string; minLabel?: string; maxLabel?: string }
+  | { kind: 'chips'; chips: ColorChip[] }
+
+const { cigarColors: defaultCigar } = colorSchemes.default
+const { posColor, negColor, cigarColors: strandCigar } = colorSchemes.strand
+
+// default/strand draw block colors plus CIGAR ops; enumerate every color those
+// modes can paint so the legend matches the canvas. Derived from the shared
+// scheme constants so they can't drift from the renderer.
+const DEFAULT_CHIPS: ColorChip[] = [
+  { color: defaultCigar.M, label: 'match' },
+  { color: defaultCigar.I, label: 'insertion' },
+  { color: defaultCigar.D, label: 'deletion' },
+  { color: defaultCigar.N, label: 'skip' },
+]
+const STRAND_CHIPS: ColorChip[] = [
+  { color: posColor, label: 'forward' },
+  { color: negColor, label: 'reverse' },
+  { color: strandCigar.I, label: 'insertion' },
+  { color: strandCigar.D, label: 'del/skip' },
+]
 
 // Short human-readable title for the floating legend header.
 export const colorByShortLabel: Record<SyntenyColorBy, string> = {
@@ -37,9 +62,9 @@ export const colorByShortLabel: Record<SyntenyColorBy, string> = {
   mappingQuality: 'Mapping quality',
 }
 
-// CSS background for a color-by legend swatch, plus the min/max domain labels
-// where the axis is bounded. Returns undefined for the per-name categorical
-// modes (query/target), which have no fixed legend.
+// Legend spec for a color-by mode: a gradient ramp for continuous modes, or a
+// set of labeled chips for the structural modes. Returns undefined for the
+// per-name categorical modes (query/target), which have no fixed legend.
 export function getColorBySwatch(
   colorBy: SyntenyColorBy,
 ): ColorBySwatchSpec | undefined {
@@ -47,18 +72,21 @@ export function getColorBySwatch(
     case 'identity':
     case 'meanQueryIdentity':
       return {
+        kind: 'ramp',
         background: gradientCss(continuousRampConfig.identity.toRgb),
         minLabel: '0%',
         maxLabel: '100%',
       }
     case 'mappingQuality':
       return {
+        kind: 'ramp',
         background: gradientCss(continuousRampConfig.mappingQuality.toRgb),
         minLabel: '0',
         maxLabel: '60',
       }
     case 'meanQueryMappingQuality':
       return {
+        kind: 'ramp',
         background: gradientCss(
           continuousRampConfig.meanQueryMappingQuality.toRgb,
         ),
@@ -67,18 +95,15 @@ export function getColorBySwatch(
       }
     case 'identityDiverging':
       return {
+        kind: 'ramp',
         background: gradientCss(t => divergingIdentityRgb(t)),
         minLabel: 'divergent',
         maxLabel: 'conserved',
       }
     case 'strand':
-      return {
-        background: `linear-gradient(to right, ${colorSchemes.strand.posColor} 0 50%, ${colorSchemes.strand.negColor} 50% 100%)`,
-        minLabel: 'fwd',
-        maxLabel: 'rev',
-      }
+      return { kind: 'chips', chips: STRAND_CHIPS }
     case 'default':
-      return { background: colorSchemes.default.cigarColors.M }
+      return { kind: 'chips', chips: DEFAULT_CHIPS }
     case 'query':
     case 'target':
       return undefined

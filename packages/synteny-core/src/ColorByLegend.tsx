@@ -60,6 +60,26 @@ const useStyles = makeStyles()(theme => ({
     opacity: 0.8,
     paddingRight: 4,
   },
+  chips: {
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 2,
+    marginTop: 2,
+    paddingRight: 4,
+  },
+  chipRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 4,
+    fontSize: '0.62rem',
+  },
+  chipBox: {
+    width: 10,
+    height: 10,
+    borderRadius: 2,
+    flexShrink: 0,
+    border: `1px solid ${theme.palette.divider}`,
+  },
 }))
 
 // Floating, dismissible legend for the active color-by mode. Presentational —
@@ -90,7 +110,7 @@ export function ColorByLegend({
           </IconButton>
         </Tooltip>
       </div>
-      {swatch ? (
+      {swatch?.kind === 'ramp' ? (
         <div className={classes.ramp}>
           <span className={classes.domainLabel}>{swatch.minLabel}</span>
           <span
@@ -99,7 +119,21 @@ export function ColorByLegend({
           />
           <span className={classes.domainLabel}>{swatch.maxLabel}</span>
         </div>
-      ) : (
+      ) : null}
+      {swatch?.kind === 'chips' ? (
+        <div className={classes.chips}>
+          {swatch.chips.map(chip => (
+            <span key={chip.label} className={classes.chipRow}>
+              <span
+                className={classes.chipBox}
+                style={{ background: chip.color }}
+              />
+              {chip.label}
+            </span>
+          ))}
+        </div>
+      ) : null}
+      {swatch ? null : (
         <div className={classes.note}>Distinct color per sequence</div>
       )}
     </div>
