@@ -100,6 +100,7 @@ export function useAlignmentsBase(model: LinearAlignmentsDisplayModel) {
         featureSpacing,
         scrollTop: model.scrollTop,
         isChainMode,
+        filterMismatchesByFrequency: !model.showLowFreqMismatches,
         pileupVisible: (picked?.section.pileupHeight ?? 0) > 0,
       }),
     }

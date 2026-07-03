@@ -9,6 +9,7 @@ import type {
 export function hitTestMismatch(
   resolved: ResolvedBlock,
   coords: CigarCoords,
+  filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
   const { genomicPos, row, bpPerPx } = coords
   const { mismatchPositions, mismatchYs, mismatchBases, mismatchFrequencies } =
@@ -22,10 +23,16 @@ export function hitTestMismatch(
       continue
     }
     const pos = mismatchPositions[i]
+    // Zoomed in (bpPerPx <= 1) every mismatch is clickable. Zoomed out, a
+    // low-frequency mismatch is only clickable when frequency filtering is on
+    // (which fades it in the draw) — with filtering off it draws fully opaque,
+    // so it must stay clickable too. Mirrors drawMismatches' alpha gate.
     if (
       pos !== undefined &&
       mousePos === pos &&
-      (bpPerPx <= 1 || (mismatchFrequencies[i] ?? 0) >= CIGAR_CLICK_MIN_FREQ)
+      (bpPerPx <= 1 ||
+        !filterMismatchesByFrequency ||
+        (mismatchFrequencies[i] ?? 0) >= CIGAR_CLICK_MIN_FREQ)
     ) {
       const baseCode = mismatchBases[i]!
       return {

@@ -124,6 +124,10 @@ export interface HitTestOptions {
   featureSpacing: number
   scrollTop: number
   isChainMode: boolean
+  // Mirrors the draw-time alpha gate: when true, low-frequency mismatches fade
+  // (and stop being clickable) once zoomed out; when false they draw opaque and
+  // stay clickable at every zoom.
+  filterMismatchesByFrequency: boolean
   // False when this section's pileup band is collapsed to zero height
   // (`showPileup` off, or a collapsed group): reads are laid out but not drawn,
   // so the per-read/cigar/modification tests must be skipped to avoid resolving
@@ -141,6 +145,7 @@ function hitTestCigarItem(
   resolved: ResolvedBlock,
   coords: CigarCoords,
   featureHeight: number,
+  filterMismatchesByFrequency: boolean,
 ): CigarHitResult | undefined {
   const { adjustedY, yWithinRow } = coords
   if (adjustedY < 0 || yWithinRow > featureHeight) {
@@ -148,7 +153,7 @@ function hitTestCigarItem(
   }
   return (
     hitTestLargeInsertion(resolved, coords, featureHeight) ??
-    hitTestMismatch(resolved, coords) ??
+    hitTestMismatch(resolved, coords, filterMismatchesByFrequency) ??
     hitTestSmallInsertion(resolved, coords, featureHeight) ??
     hitTestGap(resolved, coords) ??
     hitTestClip(resolved, coords, 'softclip') ??
@@ -173,6 +178,7 @@ export function performHitTest(
     featureSpacing,
     scrollTop,
     isChainMode,
+    filterMismatchesByFrequency,
     pileupVisible,
   } = options
 
@@ -246,7 +252,12 @@ export function performHitTest(
         coords,
         featureHeight,
       )
-      const cigarHit = hitTestCigarItem(resolved, coords, featureHeight)
+      const cigarHit = hitTestCigarItem(
+        resolved,
+        coords,
+        featureHeight,
+        filterMismatchesByFrequency,
+      )
       if (modificationHit) {
         return {
           type: 'modification',

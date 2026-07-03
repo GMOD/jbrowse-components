@@ -65,6 +65,7 @@ const ZOOMED_OUT_OPTS: HitTestOptions = {
   featureSpacing: 2,
   scrollTop: 0,
   isChainMode: false,
+  filterMismatchesByFrequency: true,
   pileupVisible: true,
 }
 
@@ -204,6 +205,41 @@ describe('detailed hit tests still fire when bpPerPx <= threshold', () => {
       bpRange: [0, 200] as [number, number],
     }
     const result = performHitTest(100, 60, resolved, ZOOMED_OUT_OPTS)
+    expect(result.type).toBe('cigar')
+    if (result.type === 'cigar') {
+      expect(result.hit.type).toBe('mismatch')
+    }
+  })
+
+  // bpRange=[0,2000], blockWidth=200 → bpPerPx=10: mismatches are still
+  // hit-tested (<= SNP_HIT_MAX_BP_PER_PX) but the frequency gate applies.
+  function lowFreqMismatchZoomedOut() {
+    return {
+      ...makeResolved({
+        mismatchPositions: new Uint32Array([1000]),
+        mismatchYs: new Uint16Array([0]),
+        mismatchBases: new Uint8Array([65]),
+        mismatchFrequencies: new Uint8Array([1]), // below CIGAR_CLICK_MIN_FREQ
+      }),
+      bpRange: [0, 2000] as [number, number],
+    }
+  }
+
+  it('low-frequency mismatch is not clickable when frequency filtering is on', () => {
+    const result = performHitTest(
+      100,
+      60,
+      lowFreqMismatchZoomedOut(),
+      ZOOMED_OUT_OPTS,
+    )
+    expect(result.type).not.toBe('cigar')
+  })
+
+  it('low-frequency mismatch stays clickable when frequency filtering is off', () => {
+    const result = performHitTest(100, 60, lowFreqMismatchZoomedOut(), {
+      ...ZOOMED_OUT_OPTS,
+      filterMismatchesByFrequency: false,
+    })
     expect(result.type).toBe('cigar')
     if (result.type === 'cigar') {
       expect(result.hit.type).toBe('mismatch')
