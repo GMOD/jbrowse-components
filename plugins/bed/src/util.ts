@@ -55,11 +55,12 @@ export function bucketBedLines(
     line => {
       if (line.startsWith('#')) {
         headerLines.push(line)
-      } else {
+      } else if (!line.startsWith('track') && !line.startsWith('browser')) {
+        // 'track'/'browser' are UCSC directive lines, not data (matches
+        // filterBedHeaderLines in spreadsheet-view)
         const tab = line.indexOf('\t')
-        const refName = line.slice(0, tab)
-        features[refName] ??= []
-        features[refName].push(line)
+        const refName = tab === -1 ? line : line.slice(0, tab)
+        ;(features[refName] ??= []).push(line)
       }
       return true
     },

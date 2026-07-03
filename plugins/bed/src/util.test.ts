@@ -1,7 +1,12 @@
 import BED from '@gmod/bed'
 
 import { isBedMethylFeature } from './generateBedMethylFeature.ts'
-import { arrayify, featureData, parseNamesFromHeader } from './util.ts'
+import {
+  arrayify,
+  bucketBedLines,
+  featureData,
+  parseNamesFromHeader,
+} from './util.ts'
 
 // a BED12 line that looks like a gene (has thickStart, blockCount, strand)
 function makeTranscriptLikeInput() {
@@ -81,6 +86,28 @@ const bigGenePredNames = [
   'chromStarts',
   'geneName2',
 ]
+
+describe('bucketBedLines', () => {
+  const enc = (s: string) => new TextEncoder().encode(s)
+
+  it('buckets data lines by refName and collects # headers', () => {
+    const { header, features } = bucketBedLines(
+      enc('#chrom\tstart\tend\nchr1\t1\t2\nchr1\t3\t4\nchr2\t5\t6\n'),
+    )
+    expect(header).toBe('#chrom\tstart\tend')
+    expect(Object.keys(features)).toEqual(['chr1', 'chr2'])
+    expect(features.chr1).toHaveLength(2)
+  })
+
+  it('skips track/browser directive lines rather than bucketing them', () => {
+    const { features } = bucketBedLines(
+      enc(
+        'browser position chr1:1-100\ntrack type=bed name=x\nchr1\t1\t2\n',
+      ),
+    )
+    expect(Object.keys(features)).toEqual(['chr1'])
+  })
+})
 
 describe('featureData', () => {
   it('produces transcript subfeatures by default for BED12 gene-like data', () => {

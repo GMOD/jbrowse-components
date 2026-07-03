@@ -42,7 +42,7 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterCon
       line => {
         if (line.startsWith('#')) {
           headerLines.push(line)
-        } else {
+        } else if (!line.startsWith('track') && !line.startsWith('browser')) {
           const cols = line.split('\t')
           const r1 = cols[0]!
           const r2 = cols[3]!

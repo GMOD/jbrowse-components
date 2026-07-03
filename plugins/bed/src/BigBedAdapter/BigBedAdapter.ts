@@ -243,7 +243,6 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
           const hasOverlaps = sortedByStart.some(
             (f, i) => i > 0 && sortedByStart[i - 1]!.end > f.start,
           )
-          const strand = subs.find(f => f.strand !== 0)?.strand ?? 1
           // overlapping subs → one gene parent; non-overlapping → one parent per sub
           // (handles bacterial GFF where two genes share a name but are distinct loci)
           const groups = hasOverlaps ? [subs] : subs.map(sub => [sub])
@@ -254,7 +253,7 @@ export default class BigBedAdapter extends BaseFeatureDataAdapter<BigBedAdapterC
                 data: {
                   type: 'gene',
                   subfeatures: group,
-                  strand,
+                  strand: group.find(f => f.strand !== 0)?.strand ?? 1,
                   name,
                   start: min(group.map(f => f.start)),
                   end: max(group.map(f => f.end)),
