@@ -30,14 +30,14 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
  * can't hold `showSoftClipping: false` or `displayMode: 'normal'`.
  */
 
-type DisplaySelf = IAnyStateTreeNode & {
+export type PromotableDisplay = IAnyStateTreeNode & {
   type: string
   configuration: AnyConfigurationModel
 }
 
 // The names of every promotable slot on a display's config schema (includes
 // slots inherited via baseConfiguration — merged into the table at construction).
-function promotableSlots(self: DisplaySelf): string[] {
+function promotableSlots(self: PromotableDisplay): string[] {
   const table = getConfigurationSchemaMetadata(
     getType(self.configuration),
   )?.definition
@@ -46,7 +46,7 @@ function promotableSlots(self: DisplaySelf): string[] {
     .map(([name]) => name)
 }
 
-function slotDefault(self: DisplaySelf, slot: string): unknown {
+function slotDefault(self: PromotableDisplay, slot: string): unknown {
   return getSlotDefinition(self.configuration, slot).defaultValue
 }
 
@@ -57,7 +57,7 @@ function slotDefault(self: DisplaySelf, slot: string): unknown {
  * slots. Main-thread only (consults the session) — the worker reads raw config.
  */
 export function getConfResolved<T = unknown>(
-  self: DisplaySelf,
+  self: PromotableDisplay,
   slot: string,
 ): T {
   const value = getConf(self, slot)
@@ -78,7 +78,7 @@ export function getConfResolved<T = unknown>(
  * promoted default — drives the track-menu "make default" checkbox.
  */
 export function areSlotsAtSessionDefault(
-  self: DisplaySelf,
+  self: PromotableDisplay,
   slots: string[],
 ): boolean {
   const session = getSession(self)
@@ -95,7 +95,7 @@ export function areSlotsAtSessionDefault(
  * of slots, e.g. featureHeight + featureSpacing behind one "make default" item).
  */
 export function toggleSlotsSessionDefault(
-  self: DisplaySelf,
+  self: PromotableDisplay,
   slots: string[],
 ): void {
   const session = getSession(self)
@@ -116,7 +116,7 @@ export function toggleSlotsSessionDefault(
  * Drives the track-selector "affected by a session default" badge.
  */
 export function displaySessionDefaultChanges(
-  self: DisplaySelf,
+  self: PromotableDisplay,
 ): TrackConfigChange[] {
   return promotableSlots(self).flatMap(slot => {
     const def = slotDefault(self, slot)
@@ -133,7 +133,7 @@ export function displaySessionDefaultChanges(
  * Clear every promoted default for this display type, so sibling tracks revert
  * to their own config values. Backs the badge's "clear default" action.
  */
-export function clearDisplaySessionDefaults(self: DisplaySelf): void {
+export function clearDisplaySessionDefaults(self: PromotableDisplay): void {
   const session = getSession(self)
   for (const slot of promotableSlots(self)) {
     session.setDisplayTypeDefault?.(self.type, slot, undefined)

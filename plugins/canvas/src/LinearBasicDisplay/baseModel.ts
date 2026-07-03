@@ -2,8 +2,6 @@ import { lazy } from 'react'
 
 import {
   ConfigurationReference,
-  clearDisplaySessionDefaults,
-  displaySessionDefaultChanges,
   getConf,
   getConfResolved,
   getConfSnapshot,
@@ -23,6 +21,7 @@ import { addDisposer, cast, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   AUTO_FORCE_LOAD_BP,
   MultiRegionDisplayMixin,
+  PromotableDefaultsMixin,
   TrackHeightMixin,
   autorunOnReadyView,
   evaluateRegionTooLarge,
@@ -92,12 +91,7 @@ import type {
   SubfeatureInfo,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
-import type {
-  AnimationMode,
-  Feature,
-  Region,
-  TrackConfigChange,
-} from '@jbrowse/core/util'
+import type { AnimationMode, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 import type {
@@ -184,6 +178,7 @@ export default function baseStateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
+        PromotableDefaultsMixin(),
         types.model({
           /**
            * #property
@@ -409,16 +404,6 @@ export default function baseStateModelFactory(
         get displayMode(): DisplayMode {
           const resolved = getConfResolved<DisplayMode>(self, 'displayMode')
           return isDisplayMode(resolved) ? resolved : 'normal'
-        },
-
-        /**
-         * #method
-         */
-        // Effective config differences an un-pinned track inherits from
-        // session-wide defaults (distinct from per-track config edits /
-        // trackConfigDeltas). Drives the "affected by a session default" badge.
-        sessionDefaultChanges(): TrackConfigChange[] {
-          return displaySessionDefaultChanges(self)
         },
 
         /**
@@ -1396,16 +1381,6 @@ export default function baseStateModelFactory(
          */
         setShowLabels(value: ShowLabelsMode) {
           self.configuration.setSlot('showLabels', value)
-        },
-
-        /**
-         * #action
-         */
-        // Clear the session-wide defaults reported by sessionDefaultChanges so
-        // this display (and its siblings of the same type) revert to their
-        // config values. Backs the "Clear default" action on the selector badge.
-        clearSessionDefaults() {
-          clearDisplaySessionDefaults(self)
         },
 
         /**

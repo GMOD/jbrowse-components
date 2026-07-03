@@ -29,3 +29,4 @@ export {
   getConfResolved,
   toggleSlotsSessionDefault,
 } from './promotableDefaults.ts'
+export type { PromotableDisplay } from './promotableDefaults.ts'

@@ -8,8 +8,6 @@ import {
 import {
   ConfigurationReference,
   areSlotsAtSessionDefault,
-  clearDisplaySessionDefaults,
-  displaySessionDefaultChanges,
   getConf,
   getConfResolved,
   toggleSlotsSessionDefault,
@@ -28,6 +26,7 @@ import {
 import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
+  PromotableDefaultsMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
@@ -118,7 +117,6 @@ import type {
   AbstractSessionModel,
   Feature,
   Region,
-  TrackConfigChange,
 } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
@@ -320,6 +318,7 @@ export default function stateModelFactory(
         BaseDisplay,
         TrackHeightMixin(),
         MultiRegionDisplayMixin(),
+        PromotableDefaultsMixin(),
         // Track-menu settings are config slots (read via getConf, written via
         // configuration.setSlot) so an edit survives hide/retick and a config
         // default can be set declaratively. The plain MST fields below are the
@@ -712,14 +711,6 @@ export default function stateModelFactory(
             'featureHeight',
             'featureSpacing',
           ])
-        },
-
-        /** #method */
-        // Effective differences an un-pinned track inherits from session-wide
-        // defaults, across every promotable slot. Drives the track-selector
-        // "affected by a session default" badge.
-        sessionDefaultChanges(): TrackConfigChange[] {
-          return displaySessionDefaultChanges(self)
         },
 
         /**
@@ -1933,13 +1924,6 @@ export default function stateModelFactory(
           // size picks this up through the featureHeight/featureSpacing getters.
           toggleCompactnessDefault() {
             toggleSlotsSessionDefault(self, ['featureHeight', 'featureSpacing'])
-          },
-
-          // Clear the session-wide defaults reported by sessionDefaultChanges so
-          // sibling tracks of this type revert to their own config values. Backs
-          // the "clear default" action on the track-selector badge.
-          clearSessionDefaults() {
-            clearDisplaySessionDefaults(self)
           },
 
           /**
