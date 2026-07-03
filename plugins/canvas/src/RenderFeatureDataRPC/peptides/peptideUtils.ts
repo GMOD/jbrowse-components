@@ -56,19 +56,16 @@ async function fetchSequence(
   }
 }
 
-// Uses the same `transcriptTypes`/`containerTypes` lists as the glyph layout
-// (see findGlyph.ts). Threading the config through keeps peptide rendering and
-// glyph layout from drifting — adding a SO term to the config picks it up in
-// both places.
+// Coding-transcript detection is structural, mirroring findGlyph: a feature (or
+// child of a container) with a direct CDS child is a coding transcript, so any
+// type — mRNA, V_gene_segment, a prokaryotic gene → CDS, an org-specific type —
+// is picked up without configuration. containerTypes only helps decide when to
+// descend into a parent to reach its per-row transcripts.
 export function findTranscriptsWithCDS(
   features: Map<string, Feature>,
-  transcriptTypes: readonly string[],
   containerTypes: readonly string[],
 ): Feature[] {
-  const transcriptTypeSet = new Set(transcriptTypes)
   const containerTypeSet = new Set(containerTypes)
-  const isTranscriptType = (type: string | undefined) =>
-    type !== undefined && transcriptTypeSet.has(type)
   const transcripts: Feature[] = []
 
   for (const feature of features.values()) {
@@ -86,16 +83,15 @@ export function findTranscriptsWithCDS(
       hasContainerChildren(feature)
 
     if (isContainer && subfeatures?.length) {
-      const matchingTranscripts = subfeatures.filter(
-        (sf: Feature) =>
-          isTranscriptType(sf.get('type')) && hasCDSSubfeature(sf),
+      const matchingTranscripts = subfeatures.filter((sf: Feature) =>
+        hasCDSSubfeature(sf),
       )
       if (matchingTranscripts.length > 0) {
         transcripts.push(...matchingTranscripts)
       } else if (hasCDSSubfeature(feature)) {
         transcripts.push(feature)
       }
-    } else if (isTranscriptType(type) && hasCDSSubfeature(feature)) {
+    } else if (hasCDSSubfeature(feature)) {
       transcripts.push(feature)
     }
   }
@@ -193,17 +189,12 @@ export async function fetchPeptideData(
   pluginManager: PluginManager,
   props: PeptideFetchProps,
   features: Map<string, Feature>,
-  transcriptTypes: readonly string[],
   containerTypes: readonly string[],
   assemblyGeneticCodeId?: number,
 ): Promise<Map<string, PeptideData>> {
   const peptideDataMap = new Map<string, PeptideData>()
 
-  const transcripts = findTranscriptsWithCDS(
-    features,
-    transcriptTypes,
-    containerTypes,
-  )
+  const transcripts = findTranscriptsWithCDS(features, containerTypes)
   if (transcripts.length === 0) {
     return peptideDataMap
   }

@@ -101,10 +101,16 @@ describe('getSubparts implied UTRs', () => {
     expect(right!.get('type')).toBe('five_prime_UTR')
   })
 
-  it('does not imply UTRs for non-transcript container types', () => {
-    // a 'gene' is not in transcriptTypes; only the CDS survives the subParts
-    // filter, no implied UTRs
-    expect(typesOf(getSubparts(transcript('gene'), config))).toEqual(['CDS'])
+  it('implies UTRs structurally regardless of feature type', () => {
+    // getSubparts only runs for features findGlyph routes to the processed-
+    // transcript glyph (a direct CDS child), so UTR synthesis is structural, not
+    // type-gated: even a bare `gene` with direct exon+CDS children
+    // (prokaryote-style) gets implied UTRs.
+    expect(typesOf(getSubparts(transcript('gene'), config))).toEqual([
+      'CDS',
+      'five_prime_UTR',
+      'three_prime_UTR',
+    ])
   })
 
   it('keeps explicit UTRs and does not synthesize duplicates', () => {

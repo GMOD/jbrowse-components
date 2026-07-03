@@ -15,7 +15,7 @@ export function mockDisplayConfig(
     containerTypes: [],
     geneGlyphMode: 'all',
     subParts: 'CDS,UTR,five_prime_UTR,three_prime_UTR',
-    impliedUTRs: false,
+    impliedUTRs: true,
     displayDirectionalChevrons: true,
     mouseover: `jexl:get(feature,'name')||get(feature,'id')`,
     jexlFilters: [],

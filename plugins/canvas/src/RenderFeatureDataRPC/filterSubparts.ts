@@ -115,15 +115,13 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
     return []
   }
   const hasUTRs = c.some(isUTR)
-  // Use the configured transcriptTypes (which includes primary_transcript by
-  // default) rather than a separate hardcoded list, so every type that routes
-  // to this layout can also get implied UTRs.
-  const isTranscript = config.transcriptTypes.includes(featureType(f))
-  // Only synthesize when there are no explicit UTRs — makeUTRs derives UTR
-  // extents from exon/CDS geometry alone, so running it on a feature that
-  // already has UTRs would push duplicates. config.impliedUTRs opts non-
-  // transcript types in, but stays gated on !hasUTRs.
-  const impliedUTRs = !hasUTRs && (isTranscript || config.impliedUTRs)
+  // getSubparts only runs for the processed-transcript glyph, which findGlyph
+  // selects structurally (a direct CDS child) — so every feature reaching here
+  // is a coding transcript. Synthesize UTRs from the exon/CDS geometry when the
+  // transcript carries none explicitly; the global impliedUTRs slot can turn
+  // this off. Gated on !hasUTRs because makeUTRs would otherwise push a second,
+  // parent-derived set on top of the real UTR subfeatures.
+  const impliedUTRs = !hasUTRs && config.impliedUTRs
 
   if (impliedUTRs) {
     c = makeUTRs(f, c)

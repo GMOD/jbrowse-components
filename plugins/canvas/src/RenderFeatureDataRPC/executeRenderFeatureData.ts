@@ -192,7 +192,6 @@ export async function executeRenderFeatureData({
             regions: [region],
           },
           features,
-          displayConfig.transcriptTypes,
           displayConfig.containerTypes,
           geneticCodeId,
         ),

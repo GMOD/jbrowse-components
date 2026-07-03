@@ -169,18 +169,12 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       transcriptTypes: {
         type: 'stringArray',
-        // V/C/D/J_gene_segment are NCBI's coding immunoglobulin/TCR loci: they
-        // carry CDS+exon children like an mRNA, so they get the processed
-        // transcript glyph rather than falling through to plain segments.
-        defaultValue: [
-          'mRNA',
-          'transcript',
-          'primary_transcript',
-          'V_gene_segment',
-          'C_gene_segment',
-          'D_gene_segment',
-          'J_gene_segment',
-        ],
+        // Only tunes isoform stacking/label spacing (see subfeatures.ts) and the
+        // gene-only view. Glyph choice and peptide translation are structural
+        // (any feature with a direct CDS child is a coding transcript), so
+        // coding types absent here — V/C/D/J_gene_segment, org-specific
+        // transcripts, prokaryotic gene → CDS — still render as transcripts.
+        defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
       },
       /**
        * #slot
@@ -202,8 +196,9 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       impliedUTRs: {
         type: 'boolean',
-        description: 'imply UTR from the exon and CDS differences',
-        defaultValue: false,
+        description:
+          'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
+        defaultValue: true,
       },
       /**
        * #slot
