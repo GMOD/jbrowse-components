@@ -66,8 +66,8 @@ Navigating via `&loc=GENEID` requires a text index built with
 `jbrowse text-index`.
 
 By default `&loc=` (and `&assembly=`) start a fresh session, ignoring the
-config's `defaultSession`. To navigate _within_ the `defaultSession` instead
-(keeping its tracks and settings), see
+config's `defaultSession`. Add `&extendSession=true` to navigate _within_ the
+`defaultSession` instead (keeping its tracks and settings), see
 [Navigating within the default session](#navigating-within-the-default-session).
 
 ### &highlight=
@@ -228,28 +228,22 @@ for your use case before relying on it.
 ### Navigating within the default session
 
 The simple params above build a fresh session and ignore the config's
-`defaultSession`. To instead let collaborators share deep links like
-`?loc=chr1:100000-200000` that navigate a curated `defaultSession` while keeping
-its tracks and settings, enable this flag in config.json:
+`defaultSession`. To instead navigate a curated `defaultSession` while keeping
+its tracks and settings, add `&extendSession=true` alongside `&loc=`:
 
-```json
-{
-  "defaultSession": {...},
-  "configuration": {
-    "extendDefaultSessionWithUrlParams": true
-  }
-}
+```
+?loc=chr1:100000-200000&extendSession=true
 ```
 
-`&loc=` (and `&tracks=`, `&highlight=`, `&nav=`, `&tracklist=`) are then applied
-to the **first linear genome view** of the `defaultSession` instead of replacing
-it. The assembly comes from that view, so `&assembly=` isn't needed.
+With `&extendSession=true`, `&loc=` (and `&tracks=`, `&highlight=`, `&nav=`,
+`&tracklist=`) are applied to the **first linear genome view** of the config's
+`defaultSession` instead of replacing it. The assembly comes from that view, so
+`&assembly=` isn't needed.
 
 :::note
 
 `&sessionTracks=` (dynamically-added track configs) is not layered onto the
-default session — use a full [session spec](#session-spec) for that. The flag
-defaults to `false`, so existing instances are unaffected.
+default session — use a full [session spec](#session-spec) for that.
 
 :::
 

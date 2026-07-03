@@ -91,7 +91,7 @@ describe('SessionLoader', () => {
       expect(loader.isJb1StyleSession).toBe(true)
     })
 
-    it('extendDefaultSession reads the config flag', () => {
+    it('extendDefaultSession reads the extendSession URL param', () => {
       expect(
         SessionLoader.create({
           loc: 'chr1:1-1000',
@@ -102,22 +102,18 @@ describe('SessionLoader', () => {
       expect(
         SessionLoader.create({
           loc: 'chr1:1-1000',
-          configSnapshot: {
-            configuration: { extendDefaultSessionWithUrlParams: true },
-          },
+          extendSession: true,
           initialTimestamp: Date.now(),
         }).extendDefaultSession,
       ).toBe(true)
     })
 
-    it('builds defaultSessionViewInit from loc when flag enabled', () => {
+    it('builds defaultSessionViewInit from loc when extendSession enabled', () => {
       const loader = SessionLoader.create({
         loc: 'chr1:1-1000',
         tracks: 'a,b',
         highlight: 'chr1:5-10',
-        configSnapshot: {
-          configuration: { extendDefaultSessionWithUrlParams: true },
-        },
+        extendSession: true,
         initialTimestamp: Date.now(),
       })
       expect(loader.defaultSessionViewInit).toEqual({
@@ -130,7 +126,7 @@ describe('SessionLoader', () => {
       })
     })
 
-    it('defaultSessionViewInit is undefined when flag disabled', () => {
+    it('defaultSessionViewInit is undefined when extendSession disabled', () => {
       expect(
         SessionLoader.create({
           loc: 'chr1:1-1000',
@@ -139,12 +135,10 @@ describe('SessionLoader', () => {
       ).toBeUndefined()
     })
 
-    it('extend flag routes loc to default session instead of a spec', async () => {
+    it('extendSession routes loc to default session instead of a spec', async () => {
       const loader = SessionLoader.create({
         loc: 'chr1:1-1000',
-        configSnapshot: {
-          configuration: { extendDefaultSessionWithUrlParams: true },
-        },
+        extendSession: true,
         initialTimestamp: Date.now(),
       })
       await loader.loadSessionByType()

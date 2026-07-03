@@ -50,21 +50,6 @@ RpcManager.configSchema
 }
 ```
 
-#### slot: configuration.extendDefaultSessionWithUrlParams
-
-when true, URL params like `&loc=` navigate within the configured defaultSession
-(preserving its tracks and settings) instead of starting a fresh session
-
-**Type:** `boolean` · **Default:** `false`
-
-```js
-{
-  type: 'boolean',
-  defaultValue: false,
-  advanced: true,
-}
-```
-
 #### slot: configuration.preferences
 
 ```js

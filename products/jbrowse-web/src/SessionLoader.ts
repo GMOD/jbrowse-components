@@ -81,6 +81,12 @@ const SessionLoader = types
     nav: types.maybe(types.boolean),
     /**
      * #property
+     * when true, jb1-style URL params (loc/tracks/highlight/...) navigate
+     * within the configured defaultSession instead of replacing it
+     */
+    extendSession: types.maybe(types.boolean),
+    /**
+     * #property
      */
     sessionName: types.maybe(types.string),
     /**
@@ -174,13 +180,11 @@ const SessionLoader = types
     },
     /**
      * #getter
-     * reads the opt-in config.json flag that makes URL params layer onto the
-     * configured defaultSession instead of replacing it
+     * reads the opt-in `&extendSession=true` URL param that makes jb1-style
+     * params layer onto the configured defaultSession instead of replacing it
      */
     get extendDefaultSession() {
-      const config = self.configSnapshot?.configuration as
-        { extendDefaultSessionWithUrlParams?: boolean } | undefined
-      return !!config?.extendDefaultSessionWithUrlParams
+      return !!self.extendSession
     },
     /**
      * #getter

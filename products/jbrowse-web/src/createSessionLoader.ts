@@ -19,6 +19,7 @@ const paramsToDelete = [
   'nav',
   'highlight',
   'sessionName',
+  'extendSession',
 ] as const
 
 // Pure read of the session-relevant URL params. No side effects, so it is
@@ -41,6 +42,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     'nav',
     'hubURL',
     'sessionName',
+    'extendSession',
   ])
   return SessionLoader.create({
     configPath: p.config,
@@ -54,6 +56,7 @@ export function createSessionLoaderFromUrl(initialTimestamp: number) {
     tracklist: p.tracklist === 'true',
     highlight: p.highlight,
     nav: p.nav !== 'false',
+    extendSession: p.extendSession === 'true',
     hubURL: p.hubURL?.split(',').filter(Boolean),
     sessionName: p.sessionName,
     initialTimestamp,
