@@ -1707,16 +1707,16 @@ export function stateModelFactory(pluginManager: PluginManager) {
          */
         get gridlineTicks() {
           const { bpPerPx } = self
-          const blocks = this.staticBlocks.blocks
-          const firstBlockOffset = blocks[0]?.offsetPx ?? 0
+          const { blocks, offsetPx: firstBlockOffset } = this.staticBlocks
           const ticks: { x: number; major: boolean }[] = []
-          for (const block of blocks) {
-            if (block.type === 'ContentBlock') {
-              const blockLeft = block.offsetPx - firstBlockOffset
-              for (const { type, x } of makeBlockTicks(block, bpPerPx)) {
-                if (x >= 0 && x <= block.widthPx) {
-                  ticks.push({ x: blockLeft + x, major: type === 'major' })
-                }
+          // iterate merged region runs (like scalebarLabels) so a tick on an
+          // internal ~800px chunk boundary isn't emitted twice (once as a
+          // chunk's right edge, once as the next chunk's left edge)
+          for (const run of groupContiguousBlocks(blocks)) {
+            const runLeft = run.offsetPx - firstBlockOffset
+            for (const { type, x } of makeBlockTicks(run, bpPerPx)) {
+              if (x >= 0 && x <= run.widthPx) {
+                ticks.push({ x: runLeft + x, major: type === 'major' })
               }
             }
           }

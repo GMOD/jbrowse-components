@@ -64,37 +64,37 @@ export function makeOverviewTicks(
   })
 }
 
+export interface Tick {
+  type: 'major' | 'minor'
+  base: number
+}
+
 export function makeTicks(
   start: number,
   end: number,
   bpPerPx: number,
   emitMajor = true,
   emitMinor = true,
-) {
-  const gridPitch = chooseGridPitch(bpPerPx, 60, 15)
+): Tick[] {
+  const { majorPitch, minorPitch } = chooseGridPitch(bpPerPx, 60, 15)
 
-  let minBase = start
-  let maxBase = end
+  // pad 20px on each side so label ends that spill slightly outside the region
+  // still draw
+  const margin = 20 * bpPerPx
+  const minBase = start - margin + 1
+  const maxBase = end + margin + 1
 
-  if (bpPerPx < 0) {
-    ;[minBase, maxBase] = [maxBase, minBase]
-  }
-
-  // add 20px additional on the right and left to allow us to draw the ends
-  // of labels that lie a little outside our region
-  minBase -= Math.abs(20 * bpPerPx) - 1
-  maxBase += Math.abs(20 * bpPerPx) + 1
-
-  const iterPitch = gridPitch.minorPitch || gridPitch.majorPitch
-  const ticks = []
+  const iterPitch = minorPitch || majorPitch
+  const majorInterval = majorPitch * 2
+  const ticks: Tick[] = []
   for (
     let base = Math.floor(minBase / iterPitch) * iterPitch;
     base < Math.ceil(maxBase / iterPitch) * iterPitch + 1;
     base += iterPitch
   ) {
-    if (emitMinor && base % (gridPitch.majorPitch * 2)) {
+    if (emitMinor && base % majorInterval) {
       ticks.push({ type: 'minor', base: base - 1 })
-    } else if (emitMajor && !(base % (gridPitch.majorPitch * 2))) {
+    } else if (emitMajor && !(base % majorInterval)) {
       ticks.push({ type: 'major', base: base - 1 })
     }
   }
