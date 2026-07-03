@@ -137,8 +137,9 @@ committed PNGs (+ their verdicts) stay valid until a future full regen.
   (volvox's simpler path works) → needs a jb2export matrix-render fix. AND real
   pop data is ref-dominant (grey); the compelling view is `colorBy:'population'`
   needing a `samplesTsv:` jb2export CLI feature. bcftools in this sandbox is
-  broken (`bcf_format_gt_v2`) — slice 1000G with `tabix -h <url> <region> |
-  bgzip` (refnames unprefixed `1`; hg19.fa.gz also `1`).
+  broken (`bcf_format_gt_v2`) — slice 1000G with
+  `tabix -h <url> <region> | bgzip` (refnames unprefixed `1`; hg19.fa.gz also
+  `1`).
 
 ## Workflow
 

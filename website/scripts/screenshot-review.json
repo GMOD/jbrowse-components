@@ -38,7 +38,7 @@
   "alignments_soft_clipped": {
     "name": "alignments_soft_clipped",
     "status": "good",
-    "note": "kept distinct from alignments_soft_clipped_menu: this one illustrates the SV breakpoint-clustering concept (sv_visualization.md, full-width, no menu) vs the menu walkthrough figure documenting how to toggle the feature (alignments_track.md) \u2014 not actually duplicates",
+    "note": "kept distinct from alignments_soft_clipped_menu: this one illustrates the SV breakpoint-clustering concept (sv_visualization.md, full-width, no menu) vs the menu walkthrough figure documenting how to toggle the feature (alignments_track.md) — not actually duplicates",
     "reviewedAt": "2026-06-24T18:19:56.000Z",
     "hash": "2978ac0765ffcb3acd35f9d5de22b49ad8d26128"
   },
@@ -52,7 +52,7 @@
   "alignments/read_cloud": {
     "name": "alignments/read_cloud",
     "status": "good",
-    "note": "Implemented: each samplot pair now draws as two colored squares (insert-size/orientation color) at the read positions joined by a black connector line \u2014 the classic samplot look (new arcMarker GPU pass + arc.slang flat line black + drawCanvas.ts). Load hang was stale (refactor landed). Regenerated.",
+    "note": "Implemented: each samplot pair now draws as two colored squares (insert-size/orientation color) at the read positions joined by a black connector line — the classic samplot look (new arcMarker GPU pass + arc.slang flat line black + drawCanvas.ts). Load hang was stale (refactor landed). Regenerated.",
     "reviewedAt": "2026-07-02T02:58:39.021Z",
     "hash": "5432e571f224e7f24b36fe442419d08df674f15b"
   },
@@ -128,7 +128,7 @@
   "cnv": {
     "name": "cnv",
     "status": "good",
-    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) \u2014 scatter now resolves finer copy-number structure (12.33% diff).",
+    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) — scatter now resolves finer copy-number structure (12.33% diff).",
     "reviewedAt": "2026-06-19T00:00:00.000Z"
   },
   "smalldel": {
@@ -253,7 +253,7 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description  DONE: Shortened the SAM 0x200 label in samFlagLabels (alignments-core) from \"read fails platform/vendor quality checks\" to \"read fails quality checks\" \u2014 no more word wrap in the dialog. JSDoc keeps full spec wording. Regenerated + verified.",
+    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description  DONE: Shortened the SAM 0x200 label in samFlagLabels (alignments-core) from \"read fails platform/vendor quality checks\" to \"read fails quality checks\" — no more word wrap in the dialog. JSDoc keeps full spec wording. Regenerated + verified.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "alignments/modifications1": {
@@ -343,7 +343,7 @@
   "lgv_usage_guide": {
     "name": "lgv_usage_guide",
     "status": "good",
-    "note": "fixed: redesigned the callouts into three tiers that follow the three real control rows, each label in the clear band immediately next to its control with a SHORT (~30-50px) arrow into it \u2014 no more long arrows spanning the whole header, and labels are no longer all piled at the top (reviewer). App-bar tier: Add. Toolbar tier (y~62, above the nav controls at y~122): Open track selector / Pan / Search box / Zoom. Ruler tier (y~152, above the track header at y~178): Drag to reorder track / Track menu. Probed live control bounding boxes to place pills+tails precisely; arrow heads stay anchored so they track the UI. Regenerated + visually verified each arrow lands on its target.",
+    "note": "fixed: redesigned the callouts into three tiers that follow the three real control rows, each label in the clear band immediately next to its control with a SHORT (~30-50px) arrow into it — no more long arrows spanning the whole header, and labels are no longer all piled at the top (reviewer). App-bar tier: Add. Toolbar tier (y~62, above the nav controls at y~122): Open track selector / Pan / Search box / Zoom. Ruler tier (y~152, above the track header at y~178): Drag to reorder track / Track menu. Probed live control bounding boxes to place pills+tails precisely; arrow heads stay anchored so they track the UI. Regenerated + visually verified each arrow lands on its target.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "linear_align_ctx_menu": {
@@ -484,7 +484,7 @@
   "read_vs_ref_insertion": {
     "name": "read_vs_ref_insertion",
     "status": "good",
-    "note": "fixed (source): long read names in the view-container header now ellipsize. Added maxWidth:300 + textOverflow:ellipsis to the shared EditableTypography input in packages/app-core ViewContainerTitle.tsx (full name kept in the hover tooltip). Verified the read-vs-ref outer title truncates with \"\u2026\"; breakpoint_split_view/link_to_split_view unaffected (titles <300px). Rebuilt jbrowse-web + regenerated.",
+    "note": "fixed (source): long read names in the view-container header now ellipsize. Added maxWidth:300 + textOverflow:ellipsis to the shared EditableTypography input in packages/app-core ViewContainerTitle.tsx (full name kept in the hover tooltip). Verified the read-vs-ref outer title truncates with \"…\"; breakpoint_split_view/link_to_split_view unaffected (titles <300px). Rebuilt jbrowse-web + regenerated.",
     "reviewedAt": "2026-06-21T18:30:50.000Z"
   },
   "recent_tracks": {
@@ -619,13 +619,13 @@
   "variant_panel": {
     "name": "variant_panel",
     "status": "good",
-    "note": "this is good, but try to make more documentation about the 'dosage' mode  DONE: Added a \"Genotype coloring \u2014 allele dosage vs phased\" section to multivariant_track.md explaining the alleleCount/dosage shading (grey ref / mid het / dark hom-alt, distinct color for mixed multi-allelic) and the phased haplotype-row mode. Verified against constants.ts/parseGenotypeDosage.ts.",
+    "note": "this is good, but try to make more documentation about the 'dosage' mode  DONE: Added a \"Genotype coloring — allele dosage vs phased\" section to multivariant_track.md explaining the alleleCount/dosage shading (grey ref / mid het / dark hom-alt, distinct color for mixed multi-allelic) and the phased haplotype-row mode. Verified against constants.ts/parseGenotypeDosage.ts.",
     "reviewedAt": "2026-06-21T22:52:11.000Z"
   },
   "variants/population_1000genomes": {
     "name": "variants/population_1000genomes",
     "status": "good",
-    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections \u2014 Genotypes (cell coloring) vs Population (sidebar row-label coloring) \u2014 making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
+    "note": "Implemented: the floating legend now renders as separate titled, individually-closable sections — Genotypes (cell coloring) vs Population (sidebar row-label coloring) — making the two distinct color meanings explicit. FloatingLegend gained sections/onDismissSection; model gained legendSections()+dismissLegendSection(). Regenerated.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "gwas/locuszoom_ld": {
@@ -637,7 +637,7 @@
   "gwas/manhattan": {
     "name": "gwas/manhattan",
     "status": "good",
-    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md \u2014 genome-wide real-world Manhattan.",
+    "note": "link to the example-site pan-ukbb examples too, maybe even whole-genome example?  DONE: Added link to the live embedded Pan-UKB GWAS example (jbrowse.org/storybook/lgv/pan-ukb-gwas) in gwas_track.md — genome-wide real-world Manhattan.",
     "reviewedAt": "2026-06-21T22:46:23.000Z"
   },
   "link_to_split_view": {
@@ -649,7 +649,7 @@
   "menu_demo": {
     "name": "menu_demo",
     "status": "good",
-    "note": "keep curated: this is a standalone Menu-component demo matching the code listing in developer_guides/menus.md, not reproducible app state \u2014 the url/lgv screenshot generator drives the jbrowse-web app only. The committed hand-made PNG is correct.",
+    "note": "keep curated: this is a standalone Menu-component demo matching the code listing in developer_guides/menus.md, not reproducible app state — the url/lgv screenshot generator drives the jbrowse-web app only. The committed hand-made PNG is correct.",
     "reviewedAt": "2026-06-11T17:30:00.000Z"
   },
   "methylation/colo829_cram_and_bedmethyl": {
@@ -679,19 +679,19 @@
   "product_architecture": {
     "name": "product_architecture",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one \u2014 the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/product_architecture.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so the diagram is a real version-controlled graphviz source rather than a hand-drawn one — the tagging concern is moot. MST state tree mirrored by React component tree via observer(), products on shared packages.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "products_and_plugins": {
     "name": "products_and_plugins",
     "status": "good",
-    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source \u2014 tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
+    "note": "resolved: committed PNG now reproduces byte-for-byte from website/diagrams/products_and_plugins.dot (verified: dot -Tpng -Gdpi=150 vs committed = 0px diff), so it's a real version-controlled graphviz source — tagging concern moot. Product/PluginManager loads a Plugin encapsulating views/tracks/displays/adapters/MST-autoruns.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "protein/structure": {
     "name": "protein/structure",
     "status": "good",
-    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views \u2014 structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
+    "note": "basically a duplicate of protein/connected, might delete  DONE: Deleted as a duplicate of protein/connected (both are side-by-side connected genome+structure views — structure was BRAF P15056, connected is TP53 P04637). Removed spec, PNG, and the Figure in protein_structure.md; the connected.png figure just below illustrates the same feature.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "no_build_final": {
@@ -763,7 +763,7 @@
   "desktop-session": {
     "name": "desktop-session",
     "status": "good",
-    "note": "resolved: the requested fallback is already implemented \u2014 products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
+    "note": "resolved: the requested fallback is already implemented — products/jbrowse-desktop/test/screenshots.ts adds the bundled volvox GFF3 genes track over http before capturing desktop-session.png (hg38+RefSeq+ClinVar is not loadable in headless Electron: only local test_data is served and there is no hg38 FASTA in-repo).",
     "reviewedAt": "2026-06-14T20:30:00.000Z"
   },
   "multiwig/cluster_dialog": {
@@ -787,7 +787,7 @@
   "variants/cluster_dialog": {
     "name": "variants/cluster_dialog",
     "status": "good",
-    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) \u2014 dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
+    "note": "fixed: two-stage figure on volvox_test_vcf (the 1000genomes sample panel) — dialog on top, clustered result + dendrogram on bottom; merges the old clustered_result figure",
     "reviewedAt": "2026-06-11T14:25:43.428Z"
   },
   "variants/clustered_result": {
@@ -844,8 +844,8 @@
     "name": "gene_track_collapse_introns",
     "status": "good",
     "note": "DONE: jexlFilter get(feature,'name')=='PTEN' (+ geneGlyphMode longestCoding) drops the neighboring KLLN + RPL11P3 features so only PTEN shows — doubles as a feature-filtering demo (reviewer's suggestion). Root cause the filtered figure wasn't regenerating: readyText 'NCBI RefSeq' matches the track name, which renders before the remote GFF loads, so the rightclick raced the PTEN label. Added an explicit waitForText 'PTEN' before the rightclick; regenerated + verified KLLN is gone.",
-    "reviewedAt": "2026-07-02T02:59:24.381Z",
-    "hash": "2c9378664cfe4ff2af69b1fce54085711da9ae36"
+    "reviewedAt": "2026-07-02T23:36:02.546Z",
+    "hash": "0bda2008eaeb9c3e38d7838b11f41280338f09c7"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
@@ -922,15 +922,15 @@
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
     "status": "good",
-    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING \u2014 GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision \u2014 renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
+    "note": "add to docs. also please rename the track to not say 'w/ subfeature details'. also it is not showing a selenocysteine, might need to double check  PARTIAL: (1) selenocysteine confirmed WORKING — GPX1 U49 renders yellow on the CDS overlay (transl_except Sec->U honored via convertCodingSequenceToPeptides.ts); the red * I first saw was the reference-sequence track 6-frame translation, which correctly has no CDS context. (2) Added the figure to gene_track.md after the transl_except prose with an explanatory caption. (3) Track rename (\"NCBI RefSeq w/ subfeature details\") still pending a decision — renaming ncbi_gff_hg19 in config_demo.json touches ~13 figures.  DONE (rename): renamed demo track ncbi_gff_hg19 \"NCBI RefSeq w/ subfeature details\" -> \"NCBI RefSeq genes (hg19)\" in config_demo.json; force-regenerated all 14 figures that show its label (sibling ncbi_gff_hg19_2 untouched, used in 0 figures). All three sub-asks now done.",
     "reviewedAt": "2026-06-21T23:01:40.000Z"
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-23T04:05:31.993Z",
-    "hash": "6f5b4501fc4395e73adddb3093bbbeb70edb8347"
+    "status": "bad",
+    "note": "can we make the bezier more dramatic, and also plot read pair arcs. then we can add to blog post. also, some parts of the view as pairs read chains are colored grey. this is a complex structural variant where some parts of the read pairs also include split supplementary alignments but we should try to color it as best we can. ",
+    "reviewedAt": "2026-07-03T12:26:20.678Z",
+    "hash": "0d701bf05dc02d2d51a58f7137004bebb7a8197e"
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
@@ -948,7 +948,7 @@
   "default_session_form": {
     "name": "default_session_form",
     "status": "good",
-    "note": "fixed: converted to a two-stage figure (reviewer). Stage 1 shows the open Admin menu with the \"Set default session\" item ringed (the click path \u2014 the Admin menu only appears in admin mode); stage 2 is the resulting confirm dialog (Set current session as default / Clear default session). Regenerated + verified.",
+    "note": "fixed: converted to a two-stage figure (reviewer). Stage 1 shows the open Admin menu with the \"Set default session\" item ringed (the click path — the Admin menu only appears in admin mode); stage 2 is the resulting confirm dialog (Set current session as default / Clear default session). Regenerated + verified.",
     "reviewedAt": "2026-06-22T12:00:00.000Z"
   },
   "assembly_manager": {
@@ -960,19 +960,19 @@
   "embed_linear_genome_view/final": {
     "name": "embed_linear_genome_view/final",
     "status": "good",
-    "note": "Implemented: now a real puppeteer capture of the embedded @jbrowse/react-linear-genome-view2 component (new mode:embedded in the generator \u2014 serves a UMD script-tag harness, screenshots the component element). Rebuilt the UMD in production mode (committed dist was a broken dev-JSX build: jsxDEV is not a function). The tutorial config referenced a dead hg38 SKBR3 bam (404, file gone \u2014 only hg19 SKBR3 exists); removed that track from both the spec and the tutorial doc. Figure now shows reference/genes/exome/phyloP/variants cleanly.",
+    "note": "Implemented: now a real puppeteer capture of the embedded @jbrowse/react-linear-genome-view2 component (new mode:embedded in the generator — serves a UMD script-tag harness, screenshots the component element). Rebuilt the UMD in production mode (committed dist was a broken dev-JSX build: jsxDEV is not a function). The tutorial config referenced a dead hg38 SKBR3 bam (404, file gone — only hg19 SKBR3 exists); removed that track from both the spec and the tutorial doc. Figure now shows reference/genes/exome/phyloP/variants cleanly.",
     "reviewedAt": "2026-06-26T00:00:00.000Z"
   },
   "jbrowse-img/1": {
     "name": "jbrowse-img/1",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_haplotype": {
     "name": "jbrowse-img/alignments_haplotype",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/dark_theme": {
@@ -984,19 +984,19 @@
   "jbrowse-img/hg38_hs1_mm39_synteny": {
     "name": "jbrowse-img/hg38_hs1_mm39_synteny",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered \u2014 autoDiagonalize now applies; the hs1<->mm39 lower level reorders from a crossing hairball into legible diagonal blocks (top hg38<->hs1 level stays near-vertical). cigar indels not visible at whole-genome scale.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered — autoDiagonalize now applies; the hs1<->mm39 lower level reorders from a crossing hairball into legible diagonal blocks (top hg38<->hs1 level stays near-vertical). cigar indels not visible at whole-genome scale.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/methylation": {
     "name": "jbrowse-img/methylation",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/hs1_mm39_synteny": {
     "name": "jbrowse-img/hs1_mm39_synteny",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered \u2014 autoDiagonalize now applies in jb2export SSR (committed PNG predated it), so mm39 chromosomes reorder and the ribbons read cleanly. cigar indels are not drawn at whole-genome scale, so the cigar-off ask is moot here.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Re-rendered — autoDiagonalize now applies in jb2export SSR (committed PNG predated it), so mm39 chromosomes reorder and the ribbons read cleanly. cigar indels are not drawn at whole-genome scale, so the cigar-off ask is moot here.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/grape_peach_synteny": {
@@ -1009,25 +1009,25 @@
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/circular_chords": {
     "name": "jbrowse-img/circular_chords",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_readgroup": {
     "name": "jbrowse-img/alignments_readgroup",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/alignments_pileup": {
     "name": "jbrowse-img/alignments_pileup",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "hg38_assembly_table": {
@@ -1039,19 +1039,19 @@
   "jbrowse-img/yeast_synteny": {
     "name": "jbrowse-img/yeast_synteny",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --drawCurves CLI flag and re-rendered with it \u2014 the ribbon is now a smooth bezier instead of straight trapezoids. render-comparative-examples.sh + README updated.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --drawCurves CLI flag and re-rendered with it — the ribbon is now a smooth bezier instead of straight trapezoids. render-comparative-examples.sh + README updated.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/yeast_dotplot": {
     "name": "jbrowse-img/yeast_dotplot",
     "status": "good",
-    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --autoDiagonalize CLI flag (options.ts/main.ts/renderRegion.tsx) and re-rendered with it \u2014 the R64 contigs reorder so the alignment forms a clean continuous diagonal instead of the old staircase. render-comparative-examples.sh + README updated.",
+    "note": "resolved: not manual (autogenerated by @jbrowse/img). Added a --autoDiagonalize CLI flag (options.ts/main.ts/renderRegion.tsx) and re-rendered with it — the R64 contigs reorder so the alignment forms a clean continuous diagonal instead of the old staircase. render-comparative-examples.sh + README updated.",
     "reviewedAt": "2026-06-21T18:08:12.000Z"
   },
   "jbrowse-img/variants": {
     "name": "jbrowse-img/variants",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "jbrowse-img/skbr3_cov": {
@@ -1063,7 +1063,7 @@
   "jbrowse-img/sequence": {
     "name": "jbrowse-img/sequence",
     "status": "good",
-    "note": "resolved: not manual \u2014 autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
+    "note": "resolved: not manual — autogenerated by @jbrowse/img (jb2export) from products/jbrowse-img/README.md examples, copied in by generate-img-doc.ts. audit-figures.ts now classifies /img/jbrowse-img/* as type \"jbrowse-img\" so figure-manifest.json no longer mislabels them as manual.",
     "reviewedAt": "2026-06-21T17:36:31.000Z"
   },
   "protein/connected": {
@@ -1131,70 +1131,92 @@
   "maf_470way_codon": {
     "name": "maf_470way_codon",
     "status": "good",
-    "note": "DONE: implemented per-codon (amino-acid) conservation as a new conservation-band mode (conservationMode: 'base'|'codon'). Codon mode shows, per reference codon, the fraction of aligned species whose translated amino acid matches the human reference, so synonymous 3rd-position changes read as conserved and the band tracks protein-level constraint. Added showConservation + conservationMode:'codon' to this figure; band renders as 'Conservation (aa identity)'. Reuses the existing codon enumeration (computeCodonConservation in computeVisibleCodons.ts); unit-tested; menu radio 'Conservation resolution' appears when an annotationAdapter is configured. Regenerated + verified.",
-    "reviewedAt": "2026-07-02T02:02:56.806Z",
-    "hash": "6b7ac43f6196448d2686820070b08b5cd4cef074"
-  },
-  "maf_cds_frames": {
-    "name": "maf_cds_frames",
-    "status": "bad",
-    "note": "what are the red and blue bars below the alignment, are these showing inversions? or cds frame? i dont really care about cds frames",
-    "reviewedAt": "2026-07-02T02:03:58.978Z",
-    "hash": "b1dd13c5df9fe26d250891985881c5aedd377ce5"
+    "note": "",
+    "reviewedAt": "2026-07-03T13:22:44.543Z",
+    "hash": "add025276305ed8e0b29218d2791ec2eb23e2687"
   },
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
     "status": "good",
-    "note": "Reworked from a global name->hue rainbow to a PER-ROW rank scheme (perRowChromRanks + SOURCE_CHROM_PALETTE in drawSourceChrom.ts): within each species row, source chromosomes are ranked by coverage and colored by rank, so every row main chromosome shares the primary blue and only blocks from a different source chromosome take an accent (orange/crimson) \u2014 rearrangements pop, no rainbow. Legend is now rank-based (Main/2nd/3rd source). Applies to canvas + SVG export; docs (user+config guides) updated; maf tests green (299).",
+    "note": "Reworked from a global name->hue rainbow to a PER-ROW rank scheme (perRowChromRanks + SOURCE_CHROM_PALETTE in drawSourceChrom.ts): within each species row, source chromosomes are ranked by coverage and colored by rank, so every row main chromosome shares the primary blue and only blocks from a different source chromosome take an accent (orange/crimson) — rearrangements pop, no rainbow. Legend is now rank-based (Main/2nd/3rd source). Applies to canvas + SVG export; docs (user+config guides) updated; maf tests green (299).",
     "reviewedAt": "2026-07-02T03:33:41.000Z",
     "hash": "17f8cc352746d6b0771fd0d466ec6ebad16ce06e"
   },
   "maf_inversions": {
     "name": "maf_inversions",
     "status": "bad",
-    "note": "too hard to see inversions. we might want a specialized 'structure only' view or something easier to see that focuses on structure if it matters. also the \"top level\" of the tree sidebar is offscreen by ~1px to the left.",
-    "reviewedAt": "2026-07-02T02:06:21.344Z",
-    "hash": "cdc05dced7b6661fb9534132a19d88f50246e50b"
+    "note": "[1px tree clip FIXED via TREE_LEFT_PAD 1->2] remaining: inversions still too hard to see; wants a specialized structure-only view (deferred design work)",
+    "reviewedAt": "2026-07-03T13:22:44.543Z",
+    "hash": "36ef8042f4650c66cd9209bd7e7f877bbbcaedaf"
   },
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
     "status": "good",
-    "note": "FIXED via data regen: swapped the raw per-site BAF for HG008-T_baf_folded.bw (Wakhan's phase-corrected, already-folded BAF: 0=balanced, 0.5=full LOH). Folded values survive summaryScoreMode:'avg' by construction, so the panel is now a normal averaged scatter (minScore:0/maxScore:0.5) with no whiskers. Verified against ground-truth benchmark intervals: chr3 p-arm (CN=1 LOH, chr3:10000-71773144) reads ~0.50, q-arm (CN=2 balanced noCNV, chr3:101706543-182470122) reads ~0.07 -- matches the caption. See WAKHAN-PIPELINE.md for how the track was generated.",
-    "reviewedAt": "2026-07-02T05:46:55.000Z",
-    "hash": "c0527d0c91f333fd1d3c2920f4a1eb556d34685a"
+    "note": "",
+    "reviewedAt": "2026-07-03T13:05:02.729Z",
+    "hash": "806c25cd49a1bb6fd4ec6f19f984de8b10dd89f7"
   },
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
     "status": "good",
-    "note": "FIXED via data regen: added the folded BAF panel (hg008_baf_folded, HG008-T_baf_folded.bw) to the view -- it was declared as a sessionTrack before but never actually shown. Genome-wide the folded BAF clearly tracks the same CN structure visible in the log2 ratio panel above it (LOH blocks read high near 0.5, balanced blocks read low near 0), with no whiskers needed since the source is already-folded. Log2 ratio panel itself was already fine and is unchanged.",
-    "reviewedAt": "2026-07-02T05:46:55.000Z",
-    "hash": "bc3e6bfd3040dc6fa1fb947e83dafa61a7f01578"
+    "note": "",
+    "reviewedAt": "2026-07-03T13:05:02.729Z",
+    "hash": "01a3e7878483370cb00f2bffe15ce49cc67a4834"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "FIXED via data regen: added HG008-T_coverage_perbase.bw, true per-base tumor coverage from mosdepth on a targeted BAM slice around CDKN2A (see WAKHAN-PIPELINE.md step 5), as a new panel above the 10kb-binned log2 ratio. It resolves the ~20kb homozygous deletion's boundaries almost exactly: depth drops from ~65x to precisely 0 at chr9:21,952,497-21,972,343, matching the benchmark SV_75 call almost to the base. The coarser log2 ratio panel is kept below for scale/context, unchanged.",
-    "reviewedAt": "2026-07-02T05:46:55.000Z",
-    "hash": "574c7210c434c6bbdf4da66decce2127a85df48a"
+    "note": "",
+    "reviewedAt": "2026-07-03T12:57:48.589Z",
+    "hash": "826612ccf2a96ca9034fd591a5a8425630014b2b"
   },
   "sv_cgiab/driver_chr17_loh": {
     "name": "sv_cgiab/driver_chr17_loh",
     "status": "good",
-    "note": "FIXED: the CNV calls track now labels each region CN <total> (<hap1>|<hap2>) via a labels.name jexl reading the BED copy-number columns (total_copy_number/hap1_copy_number/hap2_copy_number named by the file #-header), instead of the opaque CNA_## id. The haplotype split also makes LOH explicit \u2014 17p reads CN 1 (1|0), copy-neutral 17q reads CN 2 (2|0). Added as a new sessionTrack (hg008_cnv_calls) so the shared config track is untouched.",
-    "reviewedAt": "2026-07-02T04:14:04.846Z",
-    "hash": "898029b8144439be9b94d5c634555c1cf08a1e97"
+    "note": "",
+    "reviewedAt": "2026-07-03T12:57:48.589Z",
+    "hash": "c06bb1ab4df06d47be6ab6c3f55e347136d49994"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
     "status": "good",
     "note": "Re-verified against current code: the codon tooltip now resolves at chrI:2,999,285 and shows an interesting nonsynonymous change (caeJap4, gene CJA38734, codon GAA->GCC, amino acid E->A, nonsynonymous) rather than the bare 'Ref:' fallback the earlier review saw. Regenerated + verified.",
-    "reviewedAt": "2026-07-02T02:59:32.306Z",
-    "hash": "8d10e7e5ee9be8fbc9b13fb20dd42a8155f28ebd"
+    "reviewedAt": "2026-07-02T23:38:05.742Z",
+    "hash": "6e9a934b60fbc9910a9d096dfc5ba2346ae49388"
   },
   "gc_content": {
     "name": "gc_content",
-    "status": "bad",
-    "note": "can we make this screenshot on a real genome like h.pylori or something to show actual interesting skew biology like replication origin",
-    "reviewedAt": "2026-07-02T00:00:00.000Z"
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-03T12:40:33.519Z",
+    "hash": "0bb1bfb36b2cfeecef5c03f92d4c655f75ca78c3"
+  },
+  "sv_cgiab/driver_kras_gain": {
+    "name": "sv_cgiab/driver_kras_gain",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-03T12:57:48.589Z",
+    "hash": "fe25e0f8629ca50752ecbd487ea408a57a58fcf2"
+  },
+  "variants/consequence_impact_1000g": {
+    "name": "variants/consequence_impact_1000g",
+    "status": "good",
+    "note": "add clustering if it helps",
+    "reviewedAt": "2026-07-03T12:31:13.264Z",
+    "hash": "a2564d73e1a996413af3554c19b55a619f531776"
+  },
+  "variants/consequence_impact_sv": {
+    "name": "variants/consequence_impact_sv",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-03T12:57:48.589Z",
+    "hash": "c0f12c6bfaf34961b5101e8e92b805571c93754b"
+  },
+  "sv_cgiab/driver_smad4_loh": {
+    "name": "sv_cgiab/driver_smad4_loh",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-03T12:57:48.589Z",
+    "hash": "b83b6e8f74226e3f59f6ed051a8b533ad29afa0a"
   }
 }
