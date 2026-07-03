@@ -3,7 +3,7 @@ import { useEffect, useRef } from 'react'
 import { getPreparedCanvas2D } from '@jbrowse/render-core/canvas2dUtils'
 import { observer } from 'mobx-react'
 
-import { drawPeptides } from './peptidePositioning.ts'
+import { drawPeptidesForRegions } from './peptidePositioning.ts'
 import { shouldRenderPeptideText } from '../../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { VisibleRegion } from './hitTesting.ts'
@@ -44,12 +44,7 @@ const PeptideCanvas = observer(function PeptideCanvas({
   useEffect(() => {
     const ctx = getPreparedCanvas2D(canvasRef.current, width ?? 0, height)
     if (ctx && show) {
-      for (const vr of visibleRegions) {
-        const data = renderDataMap.get(vr.displayedRegionIndex)
-        if (data) {
-          drawPeptides(ctx, data, vr)
-        }
-      }
+      drawPeptidesForRegions(ctx, renderDataMap, visibleRegions)
     }
   }, [renderDataMap, visibleRegions, width, height, bpPerPx, show])
 

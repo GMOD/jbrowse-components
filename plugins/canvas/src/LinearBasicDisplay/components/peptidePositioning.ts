@@ -85,3 +85,22 @@ export function drawPeptides(
   })
   ctx.textAlign = 'start'
 }
+
+// Paint every visible region's peptides through drawPeptides. The single entry
+// point for both the on-screen overlay (PeptideCanvas) and the SVG export
+// (renderSvg), so the export can't drift from the app: same region walk, same
+// data lookup, same draw. A codon straddling a region boundary is painted by
+// both neighbors, but makeBpMapper is continuous across back-to-back regions so
+// the two land at the same absolute px — an identical overstrike, not a double.
+export function drawPeptidesForRegions(
+  ctx: Ctx2D,
+  dataMap: ReadonlyMap<number, FeatureDataResult>,
+  regions: readonly (BpRegionBounds & { displayedRegionIndex: number })[],
+) {
+  for (const vr of regions) {
+    const data = dataMap.get(vr.displayedRegionIndex)
+    if (data) {
+      drawPeptides(ctx, data, vr)
+    }
+  }
+}

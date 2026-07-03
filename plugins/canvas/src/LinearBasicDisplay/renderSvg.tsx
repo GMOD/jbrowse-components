@@ -10,7 +10,7 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { forEachDisplayLabel } from './components/labelPositioning.ts'
-import { drawPeptides } from './components/peptidePositioning.ts'
+import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
 import {
   LABEL_FONT_SIZE,
   LABEL_OVERLAY_BACKGROUND,
@@ -116,18 +116,13 @@ function CanvasFeaturesSvgBody({
         paintLabel(ctx, labels)
       },
     )
-    // Peptides need no cross-region dedup (unlike labels above): a codon
-    // straddling a region boundary is drawn by both regions, but makeBpMapper
-    // is continuous across back-to-back regions so both land at the same
-    // absolute px — an identical overstrike, not a visible double. Labels
-    // differ only because computeLabelPosition clamps X per region.
+    // Same peptide walk the app canvas runs (drawPeptidesForRegions), so the
+    // export can't drift from on-screen. Peptides need no cross-region dedup,
+    // unlike labels above: codons straddling a boundary overstrike identically
+    // rather than doubling; labels differ only because computeLabelPosition
+    // clamps X per region.
     if (renderPeptidesFlag) {
-      for (const vr of visibleRegions) {
-        const data = model.laidOutDataMap.get(vr.displayedRegionIndex)
-        if (data) {
-          drawPeptides(ctx, data, vr)
-        }
-      }
+      drawPeptidesForRegions(ctx, model.laidOutDataMap, visibleRegions)
     }
   })
 
