@@ -59,23 +59,28 @@ export function findGlyph(
     //   ProcessedTranscript — one row; filter to subParts and imply UTRs
     //   Segments            — one row of boxes joined by intron lines
     //
-    // Selection is purely structural, not type-based. A top-level feature whose
-    // children are themselves containers gets stacked; a feature with a direct
-    // CDS child is a coding transcript. That's why neither `gene` nor any
-    // transcript type is enumerated here — a gene → mRNA → exon tree is caught
-    // by hasContainerChildren and any coding transcript (mRNA, V_gene_segment,
-    // a prokaryotic gene → CDS, an org-specific type) by hasCDSSubfeature, so
-    // custom types work without configuration. containerTypes is the one
-    // explicit override, for top-level types that must stack even when the
-    // structural heuristic wouldn't fire; it comes first so it wins.
+    // Selection is purely structural, not type-based. That's why neither `gene`
+    // nor any transcript type is enumerated here — a gene → mRNA → exon tree is
+    // caught by hasContainerChildren and any coding transcript (mRNA,
+    // V_gene_segment, a prokaryotic gene → CDS, an org-specific type) by
+    // hasCDSSubfeature, so custom types work without configuration.
+    //
+    //   - containerTypes: the one explicit override, for top-level types that
+    //     must stack even when no structural heuristic fires; first so it wins.
+    //   - children-are-containers → stack. Checked before the CDS test so a
+    //     feature whose CDS child is itself a container (a polyprotein CDS with
+    //     mature_protein children, e.g. gene → CDS → cleavage products) stacks
+    //     and lets the CDS child pick up MatureProteinRegion, rather than
+    //     collapsing to a single flat CDS box.
+    //   - direct CDS child → coding transcript (its CDS children are leaves).
     if (isTopLevel && containerTypes.includes(type)) {
+      return layoutSubfeatures
+    }
+    if (isTopLevel && hasContainerChildren(feature)) {
       return layoutSubfeatures
     }
     if (hasCDSSubfeature(feature)) {
       return layoutProcessedTranscript
-    }
-    if (isTopLevel && hasContainerChildren(feature)) {
-      return layoutSubfeatures
     }
     return layoutSegments
   }
