@@ -37,7 +37,10 @@ export function drawGaps(
     const yRow = region.gapYs[i]!
     const y = pileupRowY(yRow, state)
     const gapType = region.gapTypes[i]!
-    const widthPx = x2 - x1
+    // reversed (flipped) regions map startBp to the larger screen x, so anchor
+    // at the smaller edge and use the absolute width
+    const left = Math.min(x1, x2)
+    const widthPx = Math.abs(x2 - x1)
     const w = Math.max(1, widthPx)
 
     if (gapType === GAP_DELETION) {
@@ -48,7 +51,7 @@ export function drawGaps(
           : 1
       ctx.fillStyle =
         alpha >= 1 ? rgb255(delColorBase) : rgba255(delColorBase, alpha)
-      ctx.fillRect(x1, y, w, fH)
+      ctx.fillRect(left, y, w, fH)
     } else if (gapType === GAP_SKIP) {
       // No clearRect needed: drawReads splits spliced reads into per-exon
       // segments, so the intron span is already unpainted. Just draw the 1px
@@ -56,7 +59,7 @@ export function drawGaps(
       // the read body solid under the line in vector SVG export.)
       ctx.fillStyle = rgba255(state.colors.colorSkip, intronAlpha(fH))
       const midY = y + fH / 2
-      ctx.fillRect(x1, midY - 0.5, w, 1)
+      ctx.fillRect(left, midY - 0.5, w, 1)
     }
   }
 }

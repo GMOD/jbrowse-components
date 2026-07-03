@@ -44,12 +44,15 @@ export function drawOverlaps(
       const endBp = region.overlapPositions[i * 2 + 1]!
       const x1 = bpToScreenX(startBp, block, bpLength, fullBlockWidth)
       const x2 = bpToScreenX(endBp, block, bpLength, fullBlockWidth)
-      const w = x2 - x1
+      // reversed (flipped) regions map startBp to the larger screen x, so anchor
+      // at the smaller edge and use the absolute width
+      const left = Math.min(x1, x2)
+      const w = Math.abs(x2 - x1)
       const alpha = OVERLAP_ALPHA * smoothstep(FADE_LO_PX, FADE_HI_PX, w)
       if (w > 0 && alpha > 0) {
         const y = pileupRowY(region.overlapYs[i]!, state)
         ctx.fillStyle = `rgba(0,0,0,${alpha})`
-        ctx.fillRect(x1, y, w, fH)
+        ctx.fillRect(left, y, w, fH)
       }
     }
   }

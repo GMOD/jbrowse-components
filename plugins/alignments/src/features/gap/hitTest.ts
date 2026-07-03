@@ -22,7 +22,7 @@ export function hitTestGap(
       startPos !== undefined &&
       endPos !== undefined &&
       genomicPos >= startPos &&
-      genomicPos <= endPos
+      genomicPos < endPos
     ) {
       const gapType = gapTypes[i]
       return {
