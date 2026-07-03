@@ -8,11 +8,14 @@ import {
 } from '@jbrowse/core/configuration'
 import { BaseDisplay } from '@jbrowse/core/pluggableElementTypes/models'
 import {
+  bindPromotableDefault,
+  clearPromotableSessionDefaults,
   getContainingTrack,
   getContainingView,
   getSession,
   isFeature,
   openFeatureWidget,
+  promotableSessionDefaultChanges,
 } from '@jbrowse/core/util'
 import { isJexl } from '@jbrowse/core/util/jexlStrings'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
@@ -55,6 +58,7 @@ import {
 import { createIncrementalLayout } from './layout.ts'
 import {
   canMorph,
+  captureDisplayedTops,
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
@@ -391,42 +395,44 @@ export default function baseStateModelFactory(
           return getConf(self, 'autoHeight')
         },
 
+        // The per-display-type settings a user can promote to a session-wide
+        // default, each bound to this display. `displayMode` uses the 'default'
+        // config sentinel as its "inherit" signal (a concrete mode pins the
+        // track); the three-tier resolution, "is default" check, promote/clear
+        // toggle, and override-badge diff all live in `@jbrowse/core/util`
+        // promotableDefaults. `all` feeds the aggregate changes/clear helpers.
+        get promotableDefaults() {
+          const displayMode = bindPromotableDefault<DisplayMode>(self, {
+            slot: 'displayMode',
+            // an explicit mode pins the track; the 'default' sentinel inherits
+            getPinned: () => {
+              const configured: DisplayModeConfig = getConf(self, 'displayMode')
+              return isDisplayMode(configured) ? configured : undefined
+            },
+            plainDefault: 'normal',
+            validate: v => (isDisplayMode(v) ? v : undefined),
+            toChange: (from, to) => ({ path: ['displayMode'], from, to }),
+          })
+          return { displayMode, all: [displayMode] }
+        },
+
         /**
          * #getter
          */
         get displayMode(): DisplayMode {
-          const configured: DisplayModeConfig = getConf(self, 'displayMode')
-          // An explicit height pin (one of the three concrete modes) always
-          // wins — so choosing 'normal' overrides a compact session default
-          // rather than being read as "inherit". The 'default' value (the schema
-          // default) means inherit: fall back to the user's session-wide type
-          // default, or plain 'normal' when none is set. An un-pinned track thus
-          // picks up a promoted default with no config delta / "edited" badge.
-          if (isDisplayMode(configured)) {
-            return configured
-          }
-          const sessionDefault = getSession(self).getDisplayTypeDefault?.(
-            self.type,
-            'displayMode',
-          )
-          return isDisplayMode(sessionDefault) ? sessionDefault : 'normal'
+          return this.promotableDefaults.displayMode.resolve()
         },
 
         /**
          * #method
          */
         // Effective config differences caused by a session-wide
-        // displayTypeDefault (see the displayMode resolution above) — distinct
-        // from per-track config edits (trackConfigDeltas). Reports a change only
-        // for an un-pinned ('default') track whose inherited height differs from
-        // the plain 'normal' fallback, so it can't fire on the schema default
-        // alone. Drives the "affected by a session default" badge.
+        // displayTypeDefault (distinct from per-track config edits /
+        // trackConfigDeltas), reported only for an un-pinned track whose
+        // inherited height differs from the plain 'normal' fallback. Drives the
+        // "affected by a session default" badge.
         sessionDefaultChanges(): TrackConfigChange[] {
-          const configured: DisplayModeConfig = getConf(self, 'displayMode')
-          const resolved = this.displayMode
-          return isDisplayMode(configured) || resolved === 'normal'
-            ? []
-            : [{ path: ['displayMode'], from: 'normal', to: resolved }]
+          return promotableSessionDefaultChanges(this.promotableDefaults.all)
         },
 
         /**
@@ -851,8 +857,12 @@ export default function baseStateModelFactory(
         // Start the feature-Y transition from `fromTops` (each feature's row in
         // the layout being left) toward the current `laidOutDataMap`. The rAF
         // clock that advances `morphProgress` lives in FeatureComponent (it
-        // observes `morphFromTops`). Morphs (300ms) finish before the next
-        // layout change (coarseBpPerPx is debounced 500ms), so no retarget.
+        // observes `morphFromTops`) and recomputes t from `morphStartMs` each
+        // frame, so resetting these mid-flight cleanly retargets the animation.
+        // A zoom morph (300ms) finishes before the next zoom (coarseBpPerPx is
+        // debounced 500ms), but non-debounced changes (pin toggle, region flip)
+        // can land mid-morph; the CanvasYMorph autorun re-seeds `fromTops` from
+        // the live displayed positions in that case so the retarget doesn't snap.
         beginYMorph(fromTops: Map<string, number>, fromMaxY: number) {
           self.morphFromTops = fromTops
           self.morphFromMaxY = fromMaxY
@@ -1409,11 +1419,7 @@ export default function baseStateModelFactory(
         // this display (and its siblings of the same type) revert to their
         // config values. Backs the "Clear default" action on the selector badge.
         clearSessionDefaults() {
-          getSession(self).setDisplayTypeDefault?.(
-            self.type,
-            'displayMode',
-            undefined,
-          )
+          clearPromotableSessionDefaults(self.promotableDefaults.all)
         },
 
         /**
@@ -1909,37 +1915,57 @@ export default function baseStateModelFactory(
                 ) {
                   return
                 }
-                const fromTops = captureFeatureTops(from)
+                // scrollTop/height are viewport state, not layout inputs, and
+                // morphFromTops/morphProgress/morphFromMaxY advance every rAF
+                // frame — read all untracked so neither writing scrollTop back
+                // below nor the morph clock can re-trigger this layout autorun.
+                const { scrollTop, height, fromTops, fromMaxY } = untracked(
+                  () => {
+                    // A morph still in flight means a second, non-debounced
+                    // layout change (a pin toggle or region flip — unlike zoom)
+                    // is interrupting it. Re-seed the next morph from each
+                    // feature's live displayed position instead of `from`'s
+                    // settled rows so mid-flight features don't snap, and hold
+                    // the content height across the taller of the two morphs so
+                    // a feature easing up from a deep row isn't clipped.
+                    const active = self.morphFromTops
+                    return {
+                      scrollTop: self.scrollTop,
+                      height: self.height,
+                      fromTops:
+                        active === undefined
+                          ? captureFeatureTops(from)
+                          : captureDisplayedTops(
+                              from,
+                              active,
+                              easeInOutCubic(self.morphProgress),
+                            ),
+                      fromMaxY:
+                        active === undefined
+                          ? maxBottom(from)
+                          : Math.max(maxBottom(from), self.morphFromMaxY),
+                    }
+                  },
+                )
+                // Whenever the new layout is shorter than the current scroll
+                // position, clamp back into range so the viewport can't strand
+                // past the content bottom. This happens on same-scale repacks
+                // (zoom-in de-stacking rows) AND on mode/label changes (compact
+                // mode shrinks every row) — so it must run before the branch
+                // below, not only in the same-scale path.
+                const maxScroll = Math.max(0, maxBottom(current) - height)
+                if (scrollTop > maxScroll) {
+                  self.setScrollTop(maxScroll)
+                }
                 // Only a same-scale repack (a zoom step) has comparable rows to
                 // pin against; a mode/label change rescales every row, so let it
-                // snap without scroll-follow.
-                if (scaleUnchanged) {
-                  // scrollTop/height are viewport state, not layout inputs —
-                  // read untracked so writing scrollTop back below can't
-                  // re-trigger this layout autorun.
-                  const { scrollTop, height } = untracked(() => ({
-                    scrollTop: self.scrollTop,
-                    height: self.height,
-                  }))
-                  // Feature-follow on zoom is disabled, so scrollTop is left
-                  // where the user put it — the only reason it moves on a repack
-                  // is to clamp back into range when the new layout is shorter
-                  // (e.g. zoom-in de-stacking rows) so the viewport can't strand
-                  // past the content bottom. Apply that clamp instantly (it's a
-                  // small correction, not the eased feature-follow it replaced).
-                  const maxScroll = Math.max(0, maxBottom(current) - height)
-                  if (scrollTop > maxScroll) {
-                    self.setScrollTop(maxScroll)
-                  }
-                  // The row morph still animates features to their new rows.
-                  if (
-                    morphAllowed(getSession(self).animationMode) &&
-                    canMorph(fromTops, current)
-                  ) {
-                    self.beginYMorph(fromTops, maxBottom(from))
-                  } else {
-                    self.endYMorph()
-                  }
+                // snap without a row morph.
+                if (
+                  scaleUnchanged &&
+                  morphAllowed(getSession(self).animationMode) &&
+                  canMorph(fromTops, current)
+                ) {
+                  self.beginYMorph(fromTops, fromMaxY)
                 } else {
                   self.endYMorph()
                 }

@@ -186,8 +186,14 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const { filterBy } = model
   const [flagInclude, setFlagInclude] = useState(filterBy.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy.flagExclude)
-  const [tag, setTag] = useState(filterBy.tagFilter?.tag ?? '')
-  const [tagValue, setTagValue] = useState(filterBy.tagFilter?.value ?? '')
+  const [tag, setTag] = useState(filterBy.tagFilters?.[0]?.tag ?? '')
+  const [tagValue, setTagValue] = useState(filterBy.tagFilters?.[0]?.value ?? '')
+  // Additional tag filters (e.g. HP/RG set from the right-click quick filters)
+  // aren't shown in this single-tag editor; preserve them across a submit so
+  // opening this dialog to tweak a flag doesn't drop them.
+  const [otherTagFilters, setOtherTagFilters] = useState(
+    filterBy.tagFilters?.slice(1) ?? [],
+  )
   const [readName, setReadName] = useState(filterBy.readName ?? '')
 
   const handleReset = () => {
@@ -195,21 +201,20 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
     setFlagExclude(defaultFilterFlags.flagExclude)
     setTag('')
     setTagValue('')
+    setOtherTagFilters([])
     setReadName('')
   }
 
   const handleSubmit = () => {
+    const tagFilters = [
+      ...(tag !== '' ? [{ tag, value: tagValue }] : []),
+      ...otherTagFilters,
+    ]
     model.setFilterBy({
       flagInclude,
       flagExclude,
       readName,
-      tagFilter:
-        tag !== ''
-          ? {
-              tag,
-              value: tagValue,
-            }
-          : undefined,
+      tagFilters: tagFilters.length > 0 ? tagFilters : undefined,
     })
     handleClose()
   }

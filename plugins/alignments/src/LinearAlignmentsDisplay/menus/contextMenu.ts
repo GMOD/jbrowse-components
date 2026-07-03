@@ -49,6 +49,16 @@ function getReadTag(feat: Feature, tag: string): string | undefined {
   return val === undefined ? undefined : String(val)
 }
 
+// Set the filter for one tag while preserving filters on other tags, so quick
+// HP/RG filters (and any dialog-set tag) coexist instead of clobbering.
+function setTagFilter(self: ContextMenuModel, tag: string, value: string) {
+  const others = (self.filterBy.tagFilters ?? []).filter(f => f.tag !== tag)
+  self.setFilterBy({
+    ...self.filterBy,
+    tagFilters: [...others, { tag, value }],
+  })
+}
+
 // Copy plain text (read name, sequence, feature JSON) with a success/error
 // snackbar. The clipboard util is dynamically imported so it stays out of the
 // initial bundle. Runs only on menu click, off the already-fetched feature — no
@@ -205,10 +215,7 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         label: `Filter for this haplotype (HP:${hp})`,
         icon: FilterAltIcon,
         onClick: () => {
-          self.setFilterBy({
-            ...self.filterBy,
-            tagFilter: { tag: 'HP', value: hp },
-          })
+          setTagFilter(self, 'HP', hp)
         },
       })
     }
@@ -217,16 +224,13 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         label: `Filter for this read group (RG:${rg})`,
         icon: FilterAltIcon,
         onClick: () => {
-          self.setFilterBy({
-            ...self.filterBy,
-            tagFilter: { tag: 'RG', value: rg },
-          })
+          setTagFilter(self, 'RG', rg)
         },
       })
     }
     const hasReadOrTagFilter =
       self.filterBy.readName !== undefined ||
-      self.filterBy.tagFilter !== undefined
+      (self.filterBy.tagFilters?.length ?? 0) > 0
     if (hasReadOrTagFilter) {
       filterSubMenu.push({
         label: 'Clear read/tag filters',
@@ -257,6 +261,17 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
         },
       })
     }
+    const refName = feat.get('refName')
+    if (refName) {
+      const locString = `${refName}:${feat.get('start') + 1}-${feat.get('end')}`
+      copySubMenu.push({
+        label: 'Copy location',
+        subLabel: 'e.g. to paste into the location search box',
+        onClick: () => {
+          void copyText(self, locString, 'location')
+        },
+      })
+    }
     if (seq) {
       copySubMenu.push({
         label: 'Copy read sequence',
@@ -267,7 +282,8 @@ export function getContextMenuItems(self: ContextMenuModel): MenuItem[] {
       })
     }
     copySubMenu.push({
-      label: 'Copy info to clipboard',
+      label: 'Copy feature info',
+      subLabel: 'all fields as JSON',
       onClick: () => {
         const { uniqueId, ...rest } = feat.toJSON()
         void copyText(self, JSON.stringify(rest, null, 4), 'feature info')

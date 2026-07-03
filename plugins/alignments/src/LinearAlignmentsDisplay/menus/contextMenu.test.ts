@@ -31,7 +31,7 @@ function makeModel(
 ) {
   const sortCalls: SortCall[] = []
   const filterCalls: FilterBy[] = []
-  return {
+  const model = {
     sortCalls,
     filterCalls,
     contextMenuFeature: undefined as Feature | undefined,
@@ -40,8 +40,11 @@ function makeModel(
     contextMenuRefName: 'ctgA' as string | undefined,
     contextMenuRpcData: undefined,
     filterBy: defaultFilterBy,
+    // Record every call and apply it, so successive quick-filter clicks read the
+    // accumulated filterBy (the coexistence path this suite guards).
     setFilterBy(filterBy: FilterBy) {
       filterCalls.push(filterBy)
+      model.filterBy = filterBy
     },
     setSortedByAtPosition(type: string, pos: number, refName: string) {
       sortCalls.push([type, pos, refName])
@@ -49,6 +52,7 @@ function makeModel(
     selectFeature() {},
     ...over,
   }
+  return model
 }
 
 interface SubMenuItem {
@@ -133,7 +137,7 @@ test('filter for this read sets the read name (QNAME), keeping flags', () => {
   ])
 })
 
-test('haplotype/read-group tag filters read HP/RG off the feature', () => {
+test('haplotype and read-group tag filters coexist instead of clobbering', () => {
   const model = makeModel({
     contextMenuFeature: makeFeature({
       name: 'readABC',
@@ -146,11 +150,39 @@ test('haplotype/read-group tag filters read HP/RG off the feature', () => {
     .find(i => i.label === 'Filter for this read group (RG:lib1)')!
     .onClick()
   expect(model.filterCalls).toEqual([
-    { flagInclude: 0, flagExclude: 1540, tagFilter: { tag: 'HP', value: '1' } },
     {
       flagInclude: 0,
       flagExclude: 1540,
-      tagFilter: { tag: 'RG', value: 'lib1' },
+      tagFilters: [{ tag: 'HP', value: '1' }],
+    },
+    {
+      flagInclude: 0,
+      flagExclude: 1540,
+      tagFilters: [
+        { tag: 'HP', value: '1' },
+        { tag: 'RG', value: 'lib1' },
+      ],
+    },
+  ])
+})
+
+test('re-filtering the same tag replaces its value, not duplicates', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({ name: 'readABC', tags: { HP: 2 } }),
+    filterBy: {
+      flagInclude: 0,
+      flagExclude: 1540,
+      tagFilters: [{ tag: 'HP', value: '1' }],
+    },
+  })
+  findSubMenu(run(model), 'Filter')
+    .find(i => i.label === 'Filter for this haplotype (HP:2)')!
+    .onClick()
+  expect(model.filterCalls).toEqual([
+    {
+      flagInclude: 0,
+      flagExclude: 1540,
+      tagFilters: [{ tag: 'HP', value: '2' }],
     },
   ])
 })
@@ -181,7 +213,7 @@ test('copy submenu offers name, sequence, and info when both are present', () =>
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
     'Copy read sequence',
-    'Copy info to clipboard',
+    'Copy feature info',
   ])
 })
 
@@ -192,6 +224,23 @@ test('copy submenu omits read sequence when the feature has no seq', () => {
   const copy = findSubMenu(run(model), 'Copy')
   expect(copy.map(i => i.label)).toEqual([
     'Copy read name',
-    'Copy info to clipboard',
+    'Copy feature info',
+  ])
+})
+
+test('copy submenu includes 1-based location when the feature has a refName', () => {
+  const model = makeModel({
+    contextMenuFeature: makeFeature({
+      name: 'readABC',
+      refName: 'chr1',
+      start: 99,
+      end: 200,
+    }),
+  })
+  const copy = findSubMenu(run(model), 'Copy')
+  expect(copy.map(i => i.label)).toEqual([
+    'Copy read name',
+    'Copy location',
+    'Copy feature info',
   ])
 })

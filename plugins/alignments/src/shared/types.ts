@@ -74,14 +74,30 @@ export interface ColorBy {
   modifications?: ModificationColorBy
 }
 
+export interface TagFilter {
+  tag: string
+  value?: string
+}
+
 export interface FilterBy {
   flagExclude: number
   flagInclude: number
   readName?: string
-  tagFilter?: {
-    tag: string
-    value?: string
-  }
+  // Multiple tag filters are AND-ed (a read must pass every one). Kept plural so
+  // independent quick-filters like HP (haplotype) and RG (read group) coexist
+  // instead of clobbering each other.
+  tagFilters?: TagFilter[]
+}
+
+// Legacy sessions stored a single `tagFilter`; fold it into `tagFilters` so
+// every consumer only ever reads the plural form.
+export function normalizeFilterBy(
+  filterBy: FilterBy & { tagFilter?: TagFilter },
+): FilterBy {
+  const { tagFilter, ...rest } = filterBy
+  return tagFilter !== undefined && rest.tagFilters === undefined
+    ? { ...rest, tagFilters: [tagFilter] }
+    : rest
 }
 
 // In-track stacked grouping. `type` selects the per-read group-key generator

@@ -1,5 +1,6 @@
 import {
   canMorph,
+  captureDisplayedTops,
   captureFeatureTops,
   easeInOutCubic,
   interpolateYData,
@@ -139,6 +140,21 @@ test('captureFeatureTops skips features overflowed off-screen', () => {
   )
   expect(tops.has('a')).toBe(false)
   expect(tops.get('b')).toBe(30)
+})
+
+test('captureDisplayedTops eases each feature from source toward target', () => {
+  // "a" is morphing from row 60 (source) to row 0 (target). Halfway through, its
+  // displayed top is 30 — that's what re-seeds a morph interrupted mid-flight.
+  const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
+  const fromTops = new Map([['a', 60]])
+  expect(captureDisplayedTops(target, fromTops, 0).get('a')).toBe(60)
+  expect(captureDisplayedTops(target, fromTops, 0.5).get('a')).toBe(30)
+  expect(captureDisplayedTops(target, fromTops, 1).get('a')).toBe(0)
+})
+
+test('captureDisplayedTops leaves features with no source at the target', () => {
+  const target = new Map([[0, region([{ featureId: 'a', top: 40 }])]])
+  expect(captureDisplayedTops(target, new Map(), 0.5).get('a')).toBe(40)
 })
 
 test('a feature overflowing off-screen in the target does not animate', () => {

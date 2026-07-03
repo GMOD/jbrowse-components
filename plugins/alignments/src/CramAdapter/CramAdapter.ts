@@ -31,20 +31,22 @@ function shouldFilterRecord(
   const {
     flagInclude = 0,
     flagExclude = 0,
-    tagFilter,
+    tagFilters,
     readName,
   } = filterBy ?? {}
   if (filterReadFlag(record.flags, flagInclude, flagExclude)) {
     return true
   }
-  if (tagFilter) {
+  // Multiple tag filters are AND-ed: reject the read if any one rejects it.
+  const failsTag = tagFilters?.some(tf => {
     const tagValue =
-      tagFilter.tag === 'RG'
+      tf.tag === 'RG'
         ? samHeader.readGroups[record.readGroupId]
-        : record.tags[tagFilter.tag]
-    if (filterTagValue(tagValue, tagFilter.value)) {
-      return true
-    }
+        : record.tags[tf.tag]
+    return filterTagValue(tagValue, tf.value)
+  })
+  if (failsTag) {
+    return true
   }
   return readName !== undefined && record.readName !== readName
 }
@@ -225,6 +227,10 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
       if (originalRefName) {
         this.seqIdToOriginalRefName[refId] = originalRefName
       }
+      // A failed region fetch (e.g. a transient network error mid-pan) must not
+      // wipe the header/index caches — those are memoized in setup() and only
+      // invalidated on a setup failure. Re-downloading them on every dropped
+      // data chunk would force a full re-download on the next pan.
       const records = await downloadStatus(
         'Downloading alignments',
         statusCallback,
@@ -232,10 +238,7 @@ export default class CramAdapter extends BaseFeatureDataAdapter<CramAdapterConfi
           cram.getRecordsForRange(refId, start, end, {
             onProgress,
           }),
-      ).catch((e: unknown) => {
-        this.clearCaches()
-        throw e
-      })
+      )
       checkStopToken(stopToken)
       await withProgress(
         {

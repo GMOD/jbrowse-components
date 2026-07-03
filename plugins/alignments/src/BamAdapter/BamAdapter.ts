@@ -141,6 +141,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
       const { bam } = await this.setup(opts)
       checkStopToken(stopToken)
 
+      // A failed region fetch (e.g. a transient network error mid-pan) must not
+      // wipe the header/index caches — those are memoized in setup() and only
+      // invalidated on a setup failure. Re-downloading them on every dropped
+      // data chunk would force a full re-download on the next pan.
       const records = await downloadStatus(
         'Downloading alignments',
         statusCallback,
@@ -149,13 +153,10 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
             filterBy,
             onProgress,
           }),
-      ).catch((e: unknown) => {
-        this.clearCaches()
-        throw e
-      })
+      )
       checkStopToken(stopToken)
 
-      const { readName, tagFilter } = filterBy ?? {}
+      const { readName, tagFilters } = filterBy ?? {}
       // only reads lacking an MD tag need the reference; defer loading the
       // sequence adapter (and the fetch) until we know at least one does.
       // Clip to the viewport: a whole-chromosome assembly contig spans the
@@ -192,9 +193,12 @@ export default class BamAdapter extends BaseFeatureDataAdapter<BamAdapterConfig>
             if (readName && record.name !== readName) {
               continue
             }
+            // @gmod/bam applies only flags + a single tagFilter; multiple tag
+            // filters are AND-ed here (excluded if any one rejects the read).
             if (
-              tagFilter &&
-              filterTagValue(record.tags[tagFilter.tag], tagFilter.value)
+              tagFilters?.some(tf =>
+                filterTagValue(record.tags[tf.tag], tf.value),
+              )
             ) {
               continue
             }

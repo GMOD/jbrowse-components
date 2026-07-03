@@ -50,6 +50,36 @@ export function captureFeatureTops(
   return out
 }
 
+// Each on-screen feature's *currently displayed* top when a morph is in flight,
+// i.e. its position eased `t` of the way from `fromTops` to `target`. Used to
+// re-seed a morph interrupted mid-flight by a second layout change (a pin toggle
+// or region flip, neither debounced like zoom): starting the new morph from
+// these live positions instead of `target`'s settled rows avoids a visible snap.
+// Mirrors interpolateYData's per-feature Y math (rem = 1 - t) so a retarget is
+// seamless, and skips off-screen features the same way captureFeatureTops does.
+export function captureDisplayedTops(
+  target: ReadonlyMap<number, FeatureDataResult>,
+  fromTops: FeatureTops,
+  t: number,
+): FeatureTops {
+  const rem = 1 - t
+  const out: FeatureTops = new Map()
+  for (const data of target.values()) {
+    for (const item of data.flatbushItems) {
+      if (item.topPx >= 0) {
+        const prevTop = fromTops.get(item.featureId)
+        out.set(
+          item.featureId,
+          prevTop === undefined
+            ? item.topPx
+            : item.topPx + (prevTop - item.topPx) * rem,
+        )
+      }
+    }
+  }
+  return out
+}
+
 // Whether anything is worth animating: at least one feature shared with
 // `fromTops` actually changed row (a shared-but-unmoved feature would make
 // `interpolateYData` a no-op, so a stable-seeded repack that kept every feature
