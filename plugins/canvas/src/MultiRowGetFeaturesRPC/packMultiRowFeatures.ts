@@ -1,12 +1,14 @@
 import { readConfigValue } from '@jbrowse/core/configuration'
 import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 
+import { MULTIROW_DEFAULT_COLOR } from './multiRowColors.ts'
+
 import type { MultiRowGetFeaturesResult } from './rpcTypes.ts'
 import type { Feature, ProgressReporter } from '@jbrowse/core/util'
 import type { JexlInstance } from '@jbrowse/core/util/jexlStrings'
 
 // Resolve the (possibly jexl) `color` slot to a CSS string for one feature,
-// degrading to goldenrod on a bad expression or non-string result.
+// degrading to the default color on a bad expression or non-string result.
 function evalColorSlot(
   colorCfg: { color: string },
   feature: Feature,
@@ -14,9 +16,9 @@ function evalColorSlot(
 ) {
   try {
     const css = readConfigValue(colorCfg, 'color', feature, jexl)
-    return typeof css === 'string' ? css : 'goldenrod'
+    return typeof css === 'string' ? css : MULTIROW_DEFAULT_COLOR
   } catch {
-    return 'goldenrod'
+    return MULTIROW_DEFAULT_COLOR
   }
 }
 

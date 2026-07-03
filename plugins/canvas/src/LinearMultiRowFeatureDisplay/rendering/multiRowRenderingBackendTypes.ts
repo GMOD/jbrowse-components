@@ -1,26 +1,17 @@
+import type { MultiRowGetFeaturesResult } from '../../MultiRowGetFeaturesRPC/rpcTypes.ts'
 import type { PerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 
 export type MultiRowRenderBlock = RenderBlock
 
-// Per-region feature data shipped by the worker (LinearMultiRowGetFeatures).
-// Positions are absolute genomic uint32; colors are pre-resolved ABGR. Rows are
-// referenced indirectly: `partitionValues` lists the distinct row keys seen in
-// this region and `featurePartitionIndex[i]` indexes into it, so the main thread
-// can remap to a global, stable row index without re-shipping strings per
-// feature.
-export interface MultiRowRegionData {
-  featureStarts: Uint32Array
-  featureEnds: Uint32Array
-  featureColors: Uint32Array
-  partitionValues: string[]
-  featurePartitionIndex: Uint32Array
-  // per-feature display name, for hover tooltips (render path ignores it)
-  featureNames: string[]
-  // per-feature adapter id, for the click → feature-details fetch (render path
-  // ignores it)
-  featureIds: string[]
-}
+// Per-region feature data shipped by the worker (LinearMultiRowGetFeatures) and
+// consumed by the render side. Positions are absolute genomic uint32; colors are
+// pre-resolved ABGR. Rows are referenced indirectly: `partitionValues` lists the
+// distinct row keys seen in this region and `featurePartitionIndex[i]` indexes
+// into it, so the main thread can remap to a global, stable row index without
+// re-shipping strings per feature. Aliased to the RPC result so a new worker
+// field can't drift from the render type.
+export type MultiRowRegionData = MultiRowGetFeaturesResult
 
 export interface MultiRowRenderState {
   canvasWidth: number
