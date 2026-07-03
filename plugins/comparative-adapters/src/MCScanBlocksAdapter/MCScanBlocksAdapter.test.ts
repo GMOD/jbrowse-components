@@ -56,8 +56,10 @@ test('transitive pair through the reference (peach vs cacao)', async () => {
     assemblyName: 'peach',
   })
   expect(fa.length).toBe(2)
-  expect(fa[0]!.get('mate').assemblyName).toBe('cacao')
-  expect(fa[0]!.get('mate').refName).toBe('Tc1')
+  expect(fa[0]!.get('mate')).toMatchObject({
+    assemblyName: 'cacao',
+    refName: 'Tc1',
+  })
 })
 
 test('throws when the pair is not present in blockAssemblies', async () => {
@@ -108,7 +110,7 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
       assemblyName: 'grape',
     })
     expect(fa.length).toBe(1183)
-    expect(fa[0]!.get('mate').assemblyName).toBe('peach')
+    expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'peach' })
   })
 
   test('grape vs cacao (direct)', async () => {
@@ -129,6 +131,6 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
       assemblyName: 'peach',
     })
     expect(fa.length).toBe(924)
-    expect(fa[0]!.get('mate').assemblyName).toBe('cacao')
+    expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'cacao' })
   })
 })

@@ -59,7 +59,7 @@ test('assemblyNameToPanSN maps JBrowse names to PanSN sample prefixes', async ()
     { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grapeJB' },
   )
   expect(fa.length).toBe(1)
-  expect(fa[0]!.get('mate').assemblyName).toBe('peachJB')
+  expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'peachJB' })
 })
 
 test('getRefNames strips PanSN prefix and scopes to the assembly', async () => {

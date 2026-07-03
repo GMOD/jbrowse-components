@@ -1,6 +1,7 @@
 import {
   findByTestId,
   navigateToUrl,
+  navigateWithSessionSpec,
   waitForDataLoaded,
 } from '../helpers.ts'
 import { dualSnapshot } from '../snapshot.ts'
