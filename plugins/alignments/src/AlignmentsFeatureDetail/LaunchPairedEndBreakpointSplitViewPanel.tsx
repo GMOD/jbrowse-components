@@ -4,7 +4,10 @@ import { getAssemblyName, launchBreakpointSplitView } from '@jbrowse/sv-core'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { buildPairedEndMateFeature } from '../shared/mateFeature.ts'
+import {
+  buildPairedEndMateFeature,
+  computeMateFields,
+} from '../shared/mateFeature.ts'
 
 import type { AlignmentFeatureWidgetModel } from './stateModelFactory.ts'
 import type { AlignmentFeatureSerialized } from './util.ts'
@@ -18,10 +21,20 @@ const LaunchPairedEndBreakpointSplitViewPanel = observer(
     feature: AlignmentFeatureSerialized
   }) {
     const session = getSession(model)
-    const { uniqueId, refName, start, end, strand, next_ref, next_pos } =
+    const { uniqueId, refName, start, end, strand, flags, next_ref, next_pos } =
       feature
     const assemblyName = getAssemblyName(model.view)
-    return assemblyName && next_ref !== undefined && next_pos !== undefined ? (
+    const mate = computeMateFields({
+      uniqueId,
+      refName,
+      start,
+      end,
+      strand,
+      flags,
+      nextRef: next_ref,
+      nextPos: next_pos,
+    })
+    return assemblyName && mate ? (
       <div>
         <Typography>Launch split view</Typography>
         <ActionLink
@@ -30,20 +43,12 @@ const LaunchPairedEndBreakpointSplitViewPanel = observer(
               session,
               view: model.view,
               assemblyName,
-              feature: buildPairedEndMateFeature({
-                uniqueId,
-                refName,
-                start,
-                end,
-                strand,
-                nextRef: next_ref,
-                nextPos: next_pos,
-              }),
+              feature: buildPairedEndMateFeature(mate),
             })
           }}
         >
-          {refName}:{toLocale(start)} -&gt; {next_ref}:{toLocale(next_pos)}{' '}
-          (breakpoint split view)
+          {refName}:{toLocale(start)} -&gt; {mate.nextRef}:
+          {toLocale(mate.nextPos)} (breakpoint split view)
         </ActionLink>
       </div>
     ) : null

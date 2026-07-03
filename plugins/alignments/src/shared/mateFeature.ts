@@ -1,3 +1,7 @@
+import {
+  SAM_FLAG_MATE_REVERSE,
+  SAM_FLAG_MATE_UNMAPPED,
+} from '@jbrowse/alignments-core'
 import { SimpleFeature } from '@jbrowse/core/util'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -14,24 +18,51 @@ export interface MateFields {
   strand?: number
   nextRef: string
   nextPos: number
+  mateStrand: number
 }
 
-// Paired-read mate coordinates, or undefined when there's no mapped mate (an
-// unpaired read, or a mate-unmapped read whose next_ref/next_pos are absent).
-export function getMateFields(feature: Feature): MateFields | undefined {
-  const nextRef = feature.get('next_ref')
-  const nextPos = feature.get('next_pos')
-  return typeof nextRef === 'string' && typeof nextPos === 'number'
+// Shared normalizer for the pileup Feature and the serialized feature-detail
+// object. Returns undefined when there's no *mapped* mate: an unpaired read, a
+// read whose next_ref/next_pos are absent, or a mate-unmapped read (RNEXT/PNEXT
+// point at the read's own locus by convention, so mate actions would otherwise
+// launch a bogus self-referential split view). The mate's strand comes from the
+// mate-reverse flag, not the read's own strand.
+export function computeMateFields(args: {
+  uniqueId: string
+  refName: string
+  start: number
+  end: number
+  strand?: number
+  flags?: unknown
+  nextRef: unknown
+  nextPos: unknown
+}): MateFields | undefined {
+  const { flags, nextRef, nextPos, ...rest } = args
+  const flagBits = typeof flags === 'number' ? flags : 0
+  const mateUnmapped = !!(flagBits & SAM_FLAG_MATE_UNMAPPED)
+  return typeof nextRef === 'string' &&
+    typeof nextPos === 'number' &&
+    !mateUnmapped
     ? {
-        uniqueId: feature.id(),
-        refName: feature.get('refName'),
-        start: feature.get('start'),
-        end: feature.get('end'),
-        strand: feature.get('strand'),
+        ...rest,
         nextRef,
         nextPos,
+        mateStrand: flagBits & SAM_FLAG_MATE_REVERSE ? -1 : 1,
       }
     : undefined
+}
+
+export function getMateFields(feature: Feature): MateFields | undefined {
+  return computeMateFields({
+    uniqueId: feature.id(),
+    refName: feature.get('refName'),
+    start: feature.get('start'),
+    end: feature.get('end'),
+    strand: feature.get('strand'),
+    flags: feature.get('flags'),
+    nextRef: feature.get('next_ref'),
+    nextPos: feature.get('next_pos'),
+  })
 }
 
 // The read+mate SimpleFeature that launchBreakpointSplitView consumes. Shared by
@@ -49,7 +80,7 @@ export function buildPairedEndMateFeature(f: MateFields) {
       refName: f.nextRef,
       start: f.nextPos,
       end: f.nextPos + 1,
-      strand: f.strand,
+      strand: f.mateStrand,
     },
   })
 }
