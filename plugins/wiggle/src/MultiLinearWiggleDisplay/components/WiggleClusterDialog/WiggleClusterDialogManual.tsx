@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/core/util'
 import { getRpcSessionId } from '@jbrowse/core/util/tracks'
 import {
+  buildClusteredLayout,
   generateClusterRScript,
   matrixToTsv,
   parseClusterOrder,
@@ -32,7 +33,6 @@ import { observer } from 'mobx-react'
 import { parseSamplesPerPixel } from './parseSamplesPerPixel.ts'
 
 import type { ReducedModel } from './types.ts'
-import type { Source } from '../../../util.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
@@ -50,7 +50,10 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
     false,
   )
   const [clusterMethod, setClusterMethod] = useState('single')
-  const [samplesPerPixel, setSamplesPerPixel] = useState('1')
+  const [samplesPerPixel, setSamplesPerPixel] = useLocalStorage(
+    'cluster-samplesPerPixel',
+    '1',
+  )
 
   const view = getContainingView(model) as LinearGenomeViewModel
   const shouldFetch = view.initialized && !!model.sourcesWithoutLayout.length
@@ -93,6 +96,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
             >
               <Button
                 variant="contained"
+                disabled={!results}
                 onClick={async () => {
                   const { saveAs } = await import('@jbrowse/core/util')
 
@@ -109,6 +113,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
               or{' '}
               <CopyToClipboardButton
                 variant="contained"
+                disabled={!results}
                 value={() => results || ''}
               >
                 Copy Rscript to clipboard
@@ -116,6 +121,7 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
               or{' '}
               <Button
                 variant="contained"
+                disabled={!resultsTsv}
                 onClick={async () => {
                   const { saveAs } = await import('@jbrowse/core/util')
 
@@ -166,8 +172,8 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
                 </RadioGroup>
                 <div style={{ marginTop: 20 }}>
                   <Typography>
-                    This procedure samples the data at each 'pixel' across the
-                    visible by default
+                    By default this samples the data once per screen pixel
+                    across the currently visible region.
                   </Typography>
                   <TextField
                     label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
@@ -220,28 +226,19 @@ const WiggleClusterDialogManual = observer(function WiggleClusterDialogManual({
       <DialogActions>
         <Button
           variant="contained"
+          disabled={!paste.trim()}
           onClick={() => {
             const { sourcesWithoutLayout } = model
             if (sourcesWithoutLayout.length) {
               try {
-                const currentLayout = model.layout.length
-                  ? model.layout
-                  : sourcesWithoutLayout
-                const sourcesByName = Object.fromEntries(
-                  currentLayout.map((s: Source) => [s.name, s]),
-                )
-
+                // parseClusterOrder yields 1-based R indices; buildClusteredLayout
+                // (shared with the auto dialog) expects 0-based.
                 model.setLayout(
-                  parseClusterOrder(paste).map(idx => {
-                    const sourceItem = sourcesWithoutLayout[idx - 1]
-                    if (!sourceItem) {
-                      throw new Error(`out of bounds at ${idx}`)
-                    }
-                    return {
-                      ...sourceItem,
-                      ...sourcesByName[sourceItem.name],
-                    }
-                  }),
+                  buildClusteredLayout(
+                    sourcesWithoutLayout,
+                    model.layout,
+                    parseClusterOrder(paste).map(idx => idx - 1),
+                  ),
                 )
               } catch (e) {
                 console.error(e)
