@@ -336,6 +336,17 @@ export default defineConfig(
       // different content than the bare path; without this, no-duplicates
       // treats e.g. `from './x.tsx'` + `from './x.tsx?raw'` as duplicates.
       'import-x/no-duplicates': ['error', { considerQueryString: true }],
+      // Redundant with tsc's own module/export resolution, and the priciest
+      // rules in the whole run. tsc already fails the build on invalid
+      // named/default imports.
+      'import-x/namespace': 'off',
+      'import-x/default': 'off',
+      // Full-repo deprecated-usage check needs type info on every reference
+      // (~18% of lint time) and isn't build-breaking, so it's CI-only; see
+      // `lint:strict` in package.json.
+      '@typescript-eslint/no-deprecated': process.env.LINT_STRICT
+        ? 'error'
+        : 'off',
       // Pluggable components (ReactComponent/HeadingComponent/etc.) are
       // resolved via pluginManager registry lookups (getViewType,
       // getWidgetType, evaluateExtensionPoint) and rendered as JSX. This rule
@@ -611,6 +622,17 @@ export default defineConfig(
           ],
         },
       ],
+    },
+  },
+  // execCommand is deprecated but is the only clipboard write available in
+  // non-secure (http://) contexts, which JBrowse must support. This is a
+  // permanent, accepted exception, not a strict-mode-only inline
+  // eslint-disable: no-deprecated is off by default, so an inline disable
+  // comment would be flagged as unused outside of `lint:strict`.
+  {
+    files: ['packages/core/src/util/copyToClipboard.ts'],
+    rules: {
+      '@typescript-eslint/no-deprecated': 'off',
     },
   },
   // The frontmatter of .astro files isn't part of any tsconfig `include`, so

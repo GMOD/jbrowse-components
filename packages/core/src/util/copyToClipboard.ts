@@ -57,7 +57,6 @@ function execCommandCopy(text: string, format: string) {
     selection?.addRange(range)
     // execCommand is deprecated but is the only clipboard write available in
     // non-secure (http://) contexts, which JBrowse must support
-    // eslint-disable-next-line @typescript-eslint/no-deprecated
     success = document.execCommand('copy')
   } catch (e) {
     console.error(e)
