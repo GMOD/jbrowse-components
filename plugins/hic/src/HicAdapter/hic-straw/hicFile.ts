@@ -242,9 +242,7 @@ export default class HicFile {
   async readMatrix(chrIdx1: number, chrIdx2: number) {
     await this.init()
 
-    const lo = Math.min(chrIdx1, chrIdx2)
-    const hi = Math.max(chrIdx1, chrIdx2)
-    const idx = this.masterIndex[Matrix.getKey(lo, hi)]
+    const idx = this.masterIndex[Matrix.getKey(chrIdx1, chrIdx2)]
     let matrix: Matrix | undefined
     if (idx) {
       const data = await this.file.read(idx.start, idx.size)
@@ -259,7 +257,6 @@ export default class HicFile {
     region2: HicRegion,
     units: string,
     binsize: number,
-    allRecords = false,
   ) {
     await this.init()
 
@@ -270,79 +267,48 @@ export default class HicFile {
       idx1 !== undefined &&
       idx2 !== undefined &&
       (idx1 > idx2 || (idx1 === idx2 && region1.start >= region2.end))
-    let r1 = region1
-    let r2 = region2
-    if (transpose) {
-      r1 = region2
-      r2 = region1
-    }
+    const r1 = transpose ? region2 : region1
+    const r2 = transpose ? region1 : region2
+
+    const x1 = r1.start / binsize
+    const x2 = r1.end / binsize
+    const y1 = r2.start / binsize
+    const y2 = r2.end / binsize
+
+    // Normalization vectors are loop-invariant across blocks, so resolve them
+    // once up front. Each is paired with the bin offset its values start at.
+    const norm = await this.getNormVectors(
+      normalization,
+      r1,
+      r2,
+      units,
+      binsize,
+    )
 
     const blocks = await this.getBlocks(r1, r2, units, binsize)
     const contactRecords: ContactRecord[] = []
-    if (blocks.length > 0) {
-      const x1 = r1.start / binsize
-      const x2 = r1.end / binsize
-      const y1 = r2.start / binsize
-      const y2 = r2.end / binsize
-      const nvX1 = Math.floor(x1)
-      const nvX2 = Math.ceil(x2)
-      const nvY1 = Math.floor(y1)
-      const nvY2 = Math.ceil(y2)
-      const chr1 = this.getFileChrName(r1.chr)
-      const chr2 = this.getFileChrName(r2.chr)
-
-      for (const block of blocks) {
-        // An undefined block is most likely a base-pair range outside the
-        // chromosome
-        if (block) {
-          let isNorm = !!normalization && normalization !== 'NONE'
-          let normVector1: number[] | undefined
-          let normVector2: number[] | undefined
-          if (isNorm) {
-            const nv1 = await this.getNormalizationVector(
-              normalization,
-              chr1,
-              units,
-              binsize,
-            )
-            const nv2 =
-              chr1 === chr2
-                ? nv1
-                : await this.getNormalizationVector(
-                    normalization,
-                    chr2,
-                    units,
-                    binsize,
-                  )
-            if (nv1 && nv2) {
-              normVector1 = await nv1.getValues(nvX1, nvX2)
-              normVector2 = await nv2.getValues(nvY1, nvY2)
-            } else {
-              isNorm = false
-            }
-          }
-
-          for (const rec of block.records) {
-            if (
-              allRecords ||
-              (rec.bin1 >= x1 &&
-                rec.bin1 < x2 &&
-                rec.bin2 >= y1 &&
-                rec.bin2 < y2)
-            ) {
-              if (isNorm && normVector1 && normVector2) {
-                const x = rec.bin1
-                const y = rec.bin2
-                const nvnv = normVector1[x - nvX1]! * normVector2[y - nvY1]!
-                // eslint-disable-next-line unicorn/prefer-number-properties -- vendored hic-straw, keep upstream form
-                if (nvnv !== 0 && !isNaN(nvnv)) {
-                  contactRecords.push(
-                    new ContactRecord(x, y, rec.counts / nvnv),
-                  )
-                }
-              } else {
-                contactRecords.push(rec)
+    for (const block of blocks) {
+      // An undefined block is most likely a base-pair range outside the
+      // chromosome
+      if (block) {
+        for (const rec of block.records) {
+          if (
+            rec.bin1 >= x1 &&
+            rec.bin1 < x2 &&
+            rec.bin2 >= y1 &&
+            rec.bin2 < y2
+          ) {
+            if (norm) {
+              const nvnv =
+                norm.v1[rec.bin1 - norm.offset1]! *
+                norm.v2[rec.bin2 - norm.offset2]!
+              if (nvnv !== 0 && !Number.isNaN(nvnv)) {
+                contactRecords.push(
+                  new ContactRecord(rec.bin1, rec.bin2, rec.counts / nvnv),
+                )
               }
+            } else {
+              contactRecords.push(rec)
             }
           }
         }
@@ -350,6 +316,48 @@ export default class HicFile {
     }
 
     return contactRecords
+  }
+
+  private async getNormVectors(
+    normalization: string,
+    r1: HicRegion,
+    r2: HicRegion,
+    units: string,
+    binsize: number,
+  ) {
+    let result:
+      | { v1: number[]; v2: number[]; offset1: number; offset2: number }
+      | undefined
+    if (normalization && normalization !== 'NONE') {
+      const chr1 = this.getFileChrName(r1.chr)
+      const chr2 = this.getFileChrName(r2.chr)
+      const offset1 = Math.floor(r1.start / binsize)
+      const offset2 = Math.floor(r2.start / binsize)
+      const nv1 = await this.getNormalizationVector(
+        normalization,
+        chr1,
+        units,
+        binsize,
+      )
+      const nv2 =
+        chr1 === chr2
+          ? nv1
+          : await this.getNormalizationVector(
+              normalization,
+              chr2,
+              units,
+              binsize,
+            )
+      if (nv1 && nv2) {
+        result = {
+          v1: await nv1.getValues(offset1, Math.ceil(r1.end / binsize)),
+          v2: await nv2.getValues(offset2, Math.ceil(r2.end / binsize)),
+          offset1,
+          offset2,
+        }
+      }
+    }
+    return result
   }
 
   async getBlocks(
@@ -466,8 +474,7 @@ export default class HicFile {
             const bin2 = binYOffset + row
             if (useFloatContact) {
               const counts = parser.getFloat()
-              // eslint-disable-next-line unicorn/prefer-number-properties -- vendored hic-straw, keep upstream form
-              if (!isNaN(counts)) {
+              if (!Number.isNaN(counts)) {
                 records.push(new ContactRecord(bin1, bin2, counts))
               }
             } else {
