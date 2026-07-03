@@ -6,13 +6,11 @@ import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { orientAlignment } from '../csUtils.ts'
 import {
-  csToCigar,
-  flipCigar,
   getAssemblyNamesFromConf,
   pafIdentity,
   parsePAFLine,
-  swapIndelCigar,
 } from '../util.ts'
 import { getWeightedMeans } from './util.ts'
 
@@ -130,15 +128,12 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
         const { extra, strand } = r
         if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
           const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
-
-          let CIGAR = cg ?? (cs ? csToCigar(cs) : undefined)
-          if (CIGAR) {
-            if (flip && strand === -1) {
-              CIGAR = flipCigar(CIGAR)
-            } else if (flip) {
-              CIGAR = swapIndelCigar(CIGAR)
-            }
-          }
+          const { CIGAR, cs: orientedCs } = orientAlignment({
+            cg,
+            cs,
+            flip,
+            strand,
+          })
 
           observer.next(
             new SyntenyFeature({
@@ -151,6 +146,7 @@ export default class PAFAdapter extends BaseFeatureDataAdapter {
               strand,
               ...rest,
               CIGAR,
+              cs: orientedCs,
               syntenyId: i,
               identity: pafIdentity(extra),
               numMatches,

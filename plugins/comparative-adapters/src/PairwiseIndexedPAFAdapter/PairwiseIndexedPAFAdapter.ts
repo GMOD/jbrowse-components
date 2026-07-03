@@ -5,8 +5,8 @@ import { openLocation, openTabixIndexFilehandle } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
+import { csToCigar } from '../csUtils.ts'
 import {
-  csToCigar,
   getAssemblyNamesFromConf,
   pafIdentity,
   parsePAFLine,
@@ -177,7 +177,9 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
 
             // PIF format already has pre-computed CIGARs for each perspective
             // (q-lines have D↔I swapped relative to t-lines). A hand-built PIF
-            // carrying only a `cs` tag falls back to converting it.
+            // carrying only a `cs` tag falls back to converting it. cs (if
+            // present) is likewise already per-perspective, so pass it through
+            // for mismatch rendering.
             const CIGAR =
               cg ?? (typeof cs === 'string' ? csToCigar(cs) : undefined)
 
@@ -192,6 +194,7 @@ export default class PairwiseIndexedPAFAdapter extends BaseFeatureDataAdapter<Pa
                 strand,
                 ...rest,
                 CIGAR,
+                cs: typeof cs === 'string' ? cs : undefined,
                 syntenyId: fileOffset,
                 identity: pafIdentity(extra),
                 numMatches,

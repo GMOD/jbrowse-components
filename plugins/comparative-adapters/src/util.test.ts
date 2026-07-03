@@ -1,34 +1,7 @@
-import { csToCigar, flipCigar, pafIdentity } from './util.ts'
+import { flipCigar, pafIdentity } from './util.ts'
 
 test('flip cigar', () => {
   expect(flipCigar('3M5D5M5I6M')).toEqual('6M5D5M5I3M')
-})
-
-describe('csToCigar', () => {
-  test('short form match run', () => {
-    expect(csToCigar(':6')).toBe('6=')
-  })
-
-  test('short form with substitution, insertion, deletion', () => {
-    // 6 match, C->T sub, 4 match, insert gtc, 3 match, delete a
-    expect(csToCigar(':6*ct:4+gtc:3-a')).toBe('6=1X4=3I3=1D')
-  })
-
-  test('coalesces adjacent substitutions', () => {
-    expect(csToCigar(':2*ct*ga:2')).toBe('2=2X2=')
-  })
-
-  test('long form (=SEQ) match runs', () => {
-    expect(csToCigar('=ACGT*ct=AC')).toBe('4=1X2=')
-  })
-
-  test('splice/intron (~) becomes N', () => {
-    expect(csToCigar(':5~gt10ag:5')).toBe('5=10N5=')
-  })
-
-  test('flips like a cg CIGAR', () => {
-    expect(flipCigar(csToCigar(':6+gtc:3'))).toBe('3=3D6=')
-  })
 })
 
 describe('pafIdentity', () => {
