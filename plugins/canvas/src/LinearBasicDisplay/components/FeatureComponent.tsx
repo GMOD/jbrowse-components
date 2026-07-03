@@ -497,6 +497,8 @@ const FeatureBody = observer(function FeatureBody({
     <>
       <canvas
         id={canvasId}
+        role="img"
+        aria-label="Feature track"
         ref={canvasRef}
         onMouseMove={handleMouseMove}
         onMouseLeave={() => {

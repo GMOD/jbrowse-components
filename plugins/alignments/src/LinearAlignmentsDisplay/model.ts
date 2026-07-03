@@ -113,11 +113,7 @@ import type {
 } from '../shared/types'
 import type { AnyConfigurationSchemaType } from '@jbrowse/core/configuration'
 import type { MenuItem } from '@jbrowse/core/ui'
-import type {
-  AbstractSessionModel,
-  Feature,
-  Region,
-} from '@jbrowse/core/util'
+import type { AbstractSessionModel, Feature, Region } from '@jbrowse/core/util'
 import type { StopToken } from '@jbrowse/core/util/stopToken'
 import type { Instance } from '@jbrowse/mobx-state-tree'
 import type {
@@ -989,7 +985,7 @@ export default function stateModelFactory(
           for (const [key, px] of self.groupMaxHeightOverrides) {
             maxRowsOverrides.set(key, maxRowsFor(px, rowHeight))
           }
-          return buildLaidOutByGroup({
+          const layoutOpts = {
             order,
             rawByGroup: this.rawDataByGroup,
             isChainMode: self.isChainMode,
@@ -997,11 +993,42 @@ export default function stateModelFactory(
             showSoftClipping: self.showSoftClipping,
             regions: self.loadedRegions,
             maxRows: defaultMaxRows,
-            maxRowsOverrides,
             showLinkedReadLines: self.showLinkedReadLines,
             colorBy: this.colorBy,
             colorTagMap: self.colorTagMap,
-          })
+          }
+          const pass = buildLaidOutByGroup({ ...layoutOpts, maxRowsOverrides })
+          // When the equal-split cap left sparse groups with empty rows while
+          // denser siblings truncated, hand the unused rows to the truncated
+          // groups and lay out once more. Only fit-budget groups take part —
+          // collapsed groups draw no pileup and overridden groups opt out — and
+          // `reclaimFitRows` bails (no second pass) when nothing can move.
+          const participants = order.filter(
+            ({ key }) =>
+              !self.collapsedGroups.has(key) &&
+              !self.groupMaxHeightOverrides.has(key),
+          )
+          const bonusCaps =
+            order.length > 1
+              ? reclaimFitRows({
+                  outcomes: participants.map(({ key }) => {
+                    const map = pass.get(key)
+                    return {
+                      key,
+                      usedRows: map ? groupMaxY(map) : 0,
+                      truncated: map ? anyRegionTruncated(map) : false,
+                    }
+                  }),
+                  defaultMaxRows,
+                  maxRows: maxHeightRows,
+                })
+              : undefined
+          return bonusCaps
+            ? buildLaidOutByGroup({
+                ...layoutOpts,
+                maxRowsOverrides: new Map([...maxRowsOverrides, ...bonusCaps]),
+              })
+            : pass
         },
 
         /**
@@ -1816,8 +1843,13 @@ export default function stateModelFactory(
            * #action
            */
           setScrollTop(scrollTop: number) {
-            if (self.scrollTop !== scrollTop) {
-              self.scrollTop = scrollTop
+            // clamp here (like the variant model) so a resize that shrinks
+            // scrollableHeight while scrollTop sits at the old bottom can't
+            // strand it past the content — no native overflow container to
+            // self-correct
+            const next = Math.max(0, Math.min(scrollTop, self.scrollableHeight))
+            if (self.scrollTop !== next) {
+              self.scrollTop = next
             }
           },
 

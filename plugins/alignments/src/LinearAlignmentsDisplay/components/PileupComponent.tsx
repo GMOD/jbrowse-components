@@ -358,6 +358,8 @@ const PileupCanvas = observer(function PileupCanvas({
   return (
     <canvas
       id={canvasId}
+      role="img"
+      aria-label="Sequence alignments pileup"
       ref={canvasRef}
       style={{
         display: 'block',

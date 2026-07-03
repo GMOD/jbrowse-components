@@ -24,7 +24,8 @@ export function applyRowResizeWheel(
 ) {
   e.preventDefault()
   const delta = e.deltaY > 0 ? -1 : 1
-  const minRowHeight = model.viewportHeight / model.nrow
+  // guard nrow=0 (no samples) so the auto-fit floor stays finite
+  const minRowHeight = model.viewportHeight / Math.max(1, model.nrow)
   const newRowHeight = Math.min(
     MAX_ROW_HEIGHT,
     Math.max(minRowHeight, model.rowHeight + delta),

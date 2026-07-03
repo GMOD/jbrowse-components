@@ -122,6 +122,8 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     <>
       <canvas
         id={canvasId}
+        role="img"
+        aria-label="Variant genotype matrix"
         data-testid="variant_matrix_canvas"
         ref={canvasRef}
         style={{

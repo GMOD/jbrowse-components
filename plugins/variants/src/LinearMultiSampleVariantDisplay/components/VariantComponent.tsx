@@ -238,6 +238,8 @@ const VariantBody = observer(function VariantBody({
     <>
       <canvas
         id={canvasId}
+        role="img"
+        aria-label="Variant genotypes"
         data-testid="variant_canvas"
         ref={canvasRef}
         style={{

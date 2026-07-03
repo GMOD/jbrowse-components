@@ -6,8 +6,6 @@ import { makeStyles } from '../util/tss-react/index.ts'
 
 const TRACK_WIDTH = 12
 const MIN_THUMB_HEIGHT = 20
-// keyboard arrow step; page keys move a full viewport
-const LINE_STEP = 40
 
 const useStyles = makeStyles()(theme => ({
   track: {
@@ -18,12 +16,8 @@ const useStyles = makeStyles()(theme => ({
     zIndex: 10,
     // theme-aware so the thumb stays visible in dark mode (a hardcoded black
     // thumb vanished against a dark canvas)
-    '&:hover > *, &:focus-visible > *': {
+    '&:hover > *': {
       background: theme.palette.action.active,
-    },
-    '&:focus-visible': {
-      outline: `2px solid ${theme.palette.primary.main}`,
-      outlineOffset: -2,
     },
   },
   thumb: {
@@ -39,10 +33,15 @@ const useStyles = makeStyles()(theme => ({
 /**
  * Draggable vertical scrollbar overlay for canvas-backed displays that scroll
  * their content via a `scrollTop` value (alignments pileup, variant matrix).
- * Renders nothing when the content fits the viewport. The thumb geometry, the
- * drag-to-scroll mapping, and keyboard scrolling live here so the consumers
- * don't each re-derive them; the wheel handling stays per-display (their gesture
- * semantics differ).
+ * Renders nothing when the content fits the viewport. The thumb geometry and
+ * the drag-to-scroll mapping live here so the consumers don't each re-derive
+ * them; the wheel handling stays per-display (their gesture semantics differ).
+ *
+ * Deliberately NOT a keyboard tab stop: the surrounding views have no working
+ * keyboard navigation to reach the scrolled content anyway, so a per-track
+ * `tabIndex` would only add noise to the tab order. The `role="scrollbar"` +
+ * `aria-value*` semantics are kept — they cost nothing and expose scroll
+ * position to pointer/voice assistive tech.
  */
 export default function VerticalScrollbar({
   scrollTop,
@@ -121,36 +120,6 @@ export default function VerticalScrollbar({
     }
   }
 
-  function handleKeyDown(e: React.KeyboardEvent) {
-    // WAI-ARIA scrollbar keys: arrows = one line, Page*/Space = one viewport
-    // (Shift+Space pages up), Home/End = the extremes.
-    const page = e.shiftKey ? -viewportHeight : viewportHeight
-    const step =
-      e.key === 'ArrowDown'
-        ? LINE_STEP
-        : e.key === 'ArrowUp'
-          ? -LINE_STEP
-          : e.key === 'PageDown'
-            ? viewportHeight
-            : e.key === 'PageUp'
-              ? -viewportHeight
-              : e.key === ' '
-                ? page
-                : undefined
-    const target =
-      step !== undefined
-        ? clampedScrollTop + step
-        : e.key === 'Home'
-          ? 0
-          : e.key === 'End'
-            ? scrollableHeight
-            : undefined
-    if (target !== undefined) {
-      e.preventDefault()
-      setScrollTop(clamp(target, 0, scrollableHeight))
-    }
-  }
-
   return (
     <div
       data-testid="vertical-scrollbar"
@@ -163,8 +132,6 @@ export default function VerticalScrollbar({
       aria-valuemin={0}
       aria-valuemax={Math.round(scrollableHeight)}
       aria-valuenow={Math.round(clampedScrollTop)}
-      tabIndex={0}
-      onKeyDown={handleKeyDown}
       onPointerDown={handlePointerDown}
       onPointerMove={handlePointerMove}
       onPointerUp={() => {
