@@ -74,13 +74,14 @@ export function ColorByLegend({
   const { classes } = useStyles()
   const swatch = getColorBySwatch(colorBy)
   return (
-    <div className={classes.root}>
+    <div className={classes.root} data-testid="color-by-legend">
       <div className={classes.header}>
         <span className={classes.title}>{colorByShortLabel[colorBy]}</span>
         <Tooltip title="Hide legend">
           <IconButton
             className={classes.close}
             size="small"
+            data-testid="color-by-legend-close"
             onClick={() => {
               onClose()
             }}

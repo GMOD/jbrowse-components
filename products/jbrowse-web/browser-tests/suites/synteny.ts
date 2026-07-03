@@ -1,3 +1,9 @@
+import {
+  findByTestId,
+  navigateWithSessionSpec,
+  waitForDataLoaded,
+} from '../helpers.ts'
+import { dualSnapshot } from '../snapshot.ts'
 import { lgvSnapshotTest, viewSnapshotTest } from '../suiteHelpers.ts'
 
 import type { TestCase, TestSuite } from '../types.ts'
@@ -27,9 +33,59 @@ function syntenyTest(
   })
 }
 
+// Color-by identity (viridis ramp) with the floating legend. The targeted
+// canvas capture pins the viridis coloring; the full-page capture includes the
+// top-right DOM legend overlay. Also drives the legend's dismiss button to
+// prove it hides on click.
+const identityLegendTest: TestCase = {
+  name: 'color by identity shows viridis ramp + dismissible legend',
+  fn: async page => {
+    await navigateWithSessionSpec(
+      page,
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            tracks: ['subset'],
+            colorBy: 'identity',
+            views: [
+              { loc: 'Pp01:28,845,211..28,845,272', assembly: 'peach' },
+              { loc: 'chr1:316,306..316,364', assembly: 'grape' },
+            ],
+          },
+        ],
+      },
+      'test_data/grape_peach_synteny/config.json',
+    )
+    await page.waitForSelector('[data-testid="synteny_canvas_done"]', {
+      timeout: 60000,
+    })
+    await waitForDataLoaded(page, 60000)
+
+    // legend is visible by default; full-page capture records it
+    await findByTestId(page, 'color-by-legend', 60000)
+    await dualSnapshot(
+      page,
+      'synteny-identity-legend-canvas',
+      '[data-testid="synteny_canvas_done"]',
+    )
+
+    // dismiss it and confirm it is removed
+    const close = await findByTestId(page, 'color-by-legend-close', 10000)
+    await close!.click()
+    await page.waitForFunction(
+      () =>
+        document.querySelectorAll('[data-testid="color-by-legend"]').length ===
+        0,
+      { timeout: 10000 },
+    )
+  },
+}
+
 const suite: TestSuite = {
   name: 'Synteny Views',
   tests: [
+    identityLegendTest,
     syntenyTest(
       'horizontally flipped inverted alignment',
       'synteny-flipped-inverted',
