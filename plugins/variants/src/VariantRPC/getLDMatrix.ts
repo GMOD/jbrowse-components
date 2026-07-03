@@ -389,6 +389,9 @@ export interface LDSnp {
   refName: string
   start: number
   end: number
+  // Minor allele frequency (0-0.5). Absent for pre-computed LD adapters
+  // (PLINK/ldmat) where genotypes aren't available to compute it.
+  maf?: number
 }
 
 export interface LDMatrixResult {
@@ -680,6 +683,7 @@ export async function getLDMatrix({
       refName: feature.get('refName'),
       start: feature.get('start'),
       end: feature.get('end'),
+      maf: Math.min(altFreq, 1 - altFreq),
     })
 
     if (packed) {

@@ -1,13 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 
 import BaseTooltip from '@jbrowse/core/ui/BaseTooltip'
-import { getContainingView, max } from '@jbrowse/core/util'
+import { getBpDisplayStr, getContainingView, max } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import { observer } from 'mobx-react'
 
 import Crosshairs from './Crosshairs.tsx'
+import FocalSnpHighlight from './FocalSnpHighlight.tsx'
 import LDColorLegend from './LDColorLegend.tsx'
 import { LDRenderer } from './LDRenderer.ts'
+import LDStatusBar from './LDStatusBar.tsx'
 import LinesConnectingMatrixToGenomicPosition from './LinesConnectingMatrixToGenomicPosition.tsx'
 import VariantLabels from './VariantLabels.tsx'
 import Wrapper from './Wrapper.tsx'
@@ -19,6 +21,15 @@ import type { SharedLDModel } from '../shared.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
 type LGV = LinearGenomeViewModel
+
+function SnpRow({ snp }: { snp: LDFlatbushItem['snp1'] }) {
+  return (
+    <div>
+      <b>{snp.id}</b> {snp.refName}:{(snp.start + 1).toLocaleString()}
+      {snp.maf === undefined ? null : ` · MAF ${snp.maf.toFixed(3)}`}
+    </div>
+  )
+}
 
 function LDTooltip({
   item,
@@ -39,14 +50,25 @@ function LDTooltip({
   } else {
     metricLabel = signedLD ? 'R' : 'R²'
   }
+  const distance = Math.abs(item.snp1.start - item.snp2.start)
+  // Sign only carries meaning when signed values were requested; positive =
+  // coupling (alleles co-occur), negative = repulsion (opposite haplotypes).
+  const phase =
+    signedLD && item.ldValue !== 0
+      ? item.ldValue > 0
+        ? ' (coupling)'
+        : ' (repulsion)'
+      : ''
 
   return (
     <BaseTooltip clientPoint={{ x: x + 15, y }}>
-      <div>{item.snp1.id}</div>
-      <div>{item.snp2.id}</div>
+      <SnpRow snp={item.snp1} />
+      <SnpRow snp={item.snp2} />
       <div>
         {metricLabel}: {item.ldValue.toFixed(3)}
+        {phase}
       </div>
+      <div>Distance: {getBpDisplayStr(distance)}</div>
     </BaseTooltip>
   )
 }
@@ -177,6 +199,21 @@ const LDCanvas = observer(function LDCanvas({
     setMousePosition(undefined)
   }
 
+  // Click a cell to pin its row SNP as focal (highlights that SNP's LD with
+  // every other variant); click empty space to clear.
+  const onClick = (event: React.MouseEvent) => {
+    const container = containerRef.current
+    if (!container || isLoading) {
+      return
+    }
+    const rect = container.getBoundingClientRect()
+    const item = model.hitTest(
+      event.clientX - rect.left,
+      event.clientY - rect.top,
+    )
+    model.setFocalSnp(item?.snp1)
+  }
+
   return (
     <div
       ref={containerRef}
@@ -189,6 +226,7 @@ const LDCanvas = observer(function LDCanvas({
       }}
       onMouseMove={onMouseMove}
       onMouseLeave={onMouseLeave}
+      onClick={onClick}
     >
       <canvas
         data-testid="ld_canvas"
@@ -201,6 +239,10 @@ const LDCanvas = observer(function LDCanvas({
           top: effectiveLineZoneHeight,
         }}
       />
+
+      {model.focalSnpIndex >= 0 ? (
+        <FocalSnpHighlight model={model} height={containerHeight} />
+      ) : null}
 
       {hoveredItem && genomicX1 !== undefined && genomicX2 !== undefined ? (
         <Crosshairs
@@ -224,6 +266,7 @@ const LDCanvas = observer(function LDCanvas({
       {showLegend ? (
         <LDColorLegend ldMetric={ldMetric} signedLD={signedLD} />
       ) : null}
+      <LDStatusBar model={model} />
       {useGenomicPositions ? (
         <Wrapper model={model}>
           <VariantLabels model={model} />

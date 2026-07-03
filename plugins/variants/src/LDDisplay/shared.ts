@@ -74,10 +74,20 @@ export default function sharedModelFactory(
        * #volatile
        */
       rpcData: null as LDDataResult | null,
+      /**
+       * #volatile
+       * Locus (`refName:start`) of the focal SNP whose LD row+column is
+       * emphasized, or undefined. Keyed by locus rather than array index so
+       * the selection survives a re-fetch that reorders SNPs.
+       */
+      focalSnpLocus: undefined as string | undefined,
     }))
     .actions(self => ({
       setRpcData(data: LDDataResult | null) {
         self.rpcData = data
+      },
+      setFocalSnp(snp: LDSnp | undefined) {
+        self.focalSnpLocus = snp ? `${snp.refName}:${snp.start}` : undefined
       },
       setLineZoneHeight(n: number) {
         self.configuration.setSlot('lineZoneHeight', Math.max(0, n))
@@ -211,6 +221,19 @@ export default function sharedModelFactory(
         return (PRECOMPUTED_LD_ADAPTERS as readonly string[]).includes(
           self.adapterConfig?.type,
         )
+      },
+      /**
+       * #getter
+       * Array index of the focal SNP in the current `snps`, or -1 if none is
+       * selected or the locus is no longer present after a re-fetch.
+       */
+      get focalSnpIndex() {
+        const locus = self.focalSnpLocus
+        return locus === undefined
+          ? -1
+          : (self.rpcData?.snps ?? []).findIndex(
+              s => `${s.refName}:${s.start}` === locus,
+            )
       },
     }))
     .views(self => ({
@@ -469,6 +492,16 @@ export default function sharedModelFactory(
         trackMenuItems() {
           return [
             ...superTrackMenuItems(),
+            ...(self.focalSnpIndex >= 0
+              ? [
+                  {
+                    label: 'Clear focal SNP highlight',
+                    onClick: () => {
+                      self.setFocalSnp(undefined)
+                    },
+                  },
+                ]
+              : []),
             {
               label: 'LD metric',
               type: 'subMenu',
