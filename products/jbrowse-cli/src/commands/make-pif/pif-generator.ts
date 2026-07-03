@@ -135,7 +135,7 @@ export async function createPIF(
   const transform = makePifTransform(coarseSplitGap)
   if (filename) {
     const source = createReadStream(filename)
-    await (/.b?gz$/.test(filename)
+    await (/\.b?gz$/i.test(filename)
       ? pipeline(source, createGunzip(), transform, stream)
       : pipeline(source, transform, stream))
   } else {
@@ -145,10 +145,15 @@ export async function createPIF(
 
 export function spawnSortProcess(outputFile: string, useCsi: boolean) {
   const sortCmd = `sort -t"\`printf '\\t'\`" -k1,1 -k3,3n`
-  const bgzipCommand = `bgzip > "${outputFile}"`
-  const tabixCommand = `tabix ${useCsi ? '-C ' : ''}-s1 -b3 -e4 -0 "${outputFile}"`
-  const fullCommand = `${sortCmd} | ${bgzipCommand}; ${tabixCommand}`
-  return spawn('sh', ['-c', fullCommand], {
+  const bgzipCommand = `bgzip > "$1"`
+  const tabixCommand = `tabix ${useCsi ? '-C ' : ''}-s1 -b3 -e4 -0 "$1"`
+  // `&&` (not `;`) so a bgzip failure aborts before tabix runs and propagates
+  // as the pipeline's exit code. The output path is passed as the shell's "$1"
+  // positional rather than interpolated into the command string, so a path
+  // with shell metacharacters (`"`, `$(...)`, backticks) can't break out and
+  // execute — same technique as sort-utils.ts. useCsi is a fixed literal.
+  const fullCommand = `${sortCmd} | ${bgzipCommand} && ${tabixCommand}`
+  return spawn('sh', ['-c', fullCommand, 'sh', outputFile], {
     env: { ...process.env, LC_ALL: 'C' },
     stdio: ['pipe', process.stdout, process.stderr],
   })
