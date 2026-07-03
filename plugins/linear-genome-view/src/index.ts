@@ -113,6 +113,13 @@ export type {
   RenderTransformInputs,
   StaleViewportRescaleMixinType,
 } from './BaseLinearDisplay/index.ts'
+// re-exported so LGV plugins that host their own (non-GPU) chrome can share the
+// single terminal-state precedence instead of re-encoding it (arc's SVG chrome)
+export { computeDisplayPhase } from '@jbrowse/render-core/displayPhase'
+export type {
+  DisplayPhase,
+  DisplayPhaseInputs,
+} from '@jbrowse/render-core/displayPhase'
 export {
   AUTO_FORCE_LOAD_BP,
   HighlightBand,

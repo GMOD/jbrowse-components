@@ -7,6 +7,8 @@ import {
   resolveByteLimit,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { regionSignature } from './regionSignature.ts'
+
 import type { ArcDisplayModel } from './ArcDisplayModel.ts'
 import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 
@@ -59,7 +61,7 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
       adapterConfig: self.adapterConfig,
     })
     if (isAlive(self)) {
-      self.setFeatures(dedupe(ret, r => r.id()))
+      self.setFeatures(dedupe(ret, r => r.id()), regionSignature(regions))
     }
   } finally {
     if (isAlive(self)) {

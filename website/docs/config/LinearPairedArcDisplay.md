@@ -19,8 +19,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-Selected on a `VariantTrack` of structural variants — arcs connect each breakend
-to its mate, even across displayed regions:
+Selected on a `VariantTrack` of structural variants: each feature draws an arc
+from its position to its mate breakend (parsed from the VCF `ALT`), connecting
+the two loci even when the mate is on another chromosome / displayed region.
+Short ticks mark each breakend's mate direction; clicking an arc opens the
+variant details. `color` is jexl-evaluated per `(feature, alt)`:
 
 ```js
 {

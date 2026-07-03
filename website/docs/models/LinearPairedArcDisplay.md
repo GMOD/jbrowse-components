@@ -21,8 +21,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-Selected on a `VariantTrack` of structural variants — arcs connect each breakend
-to its mate, even across displayed regions:
+Selected on a `VariantTrack` of structural variants: each feature draws an arc
+from its position to its mate breakend, even when the mate is on another
+chromosome / displayed region. Short ticks mark each breakend's mate direction;
+clicking an arc opens the variant details:
 
 ```js
 {
@@ -45,8 +47,11 @@ to its mate, even across displayed regions:
 
 ## Overview
 
-this is a non-block-based track type, and can connect arcs across multiple
-displayedRegions
+a non-block-based display that draws one arc per feature from its position to its
+mate breakend (parsed from the VCF `ALT`), connecting the two loci of a
+structural variant even across displayed regions / chromosomes; rendered as plain
+SVG on the main thread. For arcs that span a single feature's own start–end use
+[LinearArcDisplay](../lineararcdisplay) instead.
 
 ### LinearPairedArcDisplay - Configuration
 

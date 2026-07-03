@@ -21,8 +21,10 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-Selected on a `FeatureTrack`; each feature is drawn as an arc from its start to
-its end. `displayMode` is `arcs` or `semicircles`:
+Selected on a `FeatureTrack`; each feature is drawn as one arc from its start to
+its end. `displayMode` is `arcs` (bezier) or `semicircles`. The `thickness` and
+`label` slots default to expressions over the feature `score`, so override them
+(plus `color` / `arcHeight`) for data without a score:
 
 ```js
 {
@@ -39,6 +41,9 @@ its end. `displayMode` is `arcs` or `semicircles`:
       type: 'LinearArcDisplay',
       displayId: 'interactions-LinearArcDisplay',
       displayMode: 'semicircles',
+      color: "jexl:get(feature,'strand')==-1?'red':'blue'",
+      arcHeight: 80,
+      label: "jexl:get(feature,'name')",
     },
   ],
 }
@@ -46,8 +51,10 @@ its end. `displayMode` is `arcs` or `semicircles`:
 
 ## Overview
 
-a non-block-based display drawing an arc connecting the start and end of each
-feature, rendered as plain SVG on the main thread
+a non-block-based display drawing one arc per feature, connecting that feature's
+own start and end, rendered as plain SVG on the main thread. For arcs that
+connect two _separate_ loci (a breakend and its mate) use
+[LinearPairedArcDisplay](../linearpairedarcdisplay) instead.
 
 ### LinearArcDisplay - Configuration
 

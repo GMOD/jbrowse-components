@@ -13,6 +13,8 @@ import {
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 
+import { currentRegionSignature } from '../shared/regionSignature.ts'
+
 import type {
   LinearArcDisplayConfig,
   LinearArcDisplayConfigModel,
@@ -23,12 +25,17 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
 
 /**
  * #stateModel LinearArcDisplay
- * a non-block-based display drawing an arc connecting the start and end of each
- * feature, rendered as plain SVG on the main thread
+ * a non-block-based display drawing one arc per feature, connecting that
+ * feature's own start and end, rendered as plain SVG on the main thread. For
+ * arcs that connect two *separate* loci (a breakend and its mate) use
+ * [LinearPairedArcDisplay](../linearpairedarcdisplay) instead.
  *
  * #example
- * Selected on a `FeatureTrack`; each feature is drawn as an arc from its start
- * to its end. `displayMode` is `arcs` or `semicircles`:
+ * Selected on a `FeatureTrack`; each feature is drawn as one arc from its start
+ * to its end. `displayMode` is `arcs` (bezier) or `semicircles`. The
+ * `thickness` and `label` slots default to expressions over the feature
+ * `score`, so override them (plus `color` / `arcHeight`) for data without a
+ * score:
  * ```js
  * {
  *   type: 'FeatureTrack',
@@ -44,6 +51,9 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
  *       type: 'LinearArcDisplay',
  *       displayId: 'interactions-LinearArcDisplay',
  *       displayMode: 'semicircles',
+ *       color: "jexl:get(feature,'strand')==-1?'red':'blue'",
+ *       arcHeight: 80,
+ *       label: "jexl:get(feature,'name')",
  *     },
  *   ],
  * }
@@ -69,6 +79,9 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
     )
     .volatile(() => ({
       features: undefined as Feature[] | undefined,
+      // signature of the static-block region set `features` were fetched for;
+      // drives the non-stale `svgReady` export gate (see regionSignature.ts)
+      loadedRegionSignature: undefined as string | undefined,
       loading: false,
     }))
     .views(self => ({
@@ -86,18 +99,22 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       /**
        * #getter
        * the SVG-export terminal-state gate (the `SvgExportable` contract every
-       * LGV track display shares). Arc fetches all features into a single array
-       * via `FeatureDensityMixin`, so it has no `loadedRegions` spatial-coverage
-       * signal like the GPU mixins — "settled" is just features-present / error
-       * / too-large. Known gap: this stays true through an in-place refetch, so
-       * an export fired immediately after a pan/zoom can capture stale arcs
-       * (same stale-then-reposition behavior arc shows on-screen); tightening it
-       * would need fetch-generation tracking the single-array model lacks.
+       * LGV track display shares). Non-stale: `features` must have been fetched
+       * for the *current* static-block region set (`loadedRegionSignature`
+       * matches), so an export fired mid-refetch after a pan/zoom waits for
+       * fresh arcs instead of capturing stale ones — arc's analogue of the GPU
+       * mixins' `viewportWithinLoadedData`. The first-paint testid + loading
+       * anti-flash use `features !== undefined` (painted-once) directly, not
+       * this, so they don't flip on refetch (see BaseDisplayComponent).
        */
       get svgReady() {
-        return (
-          self.features !== undefined || !!self.error || self.regionTooLarge
-        )
+        // `features` defined implies `loadedRegionSignature` is set (both from
+        // one `setFeatures`), so it's the "have we loaded" guard; the signature
+        // compare then rejects a stale in-flight refetch
+        const fresh =
+          self.features !== undefined &&
+          self.loadedRegionSignature === currentRegionSignature(self)
+        return fresh || !!self.error || self.regionTooLarge
       },
       /**
        * #getter
@@ -160,14 +177,24 @@ export function stateModelFactory(configSchema: LinearArcDisplayConfigModel) {
       /**
        * #action
        */
-      setFeatures(f: Feature[]) {
+      setFeatures(f: Feature[], signature: string) {
         self.features = f
+        self.loadedRegionSignature = signature
       },
       /**
        * #action
        */
       setDisplayMode(flag: string) {
         self.configuration.setSlot('displayMode', flag)
+      },
+      /**
+       * #action
+       * retry after an error: clearing `error` re-fires the (error-gated) fetch
+       * autorun. The shared `DisplayErrorBar` retry calls this; the base
+       * `reload` is a no-op, which would leave the display stuck on error.
+       */
+      reload() {
+        self.setError(undefined)
       },
     }))
     .actions(self => ({

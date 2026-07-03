@@ -19,8 +19,11 @@ reference the markdown files in our repo of the checked out git tag
 
 ## Example usage
 
-Selected on a `FeatureTrack`; each feature is drawn as an arc from its start to
-its end. `displayMode` is `arcs` or `semicircles`:
+Selected on a `FeatureTrack`; each feature is drawn as one arc from its start to
+its end. `displayMode` is `arcs` (bezier) or `semicircles`. The `thickness` and
+`label` slots default to expressions over the feature `score`, so override them
+(plus `color` / `arcHeight`) for data without a score. All style slots are
+jexl-evaluated per feature:
 
 ```js
 {
@@ -37,6 +40,9 @@ its end. `displayMode` is `arcs` or `semicircles`:
       type: 'LinearArcDisplay',
       displayId: 'interactions-LinearArcDisplay',
       displayMode: 'semicircles',
+      color: "jexl:get(feature,'strand')==-1?'red':'blue'",
+      arcHeight: 80,
+      label: "jexl:get(feature,'name')",
     },
   ],
 }

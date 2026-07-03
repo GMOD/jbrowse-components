@@ -13,6 +13,7 @@ import {
 } from '@jbrowse/plugin-linear-genome-view'
 
 import { makeFeaturePair, pairKey } from './components/util.ts'
+import { currentRegionSignature } from '../shared/regionSignature.ts'
 
 import type {
   LinearPairedArcDisplayConfig,
@@ -24,12 +25,17 @@ import type { ExportSvgDisplayOptions } from '@jbrowse/plugin-linear-genome-view
 
 /**
  * #stateModel LinearPairedArcDisplay
- * this is a non-block-based track type, and can connect arcs across multiple
- * displayedRegions
+ * a non-block-based display that draws one arc per feature from its position to
+ * its mate breakend (parsed from the VCF `ALT`), connecting the two loci of a
+ * structural variant even across displayed regions / chromosomes; rendered as
+ * plain SVG on the main thread. For arcs that span a single feature's own
+ * start–end use [LinearArcDisplay](../lineararcdisplay) instead.
  *
  * #example
- * Selected on a `VariantTrack` of structural variants — arcs connect each
- * breakend to its mate, even across displayed regions:
+ * Selected on a `VariantTrack` of structural variants: each feature draws an arc
+ * from its position to its mate breakend, even when the mate is on another
+ * chromosome / displayed region. Short ticks mark each breakend's mate
+ * direction; clicking an arc opens the variant details:
  * ```js
  * {
  *   type: 'VariantTrack',
@@ -71,6 +77,9 @@ export function stateModelFactory(
     )
     .volatile(() => ({
       features: undefined as Feature[] | undefined,
+      // signature of the static-block region set `features` were fetched for;
+      // drives the non-stale `svgReady` export gate (see regionSignature.ts)
+      loadedRegionSignature: undefined as string | undefined,
       loading: false,
     }))
 
@@ -89,18 +98,22 @@ export function stateModelFactory(
       /**
        * #getter
        * the SVG-export terminal-state gate (the `SvgExportable` contract every
-       * LGV track display shares). Arc fetches all features into a single array
-       * via `FeatureDensityMixin`, so it has no `loadedRegions` spatial-coverage
-       * signal like the GPU mixins — "settled" is just features-present / error
-       * / too-large. Known gap: this stays true through an in-place refetch, so
-       * an export fired immediately after a pan/zoom can capture stale arcs
-       * (same stale-then-reposition behavior arc shows on-screen); tightening it
-       * would need fetch-generation tracking the single-array model lacks.
+       * LGV track display shares). Non-stale: `features` must have been fetched
+       * for the *current* static-block region set (`loadedRegionSignature`
+       * matches), so an export fired mid-refetch after a pan/zoom waits for
+       * fresh arcs instead of capturing stale ones — arc's analogue of the GPU
+       * mixins' `viewportWithinLoadedData`. The first-paint testid + loading
+       * anti-flash use `features !== undefined` (painted-once) directly, not
+       * this, so they don't flip on refetch (see BaseDisplayComponent).
        */
       get svgReady() {
-        return (
-          self.features !== undefined || !!self.error || self.regionTooLarge
-        )
+        // `features` defined implies `loadedRegionSignature` is set (both from
+        // one `setFeatures`), so it's the "have we loaded" guard; the signature
+        // compare then rejects a stale in-flight refetch
+        const fresh =
+          self.features !== undefined &&
+          self.loadedRegionSignature === currentRegionSignature(self)
+        return fresh || !!self.error || self.regionTooLarge
       },
       /**
        * #getter
@@ -144,8 +157,18 @@ export function stateModelFactory(
       /**
        * #action
        */
-      setFeatures(f: Feature[]) {
+      setFeatures(f: Feature[], signature: string) {
         self.features = f
+        self.loadedRegionSignature = signature
+      },
+      /**
+       * #action
+       * retry after an error: clearing `error` re-fires the (error-gated) fetch
+       * autorun. The shared `DisplayErrorBar` retry calls this; the base
+       * `reload` is a no-op, which would leave the display stuck on error.
+       */
+      reload() {
+        self.setError(undefined)
       },
     }))
 
