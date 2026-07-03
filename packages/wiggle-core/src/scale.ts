@@ -95,6 +95,21 @@ export function getNiceDomain({
   if (maxScore !== undefined) {
     max = maxScore
   }
+
+  if (scaleType === 'log') {
+    // d3 scaleLog is undefined at values <= 0, so autoscale (esp. localsd) or
+    // data that crosses zero (e.g. log-ratio bigwigs) would otherwise yield a
+    // domain that produces NaN ticks and a blank plot. Floor the domain to a
+    // positive, non-degenerate range so the axis renders its valid portion
+    // instead of silently disappearing.
+    if (min <= 0) {
+      min = max > 1 ? 1 : max > 0 ? max / 100 : 1
+    }
+    if (max <= min) {
+      max = min * 2
+    }
+  }
+
   const scale = createScaleForType(scaleType)
   scale.domain([min, max])
   scale.nice()

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 import { ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
 import {
@@ -49,6 +49,19 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
     'cluster-samplesPerPixel',
     '1',
   )
+
+  // Abort an in-flight clustering RPC if the dialog is dismissed (title-bar X /
+  // Escape) — the explicit Cancel button does this too, but closing any other
+  // way would otherwise leave the RPC running. A ref mirrors the active token
+  // so the unmount cleanup sees its latest value without re-subscribing.
+  const stopTokenRef = useRef<StopToken>(undefined)
+  stopTokenRef.current = stopToken
+  useEffect(
+    () => () => {
+      stopStopToken(stopTokenRef.current)
+    },
+    [],
+  )
   return (
     <>
       <DialogContent>
@@ -65,8 +78,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
           {showAdvanced ? (
             <div style={{ marginTop: 20 }}>
               <Typography>
-                This procedure samples the data at each 'pixel' across the
-                visible by default
+                By default this samples the data once per screen pixel across
+                the currently visible region.
               </Typography>
               <TextField
                 label="Samples per pixel (>1 for denser sampling, between 0-1 for sparser sampling)"
@@ -104,15 +117,20 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
           onClick={async () => {
             try {
               setError(undefined)
-              setStatus('Initializing')
-              setLoading(true)
               const view = getContainingView(model) as LinearGenomeViewModel
-              if (!view.initialized) {
-                return
-              }
-              const { rpcManager } = getSession(model)
               const { sourcesWithoutLayout, adapterConfig } = model
-              if (sourcesWithoutLayout.length) {
+              if (!view.initialized) {
+                setError(
+                  new Error(
+                    'The view is not initialized yet, please wait and try again',
+                  ),
+                )
+              } else if (!sourcesWithoutLayout.length) {
+                setError(new Error('No subtracks available to cluster'))
+              } else {
+                setStatus('Initializing')
+                setLoading(true)
+                const { rpcManager } = getSession(model)
                 const sessionId = getRpcSessionId(model)
                 const stopToken = createStopToken()
                 setStopToken(stopToken)
@@ -140,8 +158,8 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
                   ),
                   ret.tree,
                 )
+                handleClose()
               }
-              handleClose()
             } catch (e) {
               if (!isAbortException(e) && isAlive(model)) {
                 console.error(e)

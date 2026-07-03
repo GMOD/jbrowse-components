@@ -11,7 +11,7 @@ export default function ScoreLegend({
   scaleType: string
   canvasWidth: number
 }) {
-  const legend = `[${formatScore(domain[0])}-${formatScore(domain[1])}]${scaleType === 'log' ? ' (log)' : ''}`
+  const legend = `[${formatScore(domain[0])}, ${formatScore(domain[1])}]${scaleType === 'log' ? ' (log)' : ''}`
   const len = measureText(legend, 12)
   const xpos = Math.max(0, canvasWidth - len - 10)
   return (

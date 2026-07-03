@@ -40,7 +40,12 @@ import { WIGGLE_POS_COLOR_DEFAULT, WIGGLE_RENDERING_TYPES } from '../util.ts'
  *   name: 'Coverage',
  *   assemblyNames: ['hg38'],
  *   adapter: { type: 'BigWigAdapter', uri: 'https://example.com/coverage.bw' },
- *   displayDefaults: { height: 200, scaleType: 'log', color: 'darkgreen' },
+ *   displayDefaults: {
+ *     height: 200,
+ *     scaleType: 'log',
+ *     color: 'darkgreen',
+ *     useBicolor: false,
+ *   },
  * }
  * ```
  */
@@ -79,7 +84,7 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
       type: 'boolean',
       defaultValue: true,
       description:
-        'Use separate positive/negative colors instead of a single color',
+        'When true (the default), positive scores use posColor and negative scores use negColor. When false, all bars use the single color slot.',
     },
     /**
      * #slot
@@ -87,7 +92,8 @@ const linearWiggleDisplayConfigSchema = ConfigurationSchema(
     color: {
       type: 'color',
       defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-      description: 'Color for the wiggle bars (when not using bicolor mode)',
+      description:
+        'Single fill color for the wiggle bars. Only used when useBicolor is false (useBicolor defaults to true, in which case posColor/negColor are used instead).',
     },
     ...wiggleConfigSchemaFields,
     /**

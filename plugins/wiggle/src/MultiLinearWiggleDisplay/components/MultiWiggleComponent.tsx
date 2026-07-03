@@ -6,6 +6,7 @@ import { TreeSidebar, treeSidebarRightEdge } from '@jbrowse/tree-sidebar'
 import { observer } from 'mobx-react'
 
 import { findOverlayHit, findRowHit } from './findHit.ts'
+import NoDataMessage from '../../shared/NoDataMessage.tsx'
 import { WiggleRenderer } from '../../shared/WiggleRenderer.ts'
 import WiggleTooltip from '../../shared/WiggleTooltip.tsx'
 import { useWiggleMouseHandlers } from '../../shared/useWiggleMouseHandlers.ts'
@@ -195,6 +196,10 @@ const MultiWiggleBody = observer(function MultiWiggleBody({
       </svg>
 
       <TreeSidebar model={model} />
+
+      {model.hasNoData ? (
+        <NoDataMessage width={totalWidth} height={height} />
+      ) : null}
 
       <WiggleTooltip
         model={model}

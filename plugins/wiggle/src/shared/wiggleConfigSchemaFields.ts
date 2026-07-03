@@ -6,12 +6,14 @@ export const wiggleConfigSchemaFields = {
   posColor: {
     type: 'color',
     defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-    description: 'Color for positive scores (when using bicolor)',
+    description:
+      'Fill color for positive scores, used when useBicolor is true (the default)',
   },
   negColor: {
     type: 'color',
     defaultValue: '#f0636b',
-    description: 'Color for negative scores (when using bicolor)',
+    description:
+      'Fill color for negative scores, used when useBicolor is true (the default)',
   },
   bicolorPivot: {
     type: 'number',
@@ -22,13 +24,15 @@ export const wiggleConfigSchemaFields = {
   minScore: {
     type: 'number',
     defaultValue: Number.MIN_VALUE,
-    description: 'Minimum score bound',
+    description:
+      'Fixed minimum score bound. The default (Number.MIN_VALUE) is a sentinel meaning "unset, use autoscale"',
     advanced: true,
   },
   maxScore: {
     type: 'number',
     defaultValue: Number.MAX_VALUE,
-    description: 'Maximum score bound',
+    description:
+      'Fixed maximum score bound. The default (Number.MAX_VALUE) is a sentinel meaning "unset, use autoscale"',
     advanced: true,
   },
   scaleType: {
@@ -41,7 +45,8 @@ export const wiggleConfigSchemaFields = {
     type: 'stringEnum',
     model: types.enumeration('Autoscale type', ['local', 'localsd']),
     defaultValue: 'local',
-    description: 'Autoscale type',
+    description:
+      'Autoscale type: "local" uses the min/max in the visible region, "localsd" uses mean ± numStdDev standard deviations',
   },
   numStdDev: {
     type: 'number',

@@ -14,8 +14,12 @@ export function makeDensityRgbStringFn(
 ) {
   const normalize = makeScoreNormalizer(domainMin, domainMax, isLog)
   const zeroNorm = normalize(0)
+  // maxDist = max(zeroNorm, 1-zeroNorm) is always >= 0.5, so the 0.0001 floor
+  // never triggers — it's kept only to mirror the GPU shader's density branch
+  // verbatim (wiggle.slang: `t = abs(norm - zeroNorm) / max(maxDist, 0.0001)`)
+  // so a reader comparing the two backends sees identical arithmetic.
   const maxDist = Math.max(zeroNorm, 1 - zeroNorm)
-  const invMaxDist = maxDist > 0.0001 ? 1 / maxDist : 0
+  const invMaxDist = 1 / Math.max(maxDist, 0.0001)
   const rDelta = r - 255
   const gDelta = g - 255
   const bDelta = b - 255
