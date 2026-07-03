@@ -4,8 +4,10 @@ export const TREE_STROKE = '#0008'
 // Left inset (CSS px) for the root branch line. The root sits at the smallest y
 // (leftmost node in the left-to-right dendrogram); at y=0 its 1px-wide vertical
 // stroke is centered on the canvas edge, so half of it is clipped off. Nudging
-// the whole y-domain right by a pixel keeps the root line fully on-screen.
-export const TREE_LEFT_PAD = 1
+// the whole y-domain right keeps the root line fully on-screen — pad 2 (not 1)
+// leaves the stroke a clear pixel off the edge so it doesn't read as clipped
+// (reviewer: the tree's top level looked ~1px offscreen at pad 1).
+export const TREE_LEFT_PAD = 2
 
 export interface HierarchyNode<T> {
   data: T

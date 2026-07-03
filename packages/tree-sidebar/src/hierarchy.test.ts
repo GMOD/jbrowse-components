@@ -133,9 +133,9 @@ test('assignDepthY positions by depth-to-leaf, aligning leaves at the edge', () 
   // root sits at the left inset (TREE_LEFT_PAD) so its stroke isn't clipped;
   // leaf A and leaf C both reach the right edge despite A being shallower
   // (depth 1 vs 2) — they share depth-to-leaf 0
-  expect(root.y).toBe(1)
+  expect(root.y).toBe(2)
   expect(root.children![0]!.y).toBe(100)
-  expect(root.children![1]!.y).toBe(50.5)
+  expect(root.children![1]!.y).toBe(51)
   expect(root.children![1]!.children![0]!.y).toBe(100)
 })
 
@@ -166,17 +166,17 @@ test('assignBranchLengthY positions nodes by absolute merge height', () => {
   assignBranchLengthY(root, 100)
   // root (max height) at the left inset, all leaves (height 0) at the right
   // edge, the inner cluster at its merge height fraction (1 - 0.5/2)
-  expect(root.y).toBe(1)
+  expect(root.y).toBe(2)
   expect(root.children![0]!.y).toBe(100)
-  expect(root.children![1]!.y).toBe(75.25)
+  expect(root.children![1]!.y).toBe(75.5)
   expect(root.children![1]!.children![0]!.y).toBe(100)
 })
 
 test('clusterLayout uses branch-length layout when enabled', () => {
   const root = hierarchy(dendro(), childrenOf)
   clusterLayout(root, 30, 100, true)
-  expect(root.y).toBe(1)
-  expect(root.children![1]!.y).toBe(75.25)
+  expect(root.y).toBe(2)
+  expect(root.children![1]!.y).toBe(75.5)
 })
 
 test('clusterLayout falls back to cladogram when no merge heights exist', () => {
