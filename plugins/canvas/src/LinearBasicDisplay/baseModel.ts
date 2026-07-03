@@ -205,6 +205,23 @@ export default function baseStateModelFactory(
            * zoom re-packs (see packRef in layout.ts).
            */
           pinnedFeatureIds: types.array(types.string),
+          /**
+           * #property
+           * "Show only these features": the collected set the user builds by
+           * ctrl+clicking features (or via the right-click menu). Only isolates
+           * the view once `soloApplied` is true — before that it's a highlighted
+           * selection that hides nothing, so the candidates stay clickable.
+           * Persistent so a view can be opened pre-focused declaratively (e.g.
+           * collapse-introns seeds it in the new view's snapshot).
+           */
+          soloFeatureIds: types.array(types.string),
+          /**
+           * #property
+           * Whether the collected soloFeatureIds set is actually isolating the
+           * view (worker drops non-members). Decoupled from collection so
+           * building a multi-feature set doesn't hide the features mid-build.
+           */
+          soloApplied: types.optional(types.boolean, false),
         }),
       )
       .volatile(() => ({
@@ -251,22 +268,6 @@ export default function baseStateModelFactory(
               clientY: number
             }
           | undefined,
-        /**
-         * #volatile
-         */
-        // "Show only these features": the collected set the user builds by
-        // ctrl+clicking features (or via the right-click menu). Only isolates
-        // the view once `soloApplied` is true — before that it's a highlighted
-        // selection that hides nothing, so the candidates stay clickable.
-        // Volatile — a transient focus that shouldn't outlive a reload.
-        soloFeatureIds: observable.array<string>(),
-        /**
-         * #volatile
-         */
-        // Whether the collected soloFeatureIds set is actually isolating the
-        // view (worker drops non-members). Decoupled from collection so building
-        // a multi-feature set doesn't hide the features mid-build.
-        soloApplied: false,
         /**
          * #volatile
          */

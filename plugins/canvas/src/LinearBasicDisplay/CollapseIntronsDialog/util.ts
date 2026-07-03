@@ -1,7 +1,6 @@
 import { readConfObject } from '@jbrowse/core/configuration'
 import { getSession, mergeIntervals, stripTrackIds } from '@jbrowse/core/util'
 import { getSnapshot } from '@jbrowse/mobx-state-tree'
-import { when } from 'mobx'
 
 import {
   getSubfeatures,
@@ -99,9 +98,19 @@ function isSoloCapable(d: unknown): d is SoloCapableDisplay {
   )
 }
 
+interface DisplaySnapshot {
+  id: string
+  [key: string]: unknown
+}
+interface TrackSnapshot {
+  id: string
+  displays: DisplaySnapshot[]
+  [key: string]: unknown
+}
+
 // Isolate the track (matched by trackId) in `view` to a single feature via the
-// canvas display's solo set. Used to focus a freshly-opened collapsed view on
-// the same gene the user acted on.
+// canvas display's solo set. Used by the in-place "Replace" action, where the
+// display already exists so isolating is a direct action call.
 export function soloFeatureInView(
   view: LinearGenomeViewModel,
   trackId: string,
@@ -112,6 +121,34 @@ export function soloFeatureInView(
   )
   const display = track?.displays.find(isSoloCapable)
   display?.soloFeature(featureId)
+}
+
+// Seed the collapsed view's snapshot so its solo-capable display opens already
+// isolated to `featureId` — declarative, so the new view needs no post-init
+// action call. soloFeatureIds/soloApplied are persistent display props; we set
+// them only on the display that actually supports solo (located by id in the
+// source `view`, whose track/display ids still match the snapshot before
+// stripTrackIds runs), so no other display type sees an unknown property.
+function seedSoloInTracks(
+  tracks: TrackSnapshot[],
+  view: LinearGenomeViewModel,
+  trackId: string,
+  featureId: string,
+): TrackSnapshot[] {
+  const track = view.tracks.find(
+    t => readConfObject(t.configuration, 'trackId') === trackId,
+  )
+  const soloDisplayId = track?.displays.find(isSoloCapable)?.id
+  return soloDisplayId === undefined
+    ? tracks
+    : tracks.map(t => ({
+        ...t,
+        displays: t.displays.map(d =>
+          d.id === soloDisplayId
+            ? { ...d, soloFeatureIds: [featureId], soloApplied: true }
+            : d,
+        ),
+      }))
 }
 
 interface ViewState {
@@ -155,7 +192,9 @@ function buildArgs({
 }) {
   const r0 = transcripts[0]?.get('refName')
   if (!r0) {
-    return undefined
+    // Surfaced by runIntronAction's catch, which keeps the dialog open — a
+    // silent return here would close it as if the collapse had succeeded.
+    throw new Error('Could not determine the feature refName')
   }
   const refName = assembly.getCanonicalRefName2(r0)
   const bounds = assembly.regions?.find(r => r.refName === refName)
@@ -201,33 +240,31 @@ export function replaceIntrons({
   soloFeatureId,
 }: IntronActionArgs) {
   const args = buildArgs({ view, transcripts, assembly, padding, flip })
-  if (args) {
-    // snapshot the prior location so "Undo" can restore the original view.
-    // displayedRegions is a types.frozen (plain immutable array), so it's kept
-    // by reference rather than via getSnapshot (which only accepts MST nodes)
-    const previous = {
-      displayedRegions: view.displayedRegions,
-      bpPerPx: view.bpPerPx,
-      offsetPx: view.offsetPx,
-    }
-    view.setDisplayedRegions(args.mergedRegions)
-    view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
-    if (soloFeatureId !== undefined) {
-      soloFeatureInView(view, trackId, soloFeatureId)
-    }
-    getSession(view).notify('Introns collapsed', 'info', {
-      name: 'Undo',
-      onClick: () => {
-        view.setDisplayedRegions(previous.displayedRegions)
-        view.setNewView(previous.bpPerPx, previous.offsetPx)
-      },
-    })
+  // snapshot the prior location so "Undo" can restore the original view.
+  // displayedRegions is a types.frozen (plain immutable array), so it's kept
+  // by reference rather than via getSnapshot (which only accepts MST nodes)
+  const previous = {
+    displayedRegions: view.displayedRegions,
+    bpPerPx: view.bpPerPx,
+    offsetPx: view.offsetPx,
   }
+  view.setDisplayedRegions(args.mergedRegions)
+  view.setNewView(args.initialState.bpPerPx, args.initialState.offsetPx)
+  if (soloFeatureId !== undefined) {
+    soloFeatureInView(view, trackId, soloFeatureId)
+  }
+  getSession(view).notify('Introns collapsed', 'info', {
+    name: 'Undo',
+    onClick: () => {
+      view.setDisplayedRegions(previous.displayedRegions)
+      view.setNewView(previous.bpPerPx, previous.offsetPx)
+    },
+  })
 }
 
 // Run a collapse/replace action, close the dialog on success, and surface any
-// failure through the session notifier. Accepts sync or async actions so the
-// "Replace" (sync) and "Open in new view" (async) buttons share one path.
+// failure through the session notifier. Accepts sync or async actions so both
+// intron buttons ("Replace", "Open in new view") share one path.
 export async function runIntronAction(
   view: LinearGenomeViewModel,
   action: () => void | Promise<void>,
@@ -242,7 +279,7 @@ export async function runIntronAction(
   }
 }
 
-export async function collapseIntrons({
+export function collapseIntrons({
   view,
   transcripts,
   assembly,
@@ -252,20 +289,18 @@ export async function collapseIntrons({
   soloFeatureId,
 }: IntronActionArgs) {
   const args = buildArgs({ view, transcripts, assembly, padding, flip })
-  if (args) {
-    const { id, ...rest } = getSnapshot(view)
-    // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view
-    const newView = getSession(view).addView('LinearGenomeView', {
-      ...rest,
-      tracks: stripTrackIds(rest.tracks),
-      displayName: `${transcriptLabel(transcripts)} (introns collapsed)`,
-      displayedRegions: args.mergedRegions,
-      bpPerPx: args.initialState.bpPerPx,
-      offsetPx: args.initialState.offsetPx,
-    }) as LinearGenomeViewModel
-    await when(() => newView.initialized)
-    if (soloFeatureId !== undefined) {
-      soloFeatureInView(newView, trackId, soloFeatureId)
-    }
-  }
+  const { id, ...rest } = getSnapshot(view)
+  const tracks =
+    soloFeatureId === undefined
+      ? rest.tracks
+      : seedSoloInTracks(rest.tracks, view, trackId, soloFeatureId)
+  // Compute bpPerPx/offsetPx upfront to avoid layout thrashing on the new view
+  getSession(view).addView('LinearGenomeView', {
+    ...rest,
+    tracks: stripTrackIds(tracks),
+    displayName: `${transcriptLabel(transcripts)} (introns collapsed)`,
+    displayedRegions: args.mergedRegions,
+    bpPerPx: args.initialState.bpPerPx,
+    offsetPx: args.initialState.offsetPx,
+  })
 }
