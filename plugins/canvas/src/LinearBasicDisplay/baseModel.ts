@@ -64,10 +64,7 @@ import {
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
-import {
-  THEME_DERIVED_COLOR,
-  isDisplayMode,
-} from '../RenderFeatureDataRPC/renderConfig.ts'
+import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { RegionDensityStats } from './baseModelHelpers.ts'
@@ -428,13 +425,12 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // `displayMode` is a promotable slot: 'normal' (the slot default) means
-        // inherit the session-wide default, compact/superCompact pin the track.
-        // getConfResolved handles the tiers; the guard defends against a corrupt
-        // promoted value.
+        // `displayMode` is a promotable slot with an inherit sentinel: 'inherit'
+        // (the slot default) follows the session-wide default; normal/compact/
+        // superCompact each pin the track. getConfResolved walks the cascade and
+        // always yields a real mode (never 'inherit' or a corrupt promoted value).
         get displayMode(): DisplayMode {
-          const resolved = getConfResolved<DisplayMode>(self, 'displayMode')
-          return isDisplayMode(resolved) ? resolved : 'normal'
+          return getConfResolved<DisplayMode>(self, 'displayMode')
         },
 
         /**
