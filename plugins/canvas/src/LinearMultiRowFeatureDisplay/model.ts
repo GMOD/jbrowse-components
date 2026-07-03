@@ -30,6 +30,7 @@ import { fetchMultiRowFeatures } from './fetchMultiRowFeatures.ts'
 import { fetchCanvasFeatureDetails } from '../LinearBasicDisplay/baseModelHelpers.ts'
 import { MULTIROW_DEFAULT_COLOR } from '../MultiRowGetFeaturesRPC/multiRowColors.ts'
 import { buildMultiRowInstanceBuffer } from './rendering/multiRowInstanceBuffer.ts'
+import { resolveLocalRowIndices } from './rendering/resolveLocalRowIndices.ts'
 import {
   buildEditableSources,
   buildSources,
@@ -355,7 +356,8 @@ export default function stateModelFactory(
         if (mouseX < self.sidebarOffset) {
           return undefined
         }
-        const source = self.sources[Math.floor(mouseY / self.rowHeight)]
+        const targetRow = Math.floor(mouseY / self.rowHeight)
+        const source = self.sources[targetRow]
         if (!source) {
           return undefined
         }
@@ -377,17 +379,19 @@ export default function stateModelFactory(
           featureNames,
           featureIds,
         } = region
-        // resolve the hovered row to this region's local partition index once,
-        // so the per-feature test is an int compare (and naturally matches
-        // nothing when the row has no features here, i.e. index -1)
-        const targetIndex = partitionValues.indexOf(source.name)
+        // Resolve this region's local partition indices to global display rows
+        // via the same helper both render paths use, so the hit-test can't drift
+        // from where a feature actually paints.
+        const rowForLocal = resolveLocalRowIndices(
+          partitionValues,
+          self.rowIndexByValue,
+        )
         // Iterate back-to-front: both render paths paint in array order, so a
         // later feature sits on top of an overlapping earlier one — the hit must
         // resolve to the one actually visible.
         for (let i = featureStarts.length - 1; i >= 0; i--) {
-          const localIndex = featurePartitionIndex[i]!
           if (
-            localIndex === targetIndex &&
+            rowForLocal[featurePartitionIndex[i]!] === targetRow &&
             featureStarts[i]! <= bp &&
             bp < featureEnds[i]!
           ) {
