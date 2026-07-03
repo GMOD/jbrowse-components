@@ -37,14 +37,14 @@ export function stringifySAM({
     lines.push(
       [
         feature.get('name') || '*',
-        (feature.get('flag') as number | undefined) ?? 0,
+        (feature.get('flags') as number | undefined) ?? 0,
         feature.get('refName') || '*',
         String(start + 1),
-        (feature.get('mapq') as number | undefined) ?? 255,
+        feature.get('score') ?? 255,
         (feature.get('CIGAR') as string | undefined) || '*',
         (feature.get('next_ref') as string | undefined) || '*',
         typeof nextPos === 'number' ? String(nextPos + 1) : '0',
-        (feature.get('template_len') as number | undefined) ?? 0,
+        (feature.get('template_length') as number | undefined) ?? 0,
         (feature.get('seq') as string | undefined) || '*',
         qualToPhred(feature.get('qual') as string | undefined),
       ].join('\t'),

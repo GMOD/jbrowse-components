@@ -21,7 +21,9 @@ export function buildSoftclipBaseArrays(softclips: SoftclipData[]) {
     const ri = sc.readIndex
     for (let k = 0; k < sc.sequence.length; k++) {
       softclipBasePositions[i] = sc.clipStart + k
-      softclipBaseBases[i] = sc.sequence.charCodeAt(k)
+      // uppercase the ASCII base (CRAM may emit lowercase) so the Canvas2D
+      // baseColors map (uppercase-keyed) matches the GPU shader path
+      softclipBaseBases[i] = sc.sequence.charCodeAt(k) & ~0x20
       softclipBaseReadIndices[i] = ri
       i++
     }

@@ -1,14 +1,6 @@
-import {
-  CIGAR_H,
-  CIGAR_S,
-  DELETION_TYPE,
-  HARDCLIP_TYPE,
-  INSERTION_TYPE,
-  MISMATCH_TYPE,
-  SKIP_TYPE,
-  SOFTCLIP_TYPE,
-} from '@jbrowse/cigar-utils'
+import { CIGAR_H, CIGAR_S } from '@jbrowse/cigar-utils'
 
+import { readFeaturesToMismatches } from './readFeaturesToMismatches.ts'
 import { readFeaturesToNumericCIGAR } from './readFeaturesToNumericCIGAR.ts'
 import { collectMismatches } from '../shared/collectMismatches.ts'
 import { getPairOrientation } from '../shared/pairOrientation.ts'
@@ -229,112 +221,28 @@ export default class CramSlightlyLazyFeature implements Feature {
   }
 
   // windowStart/windowEnd (genomic) clip emissions to the viewport, matching
-  // BamSlightlyLazyFeature. refPos below is already read-relative, so the window
-  // is converted to that space once.
+  // BamSlightlyLazyFeature. The readFeatures walk works in read-relative space,
+  // so the window is converted to that space once before delegating.
   forEachMismatch(
     callback: MismatchCallback,
     windowStart?: number,
     windowEnd?: number,
   ) {
-    const readFeatures = this.record.readFeatures
-    if (!readFeatures) {
-      return
-    }
-
     const featStart = this.start
-    const qual = this.qualRaw
-    const hasQual = !!qual
-    const len = readFeatures.length
     const wLo =
       windowStart === undefined
         ? Number.NEGATIVE_INFINITY
         : windowStart - featStart
     const wHi =
       windowEnd === undefined ? Number.POSITIVE_INFINITY : windowEnd - featStart
-
-    let refPos = 0
-    let lastPos = featStart
-    let insertedBases = ''
-    let insertedBasesLen = 0
-
-    for (let i = 0; i < len; i++) {
-      const rf = readFeatures[i]!
-      const sublen = refPos - lastPos
-      lastPos = refPos
-
-      // Flush accumulated single-base insertions
-      if (sublen && insertedBasesLen > 0) {
-        if (refPos >= wLo && refPos < wHi) {
-          callback(
-            INSERTION_TYPE,
-            refPos,
-            0,
-            insertedBases,
-            -1,
-            0,
-            insertedBasesLen,
-          )
-        }
-        insertedBases = ''
-        insertedBasesLen = 0
-      }
-      refPos = rf.refPos - 1 - featStart
-
-      const { code } = rf
-      const inWindow = refPos < wHi && refPos + 1 > wLo
-
-      if (code === 'X') {
-        if (inWindow) {
-          const refCharCode = rf.ref ? rf.ref.charCodeAt(0) & ~0x20 : 0
-          callback(
-            MISMATCH_TYPE,
-            refPos,
-            1,
-            rf.sub ?? 'N',
-            hasQual ? qual[rf.pos - 1]! : -1,
-            refCharCode,
-            0,
-          )
-        }
-      } else if (code === 'I') {
-        if (inWindow) {
-          callback(INSERTION_TYPE, refPos, 0, rf.data, -1, 0, rf.data.length)
-        }
-      } else if (code === 'N') {
-        if (refPos < wHi && refPos + rf.data > wLo) {
-          callback(SKIP_TYPE, refPos, rf.data, 'N', -1, 0, 0)
-        }
-      } else if (code === 'S') {
-        if (inWindow) {
-          const dataLen = rf.data.length
-          callback(SOFTCLIP_TYPE, refPos, 1, `S${dataLen}`, -1, 0, dataLen)
-        }
-      } else if (code === 'H') {
-        if (inWindow) {
-          callback(HARDCLIP_TYPE, refPos, 1, `H${rf.data}`, -1, 0, rf.data)
-        }
-      } else if (code === 'D') {
-        if (refPos < wHi && refPos + rf.data > wLo) {
-          callback(DELETION_TYPE, refPos, rf.data, '*', -1, 0, 0)
-        }
-      } else if (code === 'i') {
-        insertedBases += rf.data
-        insertedBasesLen++
-      }
-    }
-
-    // Flush any remaining accumulated insertions
-    if (insertedBasesLen > 0 && refPos >= wLo && refPos < wHi) {
-      callback(
-        INSERTION_TYPE,
-        refPos,
-        0,
-        insertedBases,
-        -1,
-        0,
-        insertedBasesLen,
-      )
-    }
+    readFeaturesToMismatches(
+      this.record.readFeatures,
+      featStart,
+      this.qualRaw,
+      wLo,
+      wHi,
+      callback,
+    )
   }
 
   get fields(): SimpleFeatureSerialized {
