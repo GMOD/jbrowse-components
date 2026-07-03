@@ -140,6 +140,39 @@ describe('CascadingMenu', () => {
     })
   })
 
+  it('should render a custom item inline', async () => {
+    const user = await setup([
+      {
+        label: 'custom-row',
+        type: 'custom',
+        render: () => <div>custom content</div>,
+      },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    expect(await screen.findByText('custom content')).toBeTruthy()
+  })
+
+  it('should not close the menu when interacting with a custom item', async () => {
+    const onClick = jest.fn()
+    const user = await setup([
+      {
+        label: 'custom-row',
+        type: 'custom',
+        render: () => (
+          <button type="button" onClick={() => onClick()}>
+            nudge
+          </button>
+        ),
+      },
+      { label: 'Item 1', onClick: () => {} },
+    ])
+    await user.click(screen.getByTestId('menu-button'))
+    await user.click(await screen.findByText('nudge'))
+    expect(onClick).toHaveBeenCalled()
+    // the custom row is not a clickable MenuItem, so the menu stays open
+    expect(screen.getByText('Item 1')).toBeTruthy()
+  })
+
   it('should show a tooltip explaining why a disabled item is disabled', async () => {
     const user = userEvent.setup({ pointerEventsCheck: 0 })
     render(
