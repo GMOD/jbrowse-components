@@ -12,6 +12,8 @@ import CloseIcon from '@mui/icons-material/Close'
 import { Button, IconButton, Tooltip } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import QuickSelectSyntenyTrack from './QuickSelectSyntenyTrack.tsx'
+
 import type { LinearSyntenyViewModel } from '../../model.ts'
 import type { AbstractSessionModel } from '@jbrowse/core/util'
 
@@ -164,6 +166,11 @@ const LeftPanel = observer(function LeftPanel({
 
   return (
     <>
+      <QuickSelectSyntenyTrack
+        model={model}
+        setSelectedAssemblyNames={setSelectedAssemblyNames}
+        setSelectedRow={setSelectedRow}
+      />
       <div className={classes.mb}>
         Select assemblies for linear synteny view
       </div>
