@@ -18,6 +18,8 @@ const DEFAULT_TRANSCRIPT_TYPES = [
   'protein_coding_primary_transcript',
 ]
 
+const DEFAULT_CONTAINER_TYPES = ['proteoform_orf']
+
 function createMockFeature(opts: {
   id?: string
   type?: string
@@ -52,7 +54,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('mRNA-1')
@@ -69,7 +75,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('gene-1')
@@ -88,7 +98,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('mRNA-1')
@@ -102,7 +116,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
@@ -126,7 +144,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(2)
     expect(result.map(r => r.id())).toEqual(['mRNA-1', 'mRNA-2'])
@@ -143,7 +165,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(0)
   })
@@ -161,7 +187,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(0)
   })
@@ -174,7 +204,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['gene-1', gene]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(0)
   })
@@ -187,7 +221,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
@@ -201,7 +239,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features, DEFAULT_TRANSCRIPT_TYPES)
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
@@ -215,7 +257,11 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features, ['mRNA'])
+    const result = findTranscriptsWithCDS(
+      features,
+      ['mRNA'],
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(0)
   })
@@ -228,13 +274,60 @@ describe('findTranscriptsWithCDS', () => {
     })
 
     const features = new Map([['transcript-1', transcript]])
-    const result = findTranscriptsWithCDS(features, [
-      'mRNA',
-      'some_org_specific_transcript',
-    ])
+    const result = findTranscriptsWithCDS(
+      features,
+      ['mRNA', 'some_org_specific_transcript'],
+      DEFAULT_CONTAINER_TYPES,
+    )
 
     expect(result).toHaveLength(1)
     expect(result[0]!.id()).toBe('transcript-1')
+  })
+
+  it('descends into a configured containerType (non-gene) to reach transcripts', () => {
+    const mRNA = createMockFeature({
+      id: 'mRNA-1',
+      type: 'mRNA',
+      subfeatures: [createMockFeature({ type: 'CDS' })],
+    })
+    const orf = createMockFeature({
+      id: 'orf-1',
+      type: 'proteoform_orf',
+      subfeatures: [mRNA],
+    })
+
+    const features = new Map([['orf-1', orf]])
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]!.id()).toBe('mRNA-1')
+  })
+
+  it('descends into a structural container (children are containers) for a custom type', () => {
+    const mRNA = createMockFeature({
+      id: 'mRNA-1',
+      type: 'mRNA',
+      subfeatures: [createMockFeature({ type: 'CDS' })],
+    })
+    const geneLike = createMockFeature({
+      id: 'gene-like-1',
+      type: 'ncRNA_gene',
+      subfeatures: [mRNA],
+    })
+
+    const features = new Map([['gene-like-1', geneLike]])
+    const result = findTranscriptsWithCDS(
+      features,
+      DEFAULT_TRANSCRIPT_TYPES,
+      DEFAULT_CONTAINER_TYPES,
+    )
+
+    expect(result).toHaveLength(1)
+    expect(result[0]!.id()).toBe('mRNA-1')
   })
 })
 
