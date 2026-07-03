@@ -130,30 +130,25 @@ export function computeLaidOutData(
   const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
 
   const out = new Map<number, FeatureDataResult>()
-  // Empty regions need no layout mutations — share the raw object rather than
-  // allocating clone arrays that will never be written.
+  const refGroups = new Map<string, [number, FeatureDataResult][]>()
   for (const [n, raw] of rpcDataMap) {
     if (raw.flatbushItems.length === 0) {
+      // Empty regions need no layout mutations — share the raw object rather
+      // than allocating clone arrays that will never be written, and skip the
+      // ref-group (nothing to pack).
       out.set(n, raw)
     } else {
       const cloned = cloneMutableFields(raw)
       applyHeightScale(cloned, heightMultiplier)
       out.set(n, cloned)
+      const key = regionKeys.get(n) ?? ''
+      let group = refGroups.get(key)
+      if (!group) {
+        group = []
+        refGroups.set(key, group)
+      }
+      group.push([n, cloned])
     }
-  }
-
-  const refGroups = new Map<string, [number, FeatureDataResult][]>()
-  for (const [displayedRegionIndex, data] of out) {
-    if (data.flatbushItems.length === 0) {
-      continue
-    }
-    const key = regionKeys.get(displayedRegionIndex) ?? ''
-    let group = refGroups.get(key)
-    if (!group) {
-      group = []
-      refGroups.set(key, group)
-    }
-    group.push([displayedRegionIndex, data])
   }
 
   for (const [, regions] of refGroups) {

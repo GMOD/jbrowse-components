@@ -17,6 +17,20 @@ export function easeInOutCubic(t: number) {
   return t < 0.5 ? 4 * t * t * t : 1 - (-2 * t + 2) ** 3 / 2
 }
 
+// How far a feature should ease during a morph: its old row top minus its new
+// one. `undefined` when the feature has no previous row (newly appeared — leave
+// it at its destination) or when it overflows off-screen in the target
+// (topPx = OFFSCREEN_Y < 0 — don't sweep it toward ~-1e6). The single guard both
+// morph directions and the displayed-top capture share, so they can't drift.
+function morphDelta(
+  fromTops: FeatureTops,
+  featureId: string,
+  targetTop: number,
+) {
+  const prevTop = fromTops.get(featureId)
+  return prevTop !== undefined && targetTop >= 0 ? prevTop - targetTop : undefined
+}
+
 // Tallest row bottom across a layout, i.e. its content height.
 export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
   let max = 0
@@ -67,13 +81,8 @@ export function captureDisplayedTops(
   for (const data of target.values()) {
     for (const item of data.flatbushItems) {
       if (item.topPx >= 0) {
-        const prevTop = fromTops.get(item.featureId)
-        out.set(
-          item.featureId,
-          prevTop === undefined
-            ? item.topPx
-            : item.topPx + (prevTop - item.topPx) * rem,
-        )
+        const delta = morphDelta(fromTops, item.featureId, item.topPx) ?? 0
+        out.set(item.featureId, item.topPx + delta * rem)
       }
     }
   }
@@ -95,10 +104,8 @@ export function canMorph(
     rectCount += data.rectYs.length
     if (!moved) {
       for (const item of data.flatbushItems) {
-        const prevTop = fromTops.get(item.featureId)
-        // Skip features overflowing off-screen in the target (topPx < 0) so a
-        // feature dropping out of view doesn't count as "moved" and sweep off.
-        if (prevTop !== undefined && item.topPx >= 0 && prevTop !== item.topPx) {
+        const d = morphDelta(fromTops, item.featureId, item.topPx)
+        if (d !== undefined && d !== 0) {
           moved = true
           break
         }
@@ -138,14 +145,15 @@ export function interpolateYData(
   for (const [regionIdx, data] of target) {
     const items = data.flatbushItems
     const deltas = new Float64Array(items.length)
+    // Same delta keyed by feature id, so labels (keyed by feature/parent id, not
+    // array index) reuse it without a second pass over items.
+    const deltaById = new Map<string, number>()
     let moved = false
     for (let i = 0; i < items.length; i++) {
-      const prevTop = fromTops.get(items[i]!.featureId)
-      // Leave features overflowing off-screen in the target (topPx < 0) at their
-      // destination rather than easing toward ~-1e6.
-      if (prevTop !== undefined && items[i]!.topPx >= 0) {
-        const d = prevTop - items[i]!.topPx
+      const d = morphDelta(fromTops, items[i]!.featureId, items[i]!.topPx)
+      if (d !== undefined) {
         deltas[i] = d
+        deltaById.set(items[i]!.featureId, d)
         if (d !== 0) {
           moved = true
         }
@@ -154,20 +162,14 @@ export function interpolateYData(
     if (!moved || rem === 0) {
       out.set(regionIdx, data)
     } else {
-      const targetTops = new Map<string, number>()
-      for (const item of items) {
-        targetTops.set(item.featureId, item.topPx)
-      }
       const floatingLabelsData: FeatureDataResult['floatingLabelsData'] = {}
       for (const key in data.floatingLabelsData) {
         const label = data.floatingLabelsData[key]!
-        const id = label.parentFeatureId ?? label.featureId
-        const prevTop = fromTops.get(id)
-        const newTop = targetTops.get(id)
+        const delta = deltaById.get(label.parentFeatureId ?? label.featureId)
         floatingLabelsData[key] =
-          prevTop !== undefined && newTop !== undefined
-            ? { ...label, topY: label.topY + (prevTop - newTop) * rem }
-            : label
+          delta === undefined
+            ? label
+            : { ...label, topY: label.topY + delta * rem }
       }
       out.set(regionIdx, {
         ...data,
