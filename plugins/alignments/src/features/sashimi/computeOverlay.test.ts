@@ -140,6 +140,20 @@ test('dedupes a junction shared across same-refName regions (collapsed introns)'
   expect(arcs[0]!.score).toBe(8)
 })
 
+test('auto keeps shared-start (nested) junctions on the same side', () => {
+  // Same donor, two acceptors (100-300, 100-500) — common in alternative
+  // splicing. These nest concentrically rather than interleave, so auto must
+  // NOT split them across bands the way it does for a true crossing.
+  const data = {
+    sashimiX1: new Uint32Array([100, 100]),
+    sashimiX2: new Uint32Array([300, 500]),
+    sashimiCounts: new Uint32Array([5, 5]),
+    sashimiColorTypes: new Uint8Array([0, 0]),
+  } as unknown as PileupDataResult
+  const arcs = computeSashimiArcs({ ...baseOpts(data, 0), mode: 'auto' })
+  expect(arcs.every(a => a.side === 'up')).toBe(true)
+})
+
 test('auto puts the heavier of two crossing junctions on the upper band', () => {
   // 100-300 (light) and 200-400 (heavy) cross; the heavier claims 'up'.
   const data = {

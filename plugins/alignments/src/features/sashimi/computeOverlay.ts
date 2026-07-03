@@ -99,12 +99,15 @@ function strokeWidthForCount(count: number) {
   return Math.max(1, Math.log(count + 1))
 }
 
-// Two arcs "cross" when their spans interleave (a < c < b < d) — not nested and
-// not disjoint. Nested/disjoint pairs never visually collide once heights are
-// span-scaled, so only crossings need to be pulled onto opposite sides.
+// Two arcs "cross" when their spans strictly interleave (a < c < b < d) — not
+// nested and not disjoint. Nested/disjoint pairs never visually collide once
+// heights are span-scaled, so only crossings need to be pulled onto opposite
+// sides. Junctions sharing an endpoint (same donor or same acceptor, common in
+// alternative splicing) are nested, not crossing, so `x.left < y.left` must be
+// strict — otherwise a shared-start pair gets needlessly split across bands.
 function crosses(a: RawArc, b: RawArc) {
   const [x, y] = a.left <= b.left ? [a, b] : [b, a]
-  return y.left < x.right && x.right < y.right
+  return x.left < y.left && y.left < x.right && x.right < y.right
 }
 
 // Greedy 2-coloring for 'auto': place each junction on the side it crosses
