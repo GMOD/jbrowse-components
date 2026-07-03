@@ -7,6 +7,7 @@ import {
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
+import { captureFeatureTops } from './yMorph.ts'
 
 import type { DisplayMode } from '../RenderFeatureDataRPC/renderConfig.ts'
 import type {
@@ -269,7 +270,7 @@ export function createIncrementalLayout() {
         const output = computeLaidOutData(
           members,
           inputs,
-          prev && prevYByFeatureId(prev.output),
+          prev && captureFeatureTops(prev.output),
         )
         const reversed = new Set<number>()
         for (const idx of members.keys()) {
@@ -296,23 +297,6 @@ export function createIncrementalLayout() {
     cache = nextCache
     return out
   }
-}
-
-// Collect each feature's laid-out top (px) from a prior group output, to prime
-// the next re-pack's insertion order. Overflowed features (OFFSCREEN_Y, a large
-// negative) are skipped so they don't sort ahead of on-screen features.
-function prevYByFeatureId(
-  output: ReadonlyMap<number, FeatureDataResult>,
-): Map<string, number> {
-  const out = new Map<string, number>()
-  for (const data of output.values()) {
-    for (const item of data.flatbushItems) {
-      if (item.topPx >= 0) {
-        out.set(item.featureId, item.topPx)
-      }
-    }
-  }
-  return out
 }
 
 function cloneMutableFields(raw: FeatureDataResult) {

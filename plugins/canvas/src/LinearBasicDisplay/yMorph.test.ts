@@ -122,3 +122,30 @@ test('canMorph is false when a shared feature did not move', () => {
   const target = new Map([[0, region([{ featureId: 'a', top: 0 }])]])
   expect(canMorph(new Map([['a', 0]]), target)).toBe(false)
 })
+
+test('captureFeatureTops skips features overflowed off-screen', () => {
+  // "a" overflowed maxHeight in the prior layout (OFFSCREEN_Y ~ -1e6); it must
+  // not become a morph source, else it flies in from ~-1e6 when it reappears.
+  const tops = captureFeatureTops(
+    new Map([
+      [
+        0,
+        region([
+          { featureId: 'a', top: -1e6 },
+          { featureId: 'b', top: 30 },
+        ]),
+      ],
+    ]),
+  )
+  expect(tops.has('a')).toBe(false)
+  expect(tops.get('b')).toBe(30)
+})
+
+test('a feature overflowing off-screen in the target does not animate', () => {
+  // "a" was on-screen at 50, now overflows off-screen at ~-1e6: it must stay at
+  // its destination, not sweep from 50 down to -1e6 over the morph.
+  const fromTops = new Map([['a', 50]])
+  const target = new Map([[0, region([{ featureId: 'a', top: -1e6 }])]])
+  expect(canMorph(fromTops, target)).toBe(false)
+  expect(interpolateYData(fromTops, target, 0).get(0)!.rectYs[0]).toBe(-1e6)
+})

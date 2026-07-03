@@ -30,14 +30,21 @@ export function maxBottom(map: ReadonlyMap<number, FeatureDataResult>) {
   return max
 }
 
-// Snapshot each feature's current row top, to be the start of a later morph.
+// Snapshot each on-screen feature's row top by id. Used both as the start of a
+// later morph and to seed the next re-pack's insertion order (layout.ts).
+// Features that overflowed maxHeight (topPx = OFFSCREEN_Y, a large negative;
+// see layout.ts) are skipped so a feature that was overflowed in the old layout
+// and lands on-screen in the new one isn't animated flying in from ~-1e6, nor
+// sorted ahead of genuinely on-screen features when seeding.
 export function captureFeatureTops(
   map: ReadonlyMap<number, FeatureDataResult>,
 ): FeatureTops {
   const out: FeatureTops = new Map()
   for (const data of map.values()) {
     for (const item of data.flatbushItems) {
-      out.set(item.featureId, item.topPx)
+      if (item.topPx >= 0) {
+        out.set(item.featureId, item.topPx)
+      }
     }
   }
   return out
@@ -59,7 +66,9 @@ export function canMorph(
     if (!moved) {
       for (const item of data.flatbushItems) {
         const prevTop = fromTops.get(item.featureId)
-        if (prevTop !== undefined && prevTop !== item.topPx) {
+        // Skip features overflowing off-screen in the target (topPx < 0) so a
+        // feature dropping out of view doesn't count as "moved" and sweep off.
+        if (prevTop !== undefined && item.topPx >= 0 && prevTop !== item.topPx) {
           moved = true
           break
         }
@@ -102,7 +111,9 @@ export function interpolateYData(
     let moved = false
     for (let i = 0; i < items.length; i++) {
       const prevTop = fromTops.get(items[i]!.featureId)
-      if (prevTop !== undefined) {
+      // Leave features overflowing off-screen in the target (topPx < 0) at their
+      // destination rather than easing toward ~-1e6.
+      if (prevTop !== undefined && items[i]!.topPx >= 0) {
         const d = prevTop - items[i]!.topPx
         deltas[i] = d
         if (d !== 0) {
