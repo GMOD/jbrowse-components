@@ -1,6 +1,6 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createProgressReporter, updateStatus } from '@jbrowse/core/util'
-import { rpcResult } from '@jbrowse/core/util/librpc'
+import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -8,10 +8,7 @@ import {
 
 import { packMultiRowFeatures } from './packMultiRowFeatures.ts'
 
-import type {
-  MultiRowGetFeaturesArgs,
-  MultiRowGetFeaturesResult,
-} from './rpcTypes.ts'
+import type { MultiRowGetFeaturesArgs } from './rpcTypes.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
 
@@ -21,7 +18,7 @@ export async function executeMultiRowGetFeatures({
 }: {
   pluginManager: PluginManager
   args: MultiRowGetFeaturesArgs
-}): Promise<MultiRowGetFeaturesResult> {
+}) {
   const {
     sessionId,
     adapterConfig,
@@ -54,11 +51,8 @@ export async function executeMultiRowGetFeatures({
       stopTokenCheck,
     }),
   })
-  // Derive transferables from the result (like executeRenderFeatureData) so a
-  // new TypedArray field can't silently get cloned across the worker boundary
-  // just because a hand-maintained buffer list wasn't extended.
-  const transferables = Object.values(result)
-    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
-    .map(v => v.buffer as ArrayBuffer)
-  return rpcResult(result, transferables) as unknown as MultiRowGetFeaturesResult
+  // Caller-facing type comes from the RpcRegistry `MultiRowGetFeatures.return`
+  // ambient declaration (see rpcTypes.ts); the framework unwraps the rpcResult
+  // wrapper, so no return annotation or cast is needed here.
+  return rpcResultWithArrayBuffers(result)
 }

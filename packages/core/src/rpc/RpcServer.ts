@@ -21,6 +21,18 @@ export function rpcResult(value: unknown, transferables: Transferable[]) {
   return { __rpcResult: true, value, transferables } as RpcResult
 }
 
+// rpcResult with transferables auto-derived from the result's top-level
+// TypedArray fields, so a newly-added typed-array field is transferred (moved,
+// zero-copy) rather than silently structurally cloned just because a
+// hand-maintained buffer list wasn't extended. Use for any worker RPC whose
+// result is a flat object of typed arrays (canvas/synteny/dotplot/wiggle packers).
+export function rpcResultWithArrayBuffers(value: object) {
+  const transferables = Object.values(value)
+    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
+    .map(v => v.buffer as ArrayBuffer)
+  return rpcResult(value, transferables)
+}
+
 type Procedure = (data: unknown) => Promise<unknown>
 
 interface RpcMessageData {

@@ -1,7 +1,7 @@
 import { getAdapter } from '@jbrowse/core/data_adapters/dataAdapterCache'
 import { createJBrowseThemeFromArgs } from '@jbrowse/core/ui'
 import { updateStatus, withProgress } from '@jbrowse/core/util'
-import { rpcResult } from '@jbrowse/core/util/librpc'
+import { rpcResultWithArrayBuffers } from '@jbrowse/core/util/librpc'
 import {
   checkStopToken2,
   createStopTokenChecker,
@@ -18,11 +18,7 @@ import { findGlyph } from './glyphs/findGlyph.ts'
 import { fetchPeptideData } from './peptides/peptideUtils.ts'
 import { shouldRenderPeptideBackground } from './zoomThresholds.ts'
 
-import type {
-  FeatureDataResult,
-  RenderFeatureDataArgs,
-  RenderFeatureDataResult,
-} from './rpcTypes.ts'
+import type { FeatureDataResult, RenderFeatureDataArgs } from './rpcTypes.ts'
 import type { FeatureLayout, PeptideData } from './types.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
 import type { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
@@ -34,7 +30,7 @@ export async function executeRenderFeatureData({
 }: {
   pluginManager: PluginManager
   args: RenderFeatureDataArgs
-}): Promise<RenderFeatureDataResult> {
+}) {
   const {
     sessionId,
     adapterConfig,
@@ -224,15 +220,10 @@ export async function executeRenderFeatureData({
     bytes,
   }
 
-  // Derive transferables from the result so new TypedArray fields don't
-  // silently get cloned across the worker boundary just because someone
-  // forgot to extend a hand-maintained list.
-  const transferables = Object.values(result)
-    .filter((v): v is ArrayBufferView => ArrayBuffer.isView(v))
-    .map(v => v.buffer as ArrayBuffer)
-
-  // rpcResult wraps value + transferables for the RPC framework, which
-  // unwraps it before returning to the caller. The function signature
-  // reflects the unwrapped type; the double-cast is necessary here.
-  return rpcResult(result, transferables) as unknown as RenderFeatureDataResult
+  // rpcResultWithArrayBuffers wraps value + auto-derived transferables; the RPC
+  // framework unwraps it before returning to the caller. The caller-facing type
+  // is the RpcRegistry `RenderFeatureData.return` ambient declaration (see
+  // rpcTypes.ts), so this producer needs no return annotation or cast — matching
+  // the too-large early returns above, which the framework passes through as-is.
+  return rpcResultWithArrayBuffers(result)
 }
