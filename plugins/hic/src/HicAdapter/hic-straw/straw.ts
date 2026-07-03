@@ -36,8 +36,4 @@ export default class Straw {
   async getNormalizationOptions() {
     return this.hicFile.getNormalizationOptions()
   }
-
-  getFileChrName(chrAlias: string) {
-    return this.hicFile.getFileChrName(chrAlias)
-  }
 }

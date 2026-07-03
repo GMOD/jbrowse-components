@@ -4,33 +4,14 @@
 import type BinaryParser from './binary.ts'
 import type { BlockIndexEntry, Chromosome, HicRegion, Zoom } from './types.ts'
 
-class StaticBlockIndex {
-  private blockIndex: Record<number, BlockIndexEntry> = {}
-
-  constructor(nBlocks: number, dis: BinaryParser) {
-    let n = nBlocks
-    while (n-- > 0) {
-      const blockNumber = dis.getInt()
-      const filePosition = dis.getLong()
-      const size = dis.getInt()
-      this.blockIndex[blockNumber] = { filePosition, size }
-    }
-  }
-
-  getBlockIndexEntry(blockNumber: number): BlockIndexEntry | undefined {
-    return this.blockIndex[blockNumber]
-  }
-}
-
 export default class MatrixZoomData {
-  zoom!: Zoom
-  blockBinCount!: number
-  blockColumnCount!: number
-  blockIndex!: StaticBlockIndex
-
   constructor(
     public chr1: Chromosome,
     public chr2: Chromosome,
+    public zoom: Zoom,
+    public blockBinCount: number,
+    public blockColumnCount: number,
+    public blockIndex: Record<number, BlockIndexEntry>,
   ) {}
 
   getKey() {
@@ -43,7 +24,9 @@ export default class MatrixZoomData {
     const blockBinCount = this.blockBinCount
     const blockColumnCount = this.blockColumnCount
 
-    const blockNumbers: number[] = []
+    // A Set dedups the block numbers that transposition can collide on the
+    // same-chr diagonal, and keeps both branches uniform.
+    const blockNumbers = new Set<number>()
     if (version < 9 || !sameChr) {
       const x1 = region1.start / binsize
       const x2 = region1.end / binsize
@@ -57,14 +40,11 @@ export default class MatrixZoomData {
 
       for (let row = row1; row <= row2; row++) {
         for (let column = col1; column <= col2; column++) {
-          const blockNumber =
+          blockNumbers.add(
             sameChr && row < column
               ? column * blockColumnCount + row
-              : row * blockColumnCount + column
-          if (!blockNumbers.includes(blockNumber)) {
-            // possible from transposition
-            blockNumbers.push(blockNumber)
-          }
+              : row * blockColumnCount + column,
+          )
         }
       }
     } else {
@@ -98,11 +78,11 @@ export default class MatrixZoomData {
 
       for (let depth = nearerDepth; depth <= furtherDepth; depth++) {
         for (let pad = translatedLowerPAD; pad <= translatedHigherPAD; pad++) {
-          blockNumbers.push(depth * blockColumnCount + pad)
+          blockNumbers.add(depth * blockColumnCount + pad)
         }
       }
     }
-    return blockNumbers
+    return [...blockNumbers]
   }
 
   static parseMatrixZoomData(
@@ -110,8 +90,6 @@ export default class MatrixZoomData {
     chr2: Chromosome,
     dis: BinaryParser,
   ) {
-    const zd = new MatrixZoomData(chr1, chr2)
-
     const unit = dis.getString()
     const zoomIndex = dis.getInt()
     dis.getFloat() // sumCounts
@@ -119,13 +97,25 @@ export default class MatrixZoomData {
     dis.getFloat() // stdDev
     dis.getFloat() // percent95
     const binSize = dis.getInt()
-    zd.blockBinCount = dis.getInt()
-    zd.blockColumnCount = dis.getInt()
-    const nBlocks = dis.getInt()
+    const blockBinCount = dis.getInt()
+    const blockColumnCount = dis.getInt()
+    let nBlocks = dis.getInt()
 
-    zd.zoom = { index: zoomIndex, unit, binSize }
-    zd.blockIndex = new StaticBlockIndex(nBlocks, dis)
+    const blockIndex: Record<number, BlockIndexEntry> = {}
+    while (nBlocks-- > 0) {
+      const blockNumber = dis.getInt()
+      const filePosition = dis.getLong()
+      const size = dis.getInt()
+      blockIndex[blockNumber] = { filePosition, size }
+    }
 
-    return zd
+    return new MatrixZoomData(
+      chr1,
+      chr2,
+      { index: zoomIndex, unit, binSize },
+      blockBinCount,
+      blockColumnCount,
+      blockIndex,
+    )
   }
 }

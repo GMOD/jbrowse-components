@@ -55,14 +55,11 @@ export default class BinaryParser {
     return value
   }
 
-  getString(len?: number) {
+  getString() {
     let s = ''
     let c = this.view.getUint8(this.position++)
     while (c !== 0) {
       s += String.fromCharCode(c)
-      if (len && s.length === len) {
-        break
-      }
       c = this.view.getUint8(this.position++)
     }
     return s

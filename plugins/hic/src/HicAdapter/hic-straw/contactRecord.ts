@@ -7,8 +7,4 @@ export default class ContactRecord {
     public bin2: number,
     public counts: number,
   ) {}
-
-  getKey() {
-    return `${this.bin1}_${this.bin2}`
-  }
 }

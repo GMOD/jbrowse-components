@@ -37,7 +37,6 @@ interface MasterIndexEntry {
 export interface HicConfig {
   file: Filehandle
   nvi?: string
-  loadFragData?: boolean
 }
 
 class Block {
@@ -82,7 +81,6 @@ function getNormalizationVectorKey(
 export default class HicFile {
   private config: HicConfig
   private file: Filehandle
-  private loadFragData: boolean | undefined
 
   private normVectorCache = new LRU<string, NormalizationVector>(10)
   private normalizationTypes = ['NONE']
@@ -102,14 +100,12 @@ export default class HicFile {
   private chromosomeIndexMap: Record<string, number> = {}
   private chrAliasTable: Record<string, string> = {}
   private bpResolutions: number[] = []
-  private fragResolutions: number[] = []
   private masterIndex: Record<string, MasterIndexEntry> = {}
   private meta: HicMetadata | undefined
 
   constructor(config: HicConfig) {
     this.config = config
     this.file = config.file
-    this.loadFragData = config.loadFragData
   }
 
   async init() {
@@ -178,13 +174,6 @@ export default class HicFile {
     let nBpResolutions = binaryParser.getInt()
     while (nBpResolutions-- > 0) {
       this.bpResolutions.push(binaryParser.getInt())
-    }
-
-    if (this.loadFragData) {
-      let nFragResolutions = binaryParser.getInt()
-      while (nFragResolutions-- > 0) {
-        this.fragResolutions.push(binaryParser.getInt())
-      }
     }
 
     // Build lookup table for well-known chr aliases
@@ -423,7 +412,7 @@ export default class HicFile {
   }
 
   async readBlock(blockNumber: number, zd: MatrixZoomData) {
-    const idx = zd.blockIndex.getBlockIndexEntry(blockNumber)
+    const idx = zd.blockIndex[blockNumber]
 
     let block: Block | undefined
     if (idx) {
@@ -498,23 +487,6 @@ export default class HicFile {
     return block
   }
 
-  async isNormalizationValueAvailableAtResolution(
-    normalization: string,
-    chr: string,
-    unit: string,
-    resolution: number,
-  ) {
-    const chromosomeIndex = this.chromosomeIndexMap[this.getFileChrName(chr)]
-    const normVectorIndex = await this.getNormVectorIndex()
-    const key = getNormalizationVectorKey(
-      normalization,
-      chromosomeIndex!,
-      unit,
-      resolution,
-    )
-    return normVectorIndex?.[key] !== undefined
-  }
-
   async getNormalizationVector(
     type: string,
     chr: string,
@@ -531,20 +503,14 @@ export default class HicFile {
       result = this.normVectorCache.get(key)
     } else {
       const normVectorIndex = await this.getNormVectorIndex()
-      const status = await this.isNormalizationValueAvailableAtResolution(
-        type,
-        chr,
-        unit,
-        binSize,
-      )
       if (!normVectorIndex) {
         console.warn('Normalization vectors not present in this file')
-      } else if (!status) {
+      } else if (normVectorIndex[key] === undefined) {
         console.warn(
           `Normalization option ${type} not available at resolution ${binSize}. Will use NONE.`,
         )
       } else {
-        const idx = normVectorIndex[key]!
+        const idx = normVectorIndex[key]
         const data = await this.file.read(idx.filePosition, 8)
         const parser = new BinaryParser(new DataView(data))
         const nValues = this.version < 9 ? parser.getInt() : parser.getLong()
@@ -591,7 +557,7 @@ export default class HicFile {
         }
       }
     }
-    return this.version < 6 ? undefined : this.normVectorIndex
+    return this.normVectorIndex
   }
 
   async getNormalizationOptions() {
