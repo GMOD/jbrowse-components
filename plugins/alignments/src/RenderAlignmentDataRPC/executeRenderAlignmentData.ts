@@ -457,7 +457,7 @@ export async function executeRenderAlignmentData({
       sessionId,
       sequenceAdapter,
       region,
-      featuresArray,
+      featuresArray: inputFeatures,
     })
     regionSequence = result.regionSequence?.toLowerCase()
     regionSequenceStart = result.regionSequenceStart

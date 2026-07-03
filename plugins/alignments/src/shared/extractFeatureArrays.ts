@@ -1,8 +1,5 @@
 import { getClip } from '@jbrowse/cigar-utils'
-import {
-  detectSimplexModifications,
-  getTag,
-} from '@jbrowse/modifications-utils'
+import { getTag } from '@jbrowse/modifications-utils'
 
 import {
   extractCigarFeatures,
@@ -180,12 +177,6 @@ export function extractFeatureArrays<T extends FeatureData>(
 
   modifications.sort((a, b) => a.modType.localeCompare(b.modType))
 
-  // Resolve simplex globally now that every read is parsed (one answer per type,
-  // not a per-read guess). See detectSimplexModifications.
-  const detectedSimplexModifications = detectSimplexModifications([
-    ...seenModTypes.values(),
-  ])
-
   const uniqueTagValues = isTagColorMode
     ? [...new Set(tagColorValues)].filter(v => v !== '')
     : undefined
@@ -204,10 +195,9 @@ export function extractFeatureArrays<T extends FeatureData>(
     suppAlignments,
     clipAtStart,
     detectedModifications,
-    detectedSimplexModifications,
-    // Raw (strand, type) pairs seen in this call. When extraction is run per
-    // group, the worker merges these across groups and re-resolves simplex
-    // globally so modification coloring is identical in every section.
+    // Raw (strand, type) pairs seen in this call. The worker merges these across
+    // groups and resolves simplex globally so modification coloring is identical
+    // in every section (see detectSimplexModifications in the worker entry).
     seenModTypes,
   }
 }
