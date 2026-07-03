@@ -1,7 +1,10 @@
-import { ErrorBanner, LoadingEllipses } from '@jbrowse/core/ui'
+import {
+  ErrorBanner,
+  LoadingEllipses,
+  StatusProgressBar,
+} from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { RefetchIndicator } from '@jbrowse/synteny-core'
-import { LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { DotplotViewModel } from '../model.ts'
@@ -38,10 +41,9 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
           <div key={display.id} className={classes.loadingOverlay}>
             <LoadingEllipses message={display.statusMessage} />
             {display.statusProgress === undefined ? null : (
-              <LinearProgress
+              <StatusProgressBar
                 className={classes.bar}
-                variant="determinate"
-                value={Math.min(100, display.statusProgress * 100)}
+                fraction={display.statusProgress}
               />
             )}
           </div>

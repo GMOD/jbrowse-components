@@ -5,6 +5,7 @@ import {
   getContainingView,
   getSession,
   isAbortException,
+  statusFraction,
   statusProgressLabel,
   useLocalStorage,
 } from '@jbrowse/core/util'
@@ -104,7 +105,10 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
               >
                 Stop
               </Button>
-              <StatusProgressBar status={status} style={{ marginTop: 8 }} />
+              <StatusProgressBar
+                fraction={statusFraction(status)}
+                style={{ marginTop: 8 }}
+              />
             </div>
           ) : null}
           {error ? <ErrorBanner error={error} /> : null}

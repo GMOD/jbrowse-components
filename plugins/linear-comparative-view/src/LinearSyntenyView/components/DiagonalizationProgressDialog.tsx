@@ -1,7 +1,11 @@
 import { useEffect, useState } from 'react'
 
 import { Dialog, StatusProgressBar } from '@jbrowse/core/ui'
-import { getSession, statusProgressLabel } from '@jbrowse/core/util'
+import {
+  getSession,
+  statusFraction,
+  statusProgressLabel,
+} from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
 import { observer } from 'mobx-react'
@@ -86,7 +90,10 @@ const DiagonalizationProgressDialog = observer(
             {error ?? statusProgressLabel(status)}
           </Typography>
           {done ? null : (
-            <StatusProgressBar status={status} style={{ marginTop: 16 }} />
+            <StatusProgressBar
+              fraction={statusFraction(status)}
+              style={{ marginTop: 16 }}
+            />
           )}
         </DialogContent>
         <DialogActions>

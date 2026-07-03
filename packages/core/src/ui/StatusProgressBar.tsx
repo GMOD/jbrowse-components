@@ -1,25 +1,21 @@
 import LinearProgress from '@mui/material/LinearProgress'
 
-import { statusFraction } from '../util/progress.ts'
-
-import type { RpcStatus } from '../util/progress.ts'
-
 /**
- * A MUI LinearProgress driven by an {@link RpcStatus}: determinate (filling to
- * the status fraction) when the status carries one, indeterminate otherwise.
- * The single place that maps a status to determinate-vs-indeterminate, shared
- * by the loading/clustering/diagonalize dialogs.
+ * A MUI LinearProgress driven by a completion fraction in [0,1]: determinate
+ * (filling to the fraction) when one is given, indeterminate when `undefined`.
+ * The single place that maps a fraction to determinate-vs-indeterminate, shared
+ * by every loading/clustering/diagonalize/refetch indicator. Callers with an
+ * {@link RpcStatus} pass `statusFraction(status)`.
  */
 export default function StatusProgressBar({
-  status,
+  fraction,
   className,
   style,
 }: {
-  status?: RpcStatus
+  fraction?: number
   className?: string
   style?: React.CSSProperties
 }) {
-  const fraction = statusFraction(status)
   return (
     <LinearProgress
       className={className}

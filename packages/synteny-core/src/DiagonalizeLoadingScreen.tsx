@@ -51,7 +51,7 @@ const DiagonalizeLoadingScreen = observer(function DiagonalizeLoadingScreen({
             : `${base} ${Math.round(fraction * 100)}%`
         }
       />
-      <StatusProgressBar status={status} className={classes.bar} />
+      <StatusProgressBar fraction={fraction} className={classes.bar} />
       {onCancel ? (
         <Button
           color="secondary"

@@ -1,6 +1,5 @@
-import { LoadingEllipses } from '@jbrowse/core/ui'
+import { LoadingEllipses, StatusProgressBar } from '@jbrowse/core/ui'
 import { keyframes, makeStyles } from '@jbrowse/core/util/tss-react'
-import { LinearProgress } from '@mui/material'
 import { observer } from 'mobx-react'
 
 // anti-flash: hold the chip hidden for the first moments so a fast cached
@@ -60,11 +59,7 @@ const RefetchIndicator = observer(function RefetchIndicator({
         }
       />
       {statusProgress === undefined ? null : (
-        <LinearProgress
-          className={classes.bar}
-          variant="determinate"
-          value={Math.min(100, statusProgress * 100)}
-        />
+        <StatusProgressBar className={classes.bar} fraction={statusProgress} />
       )}
     </div>
   )

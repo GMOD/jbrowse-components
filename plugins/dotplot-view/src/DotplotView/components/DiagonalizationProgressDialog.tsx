@@ -1,7 +1,7 @@
 import { useState } from 'react'
 
 import { Dialog, ErrorBanner, StatusProgressBar } from '@jbrowse/core/ui'
-import { statusProgressLabel } from '@jbrowse/core/util'
+import { statusFraction, statusProgressLabel } from '@jbrowse/core/util'
 import { createStopToken, stopStopToken } from '@jbrowse/core/util/stopToken'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button, DialogActions, DialogContent, Typography } from '@mui/material'
@@ -98,7 +98,10 @@ const DiagonalizationProgressDialog = observer(
           {message ? <Typography>{message}</Typography> : null}
           {error ? <ErrorBanner error={error} /> : null}
           {isRunning ? (
-            <StatusProgressBar status={status} className={classes.progress} />
+            <StatusProgressBar
+              fraction={statusFraction(status)}
+              className={classes.progress}
+            />
           ) : null}
         </DialogContent>
         <DialogActions>
