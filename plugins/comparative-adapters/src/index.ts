@@ -7,6 +7,7 @@ import DeltaAdapterF from './DeltaAdapter/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import MCScanAddTrackComponentF from './MCScanAddTrackComponent/index.tsx'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter/index.ts'
+import MCScanBlocksAdapterF from './MCScanBlocksAdapter/index.ts'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
 import PAFAdapterF from './PAFAdapter/index.ts'
@@ -23,6 +24,7 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     DeltaAdapterF(pluginManager)
     ChainAdapterF(pluginManager)
     MCScanAnchorsAdapterF(pluginManager)
+    MCScanBlocksAdapterF(pluginManager)
     MCScanSimpleAnchorsAdapterF(pluginManager)
     MashMapAdapterF(pluginManager)
     BlastTabularAdapterF(pluginManager)
