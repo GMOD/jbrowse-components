@@ -1,8 +1,4 @@
-import {
-  ErrorBanner,
-  LoadingEllipses,
-  StatusProgressBar,
-} from '@jbrowse/core/ui'
+import { ErrorBanner, LoadingProgress } from '@jbrowse/core/ui'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { RefetchIndicator } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
@@ -39,13 +35,11 @@ const DisplayStatusOverlays = observer(function DisplayStatusOverlays({
           <ErrorBanner key={display.id} error={display.error} />
         ) : display.isLoading ? (
           <div key={display.id} className={classes.loadingOverlay}>
-            <LoadingEllipses message={display.statusMessage} />
-            {display.statusProgress === undefined ? null : (
-              <StatusProgressBar
-                className={classes.bar}
-                fraction={display.statusProgress}
-              />
-            )}
+            <LoadingProgress
+              message={display.statusMessage}
+              fraction={display.statusProgress}
+              barClassName={classes.bar}
+            />
           </div>
         ) : display.isRefetching ? (
           <RefetchIndicator
