@@ -1,11 +1,14 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { MultiLevelRubberband } from '@jbrowse/plugin-linear-genome-view'
+import { ColorByLegend } from '@jbrowse/synteny-core'
 import { observer } from 'mobx-react'
 
 import Header from './Header.tsx'
 import LinearComparativeRenderArea from './LinearComparativeRenderArea.tsx'
 
+import type { LinearSyntenyViewModel } from '../../LinearSyntenyView/model.ts'
 import type { LinearComparativeViewModel } from '../model.ts'
+import type { SyntenyColorBy } from '@jbrowse/synteny-core'
 
 const useStyles = makeStyles()(theme => ({
   // this helps keep the vertical guide inside the parent view container,
@@ -23,7 +26,18 @@ const useStyles = makeStyles()(theme => ({
       background: theme.palette.action.selected,
     },
   },
+  renderAreaWrapper: {
+    position: 'relative',
+  },
 }))
+
+// The dynamic color controls are synteny-specific. Gate on the MST type
+// discriminator so a plain LinearComparativeView never reads synteny-only state.
+function asSyntenyModel(model: LinearComparativeViewModel) {
+  return model.type === 'LinearSyntenyView'
+    ? (model as LinearSyntenyViewModel)
+    : undefined
+}
 
 const LinearComparativeView = observer(function LinearComparativeView({
   model,
@@ -31,6 +45,8 @@ const LinearComparativeView = observer(function LinearComparativeView({
   model: LinearComparativeViewModel
 }) {
   const { classes } = useStyles()
+  const syntenyModel = asSyntenyModel(model)
+  const showLegend = !!syntenyModel?.showColorLegend
 
   return (
     <div className={classes.rubberbandContainer}>
@@ -39,7 +55,17 @@ const LinearComparativeView = observer(function LinearComparativeView({
         model={model}
         ControlComponent={<div className={classes.rubberbandDiv} />}
       />
-      <LinearComparativeRenderArea model={model} />
+      <div className={classes.renderAreaWrapper}>
+        <LinearComparativeRenderArea model={model} />
+        {syntenyModel && showLegend ? (
+          <ColorByLegend
+            colorBy={syntenyModel.colorBy as SyntenyColorBy}
+            onClose={() => {
+              syntenyModel.setShowColorLegend(false)
+            }}
+          />
+        ) : null}
+      </div>
     </div>
   )
 })

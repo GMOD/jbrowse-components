@@ -67,32 +67,42 @@ const ColorBySelector = observer(function ColorBySelector({
 }: {
   model: LinearSyntenyViewModel
 }) {
-  const { colorBy } = model
+  const { colorBy, showColorLegend } = model
 
   return (
     <CascadingMenuButton
-      menuItems={COLOR_MODES.map(({ label, value, helpText }) => ({
-        label: (
-          <span
-            style={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 8,
-              width: '100%',
-              justifyContent: 'space-between',
-            }}
-          >
-            {label}
-            <ColorBySwatch colorBy={value} />
-          </span>
-        ),
-        type: 'radio',
-        checked: colorBy === value,
-        helpText,
-        onClick: () => {
-          model.setColorBy(value)
+      menuItems={[
+        ...COLOR_MODES.map(({ label, value, helpText }) => ({
+          label: (
+            <span
+              style={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 8,
+                width: '100%',
+                justifyContent: 'space-between',
+              }}
+            >
+              {label}
+              <ColorBySwatch colorBy={value} />
+            </span>
+          ),
+          type: 'radio' as const,
+          checked: colorBy === value,
+          helpText,
+          onClick: () => {
+            model.setColorBy(value)
+          },
+        })),
+        {
+          label: 'Show color legend',
+          type: 'checkbox' as const,
+          checked: showColorLegend,
+          onClick: () => {
+            model.setShowColorLegend(!showColorLegend)
+          },
         },
-      }))}
+      ]}
     >
       <PaletteIcon />
     </CascadingMenuButton>

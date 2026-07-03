@@ -24,6 +24,19 @@ export interface ColorBySwatchSpec {
   maxLabel?: string
 }
 
+// Short human-readable title for the floating legend header.
+export const colorByShortLabel: Record<SyntenyColorBy, string> = {
+  default: 'Default',
+  strand: 'Strand',
+  query: 'Query name',
+  target: 'Target name',
+  identity: 'Identity',
+  identityDiverging: 'Identity (diverging)',
+  meanQueryIdentity: 'Mean query identity',
+  meanQueryMappingQuality: 'Mean query MAPQ',
+  mappingQuality: 'Mapping quality',
+}
+
 // CSS background for a color-by legend swatch, plus the min/max domain labels
 // where the axis is bounded. Returns undefined for the per-name categorical
 // modes (query/target), which have no fixed legend.

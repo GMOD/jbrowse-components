@@ -112,6 +112,13 @@ export default function stateModelFactory(pluginManager: PluginManager) {
         colorBy: types.stripDefault(types.string, 'default'),
         /**
          * #property
+         * Show the floating color-by legend in the top-right of the synteny
+         * canvas. Dismissible via the legend's close button; re-enable from the
+         * color-by (palette) menu.
+         */
+        showColorLegend: types.stripDefault(types.boolean, true),
+        /**
+         * #property
          * Fade alignment blocks by per-feature identity (lower identity = more
          * transparent). Orthogonal to colorBy — surfaces identity-dropoff zones
          * without consuming the color channel.
@@ -313,6 +320,12 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        */
       setColorBy(arg: SyntenyColorBy) {
         self.colorBy = arg
+      },
+      /**
+       * #action
+       */
+      setShowColorLegend(arg: boolean) {
+        self.showColorLegend = arg
       },
       /**
        * #action
