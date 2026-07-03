@@ -81,7 +81,8 @@ const DotplotViewInternal = observer(function DotplotViewInternal({
 }) {
   const { classes } = useStyles()
   const interaction = useDotplotInteraction(model)
-  const colorBy = (model.dotplotDisplays[0]?.colorBy ?? 'default') as SyntenyColorBy
+  const colorBy = (model.dotplotDisplays[0]?.colorBy ??
+    'default') as SyntenyColorBy
   return (
     <div>
       <Header model={model} selection={interaction.selection} />

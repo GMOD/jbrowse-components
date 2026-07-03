@@ -179,6 +179,18 @@ type highlightsVisible = IOptionalIType<ISimpleType<boolean>, [undefined]>
 highlightsVisible: types.stripDefault(types.boolean, true)
 ```
 
+#### property: showColorLegend
+
+Show the floating color-by legend in the top-right of the plot. Dismissible via
+the legend's close button; re-enable from the color-by (palette) menu.
+
+```ts
+// type signature
+type showColorLegend = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showColorLegend: types.stripDefault(types.boolean, true)
+```
+
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
@@ -743,6 +755,7 @@ detail):
 | [`setHighlight`](#action-sethighlight)                             | `(highlight?: HighlightType[] \| undefined) => void`                |
 | [`removeHighlight`](#action-removehighlight)                       | `(highlight: HighlightType) => void`                                |
 | [`setHighlightsVisible`](#action-sethighlightsvisible)             | `(arg: boolean) => void`                                            |
+| [`setShowColorLegend`](#action-setshowcolorlegend)                 | `(arg: boolean) => void`                                            |
 | [`setBorderX`](#action-setborderx)                                 | `(n: number) => void`                                               |
 | [`setBorderY`](#action-setbordery)                                 | `(n: number) => void`                                               |
 | [`setWidth`](#action-setwidth)                                     | `(newWidth: number) => number`                                      |
@@ -838,6 +851,12 @@ type removeHighlight = (highlight: HighlightType) => void
 
 ```ts
 type setHighlightsVisible = (arg: boolean) => void
+```
+
+#### action: setShowColorLegend
+
+```ts
+type setShowColorLegend = (arg: boolean) => void
 ```
 
 #### action: setBorderX

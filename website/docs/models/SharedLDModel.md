@@ -486,7 +486,7 @@ detail):
 | [`filterMenuItems`](#method-filtermenuitems) | `() => { label: string; onClick: () => void; }[]`                                                                                                                                                  |
 | [`legendItems`](#method-legenditems)         | `() => LegendItem[]`                                                                                                                                                                               |
 | [`svgLegendWidth`](#method-svglegendwidth)   | `() => number`                                                                                                                                                                                     |
-| [`trackMenuItems`](#method-trackmenuitems)   | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; } \| { ...; } \| { ...; })[]`                                                 |
+| [`trackMenuItems`](#method-trackmenuitems)   | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; } \| { ...; } \| { ...; })[]`                               |
 | [`renderSvg`](#method-rendersvg)             | `(opts: ExportSvgDisplayOptions) => Promise<ReactNode>`                                                                                                                                            |
 
 </details>
@@ -530,7 +530,7 @@ type svgLegendWidth = () => number
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; } | { ...; } | { ...; })[]
 ```
 
 #### method: renderSvg

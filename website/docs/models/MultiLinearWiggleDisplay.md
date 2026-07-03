@@ -204,6 +204,7 @@ and docs.
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
+[setScatterPointSize](../wigglescoreconfigmixin#action-setscatterpointsize),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
@@ -452,11 +453,11 @@ type spatialIndex =
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                                                                                                                   |
-| ------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)             | `() => { bicolorPivot: number; resolution: number; }`                                                                                       |
-| [`gpuProps`](#method-gpuprops)             | `() => { sources: Source[]; posColor: string; negColor: string; summaryScoreMode: string; renderingType: string; isDensityMode: boolean; }` |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; } \| { ...; })[]`      |
+| Member                                     | Signature                                                                                                                                                |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)             | `() => { bicolorPivot: number; resolution: number; }`                                                                                                    |
+| [`gpuProps`](#method-gpuprops)             | `() => { sources: Source[]; posColor: string; negColor: string; summaryScoreMode: string; renderingType: string; isDensityMode: boolean; }`              |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; } \| { ...; })[]` |
 
 </details>
 
@@ -485,7 +486,7 @@ type gpuProps = () => {
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; } | { ...; })[]
 ```
 
 </details>

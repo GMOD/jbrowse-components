@@ -383,7 +383,7 @@ detail):
 | Member                                         | Signature                                                                                                                                                    |
 | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [`renderSvg`](#method-rendersvg)               | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactElement<unknown, string \| JSXElementConstructor<any>> \| Iterable<...> \| AwaitedReactNode>` |
-| [`showSubmenuItems`](#method-showsubmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                   |
+| [`showSubmenuItems`](#method-showsubmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]`                 |
 
 </details>
 
@@ -399,7 +399,7 @@ type renderSvg = (opts?: ExportSvgDisplayOptions | undefined) => Promise<ReactEl
 #### method: showSubmenuItems
 
 ```ts
-type showSubmenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type showSubmenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 </details>

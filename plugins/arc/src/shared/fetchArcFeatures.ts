@@ -61,7 +61,10 @@ export async function fetchArcFeatures(self: ArcDisplayModel) {
       adapterConfig: self.adapterConfig,
     })
     if (isAlive(self)) {
-      self.setFeatures(dedupe(ret, r => r.id()), regionSignature(regions))
+      self.setFeatures(
+        dedupe(ret, r => r.id()),
+        regionSignature(regions),
+      )
     }
   } finally {
     if (isAlive(self)) {

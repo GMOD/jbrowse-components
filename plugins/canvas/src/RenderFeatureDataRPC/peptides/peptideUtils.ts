@@ -70,7 +70,8 @@ export function findTranscriptsWithCDS(
 
   for (const feature of features.values()) {
     if (hasContainerChildren(feature)) {
-      const matchingTranscripts = getSubfeatures(feature).filter(hasCDSSubfeature)
+      const matchingTranscripts =
+        getSubfeatures(feature).filter(hasCDSSubfeature)
       if (matchingTranscripts.length > 0) {
         transcripts.push(...matchingTranscripts)
       } else if (hasCDSSubfeature(feature)) {

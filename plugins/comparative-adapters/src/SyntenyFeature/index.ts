@@ -54,13 +54,45 @@ export default class SyntenyFeature extends SimpleFeature {
       for (const m of getMismatches(this.get('CIGAR') as string | undefined)) {
         if (m.start >= lo && m.start <= hi) {
           if (m.type === 'mismatch') {
-            callback(MISMATCH_TYPE, m.start, m.length, m.base, m.qual, undefined, undefined)
+            callback(
+              MISMATCH_TYPE,
+              m.start,
+              m.length,
+              m.base,
+              m.qual,
+              undefined,
+              undefined,
+            )
           } else if (m.type === 'insertion') {
-            callback(INSERTION_TYPE, m.start, m.length, m.insertedBases ?? '', undefined, undefined, m.insertlen)
+            callback(
+              INSERTION_TYPE,
+              m.start,
+              m.length,
+              m.insertedBases ?? '',
+              undefined,
+              undefined,
+              m.insertlen,
+            )
           } else if (m.type === 'deletion') {
-            callback(DELETION_TYPE, m.start, m.length, '', undefined, undefined, undefined)
+            callback(
+              DELETION_TYPE,
+              m.start,
+              m.length,
+              '',
+              undefined,
+              undefined,
+              undefined,
+            )
           } else if (m.type === 'skip') {
-            callback(SKIP_TYPE, m.start, m.length, '', undefined, undefined, undefined)
+            callback(
+              SKIP_TYPE,
+              m.start,
+              m.length,
+              '',
+              undefined,
+              undefined,
+              undefined,
+            )
           }
         }
       }

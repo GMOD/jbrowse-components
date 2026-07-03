@@ -22,10 +22,8 @@ function makeAdapter(
   )
 }
 
-const feats = (
-  adapter: Adapter,
-  region: Record<string, unknown>,
-) => firstValueFrom(adapter.getFeatures(region as never).pipe(toArray()))
+const feats = (adapter: Adapter, region: Record<string, unknown>) =>
+  firstValueFrom(adapter.getFeatures(region as never).pipe(toArray()))
 
 test('keeps only the queried pair (grape vs peach), dropping grape-cacao and grape-grape', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), {
@@ -50,7 +48,10 @@ test('serves a direct non-reference pair present in the all-vs-all file (peach v
     assemblyName: 'peach',
   })
   expect(fa.length).toBe(1)
-  expect(fa[0]!.get('mate')).toMatchObject({ refName: 'I', assemblyName: 'cacao' })
+  expect(fa[0]!.get('mate')).toMatchObject({
+    refName: 'I',
+    assemblyName: 'cacao',
+  })
 })
 
 test('assemblyNameToPanSN maps JBrowse names to PanSN sample prefixes', async () => {

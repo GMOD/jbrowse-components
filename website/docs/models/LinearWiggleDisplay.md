@@ -226,6 +226,7 @@ and docs.
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
+[setScatterPointSize](../wigglescoreconfigmixin#action-setscatterpointsize),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
@@ -378,10 +379,10 @@ type gpuProps = () => {
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                                                                                                              |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
-| [`rpcProps`](#method-rpcprops)             | `() => { useBicolor: boolean; bicolorPivot: number; resolution: number; }`                                                             |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; } \| { ...; })[]` |
+| Member                                     | Signature                                                                                                                                    |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`rpcProps`](#method-rpcprops)             | `() => { useBicolor: boolean; bicolorPivot: number; resolution: number; }`                                                                   |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
 
 </details>
 
@@ -401,7 +402,7 @@ type rpcProps = () => {
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; } | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 </details>

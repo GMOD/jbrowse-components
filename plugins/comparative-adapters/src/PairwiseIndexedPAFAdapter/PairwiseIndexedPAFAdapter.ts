@@ -6,11 +6,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { csToCigar } from '../csUtils.ts'
-import {
-  getAssemblyNamesFromConf,
-  pafIdentity,
-  parsePAFLine,
-} from '../util.ts'
+import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 
 import type { PairwiseIndexedPAFAdapterConfig } from './configSchema.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'

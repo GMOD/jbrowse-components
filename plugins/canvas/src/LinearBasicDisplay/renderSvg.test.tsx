@@ -78,6 +78,7 @@ function makeModel(overrides: Partial<RenderSvgModel> = {}): RenderSvgModel {
   return {
     id: 'test',
     height: 100,
+    scrollTop: 0,
     error: undefined,
     regionTooLarge: false,
     svgReady: true,
@@ -185,5 +186,33 @@ describe('renderSvg', () => {
     )
     extractAndWriteSvg(html, 'reversed.svg')
     expect(html).toMatchSnapshot()
+  })
+
+  // Runs last: renderSvg emits clip <g>s whose ids come from a module-global
+  // counter in SvgCanvas, so extra renders here would renumber the snapshot
+  // tests' clip ids above.
+  it('offsets features and text by scrollTop so a scrolled track exports its viewport', async () => {
+    const data = makeData([{ startBp: 1100, endBp: 1200 }])
+    const render = (node: React.ReactNode) =>
+      renderToString(
+        <svg width={800} height={100} viewBox="0 0 800 100">
+          {node as React.ReactElement}
+        </svg>,
+      )
+    const top = render(
+      await renderSvg(
+        makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 0 }),
+      ),
+    )
+    const scrolled = render(
+      await renderSvg(
+        makeModel({ laidOutDataMap: new Map([[0, data]]), scrollTop: 30 }),
+      ),
+    )
+    // At scrollTop=0 the feature rect sits at y=0; scrolled up by 30 it moves
+    // to y=-30, proving the export honors the on-screen scroll offset instead
+    // of always drawing the track top.
+    expect(top).toContain('<rect x="80" y="0"')
+    expect(scrolled).toContain('<rect x="80" y="-30"')
   })
 })

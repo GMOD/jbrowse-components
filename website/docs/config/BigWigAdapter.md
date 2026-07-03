@@ -36,7 +36,7 @@ _See the **Slots** section below for all available configuration fields._
 
 ## Overview
 
-used to load BigWig or BigBed quantitative signal files
+used to load BigWig quantitative signal files
 
 ### Used in
 
@@ -81,13 +81,15 @@ added as feature.get('source') on all features
 {
   type: 'string',
   defaultValue: '',
-  description: 'Used for multiwiggle',
+  description:
+    'Label added to all features; used as the subtrack/row name when this adapter is a subadapter of a multi-wiggle track',
 }
 ```
 
 #### slot: resolutionMultiplier
 
-Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution
+Resolution multiplier applied to every fetch: <1 fetches more points (higher
+resolution), >1 fetches fewer (e.g. 2 = half as many points)
 
 **Type:** `number` · **Default:** `1`
 
@@ -96,7 +98,7 @@ Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution
   type: 'number',
   defaultValue: 1,
   description:
-    'Initial resolution multiplier, <1 is higher resolution, >1 is lower resolution',
+    'Resolution multiplier applied to every fetch: <1 fetches more points (higher resolution), >1 fetches fewer (e.g. 2 = half as many points)',
   advanced: true,
 }
 ```

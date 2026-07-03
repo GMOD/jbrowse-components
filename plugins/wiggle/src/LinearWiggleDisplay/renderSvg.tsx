@@ -75,17 +75,20 @@ function WiggleSvgBody({
   }
 
   const props = model.gpuProps()
-  const totalWidth = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const drawHeight = height - 2 * YSCALEBAR_LABEL_OFFSET
   const state = {
     ...renderState,
-    canvasWidth: totalWidth,
+    canvasWidth,
     canvasHeight: drawHeight,
   }
   const wiggleNode = (
     <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-      {paintLayer(totalWidth, drawHeight, opts, ctx => {
+      {paintLayer(canvasWidth, drawHeight, opts, ctx => {
         drawWiggleToCtx(
           ctx,
           { rpcDataMap, encode: data => buildSourceRenderData(data, props) },

@@ -128,8 +128,9 @@
   "cnv": {
     "name": "cnv",
     "status": "good",
-    "note": "resolution bumped to 50 (crossed a BigWig zoom-level boundary) — scatter now resolves finer copy-number structure (12.33% diff).",
-    "reviewedAt": "2026-06-19T00:00:00.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-03T20:24:03.680Z",
+    "hash": "a84c5b5bf763ae3ceb09ec0a824ecb940cdc09b1"
   },
   "smalldel": {
     "name": "smalldel",
@@ -253,8 +254,9 @@
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "the 'read fails platform/vendor quality checks' causes word wrap, shorten this description  DONE: Shortened the SAM 0x200 label in samFlagLabels (alignments-core) from \"read fails platform/vendor quality checks\" to \"read fails quality checks\" — no more word wrap in the dialog. JSDoc keeps full spec wording. Regenerated + verified.",
-    "reviewedAt": "2026-06-21T22:46:23.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-03T20:23:39.866Z",
+    "hash": "67a2ca4b13f7e3bb952a96fca713bcfcfefa3d26"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
@@ -392,9 +394,10 @@
   },
   "alignments/color_by_insert_size": {
     "name": "alignments/color_by_insert_size",
-    "status": "good",
-    "note": "removed from docs",
-    "reviewedAt": "2026-06-10T19:35:06.000Z"
+    "status": "bad",
+    "note": "remove this from docs. it is confusing.",
+    "reviewedAt": "2026-07-03T20:23:31.120Z",
+    "hash": "77237a2df456ecf10905f3ff1d8da0ee6675ffd1"
   },
   "alignments/compact": {
     "name": "alignments/compact",
@@ -411,14 +414,16 @@
   "customized_feature_details": {
     "name": "customized_feature_details",
     "status": "good",
-    "note": "fixed: viewportHeight 900->680 (details panel scrolls; ringed google link stays at top); regenerated",
-    "reviewedAt": "2026-06-21T17:36:31.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-03T20:24:08.819Z",
+    "hash": "aca231391fa837e152eddb398c7375f32f1c0890"
   },
   "customized_theme": {
     "name": "customized_theme",
     "status": "good",
-    "note": "fixed: added viewportHeight 520; regenerated",
-    "reviewedAt": "2026-06-21T17:36:31.000Z"
+    "note": "",
+    "reviewedAt": "2026-07-03T20:24:10.317Z",
+    "hash": "49f7046360dd871a61e25a257c58d38b41f56465"
   },
   "cytobands": {
     "name": "cytobands",
@@ -928,9 +933,9 @@
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
     "status": "bad",
-    "note": "can we make the bezier more dramatic, and also plot read pair arcs. then we can add to blog post. also, some parts of the view as pairs read chains are colored grey. this is a complex structural variant where some parts of the read pairs also include split supplementary alignments but we should try to color it as best we can. ",
-    "reviewedAt": "2026-07-03T12:26:20.678Z",
-    "hash": "0d701bf05dc02d2d51a58f7137004bebb7a8197e"
+    "note": "add to docs. also there are still grey read chains that appear to involve aberrant pairing orientation",
+    "reviewedAt": "2026-07-03T20:18:18.566Z",
+    "hash": "5db3af663e4afc70d648b0aed4e2f6df99a688cc"
   },
   "trio-hapibd-painting": {
     "name": "trio-hapibd-painting",
@@ -941,8 +946,8 @@
   "config_not_found": {
     "name": "config_not_found",
     "status": "good",
-    "note": "RESOLVED: committed image already the production-minimal banner (only the volvox link); the full sample list is dev-only in LoaderErrorBanner.",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
+    "note": "",
+    "reviewedAt": "2026-07-03T20:24:06.441Z",
     "hash": "b562ad3bd23820441af5672648e69144fd9eaf2c"
   },
   "default_session_form": {
@@ -1103,8 +1108,8 @@
   "chromhmm": {
     "name": "chromhmm",
     "status": "good",
-    "note": "Wrote docs/tutorials/chromhmm.md (how the multirow-bigBed ChromHMM config is built: combine per-cell-type BEDs with a cellType column -> bed9+1 bigBed -> LinearMultiRowFeatureDisplay partitionField/color(itemRgb jexl)/rowOrder). Linked from introduction.md. Screenshot itself renders fine.",
-    "reviewedAt": "2026-07-02T02:52:42.000Z",
+    "note": "",
+    "reviewedAt": "2026-07-03T20:23:59.793Z",
     "hash": "3c369b0e629f42dd7559bda7eec8c89c694be23c"
   },
   "jbrowse-img/alignments_snpcov": {
@@ -1218,5 +1223,33 @@
     "note": "",
     "reviewedAt": "2026-07-03T12:57:48.589Z",
     "hash": "b83b6e8f74226e3f59f6ed051a8b533ad29afa0a"
+  },
+  "multiway_synteny/ecoli_pangenome": {
+    "name": "multiway_synteny/ecoli_pangenome",
+    "status": "bad",
+    "note": "why are the synteny curves grey here?",
+    "reviewedAt": "2026-07-03T20:18:32.311Z",
+    "hash": "9fa12870d913e7b2cc8584435b451617ef3e92c6"
+  },
+  "multiway_synteny/grape_peach_cacao": {
+    "name": "multiway_synteny/grape_peach_cacao",
+    "status": "bad",
+    "note": "is it possible to color using consistent coloring across blocks between multiple levels? please do so",
+    "reviewedAt": "2026-07-03T20:19:09.605Z",
+    "hash": "58d023599d4bdb8c1d2474090afe51523df8643f"
+  },
+  "search_feature_highlight": {
+    "name": "search_feature_highlight",
+    "status": "good",
+    "note": "",
+    "reviewedAt": "2026-07-03T20:19:09.668Z",
+    "hash": "362c88eb40458080887005e01dc2ded66d7f46cb"
+  },
+  "feature_height_default_pin": {
+    "name": "feature_height_default_pin",
+    "status": "bad",
+    "note": "",
+    "reviewedAt": "2026-07-03T20:21:30.792Z",
+    "hash": "a619ca63a70dc5a295b7971faf4e18787ebf9fc0"
   }
 }

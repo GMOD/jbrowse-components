@@ -1,5 +1,9 @@
 import { LoadingEllipses, StatusProgressBar } from '@jbrowse/core/ui'
-import { progressLabel, statusFraction, statusMessageText } from '@jbrowse/core/util'
+import {
+  progressLabel,
+  statusFraction,
+  statusMessageText,
+} from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { Button } from '@mui/material'
 import { observer } from 'mobx-react'

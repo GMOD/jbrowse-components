@@ -17,7 +17,15 @@ interface Emit {
 // no window (±Infinity) keeps refPos == read-relative position.
 function collect(readFeatures: ReadFeatures, qual?: Uint8Array) {
   const out: Emit[] = []
-  const cb: MismatchCallback = (type, start, length, base, _q, _alt, cliplen) => {
+  const cb: MismatchCallback = (
+    type,
+    start,
+    length,
+    base,
+    _q,
+    _alt,
+    cliplen,
+  ) => {
     out.push({ type, start, length, base, cliplen })
   }
   readFeaturesToMismatches(

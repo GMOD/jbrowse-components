@@ -22,40 +22,40 @@ function withTty(isTty: boolean, fn: () => void) {
 
 describe('validateFileArgument', () => {
   test('accepts an existing readable file', () => {
-    expect(() =>
-      { validateFileArgument(existingGff, 'sort-gff', 'gff') },
-    ).not.toThrow()
+    expect(() => {
+      validateFileArgument(existingGff, 'sort-gff', 'gff')
+    }).not.toThrow()
   })
 
   test('throws for a nonexistent file so a typo cannot silently produce empty output', () => {
-    expect(() =>
-      { validateFileArgument(
+    expect(() => {
+      validateFileArgument(
         path.join(dataDir, 'does-not-exist.gff3'),
         'sort-gff',
         'gff',
-      ) },
-    ).toThrow(/does not exist/)
+      )
+    }).toThrow(/does not exist/)
   })
 
   test('throws when the path is a directory rather than a regular file', () => {
-    expect(() => { validateFileArgument(dataDir, 'sort-gff', 'gff') }).toThrow(
-      /not a regular file/,
-    )
+    expect(() => {
+      validateFileArgument(dataDir, 'sort-gff', 'gff')
+    }).toThrow(/not a regular file/)
   })
 
   test('throws for a missing argument when stdin is a TTY', () => {
     withTty(true, () => {
-      expect(() => { validateFileArgument(undefined, 'sort-gff', 'gff') }).toThrow(
-        /Missing required argument/,
-      )
+      expect(() => {
+        validateFileArgument(undefined, 'sort-gff', 'gff')
+      }).toThrow(/Missing required argument/)
     })
   })
 
   test('accepts a missing argument when stdin is piped (not a TTY)', () => {
     withTty(false, () => {
-      expect(() =>
-        { validateFileArgument(undefined, 'sort-gff', 'gff') },
-      ).not.toThrow()
+      expect(() => {
+        validateFileArgument(undefined, 'sort-gff', 'gff')
+      }).not.toThrow()
     })
   })
 })

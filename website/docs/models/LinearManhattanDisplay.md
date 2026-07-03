@@ -193,6 +193,7 @@ and docs.
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
+[setScatterPointSize](../wigglescoreconfigmixin#action-setscatterpointsize),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 

@@ -227,6 +227,7 @@ and docs.
 [setMaxScore](../wigglescoreconfigmixin#action-setmaxscore),
 [setRenderingType](../wigglescoreconfigmixin#action-setrenderingtype),
 [setSummaryScoreMode](../wigglescoreconfigmixin#action-setsummaryscoremode),
+[setScatterPointSize](../wigglescoreconfigmixin#action-setscatterpointsize),
 [setAutoscale](../wigglescoreconfigmixin#action-setautoscale),
 [isCacheValid](../wigglescoreconfigmixin#action-iscachevalid)
 
@@ -273,9 +274,9 @@ type gcMode = any
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                                                                                                  |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+| Member                                     | Signature                                                                                                                                    |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
 
 </details>
 
@@ -285,7 +286,7 @@ detail):
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 </details>

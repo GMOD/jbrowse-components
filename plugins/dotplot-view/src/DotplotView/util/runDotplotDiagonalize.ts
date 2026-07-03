@@ -49,7 +49,12 @@ export async function runDotplotDiagonalize(
   // written straight back to the view. queryRefNameMap lets the worker translate
   // each alignment's query refName back to canonical to bridge the two.
   const rename = (regions: typeof model.hview.displayedRegions) =>
-    renameRegionsForAdapter({ assemblyManager, sessionId, adapterConfig, regions })
+    renameRegionsForAdapter({
+      assemblyManager,
+      sessionId,
+      adapterConfig,
+      regions,
+    })
   const currentRegions = model.vview.displayedRegions
   const [referenceRegions, queryRefNameMap] = await Promise.all([
     rename(model.hview.displayedRegions),

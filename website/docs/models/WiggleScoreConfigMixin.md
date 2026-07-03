@@ -233,6 +233,7 @@ detail):
 | [`setMaxScore`](#action-setmaxscore)                 | `(val?: number \| undefined) => void`    |
 | [`setRenderingType`](#action-setrenderingtype)       | `(type: string) => void`                 |
 | [`setSummaryScoreMode`](#action-setsummaryscoremode) | `(val: string) => void`                  |
+| [`setScatterPointSize`](#action-setscatterpointsize) | `(val?: number \| undefined) => void`    |
 | [`setAutoscale`](#action-setautoscale)               | `(val?: string \| undefined) => void`    |
 
 </details>
@@ -286,6 +287,12 @@ type setRenderingType = (type: string) => void
 
 ```ts
 type setSummaryScoreMode = (val: string) => void
+```
+
+#### action: setScatterPointSize
+
+```ts
+type setScatterPointSize = (val?: number | undefined) => void
 ```
 
 #### action: setAutoscale

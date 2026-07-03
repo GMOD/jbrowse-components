@@ -71,7 +71,10 @@ export function buildLaidOutByGroup(
     const withLines = ctx.showLinkedReadLines
       ? attachLinkedReadLines(base)
       : base
-    byGroup.set(key, overlayReadTagColors(withLines, ctx.colorBy, ctx.colorTagMap))
+    byGroup.set(
+      key,
+      overlayReadTagColors(withLines, ctx.colorBy, ctx.colorTagMap),
+    )
   }
   return byGroup
 }
@@ -133,9 +136,17 @@ export function layoutGroupsToViewport(
     .filter(g => !collapsedKeys.has(g.key) && !heightOverridesPx.has(g.key))
     .map(({ key }) => {
       const map = pass.get(key) ?? new Map<number, PileupDataResult>()
-      return { key, usedRows: groupMaxY(map), truncated: anyRegionTruncated(map) }
+      return {
+        key,
+        usedRows: groupMaxY(map),
+        truncated: anyRegionTruncated(map),
+      }
     })
-  const bonusCaps = reclaimFitRows({ outcomes, defaultMaxRows, maxRows: maxHeightRows })
+  const bonusCaps = reclaimFitRows({
+    outcomes,
+    defaultMaxRows,
+    maxRows: maxHeightRows,
+  })
   return bonusCaps
     ? buildLaidOutByGroup(
         ctx,
@@ -216,8 +227,7 @@ export function reclaimFitRows({
     (sum, o) => sum + (o.truncated ? 0 : defaultMaxRows - o.usedRows),
     0,
   )
-  const bonus =
-    truncated.length > 0 ? Math.floor(spare / truncated.length) : 0
+  const bonus = truncated.length > 0 ? Math.floor(spare / truncated.length) : 0
   if (bonus <= 0) {
     return undefined
   }

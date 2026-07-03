@@ -50,7 +50,9 @@ function buildLut(toRgb: (norm: number) => readonly [number, number, number]) {
 }
 
 const IDENTITY_LUT = buildLut(continuousRampConfig.identity.toRgb)
-const MEAN_MAPQ_LUT = buildLut(continuousRampConfig.meanQueryMappingQuality.toRgb)
+const MEAN_MAPQ_LUT = buildLut(
+  continuousRampConfig.meanQueryMappingQuality.toRgb,
+)
 const MAPQ_LUT = buildLut(continuousRampConfig.mappingQuality.toRgb)
 // Diverging LUT is indexed by identity directly (0..1) since the pivot remap
 // inside divergingIdentityRgb is non-linear — bin i encodes identity i/255.
@@ -167,6 +169,34 @@ export function computeSyntenyColors({
   const colorN = indelColors[CIGAR_N] ?? DEFAULT_COLOR
   const { identities } = featureData
   const out = new Uint32Array(instanceCount)
+
+  // TEMP DEBUG
+  const kindHist: Record<number, number> = {}
+  for (let i = 0; i < instanceCount; i++) {
+    kindHist[kinds[i]!] = (kindHist[kinds[i]!] ?? 0) + 1
+  }
+  const firstBase = (() => {
+    for (let i = 0; i < instanceCount; i++) {
+      if (kinds[i]! < KIND_CIGAR_MATCH && kinds[i]! !== KIND_MARKER) {
+        const c = colorFn(instanceFeatureIdx[i]!)
+        return `idx${i} feat${instanceFeatureIdx[i]} abgr${c.toString(16)}`
+      }
+    }
+    return 'none'
+  })()
+  // eslint-disable-next-line no-console
+  console.error(
+    'SYNTENY_DEBUG colorBy=',
+    colorBy,
+    'count=',
+    instanceCount,
+    'kinds=',
+    JSON.stringify(kindHist),
+    'firstBase=',
+    firstBase,
+    'defaultColorAbgr=',
+    DEFAULT_COLOR.toString(16),
+  )
 
   for (let i = 0; i < instanceCount; i++) {
     const kind = kinds[i]!

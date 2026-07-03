@@ -77,14 +77,17 @@ function MultiWiggleSvgBody({
     showTree && hierarchy ? <SvgTreePath hierarchy={hierarchy} /> : null
 
   const props = model.gpuProps()
-  const totalWidth = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const state = {
     ...renderState,
-    canvasWidth: totalWidth,
+    canvasWidth,
     canvasHeight: height,
   }
-  const wiggleNode = paintLayer(totalWidth, height, opts, ctx => {
+  const wiggleNode = paintLayer(canvasWidth, height, opts, ctx => {
     drawWiggleToCtx(
       ctx,
       { rpcDataMap, encode: data => buildSourceRenderData(data, props) },

@@ -95,7 +95,10 @@ describe('real grape/peach/cacao blocks (chr1 subset)', () => {
         assemblyNames,
       }),
     )
-  const realFeats = (assemblyNames: string[], region: Record<string, unknown>) =>
+  const realFeats = (
+    assemblyNames: string[],
+    region: Record<string, unknown>,
+  ) =>
     firstValueFrom(
       realAdapter(assemblyNames)
         .getFeatures(region as never)

@@ -232,24 +232,30 @@ height in pixels of the main body of each feature
 
 #### slot: displayMode
 
-Feature height preset. 'default' inherits the session-wide default for this
-display type (falling back to normal); normal/compact/superCompact pin an
-explicit height
+Feature height preset. `inherit` (the default) follows the session-wide default
+for this display type, falling back to `normal`;
+`normal`/`compact`/`superCompact` each pin an explicit height (including pinning
+`normal` over a compact session default)
 
-**Type:** `stringEnum` · **Default:** `'default'`
+**Type:** `stringEnum` · **Default:** `'inherit'`
 
 ```js
 {
   type: 'stringEnum',
   model: types.enumeration('displayMode', [
-    'default',
+    'inherit',
     'normal',
     'compact',
     'superCompact',
   ]),
   description:
-    "Feature height preset. 'default' inherits the session-wide default for this display type (falling back to normal); normal/compact/superCompact pin an explicit height",
-  defaultValue: 'default',
+    'Feature height preset. `inherit` (the default) follows the session-wide default for this display type, falling back to `normal`; `normal`/`compact`/`superCompact` each pin an explicit height (including pinning `normal` over a compact session default)',
+
+
+
+  defaultValue: 'inherit',
+  promotedBase: 'normal',
+  promotable: true,
 }
 ```
 
@@ -314,6 +320,10 @@ Display directional chevrons on intron lines to indicate strand direction
 
 
 
+
+
+
+
   defaultValue: [
     'mRNA',
     'transcript',
@@ -353,15 +363,17 @@ subparts for a glyph
 
 #### slot: impliedUTRs
 
-imply UTR from the exon and CDS differences
+imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit
+UTR subfeatures
 
-**Type:** `boolean` · **Default:** `false`
+**Type:** `boolean` · **Default:** `true`
 
 ```js
 {
   type: 'boolean',
-  description: 'imply UTR from the exon and CDS differences',
-  defaultValue: false,
+  description:
+    'imply UTRs from exon/CDS differences on transcript glyphs that carry no explicit UTR subfeatures',
+  defaultValue: true,
 }
 ```
 

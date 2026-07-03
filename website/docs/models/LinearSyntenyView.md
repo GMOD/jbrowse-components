@@ -148,6 +148,19 @@ lodMode: types.stripDefault(
 )
 ```
 
+#### property: showColorLegend
+
+Show the floating color-by legend in the top-right of the synteny canvas.
+Dismissible via the legend's close button; re-enable from the color-by (palette)
+menu.
+
+```ts
+// type signature
+type showColorLegend = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+showColorLegend: types.stripDefault(types.boolean, true)
+```
+
 #### property: opacityByIdentity
 
 Fade alignment blocks by per-feature identity (lower identity = more
@@ -437,16 +450,16 @@ includes a subset of view menu options because the full list is a little
 overwhelming
 
 ```ts
-type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 4 more ... | { ...; })[]
+type headerMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | ... 5 more ... | { ...; })[]
 ```
 
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                   | Signature                                                                                                                  |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| [`showMenuItems`](#method-showmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
-| [`menuItems`](#method-menuitems)         | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+| Member                                   | Signature                                                                                                                                    |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`showMenuItems`](#method-showmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
+| [`menuItems`](#method-menuitems)         | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
 
 </details>
 
@@ -456,13 +469,13 @@ detail):
 #### method: showMenuItems
 
 ```ts
-type showMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type showMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 #### method: menuItems
 
 ```ts
-type menuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type menuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 </details>
@@ -495,6 +508,7 @@ detail):
 | [`setMinAlignmentLength`](#action-setminalignmentlength)               | `(arg: number) => void`                               |
 | [`setLodMode`](#action-setlodmode)                                     | `(arg: "auto" \| "fine" \| "coarse") => void`         |
 | [`setColorBy`](#action-setcolorby)                                     | `(arg: SyntenyColorBy) => void`                       |
+| [`setShowColorLegend`](#action-setshowcolorlegend)                     | `(arg: boolean) => void`                              |
 | [`setOpacityByIdentity`](#action-setopacitybyidentity)                 | `(arg: boolean) => void`                              |
 | [`setFadeThinAlignments`](#action-setfadethinalignments)               | `(arg: boolean) => void`                              |
 | [`showAllRegions`](#action-showallregions)                             | `() => void`                                          |
@@ -576,6 +590,12 @@ type setLodMode = (arg: 'auto' | 'fine' | 'coarse') => void
 
 ```ts
 type setColorBy = (arg: SyntenyColorBy) => void
+```
+
+#### action: setShowColorLegend
+
+```ts
+type setShowColorLegend = (arg: boolean) => void
 ```
 
 #### action: setOpacityByIdentity

@@ -101,9 +101,7 @@ describe('bucketBedLines', () => {
 
   it('skips track/browser directive lines rather than bucketing them', () => {
     const { features } = bucketBedLines(
-      enc(
-        'browser position chr1:1-100\ntrack type=bed name=x\nchr1\t1\t2\n',
-      ),
+      enc('browser position chr1:1-100\ntrack type=bed name=x\nchr1\t1\t2\n'),
     )
     expect(Object.keys(features)).toEqual(['chr1'])
   })

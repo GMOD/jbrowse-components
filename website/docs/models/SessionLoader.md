@@ -28,6 +28,18 @@ loading/error state the app shell renders around.
 <details open>
 <summary>SessionLoader - Properties</summary>
 
+#### property: extendSession
+
+when true, jb1-style URL params (loc/tracks/highlight/...) navigate within the
+configured defaultSession instead of replacing it
+
+```ts
+// type signature
+type extendSession = IMaybe<ISimpleType<boolean>>
+// code
+extendSession: types.maybe(types.boolean)
+```
+
 #### property: sessionSource
 
 the single resolved session, also the HMR/reload restore vehicle (preset to a
@@ -325,8 +337,8 @@ type sessionQueryType = string | undefined
 
 #### getter: extendDefaultSession
 
-reads the opt-in config.json flag that makes URL params layer onto the
-configured defaultSession instead of replacing it
+reads the opt-in `&extendSession=true` URL param that makes jb1-style params
+layer onto the configured defaultSession instead of replacing it
 
 ```ts
 type extendDefaultSession = boolean

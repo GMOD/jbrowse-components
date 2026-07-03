@@ -186,7 +186,9 @@ describe('Canvas2DWiggleRenderer', () => {
     })
 
     // exclude the full-height clip rect; scatter bars have height === pointSize
-    const bars = rectCalls.filter(([, , , h]) => h === defaultState.scatterPointSize)
+    const bars = rectCalls.filter(
+      ([, , , h]) => h === defaultState.scatterPointSize,
+    )
     expect(bars.length).toBe(1)
     expect(arcCalls.length).toBe(0)
   })

@@ -104,7 +104,13 @@ export function getBoxColor({
   jexl: JexlInstance
 }) {
   let fill = isUTR(feature)
-    ? readConfigValueSafe<string>(config, 'utrColor', feature, jexl, INVALID_COLOR)
+    ? readConfigValueSafe<string>(
+        config,
+        'utrColor',
+        feature,
+        jexl,
+        INVALID_COLOR,
+      )
     : readConfigValueSafe<string>(config, 'color', feature, jexl, INVALID_COLOR)
 
   const featureStrand = feature.get('strand')

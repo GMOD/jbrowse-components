@@ -1,6 +1,7 @@
 ---
 title: Multi-way synteny from an ortholog table
-description: Build an N-genome linear synteny view from a jcvi MCScan .blocks file
+description:
+  Build an N-genome linear synteny view from a jcvi MCScan .blocks file
 guide_category: Tutorials
 ---
 
@@ -133,7 +134,7 @@ Because a `.blocks` table is reference-anchored, any pair that includes the
 reference (peach–grape, grape–cacao) is a direct synteny relationship — so
 putting the reference genome in the **middle** row keeps every band faithful.
 
-The adapter can also serve a pair where *neither* side is the reference (e.g.
+The adapter can also serve a pair where _neither_ side is the reference (e.g.
 peach–cacao): it joins the two columns on their shared reference gene. That link
 means "both are orthologous to the same grape gene" — a **transitive** ortholog
 relationship, not a direct alignment — which is worth keeping in mind if you

@@ -40,7 +40,6 @@ exports[`export session with alignments and gff tracks 1`] = `
               {
                 "configuration": "gff3tabix_genes-LinearBasicDisplay",
                 "id": "test-id-4",
-                "pinnedFeatureIds": [],
                 "type": "LinearBasicDisplay",
               },
             ],

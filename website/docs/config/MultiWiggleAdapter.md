@@ -101,7 +101,7 @@ array of subadapter JSON objects
 
 #### slot: bigWigs
 
-array of bigwig filenames, alternative to the subadapters slot
+array of BigWig URLs/paths, alternative to the subadapters slot
 
 **Type:** `frozen`
 
@@ -109,7 +109,7 @@ array of bigwig filenames, alternative to the subadapters slot
 {
   type: 'frozen',
   description:
-    'array of bigwig filenames, alternative to the subadapters slot',
+    'array of BigWig URLs/paths, alternative to the subadapters slot',
   defaultValue: [],
 }
 ```

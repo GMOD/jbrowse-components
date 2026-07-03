@@ -96,4 +96,6 @@ const paf = execFileSync(
 fs.writeFileSync(path.join(dir, 'volvox_snp.paf'), paf)
 
 const rows = paf.split('\n').filter(Boolean)
-console.log(`wrote volvox_snp.fa and volvox_snp.paf (${rows.length} alignment rows)`)
+console.log(
+  `wrote volvox_snp.fa and volvox_snp.paf (${rows.length} alignment rows)`,
+)

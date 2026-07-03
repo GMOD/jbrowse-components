@@ -110,6 +110,8 @@ and docs.
 [regionKeys](../linearcanvasbasedisplay#getter-regionkeys),
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
 [pinnedFeatureIdSet](../linearcanvasbasedisplay#getter-pinnedfeatureidset),
+[highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
+[layoutPinnedFeatureIdSet](../linearcanvasbasedisplay#getter-layoutpinnedfeatureidset),
 [soloFeatureIdSet](../linearcanvasbasedisplay#getter-solofeatureidset),
 [hiddenFeatureIdSet](../linearcanvasbasedisplay#getter-hiddenfeatureidset),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
@@ -131,7 +133,6 @@ and docs.
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
 [hoveredSubfeature](../linearcanvasbasedisplay#getter-hoveredsubfeature),
 [featureItemMap](../linearcanvasbasedisplay#getter-featureitemmap),
-[highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
 [highlightedFeatureIds](../linearcanvasbasedisplay#getter-highlightedfeatureids),
 [flatbushIndexes](../linearcanvasbasedisplay#getter-flatbushindexes)
 

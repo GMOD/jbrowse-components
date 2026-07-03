@@ -7,7 +7,10 @@
         "trackId": "volvox-ReferenceSequenceTrack",
         "adapter": {
           "type": "IndexedFastaAdapter",
-          "fastaLocation": { "uri": "volvox.fa", "locationType": "UriLocation" },
+          "fastaLocation": {
+            "uri": "volvox.fa",
+            "locationType": "UriLocation"
+          },
           "faiLocation": {
             "uri": "volvox.fa.fai",
             "locationType": "UriLocation"

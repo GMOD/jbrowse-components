@@ -171,10 +171,11 @@ configuration: ConfigurationReference(configSchema)
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                           | Signature                |
-| -------------------------------- | ------------------------ |
-| [`features`](#volatile-features) | `Feature[] \| undefined` |
-| [`loading`](#volatile-loading)   | `false`                  |
+| Member                                                     | Signature                |
+| ---------------------------------------------------------- | ------------------------ |
+| [`features`](#volatile-features)                           | `Feature[] \| undefined` |
+| [`loadedRegionSignature`](#volatile-loadedregionsignature) | `string \| undefined`    |
+| [`loading`](#volatile-loading)                             | `false`                  |
 
 </details>
 
@@ -188,6 +189,15 @@ detail):
 type features = Feature[] | undefined
 // code
 features: undefined as Feature[] | undefined
+```
+
+#### volatile: loadedRegionSignature
+
+```ts
+// type signature
+type loadedRegionSignature = string | undefined
+// code
+loadedRegionSignature: undefined as string | undefined
 ```
 
 #### volatile: loading
@@ -217,13 +227,13 @@ type conf = ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotNam
 #### getter: svgReady
 
 the SVG-export terminal-state gate (the `SvgExportable` contract every LGV track
-display shares). Arc fetches all features into a single array via
-`FeatureDensityMixin`, so it has no `loadedRegions` spatial-coverage signal like
-the GPU mixins — "settled" is just features-present / error / too-large. Known
-gap: this stays true through an in-place refetch, so an export fired immediately
-after a pan/zoom can capture stale arcs (same stale-then-reposition behavior arc
-shows on-screen); tightening it would need fetch-generation tracking the
-single-array model lacks.
+display shares). Non-stale: `features` must have been fetched for the _current_
+static-block region set (`loadedRegionSignature` matches), so an export fired
+mid-refetch after a pan/zoom waits for fresh arcs instead of capturing stale
+ones — arc's analogue of the GPU mixins' `viewportWithinLoadedData`. The
+first-paint testid + loading anti-flash use `features !== undefined`
+(painted-once) directly, not this, so they don't flip on refetch (see
+BaseDisplayComponent).
 
 ```ts
 type svgReady = boolean
@@ -282,9 +292,9 @@ type displayMode = any
 **Other members** (undocumented — signatures only, expand below for full
 detail):
 
-| Member                                     | Signature                                                                                                                  |
-| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------- |
-| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]` |
+| Member                                     | Signature                                                                                                                                    |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| [`trackMenuItems`](#method-trackmenuitems) | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]` |
 
 </details>
 
@@ -294,13 +304,23 @@ detail):
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 </details>
 
 <details open>
 <summary>LinearArcDisplay - Actions</summary>
+
+#### action: reload
+
+retry after an error: clearing `error` re-fires the (error-gated) fetch autorun.
+The shared `DisplayErrorBar` retry calls this; the base `reload` is a no-op,
+which would leave the display stuck on error.
+
+```ts
+type reload = () => void
+```
 
 **Other members** (undocumented — signatures only, expand below for full
 detail):
@@ -309,7 +329,7 @@ detail):
 | ------------------------------------------ | --------------------------------------------------------------------- |
 | [`selectFeature`](#action-selectfeature)   | `(feature: Feature) => void`                                          |
 | [`setLoading`](#action-setloading)         | `(flag: boolean) => void`                                             |
-| [`setFeatures`](#action-setfeatures)       | `(f: Feature[]) => void`                                              |
+| [`setFeatures`](#action-setfeatures)       | `(f: Feature[], signature: string) => void`                           |
 | [`setDisplayMode`](#action-setdisplaymode) | `(flag: string) => void`                                              |
 | [`renderSvg`](#action-rendersvg)           | `(opts?: ExportSvgDisplayOptions \| undefined) => Promise<ReactNode>` |
 
@@ -333,7 +353,7 @@ type setLoading = (flag: boolean) => void
 #### action: setFeatures
 
 ```ts
-type setFeatures = (f: Feature[]) => void
+type setFeatures = (f: Feature[], signature: string) => void
 ```
 
 #### action: setDisplayMode

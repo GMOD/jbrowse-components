@@ -282,6 +282,27 @@ function cascadeBoxes(path: string[]): Annotation[] {
   return path.map(text => ({ type: 'box' as const, anchor: { text } }))
 }
 
+const trackMenuIcon = (trackId: string): ScreenshotAction => ({
+  type: 'click',
+  selector: `[data-testid="track_menu_icon"][data-trackid="${trackId}"]`,
+})
+
+// Open the alignments "Set feature height..." submenu and leave it open. Hovers
+// the submenu-parent <li> row itself (via xpath) rather than its inner label
+// span, so MUI's onMouseEnter fires and the submenu expands — a text-only hover
+// on the label didn't reliably trigger it for this ellipsis-labelled subMenu.
+const openFeatureHeightSubmenu = (): ScreenshotAction[] => [
+  { type: 'waitForText', text: 'Set feature height' },
+  { type: 'delay', ms: 400 },
+  {
+    type: 'hover',
+    selector:
+      '::-p-xpath(//li[@role="menuitem"][contains(normalize-space(.), "Set feature height")])',
+  },
+  { type: 'waitForText', text: 'Super-compact' },
+  { type: 'delay', ms: 500 },
+]
+
 // ── Trio crossover callouts (analyze_trio.md) ──────────────────────────────
 // The six VCF haplotype rows, top→bottom, sharing the hap-ibd painting's
 // Father/Mother hapN names so the sidebar and the painting read consistently.
@@ -1224,53 +1245,66 @@ export const specs: ScreenshotSpec[] = [
 
   {
     // Multi-step procedure proving the session-wide feature-height default and
-    // the CSS-style inherit/pin (displayMode promotable slot). Two feature
-    // tracks of the same display type: (1) both inherit Normal, (2) promote
-    // Compact "for all tracks like this" and both follow, (3) pin the second
-    // track back to Normal — it holds over the compact session default. This is
-    // the capability that the inherit sentinel unlocked; a plain slot couldn't
-    // pin its own default value back. See agent-docs/DISPLAY_TYPE_DEFAULTS.md.
+    // the pin behaviour on alignments tracks. featureHeight/featureSpacing are
+    // promotable slots (getConfResolved: track value → session default → schema
+    // default), so: (1) both alignments tracks inherit Normal, (2) "Use current
+    // height by default on all alignments tracks" promotes Compact and the
+    // second track follows via inherit, (3) pin the second track back to Normal
+    // — it overrides the compact session default. Each stage leaves the "Set
+    // feature height" submenu open and boxes the item being clicked.
     mode: 'url',
     name: 'feature_height_default_pin',
     url: lgvSession(VOLVOX, {
       assembly: 'volvox',
-      loc: 'ctgA:1..20,000',
-      tracks: ['gff3tabix_genes', 'bigbed_genes'],
+      loc: 'ctgA:1..8,000',
+      tracks: [
+        'volvox_alignments_pileup_coverage',
+        'volvox_cram_alignments_ctga',
+      ],
     }),
     readyText: 'ctgA',
     viewportWidth: 1100,
-    viewportHeight: 470,
-    settleMs: 5000,
+    viewportHeight: 720,
+    // alignments pileups keep re-laying-out while reads stream in; wait long
+    // enough that the menu geometry is stable before the hover/click sequence
+    settleMs: 14000,
     hideTooltip: true,
     stages: [
       {
-        // both feature tracks sit at the default (Normal) height
+        // both alignments tracks sit at the default (Normal) height. Leave the
+        // "Set feature height" submenu open (no Escape before capture) and box
+        // the selected "Normal" radio so the reader sees the control itself.
+        actions: [
+          trackMenuIcon('volvox_alignments_pileup_coverage'),
+          ...openFeatureHeightSubmenu(),
+        ],
         annotations: [
+          {
+            type: 'box',
+            anchor: { text: 'Normal' },
+            strokeWidth: 3,
+            fillOpacity: 0.12,
+          },
           {
             type: 'text',
             x: 620,
             y: 34,
             maxWidth: 440,
             fontSize: 15,
-            text: '1. Two feature tracks — both inherit the default Normal height',
+            text: '1. Feature height defaults to Normal — both alignments tracks inherit it',
           },
         ],
       },
       {
-        // set the first track to Compact, then "Use Compact by default for all
-        // tracks like this" — the second (un-pinned) track follows via inherit
+        closeMenusFirst: true,
+        // set the first track to Compact, then enable "Use current height by
+        // default on all alignments tracks" — the second (un-pinned) track
+        // follows via inherit. Re-open the submenu so the now-checked default
+        // toggle (the item actually clicked) is visible and boxed.
         actions: [
-          {
-            type: 'click',
-            selector:
-              '[data-testid="track_menu_icon"][data-trackid="gff3tabix_genes"]',
-          },
-          { type: 'waitForText', text: 'Set feature height' },
-          { type: 'hover', text: 'Set feature height' },
-          { type: 'waitForText', text: 'Super-compact' },
-          { type: 'delay', ms: 400 },
-          // exact-text match so "Compact" hits the radio, not the longer
-          // "Use Compact by default…" checkbox that also contains the word
+          trackMenuIcon('volvox_alignments_pileup_coverage'),
+          ...openFeatureHeightSubmenu(),
+          // exact-text match so "Compact" hits the radio, not a longer label
           {
             type: 'click',
             selector:
@@ -1279,45 +1313,41 @@ export const specs: ScreenshotSpec[] = [
           { type: 'delay', ms: 300 },
           { type: 'press', key: 'Escape' },
           { type: 'delay', ms: 600 },
-          {
-            type: 'click',
-            selector:
-              '[data-testid="track_menu_icon"][data-trackid="gff3tabix_genes"]',
-          },
-          { type: 'waitForText', text: 'Set feature height' },
-          { type: 'hover', text: 'Set feature height' },
-          { type: 'waitForText', text: 'by default for all tracks like this' },
-          { type: 'delay', ms: 400 },
-          { type: 'click', text: 'by default for all tracks like this' },
-          { type: 'delay', ms: 300 },
+          trackMenuIcon('volvox_alignments_pileup_coverage'),
+          ...openFeatureHeightSubmenu(),
+          { type: 'click', text: 'by default on all alignments tracks' },
+          { type: 'delay', ms: 600 },
           { type: 'press', key: 'Escape' },
-          { type: 'delay', ms: 1400 },
+          { type: 'delay', ms: 800 },
+          // re-open to display the checkbox now ticked, kept on screen for capture
+          trackMenuIcon('volvox_alignments_pileup_coverage'),
+          ...openFeatureHeightSubmenu(),
         ],
         annotations: [
+          {
+            type: 'box',
+            anchor: { text: 'by default on all alignments tracks' },
+            strokeWidth: 3,
+            fillOpacity: 0.12,
+          },
           {
             type: 'text',
             x: 620,
             y: 34,
             maxWidth: 440,
             fontSize: 15,
-            text: '2. "Use Compact by default for all tracks like this" — every un-pinned track follows',
+            text: '2. "Use current height by default on all alignments tracks" — every un-pinned track follows',
           },
         ],
       },
       {
         closeMenusFirst: true,
         // pin the second track back to Normal; it holds over the compact
-        // session default (the first track stays compact)
+        // session default (the first track stays compact). Re-open its submenu
+        // so the newly-selected "Normal" radio is visible and boxed.
         actions: [
-          {
-            type: 'click',
-            selector:
-              '[data-testid="track_menu_icon"][data-trackid="bigbed_genes"]',
-          },
-          { type: 'waitForText', text: 'Set feature height' },
-          { type: 'hover', text: 'Set feature height' },
-          { type: 'waitForText', text: 'Super-compact' },
-          { type: 'delay', ms: 400 },
+          trackMenuIcon('volvox_cram_alignments_ctga'),
+          ...openFeatureHeightSubmenu(),
           {
             type: 'click',
             selector:
@@ -1325,9 +1355,17 @@ export const specs: ScreenshotSpec[] = [
           },
           { type: 'delay', ms: 300 },
           { type: 'press', key: 'Escape' },
-          { type: 'delay', ms: 1400 },
+          { type: 'delay', ms: 700 },
+          trackMenuIcon('volvox_cram_alignments_ctga'),
+          ...openFeatureHeightSubmenu(),
         ],
         annotations: [
+          {
+            type: 'box',
+            anchor: { text: 'Normal' },
+            strokeWidth: 3,
+            fillOpacity: 0.12,
+          },
           {
             type: 'text',
             x: 620,
@@ -1760,7 +1798,10 @@ export const specs: ScreenshotSpec[] = [
       { type: 'press', key: 'ArrowDown' },
       { type: 'press', key: 'Enter' },
       // wait for navigation to settle and the highlight overlay to resolve
-      { type: 'waitForSelector', selector: '[data-testid="feature-highlight"]' },
+      {
+        type: 'waitForSelector',
+        selector: '[data-testid="feature-highlight"]',
+      },
       { type: 'delay', ms: 1200 },
     ],
     annotations: [

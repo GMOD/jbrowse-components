@@ -106,6 +106,21 @@ r² to the index SNP, read from `ldAdapter`.
 }
 ```
 
+#### slot: scatterPointSize
+
+Manhattan point diameter in px (adjustable from the track menu). Larger default
+than wiggle's since Manhattan points are the primary glyph.
+
+**Type:** `number` · **Default:** `4`
+
+```js
+{
+  type: 'number',
+  defaultValue: 4,
+  description: 'Diameter in px of Manhattan points',
+}
+```
+
 #### slot: ldAdapter
 
 PLINK .ld adapter (PlinkLDAdapter / PlinkLDTabixAdapter) supplying pairwise r²
@@ -173,7 +188,8 @@ Default height of the track
 
 #### slot: useBicolor
 
-Use separate positive/negative colors instead of a single color
+When true (the default), positive scores use posColor and negative scores use
+negColor. When false, all bars use the single color slot.
 
 **Type:** `boolean` · **Default:** `true`
 
@@ -182,13 +198,14 @@ Use separate positive/negative colors instead of a single color
   type: 'boolean',
   defaultValue: true,
   description:
-    'Use separate positive/negative colors instead of a single color',
+    'When true (the default), positive scores use posColor and negative scores use negColor. When false, all bars use the single color slot.',
 }
 ```
 
 #### slot: color
 
-Color for the wiggle bars (when not using bicolor mode)
+Single fill color for the wiggle bars. Only used when useBicolor is false
+(useBicolor defaults to true, in which case posColor/negColor are used instead).
 
 **Type:** `color`
 
@@ -196,7 +213,8 @@ Color for the wiggle bars (when not using bicolor mode)
 {
   type: 'color',
   defaultValue: WIGGLE_POS_COLOR_DEFAULT,
-  description: 'Color for the wiggle bars (when not using bicolor mode)',
+  description:
+    'Single fill color for the wiggle bars. Only used when useBicolor is false (useBicolor defaults to true, in which case posColor/negColor are used instead).',
 }
 ```
 

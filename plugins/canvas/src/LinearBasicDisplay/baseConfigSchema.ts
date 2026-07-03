@@ -174,12 +174,22 @@ export default function baseConfigSchemaFactory(_pluginManager: PluginManager) {
        */
       transcriptTypes: {
         type: 'stringArray',
-        // Only tunes isoform stacking/label spacing (see subfeatures.ts) and the
-        // gene-only view. Glyph choice and peptide translation are structural
-        // (any feature with a direct CDS child is a coding transcript), so
-        // coding types absent here — V/C/D/J_gene_segment, org-specific
-        // transcripts, prokaryotic gene → CDS — still render as transcripts.
-        defaultValue: ['mRNA', 'transcript', 'primary_transcript'],
+        // No longer gates glyph choice, UTR synthesis, or peptide translation —
+        // those are structural (any feature with a direct CDS child is a coding
+        // transcript), so org-specific/prokaryotic coding types render correctly
+        // without being listed. This now only tunes isoform stacking/label
+        // spacing (subfeatures.ts) and the gene-only view (featureAdmission.ts);
+        // V/C/D/J_gene_segment are kept so NCBI immunoglobulin/TCR segments are
+        // treated as transcripts there too.
+        defaultValue: [
+          'mRNA',
+          'transcript',
+          'primary_transcript',
+          'V_gene_segment',
+          'C_gene_segment',
+          'D_gene_segment',
+          'J_gene_segment',
+        ],
       },
       /**
        * #slot

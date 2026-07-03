@@ -114,7 +114,11 @@ export function createDotplotColorFunction(
     case 'meanQueryIdentity':
       return rampConfigColorFn(data.meanIdentities, 'meanQueryIdentity', alpha)
     case 'meanQueryMappingQuality':
-      return rampConfigColorFn(data.meanScores, 'meanQueryMappingQuality', alpha)
+      return rampConfigColorFn(
+        data.meanScores,
+        'meanQueryMappingQuality',
+        alpha,
+      )
     case 'mappingQuality':
       return rampConfigColorFn(data.mappingQuals, 'mappingQuality', alpha)
     // Dotplot keeps a plain black default (its conventional line color) rather

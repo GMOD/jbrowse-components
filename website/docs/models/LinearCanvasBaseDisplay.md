@@ -577,6 +577,8 @@ detail):
 | [`regionKeys`](#getter-regionkeys)                                 | `Map<number, string>`                                             |
 | [`reversedRegions`](#getter-reversedregions)                       | `Set<number>`                                                     |
 | [`pinnedFeatureIdSet`](#getter-pinnedfeatureidset)                 | `ReadonlySet<string>`                                             |
+| [`highlightedFeatureIdSet`](#getter-highlightedfeatureidset)       | `ReadonlySet<string>`                                             |
+| [`layoutPinnedFeatureIdSet`](#getter-layoutpinnedfeatureidset)     | `ReadonlySet<string>`                                             |
 | [`soloFeatureIdSet`](#getter-solofeatureidset)                     | `ReadonlySet<string>`                                             |
 | [`hiddenFeatureIdSet`](#getter-hiddenfeatureidset)                 | `ReadonlySet<string>`                                             |
 | [`featureWidgetType`](#getter-featurewidgettype)                   | `{ type: string; id: string; }`                                   |
@@ -597,7 +599,6 @@ detail):
 | [`hoveredFeature`](#getter-hoveredfeature)                         | `FlatbushItem \| null`                                            |
 | [`hoveredSubfeature`](#getter-hoveredsubfeature)                   | `SubfeatureInfo \| null`                                          |
 | [`featureItemMap`](#getter-featureitemmap)                         | `Map<string, FeatureItemEntry>`                                   |
-| [`highlightedFeatureIdSet`](#getter-highlightedfeatureidset)       | `ReadonlySet<string>`                                             |
 | [`highlightedFeatureIds`](#getter-highlightedfeatureids)           | `string[]`                                                        |
 | [`flatbushIndexes`](#getter-flatbushindexes)                       | `Map<number, FlatbushRegionIndexes>`                              |
 
@@ -744,6 +745,18 @@ type reversedRegions = Set<number>
 type pinnedFeatureIdSet = ReadonlySet<string>
 ```
 
+#### getter: highlightedFeatureIdSet
+
+```ts
+type highlightedFeatureIdSet = ReadonlySet<string>
+```
+
+#### getter: layoutPinnedFeatureIdSet
+
+```ts
+type layoutPinnedFeatureIdSet = ReadonlySet<string>
+```
+
 #### getter: soloFeatureIdSet
 
 ```ts
@@ -862,12 +875,6 @@ type hoveredSubfeature = SubfeatureInfo | null
 
 ```ts
 type featureItemMap = Map<string, FeatureItemEntry>
-```
-
-#### getter: highlightedFeatureIdSet
-
-```ts
-type highlightedFeatureIdSet = ReadonlySet<string>
 ```
 
 #### getter: highlightedFeatureIds

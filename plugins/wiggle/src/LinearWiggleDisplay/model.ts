@@ -317,7 +317,9 @@ export default function stateModelFactory(
           }),
           // cross hatches are meaningless in density mode (score maps to color,
           // not height)
-          ...makeShowSubMenu(self.isDensityMode ? [] : [makeCrossHatchItem(self)]),
+          ...makeShowSubMenu(
+            self.isDensityMode ? [] : [makeCrossHatchItem(self)],
+          ),
           {
             label: 'Edit color...',
             icon: PaletteIcon,

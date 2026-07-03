@@ -61,12 +61,25 @@ member (a track or display state model). For a raw configuration model, use
 ### getConfResolved
 
 Read a `promotable` slot, layering the session-wide promoted default under the
-track's own value. Drop-in for `getConf` on the display's own promotable slots.
-Main-thread only (consults the session) — the worker reads raw config.
+track's own value. Drop-in for `getConf` on the display's own promotable slots,
+and always returns a real value (never a slot's inherit sentinel). Main-thread
+only (consults the session) — the worker reads raw config.
 
 ```js
 // type signature
 <T = unknown>(self: PromotableDisplay, slot: string) => T
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
+### isSlotPinned
+
+Whether this track pins the slot (holds a non-default value) rather than
+inheriting the session-wide promoted default.
+
+```js
+// type signature
+(self: PromotableDisplay, slot: string) => boolean
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)

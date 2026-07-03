@@ -7,11 +7,7 @@ import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
 import SyntenyFeature from '../SyntenyFeature/index.ts'
 import { orientAlignment } from '../csUtils.ts'
-import {
-  getAssemblyNamesFromConf,
-  pafIdentity,
-  parsePAFLine,
-} from '../util.ts'
+import { getAssemblyNamesFromConf, pafIdentity, parsePAFLine } from '../util.ts'
 import { getWeightedMeans } from './util.ts'
 
 import type { PAFRecord } from './util.ts'

@@ -31,6 +31,7 @@ type LGV = LinearGenomeViewModel
 export interface RenderSvgModel extends SvgExportable {
   id: string
   height: number
+  scrollTop: number
   regionTooLarge: boolean
   laidOutDataMap: Map<number, FeatureDataResult>
   showLabels: boolean
@@ -92,10 +93,15 @@ function CanvasFeaturesSvgBody({
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
   const totalWidth = view.totalWidthPx
 
+  // autoHeight defaults off, so a feature track is a fixed-height viewport with
+  // vertical overflow the user scrolls. On-screen `renderState.scrollY` is
+  // `self.scrollTop`; the export honors the same offset so a scrolled track
+  // exports what's on screen (top viewport) rather than always the track top.
+  const scrollY = model.scrollTop
   const renderBlocks = buildRenderBlocks(visibleRegions)
   const featuresNode = paintLayer(totalWidth, height, opts, ctx => {
     drawFeatureBlocks(ctx, model.laidOutDataMap, renderBlocks, {
-      scrollY: 0,
+      scrollY,
       canvasWidth: totalWidth,
       canvasHeight: height,
     })
@@ -108,6 +114,10 @@ function CanvasFeaturesSvgBody({
   // rasterizeLayers is on.
   const textNode = paintLayer(totalWidth, height, undefined, ctx => {
     ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
+    // Labels/peptides are laid out in absolute track px (no per-layer scrollY,
+    // unlike drawFeatureBlocks); shift the whole layer up by scrollY so text
+    // tracks the feature geometry when the viewport is scrolled.
+    ctx.translate(0, -scrollY)
     forEachDisplayLabel(
       visibleRegions,
       model.laidOutDataMap,

@@ -7,7 +7,7 @@ import { parseBed, readFile } from '../util.ts'
 
 import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
-import type { Feature, FileLocation, Region  } from '@jbrowse/core/util'
+import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
 
 interface BareFeature {
   strand: number

@@ -116,6 +116,8 @@ and docs.
 [regionKeys](../linearcanvasbasedisplay#getter-regionkeys),
 [reversedRegions](../linearcanvasbasedisplay#getter-reversedregions),
 [pinnedFeatureIdSet](../linearcanvasbasedisplay#getter-pinnedfeatureidset),
+[highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
+[layoutPinnedFeatureIdSet](../linearcanvasbasedisplay#getter-layoutpinnedfeatureidset),
 [soloFeatureIdSet](../linearcanvasbasedisplay#getter-solofeatureidset),
 [hiddenFeatureIdSet](../linearcanvasbasedisplay#getter-hiddenfeatureidset),
 [featureWidgetType](../linearcanvasbasedisplay#getter-featurewidgettype),
@@ -137,7 +139,6 @@ and docs.
 [hoveredFeature](../linearcanvasbasedisplay#getter-hoveredfeature),
 [hoveredSubfeature](../linearcanvasbasedisplay#getter-hoveredsubfeature),
 [featureItemMap](../linearcanvasbasedisplay#getter-featureitemmap),
-[highlightedFeatureIdSet](../linearcanvasbasedisplay#getter-highlightedfeatureidset),
 [highlightedFeatureIds](../linearcanvasbasedisplay#getter-highlightedfeatureids),
 [flatbushIndexes](../linearcanvasbasedisplay#getter-flatbushindexes)
 
@@ -445,7 +446,7 @@ detail):
 | ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [`rpcProps`](#method-rpcprops)                         | `() => { displayConfig: { geneGlyphMode: "auto" \| "all" \| "longestCoding"; subfeatureLabels: "none" \| "overlay" \| "below"; transcriptTypes: string[]; containerTypes: string[]; subParts: string; ... 9 more ...; labels: { ...; }; }; ... 5 more ...; theme: SerializableThemeArgs \| undefined; }` |
 | [`showSubmenuMenuItems`](#method-showsubmenumenuitems) | `() => ({ label: string; subMenu: { label: string; type: "radio"; checked: boolean; onClick: () => void; }[]; } \| { label: string; type: "checkbox"; checked: any; onClick: () => void; })[]`                                                                                                           |
-| [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| { ...; })[]`                                                                                                                                                                               |
+| [`trackMenuItems`](#method-trackmenuitems)             | `() => (MenuDivider \| MenuSubHeader \| NormalMenuItem \| CheckboxMenuItem \| RadioMenuItem \| SubMenuItem \| CustomMenuItem \| { ...; })[]`                                                                                                                                                             |
 | [`contextMenuItems`](#method-contextmenuitems)         | `() => ({ label: string; icon: OverridableComponent<SvgIconTypeMap<{}, "svg">> & { muiName: string; }; onClick: () => void; subMenu?: undefined; } \| { ...; })[]`                                                                                                                                       |
 
 </details>
@@ -479,7 +480,7 @@ type showSubmenuMenuItems = () => (
 #### method: trackMenuItems
 
 ```ts
-type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | { ...; })[]
+type trackMenuItems = () => (MenuDivider | MenuSubHeader | NormalMenuItem | CheckboxMenuItem | RadioMenuItem | SubMenuItem | CustomMenuItem | { ...; })[]
 ```
 
 #### method: contextMenuItems

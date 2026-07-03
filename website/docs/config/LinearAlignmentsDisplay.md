@@ -94,6 +94,7 @@ Height of each feature (read) in pixels
   type: 'number',
   defaultValue: 7,
   description: 'Height of each feature (read) in pixels',
+  promotable: true,
 }
 ```
 
@@ -108,6 +109,7 @@ Spacing between features in pixels
   type: 'number',
   defaultValue: 1,
   description: 'Spacing between features in pixels',
+  promotable: true,
 }
 ```
 
@@ -690,6 +692,7 @@ Draw soft-clipped read portions
   type: 'boolean',
   defaultValue: false,
   description: 'Draw soft-clipped read portions',
+  promotable: true,
 }
 ```
 
