@@ -119,9 +119,13 @@ export function getSubparts(f: Feature, config: DisplayConfig) {
   // default) rather than a separate hardcoded list, so every type that routes
   // to this layout can also get implied UTRs.
   const isTranscript = config.transcriptTypes.includes(featureType(f))
-  const impliedUTRs = !hasUTRs && isTranscript
+  // Only synthesize when there are no explicit UTRs — makeUTRs derives UTR
+  // extents from exon/CDS geometry alone, so running it on a feature that
+  // already has UTRs would push duplicates. config.impliedUTRs opts non-
+  // transcript types in, but stays gated on !hasUTRs.
+  const impliedUTRs = !hasUTRs && (isTranscript || config.impliedUTRs)
 
-  if (impliedUTRs || config.impliedUTRs) {
+  if (impliedUTRs) {
     c = makeUTRs(f, c)
   }
 
