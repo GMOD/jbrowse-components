@@ -113,4 +113,6 @@ export default function sessionModelFactory(pluginManager: PluginManager) {
 type SessionStateModel = ReturnType<typeof sessionModelFactory>
 
 // compile-time check that the session model implements AbstractSessionModel
-export type _AssertSessionModel = AssertSessionModel<Instance<SessionStateModel>>
+export type _AssertSessionModel = AssertSessionModel<
+  Instance<SessionStateModel>
+>

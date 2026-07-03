@@ -64,7 +64,11 @@ function makeData(
   return makeFeatureData({
     ...packFixtureRects(features),
     flatbushItems: features.map((f, i) =>
-      makeFlatbushItem({ featureId: `f${i}`, startBp: f.startBp, endBp: f.endBp }),
+      makeFlatbushItem({
+        featureId: `f${i}`,
+        startBp: f.startBp,
+        endBp: f.endBp,
+      }),
     ),
     featureCount: features.length,
   })

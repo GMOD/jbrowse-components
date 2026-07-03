@@ -785,11 +785,28 @@ test('a sub-pixel fade box overlapping a visible feature stacks, not overprints'
   // observed genes-track collision.
   const data = makeFeatureData({
     features: [
-      { featureId: 'wideGene', startBp: 100, endBp: 5000, height: 12, densityFade: true },
-      { featureId: 'fakeSNP', startBp: 2000, endBp: 2001, height: 12, densityFade: true },
+      {
+        featureId: 'wideGene',
+        startBp: 100,
+        endBp: 5000,
+        height: 12,
+        densityFade: true,
+      },
+      {
+        featureId: 'fakeSNP',
+        startBp: 2000,
+        endBp: 2001,
+        height: 12,
+        densityFade: true,
+      },
     ],
   })
-  const out = layout(new Map([[0, data]]), new Map([[0, 'volvox:ctgA']]), 26, false)
+  const out = layout(
+    new Map([[0, data]]),
+    new Map([[0, 'volvox:ctgA']]),
+    26,
+    false,
+  )
   const top = (id: string) =>
     out.get(0)!.flatbushItems.find(f => f.featureId === id)!.topPx
   expect(top('wideGene')).toBe(0)

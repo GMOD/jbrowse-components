@@ -271,15 +271,10 @@ test('a codon straddling a block boundary is stitched from both blocks', () => {
     rpcDataMap: new Map([
       [
         0,
-        twoBlockRegion(
-          'AT',
-          ['AT'],
-          'GAAATAA',
-          [
-            [0, 'GAAATAA'],
-            [1, 'GAAATAA'],
-          ],
-        ),
+        twoBlockRegion('AT', ['AT'], 'GAAATAA', [
+          [0, 'GAAATAA'],
+          [1, 'GAAATAA'],
+        ]),
       ],
     ]),
     framesDataMap: new Map([[0, frames]]),
@@ -302,15 +297,10 @@ test('computeCodonConservation stitches a boundary-straddling codon', () => {
     rpcDataMap: new Map([
       [
         0,
-        twoBlockRegion(
-          'AT',
-          ['AT', 'AT'],
-          'GAAATAA',
-          [
-            [0, 'GAAATAA'],
-            [1, 'GAAATAA'],
-          ],
-        ),
+        twoBlockRegion('AT', ['AT', 'AT'], 'GAAATAA', [
+          [0, 'GAAATAA'],
+          [1, 'GAAATAA'],
+        ]),
       ],
     ]),
     framesDataMap: new Map([[0, frames]]),
@@ -321,12 +311,7 @@ test('computeCodonConservation stitches a boundary-straddling codon', () => {
 })
 
 test('findCodonAt resolves a codon straddling a block boundary', () => {
-  const region = twoBlockRegion(
-    'AT',
-    ['AT'],
-    'GAAATAA',
-    [[0, 'GAAATAA']],
-  )
+  const region = twoBlockRegion('AT', ['AT'], 'GAAATAA', [[0, 'GAAATAA']])
   // bp 102 (the exon-B piece of the straddling codon 1) resolves the whole ATG
   for (const bp of [100, 101, 102]) {
     expect(

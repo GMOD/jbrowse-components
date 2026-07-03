@@ -28,7 +28,9 @@ function morphDelta(
   targetTop: number,
 ) {
   const prevTop = fromTops.get(featureId)
-  return prevTop !== undefined && targetTop >= 0 ? prevTop - targetTop : undefined
+  return prevTop !== undefined && targetTop >= 0
+    ? prevTop - targetTop
+    : undefined
 }
 
 // Tallest row bottom across a layout, i.e. its content height.

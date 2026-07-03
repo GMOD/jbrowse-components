@@ -187,7 +187,9 @@ const FilterByTagDialog = observer(function FilterByTagDialog(props: {
   const [flagInclude, setFlagInclude] = useState(filterBy.flagInclude)
   const [flagExclude, setFlagExclude] = useState(filterBy.flagExclude)
   const [tag, setTag] = useState(filterBy.tagFilters?.[0]?.tag ?? '')
-  const [tagValue, setTagValue] = useState(filterBy.tagFilters?.[0]?.value ?? '')
+  const [tagValue, setTagValue] = useState(
+    filterBy.tagFilters?.[0]?.value ?? '',
+  )
   // Additional tag filters (e.g. HP/RG set from the right-click quick filters)
   // aren't shown in this single-tag editor; preserve them across a submit so
   // opening this dialog to tweak a flag doesn't drop them.

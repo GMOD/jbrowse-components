@@ -146,7 +146,11 @@ describe('alignments showSoftClipping session default', () => {
 
   it('follows a session-wide default of on when the track is not pinned', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showSoftClipping', true)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      true,
+    )
     expect(display.showSoftClipping).toBe(true)
     expect(display.isShowSoftClippingDefault).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([
@@ -156,7 +160,11 @@ describe('alignments showSoftClipping session default', () => {
 
   it('a config-pinned on wins and reads as its own choice, not the default', () => {
     const { session, display } = createDisplay({ showSoftClipping: true })
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showSoftClipping', false)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      false,
+    )
     // pinned on regardless of the session default; not "affected by a default"
     expect(display.showSoftClipping).toBe(true)
     expect(display.sessionDefaultChanges()).toEqual([])
@@ -165,7 +173,11 @@ describe('alignments showSoftClipping session default', () => {
   it('reacts to the session default changing after creation', () => {
     const { session, display } = createDisplay()
     expect(display.showSoftClipping).toBe(false)
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showSoftClipping', true)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      true,
+    )
     expect(display.showSoftClipping).toBe(true)
     session.setDisplayTypeDefault(
       'LinearAlignmentsDisplay',
@@ -177,7 +189,11 @@ describe('alignments showSoftClipping session default', () => {
 
   it('ignores a default promoted for a different display type', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearBasicDisplay', 'showSoftClipping', true)
+    session.setDisplayTypeDefault(
+      'LinearBasicDisplay',
+      'showSoftClipping',
+      true,
+    )
     expect(display.showSoftClipping).toBe(false)
   })
 
@@ -223,7 +239,11 @@ describe('alignments showSoftClipping session default', () => {
 
   it('clearSessionDefaults reverts inheriting tracks and empties the changes', () => {
     const { session, display } = createDisplay()
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showSoftClipping', true)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      true,
+    )
     expect(display.showSoftClipping).toBe(true)
 
     display.clearSessionDefaults()
@@ -319,7 +339,10 @@ describe('alignments compactness session default', () => {
 
       display.toggleCompactnessDefault()
       expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
+        session.getDisplayTypeDefault(
+          'LinearAlignmentsDisplay',
+          'featureHeight',
+        ),
       ).toBe(3)
       expect(
         session.getDisplayTypeDefault(
@@ -337,7 +360,10 @@ describe('alignments compactness session default', () => {
       })
       display.toggleCompactnessDefault()
       expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
+        session.getDisplayTypeDefault(
+          'LinearAlignmentsDisplay',
+          'featureHeight',
+        ),
       ).toBe(5)
       expect(
         session.getDisplayTypeDefault(
@@ -357,7 +383,10 @@ describe('alignments compactness session default', () => {
 
       display.toggleCompactnessDefault()
       expect(
-        session.getDisplayTypeDefault('LinearAlignmentsDisplay', 'featureHeight'),
+        session.getDisplayTypeDefault(
+          'LinearAlignmentsDisplay',
+          'featureHeight',
+        ),
       ).toBeUndefined()
       expect(
         session.getDisplayTypeDefault(
@@ -371,7 +400,11 @@ describe('alignments compactness session default', () => {
   it('clearSessionDefaults reverts inheriting tracks and empties changes', () => {
     const { session, display } = createDisplay()
     setCompact(session)
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showSoftClipping', true)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      true,
+    )
     expect(display.featureHeight).toBe(3)
     expect(display.showSoftClipping).toBe(true)
 
@@ -384,7 +417,11 @@ describe('alignments compactness session default', () => {
   it('reports both soft-clipping and compactness changes together', () => {
     const { session, display } = createDisplay()
     setCompact(session)
-    session.setDisplayTypeDefault('LinearAlignmentsDisplay', 'showSoftClipping', true)
+    session.setDisplayTypeDefault(
+      'LinearAlignmentsDisplay',
+      'showSoftClipping',
+      true,
+    )
     // promotable slots reported in schema-definition order
     expect(display.sessionDefaultChanges()).toEqual([
       { path: ['featureHeight'], from: 7, to: 3 },

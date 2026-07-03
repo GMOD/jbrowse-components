@@ -19,7 +19,9 @@ export function drawerGridTemplateColumns({
   const main = '[main] minmax(0, 1fr)'
   if (drawerVisible) {
     const drawer = `[drawer] ${drawerWidth}px`
-    return drawerPosition === 'right' ? `${main} ${drawer}` : `${drawer} ${main}`
+    return drawerPosition === 'right'
+      ? `${main} ${drawer}`
+      : `${drawer} ${main}`
   }
   return main
 }

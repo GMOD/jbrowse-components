@@ -2,10 +2,7 @@ export { getColorByMenuItem } from './colorBy.ts'
 export type { ModificationsModel } from './colorBy.ts'
 export { getContextMenuItems } from './contextMenu.ts'
 export { getCoverageMenuItem } from './coverage.ts'
-export {
-  COMPACTNESS_PRESETS,
-  getFeatureHeightMenuItem,
-} from './featureSize.ts'
+export { COMPACTNESS_PRESETS, getFeatureHeightMenuItem } from './featureSize.ts'
 export type { CompactnessLevel } from './featureSize.ts'
 export { getFiltersMenuItem } from './filters.ts'
 export { getReadConnectionsMenuItem } from './readConnections.ts'
