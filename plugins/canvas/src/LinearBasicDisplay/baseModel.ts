@@ -222,6 +222,14 @@ export default function baseStateModelFactory(
            * building a multi-feature set doesn't hide the features mid-build.
            */
           soloApplied: types.optional(types.boolean, false),
+          /**
+           * #property
+           * "Hide this feature" exclusion set (inverse of solo): the worker
+           * drops these from layout/drawing. Applies immediately per feature —
+           * no collect-then-apply. Persistent like the solo set, so a hidden
+           * feature stays hidden across reload/session save.
+           */
+          hiddenFeatureIds: types.array(types.string),
         }),
       )
       .volatile(() => ({
@@ -268,14 +276,6 @@ export default function baseStateModelFactory(
               clientY: number
             }
           | undefined,
-        /**
-         * #volatile
-         */
-        // "Hide this feature" exclusion set (inverse of solo): the worker drops
-        // these from layout/drawing. Applies immediately per feature — no
-        // collect-then-apply. Volatile — a transient hide that doesn't outlive a
-        // reload (unlike the now-persistent solo set).
-        hiddenFeatureIds: observable.array<string>(),
         /**
          * #volatile
          */
