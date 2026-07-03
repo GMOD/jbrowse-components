@@ -42,7 +42,7 @@ export function findGlyph(
       : layoutBox
   }
   if (hasSubfeatures) {
-    const { transcriptTypes, containerTypes } = config
+    const { containerTypes } = config
 
     // Intact transposons (repeat_region → overlapping LTR/TSD/internal parts)
     // render their subparts on one row joined by a connecting line, with no box
@@ -59,18 +59,19 @@ export function findGlyph(
     //   ProcessedTranscript — one row; filter to subParts and imply UTRs
     //   Segments            — one row of boxes joined by intron lines
     //
-    // The "stack vertically" decision is mostly structural, not type-based: any
-    // top-level feature whose children are themselves containers gets stacked.
-    // That's why the common `gene` type is enumerated nowhere — a
-    // gene → mRNA → exon tree is caught generically by hasContainerChildren, so
-    // custom gene-like types work without configuration. containerTypes is the
-    // explicit override for top-level types that must stack even when that
-    // structural heuristic wouldn't fire (and it wins over the transcript check
-    // below, hence it comes first).
+    // Selection is purely structural, not type-based. A top-level feature whose
+    // children are themselves containers gets stacked; a feature with a direct
+    // CDS child is a coding transcript. That's why neither `gene` nor any
+    // transcript type is enumerated here — a gene → mRNA → exon tree is caught
+    // by hasContainerChildren and any coding transcript (mRNA, V_gene_segment,
+    // a prokaryotic gene → CDS, an org-specific type) by hasCDSSubfeature, so
+    // custom types work without configuration. containerTypes is the one
+    // explicit override, for top-level types that must stack even when the
+    // structural heuristic wouldn't fire; it comes first so it wins.
     if (isTopLevel && containerTypes.includes(type)) {
       return layoutSubfeatures
     }
-    if (transcriptTypes.includes(type) && hasCDSSubfeature(feature)) {
+    if (hasCDSSubfeature(feature)) {
       return layoutProcessedTranscript
     }
     if (isTopLevel && hasContainerChildren(feature)) {
