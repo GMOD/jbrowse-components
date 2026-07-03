@@ -23,18 +23,18 @@ function longestCodingTranscript(
   const transcriptSubfeatures = subfeatures.filter(sub =>
     transcriptTypes.includes(featureType(sub)),
   )
-  let candidates =
+  // The isoforms we're choosing among: real transcript children when present,
+  // else the raw subfeatures. Only >1 of these means a choice was collapsed.
+  const isoforms =
     transcriptSubfeatures.length > 0 ? transcriptSubfeatures : subfeatures
 
-  const codingCandidates = candidates.filter(hasCodingSubfeature)
-  if (codingCandidates.length > 0) {
-    candidates = codingCandidates
-  }
+  const codingCandidates = isoforms.filter(hasCodingSubfeature)
+  const candidates = codingCandidates.length > 0 ? codingCandidates : isoforms
 
   const longest = candidates.reduce((a, b) =>
     a.get('end') - a.get('start') > b.get('end') - b.get('start') ? a : b,
   )
-  return { result: [longest], collapsed: true }
+  return { result: [longest], collapsed: isoforms.length > 1 }
 }
 
 export function layoutSubfeatures(args: LayoutArgs): FeatureLayout {

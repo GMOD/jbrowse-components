@@ -143,6 +143,48 @@ describe('layoutSubfeatures layout', () => {
     })
   })
 
+  describe('geneGlyphMode = "longestCoding" isoformsCollapsed flag', () => {
+    const config = mockDisplayConfig({ geneGlyphMode: 'longestCoding' })
+
+    it('reports collapsed when multiple transcript isoforms exist', () => {
+      const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2'])
+      expect(
+        layoutSubfeatures({ feature: gene, config }).isoformsCollapsed,
+      ).toBe(true)
+    })
+
+    it('does not report collapsed when only one isoform exists', () => {
+      // one real transcript alongside a non-transcript subfeature: no isoform
+      // choice was actually collapsed, so the "Isoforms collapsed" notice must
+      // stay off even though subfeatures.length > 1
+      const mrna = mockFeature({
+        type: 'mRNA',
+        name: 'mRNA-1',
+        start: 100,
+        end: 500,
+        subfeatures: [
+          mockFeature({ type: 'CDS', name: 'cds', start: 200, end: 400 }),
+        ],
+      })
+      const strayCds = mockFeature({
+        type: 'CDS',
+        name: 'stray',
+        start: 600,
+        end: 700,
+      })
+      const gene = mockFeature({
+        type: 'gene',
+        name: 'TestGene',
+        start: 100,
+        end: 700,
+        subfeatures: [mrna, strayCds],
+      })
+      expect(
+        layoutSubfeatures({ feature: gene, config }).isoformsCollapsed,
+      ).toBe(false)
+    })
+  })
+
   describe('"below" vs "none" height comparison', () => {
     it('below mode produces taller gene glyph than none mode', () => {
       const gene = makeGeneWithTranscripts(['mRNA-1', 'mRNA-2', 'mRNA-3'])
