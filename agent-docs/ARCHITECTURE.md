@@ -275,6 +275,52 @@ include `cellData`, `sampleInfo`, or any getter that reads them.
 See `plugins/linear-genome-view/src/BaseLinearDisplay/CLAUDE.md` for the
 overridable hook list and test-file mapping.
 
+## Status / progress reporting
+
+One out-of-band channel carries loading status from workers to the loading UI:
+`statusCallback: (status: RpcStatus) => void`, where
+`RpcStatus = string | { message; current; total }` (`packages/core/src/util/progress.ts`).
+A plain string is an indeterminate phase label; the object adds a determinate
+`current/total` fraction (unit-agnostic — bytes/blocks/records). The UI decides
+presentation, so percentages are never baked into the message string.
+
+Flow: worker adapter → `opts.statusCallback(status)` → RPC drivers special-case
+`statusCallback` as out-of-band (message type `unknown`, so objects cross) →
+`FetchMixin.setStatusMessage` splits it into `statusMessage` + `statusProgress`
+→ `DisplayLoadingOverlay` draws a determinate bar + cancel, else a spinner.
+There is no second `onProgress` channel — emit through `statusCallback` only.
+
+Helpers in `progress.ts`: `downloadStatus(label, cb, fn(onProgress))` wraps
+every download adapter (label + clear + a byte-reporter adapting
+generic-filehandle2 / tabix / bam / cram; `total` optional when Content-Length
+is unknown → indeterminate); `createProgressReporter`/`withProgress` for
+determinate worker CPU loops (`report()` auto-increments; cancel-check and emit
+are counter-gated so calling every iteration is cheap); `updateStatus` for
+indeterminate phases; `statusMessageText`/`statusFraction`/`statusProgressLabel`
+extract; `aggregateStatus` merges concurrent statuses into one `Σcurrent/Σtotal`.
+`parseLineByLine` (flat-file adapters) and `fetchAndMaybeUnzip`
+(bigwig/bigbed/hic/sequence) forward determinate progress through these.
+
+**Concurrent fetches share one status field — aggregate, don't clobber.** A
+fetch generation can fan out into N parallel per-region RPCs writing the same
+volatiles. Route each through `FetchMixin.setRegionStatus(key, status)` (keyed
+by `displayedRegionIndex`), which re-derives the shared fields via
+`aggregateStatus` — N downloads read as one honest bar instead of last-writer
+thrash. `runFetch`/`cancelFetch` clear the map.
+
+**Cancel is durable + retryable.** Two cancels on `FetchMixin`:
+`cancelFetch()` is an internal reset (bumps `fetchGeneration` to retrigger,
+clears `fetchCanceled`); `cancelFetchByUser()` (the overlay button) sets the
+durable `fetchCanceled` volatile and does **not** bump generation, so nothing
+restarts. `fetchCanceled` is a blocking state like `error`/`regionTooLarge`:
+`FetchVisibleRegions` early-returns on it, `ClearBlockingStateOnViewportChange`
+clears it on pan/zoom, and `runFetch` start is the single un-cancel point.
+`reload()` is the retry path.
+
+Not wired (deferred, low priority): text-indexing reports byte strings to the
+admin CLI, and worker sort/layout loops emit no per-iteration progress — both
+could go determinate via `createProgressReporter` if a context surfaces them.
+
 ---
 
 # GPU Rendering Architecture

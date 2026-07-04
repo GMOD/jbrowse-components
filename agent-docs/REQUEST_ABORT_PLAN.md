@@ -1,8 +1,9 @@
 # Aborting in-flight requests — planning doc
 
 Status: **proposal, not implemented.** Branch context `webgl-poc`. Companion to
-`PROGRESS_REPORTING.md` (status/progress) — this doc is specifically about
-*tearing down the network request* on cancel, which we currently do **not** do.
+the status/progress reporting section in `ARCHITECTURE.md` — this doc is
+specifically about *tearing down the network request* on cancel, which we
+currently do **not** do.
 
 ## Problem
 
