@@ -52,6 +52,9 @@ function makeLegacyMakeStyles() {
   }
 }
 
+const tssReact = { cx, keyframes, makeStyles }
+const legacyMakeStyles = makeLegacyMakeStyles()
+
 const libs = {
   mobx,
   '@jbrowse/mobx-state-tree': mst,
@@ -70,23 +73,15 @@ const libs = {
 
   '@mui/material/utils': MUIUtils,
   '@material-ui/core/utils': MUIUtils,
-  'tss-react': {
-    cx,
-    keyframes,
-    makeStyles,
-  },
-  'tss-react/mui': {
-    cx,
-    keyframes,
-    makeStyles,
-  },
+  'tss-react': tssReact,
+  'tss-react/mui': tssReact,
 
   '@material-ui/core': {
     ...lazyMap(Entries),
     useTheme,
     alpha,
 
-    makeStyles: makeLegacyMakeStyles(),
+    makeStyles: legacyMakeStyles,
   },
   '@mui/material': {
     ...lazyMap(Entries),
@@ -99,11 +94,11 @@ const libs = {
 
   '@mui/material/styles': {
     ...MUIStyles,
-    makeStyles: makeLegacyMakeStyles(),
+    makeStyles: legacyMakeStyles,
   },
   '@material-ui/core/styles': {
     ...MUIStyles,
-    makeStyles: makeLegacyMakeStyles(),
+    makeStyles: legacyMakeStyles,
   },
 
   // these are core in @mui/material, but used to be in @material-ui/lab
