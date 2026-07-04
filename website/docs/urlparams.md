@@ -278,6 +278,10 @@ The `views` array accepts multiple views opened simultaneously. Each can specify
 shows the whole genome. Different view types accept different params — dotplot,
 for example, takes two assemblies.
 
+A `LinearGenomeView` view object accepts the same fields as the simple params
+above: `nav`, `tracklist`, `highlight`, plus `showCenterLine`, `colorByCDS`, and
+`trackLabels` (`"overlapping"`, `"offset"`, or `"hidden"`).
+
 A top-level `sessionTracks` array can dynamically register tracks into the
 session before the views open, equivalent to combining `&sessionTracks=` with a
 simple URL:
@@ -491,12 +495,14 @@ To color by a feature attribute, use a jexl expression, e.g.
 
 ### Circular view
 
+The circular view shows the whole genome, so it takes only `assembly` and
+`tracks` — there is no `loc`.
+
 ```json live config=test_data/volvox/config.json
 {
   "views": [
     {
       "assembly": "volvox",
-      "loc": "ctgA:1-5100",
       "type": "CircularView",
       "tracks": ["volvox_sv_test"]
     }
