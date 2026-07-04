@@ -49,6 +49,7 @@ import {
   indexById,
   radioSubMenu,
   screenDensity,
+  toggleArrayMember,
 } from './baseModelHelpers.ts'
 import {
   buildFeatureFlatbushIndex,
@@ -1376,12 +1377,7 @@ export default function baseStateModelFactory(
         // observable array, which reruns the layout (see pinnedFeatureIdSet)
         // and animates the feature to/from its top row via the Y morph.
         togglePinnedFeature(featureId: string) {
-          const idx = self.pinnedFeatureIds.indexOf(featureId)
-          if (idx === -1) {
-            self.pinnedFeatureIds.push(featureId)
-          } else {
-            self.pinnedFeatureIds.splice(idx, 1)
-          }
+          toggleArrayMember(self.pinnedFeatureIds, featureId)
         },
 
         /**
@@ -1391,14 +1387,11 @@ export default function baseStateModelFactory(
         // feature and the right-click "Add/Remove" item both route here. If a
         // removal empties an applied set, drop back to showing everything.
         toggleSoloFeature(featureId: string) {
-          const idx = self.soloFeatureIds.indexOf(featureId)
-          if (idx === -1) {
-            self.soloFeatureIds.push(featureId)
-          } else {
-            self.soloFeatureIds.splice(idx, 1)
-            if (self.soloFeatureIds.length === 0) {
-              self.soloApplied = false
-            }
+          toggleArrayMember(self.soloFeatureIds, featureId)
+          // A removal that empties an applied set drops back to showing all
+          // (adding never empties, so this only fires on removal).
+          if (self.soloFeatureIds.length === 0) {
+            self.soloApplied = false
           }
         },
 
@@ -1454,24 +1447,29 @@ export default function baseStateModelFactory(
         /**
          * #action
          */
+        // Undo snackbar shared by both solo-apply paths — the same reversible
+        // affordance collapse-introns uses.
+        notifySoloApplied(message: string) {
+          getSession(self).notify(message, 'info', {
+            name: 'Undo',
+            onClick: () => {
+              self.clearSolo()
+            },
+          })
+        },
+      }))
+      .actions(self => ({
+        /**
+         * #action
+         */
         // Apply the collected set (worker starts dropping non-members) and
-        // surface an Undo snackbar — the same reversible affordance
-        // collapse-introns uses.
+        // surface an Undo snackbar.
         applySolo() {
           if (self.soloFeatureIds.length === 0) {
             return
           }
           self.soloApplied = true
-          getSession(self).notify(
-            'Showing only the selected features',
-            'info',
-            {
-              name: 'Undo',
-              onClick: () => {
-                self.clearSolo()
-              },
-            },
-          )
+          self.notifySoloApplied('Showing only the selected features')
         },
 
         /**
@@ -1482,12 +1480,7 @@ export default function baseStateModelFactory(
         soloFeature(featureId: string) {
           self.soloFeatureIds.replace([featureId])
           self.soloApplied = true
-          getSession(self).notify('Showing only this feature', 'info', {
-            name: 'Undo',
-            onClick: () => {
-              self.clearSolo()
-            },
-          })
+          self.notifySoloApplied('Showing only this feature')
         },
 
         /**
@@ -2341,10 +2334,11 @@ export default function baseStateModelFactory(
          * #method
          */
         trackMenuItems() {
+          const hiddenCount = self.hiddenFeatureIds.length
           const hasFeatureFilters =
             self.jexlFiltersSetting !== undefined ||
             self.soloFeatureIds.length > 0 ||
-            self.hiddenFeatureIds.length > 0
+            hiddenCount > 0
           return [
             {
               label: 'Show...',
@@ -2363,6 +2357,20 @@ export default function baseStateModelFactory(
                     self.openFilterDialog()
                   },
                 },
+                // Track-level unhide: the per-feature "Show N hidden" item is
+                // only reachable from a still-visible feature's menu, so this is
+                // the sole recovery once every feature in view is hidden.
+                ...(hiddenCount > 0
+                  ? [
+                      {
+                        label: `Show ${hiddenCount} hidden feature${hiddenCount > 1 ? 's' : ''}`,
+                        icon: VisibilityIcon,
+                        onClick: () => {
+                          self.showAllHidden()
+                        },
+                      },
+                    ]
+                  : []),
                 ...(hasFeatureFilters
                   ? [
                       {
