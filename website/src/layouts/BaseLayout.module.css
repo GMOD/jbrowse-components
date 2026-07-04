@@ -74,11 +74,11 @@
   padding: 6px 14px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  border: 1px solid color-mix(in srgb, var(--color-teal-bright) 55%, transparent);
+  border: 1px solid var(--color-accent);
   border-radius: 999px;
-  background: color-mix(in srgb, var(--color-teal-bright) 12%, transparent);
-  color: var(--color-teal-bright) !important;
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-teal-bright) 40%, transparent);
+  background: var(--color-accent);
+  color: #fff !important;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent);
   transition:
     background 0.2s ease,
     color 0.2s ease,
@@ -87,15 +87,15 @@
     transform 0.2s ease;
 }
 .navExternal:hover {
-  background: var(--color-teal-bright);
-  border-color: var(--color-teal-bright);
-  color: var(--color-navy) !important;
+  background: var(--color-accent-dark);
+  border-color: var(--color-accent-dark);
+  color: #fff !important;
   transform: translateY(-1px);
-  box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-teal-bright) 55%, transparent);
+  box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-accent) 55%, transparent);
 }
 .navExternal:active {
   transform: translateY(0);
-  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-teal-bright) 40%, transparent);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-accent) 40%, transparent);
 }
 .navExternal svg {
   flex-shrink: 0;
