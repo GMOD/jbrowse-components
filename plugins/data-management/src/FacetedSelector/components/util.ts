@@ -29,3 +29,13 @@ export function getRowStr(facet: string, row: Row) {
     ''
   }`
 }
+
+// Display label for a facet, shared by the grid column headers and the filter
+// sidebar. Strips the metadata prefix, disambiguating a metadata key that
+// collides with a non-metadata column as "x (from metadata)".
+export function facetLabel(facet: string, nonMetadataFieldSet: Set<string>) {
+  const bare = bareFacet(facet)
+  return isMetadataFacet(facet) && nonMetadataFieldSet.has(bare)
+    ? `${bare} (from metadata)`
+    : bare
+}

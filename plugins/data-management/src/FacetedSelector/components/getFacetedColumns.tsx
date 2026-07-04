@@ -1,6 +1,6 @@
 import SanitizedHTML from '@jbrowse/core/ui/SanitizedHTML'
 
-import { bareFacet, getRowStr, isMetadataFacet } from './util.ts'
+import { facetLabel, getRowStr } from './util.ts'
 import OverrideBadge from '../../HierarchicalTrackSelectorWidget/components/tree/OverrideBadge.tsx'
 import TrackSelectorTrackMenu from '../../HierarchicalTrackSelectorWidget/components/tree/TrackSelectorTrackMenu.tsx'
 
@@ -34,16 +34,13 @@ export function getFacetedColumns({
         </div>
       ),
     },
-    ...facetFields.map(id => {
-      const bare = bareFacet(id)
-      return {
-        id,
-        header:
-          isMetadataFacet(id) && nonMetadataFieldSet.has(bare)
-            ? `${bare} (from metadata)`
-            : bare,
-        cell: row => getRowStr(id, row),
-      } satisfies FacetedColumn
-    }),
+    ...facetFields.map(
+      id =>
+        ({
+          id,
+          header: facetLabel(id, nonMetadataFieldSet),
+          cell: row => getRowStr(id, row),
+        }) satisfies FacetedColumn,
+    ),
   ]
 }
