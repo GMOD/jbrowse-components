@@ -46,11 +46,12 @@ export function useDebounce<T>(value: T, delay: number) {
   return debouncedValue
 }
 
-// used in ViewContainer files to get the width
-export function useWidthSetter(
-  view: { setWidth: (arg: number) => void; id?: string },
-  padding: string,
-) {
+// used in ViewContainer files to get the width. useMeasure reports the content
+// box, so padding is already excluded from the measured width.
+export function useWidthSetter(view: {
+  setWidth: (arg: number) => void
+  id?: string
+}) {
   const [ref, { width }] = useMeasure()
   useEffect(() => {
     let token: ReturnType<typeof requestAnimationFrame>
@@ -68,7 +69,7 @@ export function useWidthSetter(
         cancelAnimationFrame(token)
       }
     }
-  }, [padding, view, width])
+  }, [view, width])
   return ref
 }
 

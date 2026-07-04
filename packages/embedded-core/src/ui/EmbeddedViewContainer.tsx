@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 
 import { getSession, useWidthSetter } from '@jbrowse/core/util'
 import { makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper, useTheme } from '@mui/material'
+import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewTitle from './ViewTitle.tsx'
@@ -28,8 +28,7 @@ const ViewContainer = observer(function ViewContainer({
 }) {
   const { classes } = useStyles()
   const session = getSession(view)
-  const theme = useTheme()
-  const ref = useWidthSetter(view, theme.spacing(1))
+  const ref = useWidthSetter(view)
 
   return (
     <Paper elevation={12} ref={ref} className={classes.viewContainer}>

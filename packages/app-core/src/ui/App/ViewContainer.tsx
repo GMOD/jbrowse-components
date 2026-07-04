@@ -1,6 +1,6 @@
 import { useFocusOnInteraction, useWidthSetter } from '@jbrowse/core/util'
 import { cx, makeStyles } from '@jbrowse/core/util/tss-react'
-import { Paper, useTheme } from '@mui/material'
+import { Paper } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import ViewHeader from './ViewHeader.tsx'
@@ -50,8 +50,7 @@ const ViewContainer = observer(function ViewContainer({
   view: AbstractViewModel
   session: SessionWithFocusedViewAndDrawerWidgets
 }) {
-  const theme = useTheme()
-  const ref = useWidthSetter(view, theme.spacing(1))
+  const ref = useWidthSetter(view)
   const { classes } = useStyles()
   const {
     ref: bodyRef,
