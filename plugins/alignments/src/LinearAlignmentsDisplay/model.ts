@@ -2074,21 +2074,31 @@ export default function stateModelFactory(
            * height only on the first frame. When the override already runs past
            * the real content (displayed height < override), clamp back to one row
            * of headroom so reversing the drag responds immediately.
+           *
+           * A fully-shown group (no hidden reads) has nothing to grow into, so a
+           * downward drag never banks pixels past its content: with no existing
+           * override it's a clean no-op (no spurious "fit to view" affordance),
+           * and with an override it pins at the content height. Shrinking, or
+           * growing a group that still hides reads, adjusts the override as usual.
            */
           resizeGroupHeight(key: string, dy: number) {
             const rowHeight = self.featureHeight + self.featureSpacing
-            const displayed =
-              self.sections.sections.find(s => s.groupKey === key)
-                ?.pileupHeight ?? 0
+            const truncated = anyRegionTruncated(self.groupLaidOutMap(key))
             const existing = self.groupMaxHeightOverrides.get(key)
-            const base =
-              existing === undefined
-                ? displayed
-                : Math.min(existing, displayed + rowHeight)
-            self.groupMaxHeightOverrides.set(
-              key,
-              Math.max(rowHeight, base + dy),
-            )
+            if (dy < 0 || truncated || existing !== undefined) {
+              const displayed =
+                self.sections.sections.find(s => s.groupKey === key)
+                  ?.pileupHeight ?? 0
+              const base =
+                existing === undefined
+                  ? displayed
+                  : Math.min(existing, displayed + rowHeight)
+              const grown = Math.max(rowHeight, base + dy)
+              self.groupMaxHeightOverrides.set(
+                key,
+                truncated ? grown : Math.min(grown, displayed),
+              )
+            }
             clampScrollTop()
           },
 

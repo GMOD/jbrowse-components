@@ -426,31 +426,21 @@ function CompactCoverageLabel({ top, max }: { top: number; max: number }) {
   )
 }
 
-// One bar on the right for the topmost visible section. Right side avoids the
-// group labels at left:4. All groups share coverageTicks so one bar suffices.
-const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
-  model,
+// One coverage y-axis bar, on the right at a section's scrolled band top. Right
+// side avoids the group labels at left:4. All groups share `coverageTicks` (one
+// domain), so each band shows the same scale positioned at its own coverage.
+function GroupCoverageAxisBar({
+  top,
+  coverageHeight,
+  ticks,
 }: {
-  model: LinearAlignmentsDisplayModel
+  top: number
+  coverageHeight: number
+  ticks: NonNullable<LinearAlignmentsDisplayModel['coverageTicks']>
 }) {
-  const { coverageTicks, renderSections, scrollModel: scroll } = model
-  const section = renderSections.find(s =>
-    bandOnScreen(
-      bandScreenTop(s.coverageTop, scroll),
-      s.coverageHeight,
-      scroll,
-    ),
-  )
-  if (!section || !coverageTicks) {
-    return null
-  }
-  const top = bandScreenTop(section.coverageTop, scroll)
-  if (section.coverageHeight < COMPACT_AXIS_HEIGHT) {
+  if (coverageHeight < COMPACT_AXIS_HEIGHT) {
     return (
-      <CompactCoverageLabel
-        top={top + 1}
-        max={coverageTicks.items.at(-1)?.value ?? 0}
-      />
+      <CompactCoverageLabel top={top + 1} max={ticks.items.at(-1)?.value ?? 0} />
     )
   }
   return (
@@ -460,12 +450,40 @@ const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
         top,
         right: SCROLLBAR_WIDTH + 2,
         pointerEvents: 'none',
-        height: section.coverageHeight,
+        height: coverageHeight,
         width: AXIS_SVG_WIDTH,
       }}
     >
-      <YScaleBar ticks={coverageTicks} orientation="right" />
+      <YScaleBar ticks={ticks} orientation="right" />
     </svg>
+  )
+}
+
+// One bar per group so every coverage band carries its own scale; each scrolls
+// with its section and off-screen bands are culled.
+const GroupedCoverageAxis = observer(function GroupedCoverageAxis({
+  model,
+}: {
+  model: LinearAlignmentsDisplayModel
+}) {
+  const { coverageTicks, renderSections, scrollModel: scroll } = model
+  if (!coverageTicks) {
+    return null
+  }
+  return (
+    <>
+      {renderSections.map(section => {
+        const top = bandScreenTop(section.coverageTop, scroll)
+        return bandOnScreen(top, section.coverageHeight, scroll) ? (
+          <GroupCoverageAxisBar
+            key={section.groupKey || 'ungrouped'}
+            top={top}
+            coverageHeight={section.coverageHeight}
+            ticks={coverageTicks}
+          />
+        ) : null
+      })}
+    </>
   )
 })
 
