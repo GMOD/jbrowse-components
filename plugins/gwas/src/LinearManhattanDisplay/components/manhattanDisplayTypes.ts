@@ -6,6 +6,7 @@ import type {
 } from '../manhattanRenderingBackendTypes.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
 import type Flatbush from '@jbrowse/core/util/flatbush'
+import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
 import type { WiggleGpuDisplayModel } from '@jbrowse/wiggle-core'
 
@@ -16,6 +17,7 @@ export interface ManhattanDisplayModel extends WiggleGpuDisplayModel<
   ManhattanRenderingBackend,
   ManhattanRpcResult
 > {
+  view: LinearGenomeViewModel
   renderBlocks: RenderBlock[]
   regionRefNames: ReadonlyMap<number, string>
   flatbushes: ReadonlyMap<number, Flatbush>

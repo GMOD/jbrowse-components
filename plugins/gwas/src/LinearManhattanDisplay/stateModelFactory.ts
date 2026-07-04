@@ -107,6 +107,14 @@ export function stateModelFactory(
     .views(self => ({
       /**
        * #getter
+       * the containing LGV, typed once here so downstream getters don't repeat
+       * the `getContainingView` cast
+       */
+      get view(): LinearGenomeViewModel {
+        return getContainingView(self) as LinearGenomeViewModel
+      },
+      /**
+       * #getter
        */
       get DisplayMessageComponent() {
         return LinearManhattanDisplayComponent
@@ -219,7 +227,7 @@ export function stateModelFactory(
        * points.
        */
       get renderState(): ManhattanRenderState | undefined {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.view
         const canvasWidth = view.trackWidthPx
         const canvasHeight = self.height - 2 * YSCALEBAR_LABEL_OFFSET
         return resolveRenderState(
@@ -240,7 +248,7 @@ export function stateModelFactory(
        * once rather than rebuilding per event.
        */
       get regionRefNames(): ReadonlyMap<number, string> {
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.view
         return new Map(
           view.visibleRegions.map(r => [r.displayedRegionIndex, r.refName]),
         )
@@ -271,7 +279,7 @@ export function stateModelFactory(
         // rpcDataMap keeps buffered regions that may have scrolled off-screen,
         // and the top hit can live in one of them — resolving via visible
         // regions alone would drop it and stall the LD auto-index autorun.
-        const view = getContainingView(self) as LinearGenomeViewModel
+        const view = self.view
         const refName =
           bestIdx === -1 ? undefined : view.displayedRegions[bestIdx]?.refName
         return refName ? `${refName}:${bestPos + 1}` : undefined

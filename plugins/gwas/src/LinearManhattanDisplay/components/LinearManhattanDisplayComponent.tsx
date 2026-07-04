@@ -1,7 +1,6 @@
 import { useState } from 'react'
 
 import { Menu } from '@jbrowse/core/ui'
-import { getContainingView } from '@jbrowse/core/util'
 import { DisplayChrome } from '@jbrowse/plugin-linear-genome-view'
 import {
   CrossHatches,
@@ -19,9 +18,6 @@ import TooltipComponent from './TooltipComponent.tsx'
 
 import type { ManhattanHit } from '../findManhattanHit.ts'
 import type { ManhattanDisplayModel } from './manhattanDisplayTypes.ts'
-import type { LinearGenomeViewModel } from '@jbrowse/plugin-linear-genome-view'
-
-type LGV = LinearGenomeViewModel
 
 const COORD0: [number, number] = [0, 0]
 
@@ -31,9 +27,8 @@ const LinearManhattanDisplayComponent = observer(
   }: {
     model: ManhattanDisplayModel
   }) {
-    const view = getContainingView(model) as LGV
+    const { view, height } = model
     const width = view.trackWidthPx
-    const height = model.height
     const [clientMouseCoord, setClientMouseCoord] = useState(COORD0)
     const [contextMenu, setContextMenu] = useState<{
       coord: [number, number]
