@@ -77,6 +77,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
           ])
         },
       },
+      { type: 'divider' as const },
       {
         label: `Use ${currentCompactnessLabel(model)} as the default for alignments tracks`,
         type: 'checkbox' as const,
