@@ -84,12 +84,16 @@ non-LGV views. Displays that pixel-match the canvas give the inner `<canvas>` a
 `variant_matrix_canvas`) as a query target — tests wait on `${base}-done`, then
 read the static selector.
 
-## Load-bearing gotchas (in the DisplayChrome.tsx comment block)
+## Load-bearing gotchas
 
-- Terminal states are literal **early-`return`s**, not ternary branches of one
-  `return` — under React 19 + mobx-react + jsdom the ternary form fails to
-  *commit* the banner subtree. Guarded by `DisplayChrome.test.tsx`.
+Two JSX-shape rules keep the terminal-state banners committing under React 19 +
+mobx-react + jsdom (both also restated in the `DisplayChrome.tsx` comment block,
+guarded by `DisplayChrome.test.tsx`):
+
+- terminal states are literal **early-`return`s**, not ternary branches;
 - `displayPhase`'s loading term is a **thunk**, evaluated only after the terminal
-  states are ruled out, so a terminal-state observer tracks only the terminal
-  flag — not the view's `visibleRegions` / `loadedRegions`. Tracking those during
-  a terminal state churns the observer and reproduces the commit failure above.
+  flags are ruled out.
+
+The full "why" (the React-commit repro, sub-rules 1a/1b, and the GPU-dispose
+reason) lives in ARCHITECTURE.md §"Terminal states early-return their own root"
+— don't duplicate it here.

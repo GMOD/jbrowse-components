@@ -1,12 +1,81 @@
 # Agent documentation
 
-Start with `PRD.md`. It is the governing doc for agent work on this branch.
+Front door for agent work on `webgl-poc`. This file holds the invariants and
+definition of done; **backlog and priorities live in [TODO.md](TODO.md)**.
 
-## Current docs
+## Mission
+
+Migrate JBrowse 2 from block-based HTML canvas rendering to a GPU pipeline
+(WebGPU → WebGL2 → Canvas 2D; SVG export via Canvas 2D). Keep every existing
+track type working on every backend.
+
+## Non-negotiable invariants
+
+Correctness contracts — violations cause silent bugs.
+
+- **MST owns the upload + render autoruns.** They are spawned by
+  `attachRenderingBackend` on `RenderLifecycleMixin`, not by React `useEffect`.
+- **Per-region upload values must be freshly constructed, never mutated.**
+  RenderingBackends diff by reference identity; in-place mutation leaks stale bytes.
+- **Only write MST observables via actions.** Direct writes inside an autorun
+  body (e.g. `self.canvasDrawn = true`, `self.maxY = x`) silently fail under MST
+  action enforcement. Use the defined action.
+- **Plugins define only `startRenderingBackend(backend)`.** Body is one
+  `self.attachRenderingBackend(backend, {upload, render})` call. `canvasDrawn`,
+  `renderNow`, `stopRenderingBackend`, tab-visibility rerender all live in the
+  mixin.
+- **Structural types across lazy boundaries.** Importing MST model types across
+  lazy imports is a circular-reference trap — use duck-typed interfaces.
+- **Shared backends (dotplot, synteny) use a per-plugin `lastKeys` closure** to
+  fire `deleteGeometry` on removed keys; active-set prune would wipe sibling
+  displays' data.
+- **Render callback returns `false` to skip.** Any other return (including
+  `void`) marks the canvas drawn via `markCanvasDrawn`.
+- **`readConfObject` / `getConf` are hot-path traversals.** Cache outside loops;
+  prefer `getConfSnapshot` + `readConfigValue` on plain objects at the rendering
+  layer (`CONFIG_PATTERN.md`).
+
+Coding conventions live in `CLAUDE.md` (root) and `~/.claude/CLAUDE.md`.
+
+## Where the code lives
+
+Verify against source, not memory.
+
+| Concern                     | Path                                                     |
+| --------------------------- | -------------------------------------------------------- |
+| GPU primitives / HAL        | `packages/render-core/src/hal/`                          |
+| Lifecycle mixin             | `packages/render-core/src/RenderLifecycleMixin.ts`       |
+| Shader codegen              | `packages/shader-tools/src/build-shaders.ts` (`pnpm gen:shaders`), `packages/shader-tools/src/shader-codegen/` |
+| Shared slang modules        | `packages/render-core/src/shaders/`                      |
+| Browser tests               | `products/jbrowse-web/browser-tests/`                    |
+| Canvas display              | `plugins/canvas/`                                        |
+| Wiggle / multi-wiggle       | `plugins/wiggle/`                                        |
+| Alignments + coverage       | `plugins/alignments/`                                    |
+| Variants + variant matrix   | `plugins/variants/`                                      |
+| HiC / LD                    | `plugins/hic/`, `plugins/variants/` (matrix + LD)        |
+| Dotplot                     | `plugins/dotplot-view/`                                  |
+| Linear synteny              | `plugins/linear-comparative-view/`                       |
+
+## Definition of done
+
+- **Type check** the touched packages (`pnpm tsgo -b` scoped), full project once
+  locally.
+- **Unit tests** for changed paths (`pnpm test <path>`).
+- **Browser test** when UI behavior changed, on the backend(s) you touched
+  (`node --experimental-strip-types browser-tests/runner.ts --filter=<suite>`;
+  flags in `TEST_INFRASTRUCTURE.md`).
+- **Lint** with `--cache --fix` on changed files.
+- **Snapshots** regenerated only after intentional, visually verified change
+  (`--update-snapshots`).
+- **Invariants** preserved — re-read the invariants above after lifecycle or
+  upload changes.
+
+Do **not** open a PR (`gh pr create`) unless explicitly asked.
+
+## Docs
 
 | Doc                                                                  | Purpose                                                      | When to read                                  |
 | -------------------------------------------------------------------- | ----------------------------------------------------------- | --------------------------------------------- |
-| **[PRD.md](PRD.md)**                                                 | Agent-governing PRD: priorities, invariants, paths          | Always (read first)                           |
 | **[TODO.md](TODO.md)**                                               | Action items to build/fix, plus a Pending-verification list | Picking up work                               |
 | **[OTHER_IDEAS.md](OTHER_IDEAS.md)**                                 | Future / exploratory concepts (not current work)            | Brainstorming, product direction              |
 | **[SYNTENY_BLOCK_IMPORT.md](SYNTENY_BLOCK_IMPORT.md)**               | Block-level synteny data: import from ntSynt/SyRI/MCScan vs own PAF chaining; LOD tiering | Whole-genome synteny hairball, block adapters, `make-pif --blocks` |
@@ -17,16 +86,17 @@ Start with `PRD.md`. It is the governing doc for agent work on this branch.
 | **[VIEW_INIT.md](VIEW_INIT.md)**                                     | Declarative `init` launch spec → afterAttach → state machine | Touching view launch, URL params, createViewState |
 | **[TEST_INFRASTRUCTURE.md](TEST_INFRASTRUCTURE.md)**                 | Browser + unit tests, WebGPU CI                             | Running or writing tests, validating RPC      |
 | **[PERF_INSTRUMENTATION.md](PERF_INSTRUMENTATION.md)**               | Instrumentation patterns for GPU render / scroll jank       | Diagnosing a perf regression                  |
+| **[REQUEST_ABORT_PLAN.md](REQUEST_ABORT_PLAN.md)**                   | Proposal (not implemented) for tearing down in-flight network requests on cancel | Touching request cancellation / abort / stopToken |
 | **[DISPLAYCHROME.md](DISPLAYCHROME.md)**                             | The shared display status chrome: what it is + adoption map | Touching loading/error/retry UI on a display  |
 | **[GPU_GLOSSARY.md](GPU_GLOSSARY.md)**                               | Plain-language GPU rendering glossary + precise vocabulary   | Writing about GPU internals for a non-specialist audience |
 | **[RFC-001-community-plugin-api.md](RFC-001-community-plugin-api.md)** | Community plugin API proposal                              | Plugin API design                             |
 | **[PLUGIN_ABI_STABILITY.md](PLUGIN_ABI_STABILITY.md)**               | Why plugin exports ossify into permanent ABI + fixes (fleshes out RFC-001 §7) | Removing/renaming a plugin export; "why can't we delete this?" |
-| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions                                            | Understanding why something is the way it is  |
+| **[architecture-decision-records/](architecture-decision-records/)** | Design decisions (ADR-001 … ADR-031)                        | Understanding why something is the way it is  |
 
 ## Common questions
 
-**"How do I add a new GPU display type?"** → `ARCHITECTURE.md` "Adding a new
-GPU display type".
+**"How do I add a new GPU display type?"** → `ARCHITECTURE.md` "Adding a new GPU
+display type".
 
 **"How do I debug failing browser tests?"** → `TEST_INFRASTRUCTURE.md`
 "Debugging".
@@ -34,6 +104,6 @@ GPU display type".
 **"Why does the worker get what it gets?"** → `CONFIG_PATTERN.md` +
 `ARCHITECTURE.md` §"The `rpcProps` / `gpuProps` pattern".
 
-**"What invariants must I preserve?"** → `PRD.md` "Non-negotiable invariants".
+**"What invariants must I preserve?"** → "Non-negotiable invariants" above.
 
 **"What should I work on?"** → `TODO.md`.

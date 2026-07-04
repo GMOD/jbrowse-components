@@ -323,12 +323,11 @@ could go determinate via `createProgressReporter` if a context surfaces them.
 
 ---
 
-# GPU Rendering Architecture
+## GPU Rendering Architecture
 
 Canonical reference for the GPU rendering lifecycle across all display types.
-Read `PRD.md` first for invariants and active priorities.
 
-## Package layout
+### Package layout
 
 The rendering primitives live in **`@jbrowse/render-core`**
 (`packages/render-core`) — the HAL, `RenderLifecycleMixin`, the backend base
@@ -344,7 +343,7 @@ display-integration layer (`MultiRegionDisplayMixin` / `GlobalDataDisplayMixin` 
 **static-import-only** — never exposed via the runtime `ReExports` registry. See
 ADR-030.
 
-## Glossary
+### Glossary
 
 - HAL — hardware abstraction layer; abstracts WebGL2 and WebGPU calls.
 
@@ -352,7 +351,7 @@ Full vocabulary + Canvas2D→GPU primer (for papers/talks): `GPU_GLOSSARY.md`.
 
 ---
 
-## One-liner
+### One-liner
 
 Each GPU display is an MST model that composes `RenderLifecycleMixin`
 and calls `self.attachRenderingBackend(backend, { upload, render })` in its
@@ -365,7 +364,7 @@ model via `useRenderingBackend`, render JSX.
 
 ---
 
-## The API
+### The API
 
 ```ts
 interface RenderingBackend {
@@ -394,7 +393,7 @@ startRenderingBackend(backend: RenderingBackend) {
 
 ---
 
-## What the mixin owns
+### What the mixin owns
 
 ```
 RenderLifecycleMixin
@@ -449,7 +448,7 @@ lives in the mixin.
 
 ---
 
-## Life of a frame
+### Life of a frame
 
 1. React hook (`useRenderingBackend`) mounts, creates the HAL, resolves a
    backend, calls `model.startRenderingBackend(backend)`.
@@ -464,7 +463,7 @@ lives in the mixin.
 5. Any observable touched by `upload` or `render` becomes a dep — when it
    changes, MobX re-fires that autorun. No manual invalidation.
 
-### Context-loss recovery
+#### Context-loss recovery
 
 GPU contexts can be lost. `useRenderingBackend` listens for
 `webglcontextlost`/`restored` and `device.lost`, rebuilds the backend, and
@@ -473,7 +472,7 @@ calls `model.startRenderingBackend(newRenderingBackend)`. The mixin sees
 `currentRenderingBackend`. Both autoruns re-fire against the new backend. No special
 code path.
 
-### Tab visibility
+#### Tab visibility
 
 `useTabVisibilityRerender` calls `model.renderNow()` on `visibilitychange`,
 bumping `renderTick`. WebGPU swap-chain textures are reissued by the `render`
@@ -481,7 +480,7 @@ callback.
 
 ---
 
-## RenderingBackend interfaces per plugin
+### RenderingBackend interfaces per plugin
 
 Each plugin defines its own `RenderingBackend` type and a factory that produces either
 a GPU or Canvas 2D implementation:
@@ -501,7 +500,7 @@ export function XxxRenderer(canvas: HTMLCanvasElement) {
 `createRenderingBackend` calls `createGpuHal`; if a HAL is returned, the GPU backend
 is constructed, otherwise Canvas 2D.
 
-### Canvas2D is the floor; GPU is the optional accelerator
+#### Canvas2D is the floor; GPU is the optional accelerator
 
 Every display **must** ship a Canvas2D draw function regardless — SVG export
 goes through it (see "SVG export pipeline"). The GPU shader path is an *optional
@@ -524,7 +523,7 @@ downstream knows there's no HAL. Reference: `plugins/sequence`'s
 `createRenderingBackend` only when a profile shows Canvas2D can't hold 60fps at
 the display's real feature counts.
 
-### Keeping the two backends in parity
+#### Keeping the two backends in parity
 
 A dual-path display renders the same pixels two ways (`.slang` shader vs a
 Canvas2D draw fn), and SVG export runs the Canvas2D path — so a shader-only tweak
@@ -563,7 +562,7 @@ Canvas2D fudge factor, and porting one in over-widens GPU glyphs. Min-width
 floors, by contrast, *are* mirrored (both clamp to the same px) — those keep
 sub-pixel features visible and must stay in step.
 
-### Shared per-region streamed contract
+#### Shared per-region streamed contract
 
 Per-region streamed plugins (canvas, manhattan, MAF, multi-variant, wiggle)
 specialize one generic type and inherit from one of two abstract base
@@ -613,7 +612,7 @@ Whole-map synced (alignments, multi-LGV-synteny) and monolithic (HiC, LD,
 multi-variant-matrix, dotplot) plugins still define their own backend
 interfaces because their upload shapes differ — see "Three upload patterns".
 
-### Wiggle-family contract
+#### Wiggle-family contract
 
 Wiggle-style per-position GPU displays (wiggle, multi-wiggle, Manhattan)
 share types and scale utilities. Two packages split the surface:
@@ -650,7 +649,7 @@ It ships its own `GetManhattanData` RPC (per-feature points, not pre-binned
 density), implements `WiggleRenderingBackend` with its own pass, and overrides
 `isCacheValid` to `() => true` since Manhattan data is zoom-independent.
 
-### Three upload patterns
+#### Three upload patterns
 
 Per-LGV displays use one of three upload shapes; pick the one that matches
 the data shape, not the one your neighbour copied:
@@ -676,7 +675,7 @@ shape.
 All three patterns expose the same lifecycle (`attachRenderingBackend({ upload,
 render })`); the difference is how the upload callback shovels bytes.
 
-#### Per-region streamed: per-key autoruns (`installPerRegionLifecycle`)
+##### Per-region streamed: per-key autoruns (`installPerRegionLifecycle`)
 
 **Plain English:** The naive implementation re-uploads every chromosome to the
 GPU each time any chromosome finishes loading — 300 uploads instead of 24 for
@@ -777,7 +776,7 @@ re-fire on every new arrival.
 
 ---
 
-## SVG export pipeline (single source of truth)
+### SVG export pipeline (single source of truth)
 
 SVG export and on-screen rendering share the same pure draw function(s) per
 plugin. Two shapes, picked by **whether there's a non-trivial builder step
@@ -836,7 +835,7 @@ so an errored track shows feedback instead of vanishing from the export. The
 duck-typed model interfaces each `extends SvgExportable` (`{ svgReady; error }`)
 so a missing field is a compile error, not a runtime hang.
 
-### The `svgReady` gate (single source of truth for "safe to export")
+#### The `svgReady` gate (single source of truth for "safe to export")
 
 Every GPU display exposes a **`svgReady`** getter and the off-screen renderer
 awaits only that — never an inlined `data != null || error || regionTooLarge`.
@@ -953,7 +952,7 @@ regression guard; prefer `SvgClipRect` (zero-offset rects) over hand-rolled
 
 ---
 
-## `rpcProps()` / `gpuProps()` pattern
+### `rpcProps()` / `gpuProps()` pattern
 
 Domain-named methods that enumerate **what affects rendering output**. Both
 are MST view methods (not getters) so subclasses extend them via the standard
@@ -1025,7 +1024,7 @@ main-thread layout (+ connecting-line / Flatbush in chain mode). Raw
 shape/contents of per-region data; use `gpuProps()` for scalars fed to an
 encoder.
 
-### Theme-derived render inputs are session getters, not pushed volatiles
+#### Theme-derived render inputs are session getters, not pushed volatiles
 
 Color palettes are a pure function of the active theme, so derive them in a
 model getter — `buildColorPaletteFromTheme(getSession(self).theme)` — that
@@ -1044,7 +1043,7 @@ sequence display.)
 
 ---
 
-## Per-region zoom-staleness
+### Per-region zoom-staleness
 
 All worker position output is **absolute genomic uint32** — no pixel
 coordinates cross the worker boundary, so data stays valid under zoom. Two
@@ -1070,7 +1069,7 @@ per region and refetches stale ones.
 
 ---
 
-## HAL (Hardware Abstraction Layer)
+### HAL (Hardware Abstraction Layer)
 
 Hides the WebGPU/WebGL2 difference. Lives in `packages/render-core/src/hal/`.
 
@@ -1093,7 +1092,7 @@ which regions have data — HAL already knows.
 `WebGL2Hal` (`antialias: true`, VAO + UBO, context-loss recovery),
 `MockHal` (tests).
 
-### Renderers stay stateless
+#### Renderers stay stateless
 
 GPU renderer classes own only what is intrinsically per-instance:
 
@@ -1128,7 +1127,7 @@ source of truth shifts.
 
 ---
 
-## Shaders (Slang codegen)
+### Shaders (Slang codegen)
 
 Production draw shaders are authored as `.slang`, compiled to WGSL (WebGPU)
 and GLSL ES 3.00 (WebGL2) by `packages/shader-tools/src/build-shaders.ts`. See ADR-005.
@@ -1161,7 +1160,7 @@ Authoring conventions and gotchas: ADR-005.
 
 ---
 
-## BP precision: why both uint32 storage AND hi/lo float math
+### BP precision: why both uint32 storage AND hi/lo float math
 
 Genomic positions exceed 3×10⁹ on T2T assemblies; float32's 24-bit mantissa
 can't represent every integer past 2²⁴ ≈ 16.7 Mbp, causing ~256 bp precision
@@ -1170,12 +1169,12 @@ loss at 3 Gbp. GPU clip-space is unavoidably float32, so the question is
 
 The answer is a **two-stage representation**:
 
-### Stage 1 — storage as uint32
+#### Stage 1 — storage as uint32
 
 Absolute genomic positions are stored as `uint32` vertex attributes. Uint32 is
 exact for `[0, 2³²)` = 4.29 Gbp.
 
-### Stage 2 — conversion to clip-space via hi/lo split
+#### Stage 2 — conversion to clip-space via hi/lo split
 
 In the shader the uint32 is split into a **high** half (bits 12..31, aligned
 to 4096-bp boundaries) and a **low** half (bits 0..11, values 0..4095):
@@ -1199,7 +1198,7 @@ float dLo = split.y - u.bpLo;  // exact: small-small = small
 float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
 ```
 
-### Why we need both representations
+#### Why we need both representations
 
 - **uint32 only (no split)**: shader would convert uint32 → float directly,
   losing precision at 3 Gbp. Works only below ~16 Mbp.
@@ -1213,7 +1212,7 @@ float clipX = (dHi + dLo) / bpLen * 2.0 - 1.0;
 `blockClipUtils.clipBlock` emits `[bpStartHi, bpStartLo]` for the visible
 window; `splitPositionWithFrac` is the CPU equivalent for UBO fields.
 
-### Synteny: pre-split Float32 hi/lo cumulative-bp
+#### Synteny: pre-split Float32 hi/lo cumulative-bp
 
 Synteny corner storage takes a different shape than the LGV-family uint32
 attributes above. A synteny ribbon connects two views with independent
@@ -1244,7 +1243,7 @@ Dotplot currently stays on pre-projected Float32 pixel offsets per
 ADR-010. Its geometry-buffer layout (line endpoints) differs from
 synteny's parallelogram corners and would need its own migration.
 
-### Genome-size limits (what must fit where)
+#### Genome-size limits (what must fit where)
 
 Two distinct thresholds apply — one hard, one not a real limit:
 
@@ -1287,7 +1286,7 @@ Two distinct thresholds apply — one hard, one not a real limit:
 
 ---
 
-## Coordinate convention (alignments and wiggle data)
+### Coordinate convention (alignments and wiggle data)
 
 **Every** position array emitted by the alignments or wiggle worker is
 **absolute genomic uint32** — reads, gaps, mismatches, interbase (ins/soft/
@@ -1324,7 +1323,7 @@ left-edge=`region.end`, right-edge=`region.start`.
 
 ---
 
-## Canvas scaling & hi-DPI
+### Canvas scaling & hi-DPI
 
 **GPU canvases (HAL-managed)**: shader uniforms are in CSS pixels; HAL sets the
 backing store to `css × dpr`, so `N / canvas_width` in clip space = `N` CSS
@@ -1339,7 +1338,7 @@ Canvas2D backend path; standalone overlay components must replicate it.
 
 ---
 
-## `displayedRegionIndex`
+### `displayedRegionIndex`
 
 Zero-based index into `view.displayedRegions`. Stable unless regions are
 added, removed, or reordered. **Not** an index into
@@ -1352,7 +1351,7 @@ key on a tuple of two displayedRegion indices.
 
 ---
 
-## Adding a new GPU display type
+### Adding a new GPU display type
 
 - **Types** — `MyData`, `MyRenderState`, `MyRenderingBackend`.
 - **Shader** — author `my.slang`; `pnpm gen:shaders` emits `my.generated.ts`.
@@ -1406,7 +1405,7 @@ key on a tuple of two displayedRegion indices.
 
 ---
 
-## What NOT to do
+### What NOT to do
 
 - Don't put upload/render logic in React `useEffect`/`useLayoutEffect` —
   it belongs in the MST autorun pair spawned by `attachRenderingBackend`.
