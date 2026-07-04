@@ -1877,12 +1877,15 @@ export default function baseStateModelFactory(
            * A manual drag-resize means the user wants a fixed height; turn off
            * auto-fit first, otherwise the CanvasAutoHeight autorun snaps the
            * height back on the next layout change and the drag appears to do
-           * nothing.
+           * nothing. Also drop any expand-to-fit marker — once the user sets a
+           * height by hand, restoring to the pre-expand height is stale (same
+           * reasoning as setAutoHeight).
            */
           resizeHeight(distance: number) {
             if (self.autoHeight) {
               self.setAutoHeight(false)
             }
+            self.clearHeightBeforeExpand()
             return superResizeHeight(distance)
           },
         }

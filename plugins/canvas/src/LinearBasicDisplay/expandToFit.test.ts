@@ -183,4 +183,14 @@ describe('canvas display expand-to-fit', () => {
     display.resizeHeight(50)
     expect(display.autoHeight).toBe(false)
   })
+
+  it('a manual drag-resize clears a stale expand marker', () => {
+    const display = createDisplay()
+    display.setHeight(30)
+    display.expandToFit()
+    expect(display.heightBeforeExpand).toBe(30)
+
+    display.resizeHeight(20)
+    expect(display.heightBeforeExpand).toBeUndefined()
+  })
 })
