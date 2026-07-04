@@ -70,7 +70,6 @@ const PileupBezierOverlay = observer(function PileupBezierOverlay({
             stroke={arc.stroke}
             strokeWidth={isSelected ? 5 : 1}
             strokeOpacity={0.8}
-            strokeDasharray={arc.strokeDasharray}
             fill="none"
             style={{ pointerEvents: 'stroke', cursor: 'pointer' }}
             onMouseEnter={() => {
