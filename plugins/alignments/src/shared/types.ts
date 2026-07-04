@@ -14,6 +14,14 @@ export type ArcColorByType =
 // is omitted at this value so default sessions don't carry a redundant field.
 export const DEFAULT_MODIFICATION_THRESHOLD = 10
 
+// A `modifications` fragment carrying the probability threshold, but only when
+// non-default — so default sessions don't persist a redundant field. Single
+// source for the "omit at default" rule shared by the scheme setters and the
+// threshold slider.
+export function modificationThresholdField(threshold: number) {
+  return threshold === DEFAULT_MODIFICATION_THRESHOLD ? {} : { threshold }
+}
+
 export interface ModificationColorBy {
   twoColor?: boolean
   // modification type codes to hide; absent/empty means show every detected

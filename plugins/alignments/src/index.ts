@@ -40,4 +40,5 @@ export {
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
 } from './LinearAlignmentsDisplay/menus/index.ts'
+export { pickColorOptions } from './shared/colorSchemes.ts'
 export { CoverageTooltipContents } from './LinearAlignmentsDisplay/components/AlignmentsTooltip.tsx'

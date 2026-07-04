@@ -7,7 +7,7 @@ import { checkboxItem, radioItems, radioModeMenuItem } from './menuHelpers.ts'
 import { makeModificationThresholdItem } from './modificationThresholdMenu.tsx'
 import { colorSchemeLabel, radioColorOptions } from '../../shared/colorSchemes.ts'
 import { modificationData } from '../../shared/modificationData.ts'
-import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
+import { modificationThresholdField } from '../../shared/types.ts'
 
 import type { ColorOption } from '../../shared/colorSchemes.ts'
 import type { ArcColorByType, ColorBy } from '../../shared/types.ts'
@@ -28,13 +28,17 @@ export interface ModificationsModel extends ColorByModel {
   modificationThreshold: number
 }
 
-// The modification fields always travel together: an alignments display has all
-// of them, a synteny display has none. The predicate lets the menu accept either
-// kind of model without lying about the fields being required.
-function hasModifications(
-  model: ColorByModel & Partial<ModificationsModel>,
-): model is ModificationsModel {
-  return model.modificationsReady !== undefined
+// A model that may or may not carry the modification fields — the alignments
+// display has all of them, a synteny display has none.
+type AnyColorByModel = ColorByModel & Partial<ModificationsModel>
+
+// The modification fields always travel together, so one probe narrows the whole
+// group. `modModel(model)` returns the narrowed model or undefined, letting the
+// menu sniff the display kind exactly once instead of re-testing per section.
+function modModel(model: AnyColorByModel): ModificationsModel | undefined {
+  return model.modificationsReady === undefined
+    ? undefined
+    : (model as ModificationsModel)
 }
 
 interface ColorByMenuOptions {
@@ -110,14 +114,6 @@ const DIVIDER: MenuItem = { type: 'divider' }
 
 // --- scheme setters: one place that writes each colorBy shape ---------------
 
-// Preserve a non-default probability threshold across mode switches, but omit it
-// at the default so default sessions don't carry a redundant field.
-function modThresholdField(model: ModificationsModel) {
-  return model.modificationThreshold === DEFAULT_MODIFICATION_THRESHOLD
-    ? {}
-    : { threshold: model.modificationThreshold }
-}
-
 function setByType(
   model: ModificationsModel,
   twoColor: boolean,
@@ -134,7 +130,7 @@ function setByType(
             ),
           }
         : {}),
-      ...modThresholdField(model),
+      ...modificationThresholdField(model.modificationThreshold),
     },
   })
 }
@@ -149,7 +145,9 @@ function setContextScheme(
   model.setColorScheme({
     type,
     modifications: {
-      ...(type === 'methylation' ? modThresholdField(model) : {}),
+      ...(type === 'methylation'
+        ? modificationThresholdField(model.modificationThreshold)
+        : {}),
       ...(context === 'CG' ? {} : { cytosineContext: context }),
     },
   })
@@ -192,72 +190,59 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
   const { visibleModificationTypes: types, modificationThreshold } = model
   const mods = model.colorBy.modifications
   const hidden = mods?.hiddenModifications ?? []
-  const twoColor = !!mods?.twoColor
+  const activeTwoColor = !!mods?.twoColor
   const isModType = model.colorBy.type === 'modifications'
   const modName = (k: string) => modificationData[k]?.name ?? k
-  // all types shown (none hidden) vs exactly one type shown (rest hidden)
-  const allVisible = !hidden.some(k => types.includes(k))
+  // exactly one type shown (rest hidden), vs all shown (nothing relevant hidden)
   const onlyKey = (k: string) => types.every(t => t === k || hidden.includes(t))
+  const allVisible = !hidden.some(k => types.includes(k))
   // multiple types → per-type radios (filter in one click); single type → the
-  // all/only distinction is meaningless, so use a plain mode label.
+  // all/only distinction is meaningless, so just one radio per mode.
   const multiType = types.length > 1
 
   const byTypeHelpText = `Colors each modification call by its type. Only calls at or above the probability threshold (${modificationThreshold}%) are shown.`
   const twoColorHelpText =
     'Shades each called base by probability: at least 50% in the modification color, below 50% in blue. Only positions the caller listed are drawn.'
 
-  const byTypeRadios: MenuItem[] = multiType
-    ? [
-        {
-          label: 'All modification types',
-          type: 'radio',
-          checked: isModType && !twoColor && allVisible,
-          helpText: byTypeHelpText,
-          onClick: () => {
-            setByType(model, false)
-          },
-        },
-        ...types.map((k): MenuItem => ({
-          label: modName(k),
-          type: 'radio',
-          checked: isModType && !twoColor && onlyKey(k),
-          onClick: () => {
-            setByType(model, false, k)
-          },
-        })),
-      ]
-    : [
-        {
-          label: 'By modification type',
-          type: 'radio',
-          checked: isModType && !twoColor,
-          helpText: byTypeHelpText,
-          onClick: () => {
-            setByType(model, false)
-          },
-        },
-      ]
-
-  const twoColorRadios: MenuItem[] = [
-    ...(multiType ? [DIVIDER] : []),
-    {
-      label: multiType ? 'Two-color (all)' : 'Two-color',
-      type: 'radio',
-      checked: isModType && twoColor && (!multiType || allVisible),
-      helpText: twoColorHelpText,
-      onClick: () => {
-        setByType(model, true)
-      },
+  // One radio for a (mode, scope) cell. scope `undefined` = "all types"; a key =
+  // "only that type". The checked test is the single source for both modes.
+  const radio = (
+    label: string,
+    twoColor: boolean,
+    onlyK: string | undefined,
+    helpText?: string,
+  ): MenuItem => ({
+    label,
+    type: 'radio',
+    helpText,
+    checked:
+      isModType &&
+      activeTwoColor === twoColor &&
+      (onlyK === undefined ? !multiType || allVisible : onlyKey(onlyK)),
+    onClick: () => {
+      setByType(model, twoColor, onlyK)
     },
+  })
+
+  // "all" (or the single-type radio) followed by a per-type radio for each type
+  // when there's more than one.
+  const modeRadios = (twoColor: boolean, help: string): MenuItem[] => [
+    radio(
+      multiType
+        ? twoColor
+          ? 'Two-color (all)'
+          : 'All modification types'
+        : twoColor
+          ? 'Two-color'
+          : 'By modification type',
+      twoColor,
+      undefined,
+      help,
+    ),
     ...(multiType
-      ? types.map((k): MenuItem => ({
-          label: `Two-color: ${modName(k)}`,
-          type: 'radio',
-          checked: isModType && twoColor && onlyKey(k),
-          onClick: () => {
-            setByType(model, true, k)
-          },
-        }))
+      ? types.map(k =>
+          radio(twoColor ? `Two-color: ${modName(k)}` : modName(k), twoColor, k),
+        )
       : []),
   ]
 
@@ -272,8 +257,9 @@ function buildByTypeItem(model: ModificationsModel): MenuItem {
     helpText:
       'Pick this to inspect the raw per-call data or non-methylation modifications. Colors each call by its modification type; only positions the caller listed are drawn. Two-color instead shades each listed call red/blue by probability.',
     subMenu: [
-      ...byTypeRadios,
-      ...twoColorRadios,
+      ...modeRadios(false, byTypeHelpText),
+      ...(multiType ? [DIVIDER] : []),
+      ...modeRadios(true, twoColorHelpText),
       DIVIDER,
       makeModificationThresholdItem(model),
     ],
@@ -287,6 +273,16 @@ function buildModificationsItems(model: ModificationsModel): MenuItem[] {
   return model.modificationsReady
     ? [...buildMethylationItem(model), buildByTypeItem(model)]
     : [{ label: 'Loading modifications...', disabled: true, onClick() {} }]
+}
+
+// Show the MM/ML mode submenu while types are still loading (unless the region
+// is too large to ever detect them) or once any type has loaded. A ready display
+// with zero detected types falls through — only bisulfite (Advanced) remains.
+function showModificationItems(model: ModificationsModel): boolean {
+  return (
+    (!model.modificationsReady && !model.regionTooLarge) ||
+    model.visibleModificationTypes.length > 0
+  )
 }
 
 // Bisulfite / EM-seq is reference-based (read-vs-reference C→T), so it needs no
@@ -314,30 +310,29 @@ function buildAdvancedItem(model: ModificationsModel): MenuItem {
   }
 }
 
-export function getColorByMenuItem(
-  model: ColorByModel & Partial<ModificationsModel>,
-  options: ColorByMenuOptions = {},
-) {
-  const {
-    includeTagOption = false,
-    colorOptions,
-    arcColor,
-    supplementaryColoring,
-    sessionDefault,
-  } = options
+// --- menu sections: each returns its items, or [] when not applicable --------
 
-  const colorRadio = ({ label, type }: ColorOption): MenuItem => ({
+// A plain radio that selects a whole color scheme (no extra config).
+function colorRadio(model: AnyColorByModel, { label, type }: ColorOption) {
+  return {
     label,
-    type: 'radio',
+    type: 'radio' as const,
     checked: model.colorBy.type === type,
     onClick: () => {
       model.setColorScheme({ type })
     },
-  })
+  }
+}
 
-  const headItems = (colorOptions ?? basicColorOptions).map(colorRadio)
+function schemeRadios(
+  model: AnyColorByModel,
+  colorOptions: ColorOption[] | undefined,
+): MenuItem[] {
+  return (colorOptions ?? basicColorOptions).map(o => colorRadio(model, o))
+}
 
-  const tagItem: MenuItem[] = includeTagOption
+function tagSection(model: AnyColorByModel, include: boolean): MenuItem[] {
+  return include
     ? [
         {
           label: 'Color by tag...',
@@ -352,33 +347,36 @@ export function getColorByMenuItem(
         },
       ]
     : []
+}
 
-  const pairedEndItem: MenuItem[] = hasModifications(model)
+function pairedEndSection(model: ModificationsModel | undefined): MenuItem[] {
+  return model
     ? [
         {
           label: 'Paired end',
-          subMenu: pairedEndColorOptions.map(colorRadio),
+          subMenu: pairedEndColorOptions.map(o => colorRadio(model, o)),
         },
       ]
     : []
+}
 
-  // MM/ML modes only when the data actually carries modifications (still shown
-  // while loading). When regionTooLarge and no types have ever loaded, skip the
-  // submenu — nothing useful to show. Bisulfite (Advanced) is reference-based so
-  // it applies to any alignments display regardless of MM/ML tags.
-  const showMods =
-    hasModifications(model) &&
-    ((!model.modificationsReady && !model.regionTooLarge) ||
-      model.visibleModificationTypes.length > 0)
-
-  const modItems: MenuItem[] = hasModifications(model)
+// MM/ML modes only when the data actually carries modifications (still shown
+// while loading — see showModificationItems). Bisulfite (Advanced) is
+// reference-based so it applies to any alignments display regardless of MM/ML
+// tags.
+function modificationsSection(
+  model: ModificationsModel | undefined,
+): MenuItem[] {
+  return model
     ? [
-        ...(showMods ? buildModificationsItems(model) : []),
+        ...(showModificationItems(model) ? buildModificationsItems(model) : []),
         buildAdvancedItem(model),
       ]
     : []
+}
 
-  const arcColorItem: MenuItem[] = arcColor
+function arcColorSection(arcColor: ColorByMenuOptions['arcColor']): MenuItem[] {
+  return arcColor
     ? [
         radioModeMenuItem(
           'Arc color',
@@ -389,36 +387,41 @@ export function getColorByMenuItem(
         ),
       ]
     : []
+}
 
-  const supplementaryItem: MenuItem[] = supplementaryColoring
+function supplementarySection(
+  supp: ColorByMenuOptions['supplementaryColoring'],
+): MenuItem[] {
+  return supp
     ? [
         {
           label: 'Supplementary / split reads',
           subMenu: [
             checkboxItem(
               'Color supplementary alignments by primary strand',
-              supplementaryColoring.flipStrandLongReadChains,
+              supp.flipStrandLongReadChains,
               () => {
-                supplementaryColoring.setFlipStrandLongReadChains(
-                  !supplementaryColoring.flipStrandLongReadChains,
-                )
+                supp.setFlipStrandLongReadChains(!supp.flipStrandLongReadChains)
               },
             ),
             checkboxItem(
               'Color supplementary chains orange',
-              supplementaryColoring.colorSupplementaryChains,
+              supp.colorSupplementaryChains,
               () => {
-                supplementaryColoring.setColorSupplementaryChains(
-                  !supplementaryColoring.colorSupplementaryChains,
-                )
+                supp.setColorSupplementaryChains(!supp.colorSupplementaryChains)
               },
             ),
           ],
         },
       ]
     : []
+}
 
-  const sessionDefaultItem: MenuItem[] = sessionDefault
+function sessionDefaultSection(
+  model: AnyColorByModel,
+  sessionDefault: ColorByMenuOptions['sessionDefault'],
+): MenuItem[] {
+  return sessionDefault
     ? [
         DIVIDER,
         checkboxItem(
@@ -430,19 +433,25 @@ export function getColorByMenuItem(
         ),
       ]
     : []
+}
 
+export function getColorByMenuItem(
+  model: AnyColorByModel,
+  options: ColorByMenuOptions = {},
+) {
+  const mods = modModel(model)
   return {
     label: 'Color by...',
     type: 'subMenu' as const,
     icon: Palette,
     subMenu: [
-      ...headItems,
-      ...tagItem,
-      ...pairedEndItem,
-      ...modItems,
-      ...arcColorItem,
-      ...supplementaryItem,
-      ...sessionDefaultItem,
-    ],
+      schemeRadios(model, options.colorOptions),
+      tagSection(model, options.includeTagOption ?? false),
+      pairedEndSection(mods),
+      modificationsSection(mods),
+      arcColorSection(options.arcColor),
+      supplementarySection(options.supplementaryColoring),
+      sessionDefaultSection(model, options.sessionDefault),
+    ].flat(),
   }
 }

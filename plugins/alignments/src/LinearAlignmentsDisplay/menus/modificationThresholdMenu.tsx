@@ -1,5 +1,5 @@
 import { ModificationThresholdSlider } from './ModificationThresholdSlider.tsx'
-import { DEFAULT_MODIFICATION_THRESHOLD } from '../../shared/types.ts'
+import { modificationThresholdField } from '../../shared/types.ts'
 
 import type { ColorBy } from '../../shared/types.ts'
 import type { MenuItem } from '@jbrowse/core/ui'
@@ -10,18 +10,15 @@ interface ThresholdModel {
   setColorScheme: (colorBy: ColorBy) => void
 }
 
-// Drop any prior threshold, then re-add only a non-default value so a session
-// left at the default doesn't carry a redundant field (mirrors modThresholdField
-// in colorBy.ts).
+// Drop any prior threshold, then re-add only a non-default value (via the shared
+// modificationThresholdField rule) so a session left at the default doesn't
+// carry a redundant field.
 function setModificationThreshold(model: ThresholdModel, threshold: number) {
   const currentColorBy = model.colorBy ?? { type: 'modifications' }
   const { threshold: _prev, ...restMods } = currentColorBy.modifications ?? {}
   model.setColorScheme({
     ...currentColorBy,
-    modifications: {
-      ...restMods,
-      ...(threshold === DEFAULT_MODIFICATION_THRESHOLD ? {} : { threshold }),
-    },
+    modifications: { ...restMods, ...modificationThresholdField(threshold) },
   })
 }
 

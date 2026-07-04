@@ -2397,7 +2397,7 @@ export default function stateModelFactory(
           /**
            * #action
            */
-          setColorByType(type: ArcColorByType) {
+          setArcColorByType(type: ArcColorByType) {
             self.configuration.setSlot('arcColorByType', type)
           },
 
@@ -2765,7 +2765,7 @@ export default function stateModelFactory(
                   ? {
                       current: self.arcColorByType,
                       setColor: (type: ArcColorByType) => {
-                        self.setColorByType(type)
+                        self.setArcColorByType(type)
                       },
                     }
                   : undefined,

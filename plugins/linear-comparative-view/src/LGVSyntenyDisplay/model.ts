@@ -12,6 +12,7 @@ import {
   getFeatureHeightMenuItem,
   getFiltersMenuItem,
   linearAlignmentsDisplayStateModelFactory,
+  pickColorOptions,
 } from '@jbrowse/plugin-alignments'
 import ContentCopyIcon from '@mui/icons-material/ContentCopy'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
@@ -168,11 +169,11 @@ function stateModelFactory(schema: AnyConfigurationSchemaType) {
           return [
             getFeatureHeightMenuItem(self),
             getColorByMenuItem(self, {
-              colorOptions: [
-                { label: 'Normal', type: 'normal' },
-                { label: 'Strand', type: 'strand' },
-                { label: 'Mapping quality', type: 'mappingQuality' },
-              ],
+              colorOptions: pickColorOptions(
+                'normal',
+                'strand',
+                'mappingQuality',
+              ),
             }),
             getFiltersMenuItem(self),
             {

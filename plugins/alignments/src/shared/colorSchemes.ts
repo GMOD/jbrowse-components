@@ -151,3 +151,10 @@ export function radioColorOptions(group: ColorGroup): ColorOption[] {
     )
     .map(({ type, menu }) => ({ type, label: menu.label }))
 }
+
+// Curated subset of schemes, in the given order, with labels sourced from the
+// registry — for consumers (e.g. synteny) that support only a handful of schemes
+// and shouldn't re-spell the labels at the call site.
+export function pickColorOptions(...types: ColorSchemeType[]): ColorOption[] {
+  return types.map(type => ({ type, label: colorSchemeLabel(type) }))
+}
