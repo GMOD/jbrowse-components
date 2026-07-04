@@ -352,8 +352,15 @@ export interface ConnectionInstance {
   tracks: AnyConfigurationModel[]
   configuration: AnyConfigurationModel
 }
-export interface SessionWithConnections {
+/** a session that can turn connections on and off */
+export interface SessionWithConnections extends AbstractSessionModel {
+  connectionInstances: ConnectionInstance[]
   makeConnection: (arg: AnyConfigurationModel) => void
+  breakConnection: (arg: AnyConfigurationModel) => void
+  prepareToBreakConnection: (
+    arg: AnyConfigurationModel,
+  ) => [() => void, Record<string, number>] | undefined
+  deleteConnection: (arg: AnyConfigurationModel) => void
 }
 export function isSessionModelWithConnections(
   thing: unknown,
@@ -361,10 +368,10 @@ export function isSessionModelWithConnections(
   return isSessionModel(thing) && 'makeConnection' in thing
 }
 
-export interface SessionWithConnectionEditing {
-  addConnectionConf: (arg: AnyConfigurationModel) => void
+/** a session that can also add new connection configs */
+export interface SessionWithConnectionEditing extends SessionWithConnections {
+  addConnectionConf: (arg: AnyConfigurationModel) => AnyConfigurationModel
 }
-
 export function isSessionModelWithConnectionEditing(
   thing: unknown,
 ): thing is SessionWithConnectionEditing {

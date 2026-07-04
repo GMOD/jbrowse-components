@@ -46,13 +46,15 @@ function stateModelFactory(pluginManager: PluginManager) {
     .actions(() => ({
       /**
        * #action
+       * no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override
+       * this to fetch and populate their `tracks`
        */
-      connect(_arg: AnyConfigurationModel) {},
+      connect() {},
     }))
     .actions(self => ({
       afterAttach() {
         if (self.tracks.length === 0) {
-          self.connect(self.configuration)
+          self.connect()
         }
       },
       /**
@@ -76,10 +78,6 @@ function stateModelFactory(pluginManager: PluginManager) {
       setTrackConfs(trackConfs: TrackConf[]) {
         self.tracks = cast(trackConfs)
       },
-      /**
-       * #action
-       */
-      clear() {},
     }))
 }
 

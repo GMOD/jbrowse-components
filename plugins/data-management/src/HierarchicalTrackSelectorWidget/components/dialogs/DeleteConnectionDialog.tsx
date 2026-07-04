@@ -3,7 +3,7 @@ import { DialogContentText } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SessionWithConnections } from '@jbrowse/core/util'
 
 const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
   deleteDialogDetails,
@@ -14,7 +14,7 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
     name: string
     connectionConf: AnyConfigurationModel
   }
-  session: AbstractSessionModel
+  session: SessionWithConnections
   handleClose: () => void
 }) {
   const { connectionConf, name } = deleteDialogDetails
@@ -27,8 +27,8 @@ const DeleteConnectionDialog = observer(function DeleteConnectionDialog({
       onSubmit={() => {
         // break the live connection instance (dereferencing any of its tracks
         // open in views) before removing the config it points at
-        session.prepareToBreakConnection?.(connectionConf)?.[0]()
-        session.deleteConnection?.(connectionConf)
+        session.prepareToBreakConnection(connectionConf)?.[0]()
+        session.deleteConnection(connectionConf)
         handleClose()
       }}
     >

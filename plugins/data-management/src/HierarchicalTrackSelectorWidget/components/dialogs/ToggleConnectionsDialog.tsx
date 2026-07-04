@@ -12,7 +12,7 @@ import {
 import { observer } from 'mobx-react'
 
 import type { AnyConfigurationModel } from '@jbrowse/core/configuration'
-import type { AbstractSessionModel } from '@jbrowse/core/util'
+import type { SessionWithConnections } from '@jbrowse/core/util'
 
 function ellipses(slug: string) {
   return slug.length > 20 ? `${slug.slice(0, 20)}...` : slug
@@ -31,13 +31,12 @@ const ConnectionRow = observer(function ConnectionRow({
   breakConnection,
 }: {
   conf: AnyConfigurationModel
-  session: AbstractSessionModel
+  session: SessionWithConnections
   breakConnection: (arg: AnyConfigurationModel) => void
 }) {
-  const { connectionInstances: instances = [] } = session
   const name = readConfObject(conf, 'name')
   const assemblyNames = readConfObject(conf, 'assemblyNames')
-  const hasConnection = instances.some(
+  const hasConnection = session.connectionInstances.some(
     conn => conn.connectionId === conf.connectionId,
   )
   return (
@@ -49,7 +48,7 @@ const ConnectionRow = observer(function ConnectionRow({
             if (hasConnection) {
               breakConnection(conf)
             } else {
-              session.makeConnection?.(conf)
+              session.makeConnection(conf)
             }
           }}
           color="primary"
@@ -69,7 +68,7 @@ const ConnectionList = observer(function ConnectionsList({
   session,
   breakConnection,
 }: {
-  session: AbstractSessionModel
+  session: SessionWithConnections
   breakConnection: (arg: AnyConfigurationModel) => void
 }) {
   const { classes } = useStyles()
@@ -97,7 +96,7 @@ const ToggleConnectionDialog = observer(function ToggleConnectionDialog({
   breakConnection,
 }: {
   handleClose: () => void
-  session: AbstractSessionModel
+  session: SessionWithConnections
   breakConnection: (arg: AnyConfigurationModel) => void
 }) {
   return (

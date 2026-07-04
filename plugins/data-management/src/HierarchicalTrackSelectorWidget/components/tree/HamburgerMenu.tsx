@@ -60,18 +60,20 @@ const HamburgerMenu = observer(function HamburgerMenu({
   const [facetedOpen, setFacetedOpen] = useState(false)
 
   function breakConnection(connectionConf: AnyConfigurationModel) {
-    const result = session.prepareToBreakConnection?.(connectionConf)
-    if (result) {
-      const [safelyBreakConnection, dereferenceTypeCount] = result
-      if (Object.keys(dereferenceTypeCount).length > 0) {
-        setModalInfo({
-          connectionConf,
-          safelyBreakConnection,
-          dereferenceTypeCount,
-          name: readConfObject(connectionConf, 'name'),
-        })
-      } else {
-        safelyBreakConnection()
+    if (isSessionModelWithConnections(session)) {
+      const result = session.prepareToBreakConnection(connectionConf)
+      if (result) {
+        const [safelyBreakConnection, dereferenceTypeCount] = result
+        if (Object.keys(dereferenceTypeCount).length > 0) {
+          setModalInfo({
+            connectionConf,
+            safelyBreakConnection,
+            dereferenceTypeCount,
+            name: readConfObject(connectionConf, 'name'),
+          })
+        } else {
+          safelyBreakConnection()
+        }
       }
     }
   }
@@ -205,7 +207,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
             }}
           />
         ) : null}
-        {deleteDialogDetails ? (
+        {deleteDialogDetails && isSessionModelWithConnections(session) ? (
           <DeleteConnectionDialog
             handleClose={() => {
               setDeleteDialogDetails(undefined)
@@ -228,7 +230,7 @@ const HamburgerMenu = observer(function HamburgerMenu({
             session={session}
           />
         ) : null}
-        {connectionToggleOpen ? (
+        {connectionToggleOpen && isSessionModelWithConnections(session) ? (
           <ToggleConnectionsDialog
             handleClose={() => {
               setConnectionToggleOpen(false)

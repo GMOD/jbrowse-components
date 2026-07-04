@@ -55,6 +55,21 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
 
   const isLastStep = activeStep === steps.length - 1
 
+  function handleNext() {
+    if (isLastStep) {
+      if (isSessionWithConnections(session)) {
+        session.makeConnection(session.addConnectionConf(configModel))
+      } else {
+        session.notify('This session does not support connections')
+      }
+      if (isSessionModelWithWidgets(session)) {
+        session.hideWidget(model)
+      }
+    } else {
+      setActiveStep(activeStep + 1)
+    }
+  }
+
   return (
     <div className={classes.root}>
       <Stepper
@@ -95,22 +110,7 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
                   variant="contained"
                   color="primary"
                   onClick={() => {
-                    if (isLastStep) {
-                      if (isSessionWithConnections(session)) {
-                        const conf = session.addConnectionConf(configModel)
-                        session.makeConnection(conf)
-                      } else {
-                        session.notify(
-                          'This session does not support connections',
-                        )
-                      }
-
-                      if (isSessionModelWithWidgets(session)) {
-                        session.hideWidget(model)
-                      }
-                    } else {
-                      setActiveStep(activeStep + 1)
-                    }
+                    handleNext()
                   }}
                   className={classes.button}
                   data-testid="addConnectionNext"
