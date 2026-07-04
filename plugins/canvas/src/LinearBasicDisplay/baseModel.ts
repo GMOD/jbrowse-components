@@ -333,14 +333,15 @@ export default function baseStateModelFactory(
         heightBeforeExpand: undefined as number | undefined,
         /**
          * #volatile
-         * "Fit to display height" mode: laid-out glyphs are uniformly shrunk so
-         * every row fits the track height without scrolling. Volatile — a view
-         * preference like scrollTop; picking any feature-height preset turns it
-         * off. The `height` config slot is never written, so it stays pure user
-         * intent. Only ever shrinks (scale <= 1); a track that already fits is
-         * left untouched.
+         * Squeeze-to-display-height mode (the "Fit to display height" menu
+         * preset): laid-out glyphs are uniformly shrunk so every row fits the
+         * track height without scrolling. Volatile — a view preference like
+         * scrollTop; picking any feature-height preset turns it off. The
+         * `height` config slot is never written, so it stays pure user intent.
+         * Only ever shrinks (scale <= 1); a track that already fits is left
+         * untouched.
          */
-        fitHeightToDisplay: false,
+        squeezeToDisplayHeight: false,
         /**
          * #volatile
          */
@@ -917,7 +918,7 @@ export default function baseStateModelFactory(
         /**
          * #getter
          * Layout at the current display mode, before any fit-to-height squeeze.
-         * The reference for both `fitScale` (which reads its height) and the
+         * The reference for both `squeezeScale` (which reads its height) and the
          * final `laidOutDataMap`; kept separate so the fit scale derives from the
          * unscaled content height and can't feed back on itself.
          */
@@ -943,30 +944,31 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
-         * Uniform vertical squeeze for "fit to display height" mode: the factor
-         * that makes the whole stack fit the track height without scrolling.
-         * Shrink-only (<= 1); 1 whenever fit is off, content already fits, or
-         * there's nothing to lay out. Measured off the unfitted base layout so
-         * it can't feed back on itself.
+         * Uniform vertical squeeze factor for squeeze-to-display-height mode:
+         * makes the whole stack fit the track height without scrolling.
+         * Shrink-only (<= 1); 1 whenever the squeeze is off, content already
+         * fits, or there's nothing to lay out. Measured off the unsqueezed base
+         * layout so it can't feed back on itself.
          */
-        get fitScale() {
+        get squeezeScale() {
           const base = maxBottom(self.baseLaidOutDataMap)
-          return self.fitHeightToDisplay && base > self.height
+          return self.squeezeToDisplayHeight && base > self.height
             ? self.height / base
             : 1
         },
         /**
          * #getter
          * What every consumer (hit test, GPU upload, React render) reads. The
-         * `baseLaidOutDataMap` by reference unless fit mode is squeezing the
+         * `baseLaidOutDataMap` by reference unless the squeeze is shrinking the
          * stack, in which case each region is cloned and scaled to exactly fill
-         * the track height. Returning the base map by reference off the fit path
-         * keeps the incremental-layout upload diff and Y-morph idle check intact.
+         * the track height. Returning the base map by reference off the squeeze
+         * path keeps the incremental-layout upload diff and Y-morph idle check
+         * intact.
          */
         get laidOutDataMap(): Map<number, FeatureDataResult> {
-          return this.fitScale === 1
+          return this.squeezeScale === 1
             ? self.baseLaidOutDataMap
-            : scaleLaidOutData(self.baseLaidOutDataMap, this.fitScale)
+            : scaleLaidOutData(self.baseLaidOutDataMap, this.squeezeScale)
         },
       }))
       .views(self => ({
@@ -1238,14 +1240,21 @@ export default function baseStateModelFactory(
 
         /**
          * #action
-         * Enter/leave "fit to display height" mode. Entering scrolls to the top
-         * (a fitted stack has no scroll, so a stale scrollTop would leave the GPU
-         * canvas painted at an invalid offset). The `laidOutDataMap` getter does
-         * the actual squeeze reactively.
+         * Enter/leave squeeze-to-display-height mode. Entering scrolls to the top
+         * (a squeezed stack has no scroll, so a stale scrollTop would leave the
+         * GPU canvas painted at an invalid offset). The `laidOutDataMap` getter
+         * does the actual squeeze reactively.
          */
-        setFitHeightToDisplay(fit: boolean) {
-          self.fitHeightToDisplay = fit
-          if (fit) {
+        setSqueezeToDisplayHeight(squeeze: boolean) {
+          self.squeezeToDisplayHeight = squeeze
+          if (squeeze) {
+            // Auto-fit grows the height to the content, which keeps base ===
+            // height and makes the squeeze a no-op; the two modes are opposite
+            // intents, so entering squeeze turns auto-fit off (mirrors how
+            // setAutoHeight/setDisplayMode clear the other mode). setAutoHeight
+            // is defined in a later actions block, so clear the slot directly —
+            // its only extra work (clearHeightBeforeExpand) is on the true path.
+            self.configuration.setSlot('autoHeight', false)
             self.setScrollTop(0)
           }
         },
@@ -1588,6 +1597,10 @@ export default function baseStateModelFactory(
         setAutoHeight(value: boolean) {
           self.configuration.setSlot('autoHeight', value)
           if (value) {
+            // Auto-fit (grow height to content) is the opposite of fit-to-height
+            // (squeeze content into a fixed height); leave fit mode so they
+            // can't both claim to be active.
+            self.squeezeToDisplayHeight = false
             // The manual expand/restore state is meaningless once auto-fit
             // drives the height; drop it so a later disable doesn't surface a
             // stale "restore previous height".
@@ -2046,7 +2059,7 @@ export default function baseStateModelFactory(
             let prevMode: string | undefined
             let prevShowLabels: boolean | undefined
             let prevShowDescriptions: boolean | undefined
-            let prevFitScale: number | undefined
+            let prevSqueezeScale: number | undefined
             // autorunOnReadyView gates on view.initialized — laidOutDataMap is
             // empty until then, and showLabels/effectiveShowDescriptions read
             // view.width (which throws pre-measure), so the body must not run
@@ -2060,21 +2073,21 @@ export default function baseStateModelFactory(
                 const mode = self.displayMode
                 const showLabels = self.showLabels
                 const showDescriptions = self.effectiveShowDescriptions
-                // A fit-to-height rescale (e.g. a drag-resize) is a uniform
+                // A squeeze-to-height rescale (e.g. a drag-resize) is a uniform
                 // squeeze, not a row re-pack, so treat it like a mode change:
                 // snap rather than morph, else every resize frame animates.
-                const fitScale = self.fitScale
+                const squeezeScale = self.squeezeScale
                 const scaleUnchanged =
                   mode === prevMode &&
                   showLabels === prevShowLabels &&
                   showDescriptions === prevShowDescriptions &&
-                  fitScale === prevFitScale
+                  squeezeScale === prevSqueezeScale
                 const from = prevLayout
                 prevLayout = current
                 prevMode = mode
                 prevShowLabels = showLabels
                 prevShowDescriptions = showDescriptions
-                prevFitScale = fitScale
+                prevSqueezeScale = squeezeScale
                 // Not a real layout-to-layout transition (first data, an
                 // empty map on nav) — nothing to morph or snap.
                 if (

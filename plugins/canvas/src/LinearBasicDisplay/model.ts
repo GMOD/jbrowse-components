@@ -176,19 +176,19 @@ export default function stateModelFactory(
       },
 
       setDisplayMode(value: DisplayMode) {
-        self.setFitHeightToDisplay(false)
+        self.setSqueezeToDisplayHeight(false)
         self.configuration.setSlot('displayMode', value)
       },
 
       // Revert to 'inherit' (the slot default), which strips the pin so the
       // track follows the session-wide type default again.
       resetDisplayMode() {
-        self.setFitHeightToDisplay(false)
+        self.setSqueezeToDisplayHeight(false)
         self.configuration.setSlot('displayMode', 'inherit')
       },
 
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
-        self.setFitHeightToDisplay(false)
+        self.setSqueezeToDisplayHeight(false)
         self.configuration.setSlot(
           'displayMode',
           level === 'super-compact' ? 'superCompact' : level,
@@ -282,11 +282,13 @@ export default function stateModelFactory(
               // One radio group. The top "Default" entry follows the session
               // default (un-pins); each explicit mode pins the track. Below it,
               // one checkbox promotes the current mode as the session default.
+              // Squeeze-to-height and an explicit/default display mode are one
+              // exclusive choice, so squeeze wins the radio state when it's on.
               subMenu: [
                 {
                   label: `Default (${displayModeLabel(self.inheritedDisplayMode)})`,
                   type: 'radio' as const,
-                  checked: !self.isDisplayModePinned && !self.fitHeightToDisplay,
+                  checked: !self.squeezeToDisplayHeight && !self.isDisplayModePinned,
                   onClick: () => {
                     self.resetDisplayMode()
                   },
@@ -295,7 +297,7 @@ export default function stateModelFactory(
                   label: option.label,
                   type: 'radio' as const,
                   checked:
-                    !self.fitHeightToDisplay &&
+                    !self.squeezeToDisplayHeight &&
                     self.isDisplayModePinned &&
                     self.displayMode === option.value,
                   onClick: () => {
@@ -305,9 +307,9 @@ export default function stateModelFactory(
                 {
                   label: 'Fit to display height',
                   type: 'radio' as const,
-                  checked: self.fitHeightToDisplay,
+                  checked: self.squeezeToDisplayHeight,
                   onClick: () => {
-                    self.setFitHeightToDisplay(true)
+                    self.setSqueezeToDisplayHeight(true)
                   },
                 },
                 { type: 'divider' as const },

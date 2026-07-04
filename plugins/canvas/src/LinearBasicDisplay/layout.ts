@@ -308,30 +308,37 @@ export function createIncrementalLayout() {
   }
 }
 
-// "Fit to display height": uniformly scale an already-laid-out region so the
+// Squeeze-to-display-height: uniformly scale an already-laid-out region so the
 // whole stack fits the track height without scrolling. Unlike applyHeightScale
 // (a pre-pack body shrink that feeds the packer), this runs AFTER packing on the
 // offset geometry, so it also scales the packed `topPx`/`bottomPx` and the
 // row-offset Ys — every Y and height by the same factor, so content height ×
 // scale lands exactly on the track height. Row assignment is untouched (it's
-// fixed by X-overlap), so the fit is a pure vertical squeeze.
+// fixed by X-overlap), so it's a pure vertical squeeze.
 export function scaleLaidOutData(
   map: ReadonlyMap<number, FeatureDataResult>,
   scale: number,
 ): Map<number, FeatureDataResult> {
   const out = new Map<number, FeatureDataResult>()
   for (const [n, data] of map) {
-    const cloned = cloneMutableFields(data)
-    // Reuse applyHeightScale for the fields it already covers (rect/line/arrow
-    // Ys+heights, subfeature/label/amino-acid tops, featureHeightPx), then add
-    // the packed flatbush box tops/bottoms it doesn't touch (those are 0 at the
-    // pre-pack stage applyHeightScale was written for).
-    applyHeightScale(cloned, scale)
-    for (const item of cloned.flatbushItems) {
-      item.topPx *= scale
-      item.bottomPx *= scale
+    if (data.flatbushItems.length === 0) {
+      // Nothing to scale — share the raw object (as computeLaidOutData does for
+      // empty regions) rather than allocating clone arrays that stay untouched,
+      // keeping the reference stable so idle empty regions don't re-upload.
+      out.set(n, data)
+    } else {
+      const cloned = cloneMutableFields(data)
+      // Reuse applyHeightScale for the fields it already covers (rect/line/arrow
+      // Ys+heights, subfeature/label/amino-acid tops, featureHeightPx), then add
+      // the packed flatbush box tops/bottoms it doesn't touch (those are 0 at the
+      // pre-pack stage applyHeightScale was written for).
+      applyHeightScale(cloned, scale)
+      for (const item of cloned.flatbushItems) {
+        item.topPx *= scale
+        item.bottomPx *= scale
+      }
+      out.set(n, cloned)
     }
-    out.set(n, cloned)
   }
   return out
 }

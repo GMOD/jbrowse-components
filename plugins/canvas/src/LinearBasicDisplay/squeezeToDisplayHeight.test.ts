@@ -1,53 +1,72 @@
 import { createTestEnvironment } from './testEnv.ts'
 
-// State-machine coverage for "fit to display height". The squeeze arithmetic
-// itself is covered by scaleLaidOutData in layout.test.ts; here we only drive
-// the mode flag, scroll reset, and the preset-picks-exit-fit interplay. With no
-// feature data maxY is 0, so fitScale stays 1 (a no-op) throughout.
-describe('canvas display fit-to-display-height', () => {
-  it('fitScale is 1 and fit is off by default', () => {
+// State-machine coverage for squeeze-to-display-height mode (the "Fit to
+// display height" menu preset). The squeeze arithmetic itself is covered by
+// scaleLaidOutData in layout.test.ts; here we only drive the mode flag, scroll
+// reset, and the preset-picks-exit-squeeze interplay. With no feature data maxY
+// is 0, so squeezeScale stays 1 (a no-op) throughout.
+describe('canvas display squeeze-to-display-height', () => {
+  it('squeezeScale is 1 and squeeze is off by default', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    expect(display.fitHeightToDisplay).toBe(false)
-    expect(display.fitScale).toBe(1)
+    expect(display.squeezeToDisplayHeight).toBe(false)
+    expect(display.squeezeScale).toBe(1)
   })
 
-  it('entering fit mode resets scroll; leaving it leaves scroll alone', () => {
+  it('entering squeeze mode resets scroll; leaving it leaves scroll alone', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
     display.setScrollTop(300)
 
-    display.setFitHeightToDisplay(true)
-    expect(display.fitHeightToDisplay).toBe(true)
+    display.setSqueezeToDisplayHeight(true)
+    expect(display.squeezeToDisplayHeight).toBe(true)
     expect(display.scrollTop).toBe(0)
 
     display.setScrollTop(120)
-    display.setFitHeightToDisplay(false)
-    expect(display.fitHeightToDisplay).toBe(false)
+    display.setSqueezeToDisplayHeight(false)
+    expect(display.squeezeToDisplayHeight).toBe(false)
     expect(display.scrollTop).toBe(120)
   })
 
-  it('setDisplayMode exits fit mode', () => {
+  it('setDisplayMode exits squeeze mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setSqueezeToDisplayHeight(true)
     display.setDisplayMode('compact')
-    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.squeezeToDisplayHeight).toBe(false)
   })
 
-  it('resetDisplayMode exits fit mode', () => {
+  it('resetDisplayMode exits squeeze mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setSqueezeToDisplayHeight(true)
     display.resetDisplayMode()
-    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.squeezeToDisplayHeight).toBe(false)
   })
 
-  it('setCompactness exits fit mode', () => {
+  it('setCompactness exits squeeze mode', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay()
-    display.setFitHeightToDisplay(true)
+    display.setSqueezeToDisplayHeight(true)
     display.setCompactness('super-compact')
-    expect(display.fitHeightToDisplay).toBe(false)
+    expect(display.squeezeToDisplayHeight).toBe(false)
+  })
+
+  it('entering squeeze mode turns off auto-fit height (opposite intents)', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setAutoHeight(true)
+    display.setSqueezeToDisplayHeight(true)
+    expect(display.squeezeToDisplayHeight).toBe(true)
+    expect(display.autoHeight).toBe(false)
+  })
+
+  it('enabling auto-fit height exits squeeze mode', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay()
+    display.setSqueezeToDisplayHeight(true)
+    display.setAutoHeight(true)
+    expect(display.autoHeight).toBe(true)
+    expect(display.squeezeToDisplayHeight).toBe(false)
   })
 })
