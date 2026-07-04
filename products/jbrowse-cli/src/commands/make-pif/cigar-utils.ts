@@ -105,6 +105,23 @@ export interface CigarSegment {
   qend: number
   numMatches: number
   blockLen: number
+  // Gap-compressed sequence divergence (minimap2 `de:f:` semantics): each indel
+  // run counts once as a gap event, not once per base. Counting indel bases
+  // (as `1 - numMatches/blockLen` would) roughly doubles the reported
+  // divergence, so this keeps a split row's coarse pieces coloring like the
+  // aligner's own per-row tag. A plain `cg` CIGAR folds substitutions into `M`,
+  // so `mismatches` is only nonzero for an `=`/`X` CIGAR; the caller prefers the
+  // row's own `de:f:` tag over this value whenever the row carries one.
+  divergence: number
+}
+
+function gapCompressedDivergence(
+  matches: number,
+  mismatches: number,
+  gapEvents: number,
+) {
+  const denom = matches + mismatches + gapEvents
+  return denom > 0 ? (mismatches + gapEvents) / denom : 0
 }
 
 // Walk a CIGAR and split the alignment whenever an insertion or deletion
@@ -133,6 +150,8 @@ export function splitCigarOnLargeGaps({
   let segTStart = tCursor
   let segQAnchor = qCursor
   let segMatches = 0
+  let segMismatches = 0
+  let segGapEvents = 0
   let segBlockLen = 0
   const out: CigarSegment[] = []
 
@@ -145,6 +164,11 @@ export function splitCigarOnLargeGaps({
         qend: Math.max(segQAnchor, qCursor),
         numMatches: segMatches,
         blockLen: segBlockLen,
+        divergence: gapCompressedDivergence(
+          segMatches,
+          segMismatches,
+          segGapEvents,
+        ),
       })
     }
   }
@@ -165,7 +189,9 @@ export function splitCigarOnLargeGaps({
       tCursor += len
       qCursor += len * qStep
       segBlockLen += len
-      if (op !== 'X') {
+      if (op === 'X') {
+        segMismatches += len
+      } else {
         segMatches += len
       }
     } else if ('DIN'.includes(op)) {
@@ -182,9 +208,12 @@ export function splitCigarOnLargeGaps({
         segTStart = tCursor
         segQAnchor = qCursor
         segMatches = 0
+        segMismatches = 0
+        segGapEvents = 0
         segBlockLen = 0
       } else {
         segBlockLen += len
+        segGapEvents += 1
       }
     }
     // S/H/P (clipping/padding) don't consume target or forward-strand query in PAF

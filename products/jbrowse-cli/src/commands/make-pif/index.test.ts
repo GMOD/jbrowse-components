@@ -110,6 +110,69 @@ test('make-pif converts a cs difference string to a cg CIGAR', async () => {
   })
 })
 
+test('coarse-tier identity matches the fine tier (no LOD-threshold jump)', async () => {
+  await runInTmpDir(async () => {
+    const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`
+    await runCommand(['make-pif', simplePaf, '--out', fn])
+    const lines = gunzipSync(fs.readFileSync(fn))
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+    const de = (l: string) =>
+      l
+        .split('\t')
+        .find(f => f.startsWith('de:f:'))
+        ?.slice(5)
+    // Every fine `t` row carries the aligner's de:f: tag; a coarse `T` row must
+    // reuse that exact value rather than recomputing a divergent one, so
+    // identity coloring is continuous across the coarse/fine LOD switch.
+    const fineDe = new Set(lines.filter(l => l.startsWith('t')).map(de))
+    const coarseDe = lines.filter(l => l.startsWith('T')).map(de)
+    expect(coarseDe.length).toBeGreaterThan(0)
+    for (const d of coarseDe) {
+      expect(fineDe.has(d)).toBe(true)
+    }
+  })
+})
+
+test('coarse tier keeps the aligner de:f: tag for a plain M CIGAR', async () => {
+  await runInTmpDir(async ({ dir }) => {
+    const pafPath = path.join(dir, 'mcigar.paf')
+    // A plain `cg:Z:100M` CIGAR folds substitutions into M, so a CIGAR
+    // recompute would report 0 divergence. minimap2's de:f: tag carries the
+    // real 10% divergence and must survive into the (unsplit) coarse row.
+    fs.writeFileSync(
+      pafPath,
+      `${[
+        'q1',
+        '100',
+        '0',
+        '100',
+        '+',
+        't1',
+        '100',
+        '0',
+        '100',
+        '90',
+        '100',
+        '60',
+        'cg:Z:100M',
+        'de:f:0.100000',
+      ].join('\t')}\n`,
+    )
+    const fn = 'mcigar.pif.gz'
+    await runCommand(['make-pif', pafPath, '--out', fn])
+    const lines = gunzipSync(fs.readFileSync(fn))
+      .toString()
+      .split('\n')
+      .filter(Boolean)
+    const coarseT = lines.find(l => l.startsWith('T'))!
+    const coarseQ = lines.find(l => l.startsWith('Q'))!
+    expect(coarseT).toContain('de:f:0.100000')
+    expect(coarseQ).toContain('de:f:0.100000')
+  })
+})
+
 test('make pif with CSI', async () => {
   await runInTmpDir(async () => {
     const fn = `${path.basename(simplePaf, '.paf')}.pif.gz`

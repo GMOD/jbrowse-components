@@ -58,9 +58,10 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
     return tRow + qRow
   }
 
-  // When no CIGAR is present, fall back to the PAF's own num_matches/block_len
-  // so coarse-tier identity (de:f:) reflects the aligner's reported value rather
-  // than defaulting to 100% divergence.
+  // With no CIGAR the only divergence signal is the PAF's own num_matches /
+  // block_len summary, so the single passthrough segment carries that.
+  const numMatches = +rest[0]!
+  const blockLen = +rest[1]!
   const segments = cigarStr
     ? splitCigarOnLargeGaps({
         cigar: cigarStr,
@@ -76,22 +77,21 @@ function processLine(line: string, coarseSplitGap: number | undefined): string {
           tend: +e2!,
           qstart: +s1!,
           qend: +e1!,
-          numMatches: +rest[0]!,
-          blockLen: +rest[1]!,
+          numMatches,
+          blockLen,
+          divergence: blockLen > 0 ? 1 - numMatches / blockLen : 0,
         },
       ]
   const mapq = rest[2]
-  // With a CIGAR we recompute divergence per split segment. Without one, prefer
-  // the aligner's own de:f: tag (more accurate than the num_matches/block_len
-  // proxy) and only fall back to the computed value when no tag is present.
-  const passthroughDe = cigarStr
-    ? undefined
-    : rest.find(f => f.startsWith('de:f:'))?.slice(5)
+  // The aligner's own de:f: tag (minimap2 gap-compressed divergence) is the most
+  // accurate identity we have, so it wins for every coarse piece of the row when
+  // present — this keeps split and un-split rows coloring identically and avoids
+  // the fine↔coarse jump a per-base recompute would cause. Only when a row
+  // carries no tag do we fall back to the segment's own gap-compressed estimate.
+  const pafDe = rest.find(f => f.startsWith('de:f:'))?.slice(5)
   let coarseRows = ''
   for (const seg of segments) {
-    const de =
-      passthroughDe ??
-      (seg.blockLen > 0 ? (1 - seg.numMatches / seg.blockLen).toFixed(6) : '0')
+    const de = pafDe ?? seg.divergence.toFixed(6)
     coarseRows += `${[
       `T${c2}`,
       l2,

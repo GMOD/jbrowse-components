@@ -1,6 +1,37 @@
 # Synteny block-level data: importing / generating from external tools
 
-Brainstorming doc. Status: **exploration**, no code committed for this yet.
+Status: **partially implemented.** A coarse LOD *tier* (Route B's tiering
+architecture) now ships; true cross-row block **chaining** (Route B's algorithm)
+does not. See "Implemented so far" below before extending.
+
+## Implemented so far
+
+- **Coarse LOD tier in `make-pif`** (`products/jbrowse-cli/src/commands/make-pif/`).
+  `make-pif` emits the uppercase `T`/`Q` coarse tier **by default** (`--no-coarse`
+  to opt out, `--coarse <bp>` to tune the split gap). A coarse row strips the
+  CIGAR and, wherever a single fine row has an insertion/deletion `>=` the split
+  gap (`DEFAULT_COARSE_SPLIT_GAP = 10kb`), splits that row into pieces so each
+  coarse bbox stays tight (`splitCigarOnLargeGaps` in `cigar-utils.ts`).
+- **`lodMode` (`auto | fine | coarse`)** plumbed model → RFC → RPC → adapter
+  (`BaseOptions.lodMode`; `LinearSyntenyView`/`DotplotView` models; consumed in
+  `PairwiseIndexedPAFAdapter.pickPifPrefix`). `auto` switches to coarse at
+  `bpPerPx >= coarseBpPerPxThreshold` when a coarse tier exists; a manual
+  `coarse` override falls back to fine when no coarse tier is present.
+- **Coarse-row identity** reuses the `de:f:` convention. minimap2's `de:f:` is
+  *gap-compressed* divergence (indel runs counted once), so the row's own tag —
+  when present — is written verbatim onto every coarse piece of that row,
+  including split pieces. This keeps split and un-split rows coloring identically
+  and continuous with the fine tier across the LOD switch. Only a row carrying
+  no tag falls back to a computed value, and that fallback is itself
+  gap-compressed (`gapCompressedDivergence` in `cigar-utils.ts`), never the
+  per-base `1 - numMatches/blockLen` proxy, which roughly doubles divergence by
+  counting every indel base.
+
+**Important:** this is a per-row *strip + split* pass, the opposite of the
+block *merge* below. It coarsens each alignment individually; it does **not**
+collapse runs of separate collinear alignments into blocks. The hairball's
+structural cause (many separate small alignments) is untouched — only per-ribbon
+CIGAR detail is dropped at overview. Route B's chaining is still the open work.
 
 ## The problem this addresses
 
