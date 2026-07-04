@@ -37,7 +37,7 @@ function makeAdapter(seq: string, extraConf: Record<string, unknown> = {}) {
 }
 
 function getGuides(adapter: CrisprGuideAdapter, region: Region) {
-  return firstValueFrom(adapter.getFeatures(region).pipe(toArray()))
+  return firstValueFrom(adapter.getFeatures(region, {}).pipe(toArray()))
 }
 
 test('finds a forward-strand SpCas9 guide with protospacer, PAM, cut site', async () => {
@@ -47,6 +47,7 @@ test('finds a forward-strand SpCas9 guide with protospacer, PAM, cut site', asyn
   //                     ^proto ^PAM(TGG at 16-18)
   const adapter = makeAdapter(seq, { searchReverse: false })
   const guides = await getGuides(adapter, {
+    assemblyName: 'volvox',
     refName: 'chr1',
     start: 0,
     end: 25,
@@ -76,6 +77,7 @@ test('finds a reverse-strand guide and reports guide/PAM in guide orientation', 
   //                 ^PAM_rc(CCA 6-8) ^proto(GATTAC 9-14) on plus strand
   const adapter = makeAdapter(seq, { searchForward: false })
   const guides = await getGuides(adapter, {
+    assemblyName: 'volvox',
     refName: 'chr1',
     start: 0,
     end: 21,
@@ -98,6 +100,7 @@ test('overlapping PAMs each yield a guide', async () => {
   const seq = 'ATATATATATAAATTTGGGATATAT'
   const adapter = makeAdapter(seq, { searchReverse: false })
   const guides = await getGuides(adapter, {
+    assemblyName: 'volvox',
     refName: 'chr1',
     start: 0,
     end: 25,
