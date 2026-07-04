@@ -102,7 +102,7 @@ export function buildMenuItems(self: LinearGenomeViewModel): MenuItem[] {
     ...(isSessionWithAddTracks(session)
       ? [
           {
-            label: 'Sequence search',
+            label: 'Sequence / CRISPR search',
             icon: SearchIcon,
             onClick: () => {
               session.queueDialog(handleClose => [
