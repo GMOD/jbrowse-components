@@ -77,7 +77,10 @@ function MafSvgBody({
   }
 
   const theme = createJBrowseTheme(opts.theme)
-  const width = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const width = view.width
   const {
     hierarchy,
     showTree,
