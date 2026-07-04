@@ -43,6 +43,7 @@ export interface PreferencesDialogSession {
   useWorkspaces: boolean
   setUseWorkspaces: (useWorkspaces: boolean) => void
   animationMode: AnimationMode
+  viewMargins: boolean
   setPreferenceOverride: (key: string, value: unknown) => void
 }
 
@@ -150,6 +151,13 @@ const PreferencesDialog = observer(function PreferencesDialog({
             label="Use workspaces (tabbed/tiled view layout)"
             onChange={(_, checked) => {
               session.setUseWorkspaces(checked)
+            }}
+          />
+          <FormControlLabel
+            control={<Checkbox checked={session.viewMargins} />}
+            label="Show side margins on views (easier vertical scrolling)"
+            onChange={(_, checked) => {
+              session.setPreferenceOverride('viewMargins', checked)
             }}
           />
         </FormGroup>

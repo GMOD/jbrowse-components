@@ -187,6 +187,15 @@ export function BaseSessionModel<
       get scrollZoom(): boolean {
         return self.getPreference('scrollZoom') === true
       },
+      /**
+       * #getter
+       * resolved side-margins preference. When true, views are inset with
+       * transparent margins that serve as mouse-wheel targets for vertical page
+       * scrolling (see ClassicViewsContainer).
+       */
+      get viewMargins(): boolean {
+        return self.getPreference('viewMargins') === true
+      },
     }))
     .actions(self => ({
       /**
