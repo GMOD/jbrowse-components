@@ -596,17 +596,17 @@
   },
   "trio-matrix-phased": {
     "name": "trio-matrix-phased",
-    "status": "good",
-    "note": "RESOLVED: connecting lines already thinner than main (strokeWidth 0.5 vs main 1.0); image refreshed.",
-    "reviewedAt": "2026-07-04T17:53:06.982Z",
-    "hash": "a2e1161435c6e1b7318130604c0bc3878acf1b9f"
+    "status": "bad",
+    "note": "this captured a loading state (jbrowse-web global loading)",
+    "reviewedAt": "2026-07-04T20:04:47.009Z",
+    "hash": "96792e848b76445e16122124ba4c0af845f0ac17"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
-    "status": "good",
-    "note": "RESOLVED: connecting lines already thinner than main (strokeWidth 0.5 vs main 1.0); image refreshed.",
-    "reviewedAt": "2026-07-04T17:53:05.994Z",
-    "hash": "ee1d5c7225f9efed36d691374ac71151283d6e78"
+    "status": "bad",
+    "note": "this did not capture phased mode",
+    "reviewedAt": "2026-07-04T20:04:59.554Z",
+    "hash": "f00544720258d3a9caa1e548b888f335431b5135"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -872,10 +872,10 @@
   },
   "sv_cgiab/deletion_sv_inspector_search": {
     "name": "sv_cgiab/deletion_sv_inspector_search",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-26T02:29:38.639Z",
-    "hash": "b423de6c1021c3211e2e1c7f592c0ed0e08c2c61"
+    "status": "bad",
+    "note": "this captured a temporary loading state for both the linear genome view and the sv inspector view itself",
+    "reviewedAt": "2026-07-04T20:04:25.478Z",
+    "hash": "2e6b4d4483871820190f2ff49291c51916acd450"
   },
   "sv_cgiab/translocation_breakpoint_split": {
     "name": "sv_cgiab/translocation_breakpoint_split",
@@ -914,8 +914,8 @@
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T17:58:16.415Z",
-    "hash": "5963bcacefde906577bb2660e6a0d7ae6548e194"
+    "reviewedAt": "2026-07-04T20:02:53.979Z",
+    "hash": "d1a907f834b41deb7ad3eb41cde49d140e8212af"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1079,10 +1079,10 @@
   },
   "sv_cgiab/dotplot_import_form": {
     "name": "sv_cgiab/dotplot_import_form",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-04T17:54:16.455Z",
-    "hash": "aced031db5c5be0667f7ef2b9def6b846368040b"
+    "status": "bad",
+    "note": "this captured a mobx-state-tree error",
+    "reviewedAt": "2026-07-04T20:04:34.243Z",
+    "hash": "c06f4594872c0bf6f22c330785cb9ec558add18e"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
@@ -1178,9 +1178,9 @@
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
     "status": "good",
-    "note": "Re-verified against current code: the codon tooltip now resolves at chrI:2,999,285 and shows an interesting nonsynonymous change (caeJap4, gene CJA38734, codon GAA->GCC, amino acid E->A, nonsynonymous) rather than the bare 'Ref:' fallback the earlier review saw. Regenerated + verified.",
-    "reviewedAt": "2026-07-02T23:38:05.742Z",
-    "hash": "6e9a934b60fbc9910a9d096dfc5ba2346ae49388"
+    "note": "",
+    "reviewedAt": "2026-07-04T20:04:06.500Z",
+    "hash": "dcf52829bd4122a5b4bb30e086e262a4d45c241b"
   },
   "gc_content": {
     "name": "gc_content",
@@ -1235,8 +1235,8 @@
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-04T17:54:23.657Z",
-    "hash": "7d88a93ef230faeec6e8aeff9e83a1b8ad9115e6"
+    "reviewedAt": "2026-07-04T20:04:06.577Z",
+    "hash": "af9c2563d9d483d379d4094afa9531ce4f4e25d5"
   },
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",

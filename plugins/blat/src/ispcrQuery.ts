@@ -19,9 +19,7 @@ export const DEFAULT_MAX_PRODUCT_SIZE = 4000
 // primers shorter than this are rejected by hgPcr as too unspecific
 export const MINIMUM_PRIMER_LENGTH = 15
 
-export function parseIsPcrResponse(
-  text: string,
-): SimpleFeatureSerialized[] {
+export function parseIsPcrResponse(text: string): SimpleFeatureSerialized[] {
   // a successful result is HTML (FASTA inside <PRE>), and so are the "no
   // results" and Cloudflare Turnstile pages, so we can't reject on the leading
   // '<' the way BLAT's JSON path does. Scan for amplicon headers first; only if

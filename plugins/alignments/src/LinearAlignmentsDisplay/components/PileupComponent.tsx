@@ -449,7 +449,10 @@ function GroupCoverageAxisBar({
 }) {
   if (coverageHeight < COMPACT_AXIS_HEIGHT) {
     return (
-      <CompactCoverageLabel top={top + 1} max={ticks.items.at(-1)?.value ?? 0} />
+      <CompactCoverageLabel
+        top={top + 1}
+        max={ticks.items.at(-1)?.value ?? 0}
+      />
     )
   }
   return (

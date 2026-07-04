@@ -67,8 +67,7 @@ export default class CrisprGuideAdapter extends BaseFeatureDataAdapter<CrisprGui
           })
           const { featureStart, featureEnd, pamStart, pamEnd, cutSite } =
             placement
-          const inBounds =
-            featureStart >= queryStart && featureEnd <= seqEnd
+          const inBounds = featureStart >= queryStart && featureEnd <= seqEnd
           const intersects = doesIntersect2(
             featureStart,
             featureEnd,

@@ -103,7 +103,9 @@ export async function getLocalOrRemoteStream({
     // ReadableStream we adapt (see webStreamToNodeReadable — do not swap in
     // Readable.fromWeb here).
     const nodeStream =
-      body instanceof Readable ? body : webStreamToNodeReadable(body.getReader())
+      body instanceof Readable
+        ? body
+        : webStreamToNodeReadable(body.getReader())
     nodeStream.on('data', chunk => {
       receivedBytes += chunk.length
       onUpdate(receivedBytes)

@@ -46,7 +46,11 @@ test('finds a forward-strand SpCas9 guide with protospacer, PAM, cut site', asyn
   const seq = 'ATATATATATAAATTTTGGATATAT'
   //                     ^proto ^PAM(TGG at 16-18)
   const adapter = makeAdapter(seq, { searchReverse: false })
-  const guides = await getGuides(adapter, { refName: 'chr1', start: 0, end: 25 })
+  const guides = await getGuides(adapter, {
+    refName: 'chr1',
+    start: 0,
+    end: 25,
+  })
 
   expect(guides).toHaveLength(1)
   const g = guides[0]!
@@ -59,7 +63,7 @@ test('finds a forward-strand SpCas9 guide with protospacer, PAM, cut site', asyn
   // AAATTT: no G/C, only 3 consecutive T's (not a poly-T terminator)
   expect(g.get('gcPercent')).toBe(0)
   expect(g.get('hasPolyT')).toBe(false)
-  const pamSub = (g.get('subfeatures')!)[0]!
+  const pamSub = g.get('subfeatures')![0]!
   expect(pamSub.get('start')).toBe(16)
   expect(pamSub.get('end')).toBe(19)
   expect(pamSub.get('type')).toBe('PAM')
@@ -71,7 +75,11 @@ test('finds a reverse-strand guide and reports guide/PAM in guide orientation', 
   const seq = 'ATATATCCAGATTACATATAT'
   //                 ^PAM_rc(CCA 6-8) ^proto(GATTAC 9-14) on plus strand
   const adapter = makeAdapter(seq, { searchForward: false })
-  const guides = await getGuides(adapter, { refName: 'chr1', start: 0, end: 21 })
+  const guides = await getGuides(adapter, {
+    refName: 'chr1',
+    start: 0,
+    end: 21,
+  })
 
   expect(guides).toHaveLength(1)
   const g = guides[0]!
@@ -89,6 +97,10 @@ test('overlapping PAMs each yield a guide', async () => {
   // GGG contains two NGG PAMs (at the first and second G)
   const seq = 'ATATATATATAAATTTGGGATATAT'
   const adapter = makeAdapter(seq, { searchReverse: false })
-  const guides = await getGuides(adapter, { refName: 'chr1', start: 0, end: 25 })
+  const guides = await getGuides(adapter, {
+    refName: 'chr1',
+    start: 0,
+    end: 25,
+  })
   expect(guides.length).toBeGreaterThanOrEqual(2)
 })
