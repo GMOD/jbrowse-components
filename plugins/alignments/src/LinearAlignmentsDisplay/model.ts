@@ -2083,12 +2083,18 @@ export default function stateModelFactory(
            */
           resizeGroupHeight(key: string, dy: number) {
             const rowHeight = self.featureHeight + self.featureSpacing
-            const truncated = anyRegionTruncated(self.groupLaidOutMap(key))
             const existing = self.groupMaxHeightOverrides.get(key)
-            if (dy < 0 || truncated || existing !== undefined) {
-              const displayed =
-                self.sections.sections.find(s => s.groupKey === key)
-                  ?.pileupHeight ?? 0
+            const displayed =
+              self.sections.sections.find(s => s.groupKey === key)
+                ?.pileupHeight ?? 0
+            // Dragging taller a group that already shows every read (not
+            // truncated) reveals nothing above its content height.
+            const growFullyShown =
+              dy > 0 && !anyRegionTruncated(self.groupLaidOutMap(key))
+            // Cap such growth at the content height when the group is pinned;
+            // skip the write entirely when it isn't, so a dead override (with
+            // its spurious "fit to view" affordance) never lands.
+            if (existing !== undefined || !growFullyShown) {
               const base =
                 existing === undefined
                   ? displayed
@@ -2096,7 +2102,7 @@ export default function stateModelFactory(
               const grown = Math.max(rowHeight, base + dy)
               self.groupMaxHeightOverrides.set(
                 key,
-                truncated ? grown : Math.min(grown, displayed),
+                growFullyShown ? Math.min(grown, displayed) : grown,
               )
             }
             clampScrollTop()
