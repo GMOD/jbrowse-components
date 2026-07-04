@@ -1,0 +1,82 @@
+---
+import { getCollection } from 'astro:content'
+
+import DocsLayout from '../../../layouts/DocsLayout.astro'
+import { baseUrl } from '../../../lib/base-url.ts'
+import { entrySlug } from '../../../lib/docs-sidebar.ts'
+
+const tutorials = (await getCollection('docs'))
+  .filter(entry => entry.id.startsWith('tutorials/'))
+  .map(entry => ({
+    href: `${baseUrl}/docs/${entrySlug(entry.id)}/`,
+    title: entry.data.title,
+    description: entry.data.description,
+  }))
+  .sort((a, b) => a.title.localeCompare(b.title))
+---
+
+<DocsLayout
+  title="Tutorials"
+  currentSlug="tutorials"
+  description="Step-by-step, data-driven walkthroughs of common JBrowse workflows."
+>
+  <p class="lead">
+    Hands-on walkthroughs of common JBrowse workflows, each built around a real
+    dataset.
+  </p>
+  <div class="tut-grid">
+    {
+      tutorials.map(tutorial => (
+        <a class="tut-card" href={tutorial.href}>
+          <span class="tut-title">{tutorial.title}</span>
+          {tutorial.description && (
+            <span class="tut-desc">{tutorial.description}</span>
+          )}
+        </a>
+      ))
+    }
+  </div>
+</DocsLayout>
+
+<style>
+  .lead {
+    font-size: 1.05rem;
+    color: var(--color-text-muted);
+    margin: 0 0 1.5rem;
+  }
+  .tut-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 1rem;
+  }
+  .tut-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    color: var(--color-text);
+    text-decoration: none;
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease;
+  }
+  .tut-card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
+    text-decoration: none;
+  }
+  .tut-title {
+    font-weight: 600;
+    color: var(--color-accent);
+  }
+  .tut-desc {
+    font-size: 0.875rem;
+    line-height: 1.45;
+    color: var(--color-text-muted);
+  }
+</style>
