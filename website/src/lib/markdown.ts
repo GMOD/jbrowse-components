@@ -10,6 +10,7 @@ import { ensureAutogenIndex } from './autogen-links.ts'
 import { baseUrl } from './base-url.ts'
 import rehypeAdmonitions from './rehype-admonitions.ts'
 import rehypeBaseUrls from './rehype-base-urls.ts'
+import rehypeCollectToc, { type TocItem } from './rehype-collect-toc.ts'
 import rehypeHeadingLinks from './rehype-heading-links.ts'
 import rehypeShiki from './rehype-shiki.ts'
 import rehypeTrailingSlash from './rehype-trailing-slash.ts'
@@ -32,14 +33,15 @@ const processor = unified()
   .use(rehypeTrailingSlash)
   .use(rehypeBaseUrls, { base: baseUrl })
   .use(rehypeSlug)
+  .use(rehypeCollectToc)
   .use(rehypeHeadingLinks)
   .use(rehypeStringify, { allowDangerousHtml: true })
 
 export async function renderMarkdown(
   body: string,
   id = '',
-): Promise<{ html: string }> {
+): Promise<{ html: string; toc: TocItem[] }> {
   await ensureAutogenIndex()
   const file = await processor.process({ value: body, data: { id } })
-  return { html: String(file) }
+  return { html: String(file), toc: (file.data.toc as TocItem[] | undefined) ?? [] }
 }

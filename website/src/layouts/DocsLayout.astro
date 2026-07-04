@@ -3,16 +3,20 @@ import { getCollection } from 'astro:content'
 
 import SidebarLayout from './SidebarLayout.astro'
 import SidebarItem from '../components/SidebarItem.astro'
+import TableOfContents from '../components/TableOfContents.astro'
 import { baseUrl } from '../lib/base-url.ts'
 import { buildSidebar } from '../lib/docs-sidebar.ts'
+
+import type { TocItem } from '../lib/rehype-collect-toc.ts'
 
 interface Props {
   title: string
   currentSlug: string
   description?: string
+  toc?: TocItem[]
 }
 
-const { title, currentSlug, description } = Astro.props
+const { title, currentSlug, description, toc = [] } = Astro.props
 
 const allDocs = await getCollection('docs')
 const sidebar = buildSidebar(allDocs, baseUrl)
@@ -31,6 +35,7 @@ const sidebar = buildSidebar(allDocs, baseUrl)
     <h1>{title}</h1>
     <slot />
   </article>
+  {toc.length > 0 && <TableOfContents toc={toc} />}
 </SidebarLayout>
 
 <style>

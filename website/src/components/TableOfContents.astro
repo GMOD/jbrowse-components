@@ -1,0 +1,170 @@
+---
+import type { TocItem } from '../lib/rehype-collect-toc.ts'
+
+interface Props {
+  toc: TocItem[]
+}
+
+const { toc } = Astro.props
+---
+
+{/* Apply the persisted preference before first paint so an enabled TOC doesn't
+    flash in. Default is off, so the common case renders nothing extra. */}
+<script is:inline>
+  if (localStorage.getItem('jbrowse-toc') === 'show') {
+    document.documentElement.dataset.toc = 'show'
+  }
+</script>
+
+<button
+  id="toc-toggle"
+  type="button"
+  aria-pressed="false"
+  title="Toggle table of contents"
+>
+  <svg width="15" height="15" viewBox="0 0 24 24" aria-hidden="true">
+    <path
+      d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"
+      fill="none"
+      stroke="currentColor"
+      stroke-width="2"
+      stroke-linecap="round"></path>
+  </svg>
+  <span>On this page</span>
+</button>
+
+<aside class="toc" aria-label="Table of contents">
+  <ul>
+    {
+      toc.map(item => (
+        <li class:list={['toc-item', `toc-depth-${item.depth}`]}>
+          <a href={`#${item.id}`} data-toc-link={item.id}>
+            {item.text}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</aside>
+
+<script>
+  const root = document.documentElement
+  const btn = document.getElementById('toc-toggle')
+  btn?.setAttribute('aria-pressed', String(root.dataset.toc === 'show'))
+  btn?.addEventListener('click', () => {
+    const show = root.dataset.toc !== 'show'
+    root.dataset.toc = show ? 'show' : ''
+    localStorage.setItem('jbrowse-toc', show ? 'show' : 'hide')
+    btn.setAttribute('aria-pressed', String(show))
+  })
+
+  // Scroll-spy: highlight the last heading scrolled above the top of the
+  // viewport. IntersectionObserver just wakes us when a heading crosses the
+  // band; the offsetTop check picks which one is current.
+  const links = [
+    ...document.querySelectorAll<HTMLAnchorElement>('a[data-toc-link]'),
+  ]
+  const byId = new Map(links.map(a => [a.dataset.tocLink, a]))
+  const headings = links
+    .map(a => document.getElementById(a.dataset.tocLink!))
+    .filter((el): el is HTMLElement => el !== null)
+
+  let current: HTMLAnchorElement | undefined
+  const observer = new IntersectionObserver(
+    () => {
+      const active = headings.filter(h => h.offsetTop - 96 <= window.scrollY).at(-1)
+      const next = byId.get(active?.id ?? headings[0]?.id ?? '')
+      if (next !== current) {
+        current?.removeAttribute('aria-current')
+        next?.setAttribute('aria-current', 'true')
+        current = next
+      }
+    },
+    { rootMargin: '-80px 0px -70% 0px' },
+  )
+  for (const h of headings) {
+    observer.observe(h)
+  }
+</script>
+
+<style>
+  #toc-toggle {
+    position: fixed;
+    top: calc(var(--nav-height) + 0.75rem);
+    right: 0.75rem;
+    z-index: 5;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.35rem 0.7rem;
+    border: 1px solid var(--color-border);
+    border-radius: 6px;
+    background: var(--color-surface);
+    color: var(--color-text-muted);
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  #toc-toggle:hover {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+  }
+  #toc-toggle[aria-pressed='true'] {
+    color: var(--color-accent);
+    border-color: var(--color-accent);
+    background: var(--color-sidebar-active-bg);
+  }
+
+  .toc {
+    display: none;
+    flex-shrink: 0;
+    width: 220px;
+    position: sticky;
+    top: var(--nav-height);
+    align-self: flex-start;
+    max-height: calc(100vh - var(--nav-height));
+    overflow-y: auto;
+    /* top padding clears the fixed toggle that sits at the rail's top */
+    padding: 3.25rem 1rem 2.5rem;
+    font-size: 0.85rem;
+  }
+  .toc ul {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-left: 1px solid var(--color-border);
+  }
+  .toc-item a {
+    display: block;
+    padding: 0.25rem 0 0.25rem 0.75rem;
+    margin-left: -1px;
+    border-left: 2px solid transparent;
+    color: var(--color-text-muted);
+    text-decoration: none;
+    line-height: 1.4;
+  }
+  .toc-depth-3 a {
+    padding-left: 1.5rem;
+  }
+  .toc-item a:hover {
+    color: var(--color-accent);
+  }
+  .toc-item a[aria-current='true'] {
+    color: var(--color-accent);
+    border-left-color: var(--color-accent);
+    font-weight: 600;
+  }
+
+  /* The rail only fits on wide viewports; on narrow screens the sidebar +
+     content already fill the width, so neither rail nor toggle appear. */
+  @media (min-width: 1201px) {
+    :global(:root[data-toc='show']) .toc {
+      display: block;
+    }
+  }
+  @media (max-width: 1200px) {
+    #toc-toggle {
+      display: none;
+    }
+  }
+</style>
