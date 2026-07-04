@@ -644,14 +644,23 @@ export default function baseStateModelFactory(
         /**
          * #getter
          */
-        // The searched-feature uniqueIds, resolved against the RAW fetched data
-        // (rpcDataMap) rather than the laid-out data. This is deliberately
-        // pre-layout: it feeds layoutPinnedFeatureIdSet, so the highlight can pin
-        // its feature toward the top BEFORE packing — resolving against
-        // laidOutDataMap instead would be a layout→layout cycle. Coords/name live
-        // on the raw flatbushItems, so no row/topPx info is needed here.
-        get highlightedFeatureIdSet(): ReadonlySet<string> {
-          const ids = new Set<string>()
+        // Resolve declarative highlights against the RAW fetched data (rpcDataMap)
+        // rather than the laid-out data — deliberately pre-layout, so it can feed
+        // both boxing and pinning without a layout→layout cycle (coords/name live
+        // on the raw items, no row/topPx needed). A highlight can match a
+        // top-level feature OR a subfeature (e.g. a searched transcript whose span
+        // is a subspan of its gene, so it never matches the gene's full span):
+        //   `box` = the render-item ids the overlay draws a box around.
+        //   `pin` = the ids the packer pins to a top row. For a subfeature that's
+        //           its PARENT feature, since the packer keys on top-level ids and
+        //           pinning the subfeature id would be a no-op that leaves the
+        //           searched transcript buried/clipped in a dense track.
+        get resolvedHighlights(): {
+          box: ReadonlySet<string>
+          pin: ReadonlySet<string>
+        } {
+          const box = new Set<string>()
+          const pin = new Set<string>()
           if (self.featureHighlights.length > 0) {
             for (const data of self.rpcDataMap.values()) {
               for (const item of data.flatbushItems) {
@@ -660,12 +669,40 @@ export default function baseStateModelFactory(
                     featureMatchesHighlight(item, data.refName, h),
                   )
                 ) {
-                  ids.add(item.featureId)
+                  box.add(item.featureId)
+                  pin.add(item.featureId)
+                }
+              }
+              for (const s of data.subfeatureInfos) {
+                if (
+                  self.featureHighlights.some(h =>
+                    featureMatchesHighlight(
+                      {
+                        startBp: s.startBp,
+                        endBp: s.endBp,
+                        name: s.displayLabel,
+                      },
+                      data.refName,
+                      h,
+                    ),
+                  )
+                ) {
+                  box.add(s.featureId)
+                  pin.add(s.parentFeatureId)
                 }
               }
             }
           }
-          return ids
+          return { box, pin }
+        },
+
+        /**
+         * #getter
+         */
+        // The render-item ids resolved from a search highlight (features and/or
+        // subfeatures), for the overlay to box. See resolvedHighlights.
+        get highlightedFeatureIdSet(): ReadonlySet<string> {
+          return this.resolvedHighlights.box
         },
 
         /**
@@ -677,7 +714,7 @@ export default function baseStateModelFactory(
         // by reference when nothing is highlighted, keeping the layout cache's
         // reference compare cheap in the common case.
         get layoutPinnedFeatureIdSet(): ReadonlySet<string> {
-          const highlighted = this.highlightedFeatureIdSet
+          const highlighted = this.resolvedHighlights.pin
           if (highlighted.size === 0) {
             return this.pinnedFeatureIdSet
           }
@@ -1070,12 +1107,14 @@ export default function baseStateModelFactory(
         // Highlighted uniqueIds that are actually on screen right now, for the
         // overlay to box. The set is resolved pre-layout (highlightedFeatureIdSet)
         // and intersected with the laid-out features here, so the highlight
-        // "follows" its feature across pan/zoom without a second span match.
+        // "follows" its feature across pan/zoom without a second span match. Both
+        // top-level features and subfeatures are boxable (a searched transcript
+        // renders as a subfeature), so any resolved id present in featureItemMap
+        // qualifies.
         get highlightedFeatureIds(): string[] {
           const ids: string[] = []
           for (const id of self.highlightedFeatureIdSet) {
-            const entry = this.featureItemMap.get(id)
-            if (entry?.kind === 'feature') {
+            if (this.featureItemMap.has(id)) {
               ids.push(id)
             }
           }

@@ -35,6 +35,35 @@ function loadFeature(
   )
 }
 
+// Load a gene whose span (0..3000) is the union of its transcripts, alongside a
+// subfeature transcript spanning the searched region — the shape a text search
+// for a transcript produces (its span never matches the gene's full span).
+function loadGeneWithTranscript(display: Display) {
+  display.setRpcData(
+    0,
+    makeFeatureData({
+      flatbushItems: [
+        makeFlatbushItem({ featureId: 'gene-1', startBp: 0, endBp: 3000 }),
+      ],
+      subfeatureInfos: [
+        {
+          kind: 'subfeature',
+          featureId: 'transcript-1',
+          type: 'mRNA',
+          startBp: 1000,
+          endBp: 2000,
+          topPx: 0,
+          bottomPx: 10,
+          parentFeatureId: 'gene-1',
+          displayLabel: 'BRCA1',
+        },
+      ],
+    }),
+    10,
+    ctgA,
+  )
+}
+
 describe('feature highlight declarative persistence', () => {
   it('setFeatureHighlights stores the request', () => {
     const { createDisplay } = createTestEnvironment()
@@ -136,6 +165,19 @@ describe('feature highlight declarative persistence', () => {
     display.clearFeatureHighlights()
     expect(display.highlightedFeatureIdSet.size).toBe(0)
     expect(display.layoutPinnedFeatureIdSet).toBe(display.pinnedFeatureIdSet)
+  })
+
+  it('boxes a searched subfeature and pins its parent for layout', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    loadGeneWithTranscript(display)
+
+    // the gene's full span (0..3000) does not match; the transcript subfeature
+    // (1000..2000) does, so the subfeature is boxed...
+    expect([...display.highlightedFeatureIdSet]).toEqual(['transcript-1'])
+    // ...while its PARENT gene is what gets pinned to the top of the layout
+    expect([...display.layoutPinnedFeatureIdSet]).toEqual(['gene-1'])
   })
 
   it('merges the highlight with existing user pins', () => {
