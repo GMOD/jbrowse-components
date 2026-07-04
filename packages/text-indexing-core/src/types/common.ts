@@ -29,6 +29,17 @@ function convertFileUrlToPath(fileUrl: string): string | undefined {
   return undefined
 }
 
+// Turn a WHATWG ReadableStream into a node Readable by driving its reader.
+//
+// DO NOT replace this with `Readable.fromWeb(body)`. It looks equivalent and
+// passes tests (undici's fetch body IS a node:stream/web stream), but the
+// desktop indexing worker runs on Chromium's global fetch, whose body is a DOM
+// ReadableStream from a different realm. `Readable.fromWeb`'s internal
+// `instanceof` check rejects it with the baffling "must be an instance of
+// ReadableStream. Received an instance of ReadableStream", and remote (URL)
+// track indexing breaks. `getReader()` is standard on every WHATWG stream
+// regardless of realm, so this works everywhere. See common.test.ts
+// "foreign realm" regression test.
 function webStreamToNodeReadable(
   reader: ReadableStreamDefaultReader<Uint8Array>,
 ): Readable {
@@ -74,11 +85,9 @@ export async function getLocalOrRemoteStream({
       throw new Error(`Failed to fetch ${file}: no response body`)
     }
 
-    // A fetched body is either a node Readable (node-fetch) or a web
-    // ReadableStream (global fetch). Readable.fromWeb rejects a web stream from
-    // a foreign realm — Chromium's DOM ReadableStream in the Electron indexing
-    // worker is not an instance of node:stream/web's — so drive the reader
-    // ourselves, which works for both realms.
+    // node-fetch gives a node Readable directly; global fetch gives a web
+    // ReadableStream we adapt (see webStreamToNodeReadable — do not swap in
+    // Readable.fromWeb here).
     const nodeStream =
       body instanceof Readable ? body : webStreamToNodeReadable(body.getReader())
     nodeStream.on('data', chunk => {
