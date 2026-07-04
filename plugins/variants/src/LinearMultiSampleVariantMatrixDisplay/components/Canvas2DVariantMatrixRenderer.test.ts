@@ -42,6 +42,7 @@ const STATE = {
   canvasHeight: 300,
   rowHeight: 10,
   scrollTop: 0,
+  flipped: false,
 }
 
 function makeData(
@@ -96,6 +97,20 @@ describe('Canvas2DVariantMatrixRenderer', () => {
     expect(y).toBeCloseTo(59.7)
     expect(w).toBeCloseTo(100.3)
     expect(h).toBeCloseTo(20.3)
+  })
+
+  test('mirrors column x when flipped', () => {
+    const { canvas, fillRectCalls } = createMockCanvas()
+    const renderer = new Canvas2DVariantMatrixRenderer(canvas)
+
+    renderer.render(
+      makeData({ cellFeatureIndices: new Float32Array([0]) }),
+      { ...STATE, flipped: true },
+    )
+
+    // Data column 0 of 4 (cellWidth 100) mirrors to screen column 3, x=300.
+    const [x] = fillRectCalls[0]!
+    expect(x).toBeCloseTo(299.7)
   })
 
   test('skips cells above viewport', () => {

@@ -15,8 +15,12 @@ import type {
 
 type LGV = LinearGenomeViewModel
 
+interface MatrixRenderSvgModel extends RenderSvgBaseModel {
+  flipped: boolean
+}
+
 export async function renderSvg(
-  model: RenderSvgBaseModel,
+  model: MatrixRenderSvgModel,
   opts?: ExportSvgDisplayOptions,
 ): Promise<React.ReactNode> {
   // svgReady waits for every visible region to load (not just the first datum)
@@ -43,7 +47,7 @@ function VariantMatrixSvgBody({
   height,
   opts,
 }: {
-  model: RenderSvgBaseModel
+  model: MatrixRenderSvgModel
   view: LGV
   height: number
   opts: ExportSvgDisplayOptions | undefined
@@ -61,6 +65,7 @@ function VariantMatrixSvgBody({
       canvasHeight: availableHeight,
       rowHeight,
       scrollTop,
+      flipped: model.flipped,
     })
   })
 

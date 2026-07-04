@@ -38,6 +38,21 @@ export default function stateModelFactory(
           : snap,
       )
       .views(self => ({
+        /**
+         * #getter
+         * True when every visible region is reversed (the view is horizontally
+         * flipped). The matrix lays columns out by genomic-ascending feature
+         * index, but a flipped view runs the ruler right-to-left, so columns are
+         * mirrored to `numFeatures-1-i` to keep them and the genome connector
+         * lines from crossing. Mixed forward/reversed regions don't flip.
+         */
+        get flipped(): boolean {
+          const view = getContainingView(self) as LinearGenomeViewModel
+          const regions = view.visibleRegions
+          return regions.length > 0 && regions.every(r => r.reversed)
+        },
+      }))
+      .views(self => ({
         get blockType() {
           return 'dynamicBlocks'
         },
@@ -62,6 +77,7 @@ export default function stateModelFactory(
             canvasHeight: self.availableHeight,
             rowHeight: self.effectiveRowHeight,
             scrollTop: self.scrollTop,
+            flipped: self.flipped,
           }
         },
         async renderSvg(opts?: ExportSvgDisplayOptions) {

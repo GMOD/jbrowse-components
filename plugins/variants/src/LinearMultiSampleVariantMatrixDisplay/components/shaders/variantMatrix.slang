@@ -33,6 +33,10 @@ struct Uniforms {
   float rowHeight;
   float scrollTop;
   float devicePixelRatio;
+  // 1.0 when the view is horizontally flipped: draw data column i at mirrored
+  // screen column (numFeatures-1-i) so columns track the reversed ruler and the
+  // genome connector lines stop crossing. See LinesConnectingMatrixToGenomicPosition.
+  float flipped;
 };
 [[vk::binding(1, 0)]] ConstantBuffer<Uniforms> u;
 
@@ -51,8 +55,10 @@ VsOut vs_main(CellInstance inst, uint vid : SV_VertexID) {
   // Column edges in physical (framebuffer) pixels. canvasWidth is CSS pixels,
   // gl_FragCoord / @builtin(position) are physical, so scale by dpr to match.
   float widthPx = u.canvasWidth * u.devicePixelRatio;
-  float x1px = inst.featureIndex / u.numFeatures * widthPx;
-  float x2px = (inst.featureIndex + 1.0) / u.numFeatures * widthPx;
+  float col = u.flipped > 0.5 ? (u.numFeatures - 1.0 - inst.featureIndex)
+                              : inst.featureIndex;
+  float x1px = col / u.numFeatures * widthPx;
+  float x2px = (col + 1.0) / u.numFeatures * widthPx;
 
   // True (pre-widening) column width in physical px. The fragment scales alpha
   // by clamp(this, 0, 1) so sub-pixel columns blend lighter (canvas2d-AA parity)

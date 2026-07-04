@@ -2,7 +2,9 @@ import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
 import { prepareCanvas } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRenderingBackend'
 
+import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 import { f2 } from '../../shared/constants.ts'
+
 
 import type {
   MatrixRenderState,
@@ -21,10 +23,10 @@ export function drawVariantMatrixBlocks(
   data: VariantMatrixUploadData,
   state: { canvasWidth: number; canvasHeight: number } & Pick<
     MatrixRenderState,
-    'rowHeight' | 'scrollTop'
+    'rowHeight' | 'scrollTop' | 'flipped'
   >,
 ) {
-  const { canvasWidth, canvasHeight, rowHeight, scrollTop } = state
+  const { canvasWidth, canvasHeight, rowHeight, scrollTop, flipped } = state
   if (data.numFeatures === 0) {
     return
   }
@@ -37,7 +39,12 @@ export function drawVariantMatrixBlocks(
     if (y + rowHeight < 0 || y > canvasHeight) {
       continue
     }
-    const x = data.cellFeatureIndices[i]! * cellWidth
+    const col = mirrorColumnIndex(
+      data.cellFeatureIndices[i]!,
+      data.numFeatures,
+      flipped,
+    )
+    const x = col * cellWidth
     ctx.fillStyle = abgrToCssRgba(data.cellColors[i]!)
     ctx.fillRect(x - f2, y - f2, cellWidth + f2, rowHeight + f2)
   }

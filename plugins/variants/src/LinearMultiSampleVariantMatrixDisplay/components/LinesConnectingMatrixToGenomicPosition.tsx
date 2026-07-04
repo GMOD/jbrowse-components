@@ -11,6 +11,7 @@ import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { alpha, useTheme } from '@mui/material'
 import { observer } from 'mobx-react'
 
+import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 import { pointToSegmentDist, svgMousePoint } from '../../util.ts'
 
 import type { Feature } from '@jbrowse/core/util'
@@ -28,6 +29,7 @@ interface MinimalModel {
   height: number
   lineZoneHeight: number
   featuresVolatile: Feature[] | undefined
+  flipped: boolean
 }
 
 function getGenomicX(
@@ -62,6 +64,7 @@ function getLineGeometry(model: MinimalModel) {
     featuresVolatile,
     n,
     w,
+    flipped: model.flipped,
     offsetAdj: Math.max(view.offsetPx, 0),
     left: Math.max(0, -view.offsetPx),
   }
@@ -92,7 +95,7 @@ function ConnectorLine({
 
 interface HoveredLine {
   feature: Feature
-  idx: number
+  mx: number
   genomicX: number
 }
 
@@ -133,7 +136,7 @@ const AllLines = observer(function AllLines({
   onHover: (arg: HoveredLine | undefined) => void
 }) {
   const theme = useTheme()
-  const { view, assembly, featuresVolatile, n, w, offsetAdj } =
+  const { view, assembly, featuresVolatile, n, w, flipped, offsetAdj } =
     getLineGeometry(model)
   const { lineZoneHeight } = model
 
@@ -143,11 +146,10 @@ const AllLines = observer(function AllLines({
     }
     return featuresVolatile.map((feature, i) => ({
       feature,
-      idx: i,
-      mx: i * w + w / 2,
+      mx: mirrorColumnIndex(i, n, flipped) * w + w / 2,
       gx: getGenomicX(view, assembly, feature, offsetAdj),
     }))
-  }, [assembly, featuresVolatile, n, w, view, offsetAdj])
+  }, [assembly, featuresVolatile, n, w, flipped, view, offsetAdj])
 
   const pathD = useMemo(
     () =>
@@ -182,7 +184,7 @@ const AllLines = observer(function AllLines({
       }
       onHover(
         found
-          ? { feature: found.feature, idx: found.idx, genomicX: found.gx }
+          ? { feature: found.feature, mx: found.mx, genomicX: found.gx }
           : undefined,
       )
     },
@@ -224,7 +226,7 @@ const HighlightedLine = observer(function HighlightedLine({
   model: MinimalModel
   crosshairX: number
 }) {
-  const { view, assembly, featuresVolatile, n, w, offsetAdj, left } =
+  const { view, assembly, featuresVolatile, n, w, flipped, offsetAdj, left } =
     getLineGeometry(model)
   const { lineZoneHeight } = model
 
@@ -232,15 +234,18 @@ const HighlightedLine = observer(function HighlightedLine({
     return null
   }
 
-  const idx = Math.floor((crosshairX - left) / w)
-  if (idx < 0 || idx >= n) {
+  // crosshairX picks a screen column; mirror it back to the data index so the
+  // line anchors to the feature actually drawn under the crosshair.
+  const screenCol = Math.floor((crosshairX - left) / w)
+  if (screenCol < 0 || screenCol >= n) {
     return null
   }
 
-  const gx = getGenomicX(view, assembly, featuresVolatile[idx]!, offsetAdj)
+  const dataIdx = mirrorColumnIndex(screenCol, n, flipped)
+  const gx = getGenomicX(view, assembly, featuresVolatile[dataIdx]!, offsetAdj)
   return (
     <ConnectorLine
-      mx={idx * w + w / 2}
+      mx={screenCol * w + w / 2}
       gx={gx}
       lineZoneHeight={lineZoneHeight}
     />
@@ -260,7 +265,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
     const { classes } = useStyles()
     const { lineZoneHeight, featuresVolatile } = model
     const [hovered, setHovered] = useState<HoveredLine>()
-    const { n, w } = getLineGeometry(model)
+    const { n } = getLineGeometry(model)
 
     if (!featuresVolatile || n === 0) {
       return null
@@ -273,7 +278,7 @@ const LinesConnectingMatrixToGenomicPosition = observer(
           {hovered ? (
             <>
               <ConnectorLine
-                mx={hovered.idx * w + w / 2}
+                mx={hovered.mx}
                 gx={hovered.genomicX}
                 lineZoneHeight={lineZoneHeight}
               />

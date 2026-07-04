@@ -4,6 +4,7 @@ import { VerticalScrollbar } from '@jbrowse/core/ui'
 import { getContainingView } from '@jbrowse/core/util'
 import { observer } from 'mobx-react'
 
+import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 import {
   buildVariantHit,
   variantTooltipKey,
@@ -72,7 +73,12 @@ const VariantMatrixBody = observer(function VariantMatrixBody({
     const w = view.totalWidthPxWithoutBorders
     const mouseX = clientX - rect.left
     const mouseY = clientY - rect.top
-    const featureIdx = Math.floor((mouseX / w) * cellData.numFeatures)
+    const screenCol = Math.floor((mouseX / w) * cellData.numFeatures)
+    const featureIdx = mirrorColumnIndex(
+      screenCol,
+      cellData.numFeatures,
+      model.flipped,
+    )
     const rowIdx = Math.floor(
       (mouseY + model.scrollTop) / model.effectiveRowHeight,
     )
