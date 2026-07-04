@@ -129,5 +129,8 @@ for details.
   MSAView, and other plugins
 - [protein3d developer docs](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md)
   — launching a connected protein view programmatically or via session-spec URLs
+- [msaview developer docs](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md)
+  — launching an MSA view (with an optional connected genome view) via
+  session-spec URLs
 - [2026 _Journal of Molecular Biology_ paper](https://doi.org/10.1016/j.jmb.2026.169645)
   — the methods behind these plugins

@@ -255,6 +255,12 @@ serialized form of a view's declarative `init` field; the embedded
 `@jbrowse/react-linear-genome-view2` component accepts the same shape directly
 via `defaultSession.view.init` (it does not parse URLs itself).
 
+Under the hood, each view's `type` dispatches to a `LaunchView-<type>`
+[extension point](/docs/developer_guides/extension_points) that builds the view
+from the remaining fields — so the fields a view accepts are defined by its
+`LaunchView-<type>` handler. This is also how plugins add launchable view types
+(see [Plugin-provided view types](#plugin-provided-view-types)).
+
 ```json live config=test_data/volvox/config.json
 {
   "views": [
@@ -751,6 +757,24 @@ the synteny tracks at one level of the multi-way view:
   ]
 }
 ```
+
+### Plugin-provided view types
+
+A plugin makes its view launchable from a spec by registering a
+`LaunchView-<type>` [extension point](/docs/developer_guides/extension_points).
+Once the plugin is loaded (via the config's `plugins`, `&session=json-`
+`sessionPlugins`, or a hosted config), a session spec can launch its view by
+`type`. Their spec fields are documented by each plugin, not here:
+
+- **ProteinView** (3D structures) — `jbrowse-plugin-protein3d`. Fields such as
+  `uniprotId`, `transcriptId`, `url`, and `connectedView` are documented in the
+  plugin's
+  [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-protein3d/blob/main/DEVELOPERS.md).
+  See also the [protein structures tutorial](/docs/tutorials/protein_structure).
+- **MsaView** (multiple sequence alignments) — `jbrowse-plugin-msaview`. Fields
+  such as `msaFileLocation`, `treeFileLocation`, and `connectedViewId` are
+  documented in the plugin's
+  [DEVELOPERS.md](https://github.com/GMOD/jbrowse-plugin-msaview/blob/main/DEVELOPERS.md).
 
 ### Tiled views / Workspaces
 
