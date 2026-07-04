@@ -113,6 +113,28 @@ describe('TrackSettingsChangesDialog session-default section', () => {
     expect(cleared).toHaveBeenCalledTimes(1)
   })
 
+  it('renders a frozen {type} value (e.g. colorBy) as its bare type, not JSON', () => {
+    const { getByText, queryByText } = render(
+      theme(
+        <TrackSettingsChangesDialog
+          changes={[]}
+          sessionDefaults={[
+            {
+              path: ['colorBy'],
+              from: { type: 'normal' },
+              to: { type: 'methylation' },
+            },
+          ]}
+          trackName="reads"
+          handleClose={() => {}}
+        />,
+      ),
+    )
+    expect(getByText('methylation')).toBeTruthy()
+    expect(getByText('normal')).toBeTruthy()
+    expect(queryByText(/\{.*type.*\}/)).toBeNull()
+  })
+
   it('renders a per-track edit separately from a session default and wires both resets', () => {
     const reset = jest.fn()
     const cleared = jest.fn()

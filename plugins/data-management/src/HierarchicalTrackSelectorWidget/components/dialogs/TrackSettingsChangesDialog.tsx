@@ -36,12 +36,24 @@ const useStyles = makeStyles()(theme => ({
   },
 }))
 
+// Many config values are `{ type: 'x' }` discriminated unions (colorBy,
+// groupBy, sortedBy, ...). Show just the type when that is the whole object so
+// the dialog reads "methylation" rather than `{"type":"methylation"}`; richer
+// objects keep full JSON so no detail is hidden.
+function isSoleTypeObject(v: object): v is { type: string } {
+  return (
+    'type' in v && typeof v.type === 'string' && Object.keys(v).length === 1
+  )
+}
+
 function formatValue(value: unknown): string {
   return value === undefined
     ? '(default)'
     : typeof value === 'string'
       ? value
-      : JSON.stringify(value)
+      : typeof value === 'object' && value !== null && isSoleTypeObject(value)
+        ? value.type
+        : JSON.stringify(value)
 }
 
 const ChangesTable = observer(function ChangesTable({
