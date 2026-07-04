@@ -7,6 +7,9 @@ import type { IAnyStateTreeNode } from '@jbrowse/mobx-state-tree'
 export interface ConnectionDoConnectArg {
   configuration: AnyConfigurationModel
   addTrackConfs: (arg: Record<string, unknown>[]) => void
+  // true when re-establishing on session load; suppress first-connect side
+  // effects (view launch, success snackbar)
+  silent?: boolean
 }
 
 /**

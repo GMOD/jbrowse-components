@@ -35,7 +35,9 @@ export async function doConnect(self: ConnectionDoConnectArg) {
     if (configJson.tracks) {
       self.addTrackConfs(configJson.tracks)
     }
-    session.notify('Successfully loaded', 'success')
+    if (!self.silent) {
+      session.notify('Successfully loaded', 'success')
+    }
   } catch (e) {
     console.error(e)
     session.notifyError(`${getConf(self, 'name')}: "${e}"`, e)

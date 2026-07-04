@@ -20,6 +20,10 @@ export interface TreeCategoryNode {
   children: TreeNode[]
   nestingLevel: number
   type: 'category'
+  // collapse state when the user hasn't explicitly toggled this category. Used
+  // for connection categories: dormant (unloaded) connections default collapsed
+  // so expanding one is what loads it; a loaded connection defaults expanded.
+  defaultCollapsed?: boolean
 }
 
 export type TreeNode = TreeTrackNode | TreeCategoryNode

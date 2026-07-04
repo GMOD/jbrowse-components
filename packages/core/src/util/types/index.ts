@@ -195,8 +195,15 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     { trackId: string; [key: string]: unknown }
   >
   connectionInstances?: ConnectionInstance[]
+  connectionTrackConfigs?: Record<
+    string,
+    { connectionId: string; config: Record<string, unknown> }
+  >
   makeConnection?: (arg: AnyConfigurationModel) => void
   breakConnection?: (arg: AnyConfigurationModel) => void
+  captureConnectionTrack?: (trackId: string) => void
+  pruneConnectionTrackConfig?: (trackId: string) => void
+  hydrateConnection?: (connectionId: string) => void
 
   prepareToBreakConnection?: (
     arg: AnyConfigurationModel,

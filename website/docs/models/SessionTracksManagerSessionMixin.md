@@ -4,20 +4,10 @@ title: SessionTracksManagerSessionMixin
 sidebar_label: Mixin -> SessionTracksManagerSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/SessionTracks.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/SessionTracksManagerSessionMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/SessionTracks.ts).
 
 ## Overview
 
@@ -194,18 +184,10 @@ an open track stays open and simply reverts.
 type resetTrackConfiguration = (trackId: string) => void
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                       | Signature                                                                                                                                                                                                                         |
-| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`addTrackConf`](#action-addtrackconf)       | `(trackConf: AnyConfiguration) => any`                                                                                                                                                                                            |
-| [`deleteTrackConf`](#action-deletetrackconf) | `(trackConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any[] \| undefined` |
-
 </details>
 
 <details>
-<summary>SessionTracksManagerSessionMixin - Actions (all signatures)</summary>
+<summary>SessionTracksManagerSessionMixin - Actions (other undocumented members)</summary>
 
 #### action: addTrackConf
 

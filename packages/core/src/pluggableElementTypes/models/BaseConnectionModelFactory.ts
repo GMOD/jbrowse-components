@@ -26,6 +26,16 @@ function stateModelFactory(pluginManager: PluginManager) {
        * #property
        */
       configuration: ConfigurationReference(configSchema),
+
+      /**
+       * #property
+       * set when the connection is being re-established on session load (its
+       * open tracks are already restored from `connectionTrackConfigs`), so
+       * `doConnect` suppresses first-connect side effects like launching a view
+       * or a success snackbar. Runtime-only: connection instances aren't
+       * serialized.
+       */
+      silent: types.optional(types.boolean, false),
     })
     .views(self => ({
       /**

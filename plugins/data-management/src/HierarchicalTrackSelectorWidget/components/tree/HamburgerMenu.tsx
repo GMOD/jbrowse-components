@@ -21,25 +21,12 @@ const FacetedDialog = lazy(
 )
 
 // lazy components
-const CloseConnectionDialog = lazy(
-  () => import('../dialogs/CloseConnectionDialog.tsx'),
-)
 const DeleteConnectionDialog = lazy(
   () => import('../dialogs/DeleteConnectionDialog.tsx'),
 )
 const ManageConnectionsDialog = lazy(
   () => import('../dialogs/ManageConnectionsDialog.tsx'),
 )
-const ToggleConnectionsDialog = lazy(
-  () => import('../dialogs/ToggleConnectionsDialog.tsx'),
-)
-
-interface ModalArgs {
-  connectionConf: AnyConfigurationModel
-  safelyBreakConnection: () => void
-  dereferenceTypeCount: Record<string, number>
-  name: string
-}
 
 interface DialogDetails {
   name: string
@@ -52,31 +39,10 @@ const HamburgerMenu = observer(function HamburgerMenu({
   model: HierarchicalTrackSelectorModel
 }) {
   const session = getSession(model)
-  const [modalInfo, setModalInfo] = useState<ModalArgs>()
   const [deleteDialogDetails, setDeleteDialogDetails] =
     useState<DialogDetails>()
-  const [connectionToggleOpen, setConnectionToggleOpen] = useState(false)
   const [connectionManagerOpen, setConnectionManagerOpen] = useState(false)
   const [facetedOpen, setFacetedOpen] = useState(false)
-
-  function breakConnection(connectionConf: AnyConfigurationModel) {
-    if (isSessionModelWithConnections(session)) {
-      const result = session.prepareToBreakConnection(connectionConf)
-      if (result) {
-        const [safelyBreakConnection, dereferenceTypeCount] = result
-        if (Object.keys(dereferenceTypeCount).length > 0) {
-          setModalInfo({
-            connectionConf,
-            safelyBreakConnection,
-            dereferenceTypeCount,
-            name: readConfObject(connectionConf, 'name'),
-          })
-        } else {
-          safelyBreakConnection()
-        }
-      }
-    }
-  }
 
   return (
     <>
@@ -109,16 +75,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
           {
             label: 'Connections...',
             subMenu: [
-              ...(isSessionModelWithConnections(session)
-                ? [
-                    {
-                      label: 'Turn on/off connections...',
-                      onClick: () => {
-                        setConnectionToggleOpen(true)
-                      },
-                    },
-                  ]
-                : []),
               ...(isSessionModelWithConnectionEditing(session)
                 ? [
                     {
@@ -199,14 +155,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
         <MenuIcon />
       </CascadingMenuButton>
       <Suspense fallback={null}>
-        {modalInfo ? (
-          <CloseConnectionDialog
-            modalInfo={modalInfo}
-            onClose={() => {
-              setModalInfo(undefined)
-            }}
-          />
-        ) : null}
         {deleteDialogDetails && isSessionModelWithConnections(session) ? (
           <DeleteConnectionDialog
             handleClose={() => {
@@ -230,16 +178,6 @@ const HamburgerMenu = observer(function HamburgerMenu({
             session={session}
           />
         ) : null}
-        {connectionToggleOpen && isSessionModelWithConnections(session) ? (
-          <ToggleConnectionsDialog
-            handleClose={() => {
-              setConnectionToggleOpen(false)
-            }}
-            session={session}
-            breakConnection={breakConnection}
-          />
-        ) : null}
-
         {facetedOpen ? (
           <FacetedDialog
             handleClose={() => {

@@ -4,18 +4,10 @@ title: UCSCTrackHubConnection
 sidebar_label: Connection -> UCSCTrackHubConnection
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/UCSCTrackHubConnection.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`data-management` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/UCSCTrackHubConnection/configSchema.ts).
 
 ## Overview
 
@@ -60,16 +52,7 @@ location of the hub file (usually called hub.txt)
 optional list of genomes to import from this track hub, if empty all genomes
 will be imported
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description:
-    'optional list of genomes to import from this track hub, if empty all genomes will be imported',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
@@ -89,34 +72,14 @@ a unique name for this connection
 
 **Type:** `string` · **Default:** `'nameOfConnection'`
 
-```js
-{
-  type: 'string',
-  defaultValue: 'nameOfConnection',
-  description: 'a unique name for this connection',
-}
-```
-
 #### slot: assemblyNames
 
 optional list of names of assemblies in this connection
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'optional list of names of assemblies in this connection',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### UCSCTrackHubConnection - Derives from
 
 - [BaseConnection](../baseconnection)
-
-```js
-baseConfiguration: baseConnectionConfig
-```

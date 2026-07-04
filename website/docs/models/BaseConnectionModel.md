@@ -4,38 +4,34 @@ title: BaseConnectionModel
 sidebar_label: Connection -> BaseConnectionModel
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/BaseConnectionModel.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/BaseConnectionModelFactory.ts).
 
 ## Overview
 
 <details open>
 <summary>BaseConnectionModel - Properties</summary>
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
+#### property: silent
 
-| Member                                     | Signature                   |
-| ------------------------------------------ | --------------------------- |
-| [`tracks`](#property-tracks)               | `IArrayType<IAnyModelType>` |
-| [`configuration`](#property-configuration) | `ITypeUnion<any, any, any>` |
+set when the connection is being re-established on session load (its open tracks
+are already restored from `connectionTrackConfigs`), so `doConnect` suppresses
+first-connect side effects like launching a view or a success snackbar.
+Runtime-only: connection instances aren't serialized.
+
+```ts
+// type signature
+type silent = IOptionalIType<ISimpleType<boolean>, [undefined]>
+// code
+silent: types.optional(types.boolean, false)
+```
 
 </details>
 
 <details>
-<summary>BaseConnectionModel - Properties (all signatures)</summary>
+<summary>BaseConnectionModel - Properties (other undocumented members)</summary>
 
 #### property: tracks
 
@@ -69,17 +65,10 @@ source of truth; connection names are not guaranteed unique)
 type connectionId = string
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                 | Signature |
-| ---------------------- | --------- |
-| [`name`](#getter-name) | `string`  |
-
 </details>
 
 <details>
-<summary>BaseConnectionModel - Getters (all signatures)</summary>
+<summary>BaseConnectionModel - Getters (other undocumented members)</summary>
 
 #### getter: name
 
@@ -92,27 +81,19 @@ type name = string
 <details open>
 <summary>BaseConnectionModel - Actions</summary>
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
+#### action: connect
 
-| Member                                   | Signature                                                                                                                                                                                                      |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`connect`](#action-connect)             | `(_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void` |
-| [`addTrackConf`](#action-addtrackconf)   | `(trackConf: TrackConf) => any`                                                                                                                                                                                |
-| [`addTrackConfs`](#action-addtrackconfs) | `(trackConfs: TrackConf[]) => void`                                                                                                                                                                            |
-| [`setTrackConfs`](#action-settrackconfs) | `(trackConfs: TrackConf[]) => void`                                                                                                                                                                            |
-| [`clear`](#action-clear)                 | `() => void`                                                                                                                                                                                                   |
+no-op hook; concrete connections (UCSC/JB2 track hubs, etc.) override this to
+fetch and populate their `tracks`
+
+```ts
+type connect = () => void
+```
 
 </details>
 
 <details>
-<summary>BaseConnectionModel - Actions (all signatures)</summary>
-
-#### action: connect
-
-```ts
-type connect = (_arg: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void
-```
+<summary>BaseConnectionModel - Actions (other undocumented members)</summary>
 
 #### action: addTrackConf
 
@@ -130,12 +111,6 @@ type addTrackConfs = (trackConfs: TrackConf[]) => void
 
 ```ts
 type setTrackConfs = (trackConfs: TrackConf[]) => void
-```
-
-#### action: clear
-
-```ts
-type clear = () => void
 ```
 
 </details>

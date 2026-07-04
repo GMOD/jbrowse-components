@@ -576,6 +576,9 @@ export function showTrackGeneric(
         }
       }
     }
+    // if this track came from a connection, persist its config so it survives
+    // reload without re-establishing the connection (no-op otherwise)
+    session.captureConnectionTrack?.(trackId)
     return track
   } catch (e) {
     session.notifyError(`${e}`, e)
@@ -607,6 +610,8 @@ export function hideTrackGeneric(self: GenericView, trackId: string) {
   const t = self.tracks.find(t => t.configuration.trackId === trackId)
   if (t) {
     self.tracks.remove(t)
+    // drop the persisted connection-track config if no other view holds it
+    getSession(self).pruneConnectionTrackConfig?.(trackId)
     return true
   }
   return false

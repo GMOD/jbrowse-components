@@ -86,12 +86,14 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         baseUrl: hubUri,
       })
       self.addTrackConfs(tracksNew)
-      pluginManager.evaluateExtensionPoint('LaunchView-LinearGenomeView', {
-        session,
-        assembly: genomeName,
-        tracklist: true,
-        loc: genome.data.defaultPos,
-      })
+      if (!self.silent) {
+        pluginManager.evaluateExtensionPoint('LaunchView-LinearGenomeView', {
+          session,
+          assembly: genomeName,
+          tracklist: true,
+          loc: genome.data.defaultPos,
+        })
+      }
     } else {
       const hubFile = new HubFile(hubFileText)
       const genomeFile = hubFile.data.genomesFile
@@ -132,10 +134,12 @@ export async function doConnect(self: ConnectionDoConnectArg) {
         trackCounts[genomeName] = tracks.length
       }
 
-      session.notify(
-        formatHubLoadSummary(trackCounts, notLoadedAssemblies),
-        'success',
-      )
+      if (!self.silent) {
+        session.notify(
+          formatHubLoadSummary(trackCounts, notLoadedAssemblies),
+          'success',
+        )
+      }
     }
   } catch (e) {
     console.error(e)

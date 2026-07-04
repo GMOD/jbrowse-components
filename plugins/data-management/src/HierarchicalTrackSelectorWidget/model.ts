@@ -70,6 +70,12 @@ function collapsedK(assemblyNames: string[], viewType: string) {
   ].join('-')
 }
 
+// top-level hierarchy category id for a connection; expanding it lazily loads
+// the connection (see toggleCategory)
+function connectionCategoryId(connectionId: string) {
+  return `connection-${connectionId}`
+}
+
 function localStorageGetJSON<T>(key: string, defaultValue: T) {
   const val = localStorageGetItem(key)
   return val ? (JSON.parse(val) as T) : defaultValue
@@ -115,6 +121,17 @@ function findIndexAtOffset(offsets: number[], offset: number) {
   return Math.max(0, lo - 1)
 }
 
+// a category is collapsed if the user explicitly toggled it, else by its
+// defaultCollapsed (used for dormant connection categories)
+export function isNodeCollapsed(
+  item: TreeNode,
+  collapsed: { get(key: string): boolean | undefined },
+) {
+  const explicit = collapsed.get(item.id)
+  const byDefault = item.type === 'category' ? item.defaultCollapsed : undefined
+  return explicit ?? byDefault ?? false
+}
+
 function flattenTree(
   items: TreeNode[],
   folderCategories: { has(key: string): boolean },
@@ -125,7 +142,7 @@ function flattenTree(
     result.push(item)
     if (
       item.children.length > 0 &&
-      !collapsed.get(item.id) &&
+      !isNodeCollapsed(item, collapsed) &&
       !(item.type === 'category' && folderCategories.has(item.id))
     ) {
       flattenTree(item.children, folderCategories, collapsed, result)
@@ -353,7 +370,28 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #action
        */
       toggleCategory(pathName: string) {
-        self.collapsed.set(pathName, !self.collapsed.get(pathName))
+        const session = getSession(self)
+        const conn = session.connections.find(
+          c => connectionCategoryId(c.connectionId) === pathName,
+        )
+        const isLive = conn
+          ? (session.connectionInstances ?? []).some(
+              c => c.connectionId === conn.connectionId,
+            )
+          : false
+        // account for defaultCollapsed (dormant connections) so the first click
+        // on one expands (and loads) it rather than toggling a phantom state
+        const wasCollapsed =
+          self.collapsed.get(pathName) ?? (conn ? !isLive : false)
+        if (conn && wasCollapsed) {
+          // expanding a connection = load it (no separate "turn on" step). Clear
+          // any explicit collapse so the category follows liveness via
+          // defaultCollapsed and never persists as expanded-but-unloaded
+          self.collapsed.delete(pathName)
+          session.hydrateConnection?.(conn.connectionId)
+        } else {
+          self.collapsed.set(pathName, !wasCollapsed)
+        }
       },
       /**
        * #action
@@ -531,18 +569,34 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
        * #getter
        */
       get allTracks() {
-        const { connectionInstances = [] } = getSession(self)
+        const session = getSession(self)
+        const { connectionInstances = [], connections } = session
+        const liveByConnectionId = new Map(
+          connectionInstances.map(c => [c.connectionId, c]),
+        )
+        // one category per connection *config* (not just live instances), so a
+        // connection shows in the tree before it's loaded; expanding it hydrates
+        // the connection (see toggleCategory). Tracks are empty until then.
         return [
           {
             group: 'Tracks',
+            id: 'Tracks',
             tracks: self.configAndSessionTrackConfigurations,
             noCategories: false,
+            defaultCollapsed: false,
           },
-          ...connectionInstances.map(c => ({
-            group: getConf(c, 'name'),
-            tracks: filterTracks(c.tracks, self),
-            noCategories: false,
-          })),
+          ...connections.map(conf => {
+            const live = liveByConnectionId.get(conf.connectionId)
+            return {
+              group: readConfObject(conf, 'name') as string,
+              id: connectionCategoryId(conf.connectionId),
+              tracks: live ? filterTracks(live.tracks, self) : [],
+              noCategories: false,
+              // dormant connections collapse by default so expanding loads them;
+              // a loaded one shows its tracks
+              defaultCollapsed: !live,
+            }
+          }),
         ]
       },
     }))
@@ -557,13 +611,14 @@ export default function stateTreeFactory(pluginManager: PluginManager) {
           type: 'category' as const,
           children: self.allTracks.map(s => ({
             name: s.group,
-            id: s.group,
+            id: s.id,
             type: 'category' as const,
             nestingLevel: 0,
+            defaultCollapsed: s.defaultCollapsed,
             children: generateHierarchy({
               model: self,
               trackConfs: s.tracks,
-              extra: s.group,
+              extra: s.id,
               noCategories: s.noCategories,
             }),
           })),

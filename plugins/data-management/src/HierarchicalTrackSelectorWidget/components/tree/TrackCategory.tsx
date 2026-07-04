@@ -16,6 +16,7 @@ import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
 import { useMenuGuardedClick } from './useMenuGuardedClick.ts'
+import { isNodeCollapsed } from '../../model.ts'
 import { getAllSubcategories, getAllTrackNodes } from '../../util.ts'
 
 import type { HierarchicalTrackSelectorModel } from '../../model.ts'
@@ -229,7 +230,7 @@ const NormalCategoryLabel = observer(function NormalCategoryLabel({
 }) {
   const { classes } = useStyles()
   const { name, id } = item
-  const isOpen = !model.collapsed.get(id)
+  const isOpen = !isNodeCollapsed(item, model.collapsed)
   const { setMenuOpen, guard } = useMenuGuardedClick()
 
   return (

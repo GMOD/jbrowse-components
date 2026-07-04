@@ -273,11 +273,24 @@ export function SessionTracksManagerSessionMixin(pluginManager: PluginManager) {
                   e,
                 )
               }
+            } else if (
+              'connectionTrackConfigs' in self &&
+              trackId in
+                (self.connectionTrackConfigs as Record<string, unknown>)
+            ) {
+              // an opened connection track: persist the full edited config into
+              // connectionTrackConfigs (in place, not a delta — the connection's
+              // fetched base isn't present at load, so only a complete config
+              // resolves synchronously)
+              ;(
+                self as typeof self & {
+                  updateConnectionTrackConfig: (c: PlainTrackConfig) => void
+                }
+              ).updateConnectionTrackConfig(trackConf)
             }
-            // else: a track with neither an admin base nor a sessionTracks entry
-            // (e.g. a connection-provided track). There's no base to diff against
-            // and it isn't a user-added track, so no delta is persisted; the edit
-            // still applies in-memory to the resolved config for this session.
+            // else: a track with neither an admin base, a sessionTracks entry,
+            // nor a captured connection config. No persistent home, so the edit
+            // applies in-memory to the resolved config for this session only.
           }
         },
 

@@ -4,18 +4,9 @@ title: BaseConnection
 sidebar_label: Connection -> BaseConnection
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/BaseConnection.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Built into JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/pluggableElementTypes/models/baseConnectionConfig.ts).
 
 ## Overview
 
@@ -33,26 +24,10 @@ a unique name for this connection
 
 **Type:** `string` · **Default:** `'nameOfConnection'`
 
-```js
-{
-  type: 'string',
-  defaultValue: 'nameOfConnection',
-  description: 'a unique name for this connection',
-}
-```
-
 #### slot: assemblyNames
 
 optional list of names of assemblies in this connection
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'optional list of names of assemblies in this connection',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>

@@ -49,6 +49,14 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
             ? (self.connectionInstances as ConnectionInstance[])
             : []
 
+        const connectionTrackConfigs =
+          'connectionTrackConfigs' in self
+            ? (self.connectionTrackConfigs as Record<
+                string,
+                { config: AnyConfigurationModel }
+              >)
+            : {}
+
         return Object.fromEntries([
           ...self.tracks.map(t => [t.trackId, t]),
           // Include assembly sequence tracks so they can be resolved by trackId
@@ -58,6 +66,13 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
           ...connectionInstances.flatMap(c =>
             c.tracks.map(t => [t.trackId, t]),
           ),
+          // Persisted configs of opened connection tracks. Placed last so they
+          // win over the live connection instance: identity-stable across
+          // reload, and resolves even when the connection isn't re-established.
+          ...Object.entries(connectionTrackConfigs).map(([trackId, e]) => [
+            trackId,
+            e.config,
+          ]),
         ])
       },
     }))

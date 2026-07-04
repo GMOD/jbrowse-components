@@ -4,39 +4,15 @@ title: HierarchicalTrackSelectorWidget
 sidebar_label: Widget -> HierarchicalTrackSelectorWidget
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/HierarchicalTrackSelectorWidget.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Provided by the
+`data-management` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/data-management/src/HierarchicalTrackSelectorWidget/model.ts).
 
 ## Overview
 
-<details open>
-<summary>HierarchicalTrackSelectorWidget - Properties</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                   | Signature                                          |
-| ------------------------ | -------------------------------------------------- |
-| [`id`](#property-id)     | `IOptionalIType<ISimpleType<string>, [undefined]>` |
-| [`type`](#property-type) | `ISimpleType<"HierarchicalTrackSelectorWidget">`   |
-| [`view`](#property-view) | `IMaybe<IReferenceType<IAnyType>>`                 |
-
-</details>
-
 <details>
-<summary>HierarchicalTrackSelectorWidget - Properties (all signatures)</summary>
+<summary>HierarchicalTrackSelectorWidget - Properties</summary>
 
 #### property: id
 
@@ -67,29 +43,8 @@ view: types.safeReference(pluginManager.pluggableMstType('view', 'stateModel'))
 
 </details>
 
-<details open>
-<summary>HierarchicalTrackSelectorWidget - Volatiles</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                 | Signature                                                                                                                                                                                          |
-| ------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`favorites`](#volatile-favorites)                     | `string[]`                                                                                                                                                                                         |
-| [`recentlyUsed`](#volatile-recentlyused)               | `string[]`                                                                                                                                                                                         |
-| [`selection`](#volatile-selection)                     | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
-| [`sortTrackNames`](#volatile-sorttracknames)           | `boolean \| undefined`                                                                                                                                                                             |
-| [`sortCategories`](#volatile-sortcategories)           | `boolean \| undefined`                                                                                                                                                                             |
-| [`collapsed`](#volatile-collapsed)                     | `ObservableMap<string, boolean>`                                                                                                                                                                   |
-| [`folderCategories`](#volatile-foldercategories)       | `ObservableSet<string>`                                                                                                                                                                            |
-| [`filterText`](#volatile-filtertext)                   | `string`                                                                                                                                                                                           |
-| [`recentlyUsedCounter`](#volatile-recentlyusedcounter) | `number`                                                                                                                                                                                           |
-| [`favoritesCounter`](#volatile-favoritescounter)       | `number`                                                                                                                                                                                           |
-
-</details>
-
 <details>
-<summary>HierarchicalTrackSelectorWidget - Volatiles (all signatures)</summary>
+<summary>HierarchicalTrackSelectorWidget - Volatiles</summary>
 
 #### volatile: favorites
 
@@ -235,30 +190,10 @@ filters out tracks that are not in the recently used group
 type recentlyUsedTracks = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]
 ```
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                     | Signature                                                                                                                                                                                                                                            |
-| ---------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`shownTrackIds`](#getter-showntrackids)                   | `Set<string>`                                                                                                                                                                                                                                        |
-| [`selectionSet`](#getter-selectionset)                     | `Set<ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>>`                                                  |
-| [`favoritesSet`](#getter-favoritesset)                     | `Set<string>`                                                                                                                                                                                                                                        |
-| [`recentlyUsedSet`](#getter-recentlyusedset)               | `Set<string>`                                                                                                                                                                                                                                        |
-| [`assemblyNames`](#getter-assemblynames)                   | `string[]`                                                                                                                                                                                                                                           |
-| [`activeSortTrackNames`](#getter-activesorttracknames)     | `any`                                                                                                                                                                                                                                                |
-| [`activeSortCategories`](#getter-activesortcategories)     | `any`                                                                                                                                                                                                                                                |
-| [`allTrackConfigurations`](#getter-alltrackconfigurations) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]`                                                   |
-| [`allTracks`](#getter-alltracks)                           | `{ group: any; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; }[]` |
-| [`hierarchy`](#getter-hierarchy)                           | `{ name: string; id: string; type: "category"; children: { name: any; id: any; type: "category"; nestingLevel: number; children: TreeNode[]; }[]; }`                                                                                                 |
-| [`flattenedItems`](#getter-flatteneditems)                 | `TreeNode[]`                                                                                                                                                                                                                                         |
-| [`flattenedItemOffsets`](#getter-flatteneditemoffsets)     | `{ cumulativeHeight: number; offsets: number[]; }`                                                                                                                                                                                                   |
-| [`folderCategoryStats`](#getter-foldercategorystats)       | `Map<string, { active: number; total: number; }>`                                                                                                                                                                                                    |
-| [`hasAnySubcategories`](#getter-hasanysubcategories)       | `boolean`                                                                                                                                                                                                                                            |
-
 </details>
 
 <details>
-<summary>HierarchicalTrackSelectorWidget - Getters (all signatures)</summary>
+<summary>HierarchicalTrackSelectorWidget - Getters (other undocumented members)</summary>
 
 #### getter: shownTrackIds
 
@@ -311,7 +246,7 @@ type allTrackConfigurations = (ModelInstanceTypeProps<Record<string, any>> & { s
 #### getter: allTracks
 
 ```ts
-type allTracks = { group: any; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; }[]
+type allTracks = { group: string; id: string; tracks: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]; noCategories: boolean; defaultCollapsed: boolean; }[]
 ```
 
 #### getter: hierarchy
@@ -322,10 +257,11 @@ type hierarchy = {
   id: string
   type: 'category'
   children: {
-    name: any
-    id: any
+    name: string
+    id: string
     type: 'category'
     nestingLevel: number
+    defaultCollapsed: boolean
     children: TreeNode[]
   }[]
 }
@@ -357,24 +293,8 @@ type hasAnySubcategories = boolean
 
 </details>
 
-<details open>
-<summary>HierarchicalTrackSelectorWidget - Methods</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                             | Signature                                                                                                                                                                                                                               |
-| -------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`isSelected`](#method-isselected)                 | `(track: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => boolean`                      |
-| [`isFavorite`](#method-isfavorite)                 | `(trackId: string) => boolean`                                                                                                                                                                                                          |
-| [`isRecentlyUsed`](#method-isrecentlyused)         | `(trackId: string) => boolean`                                                                                                                                                                                                          |
-| [`getRefSeqTrackConf`](#method-getrefseqtrackconf) | `(assemblyName: string) => (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) \| undefined` |
-| [`itemOffsets`](#method-itemoffsets)               | `(height: number, scrollTop: number) => { startIndex: number; endIndex: number; totalHeight: number; }`                                                                                                                                 |
-
-</details>
-
 <details>
-<summary>HierarchicalTrackSelectorWidget - Methods (all signatures)</summary>
+<summary>HierarchicalTrackSelectorWidget - Methods</summary>
 
 #### method: isSelected
 
@@ -411,44 +331,8 @@ type itemOffsets = (
 
 </details>
 
-<details open>
-<summary>HierarchicalTrackSelectorWidget - Actions</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                                                             | Signature                                                                                                                                                                                                         |
-| ------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`setSortTrackNames`](#action-setsorttracknames)                   | `(val: boolean) => void`                                                                                                                                                                                          |
-| [`setSortCategories`](#action-setsortcategories)                   | `(val: boolean) => void`                                                                                                                                                                                          |
-| [`setSelection`](#action-setselection)                             | `(elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void` |
-| [`addToSelection`](#action-addtoselection)                         | `(elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void` |
-| [`removeFromSelection`](#action-removefromselection)               | `(elt: (ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]) => void` |
-| [`clearSelection`](#action-clearselection)                         | `() => void`                                                                                                                                                                                                      |
-| [`addToFavorites`](#action-addtofavorites)                         | `(trackId: string) => void`                                                                                                                                                                                       |
-| [`removeFromFavorites`](#action-removefromfavorites)               | `(trackId: string) => void`                                                                                                                                                                                       |
-| [`clearFavorites`](#action-clearfavorites)                         | `() => void`                                                                                                                                                                                                      |
-| [`setRecentlyUsedCounter`](#action-setrecentlyusedcounter)         | `(val: number) => void`                                                                                                                                                                                           |
-| [`setRecentlyUsed`](#action-setrecentlyused)                       | `(str: string[]) => void`                                                                                                                                                                                         |
-| [`setFavoritesCounter`](#action-setfavoritescounter)               | `(val: number) => void`                                                                                                                                                                                           |
-| [`addToRecentlyUsed`](#action-addtorecentlyused)                   | `(id: string) => void`                                                                                                                                                                                            |
-| [`clearRecentlyUsed`](#action-clearrecentlyused)                   | `() => void`                                                                                                                                                                                                      |
-| [`setView`](#action-setview)                                       | `(view: unknown) => void`                                                                                                                                                                                         |
-| [`toggleCategory`](#action-togglecategory)                         | `(pathName: string) => void`                                                                                                                                                                                      |
-| [`setCategoryCollapsed`](#action-setcategorycollapsed)             | `(pathName: string, status: boolean) => void`                                                                                                                                                                     |
-| [`expandAllCategories`](#action-expandallcategories)               | `() => void`                                                                                                                                                                                                      |
-| [`setCollapsedCategories`](#action-setcollapsedcategories)         | `(str: [string, boolean][]) => void`                                                                                                                                                                              |
-| [`toggleFolderCategory`](#action-togglefoldercategory)             | `(categoryId: string) => void`                                                                                                                                                                                    |
-| [`setFolderCategories`](#action-setfoldercategories)               | `(ids: string[]) => void`                                                                                                                                                                                         |
-| [`clearFilterText`](#action-clearfiltertext)                       | `() => void`                                                                                                                                                                                                      |
-| [`setFilterText`](#action-setfiltertext)                           | `(newText: string) => void`                                                                                                                                                                                       |
-| [`collapseSubCategories`](#action-collapsesubcategories)           | `() => void`                                                                                                                                                                                                      |
-| [`collapseTopLevelCategories`](#action-collapsetoplevelcategories) | `() => void`                                                                                                                                                                                                      |
-
-</details>
-
 <details>
-<summary>HierarchicalTrackSelectorWidget - Actions (all signatures)</summary>
+<summary>HierarchicalTrackSelectorWidget - Actions</summary>
 
 #### action: setSortTrackNames
 

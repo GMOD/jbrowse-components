@@ -4,37 +4,37 @@ title: ConnectionManagementSessionMixin
 sidebar_label: Mixin -> ConnectionManagementSessionMixin
 ---
 
-Note: this document is automatically generated from @jbrowse/mobx-state-tree
-objects in our source code. See
-[Core concepts and intro to pluggable elements](/docs/developer_guide/) for more
-info
-
-Also note: this document represents the state model API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Connections.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/models/ConnectionManagementSessionMixin.md)
+Auto-generated @jbrowse/mobx-state-tree API for the current JBrowse release —
+see [pluggable elements](/docs/developer_guide/) for concepts. Built into
+JBrowse core.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/packages/product-core/src/Session/Connections.ts).
 
 ## Overview
 
 <details open>
 <summary>ConnectionManagementSessionMixin - Properties</summary>
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
+#### property: connectionTrackConfigs
 
-| Member                                                 | Signature                                           |
-| ------------------------------------------------------ | --------------------------------------------------- |
-| [`connectionInstances`](#property-connectioninstances) | `IOptionalIType<IArrayType<IAnyType>, [undefined]>` |
+Persisted configs of connection tracks the user has opened, keyed by trackId.
+Unlike `connectionInstances` (stripped from snapshots, holds the whole fetched
+hub), this holds only the tracks in use, so an open connection track resolves
+synchronously on session load without re-establishing the connection.
+
+```ts
+// type signature
+type connectionTrackConfigs = IOptionalIType<IType<Record<string, ConnectionTrackConfigEntry>, Record<string, ConnectionTrackConfigEntry>, Record<...>>, [...]>
+// code
+connectionTrackConfigs: types.stripDefault(
+        types.frozen<Record<string, ConnectionTrackConfigEntry>>(),
+        {},
+      )
+```
 
 </details>
 
 <details>
-<summary>ConnectionManagementSessionMixin - Properties (all signatures)</summary>
+<summary>ConnectionManagementSessionMixin - Properties (other undocumented members)</summary>
 
 #### property: connectionInstances
 
@@ -50,20 +50,8 @@ connectionInstances: types.stripDefault(
 
 </details>
 
-<details open>
-<summary>ConnectionManagementSessionMixin - Getters</summary>
-
-**Other members** (undocumented — signatures only, expand below for full
-detail):
-
-| Member                               | Signature                                                                                                                                                                                          |
-| ------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`connections`](#getter-connections) | `(ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>)[]` |
-
-</details>
-
 <details>
-<summary>ConnectionManagementSessionMixin - Getters (all signatures)</summary>
+<summary>ConnectionManagementSessionMixin - Getters</summary>
 
 #### getter: connections
 
@@ -76,22 +64,52 @@ type connections = (ModelInstanceTypeProps<Record<string, any>> & { setSubschema
 <details open>
 <summary>ConnectionManagementSessionMixin - Actions</summary>
 
-**Other members** (undocumented — signatures only, expand below for full
-detail):
+#### action: captureConnectionTrack
 
-| Member                                                         | Signature                                                                                                                                                                                                                                     |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [`makeConnection`](#action-makeconnection)                     | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>, initialSnapshot?: any) => any` |
-| [`prepareToBreakConnection`](#action-preparetobreakconnection) | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => [...] \| undefined`         |
-| [`breakConnection`](#action-breakconnection)                   | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => void`                       |
-| [`deleteConnection`](#action-deleteconnection)                 | `(configuration: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`                        |
-| [`addConnectionConf`](#action-addconnectionconf)               | `(connectionConf: ModelInstanceTypeProps<Record<string, any>> & { setSubschema(slotName: string, data: Record<string, unknown>): any; setSlot(slotName: string, value: unknown): void; } & IStateTreeNode<...>) => any`                       |
-| [`clearConnections`](#action-clearconnections)                 | `() => void`                                                                                                                                                                                                                                  |
+Snapshot a just-opened connection track's config into `connectionTrackConfigs`
+so it survives session reload. No-op if the track isn't connection-provided or
+is already captured (edits go through `updateConnectionTrackConfig`).
+
+```ts
+type captureConnectionTrack = (trackId: string) => void
+```
+
+#### action: updateConnectionTrackConfig
+
+Persist an edit to an opened connection track. The full config is stored (not a
+delta): the connection's fetched "base" isn't present at load, so only a
+complete config resolves synchronously.
+
+```ts
+type updateConnectionTrackConfig = (
+  trackConf: Record<string, unknown> & { trackId: string },
+) => void
+```
+
+#### action: pruneConnectionTrackConfig
+
+Drop a connection track's persisted config once no open view still references
+it, so the session doesn't accumulate closed tracks.
+
+```ts
+type pruneConnectionTrackConfig = (trackId: string) => void
+```
+
+#### action: hydrateConnection
+
+Lazily establish a single connection by id if it isn't already live — used when
+its category is expanded in the track selector. Fetches silently (no view launch
+/ success snackbar); already-open tracks keep rendering from
+`connectionTrackConfigs` meanwhile. Idempotent.
+
+```ts
+type hydrateConnection = (connectionId: string) => void
+```
 
 </details>
 
 <details>
-<summary>ConnectionManagementSessionMixin - Actions (all signatures)</summary>
+<summary>ConnectionManagementSessionMixin - Actions (other undocumented members)</summary>
 
 #### action: makeConnection
 

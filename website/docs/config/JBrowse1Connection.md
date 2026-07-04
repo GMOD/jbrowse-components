@@ -4,18 +4,10 @@ title: JBrowse1Connection
 sidebar_label: Connection -> JBrowse1Connection
 ---
 
-Note: this document is automatically generated from configuration objects in our
-source code. See [Config guide](/docs/config_guide) for more info
-
-Also note: this document represents the config API for the current released
-version of jbrowse. If you are not using the current version, please cross
-reference the markdown files in our repo of the checked out git tag
-
-## Links
-
-[Source code](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts)
-
-[GitHub page](https://github.com/GMOD/jbrowse-components/tree/main/website/docs/config/JBrowse1Connection.md)
+Auto-generated config schema for the current JBrowse release — see the
+[config guide](/docs/config_guide) for concepts. Provided by the
+`legacy-jbrowse` plugin.
+[View source](https://github.com/GMOD/jbrowse-components/blob/main/plugins/legacy-jbrowse/src/JBrowse1Connection/configSchema.ts).
 
 ## Overview
 
@@ -32,34 +24,14 @@ This config's runtime API is documented on its
 the location of the JBrowse 1 data directory, often something like
 https://mysite.com/jbrowse/data/
 
-**Type:** `fileLocation`
-
-```js
-{
-  type: 'fileLocation',
-  defaultValue: {
-    uri: 'https://mysite.com/jbrowse/data/',
-    locationType: 'UriLocation',
-  },
-  description:
-    'the location of the JBrowse 1 data directory, often something like https://mysite.com/jbrowse/data/',
-}
-```
+**Type:** `fileLocation` · **Default:**
+`{ uri: 'https://mysite.com/jbrowse/data/', locationType: 'UriLocation' }`
 
 #### slot: assemblyNames
 
 name of the assembly the connection belongs to, should be a single entry
 
-**Type:** `stringArray`
-
-```js
-{
-  description:
-    'name of the assembly the connection belongs to, should be a single entry',
-  type: 'stringArray',
-  defaultValue: [],
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
@@ -79,34 +51,14 @@ a unique name for this connection
 
 **Type:** `string` · **Default:** `'nameOfConnection'`
 
-```js
-{
-  type: 'string',
-  defaultValue: 'nameOfConnection',
-  description: 'a unique name for this connection',
-}
-```
-
 #### slot: assemblyNames
 
 optional list of names of assemblies in this connection
 
-**Type:** `stringArray`
-
-```js
-{
-  type: 'stringArray',
-  defaultValue: [],
-  description: 'optional list of names of assemblies in this connection',
-}
-```
+**Type:** `stringArray` · **Default:** `[]`
 
 </details>
 
 ### JBrowse1Connection - Derives from
 
 - [BaseConnection](../baseconnection)
-
-```js
-baseConfiguration: baseConnectionConfig
-```
