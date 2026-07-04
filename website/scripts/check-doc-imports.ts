@@ -21,18 +21,28 @@ import { join } from 'node:path'
 const root = join(import.meta.dirname, '..', '..')
 const docsDir = join(import.meta.dirname, '..', 'docs')
 
-// Build name -> package-dir map from every workspace package.json.
+interface PkgInfo {
+  dir: string
+  exports?: Record<string, unknown>
+  main?: string
+}
+
+// Build name -> package-info map from every workspace package.json. The
+// package.json is parsed once here so checkSpecifier never re-reads it.
 function collectPackages(dirs: string[]) {
-  const map = new Map<string, string>()
+  const map = new Map<string, PkgInfo>()
   for (const base of dirs) {
     const abs = join(root, base)
     for (const name of readdirSync(abs)) {
       const pkgDir = join(abs, name)
-      const pkgJson = join(pkgDir, 'package.json')
       try {
-        const { name: pkgName } = JSON.parse(readFileSync(pkgJson, 'utf8'))
-        if (pkgName) {
-          map.set(pkgName, pkgDir)
+        const pkg = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'))
+        if (pkg.name) {
+          const exports =
+            pkg.exports && typeof pkg.exports === 'object'
+              ? pkg.exports
+              : undefined
+          map.set(pkg.name, { dir: pkgDir, exports, main: pkg.main })
         }
       } catch {
         // not a package dir, skip
@@ -93,30 +103,26 @@ function checkSpecifier(specifier: string): string | undefined {
   const pkgName = m ? m[1] : specifier
   const subpath = m?.[2] ? `.${m[2]}` : '.'
 
-  const pkgDir = packages.get(pkgName!)
-  if (!pkgDir) {
+  const pkg = packages.get(pkgName!)
+  if (!pkg) {
     return undefined // external / not in this workspace — can't validate
   }
 
-  const pkgJson = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'))
-  const exportsMap = pkgJson.exports
-
-  if (exportsMap && typeof exportsMap === 'object') {
-    if (!(subpath in exportsMap)) {
+  if (pkg.exports) {
+    if (!(subpath in pkg.exports)) {
       return `"${subpath}" is not an export of ${pkgName}`
     }
-    const target = exportTarget(exportsMap[subpath])
-    if (target && !fileExists(join(pkgDir, target))) {
-      return `${pkgName} maps "${subpath}" to "${target}" but that file is missing`
-    }
-    return undefined
+    const target = exportTarget(pkg.exports[subpath])
+    return target && !fileExists(join(pkg.dir, target))
+      ? `${pkgName} maps "${subpath}" to "${target}" but that file is missing`
+      : undefined
   }
 
   // No exports map: resolve against main (bare) or src/<subpath>.
   const target =
     subpath === '.'
-      ? join(pkgDir, pkgJson.main || 'index')
-      : join(pkgDir, 'src', subpath.slice(2))
+      ? join(pkg.dir, pkg.main || 'index')
+      : join(pkg.dir, 'src', subpath.slice(2))
   return fileExists(target)
     ? undefined
     : `cannot resolve "${specifier}" under ${pkgName}`
@@ -133,9 +139,8 @@ const CODE_LANGS = new Set([
 ])
 const IMPORT_FROM = /(?:from|import)\s+['"]([^'"]+)['"]/g
 
-function scanFile(path: string): Problem[] {
+function scanImports(path: string, lines: string[]): Problem[] {
   const problems: Problem[] = []
-  const lines = readFileSync(path, 'utf8').split('\n')
   let inCode = false
   lines.forEach((line, i) => {
     const fence = FENCE.exec(line)
@@ -200,9 +205,8 @@ function anchorOf(p: string) {
   return ANCHORED.has(segs[0]!) ? segs.slice(0, 2).join('/') : segs[0]!
 }
 
-function scanFilePaths(path: string): Problem[] {
+function scanFilePaths(path: string, lines: string[]): Problem[] {
   const problems: Problem[] = []
-  const lines = readFileSync(path, 'utf8').split('\n')
   lines.forEach((line, i) => {
     for (const match of line.matchAll(REPO_PATH)) {
       const ref = match[0].replace(/[./]+$/, '')
@@ -221,15 +225,19 @@ function scanFilePaths(path: string): Problem[] {
   return problems
 }
 
-const allDocs = walk(docsDir)
-const handwritten = allDocs.filter(
-  f => !AUTOGEN_DIRS.has(f.slice(docsDir.length + 1).split('/')[0]!),
-)
+function isAutogen(file: string) {
+  return AUTOGEN_DIRS.has(file.slice(docsDir.length + 1).split('/')[0]!)
+}
 
-const problems = [
-  ...allDocs.flatMap(scanFile),
-  ...handwritten.flatMap(scanFilePaths),
-]
+// Read each doc once; imports are checked everywhere, prose paths only in
+// hand-written guides (autogen dirs embed GitHub blob URLs, not repo paths).
+const problems = walk(docsDir).flatMap(file => {
+  const lines = readFileSync(file, 'utf8').split('\n')
+  return [
+    ...scanImports(file, lines),
+    ...(isAutogen(file) ? [] : scanFilePaths(file, lines)),
+  ]
+})
 
 if (problems.length > 0) {
   console.error(`Found ${problems.length} broken reference(s) in docs:\n`)
