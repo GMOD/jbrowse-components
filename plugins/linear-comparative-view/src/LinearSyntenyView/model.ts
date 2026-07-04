@@ -235,7 +235,7 @@ export default function stateModelFactory(pluginManager: PluginManager) {
        * so a region keeps its color as it's traced across levels.
        */
       get anchorAssemblyName() {
-        const asms = self.views.map(v => v.assemblyNames?.[0])
+        const asms = self.views.map(v => v.assemblyNames[0])
         const counts = new Map<string, number>()
         for (let i = 0; i < asms.length - 1; i++) {
           for (const a of [asms[i], asms[i + 1]]) {

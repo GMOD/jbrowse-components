@@ -334,8 +334,8 @@ function stateModelFactory(configSchema: AnyConfigurationSchemaType) {
           // this level draws between views[level] (query) and views[level+1]
           // (target); color by whichever side is the anchor so every level
           // keys on the same reference assembly's chromosome names
-          const queryAsm = views[this.level]?.assemblyNames?.[0]
-          const targetAsm = views[this.level + 1]?.assemblyNames?.[0]
+          const queryAsm = views[this.level]?.assemblyNames[0]
+          const targetAsm = views[this.level + 1]?.assemblyNames[0]
           return targetAsm === anchor && queryAsm !== anchor ? 'target' : 'query'
         }
         return colorBy
