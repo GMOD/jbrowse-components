@@ -1,3 +1,5 @@
+export const twoPi = 2 * Math.PI
+
 // push intersection points where the circle (center cx,cy, radius r) meets a
 // horizontal line (orientation='h', y=fixed) or vertical line ('v', x=fixed)
 function findCircleIntersection(
@@ -23,7 +25,7 @@ function findCircleIntersection(
 }
 
 function cartesianToTheta(x: number, y: number) {
-  return (Math.atan2(y, x) + 2 * Math.PI) % (2 * Math.PI)
+  return (Math.atan2(y, x) + twoPi) % twoPi
 }
 
 export function cartesianToPolar(x: number, y: number) {
@@ -34,8 +36,6 @@ export function cartesianToPolar(x: number, y: number) {
   const theta = cartesianToTheta(x, y)
   return [rho, theta] as const
 }
-
-export const twoPi = 2 * Math.PI
 
 // return which arc range has any part of the circle visible in the viewport
 export function viewportVisibleSection(
@@ -55,20 +55,15 @@ export function viewportVisibleSection(
   const centerIsInsideViewport =
     viewL < 0 && viewR > 0 && viewT < 0 && viewB > 0
 
+  const vertices: [number, number][] = [
+    [viewL, viewT],
+    [viewR, viewT],
+    [viewL, viewB],
+    [viewR, viewB],
+  ]
+
   if (centerIsInsideViewport) {
-    const vertices = [
-      [viewL, viewT],
-      [viewR, viewT],
-      [viewL, viewB],
-      [viewR, viewB],
-    ] as const
-    let maxRho = Number.NEGATIVE_INFINITY
-    for (const [x, y] of vertices) {
-      const rho = Math.hypot(x, y)
-      if (rho > maxRho) {
-        maxRho = rho
-      }
-    }
+    const maxRho = Math.max(...vertices.map(([x, y]) => Math.hypot(x, y)))
     return {
       rho: [0, Math.min(circleRadius, maxRho)] as [number, number],
       theta: [0, twoPi] as [number, number],
@@ -76,12 +71,6 @@ export function viewportVisibleSection(
   }
 
   // find the intersections of the circle and the view rectangle
-  const vertices: [number, number][] = [
-    [viewL, viewT],
-    [viewR, viewT],
-    [viewL, viewB],
-    [viewR, viewB],
-  ]
   findCircleIntersection('v', viewL, 0, 0, circleRadius, vertices)
   findCircleIntersection('v', viewR, 0, 0, circleRadius, vertices)
   findCircleIntersection('h', viewT, 0, 0, circleRadius, vertices)
