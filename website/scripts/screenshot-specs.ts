@@ -340,7 +340,12 @@ const trioVcfLayout = TRIO_HAPLOTYPES.map(h => ({
 // one parent's 2 haplotype rows, so it's shorter than the old 4-row painting and
 // the VCF panel sits ~44px higher (measured; was 320).
 const TRIO_VCF_ROW_TOP = 276
-const TRIO_VCF_ROW_PITCH = 44
+// the VCF display auto-fits its `TRIO_VCF_DISPLAY_H` px body across the 6
+// haplotype rows (LinearMultiSampleVariantDisplay has no line zone), so the true
+// per-row pitch is height/rows ≈ 43.33 — NOT a round 44, which drifts the frames
+// ~3px low by the bottom row (reviewer: boxes don't exactly match the rows).
+const TRIO_VCF_DISPLAY_H = 260
+const TRIO_VCF_ROW_PITCH = TRIO_VCF_DISPLAY_H / TRIO_HAPLOTYPES.length
 const trioRowY = (label: string) =>
   TRIO_VCF_ROW_TOP +
   TRIO_VCF_ROW_PITCH * TRIO_HAPLOTYPES.findIndex(h => h.label === label)
@@ -1258,17 +1263,14 @@ export const specs: ScreenshotSpec[] = [
   },
 
   {
-    // Multi-step procedure proving the session-wide feature-height default and
-    // the pin behaviour on alignments tracks. featureHeight/featureSpacing are
-    // promotable slots (getConfResolved: track value → session default → schema
-    // default), so: (1) both alignments tracks inherit Normal, (2) "Use current
-    // height by default on all alignments tracks" promotes Compact and the
-    // second track follows via inherit, (3) pin the second track to
-    // Super-compact — it overrides the compact session default. (These are plain
-    // promotable slots, so the pin must be a non-schema-default value: setting it
-    // back to Normal would read as "un-pinned" and re-inherit Compact — that's
-    // the case the canvas displayMode sentinel slot exists to escape.) Each stage
-    // leaves the "Set feature height" submenu open and boxes the item clicked.
+    // Two-step procedure showing the session-wide feature-height default on
+    // alignments tracks. featureHeight/featureSpacing are promotable slots
+    // (getConfResolved: track value → session default → schema default), so:
+    // (1) both alignments tracks inherit Normal, (2) setting the first track to
+    // Compact and choosing "Use ... as the default for alignments tracks"
+    // promotes Compact to a session default and the second (un-pinned) track
+    // follows via inherit. Each stage leaves the "Set feature height" submenu
+    // open and boxes the item clicked.
     mode: 'url',
     name: 'feature_height_default_pin',
     url: lgvSession(VOLVOX, {
@@ -1331,7 +1333,7 @@ export const specs: ScreenshotSpec[] = [
           ...dismissMenus(),
           trackMenuIcon('volvox_alignments_pileup_coverage'),
           ...openFeatureHeightSubmenu(),
-          { type: 'click', text: 'by default on all alignments tracks' },
+          { type: 'click', text: 'as the default for alignments tracks' },
           { type: 'delay', ms: 600 },
           ...dismissMenus(),
           // re-open to display the checkbox now ticked, kept on screen for capture
@@ -1341,7 +1343,7 @@ export const specs: ScreenshotSpec[] = [
         annotations: [
           {
             type: 'box',
-            anchor: { text: 'by default on all alignments tracks' },
+            anchor: { text: 'as the default for alignments tracks' },
             strokeWidth: 3,
             fillOpacity: 0.12,
           },
@@ -1351,41 +1353,7 @@ export const specs: ScreenshotSpec[] = [
             y: 34,
             maxWidth: 440,
             fontSize: 15,
-            text: '2. "Use current height by default on all alignments tracks" — every un-pinned track follows',
-          },
-        ],
-      },
-      {
-        // pin the second track to Super-compact; it holds over the compact
-        // session default (the first track stays compact). A non-schema-default
-        // value is required to pin — Normal (the schema default) would re-inherit
-        // the compact default. Re-open its submenu so the newly-selected
-        // "Super-compact" radio is visible and boxed.
-        actions: [
-          ...dismissMenus(),
-          trackMenuIcon('volvox_cram_alignments_ctga'),
-          ...openFeatureHeightSubmenu(),
-          { type: 'delay', ms: 300 },
-          { type: 'click', text: 'Super-compact' },
-          { type: 'delay', ms: 500 },
-          ...dismissMenus(),
-          trackMenuIcon('volvox_cram_alignments_ctga'),
-          ...openFeatureHeightSubmenu(),
-        ],
-        annotations: [
-          {
-            type: 'box',
-            anchor: { text: 'Super-compact' },
-            strokeWidth: 3,
-            fillOpacity: 0.12,
-          },
-          {
-            type: 'text',
-            x: 620,
-            y: 34,
-            maxWidth: 440,
-            fontSize: 15,
-            text: '3. Pin the second track to Super-compact — it overrides the compact session default',
+            text: '2. "Use ... as the default for alignments tracks" promotes the height to a session default — every un-pinned track follows',
           },
         ],
       },
@@ -1939,7 +1907,9 @@ export const specs: ScreenshotSpec[] = [
         maxWidth: 180,
         text: 'Right-click any read to open this menu',
       },
-      { type: 'arrow', from: { x: 270, y: 270 }, to: { x: 392, y: 250 } },
+      // start the arrow below the text pill (which spans ~y265-285) so the line
+      // doesn't cross the callout box, then point up at the right-clicked read
+      { type: 'arrow', from: { x: 300, y: 315 }, to: { x: 392, y: 250 } },
     ],
   },
 
@@ -2071,7 +2041,30 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/grape_peach_cacao',
-    url: `?config=${encodeURIComponent('https://jbrowse.org/demos/grape_peach_cacao/config.json')}`,
+    // colorBy:'reference' keys every level on the shared reference genome
+    // (grape, the middle row) so a grape chromosome carries ONE color as it's
+    // traced up into peach and down into cacao (reviewer: consistent coloring
+    // across levels). Mirrors the hosted config's defaultSession init otherwise.
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/grape_peach_cacao/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'peach' },
+              { assembly: 'grape' },
+              { assembly: 'cacao' },
+            ],
+            tracks: [['peach_grape_blocks'], ['grape_cacao_blocks']],
+            drawCurves: true,
+            colorBy: 'reference',
+          },
+        ],
+      },
+    ),
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -2079,7 +2072,35 @@ export const specs: ScreenshotSpec[] = [
   {
     mode: 'url',
     name: 'multiway_synteny/ecoli_pangenome',
-    url: `?config=${encodeURIComponent('https://jbrowse.org/demos/ecoli_pangenome/config.json')}`,
+    // colorBy:'default' (not 'query'): these are single-chromosome strains, so
+    // per-query-name coloring paints everything one near-uniform color and adds
+    // no signal (reviewer: query-name coloring is only useful with multiple
+    // chromosomes). Default red ribbons read cleaner here.
+    url: sessionSpec(
+      encodeURIComponent(
+        'https://jbrowse.org/demos/ecoli_pangenome/config.json',
+      ),
+      {
+        views: [
+          {
+            type: 'LinearSyntenyView',
+            views: [
+              { assembly: 'K12' },
+              { assembly: 'Sakai' },
+              { assembly: 'CFT073' },
+              { assembly: 'NCTC86' },
+            ],
+            tracks: [
+              ['K12_Sakai_ava'],
+              ['Sakai_CFT073_ava'],
+              ['CFT073_NCTC86_ava'],
+            ],
+            drawCurves: true,
+            colorBy: 'default',
+          },
+        ],
+      },
+    ),
     readySelector: '[data-testid="synteny_canvas_done"]',
     readyTimeout: 120000,
     settleMs: 15000,
@@ -3824,13 +3845,13 @@ export const specs: ScreenshotSpec[] = [
         },
         {
           type: 'QuantitativeTrack',
-          trackId: 'hg008_baf_folded',
-          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
             type: 'BigWigAdapter',
             bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
               locationType: 'UriLocation',
             },
           },
@@ -3905,16 +3926,15 @@ export const specs: ScreenshotSpec[] = [
               },
             },
             {
-              trackId: 'hg008_baf_folded',
+              trackId: 'hg008_baf',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                // folded BAF (|BAF-0.5|) as an avg-summarized scatter: LOH arms
-                // rise off 0 toward 0.5 as a clean elevated band (reviewer: the
-                // raw 0..1 BAF with whiskers was too hard to read at genome
-                // scale — raw-BAF LOH bins average back to ~0.5 and the split
-                // vanishes, whereas folded BAF averages to a legible elevation)
+                // raw 0..1 BAF as a fine-resolution scatter preserving the
+                // per-bin spread: LOH arms split into symmetric upper/lower
+                // bands off the central 0.5 het line, balanced regions stay a
+                // single 0.5 line. resolution:10 keeps bins small enough that
+                // the split survives at genome scale.
                 defaultRendering: 'scatter',
-                summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 resolution: 10,
                 minScore: 0,
@@ -3935,13 +3955,11 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // The conventional two-panel somatic-CNV view over chromosome 3: log2 ratio
-  // (copy number) above the folded B-allele frequency (allelic state), with the
+  // (copy number) above the raw 0..1 B-allele frequency (allelic state), with the
   // benchmark CNV calls below. chr3 is a clean teaching example — the p-arm is a
-  // single-copy loss WITH loss-of-heterozygosity (negative log2 AND the folded
-  // BAF rising off 0 toward 0.5), while the q-arm is balanced (log2 back up,
-  // folded BAF collapsing back toward 0). The folded BAF (|BAF-0.5|) reads the
-  // LOH as a single clean elevated band rather than the raw 0..1 view's dense
-  // two-band scatter, which the reviewer found too hard to read.
+  // single-copy loss WITH loss-of-heterozygosity (negative log2 AND the BAF het
+  // SNPs splitting into upper/lower bands off 0.5), while the q-arm is balanced
+  // (log2 back up, BAF a single 0.5 line).
   {
     mode: 'url',
     name: 'sv_cgiab/cnv_log2_baf',
@@ -3962,13 +3980,13 @@ export const specs: ScreenshotSpec[] = [
         },
         {
           type: 'QuantitativeTrack',
-          trackId: 'hg008_baf_folded',
-          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
             type: 'BigWigAdapter',
             bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
               locationType: 'UriLocation',
             },
           },
@@ -3997,15 +4015,14 @@ export const specs: ScreenshotSpec[] = [
               },
             },
             {
-              trackId: 'hg008_baf_folded',
+              trackId: 'hg008_baf',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
-                // folded BAF (|BAF-0.5|), avg-summarized: the p-arm LOH reads as
-                // a clean elevated band off 0 and the balanced q-arm collapses
-                // toward 0. resolution:10 pulls finer bigwig bins so the band
-                // isn't washed out at chromosome scale.
+                // raw 0..1 BAF scatter: the p-arm LOH splits het SNPs into an
+                // upper and lower band off the 0.5 het line, while the balanced
+                // q-arm stays a single 0.5 line. resolution:10 pulls finer
+                // bigwig bins so the band-split survives at chromosome scale.
                 defaultRendering: 'scatter',
-                summaryScoreMode: 'avg',
                 scatterPointSize: 1,
                 resolution: 10,
                 minScore: 0,
@@ -4125,6 +4142,11 @@ export const specs: ScreenshotSpec[] = [
               displaySnapshot: {
                 type: 'LinearAlignmentsDisplay',
                 linkedReads: 'normal',
+                // compact pileup (reviewer): featureHeight 3 / spacing 0 packs
+                // the ~116x pileup so the deletion drop-out reads as a whole
+                // rather than scrolling off the display height
+                featureHeight: 3,
+                featureSpacing: 0,
                 height: 320,
               },
             },
@@ -4177,6 +4199,37 @@ export const specs: ScreenshotSpec[] = [
             },
           },
         },
+        {
+          // raw normal-vs-tumor coverage overlaid in one band (reviewer: show
+          // the multiwiggle of normal vs tumor coverage). indexcov is each
+          // sample median-normalized to ~1, so a copy loss reads as the tumor
+          // band dropping below the normal band.
+          type: 'MultiQuantitativeTrack',
+          trackId: 'hg008_cnv_indexcov',
+          name: 'HG008 normal vs tumor coverage (indexcov)',
+          assemblyNames: ['GRCh38_GIABv3'],
+          adapter: {
+            type: 'MultiWiggleAdapter',
+            subadapters: [
+              {
+                name: 'HG008-N (normal)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-N_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+              {
+                name: 'HG008-T (tumor)',
+                type: 'BigWigAdapter',
+                bigWigLocation: {
+                  uri: 'https://jbrowse.org/demos/cgiab/HG008-T_indexcov.bw',
+                  locationType: 'UriLocation',
+                },
+              },
+            ],
+          },
+        },
       ],
       views: [
         {
@@ -4185,6 +4238,17 @@ export const specs: ScreenshotSpec[] = [
           loc: 'chr17',
           tracks: [
             {
+              trackId: 'hg008_cnv_indexcov',
+              displaySnapshot: {
+                type: 'MultiLinearWiggleDisplay',
+                defaultRendering: 'multiscatter',
+                resolution: 10,
+                minScore: 0,
+                maxScore: 2.5,
+                height: 140,
+              },
+            },
+            {
               trackId: 'hg008_log2ratio',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
@@ -4192,6 +4256,9 @@ export const specs: ScreenshotSpec[] = [
                 useBicolor: false,
                 summaryScoreMode: 'avg',
                 scatterPointSize: 1,
+                // finer bins so the many small CNVs on chr17 resolve at
+                // whole-chromosome scale (reviewer)
+                resolution: 10,
                 minScore: -2,
                 maxScore: 2,
                 height: 140,
@@ -4203,6 +4270,7 @@ export const specs: ScreenshotSpec[] = [
                 type: 'LinearWiggleDisplay',
                 defaultRendering: 'scatter',
                 scatterPointSize: 1,
+                resolution: 10,
                 minScore: 0,
                 maxScore: 1,
                 height: 140,
@@ -4216,7 +4284,8 @@ export const specs: ScreenshotSpec[] = [
     readyText: 'chr17',
     readyTimeout: 90000,
     viewportWidth: 1500,
-    viewportHeight: 620,
+    // taller: gene/CNV context + three wiggle bands (indexcov, log2, BAF)
+    viewportHeight: 820,
     settleMs: 30000,
   },
 
@@ -4267,12 +4336,18 @@ export const specs: ScreenshotSpec[] = [
           type: 'LinearGenomeView',
           assembly: 'GRCh38_GIABv3',
           loc: 'chr12:23,000,000-27,500,000',
+          // highlight band over the KRAS locus so the eye lands on the oncogene
+          // within the ~4.5Mb gained arm even though the gene is tiny at this
+          // scale (reviewer: "can't see KRAS gene ... interesting if highlighted")
+          highlight: ['chr12:25,205,246-25,250,936'],
           tracks: [
             {
               trackId: 'hg38_ncbiRefSeq_ucsc',
               displaySnapshot: {
+                // normal (not compact) height so the KRAS gene row + label read
+                // where they land under the highlight band (reviewer: taller track)
                 type: 'LinearBasicDisplay',
-                displayMode: 'compact',
+                height: 150,
               },
             },
             {
@@ -4322,7 +4397,7 @@ export const specs: ScreenshotSpec[] = [
   },
 
   // SMAD4 (DPC4), the mirror image of the TP53 event: 18q loss with LOH
-  // (CN 1, 0+1) — negative log2 AND the folded BAF rising off 0 toward 0.5.
+  // (CN 1, 0+1) — negative log2 AND the BAF het SNPs splitting off the 0.5 line.
   // The CNV calls use the config's CN-labeled hg008_cnv_calls track so the 18q
   // event reads out as its copy number + haplotype split (reviewer: the bare
   // draftbenchmark SV ids don't say what the call is).
@@ -4346,13 +4421,13 @@ export const specs: ScreenshotSpec[] = [
         },
         {
           type: 'QuantitativeTrack',
-          trackId: 'hg008_baf_folded',
-          name: 'HG008-T folded BAF (0=balanced, 0.5=LOH)',
+          trackId: 'hg008_baf',
+          name: 'HG008-T B-allele frequency (BAF)',
           assemblyNames: ['GRCh38_GIABv3'],
           adapter: {
             type: 'BigWigAdapter',
             bigWigLocation: {
-              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf_folded.bw',
+              uri: 'https://jbrowse.org/demos/cgiab/HG008-T_baf.bw',
               locationType: 'UriLocation',
             },
           },
@@ -4381,12 +4456,15 @@ export const specs: ScreenshotSpec[] = [
               },
             },
             {
-              trackId: 'hg008_baf_folded',
+              trackId: 'hg008_baf',
               displaySnapshot: {
                 type: 'LinearWiggleDisplay',
+                // raw 0..1 BAF scatter: the 18q LOH splits het SNPs into upper
+                // and lower bands off the 0.5 het line. resolution:10 keeps bins
+                // fine enough that the split reads at chromosome scale.
                 defaultRendering: 'scatter',
-                summaryScoreMode: 'avg',
                 scatterPointSize: 1,
+                resolution: 10,
                 minScore: 0,
                 maxScore: 1,
                 height: 140,
@@ -4645,7 +4723,13 @@ export const specs: ScreenshotSpec[] = [
       { type: 'delay', ms: 2000 },
       { type: 'click', selector: '[aria-label="Sequence type"]' },
       { type: 'delay', ms: 1000 },
-      { type: 'click', text: 'Genomic w/ full introns +/-' },
+      // partial (collapsed) introns keep 10bp of each intron so the exon
+      // structure reads without huge intronic runs dominating the sequence.
+      // exact xpath so it doesn't also match the "+/- up+down stream" variant
+      {
+        type: 'click',
+        selector: '[data-testid="sequence_type_gene_collapsed_intron"]',
+      },
       { type: 'delay', ms: 3000 },
     ],
   },
@@ -6217,7 +6301,7 @@ export const specs: ScreenshotSpec[] = [
           displaySnapshot: {
             type: 'LinearMultiSampleVariantDisplay',
             renderingMode: 'phased',
-            height: 260,
+            height: TRIO_VCF_DISPLAY_H,
             // relabel sidebar rows Child/Mother/Father hapN (keeps the
             // canonical HG020xx HPn identity in `name`/`sampleName`)
             layout: trioVcfLayout,

@@ -75,7 +75,7 @@ const SequenceTypeSelector = observer(function SequenceTypeSelector({
               ]
             : []),
         ].map(([key, val]) => (
-          <MenuItem key={key} value={key}>
+          <MenuItem key={key} value={key} data-testid={`sequence_type_${key}`}>
             {val}
           </MenuItem>
         ))}

@@ -71,11 +71,11 @@ Click **Open new genome** to bring up the "Open a genome" dialog.
 <Figure src="/img/desktop-open-genome.png" caption="The Open a genome dialog. Drop or browse for a sequence file and JBrowse detects the format automatically; a text link switches to loading from URLs instead."/>
 
 The dialog is drop-first. Drop your sequence file — a FASTA, bgzip-compressed
-FASTA, or 2bit, along with any `.fai`/`.gzi` index files — onto the drop area, or
-click it to browse. To load from the web instead, click **Open from a URL** and
-paste your file URLs, one per line. JBrowse classifies each file, and once it
-recognizes a sequence it shows a confirmation card with a **Genome name** field
-(e.g. `hg38`).
+FASTA, or 2bit, along with any `.fai`/`.gzi` index files — onto the drop area,
+or click it to browse. To load from the web instead, click **Open from a URL**
+and paste your file URLs, one per line. JBrowse classifies each file, and once
+it recognizes a sequence it shows a confirmation card with a **Genome name**
+field (e.g. `hg38`).
 
 If a filename doesn't match the conventions JBrowse detects, it offers **Enter
 details manually**, opening a form with a **Format** dropdown:
@@ -157,8 +157,8 @@ To search a track by gene name or feature ID from the location box, index its
 feature names: open the track's menu (the **⋮** button on the track, or its
 entry in the track selector) and choose **Index track**. Indexing runs as a
 background job; when it finishes, names from that track can be typed straight
-into the search box. This is the in-app equivalent of the CLI `jbrowse
-text-index` command.
+into the search box. This is the in-app equivalent of the CLI
+`jbrowse text-index` command.
 
 ## Saving and reopening sessions
 

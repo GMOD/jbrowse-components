@@ -110,8 +110,8 @@
     "name": "bigwig/whole_genome_coverage",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-02T02:58:41.587Z",
-    "hash": "0bb333910e337b46305effd9f5a8e397e7fa6a19"
+    "reviewedAt": "2026-07-04T17:58:08.999Z",
+    "hash": "d0d49433174ee6ea3a29763ec82cd72eab645f5c"
   },
   "sv_inspector_begin": {
     "name": "sv_inspector_begin",
@@ -129,8 +129,8 @@
     "name": "cnv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-03T20:24:03.680Z",
-    "hash": "a84c5b5bf763ae3ceb09ec0a824ecb940cdc09b1"
+    "reviewedAt": "2026-07-04T17:58:06.992Z",
+    "hash": "f9d2483af41692af5ab1bcf8a9f4f033c95b5770"
   },
   "smalldel": {
     "name": "smalldel",
@@ -148,8 +148,8 @@
     "name": "multisv",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-02T02:59:34.684Z",
-    "hash": "1f846c0ffb88d127dd3a2f72687c9d46be3f9af6"
+    "reviewedAt": "2026-07-04T17:55:32.988Z",
+    "hash": "ea960743b3b292e08ef187a7b798223b303d97b6"
   },
   "breakpoint_split_view": {
     "name": "breakpoint_split_view",
@@ -248,15 +248,15 @@
     "name": "alignments_sort_by_base",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-02T02:58:29.317Z",
-    "hash": "db37657ca0e52e448bf87fefe16e89a8c19279ef"
+    "reviewedAt": "2026-07-04T17:59:01.698Z",
+    "hash": "bfb058960bfc75f8da4883bb9c764cc49ec6a7a1"
   },
   "alignments/filter_dialog": {
     "name": "alignments/filter_dialog",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T20:23:39.866Z",
-    "hash": "67a2ca4b13f7e3bb952a96fca713bcfcfefa3d26"
+    "note": "remove the quick 'HP' and 'RG' chips",
+    "reviewedAt": "2026-07-04T20:01:09.583Z",
+    "hash": "7faf29aea6cb6f1bfba10e25102707aca8842b6a"
   },
   "alignments/modifications1": {
     "name": "alignments/modifications1",
@@ -351,9 +351,9 @@
   "linear_align_ctx_menu": {
     "name": "linear_align_ctx_menu",
     "status": "good",
-    "note": "FIXED: switched to short volvox-sv paired reads (denser/more interesting than long reads); annotation + arrow already say \"Right-click any read to open this menu\".",
-    "reviewedAt": "2026-06-23T04:43:41.624Z",
-    "hash": "05da93807d1c4edaa29cb780d6ded641a53b443f"
+    "note": "the arrow overlaps the annotation text box",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "24f86db33abcb696d0a6ff5cfb8265b63262cf94"
   },
   "methylation/arabidopsis_bisulfite_chh": {
     "name": "methylation/arabidopsis_bisulfite_chh",
@@ -392,13 +392,6 @@
     "reviewedAt": "2026-07-02T02:58:31.474Z",
     "hash": "7e87a277183102d663d882983e8e36ebcc42a9d1"
   },
-  "alignments/color_by_insert_size": {
-    "name": "alignments/color_by_insert_size",
-    "status": "bad",
-    "note": "remove this from docs. it is confusing.",
-    "reviewedAt": "2026-07-03T20:23:31.120Z",
-    "hash": "77237a2df456ecf10905f3ff1d8da0ee6675ffd1"
-  },
   "alignments/compact": {
     "name": "alignments/compact",
     "status": "good",
@@ -415,8 +408,8 @@
     "name": "customized_feature_details",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-03T20:24:08.819Z",
-    "hash": "aca231391fa837e152eddb398c7375f32f1c0890"
+    "reviewedAt": "2026-07-04T17:58:04.374Z",
+    "hash": "c9ed9ac5ccc4038f8c8aa70e4b413a13d6b61a3e"
   },
   "customized_theme": {
     "name": "customized_theme",
@@ -469,10 +462,10 @@
   },
   "feature_detail_sequence": {
     "name": "feature_detail_sequence",
-    "status": "bad",
+    "status": "good",
     "note": "use the partial introns for this",
-    "reviewedAt": "2026-07-04T12:18:33.071Z",
-    "hash": "12d7e54e3f987781aa3df7351d670b00d4e389ca"
+    "reviewedAt": "2026-07-04T19:59:06.482Z",
+    "hash": "f473a912270c773bb0be455068d49500818a2f33"
   },
   "hic_track": {
     "name": "hic_track",
@@ -605,15 +598,15 @@
     "name": "trio-matrix-phased",
     "status": "good",
     "note": "RESOLVED: connecting lines already thinner than main (strokeWidth 0.5 vs main 1.0); image refreshed.",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
-    "hash": "2298e8ed37151dc0a0534a26d81ad93ee53f560e"
+    "reviewedAt": "2026-07-04T17:53:06.982Z",
+    "hash": "a2e1161435c6e1b7318130604c0bc3878acf1b9f"
   },
   "trio-matrix-phased-clean": {
     "name": "trio-matrix-phased-clean",
     "status": "good",
     "note": "RESOLVED: connecting lines already thinner than main (strokeWidth 0.5 vs main 1.0); image refreshed.",
-    "reviewedAt": "2026-06-23T04:41:21.287Z",
-    "hash": "9c7c4606fe160ecfbad55d48db7ece2fdec5b4b5"
+    "reviewedAt": "2026-07-04T17:53:05.994Z",
+    "hash": "ee1d5c7225f9efed36d691374ac71151283d6e78"
   },
   "upstream_downstream_details": {
     "name": "upstream_downstream_details",
@@ -848,16 +841,16 @@
   "gene_track_collapse_introns": {
     "name": "gene_track_collapse_introns",
     "status": "good",
-    "note": "DONE: jexlFilter get(feature,'name')=='PTEN' (+ geneGlyphMode longestCoding) drops the neighboring KLLN + RPL11P3 features so only PTEN shows — doubles as a feature-filtering demo (reviewer's suggestion). Root cause the filtered figure wasn't regenerating: readyText 'NCBI RefSeq' matches the track name, which renders before the remote GFF loads, so the rightclick raced the PTEN label. Added an explicit waitForText 'PTEN' before the rightclick; regenerated + verified KLLN is gone.",
-    "reviewedAt": "2026-07-02T23:36:02.546Z",
-    "hash": "0bda2008eaeb9c3e38d7838b11f41280338f09c7"
+    "note": "there are multiple 'blurbs' like \"showing 1 feature\" and \"isoforms collapsed to longest coding transcript\"...too many blurbs, both have different styles, etc. we need a better system for this",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "817e8fc0a5bf54ee03d07d5a3090b43b77f6ecb4"
   },
   "gene_track_color_by_cds": {
     "name": "gene_track_color_by_cds",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-26T02:33:20.580Z",
-    "hash": "047f47e98f52be20c0bf58852976f184d16d9316"
+    "reviewedAt": "2026-07-04T17:56:58.414Z",
+    "hash": "66ee981acaa24a38ce362d1a6769de2cd17d30ab"
   },
   "gene_track_mature_peptides": {
     "name": "gene_track_mature_peptides",
@@ -900,16 +893,16 @@
   "trio-crossover-paternal": {
     "name": "trio-crossover-paternal",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-26T02:29:38.639Z",
-    "hash": "40c7fcba5406716c6d28f4e5fd8e288c25d48e30"
+    "note": "the yellow/purple boxes dont quite exactly match the y-positioning of the rows of the multisample variant display. if needed evaluate code on the page in puppeteer to find exact boundaries",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "b6e21897924f50551531f23704fe49a68571dd6e"
   },
   "trio-crossover-maternal": {
     "name": "trio-crossover-maternal",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-26T02:29:38.639Z",
-    "hash": "dfb933eb77e489890d2e3ebcbf21a0fd3ffbfd1f"
+    "note": "the yellow/purple boxes dont quite exactly match the y-positioning of the rows of the multisample variant display. if needed evaluate code on the page in puppeteer to find exact boundaries",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "0a799bd6ed1cdb5145cc181fa956fb61f032d585"
   },
   "maf_track": {
     "name": "maf_track",
@@ -921,8 +914,8 @@
     "name": "alignments/haplotype_groupby",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-25T18:25:17.111Z",
-    "hash": "547bbaff818b9ae9327e993c256b82c8e419abc2"
+    "reviewedAt": "2026-07-04T17:58:16.415Z",
+    "hash": "5963bcacefde906577bb2660e6a0d7ae6548e194"
   },
   "gene_track_selenocysteine": {
     "name": "gene_track_selenocysteine",
@@ -1006,10 +999,10 @@
   },
   "jbrowse-img/grape_peach_synteny": {
     "name": "jbrowse-img/grape_peach_synteny",
-    "status": "good",
-    "note": "",
-    "reviewedAt": "2026-06-24T12:27:25.893Z",
-    "hash": "757159a9d74dd6ea45a0afd2e8a96d599c6ef924"
+    "status": "bad",
+    "note": "not sure if it did autodiagonalize effectively",
+    "reviewedAt": "2026-07-04T19:36:38.557Z",
+    "hash": "4b863c87facb674a6f1a806725cd672075822fcb"
   },
   "jbrowse-img/gene_track": {
     "name": "jbrowse-img/gene_track",
@@ -1074,9 +1067,9 @@
   "protein/connected": {
     "name": "protein/connected",
     "status": "good",
-    "note": "switched the demoed domain from DNA binding (1146px, residues 102-292, wider than the alignment tracks own 649px scrollable viewport) to the Oligomerization region (UniProt Region 325-358, 192px) which fits entirely within the panel with no edge clipping. Combined with the scroll action centering fix: tooltip fully on-screen, selection outline precisely aligned with the highlighted alignment columns (verified by close crop), structure + genome highlights all consistent.",
-    "reviewedAt": "2026-07-02T02:59:37.175Z",
-    "hash": "a5b503bc2ef1c35e97f448d0dfd22eba088abac5"
+    "note": "",
+    "reviewedAt": "2026-07-04T17:54:33.136Z",
+    "hash": "47873e4602dc1f4c85d8f232a08d36ff6c5ff47d"
   },
   "sv_cgiab/translocation_open_from_track": {
     "name": "sv_cgiab/translocation_open_from_track",
@@ -1088,15 +1081,15 @@
     "name": "sv_cgiab/dotplot_import_form",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-06-23T03:58:59.434Z",
-    "hash": "88034947379893151f6bd75ab0fa2415f69b4df6"
+    "reviewedAt": "2026-07-04T17:54:16.455Z",
+    "hash": "aced031db5c5be0667f7ef2b9def6b846368040b"
   },
   "feature_detail_protein": {
     "name": "feature_detail_protein",
     "status": "good",
-    "note": "New figure demonstrating translation exceptions (reviewer ask): SELENOP Protein view highlights the ten selenocysteine (U) residues recoded from in-frame UGA stops via transl_except, amber, with a legend. Added to feature_sequence.md Protein section.",
-    "reviewedAt": "2026-06-25T16:48:04.000Z",
-    "hash": "10072924fc2e8ac3d0ee00f7a8446b335c58efec"
+    "note": "",
+    "reviewedAt": "2026-07-04T17:58:04.308Z",
+    "hash": "85dc8f7d847b08e97df166a937cfa0625bd5b7d7"
   },
   "jbrowse-img/multisample_variants": {
     "name": "jbrowse-img/multisample_variants",
@@ -1128,10 +1121,10 @@
   },
   "maf_470way": {
     "name": "maf_470way",
-    "status": "good",
-    "note": "FIXED end-to-end: (1) the blank-heatmap regression (overlay canvases used raw rowHeight=0 in fit mode instead of effectiveRowHeight); (2) shortened the track (heightOverride 1080->560, rows sub-pixel but the conserved/divergent texture still reads and it is no longer a full-screen wall); (3) added MafIdentityLegend (top-right) naming the ramp red=Divergent / blue=Conserved. Regenerated + verified.",
-    "reviewedAt": "2026-07-02T03:23:30.000Z",
-    "hash": "8f9b718036e29d722d3332c033cfd0e3fb17b84d"
+    "status": "bad",
+    "note": "unclear what \"divergent\" vs \"conserved\" indicates. this just isn't a very clear image of what is going on. display even denser display with fit to display height with small e.g. 600px tall display height, even if it makes very small row heights.",
+    "reviewedAt": "2026-07-04T17:56:45.304Z",
+    "hash": "0ac4aec89c687b1a9c65647738ac263dc516a794"
   },
   "maf_470way_codon": {
     "name": "maf_470way_codon",
@@ -1143,9 +1136,9 @@
   "maf_color_by_chromosome": {
     "name": "maf_color_by_chromosome",
     "status": "good",
-    "note": "Reworked from a global name->hue rainbow to a PER-ROW rank scheme (perRowChromRanks + SOURCE_CHROM_PALETTE in drawSourceChrom.ts): within each species row, source chromosomes are ranked by coverage and colored by rank, so every row main chromosome shares the primary blue and only blocks from a different source chromosome take an accent (orange/crimson) — rearrangements pop, no rainbow. Legend is now rank-based (Main/2nd/3rd source). Applies to canvas + SVG export; docs (user+config guides) updated; maf tests green (299).",
-    "reviewedAt": "2026-07-02T03:33:41.000Z",
-    "hash": "17f8cc352746d6b0771fd0d466ec6ebad16ce06e"
+    "note": "all legend color boxes are all on same line currently. the legend should have a color box on a newline. ",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "417dfadd1e23e7579eba4235777ed6b6c5c97283"
   },
   "maf_inversions": {
     "name": "maf_inversions",
@@ -1157,30 +1150,30 @@
   "sv_cgiab/cnv_log2_baf": {
     "name": "sv_cgiab/cnv_log2_baf",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T13:05:02.729Z",
-    "hash": "806c25cd49a1bb6fd4ec6f19f984de8b10dd89f7"
+    "note": "unclear why baf looks 'capped' at 0.5 here",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "2fff3be7bdd52b0a76df98c0bbe2754ce4047a53"
   },
   "sv_cgiab/cnv_log2ratio_genome": {
     "name": "sv_cgiab/cnv_log2ratio_genome",
-    "status": "bad",
+    "status": "good",
     "note": "why is baf only taking on values between 0 and 0.5? i thought it should be between 0 and 1. also, it is using indexcov for the coverage but i think this is not well normalized to the 'baseline depth'. is there any way to do that",
-    "reviewedAt": "2026-07-04T12:24:25.812Z",
-    "hash": "862db4c8b3527ca545f09688bfa66c54944cb511"
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "f00f42ee1ec96a29cd9c736562fe34bd8d13a44e"
   },
   "sv_cgiab/driver_cdkn2a_deletion": {
     "name": "sv_cgiab/driver_cdkn2a_deletion",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T12:57:48.589Z",
-    "hash": "826612ccf2a96ca9034fd591a5a8425630014b2b"
+    "note": "might want to show with alignments track reads in 'compact' mode",
+    "reviewedAt": "2026-07-04T19:59:06.482Z",
+    "hash": "868a6dfe35aee2c68d93a0a3b660164493032b76"
   },
   "sv_cgiab/driver_chr17_loh": {
     "name": "sv_cgiab/driver_chr17_loh",
-    "status": "bad",
+    "status": "good",
     "note": "it is too hard to see anything going on in this figure. this should likely contain the multiwiggle for normal vs tumor coverage raw values. need to use higher resolution also, many of the cnv here are small",
-    "reviewedAt": "2026-07-04T12:25:25.364Z",
-    "hash": "731b13c2614f1c849c8ce2770409bf146057aff8"
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "1a8770da459ab10785fd553d9ad5a4134cee3d88"
   },
   "maf_codon_tooltip": {
     "name": "maf_codon_tooltip",
@@ -1199,9 +1192,9 @@
   "sv_cgiab/driver_kras_gain": {
     "name": "sv_cgiab/driver_kras_gain",
     "status": "good",
-    "note": "hard to see what is going on here ",
-    "reviewedAt": "2026-07-04T12:25:47.688Z",
-    "hash": "550a929300cfc43c7469bca8e8ef873e03c21c58"
+    "note": "hard to see what is going on here. might be nice if gene track was taller. can't see KRAS gene. might be interesting if it was highlighted.",
+    "reviewedAt": "2026-07-04T19:59:06.482Z",
+    "hash": "ba4bd354361c1c6e5555479150549067d0aa57e1"
   },
   "variants/consequence_impact_1000g": {
     "name": "variants/consequence_impact_1000g",
@@ -1220,36 +1213,36 @@
   "sv_cgiab/driver_smad4_loh": {
     "name": "sv_cgiab/driver_smad4_loh",
     "status": "good",
-    "note": "",
-    "reviewedAt": "2026-07-03T12:57:48.589Z",
-    "hash": "b83b6e8f74226e3f59f6ed051a8b533ad29afa0a"
+    "note": "hard to see what is going on here. why is BAF 0 to 0.5 and not 0 to 1?",
+    "reviewedAt": "2026-07-04T19:01:32.762Z",
+    "hash": "2118b626f47dae779f56beb70f764c320a504efe"
   },
   "multiway_synteny/ecoli_pangenome": {
     "name": "multiway_synteny/ecoli_pangenome",
-    "status": "bad",
-    "note": "why are the synteny curves grey here?",
-    "reviewedAt": "2026-07-03T20:18:32.311Z",
-    "hash": "9fa12870d913e7b2cc8584435b451617ef3e92c6"
+    "status": "good",
+    "note": "turn off the color by query name. color by query name is generally only useful when multiple chromosomes shown. also, try to show the linearsyntenyview import form step as a separate screenshot for creating this, and that the steps for creating the all vs all paf are well documented",
+    "reviewedAt": "2026-07-04T19:20:23.353Z",
+    "hash": "c206c17a7c20d9e59ba8906ebf904b5b91629d50"
   },
   "multiway_synteny/grape_peach_cacao": {
     "name": "multiway_synteny/grape_peach_cacao",
-    "status": "bad",
+    "status": "good",
     "note": "is it possible to color using consistent coloring across blocks between multiple levels? please do so",
-    "reviewedAt": "2026-07-03T20:19:09.605Z",
-    "hash": "58d023599d4bdb8c1d2474090afe51523df8643f"
+    "reviewedAt": "2026-07-04T19:20:23.353Z",
+    "hash": "9a1d10ba1745145940da68be15466191b03b9900"
   },
   "search_feature_highlight": {
     "name": "search_feature_highlight",
     "status": "good",
     "note": "",
-    "reviewedAt": "2026-07-03T20:19:09.668Z",
-    "hash": "362c88eb40458080887005e01dc2ded66d7f46cb"
+    "reviewedAt": "2026-07-04T17:54:23.657Z",
+    "hash": "7d88a93ef230faeec6e8aeff9e83a1b8ad9115e6"
   },
   "feature_height_default_pin": {
     "name": "feature_height_default_pin",
-    "status": "bad",
-    "note": "",
-    "reviewedAt": "2026-07-03T20:21:30.792Z",
-    "hash": "a619ca63a70dc5a295b7971faf4e18787ebf9fc0"
+    "status": "good",
+    "note": "try to make this just a two part screenshot. then it should get added to a doc page too.",
+    "reviewedAt": "2026-07-04T19:05:48.979Z",
+    "hash": "fc903bed6470a8b4716314c8cc4a5c50a666315f"
   }
 }

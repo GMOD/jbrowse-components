@@ -199,6 +199,13 @@ track menu.
 
 <Figure caption="Read arcs over a deletion in the 1000 Genomes Kinh-Vietnamese trio (child, mother, father; Illumina reads), with the 1KGP ensemble SV call on top. The red arcs are pairs spanning the deleted region — drawn red for a larger-than-expected insert size — and they line up with the called breakpoints across all three samples." src="/img/multi-sv-trio.png" />
 
+With **View as pairs** on, each mate pair collapses onto a single row joined by
+its own bezier curve, colored here by pair orientation. The abnormal
+same-orientation pairs of an inverted duplication then read as a coherent bundle
+of curves rather than scattered singleton pileup rows.
+
+<Figure caption="Bezier read-pair connectors over the inverted duplication at 1:39,660,000 (1000 Genomes sample HG02768, Illumina). With 'View as pairs' enabled, each pair is one row joined by a bezier curve, colored by pair orientation: the green LL and dark blue RR same-direction pairs of the inverted segment bundle together across the locus, distinct from the grey concordant background." src="/img/inverted_duplication_bezier.png" />
+
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 — HG002 deletion with Nanopore and Illumina reads in arc mode
 

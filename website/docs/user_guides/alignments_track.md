@@ -98,8 +98,6 @@ tables.
 
 <Figure caption="Reads colored by pair orientation at an inverted duplication. Most pairs are concordant LR (grey); the discordant ones cluster at the breakpoints — teal RL pairs (mates pointing away) flag the tandem duplication, while green LL and dark blue RR same-direction pairs flag the inversion." src="/img/inverted_duplication.png" />
 
-<Figure caption="Reads colored by insert size: red marks pairs with a larger-than-expected insert (deletion-spanning), pink marks smaller inserts. The colored reads cluster at the structural-variant breakpoints, standing out from the grey concordant background." src="/img/alignments/color_by_insert_size.png" />
-
 The [SV visualization guide](/docs/user_guides/sv_visualization) has the full
 color tables and worked examples on real structural variants.
 
@@ -131,6 +129,13 @@ For a denser pileup, lower the feature height from the track menu's pileup
 settings.
 
 <Figure caption="The same reads at a compact feature height." src="/img/alignments/compact.png" />
+
+The **Set feature height** submenu offers Normal, Compact, and Super-compact
+presets (plus a custom value). Choosing **Use "…" as the default for alignments
+tracks** promotes the current height to a session-wide default, so every other
+alignments track that hasn't been individually pinned follows it.
+
+<Figure caption="Setting the feature height. The submenu shows the height presets (top); enabling 'use current height by default on all alignments tracks' applies the chosen height to every un-pinned alignments track in the session (bottom)." src="/img/feature_height_default_pin.png" />
 
 ## Insertion and clipping indicators
 
