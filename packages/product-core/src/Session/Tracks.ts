@@ -8,6 +8,7 @@ import type {
   AnyConfiguration,
   AnyConfigurationModel,
 } from '@jbrowse/core/configuration'
+import type { ConnectionInstance } from '@jbrowse/core/util'
 import type { IAnyStateTreeNode, Instance } from '@jbrowse/mobx-state-tree'
 
 /**
@@ -45,9 +46,7 @@ export function TracksManagerSessionMixin(pluginManager: PluginManager) {
 
         const connectionInstances =
           'connectionInstances' in self
-            ? (self.connectionInstances as {
-                tracks: AnyConfigurationModel[]
-              }[])
+            ? (self.connectionInstances as ConnectionInstance[])
             : []
 
         return Object.fromEntries([

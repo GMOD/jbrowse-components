@@ -195,12 +195,7 @@ export interface AbstractSessionModel extends AbstractViewContainer {
     string,
     { trackId: string; [key: string]: unknown }
   >
-  connectionInstances?: {
-    name: string
-    connectionId: string
-    tracks: AnyConfigurationModel[]
-    configuration: AnyConfigurationModel
-  }[]
+  connectionInstances?: ConnectionInstance[]
   makeConnection?: (arg: AnyConfigurationModel) => void
   breakConnection?: (arg: AnyConfigurationModel) => void
 
@@ -349,6 +344,13 @@ export function isSessionModelWithWidgets(
   thing: unknown,
 ): thing is SessionWithWidgets {
   return isSessionModel(thing) && 'widgets' in thing
+}
+/** a live connection instance held in a session's `connectionInstances` */
+export interface ConnectionInstance {
+  name: string
+  connectionId: string
+  tracks: AnyConfigurationModel[]
+  configuration: AnyConfigurationModel
 }
 export interface SessionWithConnections {
   makeConnection: (arg: AnyConfigurationModel) => void
