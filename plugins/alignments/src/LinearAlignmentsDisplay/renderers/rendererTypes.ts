@@ -211,6 +211,22 @@ export function frequencyAlpha(base: number, frequency: number) {
   return base + frequency * (1 - base)
 }
 
+// Width (CSS px) of one 1bp pileup cell for the Canvas2D "colored rect per base"
+// layers (mismatch, modification, per-base quality/letter, soft-clip bases). At
+// least 1px so sub-pixel-narrow bases stay visible. `contiguous` adds a
+// half-pixel seam fudge for the layers that paint an unbroken wall of abutting
+// cells (per-base quality/letter, soft-clip runs): Canvas2D anti-aliases each
+// cell's fractional edges, and two abutting AA'd edges don't sum to full
+// opacity, leaving a hairline seam — the overdraw closes it. Sparse marks
+// (mismatch, modification) never abut, so they pass `contiguous: false`. The GPU
+// tiles pixel-snapped quads seamlessly and needs no fudge, so this is a
+// Canvas2D-only compensation; keeping it here means every base-wall layer shares
+// one rule instead of hardcoding (or forgetting) the `+ 0.5` locally.
+const PILEUP_CELL_SEAM_FUDGE_PX = 0.5
+export function pileupCellWidth(bpPerPx: number, contiguous: boolean) {
+  return Math.max(1, 1 / bpPerPx) + (contiguous ? PILEUP_CELL_SEAM_FUDGE_PX : 0)
+}
+
 // Introns (skip/N gaps) draw as 1px centerlines; once reads get compact the
 // per-row centerlines pack together into a solid smear. Fade them toward
 // `INTRON_MIN_ALPHA` as `featureHeight` shrinks so dense splice pileups stay

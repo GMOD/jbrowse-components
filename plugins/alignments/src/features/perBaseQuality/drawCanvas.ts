@@ -1,6 +1,7 @@
 import { qualityCssColors } from './colors.ts'
 import {
   bpToScreenX,
+  pileupCellWidth,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -22,7 +23,7 @@ export function drawPerBaseQuality(
   const n = region.perBaseQualPositions.length
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
-  const w = Math.max(1, 1 / bpPerPx) + 0.5
+  const w = pileupCellWidth(bpPerPx, true)
 
   for (let i = 0; i < n; i++) {
     const bp = region.perBaseQualPositions[i]!

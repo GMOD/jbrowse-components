@@ -1,6 +1,7 @@
 import { rgb255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
+  pileupCellWidth,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 import { buildBaseColorTupleMap } from '../mismatch/baseColors.ts'
@@ -25,6 +26,9 @@ export function drawSoftclipBases(
 ) {
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
+  // Contiguous run of per-base cells (like perBaseLetter), so it takes the seam
+  // fudge; without it the Canvas2D fallback showed hairline gaps the GPU didn't.
+  const w = pileupCellWidth(bpPerPx, true)
   const baseColors = buildBaseColorTupleMap(state)
   // Non-A/C/G/T bases (e.g. N) have no palette entry; render them with the
   // muted SNP color rather than dropping them, matching the GPU shader
@@ -34,7 +38,6 @@ export function drawSoftclipBases(
   for (let i = 0; i < region.softclipBasePositions.length; i++) {
     const bp = region.softclipBasePositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const w = Math.max(1, 1 / bpPerPx)
     const yRow = region.softclipBaseYs[i]!
     const y = pileupRowY(yRow, state)
     const base = region.softclipBaseBases[i]!

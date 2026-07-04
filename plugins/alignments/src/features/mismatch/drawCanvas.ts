@@ -3,6 +3,7 @@ import { rgb255, rgba255 } from '../../LinearAlignmentsDisplay/colorUtils.ts'
 import {
   bpToScreenX,
   frequencyAlpha,
+  pileupCellWidth,
   pileupRowY,
 } from '../../LinearAlignmentsDisplay/renderers/rendererTypes.ts'
 
@@ -24,12 +25,12 @@ export function drawMismatches(
   const fH = state.featureHeight
   const bpPerPx = bpLength / fullBlockWidth
   const pxPerBp = fullBlockWidth / bpLength
+  const w = pileupCellWidth(bpPerPx, false)
   const baseColors = buildBaseColorTupleMap(state)
 
   for (let i = 0; i < region.mismatchPositions.length; i++) {
     const bp = region.mismatchPositions[i]!
     const x = bpToScreenX(bp, block, bpLength, fullBlockWidth)
-    const w = Math.max(1, 1 / bpPerPx)
     const yRow = region.mismatchYs[i]!
     const y = pileupRowY(yRow, state)
     const base = region.mismatchBases[i]!
