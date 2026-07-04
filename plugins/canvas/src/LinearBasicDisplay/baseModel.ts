@@ -215,6 +215,15 @@ export default function baseStateModelFactory(
            * row-packer, so they hold the topmost rows in their bp range across
            * zoom re-packs (see packRef in layout.ts). stripDefault so a display
            * with nothing pinned omits the empty array from its snapshot.
+           *
+           * Persisted by uniqueId, which resolves back to the same feature after
+           * a plain reload of the same remote file: every adapter id is
+           * `adp-<configHash>` (idMaker over the config) plus a file byte offset
+           * (tabix/BigBed) or a deterministic full-file parse index (plain
+           * GFF3/BED/VCF). Caveat: NOT robust to editing a file read by a plain
+           * (non-tabix) adapter (the indices shift), nor to local blob files
+           * (their handleId changes each session — but a blob can't reload its
+           * data across refresh anyway). Same basis for solo/hiddenFeatureIds.
            */
           pinnedFeatureIds: types.stripDefault(types.array(types.string), []),
           /**
@@ -248,10 +257,11 @@ export default function baseStateModelFactory(
            * #property
            * Declarative feature highlights, typically seeded by a text search
            * (highlight the gene you searched for). Each entry pins a feature by
-           * its span+name signature rather than its uniqueId — trix never
-           * serializes the uniqueId and it isn't stable anyway — and is resolved
-           * against rendered features on the main thread. stripDefault so a
-           * display with no highlights omits the empty array from its snapshot.
+           * its span+name signature rather than its uniqueId — a search result
+           * carries no uniqueId to persist (unlike solo/hidden/pinned, which come
+           * from a click on a rendered feature and so DO have a reload-stable id)
+           * — and is resolved against rendered features on the main thread.
+           * stripDefault so a display with no highlights omits it from snapshot.
            */
           featureHighlights: types.stripDefault(
             types.array(FeatureHighlightModel),
@@ -729,13 +739,6 @@ export default function baseStateModelFactory(
         // the overlay highlight and the context-menu toggle labels.
         get soloFeatureIdSet(): ReadonlySet<string> {
           return new Set(self.soloFeatureIds)
-        },
-
-        /**
-         * #getter
-         */
-        get hiddenFeatureIdSet(): ReadonlySet<string> {
-          return new Set(self.hiddenFeatureIds)
         },
 
         /**

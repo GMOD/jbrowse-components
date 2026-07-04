@@ -161,3 +161,54 @@ describe('canvas display runtime filters', () => {
     ])
   })
 })
+
+interface MenuEntry {
+  label?: string
+  onClick?: () => void
+  subMenu?: MenuEntry[]
+}
+
+// Depth-first find by label across nested subMenus (no early returns per house
+// style — first match wins, later items are skipped once found).
+function findMenuItem(
+  items: MenuEntry[],
+  label: string,
+): MenuEntry | undefined {
+  let found: MenuEntry | undefined
+  for (const item of items) {
+    if (found === undefined) {
+      if (item.label === label) {
+        found = item
+      } else if (item.subMenu) {
+        found = findMenuItem(item.subMenu, label)
+      }
+    }
+  }
+  return found
+}
+
+describe('canvas display hidden-feature track menu', () => {
+  it('offers no track-level unhide when nothing is hidden', () => {
+    const display = createDisplay()
+    expect(
+      findMenuItem(display.trackMenuItems(), 'Show 1 hidden feature'),
+    ).toBeUndefined()
+  })
+
+  it('offers a track-level unhide once features are hidden, and it restores them', () => {
+    const display = createDisplay()
+    display.hideFeature('gene1')
+    display.hideFeature('gene2')
+
+    const item = findMenuItem(
+      display.trackMenuItems(),
+      'Show 2 hidden features',
+    )
+    expect(item).toBeDefined()
+    expect(display.rpcProps().hiddenFeatureIds).toEqual(['gene1', 'gene2'])
+
+    item!.onClick!()
+    expect(display.hiddenFeatureIds.length).toBe(0)
+    expect(display.rpcProps().hiddenFeatureIds).toBeUndefined()
+  })
+})

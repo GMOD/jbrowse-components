@@ -72,7 +72,7 @@ describe('solo/hidden declarative persistence', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({ hiddenFeatureIds: ['gene2'] })
 
-    expect([...display.hiddenFeatureIdSet]).toEqual(['gene2'])
+    expect([...display.hiddenFeatureIds]).toEqual(['gene2'])
     expect(display.rpcProps().hiddenFeatureIds).toEqual(['gene2'])
   })
 
@@ -99,6 +99,32 @@ describe('solo/hidden declarative persistence', () => {
     expect(snap.soloFeatureIds).toEqual(['gene1'])
     expect(snap.soloApplied).toBe(true)
     expect(snap.hiddenFeatureIds).toEqual(['gene2'])
+  })
+
+  it('a persisted snapshot re-hydrates into a fresh display (refresh survival)', () => {
+    // Simulates a page refresh: capture the snapshot from one environment, then
+    // rebuild a display from those persisted fields in a completely fresh one.
+    // Solo/hidden must still reach the worker and pinned must still resolve.
+    // This is the display half; the ids only line up because adapters mint
+    // reload-stable ids (see the pinnedFeatureIds prop doc).
+    const { display } = createTestEnvironment().createDisplay({
+      soloFeatureIds: ['gene1'],
+      soloApplied: true,
+      hiddenFeatureIds: ['gene2'],
+      pinnedFeatureIds: ['gene3'],
+    })
+    const snap = getSnapshot<PersistenceSnapshot>(display)
+
+    const { display: reloaded } = createTestEnvironment().createDisplay({
+      soloFeatureIds: snap.soloFeatureIds,
+      soloApplied: snap.soloApplied,
+      hiddenFeatureIds: snap.hiddenFeatureIds,
+      pinnedFeatureIds: snap.pinnedFeatureIds,
+    })
+
+    expect(reloaded.rpcProps().soloFeatureIds).toEqual(['gene1'])
+    expect(reloaded.rpcProps().hiddenFeatureIds).toEqual(['gene2'])
+    expect([...reloaded.pinnedFeatureIdSet]).toEqual(['gene3'])
   })
 
   it('runtime actions still drive the persistent props', () => {
