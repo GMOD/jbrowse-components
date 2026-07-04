@@ -42,6 +42,31 @@ test('setInit applies the import exactly once', () => {
   expect(model.importWizard.fileSource).toMatchObject({ uri: 'test.vcf' })
 })
 
+test('reloading the same file preserves column visibility and SV-type filter', () => {
+  const { Session, SpreadsheetView } = makeSession()
+  const session = Session.create({ rpcManager: {}, configuration: {} })
+  const model = session.setView(
+    SpreadsheetView.create({ type: 'SpreadsheetView' }),
+  )
+
+  const columns = [{ name: 'CHROM' }, { name: 'INFO.SVTYPE' }]
+  model.displaySpreadsheet({ columns, rowSet: { rows: [] } })
+  model.spreadsheet!.setVisibleColumns({ 'INFO.SVTYPE': false })
+  model.spreadsheet!.setSvTypeFilter('DEL')
+
+  // a re-fetch supplies only columns/rowSet (no view state); same columns ⇒
+  // carry over the user's choices
+  model.displaySpreadsheet({ columns, rowSet: { rows: [] } })
+  expect(model.spreadsheet!.visibleColumns).toEqual({ 'INFO.SVTYPE': false })
+  expect(model.spreadsheet!.svTypeFilter).toBe('DEL')
+
+  // a genuinely different file (different columns) starts clean
+  model.spreadsheet!.setVisibleColumns({ CHROM: false })
+  model.displaySpreadsheet({ columns: [{ name: 'other' }], rowSet: { rows: [] } })
+  expect(model.spreadsheet!.visibleColumns).toEqual({})
+  expect(model.spreadsheet!.svTypeFilter).toBeUndefined()
+})
+
 test('width churn does not re-trigger the load (reaction tracks init, not width)', () => {
   const { Session, SpreadsheetView } = makeSession()
   const session = Session.create({ rpcManager: {}, configuration: {} })

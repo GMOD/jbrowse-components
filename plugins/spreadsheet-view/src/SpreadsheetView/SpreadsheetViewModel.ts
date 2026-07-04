@@ -134,10 +134,29 @@ export default function stateModelFactory() {
 
           /**
            * #action
-           * load a new spreadsheet and set our mode to display it
+           * load a new spreadsheet and set our mode to display it. When the
+           * incoming data has the same columns as what's shown (i.e. a
+           * session-cached URI being re-fetched on reload), carry over the
+           * user's column-visibility and SV-type filter — a fresh parse only
+           * supplies columns/rowSet, so a plain replace would reset them. The
+           * column match keeps this from leaking view state across different
+           * files.
            */
           displaySpreadsheet(spreadsheet?: SpreadsheetSnapshot) {
-            self.spreadsheet = cast(spreadsheet)
+            const prev = self.spreadsheet
+            const sameColumns =
+              !!prev &&
+              !!spreadsheet &&
+              JSON.stringify(prev.columns) === JSON.stringify(spreadsheet.columns)
+            self.spreadsheet = cast(
+              sameColumns
+                ? {
+                    ...spreadsheet,
+                    visibleColumns: prev.visibleColumns,
+                    svTypeFilter: prev.svTypeFilter,
+                  }
+                : spreadsheet,
+            )
           },
 
           /**
