@@ -2046,6 +2046,7 @@ export default function baseStateModelFactory(
             let prevMode: string | undefined
             let prevShowLabels: boolean | undefined
             let prevShowDescriptions: boolean | undefined
+            let prevFitScale: number | undefined
             // autorunOnReadyView gates on view.initialized — laidOutDataMap is
             // empty until then, and showLabels/effectiveShowDescriptions read
             // view.width (which throws pre-measure), so the body must not run
@@ -2059,15 +2060,21 @@ export default function baseStateModelFactory(
                 const mode = self.displayMode
                 const showLabels = self.showLabels
                 const showDescriptions = self.effectiveShowDescriptions
+                // A fit-to-height rescale (e.g. a drag-resize) is a uniform
+                // squeeze, not a row re-pack, so treat it like a mode change:
+                // snap rather than morph, else every resize frame animates.
+                const fitScale = self.fitScale
                 const scaleUnchanged =
                   mode === prevMode &&
                   showLabels === prevShowLabels &&
-                  showDescriptions === prevShowDescriptions
+                  showDescriptions === prevShowDescriptions &&
+                  fitScale === prevFitScale
                 const from = prevLayout
                 prevLayout = current
                 prevMode = mode
                 prevShowLabels = showLabels
                 prevShowDescriptions = showDescriptions
+                prevFitScale = fitScale
                 // Not a real layout-to-layout transition (first data, an
                 // empty map on nav) — nothing to morph or snap.
                 if (
