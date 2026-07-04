@@ -10,7 +10,7 @@ import btn from '../styles/button.module.css'
   <!-- Hero row -->
   <div class="hero-row">
     <div class="hero-text">
-      <p class="hero-title">JBrowse</p>
+      <h1 class="hero-title">JBrowse</h1>
       <p class="hero-subtitle">The next-generation genome browser</p>
       <p class="body-text">
         JBrowse is a genome browser that runs on the web, on your desktop, or
@@ -45,7 +45,7 @@ import btn from '../styles/button.module.css'
         src={`${baseUrl}/img/screenshot.webp`}
         width="1362"
         height="731"
-        alt="screenshot of jbrowse 2"
+        alt="JBrowse linear genome view showing read alignments, coverage, and gene annotations"
       />
     </div>
   </div>
@@ -54,8 +54,7 @@ import btn from '../styles/button.module.css'
 <div class="outer-box">
   <!-- Features -->
   <div class="section-box">
-    <p class="section-title">Features</p>
-    <hr />
+    <h2 class="section-title">Features</h2>
     <div class="two-col">
       <div>
         <ul>
@@ -93,29 +92,38 @@ import btn from '../styles/button.module.css'
           src={`${baseUrl}/img/sv_inspector_importform_loaded.png`}
           width="1377"
           height="614"
-          alt="screenshot of jbrowse 2 SV inspector"
+          loading="lazy"
+          decoding="async"
+          alt="JBrowse structural variant inspector with a spreadsheet of variant calls above a genome view"
         />
       </div>
     </div>
   </div>
 
   <!-- Resources -->
-  <div class="section-box centered">
-    <p class="section-title">Get started</p>
-    <hr />
-    <div class="resources">
-      <div class="resource-group">
-        <p class="resource-group-label">Quick starts</p>
-        <ul>
+  <div class="section-box">
+    <h2 class="section-title">Get started</h2>
+    <div class="cards">
+      <div class="card">
+        <Icon class="card-icon" name="mdi:rocket-launch-outline" width="28" height="28" />
+        <h3 class="card-title">Install &amp; run</h3>
+        <p class="card-desc">
+          Open your first genome in the desktop app or straight from the browser.
+        </p>
+        <ul class="card-links">
           <li>
-            <a href={`${baseUrl}/docs/quickstart_desktop/`}>JBrowse desktop</a>
+            <a href={`${baseUrl}/docs/quickstart_desktop/`}>Desktop quick start</a>
           </li>
-          <li><a href={`${baseUrl}/docs/quickstart_web/`}>JBrowse web</a></li>
+          <li><a href={`${baseUrl}/docs/quickstart_web/`}>Web quick start</a></li>
         </ul>
       </div>
-      <div class="resource-group">
-        <p class="resource-group-label">Guides</p>
-        <ul>
+      <div class="card">
+        <Icon class="card-icon" name="mdi:book-open-page-variant-outline" width="28" height="28" />
+        <h3 class="card-title">Learn</h3>
+        <p class="card-desc">
+          Guides for using, configuring, and extending JBrowse.
+        </p>
+        <ul class="card-links">
           <li><a href={`${baseUrl}/docs/user_guide/`}>User guide</a></li>
           <li><a href={`${baseUrl}/docs/config_guide/`}>Config guide</a></li>
           <li>
@@ -123,38 +131,44 @@ import btn from '../styles/button.module.css'
           </li>
         </ul>
       </div>
-      <div class="resource-group">
-        <p class="resource-group-label">Explore</p>
-        <ul>
+      <div class="card">
+        <Icon class="card-icon" name="mdi:compass-outline" width="28" height="28" />
+        <h3 class="card-title">See it in action</h3>
+        <p class="card-desc">
+          Browse the visualization gallery and interactive live demos.
+        </p>
+        <ul class="card-links">
           <li><a href={`${baseUrl}/gallery/`}>Visualization gallery</a></li>
           <li><a href={`${baseUrl}/demos/`}>Live demos</a></li>
-          <li><a href={`${baseUrl}/features/`}>Feature list</a></li>
-          <li><a href={`${baseUrl}/blog/`}>Release blog</a></li>
+          <li><a href={`${baseUrl}/features/`}>Full feature list</a></li>
         </ul>
       </div>
-      <div class="resource-group">
-        <p class="resource-group-label">Developers</p>
-        <ul>
+      <div class="card">
+        <Icon class="card-icon" name="mdi:code-tags" width="28" height="28" />
+        <h3 class="card-title">Build with it</h3>
+        <p class="card-desc">
+          Embed JBrowse in your app and extend it with plugins.
+        </p>
+        <ul class="card-links">
           <li>
             <a href={`${baseUrl}/docs/embedded_components/`}
               >Embedded React components</a
             >
           </li>
+          <li><a href={`${baseUrl}/plugin_store/`}>Plugin store</a></li>
           <li>
             <a href={`${baseUrl}/download/#jbrowse-cli-tools`}
               >Command line tools</a
             >
           </li>
-          <li><a href={`${baseUrl}/plugin_store/`}>Plugin store</a></li>
         </ul>
       </div>
     </div>
   </div>
 
   <!-- Citation -->
-  <div class="section-box centered">
-    <p class="section-title">Citation</p>
-    <hr />
+  <div class="section-box">
+    <h2 class="section-title">Citation</h2>
     <p class="body-text">
       We at the JBrowse Consortium are working to make JBrowse a pluggable,
       open-source computational platform for integrating many kinds of
@@ -176,9 +190,8 @@ import btn from '../styles/button.module.css'
   </div>
 
   <!-- Funding -->
-  <div class="section-box centered">
-    <p class="section-title">Funding and collaboration</p>
-    <hr />
+  <div class="section-box">
+    <h2 class="section-title">Funding and collaboration</h2>
     <p class="body-text">
       JBrowse development has received support from the US National Institutes
       of Health (U41 HG003751), The Chan Zuckerberg Initiative, The Ontario
@@ -209,6 +222,8 @@ import btn from '../styles/button.module.css'
     font-weight: 400;
     line-height: 1.235;
     margin: 0;
+    padding-bottom: 0.4rem;
+    border-bottom: 1px solid var(--color-border);
   }
   .body-text {
     font-size: 1rem;
@@ -238,9 +253,9 @@ import btn from '../styles/button.module.css'
   .newsletter-hero {
     text-align: center;
     padding: 20px 24px;
-    border: 1px solid rgba(26, 63, 114, 0.2);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 20%, transparent);
     border-radius: 8px;
-    background: hsl(214, 80%, 97%);
+    background: color-mix(in srgb, var(--color-primary) 5%, white);
     margin-top: 8px;
   }
   .newsletter-label {
@@ -248,29 +263,52 @@ import btn from '../styles/button.module.css'
     color: var(--color-text-muted);
     margin: 0 0 8px;
   }
-  .resources {
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 1rem;
+    margin-top: 0.5rem;
+  }
+  .card {
     display: flex;
-    flex-wrap: wrap;
-    gap: 2rem;
+    flex-direction: column;
+    gap: 0.3rem;
+    padding: 1.25rem;
+    border: 1px solid var(--color-border);
+    border-radius: 8px;
+    background: var(--color-surface);
+    transition:
+      border-color 150ms ease,
+      box-shadow 150ms ease,
+      transform 150ms ease;
   }
-  .resource-group {
-    min-width: 160px;
+  .card:hover {
+    border-color: var(--color-accent);
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08);
+    transform: translateY(-2px);
   }
-  .resource-group-label {
-    font-size: 0.75rem;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
+  .card-icon {
+    color: var(--color-primary);
+  }
+  .card-title {
+    font-size: 1.125rem;
+    font-weight: 500;
+    line-height: 1.3;
+    margin: 0.1rem 0 0;
+  }
+  .card-desc {
+    font-size: 0.875rem;
+    line-height: 1.45;
     color: var(--color-text-muted);
-    margin: 0 0 0.4rem;
+    margin: 0 0 0.35rem;
   }
-  .resource-group ul {
-    margin: 0;
+  .card-links {
+    margin: auto 0 0;
     padding: 0;
     list-style: none;
   }
-  .resource-group li {
-    margin: 0.25rem 0;
+  .card-links li {
+    margin: 0.3rem 0;
   }
   .hero-image img {
     border-radius: 8px;
@@ -282,6 +320,7 @@ import btn from '../styles/button.module.css'
 
   .btn-row {
     display: flex;
+    flex-wrap: wrap;
     justify-content: space-evenly;
     gap: 8px;
   }
@@ -291,12 +330,6 @@ import btn from '../styles/button.module.css'
     display: flex;
     flex-direction: column;
     gap: 8px;
-  }
-
-  .centered {
-    max-width: 1600px;
-    margin-left: auto;
-    margin-right: auto;
   }
 
   .two-col {
