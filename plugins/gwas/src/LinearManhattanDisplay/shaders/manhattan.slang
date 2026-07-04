@@ -9,6 +9,7 @@
 
 import hpmath;
 import colorPack;
+import pointGlyph;
 
 public static const uint VERTS_PER_INSTANCE = 6u;
 
@@ -44,17 +45,14 @@ struct VsOut {
   float  shape    : TEXCOORD1;
 };
 
-// 1px pad (in device pixels) around the marker so the smoothstep edge has room
-// to fade. localPos is normalized so the marker boundary sits at distance 1.
-static const float AA_PAD_PX = 1.0;
+// Shape discriminators for the fragment shader. AA_PAD_PX and
+// SMALL_POINT_MAX_DIAMETER (and the disc SDF) come from the shared pointGlyph
+// module so they stay in lockstep with wiggle.slang.
 static const float SHAPE_DISC = 0.0;
 static const float SHAPE_TRI = 1.0;
 // >1.5 in the fragment shader = flat solid fill (ranged-SV bar, or the tiny
-// square below). At/below SMALL_POINT_MAX_DIAMETER an AA disc reads as a muddy
-// blob, so a crisp square is drawn instead (mirrors wiggle.slang + the JS
-// SMALL_POINT_MAX_DIAMETER_PX).
+// square below).
 static const float SHAPE_BAR = 2.0;
-static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 // 1/sqrt(5): normalizes the two slanted edges of the inverted triangle so the
 // edge functions read as true perpendicular distances for antialiasing.
 static const float INV_SQRT5 = 0.4472136;
@@ -112,7 +110,7 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     o.localPos = local;
     o.shape = SHAPE_BAR;
   } else {
-    float expand = (u.pointRadius + AA_PAD_PX) / max(u.pointRadius, 0.5);
+    float expand = discExpand(u.pointRadius);
     float halfPx = u.pointRadius * expand;
     float dx = local.x * halfPx * 2.0 / u.viewportWidth;
     float dy = local.y * halfPx * 2.0 / u.canvasHeight;
@@ -130,20 +128,19 @@ float4 fs_main(VsOut fragIn) : SV_Target {
     return fragIn.color;
   }
   float2 p = fragIn.localPos;
-  float coverage;
+  float alpha;
   if (fragIn.shape > 0.5) {
     // Inverted triangle: top edge (-1,1)-(1,1), apex (0,-1). Each edge's signed
     // distance is positive inside; the min is the SDF used for the AA fade.
     float dTop = 1.0 - p.y;
     float dLeft = (2.0 * p.x + p.y + 1.0) * INV_SQRT5;
     float dRight = (-2.0 * p.x + p.y + 1.0) * INV_SQRT5;
-    coverage = min(dTop, min(dLeft, dRight));
+    float coverage = min(dTop, min(dLeft, dRight));
+    float aa = fwidth(coverage);
+    alpha = smoothstep(-aa, aa, coverage);
   } else {
-    // Disc: boundary at distance 1 from center, so the SDF is 1 - radius.
-    coverage = 1.0 - length(p);
+    alpha = discAlpha(p);
   }
-  float aa = fwidth(coverage);
-  float alpha = smoothstep(-aa, aa, coverage);
   if (alpha <= 0.0) discard;
   return float4(fragIn.color.rgb, fragIn.color.a * alpha);
 }

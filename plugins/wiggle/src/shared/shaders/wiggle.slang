@@ -7,6 +7,7 @@
 
 import hpmath;
 import colorPack;
+import pointGlyph;
 
 
 public static const uint VERTS_PER_INSTANCE = 6u;
@@ -18,14 +19,11 @@ static const int SCALE_TYPE_LOG = 1;
 
 // Scatter glyph shapes carved by the fragment shader (matches manhattan.slang):
 // point-like features become an AA disc, wide (low-zoom) bins a solid bar.
+// AA_PAD_PX / SMALL_POINT_MAX_DIAMETER and the disc SDF live in the shared
+// pointGlyph module so they stay in lockstep with manhattan.slang.
 static const float SHAPE_SOLID = 0.0;
 static const float SHAPE_DISC = 1.0;
 static const float SHAPE_BAR = 2.0;
-// 1px device pad around a disc so the smoothstep edge has room to fade.
-static const float AA_PAD_PX = 1.0;
-// At/below this diameter an AA disc reads as a muddy blob, so draw a crisp
-// filled square instead (must match SMALL_POINT_MAX_DIAMETER_PX in JS).
-static const float SMALL_POINT_MAX_DIAMETER = 3.0;
 
 struct WiggleInstance {
   uint2 startEnd  : ATTR0;
@@ -150,7 +148,7 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
       shape = SHAPE_SOLID;
     } else {
       // expand the quad by the AA pad so the disc's fade edge isn't clipped
-      float expand = (radiusPx + AA_PAD_PX) / max(radiusPx, 0.5);
+      float expand = discExpand(radiusPx);
       float halfPx = radiusPx * expand;
       sx = midX + local.x * halfPx * 2.0 / u.viewportWidth;
       sy = centerClipY + local.y * halfPx * pxToClip;
@@ -212,10 +210,7 @@ float4 fs_main(VsOut fragIn) : SV_Target {
   if (fragIn.shape != SHAPE_DISC) {
     return fragIn.color;
   }
-  // Disc: boundary at distance 1 from center, SDF = 1 - radius, smoothstep AA.
-  float coverage = 1.0 - length(fragIn.localPos);
-  float aa = fwidth(coverage);
-  float alpha = smoothstep(-aa, aa, coverage);
+  float alpha = discAlpha(fragIn.localPos);
   if (alpha <= 0.0) {
     discard;
   }
