@@ -10,12 +10,12 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  * column is that gene's ortholog in another genome (`.` = no ortholog),
  * produced by `jcvi.compara.synteny mcscan` + `jcvi.formats.base join`.
  *
- * A `.blocks` file describes N genomes at once, but a synteny track draws one
- * pair, so the same file backs the N-1 tracks of a multi-way view: each track
- * sets `assemblyNames` to the pair it renders and the adapter derives that
- * pair's gene links from the two matching columns. When neither column is the
- * reference the link is transitive (both orthologous to the same reference
- * gene) rather than a direct alignment.
+ * A `.blocks` file describes N genomes at once, so one track backs every band of
+ * a multi-way view: list all the genomes in `assemblyNames` and the synteny view
+ * tells the adapter which pair each band draws, deriving that pair's gene links
+ * from the two matching columns. When neither column is the reference the link
+ * is transitive (both orthologous to the same reference gene) rather than a
+ * direct alignment. Listing just two assemblies pins the track to that pair.
  *
  * #example
  * ```js
@@ -28,7 +28,7 @@ import type { Instance } from '@jbrowse/mobx-state-tree'
  *     { uri: 'peach.bed' },
  *     { uri: 'cacao.bed' },
  *   ],
- *   assemblyNames: ['grape', 'peach'],
+ *   assemblyNames: ['grape', 'peach', 'cacao'],
  * }
  * ```
  */
@@ -65,7 +65,9 @@ const MCScanBlocksAdapter = ConfigurationSchema(
     },
     /**
      * #slot
-     * the pair of assemblies this track renders; both must appear in
+     * the assemblies this track can render; list all of blockAssemblies to let
+     * one track back every band of a multi-way view (the view picks each band's
+     * pair), or just two to pin it to a single pair. Every entry must appear in
      * blockAssemblies
      */
     assemblyNames: {

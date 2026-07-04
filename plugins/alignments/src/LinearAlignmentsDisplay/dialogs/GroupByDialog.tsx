@@ -115,17 +115,19 @@ function TagGroupSection(props: {
           Found values: {tagSet.join(', ')}
         </Typography>
       ) : null}
-      <FormControlLabel
-        control={
-          <Checkbox
-            checked={colorByTag}
-            onChange={event => {
-              setColorByTag(event.target.checked)
-            }}
-          />
-        }
-        label="Also color reads by this tag"
-      />
+      <div>
+        <FormControlLabel
+          control={
+            <Checkbox
+              checked={colorByTag}
+              onChange={event => {
+                setColorByTag(event.target.checked)
+              }}
+            />
+          }
+          label="Also color reads by this tag"
+        />
+      </div>
     </>
   )
 }

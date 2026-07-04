@@ -19,7 +19,9 @@ describe('pileupCellWidth', () => {
 
   it('adds exactly the seam fudge for contiguous walls', () => {
     for (const bpPerPx of [0.1, 0.5, 1, 2]) {
-      expect(pileupCellWidth(bpPerPx, true) - pileupCellWidth(bpPerPx, false)).toBeCloseTo(0.5)
+      expect(
+        pileupCellWidth(bpPerPx, true) - pileupCellWidth(bpPerPx, false),
+      ).toBeCloseTo(0.5)
     }
   })
 })

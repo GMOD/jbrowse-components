@@ -147,7 +147,8 @@ export default function stateModelFactory() {
             const sameColumns =
               !!prev &&
               !!spreadsheet &&
-              JSON.stringify(prev.columns) === JSON.stringify(spreadsheet.columns)
+              JSON.stringify(prev.columns) ===
+                JSON.stringify(spreadsheet.columns)
             self.spreadsheet = cast(
               sameColumns
                 ? {

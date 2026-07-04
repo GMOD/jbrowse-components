@@ -62,7 +62,10 @@ test('reloading the same file preserves column visibility and SV-type filter', (
 
   // a genuinely different file (different columns) starts clean
   model.spreadsheet!.setVisibleColumns({ CHROM: false })
-  model.displaySpreadsheet({ columns: [{ name: 'other' }], rowSet: { rows: [] } })
+  model.displaySpreadsheet({
+    columns: [{ name: 'other' }],
+    rowSet: { rows: [] },
+  })
   expect(model.spreadsheet!.visibleColumns).toEqual({})
   expect(model.spreadsheet!.svTypeFilter).toBeUndefined()
 })

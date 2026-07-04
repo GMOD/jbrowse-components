@@ -35,8 +35,7 @@ export function computeReadBaseCounts(
     if (seq && cigar) {
       const start = f.get('start')
       const fwd =
-        (((f.get('flags') as number | undefined) ?? 0) & SAM_FLAG_REVERSE) ===
-        0
+        (((f.get('flags') as number | undefined) ?? 0) & SAM_FLAG_REVERSE) === 0
       const ops = parseCigar2(cigar)
       let readPos = 0
       let refPos = 0

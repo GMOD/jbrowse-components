@@ -206,10 +206,8 @@ export function drawScatter(
   const scores = source.featureScores
   const { screenStartPx, screenEndPx, reversed, start, end } = block
   const n = source.numFeatures
-  const radius = pointSize / 2
-  // A bin wider than the point draws as a bar; otherwise it's a point marker
-  // (square/disc via appendPointMarker) centered on the bp midpoint. Mirrors
-  // the GPU wiggle.slang scatter branch.
+  // Every feature draws as a point marker (square/disc via appendPointMarker)
+  // centered on the bp midpoint. Mirrors the GPU wiggle.slang scatter branch.
   ctx.beginPath()
   for (let i = 0; i < n; i++) {
     const x1 = bpToScreenPx(
@@ -229,14 +227,8 @@ export function drawScatter(
       reversed,
     )
     const scoreY = scoreToY(scores[i]!) + rowTop
-    const spanPx = Math.abs(x2 - x1)
     const cx = (x1 + x2) / 2
-    if (spanPx > pointSize) {
-      const w = Math.max(WIGGLE_MIN_PX, spanPx + WIGGLE_FUDGE_FACTOR)
-      ctx.rect(Math.min(x1, x2), scoreY - radius, w, pointSize)
-    } else {
-      appendPointMarker(ctx, cx, scoreY, pointSize)
-    }
+    appendPointMarker(ctx, cx, scoreY, pointSize)
   }
   ctx.fill()
 }

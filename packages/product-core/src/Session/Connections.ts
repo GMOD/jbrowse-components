@@ -170,7 +170,9 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
         captureConnectionTrack(trackId: string) {
           if (!(trackId in self.connectionTrackConfigs)) {
             const conn = self.connectionInstances.find(c =>
-              c.tracks.some((t: AnyConfigurationModel) => t.trackId === trackId),
+              c.tracks.some(
+                (t: AnyConfigurationModel) => t.trackId === trackId,
+              ),
             )
             const track = conn?.tracks.find(
               (t: AnyConfigurationModel) => t.trackId === trackId,
@@ -221,7 +223,8 @@ export function ConnectionManagementSessionMixin(pluginManager: PluginManager) {
               trackId,
             })
             if (refs.length === 0) {
-              const { [trackId]: _removed, ...rest } = self.connectionTrackConfigs
+              const { [trackId]: _removed, ...rest } =
+                self.connectionTrackConfigs
               self.connectionTrackConfigs = rest
             }
           }

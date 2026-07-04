@@ -8,8 +8,10 @@ interface Props {
 const { toc } = Astro.props
 ---
 
-{/* Apply the persisted preference before first paint so an enabled TOC doesn't
-    flash in. Default is off, so the common case renders nothing extra. */}
+{
+  /* Apply the persisted preference before first paint so an enabled TOC doesn't
+    flash in. Default is off, so the common case renders nothing extra. */
+}
 <script is:inline>
   if (localStorage.getItem('jbrowse-toc') === 'show') {
     document.documentElement.dataset.toc = 'show'
@@ -72,7 +74,9 @@ const { toc } = Astro.props
   let current: HTMLAnchorElement | undefined
   const observer = new IntersectionObserver(
     () => {
-      const active = headings.filter(h => h.offsetTop - 96 <= window.scrollY).at(-1)
+      const active = headings
+        .filter(h => h.offsetTop - 96 <= window.scrollY)
+        .at(-1)
       const next = byId.get(active?.id ?? headings[0]?.id ?? '')
       if (next !== current) {
         current?.removeAttribute('aria-current')

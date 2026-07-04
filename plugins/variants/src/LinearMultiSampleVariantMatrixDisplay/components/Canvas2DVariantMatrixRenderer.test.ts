@@ -103,10 +103,10 @@ describe('Canvas2DVariantMatrixRenderer', () => {
     const { canvas, fillRectCalls } = createMockCanvas()
     const renderer = new Canvas2DVariantMatrixRenderer(canvas)
 
-    renderer.render(
-      makeData({ cellFeatureIndices: new Float32Array([0]) }),
-      { ...STATE, flipped: true },
-    )
+    renderer.render(makeData({ cellFeatureIndices: new Float32Array([0]) }), {
+      ...STATE,
+      flipped: true,
+    })
 
     // Data column 0 of 4 (cellWidth 100) mirrors to screen column 3, x=300.
     const [x] = fillRectCalls[0]!

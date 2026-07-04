@@ -9,7 +9,9 @@ const AllVsAllAddTrackComponent = lazy(
   () => import('./AllVsAllAddTrackComponent.tsx'),
 )
 
-export default function AllVsAllAddTrackComponentF(pluginManager: PluginManager) {
+export default function AllVsAllAddTrackComponentF(
+  pluginManager: PluginManager,
+) {
   pluginManager.addToExtensionPoint(
     'Core-addTrackComponent',
     (

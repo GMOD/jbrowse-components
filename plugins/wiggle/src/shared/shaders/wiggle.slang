@@ -125,23 +125,14 @@ VsOut vs_main(WiggleInstance inst, uint vid : SV_VertexID) {
     }
   } else if (u.renderingType == RENDERING_TYPE_SCATTER) {
     // Point plot: an AA disc centered on the bp midpoint (matches
-    // manhattan.slang). scatterPointSize is the disc diameter. A bin wider than
-    // the point becomes a horizontal bar so low-zoom summary bins keep their
-    // extent instead of collapsing to a dot.
+    // manhattan.slang). scatterPointSize is the disc diameter.
     float midX = (sx1 + sx2) * 0.5;
     float scoreYPx = scoreToY(inst.score, u.domainYMin, u.domainYMax, rowHeight, u.scaleType) + rowTop;
     float centerClipY = 1.0 - scoreYPx * pxToClip;
     float2 q = quadLocal(vid);
     float2 local = q * 2.0 - float2(1.0, 1.0);
     float radiusPx = u.scatterPointSize * 0.5;
-    float spanPx = abs(sx2 - sx1) * 0.5 * u.viewportWidth;
-    if (spanPx > u.scatterPointSize) {
-      float padClipX = AA_PAD_PX * 2.0 / u.viewportWidth;
-      sx = (q.x < 0.5 ? min(sx1, sx2) - padClipX : max(sx1, sx2) + padClipX);
-      sy = centerClipY + local.y * radiusPx * pxToClip;
-      shape = SHAPE_BAR;
-      localPos = local;
-    } else if (u.scatterPointSize <= SMALL_POINT_MAX_DIAMETER) {
+    if (u.scatterPointSize <= SMALL_POINT_MAX_DIAMETER) {
       // tiny point: crisp filled square (SHAPE_SOLID), no AA disc
       sx = midX + local.x * radiusPx * 2.0 / u.viewportWidth;
       sy = centerClipY + local.y * radiusPx * pxToClip;

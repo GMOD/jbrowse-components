@@ -22,10 +22,6 @@ makes the plot "jump" so the cursor is no longer over the same region. At every
 other zoom level the area under the cursor stays put; only reproduces from the
 max-zoomed-out level, and is more noticeable near the plot edge.
 
-## CodeQL
-
-Reconsider how often CodeQL runs — currently feels excessive.
-
 ## Synteny follow-ups
 
 - `multiway_synteny/ecoli_pangenome` screenshot review is marked "bad" ("why
@@ -37,3 +33,19 @@ Reconsider how often CodeQL runs — currently feels excessive.
   wants consistent coloring for the same block across levels (the shared
   middle genome should color-match between the peach–grape and grape–cacao
   ribbons). Separate design task, still open.
+
+## more subtle search highlight
+
+## per group (plugins/alignments group by) vertical drag resize not working well
+
+## per group yscalebar weird in plugins/alignments
+
+## move set max layout height out of set feature height
+
+## make menu item divider for 'Use default "Compact" for alignments track'
+
+## improve quickstart_desktop
+
+## no resize handle on non-first group
+
+## make option for 'fit to display height' for plugins/alignments and plugins/canvas?

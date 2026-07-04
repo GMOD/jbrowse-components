@@ -20,8 +20,12 @@ function makeAdapter(assemblyNames: string[]) {
   )
 }
 
-async function feats(assemblyNames: string[], region: Record<string, unknown>) {
-  const obs = makeAdapter(assemblyNames).getFeatures(region as never)
+async function feats(
+  assemblyNames: string[],
+  region: Record<string, unknown>,
+  opts: Record<string, unknown> = {},
+) {
+  const obs = makeAdapter(assemblyNames).getFeatures(region as never, opts)
   return firstValueFrom(obs.pipe(toArray()))
 }
 
@@ -60,6 +64,49 @@ test('transitive pair through the reference (peach vs cacao)', async () => {
     assemblyName: 'cacao',
     refName: 'Tc1',
   })
+})
+
+// One track lists all genomes; the view passes each band's target assembly, so
+// the same track backs every band instead of needing one track per pair.
+test('full-list track, target picks the band (grape query, peach target)', async () => {
+  const fa = await feats(
+    ['grape', 'peach', 'cacao'],
+    { refName: 'chr1', start: 0, end: 1000, assemblyName: 'grape' },
+    { targetAssemblyName: 'peach' },
+  )
+  expect(fa.length).toBe(3)
+  expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'peach' })
+})
+
+test('full-list track, switching target redraws a different band (grape/cacao)', async () => {
+  const fa = await feats(
+    ['grape', 'peach', 'cacao'],
+    { refName: 'chr1', start: 0, end: 1000, assemblyName: 'grape' },
+    { targetAssemblyName: 'cacao' },
+  )
+  expect(fa.length).toBe(3)
+  expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'cacao' })
+})
+
+test('full-list track, transitive band (peach query, cacao target)', async () => {
+  const fa = await feats(
+    ['grape', 'peach', 'cacao'],
+    { refName: 'Pp1', start: 0, end: 2000, assemblyName: 'peach' },
+    { targetAssemblyName: 'cacao' },
+  )
+  expect(fa.length).toBe(2)
+  expect(fa[0]!.get('mate')).toMatchObject({
+    assemblyName: 'cacao',
+    refName: 'Tc1',
+  })
+})
+
+test('getRefNames scopes to the target pair on a full-list track', async () => {
+  const names = await makeAdapter(['grape', 'peach', 'cacao']).getRefNames({
+    assemblyName: 'grape',
+    targetAssemblyName: 'peach',
+  })
+  expect(names.length).toBeGreaterThan(0)
 })
 
 test('throws when the pair is not present in blockAssemblies', async () => {

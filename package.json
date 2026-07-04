@@ -81,7 +81,7 @@
     "@types/react-dom": "^19.2.3",
     "@types/serve-handler": "^6.1.4",
     "@types/tmp": "^0.2.6",
-    "@typescript/native-preview": "7.0.0-dev.20260702.3",
+    "@typescript/native-preview": "7.0.0-dev.20260703.1",
     "@webgpu/types": "^0.1.71",
     "babel-loader": "^10.1.1",
     "babel-plugin-react-compiler": "^1.0.0",

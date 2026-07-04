@@ -30,7 +30,8 @@ const GWASAddTrackComponent = observer(function ({
     }
   }, [model])
 
-  const scoreColumn = model.mixinData.adapter?.scoreColumn ?? DEFAULT_SCORE_COLUMN
+  const scoreColumn =
+    model.mixinData.adapter?.scoreColumn ?? DEFAULT_SCORE_COLUMN
   return (
     <TextField
       label="Score column"

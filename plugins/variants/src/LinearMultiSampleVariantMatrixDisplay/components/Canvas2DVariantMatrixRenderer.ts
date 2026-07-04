@@ -5,7 +5,6 @@ import { Canvas2DGlobalRenderingBackend } from '@jbrowse/render-core/globalRende
 import { mirrorColumnIndex } from './variantMatrixRenderingBackendTypes.ts'
 import { f2 } from '../../shared/constants.ts'
 
-
 import type {
   MatrixRenderState,
   VariantMatrixUploadData,

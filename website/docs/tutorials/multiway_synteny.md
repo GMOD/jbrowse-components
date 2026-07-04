@@ -76,10 +76,11 @@ You now have `grape.blocks` plus `grape.bed`, `peach.bed`, and `cacao.bed`.
 
 ## Loading it in JBrowse with MCScanBlocksAdapter
 
-A synteny track draws one pair of genomes, but a `.blocks` file describes N. The
-`MCScanBlocksAdapter` bridges this: **one `.blocks` file backs the N-1 synteny
-tracks of the stacked view.** Each track names the two genomes it draws
-(`assemblyNames`), and the adapter pulls those two columns from the table.
+A synteny band draws one pair of genomes, but a `.blocks` file describes N. The
+`MCScanBlocksAdapter` bridges this: **one `.blocks` file — and one track — backs
+every band of the stacked view.** List all the genomes in `assemblyNames`; the
+view tells the adapter which pair each band draws, and the adapter pulls those
+two columns from the table.
 
 The `blockAssemblies` slot names every column in order (column 0 first), and
 `bedLocations` gives the matching per-column BED:
@@ -87,9 +88,9 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
 ```json
 {
   "type": "SyntenyTrack",
-  "trackId": "peach_grape_blocks",
-  "name": "Peach vs Grape (MCScan blocks)",
-  "assemblyNames": ["peach", "grape"],
+  "trackId": "grape_peach_cacao_blocks",
+  "name": "Grape / peach / cacao (MCScan blocks)",
+  "assemblyNames": ["grape", "peach", "cacao"],
   "adapter": {
     "type": "MCScanBlocksAdapter",
     "mcscanBlocksLocation": { "uri": "grape.blocks.gz" },
@@ -99,14 +100,13 @@ The `blockAssemblies` slot names every column in order (column 0 first), and
       { "uri": "peach.bed.gz" },
       { "uri": "cacao.bed.gz" }
     ],
-    "assemblyNames": ["peach", "grape"]
+    "assemblyNames": ["grape", "peach", "cacao"]
   }
 }
 ```
 
-Add a second track with `assemblyNames: ["grape", "cacao"]` (same adapter,
-different pair), then stack the three genomes with the reference in the middle
-so both bands are direct comparisons:
+Stack the three genomes with the reference in the middle so both bands are
+direct comparisons, referencing that single track from each band:
 
 ```json
 {
@@ -117,14 +117,14 @@ so both bands are direct comparisons:
       { "assembly": "grape" },
       { "assembly": "cacao" }
     ],
-    "tracks": [["peach_grape_blocks"], ["grape_cacao_blocks"]],
+    "tracks": [["grape_peach_cacao_blocks"], ["grape_peach_cacao_blocks"]],
     "drawCurves": true
   }
 }
 ```
 
 `tracks` is one entry per band: `tracks[0]` connects rows 0–1 (peach–grape) and
-`tracks[1]` connects rows 1–2 (grape–cacao).
+`tracks[1]` connects rows 1–2 (grape–cacao) — both served by the same track.
 
 <Figure caption="Three genomes stacked peach – grape – cacao, with one MCScan .blocks file backing both synteny bands. Ribbons are colored by query chromosome (chromosome painting), so each grape chromosome's orthologs can be traced up into peach and down into cacao." src="/img/multiway_synteny/grape_peach_cacao.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/grape_peach_cacao/config.json" />
 

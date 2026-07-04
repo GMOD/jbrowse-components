@@ -47,7 +47,7 @@ describe('JBrowseWebSessionModel', () => {
       const session = createTestSession({
         sessionSnapshot: { sessionConnections: [connSnap] },
       })
-      session.deleteConnection(session.sessionConnections[0]!)
+      session.deleteConnection(session.sessionConnections[0])
       expect(session.sessionConnections).toHaveLength(0)
     })
 
@@ -59,7 +59,7 @@ describe('JBrowseWebSessionModel', () => {
         adminMode: true,
         sessionSnapshot: { sessionConnections: [connSnap] },
       })
-      session.deleteConnection(session.sessionConnections[0]!)
+      session.deleteConnection(session.sessionConnections[0])
       expect(session.sessionConnections).toHaveLength(0)
     })
 

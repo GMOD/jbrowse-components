@@ -1,12 +1,12 @@
 ---
-title: JBrowse admin server quick start (experimental)
+title: JBrowse CLI admin server
 ---
 
 :::caution
 
-The admin server GUI is not actively tested and may not reflect the current
-state of the application. For a more reliable setup, use the
-[JBrowse CLI quickstart](/docs/quickstart_web/) instead.
+For most purposes we recommend using the CLI
+[JBrowse CLI quickstart](/docs/quickstart_web/) for setting up configs, the
+admin-server is not as commonly used and fairly niche
 
 :::
 

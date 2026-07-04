@@ -53,14 +53,16 @@ const names = [
   'GridViewStreamIcon',
 ]
 
-export const DataGridEntries: Record<string, ComponentType<any>> =
-  Object.fromEntries(
-    names.map(name => [
-      name,
-      lazy(() =>
-        import('@mui/x-data-grid').then(m => ({
-          default: (m as unknown as Record<string, ComponentType<any>>)[name]!,
-        })),
-      ),
-    ]),
-  )
+export const DataGridEntries: Record<
+  string,
+  ComponentType<any>
+> = Object.fromEntries(
+  names.map(name => [
+    name,
+    lazy(() =>
+      import('@mui/x-data-grid').then(m => ({
+        default: (m as unknown as Record<string, ComponentType<any>>)[name]!,
+      })),
+    ),
+  ]),
+)

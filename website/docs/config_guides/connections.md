@@ -18,9 +18,8 @@ Connections come from two places, combined in the track selector:
 - **`connections`** — a top-level array in your `config.json`, alongside
   `assemblies` and `tracks`. These are administrator-defined and available to
   everyone who loads the config.
-- **Session connections** — connections a user adds at runtime (via
-  `File` → `Open connection...`). These live in the saved session, not the
-  admin config.
+- **Session connections** — connections a user adds at runtime (via `File` →
+  `Open connection...`). These live in the saved session, not the admin config.
 
 Both render identically as categories in the track selector.
 

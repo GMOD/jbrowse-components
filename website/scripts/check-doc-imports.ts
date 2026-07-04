@@ -36,7 +36,9 @@ function collectPackages(dirs: string[]) {
     for (const name of readdirSync(abs)) {
       const pkgDir = join(abs, name)
       try {
-        const pkg = JSON.parse(readFileSync(join(pkgDir, 'package.json'), 'utf8'))
+        const pkg = JSON.parse(
+          readFileSync(join(pkgDir, 'package.json'), 'utf8'),
+        )
         if (pkg.name) {
           const exports =
             pkg.exports && typeof pkg.exports === 'object'

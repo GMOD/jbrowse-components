@@ -172,7 +172,13 @@ describe('connection track persistence', () => {
         type: 'FromConfigSequenceAdapter',
         adapterId: 'sequenceConfigAdapterId',
         features: [
-          { refName: 'ctgA', uniqueId: 'firstId', start: 0, end: 10, seq: 'cattgttgcg' },
+          {
+            refName: 'ctgA',
+            uniqueId: 'firstId',
+            start: 0,
+            end: 10,
+            seq: 'cattgttgcg',
+          },
         ],
       },
     },
@@ -203,7 +209,9 @@ describe('connection track persistence', () => {
   test('capturing an opened connection track persists it with provenance', () => {
     const session = makeRootWithConnection().session!
     session.captureConnectionTrack('connTrack1')
-    expect(session.connectionTrackConfigs.connTrack1?.connectionId).toBe('conn1')
+    expect(session.connectionTrackConfigs.connTrack1?.connectionId).toBe(
+      'conn1',
+    )
   })
 
   test('snapshot strips connection instances but keeps captured tracks', () => {

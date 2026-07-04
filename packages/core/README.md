@@ -148,6 +148,20 @@ node has no session ancestor.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
+### getSlotInheritedValue
+
+The value an un-pinned track resolves to for this slot — the session-wide
+promoted default when usable, else the base — regardless of whether this track
+currently pins its own value. Lets a track menu label its "follow default"
+choice with the mode it would fall back to (e.g. `Default (Compact)`).
+
+```js
+// type signature
+<T = unknown>(self: PromotableDisplay, slot: string) => T
+```
+
+[Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)
+
 ### isSlotPinned
 
 Whether this track pins the slot (holds a non-default value) rather than
@@ -173,15 +187,18 @@ model directly, e.g. an entry from `session.tracks`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/util.ts)
 
-### toggleSlotsSessionDefault
+### setSlotsSessionDefault
 
-Promote each listed slot's current resolved value to the session-wide default,
-or clear them when they already are the default (a single toggle for a group of
-slots, e.g. featureHeight + featureSpacing behind one "make default" item).
+Explicit setter for a group of slots' session-wide default: `promote` stores
+each slot's current resolved value as the default for this display type;
+`!promote` clears it so sibling tracks fall back to their own config. The caller
+decides direction — pass `!areSlotsAtSessionDefault(...)` to toggle at the point
+of use. Grouping (e.g. featureHeight + featureSpacing) keeps a multi-slot
+setting behind one "make default" item.
 
 ```js
 // type signature
-(self: PromotableDisplay, slots: string[]) => void
+(self: PromotableDisplay, slots: string[], promote: boolean) => void
 ```
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/configuration/promotableDefaults.ts)

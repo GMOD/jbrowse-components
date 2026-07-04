@@ -80,7 +80,12 @@ const ResolutionStepper = observer(function ResolutionStepper({
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 4, width: 200 }}>
       <Tooltip title="Coarser resolution">
-        <IconButton size="small" onClick={() => { onCoarser() }}>
+        <IconButton
+          size="small"
+          onClick={() => {
+            onCoarser()
+          }}
+        >
           <RemoveIcon fontSize="small" />
         </IconButton>
       </Tooltip>
@@ -92,7 +97,12 @@ const ResolutionStepper = observer(function ResolutionStepper({
         {formatResolution(value)}
       </Typography>
       <Tooltip title="Finer resolution">
-        <IconButton size="small" onClick={() => { onFiner() }}>
+        <IconButton
+          size="small"
+          onClick={() => {
+            onFiner()
+          }}
+        >
           <AddIcon fontSize="small" />
         </IconButton>
       </Tooltip>
@@ -101,7 +111,9 @@ const ResolutionStepper = observer(function ResolutionStepper({
           <IconButton
             size="small"
             disabled={value === 1}
-            onClick={() => { onReset() }}
+            onClick={() => {
+              onReset()
+            }}
           >
             <RestartAltIcon fontSize="small" />
           </IconButton>
