@@ -530,12 +530,32 @@ inter-chromosomal contact blocks without a manual multi-region view.
 
 Ideas from an analysis of `LinearMultiSampleVariantDisplay` /
 `LinearMultiSampleVariantMatrixDisplay` (both share
-`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). The opt-in
-genotype-quality masking/dimming idea has its own detailed plan in
-[MULTISAMPLE_VARIANT_QUALITY_HANDOFF.md](MULTISAMPLE_VARIANT_QUALITY_HANDOFF.md);
-the items below are the *other*, unrelated findings. Read
+`plugins/variants/src/shared/MultiSampleVariantBaseModel.ts`). Read
 `plugins/variants/src/CLAUDE.md` first — hot-loop rules and the fetch/layout/render
 invalidation tiers constrain all of these.
+
+**Opt-in genotype-quality masking/dimming (biggest untapped signal).** The
+GT-only fast path (`feature.processGenotypes`, `shared/alleleCounts.ts`) never
+surfaces DP/GQ/AD/PL — getting them requires the heavier `feature.get('samples')`
+escalation the PS-phasing coloring already takes
+(`computeVariantMatrixCells.ts:99`). MVP: a `genotypeQualityThreshold` config
+slot (default `0` = off = today's path unchanged); when set, a genotype with
+`GQ < threshold` renders as no-call grey instead of its allele color — masking
+chosen over continuous dimming because it reuses the existing no-call rendering
+end-to-end (no shader/legend work). Bake the decision into the existing
+`cellColors` `Uint32Array` worker-side (same place `featureColor` already
+applies) — no new per-cell arrays, no shader change, no bigger payload. It's a
+**fetch input** (belongs in `rpcProps()`), threaded through
+`VariantRPC/executeVariantCellData.ts` into both `computeVariantCells.ts` and
+`computeVariantMatrixCells.ts`, with a menu entry (presets GQ ≥ 20/≥ 30 + custom
+dialog) cloned from `createMAFFilterMenuItem` under the "Filter by" submenu.
+Open question: whether masking should also feed the MAF filter (a masked het
+shouldn't count toward AF) — couples to `minorAlleleFrequencyUtils.ts`, defer
+past the independent MVP. Same plumbing then unlocks **VAF coloring from AD**
+(color het cells by allelic fraction — a somatic/mosaic cohort view) and the
+`featureColor` presets below (cheaper still, no new RPC field). `sampleInfo`
+(per-sample `maxPloidy`/`isPhased`) is already computed and shipped but only
+used internally for haplotype expansion — never surfaced to the user.
 
 **Pedigree / inheritance awareness (biggest biological ceiling).** There is no
 pedigree, affected-status, or trio model today — "grouping" is a flat `colorBy` on
