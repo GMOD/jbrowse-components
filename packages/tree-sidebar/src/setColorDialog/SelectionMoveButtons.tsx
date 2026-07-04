@@ -23,6 +23,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
   return (
     <>
       <Button
+        variant="contained"
         disabled={disabled}
         onClick={() => {
           onChange(moveUp(rows, selected))
@@ -32,6 +33,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
         {showTips ? 'Move selected items up' : null}
       </Button>
       <Button
+        variant="contained"
         disabled={disabled}
         onClick={() => {
           onChange(moveDown(rows, selected))
@@ -41,6 +43,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
         {showTips ? 'Move selected items down' : null}
       </Button>
       <Button
+        variant="contained"
         disabled={disabled}
         onClick={() => {
           onChange(moveUp(rows, selected, rows.length))
@@ -50,6 +53,7 @@ export default function SelectionMoveButtons<T extends { name: string }>({
         {showTips ? 'Move selected items to top' : null}
       </Button>
       <Button
+        variant="contained"
         disabled={disabled}
         onClick={() => {
           onChange(moveDown(rows, selected, rows.length))

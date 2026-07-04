@@ -120,6 +120,7 @@ const AddRowDialog = observer(function AddRowDialog({
         options.length ? (
           <TextField
             select
+            variant="outlined"
             fullWidth
             label="Synteny dataset"
             value={trackId}

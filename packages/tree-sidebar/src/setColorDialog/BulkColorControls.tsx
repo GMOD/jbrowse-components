@@ -36,6 +36,7 @@ export default function BulkColorControls<
       {colorColumns.map(c => (
         <Fragment key={c.field}>
           <Button
+            variant="contained"
             disabled={disabled}
             onClick={event => {
               setAnchorByField(prev => ({

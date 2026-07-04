@@ -142,6 +142,7 @@ const OpenSequenceDialog = observer(function OpenSequenceDialog({
       </DialogContent>
       <DialogActions>
         <Button
+          variant="contained"
           onClick={() => {
             onClose().catch((e: unknown) => {
               setError(e)

@@ -99,6 +99,7 @@ const WiggleClusterDialogAuto = observer(function WiggleClusterDialogAuto({
             <div style={{ padding: 50 }}>
               <span>{statusProgressLabel(status) || 'Loading...'}</span>
               <Button
+                variant="contained"
                 onClick={() => {
                   stopStopToken(stopToken)
                 }}

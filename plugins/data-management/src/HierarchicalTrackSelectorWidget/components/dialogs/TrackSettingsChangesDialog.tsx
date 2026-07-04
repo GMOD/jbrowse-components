@@ -147,6 +147,7 @@ const TrackSettingsChangesDialog = observer(
         <DialogActions>
           {changes.length && onReset ? (
             <Button
+              variant="contained"
               color="secondary"
               onClick={() => {
                 onReset()
@@ -158,6 +159,7 @@ const TrackSettingsChangesDialog = observer(
           ) : null}
           {sessionDefaults.length && onClearDefaults ? (
             <Button
+              variant="contained"
               color="secondary"
               onClick={() => {
                 onClearDefaults()

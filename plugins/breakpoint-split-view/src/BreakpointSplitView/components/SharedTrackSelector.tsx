@@ -19,6 +19,7 @@ const SharedTrackSelector = observer(function SharedTrackSelector({
   return (
     <TextField
       select
+      variant="outlined"
       label="Track to open in all rows (optional)"
       value={value}
       onChange={event => {

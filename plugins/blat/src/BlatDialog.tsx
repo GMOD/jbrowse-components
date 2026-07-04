@@ -185,6 +185,7 @@ const BlatDialog = observer(function BlatDialog({
       </DialogContent>
       <DialogActions>
         <Button
+          variant="contained"
           onClick={() => {
             handleClose()
           }}

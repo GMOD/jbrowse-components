@@ -119,6 +119,7 @@ const CollapseIntronsDialog = observer(function CollapseIntronsDialog({
         </FormGroup>
         {transcripts.length > 1 ? (
           <Button
+            variant="contained"
             className={classes.showAllButton}
             onClick={() => {
               setShowAll(s => !s)

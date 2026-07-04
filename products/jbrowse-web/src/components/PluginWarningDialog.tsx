@@ -57,6 +57,7 @@ export default function PluginWarningDialog({
           </ul>
           {trust}{' '}
           <Button
+            variant="contained"
             type="button"
             size="small"
             onClick={() => {

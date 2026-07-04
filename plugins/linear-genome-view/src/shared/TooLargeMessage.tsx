@@ -20,6 +20,7 @@ const TooLargeMessage = observer(function TooLargeMessage({
       severity="warning"
       action={
         <Button
+          variant="contained"
           onClick={() => {
             if (isAlive(model)) {
               model.forceLoad()

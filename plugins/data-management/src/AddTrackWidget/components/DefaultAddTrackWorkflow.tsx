@@ -104,6 +104,7 @@ const DefaultAddTrackWorkflow = observer(function DefaultAddTrackWorkflow({
               {content(model)}
               <div className={classes.actionsContainer}>
                 <Button
+                  variant="contained"
                   disabled={activeStep === 0}
                   className={classes.button}
                   onClick={() => {

@@ -86,6 +86,7 @@ const ColorByAttributeDialog = observer(function ColorByAttributeDialog({
           Apply
         </Button>
         <Button
+          variant="contained"
           onClick={() => {
             handleClose()
           }}

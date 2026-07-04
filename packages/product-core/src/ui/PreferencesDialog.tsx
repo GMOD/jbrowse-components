@@ -107,6 +107,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
       <DialogContent className={classes.container}>
         <TextField
           select
+          variant="outlined"
           label="Theme"
           value={session.themeName}
           onChange={event => {
@@ -123,6 +124,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
           <TextField
             key={row.key}
             select
+            variant="outlined"
             className={classes.field}
             label={row.label}
             value={row.get(session)}
@@ -167,6 +169,7 @@ const PreferencesDialog = observer(function PreferencesDialog({
       </DialogContent>
       <DialogActions>
         <Button
+          variant="contained"
           onClick={() => {
             handleClose()
           }}

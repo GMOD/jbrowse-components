@@ -180,6 +180,7 @@ export default function LDFilterDialog({
       </DialogContent>
       <DialogActions>
         <Button
+          variant="contained"
           onClick={() => {
             handleClose()
           }}

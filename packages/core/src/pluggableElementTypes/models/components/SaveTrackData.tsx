@@ -60,7 +60,7 @@ function HelpDialog({
         <DialogContentText>{text}</DialogContentText>
       </DialogContent>
       <DialogActions>
-        <Button autoFocus onClick={onClose}>
+        <Button variant="contained" autoFocus onClick={onClose}>
           Close
         </Button>
       </DialogActions>
@@ -184,6 +184,7 @@ const SaveTrackDataDialog = observer(function SaveTrackDataDialog({
           Copy to clipboard
         </CopyToClipboardButton>
         <Button
+          variant="contained"
           disabled={loading || !!error}
           onClick={() => {
             const ext = options[type!]!.extension

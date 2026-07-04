@@ -75,6 +75,7 @@ const SpreadsheetDataGrid = observer(function SpreadsheetDataGrid({
       {svTypeColumnField && svTypeOptions.length > 0 ? (
         <TextField
           select
+          variant="outlined"
           size="small"
           label="Filter by SV type"
           value={svTypeFilter ?? ''}

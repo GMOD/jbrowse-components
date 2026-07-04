@@ -54,6 +54,7 @@ const DiagonalizeLoadingScreen = observer(function DiagonalizeLoadingScreen({
       <StatusProgressBar fraction={fraction} className={classes.bar} />
       {onCancel ? (
         <Button
+          variant="contained"
           color="secondary"
           onClick={() => {
             onCancel()

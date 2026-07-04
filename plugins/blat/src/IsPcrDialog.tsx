@@ -211,6 +211,7 @@ const IsPcrDialog = observer(function IsPcrDialog({
       </DialogContent>
       <DialogActions>
         <Button
+          variant="contained"
           onClick={() => {
             handleClose()
           }}

@@ -98,6 +98,7 @@ const DiagonalizationProgressDialog = observer(
         </DialogContent>
         <DialogActions>
           <Button
+            variant="contained"
             onClick={() => {
               handleClose()
             }}

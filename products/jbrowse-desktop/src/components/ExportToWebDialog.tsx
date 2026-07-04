@@ -192,6 +192,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
         </DialogContent>
         <DialogActions>
           <Button
+            variant="contained"
             startIcon={<OpenInBrowserIcon />}
             disabled={disabled}
             onClick={() => {
@@ -201,6 +202,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
             Open in browser
           </Button>
           <Button
+            variant="contained"
             startIcon={<ContentCopyIcon />}
             disabled={disabled}
             onClick={async () => {
@@ -214,6 +216,7 @@ const ExportToWebDialog = observer(function ExportToWebDialog({
             Copy to clipboard
           </Button>
           <Button
+            variant="contained"
             onClick={() => {
               handleClose()
             }}

@@ -163,6 +163,7 @@ const GetSequenceDialog = observer(function GetSequenceDialog({
           Copy to clipboard
         </CopyToClipboardButton>
         <Button
+          variant="contained"
           onClick={async () => {
             const { saveAs } = await import('@jbrowse/core/util')
             saveAs(

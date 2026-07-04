@@ -21,6 +21,7 @@ const DotplotWarnings = observer(function DotplotWarnings({
     <Alert severity="warning">
       Warnings during render{' '}
       <Button
+        variant="contained"
         onClick={() => {
           setShown(true)
         }}

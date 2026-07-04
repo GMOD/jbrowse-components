@@ -98,6 +98,7 @@ const AddConnectionWidget = observer(function AddConnectionWidget({
               )}
               <div className={classes.actionsContainer}>
                 <Button
+                  variant="contained"
                   disabled={activeStep === 0}
                   onClick={() => {
                     setActiveStep(activeStep - 1)

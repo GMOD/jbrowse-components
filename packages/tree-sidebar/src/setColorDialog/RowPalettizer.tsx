@@ -52,6 +52,7 @@ export default function RowPalettizer<
         </>
       ) : null}
       <Button
+        variant="contained"
         onClick={() => {
           setCurrLayout(currLayout.map(row => ({ ...row, color: undefined })))
         }}

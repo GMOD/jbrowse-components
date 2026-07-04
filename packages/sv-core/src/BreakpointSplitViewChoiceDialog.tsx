@@ -195,6 +195,7 @@ const BreakpointSplitViewChoiceDialog = observer(
         </DialogContent>
         <DialogActions>
           <Button
+            variant="contained"
             onClick={() => {
               setStep('choose')
             }}

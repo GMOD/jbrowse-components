@@ -32,6 +32,7 @@ export default function CopyToClipboardButton({
   )
   return (
     <Button
+      variant="contained"
       {...rest}
       onClick={() => {
         void copy(typeof value === 'function' ? value() : value)
