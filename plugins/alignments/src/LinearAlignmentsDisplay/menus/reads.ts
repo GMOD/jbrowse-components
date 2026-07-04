@@ -1,8 +1,15 @@
+import { lazy } from 'react'
+
+import { getSession } from '@jbrowse/core/util'
 import VisibilityIcon from '@mui/icons-material/Visibility'
 
 import { checkboxItem } from './menuHelpers.ts'
 
 import type { MenuItem } from '@jbrowse/core/ui'
+
+const SetMaxHeightDialog = lazy(
+  () => import('../dialogs/SetMaxHeightDialog.tsx'),
+)
 
 interface ReadsModel {
   showLegend: boolean
@@ -25,6 +32,8 @@ interface ReadsModel {
   toggleShowLowFreqMismatches: () => void
   showOutline: boolean
   setShowOutline: (v: boolean | undefined) => void
+  maxHeight: number
+  setMaxHeight: (height?: number) => void
 }
 
 // Visibility of the rendering layers. Sashimi and read-connection controls live
@@ -87,6 +96,18 @@ export function getReadsMenuItem(model: ReadsModel) {
           checkboxItem('Show outlines', model.showOutline, () => {
             model.setShowOutline(!model.showOutline)
           }),
+          {
+            label: 'Set max layout height...',
+            onClick: () => {
+              getSession(model).queueDialog(handleClose => [
+                SetMaxHeightDialog,
+                {
+                  model,
+                  handleClose,
+                },
+              ])
+            },
+          },
         ],
       },
     ] satisfies MenuItem[],

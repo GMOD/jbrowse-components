@@ -6,9 +6,6 @@ import HeightIcon from '@mui/icons-material/Height'
 const SetFeatureHeightDialog = lazy(
   () => import('../dialogs/SetFeatureHeightDialog.tsx'),
 )
-const SetMaxHeightDialog = lazy(
-  () => import('../dialogs/SetMaxHeightDialog.tsx'),
-)
 
 // Single source of truth for the (featureHeight, featureSpacing) pairs that
 // the feature-height menu and the LGV/comparative-view setCompactness API
@@ -33,11 +30,9 @@ export type CompactnessLevel = keyof typeof COMPACTNESS_PRESETS
 interface FeatureHeightModel {
   featureHeight: number
   featureSpacing: number
-  maxHeight: number
   isCompactnessDefault: boolean
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
-  setMaxHeight: (height?: number) => void
   setCompactnessDefault: (promote: boolean) => void
 }
 
@@ -88,18 +83,6 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         checked: model.isCompactnessDefault,
         onClick: () => {
           model.setCompactnessDefault(!model.isCompactnessDefault)
-        },
-      },
-      {
-        label: 'Set max layout height...',
-        onClick: () => {
-          getSession(model).queueDialog(handleClose => [
-            SetMaxHeightDialog,
-            {
-              model,
-              handleClose,
-            },
-          ])
         },
       },
     ],
