@@ -105,8 +105,6 @@ hiding the per-base coloring. It is **off by default** even when an
 so turn it on from the track menu (**Show CDS frames**). Hover any species row
 to read the gene name at that position.
 
-<Figure src="/img/maf_cds_frames.png" caption="The ce11 26-way alignment with the per-species CDS frame overlay: each species row carries a thin reading-frame-colored strip marking the coding exons projected onto that species, so the gene structure reads vertically across the whole alignment. Frame colors are mirrored by strand (the three +-strand frames and three −-strand frames), matching JBrowse's CDS coloring elsewhere."/>
-
 The reference species' own gene structure appears on the reference (top) row
 when the `mafFrames` file carries a record for the reference `src`, so this
 doubles as a reference annotation overlay.
