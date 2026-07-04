@@ -15,18 +15,22 @@ import {
 } from '@mui/material'
 import { observer } from 'mobx-react'
 
-import { COMMON_READ_TAGS } from '../../shared/commonTags.ts'
 import { defaultFilterFlags } from '../../shared/util.ts'
 
 import type { FilterBy } from '../../shared/types.ts'
 
 const useStyles = makeStyles()(theme => ({
   paper: {
-    padding: theme.spacing(2),
-    margin: theme.spacing(2),
+    padding: theme.spacing(1),
+    margin: theme.spacing(1),
   },
   field: {
-    margin: theme.spacing(2),
+    margin: theme.spacing(1),
+  },
+  tagRow: {
+    display: 'flex',
+    gap: theme.spacing(1),
+    alignItems: 'flex-start',
   },
   flagContainer: {
     display: 'flex',
@@ -130,25 +134,23 @@ function TagFilterSection(props: {
   return (
     <Paper className={classes.paper} variant="outlined">
       <Typography>Filter by tag name and value</Typography>
-      <div className={classes.field}>
+      <div className={classes.tagRow}>
         <TagTextField
           defaultValue={tag}
-          quickPicks={COMMON_READ_TAGS}
           onValueChange={value => {
             setTag(value ?? '')
           }}
         />
+        <TextField
+          label="Tag value"
+          size="small"
+          value={tagValue}
+          placeholder="Enter value or * for any"
+          onChange={event => {
+            setTagValue(event.target.value)
+          }}
+        />
       </div>
-      <TextField
-        className={classes.field}
-        label="Tag value"
-        value={tagValue}
-        placeholder="Enter value or * for any"
-        helperText="Use * to match any value for the tag"
-        onChange={event => {
-          setTagValue(event.target.value)
-        }}
-      />
     </Paper>
   )
 }
