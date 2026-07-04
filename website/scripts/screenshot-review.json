@@ -925,9 +925,9 @@
   },
   "inverted_duplication_bezier": {
     "name": "inverted_duplication_bezier",
-    "status": "bad",
-    "note": "add to docs. also there are still grey read chains that appear to involve aberrant pairing orientation",
-    "reviewedAt": "2026-07-03T20:18:18.566Z",
+    "status": "good",
+    "note": "resolved. The grey chains that looked like aberrant pairing are split-read inversion junctions: a read whose mate pair is concordant (grey LR fill) but which is itself split across the inversion breakpoint gets a strand-flipped supplementary alignment, and the connector between the two segments is colored for the inversion — deliberately the same dark blue as an RR pair (both are independent evidence for one inversion; classifyPair/splitColorType -> linkedReadColorPalette[6]=colorPairRR). Confusion resolved WITHOUT recoloring (keeps the corroboration reading) or a dashed stroke (reviewer disliked overloading the stroke): the arc now self-labels on hover via connectionLabel (PileupArc.label, e.g. 'Split-read inversion' vs 'RR - Both mates reverse strand'), using the same LR/RL/RR/LL nomenclature as the read-fill legend/IGV. Added a paragraph to docs/user_guides/sv_visualization.md after the bezier figure explaining grey-read + blue-arc.",
+    "reviewedAt": "2026-07-04T00:00:00.000Z",
     "hash": "5db3af663e4afc70d648b0aed4e2f6df99a688cc"
   },
   "trio-hapibd-painting": {

@@ -209,6 +209,16 @@ of curves rather than scattered singleton pileup rows.
 [Live demo](https://jbrowse.org/code/jb2/latest/?config=test_data%2Fconfig_demo.json&session=share-fDL8SrEPoO&password=6rsxL)
 — HG002 deletion with Nanopore and Illumina reads in arc mode
 
+A read can look concordant (light-grey LR fill) yet still carry a dark-blue
+connector. That happens when the read itself crosses the inversion breakpoint: it
+is split into a primary alignment and a strand-flipped supplementary alignment,
+and the arc joining those two segments is colored for the inversion — the same
+dark blue as an RR pair. This is not an aberrant mate pair. It is a second,
+independent line of evidence for the same inversion, from a single split read
+rather than a pair, so the shared color is corroboration. Hover any connector to
+read its classification (for example, _Split-read inversion_ versus _RR — both
+mates reverse strand_).
+
 ## Linked reads
 
 [Read cloud](/docs/user_guides/alignments_track#read-cloud) stratifies reads by
