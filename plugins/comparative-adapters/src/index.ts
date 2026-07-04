@@ -1,5 +1,6 @@
 import Plugin from '@jbrowse/core/Plugin'
 
+import AllVsAllAddTrackComponentF from './AllVsAllAddTrackComponent/index.tsx'
 import AllVsAllPAFAdapterF from './AllVsAllPAFAdapter/index.ts'
 import BlastTabularAdapterF from './BlastTabularAdapter/index.ts'
 import ChainAdapterF from './ChainAdapter/index.ts'
@@ -8,6 +9,7 @@ import DeltaAdapterF from './DeltaAdapter/index.ts'
 import GuessAdapterF from './GuessAdapter/index.ts'
 import MCScanAddTrackComponentF from './MCScanAddTrackComponent/index.tsx'
 import MCScanAnchorsAdapterF from './MCScanAnchorsAdapter/index.ts'
+import MCScanBlocksAddTrackComponentF from './MCScanBlocksAddTrackComponent/index.tsx'
 import MCScanBlocksAdapterF from './MCScanBlocksAdapter/index.ts'
 import MCScanSimpleAnchorsAdapterF from './MCScanSimpleAnchorsAdapter/index.ts'
 import MashMapAdapterF from './MashMapAdapter/index.ts'
@@ -32,6 +34,8 @@ export default class ComparativeAdaptersPlugin extends Plugin {
     BlastTabularAdapterF(pluginManager)
     ComparativeAddTrackComponentF(pluginManager)
     MCScanAddTrackComponentF(pluginManager)
+    MCScanBlocksAddTrackComponentF(pluginManager)
+    AllVsAllAddTrackComponentF(pluginManager)
     GuessAdapterF(pluginManager)
   }
 }

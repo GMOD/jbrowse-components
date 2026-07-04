@@ -63,9 +63,9 @@ test('assemblyNameToPanSN maps JBrowse names to PanSN sample prefixes', async ()
   expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'peachJB' })
 })
 
-test('getRefNames strips PanSN prefix and scopes to the assembly', async () => {
+test('getRefNames strips PanSN prefix and scopes to the pair (chr2 only has a grape-grape self-alignment, so it is not data for grape-vs-peach)', async () => {
   const names = await makeAdapter(['grape', 'peach']).getRefNames({
     assemblyName: 'grape',
   })
-  expect([...names].sort()).toEqual(['chr1', 'chr2'])
+  expect([...names].sort()).toEqual(['chr1'])
 })

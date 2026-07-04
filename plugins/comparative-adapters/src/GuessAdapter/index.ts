@@ -30,6 +30,21 @@ export default function GuessAdapterF(pluginManager: PluginManager) {
             type: 'PAFAdapter',
             pafLocation: file,
           }
+        } else if (adapterHint === 'AllVsAllPAFAdapter') {
+          // no file-extension guess: an all-vs-all PAF looks like any .paf, so
+          // it is only reachable by explicitly picking the adapter. The
+          // assembly pair / PanSN mapping are filled in by its add-track form.
+          return {
+            type: 'AllVsAllPAFAdapter',
+            pafLocation: file,
+          }
+        } else if (adapterHint === 'MCScanBlocksAdapter') {
+          // the extra per-genome BED files and blockAssemblies come from the
+          // add-track form; this only seeds the blocks file location
+          return {
+            type: 'MCScanBlocksAdapter',
+            mcscanBlocksLocation: file,
+          }
         } else if (adapterHint === 'BlastTabularAdapter') {
           return {
             type: 'BlastTabularAdapter',

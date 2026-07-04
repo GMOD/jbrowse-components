@@ -1,24 +1,15 @@
 import { BaseFeatureDataAdapter } from '@jbrowse/core/data_adapters/BaseAdapter'
-import { SimpleFeature, doesIntersect2, updateStatus } from '@jbrowse/core/util'
+import { updateStatus } from '@jbrowse/core/util'
 import { openLocation } from '@jbrowse/core/util/io'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
+import { getBlockRefNames, makeBlockFeatures } from '../mcscanUtil.ts'
 import { parseBed, readFile } from '../util.ts'
 
 import type { MCScanBlocksAdapterConfig } from './configSchema.ts'
+import type { BlockRow } from '../mcscanUtil.ts'
 import type { BaseOptions } from '@jbrowse/core/data_adapters/BaseAdapter'
 import type { Feature, FileLocation, Region } from '@jbrowse/core/util'
-
-interface BareFeature {
-  strand: number
-  refName: string
-  start: number
-  end: number
-  score: number
-  name: string
-}
-
-type Row = [BareFeature, BareFeature, number]
 
 // The blocks file has one column per genome; this track renders assemblyNames
 // [a, b], so we pull columns colA/colB and emit a link for every row where both
@@ -26,7 +17,7 @@ type Row = [BareFeature, BareFeature, number]
 export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBlocksAdapterConfig> {
   private setupP?: Promise<{
     assemblyNames: string[]
-    feats: Row[]
+    feats: BlockRow[]
   }>
 
   public static capabilities = ['getFeatures', 'getRefNames']
@@ -79,9 +70,9 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
         const nameB = cols[colB]
         const rA = nameA ? bedAMap.get(nameA) : undefined
         const rB = nameB ? bedBMap.get(nameB) : undefined
-        return rA && rB ? ([rA, rB, index] as Row) : undefined
+        return rA && rB ? { a: rA, b: rB, rowNum: index } : undefined
       })
-      .filter((f): f is Row => f !== undefined)
+      .filter((f): f is BlockRow => f !== undefined)
 
     return {
       assemblyNames,
@@ -97,55 +88,16 @@ export default class MCScanBlocksAdapter extends BaseFeatureDataAdapter<MCScanBl
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const r1 = opts.assemblyName
     const { feats, assemblyNames } = await this.setup(opts)
-
-    const idx = r1 === undefined ? -1 : assemblyNames.indexOf(r1)
-    if (idx !== -1) {
-      const set = new Set<string>()
-      for (const feat of feats) {
-        set.add(idx === 0 ? feat[0].refName : feat[1].refName)
-      }
-      return [...set]
-    }
-    return []
+    return getBlockRefNames(assemblyNames, feats, opts.assemblyName)
   }
 
   getFeatures(region: Region, opts: BaseOptions = {}) {
     return ObservableCreate<Feature>(async observer => {
       const { assemblyNames, feats } = await this.setup(opts)
-
-      // The index of the assembly name in the region list corresponds to the
-      // side (colA/colB) that faces this region
-      const index = assemblyNames.indexOf(region.assemblyName)
-      if (index !== -1) {
-        const flip = index === 0
-        for (const f of feats) {
-          const [rA, rB, rowNum] = f
-          const [f1, f2] = !flip ? [rB, rA] : [rA, rB]
-          if (
-            f1.refName === region.refName &&
-            doesIntersect2(region.start, region.end, f1.start, f1.end)
-          ) {
-            observer.next(
-              new SimpleFeature({
-                ...f1,
-                uniqueId: `${index}-${rowNum}`,
-                syntenyId: rowNum,
-
-                // -1 when the paired genes are on opposite strands (inverted)
-                strand: f1.strand * f2.strand,
-                assemblyName: assemblyNames[+!flip],
-                mate: {
-                  ...f2,
-                  assemblyName: assemblyNames[+flip],
-                },
-              }),
-            )
-          }
-        }
+      for (const feat of makeBlockFeatures(assemblyNames, feats, region)) {
+        observer.next(feat)
       }
-
       observer.complete()
     })
   }

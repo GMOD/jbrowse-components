@@ -1,5 +1,6 @@
 import { fetchAndMaybeUnzipText } from '@jbrowse/core/util'
 
+import type { BareFeature } from './mcscanUtil.ts'
 import type {
   BaseFeatureDataAdapter,
   BaseOptions,
@@ -23,17 +24,7 @@ export function getAssemblyNamesFromConf(adapter: BaseFeatureDataAdapter) {
 }
 
 export function parseBed(text: string) {
-  const result = new Map<
-    string,
-    {
-      refName: string
-      start: number
-      end: number
-      score: number
-      name: string
-      strand: number
-    }
-  >()
+  const result = new Map<string, BareFeature>()
   for (const line of text.split(/\n|\r\n|\r/)) {
     if (line && !line.startsWith('#')) {
       const [refName, start, end, name, score, strand] = line.split('\t')

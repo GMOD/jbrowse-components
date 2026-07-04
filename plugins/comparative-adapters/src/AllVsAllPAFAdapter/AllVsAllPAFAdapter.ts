@@ -5,10 +5,8 @@ import { parseLineByLine } from '@jbrowse/core/util/parseLineByLine'
 import { doesIntersect2 } from '@jbrowse/core/util/range'
 import { ObservableCreate } from '@jbrowse/core/util/rxjs'
 
-import { getWeightedMeans } from '../PAFAdapter/util.ts'
-import SyntenyFeature from '../SyntenyFeature/index.ts'
-import { orientAlignment } from '../csUtils.ts'
-import { pafIdentity, parsePAFLine } from '../util.ts'
+import { getWeightedMeans, makeSyntenyFeature } from '../PAFAdapter/util.ts'
+import { parsePAFLine } from '../util.ts'
 
 import type { AllVsAllPAFAdapterConfig } from './configSchema.ts'
 import type { PAFRecord } from '../PAFAdapter/util.ts'
@@ -96,10 +94,18 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     const feats = await this.setup(opts)
     const prefixToAsm = this.prefixToAssembly()
     const set = new Set<string>()
+    // only contigs that actually participate in this track's pair (both sides
+    // resolve to the two assemblies), mirroring the getFeatures filter so
+    // getRefNames doesn't over-report refs that have no drawable features here
     for (const feat of feats) {
-      for (const name of [feat.qname, feat.tname]) {
-        if (prefixToAsm[panSNSample(name)] === assemblyName) {
-          set.add(panSNContig(name))
+      const qAsm = prefixToAsm[panSNSample(feat.qname)]
+      const tAsm = prefixToAsm[panSNSample(feat.tname)]
+      if (qAsm && tAsm && qAsm !== tAsm) {
+        if (qAsm === assemblyName) {
+          set.add(panSNContig(feat.qname))
+        }
+        if (tAsm === assemblyName) {
+          set.add(panSNContig(feat.tname))
         }
       }
     }
@@ -133,30 +139,16 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
           const mateAsm = flip ? tAsm : qAsm
           const { extra, strand } = r
           if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
-            const { numMatches = 0, blockLen = 1, cg, cs, ...rest } = extra
-            const { CIGAR, cs: orientedCs } = orientAlignment({
-              cg,
-              cs,
-              flip,
-              strand,
-            })
-
             observer.next(
-              new SyntenyFeature({
-                uniqueId: i + assemblyName,
+              makeSyntenyFeature({
+                syntenyId: i,
                 assemblyName,
+                refName,
                 start,
                 end,
-                type: 'match',
-                refName,
                 strand,
-                ...rest,
-                CIGAR,
-                cs: orientedCs,
-                syntenyId: i,
-                identity: pafIdentity(extra),
-                numMatches,
-                blockLen,
+                extra,
+                flip,
                 mate: {
                   start: mateStart,
                   end: mateEnd,
