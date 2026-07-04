@@ -1,6 +1,6 @@
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import { makeBpMapper } from '@jbrowse/render-core/canvas2dUtils'
-import { alpha, useTheme } from '@mui/material'
+import { alpha } from '@mui/material'
 
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
@@ -80,6 +80,31 @@ const useStyles = makeStyles()(theme => ({
   floatingLabelOverlay: {
     background: LABEL_OVERLAY_BACKGROUND,
     color: theme.palette.common.black,
+  },
+  // Overlay boxes: only left/top/width/height vary per-feature (inline); the
+  // appearance below is all static theme derivation. Weight ranks the states:
+  // selection (2px solid) is the strongest, the search highlight is deliberately
+  // lighter (1px, translucent border + faint tint) so it reads as transient.
+  overlayBase: {
+    position: 'absolute',
+    pointerEvents: 'none',
+  },
+  hoverOverlay: {
+    backgroundColor: theme.palette.featureHover,
+  },
+  soloBox: {
+    border: `2px dashed ${theme.palette.primary.main}`,
+    borderRadius: 3,
+    backgroundColor: alpha(theme.palette.primary.main, 0.15),
+  },
+  searchHighlightBox: {
+    border: `1px solid ${alpha(theme.palette.highlight.main, 0.7)}`,
+    borderRadius: 3,
+    backgroundColor: alpha(theme.palette.highlight.main, 0.12),
+  },
+  selectedBox: {
+    border: `2px solid ${theme.palette.featureSelected}`,
+    borderRadius: 3,
   },
 }))
 
@@ -208,9 +233,7 @@ export function useHighlightOverlays(
     showLabels,
     effectiveShowDescriptions,
   } = model
-  const theme = useTheme()
-  // theme-aware (lightens on dark tracks, darkens on light) — see theme.ts
-  const hoverColor = theme.palette.featureHover
+  const { classes, cx } = useStyles()
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
@@ -251,7 +274,7 @@ export function useHighlightOverlays(
       bottomPx: number
     },
     refName: string,
-    style: React.CSSProperties,
+    className: string,
     key: string,
     extraWidth = 0,
     xPadding = 0,
@@ -268,14 +291,12 @@ export function useHighlightOverlays(
           <div
             key={`${key}-${vr.displayedRegionIndex}`}
             data-testid={testId}
+            className={cx(classes.overlayBase, className)}
             style={{
-              position: 'absolute',
               left: rect.leftPx - xPadding,
               top: rect.topPx - yPadding,
               width: rect.width + extraWidth + xPadding * 2,
               height: rect.heightPx + yPadding * 2,
-              pointerEvents: 'none',
-              ...style,
             }}
           />,
         )
@@ -305,7 +326,7 @@ export function useHighlightOverlays(
   // No-op when the id isn't currently rendered.
   const addFeatureBox = (
     featureId: string,
-    style: React.CSSProperties,
+    className: string,
     key: string,
     testId?: string,
   ) => {
@@ -314,7 +335,7 @@ export function useHighlightOverlays(
       addOverlay(
         entry.item,
         entry.vr.refName,
-        style,
+        className,
         key,
         computeExtraWidth(entry),
         2,
@@ -336,7 +357,7 @@ export function useHighlightOverlays(
       addOverlay(
         hoverItem,
         entry.vr.refName,
-        { backgroundColor: hoverColor },
+        classes.hoverOverlay,
         'hover',
         subfeatureHover ? 0 : computeExtraWidth(entry),
         subfeatureHover ? 0 : HIT_PAD_PX,
@@ -349,15 +370,10 @@ export function useHighlightOverlays(
   // "N selected" set is visible on the track, not just as a corner count.
   // Skipped once applied (the view then shows only these features anyway).
   if (!soloApplied) {
-    const soloColor = theme.palette.primary.main
     for (const featureId of soloFeatureIdSet) {
       addFeatureBox(
         featureId,
-        {
-          border: `2px dashed ${soloColor}`,
-          borderRadius: 3,
-          backgroundColor: alpha(soloColor, 0.15),
-        },
+        classes.soloBox,
         `solo-select-${featureId}`,
         'feature-solo-select',
       )
@@ -366,29 +382,17 @@ export function useHighlightOverlays(
 
   // Search highlights: box + tint the specific matched feature(s). Drawn before
   // selection so a click's selection border still reads on top.
-  const highlightColor = theme.palette.highlight.main
   for (const featureId of highlightedFeatureIds) {
     addFeatureBox(
       featureId,
-      {
-        border: `2px solid ${highlightColor}`,
-        borderRadius: 3,
-        backgroundColor: alpha(highlightColor, 0.25),
-      },
+      classes.searchHighlightBox,
       `search-highlight-${featureId}`,
       'feature-highlight',
     )
   }
 
   if (selectedFeatureId) {
-    addFeatureBox(
-      selectedFeatureId,
-      {
-        border: `2px solid ${theme.palette.featureSelected}`,
-        borderRadius: 3,
-      },
-      'selected',
-    )
+    addFeatureBox(selectedFeatureId, classes.selectedBox, 'selected')
   }
 
   return overlays.length > 0 ? overlays : null
