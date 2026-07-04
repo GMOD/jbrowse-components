@@ -1,6 +1,6 @@
 import { unified } from '@astrojs/markdown-remark'
 import react from '@astrojs/react'
-import { defineConfig } from 'astro/config'
+import { defineConfig, fontProviders } from 'astro/config'
 import icon from 'astro-icon'
 import fs from 'node:fs/promises'
 import { glob } from 'node:fs/promises'
@@ -45,6 +45,23 @@ export default defineConfig({
   // negligible for a static docs site.
   compressHTML: false,
   integrations: [react(), icon(), fixAbsoluteLinks()],
+  // Self-hosted Roboto (downloaded + optimized at build, served from our own
+  // origin) — no render-blocking request to fonts.googleapis.com. Exposed as
+  // var(--font-roboto); emit the <Font> tags with <Font cssVariable> in the head.
+  fonts: [
+    {
+      provider: fontProviders.google(),
+      name: 'Roboto',
+      cssVariable: '--font-roboto',
+      weights: [400, 500, 600, 700, 900],
+      styles: ['normal'],
+      subsets: ['latin'],
+    },
+  ],
+  // NOTE: this only applies to Astro's built-in markdown (the `.md` *pages* like
+  // features/gallery/demos — base-URL rewriting only). Docs and blog render
+  // through the richer unified pipeline in src/lib/markdown.ts (admonitions,
+  // figures, spec-examples, shiki); those extras do NOT work in `.md` pages.
   markdown: {
     processor: unified({
       rehypePlugins: [[rehypeBaseUrls, { base: BASE }]],

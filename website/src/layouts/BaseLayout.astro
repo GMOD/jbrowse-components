@@ -1,4 +1,6 @@
 ---
+import { Font } from 'astro:assets'
+
 import styles from './BaseLayout.module.css'
 import { baseUrl } from '../lib/base-url.ts'
 import { navLinks } from '../lib/nav.ts'
@@ -49,12 +51,7 @@ const navActive = styles.navActive!
       href={`${baseUrl}/rss.xml`}
     />
     <link rel="icon" href={`${baseUrl}/img/favicon.ico`} />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Roboto:wght@400..900&display=swap"
-    />
+    <Font cssVariable="--font-roboto" preload />
     <style is:global>
       :root {
         --nav-height: 60px;
@@ -92,7 +89,7 @@ const navActive = styles.navActive!
       }
       body {
         margin: 0;
-        font-family: 'Roboto', sans-serif;
+        font-family: var(--font-roboto), sans-serif;
         color: var(--color-text);
         display: flex;
         flex-direction: column;
