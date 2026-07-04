@@ -6,7 +6,7 @@ import {
   readFeatureLabels,
   readFeatureName,
 } from '../labelUtils.ts'
-import { featureType } from '../util.ts'
+import { featureType, getSubfeatures } from '../util.ts'
 import {
   centerShrink,
   emitCodonRects,
@@ -17,6 +17,8 @@ import {
   pushBoxRect,
 } from './emitPrimitives.ts'
 import {
+  CRISPR_CUT_COLOR,
+  CRISPR_PAM_COLOR,
   MATURE_PROTEIN_COLORS,
   MATURE_PROTEIN_COLOR_HEX,
   REPEAT_BODY_HEIGHT_FRACTION,
@@ -418,6 +420,66 @@ function processRepeatRegionLayout(
   emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
 }
 
+// CRISPR guide RNA (CrisprGuideAdapter): the whole feature box is the
+// protospacer+PAM span in the config color; the PAM subfeature is overpainted
+// red and the predicted cut site (the feature's `cutSite` attribute) is a dark
+// tick drawn on top. A zero-width cut rect is widened to MIN_RECT_WIDTH_PX by
+// the rect shader, so it renders as a thin vertical bar. The PAM is registered
+// as a hoverable subfeature.
+function processCrisprGuideLayout(
+  layout: FeatureLayout,
+  flatbushIdx: number,
+  ctx: RenderContext,
+  collector: Collector,
+) {
+  const { feature, height } = layout
+  const strand = feature.get('strand') ?? 0
+
+  pushBoxRect(feature, 0, height, flatbushIdx, ctx, collector.rects)
+
+  const pam = getSubfeatures(feature).find(f => featureType(f) === 'PAM')
+  if (pam) {
+    collector.rects.push({
+      start: pam.get('start'),
+      end: pam.get('end'),
+      y: 0,
+      height,
+      color: CRISPR_PAM_COLOR,
+      strand,
+      flatbushIdx,
+      densityFade: false,
+    })
+    registerSubfeature(
+      {
+        feature: pam,
+        parentFeatureId: feature.id(),
+        type: 'PAM',
+        topPx: 0,
+        heightPx: height,
+        displayLabel: 'PAM',
+      },
+      ctx,
+      collector,
+    )
+  }
+
+  const cutSite = feature.get('cutSite')
+  if (typeof cutSite === 'number') {
+    collector.rects.push({
+      start: cutSite,
+      end: cutSite,
+      y: 0,
+      height,
+      color: CRISPR_CUT_COLOR,
+      strand,
+      flatbushIdx,
+      densityFade: false,
+    })
+  }
+
+  emitTopLevelStrandArrow(layout, flatbushIdx, ctx, collector)
+}
+
 function processDefaultLayout(
   layout: FeatureLayout,
   flatbushIdx: number,
@@ -474,6 +536,9 @@ const GLYPH_EMITTERS: Record<GlyphType, GlyphEmit> = {
   },
   RepeatRegion: (layout, feature, flatbushIdx, ctx, collector) => {
     processRepeatRegionLayout(layout, feature, flatbushIdx, ctx, collector)
+  },
+  CrisprGuide: (layout, _feature, flatbushIdx, ctx, collector) => {
+    processCrisprGuideLayout(layout, flatbushIdx, ctx, collector)
   },
 }
 

@@ -1,4 +1,5 @@
 import { layoutBox } from './box.ts'
+import { layoutCrisprGuide } from './crisprGuide.ts'
 import { findGlyph } from './findGlyph.ts'
 import { layoutProcessedTranscript } from './processed.ts'
 import { layoutRepeatRegion } from './repeatRegion.ts'
@@ -100,5 +101,13 @@ describe('findGlyph structural dispatch', () => {
       ],
     })
     expect(findGlyph(feature, config)).toBe(layoutRepeatRegion)
+  })
+
+  it('routes a guide_rna to CrisprGuide', () => {
+    const feature = mockFeature({
+      type: 'guide_rna',
+      subfeatures: [mockFeature({ type: 'PAM' })],
+    })
+    expect(findGlyph(feature, config)).toBe(layoutCrisprGuide)
   })
 })

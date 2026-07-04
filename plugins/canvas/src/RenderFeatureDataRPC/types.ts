@@ -41,3 +41,4 @@ export type GlyphType =
   | 'Subfeatures'
   | 'MatureProteinRegion'
   | 'RepeatRegion'
+  | 'CrisprGuide'

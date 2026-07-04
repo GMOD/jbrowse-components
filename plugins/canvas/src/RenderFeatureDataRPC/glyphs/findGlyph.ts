@@ -1,4 +1,5 @@
 import { layoutBox } from './box.ts'
+import { layoutCrisprGuide } from './crisprGuide.ts'
 import { hasCDSSubfeature, hasContainerChildren } from './glyphUtils.ts'
 import {
   hasMatureProteinChildren,
@@ -36,6 +37,13 @@ export function findGlyph(
   const type = featureType(feature)
   const hasSubfeatures = getSubfeatures(feature).length > 0
 
+  // CRISPR guide RNAs (CrisprGuideAdapter emits type 'guide_rna' with a PAM
+  // subfeature and a cutSite attribute) get a dedicated protospacer+PAM+cut
+  // glyph. Type-based like the repeat_region check below, since 'guide_rna' is a
+  // specific semantic type rather than a structural shape.
+  if (type === 'guide_rna') {
+    return layoutCrisprGuide
+  }
   if (isCDS(feature)) {
     return hasMatureProteinChildren(feature)
       ? layoutMatureProteinRegion
