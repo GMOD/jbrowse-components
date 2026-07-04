@@ -188,10 +188,11 @@ a region with informative variants for the best separation.
 
 A clustering result can be embedded directly in a session snapshot — useful for
 sharing a pre-computed clustering via URL. Set `layout` and `clusterTree` (and
-optionally `treeAreaWidth` / `subtreeFilter`) in the display's
-`displaySnapshot`. See the
-[MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) docs for
-the full field reference.
+optionally `treeAreaWidth` / `subtreeFilter`) in the display's `displaySnapshot`
+(see
+[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
+The [MultiSampleVariantBaseModel](/docs/models/multisamplevariantbasemodel) docs
+have the full field reference.
 
 ## See also
 

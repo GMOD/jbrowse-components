@@ -126,9 +126,10 @@ interest before running it.
 
 A clustering result can be embedded directly in a session snapshot — useful for
 sharing a pre-computed clustering via URL. Set `layout`, `clusterTree`,
-`treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot`. See the
-[MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) for the
-display's full config reference.
+`treeAreaWidth`, and `subtreeFilter` in the display's `displaySnapshot` (see
+[URL parameters → advanced track configuration](/docs/urlparams#advanced-track-configuration)).
+The [MultiLinearWiggleDisplay config](/docs/config/multilinearwiggledisplay) has
+the display's full config reference.
 
 ## See also
 
