@@ -180,6 +180,45 @@ describe('feature highlight declarative persistence', () => {
     expect([...display.layoutPinnedFeatureIdSet]).toEqual(['gene-1'])
   })
 
+  it('boxes only the matched gene, not its subfeatures, on a gene search', () => {
+    const { createDisplay } = createTestEnvironment()
+    const { display } = createDisplay({ featureHighlights: [brca1] })
+
+    // gene span (1000..2000) matches the highlight exactly, and its transcript
+    // subfeatures share the gene's indexed name and overlap its span
+    display.setRpcData(
+      0,
+      makeFeatureData({
+        flatbushItems: [
+          makeFlatbushItem({
+            featureId: 'gene-1',
+            startBp: 1000,
+            endBp: 2000,
+            name: 'BRCA1',
+          }),
+        ],
+        subfeatureInfos: [
+          {
+            kind: 'subfeature',
+            featureId: 'transcript-1',
+            type: 'mRNA',
+            startBp: 1000,
+            endBp: 2000,
+            topPx: 0,
+            bottomPx: 10,
+            parentFeatureId: 'gene-1',
+            displayLabel: 'BRCA1',
+          },
+        ],
+      }),
+      10,
+      ctgA,
+    )
+
+    // one clean box around the gene, no redundant sub-boxes inside the glyph
+    expect([...display.highlightedFeatureIdSet]).toEqual(['gene-1'])
+  })
+
   it('merges the highlight with existing user pins', () => {
     const { createDisplay } = createTestEnvironment()
     const { display } = createDisplay({

@@ -670,9 +670,10 @@ export default function baseStateModelFactory(
         // Resolve declarative highlights against the RAW fetched data (rpcDataMap)
         // rather than the laid-out data — deliberately pre-layout, so it can feed
         // both boxing and pinning without a layout→layout cycle (coords/name live
-        // on the raw items, no row/topPx needed). A highlight can match a
-        // top-level feature OR a subfeature (e.g. a searched transcript whose span
-        // is a subspan of its gene, so it never matches the gene's full span):
+        // on the raw items, no row/topPx needed). A highlight boxes the top-level
+        // feature when it matches, and only falls back to boxing a subfeature when
+        // no top-level feature matched (e.g. a searched transcript whose span is a
+        // subspan of its gene, so it never matches the gene's full span):
         //   `box` = the render-item ids the overlay draws a box around.
         //   `pin` = the ids the packer pins to a top row. For a subfeature that's
         //           its PARENT feature, since the packer keys on top-level ids and
@@ -684,21 +685,23 @@ export default function baseStateModelFactory(
         } {
           const box = new Set<string>()
           const pin = new Set<string>()
-          if (self.featureHighlights.length > 0) {
+          for (const h of self.featureHighlights) {
             for (const data of self.rpcDataMap.values()) {
+              let topLevelMatched = false
               for (const item of data.flatbushItems) {
-                if (
-                  self.featureHighlights.some(h =>
-                    featureMatchesHighlight(item, data.refName, h),
-                  )
-                ) {
+                if (featureMatchesHighlight(item, data.refName, h)) {
                   box.add(item.featureId)
                   pin.add(item.featureId)
+                  topLevelMatched = true
                 }
               }
-              for (const s of data.subfeatureInfos) {
-                if (
-                  self.featureHighlights.some(h =>
+              // Only fall back to boxing subfeatures when the top-level feature
+              // never matched (e.g. a searched transcript whose span is a
+              // subspan of its gene). If the gene itself matched, boxing its
+              // subfeatures too would draw redundant sub-boxes inside the glyph.
+              if (!topLevelMatched) {
+                for (const s of data.subfeatureInfos) {
+                  if (
                     featureMatchesHighlight(
                       {
                         startBp: s.startBp,
@@ -707,11 +710,11 @@ export default function baseStateModelFactory(
                       },
                       data.refName,
                       h,
-                    ),
-                  )
-                ) {
-                  box.add(s.featureId)
-                  pin.add(s.parentFeatureId)
+                    )
+                  ) {
+                    box.add(s.featureId)
+                    pin.add(s.parentFeatureId)
+                  }
                 }
               }
             }
