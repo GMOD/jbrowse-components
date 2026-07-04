@@ -1,4 +1,5 @@
 import { SimpleFeature } from '@jbrowse/core/util'
+import { cssColorToABGR } from '@jbrowse/core/util/colorBits'
 import createJexlInstance from '@jbrowse/core/util/jexl'
 
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
@@ -54,4 +55,16 @@ test('jexl with arithmetic on feature scores', () => {
   )
   expect(fn(f1)).toBe(abgr(0, 0, 0))
   expect(fn(f2)).toBe(abgr(255, 255, 255))
+})
+
+test('non-string jexl result → visible default, not transparent', () => {
+  // a branch that yields undefined (no else) must not render an invisible point
+  const fn = makeColorEvaluator(
+    "jexl:get(feature,'start') == 100 ? 'red' : undefined",
+    jexl,
+  )
+  expect(fn(f1)).toBe(abgr(255, 0, 0))
+  const fallback = fn(f2)
+  expect(fallback).not.toBe(0)
+  expect(fallback).toBe(cssColorToABGR('#0068d1'))
 })
