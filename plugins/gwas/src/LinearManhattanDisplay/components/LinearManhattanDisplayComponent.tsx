@@ -161,6 +161,7 @@ const ManhattanBody = observer(function ManhattanBody({
           screenY={featureUnderMouse.screenY}
           width={width}
           height={height}
+          pointDiameterPx={model.scatterPointSize}
         />
       ) : null}
       {ldMode ? (

@@ -1,10 +1,10 @@
 import { abgrToCssRgba } from '@jbrowse/core/util/colorBits'
-import { SMALL_POINT_MAX_DIAMETER_PX } from '@jbrowse/plugin-wiggle'
 import {
   bpToScreenPx,
   clipBlockForCanvas,
 } from '@jbrowse/render-core/canvas2dUtils'
 import { Canvas2DPerRegionRenderingBackend } from '@jbrowse/render-core/perRegionRenderingBackend'
+import { appendPointMarker } from '@jbrowse/wiggle-core'
 
 import { scoreToY } from './manhattanRenderingBackendTypes.ts'
 
@@ -12,8 +12,6 @@ import type { ManhattanRenderState } from './manhattanRenderingBackendTypes.ts'
 import type { ManhattanRpcResult } from '../ManhattanRPC/rpcTypes.ts'
 import type { Ctx2D } from '@jbrowse/core/util/paintLayer'
 import type { RenderBlock } from '@jbrowse/render-core/renderBlock'
-
-const TWO_PI = Math.PI * 2
 
 // Pure draw entry point — used both by on-screen streaming render and SVG
 // export. No per-region builder layer (the rpcDataMap entries are already
@@ -86,12 +84,8 @@ export function drawManhattanBlocks(
         ctx.lineTo(xStart + r, y - r)
         ctx.lineTo(xStart, y + r)
         ctx.closePath()
-      } else if (pointDiameterPx <= SMALL_POINT_MAX_DIAMETER_PX) {
-        // tiny point: crisp square instead of a muddy AA disc
-        ctx.rect(xStart - r, y - r, pointDiameterPx, pointDiameterPx)
       } else {
-        ctx.moveTo(xStart + r, y)
-        ctx.arc(xStart, y, r, 0, TWO_PI)
+        appendPointMarker(ctx, xStart, y, pointDiameterPx)
       }
     }
     ctx.fill()

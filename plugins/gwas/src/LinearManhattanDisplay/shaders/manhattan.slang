@@ -72,8 +72,10 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
 
   float startClipX = bpToClipX(inst.absPosition, u);
   float endClipX = bpToClipX(inst.absEnd, u);
+  // max(range, 1e-6) guards a degenerate (min==max) domain from dividing by
+  // zero (matches wiggle.slang and the JS scoreToY `|| 1` guard).
   float scoreNorm = clamp(
-    (inst.score - u.domainYMin) / (u.domainYMax - u.domainYMin),
+    (inst.score - u.domainYMin) / max(u.domainYMax - u.domainYMin, 1e-6),
     0.0,
     1.0,
   );
@@ -81,7 +83,9 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
   float centerClipY = yPxToClipY(scoreYPx, u.canvasHeight);
 
   // Genomic span in CSS px (clip width spans -1..1 across viewportWidth).
-  float spanPx = (endClipX - startClipX) * 0.5 * u.viewportWidth;
+  // abs() because reversal is baked into bpRangeX (negated length), so
+  // endClipX < startClipX on reversed regions — matches wiggle.slang.
+  float spanPx = abs(endClipX - startClipX) * 0.5 * u.viewportWidth;
   bool isBar = spanPx > u.pointRadius * 2.0;
 
   VsOut o;
@@ -90,7 +94,10 @@ VsOut vs_main(ManhattanInstance inst, uint vid : SV_VertexID) {
     // Horizontal bar from start→end, height 2*pointRadius px, centered on the
     // score. 1px AA pad on each x edge so adjacent bars don't shimmer.
     float padClipX = AA_PAD_PX * 2.0 / u.viewportWidth;
-    float x = xZero ? (startClipX - padClipX) : (endClipX + padClipX);
+    // min/max so a reversed region (endClipX < startClipX) still spans the full
+    // bar extent instead of drawing an inverted quad — matches wiggle.slang.
+    float x = xZero ? (min(startClipX, endClipX) - padClipX)
+                    : (max(startClipX, endClipX) + padClipX);
     float halfBandPx = u.pointRadius;
     float y = centerClipY + local.y * halfBandPx * 2.0 / u.canvasHeight;
     o.position = float4(x, y, 0.0, 1.0);

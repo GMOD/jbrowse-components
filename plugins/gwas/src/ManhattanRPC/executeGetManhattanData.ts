@@ -9,8 +9,7 @@ import {
 
 import { buildLdToIndex } from './ldToIndex.ts'
 import { makeColorEvaluator } from './makeColorEvaluator.ts'
-import { makeLdColorEvaluator } from './makeLdColorEvaluator.ts'
-import { makeLdR2Evaluator } from './makeLdR2Evaluator.ts'
+import { makeLdEvaluator } from './makeLdEvaluator.ts'
 
 import type { LDRecordSource } from './ldToIndex.ts'
 import type { GetManhattanDataArgs, ManhattanRpcResult } from './rpcTypes.ts'
@@ -35,34 +34,43 @@ export function buildManhattanResult(
   const r2s = evalR2 ? new Float32Array(n) : undefined
   let scoreMin = Infinity
   let scoreMax = -Infinity
+  let count = 0
 
   for (let i = 0; i < n; i++) {
     report?.(i)
     const f = features[i]!
-    // Uint32Array assignment coerces via ToUint32 (handles full 32-bit bp
-    // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
-    // T2T-scale cumulative coordinates.
-    positions[i] = f.get('start')
-    ends[i] = f.get('end')
-    glyphs[i] = f.get('svtype') === 'INS' ? 1 : 0
     const score = Number(f.get('score'))
-    scores[i] = score
-    if (score < scoreMin) {
-      scoreMin = score
-    }
-    if (score > scoreMax) {
-      scoreMax = score
-    }
-    colors[i] = evalColor(f)
-    if (r2s) {
-      r2s[i] = evalR2!(f)
+    // A Manhattan point needs a finite y (-log10 p). Missing/garbage scores
+    // (Number(undefined) === NaN) aren't plottable, and an unguarded NaN box
+    // poisons the region's Flatbush node bounds via Math.min/max — breaking
+    // hit-testing for every point in the region. Skip them so the output
+    // arrays stay dense and index-aligned with the flatbush.
+    if (Number.isFinite(score)) {
+      // Uint32Array assignment coerces via ToUint32 (handles full 32-bit bp
+      // space); a `| 0` here would silently sign-extend bp ≥ 2^31 — wrong for
+      // T2T-scale cumulative coordinates.
+      positions[count] = f.get('start')
+      ends[count] = f.get('end')
+      glyphs[count] = f.get('svtype') === 'INS' ? 1 : 0
+      scores[count] = score
+      if (score < scoreMin) {
+        scoreMin = score
+      }
+      if (score > scoreMax) {
+        scoreMax = score
+      }
+      colors[count] = evalColor(f)
+      if (r2s) {
+        r2s[count] = evalR2!(f)
+      }
+      count++
     }
   }
 
   let flatbushData: ArrayBuffer | undefined
-  if (n > 0) {
-    const fb = new Flatbush(n, undefined, Float64Array)
-    for (let i = 0; i < n; i++) {
+  if (count > 0) {
+    const fb = new Flatbush(count, undefined, Float64Array)
+    for (let i = 0; i < count; i++) {
       const s = scores[i]!
       // bp interval [start,end] so hovering anywhere on a ranged SV's span
       // (not just its start) returns it; point features collapse to a 1bp box.
@@ -72,14 +80,16 @@ export function buildManhattanResult(
     flatbushData = fb.data
   }
 
+  // Truncate to the finite-score count (subarray shares the buffer, so no copy
+  // and the full ArrayBuffer still transfers correctly).
   return {
-    positions,
-    ends,
-    glyphs,
-    scores,
-    colors,
-    r2s,
-    numFeatures: n,
+    positions: positions.subarray(0, count),
+    ends: ends.subarray(0, count),
+    glyphs: glyphs.subarray(0, count),
+    scores: scores.subarray(0, count),
+    colors: colors.subarray(0, count),
+    r2s: r2s?.subarray(0, count),
+    numFeatures: count,
     scoreMin,
     scoreMax,
     flatbushData,
@@ -131,8 +141,9 @@ export async function executeGetManhattanData({
       buildLdToIndex({ adapter: ldAdapter, region, indexSnp }),
     )
     checkStopToken2(stopTokenCheck)
-    evalColor = makeLdColorEvaluator(ld, indexSnp, region.refName)
-    evalR2 = makeLdR2Evaluator(ld, indexSnp, region.refName)
+    const ldEval = makeLdEvaluator(ld, indexSnp, region.refName)
+    evalColor = ldEval.evalColor
+    evalR2 = ldEval.evalR2
     indexFound = ld.indexFound
   } else {
     evalColor = makeColorEvaluator(color, pluginManager.jexl)

@@ -55,7 +55,10 @@ export async function renderSvg(
     return null
   }
 
-  const totalWidth = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
   const displayHeight = model.height
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const { coverageTicks } = model
@@ -67,7 +70,7 @@ export async function renderSvg(
   const state = {
     ...baseState,
     scrollTop: 0,
-    canvasWidth: totalWidth,
+    canvasWidth,
     canvasHeight: displayHeight,
     // Export colors follow the export theme (opts.theme), not the live session
     // theme, so the pileup matches the labels/contrast which already use it.
@@ -94,7 +97,7 @@ export async function renderSvg(
     model.showModifications,
     theme,
   )
-  const pileupNode = paintLayer(totalWidth, displayHeight, opts, ctx => {
+  const pileupNode = paintLayer(canvasWidth, displayHeight, opts, ctx => {
     drawAlignmentsToCtx(
       ctx,
       {
@@ -147,7 +150,7 @@ export async function renderSvg(
             />
           </g>
         ) : (
-          <g transform={`translate(${totalWidth - 50})`}>
+          <g transform={`translate(${canvasWidth - 50})`}>
             <YScaleBar ticks={model.insertSizeTicks} orientation="right" />
             <TlenAxisLabel
               yTop={model.insertSizeTicks.yTop}

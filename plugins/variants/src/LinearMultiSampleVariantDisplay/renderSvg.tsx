@@ -62,7 +62,10 @@ function VariantSvgBody({
     referenceDrawingMode,
     canDisplayLabels,
   } = model
-  const totalWidth = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
   const regions = new Map<number, VariantCellData>()
   for (const [idxStr, data] of Object.entries(cellData.perRegionCellData)) {
@@ -70,13 +73,13 @@ function VariantSvgBody({
       regions.set(Number(idxStr), data)
     }
   }
-  const cellsNode = paintLayer(totalWidth, availableHeight, opts, ctx => {
+  const cellsNode = paintLayer(canvasWidth, availableHeight, opts, ctx => {
     if (referenceDrawingMode === 'skip') {
       ctx.fillStyle = REFERENCE_COLOR
-      ctx.fillRect(0, 0, totalWidth, availableHeight)
+      ctx.fillRect(0, 0, canvasWidth, availableHeight)
     }
     drawVariantBlocks(ctx, regions, renderBlocks, {
-      canvasWidth: totalWidth,
+      canvasWidth,
       canvasHeight: availableHeight,
       rowHeight,
       scrollTop,

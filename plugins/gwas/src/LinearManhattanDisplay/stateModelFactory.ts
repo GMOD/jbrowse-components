@@ -26,12 +26,11 @@ import {
   computeYTicks,
   getNiceDomain,
   makeCrossHatchItem,
-  makePointSizeMenu,
+  makeScatterPointSizeMenuItem,
   makeScoreSubMenu,
   resolveRenderState,
 } from '@jbrowse/wiggle-core'
 import MenuOpenIcon from '@mui/icons-material/MenuOpen'
-import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { autorun, observable } from 'mobx'
 
 import TooltipComponent from './components/TooltipComponent.tsx'
@@ -380,17 +379,9 @@ export function stateModelFactory(
       trackMenuItems() {
         return [
           makeScoreSubMenu(self, { scaleType: false }),
-          makePointSizeMenu({
+          makeScatterPointSizeMenuItem(self, {
             label: 'Point size',
-            icon: ScatterPlotIcon,
-            getValue: () => self.scatterPointSize,
-            isDefault: self.scatterPointSize === DEFAULT_POINT_DIAMETER_PX,
-            onChange: n => {
-              self.setScatterPointSize(n)
-            },
-            onReset: () => {
-              self.setScatterPointSize(undefined)
-            },
+            defaultValue: DEFAULT_POINT_DIAMETER_PX,
           }),
           makeCrossHatchItem(self),
           {

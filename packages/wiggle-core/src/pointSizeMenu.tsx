@@ -1,4 +1,5 @@
 import { SingleSlider } from '@jbrowse/core/ui'
+import ScatterPlotIcon from '@mui/icons-material/ScatterPlot'
 import { Typography } from '@mui/material'
 import { observer } from 'mobx-react'
 
@@ -94,4 +95,28 @@ export function makePointSizeMenu(opts: {
       },
     ],
   }
+}
+
+// Wires a display's shared `scatterPointSize`/`setScatterPointSize` (from
+// WiggleScoreConfigMixin) to makePointSizeMenu. Used by both the wiggle scatter
+// and GWAS Manhattan track menus so the slider/reset behavior can't drift.
+export function makeScatterPointSizeMenuItem(
+  self: {
+    scatterPointSize: number
+    setScatterPointSize: (n?: number) => void
+  },
+  opts: { label: string; defaultValue: number },
+): MenuItem {
+  return makePointSizeMenu({
+    label: opts.label,
+    icon: ScatterPlotIcon,
+    getValue: () => self.scatterPointSize,
+    isDefault: self.scatterPointSize === opts.defaultValue,
+    onChange: n => {
+      self.setScatterPointSize(n)
+    },
+    onReset: () => {
+      self.setScatterPointSize(undefined)
+    },
+  })
 }

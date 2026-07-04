@@ -18,13 +18,19 @@ const HoverHighlight = observer(function HoverHighlight({
   screenY,
   width,
   height,
+  pointDiameterPx,
 }: {
   screenX: number
   screenY: number
   width: number
   height: number
+  pointDiameterPx: number
 }) {
   const { classes } = useStyles()
+  // Ring sits just outside the point with a fixed margin; the floor keeps it
+  // visible/grabbable for tiny points and reproduces the historical r=6 at the
+  // default 4px diameter.
+  const r = Math.max(6, pointDiameterPx / 2 + 4)
   return (
     <svg
       className={classes.svg}
@@ -34,7 +40,7 @@ const HoverHighlight = observer(function HoverHighlight({
       <circle
         cx={screenX}
         cy={screenY}
-        r={6}
+        r={r}
         fill="none"
         stroke="black"
         strokeWidth={1.5}

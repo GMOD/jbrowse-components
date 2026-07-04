@@ -117,15 +117,15 @@ function ManhattanSvgBody({
       </g>
     ) : null
 
-  const totalWidth = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
   const renderBlocks = buildRenderBlocks(view.visibleRegions)
-  // SVG export spans all visible regions side-by-side, so canvasWidth is
-  // overridden to the full bp window width — canvasHeight is the same as
-  // on-screen.
-  const state = { ...renderState, canvasWidth: totalWidth }
+  const state = { ...renderState, canvasWidth }
   const manhattanNode = (
     <g transform={`translate(0,${YSCALEBAR_LABEL_OFFSET})`}>
-      {paintLayer(totalWidth, renderState.canvasHeight, opts, ctx => {
+      {paintLayer(canvasWidth, renderState.canvasHeight, opts, ctx => {
         drawManhattanBlocks(ctx, rpcDataMap, renderBlocks, state)
       })}
     </g>

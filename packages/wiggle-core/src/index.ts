@@ -30,7 +30,14 @@ export interface YScaleTicks {
 
 export { default as CrossHatches } from './CrossHatches.tsx'
 export { makeRadioSubMenu } from './radioSubMenu.ts'
-export { makePointSizeMenu } from './pointSizeMenu.tsx'
+export {
+  makePointSizeMenu,
+  makeScatterPointSizeMenuItem,
+} from './pointSizeMenu.tsx'
+export {
+  SMALL_POINT_MAX_DIAMETER_PX,
+  appendPointMarker,
+} from './pointMarker.ts'
 export { default as SetMinMaxDialog } from './SetMinMaxDialog.tsx'
 
 export {

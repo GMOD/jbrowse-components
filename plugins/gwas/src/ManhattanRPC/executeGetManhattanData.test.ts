@@ -44,6 +44,28 @@ test('flattens features into typed arrays at matching indexes', () => {
   expect(Array.from(r.colors)).toEqual([0xff00ffff, 0xff00ffff, 0xff00ffff])
 })
 
+test('drops features with a non-finite score, keeping arrays dense and the flatbush valid', () => {
+  const scoreless = new SimpleFeature({
+    uniqueId: 'n',
+    refName: '1',
+    start: 50,
+    end: 51,
+  })
+  const r = buildManhattanResult(
+    [feature('a', 10, 1.5), scoreless, feature('c', 3000, 4)],
+    constColor(0xff00ffff),
+  )
+  expect(r.numFeatures).toBe(2)
+  expect(Array.from(r.positions)).toEqual([10, 3000])
+  expect(Array.from(r.scores)).toEqual([1.5, 4])
+  // a NaN box would poison the R-tree bounds and make every search return
+  // nothing; both kept points must still be found
+  const fb = Flatbush.from(r.flatbushData!)
+  expect(fb.search(0, -Infinity, 4000, Infinity).sort((a, b) => a - b)).toEqual(
+    [0, 1],
+  )
+})
+
 test('captures end and derives glyph code from svtype (INS → 1)', () => {
   const r = buildManhattanResult(
     [

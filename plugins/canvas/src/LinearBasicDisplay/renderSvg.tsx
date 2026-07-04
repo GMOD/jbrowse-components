@@ -91,7 +91,10 @@ function CanvasFeaturesSvgBody({
 
   const visibleRegions = view.visibleRegions
   const renderPeptidesFlag = shouldRenderPeptideText(view.bpPerPx)
-  const totalWidth = view.totalWidthPx
+  // canvas spans the viewport (visibleRegions coords are viewport-relative and
+  // clipped to view.width below), matching the on-screen canvas rather than the
+  // full-genome totalWidthPx
+  const canvasWidth = view.width
 
   // autoHeight defaults off, so a feature track is a fixed-height viewport with
   // vertical overflow the user scrolls. On-screen `renderState.scrollY` is
@@ -99,10 +102,10 @@ function CanvasFeaturesSvgBody({
   // exports what's on screen (top viewport) rather than always the track top.
   const scrollY = model.scrollTop
   const renderBlocks = buildRenderBlocks(visibleRegions)
-  const featuresNode = paintLayer(totalWidth, height, opts, ctx => {
+  const featuresNode = paintLayer(canvasWidth, height, opts, ctx => {
     drawFeatureBlocks(ctx, model.laidOutDataMap, renderBlocks, {
       scrollY,
-      canvasWidth: totalWidth,
+      canvasWidth,
       canvasHeight: height,
     })
   })
@@ -112,7 +115,7 @@ function CanvasFeaturesSvgBody({
   }
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
-  const textNode = paintLayer(totalWidth, height, undefined, ctx => {
+  const textNode = paintLayer(canvasWidth, height, undefined, ctx => {
     ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
     // Labels/peptides are laid out in absolute track px (no per-layer scrollY,
     // unlike drawFeatureBlocks); shift the whole layer up by scrollY so text
