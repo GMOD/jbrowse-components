@@ -8,7 +8,7 @@ with an `#api` JSDoc tag in our source code. See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for how to import these from a plugin.
 
-### getLength
+## getLength
 
 Length of the read sequence (sum of all ops except D/N).
 
@@ -19,7 +19,7 @@ Length of the read sequence (sum of all ops except D/N).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
 
-### getLengthOnRef
+## getLengthOnRef
 
 Length the read spans on the reference (sum of M/=/X/D/N ops).
 
@@ -30,7 +30,7 @@ Length the read spans on the reference (sum of M/=/X/D/N ops).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
 
-### getMismatches
+## getMismatches
 
 Computes the list of mismatches (SNVs, indels, clips, skips) for a read from its
 CIGAR, optional MD tag, sequence, reference, and quality.
@@ -42,7 +42,7 @@ CIGAR, optional MD tag, sequence, reference, and quality.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
 
-### getNextRefPos
+## getNextRefPos
 
 Maps read-sequence positions to reference-sequence positions via the CIGAR,
 invoking the callback for each. Handles both packed Uint32Array and unpacked
@@ -55,7 +55,7 @@ number[] CIGAR formats.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/getNextRefPos.ts)
 
-### parseCigar
+## parseCigar
 
 Parses a CIGAR string to an alternating `[length, op, ...]` string array.
 
@@ -66,7 +66,7 @@ Parses a CIGAR string to an alternating `[length, op, ...]` string array.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
 
-### parseCigar2
+## parseCigar2
 
 Parses a CIGAR string to a packed number array where each value is
 `(length << 4) | opIndex`.
@@ -78,7 +78,7 @@ Parses a CIGAR string to a packed number array where each value is
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/cigar-utils/src/mismatchParser.ts)
 
-### parseCigar2Typed
+## parseCigar2Typed
 
 Same encoding as `parseCigar2` but writes into a packed `Uint32Array` — matches
 the NUMERIC_CIGAR format that BAM/CRAM adapters emit, so consumers can use a

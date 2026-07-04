@@ -8,7 +8,7 @@ with an `#api` JSDoc tag in our source code. See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for how to import these from a plugin.
 
-### computeAutoscaleDomain
+## computeAutoscaleDomain
 
 Computes a score domain from the visible feature arrays for the `local` /
 `localsd` autoscale types.
@@ -20,7 +20,7 @@ Computes a score domain from the visible feature arrays for the `local` /
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
-### domainFromStats
+## domainFromStats
 
 Converts score stats into a `[min, max]` domain, applying std-dev expansion for
 the `localsd` autoscale type.
@@ -32,7 +32,7 @@ the `localsd` autoscale type.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
-### getEffectiveScores
+## getEffectiveScores
 
 Per-feature scalar score array for a summary mode: the min/max summary array for
 `'min'`/`'max'`, otherwise the average score.
@@ -44,7 +44,7 @@ Per-feature scalar score array for a summary mode: the min/max summary array for
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/autoscale.ts)
 
-### getNiceDomain
+## getNiceDomain
 
 Rounds a domain to "nice" endpoints, clamped to the origin and overridden by any
 explicit `bounds`.
@@ -56,7 +56,7 @@ explicit `bounds`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-### getNiceScale
+## getNiceScale
 
 Returns a niced `{min, max}` domain for a maximum score value. Uses log base-2
 when `useLogScale` is true (domain is clamped to [1, max]).
@@ -68,7 +68,7 @@ when `useLogScale` is true (domain is clamped to [1, max]).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-### getOrigin
+## getOrigin
 
 The axis-origin baseline: `1` for log, `0` otherwise.
 
@@ -79,7 +79,7 @@ The axis-origin baseline: `1` for log, `0` otherwise.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-### getScale
+## getScale
 
 Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
 
@@ -90,7 +90,7 @@ Builds a niced d3 scale (linear/log/quantize) from a `ScaleOpts`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/scale.ts)
 
-### makeScoreNormalizer
+## makeScoreNormalizer
 
 Returns a loop-hoistable function normalizing a score to [0,1].
 
@@ -101,7 +101,7 @@ Returns a loop-hoistable function normalizing a score to [0,1].
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/wiggle-core/src/normalize.ts)
 
-### scaleTypeFromString
+## scaleTypeFromString
 
 Maps the `'log'`/`'linear'` string to the numeric `WiggleScaleType`.
 

@@ -8,7 +8,7 @@ with an `#api` JSDoc tag in our source code. See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for how to import these from a plugin.
 
-### getContainingDisplay
+## getContainingDisplay
 
 Returns the display model that contains the given node. Throws if the node has
 no containing display.
@@ -20,7 +20,7 @@ no containing display.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
-### getContainingTrack
+## getContainingTrack
 
 Returns the track model that contains the given node. Throws if the node has no
 containing track.
@@ -32,7 +32,7 @@ containing track.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
-### getContainingView
+## getContainingView
 
 Returns the view model that contains the given node. Throws if the node has no
 containing view.
@@ -44,7 +44,7 @@ containing view.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
-### getEnv
+## getEnv
 
 Returns the MST environment for a node, which carries the `pluginManager`.
 
@@ -55,7 +55,7 @@ Returns the MST environment for a node, which carries the `pluginManager`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/core/src/util/mstUtils.ts)
 
-### getSession
+## getSession
 
 Returns the JBrowse session model for any node in the state tree. Throws if the
 node has no session ancestor.

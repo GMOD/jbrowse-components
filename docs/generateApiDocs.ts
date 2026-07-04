@@ -67,18 +67,18 @@ export function accumulateApi(
   }
 }
 
-function renderExport({
-  name,
-  docs,
-  examples,
-  signature,
-  filename,
-}: ApiExport) {
+// `heading` is the markdown prefix for the export's name. Standalone doc pages
+// render exports as top-level `##` sections; the README nests them under its
+// own `## API` heading, so there they render one level deeper as `###`.
+function renderExport(
+  { name, docs, examples, signature, filename }: ApiExport,
+  heading = '###',
+) {
   return section(
-    `### ${name}`,
+    `${heading} ${name}`,
     docs,
     signature && codeBlock('// type signature', signature),
-    exampleSection(examples, '#### Example usage'),
+    exampleSection(examples, `${heading}# Example usage`),
     `[Source code](https://github.com/GMOD/jbrowse-components/blob/main/${filename})`,
   )
 }
@@ -99,7 +99,7 @@ with an \`#api\` JSDoc tag in our source code. See [Plugin dependencies and
 re-exports](/docs/developer_guides/imports_and_reexports) for how to import
 these from a plugin.
 
-${section(...sorted.map(renderExport))}
+${section(...sorted.map(exp => renderExport(exp, '##')))}
 `
 }
 
@@ -130,7 +130,7 @@ function renderReadmeSection(exports: ApiExport[]) {
   return section(
     '## API',
     'Auto-generated from `#api` JSDoc tags in this package. Do not edit by hand.',
-    ...sorted.map(renderExport),
+    ...sorted.map(exp => renderExport(exp)),
   )
 }
 

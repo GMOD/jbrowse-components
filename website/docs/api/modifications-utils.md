@@ -8,7 +8,7 @@ with an `#api` JSDoc tag in our source code. See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for how to import these from a plugin.
 
-### getMethBins
+## getMethBins
 
 Bins per-read base modifications and their probabilities onto reference
 positions, returning typed arrays for methylated/unmethylated calls. Only
@@ -21,7 +21,7 @@ cytosines in `context` are considered (default CpG); plants also use CHG/CHH.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getMethBins.ts)
 
-### getModPositions
+## getModPositions
 
 Parse MM tag to extract modification positions on the read sequence.
 
@@ -32,7 +32,7 @@ Parse MM tag to extract modification positions on the read sequence.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModPositions.ts)
 
-### getModProbabilities
+## getModProbabilities
 
 Reads the ML tag from a feature and returns per-call modification probabilities
 scaled to 0..1.
@@ -44,7 +44,7 @@ scaled to 0..1.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
 
-### getTag
+## getTag
 
 Read a single tag by name, using the feature's targeted tag accessor when it has
 one (BAM) and the full tags object otherwise (CRAM/synteny).
@@ -56,7 +56,7 @@ one (BAM) and the full tags object otherwise (CRAM/synteny).
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
 
-### getTagAlt
+## getTagAlt
 
 Read a tag by its canonical name, falling back to a lowercase-suffixed alias
 (e.g. MM/Mm, ML/Ml) as emitted by some aligners.
@@ -68,7 +68,7 @@ Read a tag by its canonical name, falling back to a lowercase-suffixed alias
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getTagAlt.ts)
 
-### matchesCytosineContext
+## matchesCytosineContext
 
 Whether the cytosine at read position `pos` sits in the given context.
 
@@ -85,7 +85,7 @@ where the template runs backwards and complemented, so we read backwards from
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/cytosineContext.ts)
 
-### modProbAt
+## modProbAt
 
 Returns the probability value from the flat ML array for a modification's
 position. `idx` is the position's index within the mod's stored `positions`
@@ -101,7 +101,7 @@ interleaved per position.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/modifications-utils/src/getModProbabilities.ts)
 
-### parseModHeader
+## parseModHeader
 
 Parses one MM-tag modification header (e.g. `C+m`) into its base, strand, type
 string, and modification code.

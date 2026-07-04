@@ -8,7 +8,7 @@ with an `#api` JSDoc tag in our source code. See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for how to import these from a plugin.
 
-### breakpointBpPerPx
+## breakpointBpPerPx
 
 bpPerPx that fits `windowSize` bp on each side of a breakpoint across the view
 width. Falls back to a zoomed-in default when no window is requested.
@@ -20,7 +20,7 @@ width. Falls back to a zoomed-in default when no window is requested.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
-### getBreakendAssemblyRegions
+## getBreakendAssemblyRegions
 
 Loads the assembly for a breakend feature and resolves the two regions its
 endpoints span. Throws if the assembly, its regions, or either endpoint's region
@@ -33,7 +33,7 @@ cannot be found.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
-### getBreakendCoveringRegions
+## getBreakendCoveringRegions
 
 Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
@@ -44,7 +44,7 @@ Resolves the two canonical-refName endpoints a breakend/SV feature spans.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
-### parseSvAlt
+## parseSvAlt
 
 Parse raw (non-assembly-resolved) mate coordinates from a VCF SV feature+alt.
 Returns undefined when no mate coordinate info is found.
@@ -56,7 +56,7 @@ Returns undefined when no mate coordinate info is found.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/sv-core/src/util.ts)
 
-### splitRegionAtPosition
+## splitRegionAtPosition
 
 Splits a region at `pos` into two halves that both include `pos`, so a breakend
 there stays visible in each.

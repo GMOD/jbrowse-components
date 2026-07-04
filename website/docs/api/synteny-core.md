@@ -8,7 +8,7 @@ with an `#api` JSDoc tag in our source code. See
 [Plugin dependencies and re-exports](/docs/developer_guides/imports_and_reexports)
 for how to import these from a plugin.
 
-### applyAlpha
+## applyAlpha
 
 Applies an alpha to a CSS color, returning the original when `a === 1`.
 
@@ -19,7 +19,7 @@ Applies an alpha to a CSS color, returning the original when `a === 1`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-### getQueryColor
+## getQueryColor
 
 Stable category10 color for a query name, via `hashString`.
 
@@ -30,7 +30,7 @@ Stable category10 color for a query name, via `hashString`.
 
 [Source code](https://github.com/GMOD/jbrowse-components/blob/main/packages/synteny-core/src/colorUtils.ts)
 
-### hashString
+## hashString
 
 Deterministic non-negative 32-bit hash of a string.
 
