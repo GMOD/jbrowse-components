@@ -50,9 +50,15 @@ export interface ResolvedLabel {
   kind: 'name' | 'desc' | 'sub'
 }
 
-export interface LabelVisibility {
+// The label render context threaded through both label consumers (the DOM
+// overlay in useOverlayElements and the SVG export in renderSvg): which labels
+// show, plus the display mode's resolved font size. fontSize is the single knob
+// that keeps the reserved row height, the name→description gap, and the drawn
+// text in agreement as compact modes shrink the text.
+export interface LabelRenderContext {
   showLabels: boolean
   showDescriptions: boolean
+  fontSize: number
 }
 
 function resolveFeatureLabels(
@@ -62,6 +68,7 @@ function resolveFeatureLabels(
   wantName: boolean,
   wantDesc: boolean,
   wantSub: boolean,
+  fontSize: number,
 ): ResolvedLabel[] {
   const px1 = toScreen(labelData.minX)
   const px2 = toScreen(labelData.maxX)
@@ -83,12 +90,14 @@ function resolveFeatureLabels(
     })
   }
   if (wantDesc) {
-    // descriptionLabel.relativeY is baked at RPC time assuming the name
-    // label is rendered; when showLabels is off, collapse description up to
-    // fill the vacated name row.
-    const desc = wantName
-      ? labelData.descriptionLabel!
-      : { ...labelData.descriptionLabel!, relativeY: 0 }
+    // The description sits one label-line (fontSize) below the name; when the
+    // name is hidden it collapses up to fill the vacated row. Derived from the
+    // mode's fontSize here (not the RPC-baked relativeY) so the gap tracks the
+    // compact-shrunk text.
+    const desc = {
+      ...labelData.descriptionLabel!,
+      relativeY: wantName ? fontSize : 0,
+    }
     out.push({
       label: desc,
       ...computeLabelPosition(desc, 2, bounds),
@@ -112,11 +121,11 @@ function resolveFeatureLabels(
 export function forEachRenderedLabel(
   data: FeatureDataResult,
   vr: BpRegionBounds,
-  visibility: LabelVisibility,
+  context: LabelRenderContext,
   emit: (featureId: string, labels: ResolvedLabel[]) => void,
   skip?: Set<string>,
 ) {
-  const { showLabels, showDescriptions } = visibility
+  const { showLabels, showDescriptions, fontSize } = context
   let toScreen: ((bp: number) => number) | undefined
 
   for (const featureId in data.floatingLabelsData) {
@@ -146,6 +155,7 @@ export function forEachRenderedLabel(
         wantName,
         wantDesc,
         wantSub,
+        fontSize,
       ),
     )
   }
@@ -162,7 +172,7 @@ export type RegionWithData = BpRegionBounds & { displayedRegionIndex: number }
 export function forEachDisplayLabel(
   regions: RegionWithData[],
   dataMap: Map<number, FeatureDataResult>,
-  visibility: LabelVisibility,
+  context: LabelRenderContext,
   emit: (
     featureId: string,
     labels: ResolvedLabel[],
@@ -178,7 +188,7 @@ export function forEachDisplayLabel(
     forEachRenderedLabel(
       data,
       region,
-      visibility,
+      context,
       (featureId, labels) => {
         rendered.add(featureId)
         emit(featureId, labels, region)

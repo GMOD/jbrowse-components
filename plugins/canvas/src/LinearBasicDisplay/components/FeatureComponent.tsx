@@ -74,6 +74,7 @@ export interface LinearBasicDisplayModel {
   scrollTop: number
   effectiveShowDescriptions: boolean
   displayMode: string
+  labelFontSize: number
   regionTooLarge: boolean
   regionTooLargeReason: string
   showIsoformCollapseNotice: boolean

@@ -1,9 +1,6 @@
-import {
-  LAYOUT_Y_PADDING,
-  computeLaidOutData,
-  createIncrementalLayout,
-} from './layout.ts'
+import { computeLaidOutData, createIncrementalLayout } from './layout.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
+import { ROW_PADDING } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
   makeFeatureData as makeBaseFeatureData,
   makeFlatbushItem,
@@ -350,12 +347,12 @@ test('showLabels adds label height to the feature row', () => {
   const featureHeight = 10
   const withLabels = layout(new Map([[0, mk()]]), keys, 1, true, true)
   expect(withLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(
-    featureHeight + LAYOUT_Y_PADDING + LABEL_FONT_SIZE * 2,
+    featureHeight + ROW_PADDING.normal + LABEL_FONT_SIZE * 2,
   )
 
   const withoutLabels = layout(new Map([[0, mk()]]), keys, 1, false, false)
   expect(withoutLabels.get(0)!.flatbushItems[0]!.bottomPx).toBe(
-    featureHeight + LAYOUT_Y_PADDING,
+    featureHeight + ROW_PADDING.normal,
   )
 
   // showLabels=false but showDescriptions=true: description is collapsed up
@@ -363,7 +360,7 @@ test('showLabels adds label height to the feature row', () => {
   // still occupies one row of height below the feature.
   const descOnly = layout(new Map([[0, mk()]]), keys, 1, false, true)
   expect(descOnly.get(0)!.flatbushItems[0]!.bottomPx).toBe(
-    featureHeight + LAYOUT_Y_PADDING + LABEL_FONT_SIZE,
+    featureHeight + ROW_PADDING.normal + LABEL_FONT_SIZE,
   )
 })
 

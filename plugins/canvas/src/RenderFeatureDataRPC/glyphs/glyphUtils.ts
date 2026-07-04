@@ -1,3 +1,4 @@
+import { LABEL_FONT_SIZE } from '../constants.ts'
 import { getSubfeatures, isCDS } from '../util.ts'
 
 import type { DisplayMode } from '../renderConfig.ts'
@@ -12,6 +13,33 @@ export const HEIGHT_MULTIPLIERS: Record<DisplayMode, number> = {
   normal: 1,
   compact: 0.6,
   superCompact: 0.3,
+}
+
+// Compact modes shrink label text alongside the feature body so the labels
+// don't dwarf the tighter rows. Deliberately gentler than HEIGHT_MULTIPLIERS:
+// reusing 0.6/0.3 would drop superCompact labels to ~3px and make them
+// illegible, so labels shrink only enough to track the denser layout.
+export const LABEL_FONT_MULTIPLIERS: Record<DisplayMode, number> = {
+  normal: 1,
+  compact: 0.85,
+  superCompact: 0.7,
+}
+
+// Vertical gap reserved between stacked feature rows (before any label lines).
+// Compact modes tighten it more than the body shrink alone (HEIGHT_MULTIPLIERS
+// would give 3px/1.5px) so dense views pack rows a little closer.
+export const ROW_PADDING: Record<DisplayMode, number> = {
+  normal: 5,
+  compact: 2,
+  superCompact: 1,
+}
+
+// Resolved label font size (px) for a display mode. Single source used by the
+// main-thread row reservation (layout.ts), label positioning, and the DOM/SVG
+// renderers so the reserved height, the name→description gap, and the drawn
+// text all agree.
+export function labelFontSize(displayMode: DisplayMode) {
+  return LABEL_FONT_SIZE * LABEL_FONT_MULTIPLIERS[displayMode]
 }
 
 // Sort children left-to-right; ties broken by longest first

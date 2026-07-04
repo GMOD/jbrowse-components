@@ -65,6 +65,7 @@ import {
   interpolateYData,
   maxBottom,
 } from './yMorph.ts'
+import { labelFontSize } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { THEME_DERIVED_COLOR } from '../RenderFeatureDataRPC/renderConfig.ts'
 import { shouldRenderPeptideBackground } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
@@ -442,6 +443,17 @@ export default function baseStateModelFactory(
         // always yields a real mode (never 'inherit' or a corrupt promoted value).
         get displayMode(): DisplayMode {
           return getConfResolved<DisplayMode>(self, 'displayMode')
+        },
+
+        /**
+         * #getter
+         */
+        // Resolved label font size (px) for the current display mode. Single
+        // source shared by layout row reservation, the DOM overlay, and the SVG
+        // export so compact modes shrink label text without any of the three
+        // paths drifting.
+        get labelFontSize() {
+          return labelFontSize(this.displayMode)
         },
 
         /**

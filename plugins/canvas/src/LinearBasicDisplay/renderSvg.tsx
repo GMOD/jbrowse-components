@@ -11,10 +11,7 @@ import { buildRenderBlocks } from '@jbrowse/render-core/renderBlock'
 import { drawFeatureBlocks } from './components/Canvas2DFeatureRenderer.ts'
 import { forEachDisplayLabel } from './components/labelPositioning.ts'
 import { drawPeptidesForRegions } from './components/peptidePositioning.ts'
-import {
-  LABEL_FONT_SIZE,
-  LABEL_OVERLAY_BACKGROUND,
-} from './components/sharedRendererConstants.ts'
+import { LABEL_OVERLAY_BACKGROUND } from './components/sharedRendererConstants.ts'
 import { shouldRenderPeptideText } from '../RenderFeatureDataRPC/zoomThresholds.ts'
 
 import type { ResolvedLabel } from './components/labelPositioning.ts'
@@ -36,20 +33,21 @@ export interface RenderSvgModel extends SvgExportable {
   laidOutDataMap: Map<number, FeatureDataResult>
   showLabels: boolean
   effectiveShowDescriptions: boolean
+  labelFontSize: number
 }
 
 // Labels and amino-acid overlays are rendered as DOM/React overlays
 // on-screen, so the on-screen renderer doesn't draw them. SVG export must
 // bake them into the output, so they live here as a vector-only post-pass
 // that runs after drawFeatureBlocks paints the geometry.
-function paintLabel(ctx: Ctx2D, labels: ResolvedLabel[]) {
+function paintLabel(ctx: Ctx2D, labels: ResolvedLabel[], fontSize: number) {
   for (const { label, labelX, labelY } of labels) {
     if (label.isOverlay) {
       ctx.fillStyle = LABEL_OVERLAY_BACKGROUND
-      ctx.fillRect(labelX - 1, labelY, label.textWidth + 2, LABEL_FONT_SIZE + 1)
+      ctx.fillRect(labelX - 1, labelY, label.textWidth + 2, fontSize + 1)
     }
     ctx.fillStyle = label.color
-    ctx.fillText(label.text, labelX, labelY + LABEL_FONT_SIZE)
+    ctx.fillText(label.text, labelX, labelY + fontSize)
   }
 }
 
@@ -109,14 +107,16 @@ function CanvasFeaturesSvgBody({
       canvasHeight: height,
     })
   })
-  const visibility = {
+  const fontSize = model.labelFontSize
+  const context = {
     showLabels: model.showLabels,
     showDescriptions: model.effectiveShowDescriptions,
+    fontSize,
   }
   // Labels + peptides always vector — text should remain crisp even when
   // rasterizeLayers is on.
   const textNode = paintLayer(canvasWidth, height, undefined, ctx => {
-    ctx.font = `${LABEL_FONT_SIZE}px sans-serif`
+    ctx.font = `${fontSize}px sans-serif`
     // Labels/peptides are laid out in absolute track px (no per-layer scrollY,
     // unlike drawFeatureBlocks); shift the whole layer up by scrollY so text
     // tracks the feature geometry when the viewport is scrolled.
@@ -124,9 +124,9 @@ function CanvasFeaturesSvgBody({
     forEachDisplayLabel(
       visibleRegions,
       model.laidOutDataMap,
-      visibility,
+      context,
       (_, labels) => {
-        paintLabel(ctx, labels)
+        paintLabel(ctx, labels, fontSize)
       },
     )
     // Same peptide walk the app canvas runs (drawPeptidesForRegions), so the

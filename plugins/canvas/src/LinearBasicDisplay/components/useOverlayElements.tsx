@@ -5,10 +5,7 @@ import { alpha, useTheme } from '@mui/material'
 import { computeLabelExtraWidth } from './highlightUtils.ts'
 import { HIT_PAD_PX } from './hitTesting.ts'
 import { forEachDisplayLabel } from './labelPositioning.ts'
-import {
-  LABEL_FONT_SIZE,
-  LABEL_OVERLAY_BACKGROUND,
-} from './sharedRendererConstants.ts'
+import { LABEL_OVERLAY_BACKGROUND } from './sharedRendererConstants.ts'
 
 import type { FeatureItemEntry, VisibleRegion } from './hitTesting.ts'
 import type {
@@ -20,6 +17,7 @@ import type {
 interface OverlayModel {
   showLabels: boolean
   effectiveShowDescriptions: boolean
+  labelFontSize: number
   selectedFeatureId: string | undefined
   selectFeatureById: (
     featureId: string,
@@ -60,9 +58,10 @@ const useStyles = makeStyles()(theme => ({
   // worker's label.color, which the SVG export consumes) so a theme switch
   // recolors them instantly without re-running the worker. Description and
   // light-background overlay labels override the default below.
+  // fontSize is applied inline per-label from the model's resolved label size
+  // (it shrinks in compact display modes), so it isn't pinned here.
   floatingLabel: {
     position: 'absolute',
-    fontSize: LABEL_FONT_SIZE,
     lineHeight: 1,
     whiteSpace: 'nowrap',
     color: theme.palette.text.primary,
@@ -105,22 +104,28 @@ export function useFloatingLabels(
   ) => void,
 ) {
   const { classes, cx } = useStyles()
-  const { showLabels, effectiveShowDescriptions, selectFeatureById } = model
+  const {
+    showLabels,
+    effectiveShowDescriptions,
+    labelFontSize,
+    selectFeatureById,
+  } = model
 
   if (!overlaysReady(viewInitialized, width, bpPerPx, visibleRegions)) {
     return null
   }
 
   const elements: React.ReactElement[] = []
-  const visibility = {
+  const context = {
     showLabels,
     showDescriptions: effectiveShowDescriptions,
+    fontSize: labelFontSize,
   }
 
   forEachDisplayLabel(
     visibleRegions,
     renderDataMap,
-    visibility,
+    context,
     (featureId, labels, vr) => {
       const displayedRegionIndex = vr.displayedRegionIndex
       const entry = featureItemMap.get(featureId)
@@ -171,6 +176,7 @@ export function useFloatingLabels(
             onContextMenu={clickable ? handleLabelContextMenu : undefined}
             onMouseMove={clickable ? handleLabelMouseMove : undefined}
             style={{
+              fontSize: labelFontSize,
               transform: `translate(${labelX}px, ${labelY}px)`,
             }}
           >

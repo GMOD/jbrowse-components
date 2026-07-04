@@ -3,11 +3,7 @@ import {
   forEachRenderedLabel,
 } from './labelPositioning.ts'
 
-import type {
-  LabelVisibility,
-  RegionWithData,
-  ResolvedLabel,
-} from './labelPositioning.ts'
+import type { RegionWithData, ResolvedLabel } from './labelPositioning.ts'
 import type {
   FeatureDataResult,
   FeatureLabelData,
@@ -50,15 +46,22 @@ const FULL_REGION: BpRegionBounds = {
   screenEndPx: 1000,
 }
 
+const LABEL_FONT = 11
+
 function collect(
   data: FeatureDataResult,
   vr: BpRegionBounds,
-  visibility: LabelVisibility,
+  visibility: { showLabels: boolean; showDescriptions: boolean },
 ) {
   const out: { featureId: string; labels: ResolvedLabel[] }[] = []
-  forEachRenderedLabel(data, vr, visibility, (featureId, labels) => {
-    out.push({ featureId, labels })
-  })
+  forEachRenderedLabel(
+    data,
+    vr,
+    { ...visibility, fontSize: LABEL_FONT },
+    (featureId, labels) => {
+      out.push({ featureId, labels })
+    },
+  )
   return out
 }
 
@@ -98,7 +101,9 @@ describe('forEachRenderedLabel', () => {
       showDescriptions: true,
     })
     expect(emitted!.labels.map(l => l.kind)).toEqual(['name', 'desc'])
-    expect(emitted!.labels[1]!.label.relativeY).toBe(12)
+    // description sits one label-line (the context font size) below the name,
+    // regardless of the worker-supplied relativeY
+    expect(emitted!.labels[1]!.label.relativeY).toBe(LABEL_FONT)
   })
 
   test('collapses description relativeY to 0 when name is hidden', () => {
@@ -193,7 +198,7 @@ describe('forEachDisplayLabel', () => {
     forEachDisplayLabel(
       [regionWithData(0), regionWithData(1)],
       laidOutDataMap,
-      { showLabels: true, showDescriptions: true },
+      { showLabels: true, showDescriptions: true, fontSize: LABEL_FONT },
       featureId => {
         emitted.push(featureId)
       },
@@ -210,7 +215,7 @@ describe('forEachDisplayLabel', () => {
     forEachDisplayLabel(
       [regionWithData(0), regionWithData(1)],
       laidOutDataMap,
-      { showLabels: true, showDescriptions: true },
+      { showLabels: true, showDescriptions: true, fontSize: LABEL_FONT },
       featureId => {
         emitted.push(featureId)
       },

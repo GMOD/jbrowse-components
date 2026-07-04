@@ -45,14 +45,17 @@ describe('floatingLabels', () => {
       expect(result.descriptionLabel).toBeUndefined()
     })
 
-    it('positions description below name by LABEL_FONT_SIZE', () => {
+    it('leaves label positioning to the main-thread render layer', () => {
       const result = createFeatureFloatingLabels({
         name: 'Gene1',
         description: 'A gene',
         theme,
       })
+      // The name→description gap is applied at render time from the display
+      // mode's font size (labelPositioning.resolveFeatureLabels), so the worker
+      // bakes no vertical offset.
       expect(result.nameLabel!.relativeY).toBe(0)
-      expect(result.descriptionLabel!.relativeY).toBe(LABEL_FONT_SIZE)
+      expect(result.descriptionLabel!.relativeY).toBe(0)
     })
 
     it('includes textWidth for each label', () => {

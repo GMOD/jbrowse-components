@@ -1,9 +1,10 @@
 import GranularRectLayout from '@jbrowse/core/util/layouts/GranularRectLayout'
 
-import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import {
   HEIGHT_MULTIPLIERS,
+  ROW_PADDING,
   STRAND_ARROW_WIDTH,
+  labelFontSize,
 } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import { maxLabelTextWidth } from '../RenderFeatureDataRPC/rpcTypes.ts'
 import { MIN_RECT_WIDTH_PX } from './components/sharedRendererConstants.ts'
@@ -14,8 +15,6 @@ import type {
   FeatureDataResult,
   FeatureLabelData,
 } from '../RenderFeatureDataRPC/rpcTypes.ts'
-
-export const LAYOUT_Y_PADDING = 5
 
 // Y offset applied to features that overflow GranularRectLayout's maxHeight.
 // Pushes them far above the visible area so the renderer/hit-test drops them
@@ -133,6 +132,8 @@ export function computeLaidOutData(
     pinnedFeatureIds,
   } = inputs
   const heightMultiplier = HEIGHT_MULTIPLIERS[displayMode]
+  const labelFontPx = labelFontSize(displayMode)
+  const rowPadding = ROW_PADDING[displayMode]
 
   const out = new Map<number, FeatureDataResult>()
   const refGroups = new Map<string, [number, FeatureDataResult][]>()
@@ -165,6 +166,8 @@ export function computeLaidOutData(
       reversedRegions,
       pinnedFeatureIds,
       heightMultiplier,
+      labelFontPx,
+      rowPadding,
       prevYByFeatureId,
     )
     for (const [, data] of regions) {
@@ -378,10 +381,15 @@ function packRef(
   // Feature ids pinned to the top: sorted ahead of everything so they win the
   // lowest rows in their bp range.
   pinnedFeatureIds: ReadonlySet<string>,
-  // compact/superCompact scale factor (1 in normal mode). Applied to the
-  // inter-row padding so the layout tightens with the feature body, not just
-  // the feature height.
+  // compact/superCompact scale factor (1 in normal mode), used to shrink the
+  // row-quantization grid (pitchY) with the feature body.
   heightMultiplier: number,
+  // Resolved label font size (px) for the current display mode — reserved per
+  // rendered label line so the row height matches the (compact-shrunk) text.
+  labelFontPx: number,
+  // Vertical gap between stacked rows for the current display mode (compact
+  // modes tighten it more than the body shrink; see ROW_PADDING).
+  rowPadding: number,
   // Each feature's y (px) in the previous layout, if any. Used only to order
   // insertion, not to force a row — see the sort below.
   prevYByFeatureId?: ReadonlyMap<string, number>,
@@ -465,16 +473,17 @@ function packRef(
         }
         continue
       }
-      // featureHeightPx is already compact-scaled (see applyHeightScale); scale
-      // the row padding to match so rows pack tightly. Label heights are left
-      // unscaled since label text renders at a fixed font size.
-      let height = item.featureHeightPx + LAYOUT_Y_PADDING * heightMultiplier
+      // featureHeightPx is already compact-scaled (see applyHeightScale); add
+      // the mode's inter-row gap (rowPadding) so rows pack tightly. Label lines
+      // reserve the mode's resolved font size (labelFontPx) so compact rows
+      // shrink with the smaller text the renderers draw.
+      let height = item.featureHeightPx + rowPadding
       const labelInfo = labelInfoByFeatureId.get(item.featureId)
       if (showLabels && labelInfo?.hasName) {
-        height += LABEL_FONT_SIZE
+        height += labelFontPx
       }
       if (showDescriptions && labelInfo?.hasDescription) {
-        height += LABEL_FONT_SIZE
+        height += labelFontPx
       }
 
       allFeatures.set(item.featureId, {

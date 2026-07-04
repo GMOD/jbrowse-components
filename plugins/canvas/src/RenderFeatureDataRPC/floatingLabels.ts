@@ -37,7 +37,10 @@ export function createFeatureFloatingLabels({
   const descriptionLabel: LabelItem | undefined = shouldShowDescription
     ? {
         text: description,
-        relativeY: shouldShowLabel ? LABEL_FONT_SIZE : 0,
+        // The name→description gap depends on the display mode's label font
+        // size, which only the main thread knows, so it's positioned there
+        // (labelPositioning.resolveFeatureLabels), not baked in here.
+        relativeY: 0,
         color: theme.palette.featureDescription,
         textWidth: measureText(description, LABEL_FONT_SIZE),
       }
