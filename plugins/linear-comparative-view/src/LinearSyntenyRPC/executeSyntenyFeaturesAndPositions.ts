@@ -103,6 +103,9 @@ export async function executeSyntenyFeaturesAndPositions({
       bpPerPx,
       lodMode,
       statusCallback,
+      // the assembly on the other side of this band; a multi-genome adapter
+      // (AllVsAllPAFAdapter) uses it to keep only this pair's records
+      targetAssemblyName: v2.displayedRegions[0]?.assemblyName,
     },
   )
   const deduped = dedupe(allFeatures, f => f.id())

@@ -90,17 +90,25 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
   }
 
   async getRefNames(opts: BaseOptions = {}) {
-    const assemblyName = opts.assemblyName
+    const { assemblyName, targetAssemblyName } = opts
     const feats = await this.setup(opts)
     const prefixToAsm = this.prefixToAssembly()
     const set = new Set<string>()
-    // only contigs that actually participate in this track's pair (both sides
-    // resolve to the two assemblies), mirroring the getFeatures filter so
-    // getRefNames doesn't over-report refs that have no drawable features here
+    // only contigs that actually participate in a cross-assembly pair, mirroring
+    // the getFeatures filter so getRefNames doesn't over-report refs with no
+    // drawable features. When a target is given (multi-way band) scope to that
+    // pair; otherwise (e.g. the assembly-swap check) report across all pairs
     for (const feat of feats) {
       const qAsm = prefixToAsm[panSNSample(feat.qname)]
       const tAsm = prefixToAsm[panSNSample(feat.tname)]
-      if (qAsm && tAsm && qAsm !== tAsm) {
+      const isPair =
+        qAsm !== undefined &&
+        tAsm !== undefined &&
+        qAsm !== tAsm &&
+        (targetAssemblyName === undefined ||
+          qAsm === targetAssemblyName ||
+          tAsm === targetAssemblyName)
+      if (isPair) {
         if (qAsm === assemblyName) {
           set.add(panSNContig(feat.qname))
         }
@@ -116,6 +124,7 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
     return ObservableCreate<Feature>(async observer => {
       const pafRecords = await this.setup(opts)
       const { start: qstart, end: qend, refName: qref, assemblyName } = query
+      const { targetAssemblyName } = opts
       const prefixToAsm = this.prefixToAssembly()
 
       for (let i = 0; i < pafRecords.length; i++) {
@@ -123,20 +132,32 @@ export default class AllVsAllPAFAdapter extends BaseFeatureDataAdapter<AllVsAllP
         const qAsm = prefixToAsm[panSNSample(r.qname)]
         const tAsm = prefixToAsm[panSNSample(r.tname)]
 
-        // keep only records whose two sides are exactly this track's pair (both
-        // resolved, and different from each other) — this is what filters an
-        // all-vs-all file down to the A-vs-B band
-        if (qAsm && tAsm && qAsm !== tAsm) {
-          // orient so the side on the queried assembly is the feature, the
-          // other is the mate; flip mirrors PAFAdapter (query side is qname)
-          const flip = qAsm === assemblyName
+        // orient so the side on the queried assembly is the feature, the other
+        // is the mate; flip mirrors PAFAdapter (query side is qname)
+        const flip = qAsm === assemblyName
+        const mateAsm = flip ? tAsm : qAsm
+
+        // Draw a record on this band only when one side is the queried assembly
+        // and the mate is the band's target. This filters an all-vs-all file
+        // down to the A-vs-B band: when the track lists all N assemblies,
+        // targetAssemblyName (from the other view) picks the pair; a legacy
+        // 2-assembly track leaves it undefined, so the sole other assembly is
+        // used. Matching the mate by ASSEMBLY (not just refName) is essential —
+        // panSNContig strips the prefix below, so A-vs-B and A-vs-C records can
+        // share a contig name and only the assembly tells them apart.
+        const drawsHere =
+          (qAsm === assemblyName || tAsm === assemblyName) &&
+          mateAsm !== undefined &&
+          mateAsm !== assemblyName &&
+          (targetAssemblyName === undefined || mateAsm === targetAssemblyName)
+
+        if (drawsHere) {
           const start = flip ? r.qstart : r.tstart
           const end = flip ? r.qend : r.tend
           const refName = panSNContig(flip ? r.qname : r.tname)
           const mateName = panSNContig(flip ? r.tname : r.qname)
           const mateStart = flip ? r.tstart : r.qstart
           const mateEnd = flip ? r.tend : r.qend
-          const mateAsm = flip ? tAsm : qAsm
           const { extra, strand } = r
           if (refName === qref && doesIntersect2(qstart, qend, start, end)) {
             observer.next(

@@ -22,8 +22,14 @@ function makeAdapter(
   )
 }
 
-const feats = (adapter: Adapter, region: Record<string, unknown>) =>
-  firstValueFrom(adapter.getFeatures(region as never).pipe(toArray()))
+const feats = (
+  adapter: Adapter,
+  region: Record<string, unknown>,
+  opts: Record<string, unknown> = {},
+) =>
+  firstValueFrom(
+    adapter.getFeatures(region as never, opts as never).pipe(toArray()),
+  )
 
 test('keeps only the queried pair (grape vs peach), dropping grape-cacao and grape-grape', async () => {
   const fa = await feats(makeAdapter(['grape', 'peach']), {
@@ -61,6 +67,40 @@ test('assemblyNameToPanSN maps JBrowse names to PanSN sample prefixes', async ()
   )
   expect(fa.length).toBe(1)
   expect(fa[0]!.get('mate')).toMatchObject({ assemblyName: 'peachJB' })
+})
+
+test('one full-list track, targetAssemblyName isolates the band (grape query, peach target keeps only grape-peach, not grape-cacao)', async () => {
+  const fa = await feats(
+    makeAdapter(['grape', 'peach', 'cacao']),
+    { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
+    { targetAssemblyName: 'peach' },
+  )
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('mate')).toMatchObject({
+    refName: 'G1',
+    assemblyName: 'peach',
+  })
+})
+
+test('one full-list track, switching targetAssemblyName redraws a different band (grape query, cacao target)', async () => {
+  const fa = await feats(
+    makeAdapter(['grape', 'peach', 'cacao']),
+    { refName: 'chr1', start: 0, end: 2000, assemblyName: 'grape' },
+    { targetAssemblyName: 'cacao' },
+  )
+  expect(fa.length).toBe(1)
+  expect(fa[0]!.get('mate')).toMatchObject({
+    refName: 'I',
+    assemblyName: 'cacao',
+  })
+})
+
+test('getRefNames on a full-list track scopes to the target pair', async () => {
+  const names = await makeAdapter(['grape', 'peach', 'cacao']).getRefNames({
+    assemblyName: 'grape',
+    targetAssemblyName: 'peach',
+  })
+  expect([...names].sort()).toEqual(['chr1'])
 })
 
 test('getRefNames strips PanSN prefix and scopes to the pair (chr2 only has a grape-grape self-alignment, so it is not data for grape-vs-peach)', async () => {

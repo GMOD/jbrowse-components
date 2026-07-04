@@ -20,6 +20,22 @@ const threeWayView = {
   ],
 }
 
+// Same ins/volvox/del stack, but BOTH bands are backed by a single all-vs-all
+// PanSN PAF track (volvox_all_vs_all, assemblyNames lists all three) instead of
+// two separate pairwise PAFs. The synteny RPC passes each band's target
+// assembly, and the AllVsAllPAFAdapter filters the shared file to that pair.
+// Exercises the multi-genome one-track-backs-all-bands path end-to-end (unit
+// tests only hit the adapter in isolation).
+const threeWayAllVsAllView = {
+  type: 'LinearSyntenyView',
+  tracks: [['volvox_all_vs_all'], ['volvox_all_vs_all']],
+  views: [
+    { loc: 'ctgA:1-50000', assembly: 'volvox_ins' },
+    { loc: 'ctgA:1-50000', assembly: 'volvox' },
+    { loc: 'ctgA:1-50000', assembly: 'volvox_del' },
+  ],
+}
+
 const suite: TestSuite = {
   name: 'Multi-Way Synteny Views',
   tests: [
@@ -44,6 +60,12 @@ const suite: TestSuite = {
         await pageSnapshot(page, 'multiway-synteny-3way-fullpage')
       },
     },
+    viewSnapshotTest({
+      name: '3-way synteny from one all-vs-all PAF (volvox ins/del)',
+      snapshot: 'multiway-synteny-3way-allvsall',
+      view: threeWayAllVsAllView,
+      waitTestId: 'synteny_canvas_done',
+    }),
     viewSnapshotTest({
       name: '2-way synteny with gene tracks (volvox)',
       snapshot: 'multiway-synteny-2way-with-genes',

@@ -155,26 +155,30 @@ minimap2 -c -x asm20 -X all.fa all.fa > all_vs_all.paf
 ```
 
 Because the file already contains every pairwise comparison, the
-`AllVsAllPAFAdapter` lets **one PAF back every band** of the stacked view — no
-per-pair alignment step. Each track names the pair it draws; the adapter keeps
-only the records whose two sides are that pair (classified by PanSN prefix):
+`AllVsAllPAFAdapter` lets **one track back every band** of the stacked view — no
+per-pair alignment step and no duplicate tracks. List every assembly the file
+covers in `assemblyNames`; the synteny view tells the adapter which pair each
+band draws, and the adapter keeps only those records (classified by PanSN
+prefix):
 
 ```json
 {
   "type": "SyntenyTrack",
-  "trackId": "K12_Sakai_ava",
-  "name": "K12 vs Sakai (all-vs-all PAF)",
-  "assemblyNames": ["K12", "Sakai"],
+  "trackId": "ecoli_ava",
+  "name": "E. coli pangenome (all-vs-all PAF)",
+  "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"],
   "adapter": {
     "type": "AllVsAllPAFAdapter",
     "pafLocation": { "uri": "all_vs_all.paf.gz" },
-    "assemblyNames": ["K12", "Sakai"]
+    "assemblyNames": ["K12", "Sakai", "CFT073", "NCTC86"]
   }
 }
 ```
 
-If a JBrowse assembly name differs from its PanSN sample prefix, map it with the
-`assemblyNameToPanSN` slot (e.g. `{ "grape": "Vitis_vinifera" }`).
+Reference that single track from every band of the stacked view (`tracks[i]` for
+each adjacent pair). If a JBrowse assembly name differs from its PanSN sample
+prefix, map it with the `assemblyNameToPanSN` slot (e.g.
+`{ "grape": "Vitis_vinifera" }`).
 
 <Figure caption="Four E. coli strains (K-12, Sakai, CFT073, NCTC86) stacked from a single minimap2 all-vs-all PAF. Every adjacent band is a direct alignment because an all-vs-all file is a complete graph; the ribbons trace the shared chromosomal backbone with strain-specific rearrangements." src="/img/multiway_synteny/ecoli_pangenome.png" link="https://jbrowse.org/code/jb2/main/?config=https://jbrowse.org/demos/ecoli_pangenome/config.json" />
 

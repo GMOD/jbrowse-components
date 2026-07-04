@@ -22,6 +22,12 @@ export interface BaseOptions {
   // Used by synteny/comparative adapters in getRefNames to pick which side of
   // the pairing to return refnames for. Single-assembly adapters ignore it.
   assemblyName?: string
+  // The assembly on the *other* side of a synteny band, set by the synteny
+  // render RPC from the target view. Lets a multi-genome adapter (e.g.
+  // AllVsAllPAFAdapter) whose config lists all N assemblies isolate the exact
+  // pair a band draws — `assemblyName` alone can't, since one file backs every
+  // pair. Pairwise adapters (which already know their pair) ignore it.
+  targetAssemblyName?: string
   // Used by comparative adapters that expose multiple level-of-detail tiers
   // (e.g. PIF's per-row CIGAR vs merged-block coarse tier). 'auto' uses the
   // adapter's bpPerPx threshold; 'fine'/'coarse' force a specific tier.
