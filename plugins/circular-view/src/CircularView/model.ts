@@ -20,7 +20,7 @@ import PhotoCameraIcon from '@mui/icons-material/PhotoCamera'
 import { autorun } from 'mobx'
 
 import { calculateStaticSlices } from './slices.ts'
-import { viewportVisibleSection } from './viewportVisibleRegion.ts'
+import { twoPi, viewportVisibleSection } from './viewportVisibleRegion.ts'
 
 import type { SliceRegion } from './slices.ts'
 import type PluginManager from '@jbrowse/core/PluginManager'
@@ -60,7 +60,6 @@ export interface ExportSvgOptions {
  * ```
  */
 function stateModelFactory(pluginManager: PluginManager) {
-  const twoPi = 2 * Math.PI
   const minHeight = 40
   const minWidth = 100
   const defaultHeight = 400

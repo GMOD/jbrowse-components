@@ -7,7 +7,7 @@ import {
   buildPairedIntervalTree,
   intervalTreeFeatures,
 } from '../adapterUtil.ts'
-import { parseNamesFromHeader } from '../util.ts'
+import { resolveColumnNames } from '../util.ts'
 import { featureData } from './util.ts'
 
 import type { BedpeAdapterConfig } from './configSchema.ts'
@@ -81,12 +81,10 @@ export default class BedpeAdapter extends BaseFeatureDataAdapter<BedpeAdapterCon
   }
 
   async getNames() {
-    const columnNames: string[] = this.getConf('columnNames')
-    if (columnNames.length) {
-      return columnNames
-    }
-    const { header } = await this.loadData()
-    return parseNamesFromHeader(header)
+    return resolveColumnNames(
+      this.getConf('columnNames'),
+      async () => (await this.loadData()).header,
+    )
   }
 
   private async loadFeatureTreeP(refName: string) {

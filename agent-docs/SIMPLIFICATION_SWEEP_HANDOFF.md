@@ -152,19 +152,28 @@ too slow for large sequences) — no longer a finding.
   `MafAlignmentTooltipContents.tsx`, `MafCoverageTooltipContents.tsx`,
   `MafInterbaseTooltipContents.tsx`. Shared `useMafTooltipStyles`. (local
   makeStyles is conventionally tolerated.)
-- **alignments straggler flag literals → SAM_FLAG_*** (consistency, zero runtime
-  cost): `executeRenderAlignmentData.ts:61` `&2`→PROPER_PAIR;
-  `features/modCoverage/readBaseCounts.ts:36` `&16`→REVERSE;
-  `BamSlightlyLazyFeature.ts:128-130` & `CramSlightlyLazyFeature.ts:78-80`
-  `&0x40/0x10/0x20`→FIRST_IN_PAIR/REVERSE/MATE_REVERSE.
-- **circular-view twoPi** — `viewportVisibleRegion.ts:38` & `model.ts:63` both
-  `2*Math.PI`. Trivial shared const.
-- **bed getNames** — `BedAdapter.ts:63` & `BedpeAdapter.ts:83` byte-identical;
-  `BedTabixAdapter.getNames:110` differs (keep). Optional `resolveColumnNames`
-  helper in `util.ts`. ~5 lines each, marginal.
-- **cigar-utils getNibble** — `forEachMismatchNumeric.ts` repeats
-  `(numericSeq[i>>1] >> ((1-(i&1))<<2)) & 0xf` ~6×. Pure `getNibble(seq,i)` in
-  `bamSeqDecoder.ts` returns a primitive (inlinable, hot-loop-safe). Optional.
+- **cigar-utils getNibble (2026-07-04; deliberately skipped)** — considered
+  extracting the repeated `(numericSeq[i>>1] >> ((1-(i&1))<<2)) & 0xf` in
+  `forEachMismatchNumeric.ts` into a `getNibble(seq,i)` helper. **Not applied**:
+  this is the per-base mismatch-walk loop, explicitly comment-flagged in that
+  file as running over whole-chromosome contigs (~250M bases); a function-call
+  indirection here is exactly what `packages/alignments-core/CLAUDE.md`'s "no
+  allocation / verbose-but-zero-alloc wins over DRY" hot-loop rule warns
+  against, even for a would-be-inlinable primitive-returning function. Left
+  as-is; the other Tier 2 items below (all once-per-feature or non-hot) were
+  applied.
+
+### Applied 2026-07-04 (alignments/bed/circular-view typecheck + tests pass)
+- **alignments straggler flag literals → SAM_FLAG_*** —
+  `executeRenderAlignmentData.ts` `&2`→`SAM_FLAG_PROPER_PAIR`;
+  `features/modCoverage/readBaseCounts.ts` `&16`→`SAM_FLAG_REVERSE`;
+  `BamSlightlyLazyFeature.ts` & `CramSlightlyLazyFeature.ts`
+  `&0x40/0x10/0x20`→`SAM_FLAG_FIRST_IN_PAIR`/`SAM_FLAG_REVERSE`/`SAM_FLAG_MATE_REVERSE`.
+- **circular-view twoPi** — `viewportVisibleRegion.ts` now exports `twoPi`;
+  `model.ts`'s local redeclaration removed, imports it instead.
+- **bed getNames** — `BedAdapter`/`BedpeAdapter` `getNames()` now both call a
+  shared `resolveColumnNames` helper in `util.ts`. `BedTabixAdapter` untouched
+  (its `getNames` genuinely differs).
 
 ---
 

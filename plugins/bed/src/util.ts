@@ -158,6 +158,18 @@ export function parseNamesFromHeader(header: string) {
     : undefined
 }
 
+// shared by BedAdapter/BedpeAdapter's getNames(): explicit columnNames config
+// wins, else fall back to parsing the file's own header line
+export async function resolveColumnNames(
+  columnNames: string[],
+  getHeader: () => Promise<string>,
+) {
+  if (columnNames.length) {
+    return columnNames
+  }
+  return parseNamesFromHeader(await getHeader())
+}
+
 export function parseStrand(strand: string | number | undefined): number {
   if (strand === '-' || strand === -1) {
     return -1

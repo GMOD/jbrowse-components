@@ -1,4 +1,7 @@
-import { SAM_FLAG_SUPPLEMENTARY } from '@jbrowse/alignments-core'
+import {
+  SAM_FLAG_PROPER_PAIR,
+  SAM_FLAG_SUPPLEMENTARY,
+} from '@jbrowse/alignments-core'
 import {
   createProgressReporter,
   groupBy,
@@ -59,13 +62,14 @@ function isConcordantOrientation(f: Feature) {
   )
 }
 
-// A chain counts as a proper pair only when every read carries the 0x2 flag
-// and has a concordant orientation.
+// A chain counts as a proper pair only when every read carries the proper-pair
+// flag and has a concordant orientation.
 function isProperPairChain(chain: Feature[]) {
   return chain.every(
     (f: Feature) =>
-      !!(((f.get('flags') as number | undefined) ?? 0) & 2) &&
-      isConcordantOrientation(f),
+      !!(
+        ((f.get('flags') as number | undefined) ?? 0) & SAM_FLAG_PROPER_PAIR
+      ) && isConcordantOrientation(f),
   )
 }
 

@@ -35,7 +35,7 @@ export function cartesianToPolar(x: number, y: number) {
   return [rho, theta] as const
 }
 
-const twoPi = 2 * Math.PI
+export const twoPi = 2 * Math.PI
 
 // return which arc range has any part of the circle visible in the viewport
 export function viewportVisibleSection(

@@ -1,4 +1,9 @@
 import { BamRecord } from '@gmod/bam'
+import {
+  SAM_FLAG_FIRST_IN_PAIR,
+  SAM_FLAG_MATE_REVERSE,
+  SAM_FLAG_REVERSE,
+} from '@jbrowse/alignments-core'
 import { CIGAR_H, CIGAR_S, forEachMismatchNumeric } from '@jbrowse/cigar-utils'
 
 import { collectMismatches } from '../shared/collectMismatches.ts'
@@ -80,9 +85,9 @@ export default class BamSlightlyLazyFeature
       return undefined
     }
     return getPairOrientation({
-      isRead1: !!(this.flags & 0x40),
-      isSelfRev: !!(this.flags & 0x10),
-      isMateRev: !!(this.flags & 0x20),
+      isRead1: !!(this.flags & SAM_FLAG_FIRST_IN_PAIR),
+      isSelfRev: !!(this.flags & SAM_FLAG_REVERSE),
+      isMateRev: !!(this.flags & SAM_FLAG_MATE_REVERSE),
       selfRefId: this.ref_id,
       selfPos: this.start,
       mateRefId: this.next_refid,

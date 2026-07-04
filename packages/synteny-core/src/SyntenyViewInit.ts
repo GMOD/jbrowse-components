@@ -12,7 +12,7 @@ export interface SyntenyViewSharedInit {
   // wait, so the user doesn't see an undiagonalized flash.
   autoDiagonalize?: boolean
   // Initial colorBy. Use 'query' (chromosome painting) for whole-genome
-  // views where the default grey blends ribbons/points into mud.
+  // views where the default red is hard to distinguish across many ribbons.
   colorBy?: SyntenyColorBy
   // Per-feature alignment-length filter applied at the renderer. Hides
   // chains shorter than this many bp; cuts the genome-scale hairball.
