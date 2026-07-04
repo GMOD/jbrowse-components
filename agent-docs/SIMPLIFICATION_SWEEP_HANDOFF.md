@@ -148,10 +148,11 @@ too slow for large sequences) — no longer a finding.
 ---
 
 ## ▶ TIER 2: low value / optional (apply only if doing a thorough pass)
-- **maf tooltip styles** — identical `table` makeStyles block in
-  `MafAlignmentTooltipContents.tsx`, `MafCoverageTooltipContents.tsx`,
-  `MafInterbaseTooltipContents.tsx`. Shared `useMafTooltipStyles`. (local
-  makeStyles is conventionally tolerated.)
+- **maf tooltip styles (2026-07-04; already stale — no action needed)** — this
+  item predates `3ac60c6e36`, which already extracted a shared
+  `useTooltipStyles` (`tooltipStyles.ts`) consumed by all three of
+  `MafAlignmentTooltipContents.tsx`, `MafCoverageTooltipContents.tsx`, and
+  `MafInterbaseTooltipContents.tsx`. Nothing left to dedupe.
 - **cigar-utils getNibble (2026-07-04; deliberately skipped)** — considered
   extracting the repeated `(numericSeq[i>>1] >> ((1-(i&1))<<2)) & 0xf` in
   `forEachMismatchNumeric.ts` into a `getNibble(seq,i)` helper. **Not applied**:
