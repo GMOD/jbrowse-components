@@ -1,4 +1,9 @@
-import { computeLaidOutData, createIncrementalLayout } from './layout.ts'
+import {
+  computeLaidOutData,
+  createIncrementalLayout,
+  scaleLaidOutData,
+} from './layout.ts'
+import { maxBottom } from './yMorph.ts'
 import { LABEL_FONT_SIZE } from '../RenderFeatureDataRPC/constants.ts'
 import { ROW_PADDING } from '../RenderFeatureDataRPC/glyphs/glyphUtils.ts'
 import {
@@ -931,4 +936,44 @@ test('compact mode scales aminoAcidOverlay height alongside its top', () => {
   // compact multiplier is 0.6; topPx and heightPx must scale by the same factor
   expect(aa.heightPx).toBeCloseTo(12)
   expect(aa.topPx).toBeCloseTo(3)
+})
+
+test('scaleLaidOutData squeezes every Y and height by the fit factor', () => {
+  const data = makeFeatureData({
+    features: [
+      { featureId: 'f1', startBp: 100, endBp: 500, height: 20 },
+      { featureId: 'f2', startBp: 200, endBp: 600, height: 20 },
+    ],
+  })
+  // no labels so the row height is just body + padding, keeping the math simple
+  const laid = layout(
+    new Map([[0, data]]),
+    new Map([[0, 'volvox:ctgA']]),
+    1,
+    false,
+    false,
+  )
+  const before = maxBottom(laid)
+  const scaled = scaleLaidOutData(laid, 0.5)
+
+  // fresh clone, base map untouched
+  expect(scaled.get(0)).not.toBe(laid.get(0))
+  expect(maxBottom(laid)).toBe(before)
+
+  // content height halved, and the packed flatbush box tops/bottoms too
+  expect(maxBottom(scaled)).toBeCloseTo(before / 2)
+  const base = laid.get(0)!.flatbushItems
+  const out = scaled.get(0)!.flatbushItems
+  for (let i = 0; i < base.length; i++) {
+    expect(out[i]!.topPx).toBeCloseTo(base[i]!.topPx * 0.5)
+    expect(out[i]!.bottomPx).toBeCloseTo(base[i]!.bottomPx * 0.5)
+    expect(out[i]!.featureHeightPx).toBeCloseTo(base[i]!.featureHeightPx * 0.5)
+  }
+  // the row-offset rect Ys scale as well
+  expect(out[0]).toBeDefined()
+  const baseRectYs = laid.get(0)!.rectYs
+  const outRectYs = scaled.get(0)!.rectYs
+  for (let i = 0; i < baseRectYs.length; i++) {
+    expect(outRectYs[i]).toBeCloseTo(baseRectYs[i]! * 0.5)
+  }
 })

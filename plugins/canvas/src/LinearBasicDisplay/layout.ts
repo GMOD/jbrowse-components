@@ -308,6 +308,34 @@ export function createIncrementalLayout() {
   }
 }
 
+// "Fit to display height": uniformly scale an already-laid-out region so the
+// whole stack fits the track height without scrolling. Unlike applyHeightScale
+// (a pre-pack body shrink that feeds the packer), this runs AFTER packing on the
+// offset geometry, so it also scales the packed `topPx`/`bottomPx` and the
+// row-offset Ys — every Y and height by the same factor, so content height ×
+// scale lands exactly on the track height. Row assignment is untouched (it's
+// fixed by X-overlap), so the fit is a pure vertical squeeze.
+export function scaleLaidOutData(
+  map: ReadonlyMap<number, FeatureDataResult>,
+  scale: number,
+): Map<number, FeatureDataResult> {
+  const out = new Map<number, FeatureDataResult>()
+  for (const [n, data] of map) {
+    const cloned = cloneMutableFields(data)
+    // Reuse applyHeightScale for the fields it already covers (rect/line/arrow
+    // Ys+heights, subfeature/label/amino-acid tops, featureHeightPx), then add
+    // the packed flatbush box tops/bottoms it doesn't touch (those are 0 at the
+    // pre-pack stage applyHeightScale was written for).
+    applyHeightScale(cloned, scale)
+    for (const item of cloned.flatbushItems) {
+      item.topPx *= scale
+      item.bottomPx *= scale
+    }
+    out.set(n, cloned)
+  }
+  return out
+}
+
 function cloneMutableFields(raw: FeatureDataResult) {
   const floatingLabelsData: Record<string, FeatureLabelData> = {}
   for (const [k, v] of Object.entries(raw.floatingLabelsData)) {

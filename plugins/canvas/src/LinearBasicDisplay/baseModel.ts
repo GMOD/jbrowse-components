@@ -56,7 +56,7 @@ import {
   buildSubfeatureFlatbushIndex,
 } from './components/hitTesting.ts'
 import { featureMatchesHighlight } from './featureHighlight.ts'
-import { createIncrementalLayout } from './layout.ts'
+import { createIncrementalLayout, scaleLaidOutData } from './layout.ts'
 import {
   canMorph,
   captureDisplayedTops,
@@ -331,6 +331,16 @@ export default function baseStateModelFactory(
          * #volatile
          */
         heightBeforeExpand: undefined as number | undefined,
+        /**
+         * #volatile
+         * "Fit to display height" mode: laid-out glyphs are uniformly shrunk so
+         * every row fits the track height without scrolling. Volatile — a view
+         * preference like scrollTop; picking any feature-height preset turns it
+         * off. The `height` config slot is never written, so it stays pure user
+         * intent. Only ever shrinks (scale <= 1); a track that already fits is
+         * left untouched.
+         */
+        fitHeightToDisplay: false,
         /**
          * #volatile
          */
@@ -906,8 +916,12 @@ export default function baseStateModelFactory(
       .views(self => ({
         /**
          * #getter
+         * Layout at the current display mode, before any fit-to-height squeeze.
+         * The reference for both `fitScale` (which reads its height) and the
+         * final `laidOutDataMap`; kept separate so the fit scale derives from the
+         * unscaled content height and can't feed back on itself.
          */
-        get laidOutDataMap(): Map<number, FeatureDataResult> {
+        get baseLaidOutDataMap(): Map<number, FeatureDataResult> {
           if (self.regionTooLarge) {
             return new Map()
           }
@@ -924,6 +938,35 @@ export default function baseStateModelFactory(
             displayMode: self.displayMode,
             pinnedFeatureIds: self.layoutPinnedFeatureIdSet,
           })
+        },
+      }))
+      .views(self => ({
+        /**
+         * #getter
+         * Uniform vertical squeeze for "fit to display height" mode: the factor
+         * that makes the whole stack fit the track height without scrolling.
+         * Shrink-only (<= 1); 1 whenever fit is off, content already fits, or
+         * there's nothing to lay out. Measured off the unfitted base layout so
+         * it can't feed back on itself.
+         */
+        get fitScale() {
+          const base = maxBottom(self.baseLaidOutDataMap)
+          return self.fitHeightToDisplay && base > self.height
+            ? self.height / base
+            : 1
+        },
+        /**
+         * #getter
+         * What every consumer (hit test, GPU upload, React render) reads. The
+         * `baseLaidOutDataMap` by reference unless fit mode is squeezing the
+         * stack, in which case each region is cloned and scaled to exactly fill
+         * the track height. Returning the base map by reference off the fit path
+         * keeps the incremental-layout upload diff and Y-morph idle check intact.
+         */
+        get laidOutDataMap(): Map<number, FeatureDataResult> {
+          return this.fitScale === 1
+            ? self.baseLaidOutDataMap
+            : scaleLaidOutData(self.baseLaidOutDataMap, this.fitScale)
         },
       }))
       .views(self => ({
@@ -1191,6 +1234,20 @@ export default function baseStateModelFactory(
           // features clipped, blank below) until a DOM scroll event happens to
           // sync it back.
           self.setScrollTop(0)
+        },
+
+        /**
+         * #action
+         * Enter/leave "fit to display height" mode. Entering scrolls to the top
+         * (a fitted stack has no scroll, so a stale scrollTop would leave the GPU
+         * canvas painted at an invalid offset). The `laidOutDataMap` getter does
+         * the actual squeeze reactively.
+         */
+        setFitHeightToDisplay(fit: boolean) {
+          self.fitHeightToDisplay = fit
+          if (fit) {
+            self.setScrollTop(0)
+          }
         },
 
         /**

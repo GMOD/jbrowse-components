@@ -176,16 +176,19 @@ export default function stateModelFactory(
       },
 
       setDisplayMode(value: DisplayMode) {
+        self.setFitHeightToDisplay(false)
         self.configuration.setSlot('displayMode', value)
       },
 
       // Revert to 'inherit' (the slot default), which strips the pin so the
       // track follows the session-wide type default again.
       resetDisplayMode() {
+        self.setFitHeightToDisplay(false)
         self.configuration.setSlot('displayMode', 'inherit')
       },
 
       setCompactness(level: 'normal' | 'compact' | 'super-compact') {
+        self.setFitHeightToDisplay(false)
         self.configuration.setSlot(
           'displayMode',
           level === 'super-compact' ? 'superCompact' : level,
@@ -283,7 +286,7 @@ export default function stateModelFactory(
                 {
                   label: `Default (${displayModeLabel(self.inheritedDisplayMode)})`,
                   type: 'radio' as const,
-                  checked: !self.isDisplayModePinned,
+                  checked: !self.isDisplayModePinned && !self.fitHeightToDisplay,
                   onClick: () => {
                     self.resetDisplayMode()
                   },
@@ -292,12 +295,21 @@ export default function stateModelFactory(
                   label: option.label,
                   type: 'radio' as const,
                   checked:
+                    !self.fitHeightToDisplay &&
                     self.isDisplayModePinned &&
                     self.displayMode === option.value,
                   onClick: () => {
                     self.setDisplayMode(option.value)
                   },
                 })),
+                {
+                  label: 'Fit to display height',
+                  type: 'radio' as const,
+                  checked: self.fitHeightToDisplay,
+                  onClick: () => {
+                    self.setFitHeightToDisplay(true)
+                  },
+                },
                 { type: 'divider' as const },
                 {
                   label: `Use "${displayModeLabel(self.displayMode)}" as the default for feature tracks`,
