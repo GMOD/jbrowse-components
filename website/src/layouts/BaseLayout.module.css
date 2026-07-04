@@ -67,6 +67,43 @@
 .navRight a:hover {
   color: var(--color-teal-bright);
 }
+.navExternal {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 14px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  border: 1px solid color-mix(in srgb, var(--color-teal-bright) 55%, transparent);
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--color-teal-bright) 12%, transparent);
+  color: var(--color-teal-bright) !important;
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-teal-bright) 40%, transparent);
+  transition:
+    background 0.2s ease,
+    color 0.2s ease,
+    border-color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+.navExternal:hover {
+  background: var(--color-teal-bright);
+  border-color: var(--color-teal-bright);
+  color: var(--color-navy) !important;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 14px -2px color-mix(in srgb, var(--color-teal-bright) 55%, transparent);
+}
+.navExternal:active {
+  transform: translateY(0);
+  box-shadow: 0 0 0 0 color-mix(in srgb, var(--color-teal-bright) 40%, transparent);
+}
+.navExternal svg {
+  flex-shrink: 0;
+  transition: transform 0.2s ease;
+}
+.navExternal:hover svg {
+  transform: translate(1px, -1px);
+}
 .socialIcon {
   width: 24px;
   height: 24px;

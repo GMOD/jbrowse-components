@@ -56,6 +56,8 @@ const navActive = styles.navActive!
       :root {
         --nav-height: 60px;
         --sidebar-width: 320px;
+        --font-mono: ui-monospace, 'SF Mono', 'Cascadia Code', 'Consolas',
+          'Liberation Mono', monospace;
         --sidebar-link-padding: 6px 12px;
         --color-accent: hsl(160, 51%, 35%);
         --color-accent-dark: hsl(160, 55%, 26%);
@@ -75,8 +77,9 @@ const navActive = styles.navActive!
         --color-text-muted: #606770;
         --color-code-bg: #1e1e2e;
         --color-code-text: #cdd6f4;
-        --color-inline-code-bg: #f0f0f0;
-        --color-inline-code-text: #8e3b5a;
+        --color-inline-code-bg: #f2f3f5;
+        --color-inline-code-border: #dfe1e5;
+        --color-inline-code-text: #1c1e21;
         --color-table-stripe: #fafafa;
         --color-blockquote-bg: #f0faf8;
         --color-highlight-bg: #fff3cd;
@@ -111,7 +114,6 @@ const navActive = styles.navActive!
       </a>
 
       <div class={styles.navLinks} id="nav-links">
-        <a href="http://genomes.jbrowse.org/">Genomes</a>
         {
           navLinks.map(({ path, label }) => (
             <a
@@ -125,6 +127,29 @@ const navActive = styles.navActive!
       </div>
 
       <div class={styles.navRight}>
+        <a
+          href="https://genomes.jbrowse.org/"
+          class={styles.navExternal}
+          target="_blank"
+          rel="noopener noreferrer"
+          title="Browse hosted genomes — opens the JBrowse Genomes app in a new tab"
+        >
+          Genomes
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="12"
+            height="12"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2.5"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <path d="M7 17 17 7"></path><path d="M7 7h10v10"></path>
+          </svg>
+        </a>
         <a
           href={`${baseUrl}/search/`}
           class:list={[
