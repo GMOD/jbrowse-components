@@ -23,14 +23,14 @@ import {
   measureText,
   openFeatureWidget,
 } from '@jbrowse/core/util'
-import { getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
+import { addDisposer, getSnapshot, isAlive, types } from '@jbrowse/mobx-state-tree'
 import {
   MultiRegionDisplayMixin,
   PromotableDefaultsMixin,
   TrackHeightMixin,
 } from '@jbrowse/plugin-linear-genome-view'
 import { domainFromStats, getNiceDomain } from '@jbrowse/wiggle-core'
-import { observable } from 'mobx'
+import { autorun, observable } from 'mobx'
 
 import { updateColorTagMap as updateColorTagMapPure } from './colorTagUtils.ts'
 import { readColorCategory } from './colorUtils.ts'
@@ -513,6 +513,14 @@ export default function stateModelFactory(
           groupMaxHeightOverrides: observable.map<string, number>(),
           /**
            * #volatile
+           * "Fit to display height" mode: an autorun keeps `featureHeight` sized
+           * so all uncollapsed groups' reads fill the display without scrolling
+           * (reads thin as needed). Volatile — a view preference like scrollTop;
+           * picking any explicit feature-height preset turns it back off.
+           */
+          fitHeightToDisplay: false,
+          /**
+           * #volatile
            */
           highlightedChainIds: [] as string[],
           /**
@@ -975,9 +983,9 @@ export default function stateModelFactory(
         /**
          * #getter
          * The layout mechanics (grouping, sort, soft-clip, colors) shared by the
-         * viewport fit pass and any ad-hoc layout — e.g. `fitReadsToHeight`, which
-         * lays every group out uncapped to count rows. Kept apart from the fit
-         * policy (row caps), which varies per call.
+         * viewport fit pass and any ad-hoc layout — e.g. `fittedFeatureHeight`,
+         * which lays every group out uncapped to count rows. Kept apart from the
+         * fit policy (row caps), which varies per call.
          */
         get groupLayoutContext() {
           return {
@@ -1529,6 +1537,31 @@ export default function stateModelFactory(
         },
       }))
       .views(self => ({
+        /**
+         * #getter
+         * The read height that makes every uncollapsed group's reads fill the
+         * display without scrolling. Row count is fixed by read overlaps, so we
+         * lay the groups out uncapped (a fixed maxHeight-row cap, independent of
+         * the current featureHeight — so the fit autorun that writes featureHeight
+         * can't feed back into this) and divide the pileup space by it. 0 when
+         * there's nothing to fit (no data / no room), signalling "leave as-is".
+         */
+        get fittedFeatureHeight() {
+          const empty = new Map<number, PileupDataResult>()
+          const laid = buildLaidOutByGroup(
+            self.groupLayoutContext,
+            maxRowsFor(self.maxHeight, 1),
+          )
+          const rows = self.groupOrder
+            .filter(g => !self.collapsedGroups.has(g.key))
+            .reduce((sum, { key }) => sum + groupMaxY(laid.get(key) ?? empty), 0)
+          const pileupSpace =
+            self.height - Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
+          return rows > 0 && pileupSpace > 0
+            ? Math.max(1, Math.floor(pileupSpace / rows))
+            : 0
+        },
+
         /**
          * #getter
          */
@@ -2153,6 +2186,7 @@ export default function stateModelFactory(
            * #action
            */
           setFeatureHeight(height?: number) {
+            self.fitHeightToDisplay = false
             self.configuration.setSlot('featureHeight', height)
             self.scrollTop = 0
           },
@@ -2161,6 +2195,7 @@ export default function stateModelFactory(
            * #action
            */
           setFeatureSpacing(spacing?: number) {
+            self.fitHeightToDisplay = false
             self.configuration.setSlot('featureSpacing', spacing)
             self.scrollTop = 0
           },
@@ -2179,6 +2214,7 @@ export default function stateModelFactory(
            */
           setCompactness(level: CompactnessLevel) {
             const { featureHeight, featureSpacing } = COMPACTNESS_PRESETS[level]
+            self.fitHeightToDisplay = false
             self.configuration.setSlot('featureHeight', featureHeight)
             self.configuration.setSlot('featureSpacing', featureSpacing)
             self.scrollTop = 0
@@ -2186,35 +2222,47 @@ export default function stateModelFactory(
 
           /**
            * #action
-           * Shrink the read height so every read (all groups, uncollapsed) fits
-           * the display without scrolling — the row count is fixed by read
-           * overlaps, so we lay the groups out uncapped, count rows, and divide
-           * the pileup space by that. Reads go as thin as 1px; only past that
-           * (more rows than pixels) does the stack still scroll. Drops per-group
-           * overrides so the fit is uniform, and zeroes spacing to reclaim it.
+           * Enter/leave "fit to display height" mode. Entering drops per-group
+           * height overrides so the fit is uniform; the afterAttach autorun then
+           * keeps `featureHeight` sized to fit as the display/data change.
            */
-          fitReadsToHeight() {
-            const rowHeight = self.featureHeight + self.featureSpacing
-            const laid = buildLaidOutByGroup(
-              self.groupLayoutContext,
-              maxRowsFor(self.maxHeight, rowHeight),
-            )
-            const empty = new Map<number, PileupDataResult>()
-            const rows = self.groupOrder
-              .filter(g => !self.collapsedGroups.has(g.key))
-              .reduce((sum, { key }) => sum + groupMaxY(laid.get(key) ?? empty), 0)
-            const overhead =
-              Math.max(1, self.groupOrder.length) * self.coverageDisplayHeight
-            const pileupSpace = self.height - overhead
-            if (rows > 0 && pileupSpace > 0) {
+          setFitHeightToDisplay(fit: boolean) {
+            self.fitHeightToDisplay = fit
+            if (fit) {
               self.groupMaxHeightOverrides.clear()
-              self.configuration.setSlot('featureSpacing', 0)
-              self.configuration.setSlot(
-                'featureHeight',
-                Math.max(1, Math.floor(pileupSpace / rows)),
-              )
-              self.scrollTop = 0
             }
+          },
+
+          /**
+           * #action
+           * Write the fitted read height into the feature-size slots. Bypasses
+           * `setFeatureHeight` (which would exit fit mode) — this IS the mode
+           * maintaining itself. `fittedFeatureHeight` is featureHeight-independent,
+           * so writing these slots can't re-trigger the driving autorun.
+           */
+          applyFittedHeight(height: number) {
+            self.configuration.setSlot('featureSpacing', 0)
+            self.configuration.setSlot('featureHeight', height)
+            self.scrollTop = 0
+          },
+
+          afterAttach() {
+            // Keep the fitted read height in sync while in "fit to display
+            // height" mode — re-fits as the display resizes, data loads, or
+            // groups collapse. Reads `fittedFeatureHeight` here (tracked) and
+            // hands it to the write action; that height ignores featureHeight, so
+            // this can't loop.
+            addDisposer(
+              self,
+              autorun(() => {
+                if (self.fitHeightToDisplay) {
+                  const height = self.fittedFeatureHeight
+                  if (height > 0) {
+                    self.applyFittedHeight(height)
+                  }
+                }
+              }),
+            )
           },
 
           /**

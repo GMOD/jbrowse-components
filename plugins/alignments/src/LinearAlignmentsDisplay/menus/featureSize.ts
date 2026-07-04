@@ -31,10 +31,11 @@ interface FeatureHeightModel {
   featureHeight: number
   featureSpacing: number
   isCompactnessDefault: boolean
+  fitHeightToDisplay: boolean
   setFeatureHeight: (height?: number) => void
   setFeatureSpacing: (spacing?: number) => void
   setCompactnessDefault: (promote: boolean) => void
-  fitReadsToHeight: () => void
+  setFitHeightToDisplay: (fit: boolean) => void
 }
 
 // Names the height the track currently shows — a preset label when it matches
@@ -59,6 +60,7 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
         label: preset.label,
         type: 'radio' as const,
         checked:
+          !model.fitHeightToDisplay &&
           model.featureHeight === preset.featureHeight &&
           model.featureSpacing === preset.featureSpacing,
         onClick: () => {
@@ -66,6 +68,14 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
           model.setFeatureSpacing(preset.featureSpacing)
         },
       })),
+      {
+        label: 'Fit to display height',
+        type: 'radio' as const,
+        checked: model.fitHeightToDisplay,
+        onClick: () => {
+          model.setFitHeightToDisplay(true)
+        },
+      },
       {
         label: 'Custom',
         onClick: () => {
@@ -76,12 +86,6 @@ export function getFeatureHeightMenuItem(model: FeatureHeightModel) {
               handleClose,
             },
           ])
-        },
-      },
-      {
-        label: 'Fit to display height',
-        onClick: () => {
-          model.fitReadsToHeight()
         },
       },
       { type: 'divider' as const },

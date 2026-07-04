@@ -326,7 +326,9 @@ const GroupResizeHandles = observer(function GroupResizeHandles({
 }: {
   model: LinearAlignmentsDisplayModel
 }) {
-  if (!model.isGrouped) {
+  // In fit-to-height mode the read height is derived to fill the display, so a
+  // per-group pileup drag has nothing to act on — hide the handles.
+  if (!model.isGrouped || model.fitHeightToDisplay) {
     return null
   }
   const { height, scrollModel: scroll } = model
