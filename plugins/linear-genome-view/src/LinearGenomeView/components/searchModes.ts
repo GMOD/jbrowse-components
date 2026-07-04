@@ -1,0 +1,61 @@
+import { getSession, isSessionWithAddTracks } from '@jbrowse/core/util'
+import { makeStyles } from '@jbrowse/core/util/tss-react'
+import { getSnapshot } from '@jbrowse/mobx-state-tree'
+
+export interface SequenceSearchModel {
+  assemblyNames: string[]
+  showTrack: (trackId: string) => void
+}
+
+// Props for a self-contained search-mode panel: it renders its own fields and
+// action buttons and creates the track itself, so a plugin replacing one via
+// its `Core-replaceWidget`-style extension point is fully independent of ours.
+export interface SequenceSearchModeProps {
+  model: SequenceSearchModel
+  handleClose: () => void
+}
+
+export const useSearchModeStyles = makeStyles()({
+  dialogContent: {
+    width: '34em',
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 12,
+  },
+  row: {
+    display: 'flex',
+    gap: 12,
+    '& > *': {
+      flex: 1,
+    },
+  },
+  toggleRow: {
+    display: 'flex',
+    alignItems: 'center',
+    gap: 12,
+  },
+})
+
+// Creates a FeatureTrack wrapping the assembly's sequence adapter and shows it.
+// `adapter` carries the type + params; the reference sequence subadapter is
+// injected here so each mode's panel doesn't repeat the session plumbing.
+export function addReferenceScanTrack(
+  model: SequenceSearchModel,
+  args: { trackId: string; name: string; adapter: Record<string, unknown> },
+) {
+  const session = getSession(model)
+  const assemblyName = model.assemblyNames[0]!
+  if (isSessionWithAddTracks(session)) {
+    const sequenceAdapter = getSnapshot(
+      session.assemblyManager.get(assemblyName)?.configuration.sequence.adapter,
+    )
+    session.addTrackConf({
+      trackId: args.trackId,
+      name: args.name,
+      assemblyNames: [assemblyName],
+      type: 'FeatureTrack',
+      adapter: { ...args.adapter, sequenceAdapter },
+    })
+    model.showTrack(args.trackId)
+  }
+}
