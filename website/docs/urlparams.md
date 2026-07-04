@@ -26,10 +26,10 @@ Example
 
 `?config=test_data/volvox/config.json`
 
-A path to a JBrowse 2 config file, relative to the current folder on the disk.
-Note that this just uses client-side fetch to read the file, not server-side
-file reads. If ?config= is not specified, it looks for a file named config.json
-e.g. http://host/jbrowse2/config.json, which is what the @jbrowse/cli tool sets
+A path to a JBrowse 2 config file, relative to the current folder on disk. This
+uses a client-side fetch, not a server-side file read. If `?config=` is omitted,
+JBrowse looks for `config.json` in the current folder (e.g.
+`http://host/jbrowse2/config.json`), which is what the `@jbrowse/cli` tool sets
 up by default.
 
 The special value `?config=none` skips loading a config file entirely. This is
@@ -84,14 +84,13 @@ space (URL-encoded as `%20`):
 
 `&highlight=chr1:6000-7000%20chr1:7100-7200`
 
-Note: `&assembly=` should always accompany `&highlight=` — the highlight is
-stored with the assembly name so that downstream features (e.g. bookmarking the
-highlighted region from the chip menu) can resolve it. The highlight will still
-render without an assembly in a single-assembly view if the refName matches a
-displayed region, but it is not portable across assemblies and may fail in
-actions that require a fully-qualified region. The same caveat applies when
-authoring `view.highlight` directly in a session JSON: include `assemblyName` on
-each entry.
+Note: always pass `&assembly=` alongside `&highlight=`. The highlight is stored
+with the assembly name so downstream features (e.g. bookmarking the highlighted
+region from the chip menu) can resolve it. Without an assembly, the highlight
+still renders in a single-assembly view when the refName matches a displayed
+region, but it is not portable across assemblies and may fail in actions that
+need a fully-qualified region. The same applies when authoring `view.highlight`
+directly in a session JSON: include `assemblyName` on each entry.
 
 `view.highlight` entries also accept optional `color` and `label` fields, both
 when authoring a session JSON directly and via the URL by passing a JSON object
@@ -197,16 +196,16 @@ Example
 
 `&sessionName=My%20Custom%20Session`
 
-Sets the session name displayed in the header bar. This parameter works with all
-session types including:
+Sets the session name displayed in the header bar. It works with all session
+types:
 
 - Default sessions (loaded from config)
 - Session specs (`&session=spec-...`)
 - Hub sessions (`&hubURL=...`)
 
-This is useful for giving meaningful names to sessions launched via URL, rather
-than using auto-generated names with timestamps. The value should be URL-encoded
-if it contains special characters or spaces.
+Use it to give URL-launched sessions a meaningful name instead of an
+auto-generated one with a timestamp. URL-encode the value if it contains spaces
+or special characters.
 
 ### &hubURL=
 
@@ -905,11 +904,10 @@ The `layout` parameter:
 
 ### &session=json-
 
-Similar to encoded sessions, but more readable, `&session=json-` type sessions
-let you specify the input as a JSON snapshot of a session. This is slightly
-different from a session spec, which has extra logic that loads the session.
-JSON sessions are literal session snapshots, like those that might come from the
-"Export session..." process.
+Like encoded sessions but more readable, `&session=json-` takes a plain JSON
+snapshot of a session. Unlike a session spec (which runs extra logic to build
+the session), a JSON session is a literal snapshot — the same shape produced by
+"Export session...".
 
 Example
 
