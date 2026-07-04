@@ -54,6 +54,20 @@ function webStreamToNodeReadable(
           this.destroy(e as Error)
         })
     },
+    // Cancel the source when the Readable is destroyed early (e.g. an aborted
+    // index) so the underlying fetch connection is released rather than left
+    // hanging — the cleanup Readable.fromWeb would do for us if it accepted
+    // this stream.
+    destroy(error: Error | null, callback: (error?: Error | null) => void) {
+      reader.cancel(error ?? undefined).then(
+        () => {
+          callback(error)
+        },
+        () => {
+          callback(error)
+        },
+      )
+    },
   })
 }
 

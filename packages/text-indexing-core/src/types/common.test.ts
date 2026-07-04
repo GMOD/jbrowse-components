@@ -184,4 +184,46 @@ describe('getLocalOrRemoteStream', () => {
       globalThis.fetch = originalFetch
     }
   })
+
+  it('cancels the foreign-realm reader when the stream is destroyed early', async () => {
+    // Destroying the adapted Readable (e.g. an aborted index) must cancel the
+    // underlying web reader so the fetch connection is released.
+    let cancelled = false
+    const foreignBody = {
+      getReader() {
+        return {
+          read() {
+            return new Promise(() => {}) // never resolves; only cancel ends it
+          },
+          cancel() {
+            cancelled = true
+            return Promise.resolve()
+          },
+        }
+      },
+    }
+    const originalFetch = globalThis.fetch
+    globalThis.fetch = () =>
+      Promise.resolve({
+        ok: true,
+        headers: { get: () => '0' },
+        body: foreignBody,
+      } as unknown as Response)
+    try {
+      const stream = await getLocalOrRemoteStream({
+        file: 'https://example.com/data.tsv',
+        out: testDataDir,
+        onStart: () => {},
+        onUpdate: () => {},
+      })
+      await new Promise<void>((resolve, reject) => {
+        stream.on('close', resolve)
+        stream.on('error', reject)
+        stream.destroy()
+      })
+      expect(cancelled).toBe(true)
+    } finally {
+      globalThis.fetch = originalFetch
+    }
+  })
 })
