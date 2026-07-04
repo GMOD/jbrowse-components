@@ -1,3 +1,5 @@
+import { useState } from 'react'
+
 import { makeStyles } from '@jbrowse/core/util/tss-react'
 import UnfoldLessIcon from '@mui/icons-material/UnfoldLess'
 import UnfoldMoreIcon from '@mui/icons-material/UnfoldMore'
@@ -39,6 +41,12 @@ const OverflowIndicator = observer(function OverflowIndicator({
   onRestore: () => void
 }) {
   const { classes } = useStyles()
+  // Clicking the button changes the track height, so the button (anchored to
+  // the bottom of the growing/shrinking container) jumps out from under the
+  // cursor without a pointer move — the browser won't fire mouseleave until the
+  // next move, so MUI's default hover-driven Tooltip would stay stuck open.
+  // Controlling open state lets us force it closed on click.
+  const [open, setOpen] = useState(false)
   // Once expanded, keep offering "restore" (resize back down) rather than
   // flipping to expand again — the collapse affordance is the priority. The
   // expand action is gated on canExpand so it never offers a no-op or a shrink.
@@ -56,13 +64,23 @@ const OverflowIndicator = observer(function OverflowIndicator({
     .filter(Boolean)
     .join(' — ')
   return visible ? (
-    <Tooltip title={title}>
+    <Tooltip
+      title={title}
+      open={open}
+      onOpen={() => {
+        setOpen(true)
+      }}
+      onClose={() => {
+        setOpen(false)
+      }}
+    >
       <IconButton
         aria-label={label}
         size="small"
         className={classes.button}
         onClick={e => {
           e.stopPropagation()
+          setOpen(false)
           if (expanded) {
             onRestore()
           } else {
